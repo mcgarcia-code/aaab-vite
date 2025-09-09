@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useSancionesStore } from '@/stores/sanciones'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from '@/stores/auth'
 
 // --- STORES ---
 const sancionesStore = useSancionesStore()
