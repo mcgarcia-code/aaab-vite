@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue' // Vite por defecto llama a la vista de inicio "HomeView"
 
@@ -32,6 +33,11 @@ const routes = [
     path: '/sanciones',
     name: 'sanciones',
     component: () => import('../views/SancionesView.vue'),
+  },
+  {
+    path: '/arbitro',
+    name: 'arbitro',
+    component: () => import('../views/ArbitroView.vue'),
   },
 ]
 

@@ -59,14 +59,17 @@ const showLoginModal = () => {
 // Método para manejar el login
 const handleLogin = async () => {
   try {
-    const response = await fetch('https://arbitroshandball.com.ar/api', {
+    const response = await fetch('https://arbitroshandball.com.ar/api/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: username.value,
-        password: password.value,
+        entity: "login",
+        data: {
+          username: username.value,
+          password: password.value,
+        }
       }),
     })
 

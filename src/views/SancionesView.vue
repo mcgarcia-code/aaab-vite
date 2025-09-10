@@ -1,11 +1,5 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useSancionesStore } from '@/stores/sanciones'
-import { useAuthStore } from '@/stores/auth'
-
-// --- STORES ---
-const sancionesStore = useSancionesStore()
-const authStore = useAuthStore()
 
 // --- STATE ---
 const nuevaSancion = ref({
@@ -16,6 +10,7 @@ const nuevaSancion = ref({
   desde: '',
   hasta: '',
 })
+isAdmin = false
 
 // --- ACTIONS ---
 function guardarSancion() {
@@ -33,24 +28,29 @@ function guardarSancion() {
 
 // --- LIFECYCLE ---
 onMounted(() => {
-  sancionesStore.fetchSanciones()
+  fetchSanciones()
+
+
 })
+function fetchSanciones(){
+
+}
 </script>
 
 <template>
   <div class="dark-background-section py-5">
     <div class="container my-5">
-      <div v-if="authStore.isAdmin" class="card shadow-sm mb-5 admin-card">
+      <div v-if="isAdmin" class="card shadow-sm mb-5 admin-card">
         <div class="card-body p-4">
           <h3 class="card-title mb-3 text-dark">Agregar Nueva Sanción</h3>
           <div class="row g-3">
             <div class="col-md-6">
-              <input
-                type="text"
+              <select
                 class="form-control"
-                placeholder="Nombre del Árbitro"
                 v-model="nuevaSancion.arbitro"
-              />
+              >
+                <option selected disabled>Seleccione un arbitro...</option>
+              </select>
             </div>
             <div class="col-md-6">
               <input
