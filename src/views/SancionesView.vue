@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-
+import { api } from "@/api/api"
 // --- STATE ---
 const nuevaSancion = ref({
   arbitro: '',
@@ -10,12 +10,30 @@ const nuevaSancion = ref({
   desde: '',
   hasta: '',
 })
-isAdmin = false
+let sanciones = null
+let  isAdmin = false
 
+// --- LIFECYCLE ---
+onMounted(() => {
+  fetchSanciones()
+})
+async function fetchSanciones(){
+  let s = JSON.stringify({
+    entity : "sanciones",
+    action : "listar",
+  })
+  let data = await api.get("s="+s)
+  this.sanciones = data.sanciones 
+}
 // --- ACTIONS ---
 function guardarSancion() {
   if (!nuevaSancion.value.arbitro) return
-  sancionesStore.agregarSancion(nuevaSancion.value)
+  let d = {
+    entity:'sanciones', 
+    action:'agregar', 
+    data: nuevaSancion.value
+  }
+  api.post("/", d);
   nuevaSancion.value = {
     arbitro: '',
     motivo: '',
@@ -24,16 +42,6 @@ function guardarSancion() {
     desde: '',
     hasta: '',
   }
-}
-
-// --- LIFECYCLE ---
-onMounted(() => {
-  fetchSanciones()
-
-
-})
-function fetchSanciones(){
-
 }
 </script>
 
@@ -103,12 +111,12 @@ function fetchSanciones(){
       </div>
       <div class="row justify-content-center">
         <div class="col-lg-10">
-          <div v-if="sancionesStore.loading" class="text-center text-white">
+          <!-- <div v-if="sancionesStore.loading" class="text-center text-white">
             <div class="spinner-border" role="status">
               <span class="visually-hidden">Cargando...</span>
             </div>
-          </div>
-          <div v-else class="table-responsive shadow rounded">
+          </div> -->
+          <div class="table-responsive shadow rounded">
             <table class="table table-striped table-hover mb-0">
               <thead class="table-dark">
                 <tr>
@@ -121,7 +129,7 @@ function fetchSanciones(){
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="sancion in sancionesStore.sanciones" :key="sancion.id">
+                <tr v-for="sancion in sanciones" :key="sancion.id">
                   <td>{{ sancion.arbitro }}</td>
                   <td>{{ sancion.motivo }}</td>
                   <td>{{ sancion.articulo }}</td>
