@@ -104,6 +104,7 @@ const logout = () => {
   token.value = ''
   user.value = null
   localStorage.removeItem('authToken')
+  window.location.reload()
 }
 
 // Depuración de clics y aseguramiento de interactividad

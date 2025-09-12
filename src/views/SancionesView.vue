@@ -10,27 +10,37 @@ const nuevaSancion = ref({
   desde: '',
   hasta: '',
 })
-let sanciones = null
-let  isAdmin = false
+const sanciones = ref(null)
+const arbitros = ref(null)
+const isAdmin = ref(false)
 
 // --- LIFECYCLE ---
 onMounted(() => {
   fetchSanciones()
+  fetchArbitros()
+  isAdmin.value = getToken()
+  console.log(isAdmin)
 })
+function getToken(){
+  let token = localStorage.getItem("authToken") ?? ""
+  return token.length > 0 ? true : false
+}
 async function fetchSanciones(){
-  let s = JSON.stringify({
-    entity : "sanciones",
-    action : "listar",
-  })
-  let data = await api.get("s="+s)
-  this.sanciones = data.sanciones 
+  let s = "?entity=sanciones&action=listar"
+  let data = await api.get(s)
+  sanciones.value = data.sanciones
+}
+async function fetchArbitros(){
+  let s = "?entity=arbitros&action=listar"
+  let data = await api.get(s)
+  arbitros.value = data.arbitros
 }
 // --- ACTIONS ---
 function guardarSancion() {
   if (!nuevaSancion.value.arbitro) return
   let d = {
-    entity:'sanciones', 
-    action:'agregar', 
+    entity:'sanciones',
+    action:'agregar',
     data: nuevaSancion.value
   }
   api.post("/", d);
@@ -58,6 +68,13 @@ function guardarSancion() {
                 v-model="nuevaSancion.arbitro"
               >
                 <option selected disabled>Seleccione un arbitro...</option>
+                <option
+                  v-for="arbitro in arbitros"
+                  v-bind:key="arbitro.id"
+                  :value="arbitro.id"
+                >
+                  {{ arbitro.apellido }}, {{ arbitro.nombre }}
+                </option>
               </select>
             </div>
             <div class="col-md-6">
