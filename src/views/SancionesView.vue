@@ -19,7 +19,7 @@ const isAdmin = ref(false)
 onMounted(() => {
   fetchSanciones()
   fetchArbitros()
-  isAdmin.value = store.user ? true : false
+  isAdmin.value = store.getters.isAuthenticated
 })
 async function fetchSanciones(){
   let s = "?entity=sanciones&action=listar"
@@ -39,7 +39,7 @@ function guardarSancion() {
     action:'agregar',
     data: nuevaSancion.value
   }
-  api.post("/", d);
+  api.post("/", d).then(()=>fetchSanciones());
   nuevaSancion.value = {
     arbitro: '',
     motivo: '',

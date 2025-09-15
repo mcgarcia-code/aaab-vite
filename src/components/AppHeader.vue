@@ -89,7 +89,7 @@ const handleLogin = async () => {
 
 // Método para cerrar sesión
 const logout = () => {
-  store.logout()
+  store.dispatch('logout')
   window.location.reload()
 }
 
