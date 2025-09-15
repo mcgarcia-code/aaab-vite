@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
-import { useStore } from 'vuex';
+import store from "../stores/auth";
 
 const routes = [
   {
@@ -73,7 +73,6 @@ const router = createRouter({
 
 // Guardia de navegación para proteger rutas
 router.beforeEach((to, from, next) => {
-  const store = useStore();
   if (to.meta.requiresAuth && !store.getters.isAuthenticated) {
     next('/');
   } else {

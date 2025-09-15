@@ -5,7 +5,7 @@ import { RouterLink } from 'vue-router'
 import { Modal } from 'bootstrap' // Importa el Modal específico de Bootstrap
 import logo from '@/assets/logo.png'
 import { api } from '../api/api';
-import { createStore } from '../stores/auth'
+import store from '../stores/auth'
 // Referencias para el navbar y el menú
 const navbarToggler = ref(null)
 const navbarNav = ref(null)
@@ -16,7 +16,7 @@ const username = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const user = ref(null) // Almacena datos del usuario autenticado
-const token = ref(localStorage.getItem('authToken') || '') // Persiste el token
+const isAuthenticated = ref(false)
 // Instancia del modal
 const modalInstance = ref(null)
 
@@ -61,16 +61,18 @@ const showLoginModal = () => {
 // Método para manejar el login
 const handleLogin = async () => {
     try {
-        let d = {
-          entity:"login",
-          data:{
-            username: username.value,
-            password: password.value,
-          },
-        }
-        const data = await api.post('/', d);
-        createStore.commit('setAuth', { user: data.user });
-         // Limpiar formulario y cerrar modal
+      let d = {
+        entity:"login",
+        data:{
+          username: username.value,
+          password: password.value,
+        },
+      }
+      const data = await api.post('', d);
+      if (data.user) {
+        store.commit('setAuth', { user: data.user });
+        isAuthenticated.value = true;
+                  // Limpiar formulario y cerrar modal
         username.value = ''
         password.value = ''
         errorMessage.value = ''
@@ -79,6 +81,7 @@ const handleLogin = async () => {
         if (modalInstance.value) {
           modalInstance.value.hide()
         }
+      }
     } catch (error) {
     errorMessage.value = 'Error de conexión. Intenta de nuevo.'
   }
@@ -86,8 +89,7 @@ const handleLogin = async () => {
 
 // Método para cerrar sesión
 const logout = () => {
-  token.value = ''
-  user.value = null
+  store.logout()
   window.location.reload()
 }
 
@@ -176,7 +178,7 @@ onUnmounted(() => {
         <!-- Botón de login/logout -->
         <div class="ms-3" v-if="showLoginButton">
           <button
-            v-if="!user"
+            v-if="!isAuthenticated"
             class="btn btn-outline-primary"
             type="button"
             @click="showLoginModal"

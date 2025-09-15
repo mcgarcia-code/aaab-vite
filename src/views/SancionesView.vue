@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { api } from "@/api/api"
+import store from "@/stores/auth"
 // --- STATE ---
 const nuevaSancion = ref({
   arbitro: '',
@@ -18,13 +19,8 @@ const isAdmin = ref(false)
 onMounted(() => {
   fetchSanciones()
   fetchArbitros()
-  isAdmin.value = getToken()
-  console.log(isAdmin)
+  isAdmin.value = store.user ? true : false
 })
-function getToken(){
-  let token = localStorage.getItem("authToken") ?? ""
-  return token.length > 0 ? true : false
-}
 async function fetchSanciones(){
   let s = "?entity=sanciones&action=listar"
   let data = await api.get(s)
