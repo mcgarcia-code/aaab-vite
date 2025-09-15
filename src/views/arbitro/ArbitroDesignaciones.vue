@@ -33,7 +33,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { api } from '../../api';
+import { api } from '../../api/api';
 
 const designaciones = ref([]);
 const error = ref('');

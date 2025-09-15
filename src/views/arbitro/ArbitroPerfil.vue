@@ -67,7 +67,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { api } from '../../api';
+import { api } from '../../api/api';
 
 const form = ref({
   apellido: '',
