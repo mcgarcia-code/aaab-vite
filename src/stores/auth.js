@@ -1,21 +1,29 @@
-import { ref } from 'vue'
-import { defineStore } from 'pinia'
+import { createStore } from 'vuex';
 
-export const useAuthStore = defineStore('auth', () => {
-  // El único estado que nos importa es saber si es admin o no.
-  const isAdmin = ref(false)
-
-  // Esta función la llamarás desde tu futura página de login
-  function login() {
-    // TODO: Aquí, en el futuro, harás una llamada a tu API con un usuario y contraseña.
-    // Si la respuesta es correcta, pondrás isAdmin.value = true
-    isAdmin.value = true
-    console.log('Acceso de administrador concedido (simulación).')
-  }
-
-  function logout() {
-    isAdmin.value = false
-  }
-
-  return { isAdmin, login, logout }
-})
+export default createStore({
+  state: {
+    user: null, // No almacenamos token, ya que está en la cookie
+  },
+  mutations: {
+    setAuth(state, { user }) {
+      state.user = user;
+    },
+    clearAuth(state) {
+      state.user = null;
+    },
+  },
+  actions: {
+    login({ commit }, { user }) {
+      commit('setAuth', { user });
+    },
+    logout({ commit }) {
+      commit('clearAuth');
+      // Borrar cookie en el frontend
+      document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/api; domain=arbitroshandball.com.ar; secure; SameSite=Strict';
+    },
+  },
+  getters: {
+    isAuthenticated: (state) => !!state.user, // Depende de user, no de token
+    user: (state) => state.user,
+  },
+});

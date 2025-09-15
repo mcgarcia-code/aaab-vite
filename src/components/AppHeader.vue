@@ -4,7 +4,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Modal } from 'bootstrap' // Importa el Modal específico de Bootstrap
 import logo from '@/assets/logo.png'
-
+import { api } from '../api/api';
+import { createStore } from '../stores/auth'
 // Referencias para el navbar y el menú
 const navbarToggler = ref(null)
 const navbarNav = ref(null)
@@ -59,51 +60,34 @@ const showLoginModal = () => {
 }
 // Método para manejar el login
 const handleLogin = async () => {
-  try {
-    const response = await fetch('https://arbitroshandball.com.ar/api/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        entity: "login",
-        data: {
-          username: username.value,
-          password: password.value,
+    try {
+        let d = {
+          entity:"login",
+          data:{
+            username: username.value,
+            password: password.value,
+          },
         }
-      }),
-    })
+        const data = await api.post('/', d);
+        createStore.commit('setAuth', { user: data.user });
+         // Limpiar formulario y cerrar modal
+        username.value = ''
+        password.value = ''
+        errorMessage.value = ''
 
-    const data = await response.json()
-
-    if (response.ok) {
-      // Almacenar token y datos del usuario
-      token.value = data.token
-      user.value = { name: data.user.name } // Asumiendo que la API devuelve { token, user: { name } }
-      localStorage.setItem('authToken', data.token)
-
-      // Limpiar formulario y cerrar modal
-      username.value = ''
-      password.value = ''
-      errorMessage.value = ''
-
-      // Cierra el modal usando la instancia modular
-      if (modalInstance.value) {
-        modalInstance.value.hide()
-      }
-    } else {
-      errorMessage.value = data.message || 'Error en el inicio de sesión'
-    }
-  } catch (error) {
+        // Cierra el modal usando la instancia modular
+        if (modalInstance.value) {
+          modalInstance.value.hide()
+        }
+    } catch (error) {
     errorMessage.value = 'Error de conexión. Intenta de nuevo.'
   }
-}
+};
 
 // Método para cerrar sesión
 const logout = () => {
   token.value = ''
   user.value = null
-  localStorage.removeItem('authToken')
   window.location.reload()
 }
 

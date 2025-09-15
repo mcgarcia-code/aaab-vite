@@ -1,17 +1,17 @@
 /* eslint-disable no-unused-vars */
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue' // Vite por defecto llama a la vista de inicio "HomeView"
+import { createRouter, createWebHistory } from 'vue-router';
+import HomeView from '../views/HomeView.vue';
+import { useStore } from 'vuex';
 
 const routes = [
   {
     path: '/',
-    name: 'inicio', // El nombre de la ruta puede seguir siendo "inicio"
-    component: HomeView, // Cargamos la página de inicio directamente
+    name: 'inicio',
+    component: HomeView,
   },
   {
     path: '/descargas',
     name: 'descargas',
-    // Las demás páginas se cargan con lazy loading
     component: () => import('../views/DescargasView.vue'),
   },
   {
@@ -38,17 +38,46 @@ const routes = [
     path: '/arbitro',
     name: 'arbitro',
     component: () => import('../views/ArbitroView.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: 'designaciones',
+        name: 'arbitroDesignaciones',
+        component: () => import('../views/arbitro/ArbitroDesignaciones.vue'),
+      },
+      {
+        path: 'licencias',
+        name: 'arbitroLicencias',
+        component: () => import('../views/arbitro/ArbitroLicencias.vue'),
+      },
+      {
+        path: 'perfil',
+        name: 'arbitroPerfil',
+        component: () => import('../views/arbitro/ArbitroPerfil.vue'),
+      },
+      {
+        path: '',
+        redirect: { name: 'arbitroPerfil' }, // Redirigir /arbitros a /arbitros/perfil
+      },
+    ],
   },
-]
+];
 
 const router = createRouter({
-  // Se actualiza la sintaxis de BASE_URL para Vite
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-  // Esta función ya estaba correcta
   scrollBehavior(_to, _from, _savedPosition) {
-    return { top: 0 }
+    return { top: 0 };
   },
-})
+});
 
-export default router
+// Guardia de navegación para proteger rutas
+router.beforeEach((to, from, next) => {
+  const store = useStore();
+  if (to.meta.requiresAuth && !store.getters.isAuthenticated) {
+    next('/');
+  } else {
+    next();
+  }
+});
+export default router;
