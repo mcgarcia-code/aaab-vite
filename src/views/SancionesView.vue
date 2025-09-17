@@ -22,13 +22,20 @@ onMounted(() => {
   isAdmin.value = store.getters.isAuthenticated
 })
 async function fetchSanciones(){
-  let s = "?entity=sanciones&action=listar"
+  let s = {
+    entity:"sanciones",
+    action:"listar",
+  }
   let data = await api.get(s)
   sanciones.value = data.sanciones
 }
 async function fetchArbitros(){
-  let s = "?entity=arbitros&action=listar"
+  let s = {
+    entity: "arbitros",
+    action: "listar"
+  }
   let data = await api.get(s)
+  console.log(data)
   arbitros.value = data.arbitros
 }
 // --- ACTIONS ---
@@ -124,11 +131,6 @@ function guardarSancion() {
       </div>
       <div class="row justify-content-center">
         <div class="col-lg-10">
-          <!-- <div v-if="sancionesStore.loading" class="text-center text-white">
-            <div class="spinner-border" role="status">
-              <span class="visually-hidden">Cargando...</span>
-            </div>
-          </div> -->
           <div class="table-responsive shadow rounded">
             <table class="table table-striped table-hover mb-0">
               <thead class="table-dark">

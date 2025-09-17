@@ -59,7 +59,11 @@ const success = ref(false);
 
 onMounted(async () => {
   try {
-    const data = await api.get('entity=arbitros&action=licencias');
+    let s = {
+      entity:"arbitros",
+      action:"licencias",
+    }
+    const data = await api.get(s);
     licencias.value = data.data;
   } catch (err) {
     error.value = err.message;

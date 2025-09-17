@@ -93,7 +93,11 @@ const success = ref(false);
 
 onMounted(async () => {
   try {
-    const data = await api.get('?entity=arbitros&action=info');
+    let s = {
+      entity:"arbitros",
+      action:"info",
+    }
+    const data = await api.get(s);
     Object.assign(form.value, data.data);
   } catch (err) {
     error.value = err.message;
@@ -102,7 +106,12 @@ onMounted(async () => {
 
 const saveProfile = async () => {
   try {
-    await api.post('?entity=arbitros&action=info', form.value);
+    let s = {
+      entity:"arbitros",
+      action:"info",
+      data:form.value,
+    }
+    await api.post("",s);
     success.value = true;
     error.value = '';
     setTimeout(() => (success.value = false), 3000);

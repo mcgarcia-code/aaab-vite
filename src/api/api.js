@@ -2,6 +2,13 @@ const BASE_URL = "https://arbitroshandball.com.ar/api/";
 
 const request = async (endpoint, options = {}) => {
     try {
+        if (options.method === "GET") {
+            let e = {}
+            if (endpoint) {
+                e = new URLSearchParams(endpoint)
+                endpoint = "?"+e.toString()
+            }
+        }
         const response = await fetch(`${BASE_URL}${endpoint}`, {
             method: options.method || 'GET',
             headers: {
@@ -26,7 +33,7 @@ const request = async (endpoint, options = {}) => {
 
 export const api = {
     post: (endpoint, body, headers = {}) => request(endpoint, { method: 'POST', body, headers }),
-    get: (endpoint, headers = {}) => request(endpoint, { headers }),
+    get: (endpoint, headers = {}) => request(endpoint, { method:'GET', headers }),
     put: (endpoint, body, headers = {}) => request(endpoint, { method: 'PUT', body, headers }),
     delete: (endpoint, headers = {}) => request(endpoint, { method: 'DELETE', headers }),
 };
