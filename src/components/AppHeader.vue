@@ -23,9 +23,10 @@ const modalInstance = ref(null)
 // Método para ocultar el navbar en móvil
 const hideNavBar = () => {
   if (navbarNav.value && navbarNav.value.classList.contains('show')) {
-    navbarToggler.value.click()
+    navbarNav.value.classList.remove('show')
   }
 }
+
 // Nueva variable para controlar visibilidad del botón
 const showLoginButton = ref(false)
 

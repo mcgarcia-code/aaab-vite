@@ -83,7 +83,7 @@ import ctaBg from '../assets/imagen-cta.webp'
         <div class="col-lg-8">
           <div class="alert alert-info text-center" role="alert">
             <p class="mb-0">
-              Las designaciones del <strong>30 y 31 de Agosto</strong> ya están disponibles.
+              Las designaciones del <strong>20 y 21 de Septiembre</strong> ya están disponibles.
             </p>
             <RouterLink to="/designaciones" class="alert-link">Ver ahora</RouterLink>
           </div>
