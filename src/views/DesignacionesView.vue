@@ -26,7 +26,7 @@ import designacionesImg from '@/assets/designaciones-mobile.png';
               <strong>Fecha:</strong>
               <span class="badge bg-danger fs-6 py-2 px-3 ms-2">20 y 21 de Septiembre</span>
             </p>
-            <a href="#" class="btn btn-danger btn-lg text-uppercase fw-bold">
+            <a href="https://docs.google.com/spreadsheets/d/1hBIIy8B1CEQovDp3O4nUZMniObKfS7ZX/edit?usp=sharing&ouid=110583671843914808563&rtpof=true&sd=true" class="btn btn-danger btn-lg text-uppercase fw-bold">
               <i class="bi bi-cloud-arrow-down-fill me-2"></i> Descargar
             </a>
           </div>
