@@ -170,17 +170,15 @@ onUnmounted(() => {
               Catálogo Online
             </a>
           </li>
-          <!-- Enlace al perfil si está autenticado -->
           <li v-if="user" class="nav-item">
             <RouterLink class="nav-link" to="/arbitro">{{ user.name }}</RouterLink>
           </li>
         </ul>
 
-        <!-- Botón de login/logout -->
         <div class="ms-3" v-if="showLoginButton">
           <button
             v-if="!isAuthenticated"
-            class="btn btn-outline-primary"
+            class="btn btn-custom-login"
             type="button"
             @click="showLoginModal"
           >
@@ -197,7 +195,7 @@ onUnmounted(() => {
       </div>
     </div>
   </header>
-  <!-- Modal de login -->
+
   <div
       ref="loginModal"
       class="modal fade"
@@ -244,9 +242,11 @@ onUnmounted(() => {
               <div v-if="errorMessage" class="alert alert-danger" role="alert">
                 {{ errorMessage }}
               </div>
-              <button type="submit" class="btn btn-primary w-100">
-                Iniciar Sesión
-              </button>
+              <div class="text-center">
+                  <button type="submit" class="btn btn-custom-login w-50">
+                      Iniciar Sesión
+                  </button>
+              </div>
             </form>
           </div>
         </div>
@@ -264,25 +264,42 @@ onUnmounted(() => {
 }
 
 .nav-link:hover {
-  color: #dc3545 !important; /* Rojo fuerte */
+  color: #dc3545 !important;
 }
 
 .nav-link.router-link-exact-active {
-  color: #dc3545 !important; /* Rojo fuerte */
+  color: #dc3545 !important;
   font-weight: bold;
 }
 
 @media (max-width: 1199.98px) {
   .navbar-collapse .navbar-nav {
     align-items: flex-end;
-    padding-top: 1rem; /* Espacio extra en móvil */
+    padding-top: 1rem;
   }
 }
 
-/* Estilos para asegurar que el modal sea interactivo */
+/* --- NUEVOS ESTILOS PARA EL BOTÓN --- */
+.btn-custom-login {
+  background-color: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-custom-login:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+/* --- FIN DE NUEVOS ESTILOS --- */
+
 .modal {
-  z-index: 10000 !important; /* Muy alto para evitar conflictos */
-  pointer-events: none; /* Evita clics en el fondo del modal */
+  z-index: 10000 !important;
+  pointer-events: none;
 }
 
 .modal.show {
@@ -290,22 +307,22 @@ onUnmounted(() => {
 }
 
 .modal-dialog {
-  z-index: 10001 !important; /* Por encima del backdrop */
-  pointer-events: auto !important; /* Habilita clics */
+  z-index: 10001 !important;
+  pointer-events: auto !important;
 }
 
 .modal-content {
-  z-index: 10002 !important; /* Por encima de todo */
-  pointer-events: auto !important; /* Habilita clics */
+  z-index: 10002 !important;
+  pointer-events: auto !important;
 }
 
 .modal-backdrop {
-  z-index: 9999 !important; /* Justo debajo del modal */
+  z-index: 9999 !important;
 }
 
 .form-control,
 .btn {
-  z-index: 10003 !important; /* Asegura que los inputs y botones sean clicables */
+  z-index: 10003 !important;
   pointer-events: auto !important;
 }
 </style>
