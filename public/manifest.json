@@ -1,0 +1,21 @@
+{
+  "name": "Asociación Argentina de Árbitros de Balonmano",
+  "short_name": "AAAB",
+  "description": "Sitio oficial de la AAAB. Designaciones, sanciones y reglamentos.",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#c8102e"
+}

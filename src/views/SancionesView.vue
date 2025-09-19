@@ -106,7 +106,7 @@ function guardarSancion() {
             </div>
             <div class="col-md-6">
               <input
-                type="text"
+                type="date"
                 class="form-control"
                 placeholder="Desde (dd/mm/yyyy)"
                 v-model="nuevaSancion.desde"
@@ -114,7 +114,7 @@ function guardarSancion() {
             </div>
             <div class="col-md-6">
               <input
-                type="text"
+                type="date"
                 class="form-control"
                 placeholder="Hasta (dd/mm/yyyy o Indefinido)"
                 v-model="nuevaSancion.hasta"

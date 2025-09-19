@@ -5,7 +5,7 @@ const documentos = ref([
   {
     titulo: 'Sanciones',
     subtitulo: 'Listado oficial de sanciones.',
-    url: '#', // Esta URL no se usa para esta tarjeta
+    url: '/sanciones',
     icon: 'bi bi-exclamation-octagon-fill',
   },
   {
