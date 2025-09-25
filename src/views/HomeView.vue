@@ -25,7 +25,7 @@ import ctaBg from '../assets/imagen-cta.webp'
             <i class="bi bi-award-fill feature-icon"></i>
             <h3 class="fw-bold mt-3">Formación</h3>
             <p class="text-muted">
-              Capacítate con nuestros cursos intensivos y regulares para todos los niveles.
+              Capacitate con nuestros cursos intensivos y regulares para todos los niveles.
             </p>
           </div>
         </div>
@@ -34,7 +34,7 @@ import ctaBg from '../assets/imagen-cta.webp'
             <i class="bi bi-cloud-arrow-down-fill feature-icon"></i>
             <h3 class="fw-bold mt-3">Centro de Descargas</h3>
             <p class="text-muted">
-              Accede a reglamentos, planillas y todo el material oficial actualizado.
+              Accedé a reglamentos, planillas y todo el material oficial actualizado.
             </p>
           </div>
         </div>
@@ -43,7 +43,7 @@ import ctaBg from '../assets/imagen-cta.webp'
             <i class="bi bi-shield-check feature-icon"></i>
             <h3 class="fw-bold mt-3">Tribunal de Ética</h3>
             <p class="text-muted">
-              Consulta estatutos, sanciones y todos los documentos disciplinarios.
+              Consultá estatutos, sanciones y todos los documentos disciplinarios.
             </p>
           </div>
         </div>
@@ -60,7 +60,7 @@ import ctaBg from '../assets/imagen-cta.webp'
         <h2 class="display-4 fw-bold">CATÁLOGO ONLINE</h2>
         <p class="lead my-4">
           ¿Querés dominar el catálogo y las reglas del Handball? Este es el lugar perfecto para
-          practicar. Accede al catálogo 100% virtual, tanto en inglés como en español y perfecciona
+          practicar. Accedé al catálogo 100% virtual, tanto en inglés como en español y perfeccioná
           tus conocimientos.
         </p>
         <a
@@ -77,13 +77,13 @@ import ctaBg from '../assets/imagen-cta.webp'
     <section class="container my-5 py-5">
       <div class="text-center mb-5">
         <h2 class="fw-bold">Últimas Designaciones</h2>
-        <p class="lead text-muted">Consulta las designaciones para los próximos encuentros.</p>
+        <p class="lead text-muted">Consultá las designaciones para los próximos encuentros.</p>
       </div>
       <div class="row justify-content-center">
         <div class="col-lg-8">
           <div class="alert alert-info text-center" role="alert">
             <p class="mb-0">
-              Las designaciones del <strong>20 y 21 de Septiembre</strong> ya están disponibles.
+              Las designaciones del <strong>27 y 28 de Septiembre</strong> ya están disponibles.
             </p>
             <RouterLink to="/designaciones" class="alert-link">Ver ahora</RouterLink>
           </div>
