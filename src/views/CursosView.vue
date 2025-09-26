@@ -1,5 +1,18 @@
 <script setup>
 import { ref } from 'vue'
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de CURSOS
+useHead({
+  title: 'Cursos de Árbitros | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Capacitate con nuestros cursos intensivos y regulares para todos los niveles.',
+    },
+  ],
+})
+
 
 // Se mueven los datos que estaban en data() a un ref()
 const cursos = ref([

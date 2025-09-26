@@ -1,7 +1,20 @@
 <script setup>
+import { useHead } from '@vueuse/head'
 // 1. Se importan las imágenes de fondo para que Vite las procese
 import heroBg from '../assets/hero-background.webp'
 import ctaBg from '../assets/imagen-cta.webp'
+
+// --- TITULOS DINAMICOS PARA SEO---
+useHead({
+  title: 'Inicio | Asociación Argentina de Árbitros de Balonmano (AAAB)',
+  meta: [
+    {
+      name: 'description',
+      content: 'Sitio oficial de la Asociación Argentina de Árbitros de Balonmano. Consultá las últimas designaciones, sanciones, reglamentos y todo el material de formación.',
+    },
+  ],
+})
+// --- FIN DE LO AGREGADO ---
 </script>
 
 <template>

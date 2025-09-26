@@ -1,6 +1,17 @@
 <script setup>
+import { useHead } from '@vueuse/head'
 import { ref } from 'vue'
 
+// Título y descripción específicos para la página de Tribunal de Ética
+useHead({
+  title: 'Sanciones y Tribunal de Ética | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Consultá estatutos, sanciones y todos los documentos disciplinarios.',
+    },
+  ],
+})
 const documentos = ref([
   {
     titulo: 'Sanciones',

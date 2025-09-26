@@ -1,6 +1,17 @@
 <script setup>
 import { ref } from 'vue'
+import { useHead } from '@vueuse/head'
 
+// Título y descripción específicos para la página de DESCARGAS
+useHead({
+  title: 'Descargas | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Accedé a reglamentos, planillas y todo el material oficial actualizado.',
+    },
+  ],
+})
 // Los datos que estaban en data() ahora son un ref()
 const categorias = ref([
   {
