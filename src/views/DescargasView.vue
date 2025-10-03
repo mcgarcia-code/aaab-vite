@@ -105,7 +105,9 @@ const categorias = ref([
         nombre: 'Audio Yoyo-Test',
         url: 'https://drive.google.com/file/d/13EFnGk5Bx3_2OkFCXG1EvgCewCIxJpn3/view',
       },
-      { nombre: 'Protoloco Yoyo-Test', url: '#' },
+      { nombre: 'Protoloco Yoyo-Test',
+        url: 'https://docs.google.com/document/d/1w_QvpaQ-gBBmiqH8F2bb9skxbypj7t7q/edit?usp=sharing&ouid=110583671843914808563&rtpof=true&sd=true'
+      },
     ],
   },
   {
