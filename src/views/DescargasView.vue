@@ -80,7 +80,7 @@ const categorias = ref([
     subtitulo: 'Reglamentos oficiales de Handball y Beach Handball.',
     icon: 'bi bi-book-half',
     documentos: [
-      { nombre: 'Handball Indoor Español', url: '#' },
+      { nombre: 'Handball Indoor Español', url: 'https://drive.google.com/file/d/1b6xNn6LXfTXewmJ3lc3XwzVKGfZU92dF/view?usp=drive_link' },
       {
         nombre: 'Handball Indoor Inglés',
         url: 'https://drive.google.com/file/d/12gS1Xxik5Ej_cCqKBetwid3PKJa8MvWv/view?usp=drive_link',

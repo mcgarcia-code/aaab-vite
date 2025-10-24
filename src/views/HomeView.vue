@@ -96,7 +96,7 @@ useHead({
         <div class="col-lg-8">
           <div class="alert alert-info text-center" role="alert">
             <p class="mb-0">
-              Las designaciones del <strong>27 y 28 de Septiembre</strong> ya están disponibles.
+              Las designaciones del <strong>18 y 19 de Octubre</strong> ya están disponibles.
             </p>
             <RouterLink to="/designaciones" class="alert-link">Ver ahora</RouterLink>
           </div>
