@@ -22,7 +22,7 @@ const documentos = ref([
   {
     titulo: 'Estatuto',
     subtitulo: 'Estatuto oficial de la AAAB.',
-    url: 'https://drive.google.com/file/d/1VvhJ4H021zEhU3vpwciaIivIiybHSeSu/view',
+    url: 'https://drive.google.com/file/d/1-ATROmuyXRnS4l4DqGLUldm8X5-6q6jI/view?usp=sharing',
     icon: 'bi bi-journal-check',
   },
   {

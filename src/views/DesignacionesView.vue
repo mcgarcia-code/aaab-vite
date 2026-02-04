@@ -36,9 +36,9 @@ useHead({
             </p>
             <p class="mb-4 fs-5">
               <strong>Fecha:</strong>
-              <span class="badge bg-danger fs-6 py-2 px-3 ms-2">18 y 19 de Octubre</span>
+              <span class="badge bg-danger fs-6 py-2 px-3 ms-2">29 y 30 de Noviembre</span>
             </p>
-            <a href="https://docs.google.com/spreadsheets/d/1MTDV8V_mqrJ0emWZ3AE2E_-wcciHajlY/edit?usp=sharing&ouid=110583671843914808563&rtpof=true&sd=true" class="btn btn-danger btn-lg text-uppercase fw-bold">
+            <a href="https://docs.google.com/spreadsheets/d/1OEd4D9sjzmG8JdHvOoMA7asPFRuIKe5D/edit?usp=sharing&ouid=110583671843914808563&rtpof=true&sd=true" class="btn btn-danger btn-lg text-uppercase fw-bold">
               <i class="bi bi-cloud-arrow-down-fill me-2"></i> Descargar
             </a>
           </div>

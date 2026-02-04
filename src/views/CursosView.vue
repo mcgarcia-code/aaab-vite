@@ -22,7 +22,7 @@ const cursos = ref([
       'Destinado a todos aquellos que quieran incorporarse a nuestra plantilla arbitral y que tengan conocimientos básicos del deporte.',
     // Se usa la nueva sintaxis de Vite para cargar la imagen
     image: new URL('../assets/curso-basico.webp', import.meta.url).href,
-    startDate: 'Inscripciones cerradas',
+    startDate: 'Próximamente - Abril 2026',
     duration: '3 Meses',
     modality: 'Presencial',
     detailsLink: 'https://drive.google.com/file/d/1p7sOlohNfBTtwqtOBVq0xBLHeZ71VVdl/view',
@@ -35,8 +35,8 @@ const cursos = ref([
       'Destinado a jugadores/as activos de Fe.Me.Bal de Liga de Honor ORO, Liga de Honor PLATA, Inferiores A y Técnicos nivel 3 o 2 de Fe.Me.Bal.',
     // Se usa la nueva sintaxis de Vite para cargar la imagen
     image: new URL('../assets/curso-avanzado.webp', import.meta.url).href,
-    startDate: 'Febrero/Marzo 2026',
-    duration: '2 Semanas',
+    startDate: '18 de Febrero 2026',
+    duration: '2 semanas',
     modality: 'Presencial',
     detailsLink: 'https://drive.google.com/file/d/1CY5RgpKwIjWkbj7_qVdWjGEPEAoLNfCo/view',
     enrollLink:
