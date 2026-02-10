@@ -29,7 +29,7 @@ useHead({
           </div>
           <div class="col-md-7">
             <p class="text-uppercase fw-bold mb-2 opacity-75">ÚLTIMA ACTUALIZACIÓN</p>
-            <h1 class="display-4 fw-bold mb-3">TORNEO CLAUSURA 2025</h1>
+            <h1 class="display-4 fw-bold mb-3">TORNEO APERTURA 2026</h1>
             <p class="lead mb-4">
               ¡Grandes noticias! Ya se encuentran disponibles las designaciones para los
               partidos del fin de semana.

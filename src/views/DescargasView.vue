@@ -20,7 +20,7 @@ const categorias = ref([
     icon: 'bi bi-tools',
     documentos: [
       {
-        nombre: 'Aranceles Arbitrales 2025',
+        nombre: 'Aranceles Arbitrales',
         url: 'https://drive.google.com/file/d/1Q1zZt2go59F2oUwPk8tpKUpQUDVBYQlU/view?usp=sharing',
       },
       {
