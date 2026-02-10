@@ -1,9 +1,15 @@
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
-// Se importa la imagen para que Vite la procese correctamente
-import designacionesImg from '@/assets/designaciones-mobile.png';
+import axios from 'axios'
+import designacionesImg from '@/assets/designaciones-mobile.png'
 
-// Título y descripción específicos para la página de DESIGNACIONES
+// Variables reactivas para los datos que cambian
+const torneo = ref('Cargando...')
+const fechaDesignacion = ref('...')
+const linkDescarga = ref('#')
+
+// SEO Dinámico
 useHead({
   title: 'Designaciones | AAAB',
   meta: [
@@ -13,6 +19,21 @@ useHead({
     },
   ],
 })
+
+// Función para obtener los datos
+const fetchDesignaciones = async () => {
+  try {
+    // Apuntamos a un archivo JSON que subiremos a la carpeta public de tu hosting
+    const response = await axios.get('/data/config.json');
+    torneo.value = response.data.torneo;
+    fechaDesignacion.value = response.data.fecha;
+    linkDescarga.value = response.data.link;
+  } catch (error) {
+    console.error("Error cargando designaciones", error);
+  }
+}
+
+onMounted(fetchDesignaciones);
 </script>
 
 <template>
@@ -29,16 +50,16 @@ useHead({
           </div>
           <div class="col-md-7">
             <p class="text-uppercase fw-bold mb-2 opacity-75">ÚLTIMA ACTUALIZACIÓN</p>
-            <h1 class="display-4 fw-bold mb-3">TORNEO APERTURA 2026</h1>
+            <h1 class="display-4 fw-bold mb-3">{{ torneo }}</h1>
             <p class="lead mb-4">
               ¡Grandes noticias! Ya se encuentran disponibles las designaciones para los
               partidos del fin de semana.
             </p>
             <p class="mb-4 fs-5">
               <strong>Fecha:</strong>
-              <span class="badge bg-danger fs-6 py-2 px-3 ms-2">29 y 30 de Noviembre</span>
+              <span class="badge bg-danger fs-6 py-2 px-3 ms-2">{{ fechaDesignacion }}</span>
             </p>
-            <a href="https://docs.google.com/spreadsheets/d/1OEd4D9sjzmG8JdHvOoMA7asPFRuIKe5D/edit?usp=sharing&ouid=110583671843914808563&rtpof=true&sd=true" class="btn btn-danger btn-lg text-uppercase fw-bold">
+            <a :href="linkDescarga" target="_blank" class="btn btn-danger btn-lg text-uppercase fw-bold">
               <i class="bi bi-cloud-arrow-down-fill me-2"></i> Descargar
             </a>
           </div>
@@ -49,6 +70,7 @@ useHead({
 </template>
 
 <style scoped>
+/* Tu CSS se mantiene igual */
 .designaciones-hero {
   min-height: 90vh;
   background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
