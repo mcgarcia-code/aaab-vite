@@ -1,10 +1,16 @@
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
-// 1. Se importan las imágenes de fondo para que Vite las procese
+import axios from 'axios'
+
+// 1. Importación de imágenes para procesamiento de Vite
 import heroBg from '../assets/hero-background.webp'
 import ctaBg from '../assets/imagen-cta.webp'
 
-// --- TITULOS DINAMICOS PARA SEO---
+// Variable reactiva para la fecha que viene del JSON
+const fechaDesignacion = ref('...')
+
+// --- TÍTULOS DINÁMICOS PARA SEO ---
 useHead({
   title: 'Inicio | Asociación Argentina de Árbitros de Balonmano (AAAB)',
   meta: [
@@ -14,7 +20,24 @@ useHead({
     },
   ],
 })
-// --- FIN DE LO AGREGADO ---
+
+// Función para obtener la fecha desde el archivo de configuración
+const fetchFecha = async () => {
+  try {
+    /** * SE AGREGA EL TIMESTAMP (?v=...)
+     * Esto obliga al navegador a pedir el archivo real al servidor
+     * en lugar de usar una versión vieja guardada en caché.
+     */
+    const response = await axios.get(`/data/config.json?v=${new Date().getTime()}`);
+    fechaDesignacion.value = response.data.fecha;
+  } catch (error) {
+    console.error("Error cargando la fecha en el inicio", error);
+    // Valor por defecto por si falla la carga
+    fechaDesignacion.value = 'Próximamente';
+  }
+}
+
+onMounted(fetchFecha);
 </script>
 
 <template>
@@ -96,7 +119,7 @@ useHead({
         <div class="col-lg-8">
           <div class="alert alert-info text-center" role="alert">
             <p class="mb-0">
-              Las designaciones del <strong>29 y 30 de Noviembre</strong> ya están disponibles.
+              Las designaciones del <strong>{{ fechaDesignacion }}</strong> ya están disponibles.
             </p>
             <RouterLink to="/designaciones" class="alert-link">Ver ahora</RouterLink>
           </div>
@@ -115,7 +138,6 @@ useHead({
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  /* La imagen ahora se aplica desde el template */
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -148,7 +170,6 @@ useHead({
 /* SECCIÓN 3: CALL TO ACTION PARALLAX */
 .cta-parallax {
   min-height: 400px;
-  /* La imagen ahora se aplica desde el template */
   background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;

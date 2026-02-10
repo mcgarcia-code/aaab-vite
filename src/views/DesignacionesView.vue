@@ -23,13 +23,19 @@ useHead({
 // Función para obtener los datos
 const fetchDesignaciones = async () => {
   try {
-    // Apuntamos a un archivo JSON que subiremos a la carpeta public de tu hosting
-    const response = await axios.get('/data/config.json');
+    /** * Agregamos ?v=${new Date().getTime()} para forzar al navegador
+     * a traer siempre la versión más reciente del servidor.
+     */
+    const response = await axios.get(`/data/config.json?v=${new Date().getTime()}`);
+
+    // Mapeamos los datos del JSON a nuestras variables
     torneo.value = response.data.torneo;
     fechaDesignacion.value = response.data.fecha;
     linkDescarga.value = response.data.link;
   } catch (error) {
     console.error("Error cargando designaciones", error);
+    torneo.value = "Información no disponible";
+    fechaDesignacion.value = "Próximamente";
   }
 }
 
@@ -59,7 +65,12 @@ onMounted(fetchDesignaciones);
               <strong>Fecha:</strong>
               <span class="badge bg-danger fs-6 py-2 px-3 ms-2">{{ fechaDesignacion }}</span>
             </p>
-            <a :href="linkDescarga" target="_blank" class="btn btn-danger btn-lg text-uppercase fw-bold">
+            <a
+              :href="linkDescarga"
+              target="_blank"
+              class="btn btn-danger btn-lg text-uppercase fw-bold"
+              :disabled="linkDescarga === '#'"
+            >
               <i class="bi bi-cloud-arrow-down-fill me-2"></i> Descargar
             </a>
           </div>
@@ -70,7 +81,6 @@ onMounted(fetchDesignaciones);
 </template>
 
 <style scoped>
-/* Tu CSS se mantiene igual */
 .designaciones-hero {
   min-height: 90vh;
   background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
