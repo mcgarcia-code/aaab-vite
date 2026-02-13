@@ -19,6 +19,13 @@ const routes = [
     name: 'cursos',
     component: () => import('../views/CursosView.vue'),
   },
+  // --- NUEVA RUTA ESCUELA DE ARBITROS ---
+  {
+    path: '/escuela-arbitros',
+    name: 'escuelaArbitros',
+    component: () => import('../views/EscuelaArbitros.vue'),
+  },
+  // --------------------------------------
   {
     path: '/designaciones',
     name: 'designaciones',
@@ -57,7 +64,7 @@ const routes = [
       },
       {
         path: '',
-        redirect: { name: 'arbitroPerfil' }, // Redirigir /arbitros a /arbitros/perfil
+        redirect: { name: 'arbitroPerfil' },
       },
     ],
   },
@@ -71,7 +78,6 @@ const router = createRouter({
   },
 });
 
-// Guardia de navegación para proteger rutas
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !store.getters.isAuthenticated) {
     next('/');
@@ -79,4 +85,5 @@ router.beforeEach((to, from, next) => {
     next();
   }
 });
+
 export default router;

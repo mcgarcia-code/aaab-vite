@@ -15,7 +15,7 @@ useHead({
 // Los datos que estaban en data() ahora son un ref()
 const categorias = ref([
   {
-    titulo: 'Material útil para árbitros',
+    titulo: 'Material útil para árbitros.',
     subtitulo: 'Guías, aranceles y herramientas para tu labor.',
     icon: 'bi bi-tools',
     documentos: [
