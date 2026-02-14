@@ -1,6 +1,6 @@
 <script setup>
 // Ya no se necesita la lógica de login, el script puede quedar casi vacío
-import logo from '@/assets/logo.png'
+import logo from '@/assets/fotos/logo.png'
 </script>
 
 <template>

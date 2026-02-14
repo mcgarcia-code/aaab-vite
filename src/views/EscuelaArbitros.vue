@@ -186,7 +186,7 @@ const infoInscripcion = ref({
           </div>
         </div>
       </div>
-      </div> </div> </template>
+    </div> </div> </template>
 
 <style scoped>
 .dark-background-section {

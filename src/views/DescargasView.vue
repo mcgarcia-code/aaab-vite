@@ -14,6 +14,18 @@ useHead({
 })
 // Los datos que estaban en data() ahora son un ref()
 const categorias = ref([
+  // NUEVA CATEGORÍA: CARNET DIGITAL
+  {
+    titulo: 'Carnet Digital',
+    subtitulo: 'Consultá tu credencial oficial de árbitro activo.',
+    icon: 'bi bi-person-vcard-fill', // Icono de Bootstrap
+    documentos: [
+      {
+        nombre: 'Acceder a mi Carnet Digital',
+        url: '/carnet-digital', // Cambia esto por la ruta que definiste en tu router
+      },
+    ],
+  },
   {
     titulo: 'Material útil para árbitros.',
     subtitulo: 'Guías, aranceles y herramientas para tu labor.',
@@ -224,7 +236,7 @@ const categorias = ref([
 .dark-background-section {
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    url('../assets/descargas-background.webp');
+    url('../assets/fotos/descargas-background.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

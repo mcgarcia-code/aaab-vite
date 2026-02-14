@@ -4,8 +4,8 @@ import { useHead } from '@vueuse/head'
 import axios from 'axios'
 
 // 1. Importación de imágenes para procesamiento de Vite
-import heroBg from '../assets/hero-background.webp'
-import ctaBg from '../assets/imagen-cta.webp'
+import heroBg from '../assets/fotos/hero-background.webp'
+import ctaBg from '../assets/fotos/imagen-cta.webp'
 
 // Variable reactiva para la fecha que viene del JSON
 const fechaDesignacion = ref('...')

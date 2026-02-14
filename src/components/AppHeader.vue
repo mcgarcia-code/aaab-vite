@@ -3,7 +3,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Modal } from 'bootstrap' // Importa el Modal específico de Bootstrap
-import logo from '@/assets/logo.png'
+import logo from '@/assets/fotos/logo.png'
 import { api } from '../api/api';
 import store from '../stores/auth'
 // Referencias para el navbar y el menú

@@ -1,6 +1,8 @@
 /* eslint-disable no-unused-vars */
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
+// 1. Importación estática para carga instantánea
+import CarnetView from '../views/CarnetView.vue';
 import store from "../stores/auth";
 
 const routes = [
@@ -31,6 +33,7 @@ const routes = [
     name: 'designaciones',
     component: () => import('../views/DesignacionesView.vue'),
   },
+
   {
     path: '/tribunal-de-etica',
     name: 'tribunalEtica',
@@ -40,6 +43,12 @@ const routes = [
     path: '/sanciones',
     name: 'sanciones',
     component: () => import('../views/SancionesView.vue'),
+  },
+  {
+    path: '/carnet-digital',
+    name: 'carnetDigital',
+    // 2. Usamos el componente importado directamente
+    component: CarnetView,
   },
   {
     path: '/arbitro',

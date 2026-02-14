@@ -167,7 +167,7 @@ function guardarSancion() {
 .dark-background-section {
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    url('../assets/sanciones-background.webp');
+    url('../assets/fotos/sanciones-background.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

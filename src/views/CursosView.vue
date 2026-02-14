@@ -21,7 +21,7 @@ const cursos = ref([
     description:
       'Destinado a todos aquellos que quieran incorporarse a nuestra plantilla arbitral y que tengan conocimientos básicos del deporte.',
     // Se usa la nueva sintaxis de Vite para cargar la imagen
-    image: new URL('../assets/curso-basico.webp', import.meta.url).href,
+    image: new URL('../assets/fotos/curso-basico.webp', import.meta.url).href,
     startDate: 'Próximamente - Abril 2026',
     duration: '3 Meses',
     modality: 'Presencial',
@@ -34,7 +34,7 @@ const cursos = ref([
     description:
       'Destinado a jugadores/as activos de Fe.Me.Bal de Liga de Honor ORO, Liga de Honor PLATA, Inferiores A y Técnicos nivel 3 o 2 de Fe.Me.Bal.',
     // Se usa la nueva sintaxis de Vite para cargar la imagen
-    image: new URL('../assets/curso-avanzado.webp', import.meta.url).href,
+    image: new URL('../assets/fotos/curso-avanzado.webp', import.meta.url).href,
     startDate: '18 de Febrero 2026',
     duration: '2 semanas',
     modality: 'Presencial',
@@ -105,7 +105,7 @@ const cursos = ref([
 /* Código CSS limpio y sin caracteres invisibles */
 .dark-background-section {
   background-image:
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('../assets/cursos-background.webp');
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('../assets/fotos/cursos-background.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
