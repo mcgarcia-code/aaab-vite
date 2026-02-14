@@ -22,8 +22,7 @@
           <div class="cred-left">
             <div class="photo-box">
               <img
-                :key="arbitro.dni"
-                :src="`https://arbitroshandball.com.ar/assets/carnet-arbitros/${arbitro.dni}.jpg`"
+                :src="fotoSrc"
                 @error="setFallbackImg"
                 alt="Foto Oficial"
               >
@@ -92,13 +91,21 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue';
+import { ref, computed } from 'vue';
 
 const dniBusqueda = ref('');
 const arbitro = ref(null);
 const errorMsg = ref('');
 const loading = ref(false);
 const carnetRef = ref(null);
+const fotoError = ref(false);
+const cacheBuster = ref(0);
+
+const fotoSrc = computed(() => {
+  if (!arbitro.value) return '';
+  if (fotoError.value) return 'https://arbitroshandball.com.ar/assets/carnet-arbitros/default.png';
+  return `https://arbitroshandball.com.ar/assets/carnet-arbitros/${arbitro.value.dni}.jpg?v=${cacheBuster.value}`;
+});
 
 const buscarArbitro = async () => {
   if (!dniBusqueda.value) return;
@@ -112,14 +119,12 @@ const buscarArbitro = async () => {
     const dniLimpio = dniBusqueda.value.trim();
     const response = await fetch(`https://arbitroshandball.com.ar/carnet/backend/buscar.php?dni=${dniLimpio}`);
     const res = await response.json();
-
     if (res.status === 'success') {
       // Normalizamos el DNI para que no contenga puntos o caracteres no numéricos
       res.data.dni = String(res.data.dni).replace(/\D/g, '');
-
-      // Esperamos el siguiente ciclo para inyectar los datos y refrescar la imagen
-      await nextTick();
       arbitro.value = res.data;
+      fotoError.value = false;
+      cacheBuster.value += 1;
     } else {
       errorMsg.value = "El DNI ingresado no figura como árbitro activo en el 2026.";
     }
@@ -159,10 +164,8 @@ const descargarCarnet = async () => {
   }
 };
 
-const setFallbackImg = (event) => {
-  if (event.target.src.includes('default.png')) return;
-  event.target.onerror = null;
-  event.target.src = 'https://arbitroshandball.com.ar/assets/carnet-arbitros/default.png';
+const setFallbackImg = () => {
+  fotoError.value = true;
 };
 </script>
 
