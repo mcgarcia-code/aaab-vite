@@ -1,18 +1,29 @@
 <template>
   <div class="carnet-wrapper">
     <div class="search-section mb-5">
-      <div class="input-group custom-search shadow-lg">
-        <input
-          v-model="dniBusqueda"
-          type="text"
-          class="form-control form-control-lg"
-          placeholder="Ingrese DNI del árbitro sin puntos."
-          @keyup.enter="buscarArbitro"
-        >
-        <button class="btn btn-danger px-5 fw-bold" @click="buscarArbitro" :disabled="loading">
-          <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-          <span v-else><i class="bi bi-search me-2"></i> BUSCAR</span>
-        </button>
+      <div class="row g-2 justify-content-center custom-search-container">
+
+        <div class="col-12 col-md-3">
+          <input
+            v-model="dniBusqueda"
+            type="text"
+            class="form-control form-control-lg shadow-lg"
+            placeholder="Ingrese DNI sin puntos."
+            @keyup.enter="buscarArbitro"
+          >
+        </div>
+
+        <div class="col-12 col-md-auto">
+          <button
+            class="btn btn-danger btn-lg px-5 fw-bold shadow-lg w-100"
+            @click="buscarArbitro"
+            :disabled="loading"
+          >
+            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+            <span v-else><i class="bi bi-search me-2"></i> BUSCAR</span>
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -148,9 +159,26 @@ const descargarCarnet = async () => {
       useCORS: true,
       logging: false,
       imageTimeout: 0,
-      // Dimensiones fijas para el renderizado del canvas
       width: 650,
-      height: 380
+      height: 380,
+      windowWidth: 650, // Importante: fuerza el ancho de la ventana virtual
+      onclone: (clonedDoc) => {
+        // Buscamos el carnet en el documento clonado
+        const el = clonedDoc.querySelector('.credential-card');
+        if (el) {
+          // FORZAMOS los estilos originales de escritorio ignorando el @media
+          el.style.width = '650px';
+          el.style.height = '380px';
+          el.style.flexDirection = 'row'; // Evita que se ponga vertical
+          el.style.maxWidth = 'none';
+
+          // Aseguramos que las columnas internas recuperen su ancho %
+          const left = el.querySelector('.cred-left');
+          const right = el.querySelector('.cred-right');
+          if (left) left.style.width = '38%';
+          if (right) right.style.width = '62%';
+        }
+      }
     });
 
     const link = document.createElement('a');
@@ -180,7 +208,7 @@ const setFallbackImg = () => {
   height: 380px;
   background: #fdfdfd;
   border-radius: 20px;
-  display: flex;
+  display: flex !important;
   overflow: hidden;
   box-shadow: 0 30px 60px rgba(0,0,0,0.6);
   position: relative;
