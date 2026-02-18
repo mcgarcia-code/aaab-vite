@@ -1,0 +1,75 @@
+﻿name: Deploy via SFTP
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      test_only:
+        description: "Solo probar conexion SFTP (sin deploy)"
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.test_only) }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.test_only) }}
+        run: npm ci
+
+      - name: Build project
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.test_only) }}
+        run: npm run build
+
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Configure SSH key
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_SSH_PRIVATE_KEY: ${{ secrets.SFTP_SSH_PRIVATE_KEY }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.SFTP_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          printf "%s" "$SFTP_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          if [ -n "$SFTP_KNOWN_HOSTS" ]; then
+            printf "%s" "$SFTP_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "${SFTP_PORT:-22}" -H "$SFTP_HOST" >> ~/.ssh/known_hosts
+          fi
+
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Test SFTP connection
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+          SFTP_REMOTE_PATH: ${{ secrets.SFTP_REMOTE_PATH }}
+        run: |
+          lftp -u "$SFTP_USERNAME","" "sftp://$SFTP_HOST:${SFTP_PORT:-22}" -e "set sftp:auto-confirm yes; set sftp:connect-program 'ssh -a -x -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes'; pwd; cls -la $SFTP_REMOTE_PATH; bye"
+
+      - name: Deploy dist via SFTP (SSH key)
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.test_only) }}
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+          SFTP_REMOTE_PATH: ${{ secrets.SFTP_REMOTE_PATH }}
+        run: |
+          lftp -u "$SFTP_USERNAME","" "sftp://$SFTP_HOST:${SFTP_PORT:-22}" -e "set sftp:auto-confirm yes; set sftp:connect-program 'ssh -a -x -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes'; mirror -R --delete --verbose dist $SFTP_REMOTE_PATH; bye"
