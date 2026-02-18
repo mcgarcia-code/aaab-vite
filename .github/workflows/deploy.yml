@@ -2,6 +2,13 @@
 
 on:
   push:
+  workflow_dispatch:
+    inputs:
+      test_only:
+        description: "Solo probar conexion SSH/rsync (sin deploy)"
+        required: true
+        default: true
+        type: boolean
 
 jobs:
   deploy:
@@ -12,14 +19,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.test_only) }}
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Install dependencies
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.test_only) }}
         run: npm ci
 
       - name: Build Vue
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.test_only) }}
         run: npm run build
 
       - name: Setup SSH key
@@ -28,6 +38,19 @@ jobs:
           echo "${{ secrets.SFTP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
+      - name: Test SSH connection
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 \
+            -o IdentitiesOnly=yes \
+            -o PreferredAuthentications=publickey \
+            -o StrictHostKeyChecking=no \
+            -p "${SFTP_PORT:-22}" \
+            "$SFTP_USERNAME@$SFTP_HOST" "echo SSH_OK"
+
       - name: Deploy with rsync
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
@@ -35,6 +58,15 @@ jobs:
           SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
           SFTP_REMOTE_PATH: ${{ secrets.SFTP_REMOTE_PATH }}
         run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.test_only }}" = "true" ]; then
+            rsync -avzn --delete \
+              --exclude='.htaccess' \
+              -e "ssh -i ~/.ssh/id_ed25519 -p ${SFTP_PORT:-22} -o StrictHostKeyChecking=no" \
+              dist/ \
+              "$SFTP_USERNAME@$SFTP_HOST:$SFTP_REMOTE_PATH"
+            exit 0
+          fi
+
           rsync -avz --delete \
             --exclude='.htaccess' \
             -e "ssh -i ~/.ssh/id_ed25519 -p ${SFTP_PORT:-22} -o StrictHostKeyChecking=no" \
