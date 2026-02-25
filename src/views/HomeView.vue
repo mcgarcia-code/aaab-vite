@@ -50,7 +50,7 @@ onMounted(fetchFecha);
           ÁRBITROS DE BALONMANO
         </h1>
         <p class="lead mb-5">Formación, excelencia y pasión por el arbitraje.</p>
-        <RouterLink to="/cursos" class="btn btn-danger btn-lg">Ver Cursos</RouterLink>
+        <RouterLink to="/escuela-arbitros" class="btn btn-danger btn-lg">Escuela de Árbitros</RouterLink>
       </div>
     </section>
 
@@ -61,7 +61,7 @@ onMounted(fetchFecha);
             <i class="bi bi-award-fill feature-icon"></i>
             <h3 class="fw-bold mt-3">Formación</h3>
             <p class="text-muted">
-              Capacitate con nuestros cursos intensivos y regulares para todos los niveles.
+              Capacitate con nuestra Escuela de Formación Arbitral para todos los niveles.
             </p>
           </div>
         </div>

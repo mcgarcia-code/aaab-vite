@@ -1,31 +1,31 @@
 <template>
   <div class="carnet-wrapper">
     <div class="search-section mb-5">
-      <div class="row g-2 justify-content-center custom-search-container">
+  <div class="row g-2 justify-content-center custom-search-container">
 
-        <div class="col-12 col-md-3">
-          <input
-            v-model="dniBusqueda"
-            type="text"
-            class="form-control form-control-lg shadow-lg"
-            placeholder="Ingrese DNI sin puntos."
-            @keyup.enter="buscarArbitro"
-          >
-        </div>
-
-        <div class="col-12 col-md-auto">
-          <button
-            class="btn btn-danger btn-lg px-5 fw-bold shadow-lg w-100"
-            @click="buscarArbitro"
-            :disabled="loading"
-          >
-            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-            <span v-else><i class="bi bi-search me-2"></i> BUSCAR</span>
-          </button>
-        </div>
-
-      </div>
+    <div class="col-8 col-md-3">
+      <input
+        v-model="dniBusqueda"
+        type="text"
+        class="form-control form-control-lg shadow-lg"
+        placeholder="Ingrese DNI sin puntos."
+        @keyup.enter="buscarArbitro"
+      >
     </div>
+
+    <div class="col-auto col-md-auto">
+      <button
+        class="btn btn-danger btn-lg px-5 fw-bold shadow-lg w-100"
+        @click="buscarArbitro"
+        :disabled="loading"
+      >
+        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+        <span v-else><i class="bi bi-search me-2"></i> BUSCAR</span>
+      </button>
+    </div>
+
+  </div>
+</div>
 
     <Transition name="slide-up">
       <div v-if="arbitro" class="text-center">

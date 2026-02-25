@@ -152,7 +152,7 @@ onUnmounted(() => {
             <RouterLink class="nav-link" to="/descargas">Descargas</RouterLink>
           </li>
           <li class="nav-item">
-            <RouterLink class="nav-link" to="/cursos">Curso de Árbitros</RouterLink>
+            <RouterLink class="nav-link" to="/escuela-arbitros">Escuela de Árbitros</RouterLink>
           </li>
           <li class="nav-item">
             <RouterLink class="nav-link" to="/designaciones">Designaciones</RouterLink>

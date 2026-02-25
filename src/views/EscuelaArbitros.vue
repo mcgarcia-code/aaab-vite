@@ -28,7 +28,7 @@ const materias = ref([
   {
     title: 'Análisis de Video y Gestoformas',
     icon: 'bi-camera-video',
-    description: 'Taller de gestoformas y video-tests para unificación de criterios.',
+    description: 'Taller de gestoformas, silbato y video-tests para unificación de criterios.',
     details: 'Aprobación mediante el 50% de los video-tests realizados.'
   },
   {
@@ -42,26 +42,85 @@ const materias = ref([
 const totalModulos = computed(() => materias.value.length + 1)
 
 const cuerpoDocente = ref([
-  { name: 'Nombre Apellido', role: 'Director Académico', bio: 'Árbitro Nacional / Instructor Federativo.', icon: 'bi-person-badge' },
-  { name: 'Nombre Apellido', role: 'Preparador Físico', bio: 'Prof. de Educación Física especializado en alto rendimiento.', icon: 'bi-person-badge' },
-  { name: 'Especialistas', role: 'Staff Invitado', bio: 'Psicólogos deportivos y Entrenadores de Liga de Honor.', icon: 'bi-mortarboard' }
+  {
+    name: 'Mariana García',
+    role: 'Aspectos Reglamentarios, Práctica Arbitral',
+    bio: 'Árbitra Internacional / Profesora de Ed. Física',
+    image: new URL('../assets/fotos/mariana-garcia.webp', import.meta.url).href
+  },
+  {
+    name: 'Marcelo La Delfa',
+    role: 'Aspectos Reglamentarios, Taller de Silbato y Gestoformas, Práctica Arbitral',
+    bio: 'Árbitro Nacional / Profesor de Ed. Física',
+    image: new URL('../assets/fotos/marcelo-ladelfa.webp', import.meta.url).href
+  },
+  {
+    name: 'María Inés Paolantoni',
+    role: 'Aspectos Reglamentarios, Análisis de Video',
+    bio: 'Árbitra Internacional / Abogada',
+    image: new URL('../assets/fotos/ines-paolantoni.webp', import.meta.url).href
+  },
+  {
+    name: 'Tomas Moreno',
+    role: 'Preparador Físico',
+    bio: 'Árbitro Local / Profesor de Ed. Física especializado en alto rendimiento deportivo',
+    image: new URL('../assets/fotos/tomas-moreno.webp', import.meta.url).href
+  },
+  {
+    name: 'Facundo Altamirano',
+    role: 'Preparador Físico',
+    bio: 'Árbitro Regional / Profesor de Ed. Física especializado en alto rendimiento deportivo',
+    image: new URL('../assets/fotos/facundo-altamirano.webp', import.meta.url).href
+  },
+  {
+    name: 'Mariela Policano',
+    role: 'Análisis de Video, Encuentros de Mini Handball',
+    bio: 'Árbitra Local',
+    image: new URL('../assets/fotos/mariela-policano.webp', import.meta.url).href
+  },
+  {
+    name: 'Bárbara Fernández',
+    role: 'Encuentros de Mini Handball',
+    bio: 'Árbitra Nacional',
+    image: new URL('../assets/fotos/barbara-fernandez.webp', import.meta.url).href
+  },
+  {
+    name: 'Francisco Cistriano',
+    role: 'Encuentros de Mini Handball',
+    bio: 'Árbitro Nacional / Licenciado en Ciencias Políticas',
+    image: new URL('../assets/fotos/francisco-cistriano.webp', import.meta.url).href
+  }
 ])
 
+const staffInvitado = ref({
+  name: 'Espacios de Encuentro',
+  role: 'Staff Invitado',
+  bio: 'Psicólogos deportivos, Árbitros Referentes y Entrenadores de Formativas',
+  icon: 'bi-mortarboard'
+})
+
 const faqs = ref([
+  { q: '¿Qué días, en qué horario y dónde se cursa?', a: 'Las clases se dictan los días Martes de 19:30 a 21:30 horas en el ISEF N°2 Federico W. Dickens - Curapaligue 1150.', icon: 'bi-clock-history' },
+  { q: '¿Cuáles son los requisitos de edad para inscribirse?', a: 'Se requiere un mínimo de 18 años cumplidos al año siguiente del curso y un máximo de menos de 50 años al momento de la inscripción.', icon: 'bi-person-badge' },
   { q: '¿Qué sucede si desapruebo un módulo?', a: 'Podés recursar únicamente la materia adeudada el año siguiente abonando el derecho de examen correspondiente.', icon: 'bi-patch-question' },
-  { q: '¿Es obligatorio ser jugador?', a: 'No, pero se requiere conocimiento básico del deporte (ex-jugadores, estudiantes de Ed. Física, etc.).', icon: 'bi-info-circle' },
-  { q: '¿Cuál es la política de cuotas?', a: 'Se abonan de Abril a Noviembre. En caso de abandono, las cuotas abonadas no son reembolsables.', icon: 'bi-credit-card' }
+  { q: '¿Es obligatorio ser jugador?', a: 'No, pero se requiere conocimiento básico (ex-jugadores, estudiantes de Ed. Física, entrenadores, etc.).', icon: 'bi-info-circle' },
+  { q: '¿Cuál es el régimen de asistencia requerido?', a: 'Se exige un mínimo del 75% de asistencia a las clases presenciales, entrenamientos y charlas obligatorias.', icon: 'bi-calendar-check' },
+  { q: '¿Cuál es la política de cuotas?', a: 'Se abonan 8 cuotas de Abril a Noviembre. En caso de abandono, los pagos realizados no son reembolsables.', icon: 'bi-credit-card' },
+  { q: '¿Cuándo se realizan las prácticas de arbitraje?', a: 'Se realizan encuentros de Mini Handball durante el ciclo lectivo y etapas de prácticas intensivas en partidos amistosos durante el receso invernal (julio) y la pretemporada (febrero).', icon: 'bi-arrow-right-circle'},
+  { q: '¿Cómo se evalúa la preparación física?', a: 'Se califica como Aprobado/Desaprobado mediante el Shuttle Run Test (Mujeres estadío 8.5 / Hombres estadío 9.5).', icon: 'bi-lightning-charge' },
+  { q: '¿Existe un compromiso ético al inscribirse?', a: 'Sí, el aspirante se compromete al respeto absoluto hacia el colectivo arbitral en ejercicio y al correcto manejo de su imagen en redes sociales.', icon: 'bi-shield-check' }
 ])
 
 const infoInscripcion = ref({
   title: 'Ciclo Lectivo 2026',
-  description: 'Nuestro programa anual está destinado a quienes posean conocimientos básicos (jugadores, ex-jugadores o estudiantes de Ed. Física) que deseen incorporarse a nuestra plantilla arbitral.',
-  image: new URL('../assets/curso-avanzado.webp', import.meta.url).href,
+  description: 'Nuestro programa anual está destinado a personas con conocimientos básicos y experiencia en el Handball, que deseen incorporarse a nuestra plantilla arbitral',
+  image: new URL('../assets/fotos/curso-avanzado.webp', import.meta.url).href,
   startDate: 'Abril 2026',
   duration: 'Anual (Abril a Noviembre)',
   modality: 'Presencial',
-  detailsLink: '#',
-  enrollLink: '#',
+  detailsLink: 'https://drive.google.com/file/d/13cOvOnxxG1P3zoDBx4IrlUMbFdOO37hq/view?usp=sharing',
+  enrollLink: 'https://forms.gle/TxrzdSs1if8pX8n99',
+  scheduleLink: 'https://drive.google.com/file/d/1jb5t2ek3zIwSaXVFr4sR-ZMh8QeDMi1z/view?usp=sharing',
 })
 </script>
 
@@ -101,9 +160,17 @@ const infoInscripcion = ref({
                   <i class="bi bi-info-circle me-2"></i>
                   Para aprobar se deben completar los {{ totalModulos }} módulos.
                 </div>
-                <div class="d-flex justify-content-between">
-                  <a :href="infoInscripcion.detailsLink" target="_blank" class="btn btn-outline-secondary w-100 me-2">Ver Programa</a>
-                  <a :href="infoInscripcion.enrollLink" target="_blank" class="btn btn-danger btn-enroll w-100">Inscribirme</a>
+
+                <div class="row g-2">
+                  <div class="col-6">
+                    <a :href="infoInscripcion.detailsLink" target="_blank" class="btn btn-outline-secondary w-100 btn-sm py-2">Ver Programa Académico</a>
+                  </div>
+                  <div class="col-6">
+                    <a :href="infoInscripcion.scheduleLink" target="_blank" class="btn btn-outline-secondary w-100 btn-sm py-2">Ver Cronograma Anual</a>
+                  </div>
+                  <div class="col-12">
+                    <a :href="infoInscripcion.enrollLink" target="_blank" class="btn btn-danger btn-enroll w-100 py-2">Inscribirme</a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -147,50 +214,80 @@ const infoInscripcion = ref({
       </div>
 
       <div class="row mt-5">
-        <div class="col-12 mb-4">
+        <div class="col-12 mb-4 text-center">
           <h2 class="fw-bold text-white border-bottom border-danger pb-2 d-inline-block section-title">Cuerpo Docente</h2>
         </div>
-        <div v-for="profe in cuerpoDocente" :key="profe.name" class="col-md-4 mb-4">
-          <div class="card bg-dark border-secondary h-100 docente-card">
-            <div class="card-body text-center p-4">
-              <div class="mb-3 text-danger">
-                <i :class="['bi', profe.icon, 'display-5']"></i>
+
+        <div v-for="profe in cuerpoDocente" :key="profe.name" class="col-lg-6 mb-3">
+          <div class="card bg-dark border-secondary h-100 docente-horizontal-card">
+            <div class="card-body d-flex align-items-center p-3">
+              <div class="flex-shrink-0 me-3">
+                <img
+                  :src="profe.image"
+                  :alt="profe.name"
+                  class="rounded-circle border border-danger shadow-sm"
+                  style="width: 75px; height: 75px; object-fit: cover;"
+                />
               </div>
-              <h5 class="fw-bold text-white mb-1">{{ profe.name }}</h5>
-              <p class="text-danger small fw-bold mb-3 text-uppercase">{{ profe.role }}</p>
-              <p class="card-text text-white-50 small italic">"{{ profe.bio }}"</p>
+              <div>
+                <h5 class="fw-bold text-white mb-0">{{ profe.name }}</h5>
+                <p class="text-danger small fw-bold mb-1 text-uppercase">{{ profe.role }}</p>
+                <p class="card-text text-white-50 small mb-0 italic">"{{ profe.bio }}"</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-8 mx-auto mt-4">
+          <div class="card bg-dark border-danger h-100 docente-horizontal-card shadow">
+            <div class="card-body d-flex align-items-center justify-content-center p-4">
+              <div class="icon-circle flex-shrink-0 text-danger bg-dark border border-danger me-4 d-none d-sm-flex">
+                <i :class="['bi', staffInvitado.icon, 'fs-2']"></i>
+              </div>
+              <div class="text-center text-sm-start">
+                <h5 class="fw-bold text-white mb-0">{{ staffInvitado.name }}</h5>
+                <p class="text-danger small fw-bold mb-1 text-uppercase">{{ staffInvitado.role }}</p>
+                <p class="card-text text-white-50 small mb-0 italic">"{{ staffInvitado.bio }}"</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="row mt-5">
-        <div class="col-12 mb-4">
+        <div class="col-12 mb-4 text-center">
           <h2 class="fw-bold text-white border-bottom border-danger pb-2 d-inline-block section-title">Preguntas Frecuentes</h2>
         </div>
         <div class="col-lg-10 mx-auto">
-          <div class="row">
-            <div v-for="(faq, index) in faqs" :key="index" class="col-md-6 mb-4">
-              <div class="card h-100 faq-card border-secondary text-white shadow-sm">
-                <div class="card-body d-flex p-4">
-                  <div class="me-3">
-                    <i :class="['bi', faq.icon, 'fs-3 text-danger']"></i>
-                  </div>
-                  <div>
-                    <h6 class="fw-bold text-white mb-2">{{ faq.q }}</h6>
-                    <p class="text-white-50 small mb-0">{{ faq.a }}</p>
-                  </div>
+          <div class="accordion accordion-flush" id="faqAccordion">
+            <div v-for="(faq, index) in faqs" :key="index" class="accordion-item bg-dark border-secondary mb-3 rounded shadow-sm">
+              <h2 class="accordion-header">
+                <button
+                  class="accordion-button collapsed bg-dark text-white fw-bold"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  :data-bs-target="'#collapse' + index"
+                >
+                  <i :class="['bi', faq.icon, 'me-3 text-danger fs-4']"></i>
+                  {{ faq.q }}
+                </button>
+              </h2>
+              <div :id="'collapse' + index" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body text-white-50 border-top border-secondary">
+                  {{ faq.a }}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div> </div> </template>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .dark-background-section {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('../assets/cursos-background.webp');
+  background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('../assets/fotos/cursos-background.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -240,27 +337,39 @@ const infoInscripcion = ref({
   box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
 }
 
-.docente-card {
+/* Estilos Docentes Horizontal */
+.docente-horizontal-card {
   transition: all 0.3s ease;
-  border-radius: 15px;
-}
-.docente-card:hover {
-  transform: translateY(-5px);
-  border-color: #dc3545 !important;
-  box-shadow: 0 10px 20px rgba(220, 53, 69, 0.2) !important;
-}
-
-.faq-card {
-  background-color: rgba(33, 37, 41, 0.7) !important;
-  backdrop-filter: blur(5px);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+.docente-horizontal-card:hover {
+  transform: translateX(10px);
+  border-color: #dc3545 !important;
 }
 
-.faq-card:hover {
-  transform: translateY(-5px);
-  border-color: #dc3545 !important;
+.icon-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estilos Acordeón FAQ */
+.accordion-item {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.accordion-button {
+  box-shadow: none !important;
+}
+.accordion-button:not(.collapsed) {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+  color: white !important;
+}
+.accordion-button::after {
+  filter: invert(1);
 }
 
 .section-title {
