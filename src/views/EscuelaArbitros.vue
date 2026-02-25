@@ -69,7 +69,7 @@ const cuerpoDocente = ref([
   {
     name: 'Facundo Altamirano',
     role: 'Preparador Físico',
-    bio: 'Árbitro Regional / Profesor de Ed. Física especializado en alto rendimiento deportivo',
+    bio: 'Árbitro Regional / Profesor de Ed. Física',
     image: new URL('../assets/fotos/facundo-altamirano.webp', import.meta.url).href
   },
   {
