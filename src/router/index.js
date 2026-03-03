@@ -27,6 +27,12 @@ const routes = [
     name: 'escuelaArbitros',
     component: () => import('../views/EscuelaArbitros.vue'),
   },
+  {
+    path: '/preguntas-frecuentes',
+    name: 'faq',
+    // Si renombraste el archivo, usá FaqView.vue aquí
+    component: () => import('../views/FaqView.vue')
+  },
   // --------------------------------------
   {
     path: '/designaciones',

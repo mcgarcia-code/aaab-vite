@@ -1,4 +1,3 @@
-<!-- eslint-disable no-unused-vars -->
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
@@ -6,6 +5,7 @@ import { Modal } from 'bootstrap' // Importa el Modal específico de Bootstrap
 import logo from '@/assets/fotos/logo.png'
 import { api } from '../api/api';
 import store from '../stores/auth'
+
 // Referencias para el navbar y el menú
 const navbarToggler = ref(null)
 const navbarNav = ref(null)
@@ -41,6 +41,7 @@ onMounted(() => {
   window.toggleLoginButton = toggleLoginButton
   window.showLoginButton = showLoginButton // Exponer la ref para modificar directamente
 })
+
 // Método para mostrar el modal de login
 const showLoginModal = () => {
   if (loginModal.value && !modalInstance.value) {
@@ -59,6 +60,7 @@ const showLoginModal = () => {
     }, 100)
   }
 }
+
 // Método para manejar el login
 const handleLogin = async () => {
     try {
@@ -73,7 +75,7 @@ const handleLogin = async () => {
       if (data.user) {
         store.commit('setAuth', { user: data.user });
         isAuthenticated.value = true;
-                  // Limpiar formulario y cerrar modal
+        // Limpiar formulario y cerrar modal
         username.value = ''
         password.value = ''
         errorMessage.value = ''
@@ -169,6 +171,9 @@ onUnmounted(() => {
             >
               Catálogo Online
             </a>
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/preguntas-frecuentes">Preguntas Frecuentes</RouterLink>
           </li>
           <li v-if="user" class="nav-item">
             <RouterLink class="nav-link" to="/arbitro">{{ user.name }}</RouterLink>
@@ -279,7 +284,6 @@ onUnmounted(() => {
   }
 }
 
-/* --- NUEVOS ESTILOS PARA EL BOTÓN --- */
 .btn-custom-login {
   background-color: #dc3545;
   color: #fff;
@@ -295,7 +299,6 @@ onUnmounted(() => {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
-/* --- FIN DE NUEVOS ESTILOS --- */
 
 .modal {
   z-index: 10000 !important;

@@ -147,16 +147,16 @@ const categorias = ref([
     icon: 'bi bi-folder-check',
     documentos: [
       {
-        nombre: 'Manual de Prodecimientos Administrativos de Mini Handball',
-        url: 'https://drive.google.com/file/d/1QLcULE_tfzCLVmZVXntHkSZBAK5LGMnM/view',
+        nombre: 'Manual de Prodecimientos Administrativos - Mini Handball',
+        url: 'https://drive.google.com/file/d/1oTxWmSdxERSN1K2mrZIAMAWVn0sAiIWm/view?usp=sharing',
       },
       {
-        nombre: 'Datos Útiles 2025',
-        url: 'https://drive.google.com/file/d/1ksZE-mSO-iaFJWg2LtVdDTYI6syB0Jmq/view',
+        nombre: 'Manual de Procedimientos Administrativos - General',
+        url: 'https://drive.google.com/file/d/1kNsMf0UeZWLcnTbcdYpeHl38iaRFUfhu/view?usp=sharing',
       },
       {
-        nombre: 'Cuestiones Admnistrativas',
-        url: 'https://drive.google.com/file/d/1y-h80-Iqtc3bUI_BuBhR8ywbV2JgscXP/view',
+        nombre: 'E-mails Institucionales',
+        url: 'https://drive.google.com/file/d/1nQ1-5qFoWVLcKWIaE5UU1QjDETkPg4S2/view?usp=sharing',
       },
     ],
   },
