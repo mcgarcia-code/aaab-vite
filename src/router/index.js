@@ -16,11 +16,11 @@ const routes = [
     name: 'descargas',
     component: () => import('../views/DescargasView.vue'),
   },
-  {
-    path: '/cursos',
-    name: 'cursos',
-    component: () => import('../views/CursosView.vue'),
-  },
+ //{
+ //   path: '/cursos',
+ //   name: 'cursos',
+ //   component: () => import('../views/CursosView.vue'),
+ // },
   // --- NUEVA RUTA ESCUELA DE ARBITROS ---
   {
     path: '/escuela-arbitros',

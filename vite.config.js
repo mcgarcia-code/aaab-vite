@@ -19,10 +19,14 @@ export default defineConfig({
       // Rutas generadas a partir de tu archivo de rutas de Vue
       dynamicRoutes: [
         '/descargas',
-        '/cursos',
+        '/escuela-arbitros',
         '/designaciones',
         '/tribunal-de-etica',
         '/sanciones',
+        '/preguntas-frecuentes',
+        '/carnet-digital',
+        '/catalogo',
+        
       ],
 
       // Opcional: Esto también generará un archivo robots.txt útil
