@@ -57,6 +57,11 @@ const routes = [
     component: CarnetView,
   },
   {
+  path: '/gestion-privada-arbitros',
+  name: 'AdminArbitros',
+  component: () => import('../views/AdminArbitros.vue')
+  },
+  {
     path: '/arbitro',
     name: 'arbitro',
     component: () => import('../views/ArbitroView.vue'),
