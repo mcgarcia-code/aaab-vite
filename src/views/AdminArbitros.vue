@@ -209,11 +209,71 @@ th.sticky-col { z-index: 30; background: #2c3e50 !important; }
 .filter-row td { top: 31px; position: sticky; z-index: 25; background: #f9f9f9 !important; padding: 3px; }
 .filter-row input { font-size: 10px; height: 22px; border: 1px solid #3b82f6; }
 
-td { padding: 3px 5px; border-bottom: 1px solid #eee; border-right: 1px solid #eee; font-size: 11px; }
+td { 
+  padding: 3px 5px; 
+  border-bottom: 1px solid #eee; 
+  border-right: 1px solid #eee; 
+  font-size: 11px;
+  vertical-align: top;    /* Alinea el texto arriba para que no "flote" al medio */
+}
+
 input { width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 2px; font-size: 11px; height: 26px; }
-textarea { width: 150px; height: 26px; resize: none; border: 1px solid #ddd; font-size: 11px; }
+
+textarea { 
+  width: 500px;           /* Aumentamos el ancho para que sea más legible */
+  min-height: 40px;       /* Le damos un poco más de aire vertical */
+  height: auto;           /* Permite que crezca si el usuario lo estira */
+  resize: vertical;       /* Permite agrandarlo hacia abajo manualmente */
+  border: 1px solid #ddd; 
+  font-size: 11px;
+  padding: 4px;
+  display: block;
+}
+
+/* Estado con Foco: se agranda al hacer clic */
+textarea:focus { 
+  width: 350px;        /* Se hace más ancho */
+  height: 120px;       /* Se hace más alto */
+  border-color: #3b82f6; /* Cambia al azul que usás en los filtros */
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+  overflow-y: auto;    /* Aparece el scroll si el texto es muy largo */
+  outline: none;       /* Quita el borde naranja por defecto del navegador */
+  position: relative;
+  z-index: 100;        /* Asegura que se vea por encima de otras celdas */
+}
 
 .btn-delete { background: #94a3b8; color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; display: flex; }
 .btn-delete:hover { background: #dc3545; }
 .new-tag { color: #27ae60; font-weight: bold; font-size: 9px; }
+
+/* Filas Impares: Azul grisáceo claro pero perceptible */
+tbody tr:nth-child(odd) td {
+  background-color: #e2e8f0; /* Un tono más fuerte que el anterior */
+  border-bottom: 1px solid #cbd5e1;
+}
+
+/* Aplicar a las columnas fijas (ID, Apellido, Nombre) */
+tbody tr:nth-child(odd) .sticky-col {
+  background-color: #e2e8f0 !important;
+  border-right: 1px solid #cbd5e1 !important;
+}
+
+/* Filas Pares: Blanco para descansar la vista */
+tbody tr:nth-child(even) td,
+tbody tr:nth-child(even) .sticky-col {
+  background-color: #ffffff !important;
+}
+
+/* Efecto Hover: Resaltado en un tono que destaque sobre ambos */
+tbody tr:hover td, 
+tbody tr:hover .sticky-col {
+  background-color: #5a8fe5 !important; /* Gris más oscuro al pasar el mouse */
+  cursor: pointer;
+}
+
+/* Ajuste para que los inputs no se pierdan en el fondo oscuro */
+tbody tr:nth-child(odd) input, 
+tbody tr:nth-child(odd) textarea {
+  background-color: #f8fafc;
+}
 </style>
