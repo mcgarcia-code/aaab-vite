@@ -1,0 +1,42 @@
+[33ma380347[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Modificaciones finales de filtros y diseño
+[33mf5dcabd[m view creada adminarbitros para gestionar la base de datos
+[33mfdfc02a[m Agregada sección escuela-arbitros y sitemap, cambio de jpg a webp en carnet digital
+[33m5ec5136[m Version con footer nuevo, mas nuevas FAQ
+[33m96215fa[m actualización final escuela de árbitros
+[33m400299f[m escuela de arbitros subida y actualizada, modificacion del navbar
+[33m8f72d49[m .
+[33mba634c7[m B64 del SSH
+[33m78676be[m .
+[33m5304def[m Check SSH
+[33mc603f8d[m .
+[33me6ca820[m .
+[33m6caf661[m Incorporado el deploy para compilación automatica
+[33mfde1137[m funcion ok de carnet digital con descarga
+[33m7d001f4[m Corrección de la busqueda de foto
+[33m73b3a27[m se modifico escuela de arbitros, se agrego carnet digital, pero no toma la foto del dni, pero si la de default
+[33m47238ac[m Merge branch 'main' of https://github.com/mcgarcia-code/aaab-vite
+[33m4f43621[m escuela de arbitros
+[33m8e5c5e1[m archivo config.json modificado para que tome en inicio y designaciones
+[33m2d31313[m archivo config.json modificado para que tome en inicio y designaciones
+[33m4df6f3b[m archivo data/config.json para subir las designaciones mas facil
+[33m573304c[m año 2026
+[33m49927cb[m curso intensivo 2026
+[33me55f29c[m modificado 24/10, no me acuerdo que modifique, pero de sanciones nada
+[33mbd3a158[m modificacion en descargas, protocolo yoyo test
+[33m51d083d[m cambios en seo titulos dinamicos
+[33m240f32e[m modificacion de tildes y codigo de sanciones
+[33m967f3c9[m boton de iniciar sesion modificado
+[33m3d4477e[m creacion de sitemaps y robots.txt
+[33m0537fe6[m mejoras en SEO, se modifico el formato de la tabla de sanciones y se agrego ico para android y ios
+[33m279ad3d[m designaciones modificaciones para 20 y 21 de septiembre
+[33m6a05606[m cambio en designaciones y nav bar
+[33md242801[m Cambios menores en api.js, eliminación de sanciones.js La función api.get() ahora recibe un objeto {} con las variables entity y action en vez del string "?..."
+[33mfd51e49[m Correcciones mínimas en subfolder arbitro
+[33ma1500c6[m Revisión del codigo para corregir inconvenientes con authStore Proyecto funcional para login y carga/consulta de sanciones
+[33m6218710[m Correcciones en la implementación de vuex y store (auth.js)
+[33m68782fa[m Incorporación de los routers para Designaciones, Perfil y Licencias del usuario Arbitro para futuras implementaciones Se adapto el codigo para usar HTTP-cookies en vez de localStorage el Fetch() de request ahora incorpora credentials Se incorpora la librería vuex para manejo de auth
+[33m186b70d[m Menú para agregar y visualizar sanciones, tanto con fecha como indefinidas, y filtradas por fecha actual.
+[33m3c0f2c6[m Archivo api.js para manejar fetch() y token de localStorage
+[33m644f989[m Cambios en Sanciones: Se empezó a incorporar el SELECT de arbitros para agregar las sanciones Cambios en AppHeader: Login para usuario con modificiacion de NavBar en caso de exito. Función en Consola para mostrar el botón de Login. Creación de ArbitroView para futura utilización El token de login se almacena en localStorage para tener acceso general
+[33mf182fe9[m Cambios para incorporar el login button y el fetch a la API
+[33m2821e65[m Initial commit after Vite migration
