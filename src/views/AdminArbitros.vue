@@ -7,15 +7,37 @@ const arbitros = ref([]);
 const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
 const filtros = reactive({}); 
 
+// --- LÓGICA DE FECHAS (Visualización y Edición) ---
+const mostrarFechaArg = (fecha) => {
+  if (!fecha) return '';
+  // Si la fecha viene de la DB como 1984-07-05, la mostramos como 05/07/1984
+  const partes = fecha.split('-');
+  if (partes.length !== 3) return fecha;
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+};
+
+const procesarEntradaFecha = (valor, arbitro) => {
+  // Solo procesamos si el usuario terminó de escribir (10 caracteres: DD/MM/AAAA)
+  if (valor.length === 10) {
+    const partes = valor.split('/');
+    if (partes.length === 3) {
+      const [d, m, y] = partes;
+      // Guardamos el formato ISO que el hosting necesita (YYYY-MM-DD)
+      arbitro.fecha_nacimiento = `${y}-${m}-${d}`;
+    }
+  }
+};
+
 const exportarExcel = () => {
-  // 1. Creamos una hoja de trabajo a partir de los datos filtrados
-  const worksheet = XLSX.utils.json_to_sheet(arbitrosFiltrados.value);
-  
-  // 2. Creamos un libro de trabajo
+  // Mapeamos los datos para que el Excel salga con la fecha en formato Argentino
+  const datosParaExcel = arbitrosFiltrados.value.map(a => ({
+    ...a,
+    fecha_nacimiento: mostrarFechaArg(a.fecha_nacimiento)
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(datosParaExcel);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Arbitros");
-  
-  // 3. Generamos el archivo y lo descargamos
   XLSX.writeFile(workbook, "Lista_Arbitros_AAAB.xlsx");
 };
 
@@ -24,7 +46,6 @@ const cargarDatos = async () => {
     const res = await axios.get(API_URL);
     arbitros.value = Array.isArray(res.data) ? res.data : [];
   } catch (err) { 
-    // Usamos 'err' para que ESLint no proteste y para ver el error real en consola
     console.error("Error al cargar datos:", err); 
   }
 };
@@ -33,24 +54,19 @@ const crearNuevo = () => {
   arbitros.value.unshift({
     apellido: '', nombre: '', grupo: '', subgrupo: '', dni: '', email: '', 
     direccion: '', provincia: '', localidad: '', zona: '', celular: '',
-    observaciones: ''
+    fecha_nacimiento: '', observaciones: ''
   });
 };
 
 const guardarTodo = async () => {
   try {
-    // Filtramos para enviar solo los registros que tienen datos
     const datosParaEnviar = arbitros.value.filter(a => a.apellido || a.nombre);
-    
-    // Enviamos TODO el array en una sola petición POST
     await axios.post(API_URL, { masivo: true, datos: datosParaEnviar });
-    
     alert("Los cambios fueron cargados exitosamente");
     cargarDatos();
   } catch (err) {
-    // Aquí usamos 'err' para que ESLint no proteste
     console.error("Fallo en el guardado masivo único:", err);
-    alert("Error al realizar el guardado masivo. Revisa la consola.");
+    alert("Error al realizar el guardado masivo.");
   }
 };
 
@@ -60,7 +76,6 @@ const eliminar = async (id) => {
     await axios.delete(`${API_URL}?id=${id}`);
     arbitros.value = arbitros.value.filter(a => a.id !== id);
   } catch (err) { 
-    // Usamos 'err' aquí también
     console.error("Error al intentar eliminar:", err);
     alert("Error al eliminar"); 
   }
@@ -88,10 +103,9 @@ onMounted(cargarDatos);
       <h2 class="title">Gestión de Base de Datos - Árbitros</h2>
 
       <div class="counter-badge">
-    Total Árbitros: <strong>{{ totalFiltrados }}</strong>
+        Total Árbitros: <strong>{{ totalFiltrados }}</strong>
       </div>
 
-      
       <div class="header-actions">
         <button @click="guardarTodo" class="btn-save-all">
           <span class="material-icons">save</span> Guardar Cambios
@@ -101,7 +115,7 @@ onMounted(cargarDatos);
         </button>
         <button @click="exportarExcel" class="btn-export">
           <span class="material-icons">download</span> Exportar Excel
-      </button>
+        </button>
       </div>
     </div>
 
@@ -130,26 +144,26 @@ onMounted(cargarDatos);
             <td class="col-xs"><input v-model="filtros.grupo"></td>
             <td class="col-xs"><input v-model="filtros.subgrupo"></td>
             <td class="col-dni"><input v-model="filtros.dni"></td>
-            <td><input v-model="filtros.email" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.direccion" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.provincia" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.localidad" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.zona" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.celular" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.fecha_nacimiento" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.telefonocontacto" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.parentescocontacto" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.movilidad" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.disponibilidad_sabado" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.disponibilidad_sabado_desde" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.disponibilidad_sabado_hasta" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.disponibilidad_domingo" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.disponibilidad_domingo_desde" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.disponibilidad_domingo_hasta" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.juega_handball" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.donde_juega" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.categoria_handball" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.observaciones" placeholder="Filtrar.."></td>
+            <td><input v-model="filtros.email" placeholder=".."></td>
+            <td><input v-model="filtros.direccion" placeholder=".."></td>
+            <td><input v-model="filtros.provincia" placeholder=".."></td>
+            <td><input v-model="filtros.localidad" placeholder=".."></td>
+            <td><input v-model="filtros.zona" placeholder=".."></td>
+            <td><input v-model="filtros.celular" placeholder=".."></td>
+            <td><input v-model="filtros.fecha_nacimiento" placeholder=".."></td>
+            <td><input v-model="filtros.telefonocontacto" placeholder=".."></td>
+            <td><input v-model="filtros.parentescocontacto" placeholder=".."></td>
+            <td><input v-model="filtros.movilidad" placeholder=".."></td>
+            <td><input v-model="filtros.disponibilidad_sabado" placeholder=".."></td>
+            <td><input v-model="filtros.disponibilidad_sabado_desde" placeholder=".."></td>
+            <td><input v-model="filtros.disponibilidad_sabado_hasta" placeholder=".."></td>
+            <td><input v-model="filtros.disponibilidad_domingo" placeholder=".."></td>
+            <td><input v-model="filtros.disponibilidad_domingo_desde" placeholder=".."></td>
+            <td><input v-model="filtros.disponibilidad_domingo_hasta" placeholder=".."></td>
+            <td><input v-model="filtros.juega_handball" placeholder=".."></td>
+            <td><input v-model="filtros.donde_juega" placeholder=".."></td>
+            <td><input v-model="filtros.categoria_handball" placeholder=".."></td>
+            <td><input v-model="filtros.observaciones" placeholder=".."></td>
           </tr>
         </thead>
         <tbody>
@@ -172,7 +186,16 @@ onMounted(cargarDatos);
             <td><input v-model="a.localidad"></td>
             <td><input v-model="a.zona"></td>
             <td><input v-model="a.celular"></td>
-            <td><input type="date" v-model="a.fecha_nacimiento"></td>
+            <td>
+              <input 
+                type="text" 
+                :value="mostrarFechaArg(a.fecha_nacimiento)" 
+                @input="e => procesarEntradaFecha(e.target.value, a)"
+                placeholder="DD/MM/AAAA"
+                class="input-fecha-directo"
+                maxlength="10"
+              >
+            </td>
             <td><input v-model="a.telefonocontacto"></td>
             <td><input v-model="a.parentescocontacto"></td>
             <td><input v-model="a.movilidad"></td>
@@ -237,67 +260,69 @@ td {
   border-bottom: 1px solid #eee; 
   border-right: 1px solid #eee; 
   font-size: 11px;
-  vertical-align: top;    /* Alinea el texto arriba para que no "flote" al medio */
+  vertical-align: top;
 }
 
 input { width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 2px; font-size: 11px; height: 26px; }
 
+.input-fecha-directo {
+  width: 100px;
+  text-align: center;
+  border: 1px solid #ddd; /* Ahora es gris como los demás */
+  font-weight: normal;    /* Le quité el negrita para que sea idéntico */
+  color: inherit;
+  background: white;
+}
+
 textarea { 
-  width: 500px;           /* Aumentamos el ancho para que sea más legible */
-  min-height: 40px;       /* Le damos un poco más de aire vertical */
-  height: auto;           /* Permite que crezca si el usuario lo estira */
-  resize: vertical;       /* Permite agrandarlo hacia abajo manualmente */
+  width: 500px; 
+  min-height: 40px; 
+  height: auto; 
+  resize: vertical; 
   border: 1px solid #ddd; 
   font-size: 11px;
   padding: 4px;
   display: block;
 }
 
-/* Estado con Foco: se agranda al hacer clic */
 textarea:focus { 
-  width: 350px;        /* Se hace más ancho */
-  height: 120px;       /* Se hace más alto */
-  border-color: #3b82f6; /* Cambia al azul que usás en los filtros */
+  width: 350px; 
+  height: 120px; 
+  border-color: #3b82f6; 
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
-  overflow-y: auto;    /* Aparece el scroll si el texto es muy largo */
-  outline: none;       /* Quita el borde naranja por defecto del navegador */
+  overflow-y: auto; 
+  outline: none; 
   position: relative;
-  z-index: 100;        /* Asegura que se vea por encima de otras celdas */
+  z-index: 100; 
 }
 
 .btn-delete { background: #94a3b8; color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; display: flex; }
 .btn-delete:hover { background: #dc3545; }
 .new-tag { color: #27ae60; font-weight: bold; font-size: 9px; }
 
-/* Filas Impares: Azul grisáceo claro pero perceptible */
+/* Filas Intercaladas */
 tbody tr:nth-child(odd) td {
-  background-color: #e2e8f0; /* Un tono más fuerte que el anterior */
+  background-color: #e2e8f0; 
   border-bottom: 1px solid #cbd5e1;
 }
-
-/* Aplicar a las columnas fijas (ID, Apellido, Nombre) */
 tbody tr:nth-child(odd) .sticky-col {
   background-color: #e2e8f0 !important;
   border-right: 1px solid #cbd5e1 !important;
 }
-
-/* Filas Pares: Blanco para descansar la vista */
 tbody tr:nth-child(even) td,
 tbody tr:nth-child(even) .sticky-col {
   background-color: #ffffff !important;
 }
 
-/* Efecto Hover: Resaltado en un tono que destaque sobre ambos */
+/* Hover Effect */
 tbody tr:hover td, 
 tbody tr:hover .sticky-col {
-  background-color: #5a8fe5 !important; /* Gris más oscuro al pasar el mouse */
-  cursor: pointer;
+  background-color: #5a8fe5 !important; 
+  color: white;
 }
-
-/* Ajuste para que los inputs no se pierdan en el fondo oscuro */
-tbody tr:nth-child(odd) input, 
-tbody tr:nth-child(odd) textarea {
-  background-color: #f8fafc;
+tbody tr:hover input {
+  background-color: white !important;
+  color: #000;
 }
 
 .counter-badge {
@@ -310,7 +335,7 @@ tbody tr:nth-child(odd) textarea {
 }
 
 .btn-export {
-  background-color: #27ae60; /* Verde Excel */
+  background-color: #27ae60; 
   color: white;
   border: none;
   padding: 8px 15px;
@@ -321,10 +346,5 @@ tbody tr:nth-child(odd) textarea {
   gap: 6px;
   font-weight: bold;
   font-size: 11px;
-  transition: background 0.3s;
-}
-
-.btn-export:hover {
-  background-color: #1e8449;
 }
 </style>
