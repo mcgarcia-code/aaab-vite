@@ -1,10 +1,23 @@
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue';
 import axios from 'axios';
+import * as XLSX from 'xlsx';
 
 const arbitros = ref([]);
 const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
 const filtros = reactive({}); 
+
+const exportarExcel = () => {
+  // 1. Creamos una hoja de trabajo a partir de los datos filtrados
+  const worksheet = XLSX.utils.json_to_sheet(arbitrosFiltrados.value);
+  
+  // 2. Creamos un libro de trabajo
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Arbitros");
+  
+  // 3. Generamos el archivo y lo descargamos
+  XLSX.writeFile(workbook, "Lista_Arbitros_AAAB.xlsx");
+};
 
 const cargarDatos = async () => {
   try {
@@ -62,6 +75,8 @@ const arbitrosFiltrados = computed(() => {
   });
 });
 
+const totalFiltrados = computed(() => arbitrosFiltrados.value.length);
+
 onMounted(cargarDatos);
 </script>
 
@@ -71,6 +86,11 @@ onMounted(cargarDatos);
   <div class="admin-panel">
     <div class="header-section">
       <h2 class="title">Gestión de Base de Datos - Árbitros</h2>
+
+      <div class="counter-badge">
+    Total Árbitros: <strong>{{ totalFiltrados }}</strong>
+      </div>
+
       
       <div class="header-actions">
         <button @click="guardarTodo" class="btn-save-all">
@@ -79,6 +99,9 @@ onMounted(cargarDatos);
         <button @click="crearNuevo" class="btn-new">
           <span class="material-icons">person_add</span> Agregar Nuevo Árbitro
         </button>
+        <button @click="exportarExcel" class="btn-export">
+          <span class="material-icons">download</span> Exportar Excel
+      </button>
       </div>
     </div>
 
@@ -275,5 +298,33 @@ tbody tr:hover .sticky-col {
 tbody tr:nth-child(odd) input, 
 tbody tr:nth-child(odd) textarea {
   background-color: #f8fafc;
+}
+
+.counter-badge {
+  background: #f1f5f9;
+  padding: 8px 15px;
+  border-radius: 4px;
+  color: #2c3e50;
+  font-weight: bold;
+  border: 1px solid #cbd5e1;
+}
+
+.btn-export {
+  background-color: #27ae60; /* Verde Excel */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: bold;
+  font-size: 11px;
+  transition: background 0.3s;
+}
+
+.btn-export:hover {
+  background-color: #1e8449;
 }
 </style>
