@@ -16,6 +16,7 @@ const mostrarFechaArg = (fecha) => {
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
 };
 
+
 const procesarEntradaFecha = (valor, arbitro) => {
   // Solo procesamos si el usuario terminó de escribir (10 caracteres: DD/MM/AAAA)
   if (valor.length === 10) {
@@ -167,13 +168,20 @@ onMounted(cargarDatos);
           </tr>
         </thead>
         <tbody>
-          <tr v-for="a in arbitrosFiltrados" :key="a.id || Math.random()">
-            <td class="sticky-col col-acciones cell-actions">
-              <button @click="eliminar(a.id)" class="btn-table btn-delete" v-if="a.id" title="Eliminar">
-                <span class="material-icons">delete</span>
-              </button>
-              <span v-else class="new-tag">NUEVO</span>
-            </td>
+         <tr 
+            v-for="a in arbitrosFiltrados" 
+            :key="a.id || Math.random()"
+            :class="{ 
+            'fila-licencia-aprobada': a.tiene_aprobada > 0,
+            'fila-licencia-rechazada': a.tiene_aprobada == 0 && a.tiene_rechazada > 0 
+            }"
+          >
+    <td class="sticky-col col-acciones cell-actions">
+      <button @click="eliminar(a.id)" class="btn-table btn-delete" v-if="a.id" title="Eliminar">
+        <span class="material-icons">delete</span>
+      </button>
+      <span v-else class="new-tag">NUEVO</span>
+    </td>
             <td class="sticky-col col-id">{{ a.id || '-' }}</td>
             <td class="sticky-col col-apellido"><input v-model="a.apellido"></td>
             <td class="sticky-col col-nombre"><input v-model="a.nombre"></td>
@@ -346,5 +354,39 @@ tbody tr:hover input {
   gap: 6px;
   font-weight: bold;
   font-size: 11px;
+}
+
+/* --- ESTILOS PARA LICENCIAS --- */
+
+/* 1. ROJO: Licencia Aprobada (No disponible para dirigir) */
+.fila-licencia-aprobada td, 
+.fila-licencia-aprobada .sticky-col {
+  background-color: #fee2e2 !important; 
+  border-bottom: 1px solid #ef4444 !important;
+}
+.fila-licencia-aprobada input, 
+.fila-licencia-aprobada textarea {
+  background-color: #fff1f1 !important;
+  color: #991b1b !important;
+  font-weight: bold;
+}
+.fila-licencia-aprobada:hover td {
+  background-color: #fecaca !important;
+}
+
+/* 2. AMARILLO: Licencia Rechazada (Disponible, pero avisó tarde) */
+.fila-licencia-rechazada td, 
+.fila-licencia-rechazada .sticky-col {
+  background-color: #fef9c3 !important; /* Amarillo suave */
+  border-bottom: 1px solid #eab308 !important;
+}
+.fila-licencia-rechazada input, 
+.fila-licencia-rechazada textarea {
+  background-color: #fefce8 !important;
+  color: #854d0e !important;
+  font-weight: bold;
+}
+.fila-licencia-rechazada:hover td {
+  background-color: #fef08a !important;
 }
 </style>

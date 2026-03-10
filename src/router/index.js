@@ -57,6 +57,25 @@ const routes = [
     component: CarnetView,
   },
   {
+    path: '/login-arbitro',
+    name: 'LoginArbitro',
+    component: () => import('../views/LoginArbitro.vue')
+  },
+  {
+    path: '/panel-arbitro',
+    name: 'PanelArbitro',
+    component: () => import('../views/PanelArbitro.vue'),
+    // Esta función verifica si hay un usuario logueado antes de entrar
+    beforeEnter: (to, from, next) => {
+      const user = localStorage.getItem('user_aaab');
+      if (user) {
+        next();
+      } else {
+        next('/login-arbitro');
+      }
+    }
+  },
+  {
   path: '/gestion-privada-arbitros',
   name: 'AdminArbitros',
   component: () => import('../views/AdminArbitros.vue')
