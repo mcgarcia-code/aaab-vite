@@ -25,14 +25,20 @@ const iniciarSesion = async () => {
     });
 
     if (res.data.success) {
-      // Guardamos los datos del árbitro en el navegador (localStorage)
+      // Guardamos los datos del árbitro
       localStorage.setItem('user_aaab', JSON.stringify(res.data.arbitro));
-      // Redirigimos al panel del árbitro (que crearemos luego)
+      
+      // DISPARAMOS UN EVENTO para que el Header se actualice al instante
+      window.dispatchEvent(new Event('storage'));
+
+      // Redirigimos al panel
       router.push('/panel-arbitro');
     } else {
       errorMsg.value = res.data.message || "Error al ingresar";
     }
-  } catch{
+  } catch (err) {
+    // Agregamos el error a la consola para que puedas verlo en F12 si falla algo más
+    console.error("Error en login:", err);
     errorMsg.value = "Error de conexión con el servidor";
   } finally {
     cargando.value = false;
@@ -79,7 +85,6 @@ const iniciarSesion = async () => {
 <style scoped>
 .login-container {
   min-height: 100vh;
-  /* Mantenemos el fondo oscuro que hace resaltar el rojo */
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   padding: 20px;
 }
@@ -91,7 +96,6 @@ const iniciarSesion = async () => {
   border: none;
 }
 
-/* Color del título para que no use el blue de .text-primary */
 .text-primary {
   color: #dc3545 !important;
 }
@@ -105,17 +109,16 @@ const iniciarSesion = async () => {
 }
 
 .btn-primary {
-  background-color: #dc3545 !important; /* Rojo AAAB */
+  background-color: #dc3545 !important; 
   border: none;
   padding: 10px;
   font-weight: bold;
 }
 
 .btn-primary:hover {
-  background-color: #a71d2a !important; /* Rojo más oscuro al pasar el mouse */
+  background-color: #a71d2a !important; 
 }
 
-/* Quitamos el borde azul cuando hacen clic en el input */
 .form-control:focus {
   border-color: #dc3545;
   box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);

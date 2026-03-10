@@ -1,9 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
-// 1. Importación estática para carga instantánea
 import CarnetView from '../views/CarnetView.vue';
-import store from "../stores/auth";
 
 const routes = [
   {
@@ -16,12 +14,6 @@ const routes = [
     name: 'descargas',
     component: () => import('../views/DescargasView.vue'),
   },
- //{
- //   path: '/cursos',
- //   name: 'cursos',
- //   component: () => import('../views/CursosView.vue'),
- // },
-  // --- NUEVA RUTA ESCUELA DE ARBITROS ---
   {
     path: '/escuela-arbitros',
     name: 'escuelaArbitros',
@@ -30,16 +22,13 @@ const routes = [
   {
     path: '/preguntas-frecuentes',
     name: 'faq',
-    // Si renombraste el archivo, usá FaqView.vue aquí
     component: () => import('../views/FaqView.vue')
   },
-  // --------------------------------------
   {
     path: '/designaciones',
     name: 'designaciones',
     component: () => import('../views/DesignacionesView.vue'),
   },
-
   {
     path: '/tribunal-de-etica',
     name: 'tribunalEtica',
@@ -53,19 +42,25 @@ const routes = [
   {
     path: '/carnet-digital',
     name: 'carnetDigital',
-    // 2. Usamos el componente importado directamente
     component: CarnetView,
   },
   {
     path: '/login-arbitro',
     name: 'LoginArbitro',
-    component: () => import('../views/LoginArbitro.vue')
+    component: () => import('../views/LoginArbitro.vue'),
+    // Si ya está logueado, lo mandamos al panel
+    beforeEnter: (to, from, next) => {
+      if (localStorage.getItem('user_aaab')) {
+        next('/panel-arbitro');
+      } else {
+        next();
+      }
+    }
   },
   {
     path: '/panel-arbitro',
     name: 'PanelArbitro',
     component: () => import('../views/PanelArbitro.vue'),
-    // Esta función verifica si hay un usuario logueado antes de entrar
     beforeEnter: (to, from, next) => {
       const user = localStorage.getItem('user_aaab');
       if (user) {
@@ -76,10 +71,12 @@ const routes = [
     }
   },
   {
-  path: '/gestion-privada-arbitros',
-  name: 'AdminArbitros',
-  component: () => import('../views/AdminArbitros.vue')
+    path: '/gestion-privada-arbitros',
+    name: 'AdminArbitros',
+    component: () => import('../views/AdminArbitros.vue')
   },
+  
+  /* ESTA SECCIÓN NO SE USA POR EL MOMENTO
   {
     path: '/arbitro',
     name: 'arbitro',
@@ -107,6 +104,7 @@ const routes = [
       },
     ],
   },
+  */
 ];
 
 const router = createRouter({
@@ -117,9 +115,12 @@ const router = createRouter({
   },
 });
 
+// Guardia global para rutas con meta: { requiresAuth: true }
 router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !store.getters.isAuthenticated) {
-    next('/');
+  const estaLogueado = !!localStorage.getItem('user_aaab');
+
+  if (to.matched.some(record => record.meta.requiresAuth) && !estaLogueado) {
+    next('/login-arbitro');
   } else {
     next();
   }

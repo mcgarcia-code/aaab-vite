@@ -53,8 +53,8 @@ const solicitarLicencia = async () => {
   try {
     const res = await axios.post('https://arbitroshandball.com.ar/api/guardar_licencia.php', {
       id_arbitro: arbitro.value.id,
-      nombre_arbitro: arbitro.value.nombre,    // <--- AGREGAR ESTO
-      apellido_arbitro: arbitro.value.apellido, // <--- AGREGAR ESTO
+      nombre_arbitro: arbitro.value.nombre,
+      apellido_arbitro: arbitro.value.apellido,
       fecha_licencia: fechaSeleccionada.value,
       estado: estadoFinal
     });
@@ -79,6 +79,8 @@ const solicitarLicencia = async () => {
 
 const cerrarSesion = () => {
   localStorage.removeItem('user_aaab');
+  // NOTIFICAMOS al Header que la sesión se cerró
+  window.dispatchEvent(new Event('storage')); 
   router.push('/login-arbitro');
 };
 </script>
@@ -172,7 +174,6 @@ h2.text-white {
   border-radius: 15px; 
 }
 
-/* HISTORIAL EN BLANCO */
 .card-historial {
   background: #ffffff !important;
 }
@@ -202,7 +203,6 @@ h2.text-white {
   color: #ffffff !important;
 }
 
-/* ESTILO DEL INPUT DE FECHA */
 .custom-input-date {
     color: #000000 !important;
     background-color: #ffffff !important;

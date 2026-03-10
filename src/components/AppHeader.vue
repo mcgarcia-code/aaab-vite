@@ -1,14 +1,26 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import logo from '@/assets/fotos/logo.png'
 
 // Referencias para el navbar (cerrar menú en móvil)
 const navbarNav = ref(null)
 
-// Detectamos si el árbitro está logueado para cambiar el texto del botón
-const estaLogueado = computed(() => {
-  return !!localStorage.getItem('user_aaab')
+// Creamos una referencia reactiva para el estado del login
+const logueado = ref(!!localStorage.getItem('user_aaab'))
+
+// Función para actualizar el estado
+const actualizarEstado = () => {
+  logueado.value = !!localStorage.getItem('user_aaab')
+}
+
+// Escuchamos el evento cuando se monta el componente y lo quitamos al desmontar
+onMounted(() => {
+  window.addEventListener('storage', actualizarEstado)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('storage', actualizarEstado)
 })
 
 const hideNavBar = () => {
@@ -50,7 +62,7 @@ const hideNavBar = () => {
           <li class="nav-item"><RouterLink class="nav-link" to="/preguntas-frecuentes">Preguntas Frecuentes</RouterLink></li>
           
           <li class="nav-item">
-            <RouterLink v-if="!estaLogueado" to="/login-arbitro" class="btn btn-login-nav ms-lg-3">
+            <RouterLink v-if="!logueado" to="/login-arbitro" class="btn btn-login-nav ms-lg-3">
               INICIAR SESIÓN
             </RouterLink>
             <RouterLink v-else to="/panel-arbitro" class="btn btn-login-nav ms-lg-3">
