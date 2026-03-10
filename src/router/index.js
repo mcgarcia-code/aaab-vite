@@ -48,7 +48,6 @@ const routes = [
     path: '/login-arbitro',
     name: 'LoginArbitro',
     component: () => import('../views/LoginArbitro.vue'),
-    // Si ya está logueado, lo mandamos al panel
     beforeEnter: (to, from, next) => {
       if (localStorage.getItem('user_aaab')) {
         next('/panel-arbitro');
@@ -59,52 +58,44 @@ const routes = [
   },
   {
     path: '/panel-arbitro',
-    name: 'PanelArbitro',
     component: () => import('../views/PanelArbitro.vue'),
     beforeEnter: (to, from, next) => {
-      const user = localStorage.getItem('user_aaab');
-      if (user) {
-        next();
-      } else {
-        next('/login-arbitro');
+      if (localStorage.getItem('user_aaab')) next();
+      else next('/login-arbitro');
+    },
+    children: [
+      {
+        path: '', 
+        name: 'PanelInicio',
+        component: () => import('../components/panel/InicioPanel.vue')
+      },
+      {
+        path: 'licencia', 
+        name: 'PanelLicencia',
+        component: () => import('../components/panel/SolicitarLicencia.vue')
+      },
+      {
+        path: 'datos', 
+        name: 'PanelDatos',
+        component: () => import('../components/panel/MisDatos.vue')
+      },
+      {
+        path: 'disponibilidad',
+        name: 'PanelDisponibilidad',
+        component: () => import('../components/panel/Disponibilidad.vue')
+      },
+      {
+        path: 'sanciones',
+        name: 'PanelSanciones',
+        component: () => import('../components/panel/Sanciones.vue')
       }
-    }
-  },
+    ]
+  }, // <--- Aquí faltaba esta coma
   {
     path: '/gestion-privada-arbitros',
     name: 'AdminArbitros',
     component: () => import('../views/AdminArbitros.vue')
-  },
-  
-  /* ESTA SECCIÓN NO SE USA POR EL MOMENTO
-  {
-    path: '/arbitro',
-    name: 'arbitro',
-    component: () => import('../views/ArbitroView.vue'),
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: 'designaciones',
-        name: 'arbitroDesignaciones',
-        component: () => import('../views/arbitro/ArbitroDesignaciones.vue'),
-      },
-      {
-        path: 'licencias',
-        name: 'arbitroLicencias',
-        component: () => import('../views/arbitro/ArbitroLicencias.vue'),
-      },
-      {
-        path: 'perfil',
-        name: 'arbitroPerfil',
-        component: () => import('../views/arbitro/ArbitroPerfil.vue'),
-      },
-      {
-        path: '',
-        redirect: { name: 'arbitroPerfil' },
-      },
-    ],
-  },
-  */
+  }
 ];
 
 const router = createRouter({
@@ -115,10 +106,8 @@ const router = createRouter({
   },
 });
 
-// Guardia global para rutas con meta: { requiresAuth: true }
 router.beforeEach((to, from, next) => {
   const estaLogueado = !!localStorage.getItem('user_aaab');
-
   if (to.matched.some(record => record.meta.requiresAuth) && !estaLogueado) {
     next('/login-arbitro');
   } else {
