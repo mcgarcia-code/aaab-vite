@@ -269,7 +269,6 @@ table { width: max-content; border-collapse: separate; border-spacing: 0; }
 .col-apellido { left: 100px; width: 140px; }
 .col-nombre { left: 240px; width: 140px; box-shadow: 4px 0 6px -4px rgba(0,0,0,0.1); }
 
-/* CLASES COMPACTAS SOLICITADAS */
 .col-xs-compact { width: 45px; min-width: 45px; text-align: center; }
 .col-dni-compact { width: 85px; min-width: 85px; text-align: center; }
 
@@ -294,9 +293,23 @@ td { padding: 4px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle;
 
 tbody tr:hover td, tbody tr:hover .sticky-col { background-color: #f1f5f9 !important; }
 
-/* COLORES DE FILAS AGREGADOS */
 .fila-licencia-aprobada td, .fila-licencia-aprobada .sticky-col { background-color: #fee2e2 !important; color: #991b1b !important; }
 .fila-licencia-rechazada td, .fila-licencia-rechazada .sticky-col { background-color: #fef9c3 !important; color: #854d0e !important; }
 .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #fff1f2 !important; }
 .fila-inactiva .edit-input { color: #be123c !important; font-weight: 600; }
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 1024px) {
+  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .header-actions { width: 100%; justify-content: space-between; }
+  .btn-action { flex: 1; justify-content: center; }
+}
+
+@media (max-width: 768px) {
+  .admin-panel { padding: 15px; }
+  .header-actions { flex-wrap: wrap; }
+  .btn-action { min-width: 45%; }
+  .title { font-size: 1.2rem; }
+  .table-container { max-height: 60vh; }
+}
 </style>
