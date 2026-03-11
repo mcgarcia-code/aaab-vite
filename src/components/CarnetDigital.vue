@@ -38,9 +38,16 @@
                 alt="Foto Oficial"
               >
             </div>
-            <div class="status-badge">
-              <i class="bi bi-patch-check-fill me-1"></i> ARBITRO ACTIVO
-            </div>
+            <div 
+  :class="['status-badge', arbitro.es_activo == 1 ? 'bg-success' : 'bg-danger']"
+>
+  <template v-if="arbitro.es_activo == 1">
+    <i class="bi bi-patch-check-fill me-1"></i> ARBITRO ACTIVO
+  </template>
+  <template v-else>
+    <i class="bi bi-x-circle-fill me-1"></i> ARBITRO INACTIVO
+  </template>
+</div>
           </div>
 
           <div class="cred-right text-start">
@@ -252,17 +259,23 @@ const setFallbackImg = () => {
   image-rendering: crisp-edges;
 }
 
+/* Busca .status-badge y quita el 'background: #198754;' */
 .status-badge {
   margin-top: 20px;
-  background: #198754;
-  color: white;
+  color: white; /* Mantenemos el texto blanco */
   padding: 6px 15px;
   border-radius: 50px;
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* Agregamos estas para asegurar el tiro en el canvas */
+.bg-success { background-color: #198754 !important; }
+.bg-danger { background-color: #dc3545 !important; }
 .cred-right {
   width: 62%;
   padding: 35px;
