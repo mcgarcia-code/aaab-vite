@@ -80,14 +80,15 @@ const solicitarLicencia = async () => {
 </script>
 
 <template>
-  <div class="animate__animated animate__fadeIn">
-    <div class="card shadow p-4 border-0 mb-4">
-      <h4 class="text-danger fw-bold mb-3">Solicitar Nueva Licencia</h4>
-      <p class="text-muted small mb-3">
-        Recordá que las licencias deben solicitarse con un mínimo de <strong>9 días</strong> de antelación para ser aprobadas automáticamente y son por día completo. No hay licencias parciales.
+  <div class="animate__animated animate__fadeIn container py-2 px-0 px-md-2">
+    
+    <div class="card shadow p-3 p-md-4 border-0 mb-4 mx-auto" style="max-width: 800px;">
+      <h4 class="text-danger fw-bold mb-2">Solicitar Nueva Licencia</h4>
+      <p class="text-muted x-small-mobile mb-3">
+        Las licencias deben solicitarse con un mínimo de <strong>9 días</strong> de antelación para aprobación automática.
       </p>
 
-      <div v-if="mensaje.texto" :class="`alert alert-${mensaje.tipo} small py-2 shadow-sm`" role="alert">
+      <div v-if="mensaje.texto" :class="`alert alert-${mensaje.tipo} small py-2 shadow-sm border-0`" role="alert">
         {{ mensaje.texto }}
       </div>
 
@@ -97,7 +98,7 @@ const solicitarLicencia = async () => {
           type="date" 
           :min="fechaMinima" 
           v-model="fechaSeleccionada" 
-          class="form-control form-control-lg custom-input-date"
+          class="form-control form-control-lg custom-input-date shadow-none"
           onkeydown="return false"
         >
       </div>
@@ -105,38 +106,46 @@ const solicitarLicencia = async () => {
       <button 
         @click="solicitarLicencia" 
         :disabled="!fechaSeleccionada || cargando" 
-        class="btn btn-primary w-100 fw-bold py-2 shadow-sm"
+        class="btn btn-primary w-100 fw-bold py-3 py-md-2 shadow-sm"
       >
         <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
         {{ cargando ? 'PROCESANDO...' : 'ENVIAR SOLICITUD' }}
       </button>
     </div>
 
-    <div class="historial-seccion">
-      <h4 class="text-white mb-3 small fw-bold text-uppercase">Mi Historial de Licencias</h4>
+    <div class="historial-seccion mx-auto" style="max-width: 800px;">
+      <h6 class="text-white mb-3 small fw-bold text-uppercase px-2" style="letter-spacing: 1px;">Mi Historial de Licencias</h6>
+      
       <div class="card card-historial shadow border-0 overflow-hidden">
         <div class="table-responsive">
-          <table class="table table-hover mb-0">
+          <table class="table table-hover align-middle mb-0">
             <thead>
-              <tr>
-                <th>Fecha Licencia</th>
-                <th>Solicitada el</th>
-                <th class="text-center">Estado</th>
+              <tr class="text-uppercase">
+                <th class="ps-3">Fecha</th>
+                <th class="d-none d-md-table-cell">Solicitada</th>
+                <th class="text-center pe-3">Estado</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(lic, index) in licencias" :key="index">
-                <td class="align-middle fw-bold">{{ formatearFecha(lic.fecha_licencia) }}</td>
-                <td class="align-middle text-muted small">{{ formatearFecha(lic.fecha_solicitud) }}</td>
-                <td class="text-center align-middle">
-                  <span :class="lic.estado === 'aprobada' ? 'badge bg-success' : 'badge bg-danger'">
+                <td class="ps-3 align-middle fw-bold text-dark">
+                  <div class="d-flex flex-column">
+                    <span>{{ formatearFecha(lic.fecha_licencia) }}</span>
+                    <span class="d-md-none text-muted" style="font-size: 0.65rem;">Solic: {{ formatearFecha(lic.fecha_solicitud) }}</span>
+                  </div>
+                </td>
+                <td class="align-middle text-muted small d-none d-md-table-cell">
+                    {{ formatearFecha(lic.fecha_solicitud) }}
+                </td>
+                <td class="text-center align-middle pe-3">
+                  <span :class="lic.estado === 'aprobada' ? 'badge bg-success' : 'badge bg-danger'" class="status-badge">
                     {{ lic.estado.toUpperCase() }}
                   </span>
                 </td>
               </tr>
               <tr v-if="licencias.length === 0">
-                <td colspan="3" class="text-center text-muted py-4 small">
-                  No tenés licencias registradas hasta el momento.
+                <td colspan="3" class="text-center text-muted py-5 small">
+                  No tenés licencias registradas.
                 </td>
               </tr>
             </tbody>
@@ -144,31 +153,31 @@ const solicitarLicencia = async () => {
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <style scoped>
 .card { border-radius: 15px; background: #ffffff; }
-.card-historial { background: #ffffff !important; }
+.card-historial { border-radius: 12px; }
 
 .btn-primary { 
   background-color: #dc2626 !important; 
   border: none; 
-  transition: all 0.3s ease;
 }
 .btn-primary:hover:not(:disabled) { 
   background-color: #b91c1c !important; 
-  transform: translateY(-1px);
 }
 
-/* ESTILOS PARA QUE EL INPUT APAREZCA VACÍO */
+/* ESTILOS PARA EL INPUT DE FECHA */
 .custom-input-date {
   color: #000000 !important;
   background-color: #ffffff !important;
   border: 1px solid #ced4da !important;
+  font-size: 1rem;
 }
 
-/* Truco para ocultar el dd/mm/aaaa cuando no hay valor */
+/* Ocultar placeholder nativo cuando está vacío */
 input[type="date"]:in-range::-webkit-datetime-edit-year-field,
 input[type="date"]:in-range::-webkit-datetime-edit-month-field,
 input[type="date"]:in-range::-webkit-datetime-edit-day-field,
@@ -176,44 +185,46 @@ input[type="date"]:in-range::-webkit-datetime-edit-text {
   color: transparent;
 }
 
-/* Mostramos el texto cuando el input tiene foco o ya tiene un valor */
 input[type="date"]:focus::-webkit-datetime-edit-year-field,
 input[type="date"]:focus::-webkit-datetime-edit-month-field,
 input[type="date"]:focus::-webkit-datetime-edit-day-field,
 input[type="date"]:focus::-webkit-datetime-edit-text,
-input[type="date"]:not([value=""])::-webkit-datetime-edit-year-field,
-input[type="date"]:not([value=""])::-webkit-datetime-edit-month-field,
-input[type="date"]:not([value=""])::-webkit-datetime-edit-day-field,
-input[type="date"]:not([value=""])::-webkit-datetime-edit-text {
+input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-year-field,
+input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-month-field,
+input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-day-field,
+input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
   color: #000 !important;
 }
 
+/* TABLA RESPONSIVE */
 .table thead th {
-  background-color: #f1f5f9;
-  color: #475569;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  padding: 12px 10px;
-  border-bottom: none;
+  background-color: #f8fafc;
+  color: #64748b;
+  font-size: 0.65rem;
+  padding: 15px 10px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .table td {
-  font-size: 0.85rem;
-  padding: 12px 10px;
+  padding: 15px 10px;
   border-bottom: 1px solid #f1f5f9;
 }
 
-.badge {
+.status-badge {
   padding: 6px 10px;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
+  font-weight: 800;
   border-radius: 6px;
-  letter-spacing: 0.5px;
+  display: inline-block;
+  min-width: 80px;
 }
 
 .bg-success { background-color: #10b981 !important; }
 .bg-danger { background-color: #ef4444 !important; }
 
-.animate__animated {
-  animation-duration: 0.5s;
+@media (max-width: 768px) {
+    .x-small-mobile { font-size: 0.8rem; }
+    .status-badge { min-width: 70px; padding: 5px 8px; }
+    h4 { font-size: 1.25rem; }
 }
 </style>

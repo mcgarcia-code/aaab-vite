@@ -8,7 +8,7 @@ const historial = ref([]);
 const cargando = ref(false);
 const mensaje = ref({ texto: '', tipo: '' });
 
-// 1. VARIABLE PARA LOS CHECKBOXES (Esencial para que se marquen)
+// 1. VARIABLE PARA LOS CHECKBOXES
 const movilidadSeleccionada = ref([]);
 
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
@@ -24,18 +24,15 @@ const obtenerHistorial = async () => {
 
 onMounted(() => {
   obtenerHistorial();
-  // 2. CARGAR MOVILIDAD AL INICIAR
   if (arbitro.value.movilidad) {
     movilidadSeleccionada.value = arbitro.value.movilidad.split(',');
   }
 });
 
-// 3. ACTUALIZAR STRING DE MOVILIDAD AL MARCAR CHECKS
 watch(movilidadSeleccionada, (nuevo) => {
   arbitro.value.movilidad = nuevo.join(',');
 });
 
-// 4. LIMPIAR HORARIOS SI NO ES "OTROS" (Para que no queden datos viejos en la DB)
 watch(() => arbitro.value.disponibilidad_sabado, (val) => {
   if (val !== 'OTROS') {
     arbitro.value.disponibilidad_sabado_desde = null;
@@ -94,24 +91,24 @@ const enviarSolicitudManual = async () => {
   <div class="animate__animated animate__fadeIn container py-4 page-bg">
     
     <div class="card shadow border-0 mb-4" style="border-radius: 15px;">
-      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <div>
           <h4 class="text-danger fw-bold m-0">Disponibilidad Horaria</h4>
           <p class="text-muted small m-0">Gestioná tus horarios y actividad deportiva.</p>
         </div>
-        <span :class="edicionAbierta ? 'badge bg-success' : 'badge bg-secondary'" class="px-3 py-2 shadow-sm">
+        <span :class="edicionAbierta ? 'badge bg-success' : 'badge bg-secondary'" class="px-3 py-2 shadow-sm w-fit-mobile">
           {{ edicionAbierta ? 'Edición Abierta' : 'Edición Cerrada' }}
         </span>
       </div>
       
-      <div class="card-body p-4">
+      <div class="card-body p-3 p-md-4">
         <div v-if="mensaje.texto" :class="`alert alert-${mensaje.tipo} mb-4 shadow-sm border-0`" role="alert">
           {{ mensaje.texto }}
         </div>
 
         <h6 class="text-danger fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">Movilidad</h6>
         <div class="row mb-4 border-bottom pb-3">
-          <div class="col-12 d-flex gap-4">
+          <div class="col-12 d-flex flex-wrap gap-3 gap-md-4">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" value="auto" v-model="movilidadSeleccionada" :disabled="!edicionAbierta">
               <label class="form-check-label">Auto</label>
@@ -133,71 +130,71 @@ const enviarSolicitudManual = async () => {
 
         <h6 class="text-danger fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">Sábados</h6>
         <div class="row g-3 mb-4 border-bottom pb-4">
-          <div class="col-md-4">
+          <div class="col-12 col-md-4">
             <label class="form-label small fw-bold text-muted">Disponibilidad</label>
             <select v-if="edicionAbierta" v-model="arbitro.disponibilidad_sabado" class="form-select form-select-sm">
               <option value="NO">NO</option>
               <option value="FT">FT (Full Time)</option>
               <option value="OTROS">OTROS</option>
             </select>
-            <div v-else class="p-2 bg-light rounded fw-bold">{{ arbitro.disponibilidad_sabado }}</div>
+            <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.disponibilidad_sabado }}</div>
           </div>
-          <div v-if="arbitro.disponibilidad_sabado === 'OTROS'" class="col-md-4">
+          <div v-if="arbitro.disponibilidad_sabado === 'OTROS'" class="col-6 col-md-4">
             <label class="form-label small fw-bold text-muted">Desde</label>
             <input v-if="edicionAbierta" v-model="arbitro.disponibilidad_sabado_desde" type="time" class="form-control form-control-sm">
-            <div v-else class="p-2 bg-light rounded fw-bold">{{ arbitro.disponibilidad_sabado_desde || '--:--' }}</div>
+            <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.disponibilidad_sabado_desde || '--:--' }}</div>
           </div>
-          <div v-if="arbitro.disponibilidad_sabado === 'OTROS'" class="col-md-4">
+          <div v-if="arbitro.disponibilidad_sabado === 'OTROS'" class="col-6 col-md-4">
             <label class="form-label small fw-bold text-muted">Hasta</label>
             <input v-if="edicionAbierta" v-model="arbitro.disponibilidad_sabado_hasta" type="time" class="form-control form-control-sm">
-            <div v-else class="p-2 bg-light rounded fw-bold">{{ arbitro.disponibilidad_sabado_hasta || '--:--' }}</div>
+            <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.disponibilidad_sabado_hasta || '--:--' }}</div>
           </div>
         </div>
 
         <h6 class="text-danger fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">Domingos</h6>
         <div class="row g-3 mb-4 border-bottom pb-4">
-          <div class="col-md-4">
+          <div class="col-12 col-md-4">
             <label class="form-label small fw-bold text-muted">Disponibilidad</label>
             <select v-if="edicionAbierta" v-model="arbitro.disponibilidad_domingo" class="form-select form-select-sm">
               <option value="NO">NO</option>
               <option value="FT">FT (Full Time)</option>
               <option value="OTROS">OTROS</option>
             </select>
-            <div v-else class="p-2 bg-light rounded fw-bold">{{ arbitro.disponibilidad_domingo }}</div>
+            <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.disponibilidad_domingo }}</div>
           </div>
-          <div v-if="arbitro.disponibilidad_domingo === 'OTROS'" class="col-md-4">
+          <div v-if="arbitro.disponibilidad_domingo === 'OTROS'" class="col-6 col-md-4">
             <label class="form-label small fw-bold text-muted">Desde</label>
             <input v-if="edicionAbierta" v-model="arbitro.disponibilidad_domingo_desde" type="time" class="form-control form-control-sm">
-            <div v-else class="p-2 bg-light rounded fw-bold">{{ arbitro.disponibilidad_domingo_desde || '--:--' }}</div>
+            <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.disponibilidad_domingo_desde || '--:--' }}</div>
           </div>
-          <div v-if="arbitro.disponibilidad_domingo === 'OTROS'" class="col-md-4">
+          <div v-if="arbitro.disponibilidad_domingo === 'OTROS'" class="col-6 col-md-4">
             <label class="form-label small fw-bold text-muted">Hasta</label>
             <input v-if="edicionAbierta" v-model="arbitro.disponibilidad_domingo_hasta" type="time" class="form-control form-control-sm">
-            <div v-else class="p-2 bg-light rounded fw-bold">{{ arbitro.disponibilidad_domingo_hasta || '--:--' }}</div>
+            <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.disponibilidad_domingo_hasta || '--:--' }}</div>
           </div>
         </div>
 
         <h6 class="text-danger fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">Actividad Deportiva</h6>
         <div class="row g-3 mb-4">
-          <div class="col-md-4">
+          <div class="col-12 col-md-4">
             <label class="form-label small fw-bold text-muted">¿Juega al Handball?</label>
             <select v-if="edicionAbierta" v-model="arbitro.juega_handball" class="form-select form-select-sm">
               <option value="no">NO</option>
               <option value="si">SI</option>
             </select>
-            <div v-else class="p-2 bg-light rounded fw-bold text-uppercase">{{ arbitro.juega_handball }}</div>
+            <div v-else class="p-2 bg-light rounded fw-bold text-uppercase text-dark">{{ arbitro.juega_handball }}</div>
           </div>
-          <div v-if="arbitro.juega_handball === 'si'" class="col-md-4">
+          <div v-if="arbitro.juega_handball === 'si'" class="col-12 col-md-4">
             <label class="form-label small fw-bold text-muted">Club</label>
             <input v-if="edicionAbierta" v-model="arbitro.donde_juega" type="text" class="form-control form-control-sm">
-            <div v-else class="p-2 bg-light rounded fw-bold">{{ arbitro.donde_juega || '-' }}</div>
+            <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.donde_juega || '-' }}</div>
           </div>
-          <div v-if="arbitro.juega_handball === 'si'" class="col-md-4">
+          <div v-if="arbitro.juega_handball === 'si'" class="col-12 col-md-4">
             <label class="form-label small fw-bold text-muted">Categoría</label>
             <input v-if="edicionAbierta" v-model="arbitro.categoria_handball" type="text" class="form-control form-control-sm">
-            <div v-else class="p-2 bg-light rounded fw-bold">{{ arbitro.categoria_handball || '-' }}</div>
+            <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.categoria_handball || '-' }}</div>
           </div>
-          <div class="col-md-12">
+          <div class="col-12">
             <label class="form-label small fw-bold text-muted">Observaciones Generales</label>
             <textarea v-if="edicionAbierta" v-model="arbitro.observaciones" class="form-control form-control-sm" rows="2"></textarea>
             <div v-else class="p-2 bg-light rounded small text-dark">{{ arbitro.observaciones || 'Sin observaciones' }}</div>
@@ -206,15 +203,17 @@ const enviarSolicitudManual = async () => {
 
         <button v-if="edicionAbierta" @click="guardarCambiosDirectos" class="btn btn-success w-100 fw-bold shadow-sm py-2" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
-          ACTUALIZAR DISPONIBILIDAD EN LEGAJO
+          ACTUALIZAR DISPONIBILIDAD
         </button>
       </div>
     </div>
-    <div class="manual-section p-4 rounded-4 shadow-lg mb-5">
+
+    <div class="manual-section p-3 p-md-4 rounded-4 shadow-lg mb-5 mx-auto">
         <div class="text-center text-white-50 mb-4 small">
             <i class="bi bi-shield-lock-fill me-1"></i>
-            Para evitar abusos, todas las solicitudes quedan registradas en tu historial de legajo.
+            Para evitar abusos, todas las solicitudes quedan registradas.
         </div>
+        
         <div class="card border-0 shadow-sm overflow-hidden mb-4" style="border-radius: 12px;">
             <div class="card-header bg-white border-bottom py-2 ps-3">
                 <h6 class="m-0 fw-bold text-dark small">Historial de Solicitudes</h6>
@@ -224,14 +223,14 @@ const enviarSolicitudManual = async () => {
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light">
                             <tr class="x-small text-uppercase text-muted">
-                                <th class="ps-3" style="width: 130px;">Fecha</th>
-                                <th>Mensaje / Motivo</th>
+                                <th class="ps-3" style="width: 110px;">Fecha</th>
+                                <th>Mensaje</th>
                                 <th class="text-center">Estado</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(h, i) in historial" :key="i">
-                                <td class="ps-3 small fw-bold">{{ h.fecha }}</td>
+                                <td class="ps-3 small fw-bold text-dark">{{ h.fecha }}</td>
                                 <td class="small text-dark">{{ h.mensaje_corto || h.mensaje }}</td>
                                 <td class="text-center">
                                     <span class="badge bg-secondary x-small">ENVIADO</span>
@@ -240,24 +239,24 @@ const enviarSolicitudManual = async () => {
                         </tbody>
                     </table>
                 </div>
-                <div v-else class="text-center py-5">
-                    <div class="mb-3">
-                        <i class="bi bi-folder2-open fs-1 text-muted opacity-50"></i>
-                    </div>
-                    <p class="text-muted small px-3">No registras solicitudes previas en tu historial de legajo.</p>
+                <div v-else class="text-center py-4">
+                    <p class="text-muted small m-0">Sin solicitudes previas.</p>
                 </div>
             </div>
         </div>
+
         <div v-if="!edicionAbierta" class="mt-4">
-            <div class="alert alert-info border-0 shadow-sm mb-3 d-flex align-items-center" style="background-color: #e0f7fa; color: #006064; border-radius: 10px;">
-                <i class="bi bi-info-circle-fill me-3 fs-5"></i>
-                <div class="small">
-                    Esta solicitud será enviada a <strong>secretaría y designaciones</strong>. Incluiremos automáticamente tu nombre ({{ arbitro.nombre }} {{ arbitro.apellido }}), ID, Grupo ({{ arbitro.grupo }}) y Subgrupo ({{ arbitro.subgrupo || '-' }}) para agilizar el trámite.
+            <div class="alert alert-info border-0 shadow-sm mb-3 d-flex align-items-center info-mobile" style="background-color: #e0f7fa; color: #006064; border-radius: 10px;">
+                <i class="bi bi-info-circle-fill me-3 fs-5 d-none d-md-block"></i>
+                <div class="x-small-mobile">
+                    Solicitud para <strong>secretaría y designaciones</strong>.
                 </div>
             </div>
-            <div class="p-4 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2);">
+            <div class="p-3 p-md-4 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2);">
                 <h6 class="text-white fw-bold small mb-2 text-uppercase">Informar cambio urgente</h6>
-                <textarea v-model="solicitudManual" class="form-control mb-3 text-white border-secondary" rows="3" placeholder="Detallá aquí tu cambio de disponibilidad..."></textarea>
+                
+                <textarea v-model="solicitudManual" class="form-control mb-3 custom-textarea" rows="3" placeholder="Detallá aquí tu cambio..."></textarea>
+                
                 <button @click="enviarSolicitudManual" class="btn btn-danger w-100 fw-bold py-2 shadow" :disabled="cargando || !solicitudManual">
                     ENVIAR SOLICITUD FORMAL
                 </button>
@@ -266,3 +265,25 @@ const enviarSolicitudManual = async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }
+.manual-section { background-color: #0c1624; border-radius: 1rem; }
+.btn-danger { background-color: #dc2626 !important; border: none; }
+.text-white-50 { color: rgba(255, 255, 255, 0.5) !important; }
+
+/* REGLA SOLICITADA: Fondo blanco, letra negra */
+.custom-textarea {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border: none;
+    border-radius: 8px;
+}
+.custom-textarea::placeholder { color: #6c757d; }
+
+@media (max-width: 768px) {
+    .w-fit-mobile { width: fit-content; }
+    .x-small-mobile { font-size: 0.75rem; }
+    .info-mobile { padding: 0.75rem; }
+}
+</style>
