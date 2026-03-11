@@ -1,5 +1,4 @@
 <script setup>
-/* eslint-disable vue/multi-word-component-names */
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
@@ -85,7 +84,7 @@ const solicitarLicencia = async () => {
     <div class="card shadow p-4 border-0 mb-4">
       <h4 class="text-danger fw-bold mb-3">Solicitar Nueva Licencia</h4>
       <p class="text-muted small mb-3">
-        Recordá que las licencias deben solicitarse con un mínimo de <strong>9 días</strong> de antelación para ser aprobadas automáticamente.
+        Recordá que las licencias deben solicitarse con un mínimo de <strong>9 días</strong> de antelación para ser aprobadas automáticamente y son por día completo. No hay licencias parciales.
       </p>
 
       <div v-if="mensaje.texto" :class="`alert alert-${mensaje.tipo} small py-2 shadow-sm`" role="alert">

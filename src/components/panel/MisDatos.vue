@@ -1,165 +1,243 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 
 const arbitro = ref(JSON.parse(localStorage.getItem('user_aaab') || '{}'));
-
-const passNueva = ref('');
-const passConfirmar = ref('');
-const solicitudCambio = ref(''); // Para el nuevo cuadro de cambios sensibles
+const opciones = ref({ provincias: [], localidades: [] });
+const localidadesFiltradas = ref([]);
 const mensaje = ref({ texto: '', tipo: '' });
 const cargando = ref(false);
+const solicitudCambio = ref('');
 
-const actualizarPassword = async () => {
-  if (passNueva.value.length < 6) {
-    mensaje.value = { texto: "La contraseña debe tener al menos 6 caracteres.", tipo: 'danger' };
-    return;
-  }
-  if (passNueva.value !== passConfirmar.value) {
-    mensaje.value = { texto: "Las contraseñas no coinciden.", tipo: 'danger' };
-    return;
-  }
+// --- LÓGICA DE SEGURIDAD (PASSWORD) ---
+const nuevaPassword = ref('');
+const passwordMensaje = ref({ texto: '', tipo: '' });
 
-  cargando.value = true;
-  try {
-    const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_password.php', {
-      id_arbitro: arbitro.value.id,
-      password: passNueva.value
-    });
-    if (res.data.success) {
-      mensaje.value = { texto: "Contraseña actualizada correctamente.", tipo: 'success' };
-      passNueva.value = ''; passConfirmar.value = '';
-    } else {
-      mensaje.value = { texto: res.data.message, tipo: 'danger' };
+// Control de edición (0 = Cerrado / 1 = Abierto)
+const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
+
+onMounted(async () => {
+    try {
+        const res = await axios.get('https://arbitroshandball.com.ar/api/get_opciones.php');
+        opciones.value = res.data;
+        if (arbitro.value.provincia) {
+            filtrarLocalidades(arbitro.value.provincia);
+        }
+    } catch {
+        console.error("Error al cargar provincias/localidades");
     }
-  } catch {
-    mensaje.value = { texto: "Error al conectar con el servidor.", tipo: 'danger' };
-  } finally {
-    cargando.value = false;
-  }
+});
+
+const filtrarLocalidades = (provId) => {
+    if (!opciones.value.localidades) return;
+    localidadesFiltradas.value = opciones.value.localidades.filter(l => l.provincia_id == provId);
+};
+
+watch(() => arbitro.value.provincia, (nuevoId) => {
+    filtrarLocalidades(nuevoId);
+});
+
+const guardarCambios = async () => {
+    cargando.value = true;
+    try {
+        const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_perfil.php', arbitro.value);
+        if (res.data.success) {
+            mensaje.value = { texto: "Datos actualizados correctamente.", tipo: 'success' };
+            localStorage.setItem('user_aaab', JSON.stringify(arbitro.value));
+        } else {
+            mensaje.value = { texto: res.data.message, tipo: 'danger' };
+        }
+    } catch {
+        mensaje.value = { texto: "Error al conectar con el servidor.", tipo: 'danger' };
+    } finally {
+        cargando.value = false;
+    }
+};
+
+const cambiarPassword = async () => {
+    if (nuevaPassword.value.length < 6) {
+        passwordMensaje.value = { texto: "La contraseña debe tener al menos 6 caracteres.", tipo: 'danger' };
+        return;
+    }
+    cargando.value = true;
+    try {
+        // URL corregida a actualizar_password.php
+        const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_password.php', {
+            id_arbitro: arbitro.value.id,
+            password: nuevaPassword.value
+        });
+        if (res.data.success) {
+            passwordMensaje.value = { texto: "Contraseña actualizada con éxito.", tipo: 'success' };
+            nuevaPassword.value = '';
+        } else {
+            passwordMensaje.value = { texto: res.data.message, tipo: 'danger' };
+        }
+    } catch {
+        passwordMensaje.value = { texto: "Error al actualizar la contraseña.", tipo: 'danger' };
+    } finally {
+        cargando.value = false;
+    }
 };
 
 const enviarSolicitudRectificacion = async () => {
-  if (!solicitudCambio.value.trim()) return;
-  cargando.value = true;
-  try {
-    // Usamos el mismo PHP de disponibilidad o uno similar
-    const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_disponibilidad.php', {
-      id_arbitro: arbitro.value.id,
-      nombre: arbitro.value.nombre,
-      apellido: arbitro.value.apellido,
-      grupo: arbitro.value.grupo,
-      mensaje: "SOLICITUD RECTIFICACIÓN DATOS: " + solicitudCambio.value
-    });
-    if (res.data.success) {
-      mensaje.value = { texto: "Solicitud de rectificación enviada.", tipo: 'success' };
-      solicitudCambio.value = '';
+    if (!solicitudCambio.value.trim()) return;
+    cargando.value = true;
+    try {
+        const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_disponibilidad.php', {
+            id_arbitro: arbitro.value.id,
+            nombre: arbitro.value.nombre,
+            apellido: arbitro.value.apellido,
+            grupo: arbitro.value.grupo,
+            mensaje: "SOLICITUD RECTIFICACIÓN: " + solicitudCambio.value
+        });
+        if (res.data.success) {
+            mensaje.value = { texto: "Solicitud enviada con éxito.", tipo: 'success' };
+            solicitudCambio.value = '';
+        }
+    } catch {
+        mensaje.value = { texto: "Error al enviar solicitud.", tipo: 'danger' };
+    } finally {
+        cargando.value = false;
     }
-  } catch {
-    mensaje.value = { texto: "Error al enviar solicitud.", tipo: 'danger' };
-  } finally {
-    cargando.value = false;
-  }
 };
 </script>
 
 <template>
-  <div class="animate__animated animate__fadeIn">
+  <div class="animate__animated animate__fadeIn container py-4">
     
-    <div class="card shadow border-0 mb-4">
-      <div class="card-header bg-white py-3">
+    <div class="card shadow border-0 overflow-hidden mx-auto" style="border-radius: 15px; max-width: 1000px;">
+      <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
         <h4 class="text-danger fw-bold m-0">Legajo Personal</h4>
+        <span v-if="edicionAbierta" class="badge bg-success px-3 py-2 shadow-sm">Edición Abierta</span>
+        <span v-else class="badge bg-secondary px-3 py-2 shadow-sm">Edición Cerrada</span>
       </div>
-      <div class="card-body">
+
+      <div class="card-body p-4">
         
-        <div v-if="mensaje.texto" :class="`alert alert-${mensaje.tipo} small py-2 mb-4`" role="alert">
+        <div v-if="mensaje.texto" :class="`alert alert-${mensaje.tipo} mb-4 border-0 shadow-sm`" role="alert">
           {{ mensaje.texto }}
         </div>
 
-        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Información Personal</h6>
-        <div class="row g-3 mb-4">
-          <div class="col-md-6">
-            <label class="text-muted x-small d-block text-uppercase">Nombre y Apellido</label>
-            <span class="fw-bold text-dark">{{ arbitro.nombre }} {{ arbitro.apellido }}</span>
-          </div>
-          <div class="col-md-6">
-            <label class="text-muted x-small d-block text-uppercase">DNI</label>
-            <span class="fw-bold text-dark">{{ arbitro.dni }}</span>
-          </div>
-          <div class="col-md-6">
-            <label class="text-muted x-small d-block text-uppercase">Email</label>
-            <span class="fw-bold text-dark">{{ arbitro.email }}</span>
-          </div>
-          <div class="col-md-6">
-            <label class="text-muted x-small d-block text-uppercase">Celular</label>
-            <span class="fw-bold text-dark">{{ arbitro.celular || 'No registrado' }}</span>
-          </div>
-          <div class="col-12">
-            <label class="text-muted x-small d-block text-uppercase">Dirección</label>
-            <span class="fw-bold text-dark">{{ arbitro.direccion || 'No registrada' }}</span>
-          </div>
-        </div>
-
-        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Datos Arbitrales</h6>
-        <div class="row g-3 mb-4">
-          <div class="col-md-6">
-            <label class="text-muted x-small d-block text-uppercase">Grupo / Subgrupo</label>
-            <span class="badge bg-dark">{{ arbitro.grupo }} {{ arbitro.subgrupo ? '- ' + arbitro.subgrupo : '' }}</span>
-          </div>
-          
-          <div v-if="arbitro.juega_handball === 'Si'" class="col-12 mt-3 p-3 bg-light rounded border">
-            <h6 class="fw-bold mb-2 small text-danger text-uppercase">Actividad como Jugador/a</h6>
-            <div class="row">
-              <div class="col-md-6">
-                <label class="text-muted x-small d-block">CLUB</label>
-                <span class="fw-bold text-dark">{{ arbitro.donde_juega }}</span>
-              </div>
-              <div class="col-md-6">
-                <label class="text-muted x-small d-block">CATEGORÍA</label>
-                <span class="fw-bold text-dark">{{ arbitro.categoria_handball }}</span>
-              </div>
+        <div class="row g-4 mb-4 border-bottom pb-4">
+            <div class="col-md-5">
+                <label class="d-block small text-muted mb-1 text-uppercase fw-bold">Nombre y Apellido</label>
+                <span class="fs-5 fw-bold text-dark">{{ arbitro.nombre }} {{ arbitro.apellido }}</span>
             </div>
-          </div>
+            <div class="col-md-3">
+                <label class="d-block small text-muted mb-1 text-uppercase fw-bold">DNI</label>
+                <span class="fs-5 fw-bold text-dark">{{ arbitro.dni }}</span>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <label class="d-block small text-muted mb-1 text-uppercase fw-bold text-md-end">Grupo Arbitral</label>
+                <span class="badge bg-dark fs-6 d-inline-block mt-1">
+                    {{ arbitro.grupo }} {{ arbitro.subgrupo ? '- ' + arbitro.subgrupo : '' }}
+                </span>
+            </div>
         </div>
 
-        <div class="rectificacion-box p-3 rounded mt-4">
-          <h6 class="fw-bold text-dark mb-2 small">Solicitar Rectificación de Datos</h6>
-          <p class="x-small text-muted mb-3">Para modificar DNI, Nombre, Grupo o datos de actividad, solicitalo aquí detallando el motivo.</p>
-          <textarea v-model="solicitudCambio" class="form-control form-control-sm mb-2" rows="3" placeholder="Detallá qué dato querés corregir y por qué..."></textarea>
-          <button @click="enviarSolicitudRectificacion" :disabled="!solicitudCambio" class="btn btn-outline-danger btn-sm w-100 fw-bold">ENVIAR SOLICITUD DE CAMBIO</button>
+        <h6 class="text-danger fw-bold text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Información de contacto</h6>
+        <div class="row g-3 mb-5">
+            <div class="col-md-3">
+                <label class="small text-muted mb-1 d-block">Fecha de Nacimiento</label>
+                <span class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.fecha_nacimiento }}</span>
+            </div>
+            <div class="col-md-5">
+                <label class="small text-muted mb-1 d-block">Email</label>
+                <input v-if="edicionAbierta" v-model="arbitro.email" type="email" class="form-control form-control-sm">
+                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded" style="word-break: break-all;">{{ arbitro.email }}</span>
+            </div>
+            <div class="col-md-4">
+                <label class="small text-muted mb-1 d-block">Celular</label>
+                <input v-if="edicionAbierta" v-model="arbitro.celular" type="text" class="form-control form-control-sm">
+                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.celular }}</span>
+            </div>
+            <div class="col-md-12">
+                <label class="small text-muted mb-1 d-block">Dirección Residencial</label>
+                <input v-if="edicionAbierta" v-model="arbitro.direccion" type="text" class="form-control form-control-sm">
+                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.direccion }}</span>
+            </div>
+            <div class="col-md-6">
+                <label class="small text-muted mb-1 d-block">Provincia</label>
+                <select v-if="edicionAbierta" v-model="arbitro.provincia" class="form-select form-select-sm">
+                    <option v-for="p in opciones.provincias" :key="p.id" :value="p.id">{{ p.nombre }}</option>
+                </select>
+                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.nombre_provincia }}</span>
+            </div>
+            <div class="col-md-6">
+                <label class="small text-muted mb-1 d-block">Localidad</label>
+                <select v-if="edicionAbierta" v-model="arbitro.localidad" class="form-select form-select-sm">
+                    <option v-for="l in localidadesFiltradas" :key="l.id" :value="l.id">{{ l.nombre }}</option>
+                </select>
+                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.nombre_localidad }}</span>
+            </div>
         </div>
 
+        <h6 class="text-danger fw-bold text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Contacto de Emergencia</h6>
+        <div class="row g-3 border-bottom pb-5">
+            <div class="col-md-6">
+                <label class="small text-muted mb-1 d-block">Tel. de Emergencia</label>
+                <input v-if="edicionAbierta" v-model="arbitro.telefonocontacto" type="text" class="form-control form-control-sm">
+                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.telefonocontacto }}</span>
+            </div>
+            <div class="col-md-6">
+                <label class="small text-muted mb-1 d-block">Parentesco</label>
+                <input v-if="edicionAbierta" v-model="arbitro.parentescocontacto" type="text" class="form-control form-control-sm">
+                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.parentescocontacto }}</span>
+            </div>
+        </div>
+
+        <h6 class="text-danger fw-bold text-uppercase mb-3 mt-4" style="font-size: 0.8rem; letter-spacing: 1px;">Seguridad</h6>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-8">
+                <label class="small text-muted mb-1 d-block">Nueva Contraseña</label>
+                <input v-model="nuevaPassword" type="password" class="form-control form-control-sm" placeholder="Escribí tu nueva clave aquí">
+            </div>
+            <div class="col-md-4">
+                <button @click="cambiarPassword" class="btn btn-dark btn-sm w-100 fw-bold py-2 shadow-sm" :disabled="cargando || !nuevaPassword">
+                    ACTUALIZAR CLAVE
+                </button>
+            </div>
+            <div v-if="passwordMensaje.texto" class="col-12 mt-2">
+                <div :class="`alert alert-${passwordMensaje.tipo} py-2 small border-0 mb-0 shadow-sm`" role="alert">
+                    {{ passwordMensaje.texto }}
+                </div>
+            </div>
+        </div>
+
+        <div v-if="edicionAbierta" class="mt-5 pt-3 border-top text-end">
+            <button @click="guardarCambios" class="btn btn-success fw-bold px-5 shadow-sm" :disabled="cargando">
+                <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
+                GUARDAR CAMBIOS EN LEGAJO
+            </button>
+        </div>
       </div>
     </div>
 
-    <div class="card shadow border-0">
-      <div class="card-header bg-white py-3">
-        <h5 class="fw-bold m-0 text-dark">Seguridad</h5>
-      </div>
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label small fw-bold">Nueva Contraseña</label>
-            <input type="password" v-model="passNueva" class="form-control form-control-sm">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label small fw-bold">Confirmar</label>
-            <input type="password" v-model="passConfirmar" class="form-control form-control-sm">
-          </div>
-          <div class="col-12">
-            <button @click="actualizarPassword" :disabled="cargando" class="btn btn-dark btn-sm px-4">ACTUALIZAR CLAVE</button>
-          </div>
+    <div v-if="!edicionAbierta" class="manual-section p-4 rounded-4 shadow-lg mt-4 mx-auto" style="max-width: 1000px;">
+        <div class="text-center text-white-50 mb-3 small">
+            <i class="bi bi-info-circle-fill me-1"></i>
+            La edición directa está cerrada. Podés enviar una solicitud formal aquí.
         </div>
-      </div>
+        <div class="p-4 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2);">
+            <h6 class="text-white fw-bold small mb-2 text-uppercase">Solicitar Rectificación</h6>
+            <p class="x-small text-white-50 mb-3">Si necesitás corregir datos personales, detallalo a continuación para secretaría.</p>
+            <textarea v-model="solicitudCambio" class="form-control mb-3 text-white border-secondary bg-dark" rows="3" placeholder="Detallá el cambio necesario..."></textarea>
+            <button @click="enviarSolicitudRectificacion" class="btn btn-danger w-100 fw-bold py-2 shadow" :disabled="cargando || !solicitudCambio">
+                ENVIAR SOLICITUD DE CAMBIO
+            </button>
+        </div>
     </div>
-
   </div>
 </template>
 
 <style scoped>
-.card { border-radius: 15px; }
-.x-small { font-size: 0.65rem; letter-spacing: 0.5px; }
-.rectificacion-box { background-color: #fffbeb; border: 1px solid #fef3c7; }
-.text-danger { color: #dc2626 !important; }
-.form-control:focus { border-color: #dc2626; box-shadow: 0 0 0 0.25rem rgba(220, 38, 38, 0.1); }
+.form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }
+.x-small { font-size: 0.75rem; }
+.badge { letter-spacing: 1px; }
+.manual-section { background-color: #0c1624; border-radius: 1rem; }
+.bg-dark { background-color: #1a1a1a !important; color: white !important; }
+.form-control.text-white::placeholder { color: rgba(255,255,255,0.4); }
+.form-control.text-white:focus { background-color: #1a1a1a; border-color: #dc2626; box-shadow: 0 0 0 0.25rem rgba(220, 38, 38, 0.25); color: white; }
+.btn-danger { background-color: #dc2626 !important; border: none; }
+.text-white-50 { color: rgba(255, 255, 255, 0.5) !important; }
 </style>

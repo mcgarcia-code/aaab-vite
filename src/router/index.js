@@ -82,7 +82,7 @@ const routes = [
       {
         path: 'disponibilidad',
         name: 'PanelDisponibilidad',
-        component: () => import('../components/panel/Disponibilidad.vue')
+        component: () => import('../components/panel/PanelDisponibilidad.vue')
       },
       {
         path: 'sanciones',
