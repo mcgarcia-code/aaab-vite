@@ -59,13 +59,18 @@ const cambiarPassword = async () => {
         passwordMensaje.value = { texto: "La contraseña debe tener al menos 6 caracteres.", tipo: 'danger' };
         return;
     }
+    
     cargando.value = true;
+    passwordMensaje.value = { texto: '', tipo: '' };
+
     try {
         const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_password.php', {
             id_arbitro: arbitro.value.id,
             password: nuevaPassword.value
         });
+
         if (res.data.success) {
+            // Mensaje de éxito solicitado
             passwordMensaje.value = { texto: "Contraseña actualizada con éxito.", tipo: 'success' };
             nuevaPassword.value = '';
         } else {
@@ -118,19 +123,28 @@ const enviarSolicitudRectificacion = async () => {
         </div>
 
         <div class="row g-4 mb-4 border-bottom pb-4">
-            <div class="col-12 col-md-5">
+            <div class="col-12 col-md-4">
                 <label class="d-block small text-muted mb-1 text-uppercase fw-bold">Nombre y Apellido</label>
                 <span class="fs-5 fw-bold text-dark">{{ arbitro.nombre }} {{ arbitro.apellido }}</span>
             </div>
-            <div class="col-12 col-md-3">
+            <div class="col-12 col-md-2">
                 <label class="d-block small text-muted mb-1 text-uppercase fw-bold">DNI</label>
                 <span class="fs-5 fw-bold text-dark">{{ arbitro.dni }}</span>
             </div>
-            <div class="col-12 col-md-4 text-md-end">
-                <label class="d-block small text-muted mb-1 text-uppercase fw-bold text-md-end">Grupo Arbitral</label>
-                <span class="badge bg-dark fs-6 d-inline-block mt-1">
-                    {{ arbitro.grupo }} {{ arbitro.subgrupo ? '- ' + arbitro.subgrupo : '' }}
-                </span>
+            <div class="col-12 col-md-6 text-md-end">
+                <label class="d-block small text-muted mb-1 text-uppercase fw-bold text-md-end">Grupo Arbitral y Estado</label>
+                <div class="d-flex flex-wrap justify-content-md-end gap-2 align-items-center mt-1">
+                    <span class="badge bg-dark fs-6">
+                        {{ arbitro.grupo }} {{ arbitro.subgrupo ? '- ' + arbitro.subgrupo : '' }}
+                    </span>
+                    
+                    <span v-if="arbitro.es_activo == 1" class="status-pill status-active">
+                        <i class="bi bi-check-circle-fill"></i> En actividad
+                    </span>
+                    <span v-else class="status-pill status-inactive">
+                        <i class="bi bi-x-circle-fill"></i> Inactivo
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -193,11 +207,15 @@ const enviarSolicitudRectificacion = async () => {
             </div>
             <div class="col-12 col-md-4">
                 <button @click="cambiarPassword" class="btn btn-dark btn-sm w-100 fw-bold py-2 shadow-sm" :disabled="cargando || !nuevaPassword">
+                    <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
                     ACTUALIZAR CLAVE
                 </button>
             </div>
-            <div v-if="passwordMensaje.texto" class="col-12 mt-2">
-                <div :class="`alert alert-${passwordMensaje.tipo} py-2 small border-0 mb-0 shadow-sm`" role="alert">
+            
+            <div v-if="passwordMensaje.texto" class="col-12 mt-3">
+                <div :class="`alert alert-${passwordMensaje.tipo} py-2 px-3 small border-0 mb-0 shadow-sm d-flex align-items-center animate__animated animate__fadeInUp`" role="alert">
+                    <i v-if="passwordMensaje.tipo === 'success'" class="bi bi-check-circle-fill me-2 fs-6"></i>
+                    <i v-else class="bi bi-exclamation-triangle-fill me-2 fs-6"></i>
                     {{ passwordMensaje.texto }}
                 </div>
             </div>
@@ -254,7 +272,6 @@ const enviarSolicitudRectificacion = async () => {
     border-radius: 1rem;
 }
 
-/* REGLA SOLICITADA: Fondo blanco, letra negra */
 .custom-textarea {
     background-color: #ffffff !important;
     color: #000000 !important;
@@ -274,7 +291,43 @@ const enviarSolicitudRectificacion = async () => {
     color: rgba(255, 255, 255, 0.5) !important; 
 }
 
-/* Ajustes Responsive */
+/* ESTILOS PARA EL STATUS PILL */
+.status-pill {
+    font-size: 0.85rem;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.status-active {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.status-active i {
+    color: #22c55e;
+}
+
+.status-inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.status-inactive i {
+    color: #ef4444;
+}
+
+/* Animación para el cartel de password */
+.animate__fadeInUp {
+    animation-duration: 0.5s;
+}
+
 @media (max-width: 768px) {
     .w-fit-mobile {
         width: fit-content;

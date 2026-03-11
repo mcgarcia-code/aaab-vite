@@ -6,11 +6,11 @@ import { RouterLink } from 'vue-router';
   <div class="row g-3 animate__animated animate__fadeIn">
     
     <div class="col-md-6">
-      <RouterLink to="/panel-arbitro/licencia" class="text-decoration-none">
+      <RouterLink to="/panel-arbitro/datos" class="text-decoration-none">
         <div class="menu-card shadow">
-          <i class="bi bi-calendar-check fs-1 text-danger"></i>
-          <h5 class="mt-2 fw-bold text-dark">Solicitar Licencia</h5>
-          <p class="small text-muted m-0">Inasistencias con 9 días de antelación.</p>
+          <i class="bi bi-person-lines-fill fs-1 text-danger"></i>
+          <h5 class="mt-2 fw-bold text-dark">Datos Personales</h5>
+          <p class="small text-muted m-0">Ver legajo y cambiar contraseña.</p>
         </div>
       </RouterLink>
     </div>
@@ -26,11 +26,11 @@ import { RouterLink } from 'vue-router';
     </div>
 
     <div class="col-md-6">
-      <RouterLink to="/panel-arbitro/datos" class="text-decoration-none">
+      <RouterLink to="/panel-arbitro/licencia" class="text-decoration-none">
         <div class="menu-card shadow">
-          <i class="bi bi-person-lines-fill fs-1 text-danger"></i>
-          <h5 class="mt-2 fw-bold text-dark">Datos Personales</h5>
-          <p class="small text-muted m-0">Ver legajo y cambiar contraseña.</p>
+          <i class="bi bi-calendar-check fs-1 text-danger"></i>
+          <h5 class="mt-2 fw-bold text-dark">Solicitar Licencia</h5>
+          <p class="small text-muted m-0">Inasistencias con 9 días de antelación.</p>
         </div>
       </RouterLink>
     </div>

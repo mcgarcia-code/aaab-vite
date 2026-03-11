@@ -7,33 +7,29 @@ const arbitros = ref([]);
 const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
 const filtros = reactive({}); 
 
-// --- LÓGICA DE FECHAS (Visualización y Edición) ---
+// --- LÓGICA DE FECHAS ---
 const mostrarFechaArg = (fecha) => {
   if (!fecha) return '';
-  // Si la fecha viene de la DB como 1984-07-05, la mostramos como 05/07/1984
   const partes = fecha.split('-');
   if (partes.length !== 3) return fecha;
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
 };
 
-
 const procesarEntradaFecha = (valor, arbitro) => {
-  // Solo procesamos si el usuario terminó de escribir (10 caracteres: DD/MM/AAAA)
   if (valor.length === 10) {
     const partes = valor.split('/');
     if (partes.length === 3) {
       const [d, m, y] = partes;
-      // Guardamos el formato ISO que el hosting necesita (YYYY-MM-DD)
       arbitro.fecha_nacimiento = `${y}-${m}-${d}`;
     }
   }
 };
 
 const exportarExcel = () => {
-  // Mapeamos los datos para que el Excel salga con la fecha en formato Argentino
   const datosParaExcel = arbitrosFiltrados.value.map(a => ({
     ...a,
-    fecha_nacimiento: mostrarFechaArg(a.fecha_nacimiento)
+    fecha_nacimiento: mostrarFechaArg(a.fecha_nacimiento),
+    es_activo: a.es_activo == 1 ? 'SI' : 'NO'
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(datosParaExcel);
@@ -55,7 +51,8 @@ const crearNuevo = () => {
   arbitros.value.unshift({
     apellido: '', nombre: '', grupo: '', subgrupo: '', dni: '', email: '', 
     direccion: '', provincia: '', localidad: '', zona: '', celular: '',
-    fecha_nacimiento: '', observaciones: ''
+    fecha_nacimiento: '', observaciones: '',
+    es_activo: 1 
   });
 };
 
@@ -99,38 +96,40 @@ onMounted(cargarDatos);
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <div class="admin-panel">
-    <div class="header-section">
-      <h2 class="title">Gestión de Base de Datos - Árbitros</h2>
-
-      <div class="counter-badge">
-        Total Árbitros: <strong>{{ totalFiltrados }}</strong>
+  <div class="admin-panel animate__animated animate__fadeIn">
+    <div class="header-section shadow-sm">
+      <div class="title-wrapper">
+        <h2 class="title">Gestión de Árbitros</h2>
+        <div class="counter-badge">
+          TOTAL: {{ totalFiltrados }} <small>Árbitros</small>
+        </div>
       </div>
 
       <div class="header-actions">
-        <button @click="guardarTodo" class="btn-save-all">
-          <span class="material-icons">save</span> Guardar Cambios
+        <button @click="guardarTodo" class="btn-action btn-save">
+          <span class="material-icons">save</span> Guardar
         </button>
-        <button @click="crearNuevo" class="btn-new">
-          <span class="material-icons">person_add</span> Agregar Nuevo Árbitro
+        <button @click="crearNuevo" class="btn-action btn-new">
+          <span class="material-icons">person_add</span> Nuevo
         </button>
-        <button @click="exportarExcel" class="btn-export">
-          <span class="material-icons">download</span> Exportar Excel
+        <button @click="exportarExcel" class="btn-action btn-export">
+          <span class="material-icons">download</span> Excel
         </button>
       </div>
     </div>
 
-    <div class="table-container">
+    <div class="table-container shadow">
       <table>
         <thead>
           <tr>
             <th class="sticky-col col-acciones">Acciones</th>
             <th class="sticky-col col-id">ID</th>
+            <th class="col-xs-compact">Activo</th> 
             <th class="sticky-col col-apellido">Apellido</th>
             <th class="sticky-col col-nombre">Nombre</th>
-            <th class="col-xs">Grupo</th>
-            <th class="col-xs">Subg.</th>
-            <th class="col-dni">DNI</th>
+            <th class="col-xs-compact">Grupo</th>
+            <th class="col-xs-compact">Subg.</th>
+            <th class="col-dni-compact">DNI</th>
             <th>Email</th><th>Dirección</th><th>Provincia</th><th>Localidad</th><th>Zona</th>
             <th>Celular</th><th>F. Nacimiento</th><th>Tel. Contacto</th><th>Parentesco</th>
             <th>Movilidad</th><th>Sáb. Disp</th><th>Sáb. Desde</th><th>Sáb. Hasta</th>
@@ -140,31 +139,32 @@ onMounted(cargarDatos);
           <tr class="filter-row">
             <td class="sticky-col col-acciones"></td>
             <td class="sticky-col col-id"></td>
-            <td class="sticky-col col-apellido"><input v-model="filtros.apellido" placeholder=".."></td>
-            <td class="sticky-col col-nombre"><input v-model="filtros.nombre" placeholder=".."></td>
-            <td class="col-xs"><input v-model="filtros.grupo"></td>
-            <td class="col-xs"><input v-model="filtros.subgrupo"></td>
-            <td class="col-dni"><input v-model="filtros.dni"></td>
-            <td><input v-model="filtros.email" placeholder=".."></td>
-            <td><input v-model="filtros.direccion" placeholder=".."></td>
-            <td><input v-model="filtros.provincia" placeholder=".."></td>
-            <td><input v-model="filtros.localidad" placeholder=".."></td>
-            <td><input v-model="filtros.zona" placeholder=".."></td>
-            <td><input v-model="filtros.celular" placeholder=".."></td>
-            <td><input v-model="filtros.fecha_nacimiento" placeholder=".."></td>
-            <td><input v-model="filtros.telefonocontacto" placeholder=".."></td>
-            <td><input v-model="filtros.parentescocontacto" placeholder=".."></td>
-            <td><input v-model="filtros.movilidad" placeholder=".."></td>
-            <td><input v-model="filtros.disponibilidad_sabado" placeholder=".."></td>
-            <td><input v-model="filtros.disponibilidad_sabado_desde" placeholder=".."></td>
-            <td><input v-model="filtros.disponibilidad_sabado_hasta" placeholder=".."></td>
-            <td><input v-model="filtros.disponibilidad_domingo" placeholder=".."></td>
-            <td><input v-model="filtros.disponibilidad_domingo_desde" placeholder=".."></td>
-            <td><input v-model="filtros.disponibilidad_domingo_hasta" placeholder=".."></td>
-            <td><input v-model="filtros.juega_handball" placeholder=".."></td>
-            <td><input v-model="filtros.donde_juega" placeholder=".."></td>
-            <td><input v-model="filtros.categoria_handball" placeholder=".."></td>
-            <td><input v-model="filtros.observaciones" placeholder=".."></td>
+            <td class="col-xs-compact"><input v-model="filtros.es_activo" class="filter-input text-center" placeholder="1/0"></td>
+            <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar.."></td>
+            <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar.."></td>
+            <td class="col-xs-compact"><input v-model="filtros.grupo" class="filter-input text-center"></td>
+            <td class="col-xs-compact"><input v-model="filtros.subgrupo" class="filter-input text-center"></td>
+            <td class="col-dni-compact"><input v-model="filtros.dni" class="filter-input text-center"></td>
+            <td><input v-model="filtros.email" class="filter-input"></td>
+            <td><input v-model="filtros.direccion" class="filter-input"></td>
+            <td><input v-model="filtros.provincia" class="filter-input"></td>
+            <td><input v-model="filtros.localidad" class="filter-input"></td>
+            <td><input v-model="filtros.zona" class="filter-input"></td>
+            <td><input v-model="filtros.celular" class="filter-input"></td>
+            <td><input v-model="filtros.fecha_nacimiento" class="filter-input"></td>
+            <td><input v-model="filtros.telefonocontacto" class="filter-input"></td>
+            <td><input v-model="filtros.parentescocontacto" class="filter-input"></td>
+            <td><input v-model="filtros.movilidad" class="filter-input"></td>
+            <td><input v-model="filtros.disponibilidad_sabado" class="filter-input"></td>
+            <td><input v-model="filtros.disponibilidad_sabado_desde" class="filter-input"></td>
+            <td><input v-model="filtros.disponibilidad_sabado_hasta" class="filter-input"></td>
+            <td><input v-model="filtros.disponibilidad_domingo" class="filter-input"></td>
+            <td><input v-model="filtros.disponibilidad_domingo_desde" class="filter-input"></td>
+            <td><input v-model="filtros.disponibilidad_domingo_hasta" class="filter-input"></td>
+            <td><input v-model="filtros.juega_handball" class="filter-input"></td>
+            <td><input v-model="filtros.donde_juega" class="filter-input"></td>
+            <td><input v-model="filtros.categoria_handball" class="filter-input"></td>
+            <td><input v-model="filtros.observaciones" class="filter-input"></td>
           </tr>
         </thead>
         <tbody>
@@ -172,51 +172,63 @@ onMounted(cargarDatos);
             v-for="a in arbitrosFiltrados" 
             :key="a.id || Math.random()"
             :class="{ 
-            'fila-licencia-aprobada': a.tiene_aprobada > 0,
-            'fila-licencia-rechazada': a.tiene_aprobada == 0 && a.tiene_rechazada > 0 
+              'fila-licencia-aprobada': a.tiene_aprobada > 0,
+              'fila-licencia-rechazada': a.tiene_aprobada == 0 && a.tiene_rechazada > 0,
+              'fila-inactiva': a.es_activo == 0
             }"
+            :title="a.tiene_aprobada > 0 ? 'LICENCIA APROBADA PARA EL: ' + mostrarFechaArg(a.fecha_licencia_aprobada) : 
+                    (a.tiene_rechazada > 0 ? 'LICENCIA RECHAZADA PARA EL: ' + mostrarFechaArg(a.fecha_licencia_rechazada) : 
+                    (a.es_activo == 0 ? 'ÁRBITRO INACTIVO' : ''))"
           >
-    <td class="sticky-col col-acciones cell-actions">
-      <button @click="eliminar(a.id)" class="btn-table btn-delete" v-if="a.id" title="Eliminar">
-        <span class="material-icons">delete</span>
-      </button>
-      <span v-else class="new-tag">NUEVO</span>
-    </td>
+            <td class="sticky-col col-acciones cell-actions">
+              <button @click="eliminar(a.id)" class="btn-table btn-delete" v-if="a.id" title="Eliminar">
+                <span class="material-icons">delete</span>
+              </button>
+              <span v-else class="new-tag">NUEVO</span>
+            </td>
             <td class="sticky-col col-id">{{ a.id || '-' }}</td>
-            <td class="sticky-col col-apellido"><input v-model="a.apellido"></td>
-            <td class="sticky-col col-nombre"><input v-model="a.nombre"></td>
-            <td class="col-xs"><input v-model="a.grupo" class="small-input"></td>
-            <td class="col-xs"><input v-model="a.subgrupo" class="small-input"></td>
-            <td class="col-dni"><input v-model="a.dni"></td>
-            <td><input v-model="a.email"></td>
-            <td><input v-model="a.direccion"></td>
-            <td><input v-model="a.provincia"></td>
-            <td><input v-model="a.localidad"></td>
-            <td><input v-model="a.zona"></td>
-            <td><input v-model="a.celular"></td>
+            
+            <td class="col-xs-compact">
+              <select v-model="a.es_activo" class="small-select select-compact">
+                <option :value="1">SI</option>
+                <option :value="0">NO</option>
+              </select>
+            </td>
+
+            <td class="sticky-col col-apellido"><input v-model="a.apellido" class="edit-input"></td>
+            <td class="sticky-col col-nombre"><input v-model="a.nombre" class="edit-input"></td>
+            <td class="col-xs-compact"><input v-model="a.grupo" class="edit-input text-center"></td>
+            <td class="col-xs-compact"><input v-model="a.subgrupo" class="edit-input text-center"></td>
+            <td class="col-dni-compact"><input v-model="a.dni" class="edit-input text-center"></td>
+            <td><input v-model="a.email" class="edit-input"></td>
+            <td><input v-model="a.direccion" class="edit-input"></td>
+            <td><input v-model="a.provincia" class="edit-input" readonly title="Se edita desde el Legajo"></td>
+            <td><input v-model="a.localidad" class="edit-input" readonly title="Se edita desde el Legajo"></td>
+            <td><input v-model="a.zona" class="edit-input" readonly title="Se edita desde el Legajo"></td>
+            <td><input v-model="a.celular" class="edit-input"></td>
             <td>
               <input 
                 type="text" 
                 :value="mostrarFechaArg(a.fecha_nacimiento)" 
                 @input="e => procesarEntradaFecha(e.target.value, a)"
                 placeholder="DD/MM/AAAA"
-                class="input-fecha-directo"
+                class="edit-input input-fecha-directo"
                 maxlength="10"
               >
             </td>
-            <td><input v-model="a.telefonocontacto"></td>
-            <td><input v-model="a.parentescocontacto"></td>
-            <td><input v-model="a.movilidad"></td>
-            <td><input v-model="a.disponibilidad_sabado"></td>
-            <td><input type="time" v-model="a.disponibilidad_sabado_desde"></td>
-            <td><input type="time" v-model="a.disponibilidad_sabado_hasta"></td>
-            <td><input v-model="a.disponibilidad_domingo"></td>
-            <td><input type="time" v-model="a.disponibilidad_domingo_desde"></td>
-            <td><input type="time" v-model="a.disponibilidad_domingo_hasta"></td>
-            <td><input v-model="a.juega_handball"></td>
-            <td><input v-model="a.donde_juega"></td>
-            <td><input v-model="a.categoria_handball"></td>
-            <td><textarea v-model="a.observaciones"></textarea></td>
+            <td><input v-model="a.telefonocontacto" class="edit-input"></td>
+            <td><input v-model="a.parentescocontacto" class="edit-input"></td>
+            <td><input v-model="a.movilidad" class="edit-input"></td>
+            <td><input v-model="a.disponibilidad_sabado" class="edit-input"></td>
+            <td><input type="time" v-model="a.disponibilidad_sabado_desde" class="edit-input"></td>
+            <td><input type="time" v-model="a.disponibilidad_sabado_hasta" class="edit-input"></td>
+            <td><input v-model="a.disponibilidad_domingo" class="edit-input"></td>
+            <td><input type="time" v-model="a.disponibilidad_domingo_desde" class="edit-input"></td>
+            <td><input type="time" v-model="a.disponibilidad_domingo_hasta" class="edit-input"></td>
+            <td><input v-model="a.juega_handball" class="edit-input"></td>
+            <td><input v-model="a.donde_juega" class="edit-input"></td>
+            <td><input v-model="a.categoria_handball" class="edit-input"></td>
+            <td><textarea v-model="a.observaciones" class="edit-textarea"></textarea></td>
           </tr>
         </tbody>
       </table>
@@ -225,168 +237,66 @@ onMounted(cargarDatos);
 </template>
 
 <style scoped>
-.admin-panel { padding: 15px; background: #fff; font-family: sans-serif; }
+.admin-panel { padding: 25px; background: #f8fafc; font-family: 'Segoe UI', Roboto, sans-serif; min-height: 100vh; }
 .material-icons { font-size: 18px; }
 
-.header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.header-actions { display: flex; gap: 10px; }
-
-.btn-new, .btn-save-all { 
-  background-color: #dc3545; color: white; border: none; padding: 8px 15px; 
-  border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: bold; font-size: 11px;
-}
-.btn-save-all { background-color: #3b82f6; transition: background 0.3s; }
-.btn-save-all:hover { background-color: #2c3e50; }
-.btn-new:hover { background-color: #2c3e50; }
-
-.table-container { 
-  overflow: auto; 
-  max-height: 75vh; 
-  border: 1px solid #ddd; 
-  width: 100%;
+.header-section { 
+  background: #ffffff; padding: 15px 25px; border-radius: 12px; 
+  display: flex; justify-content: space-between; align-items: center; 
+  margin-bottom: 25px; border: 1px solid #e2e8f0;
 }
 
+.title-wrapper { display: flex; align-items: center; gap: 15px; }
+.title { font-size: 1.4rem; font-weight: 700; color: #1e293b; margin: 0; }
+.counter-badge { background: #f1f5f9; padding: 5px 12px; border-radius: 8px; color: #ef4444; font-weight: 800; border: 1px solid #e2e8f0; font-size: 1rem; }
+.header-actions { display: flex; gap: 12px; }
+
+.btn-action { 
+  border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; 
+  display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.8rem;
+  transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.btn-save { background-color: #3b82f6; color: white; }
+.btn-new { background-color: #ef4444; color: white; }
+.btn-export { background-color: #10b981; color: white; }
+
+.table-container { overflow: auto; max-height: 70vh; background: white; border-radius: 12px; border: 1px solid #e2e8f0; }
 table { width: max-content; border-collapse: separate; border-spacing: 0; }
 
-.sticky-col { position: sticky !important; z-index: 10; background: white !important; border-right: 1px solid #ddd !important; }
-.col-acciones { left: 0; width: 80px; }
-.col-id { left: 80px; width: 45px; }
-.col-apellido { left: 125px; width: 140px; }
-.col-nombre { left: 265px; width: 140px; box-shadow: 3px 0 5px -2px rgba(0,0,0,0.1); }
+.sticky-col { position: sticky !important; z-index: 10; background: white !important; border-right: 1px solid #f1f5f9 !important; }
+.col-acciones { left: 0; width: 60px; text-align: center; }
+.col-id { left: 60px; width: 40px; text-align: center; color: #64748b; font-weight: 600; }
+.col-apellido { left: 100px; width: 140px; }
+.col-nombre { left: 240px; width: 140px; box-shadow: 4px 0 6px -4px rgba(0,0,0,0.1); }
 
-.col-xs { width: 45px; min-width: 45px; }
-.col-dni { width: 85px; min-width: 85px; }
+/* CLASES COMPACTAS SOLICITADAS */
+.col-xs-compact { width: 45px; min-width: 45px; text-align: center; }
+.col-dni-compact { width: 85px; min-width: 85px; text-align: center; }
 
-th { background: #2c3e50; color: white; padding: 8px; position: sticky; top: 0; z-index: 20; font-size: 10px; text-transform: uppercase; }
-th.sticky-col { z-index: 30; background: #2c3e50 !important; }
+th { background: #f8fafc; color: #475569; padding: 12px 10px; position: sticky; top: 0; z-index: 20; font-size: 0.7rem; text-transform: uppercase; font-weight: 700; border-bottom: 2px solid #e2e8f0; }
+th.sticky-col { z-index: 30; background: #f8fafc !important; }
 
-.filter-row td { top: 31px; position: sticky; z-index: 25; background: #f9f9f9 !important; padding: 3px; }
-.filter-row input { font-size: 10px; height: 22px; border: 1px solid #3b82f6; }
+.filter-row td { top: 43px; position: sticky; z-index: 25; background: #f8fafc !important; padding: 5px; }
+.filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; width: 100%; transition: border-color 0.2s; }
+.text-center { text-align: center; }
 
-td { 
-  padding: 3px 5px; 
-  border-bottom: 1px solid #eee; 
-  border-right: 1px solid #eee; 
-  font-size: 11px;
-  vertical-align: top;
-}
+td { padding: 4px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 
-input { width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 2px; font-size: 11px; height: 26px; }
+.edit-input, .small-select { width: 100%; padding: 6px; border: 1px solid transparent; border-radius: 6px; font-size: 0.8rem; background: transparent; color: #334155; transition: all 0.2s; }
+.edit-input:focus { background: white; border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+.select-compact { padding: 0; font-size: 0.75rem; height: 26px; }
 
-.input-fecha-directo {
-  width: 100px;
-  text-align: center;
-  border: 1px solid #ddd; /* Ahora es gris como los demás */
-  font-weight: normal;    /* Le quité el negrita para que sea idéntico */
-  color: inherit;
-  background: white;
-}
+.edit-textarea { width: 300px; height: 32px; border: 1px solid transparent; border-radius: 6px; font-size: 0.75rem; padding: 6px; resize: none; background: transparent; }
+.edit-textarea:focus { height: 100px; width: 350px; background: white; border-color: #3b82f6; outline: none; }
 
-textarea { 
-  width: 500px; 
-  min-height: 40px; 
-  height: auto; 
-  resize: vertical; 
-  border: 1px solid #ddd; 
-  font-size: 11px;
-  padding: 4px;
-  display: block;
-}
+.btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 6px; border-radius: 6px; cursor: pointer; }
+.new-tag { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 0.65rem; }
 
-textarea:focus { 
-  width: 350px; 
-  height: 120px; 
-  border-color: #3b82f6; 
-  box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
-  overflow-y: auto; 
-  outline: none; 
-  position: relative;
-  z-index: 100; 
-}
+tbody tr:hover td, tbody tr:hover .sticky-col { background-color: #f1f5f9 !important; }
 
-.btn-delete { background: #94a3b8; color: white; border: none; padding: 4px; border-radius: 3px; cursor: pointer; display: flex; }
-.btn-delete:hover { background: #dc3545; }
-.new-tag { color: #27ae60; font-weight: bold; font-size: 9px; }
-
-/* Filas Intercaladas */
-tbody tr:nth-child(odd) td {
-  background-color: #e2e8f0; 
-  border-bottom: 1px solid #cbd5e1;
-}
-tbody tr:nth-child(odd) .sticky-col {
-  background-color: #e2e8f0 !important;
-  border-right: 1px solid #cbd5e1 !important;
-}
-tbody tr:nth-child(even) td,
-tbody tr:nth-child(even) .sticky-col {
-  background-color: #ffffff !important;
-}
-
-/* Hover Effect */
-tbody tr:hover td, 
-tbody tr:hover .sticky-col {
-  background-color: #5a8fe5 !important; 
-  color: white;
-}
-tbody tr:hover input {
-  background-color: white !important;
-  color: #000;
-}
-
-.counter-badge {
-  background: #f1f5f9;
-  padding: 8px 15px;
-  border-radius: 4px;
-  color: #2c3e50;
-  font-weight: bold;
-  border: 1px solid #cbd5e1;
-}
-
-.btn-export {
-  background-color: #27ae60; 
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: bold;
-  font-size: 11px;
-}
-
-/* --- ESTILOS PARA LICENCIAS --- */
-
-/* 1. ROJO: Licencia Aprobada (No disponible para dirigir) */
-.fila-licencia-aprobada td, 
-.fila-licencia-aprobada .sticky-col {
-  background-color: #fee2e2 !important; 
-  border-bottom: 1px solid #ef4444 !important;
-}
-.fila-licencia-aprobada input, 
-.fila-licencia-aprobada textarea {
-  background-color: #fff1f1 !important;
-  color: #991b1b !important;
-  font-weight: bold;
-}
-.fila-licencia-aprobada:hover td {
-  background-color: #fecaca !important;
-}
-
-/* 2. AMARILLO: Licencia Rechazada (Disponible, pero avisó tarde) */
-.fila-licencia-rechazada td, 
-.fila-licencia-rechazada .sticky-col {
-  background-color: #fef9c3 !important; /* Amarillo suave */
-  border-bottom: 1px solid #eab308 !important;
-}
-.fila-licencia-rechazada input, 
-.fila-licencia-rechazada textarea {
-  background-color: #fefce8 !important;
-  color: #854d0e !important;
-  font-weight: bold;
-}
-.fila-licencia-rechazada:hover td {
-  background-color: #fef08a !important;
-}
+/* COLORES DE FILAS AGREGADOS */
+.fila-licencia-aprobada td, .fila-licencia-aprobada .sticky-col { background-color: #fee2e2 !important; color: #991b1b !important; }
+.fila-licencia-rechazada td, .fila-licencia-rechazada .sticky-col { background-color: #fef9c3 !important; color: #854d0e !important; }
+.fila-inactiva td, .fila-inactiva .sticky-col { background-color: #fff1f2 !important; }
+.fila-inactiva .edit-input { color: #be123c !important; font-weight: 600; }
 </style>
