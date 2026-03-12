@@ -27,11 +27,17 @@ const iniciarSesion = async () => {
     });
 
     if (res.data.success) {
-      // 2. REEMPLAZO: Usamos auth.setUser en lugar de localStorage.setItem
-      // Esto internamente ya usa sessionStorage y dispara el evento 'storage'
+      // Guardamos el objeto completo (que ahora incluye el rol)
       auth.setUser(res.data.arbitro); 
       
-      router.push('/panel-arbitro');
+      // LÓGICA DE REDIRECCIÓN BASADA EN ROL
+      // El PHP ahora nos manda 'admin' o 'arbitro'
+      if (res.data.arbitro.rol === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/panel-arbitro');
+      }
+      
     } else {
       errorMsg.value = res.data.message;
     }

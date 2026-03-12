@@ -85,7 +85,7 @@ const solicitarLicencia = async () => {
     <div class="card shadow p-3 p-md-4 border-0 mb-4 mx-auto" style="max-width: 800px;">
       <h4 class="text-danger fw-bold mb-2">Solicitar Nueva Licencia</h4>
       <p class="text-muted x-small-mobile mb-3">
-        Las licencias deben solicitarse con un mínimo de <strong>9 días</strong> de antelación para aprobación automática.
+        Las licencias deben solicitarse con un mínimo de <strong>10 días</strong> de antelación para aprobación automática. Las mismas son por día completo, no hay licencias parciales.
       </p>
 
       <div v-if="mensaje.texto" :class="`alert alert-${mensaje.tipo} small py-2 shadow-sm border-0`" role="alert">

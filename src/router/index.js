@@ -48,6 +48,21 @@ const routes = [
       { path: 'disponibilidad', name: 'PanelDisponibilidad', component: () => import('../components/panel/PanelDisponibilidad.vue') },
       { path: 'sanciones', name: 'PanelSanciones', component: () => import('../components/panel/Sanciones.vue') },  
     ]
+    },
+{    
+    path: '/admin',
+    component: () => import('../views/AdminPanel.vue'), // Crearemos este archivo ahora
+    beforeEnter: (to, from, next) => {
+      const user = auth.getUser();
+      if (auth.isLoggedIn() && user.rol === 'admin') next();
+      else next('/login-arbitro');
+    },
+    children: [
+      { path: '', name: 'AdminInicio', component: () => import('../components/admin/AdminInicio.vue') },
+      { path: 'secretaria', component: () => import('../components/admin/SecretariaAdmin.vue') },
+      { path: 'tribunal', component: () => import('../components/admin/TribunalAdmin.vue') },
+      { path: 'tesoreria', component: () => import('../components/admin/TesoreriaAdmin.vue') },
+    ]
   },
   
   {
