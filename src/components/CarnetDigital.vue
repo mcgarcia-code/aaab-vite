@@ -8,7 +8,7 @@
         v-model="dniBusqueda"
         type="text"
         class="form-control form-control-lg shadow-lg"
-        placeholder="Ingrese DNI sin puntos."
+        placeholder="Ingresá el DNI sin puntos."
         @keyup.enter="buscarArbitro"
       >
     </div>

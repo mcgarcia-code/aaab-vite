@@ -24,7 +24,7 @@ const mostrarCredencial = ref(false);
         <div class="menu-card shadow">
           <i class="bi bi-clock-history fs-1 text-danger"></i>
           <h5 class="mt-2 fw-bold text-dark">Disponibilidad</h5>
-          <p class="small text-muted m-0">Solicitar modificación de horarios.</p>
+          <p class="small text-muted m-0">Solicitá la modificación de tus horarios.</p>
         </div>
       </RouterLink>
     </div>
@@ -43,7 +43,7 @@ const mostrarCredencial = ref(false);
       <div class="menu-card shadow">
         <i class="bi bi-person-badge fs-1 text-danger"></i>
         <h5 class="mt-2 fw-bold text-dark">Credencial Digital</h5>
-        <p class="small text-muted m-0">Visualizar y descargar carnet oficial 2026.</p>
+        <p class="small text-muted m-0">Visualizá y descargá tu carnet oficial 2026.</p>
       </div>
     </div>
 
@@ -52,7 +52,7 @@ const mostrarCredencial = ref(false);
         <div class="menu-card shadow">
           <i class="bi bi-shield-exclamation fs-1 text-danger"></i>
           <h5 class="mt-2 fw-bold text-dark">Tribunal de Ética</h5>
-          <p class="small text-muted m-0">Consulta de sanciones vigentes.</p>
+          <p class="small text-muted m-0">Consultá si tenés sanciones vigentes.</p>
         </div>
       </RouterLink>
     </div>

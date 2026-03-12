@@ -15,17 +15,17 @@ useHead({
 // Los datos que estaban en data() ahora son un ref()
 const categorias = ref([
   // NUEVA CATEGORÍA: CARNET DIGITAL
-  {
-    titulo: 'Carnet Digital',
-    subtitulo: 'Consultá tu credencial oficial de árbitro activo.',
+  /*{
+    titulo: 'Árbitros habilitados',
+    subtitulo: 'Consultá si un árbitro esta activo o inactivo.',
     icon: 'bi bi-person-vcard-fill', // Icono de Bootstrap
     documentos: [
       {
-        nombre: 'Acceder a mi Carnet Digital',
+        nombre: 'Accedé al Carnet Digital',
         url: '/carnet-digital', // Cambia esto por la ruta que definiste en tu router
       },
     ],
-  },
+  },*/
   {
     titulo: 'Material útil para árbitros.',
     subtitulo: 'Guías, aranceles y herramientas para tu labor.',

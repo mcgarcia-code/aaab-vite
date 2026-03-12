@@ -4,7 +4,7 @@
       <div class="text-center mb-5">
         <h1 class="fw-bold text-white">Credencial Digital</h1>
         <p class="lead text-white-50">
-          Ingresá tu DNI para validar tu condición de árbitro activo.
+          Ingresá el DNI
         </p>
       </div>
 
