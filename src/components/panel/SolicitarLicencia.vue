@@ -227,4 +227,23 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
     .status-badge { min-width: 70px; padding: 5px 8px; }
     h4 { font-size: 1.25rem; }
 }
+
+@media (max-width: 576px) {
+    /* En pantallas muy pequeñas, reducimos el padding lateral del container 
+       que pusiste como px-0 para ganar cada pixel disponible */
+    .container {
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+
+    /* Reducimos el padding de las celdas de la tabla para que el 
+       badge de estado no quede pegado al borde */
+    .table td, .table th {
+        padding: 10px 5px !important;
+    }
+    
+    .status-badge {
+        font-size: 0.55rem; /* Un pelín más chico para evitar que se rompa en dos líneas */
+    }
+}
 </style>

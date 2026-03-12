@@ -99,7 +99,7 @@ const enviarSolicitudManual = async () => {
 <template>
   <div class="animate__animated animate__fadeIn container py-4 page-bg">
     
-    <div class="card shadow border-0 mb-4" style="border-radius: 15px;">
+    <div class="card shadow border-0 mb-4 mx-auto" style="border-radius: 15px; max-width: 1000px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <div>
           <h4 class="text-danger fw-bold m-0">Disponibilidad Horaria</h4>
@@ -217,8 +217,9 @@ const enviarSolicitudManual = async () => {
       </div>
     </div>
 
-    <div class="manual-section p-3 p-md-4 rounded-4 shadow-lg mb-5 mx-auto">
-        <div class="text-center text-white-50 mb-4 small">
+    <div class="manual-section p-0 p-md-0 rounded-4 mb-5 mx-auto" style="max-width: 1000px; background: transparent; box-shadow: none;">
+        
+        <div class="text-center text-white-50 mb-3 small">
             <i class="bi bi-shield-lock-fill me-1"></i>
             Para evitar abusos, todas las solicitudes quedan registradas.
         </div>
@@ -261,7 +262,8 @@ const enviarSolicitudManual = async () => {
                     Solicitud para <strong>secretaría y designaciones</strong>.
                 </div>
             </div>
-            <div class="p-3 p-md-4 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2);">
+
+            <div class="p-3 p-md-4 rounded-4 shadow-lg" style="background: #0c1624; border: 1px dashed rgba(255,255,255,0.2);">
                 <h6 class="text-white fw-bold small mb-2 text-uppercase">Informar cambio urgente</h6>
                 
                 <textarea v-model="solicitudManual" class="form-control mb-3 custom-textarea" rows="3" placeholder="Detallá aquí tu cambio de horarios..."></textarea>
@@ -272,6 +274,7 @@ const enviarSolicitudManual = async () => {
             </div>
         </div>
     </div>
+
   </div>
 </template>
 
@@ -294,5 +297,35 @@ const enviarSolicitudManual = async () => {
     .w-fit-mobile { width: fit-content; }
     .x-small-mobile { font-size: 0.75rem; }
     .info-mobile { padding: 0.75rem; }
+}
+
+@media (max-width: 576px) {
+    /* Reduce un poco el tamaño de los inputs de tiempo para que quepan bien */
+    input[type="time"] {
+        padding-left: 5px;
+        padding-right: 5px;
+        font-size: 0.85rem;
+    }
+
+    /* Ajusta el padding de la card para ganar espacio */
+    .card-body {
+        padding: 1rem !important;
+    }
+
+    /* Asegura que los checkboxes no queden pegados al borde */
+    .form-check {
+        margin-right: 5px;
+    }
+    
+    /* Evita que el título de la página sea demasiado grande */
+    h4 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Mejora la visualización del estado ENVIADO */
+.x-small {
+    font-size: 0.65rem;
+    font-weight: 800;
 }
 </style>

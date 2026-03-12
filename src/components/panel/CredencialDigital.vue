@@ -3,7 +3,6 @@ import { ref, onMounted } from 'vue';
 import html2canvas from 'html2canvas';
 import QrcodeVue from 'qrcode.vue';
 
-// Corregido: Definimos las props sin asignarlas a una variable que no usamos
 defineProps({
   mostrar: Boolean
 });
@@ -35,7 +34,7 @@ const descargar = () => {
       const canvas = await html2canvas(elemento, {
         useCORS: true,
         allowTaint: true,
-        scale: 3,
+        scale: 3, // Alta calidad para la descarga
         backgroundColor: '#ffffff',
         logging: false,
       });
@@ -91,7 +90,7 @@ const descargar = () => {
                 <span class="label">DOCUMENTO</span>
                 <span class="val">{{ arbitro.dni }}</span>
               </div>
-              <div class="info-group border-separator ps-4">
+              <div class="info-group border-separator ps-4 ms-auto-md">
                 <span class="label">GRUPO</span>
                 <span class="val text-danger fw-bold">{{ arbitro.grupo }}</span>
               </div>
@@ -100,7 +99,7 @@ const descargar = () => {
 
           <div class="footer-card">
             <div class="qr-container">
-              <qrcode-vue value="https://arbitroshandball.com.ar" :size="80" level="H" />
+              <qrcode-vue value="https://arbitroshandball.com.ar" :size="70" level="H" />
             </div>
             <div class="aaab-info">
               ASOCIACIÓN ARGENTINA<br>DE ÁRBITROS DE HANDBALL
@@ -130,14 +129,18 @@ const descargar = () => {
   background: rgba(0,0,0,0.85); 
   display: flex; justify-content: center; align-items: center; 
   z-index: 9999; 
+  padding: 15px;
 }
 
 .modal-container { 
   max-width: 720px; 
-  width: 95%; 
-  max-height: 90vh;
+  width: 100%; 
+  max-height: 95vh;
   overflow-y: auto;
+  scrollbar-width: none;
 }
+
+.modal-container::-webkit-scrollbar { display: none; }
 
 /* --- TARJETA --- */
 .credencial-card { 
@@ -146,7 +149,7 @@ const descargar = () => {
   border-radius: 20px; 
   overflow: hidden; 
   min-height: 420px; 
-  border: 5px solid white; 
+  border: 4px solid white; 
   box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
   position: relative; 
 }
@@ -173,11 +176,11 @@ const descargar = () => {
 }
 
 .foto-wrap { 
-  width: 180px; height: 180px; 
+  width: 160px; height: 160px; 
   background: white; 
   border-radius: 15px; 
-  padding: 10px; 
-  margin-bottom: 25px; 
+  padding: 8px; 
+  margin-bottom: 20px; 
   box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
 }
 
@@ -188,10 +191,10 @@ const descargar = () => {
 }
 
 .status-badge { 
-  color: white; padding: 8px 18px; 
+  color: white; padding: 6px 14px; 
   border-radius: 50px; 
-  font-weight: bold; font-size: 0.8rem; 
-  display: flex; align-items: center; gap: 8px; 
+  font-weight: bold; font-size: 0.75rem; 
+  display: flex; align-items: center; gap: 6px; 
   white-space: nowrap;
 }
 
@@ -201,7 +204,7 @@ const descargar = () => {
 /* --- COLUMNA BLANCA --- */
 .side-white { 
   width: 65%; 
-  padding: 30px 45px; 
+  padding: 25px 35px; 
   position: relative; 
   text-align: left; 
   display: flex; flex-direction: column; 
@@ -209,14 +212,14 @@ const descargar = () => {
 }
 
 .header-top { 
-  display: flex; align-items: center; gap: 10px; 
-  font-weight: bold; font-size: 0.9rem; 
+  display: flex; align-items: center; gap: 8px; 
+  font-weight: bold; font-size: 0.85rem; 
   margin-bottom: 20px; color: #666;
 }
 
 .info-vertical { 
   display: flex; flex-direction: column; 
-  gap: 25px; 
+  gap: 20px; 
   flex-grow: 1; 
 }
 
@@ -227,19 +230,19 @@ const descargar = () => {
 
 .label { 
   color: #adb5bd; 
-  font-size: 0.75rem; 
+  font-size: 0.7rem; 
   font-weight: bold; 
   display: block; 
-  margin-bottom: 5px;
+  margin-bottom: 3px;
 }
 
 .name { 
-  font-weight: 900; font-size: 2rem; 
+  font-weight: 900; font-size: 1.8rem; 
   line-height: 1.1; margin: 0; color: #1a1a1a; 
 }
 
 .val { 
-  font-size: 1.6rem; 
+  font-size: 1.4rem; 
   font-weight: 800; 
   color: #1a1a1a; 
 }
@@ -254,32 +257,35 @@ const descargar = () => {
 
 .qr-container {
   background: white;
-  padding: 5px;
+  padding: 4px;
   border: 1px solid #eee;
 }
 
 .aaab-info { 
-  font-size: 0.65rem; font-weight: bold; 
+  font-size: 0.6rem; font-weight: bold; 
   line-height: 1.2; color: #444; 
+  max-width: 120px;
 }
 
 .expire { 
-  font-size: 0.75rem; font-weight: bold; 
+  font-size: 0.7rem; font-weight: bold; 
   color: #adb5bd; text-align: right; 
 }
 
 /* --- BOTONES --- */
 .btn-download { 
   background: #dc3545; color: white; border: none; 
-  padding: 16px 60px; border-radius: 50px; 
-  font-weight: bold; font-size: 1.1rem; 
+  padding: 14px 40px; border-radius: 50px; 
+  font-weight: bold; font-size: 1rem; 
   cursor: pointer; transition: 0.2s; 
+  width: 100%;
+  max-width: 320px;
 }
 
 .btn-download:hover { background: #a71d2a; transform: scale(1.02); }
 
 .btn-close-text { 
-  cursor: pointer; margin-top: 20px; 
+  cursor: pointer; margin-top: 15px; 
   color: white; background: none; border: none; 
   text-decoration: underline; opacity: 0.8; 
 }
@@ -288,18 +294,28 @@ const descargar = () => {
 @media (max-width: 650px) {
   .credencial-card {
     flex-direction: column;
-    height: auto;
-    width: 320px;
+    min-height: auto;
+    width: 100%;
+    max-width: 320px;
     margin: 0 auto;
   }
 
-  .side-black, .side-white {
+  .side-black {
     width: 100%;
+    padding: 30px 20px;
   }
+
+  .side-white {
+    width: 100%;
+    padding: 30px 25px;
+    text-align: center;
+  }
+
+  .header-top { justify-content: center; }
 
   .info-row-parallel {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 15px;
   }
 
@@ -313,6 +329,7 @@ const descargar = () => {
     align-items: center;
     gap: 15px;
     text-align: center;
+    margin-top: 30px;
   }
 
   .expire, .aaab-info {

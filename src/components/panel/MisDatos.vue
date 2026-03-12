@@ -8,7 +8,7 @@ const localidadesFiltradas = ref([]);
 const mensaje = ref({ texto: '', tipo: '' });
 const cargando = ref(false);
 const solicitudCambio = ref('');
-const historialRectificaciones = ref([]); // Nueva variable para el historial
+const historialRectificaciones = ref([]);
 
 // --- LÓGICA DE SEGURIDAD (PASSWORD) ---
 const nuevaPassword = ref('');
@@ -17,7 +17,7 @@ const passwordMensaje = ref({ texto: '', tipo: '' });
 // Control de edición (0 = Cerrado / 1 = Abierto)
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
 
-// NUEVA FUNCIÓN: Obtiene solo el historial de rectificaciones
+// Obtiene solo el historial de rectificaciones
 const obtenerHistorialRectificaciones = async () => {
     try {
         const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=rectificacion`);
@@ -28,7 +28,7 @@ const obtenerHistorialRectificaciones = async () => {
 };
 
 onMounted(async () => {
-    obtenerHistorialRectificaciones(); // Cargar historial al iniciar
+    obtenerHistorialRectificaciones();
     try {
         const res = await axios.get('https://arbitroshandball.com.ar/api/get_opciones.php');
         opciones.value = res.data;
@@ -108,7 +108,7 @@ const enviarSolicitudRectificacion = async () => {
         if (res.data.success) {
             mensaje.value = { texto: "Solicitud enviada con éxito.", tipo: 'success' };
             solicitudCambio.value = '';
-            obtenerHistorialRectificaciones(); // Refrescar historial tras enviar
+            obtenerHistorialRectificaciones();
         }
     } catch {
         mensaje.value = { texto: "Error al enviar solicitud.", tipo: 'danger' };
@@ -121,7 +121,7 @@ const enviarSolicitudRectificacion = async () => {
 <template>
   <div class="animate__animated animate__fadeIn container py-4">
     
-    <div class="card shadow border-0 overflow-hidden mx-auto" style="border-radius: 15px; max-width: 1000px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4" style="border-radius: 15px; max-width: 1000px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <h4 class="text-danger fw-bold m-0">Legajo Personal</h4>
         <span v-if="edicionAbierta" class="badge bg-success px-3 py-2 shadow-sm w-fit-mobile">Edición Abierta</span>
@@ -240,7 +240,7 @@ const enviarSolicitudRectificacion = async () => {
       </div>
     </div>
 
-    <div class="card border-0 shadow mx-auto mt-4 overflow-hidden" style="border-radius: 15px; max-width: 1000px;">
+    <div class="card border-0 shadow mx-auto mb-4 overflow-hidden" style="border-radius: 15px; max-width: 1000px;">
         <div class="card-header bg-white py-2 ps-3 border-bottom">
             <h6 class="m-0 fw-bold text-dark small">Historial de Rectificaciones</h6>
         </div>
@@ -271,13 +271,13 @@ const enviarSolicitudRectificacion = async () => {
         </div>
     </div>
 
-    <div v-if="!edicionAbierta" class="manual-section p-3 p-md-4 rounded-4 shadow-lg mt-4 mx-auto" style="max-width: 1000px;">
+    <div v-if="!edicionAbierta" class="manual-section p-0 mx-auto mt-4" style="max-width: 1000px; background: transparent; box-shadow: none;">
         <div class="text-center text-white-50 mb-3 small">
             <i class="bi bi-info-circle-fill me-1"></i>
             La edición directa está cerrada. Podés enviar una solicitud formal aquí.
         </div>
 
-        <div class="p-3 p-md-4 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2);">
+        <div class="p-3 p-md-4 rounded-4 shadow-lg" style="background: #0c1624; border: 1px dashed rgba(255,255,255,0.2);">
             <h6 class="text-white fw-bold small mb-2 text-uppercase">Solicitar Rectificación</h6>
             <p class="x-small text-white-50 mb-3">
                 Si necesitás corregir datos personales (DNI, Fecha de Nac., etc.), detallalo a continuación.
@@ -303,13 +303,11 @@ const enviarSolicitudRectificacion = async () => {
 </template>
 
 <style scoped>
-/* Estilos existentes se mantienen */
 .form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }
 .x-small { font-size: 0.75rem; }
 .badge { letter-spacing: 1px; }
 
 .manual-section { 
-    background-color: #0c1624; 
     border-radius: 1rem;
 }
 
@@ -362,7 +360,22 @@ const enviarSolicitudRectificacion = async () => {
 }
 
 @media (max-width: 768px) {
-    .w-fit-mobile { width: fit-content; }
-    .w-100-mobile { width: 100% !important; }
+    .w-fit-mobile { 
+        width: fit-content !important; 
+        margin-top: 5px; 
+    }
+    
+    .w-100-mobile { 
+        width: 100% !important; 
+        display: block;
+    }
+
+    .fs-5 {
+        font-size: 1.1rem !important;
+    }
+    
+    label {
+        margin-top: 5px;
+    }
 }
 </style>
