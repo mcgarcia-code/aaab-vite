@@ -8,6 +8,7 @@ const localidadesFiltradas = ref([]);
 const mensaje = ref({ texto: '', tipo: '' });
 const cargando = ref(false);
 const solicitudCambio = ref('');
+const historialRectificaciones = ref([]); // Nueva variable para el historial
 
 // --- LÓGICA DE SEGURIDAD (PASSWORD) ---
 const nuevaPassword = ref('');
@@ -16,7 +17,18 @@ const passwordMensaje = ref({ texto: '', tipo: '' });
 // Control de edición (0 = Cerrado / 1 = Abierto)
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
 
+// NUEVA FUNCIÓN: Obtiene solo el historial de rectificaciones
+const obtenerHistorialRectificaciones = async () => {
+    try {
+        const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=rectificacion`);
+        historialRectificaciones.value = res.data;
+    } catch {
+        console.error("Error al cargar el historial de rectificaciones");
+    }
+};
+
 onMounted(async () => {
+    obtenerHistorialRectificaciones(); // Cargar historial al iniciar
     try {
         const res = await axios.get('https://arbitroshandball.com.ar/api/get_opciones.php');
         opciones.value = res.data;
@@ -70,7 +82,6 @@ const cambiarPassword = async () => {
         });
 
         if (res.data.success) {
-            // Mensaje de éxito solicitado
             passwordMensaje.value = { texto: "Contraseña actualizada con éxito.", tipo: 'success' };
             nuevaPassword.value = '';
         } else {
@@ -87,16 +98,17 @@ const enviarSolicitudRectificacion = async () => {
     if (!solicitudCambio.value.trim()) return;
     cargando.value = true;
     try {
-        const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_disponibilidad.php', {
+        const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_cambios.php', {
             id_arbitro: arbitro.value.id,
             nombre: arbitro.value.nombre,
             apellido: arbitro.value.apellido,
             grupo: arbitro.value.grupo,
-            mensaje: "SOLICITUD RECTIFICACIÓN: " + solicitudCambio.value
+            mensaje: "RECTIFICACIÓN: " + solicitudCambio.value
         });
         if (res.data.success) {
             mensaje.value = { texto: "Solicitud enviada con éxito.", tipo: 'success' };
             solicitudCambio.value = '';
+            obtenerHistorialRectificaciones(); // Refrescar historial tras enviar
         }
     } catch {
         mensaje.value = { texto: "Error al enviar solicitud.", tipo: 'danger' };
@@ -117,7 +129,6 @@ const enviarSolicitudRectificacion = async () => {
       </div>
 
       <div class="card-body p-3 p-md-4">
-        
         <div v-if="mensaje.texto" :class="`alert alert-${mensaje.tipo} mb-4 border-0 shadow-sm`" role="alert">
           {{ mensaje.texto }}
         </div>
@@ -137,7 +148,6 @@ const enviarSolicitudRectificacion = async () => {
                     <span class="badge bg-dark fs-6">
                         {{ arbitro.grupo }} {{ arbitro.subgrupo ? '- ' + arbitro.subgrupo : '' }}
                     </span>
-                    
                     <span v-if="arbitro.es_activo == 1" class="status-pill status-active">
                         <i class="bi bi-check-circle-fill"></i> En actividad
                     </span>
@@ -230,6 +240,37 @@ const enviarSolicitudRectificacion = async () => {
       </div>
     </div>
 
+    <div class="card border-0 shadow mx-auto mt-4 overflow-hidden" style="border-radius: 15px; max-width: 1000px;">
+        <div class="card-header bg-white py-2 ps-3 border-bottom">
+            <h6 class="m-0 fw-bold text-dark small">Historial de Rectificaciones</h6>
+        </div>
+        <div class="card-body p-0 bg-white">
+            <div v-if="historialRectificaciones.length > 0" class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr class="x-small text-uppercase text-muted" style="font-size: 0.7rem;">
+                            <th class="ps-3" style="width: 130px;">Fecha</th>
+                            <th>Mensaje de Solicitud</th>
+                            <th class="text-center">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(h, i) in historialRectificaciones" :key="i">
+                            <td class="ps-3 small fw-bold text-dark">{{ h.fecha }}</td>
+                            <td class="small text-dark">{{ h.mensaje }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary x-small" style="font-size: 0.65rem;">ENVIADO</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div v-else class="text-center py-4 text-muted small">
+                Sin solicitudes de rectificación previas.
+            </div>
+        </div>
+    </div>
+
     <div v-if="!edicionAbierta" class="manual-section p-3 p-md-4 rounded-4 shadow-lg mt-4 mx-auto" style="max-width: 1000px;">
         <div class="text-center text-white-50 mb-3 small">
             <i class="bi bi-info-circle-fill me-1"></i>
@@ -239,14 +280,14 @@ const enviarSolicitudRectificacion = async () => {
         <div class="p-3 p-md-4 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2);">
             <h6 class="text-white fw-bold small mb-2 text-uppercase">Solicitar Rectificación</h6>
             <p class="x-small text-white-50 mb-3">
-                Si necesitás corregir datos personales, detallalo a continuación para secretaría.
+                Si necesitás corregir datos personales (DNI, Fecha de Nac., etc.), detallalo a continuación.
             </p>
             
             <textarea 
                 v-model="solicitudCambio" 
                 class="form-control mb-3 custom-textarea" 
                 rows="3" 
-                placeholder="Detallá el cambio necesario..."
+                placeholder="Ej: Hola, necesito corregir mi DNI, el correcto es..."
             ></textarea>
             
             <button 
@@ -258,11 +299,11 @@ const enviarSolicitudRectificacion = async () => {
             </button>
         </div>
     </div>
-
   </div>
 </template>
 
 <style scoped>
+/* Estilos existentes se mantienen */
 .form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }
 .x-small { font-size: 0.75rem; }
 .badge { letter-spacing: 1px; }
@@ -291,7 +332,6 @@ const enviarSolicitudRectificacion = async () => {
     color: rgba(255, 255, 255, 0.5) !important; 
 }
 
-/* ESTILOS PARA EL STATUS PILL */
 .status-pill {
     font-size: 0.85rem;
     font-weight: bold;
@@ -308,32 +348,21 @@ const enviarSolicitudRectificacion = async () => {
     color: #166534;
     border: 1px solid #bbf7d0;
 }
-
-.status-active i {
-    color: #22c55e;
-}
+.status-active i { color: #22c55e; }
 
 .status-inactive {
     background-color: #fee2e2;
     color: #991b1b;
     border: 1px solid #fecaca;
 }
+.status-inactive i { color: #ef4444; }
 
-.status-inactive i {
-    color: #ef4444;
-}
-
-/* Animación para el cartel de password */
 .animate__fadeInUp {
     animation-duration: 0.5s;
 }
 
 @media (max-width: 768px) {
-    .w-fit-mobile {
-        width: fit-content;
-    }
-    .w-100-mobile {
-        width: 100% !important;
-    }
+    .w-fit-mobile { width: fit-content; }
+    .w-100-mobile { width: 100% !important; }
 }
 </style>

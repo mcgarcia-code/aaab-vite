@@ -88,9 +88,9 @@ const routes = [
         path: 'sanciones',
         name: 'PanelSanciones',
         component: () => import('../components/panel/Sanciones.vue')
-      }
+      },  
     ]
-  }, // <--- Aquí faltaba esta coma
+  },
   {
     path: '/gestion-privada-arbitros',
     name: 'AdminArbitros',

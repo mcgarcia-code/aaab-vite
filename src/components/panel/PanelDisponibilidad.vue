@@ -13,9 +13,10 @@ const movilidadSeleccionada = ref([]);
 
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
 
+// CORRECCIÓN: Ahora solicita explícitamente el tipo 'disponibilidad'
 const obtenerHistorial = async () => {
   try {
-    const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}`);
+    const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=disponibilidad`);
     historial.value = res.data;
   } catch {
     console.error("Error al cargar el historial");
@@ -44,6 +45,13 @@ watch(() => arbitro.value.disponibilidad_domingo, (val) => {
     arbitro.value.disponibilidad_domingo_desde = null;
     arbitro.value.disponibilidad_domingo_hasta = null;
   }
+// NUEVO WATCH PARA LIMPIEZA DE CLUB Y CATEGORÍA
+watch(() => arbitro.value.juega_handball, (nuevoValor) => {
+  if (nuevoValor === 'no') {
+    arbitro.value.donde_juega = null;
+    arbitro.value.categoria_handball = null;
+  }
+});
 });
 
 const guardarCambiosDirectos = async () => {
@@ -67,11 +75,12 @@ const enviarSolicitudManual = async () => {
   if (!solicitudManual.value.trim()) return;
   cargando.value = true;
   try {
-    const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_disponibilidad.php', {
+    const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_cambios.php', {
       id_arbitro: arbitro.value.id,
       nombre: arbitro.value.nombre,
       apellido: arbitro.value.apellido,
       grupo: arbitro.value.grupo,
+      // El backend detectará que NO es RECTIFICACIÓN y lo guardará como 'disponibilidad'
       mensaje: "SOLICITUD DISPONIBILIDAD: " + solicitudManual.value
     });
     if (res.data.success) {
@@ -231,7 +240,7 @@ const enviarSolicitudManual = async () => {
                         <tbody>
                             <tr v-for="(h, i) in historial" :key="i">
                                 <td class="ps-3 small fw-bold text-dark">{{ h.fecha }}</td>
-                                <td class="small text-dark">{{ h.mensaje_corto || h.mensaje }}</td>
+                                <td class="small text-dark">{{ h.mensaje }}</td>
                                 <td class="text-center">
                                     <span class="badge bg-secondary x-small">ENVIADO</span>
                                 </td>
@@ -240,7 +249,7 @@ const enviarSolicitudManual = async () => {
                     </table>
                 </div>
                 <div v-else class="text-center py-4">
-                    <p class="text-muted small m-0">Sin solicitudes previas.</p>
+                    <p class="text-muted small m-0">Sin solicitudes previas de disponibilidad.</p>
                 </div>
             </div>
         </div>
@@ -255,7 +264,7 @@ const enviarSolicitudManual = async () => {
             <div class="p-3 p-md-4 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2);">
                 <h6 class="text-white fw-bold small mb-2 text-uppercase">Informar cambio urgente</h6>
                 
-                <textarea v-model="solicitudManual" class="form-control mb-3 custom-textarea" rows="3" placeholder="Detallá aquí tu cambio..."></textarea>
+                <textarea v-model="solicitudManual" class="form-control mb-3 custom-textarea" rows="3" placeholder="Detallá aquí tu cambio de horarios..."></textarea>
                 
                 <button @click="enviarSolicitudManual" class="btn btn-danger w-100 fw-bold py-2 shadow" :disabled="cargando || !solicitudManual">
                     ENVIAR SOLICITUD FORMAL
@@ -267,12 +276,12 @@ const enviarSolicitudManual = async () => {
 </template>
 
 <style scoped>
+/* (Se mantienen tus mismos estilos) */
 .form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }
 .manual-section { background-color: #0c1624; border-radius: 1rem; }
 .btn-danger { background-color: #dc2626 !important; border: none; }
 .text-white-50 { color: rgba(255, 255, 255, 0.5) !important; }
 
-/* REGLA SOLICITADA: Fondo blanco, letra negra */
 .custom-textarea {
     background-color: #ffffff !important;
     color: #000000 !important;
