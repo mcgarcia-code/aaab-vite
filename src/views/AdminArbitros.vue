@@ -189,11 +189,14 @@ onMounted(cargarDatos);
             <td class="sticky-col col-id">{{ a.id || '-' }}</td>
             
             <td class="col-xs-compact">
-              <select v-model="a.es_activo" class="small-select select-compact">
-                <option :value="1">SI</option>
-                <option :value="0">NO</option>
-              </select>
-            </td>
+  <div class="status-wrapper">
+    <span :class="['status-dot', a.es_activo == 1 ? 'dot-active' : 'dot-inactive']"></span>
+    <select v-model="a.es_activo" class="small-select select-compact">
+      <option :value="1">SI</option>
+      <option :value="0">NO</option>
+    </select>
+  </div>
+</td>
 
             <td class="sticky-col col-apellido"><input v-model="a.apellido" class="edit-input"></td>
             <td class="sticky-col col-nombre"><input v-model="a.nombre" class="edit-input"></td>
@@ -237,66 +240,189 @@ onMounted(cargarDatos);
 </template>
 
 <style scoped>
-.admin-panel { padding: 25px; background: #f8fafc; font-family: 'Segoe UI', Roboto, sans-serif; min-height: 100vh; }
+/* --- BASE Y CONTENEDOR PRINCIPAL --- */
+.admin-panel { 
+  padding: 25px; 
+  background: #f8fafc; 
+  font-family: 'Segoe UI', Roboto, sans-serif; 
+  min-height: 100vh; 
+}
+
 .material-icons { font-size: 18px; }
 
+/* --- CABECERA (HEADER) --- */
 .header-section { 
-  background: #ffffff; padding: 15px 25px; border-radius: 12px; 
-  display: flex; justify-content: space-between; align-items: center; 
-  margin-bottom: 25px; border: 1px solid #e2e8f0;
+  background: #ffffff; 
+  padding: 15px 25px; 
+  border-radius: 12px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 25px; 
+  border: 1px solid #e2e8f0;
 }
 
 .title-wrapper { display: flex; align-items: center; gap: 15px; }
 .title { font-size: 1.4rem; font-weight: 700; color: #1e293b; margin: 0; }
-.counter-badge { background: #f1f5f9; padding: 5px 12px; border-radius: 8px; color: #ef4444; font-weight: 800; border: 1px solid #e2e8f0; font-size: 1rem; }
+
+.counter-badge { 
+  background: #1e293b; /* Color oscuro para contraste */
+  color: #ffffff; 
+  padding: 6px 14px; 
+  border-radius: 20px; 
+  font-weight: 700; 
+  border: none; 
+  font-size: 0.9rem; 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 .header-actions { display: flex; gap: 12px; }
 
+/* --- BOTONES DE ACCIÓN --- */
 .btn-action { 
-  border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; 
-  display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.8rem;
-  transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  border: none; 
+  padding: 10px 18px; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  font-weight: 700; 
+  font-size: 0.8rem;
+  transition: all 0.2s ease; 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
+
+.btn-action:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .btn-save { background-color: #3b82f6; color: white; }
 .btn-new { background-color: #ef4444; color: white; }
 .btn-export { background-color: #10b981; color: white; }
 
-.table-container { overflow: auto; max-height: 70vh; background: white; border-radius: 12px; border: 1px solid #e2e8f0; }
+/* --- TABLA Y CONTENEDOR --- */
+.table-container { 
+  overflow: auto; 
+  max-height: 70vh; 
+  background: white; 
+  border-radius: 12px; 
+  border: 1px solid #e2e8f0; 
+}
+
 table { width: max-content; border-collapse: separate; border-spacing: 0; }
 
-.sticky-col { position: sticky !important; z-index: 10; background: white !important; border-right: 1px solid #f1f5f9 !important; }
+/* Columnas fijas (Sticky) con sombra mejorada */
+.sticky-col { 
+  position: sticky !important; 
+  z-index: 10; 
+  background: white !important; 
+  border-right: 1px solid #e2e8f0 !important; 
+}
+
 .col-acciones { left: 0; width: 60px; text-align: center; }
 .col-id { left: 60px; width: 40px; text-align: center; color: #64748b; font-weight: 600; }
 .col-apellido { left: 100px; width: 140px; }
-.col-nombre { left: 240px; width: 140px; box-shadow: 4px 0 6px -4px rgba(0,0,0,0.1); }
+.col-nombre { left: 240px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.15); }
 
-.col-xs-compact { width: 45px; min-width: 45px; text-align: center; }
-.col-dni-compact { width: 85px; min-width: 85px; text-align: center; }
+/* Encabezados */
+th { 
+  background: #f8fafc; 
+  color: #475569; 
+  padding: 14px 10px; 
+  position: sticky; 
+  top: 0; 
+  z-index: 20; 
+  font-size: 0.7rem; 
+  text-transform: uppercase; 
+  font-weight: 800; 
+  border-bottom: 2px solid #e2e8f0; 
+}
 
-th { background: #f8fafc; color: #475569; padding: 12px 10px; position: sticky; top: 0; z-index: 20; font-size: 0.7rem; text-transform: uppercase; font-weight: 700; border-bottom: 2px solid #e2e8f0; }
 th.sticky-col { z-index: 30; background: #f8fafc !important; }
 
-.filter-row td { top: 43px; position: sticky; z-index: 25; background: #f8fafc !important; padding: 5px; }
-.filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; width: 100%; transition: border-color 0.2s; }
-.text-center { text-align: center; }
+/* Fila de Filtros */
+.filter-row td { 
+  top: 48px; /* Ajustado al nuevo padding de TH */
+  position: sticky; 
+  z-index: 25; 
+  background: #f8fafc !important; 
+  padding: 8px 5px; 
+  border-bottom: 2px solid #cbd5e1;
+}
 
-td { padding: 4px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.filter-input { 
+  font-size: 0.75rem; 
+  height: 30px; 
+  border: 1px solid #cbd5e1; 
+  border-radius: 6px; 
+  padding: 4px 8px; 
+  width: 100%; 
+  transition: all 0.2s; 
+  background-color: #ffffff;
+}
 
-.edit-input, .small-select { width: 100%; padding: 6px; border: 1px solid transparent; border-radius: 6px; font-size: 0.8rem; background: transparent; color: #334155; transition: all 0.2s; }
-.edit-input:focus { background: white; border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-.select-compact { padding: 0; font-size: 0.75rem; height: 26px; }
+.filter-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
 
-.edit-textarea { width: 300px; height: 32px; border: 1px solid transparent; border-radius: 6px; font-size: 0.75rem; padding: 6px; resize: none; background: transparent; }
+/* --- CELDAS Y DATOS --- */
+td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+/* Filas alternas para mejor lectura */
+tbody tr:nth-child(even) { background-color: #fafafa; }
+tbody tr:nth-child(even) .sticky-col { background-color: #fafafa !important; }
+
+.edit-input, .small-select { 
+  width: 100%; 
+  padding: 6px 8px; 
+  border: 1px solid transparent; 
+  border-radius: 6px; 
+  font-size: 0.8rem; 
+  background: transparent; 
+  color: #334155; 
+  transition: all 0.2s; 
+}
+
+.edit-input:focus { 
+  background: white; 
+  border-color: #3b82f6; 
+  outline: none; 
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); 
+}
+
+.edit-textarea { 
+  width: 300px; 
+  height: 32px; 
+  border: 1px solid transparent; 
+  border-radius: 6px; 
+  font-size: 0.75rem; 
+  padding: 6px; 
+  resize: none; 
+  background: transparent; 
+  transition: all 0.2s;
+}
+
 .edit-textarea:focus { height: 100px; width: 350px; background: white; border-color: #3b82f6; outline: none; }
 
-.btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 6px; border-radius: 6px; cursor: pointer; }
-.new-tag { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 0.65rem; }
+/* --- ESTADOS Y BADGES --- */
+.btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 6px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+.btn-delete:hover { background: #fecaca; }
 
+.new-tag { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 0.65rem; }
+
+/* Hovers y Estados de Licencia */
 tbody tr:hover td, tbody tr:hover .sticky-col { background-color: #f1f5f9 !important; }
 
 .fila-licencia-aprobada td, .fila-licencia-aprobada .sticky-col { background-color: #fee2e2 !important; color: #991b1b !important; }
 .fila-licencia-rechazada td, .fila-licencia-rechazada .sticky-col { background-color: #fef9c3 !important; color: #854d0e !important; }
+
 .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #fff1f2 !important; }
 .fila-inactiva .edit-input { color: #be123c !important; font-weight: 600; }
+
+/* --- CLASES DE UTILIDAD --- */
+.col-xs-compact { width: 50px; min-width: 50px; text-align: center; }
+.col-dni-compact { width: 95px; min-width: 95px; text-align: center; }
+.text-center { text-align: center; }
 
 /* --- RESPONSIVE DESIGN --- */
 @media (max-width: 1024px) {
@@ -311,5 +437,41 @@ tbody tr:hover td, tbody tr:hover .sticky-col { background-color: #f1f5f9 !impor
   .btn-action { min-width: 45%; }
   .title { font-size: 1.2rem; }
   .table-container { max-height: 60vh; }
+}
+
+/* Contenedor para alinear círculo y select */
+.status-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+/* Estilo base del círculo */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0; /* Para que no se aplaste */
+}
+
+/* Colores dinámicos */
+.dot-active {
+  background-color: #10b981; /* Verde esmeralda */
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.dot-inactive {
+  background-color: #ef4444; /* Rojo */
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* Ajuste opcional para el select dentro del wrapper */
+.select-compact {
+  border: none !important;
+  font-weight: bold;
+  width: auto !important;
+  cursor: pointer;
 }
 </style>

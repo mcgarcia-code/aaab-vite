@@ -1,5 +1,9 @@
 <script setup>
+import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
+import CredencialDigital from './CredencialDigital.vue'; // Importamos el componente
+
+const mostrarCredencial = ref(false);
 </script>
 
 <template>
@@ -35,6 +39,14 @@ import { RouterLink } from 'vue-router';
       </RouterLink>
     </div>
 
+    <div class="col-md-6" @click="mostrarCredencial = true">
+      <div class="menu-card shadow">
+        <i class="bi bi-person-badge fs-1 text-danger"></i>
+        <h5 class="mt-2 fw-bold text-dark">Credencial Digital</h5>
+        <p class="small text-muted m-0">Visualizar y descargar carnet oficial 2026.</p>
+      </div>
+    </div>
+
     <div class="col-md-6">
       <RouterLink to="/panel-arbitro/sanciones" class="text-decoration-none">
         <div class="menu-card shadow">
@@ -44,6 +56,8 @@ import { RouterLink } from 'vue-router';
         </div>
       </RouterLink>
     </div>
+
+    <CredencialDigital :mostrar="mostrarCredencial" @cerrar="mostrarCredencial = false" />
 
   </div>
 </template>
