@@ -1,19 +1,20 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
+// 1. Importamos el centralizador de auth
+import { auth } from '@/api/auth';
 
-const arbitro = ref(JSON.parse(localStorage.getItem('user_aaab') || '{}'));
+// 2. REEMPLAZO: Obtenemos el árbitro desde el sistema centralizado
+const arbitro = ref(auth.getUser() || {});
+
 const solicitudManual = ref('');
 const historial = ref([]);
 const cargando = ref(false);
 const mensaje = ref({ texto: '', tipo: '' });
 
-// 1. VARIABLE PARA LOS CHECKBOXES
 const movilidadSeleccionada = ref([]);
-
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
 
-// CORRECCIÓN: Ahora solicita explícitamente el tipo 'disponibilidad'
 const obtenerHistorial = async () => {
   try {
     const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=disponibilidad`);
@@ -40,18 +41,20 @@ watch(() => arbitro.value.disponibilidad_sabado, (val) => {
     arbitro.value.disponibilidad_sabado_hasta = null;
   }
 });
+
 watch(() => arbitro.value.disponibilidad_domingo, (val) => {
   if (val !== 'OTROS') {
     arbitro.value.disponibilidad_domingo_desde = null;
     arbitro.value.disponibilidad_domingo_hasta = null;
   }
+});
+
 // NUEVO WATCH PARA LIMPIEZA DE CLUB Y CATEGORÍA
 watch(() => arbitro.value.juega_handball, (nuevoValor) => {
   if (nuevoValor === 'no') {
     arbitro.value.donde_juega = null;
     arbitro.value.categoria_handball = null;
   }
-});
 });
 
 const guardarCambiosDirectos = async () => {
@@ -60,7 +63,10 @@ const guardarCambiosDirectos = async () => {
     const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_perfil.php', arbitro.value);
     if (res.data.success) {
       mensaje.value = { texto: "Disponibilidad actualizada correctamente.", tipo: 'success' };
-      localStorage.setItem('user_aaab', JSON.stringify(arbitro.value));
+      
+      // 3. REEMPLAZO: Guardamos los cambios en el sessionStorage centralizado
+      auth.setUser(arbitro.value);
+      
     } else {
       mensaje.value = { texto: res.data.message, tipo: 'danger' };
     }
@@ -80,7 +86,6 @@ const enviarSolicitudManual = async () => {
       nombre: arbitro.value.nombre,
       apellido: arbitro.value.apellido,
       grupo: arbitro.value.grupo,
-      // El backend detectará que NO es RECTIFICACIÓN y lo guardará como 'disponibilidad'
       mensaje: "SOLICITUD DISPONIBILIDAD: " + solicitudManual.value
     });
     if (res.data.success) {

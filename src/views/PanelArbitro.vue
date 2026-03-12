@@ -1,3 +1,27 @@
+<script setup>
+import { ref, onMounted } from 'vue'; // Agregamos onMounted
+// 1. Importamos auth
+import { auth } from '@/api/auth'; 
+
+
+// 2. REEMPLAZO: En lugar de JSON.parse(localStorage...), usamos auth.getUser()
+const arbitro = ref(auth.getUser() || {});
+
+const urlFoto = `https://arbitroshandball.com.ar/assets/carnet-arbitros/${arbitro.value.dni}.webp`;
+
+const cerrarSesion = () => {
+  // 3. REEMPLAZO: Usamos el método centralizado que ya limpia el session y redirige
+  auth.logout();
+};
+// ACTIVAR EL TIMER AL ENTRAR
+onMounted(() => {
+  if (auth.isLoggedIn()) {
+    auth.startInactivityTimer();
+  }
+});
+
+</script>
+
 <template>
   <div class="panel-container p-3">
     <div class="container max-800">
@@ -26,20 +50,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-
-const router = useRouter();
-const arbitro = ref(JSON.parse(localStorage.getItem('user_aaab') || '{}'));
-const urlFoto = `https://arbitroshandball.com.ar/assets/carnet-arbitros/${arbitro.value.dni}.webp`;
-
-const cerrarSesion = () => {
-  localStorage.removeItem('user_aaab');
-  window.dispatchEvent(new Event('storage'));
-  router.push('/login-arbitro');
-};
-</script>
 
 <style scoped>
 /* Solo estilos del Layout */

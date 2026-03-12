@@ -2,19 +2,22 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import logo from '@/assets/fotos/logo.png'
+// 1. Importamos auth
+import { auth } from '@/api/auth'
 
 // Referencias para el navbar (cerrar menú en móvil)
 const navbarNav = ref(null)
 
-// Creamos una referencia reactiva para el estado del login
-const logueado = ref(!!localStorage.getItem('user_aaab'))
+// 2. REEMPLAZO: Usamos auth.isLoggedIn() para la reactividad inicial
+const logueado = ref(auth.isLoggedIn())
 
-// Función para actualizar el estado
+// 3. REEMPLAZO: Actualizamos usando el método de auth
 const actualizarEstado = () => {
-  logueado.value = !!localStorage.getItem('user_aaab')
+  logueado.value = auth.isLoggedIn()
 }
 
-// Escuchamos el evento cuando se monta el componente y lo quitamos al desmontar
+// El onMounted y onUnmounted se quedan igual porque auth.js 
+// dispara el evento 'storage' manualmente para que esto funcione.
 onMounted(() => {
   window.addEventListener('storage', actualizarEstado)
 })

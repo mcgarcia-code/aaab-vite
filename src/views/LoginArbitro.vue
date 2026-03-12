@@ -2,6 +2,8 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+// 1. Importamos el centralizador de autenticación
+import { auth } from '@/api/auth'; 
 
 const router = useRouter();
 const email = ref('');
@@ -25,8 +27,10 @@ const iniciarSesion = async () => {
     });
 
     if (res.data.success) {
-      localStorage.setItem('user_aaab', JSON.stringify(res.data.arbitro));
-      window.dispatchEvent(new Event('storage'));
+      // 2. REEMPLAZO: Usamos auth.setUser en lugar de localStorage.setItem
+      // Esto internamente ya usa sessionStorage y dispara el evento 'storage'
+      auth.setUser(res.data.arbitro); 
+      
       router.push('/panel-arbitro');
     } else {
       errorMsg.value = res.data.message;

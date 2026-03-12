@@ -1,8 +1,11 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
+// 1. Importamos auth
+import { auth } from '@/api/auth';
 
-const arbitro = ref(JSON.parse(localStorage.getItem('user_aaab') || '{}'));
+// 2. REEMPLAZO: Obtenemos el árbitro a través de auth
+const arbitro = ref(auth.getUser() || {});
 const opciones = ref({ provincias: [], localidades: [] });
 const localidadesFiltradas = ref([]);
 const mensaje = ref({ texto: '', tipo: '' });
@@ -10,14 +13,11 @@ const cargando = ref(false);
 const solicitudCambio = ref('');
 const historialRectificaciones = ref([]);
 
-// --- LÓGICA DE SEGURIDAD (PASSWORD) ---
 const nuevaPassword = ref('');
 const passwordMensaje = ref({ texto: '', tipo: '' });
 
-// Control de edición (0 = Cerrado / 1 = Abierto)
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
 
-// Obtiene solo el historial de rectificaciones
 const obtenerHistorialRectificaciones = async () => {
     try {
         const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=rectificacion`);
@@ -55,7 +55,11 @@ const guardarCambios = async () => {
         const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_perfil.php', arbitro.value);
         if (res.data.success) {
             mensaje.value = { texto: "Datos actualizados correctamente.", tipo: 'success' };
-            localStorage.setItem('user_aaab', JSON.stringify(arbitro.value));
+            
+            // 3. REEMPLAZO: Actualizamos la sesión con los nuevos datos del árbitro
+            // Esto asegura que si cambia su nombre o grupo, se vea reflejado en todo el panel
+            auth.setUser(arbitro.value);
+            
         } else {
             mensaje.value = { texto: res.data.message, tipo: 'danger' };
         }
@@ -66,6 +70,7 @@ const guardarCambios = async () => {
     }
 };
 
+// ... El resto de las funciones (cambiarPassword, enviarSolicitudRectificacion) se mantienen igual ...
 const cambiarPassword = async () => {
     if (nuevaPassword.value.length < 6) {
         passwordMensaje.value = { texto: "La contraseña debe tener al menos 6 caracteres.", tipo: 'danger' };
