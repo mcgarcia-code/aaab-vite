@@ -90,6 +90,24 @@ const arbitrosFiltrados = computed(() => {
 
 const totalFiltrados = computed(() => arbitrosFiltrados.value.length);
 
+const obtenerTooltip = (a) => {
+  let mensajes = [];
+
+  if (a.tiene_aprobada > 0) {
+    mensajes.push(`LICENCIA APROBADA PARA EL: ${mostrarFechaArg(a.fecha_licencia_aprobada)}`);
+  }
+
+  if (a.tiene_rechazada > 0) {
+    mensajes.push(`LICENCIA RECHAZADA PARA EL: ${mostrarFechaArg(a.fecha_licencia_rechazada)}`);
+  }
+
+  if (a.es_activo == 0) {
+    mensajes.push("ÁRBITRO INACTIVO");
+  }
+
+  return mensajes.join('\n'); // El \n crea el salto de línea en el tooltip
+};
+
 onMounted(cargarDatos);
 </script>
 
@@ -130,11 +148,26 @@ onMounted(cargarDatos);
             <th class="col-xs-compact">Grupo</th>
             <th class="col-xs-compact">Subg.</th>
             <th class="col-dni-compact">DNI</th>
-            <th>Email</th><th>Dirección</th><th>Provincia</th><th>Localidad</th><th>Zona</th>
-            <th>Celular</th><th>F. Nacimiento</th><th>Tel. Contacto</th><th>Parentesco</th>
-            <th>Movilidad</th><th>Sáb. Disp</th><th>Sáb. Desde</th><th>Sáb. Hasta</th>
-            <th>Dom. Disp</th><th>Dom. Desde</th><th>Dom. Hasta</th><th>Juega</th>
-            <th>Club</th><th>Cat. Juega</th><th>Observaciones</th>
+            <th>Email</th>
+            <th>Dirección</th>
+            <th>Provincia</th>
+            <th>Localidad</th>
+            <th>Zona</th>
+            <th>Celular</th>
+            <th>F. Nacimiento</th>
+            <th>Tel. Contacto</th>
+            <th>Parentesco</th>
+            <th>Movilidad</th>
+            <th class="col-dni-compact" >Sáb. Disp</th>
+            <th>Sáb. Desde</th>
+            <th>Sáb. Hasta</th>
+            <th class="col-dni-compact" >Dom. Disp</th>
+            <th>Dom. Desde</th>
+            <th>Dom. Hasta</th>
+            <th class="col-dni-compact" >Juega</th>
+            <th>Club</th>
+            <th>Cat. Juega</th>
+            <th>Observaciones</th>
           </tr>
           <tr class="filter-row">
             <td class="sticky-col col-acciones"></td>
@@ -155,31 +188,29 @@ onMounted(cargarDatos);
             <td><input v-model="filtros.telefonocontacto" class="filter-input"></td>
             <td><input v-model="filtros.parentescocontacto" class="filter-input"></td>
             <td><input v-model="filtros.movilidad" class="filter-input"></td>
-            <td><input v-model="filtros.disponibilidad_sabado" class="filter-input"></td>
+            <td class="col-dni-compact"><input v-model="filtros.disponibilidad_sabado" class="filter-input"></td>
             <td><input v-model="filtros.disponibilidad_sabado_desde" class="filter-input"></td>
             <td><input v-model="filtros.disponibilidad_sabado_hasta" class="filter-input"></td>
-            <td><input v-model="filtros.disponibilidad_domingo" class="filter-input"></td>
+            <td class="col-dni-compact"><input v-model="filtros.disponibilidad_domingo" class="filter-input"></td>
             <td><input v-model="filtros.disponibilidad_domingo_desde" class="filter-input"></td>
             <td><input v-model="filtros.disponibilidad_domingo_hasta" class="filter-input"></td>
-            <td><input v-model="filtros.juega_handball" class="filter-input"></td>
+            <td class="col-dni-compact"><input v-model="filtros.juega_handball" class="filter-input"></td>
             <td><input v-model="filtros.donde_juega" class="filter-input"></td>
             <td><input v-model="filtros.categoria_handball" class="filter-input"></td>
             <td><input v-model="filtros.observaciones" class="filter-input"></td>
           </tr>
         </thead>
         <tbody>
-         <tr 
-            v-for="a in arbitrosFiltrados" 
-            :key="a.id || Math.random()"
-            :class="{ 
-              'fila-licencia-aprobada': a.tiene_aprobada > 0,
-              'fila-licencia-rechazada': a.tiene_aprobada == 0 && a.tiene_rechazada > 0,
-              'fila-inactiva': a.es_activo == 0
-            }"
-            :title="a.tiene_aprobada > 0 ? 'LICENCIA APROBADA PARA EL: ' + mostrarFechaArg(a.fecha_licencia_aprobada) : 
-                    (a.tiene_rechazada > 0 ? 'LICENCIA RECHAZADA PARA EL: ' + mostrarFechaArg(a.fecha_licencia_rechazada) : 
-                    (a.es_activo == 0 ? 'ÁRBITRO INACTIVO' : ''))"
-          >
+        <tr 
+  v-for="a in arbitrosFiltrados" 
+  :key="a.id || Math.random()"
+  :class="{ 
+    'fila-licencia-aprobada': a.tiene_aprobada > 0,
+    'fila-licencia-rechazada': a.tiene_aprobada == 0 && a.tiene_rechazada > 0,
+    'fila-inactiva': a.es_activo == 0
+  }"
+  :title="obtenerTooltip(a)"
+>
             <td class="sticky-col col-acciones cell-actions">
               <button @click="eliminar(a.id)" class="btn-table btn-delete" v-if="a.id" title="Eliminar">
                 <span class="material-icons">delete</span>
@@ -266,7 +297,7 @@ onMounted(cargarDatos);
 .title { font-size: 1.4rem; font-weight: 700; color: #1e293b; margin: 0; }
 
 .counter-badge { 
-  background: #1e293b; /* Color oscuro para contraste */
+  background: #1e293b; 
   color: #ffffff; 
   padding: 6px 14px; 
   border-radius: 20px; 
@@ -314,11 +345,11 @@ table { width: max-content; border-collapse: separate; border-spacing: 0; }
   position: sticky !important; 
   z-index: 10; 
   background: white !important; 
-  border-right: 1px solid #e2e8f0 !important; 
+  border-right: 1px solid #e2e8f0 !important;
 }
 
 .col-acciones { left: 0; width: 60px; text-align: center; }
-.col-id { left: 60px; width: 40px; text-align: center; color: #64748b; font-weight: 600; }
+.col-id { left: 60px; width: 40px; text-align: center; }
 .col-apellido { left: 100px; width: 140px; }
 .col-nombre { left: 240px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.15); }
 
@@ -340,7 +371,7 @@ th.sticky-col { z-index: 30; background: #f8fafc !important; }
 
 /* Fila de Filtros */
 .filter-row td { 
-  top: 48px; /* Ajustado al nuevo padding de TH */
+  top: 48px; 
   position: sticky; 
   z-index: 25; 
   background: #f8fafc !important; 
@@ -369,8 +400,13 @@ th.sticky-col { z-index: 30; background: #f8fafc !important; }
 td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 
 /* Filas alternas para mejor lectura */
-tbody tr:nth-child(even) { background-color: #fafafa; }
-tbody tr:nth-child(even) .sticky-col { background-color: #fafafa !important; }
+tbody tr:nth-child(even):not(.fila-licencia-aprobada):not(.fila-licencia-rechazada):not(.fila-inactiva) {
+  background-color: #fafafa;
+}
+
+tbody tr:nth-child(even):not(.fila-licencia-aprobada):not(.fila-licencia-rechazada):not(.fila-inactiva) .sticky-col {
+  background-color: #fafafa !important;
+}
 
 .edit-input, .small-select { 
   width: 100%; 
@@ -411,13 +447,41 @@ tbody tr:nth-child(even) .sticky-col { background-color: #fafafa !important; }
 .new-tag { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: 800; font-size: 0.65rem; }
 
 /* Hovers y Estados de Licencia */
-tbody tr:hover td, tbody tr:hover .sticky-col { background-color: #f1f5f9 !important; }
+/* Ajuste: Solo aplica el hover gris a filas que NO tengan estados especiales */
+tbody tr:not(.fila-licencia-aprobada):not(.fila-licencia-rechazada):not(.fila-inactiva):hover td, 
+tbody tr:not(.fila-licencia-aprobada):not(.fila-licencia-rechazada):not(.fila-inactiva):hover .sticky-col { 
+  background-color: #f1f5f9 !important; 
+}
 
-.fila-licencia-aprobada td, .fila-licencia-aprobada .sticky-col { background-color: #fee2e2 !important; color: #991b1b !important; }
-.fila-licencia-rechazada td, .fila-licencia-rechazada .sticky-col { background-color: #fef9c3 !important; color: #854d0e !important; }
+/* --- ESTADOS ESPECIALES (FONDO SÓLIDO Y NEGRITA) --- */
 
-.fila-inactiva td, .fila-inactiva .sticky-col { background-color: #fff1f2 !important; }
-.fila-inactiva .edit-input { color: #be123c !important; font-weight: 600; }
+/* 1. Licencia Aprobada e Inactivos (ROJO SÓLIDO) */
+.fila-licencia-aprobada td, 
+.fila-licencia-aprobada .sticky-col,
+.fila-inactiva td, 
+.fila-inactiva .sticky-col { 
+  background-color: #f37d7d !important; /* Color sólido sin transparencia */
+  font-weight: bold !important;
+  color: #000 !important;
+}
+
+/* 2. Licencia Rechazada (AMARILLO SÓLIDO) */
+.fila-licencia-rechazada td, 
+.fila-licencia-rechazada .sticky-col { 
+  background-color: #e6d84a !important; /* Color sólido sin transparencia */
+  font-weight: bold !important;
+  color: #000 !important;
+}
+
+/* Forzar que los inputs hereden el fondo sólido en estos estados */
+.fila-licencia-aprobada .edit-input, 
+.fila-licencia-rechazada .edit-input, 
+.fila-inactiva .edit-input {
+  background-color: transparent !important;
+  font-weight: bold !important;
+  color: #000 !important;
+}
+
 
 /* --- CLASES DE UTILIDAD --- */
 .col-xs-compact { width: 50px; min-width: 50px; text-align: center; }
@@ -453,17 +517,17 @@ tbody tr:hover td, tbody tr:hover .sticky-col { background-color: #f1f5f9 !impor
   height: 10px;
   border-radius: 50%;
   display: inline-block;
-  flex-shrink: 0; /* Para que no se aplaste */
+  flex-shrink: 0;
 }
 
 /* Colores dinámicos */
 .dot-active {
-  background-color: #10b981; /* Verde esmeralda */
+  background-color: #10b981; 
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
 }
 
 .dot-inactive {
-  background-color: #ef4444; /* Rojo */
+  background-color: #ef4444; 
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
 }
 

@@ -111,12 +111,14 @@ const descargar = () => {
         </div>
       </div>
 
-      <div class="actions mt-4 d-flex flex-column align-items-center">
-        <button class="btn-download shadow" @click="descargar">
-          <i class="bi bi-download me-2"></i> DESCARGAR CREDENCIAL
-        </button>
-        <button class="btn-close-text" @click="emit('cerrar')">Cerrar</button>
-      </div>
+      <div class="actions-wrapper">
+  <div class="actions d-flex flex-column align-items-center">
+    <button class="btn-download shadow" @click="descargar">
+      <i class="bi bi-download me-2"></i> DESCARGAR CREDENCIAL
+    </button>
+    <button class="btn-close-text" @click="emit('cerrar')">Cerrar</button>
+  </div>
+</div>
     </div>
   </div>
 </template>
@@ -289,6 +291,16 @@ const descargar = () => {
   color: white; background: none; border: none; 
   text-decoration: underline; opacity: 0.8; 
 }
+.actions-wrapper {
+  position: sticky;
+  bottom: -1px; /* Evita fugas de luz en el borde inferior */
+  /* El gradiente ayuda a que la transición entre la credencial y los botones sea suave */
+  background: linear-gradient(to top, rgba(0,0,0,1) 80%, transparent); 
+  padding: 20px 0 30px 0; /* Más padding abajo para móviles con notch o barras de gestos */
+  width: 100%;
+  margin-top: 10px;
+  z-index: 10;
+}
 
 /* --- RESPONSIVE --- */
 @media (max-width: 650px) {
@@ -340,6 +352,9 @@ const descargar = () => {
     font-size: 6rem;
     left: 50%;
     top: 75%;
+  }
+  .modal-container {
+    padding-bottom: 20px; /* Espacio para que el scroll no choque con el botón */
   }
 }
 </style>

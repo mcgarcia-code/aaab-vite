@@ -34,7 +34,7 @@ const mostrarCredencial = ref(false);
         <div class="menu-card shadow">
           <i class="bi bi-calendar-check text-danger"></i>
           <h5 class="mt-2 fw-bold text-dark">Solicitar Licencia</h5>
-          <p class="small text-muted m-0">Inasistencias con 9 días de antelación.</p>
+          <p class="small text-muted m-0">Inasistencias con 10 días de antelación.</p>
         </div>
       </RouterLink>
     </div>
