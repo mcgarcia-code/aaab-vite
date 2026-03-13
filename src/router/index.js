@@ -75,6 +75,11 @@ const routes = [
   name: 'Designaciones',
   component: () => import('../views/DesignacionesAdmin.vue') // Ajusta la ruta a tu archivo
 },
+  {
+  path: '/contactos-celulares',
+  name: 'ContactosCelulares',
+  component: () => import('../views/ContactosCelularesView.vue') // Ajusta la ruta a tu archivo
+},
 ];
 
 const router = createRouter({

@@ -59,11 +59,18 @@ const obtenerTextoLicencia = (a) => {
   return textos.length > 0 ? textos.join(' | ') : '-';
 };
 
+const normalizarTexto = (valor) => {
+  return String(valor || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+};
+
 const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     const cumpleTexto = Object.keys(filtros).every(key => {
       if (!filtros[key] || key === 'licencia') return true;
-      return String(a[key] || "").toLowerCase().includes(filtros[key].toLowerCase());
+      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
     let cumpleLicencia = true;
     if (filtros.licencia === 'aprobada') cumpleLicencia = a.tiene_aprobada > 0;
