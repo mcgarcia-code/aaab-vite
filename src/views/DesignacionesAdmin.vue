@@ -117,7 +117,7 @@ onMounted(cargarDatos);
         <input v-model="filtros.apellido" placeholder="Apellido..">
         <input v-model="filtros.nombre" placeholder="Nombre..">
         <select v-model="filtros.licencia">
-          <option value="">Todas las Licencias</option>
+          <option value="">Todos los árbitros</option>
           <option value="aprobada">Aprobadas</option>
           <option value="rechazada">Rechazadas</option>
         </select>
@@ -159,7 +159,7 @@ onMounted(cargarDatos);
             <td class="sticky-col col-shrink sticky-col-final" style="left:330px; z-index: 35;"></td>
             <td class="sticky-col" style="left:380px; z-index: 35;">
               <select v-model="filtros.licencia" class="filter-input">
-                <option value="">Todas</option>
+                <option value="">Todos los árbitros</option>
                 <option value="aprobada">Aprobada</option>
                 <option value="rechazada">Rechazada</option>
               </select>
