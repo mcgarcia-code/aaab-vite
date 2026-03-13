@@ -122,6 +122,8 @@ onMounted(cargarDatos);
           <option value="rechazada">Rechazadas</option>
         </select>
         <input v-model="filtros.zona" placeholder="Zona..">
+        <input v-model="filtros.grupo" placeholder="Grupo..">
+        <input v-model="filtros.subgrupo" placeholder="Sub-grupo..">
       </div>
       <button @click="mostrarFiltrosMobile = false" class="btn-close-filters">Ver Resultados</button>
     </div>
