@@ -42,6 +42,16 @@ const mostrarFechaArg = (fecha) => {
   return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
 };
 
+// --- LÓGICA WHATSAPP ---
+const abrirWhatsApp = (numero) => {
+  if (!numero) return;
+  // Limpiamos el número de espacios, guiones y el "+" inicial
+  const limpio = String(numero).replace(/\D/g, '');
+  // Si no empieza con 54, se lo agregamos (asumiendo Argentina)
+  const prefijo = limpio.startsWith('54') ? limpio : `54${limpio}`;
+  window.open(`https://wa.me/${prefijo}`, '_blank');
+};
+
 const obtenerTextoLicencia = (a) => {
   let textos = [];
   if (a.tiene_aprobada > 0 && a.fecha_licencia_aprobada) textos.push(`APR: ${mostrarFechaArg(a.fecha_licencia_aprobada)}`);
@@ -65,6 +75,7 @@ const arbitrosFiltrados = computed(() => {
 const exportarExcel = () => {
   const datos = arbitrosFiltrados.value.map(a => ({
     APELLIDO: a.apellido, NOMBRE: a.nombre,
+    CELULAR: a.celular,
     SAB_DESIGNADO: designadosSabado.value.has(a.id) ? 'SI' : 'NO',
     DOM_DESIGNADO: designadosDomingo.value.has(a.id) ? 'SI' : 'NO',
     LICENCIA: obtenerTextoLicencia(a),
@@ -124,11 +135,12 @@ onMounted(cargarDatos);
             <th class="sticky-col col-shrink" style="left: 280px; z-index: 40;">SÁB</th>
             <th class="sticky-col col-shrink sticky-col-final" style="left: 330px; z-index: 40;">DOM</th>
             <th class="sticky-col" style="left: 380px; z-index: 40; min-width: 160px;">Licencia</th>
+            <th class="col-shrink">WhatsApp</th>
             <th class="col-shrink">Activo</th>
             <th class="col-shrink">Grupo</th>
             <th class="col-shrink">Sub</th>
             <th>Zona</th>
-            <th>Móvil</th>
+            <th>Movilidad</th>
             <th class="col-shrink">Sáb Disp</th>
             <th>Desde</th>
             <th>Hasta</th>
@@ -152,7 +164,7 @@ onMounted(cargarDatos);
                 <option value="rechazada">Rechazada</option>
               </select>
             </td>
-            <td class="bg-filter col-shrink"><input v-model="filtros.es_activo" class="filter-input-min"></td>
+            <td></td> <td class="bg-filter col-shrink"><input v-model="filtros.es_activo" class="filter-input-min"></td>
             <td class="bg-filter col-shrink"><input v-model="filtros.grupo" class="filter-input-min"></td>
             <td class="bg-filter col-shrink"><input v-model="filtros.subgrupo" class="filter-input-min"></td>
             <td class="bg-filter"><input v-model="filtros.zona" class="filter-input"></td>
@@ -174,6 +186,14 @@ onMounted(cargarDatos);
             <td class="sticky-col text-center col-shrink" style="left: 280px;"><input type="checkbox" :checked="designadosSabado.has(a.id)" @change="toggleDesignacion(a.id, 'S')" class="check"></td>
             <td class="sticky-col text-center col-shrink sticky-col-final" style="left: 330px;"><input type="checkbox" :checked="designadosDomingo.has(a.id)" @change="toggleDesignacion(a.id, 'D')" class="check"></td>
             <td class="sticky-col text-center text-xs" style="left: 380px; white-space: nowrap;">{{ obtenerTextoLicencia(a) }}</td>
+            
+            <td class="text-center col-shrink">
+              <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa" title="Enviar WhatsApp">
+                <span class="material-icons">chat</span>
+              </button>
+              <span v-else>-</span>
+            </td>
+
             <td class="text-center col-shrink"><span :class="['dot', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span></td>
             <td class="text-center col-shrink">{{ a.grupo }}</td>
             <td class="text-center col-shrink">{{ a.subgrupo }}</td>
@@ -208,6 +228,9 @@ onMounted(cargarDatos);
             <p><strong>Dom:</strong> {{ a.disponibilidad_domingo }} ({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</p>
             <p v-if="a.observaciones"><strong>Obs:</strong> {{ a.observaciones }}</p>
           </div>
+          <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa-mobile">
+            <span class="material-icons">chat</span> Contactar por WhatsApp
+          </button>
         </div>
       </div>
     </div>
@@ -226,30 +249,68 @@ onMounted(cargarDatos);
 .btn-export { background: #10b981; color: white; }
 .btn-filter-mobile { background: #3b82f6; color: white; }
 
+/* BOTON WHATSAPP */
+/* El botón circular de WhatsApp */
+
+td.text-center {
+  display: table-cell; /* Asegura que se comporte como celda */
+  text-align: center;  /* Centrado horizontal básico */
+  vertical-align: middle; /* Centrado vertical */
+}
+.btn-wa {
+  background: #25d366;
+  color: white;
+  border: none;
+  width: 28px;       /* Le damos un ancho fijo */
+  height: 28px;      /* Le damos un alto fijo */
+  border-radius: 50%;
+  cursor: pointer;
+  
+  /* Flexbox para centrar el icono dentro del círculo */
+  display: inline-flex; 
+  align-items: center;
+  justify-content: center;
+  
+  margin: 0 auto;    /* Margen automático para centrarlo si hay espacio */
+  transition: 0.2s;
+}
+.btn-wa:hover { transform: scale(1.1); }
+.btn-wa .material-icons { font-size: 18px; }
+
+.btn-wa-mobile {
+  width: 100%;
+  margin-top: 10px;
+  background: #25d366;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  
+  /* Centrado perfecto */
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  
+  gap: 8px; /* Espacio entre el icono y el texto */
+  font-size: 0.85rem;
+}
+
 /* TABLA DESKTOP */
 .table-container { overflow: auto; max-height: 80vh; background: white; border: 1px solid #e2e8f0; }
 table { width: max-content; border-collapse: separate; border-spacing: 0; font-size: 0.8rem; }
 th { background: #f1f5f9 !important; padding: 10px; position: sticky; top: 0; z-index: 30; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; }
 .filter-row td { position: sticky; top: 33px; z-index: 25; background: #f1f5f9 !important; padding: 4px; border-bottom: 2px solid #cbd5e1; }
 
-/* STICKY COLUMNS */
 .sticky-col { position: sticky; z-index: 10; background-color: #ffffff !important; border-right: 1px solid #e2e8f0; }
 th.sticky-col { z-index: 50 !important; }
 .filter-row .sticky-col { background-color: #f1f5f9 !important; }
 
-/* REGLA DE BORDE PARA SEPARAR EL DOMINGO */
-.sticky-col-final {
-  border-right: 2px solid #cbd5e1 !important;
-}
+/* SEPARADOR DOMINGO-LICENCIA */
+.sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
 
 /* REGLA DE ANCHO MÍNIMO */
-.col-shrink { 
-  width: 1px !important; 
-  white-space: nowrap !important; 
-  padding: 8px 10px !important; 
-  text-align: center;
-}
-
+.col-shrink { width: 1px !important; white-space: nowrap !important; padding: 8px 10px !important; text-align: center; }
 .filter-input { width: 100%; padding: 2px; border: 1px solid #cbd5e1; font-size: 0.7rem; }
 .filter-input-min { width: 35px; text-align: center; border: 1px solid #cbd5e1; font-size: 0.7rem; }
 
@@ -259,7 +320,6 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 .dot-red { background-color: #ef4444; }
 .check { transform: scale(1.1); cursor: pointer; }
 .font-bold { font-weight: bold; }
-.text-center { text-align: center; }
 
 /* OBS EXPANDIBLE */
 .col-obs-container { width: 150px; position: relative; }
@@ -276,7 +336,7 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
   .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
 }
 
-/* COLORES */
+/* COLORES FILAS */
 .fila-des, .fila-des .sticky-col { background-color: #f0fdf4 !important; }
 .fila-lic-ok td, .fila-lic-ok .sticky-col, .card-arbitro.fila-lic-ok { background-color: #fca5a5 !important; }
 .fila-ina td, .fila-ina .sticky-col, .card-arbitro.fila-ina { background-color: #f1f5f9 !important; color: #64748b !important; }
