@@ -25,6 +25,13 @@ const procesarEntradaFecha = (valor, arbitro) => {
   }
 };
 
+const normalizarTexto = (valor) => {
+  return String(valor || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+};
+
 const exportarExcel = () => {
   const datosParaExcel = arbitrosFiltrados.value.map(a => ({
     ...a,
@@ -83,7 +90,7 @@ const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     return Object.keys(filtros).every(key => {
       if (!filtros[key]) return true;
-      return String(a[key] || "").toLowerCase().includes(filtros[key].toLowerCase());
+      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
   });
 });
