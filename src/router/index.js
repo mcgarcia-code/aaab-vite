@@ -69,7 +69,12 @@ const routes = [
     path: '/gestion-privada-arbitros',
     name: 'AdminArbitros',
     component: () => import('../views/AdminArbitros.vue')
-  }
+  },
+  {
+  path: '/designaciones-aaab',
+  name: 'Designaciones',
+  component: () => import('../views/DesignacionesAdmin.vue') // Ajusta la ruta a tu archivo
+},
 ];
 
 const router = createRouter({
