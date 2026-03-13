@@ -1,14 +1,9 @@
-﻿name: Deploy via SFTP
+﻿name: Deploy Vue 3 to cPanel
 
 on:
   push:
-  workflow_dispatch:
-    inputs:
-      test_only:
-        description: "Solo probar conexion SSH/rsync (sin deploy)"
-        required: true
-        default: true
-        type: boolean
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -19,70 +14,26 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node
-        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.test_only) }}
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install dependencies
-        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.test_only) }}
         run: npm ci
 
       - name: Build Vue
-        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.test_only) }}
         run: npm run build
 
       - name: Setup SSH key
-        env:
-          SFTP_SSH_PRIVATE_KEY_B64: ${{ secrets.SFTP_SSH_PRIVATE_KEY_B64 }}
-          SFTP_SSH_PRIVATE_KEY: ${{ secrets.SFTP_SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
-
-          if [ -n "$SFTP_SSH_PRIVATE_KEY_B64" ]; then
-            printf "%s" "$SFTP_SSH_PRIVATE_KEY_B64" | tr -d '\r\n ' | base64 -d > ~/.ssh/id_ed25519
-          elif printf "%s" "$SFTP_SSH_PRIVATE_KEY" | grep -q "BEGIN .*PRIVATE KEY"; then
-            printf "%s" "$SFTP_SSH_PRIVATE_KEY" | sed 's/\\n/\n/g' | tr -d '\r' > ~/.ssh/id_ed25519
-          elif printf "%s" "$SFTP_SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_ed25519 2>/dev/null; then
-            true
-          else
-            printf "%s" "$SFTP_SSH_PRIVATE_KEY" | sed 's/\\n/\n/g' | tr -d '\r' > ~/.ssh/id_ed25519
-          fi
-
+          echo "${{ secrets.SFTP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keygen -y -f ~/.ssh/id_ed25519 > /dev/null 2>&1 || (echo "Invalid SSH private key. Prefer setting SFTP_SSH_PRIVATE_KEY_B64." && exit 1)
-
-      - name: Test SSH connection
-        env:
-          SFTP_HOST: ${{ secrets.SFTP_HOST }}
-          SFTP_PORT: ${{ secrets.SFTP_PORT }}
-          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
-        run: |
-          ssh -i ~/.ssh/id_ed25519 \
-            -o IdentitiesOnly=yes \
-            -o PreferredAuthentications=publickey \
-            -o StrictHostKeyChecking=no \
-            -p "${SFTP_PORT:-22}" \
-            "$SFTP_USERNAME@$SFTP_HOST" "echo SSH_OK"
 
       - name: Deploy with rsync
-        env:
-          SFTP_HOST: ${{ secrets.SFTP_HOST }}
-          SFTP_PORT: ${{ secrets.SFTP_PORT }}
-          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
-          SFTP_REMOTE_PATH: ${{ secrets.SFTP_REMOTE_PATH }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.test_only }}" = "true" ]; then
-            rsync -avzn --delete \
-              --exclude='.htaccess' \
-              -e "ssh -i ~/.ssh/id_ed25519 -p ${SFTP_PORT:-22} -o StrictHostKeyChecking=no" \
-              dist/ \
-              "$SFTP_USERNAME@$SFTP_HOST:$SFTP_REMOTE_PATH"
-            exit 0
-          fi
-
           rsync -avz --delete \
             --exclude='.htaccess' \
-            -e "ssh -i ~/.ssh/id_ed25519 -p ${SFTP_PORT:-22} -o StrictHostKeyChecking=no" \
+            -e "ssh -p 46464 -o StrictHostKeyChecking=no" \
             dist/ \
-            "$SFTP_USERNAME@$SFTP_HOST:$SFTP_REMOTE_PATH"
+            ${{ secrets.SFTP_USERNAME }}@${{ secrets.SFTP_HOST }}:/home/${{ secrets.SFTP_USERNAME }}/public_html/
