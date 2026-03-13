@@ -54,8 +54,23 @@ const abrirWhatsApp = (numero) => {
 
 const obtenerTextoLicencia = (a) => {
   let textos = [];
-  if (a.tiene_aprobada > 0 && a.fecha_licencia_aprobada) textos.push(`APR: ${mostrarFechaArg(a.fecha_licencia_aprobada)}`);
-  if (a.tiene_rechazada > 0 && a.fecha_licencia_rechazada) textos.push(`REC: ${mostrarFechaArg(a.fecha_licencia_rechazada)}`);
+
+  const formatearVariasFechas = (cadenaFechas) => {
+    if (!cadenaFechas) return '';
+    // Separamos por coma, limpiamos espacios y formateamos cada una
+    return cadenaFechas.split(',')
+      .map(f => mostrarFechaArg(f.trim()))
+      .join(', ');
+  };
+
+  if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
+    textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
+  }
+  
+  if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
+    textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
+  }
+
   return textos.length > 0 ? textos.join(' | ') : '-';
 };
 

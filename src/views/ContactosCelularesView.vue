@@ -153,9 +153,9 @@ onMounted(cargarDatos);
 </template>
 
 <style scoped>
-.admin-panel { padding: 15px; background: #f8fafc; min-height: 100vh; font-family: sans-serif; }
+.admin-panel { padding: 15px; background: #f8fafc; font-family: sans-serif; color: #000; }
 .header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #25d366; align-items: center; }
-.title { font-size: 1.2rem; font-weight: bold; margin: 0; color: #1e293b; }
+.title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #1e293b; }
 .counter { font-size: 0.85rem; color: #64748b; }
 
 .header-actions { display: flex; gap: 8px; }
