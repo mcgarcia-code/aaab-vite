@@ -32,7 +32,7 @@ jobs:
 
       - name: Deploy with rsync
         run: |
-          rsync -avz --delete \
+          rsync -avz \
             --exclude='.htaccess' \
             -e "ssh -p 46464 -o StrictHostKeyChecking=no" \
             dist/ \
