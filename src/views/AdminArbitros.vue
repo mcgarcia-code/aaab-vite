@@ -18,16 +18,6 @@ const mostrarFechaArg = (fecha) => {
   return `${partes[2]}/${partes[1]}/${partes[0]}`;
 };
 
-const procesarEntradaFecha = (valor, arbitro) => {
-  if (valor.length === 10) {
-    const partes = valor.split('/');
-    if (partes.length === 3) {
-      const [d, m, y] = partes;
-      arbitro.fecha_nacimiento = `${y}-${m}-${d}`;
-    }
-  }
-};
-
 const normalizarTexto = (valor) => {
   return String(valor || '')
     .normalize('NFD')
@@ -211,7 +201,7 @@ onMounted(cargarDatos);
             <td><input v-model="a.zona" class="edit-input" readonly></td>
             <td><input v-model="a.celular" class="edit-input"></td>
             <td>
-              <input type="text" :value="mostrarFechaArg(a.fecha_nacimiento)" @input="e => procesarEntradaFecha(e.target.value, a)" placeholder="DD/MM/AAAA" class="edit-input" maxlength="10">
+              <input type="date" v-model="a.fecha_nacimiento" class="edit-input">
             </td>
             <td><input v-model="a.telefonocontacto" class="edit-input"></td>
             <td><input v-model="a.parentescocontacto" class="edit-input"></td>
