@@ -42,43 +42,52 @@ const mostrarFechaArg = (fecha) => {
   return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
 };
 
-// --- LÓGICA WHATSAPP ---
+// --- LÓGICA DE COLORES SOLICITADA ---
+const obtenerClaseFila = (a) => {
+  const tieneAprobada = Number(a.tiene_aprobada) > 0;
+  const tieneRechazada = Number(a.tiene_rechazada) > 0;
+  const esInactivo = a.es_activo == 0;
+
+  // Condición 3: Más de dos (aprobadas + rechazadas) O si tiene de ambos tipos simultáneamente
+  // (Interpretado como: si hay conflicto de licencias o volumen alto -> Rojo)
+  if (tieneAprobada && tieneRechazada) return 'fila-roja';
+  
+  // Condición 1: Inactivos (valor 0) o Licencias Aprobadas -> Rojo
+  if (esInactivo || tieneAprobada) return 'fila-roja';
+
+  // Condición 2: Licencias rechazadas -> Amarillo
+  if (tieneRechazada) return 'fila-amarilla';
+
+  // Default: Si está designado (Verde suave original)
+  if (designadosSabado.value.has(a.id) || designadosDomingo.value.has(a.id)) return 'fila-des';
+
+  return '';
+};
+
 const abrirWhatsApp = (numero) => {
   if (!numero) return;
-  // Limpiamos el número de espacios, guiones y el "+" inicial
   const limpio = String(numero).replace(/\D/g, '');
-  // Si no empieza con 54, se lo agregamos (asumiendo Argentina)
   const prefijo = limpio.startsWith('54') ? limpio : `54${limpio}`;
   window.open(`https://wa.me/${prefijo}`, '_blank');
 };
 
 const obtenerTextoLicencia = (a) => {
   let textos = [];
-
   const formatearVariasFechas = (cadenaFechas) => {
     if (!cadenaFechas) return '';
-    // Separamos por coma, limpiamos espacios y formateamos cada una
-    return cadenaFechas.split(',')
-      .map(f => mostrarFechaArg(f.trim()))
-      .join(', ');
+    return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
   };
-
   if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
     textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
   }
-  
   if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
     textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
   }
-
   return textos.length > 0 ? textos.join(' | ') : '-';
 };
 
 const normalizarTexto = (valor) => {
-  return String(valor || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
+  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 };
 
 const arbitrosFiltrados = computed(() => {
@@ -204,7 +213,7 @@ onMounted(cargarDatos);
           </tr>
         </thead>
         <tbody>
-          <tr v-for="a in arbitrosFiltrados" :key="a.id" :class="{'fila-lic-ok': a.tiene_aprobada > 0, 'fila-des': designadosSabado.has(a.id) || designadosDomingo.has(a.id), 'fila-ina': a.es_activo == 0}">
+          <tr v-for="a in arbitrosFiltrados" :key="a.id" :class="obtenerClaseFila(a)">
             <td class="sticky-col font-bold" style="left: 0;">{{ a.apellido }}</td>
             <td class="sticky-col font-bold" style="left: 140px;">{{ a.nombre }}</td>
             <td class="sticky-col text-center col-shrink" style="left: 280px;"><input type="checkbox" :checked="designadosSabado.has(a.id)" @change="toggleDesignacion(a.id, 'S')" class="check"></td>
@@ -239,7 +248,7 @@ onMounted(cargarDatos);
     </div>
 
     <div class="mobile-only">
-      <div v-for="a in arbitrosFiltrados" :key="'mob-'+a.id" class="card-arbitro" :class="{'fila-lic-ok': a.tiene_aprobada > 0, 'fila-des': designadosSabado.has(a.id) || designadosDomingo.has(a.id), 'fila-ina': a.es_activo == 0}">
+      <div v-for="a in arbitrosFiltrados" :key="'mob-'+a.id" class="card-arbitro" :class="obtenerClaseFila(a)">
         <div class="card-header">
           <div class="card-name"><span :class="['dot-sm', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span> <strong>{{ a.apellido }}, {{ a.nombre }}</strong></div>
           <div class="card-lic text-xs">{{ obtenerTextoLicencia(a) }}</div>
@@ -265,7 +274,7 @@ onMounted(cargarDatos);
 .admin-panel { padding: 15px; background: #f8fafc; font-family: sans-serif; color: #000; }
 .header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
-.counter { font-size: 0.8rem; color: #475569; }
+.counter { font-size: 0.85rem; color: #475569; }
 .header-actions { display: flex; gap: 8px; }
 .btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; }
 .btn-clear { background: #e2e8f0; }
@@ -273,67 +282,23 @@ onMounted(cargarDatos);
 .btn-export { background: #10b981; color: white; }
 .btn-filter-mobile { background: #3b82f6; color: white; }
 
-/* BOTON WHATSAPP */
-/* El botón circular de WhatsApp */
-
-td.text-center {
-  display: table-cell; /* Asegura que se comporte como celda */
-  text-align: center;  /* Centrado horizontal básico */
-  vertical-align: middle; /* Centrado vertical */
-}
-.btn-wa {
-  background: #25d366;
-  color: white;
-  border: none;
-  width: 28px;       /* Le damos un ancho fijo */
-  height: 28px;      /* Le damos un alto fijo */
-  border-radius: 50%;
-  cursor: pointer;
-  
-  /* Flexbox para centrar el icono dentro del círculo */
-  display: inline-flex; 
-  align-items: center;
-  justify-content: center;
-  
-  margin: 0 auto;    /* Margen automático para centrarlo si hay espacio */
-  transition: 0.2s;
-}
+td.text-center { display: table-cell; text-align: center; vertical-align: middle; }
+.btn-wa { background: #25d366; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto; transition: 0.2s; }
 .btn-wa:hover { transform: scale(1.1); }
 .btn-wa .material-icons { font-size: 18px; }
 
-.btn-wa-mobile {
-  width: 100%;
-  margin-top: 10px;
-  background: #25d366;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 6px;
-  font-weight: bold;
-  
-  /* Centrado perfecto */
-  display: flex;
-  align-items: center;
-  justify-content: center; 
-  
-  gap: 8px; /* Espacio entre el icono y el texto */
-  font-size: 0.85rem;
-}
+.btn-wa-mobile { width: 100%; margin-top: 10px; background: #25d366; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; }
 
-/* TABLA DESKTOP */
 .table-container { overflow: auto; max-height: 80vh; background: white; border: 1px solid #e2e8f0; }
 table { width: max-content; border-collapse: separate; border-spacing: 0; font-size: 0.8rem; }
 th { background: #f1f5f9 !important; padding: 10px; position: sticky; top: 0; z-index: 30; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; }
 .filter-row td { position: sticky; top: 33px; z-index: 25; background: #f1f5f9 !important; padding: 4px; border-bottom: 2px solid #cbd5e1; }
 
-.sticky-col { position: sticky; z-index: 10; background-color: #ffffff !important; border-right: 1px solid #e2e8f0; }
-th.sticky-col { z-index: 50 !important; }
+.sticky-col { position: sticky; z-index: 10; background-color: inherit !important; border-right: 1px solid #e2e8f0; }
+th.sticky-col { z-index: 50 !important; background-color: #f1f5f9 !important; }
 .filter-row .sticky-col { background-color: #f1f5f9 !important; }
-
-/* SEPARADOR DOMINGO-LICENCIA */
 .sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
 
-/* REGLA DE ANCHO MÍNIMO */
 .col-shrink { width: 1px !important; white-space: nowrap !important; padding: 8px 10px !important; text-align: center; }
 .filter-input { width: 100%; padding: 2px; border: 1px solid #cbd5e1; font-size: 0.7rem; }
 .filter-input-min { width: 35px; text-align: center; border: 1px solid #cbd5e1; font-size: 0.7rem; }
@@ -345,7 +310,6 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 .check { transform: scale(1.1); cursor: pointer; }
 .font-bold { font-weight: bold; }
 
-/* OBS EXPANDIBLE */
 .col-obs-container { width: 150px; position: relative; }
 .obs-wrapper { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; padding: 4px; border-radius: 4px; }
 .obs-wrapper:focus { position: absolute; width: 300px; white-space: normal; background: #fff; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #3b82f6; padding: 10px; left: -150px; top: 0; }
@@ -360,8 +324,16 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
   .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
 }
 
-/* COLORES FILAS */
-.fila-des, .fila-des .sticky-col { background-color: #f0fdf4 !important; }
-.fila-lic-ok td, .fila-lic-ok .sticky-col, .card-arbitro.fila-lic-ok { background-color: #fca5a5 !important; }
-.fila-ina td, .fila-ina .sticky-col, .card-arbitro.fila-ina { background-color: #f1f5f9 !important; color: #64748b !important; }
+/* COLORES DE FILAS (NUEVAS REGLAS) */
+.fila-roja, .fila-roja .sticky-col, .card-arbitro.fila-roja { 
+  background-color: #fca5a5 !important; 
+  color: #000 !important;
+}
+.fila-amarilla, .fila-amarilla .sticky-col, .card-arbitro.fila-amarilla { 
+  background-color: #fef08a !important; 
+  color: #000 !important;
+}
+.fila-des, .fila-des .sticky-col, .card-arbitro.fila-des { 
+  background-color: #f0fdf4 !important; 
+}
 </style>

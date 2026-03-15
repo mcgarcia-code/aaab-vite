@@ -74,7 +74,19 @@ const guardarTodo = async () => {
 const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     return Object.keys(filtros).every(key => {
-      if (!filtros[key]) return true;
+      if (filtros[key] === undefined || filtros[key] === null || filtros[key] === '') return true;
+
+      // Lógica especial para el filtro de Activo (SI/NO)
+      if (key === 'es_activo') {
+        const busqueda = filtros[key].toLowerCase();
+        const valorReal = String(a[key]); // '1' o '0'
+        
+        if (busqueda === 'si') return valorReal === '1';
+        if (busqueda === 'no') return valorReal === '0';
+        // Permite también filtrar por 1 o 0 directamente
+        return valorReal.includes(busqueda);
+      }
+
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
   });
@@ -147,7 +159,7 @@ onMounted(cargarDatos);
             <td class="sticky-col col-id"></td>
             <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar.."></td>
             <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar.."></td>
-            <td class="col-xs-compact"><input v-model="filtros.es_activo" class="filter-input text-center" placeholder="1/0"></td>
+            <td class="col-xs-compact"><input v-model="filtros.es_activo" class="filter-input text-center" placeholder="SI/NO"></td>
             <td class="col-xs-compact"><input v-model="filtros.grupo" class="filter-input text-center"></td>
             <td class="col-xs-compact"><input v-model="filtros.subgrupo" class="filter-input text-center"></td>
             <td class="col-dni-compact"><input v-model="filtros.dni" class="filter-input text-center"></td>
@@ -232,7 +244,7 @@ onMounted(cargarDatos);
 }
 
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
-.counter { font-size: 0.8rem; color: #475569; }
+.counter { font-size: 0.85rem; color: #475569; }
 
 .header-actions { display: flex; gap: 8px; }
 
