@@ -7,7 +7,7 @@ import { auth } from '@/api/auth';
 // 2. REEMPLAZO: En lugar de JSON.parse(localStorage...), usamos auth.getUser()
 const arbitro = ref(auth.getUser() || {});
 
-const urlFoto = `https://arbitroshandball.com.ar/assets/carnet-arbitros/${arbitro.value.dni}.webp`;
+const urlFoto = `https://arbitroshandball.com.ar/resources/carnet-arbitros/${arbitro.value.dni}.webp`;
 
 const cerrarSesion = () => {
   // 3. REEMPLAZO: Usamos el método centralizado que ya limpia el session y redirige
