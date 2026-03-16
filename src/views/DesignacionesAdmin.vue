@@ -3,8 +3,11 @@ import { ref, onMounted, computed, reactive } from 'vue';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 
-const arbitros = ref([]);
+// --- CONFIGURACIÓN DE APIS ---
 const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
+const API_URL_BE = 'https://arbitroshandball.com.ar/api/api.php'; 
+
+const arbitros = ref([]);
 const mostrarFiltrosMobile = ref(false);
 
 const filtros = reactive({
@@ -16,52 +19,94 @@ const filtros = reactive({
 const designadosSabado = ref(new Set());
 const designadosDomingo = ref(new Set());
 
-const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
-const limpiarChecks = () => {
-  if (confirm("¿Limpiar tildes de designación?")) {
-    designadosSabado.value.clear();
-    designadosDomingo.value.clear();
-  }
-};
-
-const toggleDesignacion = (id, dia) => {
-  const set = dia === 'S' ? designadosSabado.value : designadosDomingo.value;
-  set.has(id) ? set.delete(id) : set.add(id);
-};
+// --- LÓGICA DE CARGA Y PERSISTENCIA ---
 
 const cargarDatos = async () => {
   try {
     const res = await axios.get(API_URL);
     arbitros.value = Array.isArray(res.data) ? res.data : [];
-  } catch (err) { console.error("Error:", err); }
+
+    const resChecks = await axios.post(API_URL_BE, {
+      entity: 'designaciones',
+      action: 'obtener_tildes',
+      payload: {}
+    });
+
+    if (resChecks.data && Array.isArray(resChecks.data)) {
+      designadosSabado.value.clear();
+      designadosDomingo.value.clear();
+      resChecks.data.forEach(item => {
+        if (item.dia === 'S') designadosSabado.value.add(item.id_arbitro);
+        if (item.dia === 'D') designadosDomingo.value.add(item.id_arbitro);
+      });
+    }
+  } catch (err) { 
+    console.error("Error al cargar datos:", err); 
+  }
 };
+
+const toggleDesignacion = async (id, dia) => {
+  const set = dia === 'S' ? designadosSabado.value : designadosDomingo.value;
+  const nuevoValor = !set.has(id);
+
+  if (nuevoValor) set.add(id); else set.delete(id);
+
+  try {
+    await axios.post(API_URL_BE, {
+      entity: 'designaciones',
+      action: 'actualizar_tilde',
+      payload: { id_arbitro: id, dia: dia, checked: nuevoValor }
+    });
+  } catch (err) {
+    console.error("Error al guardar tilde:", err);
+  }
+};
+
+const limpiarChecks = async () => {
+  if (confirm("¿Limpiar tildes de designación?")) {
+    designadosSabado.value.clear();
+    designadosDomingo.value.clear();
+    try {
+      await axios.post(API_URL_BE, {
+        entity: 'designaciones',
+        action: 'limpiar_todo',
+        payload: {}
+      });
+    } catch (err) {
+      console.error("Error al limpiar tildes en BE:", err);
+    }
+  }
+};
+
+// --- LÓGICA DE COLORES 
+const obtenerClaseFila = (a) => {
+  const tieneAprobada = Number(a.tiene_aprobada) > 0;
+  const tieneRechazada = Number(a.tiene_rechazada) > 0;
+  const esInactivo = a.es_activo == 0;
+  
+  const tildadoSabado = designadosSabado.value.has(a.id);
+  const tildadoDomingo = designadosDomingo.value.has(a.id);
+
+  // 1. ROJO: Si tiene AMBOS tildados O Licencia Aprobada O es Inactivo O Conflicto de licencias
+  if ((tildadoSabado && tildadoDomingo) || esInactivo || tieneAprobada || (tieneAprobada && tieneRechazada)) {
+    return 'fila-roja';
+  }
+
+  // 2. AMARILLO: Licencias rechazadas 
+  if (tieneRechazada) return 'fila-amarilla';
+
+  // 3. VERDE: Si tiene SOLO UNO tildado (Sábado o Domingo)
+  if (tildadoSabado || tildadoDomingo) return 'fila-des';
+
+  return '';
+};
+
+const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
 
 const mostrarFechaArg = (fecha) => {
   if (!fecha) return '';
   const partes = fecha.split('-');
   return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
-};
-
-// --- LÓGICA DE COLORES SOLICITADA ---
-const obtenerClaseFila = (a) => {
-  const tieneAprobada = Number(a.tiene_aprobada) > 0;
-  const tieneRechazada = Number(a.tiene_rechazada) > 0;
-  const esInactivo = a.es_activo == 0;
-
-  // Condición 3: Más de dos (aprobadas + rechazadas) O si tiene de ambos tipos simultáneamente
-  // (Interpretado como: si hay conflicto de licencias o volumen alto -> Rojo)
-  if (tieneAprobada && tieneRechazada) return 'fila-roja';
-  
-  // Condición 1: Inactivos (valor 0) o Licencias Aprobadas -> Rojo
-  if (esInactivo || tieneAprobada) return 'fila-roja';
-
-  // Condición 2: Licencias rechazadas -> Amarillo
-  if (tieneRechazada) return 'fila-amarilla';
-
-  // Default: Si está designado (Verde suave original)
-  if (designadosSabado.value.has(a.id) || designadosDomingo.value.has(a.id)) return 'fila-des';
-
-  return '';
 };
 
 const abrirWhatsApp = (numero) => {
