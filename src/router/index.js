@@ -75,7 +75,13 @@ const routes = [
   name: 'ContactosCelulares',
   component: () => import('../views/ContactosCelularesView.vue') // Ajusta la ruta a tu archivo
 },
+{
+    path: '/coordinadores-base',
+    name: 'CoordinadoresBase',
+    component: () => import('../views/CoordinadoresDatosView.vue') // Ajusta la ruta a tu archivo
+  }
 ];
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
