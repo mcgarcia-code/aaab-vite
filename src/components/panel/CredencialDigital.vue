@@ -77,8 +77,8 @@ const descargar = async () => {
           <div class="foto-wrap">
             <img 
               class="foto-arbitro"
-              :src="`https://arbitroshandball.com.ar/assets/carnet-arbitros/${arbitro.dni}.webp?t=${new Date().getTime()}`" 
-              @error="e => e.target.src = 'https://arbitroshandball.com.ar/assets/carnet-arbitros/default.webp'"
+              :src="`https://arbitroshandball.com.ar/resources/carnet-arbitros/${arbitro.dni}.webp?t=${new Date().getTime()}`" 
+              @error="e => e.target.src = 'https://arbitroshandball.com.ar/resources/carnet-arbitros/default.webp'"
             >
           </div>
           

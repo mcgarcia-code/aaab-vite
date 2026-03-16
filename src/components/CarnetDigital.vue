@@ -121,8 +121,8 @@ const cacheBuster = ref(0);
 
 const fotoSrc = computed(() => {
   if (!arbitro.value) return '';
-  if (fotoError.value) return 'https://arbitroshandball.com.ar/assets/carnet-arbitros/default.webp';
-  return `https://arbitroshandball.com.ar/assets/carnet-arbitros/${arbitro.value.dni}.webp?v=${cacheBuster.value}`;
+  if (fotoError.value) return 'https://arbitroshandball.com.ar/resources/carnet-arbitros/default.webp';
+  return `https://arbitroshandball.com.ar/resources/carnet-arbitros/${arbitro.value.dni}.webp?v=${cacheBuster.value}`;
 });
 
 const buscarArbitro = async () => {
