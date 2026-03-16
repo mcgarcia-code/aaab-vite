@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { auth } from '@/api/auth'; // <--- Importa tu servicio
 import html2canvas from 'html2canvas';
 import QrcodeVue from 'qrcode.vue';
 
@@ -9,13 +10,22 @@ defineProps({
 
 const emit = defineEmits(['cerrar']);
 
-const arbitro = ref({ nombre: '', apellido: '', dni: '', grupo: '', es_activo: 0 });
+// Inicializamos con valores vacíos para evitar errores de renderizado
+const arbitro = ref({ 
+  nombre: '', 
+  apellido: '', 
+  dni: '', 
+  grupo: '', 
+  es_activo: 0 
+});
+
 const añoActual = new Date().getFullYear();
 
 onMounted(() => {
-  const userJson = localStorage.getItem('user_aaab');
-  if (userJson) {
-    const datos = JSON.parse(userJson);
+  // USAMOS TU SERVICIO:
+  const datos = auth.getUser();
+  
+  if (datos) {
     arbitro.value = {
       nombre: datos.nombre || '',
       apellido: datos.apellido || '',
@@ -23,30 +33,35 @@ onMounted(() => {
       grupo: datos.grupo || '',
       es_activo: datos.es_activo 
     };
+  } else {
+    console.warn("No se encontró sesión de árbitro activa.");
+    // Opcional: emit('cerrar') si no hay usuario
   }
 });
 
-const descargar = () => {
-  setTimeout(async () => {
-    const elemento = document.getElementById('credencial-render');
+const descargar = async () => {
+  // Esperamos un poco para asegurar que el DOM esté listo, 
+  // especialmente si el modal acaba de abrirse
+  const elemento = document.getElementById('credencial-render');
+  
+  if (!elemento) return;
+
+  try {
+    const canvas = await html2canvas(elemento, {
+      useCORS: true,
+      allowTaint: false, // Cambiado a false para evitar problemas de seguridad con el canvas
+      scale: 3,
+      backgroundColor: '#ffffff',
+      logging: false,
+    });
     
-    try {
-      const canvas = await html2canvas(elemento, {
-        useCORS: true,
-        allowTaint: true,
-        scale: 3, // Alta calidad para la descarga
-        backgroundColor: '#ffffff',
-        logging: false,
-      });
-      
-      const link = document.createElement('a');
-      link.download = `Credencial-${arbitro.value.dni}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
-      link.click();
-    } catch (error) {
-      console.error("Error al generar la imagen:", error);
-    }
-  }, 400);
+    const link = document.createElement('a');
+    link.download = `Credencial-${arbitro.value.dni}.png`;
+    link.href = canvas.toDataURL('image/png', 1.0);
+    link.click();
+  } catch (error) {
+    console.error("Error al generar la imagen:", error);
+  }
 };
 </script>
 
