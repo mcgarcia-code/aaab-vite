@@ -11,8 +11,9 @@ const arbitros = ref([]);
 const mostrarFiltrosMobile = ref(false);
 
 const filtros = reactive({
-  apellido: '', nombre: '', licencia: '', es_activo: '', grupo: '', subgrupo: '', 
-  zona: '', movilidad: '', disponibilidad_sabado: '', disponibilidad_domingo: '',
+  apellido: '', nombre: '', licencia: '', es_activo: '', 
+  grupo: '', subgrupo: '', zona: '', movilidad: '', 
+  disponibilidad_sabado: '', disponibilidad_domingo: '',
   juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: ''
 });
 
@@ -20,7 +21,6 @@ const designadosSabado = ref(new Set());
 const designadosDomingo = ref(new Set());
 
 // --- LÓGICA DE CARGA Y PERSISTENCIA ---
-
 const cargarDatos = async () => {
   try {
     const res = await axios.get(API_URL);
@@ -48,9 +48,7 @@ const cargarDatos = async () => {
 const toggleDesignacion = async (id, dia) => {
   const set = dia === 'S' ? designadosSabado.value : designadosDomingo.value;
   const nuevoValor = !set.has(id);
-
   if (nuevoValor) set.add(id); else set.delete(id);
-
   try {
     await axios.post(API_URL_BE, {
       entity: 'designaciones',
@@ -78,26 +76,17 @@ const limpiarChecks = async () => {
   }
 };
 
-// --- LÓGICA DE COLORES 
 const obtenerClaseFila = (a) => {
   const tieneAprobada = Number(a.tiene_aprobada) > 0;
   const tieneRechazada = Number(a.tiene_rechazada) > 0;
   const esInactivo = a.es_activo == 0;
-  
   const tildadoSabado = designadosSabado.value.has(a.id);
   const tildadoDomingo = designadosDomingo.value.has(a.id);
-
-  // 1. ROJO: Si tiene AMBOS tildados O Licencia Aprobada O es Inactivo O Conflicto de licencias
-  if ((tildadoSabado && tildadoDomingo) || esInactivo || tieneAprobada || (tieneAprobada && tieneRechazada)) {
+  if ((tildadoSabado && tildadoDomingo) || esInactivo || tieneAprobada) {
     return 'fila-roja';
   }
-
-  // 2. AMARILLO: Licencias rechazadas 
   if (tieneRechazada) return 'fila-amarilla';
-
-  // 3. VERDE: Si tiene SOLO UNO tildado (Sábado o Domingo)
   if (tildadoSabado || tildadoDomingo) return 'fila-des';
-
   return '';
 };
 
@@ -139,11 +128,15 @@ const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     const cumpleTexto = Object.keys(filtros).every(key => {
       if (!filtros[key] || key === 'licencia') return true;
+      if (key === 'es_activo') return String(a[key]) === filtros[key];
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
+
     let cumpleLicencia = true;
-    if (filtros.licencia === 'aprobada') cumpleLicencia = a.tiene_aprobada > 0;
-    if (filtros.licencia === 'rechazada') cumpleLicencia = a.tiene_rechazada > 0;
+    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada) > 0;
+    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada) > 0;
+    else if (filtros.licencia === 'sin_licencia') cumpleLicencia = Number(a.tiene_aprobada) === 0 && Number(a.tiene_rechazada) === 0;
+
     return cumpleTexto && cumpleLicencia;
   });
 });
@@ -182,9 +175,18 @@ onMounted(cargarDatos);
         <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-filter-mobile mobile-only">
           <span class="material-icons">filter_alt</span>
         </button>
-        <button @click="limpiarFiltros" class="btn-action btn-clear"><span class="material-icons">filter_alt_off</span> <span class="btn-text">Filtros</span></button>
-        <button @click="limpiarChecks" class="btn-action btn-clear-checks desktop-only"><span class="material-icons">check_box_outline_blank</span> <span class="btn-text">Tildes</span></button>
-        <button @click="exportarExcel" class="btn-action btn-export"><span class="material-icons">download</span> <span class="btn-text">Excel</span></button>
+        <button @click="limpiarFiltros" class="btn-action btn-clear">
+          <span class="material-icons">filter_alt_off</span> 
+          <span class="btn-text">Filtros</span>
+        </button>
+        <button @click="limpiarChecks" class="btn-action btn-clear-checks desktop-only">
+          <span class="material-icons" style="font-size: 18px; line-height: 1;">check_box_outline_blank</span> 
+          <span class="btn-text" style="line-height: 1;">Tildes</span>
+        </button>
+        <button @click="exportarExcel" class="btn-action btn-export">
+          <span class="material-icons">download</span> 
+          <span class="btn-text">Excel</span>
+        </button>
       </div>
     </div>
 
@@ -192,14 +194,32 @@ onMounted(cargarDatos);
       <div class="filter-grid-mobile">
         <input v-model="filtros.apellido" placeholder="Apellido..">
         <input v-model="filtros.nombre" placeholder="Nombre..">
-        <select v-model="filtros.licencia">
-          <option value="">Todos los árbitros</option>
-          <option value="aprobada">Aprobadas</option>
-          <option value="rechazada">Rechazadas</option>
-        </select>
+        
+        <div class="mobile-select-group">
+          <label>Estado Activo:</label>
+          <select v-model="filtros.es_activo">
+            <option value="">Todos los estados</option>
+            <option value="1">Sólo Activos</option>
+            <option value="0">Sólo Inactivos</option>
+          </select>
+        </div>
+
+        <div class="mobile-select-group">
+          <label>Licencia:</label>
+          <select v-model="filtros.licencia">
+            <option value="">Todos los Árbitros</option>
+            <option value="sin_licencia">Sin Licencia</option>
+            <option value="aprobada">Licencias Aprobadas</option>
+            <option value="rechazada">Licencias Rechazadas</option>
+          </select>
+        </div>
+
+        <div class="filter-row-mobile">
+          <input v-model="filtros.grupo" placeholder="Grupo">
+          <input v-model="filtros.subgrupo" placeholder="Sub-grupo">
+        </div>
+        
         <input v-model="filtros.zona" placeholder="Zona..">
-        <input v-model="filtros.grupo" placeholder="Grupo..">
-        <input v-model="filtros.subgrupo" placeholder="Sub-grupo..">
       </div>
       <button @click="mostrarFiltrosMobile = false" class="btn-close-filters">Ver Resultados</button>
     </div>
@@ -214,7 +234,7 @@ onMounted(cargarDatos);
             <th class="sticky-col col-shrink sticky-col-final" style="left: 330px; z-index: 40;">DOM</th>
             <th class="sticky-col" style="left: 380px; z-index: 40; min-width: 160px;">Licencia</th>
             <th class="col-shrink">WhatsApp</th>
-            <th class="col-shrink">Activo</th>
+            <th style="width: 80px;">Activo</th>
             <th class="col-shrink">Grupo</th>
             <th class="col-shrink">Sub</th>
             <th>Zona</th>
@@ -237,12 +257,20 @@ onMounted(cargarDatos);
             <td class="sticky-col col-shrink sticky-col-final" style="left:330px; z-index: 35;"></td>
             <td class="sticky-col" style="left:380px; z-index: 35;">
               <select v-model="filtros.licencia" class="filter-input">
-                <option value="">Todos los árbitros</option>
-                <option value="aprobada">Aprobada</option>
-                <option value="rechazada">Rechazada</option>
+                <option value="">Todas</option>
+                <option value="sin_licencia">Sin Licencia</option>
+                <option value="aprobada">Licencias Aprobadas</option>
+                <option value="rechazada">Licencias Rechazadas</option>
               </select>
             </td>
-            <td></td> <td class="bg-filter col-shrink"><input v-model="filtros.es_activo" class="filter-input-min"></td>
+            <td></td> 
+            <td class="bg-filter">
+              <select v-model="filtros.es_activo" class="filter-input">
+                <option value="">Todos</option>
+                <option value="1">SÍ</option>
+                <option value="0">NO</option>
+              </select>
+            </td>
             <td class="bg-filter col-shrink"><input v-model="filtros.grupo" class="filter-input-min"></td>
             <td class="bg-filter col-shrink"><input v-model="filtros.subgrupo" class="filter-input-min"></td>
             <td class="bg-filter"><input v-model="filtros.zona" class="filter-input"></td>
@@ -264,14 +292,12 @@ onMounted(cargarDatos);
             <td class="sticky-col text-center col-shrink" style="left: 280px;"><input type="checkbox" :checked="designadosSabado.has(a.id)" @change="toggleDesignacion(a.id, 'S')" class="check"></td>
             <td class="sticky-col text-center col-shrink sticky-col-final" style="left: 330px;"><input type="checkbox" :checked="designadosDomingo.has(a.id)" @change="toggleDesignacion(a.id, 'D')" class="check"></td>
             <td class="sticky-col text-center text-xs" style="left: 380px; white-space: nowrap;">{{ obtenerTextoLicencia(a) }}</td>
-            
             <td class="text-center col-shrink">
               <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa" title="Enviar WhatsApp">
                 <span class="material-icons">chat</span>
               </button>
               <span v-else>-</span>
             </td>
-
             <td class="text-center col-shrink"><span :class="['dot', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span></td>
             <td class="text-center col-shrink">{{ a.grupo }}</td>
             <td class="text-center col-shrink">{{ a.subgrupo }}</td>
@@ -321,7 +347,7 @@ onMounted(cargarDatos);
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
 .counter { font-size: 0.85rem; color: #475569; }
 .header-actions { display: flex; gap: 8px; }
-.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; }
+.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.75rem; }
 .btn-clear { background: #e2e8f0; }
 .btn-clear-checks { background: #fee2e2; color: #991b1b; }
 .btn-export { background: #10b981; color: white; }
@@ -330,8 +356,6 @@ onMounted(cargarDatos);
 td.text-center { display: table-cell; text-align: center; vertical-align: middle; }
 .btn-wa { background: #25d366; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto; transition: 0.2s; }
 .btn-wa:hover { transform: scale(1.1); }
-.btn-wa .material-icons { font-size: 18px; }
-
 .btn-wa-mobile { width: 100%; margin-top: 10px; background: #25d366; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; }
 
 .table-container { overflow: auto; max-height: 80vh; background: white; border: 1px solid #e2e8f0; }
@@ -339,7 +363,8 @@ table { width: max-content; border-collapse: separate; border-spacing: 0; font-s
 th { background: #f1f5f9 !important; padding: 10px; position: sticky; top: 0; z-index: 30; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; }
 .filter-row td { position: sticky; top: 33px; z-index: 25; background: #f1f5f9 !important; padding: 4px; border-bottom: 2px solid #cbd5e1; }
 
-.sticky-col { position: sticky; z-index: 10; background-color: inherit !important; border-right: 1px solid #e2e8f0; }
+/* FIX STICKY COLUMNS */
+.sticky-col { position: sticky; z-index: 10; background-color: white !important; border-right: 1px solid #e2e8f0; }
 th.sticky-col { z-index: 50 !important; background-color: #f1f5f9 !important; }
 .filter-row .sticky-col { background-color: #f1f5f9 !important; }
 .sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
@@ -359,26 +384,38 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 .obs-wrapper { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; padding: 4px; border-radius: 4px; }
 .obs-wrapper:focus { position: absolute; width: 300px; white-space: normal; background: #fff; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #3b82f6; padding: 10px; left: -150px; top: 0; }
 
-/* MOBILE */
+/* MOBILE STYLES */
 .mobile-only { display: none; }
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
-  .header-actions .btn-text { display: none; }
+  .header-actions .btn-text { display: none !important; }
+  .btn-action { padding: 8px 10px; gap: 0; }
+
+  /* PANEL DE FILTROS IGUAL A LA IMAGEN */
+  .mobile-filter-panel { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+  .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+  .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background-color: #f8fafc; color: #475569; }
+  
+  .mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
+  .mobile-select-group label { font-size: 0.75rem; color: #475569; font-weight: bold; margin-bottom: 2px; }
+  
+  .filter-row-mobile { display: flex; gap: 10px; }
+  .filter-row-mobile input { flex: 1; }
+
+  .btn-close-filters { width: 100%; background: #1e293b; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+
+  /* CARDS MOBILE */
   .card-arbitro { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
   .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
 }
 
-/* COLORES DE FILAS (NUEVAS REGLAS) */
-.fila-roja, .fila-roja .sticky-col, .card-arbitro.fila-roja { 
-  background-color: #fca5a5 !important; 
-  color: #000 !important;
+@media (min-width: 768px) {
+  .header-actions .btn-text { display: inline; }
 }
-.fila-amarilla, .fila-amarilla .sticky-col, .card-arbitro.fila-amarilla { 
-  background-color: #fef08a !important; 
-  color: #000 !important;
-}
-.fila-des, .fila-des .sticky-col, .card-arbitro.fila-des { 
-  background-color: #f0fdf4 !important; 
-}
+
+/* COLORES DE FILAS */
+.fila-roja, .fila-roja .sticky-col { background-color: #fca5a5 !important; color: #000 !important; }
+.fila-amarilla, .fila-amarilla .sticky-col { background-color: #fef08a !important; color: #000 !important; }
+.fila-des, .fila-des .sticky-col { background-color: #f0fdf4 !important; }
 </style>

@@ -74,11 +74,15 @@ const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     const cumpleTexto = Object.keys(filtros).every(key => {
       if (!filtros[key] || key === 'licencia') return true;
+      if (key === 'es_activo') return String(a[key]) === filtros[key];
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
+    
     let cumpleLicencia = true;
-    if (filtros.licencia === 'aprobada') cumpleLicencia = a.tiene_aprobada > 0;
-    if (filtros.licencia === 'rechazada') cumpleLicencia = a.tiene_rechazada > 0;
+    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada) > 0;
+    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada) > 0;
+    else if (filtros.licencia === 'sin_licencia') cumpleLicencia = Number(a.tiene_aprobada) === 0 && Number(a.tiene_rechazada) === 0;
+
     return cumpleTexto && cumpleLicencia;
   });
 });
@@ -111,12 +115,21 @@ onMounted(cargarDatos);
         <h2 class="title">Coordinadores: Base de datos</h2>
         <span class="counter">Total: {{ arbitrosFiltrados.length }} árbitros</span>
       </div>
+      
       <div class="header-actions">
         <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-filter-mobile mobile-only">
           <span class="material-icons">filter_alt</span>
         </button>
-        <button @click="limpiarFiltros" class="btn-action btn-clear"><span class="material-icons">filter_alt_off</span> <span class="btn-text">Filtros</span></button>
-        <button @click="exportarExcel" class="btn-action btn-export"><span class="material-icons">download</span> <span class="btn-text">Excel</span></button>
+
+        <button @click="limpiarFiltros" class="btn-action btn-clear">
+          <span class="material-icons">filter_alt_off</span> 
+          <span class="btn-text">Filtros</span>
+        </button>
+
+        <button @click="exportarExcel" class="btn-action btn-export">
+          <span class="material-icons">download</span> 
+          <span class="btn-text">Excel</span>
+        </button>
       </div>
     </div>
 
@@ -124,11 +137,26 @@ onMounted(cargarDatos);
       <div class="filter-grid-mobile">
         <input v-model="filtros.apellido" placeholder="Apellido..">
         <input v-model="filtros.nombre" placeholder="Nombre..">
-        <select v-model="filtros.licencia">
-          <option value="">Todos los árbitros</option>
-          <option value="aprobada">Licencias Aprobadas</option>
-          <option value="rechazada">Licencias Rechazadas</option>
-        </select>
+        
+        <div class="mobile-select-group">
+          <label>Estado Activo:</label>
+          <select v-model="filtros.es_activo">
+            <option value="">Todos los estados</option>
+            <option value="1">Solo Activos</option>
+            <option value="0">Solo Inactivos</option>
+          </select>
+        </div>
+
+        <div class="mobile-select-group">
+          <label>Licencia:</label>
+          <select v-model="filtros.licencia">
+            <option value="">Todos los Árbitros</option>
+            <option value="sin_licencia">Sin Licencia</option>
+            <option value="aprobada">Licencias Aprobadas</option>
+            <option value="rechazada">Licencias Rechazadas</option>
+          </select>
+        </div>
+
         <div class="filter-row-mobile">
           <input v-model="filtros.grupo" placeholder="Grupo">
           <input v-model="filtros.subgrupo" placeholder="Sub-grupo">
@@ -151,27 +179,44 @@ onMounted(cargarDatos);
             <th class="col-shrink">Sub</th>
             <th>Zona</th>
             <th>Movilidad</th>
+            <th class="col-shrink">Sáb Disp</th>
+            <th>Desde</th>
+            <th>Hasta</th>
+            <th class="col-shrink">Dom Disp</th>
+            <th>Desde</th>
+            <th>Hasta</th>
             <th class="col-shrink">Juega</th>
             <th>Club</th>
             <th>Cat</th>
             <th>Observaciones</th>
           </tr>
           <tr class="filter-row">
-            <td class="sticky-col" style="left:0;"><input v-model="filtros.apellido" class="filter-input"></td>
-            <td class="sticky-col" style="left:140px;"><input v-model="filtros.nombre" class="filter-input"></td>
-            <td class="sticky-col sticky-col-final" style="left:280px;">
+            <td class="sticky-col" style="left:0; z-index: 35;"><input v-model="filtros.apellido" class="filter-input"></td>
+            <td class="sticky-col" style="left:140px; z-index: 35;"><input v-model="filtros.nombre" class="filter-input"></td>
+            <td class="sticky-col sticky-col-final" style="left:280px; z-index: 35;">
               <select v-model="filtros.licencia" class="filter-input">
                 <option value="">Todas</option>
-                <option value="aprobada">APR</option>
-                <option value="rechazada">REC</option>
+                <option value="sin_licencia">Sin Licencia</option>
+                <option value="aprobada">Licencia Aprobadas</option>
+                <option value="rechazada">Licencia Rechazadas</option>
               </select>
             </td>
             <td></td> 
-            <td><input v-model="filtros.es_activo" class="filter-input-min"></td>
+            <td>
+              <select v-model="filtros.es_activo" class="filter-input">
+                <option value="">Todos</option>
+                <option value="1">SÍ</option>
+                <option value="0">NO</option>
+              </select>
+            </td>
             <td><input v-model="filtros.grupo" class="filter-input-min"></td>
             <td><input v-model="filtros.subgrupo" class="filter-input-min"></td>
             <td><input v-model="filtros.zona" class="filter-input"></td>
             <td><input v-model="filtros.movilidad" class="filter-input"></td>
+            <td><input v-model="filtros.disponibilidad_sabado" class="filter-input-min"></td>
+            <td></td><td></td>
+            <td><input v-model="filtros.disponibilidad_domingo" class="filter-input-min"></td>
+            <td></td><td></td>
             <td><input v-model="filtros.juega_handball" class="filter-input-min"></td>
             <td><input v-model="filtros.donde_juega" class="filter-input"></td>
             <td><input v-model="filtros.categoria_handball" class="filter-input"></td>
@@ -191,6 +236,12 @@ onMounted(cargarDatos);
             <td class="text-center">{{ a.subgrupo }}</td>
             <td>{{ a.zona }}</td>
             <td>{{ a.movilidad }}</td>
+            <td class="text-center">{{ a.disponibilidad_sabado }}</td>
+            <td class="text-xs">{{ a.disponibilidad_sabado_desde }}</td>
+            <td class="text-xs">{{ a.disponibilidad_sabado_hasta }}</td>
+            <td class="text-center">{{ a.disponibilidad_domingo }}</td>
+            <td class="text-xs">{{ a.disponibilidad_domingo_desde }}</td>
+            <td class="text-xs">{{ a.disponibilidad_domingo_hasta }}</td>
             <td class="text-center">{{ a.juega_handball }}</td>
             <td>{{ a.donde_juega }}</td>
             <td>{{ a.categoria_handball }}</td>
@@ -216,6 +267,8 @@ onMounted(cargarDatos);
           </div>
           <div class="card-info">
             <p><strong>Juega:</strong> {{ a.juega_handball }} <span v-if="a.juega_handball === 'SI'">en {{ a.donde_juega }}</span></p>
+            <p><strong>Sáb:</strong> {{ a.disponibilidad_sabado }} ({{ a.disponibilidad_sabado_desde }}-{{ a.disponibilidad_sabado_hasta }})</p>
+            <p><strong>Dom:</strong> {{ a.disponibilidad_domingo }} ({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</p>
             <p v-if="a.observaciones"><strong>Obs:</strong> {{ a.observaciones }}</p>
           </div>
           <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa-mobile">
@@ -224,103 +277,79 @@ onMounted(cargarDatos);
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <style scoped>
-/* Estilos Base */
 .admin-panel { padding: 15px; background: #f8fafc; font-family: sans-serif; color: #000; min-height: 100vh; }
-.header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
 .counter { font-size: 0.85rem; color: #475569; }
+
 .header-actions { display: flex; gap: 8px; }
-.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; }
-.btn-clear { background: #e2e8f0; }
+.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.75rem; transition: background 0.2s; }
+.btn-clear { background: #e2e8f0; color: #1e293b; }
 .btn-export { background: #10b981; color: white; }
 .btn-filter-mobile { background: #3b82f6; color: white; }
 
-/* TABLA ESCRITORIO */
-.table-container { overflow: auto; max-height: 80vh; background: white; border: 1px solid #e2e8f0; }
+.btn-action .material-icons { font-size: 18px; line-height: 1; }
+.btn-text { line-height: 1; }
+
+.table-container { overflow: auto; max-height: 80vh; background: white; border: 1px solid #e2e8f0; border-radius: 4px; width: 100%; }
 table { width: max-content; border-collapse: separate; border-spacing: 0; font-size: 0.8rem; }
 th { background: #f1f5f9 !important; padding: 10px; position: sticky; top: 0; z-index: 30; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; }
 .filter-row td { position: sticky; top: 33px; z-index: 25; background: #f1f5f9 !important; padding: 4px; border-bottom: 2px solid #cbd5e1; }
-td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 
-.sticky-col { position: sticky; z-index: 10; background-color: inherit !important; border-right: 1px solid #e2e8f0; }
+/* Estilos de columna fija con padding para alejar del margen */
+.sticky-col { position: sticky; z-index: 10; background-color: white !important; border-right: 1px solid #e2e8f0; padding-left: 12px; }
 th.sticky-col { z-index: 50 !important; background-color: #f1f5f9 !important; }
+.filter-row .sticky-col { background-color: #f1f5f9 !important; }
 .sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
 
-.filter-input { width: 100%; padding: 2px; border: 1px solid #cbd5e1; font-size: 0.7rem; }
-.filter-input-min { width: 35px; text-align: center; border: 1px solid #cbd5e1; font-size: 0.7rem; }
+.font-bold { font-weight: bold; }
+.col-shrink { width: 1px !important; white-space: nowrap !important; padding: 8px 10px !important; text-align: center; }
+.filter-input { width: 100%; padding: 4px; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 2px; background: white; }
+.filter-input-min { width: 35px; text-align: center; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 2px; }
+
 .btn-wa { background: #25d366; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .dot-green { background-color: #22c55e; }
 .dot-red { background-color: #ef4444; }
-.obs-wrapper { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-.obs-wrapper:focus { position: absolute; width: 300px; white-space: normal; background: #fff; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #3b82f6; padding: 10px; left: -100px; }
 
-/* COLORES DE FILAS */
 .fila-roja, .fila-roja .sticky-col { background-color: #fca5a5 !important; }
 .fila-amarilla, .fila-amarilla .sticky-col { background-color: #fef08a !important; }
 
-/* --- FILTROS MÓVIL (NUEVO DISEÑO) --- */
-.mobile-filter-panel {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
+.col-obs-container { width: 150px; position: relative; }
+.obs-wrapper { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; padding: 4px; border-radius: 4px; }
+.obs-wrapper:focus { position: absolute; width: 300px; white-space: normal; background: #fff; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #3b82f6; padding: 10px; right: 0; top: 0; }
+
+.mobile-only { display: none !important; }
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+  .header-actions .btn-text { display: none !important; }
+  .btn-action { padding: 8px 10px; gap: 0; }
+
+  .mobile-filter-panel { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+  .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+  .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background-color: #f8fafc; }
+  
+  .mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
+  .mobile-select-group label { font-size: 0.75rem; color: #475569; font-weight: bold; }
+  
+  .filter-row-mobile { display: flex; gap: 10px; }
+  .filter-row-mobile input { flex: 1; }
+
+  .btn-close-filters { width: 100%; background: #1e293b; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+  .card-arbitro { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
+  .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; }
+  .card-name { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; color: #475569; }
+  .btn-wa-mobile { width: 100%; margin-top: 10px; background: #25d366; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
 }
 
-.filter-grid-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 15px;
-}
-
-.filter-row-mobile {
-  display: flex;
-  gap: 10px;
-}
-
-.filter-grid-mobile input, 
-.filter-grid-mobile select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 1rem;
-  background-color: #f8fafc;
-  outline: none;
-}
-
-.filter-grid-mobile input:focus { border-color: #3b82f6; background: #fff; }
-
-.btn-close-filters {
-  width: 100%;
-  background: #1e293b;
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-/* CARDS MÓVIL */
-.card-arbitro { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
-.card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
-.btn-wa-mobile { width: 100%; margin-top: 10px; background: #25d366; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
-
-/* VISIBILIDAD */
-.desktop-only { display: none !important; }
-.mobile-only { display: block !important; }
-
-@media (min-width: 1025px) {
-  .desktop-only { display: block !important; }
-  .mobile-only { display: none !important; }
+@media (min-width: 768px) {
+  .header-actions .btn-text { display: inline; }
 }
 </style>
