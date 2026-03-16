@@ -1,128 +1,99 @@
 <script setup>
 import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
-import CredencialDigital from './CredencialDigital.vue'; // Importamos el componente
+import CredencialDigital from './CredencialDigital.vue';
 
 const mostrarCredencial = ref(false);
+
+// Unificamos la lógica de los links aquí
+const menuItems = [
+  { to: '/panel-arbitro/datos', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Ver legajo y seguridad.' },
+  { to: '/panel-arbitro/disponibilidad', title: 'Disponibilidad', icon: 'bi bi-clock-history', desc: 'Modificá tus horarios.' },
+  { to: '/panel-arbitro/licencia', title: 'Solicitar Licencia', icon: 'bi bi-calendar-check', desc: 'Inasistencias con antelación.' },
+  { isModal: true, title: 'Credencial Digital', icon: 'bi bi-person-badge', desc: 'Carnet oficial 2026.' },
+  { to: '/panel-arbitro/sanciones', title: 'Tribunal de Ética', icon: 'bi bi-shield-exclamation', desc: 'Consultá sanciones.' },
+  { to: '/panel-arbitro/rendimiento', title: 'Mi Rendimiento', icon: 'bi bi-graph-up-arrow', desc: 'Estadísticas y partidos.' }
+];
 </script>
 
 <template>
-  <div class="row g-3 animate__animated animate__fadeIn">
+  <div class="row g-3 g-md-4 animate__animated animate__fadeIn">
     
-    <div class="col-12 col-md-4">
-      <RouterLink to="/panel-arbitro/datos" class="text-decoration-none">
-        <div class="menu-card shadow">
-          <i class="bi bi-person-lines-fill text-danger"></i>
-          <h5 class="mt-2 fw-bold text-dark">Datos Personales</h5>
-          <p class="small text-muted m-0">Ver legajo y cambiar contraseña.</p>
+    <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItems" :key="item.title">
+      <div v-if="item.isModal" @click="mostrarCredencial = true" class="h-100">
+        <div class="menu-card shadow-sm">
+          <div class="icon-circle">
+            <i :class="[item.icon, 'text-danger']"></i>
+          </div>
+          <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
+          <p class="small text-muted m-0">{{ item.desc }}</p>
         </div>
-      </RouterLink>
-    </div>
-
-    <div class="col-12 col-md-4">
-      <RouterLink to="/panel-arbitro/disponibilidad" class="text-decoration-none">
-        <div class="menu-card shadow">
-          <i class="bi bi-clock-history text-danger"></i>
-          <h5 class="mt-2 fw-bold text-dark">Disponibilidad</h5>
-          <p class="small text-muted m-0">Solicitá la modificación de tus horarios.</p>
-        </div>
-      </RouterLink>
-    </div>
-
-    <div class="col-12 col-md-4">
-      <RouterLink to="/panel-arbitro/licencia" class="text-decoration-none">
-        <div class="menu-card shadow">
-          <i class="bi bi-calendar-check text-danger"></i>
-          <h5 class="mt-2 fw-bold text-dark">Solicitar Licencia</h5>
-          <p class="small text-muted m-0">Inasistencias con 10 días de antelación.</p>
-        </div>
-      </RouterLink>
-    </div>
-
-    <div class="col-12 col-md-4" @click="mostrarCredencial = true">
-      <div class="menu-card shadow">
-        <i class="bi bi-person-badge text-danger"></i>
-        <h5 class="mt-2 fw-bold text-dark">Credencial Digital</h5>
-        <p class="small text-muted m-0">Visualizá y descargá tu carnet oficial 2026.</p>
       </div>
-    </div>
 
-    <div class="col-12 col-md-4">
-      <RouterLink to="/panel-arbitro/sanciones" class="text-decoration-none">
-        <div class="menu-card shadow">
-          <i class="bi bi-shield-exclamation text-danger"></i>
-          <h5 class="mt-2 fw-bold text-dark">Tribunal de Ética</h5>
-          <p class="small text-muted m-0">Consultá si tenés sanciones vigentes.</p>
-        </div>
-      </RouterLink>
-    </div>
-
-    <div class="col-12 col-md-4">
-      <RouterLink to="/panel-arbitro/rendimiento" class="text-decoration-none">
-        <div class="menu-card shadow">
-          <i class="bi bi-graph-up-arrow text-danger"></i>
-          <h5 class="mt-2 fw-bold text-dark">Mi Rendimiento</h5>
-          <p class="small text-muted m-0">Estadísticas, partidos y evaluaciones.</p>
+      <RouterLink v-else :to="item.to" class="text-decoration-none h-100 d-block">
+        <div class="menu-card shadow-sm">
+          <div class="icon-circle">
+            <i :class="[item.icon, 'text-danger']"></i>
+          </div>
+          <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
+          <p class="small text-muted m-0">{{ item.desc }}</p>
         </div>
       </RouterLink>
     </div>
 
     <CredencialDigital :mostrar="mostrarCredencial" @cerrar="mostrarCredencial = false" />
-
   </div>
 </template>
 
 <style scoped>
 .menu-card {
   background: #ffffff;
-  border-radius: 15px;
-  padding: 25px 15px; /* Ajuste para que no sea tan alto con 3 columnas */
+  border-radius: 20px;
+  padding: 35px 15px;
   text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border-bottom: 4px solid transparent;
+  border: 1px solid #f1f5f9;
+  cursor: pointer;
 }
 
-.menu-card h5 {
-  font-size: 1.1rem;
+.icon-circle {
+  width: 75px;
+  height: 75px;
+  background: #fff5f5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
 }
 
-/* Iconos */
-.menu-card i {
-  transition: transform 0.3s ease;
-  font-size: 2.2rem; 
-}
+.menu-card i { font-size: 2.2rem; }
 
-@media (min-width: 768px) {
-  .menu-card {
-    padding: 35px 20px;
-  }
-  .menu-card h5 {
-    font-size: 1.2rem; /* Un pelín más chico para que entre en una línea */
-  }
-  .menu-card i {
-    font-size: 2.8rem; 
-  }
-}
-
+/* Efecto Hover */
 .menu-card:hover {
-  transform: translateY(-5px);
-  background-color: #f8fafc;
-  border-bottom: 4px solid #dc2626;
+  transform: translateY(-8px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.2) !important;
+  border-bottom: 5px solid #dc2626;
 }
 
-.menu-card:hover i {
-  transform: scale(1.1);
+.menu-card:hover .icon-circle { background: #dc2626; }
+.menu-card:hover i { color: white !important; transform: scale(1.1); }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 576px) {
+  .menu-card { padding: 25px 10px; }
+  .icon-circle { width: 60px; height: 60px; }
+  .menu-card i { font-size: 1.8rem; }
+  .menu-card h5 { font-size: 1.1rem; }
 }
 
-.text-danger { color: #dc2626 !important; }
-
-.row.g-3 {
-  padding: 10px;
+@media (min-width: 577px) and (max-width: 992px) {
+  .menu-card { padding: 30px 15px; }
 }
 </style>
