@@ -108,7 +108,7 @@ onMounted(cargarDatos);
     
     <div class="header-section">
       <div class="header-title-box">
-        <h2 class="title">Panel de Árbitros</h2>
+        <h2 class="title">Coordinadores: Base de datos</h2>
         <span class="counter">Total: {{ arbitrosFiltrados.length }} árbitros</span>
       </div>
       <div class="header-actions">
