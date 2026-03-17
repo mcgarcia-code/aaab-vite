@@ -1,7 +1,7 @@
 // src/api/api.js
 import axios from 'axios';
 
-const BASE_URL = "https://arbitroshandball.com.ar/api/";
+const BASE_URL = "https://arbitroshandball.com.ar/api/api.php";
 
 // Creamos la instancia de Axios
 const apiClient = axios.create({
@@ -32,6 +32,6 @@ apiClient.interceptors.request.use((config) => {
 
 // Exportamos un objeto similar al que ya tenías para no romper tus componentes
 export const api = {
-  get: (url, params = {}) => apiClient.get(url, { params }).then(res => res.data),
-  post: (url, data) => apiClient.post(url, data).then(res => res.data),
+  get: (params = {}) => apiClient.get('', { params }).then(res => res.data),
+  post: (data = {}) => apiClient.post('', data).then(res => res.data),
 };

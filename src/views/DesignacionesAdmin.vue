@@ -1,11 +1,12 @@
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue';
+// axios debería removerse cuando se reemplace todo con api.get() y api.post()
 import axios from 'axios';
+import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 
 // --- CONFIGURACIÓN DE APIS ---
 const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
-const API_URL_BE = 'https://arbitroshandball.com.ar/api/api.php'; 
 
 const arbitros = ref([]);
 const mostrarFiltrosMobile = ref(false);
@@ -28,13 +29,12 @@ const cargarDatos = async () => {
     arbitros.value = Array.isArray(res.data) ? res.data : [];
 
     // 2. Cargar las tildes (designaciones temporales)
-    const resChecks = await axios.post(API_URL_BE, {
+
+    const resChecks = await api.get({
       entity: 'designaciones',
       action: 'obtener_tildes',
-      payload: {}
-    });
-
-    const listaTildes = resChecks.data.payload;
+    })
+    const listaTildes = resChecks.payload;
 
     if (listaTildes && Array.isArray(listaTildes)) {
       designadosSabado.value.clear();
@@ -60,7 +60,6 @@ const toggleDesignacion = async (id, dia) => {
     await axios.post(API_URL_BE, {
       entity: 'designaciones',
       action: 'actualizar_tilde',
-      
       payload: { id_arbitro: id, dia: dia, checked: nuevoValor } 
     });
   } catch (err) {
