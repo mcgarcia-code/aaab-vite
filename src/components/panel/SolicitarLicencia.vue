@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+// 1. Importamos auth para la sesión y api para las peticiones centralizadas
+import { auth } from '@/api/auth';
+import { api } from '@/api/api';
 
-// Traemos el usuario del localStorage para tener el ID y Nombre
-const arbitro = ref(JSON.parse(localStorage.getItem('user_aaab') || '{}'));
+// 2. Usamos el método getUser() que ya apunta a sessionStorage
+const arbitro = ref(auth.getUser() || {});
 
 const fechaSeleccionada = ref('');
 const mensaje = ref({ texto: '', tipo: '' });
@@ -22,10 +24,11 @@ const formatearFecha = (fechaStr) => {
 
 const obtenerLicencias = async () => {
   try {
-    const res = await axios.get(`https://arbitroshandball.com.ar/api/mis_licencias.php?id_arbitro=${arbitro.value.id}`);
-    licencias.value = res.data;
-  } catch {
-    console.error("Error al cargar historial");
+    // 3. Usamos api.get (ya tiene el token en el Header)
+    const res = await api.get(`mis_licencias.php?id_arbitro=${arbitro.value.id}`);
+    licencias.value = res; // res ya es la data directa según nuestro api.js
+  } catch (err) {
+    console.error("Error al cargar historial", err);
   }
 };
 
@@ -53,7 +56,8 @@ const solicitarLicencia = async () => {
   mensaje.value = { texto: '', tipo: '' };
 
   try {
-    const res = await axios.post('https://arbitroshandball.com.ar/api/guardar_licencia.php', {
+    // 4. Usamos api.post (envía el Token automáticamente)
+    const res = await api.post('guardar_licencia.php', {
       id_arbitro: arbitro.value.id,
       nombre_arbitro: arbitro.value.nombre,
       apellido_arbitro: arbitro.value.apellido,
@@ -61,7 +65,7 @@ const solicitarLicencia = async () => {
       estado: estadoFinal
     });
 
-    if (res.data.success) {
+    if (res.success) {
       mensaje.value = { 
         texto: enTermino ? "Licencia aceptada correctamente." : "Licencia rechazada por estar fuera de término (mínimo 9 días).", 
         tipo: enTermino ? 'success' : 'danger' 
@@ -69,9 +73,9 @@ const solicitarLicencia = async () => {
       fechaSeleccionada.value = '';
       await obtenerLicencias();
     } else {
-      mensaje.value = { texto: res.data.message, tipo: 'danger' };
+      mensaje.value = { texto: res.message, tipo: 'danger' };
     }
-  } catch {
+  } catch{
     mensaje.value = { texto: "Error de conexión con el servidor.", tipo: 'danger' };
   } finally {
     cargando.value = false;

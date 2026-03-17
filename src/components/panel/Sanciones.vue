@@ -1,18 +1,22 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+// 1. Importamos auth para la sesión y api para las peticiones con headers
+import { auth } from '@/api/auth';
+import { api } from '@/api/api';
 
-const arbitro = ref(JSON.parse(localStorage.getItem('user_aaab') || '{}'));
+// 2. Usamos el método getUser() que ya gestiona sessionStorage
+const arbitro = ref(auth.getUser() || {});
 const sanciones = ref([]);
 const cargando = ref(false);
 
-// Función para obtener las sanciones (la dejamos lista para cuando conectes el backend)
+// Función para obtener las sanciones
 const obtenerSanciones = async () => {
   cargando.value = true;
   try {
-    // URL sugerida para el futuro: mis_sanciones.php
-    const res = await axios.get(`https://arbitroshandball.com.ar/api/mis_sanciones.php?id_arbitro=${arbitro.value.id}`);
-    sanciones.value = res.data;
+    // 3. Usamos 'api.get' (nuestra instancia de Axios con interceptores)
+    // Ya no necesitas pasar la URL completa si definiste BASE_URL en api.js
+    const res = await api.get(`mis_sanciones.php?id_arbitro=${arbitro.value.id}`);
+    sanciones.value = res; // Con nuestra api.js, res ya es res.data
   } catch (err) {
     console.error("Error al cargar sanciones:", err);
   } finally {

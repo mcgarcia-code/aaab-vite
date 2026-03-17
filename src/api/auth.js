@@ -1,62 +1,52 @@
 // src/api/auth.js
 
 const USER_KEY = 'user_aaab';
-const INACTIVITY_LIMIT = 60 * 60 * 1000; // 60 minutos en milisegundos
+const INACTIVITY_LIMIT = 60 * 60 * 1000; // 60 minutos
 let inactivityTimeout;
 
+// Función auxiliar para resetear el timer (fuera para poder remover el listener)
+const events = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
+const resetHandler = () => auth.startInactivityTimer();
+
 export const auth = {
-  // Guarda al árbitro y arranca el timer
   setUser(userData) {
-    localStorage.setItem(USER_KEY, JSON.stringify(userData));
+    // CAMBIO: Ahora usamos sessionStorage
+    sessionStorage.setItem(USER_KEY, JSON.stringify(userData));
     window.dispatchEvent(new Event('storage')); 
-    this.startInactivityTimer(); // Iniciar timer al loguearse
+    this.startInactivityTimer();
   },
 
   getUser() {
-    const user = localStorage.getItem(USER_KEY);
+    // CAMBIO: Ahora buscamos en sessionStorage
+    const user = sessionStorage.getItem(USER_KEY);
     return user ? JSON.parse(user) : null;
   },
 
   isLoggedIn() {
-    return !!localStorage.getItem(USER_KEY);
+    return !!sessionStorage.getItem(USER_KEY);
   },
 
-  // Limpia todo y cierra sesión
   logout() {
-    localStorage.removeItem(USER_KEY);
-    this.stopInactivityTimer(); // Limpiar eventos
+    sessionStorage.removeItem(USER_KEY);
+    this.stopInactivityTimer();
     window.dispatchEvent(new Event('storage'));
     window.location.href = '/login-arbitro';
   },
 
-  // --- LÓGICA DE INACTIVIDAD ---
-
   startInactivityTimer() {
-    this.stopInactivityTimer(); // Limpiar si ya había uno corriendo
+    clearTimeout(inactivityTimeout);
 
-    const resetTimer = () => {
-      clearTimeout(inactivityTimeout);
-      inactivityTimeout = setTimeout(() => {
-        alert("Tu sesión ha expirado por inactividad (60 minutos).");
-        this.logout();
-      }, INACTIVITY_LIMIT);
-    };
+    inactivityTimeout = setTimeout(() => {
+      alert("Tu sesión ha expirado por inactividad.");
+      this.logout();
+    }, INACTIVITY_LIMIT);
 
-    // Eventos que reinician el contador de 60 min
-    const events = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
-    events.forEach(event => window.addEventListener(event, resetTimer));
-
-    resetTimer(); // Iniciar el primer contador
+    // Agregamos listeners si no estaban
+    events.forEach(event => window.addEventListener(event, resetHandler));
   },
 
   stopInactivityTimer() {
     clearTimeout(inactivityTimeout);
-    const events = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
-    events.forEach(event => window.removeEventListener(event, resetTimer));
+    events.forEach(event => window.removeEventListener(event, resetHandler));
   }
 };
-
-// Referencia interna para el removeEventListener
-function resetTimer() {
-  auth.startInactivityTimer();
-}

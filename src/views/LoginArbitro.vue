@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 // 1. Importamos el centralizador de autenticación
 import { auth } from '@/api/auth'; 
 
+
 const router = useRouter();
 const email = ref('');
 const password = ref('');
