@@ -54,11 +54,38 @@ const crearNuevo = () => {
 
 const guardarTodo = async () => {
   try {
-    const datosParaEnviar = arbitros.value.filter(a => a.apellido || a.nombre);
+    const datosParaEnviar = arbitros.value
+      .filter(a => a.apellido || a.nombre)
+      .map(a => {
+      
+        const clon = { ...a };
+        
+        // Lista de campos que queremos que puedan ser NULL si están vacíos
+        const camposLimpiar = [
+          'disponibilidad_sabado_desde', 
+          'disponibilidad_sabado_hasta', 
+          'disponibilidad_domingo_desde', 
+          'disponibilidad_domingo_hasta',
+          'fecha_nacimiento'
+        ];
+
+        
+        camposLimpiar.forEach(campo => {
+          if (clon[campo] === "" || clon[campo] === undefined) {
+            clon[campo] = null;
+          }
+        });
+
+        return clon;
+      });
+
     await axios.post(API_URL, { masivo: true, datos: datosParaEnviar });
     alert("Los cambios fueron cargados exitosamente");
     cargarDatos();
-  } catch{ alert("Error al guardar"); }
+  } catch (err) { 
+    alert("Error al guardar"); 
+    console.error(err);
+  }
 };
 
 const arbitrosFiltrados = computed(() => {
@@ -66,14 +93,11 @@ const arbitrosFiltrados = computed(() => {
     return Object.keys(filtros).every(key => {
       if (filtros[key] === undefined || filtros[key] === null || filtros[key] === '') return true;
 
-      // Lógica especial para el filtro de Activo (SI/NO)
       if (key === 'es_activo') {
         const busqueda = filtros[key].toLowerCase();
-        const valorReal = String(a[key]); // '1' o '0'
-        
+        const valorReal = String(a[key]); 
         if (busqueda === 'si') return valorReal === '1';
         if (busqueda === 'no') return valorReal === '0';
-        // Permite también filtrar por 1 o 0 directamente
         return valorReal.includes(busqueda);
       }
 
@@ -200,18 +224,26 @@ onMounted(cargarDatos);
             <td><input v-model="a.localidad" class="edit-input" readonly></td>
             <td><input v-model="a.zona" class="edit-input" readonly></td>
             <td><input v-model="a.celular" class="edit-input"></td>
-            <td>
-              <input type="date" v-model="a.fecha_nacimiento" class="edit-input">
-            </td>
+            
+<td>
+  <div class="date-custom-wrapper" :data-date="a.fecha_nacimiento ? mostrarFechaArg(a.fecha_nacimiento) : ''">
+    <input type="date" v-model="a.fecha_nacimiento" class="edit-input input-fecha-nativa">
+  </div>
+</td>
+
             <td><input v-model="a.telefonocontacto" class="edit-input"></td>
             <td><input v-model="a.parentescocontacto" class="edit-input"></td>
             <td><input v-model="a.movilidad" class="edit-input"></td>
             <td><input v-model="a.disponibilidad_sabado" class="edit-input"></td>
+            
             <td><input type="time" v-model="a.disponibilidad_sabado_desde" class="edit-input"></td>
             <td><input type="time" v-model="a.disponibilidad_sabado_hasta" class="edit-input"></td>
+            
             <td><input v-model="a.disponibilidad_domingo" class="edit-input"></td>
+            
             <td><input type="time" v-model="a.disponibilidad_domingo_desde" class="edit-input"></td>
             <td><input type="time" v-model="a.disponibilidad_domingo_hasta" class="edit-input"></td>
+            
             <td><input v-model="a.juega_handball" class="edit-input"></td>
             <td><input v-model="a.donde_juega" class="edit-input"></td>
             <td><input v-model="a.categoria_handball" class="edit-input"></td>
@@ -224,80 +256,66 @@ onMounted(cargarDatos);
 </template>
 
 <style scoped>
-/* ESTILO UNIFICADO Y RESPONSIVE */
+
 .admin-panel { padding: 15px; background: #f8fafc; font-family: sans-serif; color: #000; min-height: 100vh; }
-
-.header-section { 
-  background: white; padding: 15px; border-radius: 8px; display: flex; 
-  justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; 
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center;
-}
-
+.header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
 .counter { font-size: 0.85rem; color: #475569; }
-
 .header-actions { display: flex; gap: 8px; }
-
-.btn-action { 
-  border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; 
-  display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s;
-}
-
+.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
 .btn-clear { background: #e2e8f0; color: #000; }
 .btn-blue { background: #3b82f6; color: white; }
 .btn-clear-checks { background: #fee2e2; color: #991b1b; } 
 .btn-export { background: #10b981; color: white; }
-
-/* TABLE CONTAINER Y SCROLL */
-.table-container { 
-  overflow: auto; max-height: 75vh; background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
-}
-
+.table-container { overflow: auto; max-height: 75vh; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
 table { width: max-content; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; }
-
-/* STICKY HEADERS SUPERIORES */
-thead tr.main-header th { 
-  position: sticky; top: 0; z-index: 1000; background: #f8fafc; border-bottom: 2px solid #e2e8f0; 
-}
-thead tr.filter-row td { 
-  position: sticky; top: 38px; z-index: 950; background: #f8fafc !important; border-bottom: 2px solid #cbd5e1;
-}
-
-/* STICKY COLUMNAS LATERALES */
+thead tr.main-header th { position: sticky; top: 0; z-index: 1000; background: #f8fafc; border-bottom: 2px solid #e2e8f0; }
+thead tr.filter-row td { position: sticky; top: 38px; z-index: 950; background: #f8fafc !important; border-bottom: 2px solid #cbd5e1; }
 .sticky-col { position: sticky !important; z-index: 10; background: white !important; border-right: 1px solid #e2e8f0 !important; }
 .col-id { left: 0; width: 50px; text-align: center; }
 .col-apellido { left: 50px; width: 140px; }
 .col-nombre { left: 190px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-
-thead th.sticky-col { z-index: 1100 !important; }
-thead td.sticky-col { z-index: 1050 !important; }
-
 th { padding: 10px; color: #475569; text-transform: uppercase; font-weight: 800; font-size: 0.7rem; }
-
 .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
-
-/* FILA INACTIVA */
 .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #f37d7d !important; font-weight: bold; color: #000; }
-
 .edit-input { width: 100%; padding: 4px; border: 1px solid transparent; background: transparent; font-size: 0.85rem; }
 .edit-input:focus { background: white; border-color: #3b82f6; outline: none; }
-
-.edit-textarea { 
-  width: 250px; height: 30px; border: 1px solid transparent; background: transparent; 
-  font-size: 0.85rem; font-family: inherit; resize: none; padding: 4px; transition: all 0.2s;
-}
+.edit-textarea { width: 250px; height: 30px; border: 1px solid transparent; background: transparent; font-size: 0.85rem; font-family: inherit; resize: none; padding: 4px; transition: all 0.2s; }
 .edit-textarea:focus { height: 80px; background: white; border-color: #3b82f6; outline: none; }
-
 .status-wrapper { display: flex; align-items: center; gap: 5px; justify-content: center; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-active { background: #10b981; }
 .dot-inactive { background: #ef4444; }
 .select-compact { border: none; font-weight: bold; background: transparent; cursor: pointer; font-size: 0.8rem; }
-
 .col-xs-compact { width: 70px; text-align: center; }
 .col-dni-compact { width: 90px; text-align: center; }
 
-/* MEDIA QUERIES PARA RESPONSIVE */
+/* AJUSTE PARA FECHA DD/MM/YYYY */
+.date-custom-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 110px;
+}
+.date-custom-wrapper::before {
+  content: attr(data-date);
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 0.85rem;
+}
+.input-fecha-nativa {
+  color: transparent !important;
+  cursor: pointer;
+}
+.input-fecha-nativa::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 0;
+  cursor: pointer;
+}
+
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
   .header-actions { width: 100%; justify-content: space-between; flex-wrap: wrap; }

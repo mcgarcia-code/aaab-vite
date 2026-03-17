@@ -18,6 +18,14 @@ const passwordMensaje = ref({ texto: '', tipo: '' });
 
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
 
+
+const mostrarFechaArg = (fecha) => {
+    if (!fecha) return '';
+    const partes = fecha.split('-');
+    if (partes.length !== 3) return fecha;
+    return `${partes[2]}-${partes[1]}-${partes[0]}`;
+};
+
 const obtenerHistorialRectificaciones = async () => {
     try {
         const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=rectificacion`);
@@ -166,9 +174,20 @@ const enviarSolicitudRectificacion = async () => {
         <h6 class="text-danger fw-bold text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Información de contacto</h6>
         <div class="row g-3 mb-5">
             <div class="col-12 col-md-3">
-                <label class="small text-muted mb-1 d-block">Fecha de Nacimiento</label>
-                <span class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.fecha_nacimiento }}</span>
-            </div>
+    <label class="small text-muted mb-1 d-block">Fecha de Nacimiento</label>
+    
+    <div v-if="edicionAbierta" class="date-custom-wrapper" :data-date="arbitro.fecha_nacimiento ? mostrarFechaArg(arbitro.fecha_nacimiento) : 'Seleccionar fecha'">
+        <input 
+            type="date" 
+            v-model="arbitro.fecha_nacimiento" 
+            class="form-control form-control-sm input-fecha-nativa"
+        >
+    </div>
+
+    <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">
+        {{ mostrarFechaArg(arbitro.fecha_nacimiento) }}
+    </span>
+</div>
             <div class="col-12 col-md-5">
                 <label class="small text-muted mb-1 d-block">Email</label>
                 <input v-if="edicionAbierta" v-model="arbitro.email" type="email" class="form-control form-control-sm">
