@@ -25,7 +25,7 @@ const iniciarSesion = async () => {
     // Esto llamará a api.php, el cual incluirá login.php (si así lo configuraste)
     const res = await api.post({
       entity: 'login_arbitro', // Esto hará que api.php busque login_arbitro.php
-      action: 'login_arbitro', // 
+      action: 'login', // 
       payload: {
         email: email.value.trim(),
         password: password.value
