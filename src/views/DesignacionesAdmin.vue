@@ -1,12 +1,12 @@
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue';
-// axios debería removerse cuando se reemplace todo con api.get() y api.post()
 import axios from 'axios';
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 
 // --- CONFIGURACIÓN DE APIS ---
 const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
+const API_URL_BE = 'https://arbitroshandball.com.ar/api/api.php'; 
 
 const arbitros = ref([]);
 const mostrarFiltrosMobile = ref(false);
