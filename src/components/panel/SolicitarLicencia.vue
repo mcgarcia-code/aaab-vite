@@ -1,86 +1,99 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-// 1. Importamos auth para la sesión y api para las peticiones centralizadas
 import { auth } from '@/api/auth';
 import { api } from '@/api/api';
 
-// 2. Usamos el método getUser() que ya apunta a sessionStorage
 const arbitro = ref(auth.getUser() || {});
-
 const fechaSeleccionada = ref('');
 const mensaje = ref({ texto: '', tipo: '' });
 const cargando = ref(false);
 const licencias = ref([]);
-
-// Bloqueo de fechas pasadas en el calendario
 const fechaMinima = new Date().toISOString().split("T")[0];
 
 const formatearFecha = (fechaStr) => {
   if (!fechaStr) return '';
   const soloFecha = fechaStr.split(' ')[0];
-  const [year, month, day] = soloFecha.split('-');
-  return `${day}-${month}-${year}`;
+  const partes = soloFecha.split('-');
+  if (partes.length !== 3) return fechaStr;
+  return `${partes[2]}/${partes[1]}/${partes[0]}`;
 };
+
+// --- PETICIONES API (ADAPTADAS A API.PHP) ---
 
 const obtenerLicencias = async () => {
+  if (!arbitro.value.id) return;
   try {
-    // 3. Usamos api.get (ya tiene el token en el Header)
-    const res = await api.get(`mis_licencias.php?id_arbitro=${arbitro.value.id}`);
-    licencias.value = res; // res ya es la data directa según nuestro api.js
+    // Para GET, api.php suele requerir el payload como string JSON en la URL
+    const res = await api.get({
+      entity: 'licencias',
+      action: 'obtenerHistorial',
+      payload: JSON.stringify({ id_arbitro: arbitro.value.id })
+    });
+    
+    // api.php devuelve el resultado de la función en .payload
+    licencias.value = res.payload || [];
   } catch (err) {
-    console.error("Error al cargar historial", err);
+    console.error("Error al cargar historial:", err);
   }
-};
-
-onMounted(() => {
-  if (arbitro.value.id) {
-    obtenerLicencias();
-  }
-});
-
-const validarFecha = () => {
-  if (!fechaSeleccionada.value) return false;
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  const fechaPedido = new Date(fechaSeleccionada.value);
-  fechaPedido.setHours(0, 0, 0, 0);
-  const diffTiempo = fechaPedido - hoy;
-  const diffDias = Math.ceil(diffTiempo / (1000 * 60 * 60 * 24));
-  return diffDias >= 9;
 };
 
 const solicitarLicencia = async () => {
-  const enTermino = validarFecha();
+  if (!fechaSeleccionada.value) return;
+
+  const enTermino = (() => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fechaPedido = new Date(fechaSeleccionada.value);
+    fechaPedido.setHours(0, 0, 0, 0);
+    const diffDias = Math.ceil((fechaPedido - hoy) / (1000 * 60 * 60 * 24));
+    return diffDias >= 9;
+  })();
+
   const estadoFinal = enTermino ? 'aprobada' : 'rechazada';
   cargando.value = true;
   mensaje.value = { texto: '', tipo: '' };
 
   try {
-    // 4. Usamos api.post (envía el Token automáticamente)
-    const res = await api.post('guardar_licencia.php', {
-      id_arbitro: arbitro.value.id,
-      nombre_arbitro: arbitro.value.nombre,
-      apellido_arbitro: arbitro.value.apellido,
-      fecha_licencia: fechaSeleccionada.value,
-      estado: estadoFinal
+    // Enviamos el objeto con entity, action y payload
+    const res = await api.post({
+      entity: 'licencias',
+      action: 'guardarLicencia',
+      payload: {
+        id_arbitro: arbitro.value.id,
+        nombre_arbitro: arbitro.value.nombre,
+        apellido_arbitro: arbitro.value.apellido,
+        fecha_licencia: fechaSeleccionada.value,
+        estado: estadoFinal
+      }
     });
 
-    if (res.success) {
+    // Validamos 'res.ok' (de api.php) y 'res.payload.success' (de nuestra función)
+    if (res.ok && res.payload.success) {
       mensaje.value = { 
-        texto: enTermino ? "Licencia aceptada correctamente." : "Licencia rechazada por estar fuera de término (mínimo 9 días).", 
+        texto: enTermino 
+          ? "Licencia aceptada correctamente." 
+          : "Licencia rechazada por estar fuera de término (mínimo 9 días).", 
         tipo: enTermino ? 'success' : 'danger' 
       };
       fechaSeleccionada.value = '';
       await obtenerLicencias();
     } else {
-      mensaje.value = { texto: res.message, tipo: 'danger' };
+      mensaje.value = { 
+        texto: res.payload?.message || "Error al procesar la solicitud.", 
+        tipo: 'danger' 
+      };
     }
-  } catch{
+  } catch (err) {
+    console.error("Error:", err);
     mensaje.value = { texto: "Error de conexión con el servidor.", tipo: 'danger' };
   } finally {
     cargando.value = false;
   }
 };
+
+onMounted(() => {
+  if (arbitro.value.id) obtenerLicencias();
+});
 </script>
 
 <template>
