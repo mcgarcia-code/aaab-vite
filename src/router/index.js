@@ -46,7 +46,7 @@ const routes = [
   {    
     path: '/admin',
     component: () => import('../views/AdminPanel.vue'),
-    meta: { requiresAuth: true, role: 'admin' }, // Agregamos meta para control centralizado
+    meta: { requiresAuth: true, role: 'admin' }, 
     children: [
       { path: '', name: 'AdminInicio', component: () => import('../components/admin/AdminInicio.vue') },
       { path: 'secretaria', component: () => import('../components/admin/SecretariaAdmin.vue') },
