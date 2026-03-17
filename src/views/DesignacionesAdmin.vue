@@ -23,21 +23,26 @@ const designadosDomingo = ref(new Set());
 // --- LÓGICA DE CARGA Y PERSISTENCIA ---
 const cargarDatos = async () => {
   try {
+    // 1. Cargar la lista general de árbitros
     const res = await axios.get(API_URL);
     arbitros.value = Array.isArray(res.data) ? res.data : [];
 
+    // 2. Cargar las tildes (designaciones temporales)
     const resChecks = await axios.post(API_URL_BE, {
       entity: 'designaciones',
       action: 'obtener_tildes',
       payload: {}
     });
 
-    if (resChecks.data && Array.isArray(resChecks.data)) {
+    const listaTildes = resChecks.data.payload;
+
+    if (listaTildes && Array.isArray(listaTildes)) {
       designadosSabado.value.clear();
       designadosDomingo.value.clear();
-      resChecks.data.forEach(item => {
-        if (item.dia === 'S') designadosSabado.value.add(item.id_arbitro);
-        if (item.dia === 'D') designadosDomingo.value.add(item.id_arbitro);
+
+      listaTildes.forEach(item => {
+        if (item.dia === 'S') designadosSabado.value.add(item.idarbitro);
+        if (item.dia === 'D') designadosDomingo.value.add(item.idarbitro);
       });
     }
   } catch (err) { 
@@ -48,12 +53,15 @@ const cargarDatos = async () => {
 const toggleDesignacion = async (id, dia) => {
   const set = dia === 'S' ? designadosSabado.value : designadosDomingo.value;
   const nuevoValor = !set.has(id);
+  
   if (nuevoValor) set.add(id); else set.delete(id);
+  
   try {
     await axios.post(API_URL_BE, {
       entity: 'designaciones',
       action: 'actualizar_tilde',
-      payload: { id_arbitro: id, dia: dia, checked: nuevoValor }
+      
+      payload: { id_arbitro: id, dia: dia, checked: nuevoValor } 
     });
   } catch (err) {
     console.error("Error al guardar tilde:", err);
@@ -67,7 +75,7 @@ const limpiarChecks = async () => {
     try {
       await axios.post(API_URL_BE, {
         entity: 'designaciones',
-        action: 'limpiar_todo',
+        action: 'limpiarTildesDesignaciones',
         payload: {}
       });
     } catch (err) {
