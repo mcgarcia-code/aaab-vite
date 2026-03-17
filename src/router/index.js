@@ -46,7 +46,8 @@ const routes = [
       { path: 'licencia', name: 'PanelLicencia', component: () => import('../components/panel/SolicitarLicencia.vue') },
       { path: 'datos', name: 'PanelDatos', component: () => import('../components/panel/MisDatos.vue') },
       { path: 'disponibilidad', name: 'PanelDisponibilidad', component: () => import('../components/panel/PanelDisponibilidad.vue') },
-      { path: 'sanciones', name: 'PanelSanciones', component: () => import('../components/panel/Sanciones.vue') },  
+      { path: 'sanciones', name: 'PanelSanciones', component: () => import('../components/panel/Sanciones.vue') },
+      { path: 'credencial', name: 'PanelCredencial', component: () => import('../components/panel/CredencialDigital.vue') },  
     ]
     },
 {    
