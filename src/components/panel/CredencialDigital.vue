@@ -31,7 +31,7 @@ const cargarDatos = async () => {
   
   try {
     const res = await api.get({
-      entity: 'arbitros',
+      entity: 'datos_personales', // Esto hará que api.php busque credencial.php
       action: 'obtenerPerfil',
       payload: JSON.stringify({ dni: user.dni })
     });

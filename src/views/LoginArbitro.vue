@@ -1,10 +1,9 @@
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
 import { useRouter } from 'vue-router';
-// 1. Importamos el centralizador de autenticación
+// 1. Importamos auth y api desde tu carpeta api
 import { auth } from '@/api/auth'; 
-
+import { api } from '@/api/api'; 
 
 const router = useRouter();
 const email = ref('');
@@ -22,25 +21,33 @@ const iniciarSesion = async () => {
   errorMsg.value = '';
 
   try {
-    const res = await axios.post('https://arbitroshandball.com.ar/api/login_arbitro.php', {
-      email: email.value.trim(),
-      password: password.value
+    // 2. ADAPTACIÓN: Usamos api.post con la estructura entity/action/payload
+    // Esto llamará a api.php, el cual incluirá login.php (si así lo configuraste)
+    const res = await api.post({
+      entity: 'login_arbitro', // Esto hará que api.php busque login_arbitro.php
+      action: 'login_arbitro', // 
+      payload: {
+        email: email.value.trim(),
+        password: password.value
+      }
     });
 
-    if (res.data.success) {
-      // Guardamos el objeto completo (que ahora incluye el rol)
-      auth.setUser(res.data.arbitro); 
+    // 3. ADAPTACIÓN: Verificamos 'res.ok' (como lo define tu api.php)
+    if (res.ok && res.payload.success) {
       
-      // LÓGICA DE REDIRECCIÓN BASADA EN ROL
-      // El PHP ahora nos manda 'admin' o 'arbitro'
-      if (res.data.arbitro.rol === 'admin') {
+      // Guardamos el objeto completo (incluyendo el token para el interceptor)
+      auth.setUser(res.payload.arbitro); 
+      
+      // Redirección basada en rol
+      if (res.payload.arbitro.rol === 'admin') {
         router.push('/admin');
       } else {
         router.push('/panel-arbitro');
       }
       
     } else {
-      errorMsg.value = res.data.message;
+      // Mensaje de error desde el backend
+      errorMsg.value = res.payload?.message || res.message || "Credenciales incorrectas";
     }
   } catch (err) {
     console.error("Error en login:", err);

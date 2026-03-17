@@ -2,7 +2,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 import CarnetView from '../views/CarnetView.vue';
-// 1. Importamos auth desde la carpeta api
 import { auth } from '@/api/auth'; 
 
 const routes = [
@@ -20,9 +19,10 @@ const routes = [
     name: 'LoginArbitro',
     component: () => import('../views/LoginArbitro.vue'),
     beforeEnter: (to, from, next) => {
-      // 2. REEMPLAZO: Si ya está logueado, lo mandamos al panel
+      // Si ya tiene sesión activa, lo redirigimos a su panel correspondiente
       if (auth.isLoggedIn()) {
-        next('/panel-arbitro');
+        const user = auth.getUser();
+        user?.rol === 'admin' ? next('/admin') : next('/panel-arbitro');
       } else {
         next();
       }
@@ -32,15 +32,7 @@ const routes = [
   {
     path: '/panel-arbitro',
     component: () => import('../views/PanelArbitro.vue'),
-    meta: { requiresAuth: true }, // Marcamos que requiere estar logueado
-    beforeEnter: (to, from, next) => {
-      // 3. REEMPLAZO: Si no está logueado, lo mandamos al login
-      if (auth.isLoggedIn()) {
-        next();
-      } else {
-        next('/login-arbitro');
-      }
-    },
+    meta: { requiresAuth: true }, 
     children: [
       { path: '', name: 'PanelInicio', component: () => import('../components/panel/InicioPanel.vue') },
       { path: 'licencia', name: 'PanelLicencia', component: () => import('../components/panel/SolicitarLicencia.vue') },
@@ -49,15 +41,12 @@ const routes = [
       { path: 'sanciones', name: 'PanelSanciones', component: () => import('../components/panel/Sanciones.vue') },
       { path: 'credencial', name: 'PanelCredencial', component: () => import('../components/panel/CredencialDigital.vue') },  
     ]
-    },
-{    
+  },
+
+  {    
     path: '/admin',
-    component: () => import('../views/AdminPanel.vue'), // Crearemos este archivo ahora
-    beforeEnter: (to, from, next) => {
-      const user = auth.getUser();
-      if (auth.isLoggedIn() && user.rol === 'admin') next();
-      else next('/login-arbitro');
-    },
+    component: () => import('../views/AdminPanel.vue'),
+    meta: { requiresAuth: true, role: 'admin' }, // Agregamos meta para control centralizado
     children: [
       { path: '', name: 'AdminInicio', component: () => import('../components/admin/AdminInicio.vue') },
       { path: 'secretaria', component: () => import('../components/admin/SecretariaAdmin.vue') },
@@ -67,22 +56,21 @@ const routes = [
   },
   
   {
-  path: '/designaciones-aaab',
-  name: 'Designaciones',
-  component: () => import('../views/DesignacionesAdmin.vue') // Ajusta la ruta a tu archivo
-},
+    path: '/designaciones-aaab',
+    name: 'Designaciones',
+    component: () => import('../views/DesignacionesAdmin.vue')
+  },
   {
-  path: '/contactos-celulares',
-  name: 'ContactosCelulares',
-  component: () => import('../views/ContactosCelularesView.vue') // Ajusta la ruta a tu archivo
-},
-{
+    path: '/contactos-celulares',
+    name: 'ContactosCelulares',
+    component: () => import('../views/ContactosCelularesView.vue')
+  },
+  {
     path: '/coordinadores-base',
     name: 'CoordinadoresBase',
-    component: () => import('../views/CoordinadoresDatosView.vue') // Ajusta la ruta a tu archivo
+    component: () => import('../views/CoordinadoresDatosView.vue')
   }
 ];
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -92,13 +80,27 @@ const router = createRouter({
   },
 });
 
-// Guard Global para proteger rutas marcadas con requiresAuth
+// Guard Global: Centraliza toda la protección de rutas
 router.beforeEach((to, from, next) => {
-  // 4. REEMPLAZO: Chequeo centralizado
   const estaLogueado = auth.isLoggedIn();
-  
-  if (to.matched.some(record => record.meta.requiresAuth) && !estaLogueado) {
-    next('/login-arbitro');
+  const user = auth.getUser();
+
+  // 1. Verificar si la ruta requiere autenticación
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!estaLogueado) {
+      next('/login-arbitro');
+    } 
+    // 2. Verificar si la ruta es exclusiva para admin
+    else if (to.matched.some(record => record.meta.role === 'admin')) {
+      if (user?.rol === 'admin') {
+        next();
+      } else {
+        next('/panel-arbitro'); // Si no es admin, lo mandamos al panel normal
+      }
+    } 
+    else {
+      next();
+    }
   } else {
     next();
   }
