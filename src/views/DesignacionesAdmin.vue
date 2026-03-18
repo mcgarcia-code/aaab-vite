@@ -26,7 +26,12 @@ const cargarDatos = async () => {
   try {
     // 1. Cargar la lista general de árbitros
     const res = await axios.get(API_URL);
-    arbitros.value = Array.isArray(res.data) ? res.data : [];
+    arbitros.value = Array.isArray(res.data)
+      ? res.data.map(a => ({
+          ...a,
+          apto_medico: a.apto_medico == 1,
+        }))
+      : [];
 
     // 2. Cargar las tildes (designaciones temporales)
 
@@ -242,6 +247,7 @@ onMounted(cargarDatos);
             <th class="sticky-col" style="left: 380px; z-index: 40; min-width: 160px;">Licencia</th>
             <th class="col-shrink">WhatsApp</th>
             <th style="width: 80px;">Activo</th>
+            <th style="width: 90px;">Apto Físico</th>
             <th class="col-shrink">Grupo</th>
             <th class="col-shrink">Sub</th>
             <th>Zona</th>
@@ -278,6 +284,7 @@ onMounted(cargarDatos);
                 <option value="0">NO</option>
               </select>
             </td>
+            <td class="bg-filter"></td>
             <td class="bg-filter col-shrink"><input v-model="filtros.grupo" class="filter-input-min"></td>
             <td class="bg-filter col-shrink"><input v-model="filtros.subgrupo" class="filter-input-min"></td>
             <td class="bg-filter"><input v-model="filtros.zona" class="filter-input"></td>
@@ -306,6 +313,9 @@ onMounted(cargarDatos);
               <span v-else>-</span>
             </td>
             <td class="text-center col-shrink"><span :class="['dot', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span></td>
+            <td :class="['text-center', { inactivo: !a.apto_medico }]">
+              <input type="checkbox" :checked="a.apto_medico" disabled class="check check-readonly">
+            </td>
             <td class="text-center col-shrink">{{ a.grupo }}</td>
             <td class="text-center col-shrink">{{ a.subgrupo }}</td>
             <td>{{ a.zona }}</td>
@@ -385,6 +395,8 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 .dot-green { background-color: #22c55e; }
 .dot-red { background-color: #ef4444; }
 .check { transform: scale(1.1); cursor: pointer; }
+.check-readonly { cursor: default; }
+.inactivo { background-color: #fee2e2 !important; }
 .font-bold { font-weight: bold; }
 
 .col-obs-container { width: 150px; position: relative; }
