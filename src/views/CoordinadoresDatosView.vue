@@ -11,6 +11,7 @@ const mostrarFiltrosMobile = ref(false);
 
 const filtros = reactive({
   apellido: '', nombre: '', licencia: '', es_activo: '', 
+  apto_medico: '', // Agregado filtro apto_medico
   grupo: '', subgrupo: '', zona: '', movilidad: '', 
   juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: ''
 });
@@ -74,7 +75,12 @@ const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     const cumpleTexto = Object.keys(filtros).every(key => {
       if (!filtros[key] || key === 'licencia') return true;
-      if (key === 'es_activo') return String(a[key]) === filtros[key];
+      
+      // Lógica específica para filtros SI/NO (numéricos o booleanos)
+      if (key === 'es_activo' || key === 'apto_medico') {
+         return String(a[key]) === filtros[key];
+      }
+      
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
     
@@ -93,6 +99,7 @@ const exportarExcel = () => {
     CELULAR: a.celular,
     LICENCIA: obtenerTextoLicencia(a),
     ACTIVO: a.es_activo == 1 ? 'SI' : 'NO',
+    APTO_MEDICO: a.apto_medico == 1 ? 'SI' : 'NO',
     GRUPO: a.grupo, SUBGRUPO: a.subgrupo,
     ZONA: a.zona, MOVILIDAD: a.movilidad,
     JUEGA: a.juega_handball, CLUB: a.donde_juega, OBS: a.observaciones
@@ -148,6 +155,15 @@ onMounted(cargarDatos);
         </div>
 
         <div class="mobile-select-group">
+          <label>Apto Médico:</label>
+          <select v-model="filtros.apto_medico">
+            <option value="">Todos</option>
+            <option value="1">Solo Aptos</option>
+            <option value="0">No Aptos</option>
+          </select>
+        </div>
+
+        <div class="mobile-select-group">
           <label>Licencia:</label>
           <select v-model="filtros.licencia">
             <option value="">Todos los Árbitros</option>
@@ -175,6 +191,7 @@ onMounted(cargarDatos);
             <th class="sticky-col sticky-col-final" style="left: 280px; z-index: 40; min-width: 160px;">Licencia</th>
             <th class="col-shrink">WhatsApp</th>
             <th class="col-shrink">Activo</th>
+            <th class="col-shrink">Apto Med.</th>
             <th class="col-shrink">Grupo</th>
             <th class="col-shrink">Sub</th>
             <th>Zona</th>
@@ -209,6 +226,13 @@ onMounted(cargarDatos);
                 <option value="0">NO</option>
               </select>
             </td>
+            <td>
+              <select v-model="filtros.apto_medico" class="filter-input">
+                <option value="">Todos</option>
+                <option value="1">SÍ</option>
+                <option value="0">NO</option>
+              </select>
+            </td>
             <td><input v-model="filtros.grupo" class="filter-input-min"></td>
             <td><input v-model="filtros.subgrupo" class="filter-input-min"></td>
             <td><input v-model="filtros.zona" class="filter-input"></td>
@@ -232,6 +256,7 @@ onMounted(cargarDatos);
               <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa"><span class="material-icons">chat</span></button>
             </td>
             <td class="text-center"><span :class="['dot', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span></td>
+            <td class="text-center"><span :class="['dot', a.apto_medico == 1 ? 'dot-green' : 'dot-red']"></span></td>
             <td class="text-center">{{ a.grupo }}</td>
             <td class="text-center">{{ a.subgrupo }}</td>
             <td>{{ a.zona }}</td>
@@ -263,6 +288,9 @@ onMounted(cargarDatos);
         <div class="card-body">
           <div class="card-row">
             <span><strong>Gr:</strong> {{ a.grupo }}-{{ a.subgrupo }}</span>
+            <span><strong>Apto Médico:</strong> <span :class="a.apto_medico == 1 ? 'text-green' : 'text-red'">{{ a.apto_medico == 1 ? 'SÍ' : 'NO' }}</span></span>
+          </div>
+          <div class="card-row">
             <span><strong>Zona:</strong> {{ a.zona }}</span>
           </div>
           <div class="card-info">
@@ -300,7 +328,6 @@ table { width: max-content; border-collapse: separate; border-spacing: 0; font-s
 th { background: #f1f5f9 !important; padding: 10px; position: sticky; top: 0; z-index: 30; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; }
 .filter-row td { position: sticky; top: 33px; z-index: 25; background: #f1f5f9 !important; padding: 4px; border-bottom: 2px solid #cbd5e1; }
 
-/* Estilos de columna fija con padding para alejar del margen */
 .sticky-col { position: sticky; z-index: 10; background-color: white !important; border-right: 1px solid #e2e8f0; padding-left: 12px; }
 th.sticky-col { z-index: 50 !important; background-color: #f1f5f9 !important; }
 .filter-row .sticky-col { background-color: #f1f5f9 !important; }
@@ -315,6 +342,8 @@ th.sticky-col { z-index: 50 !important; background-color: #f1f5f9 !important; }
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .dot-green { background-color: #22c55e; }
 .dot-red { background-color: #ef4444; }
+.text-green { color: #22c55e; font-weight: bold; }
+.text-red { color: #ef4444; font-weight: bold; }
 
 .fila-roja, .fila-roja .sticky-col { background-color: #fca5a5 !important; }
 .fila-amarilla, .fila-amarilla .sticky-col { background-color: #fef08a !important; }
