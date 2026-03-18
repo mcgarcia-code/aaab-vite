@@ -26,15 +26,7 @@ const cargarDatos = async () => {
       action: 'getInstitucionesCuit',
       payload: {}
     });
-    
-   
-    if (Array.isArray(res)) {
-      instituciones.value = res;
-    } else if (res && Array.isArray(res.data)) {
-      instituciones.value = res.data;
-    } else {
-      instituciones.value = [];
-    }
+    instituciones.value = res.payload;
   } catch (err) { 
     console.error("Error al cargar instituciones:", err); 
   }
