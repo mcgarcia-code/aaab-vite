@@ -48,7 +48,7 @@ const cargarDatos = async () => {
     if (respuesta.ok && Array.isArray(respuesta.payload)) {
       arbitros.value = respuesta.payload.map(a => ({
         ...a,
-        apto_medico: !!(a.apto_medico == 1 || a.apto_medico === true)
+        apto_medico: a.apto_medico == 1
       }));
     } else {
       arbitros.value = [];
@@ -260,8 +260,6 @@ onMounted(cargarDatos);
               <input 
                 type="checkbox" 
                 v-model="a.apto_medico" 
-                :true-value="1" 
-                :false-value="0"
                 @change="actualizarAptoFisico(a)"
               >
             </td>
