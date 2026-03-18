@@ -1,7 +1,7 @@
 
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue';
-import api from '@api/api'; 
+import api from '@/api/api'; 
 
 const instituciones = ref([]);
 const mostrarFiltrosMobile = ref(false);
