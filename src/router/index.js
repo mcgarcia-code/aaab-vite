@@ -82,10 +82,16 @@ const routes = [
     component: () => import('../views/ContactosCelularesView.vue')
   },
   {
+    path: '/instituciones-cuit',
+    name: 'InstitucionesCuit',
+    component: () => import('../views/InstitucionesCuit.vue')
+  },
+  {
     path: '/coordinadores-base',
     name: 'CoordinadoresBase',
     component: () => import('../views/CoordinadoresDatosView.vue')
   }
+  
 ];
 
 const router = createRouter({
