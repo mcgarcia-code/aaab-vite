@@ -68,7 +68,6 @@ const crearNuevo = () => {
 
 const actualizarAptoFisico = async (arbitro) => {
   try {
-    // Guardamos la respuesta del post en una variable
     const response = await api.post({
       entity: 'datos_personales',
       action: 'actualizarAptoFisico',
@@ -107,7 +106,6 @@ const guardarTodo = async () => {
         return clon;
       });
 
-    // Guardamos la respuesta del guardado masivo en una variable
     const res = await api.post({ 
       entity: 'datos_personales',
       action: 'guardarDatosArbitros', 
