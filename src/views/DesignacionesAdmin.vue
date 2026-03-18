@@ -13,6 +13,7 @@ const mostrarFiltrosMobile = ref(false);
 
 const filtros = reactive({
   apellido: '', nombre: '', licencia: '', es_activo: '', 
+  apto_medico: '', // Agregado para el filtro de Apto Físico
   grupo: '', subgrupo: '', zona: '', movilidad: '', 
   disponibilidad_sabado: '', disponibilidad_domingo: '',
   juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: ''
@@ -24,7 +25,6 @@ const designadosDomingo = ref(new Set());
 // --- LÓGICA DE CARGA Y PERSISTENCIA ---
 const cargarDatos = async () => {
   try {
-    // 1. Cargar la lista general de árbitros
     const res = await axios.get(API_URL);
     arbitros.value = Array.isArray(res.data)
       ? res.data.map(a => ({
@@ -32,8 +32,6 @@ const cargarDatos = async () => {
           apto_medico: a.apto_medico == 1,
         }))
       : [];
-
-    // 2. Cargar las tildes (designaciones temporales)
 
     const resChecks = await api.get({
       entity: 'designaciones',
@@ -139,7 +137,7 @@ const normalizarTexto = (valor) => {
 const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     const cumpleTexto = Object.keys(filtros).every(key => {
-      if (!filtros[key] || key === 'licencia') return true;
+      if (!filtros[key] || key === 'licencia' || key === 'apto_medico') return true;
       if (key === 'es_activo') return String(a[key]) === filtros[key];
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
@@ -149,7 +147,14 @@ const arbitrosFiltrados = computed(() => {
     else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada) > 0;
     else if (filtros.licencia === 'sin_licencia') cumpleLicencia = Number(a.tiene_aprobada) === 0 && Number(a.tiene_rechazada) === 0;
 
-    return cumpleTexto && cumpleLicencia;
+    // Lógica para el filtro de Apto Médico (comparamos booleano con string "1"/"0")
+    let cumpleApto = true;
+    if (filtros.apto_medico !== '') {
+      const valorFiltro = filtros.apto_medico === '1';
+      cumpleApto = a.apto_medico === valorFiltro;
+    }
+
+    return cumpleTexto && cumpleLicencia && cumpleApto;
   });
 });
 
@@ -226,6 +231,15 @@ onMounted(cargarDatos);
           </select>
         </div>
 
+        <div class="mobile-select-group">
+          <label>Apto Físico:</label>
+          <select v-model="filtros.apto_medico">
+            <option value="">Todos</option>
+            <option value="1">Sólo Aptos</option>
+            <option value="0">No Aptos</option>
+          </select>
+        </div>
+
         <div class="filter-row-mobile">
           <input v-model="filtros.grupo" placeholder="Grupo">
           <input v-model="filtros.subgrupo" placeholder="Sub-grupo">
@@ -239,35 +253,36 @@ onMounted(cargarDatos);
     <div class="table-container shadow desktop-only">
       <table>
         <thead>
-          <tr>
-            <th class="sticky-col" style="left: 0; z-index: 40; width: 140px;">Apellido</th>
-            <th class="sticky-col" style="left: 140px; z-index: 40; width: 140px;">Nombre</th>
-            <th class="sticky-col col-shrink" style="left: 280px; z-index: 40;">SÁB</th>
-            <th class="sticky-col col-shrink sticky-col-final" style="left: 330px; z-index: 40;">DOM</th>
-            <th class="sticky-col" style="left: 380px; z-index: 40; min-width: 160px;">Licencia</th>
-            <th class="col-shrink">WhatsApp</th>
-            <th style="width: 80px;">Activo</th>
-            <th style="width: 90px;">Apto Físico</th>
-            <th class="col-shrink">Grupo</th>
-            <th class="col-shrink">Sub</th>
-            <th>Zona</th>
-            <th>Movilidad</th>
-            <th class="col-shrink">Sáb Disp</th>
-            <th>Desde</th>
-            <th>Hasta</th>
-            <th class="col-shrink">Dom Disp</th>
-            <th>Desde</th>
-            <th>Hasta</th>
-            <th class="col-shrink">Juega</th>
-            <th>Club</th>
-            <th>Cat</th>
-            <th>Observaciones</th>
-          </tr>
+              <tr>
+                <th class="sticky-col" style="left: 0; z-index: 40; width: 140px;">Apellido</th>
+                <th class="sticky-col" style="left: 140px; z-index: 40; width: 140px;">Nombre</th>
+                <th class="sticky-col col-shrink sticky-col-final" style="left: 280px; z-index: 40;">SÁB</th>
+                <th class="sticky-col col-shrink" style="left: 330px; z-index: 40;">DOM</th>
+                <th class="sticky-col text-center" style="left: 380px; z-index: 40; min-width: 160px;">Licencia</th>
+                <th class="col-shrink">WhatsApp</th>
+                <th style="width: 80px;">Activo</th>
+                <th class="text-center" style="width: 90px;">Apto Físico</th>
+                <th class="col-shrink">Grupo</th>
+                <th class="col-shrink">Sub</th>
+                <th class="text-center">Zona</th>
+                <th class="text-center">Movilidad</th>
+                <th class="col-shrink">Sáb Disp</th>
+                <th>Desde</th>
+                <th>Hasta</th>
+                <th class="col-shrink">Dom Disp</th>
+                <th>Desde</th>
+                <th>Hasta</th>
+                <th class="col-shrink">Juega</th>
+                <th class="text-center">Club</th>
+                <th class="text-center">Cat</th>
+                <th class="text-center">Observaciones</th>
+              </tr>
           <tr class="filter-row">
             <td class="sticky-col" style="left:0; z-index: 35;"><input v-model="filtros.apellido" class="filter-input"></td>
             <td class="sticky-col" style="left:140px; z-index: 35;"><input v-model="filtros.nombre" class="filter-input"></td>
             <td class="sticky-col col-shrink" style="left:280px; z-index: 35;"></td>
             <td class="sticky-col col-shrink sticky-col-final" style="left:330px; z-index: 35;"></td>
+            
             <td class="sticky-col" style="left:380px; z-index: 35;">
               <select v-model="filtros.licencia" class="filter-input">
                 <option value="">Todas</option>
@@ -284,7 +299,13 @@ onMounted(cargarDatos);
                 <option value="0">NO</option>
               </select>
             </td>
-            <td class="bg-filter"></td>
+            <td class="bg-filter text-center">
+              <select v-model="filtros.apto_medico" class="filter-input">
+                <option value="">Todos</option>
+                <option value="1">SÍ</option>
+                <option value="0">NO</option>
+              </select>
+            </td>
             <td class="bg-filter col-shrink"><input v-model="filtros.grupo" class="filter-input-min"></td>
             <td class="bg-filter col-shrink"><input v-model="filtros.subgrupo" class="filter-input-min"></td>
             <td class="bg-filter"><input v-model="filtros.zona" class="filter-input"></td>
@@ -344,6 +365,7 @@ onMounted(cargarDatos);
         <div class="card-body">
           <div class="card-row"><span><strong>Gr:</strong> {{ a.grupo }}-{{ a.subgrupo }}</span><span><strong>Zona:</strong> {{ a.zona }}</span></div>
           <div class="card-info">
+            <p><strong>Apto Físico:</strong> {{ a.apto_medico ? 'SÍ' : 'NO' }}</p>
             <p><strong>Juega:</strong> {{ a.juega_handball }} <span v-if="a.juega_handball === 'SI'">en {{ a.donde_juega }}</span></p>
             <p><strong>Sáb:</strong> {{ a.disponibilidad_sabado }} ({{ a.disponibilidad_sabado_desde }}-{{ a.disponibilidad_sabado_hasta }})</p>
             <p><strong>Dom:</strong> {{ a.disponibilidad_domingo }} ({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</p>
@@ -366,7 +388,7 @@ onMounted(cargarDatos);
 .header-actions { display: flex; gap: 8px; }
 .btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.75rem; }
 .btn-clear { background: #e2e8f0; }
-.btn-clear-checks { background: #fee2e2; color: #991b1b; }
+.btn-clear-checks { background: #fca5a5; color: #991b1b; }
 .btn-export { background: #10b981; color: white; }
 .btn-filter-mobile { background: #3b82f6; color: white; }
 
@@ -396,7 +418,7 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 .dot-red { background-color: #ef4444; }
 .check { transform: scale(1.1); cursor: pointer; }
 .check-readonly { cursor: default; }
-.inactivo { background-color: #fee2e2 !important; }
+.inactivo { background-color: #fca5a5 !important; }
 .font-bold { font-weight: bold; }
 
 .col-obs-container { width: 150px; position: relative; }
@@ -436,5 +458,5 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 /* COLORES DE FILAS */
 .fila-roja, .fila-roja .sticky-col { background-color: #fca5a5 !important; color: #000 !important; }
 .fila-amarilla, .fila-amarilla .sticky-col { background-color: #fef08a !important; color: #000 !important; }
-.fila-des, .fila-des .sticky-col { background-color: #f0fdf4 !important; }
+.fila-des, .fila-des .sticky-col { background-color: #93e2ab !important; }
 </style>
