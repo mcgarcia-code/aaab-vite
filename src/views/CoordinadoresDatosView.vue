@@ -95,7 +95,7 @@ const arbitrosFiltrados = computed(() => {
 
 const exportarExcel = () => {
   const datos = arbitrosFiltrados.value.map(a => ({
-    APELLIDO: a.apellido, NOMBRE: a.nombre,
+    APELLIDO: a.apellido, NOMBRE: a.nombre, EDAD: a.edad,
     CELULAR: a.celular,
     LICENCIA: obtenerTextoLicencia(a),
     ACTIVO: a.es_activo == 1 ? 'SI' : 'NO',
@@ -188,6 +188,7 @@ onMounted(cargarDatos);
           <tr>
             <th class="sticky-col" style="left: 0; z-index: 40; width: 140px;">Apellido</th>
             <th class="sticky-col" style="left: 140px; z-index: 40; width: 140px;">Nombre</th>
+            <th class="col-shrink">Edad</th>
             <th class="sticky-col sticky-col-final" style="left: 280px; z-index: 40; min-width: 160px;">Licencia</th>
             <th class="col-shrink">WhatsApp</th>
             <th class="col-shrink">Activo</th>
@@ -210,6 +211,7 @@ onMounted(cargarDatos);
           <tr class="filter-row">
             <td class="sticky-col" style="left:0; z-index: 35;"><input v-model="filtros.apellido" class="filter-input"></td>
             <td class="sticky-col" style="left:140px; z-index: 35;"><input v-model="filtros.nombre" class="filter-input"></td>
+            <td></td>
             <td class="sticky-col sticky-col-final" style="left:280px; z-index: 35;">
               <select v-model="filtros.licencia" class="filter-input">
                 <option value="">Todas</option>
@@ -251,6 +253,7 @@ onMounted(cargarDatos);
           <tr v-for="a in arbitrosFiltrados" :key="a.id" :class="obtenerClaseFila(a)">
             <td class="sticky-col font-bold" style="left: 0;">{{ a.apellido }}</td>
             <td class="sticky-col font-bold" style="left: 140px;">{{ a.nombre }}</td>
+            <td class="text-center">{{ a.edad }}</td>
             <td class="sticky-col text-center text-xs sticky-col-final" style="left: 280px;">{{ obtenerTextoLicencia(a) }}</td>
             <td class="text-center">
               <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa"><span class="material-icons">chat</span></button>
@@ -281,7 +284,7 @@ onMounted(cargarDatos);
         <div class="card-header">
           <div class="card-name">
             <span :class="['dot-sm', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span> 
-            <strong>{{ a.apellido }}, {{ a.nombre }}</strong>
+            <strong>{{ a.apellido }}, {{ a.nombre }} ({{ a.edad }} años)</strong>
           </div>
           <div class="card-lic text-xs">{{ obtenerTextoLicencia(a) }}</div>
         </div>
