@@ -1,10 +1,9 @@
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue';
-import axios from 'axios';
+import { api } from '@/api/api'; 
 import * as XLSX from 'xlsx';
 
 const arbitros = ref([]);
-const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
 const filtros = reactive({}); 
 
 const limpiarFiltros = () => {
@@ -29,7 +28,8 @@ const exportarExcel = () => {
   const datosParaExcel = arbitrosFiltrados.value.map(a => ({
     ...a,
     fecha_nacimiento: mostrarFechaArg(a.fecha_nacimiento),
-    es_activo: a.es_activo == 1 ? 'SI' : 'NO'
+    es_activo: a.es_activo == 1 ? 'SI' : 'NO',
+    apto_medico: a.apto_medico ? 'SI' : 'NO'
   }));
   const worksheet = XLSX.utils.json_to_sheet(datosParaExcel);
   const workbook = XLSX.utils.book_new();
@@ -39,17 +39,50 @@ const exportarExcel = () => {
 
 const cargarDatos = async () => {
   try {
-    const res = await axios.get(API_URL);
-    arbitros.value = Array.isArray(res.data) ? res.data : [];
-  } catch (err) { console.error("Error:", err); }
+    const res = await api.get({
+      entity: 'arbitros',
+      action: 'getArbitros',
+    });
+
+    const respuesta = res.data || res;
+    if (respuesta.ok && Array.isArray(respuesta.payload)) {
+      arbitros.value = respuesta.payload.map(a => ({
+        ...a,
+        apto_medico: !!(a.apto_medico == 1 || a.apto_medico === true)
+      }));
+    } else {
+      arbitros.value = [];
+    }
+  } catch (err) { 
+    console.error("Error al cargar:", err); 
+  }
 };
 
 const crearNuevo = () => {
   arbitros.value.unshift({
     apellido: '', nombre: '', grupo: '', subgrupo: '', dni: '', email: '', 
     direccion: '', provincia: '', localidad: '', zona: '', celular: '',
-    fecha_nacimiento: '', observaciones: '', es_activo: 1 
+    fecha_nacimiento: '', observaciones: '', es_activo: 1, apto_medico: false 
   });
+};
+
+const actualizarAptoFisico = async (arbitro) => {
+  try {
+    // Guardamos la respuesta del post en una variable
+    const response = await api.post({
+      entity: 'datos_personales',
+      action: 'actualizarAptoFisico',
+      payload: {
+        id_arbitro: arbitro.id,
+        apto_medico: arbitro.apto_medico 
+      }
+    });
+    console.log("Respuesta actualización apto:", response);
+  } catch (err) {
+    alert("Error al actualizar apto médico");
+    console.error(err);
+    arbitro.apto_medico = !arbitro.apto_medico;
+  }
 };
 
 const guardarTodo = async () => {
@@ -57,10 +90,7 @@ const guardarTodo = async () => {
     const datosParaEnviar = arbitros.value
       .filter(a => a.apellido || a.nombre)
       .map(a => {
-      
         const clon = { ...a };
-        
-        // Lista de campos que queremos que puedan ser NULL si están vacíos
         const camposLimpiar = [
           'disponibilidad_sabado_desde', 
           'disponibilidad_sabado_hasta', 
@@ -68,20 +98,31 @@ const guardarTodo = async () => {
           'disponibilidad_domingo_hasta',
           'fecha_nacimiento'
         ];
-
         
         camposLimpiar.forEach(campo => {
           if (clon[campo] === "" || clon[campo] === undefined) {
             clon[campo] = null;
           }
         });
-
         return clon;
       });
 
-    await axios.post(API_URL, { masivo: true, datos: datosParaEnviar });
-    alert("Los cambios fueron cargados exitosamente");
-    cargarDatos();
+    // Guardamos la respuesta del guardado masivo en una variable
+    const res = await api.post({ 
+      entity: 'datos_personales',
+      action: 'guardarDatosArbitros', 
+      payload: {
+        listaArbitros: datosParaEnviar 
+      }
+    });
+
+    const respuesta = res.data || res;
+    if (respuesta.ok) {
+      alert("Los cambios fueron cargados exitosamente");
+      await cargarDatos();
+    } else {
+      alert("Hubo un problema al guardar: " + (respuesta.message || "Error desconocido"));
+    }
   } catch (err) { 
     alert("Error al guardar"); 
     console.error(err);
@@ -145,7 +186,7 @@ onMounted(cargarDatos);
             <th class="sticky-col col-apellido">Apellido</th>
             <th class="sticky-col col-nombre">Nombre</th>
             <th class="col-xs-compact">Activo</th> 
-            <th class="col-xs-compact">Grupo</th>
+            <th class="col-xs-compact">Apto Med.</th> <th class="col-xs-compact">Grupo</th>
             <th class="col-xs-compact">Subg.</th>
             <th class="col-dni-compact">DNI</th>
             <th>Email</th>
@@ -174,7 +215,7 @@ onMounted(cargarDatos);
             <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar.."></td>
             <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar.."></td>
             <td class="col-xs-compact"><input v-model="filtros.es_activo" class="filter-input text-center" placeholder="SI/NO"></td>
-            <td class="col-xs-compact"><input v-model="filtros.grupo" class="filter-input text-center"></td>
+            <td class="col-xs-compact"></td> <td class="col-xs-compact"><input v-model="filtros.grupo" class="filter-input text-center"></td>
             <td class="col-xs-compact"><input v-model="filtros.subgrupo" class="filter-input text-center"></td>
             <td class="col-dni-compact"><input v-model="filtros.dni" class="filter-input text-center"></td>
             <td><input v-model="filtros.email" class="filter-input"></td>
@@ -215,6 +256,16 @@ onMounted(cargarDatos);
               </div>
             </td>
 
+            <td class="col-xs-compact">
+              <input 
+                type="checkbox" 
+                v-model="a.apto_medico" 
+                :true-value="1" 
+                :false-value="0"
+                @change="actualizarAptoFisico(a)"
+              >
+            </td>
+
             <td class="col-xs-compact"><input v-model="a.grupo" class="edit-input text-center"></td>
             <td class="col-xs-compact"><input v-model="a.subgrupo" class="edit-input text-center"></td>
             <td class="col-dni-compact"><input v-model="a.dni" class="edit-input text-center"></td>
@@ -225,11 +276,11 @@ onMounted(cargarDatos);
             <td><input v-model="a.zona" class="edit-input" readonly></td>
             <td><input v-model="a.celular" class="edit-input"></td>
             
-<td>
-  <div class="date-custom-wrapper" :data-date="a.fecha_nacimiento ? mostrarFechaArg(a.fecha_nacimiento) : ''">
-    <input type="date" v-model="a.fecha_nacimiento" class="edit-input input-fecha-nativa">
-  </div>
-</td>
+            <td>
+              <div class="date-custom-wrapper" :data-date="a.fecha_nacimiento ? mostrarFechaArg(a.fecha_nacimiento) : ''">
+                <input type="date" v-model="a.fecha_nacimiento" class="edit-input input-fecha-nativa">
+              </div>
+            </td>
 
             <td><input v-model="a.telefonocontacto" class="edit-input"></td>
             <td><input v-model="a.parentescocontacto" class="edit-input"></td>
@@ -256,7 +307,7 @@ onMounted(cargarDatos);
 </template>
 
 <style scoped>
-
+/* Se mantienen todos tus estilos originales */
 .admin-panel { padding: 15px; background: #f8fafc; font-family: sans-serif; color: #000; min-height: 100vh; }
 .header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
