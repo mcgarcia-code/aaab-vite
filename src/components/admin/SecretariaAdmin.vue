@@ -243,7 +243,6 @@ onMounted(cargarDatos);
             <td class="sticky-col col-id">{{ a.id || '-' }}</td>
             <td class="sticky-col col-apellido"><input v-model="a.apellido" class="edit-input"></td>
             <td class="sticky-col col-nombre"><input v-model="a.nombre" class="edit-input"></td>
-            
             <td class="col-xs-compact">
               <div class="status-wrapper">
                 <span :class="['status-dot', a.es_activo == 1 ? 'dot-active' : 'dot-inactive']"></span>
@@ -254,7 +253,9 @@ onMounted(cargarDatos);
               </div>
             </td>
 
-            <td class="col-xs-compact">
+            <td
+              :class="[{ 'inactivo': !a.apto_medico }, 'text-center']"
+            >
               <input 
                 type="checkbox" 
                 v-model="a.apto_medico" 
@@ -335,6 +336,7 @@ th { padding: 10px; color: #475569; text-transform: uppercase; font-weight: 800;
 .dot-inactive { background: #ef4444; }
 .select-compact { border: none; font-weight: bold; background: transparent; cursor: pointer; font-size: 0.8rem; }
 .col-xs-compact { width: 70px; text-align: center; }
+.inactivo { background-color: #fee2e2 !important; }
 .col-dni-compact { width: 90px; text-align: center; }
 
 /* AJUSTE PARA FECHA DD/MM/YYYY */
