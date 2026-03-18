@@ -48,7 +48,7 @@ const enviarFactura = (emailClub) => {
   
   const destinatario = emailClub.trim();
   const cc = "facturas@arbitroshandball.com.ar";
-  const subject = "Envío de Factura - Árbitraje AAAB";
+  const subject = "Envío de Factura - Arbitraje AAAB";
   const body = "Estimados,\n\nAdjuntamos la factura correspondiente.\n\nSaludos cordiales.";
   
   const mailtoLink = `mailto:${destinatario}?cc=${cc}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -124,7 +124,7 @@ onMounted(cargarDatos);
             <td><small>{{ i.condicion || '-' }}</small></td>
             <td class="text-center">
               <div class="actions-wrapper">
-                <button v-if="i.email && i.email !== 'NULL'" @click="enviarFactura(i.email)" class="btn-email" title="Enviar Factura">
+                <button v-if="i.email && i.email !== 'NULL'" @click="enviarFactura(i.email)" class="btn-email" title="Enviar E-mail">
                   <span class="material-icons">send</span>
                 </button>
                 <button v-if="i.email && i.email !== 'NULL'" @click="copiarAlPortapapeles(i.email, 'Email')" class="btn-copy" title="Copiar Email">
@@ -149,13 +149,13 @@ onMounted(cargarDatos);
             </div>
             <div class="card-actions-mobile">
                 <button v-if="i.cuit && i.cuit !== 'NULL'" @click="copiarAlPortapapeles(i.cuit, 'CUIT')" class="btn-copy-mobile">
-                  <span class="material-icons">content_copy</span> CUIT
+                  <span class="material-icons">content_copy</span> Copiar CUIT
                 </button>
                 <button v-if="i.email && i.email !== 'NULL'" @click="copiarAlPortapapeles(i.email, 'Email')" class="btn-copy-mobile">
-                  <span class="material-icons">content_copy</span> Email
+                  <span class="material-icons">content_copy</span> Copiar E.mail
                 </button>
                 <button v-if="i.email && i.email !== 'NULL'" @click="enviarFactura(i.email)" class="btn-copy-mobile btn-send-mobile">
-                  <span class="material-icons">send</span> Enviar Factura
+                  <span class="material-icons">send</span> Enviar E-mail
                 </button>
             </div>
           </div>
