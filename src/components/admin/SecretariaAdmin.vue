@@ -132,12 +132,19 @@ const arbitrosFiltrados = computed(() => {
     return Object.keys(filtros).every(key => {
       if (filtros[key] === undefined || filtros[key] === null || filtros[key] === '') return true;
 
+      const busqueda = filtros[key].toLowerCase();
+
       if (key === 'es_activo') {
-        const busqueda = filtros[key].toLowerCase();
         const valorReal = String(a[key]); 
         if (busqueda === 'si') return valorReal === '1';
         if (busqueda === 'no') return valorReal === '0';
         return valorReal.includes(busqueda);
+      }
+
+      // Lógica para filtro Apto Médico (booleano)
+      if (key === 'apto_medico') {
+        if (busqueda === 'si') return a.apto_medico === true;
+        if (busqueda === 'no') return a.apto_medico === false;
       }
 
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
@@ -184,7 +191,8 @@ onMounted(cargarDatos);
             <th class="sticky-col col-apellido">Apellido</th>
             <th class="sticky-col col-nombre">Nombre</th>
             <th class="col-xs-compact">Activo</th> 
-            <th class="col-xs-compact">Apto Med.</th> <th class="col-xs-compact">Grupo</th>
+            <th class="col-xs-compact">Apto Med.</th> 
+            <th class="col-xs-compact">Grupo</th>
             <th class="col-xs-compact">Subg.</th>
             <th class="col-dni-compact">DNI</th>
             <th>Email</th>
@@ -213,7 +221,8 @@ onMounted(cargarDatos);
             <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar.."></td>
             <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar.."></td>
             <td class="col-xs-compact"><input v-model="filtros.es_activo" class="filter-input text-center" placeholder="SI/NO"></td>
-            <td class="col-xs-compact"></td> <td class="col-xs-compact"><input v-model="filtros.grupo" class="filter-input text-center"></td>
+            <td class="col-xs-compact"><input v-model="filtros.apto_medico" class="filter-input text-center" placeholder="SI/NO"></td> 
+            <td class="col-xs-compact"><input v-model="filtros.grupo" class="filter-input text-center"></td>
             <td class="col-xs-compact"><input v-model="filtros.subgrupo" class="filter-input text-center"></td>
             <td class="col-dni-compact"><input v-model="filtros.dni" class="filter-input text-center"></td>
             <td><input v-model="filtros.email" class="filter-input"></td>
@@ -253,9 +262,7 @@ onMounted(cargarDatos);
               </div>
             </td>
 
-            <td
-              :class="[{ 'inactivo': !a.apto_medico }, 'text-center']"
-            >
+            <td :class="[{ 'inactivo': !a.apto_medico }, 'text-center']">
               <input 
                 type="checkbox" 
                 v-model="a.apto_medico" 
@@ -304,7 +311,6 @@ onMounted(cargarDatos);
 </template>
 
 <style scoped>
-/* Se mantienen todos tus estilos originales */
 .admin-panel { padding: 15px; background: #f8fafc; font-family: sans-serif; color: #000; min-height: 100vh; }
 .header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
@@ -317,12 +323,32 @@ onMounted(cargarDatos);
 .btn-export { background: #10b981; color: white; }
 .table-container { overflow: auto; max-height: 75vh; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
 table { width: max-content; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; }
+
+/* FIX PARA COLUMNAS FIJAS Y DESPLAZAMIENTO POR DETRÁS */
 thead tr.main-header th { position: sticky; top: 0; z-index: 1000; background: #f8fafc; border-bottom: 2px solid #e2e8f0; }
-thead tr.filter-row td { position: sticky; top: 38px; z-index: 950; background: #f8fafc !important; border-bottom: 2px solid #cbd5e1; }
+thead tr.filter-row td { 
+  position: relative; /* Cambiado de sticky a relative */
+  top: auto; 
+  z-index: 5; 
+  background: #f8fafc !important; 
+  border-bottom: 2px solid #cbd5e1; 
+}
+
 .sticky-col { position: sticky !important; z-index: 10; background: white !important; border-right: 1px solid #e2e8f0 !important; }
+
+/* REGLA CRÍTICA: Los encabezados que también son sticky-col deben estar por encima de los encabezados normales */
+thead th.sticky-col { 
+  z-index: 1500 !important;
+}
+
+thead td.sticky-col { 
+  z-index: 10 !important; 
+}
+
 .col-id { left: 0; width: 50px; text-align: center; }
 .col-apellido { left: 50px; width: 140px; }
 .col-nombre { left: 190px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
+
 th { padding: 10px; color: #475569; text-transform: uppercase; font-weight: 800; font-size: 0.7rem; }
 .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
 .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #f37d7d !important; font-weight: bold; color: #000; }
@@ -339,31 +365,11 @@ th { padding: 10px; color: #475569; text-transform: uppercase; font-weight: 800;
 .inactivo { background-color: #fee2e2 !important; }
 .col-dni-compact { width: 90px; text-align: center; }
 
-/* AJUSTE PARA FECHA DD/MM/YYYY */
-.date-custom-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 110px;
-}
-.date-custom-wrapper::before {
-  content: attr(data-date);
-  position: absolute;
-  left: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 0.85rem;
-}
-.input-fecha-nativa {
-  color: transparent !important;
-  cursor: pointer;
-}
-.input-fecha-nativa::-webkit-calendar-picker-indicator {
-  position: absolute;
-  right: 0;
-  cursor: pointer;
-}
+/* FECHA DD/MM/YYYY */
+.date-custom-wrapper { position: relative; display: flex; align-items: center; width: 110px; }
+.date-custom-wrapper::before { content: attr(data-date); position: absolute; left: 4px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.85rem; }
+.input-fecha-nativa { color: transparent !important; cursor: pointer; }
+.input-fecha-nativa::-webkit-calendar-picker-indicator { position: absolute; right: 0; cursor: pointer; }
 
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
