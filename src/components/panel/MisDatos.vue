@@ -137,8 +137,22 @@ const enviarSolicitudRectificacion = async () => {
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4" style="border-radius: 15px; max-width: 1000px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <h4 class="text-danger fw-bold m-0">Legajo Personal</h4>
-        <span v-if="edicionAbierta" class="badge bg-success px-3 py-2 shadow-sm w-fit-mobile">Edición Abierta</span>
-        <span v-else class="badge bg-secondary px-3 py-2 shadow-sm w-fit-mobile">Edición Cerrada</span>
+        
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+            <span v-if="arbitro.apto_medico == 1" class="badge bg-success px-3 py-2 shadow-sm d-flex align-items-center gap-2">
+                <i class="bi bi-heart-pulse-fill"></i> APTO MÉDICO: SÍ
+            </span>
+            <span v-else class="badge bg-danger px-3 py-2 shadow-sm d-flex align-items-center gap-2 animate__animated animate__pulse animate__infinite">
+                <i class="bi bi-exclamation-triangle-fill"></i> APTO MÉDICO: NO
+            </span>
+
+            <span v-if="edicionAbierta" class="badge bg-primary px-3 py-2 shadow-sm w-fit-mobile">
+                <i class="bi bi-pencil-square me-1"></i> Edición Abierta
+            </span>
+            <span v-else class="badge bg-secondary px-3 py-2 shadow-sm w-fit-mobile">
+                <i class="bi bi-lock-fill me-1"></i> Edición Cerrada
+            </span>
+        </div>
       </div>
 
       <div class="card-body p-3 p-md-4">

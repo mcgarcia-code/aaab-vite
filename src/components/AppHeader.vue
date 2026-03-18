@@ -1,23 +1,22 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import logo from '@/assets/fotos/logo.png'
-// 1. Importamos auth
 import { auth } from '@/api/auth'
 
-// Referencias para el navbar (cerrar menú en móvil)
 const navbarNav = ref(null)
-
-// 2. REEMPLAZO: Usamos auth.isLoggedIn() para la reactividad inicial
 const logueado = ref(auth.isLoggedIn())
 
-// 3. REEMPLAZO: Actualizamos usando el método de auth
+// Propiedad computada para determinar a qué panel ir
+const rutaPanel = computed(() => {
+  const user = auth.getUser();
+  return user?.rol === 'admin' ? '/admin' : '/panel-arbitro';
+})
+
 const actualizarEstado = () => {
   logueado.value = auth.isLoggedIn()
 }
 
-// El onMounted y onUnmounted se quedan igual porque auth.js 
-// dispara el evento 'storage' manualmente para que esto funcione.
 onMounted(() => {
   window.addEventListener('storage', actualizarEstado)
 })
@@ -68,7 +67,7 @@ const hideNavBar = () => {
             <RouterLink v-if="!logueado" to="/login-arbitro" class="btn btn-login-nav ms-lg-3">
               INICIAR SESIÓN
             </RouterLink>
-            <RouterLink v-else to="/panel-arbitro" class="btn btn-login-nav ms-lg-3">
+            <RouterLink v-else :to="rutaPanel" class="btn btn-login-nav ms-lg-3">
               MI PANEL
             </RouterLink>
           </li>

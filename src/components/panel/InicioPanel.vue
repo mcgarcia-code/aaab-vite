@@ -1,10 +1,7 @@
 <script setup>
-import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
-const mostrarCredencial = ref(false);
-
-// Unificamos la lógica de los links aquí
+// Unificamos la lógica de los links: todos son rutas directas ahora
 const menuItems = [
   { to: '/panel-arbitro/datos', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Ver legajo y seguridad.' },
   { to: '/panel-arbitro/disponibilidad', title: 'Disponibilidad', icon: 'bi bi-clock-history', desc: 'Modificá tus horarios.' },
@@ -19,17 +16,7 @@ const menuItems = [
   <div class="row g-3 g-md-4 animate__animated animate__fadeIn">
     
     <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItems" :key="item.title">
-      <div v-if="item.isModal" @click="mostrarCredencial = true" class="h-100">
-        <div class="menu-card shadow-sm">
-          <div class="icon-circle">
-            <i :class="[item.icon, 'text-danger']"></i>
-          </div>
-          <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
-          <p class="small text-muted m-0">{{ item.desc }}</p>
-        </div>
-      </div>
-
-      <RouterLink v-else :to="item.to" class="text-decoration-none h-100 d-block">
+      <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
         <div class="menu-card shadow-sm">
           <div class="icon-circle">
             <i :class="[item.icon, 'text-danger']"></i>
@@ -40,10 +27,8 @@ const menuItems = [
       </RouterLink>
     </div>
 
-    <CredencialDigital :mostrar="mostrarCredencial" @cerrar="mostrarCredencial = false" />
   </div>
 </template>
-
 <style scoped>
 .menu-card {
   background: #ffffff;

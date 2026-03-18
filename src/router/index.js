@@ -19,7 +19,6 @@ const routes = [
     name: 'LoginArbitro',
     component: () => import('../views/LoginArbitro.vue'),
     beforeEnter: (to, from, next) => {
-      // Si ya tiene sesión activa, lo redirigimos a su panel correspondiente
       if (auth.isLoggedIn()) {
         const user = auth.getUser();
         user?.rol === 'admin' ? next('/admin') : next('/panel-arbitro');
@@ -45,13 +44,30 @@ const routes = [
 
   {    
     path: '/admin',
+    // Mantenemos tu carga dinámica del layout
     component: () => import('../views/AdminPanel.vue'),
     meta: { requiresAuth: true, role: 'admin' }, 
     children: [
-      { path: '', name: 'AdminInicio', component: () => import('../components/admin/AdminInicio.vue') },
-      { path: 'secretaria', component: () => import('../components/admin/SecretariaAdmin.vue') },
-      { path: 'tribunal', component: () => import('../components/admin/TribunalAdmin.vue') },
-      { path: 'tesoreria', component: () => import('../components/admin/TesoreriaAdmin.vue') },
+      { 
+        path: '', 
+        name: 'AdminInicio', 
+        component: () => import('../components/admin/AdminInicio.vue') 
+      },
+      { 
+        path: 'secretaria', 
+        name: 'AdminSecretaria', 
+        component: () => import('../components/admin/SecretariaAdmin.vue') 
+      },
+      { 
+        path: 'tribunal', 
+        name: 'AdminTribunal', 
+        component: () => import('../components/admin/TribunalAdmin.vue') 
+      },
+      { 
+        path: 'tesoreria', 
+        name: 'AdminTesoreria', 
+        component: () => import('../components/admin/TesoreriaAdmin.vue') 
+      },
     ]
   },
   
@@ -80,25 +96,29 @@ const router = createRouter({
   },
 });
 
-// Guard Global: Centraliza toda la protección de rutas
 router.beforeEach((to, from, next) => {
   const estaLogueado = auth.isLoggedIn();
   const user = auth.getUser();
 
-  // 1. Verificar si la ruta requiere autenticación
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!estaLogueado) {
       next('/login-arbitro');
+      return;
     } 
-    // 2. Verificar si la ruta es exclusiva para admin
-    else if (to.matched.some(record => record.meta.role === 'admin')) {
+
+    // REDIRECCIÓN LÓGICA: Si es admin y va a la ruta de árbitros, lo mandamos a /admin
+    if (to.path.startsWith('/panel-arbitro') && user?.rol === 'admin') {
+      next('/admin');
+      return;
+    }
+
+    if (to.matched.some(record => record.meta.role === 'admin')) {
       if (user?.rol === 'admin') {
         next();
       } else {
-        next('/panel-arbitro'); // Si no es admin, lo mandamos al panel normal
+        next('/panel-arbitro');
       }
-    } 
-    else {
+    } else {
       next();
     }
   } else {
