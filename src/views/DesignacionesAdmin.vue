@@ -485,7 +485,7 @@ td.text-center { display: table-cell; text-align: center; vertical-align: middle
 .btn-wa:hover { transform: scale(1.1); }
 .btn-wa-mobile { width: 100%; margin-top: 10px; background: #25d366; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; }
 
-.table-container { overflow: auto; max-height: 80vh; background: white; border: 1px solid #e2e8f0; }
+.table-container { overflow: auto; max-height: 70vh; background: white; border: 1px solid #e2e8f0; }
 table { width: max-content; border-collapse: separate; border-spacing: 0; font-size: 0.8rem; }
 th { background: #f1f5f9 !important; padding: 10px; position: sticky; top: 0; z-index: 30; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; }
 .filter-row td { position: sticky; top: 33px; z-index: 25; background: #f1f5f9 !important; padding: 4px; border-bottom: 2px solid #cbd5e1; }
