@@ -1,165 +1,3 @@
-<script setup>
-import { ref, onMounted, watch } from 'vue';
-import axios from 'axios';
-// 1. Importamos auth
-import { auth } from '@/api/auth';
-import { useHead } from '@vueuse/head'
-
-// Título y descripción específicos para la página de Mis Datos
-useHead({
-  title: 'Mis Datos | AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Mis datos personales y de contacto.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Mis Datos | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Mis datos personales y de contacto.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
-  ],
-})
-
-// 2. REEMPLAZO: Obtenemos el árbitro a través de auth
-const arbitro = ref(auth.getUser() || {});
-const opciones = ref({ provincias: [], localidades: [] });
-const localidadesFiltradas = ref([]);
-const mensaje = ref({ texto: '', tipo: '' });
-const cargando = ref(false);
-const solicitudCambio = ref('');
-const historialRectificaciones = ref([]);
-
-const nuevaPassword = ref('');
-const passwordMensaje = ref({ texto: '', tipo: '' });
-
-const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
-
-
-const mostrarFechaArg = (fecha) => {
-    if (!fecha) return '';
-    const partes = fecha.split('-');
-    if (partes.length !== 3) return fecha;
-    return `${partes[2]}-${partes[1]}-${partes[0]}`;
-};
-
-const obtenerHistorialRectificaciones = async () => {
-    try {
-        const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=rectificacion`);
-        historialRectificaciones.value = res.data;
-    } catch {
-        console.error("Error al cargar el historial de rectificaciones");
-    }
-};
-
-onMounted(async () => {
-    obtenerHistorialRectificaciones();
-    try {
-        const res = await axios.get('https://arbitroshandball.com.ar/api/get_opciones.php');
-        opciones.value = res.data;
-        if (arbitro.value.provincia) {
-            filtrarLocalidades(arbitro.value.provincia);
-        }
-    } catch {
-        console.error("Error al cargar provincias/localidades");
-    }
-});
-
-const filtrarLocalidades = (provId) => {
-    if (!opciones.value.localidades) return;
-    localidadesFiltradas.value = opciones.value.localidades.filter(l => l.provincia_id == provId);
-};
-
-watch(() => arbitro.value.provincia, (nuevoId) => {
-    filtrarLocalidades(nuevoId);
-});
-
-const guardarCambios = async () => {
-    cargando.value = true;
-    try {
-        const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_perfil.php', arbitro.value);
-        if (res.data.success) {
-            mensaje.value = { texto: "Datos actualizados correctamente.", tipo: 'success' };
-            
-            // 3. REEMPLAZO: Actualizamos la sesión con los nuevos datos del árbitro
-            // Esto asegura que si cambia su nombre o grupo, se vea reflejado en todo el panel
-            auth.setUser(arbitro.value);
-            
-        } else {
-            mensaje.value = { texto: res.data.message, tipo: 'danger' };
-        }
-    } catch {
-        mensaje.value = { texto: "Error al conectar con el servidor.", tipo: 'danger' };
-    } finally {
-        cargando.value = false;
-    }
-};
-
-// ... El resto de las funciones (cambiarPassword, enviarSolicitudRectificacion) se mantienen igual ...
-const cambiarPassword = async () => {
-    if (nuevaPassword.value.length < 6) {
-        passwordMensaje.value = { texto: "La contraseña debe tener al menos 6 caracteres.", tipo: 'danger' };
-        return;
-    }
-    
-    cargando.value = true;
-    passwordMensaje.value = { texto: '', tipo: '' };
-
-    try {
-        const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_password.php', {
-            id_arbitro: arbitro.value.id,
-            password: nuevaPassword.value
-        });
-
-        if (res.data.success) {
-            passwordMensaje.value = { texto: "Contraseña actualizada con éxito.", tipo: 'success' };
-            nuevaPassword.value = '';
-        } else {
-            passwordMensaje.value = { texto: res.data.message, tipo: 'danger' };
-        }
-    } catch {
-        passwordMensaje.value = { texto: "Error al actualizar la contraseña.", tipo: 'danger' };
-    } finally {
-        cargando.value = false;
-    }
-};
-
-const enviarSolicitudRectificacion = async () => {
-    if (!solicitudCambio.value.trim()) return;
-    cargando.value = true;
-    try {
-        const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_cambios.php', {
-            id_arbitro: arbitro.value.id,
-            nombre: arbitro.value.nombre,
-            apellido: arbitro.value.apellido,
-            grupo: arbitro.value.grupo,
-            mensaje: "RECTIFICACIÓN: " + solicitudCambio.value
-        });
-        if (res.data.success) {
-            mensaje.value = { texto: "Solicitud enviada con éxito.", tipo: 'success' };
-            solicitudCambio.value = '';
-            obtenerHistorialRectificaciones();
-        }
-    } catch {
-        mensaje.value = { texto: "Error al enviar solicitud.", tipo: 'danger' };
-    } finally {
-        cargando.value = false;
-    }
-};
-</script>
-
 <template>
   <div class="animate__animated animate__fadeIn container py-4">
     
@@ -368,6 +206,168 @@ const enviarSolicitudRectificacion = async () => {
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, watch } from 'vue';
+import axios from 'axios';
+// 1. Importamos auth
+import { auth } from '@/api/auth';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Mis Datos
+useHead({
+  title: 'Mis Datos | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Mis datos personales y de contacto.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Mis Datos | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Mis datos personales y de contacto.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+})
+
+// 2. REEMPLAZO: Obtenemos el árbitro a través de auth
+const arbitro = ref(auth.getUser() || {});
+const opciones = ref({ provincias: [], localidades: [] });
+const localidadesFiltradas = ref([]);
+const mensaje = ref({ texto: '', tipo: '' });
+const cargando = ref(false);
+const solicitudCambio = ref('');
+const historialRectificaciones = ref([]);
+
+const nuevaPassword = ref('');
+const passwordMensaje = ref({ texto: '', tipo: '' });
+
+const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
+
+
+const mostrarFechaArg = (fecha) => {
+    if (!fecha) return '';
+    const partes = fecha.split('-');
+    if (partes.length !== 3) return fecha;
+    return `${partes[2]}-${partes[1]}-${partes[0]}`;
+};
+
+const obtenerHistorialRectificaciones = async () => {
+    try {
+        const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=rectificacion`);
+        historialRectificaciones.value = res.data;
+    } catch {
+        console.error("Error al cargar el historial de rectificaciones");
+    }
+};
+
+onMounted(async () => {
+    obtenerHistorialRectificaciones();
+    try {
+        const res = await axios.get('https://arbitroshandball.com.ar/api/get_opciones.php');
+        opciones.value = res.data;
+        if (arbitro.value.provincia) {
+            filtrarLocalidades(arbitro.value.provincia);
+        }
+    } catch {
+        console.error("Error al cargar provincias/localidades");
+    }
+});
+
+const filtrarLocalidades = (provId) => {
+    if (!opciones.value.localidades) return;
+    localidadesFiltradas.value = opciones.value.localidades.filter(l => l.provincia_id == provId);
+};
+
+watch(() => arbitro.value.provincia, (nuevoId) => {
+    filtrarLocalidades(nuevoId);
+});
+
+const guardarCambios = async () => {
+    cargando.value = true;
+    try {
+        const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_perfil.php', arbitro.value);
+        if (res.data.success) {
+            mensaje.value = { texto: "Datos actualizados correctamente.", tipo: 'success' };
+            
+            // 3. REEMPLAZO: Actualizamos la sesión con los nuevos datos del árbitro
+            // Esto asegura que si cambia su nombre o grupo, se vea reflejado en todo el panel
+            auth.setUser(arbitro.value);
+            
+        } else {
+            mensaje.value = { texto: res.data.message, tipo: 'danger' };
+        }
+    } catch {
+        mensaje.value = { texto: "Error al conectar con el servidor.", tipo: 'danger' };
+    } finally {
+        cargando.value = false;
+    }
+};
+
+// ... El resto de las funciones (cambiarPassword, enviarSolicitudRectificacion) se mantienen igual ...
+const cambiarPassword = async () => {
+    if (nuevaPassword.value.length < 6) {
+        passwordMensaje.value = { texto: "La contraseña debe tener al menos 6 caracteres.", tipo: 'danger' };
+        return;
+    }
+    
+    cargando.value = true;
+    passwordMensaje.value = { texto: '', tipo: '' };
+
+    try {
+        const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_password.php', {
+            id_arbitro: arbitro.value.id,
+            password: nuevaPassword.value
+        });
+
+        if (res.data.success) {
+            passwordMensaje.value = { texto: "Contraseña actualizada con éxito.", tipo: 'success' };
+            nuevaPassword.value = '';
+        } else {
+            passwordMensaje.value = { texto: res.data.message, tipo: 'danger' };
+        }
+    } catch {
+        passwordMensaje.value = { texto: "Error al actualizar la contraseña.", tipo: 'danger' };
+    } finally {
+        cargando.value = false;
+    }
+};
+
+const enviarSolicitudRectificacion = async () => {
+    if (!solicitudCambio.value.trim()) return;
+    cargando.value = true;
+    try {
+        const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_cambios.php', {
+            id_arbitro: arbitro.value.id,
+            nombre: arbitro.value.nombre,
+            apellido: arbitro.value.apellido,
+            grupo: arbitro.value.grupo,
+            mensaje: "RECTIFICACIÓN: " + solicitudCambio.value
+        });
+        if (res.data.success) {
+            mensaje.value = { texto: "Solicitud enviada con éxito.", tipo: 'success' };
+            solicitudCambio.value = '';
+            obtenerHistorialRectificaciones();
+        }
+    } catch {
+        mensaje.value = { texto: "Error al enviar solicitud.", tipo: 'danger' };
+    } finally {
+        cargando.value = false;
+    }
+};
+</script>
 
 <style scoped>
 .form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }

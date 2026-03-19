@@ -1,9 +1,3 @@
-<script setup>
-// En <script setup>, los componentes se registran automáticamente al importarlos.
-import AppHeader from './components/AppHeader.vue'
-import AppFooter from './components/AppFooter.vue'
-</script>
-
 <template>
   <AppHeader />
   <main>
@@ -12,10 +6,16 @@ import AppFooter from './components/AppFooter.vue'
   <AppFooter />
 </template>
 
+<script setup>
+// En <script setup>, los componentes se registran automáticamente al importarlos.
+import AppHeader from './components/AppHeader.vue'
+import AppFooter from './components/AppFooter.vue'
+</script>
+
 <style>
 /* Estilos Globales */
 body {
-  font-family: 'Poppins', sans-serif; /* Aplicamos la nueva fuente a todo el sitio */
+  font-family: 'sans-serif'; /* Aplicamos la nueva fuente a todo el sitio */
   background-color: #f8f9fa;
   overflow-x: hidden; /* Evita barras de scroll horizontales */
 }

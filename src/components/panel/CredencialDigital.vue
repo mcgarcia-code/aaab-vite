@@ -1,3 +1,74 @@
+
+<template>
+  <div class="page-container">
+    <div v-if="cargando" class="loader-full">
+      <div class="spinner-border text-light"></div>
+      <p class="text-light mt-2">Generando credencial oficial...</p>
+    </div>
+
+    <div v-else class="content animate__animated animate__fadeIn">
+      
+      <div ref="credencialRef" class="credencial-card">
+        <div class="watermark-center">{{ añoActual }}</div>
+
+        <div class="side-black">
+          <div class="foto-wrap">
+            <img 
+              class="foto-arbitro"
+              :src="`https://arbitroshandball.com.ar/resources/carnet-arbitros/${arbitro.dni}.webp?t=${new Date().getTime()}`" 
+              @error="e => e.target.src = 'https://arbitroshandball.com.ar/resources/carnet-arbitros/default.webp'"
+            >
+          </div>
+          <div :class="['status-badge', arbitro.es_activo == 1 ? 'bg-active' : 'bg-inactive']">
+            <i :class="arbitro.es_activo == 1 ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'"></i>
+            {{ arbitro.es_activo == 1 ? 'ACTIVO' : 'INACTIVO' }}
+          </div>
+        </div>
+
+        <div class="side-white">
+          <div class="header-top">
+          <img :src="logo" alt="Logo AAAB" class="logo-credencial">
+          <span>CREDENCIAL DIGITAL</span>
+          </div>
+
+          <div class="info-vertical">
+            <div class="info-group">
+              <span class="label">APELLIDO Y NOMBRE</span>
+              <h1 class="name">{{ (arbitro.apellido || '').toUpperCase() }}, {{ arbitro.nombre }}</h1>
+            </div>
+
+            <div class="info-row-parallel">
+              <div class="info-group">
+                <span class="label">DOCUMENTO</span>
+                <span class="val">{{ arbitro.dni }}</span>
+              </div>
+              <div class="info-group border-separator ps-4 ms-auto-md">
+                <span class="label">GRUPO</span>
+                <span class="val text-danger fw-bold">{{ arbitro.grupo }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-card">
+            <div class="qr-container">
+              <qrcode-vue :value="`https://arbitroshandball.com.ar/perfil/${arbitro.dni}`" :size="70" level="H" />
+            </div>
+            <div class="aaab-info">ASOCIACIÓN ARGENTINA<br>DE ÁRBITROS DE HANDBALL</div>
+            <div class="expire">VENCE: 31/12/{{ añoActual }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions-section">
+        <button class="btn-download shadow" @click="descargar" :disabled="procesando">
+          <i class="bi me-2" :class="procesando ? 'bi-hourglass-split' : 'bi-download'"></i> 
+          {{ procesando ? 'PROCESANDO...' : 'DESCARGAR IMAGEN' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import { api } from '@/api/api'; 
@@ -102,75 +173,6 @@ const descargar = async () => {
 };
 </script>
 
-<template>
-  <div class="page-container">
-    <div v-if="cargando" class="loader-full">
-      <div class="spinner-border text-light"></div>
-      <p class="text-light mt-2">Generando credencial oficial...</p>
-    </div>
-
-    <div v-else class="content animate__animated animate__fadeIn">
-      
-      <div ref="credencialRef" class="credencial-card">
-        <div class="watermark-center">{{ añoActual }}</div>
-
-        <div class="side-black">
-          <div class="foto-wrap">
-            <img 
-              class="foto-arbitro"
-              :src="`https://arbitroshandball.com.ar/resources/carnet-arbitros/${arbitro.dni}.webp?t=${new Date().getTime()}`" 
-              @error="e => e.target.src = 'https://arbitroshandball.com.ar/resources/carnet-arbitros/default.webp'"
-            >
-          </div>
-          <div :class="['status-badge', arbitro.es_activo == 1 ? 'bg-active' : 'bg-inactive']">
-            <i :class="arbitro.es_activo == 1 ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'"></i>
-            {{ arbitro.es_activo == 1 ? 'ACTIVO' : 'INACTIVO' }}
-          </div>
-        </div>
-
-        <div class="side-white">
-          <div class="header-top">
-          <img :src="logo" alt="Logo AAAB" class="logo-credencial">
-          <span>CREDENCIAL DIGITAL</span>
-          </div>
-
-          <div class="info-vertical">
-            <div class="info-group">
-              <span class="label">APELLIDO Y NOMBRE</span>
-              <h1 class="name">{{ (arbitro.apellido || '').toUpperCase() }}, {{ arbitro.nombre }}</h1>
-            </div>
-
-            <div class="info-row-parallel">
-              <div class="info-group">
-                <span class="label">DOCUMENTO</span>
-                <span class="val">{{ arbitro.dni }}</span>
-              </div>
-              <div class="info-group border-separator ps-4 ms-auto-md">
-                <span class="label">GRUPO</span>
-                <span class="val text-danger fw-bold">{{ arbitro.grupo }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="footer-card">
-            <div class="qr-container">
-              <qrcode-vue :value="`https://arbitroshandball.com.ar/perfil/${arbitro.dni}`" :size="70" level="H" />
-            </div>
-            <div class="aaab-info">ASOCIACIÓN ARGENTINA<br>DE ÁRBITROS DE HANDBALL</div>
-            <div class="expire">VENCE: 31/12/{{ añoActual }}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="actions-section">
-        <button class="btn-download shadow" @click="descargar" :disabled="procesando">
-          <i class="bi me-2" :class="procesando ? 'bi-hourglass-split' : 'bi-download'"></i> 
-          {{ procesando ? 'PROCESANDO...' : 'DESCARGAR IMAGEN' }}
-        </button>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .page-container {

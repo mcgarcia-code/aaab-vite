@@ -1,3 +1,35 @@
+<template>
+  <div class="panel-layout">
+    <nav class="navbar navbar-dark bg-dark px-3 shadow-sm mb-4">
+      <div class="container-fluid d-flex justify-content-between align-items-center">
+        <span class="navbar-brand fw-bold">Panel Árbitro AAAB</span>
+        <button @click="cerrarSesion" class="btn btn-outline-danger btn-sm px-3">Cerrar Sesión</button>
+      </div>
+    </nav>
+    
+    <div class="container py-2">
+      <div class="max-800">
+        <div class="user-header d-flex align-items-center mb-4 p-3 rounded-4 shadow">
+          <img :src="urlFoto" @error="(e) => e.target.src = 'https://via.placeholder.com/150'" 
+               class="perfil-img me-3">
+          <div class="overflow-hidden">
+            <h2 class="text-white fw-bold m-0 text-capitalize text-truncate">Hola, {{ arbitro.nombre }}</h2>
+            <span class="badge bg-danger mt-1">ID Árbitro: {{ arbitro.id }}</span>
+          </div>
+        </div>
+
+        <div v-if="$route.name !== 'PanelInicio'" class="mb-4">
+          <RouterLink to="/panel-arbitro" class="btn-volver">
+            <i class="bi bi-arrow-left me-2"></i> Volver al Menú
+          </RouterLink>
+        </div>
+
+        <RouterView />
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import { auth } from '@/api/auth'; 
@@ -45,38 +77,6 @@ onMounted(() => {
   }
 });
 </script>
-
-<template>
-  <div class="panel-layout">
-    <nav class="navbar navbar-dark bg-dark px-3 shadow-sm mb-4">
-      <div class="container-fluid d-flex justify-content-between align-items-center">
-        <span class="navbar-brand fw-bold">Panel Árbitro AAAB</span>
-        <button @click="cerrarSesion" class="btn btn-outline-danger btn-sm px-3">Cerrar Sesión</button>
-      </div>
-    </nav>
-    
-    <div class="container py-2">
-      <div class="max-800">
-        <div class="user-header d-flex align-items-center mb-4 p-3 rounded-4 shadow">
-          <img :src="urlFoto" @error="(e) => e.target.src = 'https://via.placeholder.com/150'" 
-               class="perfil-img me-3">
-          <div class="overflow-hidden">
-            <h2 class="text-white fw-bold m-0 text-capitalize text-truncate">Hola, {{ arbitro.nombre }}</h2>
-            <span class="badge bg-danger mt-1">ID Árbitro: {{ arbitro.id }}</span>
-          </div>
-        </div>
-
-        <div v-if="$route.name !== 'PanelInicio'" class="mb-4">
-          <RouterLink to="/panel-arbitro" class="btn-volver">
-            <i class="bi bi-arrow-left me-2"></i> Volver al Menú
-          </RouterLink>
-        </div>
-
-        <RouterView />
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .panel-layout { 

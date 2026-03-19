@@ -1,3 +1,50 @@
+<template>
+  <div class="dark-background-section py-5">
+    <div class="container my-5">
+      <div class="text-center mb-5">
+        <h1 class="fw-bold text-white">Tribunal de Ética</h1>
+        <p class="lead text-white-50">
+          Documentación oficial, estatutos y códigos de conducta de la asociación.
+        </p>
+      </div>
+
+      <div class="row">
+        <div v-for="documento in documentos" :key="documento.titulo" class="col-lg-3 col-md-6 mb-4">
+          <div class="card h-100 text-center shadow-sm card-hover">
+            <div class="card-body d-flex flex-column p-4">
+              <div
+                class="icon-header bg-danger text-white d-flex align-items-center justify-content-center mx-auto mb-3"
+              >
+                <i :class="documento.icon"></i>
+              </div>
+              <h5 class="card-title text-uppercase mb-2 text-dark">{{ documento.titulo }}</h5>
+              <p class="card-text text-muted flex-grow-1">{{ documento.subtitulo }}</p>
+              <div class="mt-auto">
+                <RouterLink
+                  v-if="documento.titulo === 'Sanciones'"
+                  to="/sanciones"
+                  class="btn btn-outline-dark"
+                >
+                  Ver Sanciones
+                </RouterLink>
+                <a
+                  v-else
+                  :href="documento.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-outline-dark"
+                >
+                  Descargar
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { useHead } from '@vueuse/head'
 import { ref } from 'vue'
@@ -56,53 +103,6 @@ const documentos = ref([
   },
 ])
 </script>
-
-<template>
-  <div class="dark-background-section py-5">
-    <div class="container my-5">
-      <div class="text-center mb-5">
-        <h1 class="fw-bold text-white">Tribunal de Ética</h1>
-        <p class="lead text-white-50">
-          Documentación oficial, estatutos y códigos de conducta de la asociación.
-        </p>
-      </div>
-
-      <div class="row">
-        <div v-for="documento in documentos" :key="documento.titulo" class="col-lg-3 col-md-6 mb-4">
-          <div class="card h-100 text-center shadow-sm card-hover">
-            <div class="card-body d-flex flex-column p-4">
-              <div
-                class="icon-header bg-danger text-white d-flex align-items-center justify-content-center mx-auto mb-3"
-              >
-                <i :class="documento.icon"></i>
-              </div>
-              <h5 class="card-title text-uppercase mb-2 text-dark">{{ documento.titulo }}</h5>
-              <p class="card-text text-muted flex-grow-1">{{ documento.subtitulo }}</p>
-              <div class="mt-auto">
-                <RouterLink
-                  v-if="documento.titulo === 'Sanciones'"
-                  to="/sanciones"
-                  class="btn btn-outline-dark"
-                >
-                  Ver Sanciones
-                </RouterLink>
-                <a
-                  v-else
-                  :href="documento.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="btn btn-outline-dark"
-                >
-                  Descargar
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 /* Estilos para la sección principal con imagen de fondo oscuro */

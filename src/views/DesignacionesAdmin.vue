@@ -1,229 +1,3 @@
-<script setup>
-import { ref, onMounted, computed, reactive } from 'vue';
-import axios from 'axios';
-import { api } from '@/api/api';
-import * as XLSX from 'xlsx';
-import { useHead } from '@vueuse/head'
-
-// Título y descripción específicos para la página de Designaciones ADMIN
-useHead({
-  title: 'Designaciones de Árbitros| AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Administra y controla las designaciones de árbitros para los partidos del fin de semana.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Designaciones de Árbitros | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Administra y controla las designaciones de árbitros para los partidos del fin de semana.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
-  ],
-})
-
-
-// --- CONFIGURACIÓN DE APIS ---
-const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
-const API_URL_BE = 'https://arbitroshandball.com.ar/api/api.php'; 
-
-const arbitros = ref([]);
-const mostrarFiltrosMobile = ref(false);
-
-const filtros = reactive({
-  apellido: '', nombre: '', licencia: '', es_activo: '', 
-  apto_medico: '', // Agregado para el filtro de Apto Físico
-  grupo: '', subgrupo: '', zona: '', movilidad: '', 
-  disponibilidad_sabado: '', disponibilidad_domingo: '',
-  juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: '',
-  // NUEVOS CAMPOS DE FILTRO
-  designado_sabado: '',
-  designado_domingo: ''
-});
-
-const designadosSabado = ref(new Set());
-const designadosDomingo = ref(new Set());
-
-// --- LÓGICA DE CARGA Y PERSISTENCIA ---
-const cargarDatos = async () => {
-  try {
-    const res = await axios.get(API_URL);
-    arbitros.value = Array.isArray(res.data)
-      ? res.data.map(a => ({
-          ...a,
-          apto_medico: a.apto_medico == 1,
-        }))
-      : [];
-
-    const resChecks = await api.get({
-      entity: 'designaciones',
-      action: 'obtener_tildes',
-    })
-    const listaTildes = resChecks.payload;
-
-    if (listaTildes && Array.isArray(listaTildes)) {
-      designadosSabado.value.clear();
-      designadosDomingo.value.clear();
-
-      listaTildes.forEach(item => {
-        if (item.dia === 'S') designadosSabado.value.add(item.idarbitro);
-        if (item.dia === 'D') designadosDomingo.value.add(item.idarbitro);
-      });
-    }
-  } catch (err) { 
-    console.error("Error al cargar datos:", err); 
-  }
-};
-
-const toggleDesignacion = async (id, dia) => {
-  const set = dia === 'S' ? designadosSabado.value : designadosDomingo.value;
-  const nuevoValor = !set.has(id);
-  
-  if (nuevoValor) set.add(id); else set.delete(id);
-  
-  try {
-    await axios.post(API_URL_BE, {
-      entity: 'designaciones',
-      action: 'actualizar_tilde',
-      payload: { id_arbitro: id, dia: dia, checked: nuevoValor } 
-    });
-  } catch (err) {
-    console.error("Error al guardar tilde:", err);
-  }
-};
-
-const limpiarChecks = async () => {
-  if (confirm("¿Limpiar tildes de designación?")) {
-    designadosSabado.value.clear();
-    designadosDomingo.value.clear();
-    try {
-      await axios.post(API_URL_BE, {
-        entity: 'designaciones',
-        action: 'limpiarTildesDesignaciones',
-        payload: {}
-      });
-    } catch (err) {
-      console.error("Error al limpiar tildes en BE:", err);
-    }
-  }
-};
-
-const obtenerClaseFila = (a) => {
-  const tieneAprobada = Number(a.tiene_aprobada) > 0;
-  const tieneRechazada = Number(a.tiene_rechazada) > 0;
-  const esInactivo = a.es_activo == 0;
-  const tildadoSabado = designadosSabado.value.has(a.id);
-  const tildadoDomingo = designadosDomingo.value.has(a.id);
-  if ((tildadoSabado && tildadoDomingo) || esInactivo || tieneAprobada) {
-    return 'fila-roja';
-  }
-  if (tieneRechazada) return 'fila-amarilla';
-  if (tildadoSabado || tildadoDomingo) return 'fila-des';
-  return '';
-};
-
-const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
-
-const mostrarFechaArg = (fecha) => {
-  if (!fecha) return '';
-  const partes = fecha.split('-');
-  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
-};
-
-const abrirWhatsApp = (numero) => {
-  if (!numero) return;
-  const limpio = String(numero).replace(/\D/g, '');
-  const prefijo = limpio.startsWith('54') ? limpio : `54${limpio}`;
-  window.open(`https://wa.me/${prefijo}`, '_blank');
-};
-
-const obtenerTextoLicencia = (a) => {
-  let textos = [];
-  const formatearVariasFechas = (cadenaFechas) => {
-    if (!cadenaFechas) return '';
-    return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
-  };
-  if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
-    textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
-  }
-  if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
-    textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
-  }
-  return textos.length > 0 ? textos.join(' | ') : '-';
-};
-
-const normalizarTexto = (valor) => {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-};
-
-const arbitrosFiltrados = computed(() => {
-  return arbitros.value.filter(a => {
-    const cumpleTexto = Object.keys(filtros).every(key => {
-      if (!filtros[key] || key === 'licencia' || key === 'apto_medico' || key === 'designado_sabado' || key === 'designado_domingo') return true;
-      if (key === 'es_activo') return String(a[key]) === filtros[key];
-      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
-    });
-
-    let cumpleLicencia = true;
-    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada) > 0;
-    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada) > 0;
-    else if (filtros.licencia === 'sin_licencia') cumpleLicencia = Number(a.tiene_aprobada) === 0 && Number(a.tiene_rechazada) === 0;
-
-    // Lógica para el filtro de Apto Médico
-    let cumpleApto = true;
-    if (filtros.apto_medico !== '') {
-      const valorFiltro = filtros.apto_medico === '1';
-      cumpleApto = a.apto_medico === valorFiltro;
-    }
-
-    // LÓGICA DE FILTROS PARA DESIGNACIONES (TILDES)
-    let cumpleDesignadoSab = true;
-    if (filtros.designado_sabado !== '') {
-      cumpleDesignadoSab = (filtros.designado_sabado === '1') === designadosSabado.value.has(a.id);
-    }
-
-    let cumpleDesignadoDom = true;
-    if (filtros.designado_domingo !== '') {
-      cumpleDesignadoDom = (filtros.designado_domingo === '1') === designadosDomingo.value.has(a.id);
-    }
-
-    return cumpleTexto && cumpleLicencia && cumpleApto && cumpleDesignadoSab && cumpleDesignadoDom;
-  });
-});
-
-const exportarExcel = () => {
-  const datos = arbitrosFiltrados.value.map(a => ({
-    APELLIDO: a.apellido, NOMBRE: a.nombre,
-    CELULAR: a.celular,
-    SAB_DESIGNADO: designadosSabado.value.has(a.id) ? 'SI' : 'NO',
-    DOM_DESIGNADO: designadosDomingo.value.has(a.id) ? 'SI' : 'NO',
-    LICENCIA: obtenerTextoLicencia(a),
-    ACTIVO: a.es_activo == 1 ? 'SI' : 'NO',
-    ZONA: a.zona, MOVILIDAD: a.movilidad,
-    SAB_DISP: a.disponibilidad_sabado, SAB_HORA: `${a.disponibilidad_sabado_desde} a ${a.disponibilidad_sabado_hasta}`,
-    DOM_DISP: a.disponibilidad_domingo, DOM_HORA: `${a.disponibilidad_domingo_desde} a ${a.disponibilidad_domingo_hasta}`,
-    JUEGA: a.juega_handball, CLUB: a.donde_juega, OBS: a.observaciones
-  }));
-  const ws = XLSX.utils.json_to_sheet(datos);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Designaciones");
-  XLSX.writeFile(wb, "Planilla_Designaciones_AAAB.xlsx");
-};
-
-onMounted(cargarDatos);
-</script>
-
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <div class="admin-panel">
@@ -467,6 +241,234 @@ onMounted(cargarDatos);
     </div>
   </div>
 </template>
+
+
+<script setup>
+import { ref, onMounted, computed, reactive } from 'vue';
+import axios from 'axios';
+import { api } from '@/api/api';
+import * as XLSX from 'xlsx';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Designaciones ADMIN
+useHead({
+  title: 'Designaciones de Árbitros| AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Administra y controla las designaciones de árbitros para los partidos del fin de semana.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Designaciones de Árbitros | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Administra y controla las designaciones de árbitros para los partidos del fin de semana.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+})
+
+
+// --- CONFIGURACIÓN DE APIS ---
+const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
+const API_URL_BE = 'https://arbitroshandball.com.ar/api/api.php'; 
+
+const arbitros = ref([]);
+const mostrarFiltrosMobile = ref(false);
+
+const filtros = reactive({
+  apellido: '', nombre: '', licencia: '', es_activo: '', 
+  apto_medico: '', // Agregado para el filtro de Apto Físico
+  grupo: '', subgrupo: '', zona: '', movilidad: '', 
+  disponibilidad_sabado: '', disponibilidad_domingo: '',
+  juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: '',
+  // NUEVOS CAMPOS DE FILTRO
+  designado_sabado: '',
+  designado_domingo: ''
+});
+
+const designadosSabado = ref(new Set());
+const designadosDomingo = ref(new Set());
+
+// --- LÓGICA DE CARGA Y PERSISTENCIA ---
+const cargarDatos = async () => {
+  try {
+    const res = await axios.get(API_URL);
+    arbitros.value = Array.isArray(res.data)
+      ? res.data.map(a => ({
+          ...a,
+          apto_medico: a.apto_medico == 1,
+        }))
+      : [];
+
+    const resChecks = await api.get({
+      entity: 'designaciones',
+      action: 'obtener_tildes',
+    })
+    const listaTildes = resChecks.payload;
+
+    if (listaTildes && Array.isArray(listaTildes)) {
+      designadosSabado.value.clear();
+      designadosDomingo.value.clear();
+
+      listaTildes.forEach(item => {
+        if (item.dia === 'S') designadosSabado.value.add(item.idarbitro);
+        if (item.dia === 'D') designadosDomingo.value.add(item.idarbitro);
+      });
+    }
+  } catch (err) { 
+    console.error("Error al cargar datos:", err); 
+  }
+};
+
+const toggleDesignacion = async (id, dia) => {
+  const set = dia === 'S' ? designadosSabado.value : designadosDomingo.value;
+  const nuevoValor = !set.has(id);
+  
+  if (nuevoValor) set.add(id); else set.delete(id);
+  
+  try {
+    await axios.post(API_URL_BE, {
+      entity: 'designaciones',
+      action: 'actualizar_tilde',
+      payload: { id_arbitro: id, dia: dia, checked: nuevoValor } 
+    });
+  } catch (err) {
+    console.error("Error al guardar tilde:", err);
+  }
+};
+
+const limpiarChecks = async () => {
+  if (confirm("¿Limpiar tildes de designación?")) {
+    designadosSabado.value.clear();
+    designadosDomingo.value.clear();
+    try {
+      await axios.post(API_URL_BE, {
+        entity: 'designaciones',
+        action: 'limpiarTildesDesignaciones',
+        payload: {}
+      });
+    } catch (err) {
+      console.error("Error al limpiar tildes en BE:", err);
+    }
+  }
+};
+
+const obtenerClaseFila = (a) => {
+  const tieneAprobada = Number(a.tiene_aprobada) > 0;
+  const tieneRechazada = Number(a.tiene_rechazada) > 0;
+  const esInactivo = a.es_activo == 0;
+  const tildadoSabado = designadosSabado.value.has(a.id);
+  const tildadoDomingo = designadosDomingo.value.has(a.id);
+  if ((tildadoSabado && tildadoDomingo) || esInactivo || tieneAprobada) {
+    return 'fila-roja';
+  }
+  if (tieneRechazada) return 'fila-amarilla';
+  if (tildadoSabado || tildadoDomingo) return 'fila-des';
+  return '';
+};
+
+const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
+
+const mostrarFechaArg = (fecha) => {
+  if (!fecha) return '';
+  const partes = fecha.split('-');
+  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
+};
+
+const abrirWhatsApp = (numero) => {
+  if (!numero) return;
+  const limpio = String(numero).replace(/\D/g, '');
+  const prefijo = limpio.startsWith('54') ? limpio : `54${limpio}`;
+  window.open(`https://wa.me/${prefijo}`, '_blank');
+};
+
+const obtenerTextoLicencia = (a) => {
+  let textos = [];
+  const formatearVariasFechas = (cadenaFechas) => {
+    if (!cadenaFechas) return '';
+    return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
+  };
+  if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
+    textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
+  }
+  if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
+    textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
+  }
+  return textos.length > 0 ? textos.join(' | ') : '-';
+};
+
+const normalizarTexto = (valor) => {
+  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+};
+
+const arbitrosFiltrados = computed(() => {
+  return arbitros.value.filter(a => {
+    const cumpleTexto = Object.keys(filtros).every(key => {
+      if (!filtros[key] || key === 'licencia' || key === 'apto_medico' || key === 'designado_sabado' || key === 'designado_domingo') return true;
+      if (key === 'es_activo') return String(a[key]) === filtros[key];
+      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
+    });
+
+    let cumpleLicencia = true;
+    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada) > 0;
+    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada) > 0;
+    else if (filtros.licencia === 'sin_licencia') cumpleLicencia = Number(a.tiene_aprobada) === 0 && Number(a.tiene_rechazada) === 0;
+
+    // Lógica para el filtro de Apto Médico
+    let cumpleApto = true;
+    if (filtros.apto_medico !== '') {
+      const valorFiltro = filtros.apto_medico === '1';
+      cumpleApto = a.apto_medico === valorFiltro;
+    }
+
+    // LÓGICA DE FILTROS PARA DESIGNACIONES (TILDES)
+    let cumpleDesignadoSab = true;
+    if (filtros.designado_sabado !== '') {
+      cumpleDesignadoSab = (filtros.designado_sabado === '1') === designadosSabado.value.has(a.id);
+    }
+
+    let cumpleDesignadoDom = true;
+    if (filtros.designado_domingo !== '') {
+      cumpleDesignadoDom = (filtros.designado_domingo === '1') === designadosDomingo.value.has(a.id);
+    }
+
+    return cumpleTexto && cumpleLicencia && cumpleApto && cumpleDesignadoSab && cumpleDesignadoDom;
+  });
+});
+
+const exportarExcel = () => {
+  const datos = arbitrosFiltrados.value.map(a => ({
+    APELLIDO: a.apellido, NOMBRE: a.nombre,
+    CELULAR: a.celular,
+    SAB_DESIGNADO: designadosSabado.value.has(a.id) ? 'SI' : 'NO',
+    DOM_DESIGNADO: designadosDomingo.value.has(a.id) ? 'SI' : 'NO',
+    LICENCIA: obtenerTextoLicencia(a),
+    ACTIVO: a.es_activo == 1 ? 'SI' : 'NO',
+    ZONA: a.zona, MOVILIDAD: a.movilidad,
+    SAB_DISP: a.disponibilidad_sabado, SAB_HORA: `${a.disponibilidad_sabado_desde} a ${a.disponibilidad_sabado_hasta}`,
+    DOM_DISP: a.disponibilidad_domingo, DOM_HORA: `${a.disponibilidad_domingo_desde} a ${a.disponibilidad_domingo_hasta}`,
+    JUEGA: a.juega_handball, CLUB: a.donde_juega, OBS: a.observaciones
+  }));
+  const ws = XLSX.utils.json_to_sheet(datos);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Designaciones");
+  XLSX.writeFile(wb, "Planilla_Designaciones_AAAB.xlsx");
+};
+
+onMounted(cargarDatos);
+</script>
+
 
 <style scoped>
 .admin-panel { padding: 15px; background: #f8fafc; font-family: sans-serif; color: #000; }

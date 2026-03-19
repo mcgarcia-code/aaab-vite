@@ -1,37 +1,3 @@
-<script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { RouterLink } from 'vue-router'
-import logo from '@/assets/fotos/logo.png'
-import { auth } from '@/api/auth'
-
-const navbarNav = ref(null)
-const logueado = ref(auth.isLoggedIn())
-
-// Propiedad computada para determinar a qué panel ir
-const rutaPanel = computed(() => {
-  const user = auth.getUser();
-  return user?.rol === 'admin' ? '/admin' : '/panel-arbitro';
-})
-
-const actualizarEstado = () => {
-  logueado.value = auth.isLoggedIn()
-}
-
-onMounted(() => {
-  window.addEventListener('storage', actualizarEstado)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('storage', actualizarEstado)
-})
-
-const hideNavBar = () => {
-  if (navbarNav.value && navbarNav.value.classList.contains('show')) {
-    navbarNav.value.classList.remove('show')
-  }
-}
-</script>
-
 <template>
   <header class="navbar navbar-expand-xl navbar-light bg-white shadow-sm sticky-top">
     <div class="container-fluid">
@@ -76,6 +42,42 @@ const hideNavBar = () => {
     </div>
   </header>
 </template>
+
+<script setup>
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { RouterLink } from 'vue-router'
+import logo from '@/assets/fotos/logo.png'
+import { auth } from '@/api/auth'
+
+const navbarNav = ref(null)
+const logueado = ref(auth.isLoggedIn())
+
+// Propiedad computada para determinar a qué panel ir
+const rutaPanel = computed(() => {
+  const user = auth.getUser();
+  return user?.rol === 'admin' ? '/admin' : '/panel-arbitro';
+})
+
+const actualizarEstado = () => {
+  logueado.value = auth.isLoggedIn()
+}
+
+onMounted(() => {
+  window.addEventListener('storage', actualizarEstado)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('storage', actualizarEstado)
+})
+
+const hideNavBar = () => {
+  if (navbarNav.value && navbarNav.value.classList.contains('show')) {
+    navbarNav.value.classList.remove('show')
+  }
+}
+</script>
+
+
 
 <style scoped>
 .nav-link:hover, .nav-link.router-link-exact-active {

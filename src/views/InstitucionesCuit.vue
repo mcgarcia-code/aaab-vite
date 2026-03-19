@@ -1,115 +1,3 @@
-<script setup>
-import { ref, onMounted, computed, reactive } from 'vue';
-import { api } from '@/api/api'; 
-import { useHead } from '@vueuse/head'
-
-// Título y descripción específicos para la página de Instituciones y CUITs
-useHead({
-  title: 'Instituciones y CUITs| AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Accedé al listado de instituciones y CUITs para realizar la facturación.',
-    },
-    // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Instituciones y CUITs | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Accedé al listado de instituciones y CUITs para realizar la facturación.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
-  ],
-})
-
-const instituciones = ref([]);
-const mostrarFiltrosMobile = ref(false);
-
-const filtros = reactive({
-  club: '', 
-  cuit: '', 
-  condicion: ''
-});
-
-const limpiarFiltros = () => {
-  filtros.club = '';
-  filtros.cuit = '';
-  filtros.condicion = '';
-};
-
-const cargarDatos = async () => {
-  try {
-    const res = await api.get({
-      entity: 'facturacion',
-      action: 'getInstitucionesCuit',
-      payload: {}
-    });
-    // Se asume que el campo 'celular' ya viene en el payload del PHP
-    instituciones.value = res.payload;
-  } catch (err) { 
-    console.error("Error al cargar instituciones:", err); 
-  }
-};
-
-const copiarAlPortapapeles = async (texto, etiqueta) => {
-  if (!texto || texto === 'NULL' || texto.trim() === '') return;
-  try {
-    await navigator.clipboard.writeText(texto.trim());
-    alert(`${etiqueta} copiado: ${texto}`);
-  } catch (err) {
-    console.error('Error al copiar:', err);
-  }
-};
-
-const enviarFactura = (emailClub) => {
-  if (!emailClub || emailClub === 'NULL' || emailClub.trim() === '') return;
-  
-  const destinatario = emailClub.trim();
-  const cc = "aaabfacturas@gmail.com";
-  const subject = "Envío de Factura - Arbitraje AAAB";
-  const body = "Estimados,\n\nAdjuntamos la factura correspondiente.\n\nSaludos cordiales.";
-  
-  const mailtoLink = `mailto:${destinatario}?cc=${cc}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailtoLink;
-};
-
-// --- LÓGICA WHATSAPP ---
-const enviarWhatsapp = (celular) => {
-  if (!celular || celular === 'NULL' || celular.trim() === '') return;
-  const numeroLimpio = String(celular).replace(/\D/g, '');
-  const mensaje = encodeURIComponent("Hola, ¿Cómo estás? Me comunico por el envío de facturación de arbitraje de Handball.");
-  const prefijo = numeroLimpio.startsWith('54') ? numeroLimpio : `54${numeroLimpio}`;
-   window.open(`https://wa.me/${prefijo}?text=${mensaje}`, '_blank');
-};
-
-const normalizarTexto = (valor) => {
-  return String(valor || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-};
-
-const filtrados = computed(() => {
-  return instituciones.value.filter(i => {
-    const matchClub = normalizarTexto(i.club).includes(normalizarTexto(filtros.club));
-    const matchCuit = normalizarTexto(i.cuit).includes(normalizarTexto(filtros.cuit));
-    const matchCondicion = normalizarTexto(i.condicion).includes(normalizarTexto(filtros.condicion));
-    return matchClub && matchCuit && matchCondicion;
-  });
-});
-
-onMounted(cargarDatos);
-</script>
-
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   
@@ -226,6 +114,119 @@ onMounted(cargarDatos);
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, computed, reactive } from 'vue';
+import { api } from '@/api/api'; 
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Instituciones y CUITs
+useHead({
+  title: 'Instituciones y CUITs| AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Accedé al listado de instituciones y CUITs para realizar la facturación.',
+    },
+    // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Instituciones y CUITs | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Accedé al listado de instituciones y CUITs para realizar la facturación.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+})
+
+const instituciones = ref([]);
+const mostrarFiltrosMobile = ref(false);
+
+const filtros = reactive({
+  club: '', 
+  cuit: '', 
+  condicion: ''
+});
+
+const limpiarFiltros = () => {
+  filtros.club = '';
+  filtros.cuit = '';
+  filtros.condicion = '';
+};
+
+const cargarDatos = async () => {
+  try {
+    const res = await api.get({
+      entity: 'facturacion',
+      action: 'getInstitucionesCuit',
+      payload: {}
+    });
+    // Se asume que el campo 'celular' ya viene en el payload del PHP
+    instituciones.value = res.payload;
+  } catch (err) { 
+    console.error("Error al cargar instituciones:", err); 
+  }
+};
+
+const copiarAlPortapapeles = async (texto, etiqueta) => {
+  if (!texto || texto === 'NULL' || texto.trim() === '') return;
+  try {
+    await navigator.clipboard.writeText(texto.trim());
+    alert(`${etiqueta} copiado: ${texto}`);
+  } catch (err) {
+    console.error('Error al copiar:', err);
+  }
+};
+
+const enviarFactura = (emailClub) => {
+  if (!emailClub || emailClub === 'NULL' || emailClub.trim() === '') return;
+  
+  const destinatario = emailClub.trim();
+  const cc = "aaabfacturas@gmail.com";
+  const subject = "Envío de Factura - Arbitraje AAAB";
+  const body = "Estimados,\n\nAdjuntamos la factura correspondiente.\n\nSaludos cordiales.";
+  
+  const mailtoLink = `mailto:${destinatario}?cc=${cc}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailtoLink;
+};
+
+// --- LÓGICA WHATSAPP ---
+const enviarWhatsapp = (celular) => {
+  if (!celular || celular === 'NULL' || celular.trim() === '') return;
+  const numeroLimpio = String(celular).replace(/\D/g, '');
+  const mensaje = encodeURIComponent("Hola, ¿Cómo estás? Me comunico por el envío de facturación de arbitraje de Handball.");
+  const prefijo = numeroLimpio.startsWith('54') ? numeroLimpio : `54${numeroLimpio}`;
+   window.open(`https://wa.me/${prefijo}?text=${mensaje}`, '_blank');
+};
+
+const normalizarTexto = (valor) => {
+  return String(valor || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+};
+
+const filtrados = computed(() => {
+  return instituciones.value.filter(i => {
+    const matchClub = normalizarTexto(i.club).includes(normalizarTexto(filtros.club));
+    const matchCuit = normalizarTexto(i.cuit).includes(normalizarTexto(filtros.cuit));
+    const matchCondicion = normalizarTexto(i.condicion).includes(normalizarTexto(filtros.condicion));
+    return matchClub && matchCuit && matchCondicion;
+  });
+});
+
+onMounted(cargarDatos);
+</script>
+
 
 <style scoped>
 .admin-panel { padding: 15px; background: #f8fafc; font-family: sans-serif; color: #334155; }

@@ -1,3 +1,56 @@
+<template>
+  <div class="dark-background-section py-5">
+    <div class="container my-5">
+      <div class="text-center mb-5">
+        <h1 class="fw-bold text-white">Cursos de Árbitros</h1>
+        <p class="lead text-white-50">Explora nuestros próximos cursos y capacitaciones.</p>
+      </div>
+
+      <div class="row justify-content-center g-4">
+        <div v-for="(curso, index) in cursos" :key="index" class="col-md-6 col-lg-5">
+          <div class="card h-100 course-card">
+            <img :src="curso.image" class="card-img-top" :alt="curso.title" />
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title fw-bold text-dark">{{ curso.title }}</h5>
+              <p class="card-text text-muted mb-3">{{ curso.description }}</p>
+              <ul class="list-group list-group-flush mb-4 flex-grow-1">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="bi bi-calendar me-2"></i>Fecha Inicio:</span>
+                  <span class="fw-bold text-dark">{{ curso.startDate }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="bi bi-clock me-2"></i>Duración:</span>
+                  <span class="fw-bold text-dark">{{ curso.duration }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span><i class="bi bi-geo-alt me-2"></i>Modalidad:</span>
+                  <span class="fw-bold text-dark">{{ curso.modality }}</span>
+                </li>
+              </ul>
+              <div class="mt-auto d-flex justify-content-between">
+                <a
+                  :href="curso.detailsLink"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-outline-secondary me-2"
+                  >Más detalles</a
+                >
+                <a
+                  :href="curso.enrollLink"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn btn-danger"
+                  >Inscribirme</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
@@ -64,59 +117,6 @@ const cursos = ref([
 
 // La función getImageUrl() ya no es necesaria
 </script>
-
-<template>
-  <div class="dark-background-section py-5">
-    <div class="container my-5">
-      <div class="text-center mb-5">
-        <h1 class="fw-bold text-white">Cursos de Árbitros</h1>
-        <p class="lead text-white-50">Explora nuestros próximos cursos y capacitaciones.</p>
-      </div>
-
-      <div class="row justify-content-center g-4">
-        <div v-for="(curso, index) in cursos" :key="index" class="col-md-6 col-lg-5">
-          <div class="card h-100 course-card">
-            <img :src="curso.image" class="card-img-top" :alt="curso.title" />
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title fw-bold text-dark">{{ curso.title }}</h5>
-              <p class="card-text text-muted mb-3">{{ curso.description }}</p>
-              <ul class="list-group list-group-flush mb-4 flex-grow-1">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span><i class="bi bi-calendar me-2"></i>Fecha Inicio:</span>
-                  <span class="fw-bold text-dark">{{ curso.startDate }}</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span><i class="bi bi-clock me-2"></i>Duración:</span>
-                  <span class="fw-bold text-dark">{{ curso.duration }}</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span><i class="bi bi-geo-alt me-2"></i>Modalidad:</span>
-                  <span class="fw-bold text-dark">{{ curso.modality }}</span>
-                </li>
-              </ul>
-              <div class="mt-auto d-flex justify-content-between">
-                <a
-                  :href="curso.detailsLink"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="btn btn-outline-secondary me-2"
-                  >Más detalles</a
-                >
-                <a
-                  :href="curso.enrollLink"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="btn btn-danger"
-                  >Inscribirme</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 /* Código CSS limpio y sin caracteres invisibles */

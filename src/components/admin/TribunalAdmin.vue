@@ -1,3 +1,73 @@
+<template>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <div class="full-screen-wrapper">
+    <div class="container-fluid py-4 animate__animated animate__fadeIn">
+      
+      <div class="text-center mb-4">
+        <i class="bi bi-shield-exclamation text-danger main-icon"></i>
+        <h2 class="fw-bold text-white mt-2">Tribunal de Ética</h2>
+        <p class="small text-white m-0">Carga de sanciones disciplinarias</p>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-7">
+          <div class="menu-card-static shadow-lg">
+            <div class="row g-3">
+              
+              <div class="col-12">
+                <label class="fw-bold text-dark small mb-1">Árbitro</label>
+                <select v-model="nuevaSancion.id_arbitro" class="form-select custom-input">
+                  <option value="">Seleccione un árbitro...</option>
+                  <option v-for="a in arbitros" :key="a.id" :value="a.id">
+                    {{ a.apellido }}, {{ a.nombre }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label class="fw-bold text-dark small mb-1">Artículo</label>
+                <input v-model="nuevaSancion.articulo" placeholder="Ej: Art. 42" class="form-control custom-input">
+              </div>
+
+              <div class="col-md-6">
+                <label class="fw-bold text-dark small mb-1">Sanción</label>
+                <input v-model="nuevaSancion.sancion_detalle" placeholder="Ej: 2 fechas" class="form-control custom-input">
+              </div>
+
+              <div class="col-12">
+                <label class="fw-bold text-dark small mb-1">Motivo / Descripción</label>
+                <textarea v-model="nuevaSancion.motivo" rows="3" class="form-control custom-input"></textarea>
+              </div>
+
+              <div class="col-md-6">
+                <label class="fw-bold text-dark small mb-1">Desde</label>
+                <input type="date" v-model="nuevaSancion.fecha_desde" class="form-control custom-input">
+              </div>
+
+              <div class="col-md-6">
+                <label class="fw-bold text-dark small mb-1">Hasta</label>
+                <input type="date" v-model="nuevaSancion.fecha_hasta" class="form-control custom-input">
+              </div>
+
+              <div class="col-12 mt-4">
+                <div v-if="mensaje.texto" :class="['alert py-2 mb-3 text-center small alert-' + mensaje.tipo]">
+                  {{ mensaje.texto }}
+                </div>
+                <button @click="guardarSancion" :disabled="cargando" class="btn-send shadow-sm">
+                  {{ cargando ? 'GUARDANDO...' : 'REGISTRAR SANCIÓN' }}
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
@@ -72,74 +142,7 @@ const guardarSancion = async () => {
 onMounted(cargarArbitros);
 </script>
 
-<template>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <div class="full-screen-wrapper">
-    <div class="container-fluid py-4 animate__animated animate__fadeIn">
-      
-      <div class="text-center mb-4">
-        <i class="bi bi-shield-exclamation text-danger main-icon"></i>
-        <h2 class="fw-bold text-white mt-2">Tribunal de Ética</h2>
-        <p class="small text-white m-0">Carga de sanciones disciplinarias</p>
-      </div>
-
-      <div class="row justify-content-center">
-        <div class="col-12 col-md-10 col-lg-7">
-          <div class="menu-card-static shadow-lg">
-            <div class="row g-3">
-              
-              <div class="col-12">
-                <label class="fw-bold text-dark small mb-1">Árbitro</label>
-                <select v-model="nuevaSancion.id_arbitro" class="form-select custom-input">
-                  <option value="">Seleccione un árbitro...</option>
-                  <option v-for="a in arbitros" :key="a.id" :value="a.id">
-                    {{ a.apellido }}, {{ a.nombre }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="fw-bold text-dark small mb-1">Artículo</label>
-                <input v-model="nuevaSancion.articulo" placeholder="Ej: Art. 42" class="form-control custom-input">
-              </div>
-
-              <div class="col-md-6">
-                <label class="fw-bold text-dark small mb-1">Sanción</label>
-                <input v-model="nuevaSancion.sancion_detalle" placeholder="Ej: 2 fechas" class="form-control custom-input">
-              </div>
-
-              <div class="col-12">
-                <label class="fw-bold text-dark small mb-1">Motivo / Descripción</label>
-                <textarea v-model="nuevaSancion.motivo" rows="3" class="form-control custom-input"></textarea>
-              </div>
-
-              <div class="col-md-6">
-                <label class="fw-bold text-dark small mb-1">Desde</label>
-                <input type="date" v-model="nuevaSancion.fecha_desde" class="form-control custom-input">
-              </div>
-
-              <div class="col-md-6">
-                <label class="fw-bold text-dark small mb-1">Hasta</label>
-                <input type="date" v-model="nuevaSancion.fecha_hasta" class="form-control custom-input">
-              </div>
-
-              <div class="col-12 mt-4">
-                <div v-if="mensaje.texto" :class="['alert py-2 mb-3 text-center small alert-' + mensaje.tipo]">
-                  {{ mensaje.texto }}
-                </div>
-                <button @click="guardarSancion" :disabled="cargando" class="btn-send shadow-sm">
-                  {{ cargando ? 'GUARDANDO...' : 'REGISTRAR SANCIÓN' }}
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 /* CONFIGURACIÓN DE PANTALLA COMPLETA */

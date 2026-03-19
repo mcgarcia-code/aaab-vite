@@ -1,7 +1,3 @@
-<script setup>
-import logo from '@/assets/fotos/logo.png'
-</script>
-
 <template>
   <footer class="main-footer">
     <div class="container">
@@ -101,11 +97,16 @@ import logo from '@/assets/fotos/logo.png'
   </footer>
 </template>
 
+<script setup>
+import logo from '@/assets/fotos/logo.png'
+</script>
+
+
 <style scoped>
 .main-footer {
   background-color: #212529;
   color: #ffffff;
-  font-family: 'Inter', sans-serif; /* O la que uses en tu proyecto */
+  font-family: 'sans-serif'; 
 }
 
 .footer-title {

@@ -1,3 +1,60 @@
+<template>
+  <div class="animate__animated animate__fadeIn">
+    <div class="card shadow border-0">
+      <div class="card-header bg-white py-3">
+        <h4 class="text-danger fw-bold m-0">Tribunal de Ética</h4>
+        <p class="text-muted small m-0">Historial de sanciones y resoluciones vigentes.</p>
+      </div>
+      
+      <div class="card-body p-0">
+        <div v-if="sanciones.length > 0" class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+              <tr>
+                <th class="ps-3">Desde</th>
+                <th>Hasta</th>
+                <th>Motivo / Artículo</th>
+                <th class="text-center">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(sancion, index) in sanciones" :key="index">
+                <td class="ps-3 fw-bold">{{ sancion.fecha_inicio }}</td>
+                <td class="fw-bold">{{ sancion.fecha_fin }}</td>
+                <td>
+                  <div class="fw-bold text-dark">{{ sancion.motivo }}</div>
+                  <div class="text-muted x-small">Art. {{ sancion.articulo }}</div>
+                </td>
+                <td class="text-center">
+                  <span class="badge rounded-pill bg-danger">Cumpliendo</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div v-else class="text-center py-5">
+          <i class="bi bi-shield-check text-success display-1"></i>
+          <h5 class="mt-3 fw-bold text-dark">Sin Sanciones Vigentes</h5>
+          <p class="text-muted small px-4">
+            No se registran medidas disciplinarias activas en tu legajo arbitral a la fecha.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-secondary mt-4 border-0 shadow-sm">
+      <div class="d-flex">
+        <i class="bi bi-info-square-fill me-3 fs-4 text-dark"></i>
+        <div class="small text-dark">
+          Las resoluciones del Tribunal de Ética son de cumplimiento obligatorio según el reglamento vigente de la AAAB. 
+          Para consultas sobre una resolución, podés dirigirte a etica@arbitroshandball.com.ar
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 // 1. Importamos auth para la sesión y api para las peticiones con headers
@@ -57,63 +114,6 @@ onMounted(() => {
   // obtenerSanciones(); // Descomentar cuando el PHP esté listo
 });
 </script>
-
-<template>
-  <div class="animate__animated animate__fadeIn">
-    <div class="card shadow border-0">
-      <div class="card-header bg-white py-3">
-        <h4 class="text-danger fw-bold m-0">Tribunal de Ética</h4>
-        <p class="text-muted small m-0">Historial de sanciones y resoluciones vigentes.</p>
-      </div>
-      
-      <div class="card-body p-0">
-        <div v-if="sanciones.length > 0" class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="bg-light">
-              <tr>
-                <th class="ps-3">Desde</th>
-                <th>Hasta</th>
-                <th>Motivo / Artículo</th>
-                <th class="text-center">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(sancion, index) in sanciones" :key="index">
-                <td class="ps-3 fw-bold">{{ sancion.fecha_inicio }}</td>
-                <td class="fw-bold">{{ sancion.fecha_fin }}</td>
-                <td>
-                  <div class="fw-bold text-dark">{{ sancion.motivo }}</div>
-                  <div class="text-muted x-small">Art. {{ sancion.articulo }}</div>
-                </td>
-                <td class="text-center">
-                  <span class="badge rounded-pill bg-danger">Cumpliendo</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div v-else class="text-center py-5">
-          <i class="bi bi-shield-check text-success display-1"></i>
-          <h5 class="mt-3 fw-bold text-dark">Sin Sanciones Vigentes</h5>
-          <p class="text-muted small px-4">
-            No se registran medidas disciplinarias activas en tu legajo arbitral a la fecha.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <div class="alert alert-secondary mt-4 border-0 shadow-sm">
-      <div class="d-flex">
-        <i class="bi bi-info-square-fill me-3 fs-4 text-dark"></i>
-        <div class="small text-dark">
-          Las resoluciones del Tribunal de Ética son de cumplimiento obligatorio según el reglamento vigente de la AAAB. 
-          Para consultas sobre una resolución, podés dirigirte a etica@arbitroshandball.com.ar
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .card { border-radius: 15px; overflow: hidden; }

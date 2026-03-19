@@ -1,135 +1,3 @@
-<script setup>
-import { ref, onMounted, watch } from 'vue';
-import axios from 'axios';
-// 1. Importamos el centralizador de auth
-import { auth } from '@/api/auth';
-import { useHead } from '@vueuse/head'
-
-// Título y descripción específicos para la página de Disponibilidad Horaria AAAB
-useHead({
-  title: 'Disponibilidad Horaria | AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Modificá tu disponibilidad horaria para sábados y domingos, y gestioná tu movilidad y actividad deportiva desde un panel centralizado.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Disponibilidad Horaria | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Modificá tu disponibilidad horaria para sábados y domingos, y gestioná tu movilidad y actividad deportiva desde un panel centralizado.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
-  ],
-})
-
-// 2. REEMPLAZO: Obtenemos el árbitro desde el sistema centralizado
-const arbitro = ref(auth.getUser() || {});
-
-const solicitudManual = ref('');
-const historial = ref([]);
-const cargando = ref(false);
-const mensaje = ref({ texto: '', tipo: '' });
-
-const movilidadSeleccionada = ref([]);
-const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
-
-const obtenerHistorial = async () => {
-  try {
-    const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=disponibilidad`);
-    historial.value = res.data;
-  } catch {
-    console.error("Error al cargar el historial");
-  }
-};
-
-onMounted(() => {
-  obtenerHistorial();
-  if (arbitro.value.movilidad) {
-    movilidadSeleccionada.value = arbitro.value.movilidad.split(',');
-  }
-});
-
-watch(movilidadSeleccionada, (nuevo) => {
-  arbitro.value.movilidad = nuevo.join(',');
-});
-
-watch(() => arbitro.value.disponibilidad_sabado, (val) => {
-  if (val !== 'OTROS') {
-    arbitro.value.disponibilidad_sabado_desde = null;
-    arbitro.value.disponibilidad_sabado_hasta = null;
-  }
-});
-
-watch(() => arbitro.value.disponibilidad_domingo, (val) => {
-  if (val !== 'OTROS') {
-    arbitro.value.disponibilidad_domingo_desde = null;
-    arbitro.value.disponibilidad_domingo_hasta = null;
-  }
-});
-
-// NUEVO WATCH PARA LIMPIEZA DE CLUB Y CATEGORÍA
-watch(() => arbitro.value.juega_handball, (nuevoValor) => {
-  if (nuevoValor === 'no') {
-    arbitro.value.donde_juega = null;
-    arbitro.value.categoria_handball = null;
-  }
-});
-
-const guardarCambiosDirectos = async () => {
-  cargando.value = true;
-  try {
-    const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_perfil.php', arbitro.value);
-    if (res.data.success) {
-      mensaje.value = { texto: "Disponibilidad actualizada correctamente.", tipo: 'success' };
-      
-      // 3. REEMPLAZO: Guardamos los cambios en el sessionStorage centralizado
-      auth.setUser(arbitro.value);
-      
-    } else {
-      mensaje.value = { texto: res.data.message, tipo: 'danger' };
-    }
-  } catch {
-    mensaje.value = { texto: "Error de conexión.", tipo: 'danger' };
-  } finally {
-    cargando.value = false;
-  }
-};
-
-const enviarSolicitudManual = async () => {
-  if (!solicitudManual.value.trim()) return;
-  cargando.value = true;
-  try {
-    const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_cambios.php', {
-      id_arbitro: arbitro.value.id,
-      nombre: arbitro.value.nombre,
-      apellido: arbitro.value.apellido,
-      grupo: arbitro.value.grupo,
-      mensaje: "SOLICITUD DISPONIBILIDAD: " + solicitudManual.value
-    });
-    if (res.data.success) {
-      mensaje.value = { texto: "Solicitud enviada con éxito.", tipo: 'success' };
-      solicitudManual.value = '';
-      obtenerHistorial();
-    }
-  } catch {
-    mensaje.value = { texto: "Error al enviar solicitud.", tipo: 'danger' };
-  } finally {
-    cargando.value = false;
-  }
-};
-</script>
-
 <template>
   <div class="animate__animated animate__fadeIn container py-4 page-bg">
     
@@ -311,6 +179,138 @@ const enviarSolicitudManual = async () => {
 
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, watch } from 'vue';
+import axios from 'axios';
+// 1. Importamos el centralizador de auth
+import { auth } from '@/api/auth';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Disponibilidad Horaria AAAB
+useHead({
+  title: 'Disponibilidad Horaria | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Modificá tu disponibilidad horaria para sábados y domingos, y gestioná tu movilidad y actividad deportiva desde un panel centralizado.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Disponibilidad Horaria | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Modificá tu disponibilidad horaria para sábados y domingos, y gestioná tu movilidad y actividad deportiva desde un panel centralizado.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+})
+
+// 2. REEMPLAZO: Obtenemos el árbitro desde el sistema centralizado
+const arbitro = ref(auth.getUser() || {});
+
+const solicitudManual = ref('');
+const historial = ref([]);
+const cargando = ref(false);
+const mensaje = ref({ texto: '', tipo: '' });
+
+const movilidadSeleccionada = ref([]);
+const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
+
+const obtenerHistorial = async () => {
+  try {
+    const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=disponibilidad`);
+    historial.value = res.data;
+  } catch {
+    console.error("Error al cargar el historial");
+  }
+};
+
+onMounted(() => {
+  obtenerHistorial();
+  if (arbitro.value.movilidad) {
+    movilidadSeleccionada.value = arbitro.value.movilidad.split(',');
+  }
+});
+
+watch(movilidadSeleccionada, (nuevo) => {
+  arbitro.value.movilidad = nuevo.join(',');
+});
+
+watch(() => arbitro.value.disponibilidad_sabado, (val) => {
+  if (val !== 'OTROS') {
+    arbitro.value.disponibilidad_sabado_desde = null;
+    arbitro.value.disponibilidad_sabado_hasta = null;
+  }
+});
+
+watch(() => arbitro.value.disponibilidad_domingo, (val) => {
+  if (val !== 'OTROS') {
+    arbitro.value.disponibilidad_domingo_desde = null;
+    arbitro.value.disponibilidad_domingo_hasta = null;
+  }
+});
+
+// NUEVO WATCH PARA LIMPIEZA DE CLUB Y CATEGORÍA
+watch(() => arbitro.value.juega_handball, (nuevoValor) => {
+  if (nuevoValor === 'no') {
+    arbitro.value.donde_juega = null;
+    arbitro.value.categoria_handball = null;
+  }
+});
+
+const guardarCambiosDirectos = async () => {
+  cargando.value = true;
+  try {
+    const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_perfil.php', arbitro.value);
+    if (res.data.success) {
+      mensaje.value = { texto: "Disponibilidad actualizada correctamente.", tipo: 'success' };
+      
+      // 3. REEMPLAZO: Guardamos los cambios en el sessionStorage centralizado
+      auth.setUser(arbitro.value);
+      
+    } else {
+      mensaje.value = { texto: res.data.message, tipo: 'danger' };
+    }
+  } catch {
+    mensaje.value = { texto: "Error de conexión.", tipo: 'danger' };
+  } finally {
+    cargando.value = false;
+  }
+};
+
+const enviarSolicitudManual = async () => {
+  if (!solicitudManual.value.trim()) return;
+  cargando.value = true;
+  try {
+    const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_cambios.php', {
+      id_arbitro: arbitro.value.id,
+      nombre: arbitro.value.nombre,
+      apellido: arbitro.value.apellido,
+      grupo: arbitro.value.grupo,
+      mensaje: "SOLICITUD DISPONIBILIDAD: " + solicitudManual.value
+    });
+    if (res.data.success) {
+      mensaje.value = { texto: "Solicitud enviada con éxito.", tipo: 'success' };
+      solicitudManual.value = '';
+      obtenerHistorial();
+    }
+  } catch {
+    mensaje.value = { texto: "Error al enviar solicitud.", tipo: 'danger' };
+  } finally {
+    cargando.value = false;
+  }
+};
+</script>
 
 <style scoped>
 /* (Se mantienen tus mismos estilos) */

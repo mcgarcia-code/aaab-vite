@@ -1,3 +1,38 @@
+<template>
+  <div class="panel-layout">
+    <nav class="navbar navbar-dark bg-dark px-3 shadow-sm mb-4">
+      <div class="container-fluid d-flex justify-content-between align-items-center">
+        <span class="navbar-brand fw-bold">Panel Gestión AAAB</span>
+        <button @click="cerrarSesion" class="btn btn-outline-danger btn-sm px-3">Cerrar Sesión</button>
+      </div>
+    </nav>
+    
+    <div class="container py-2">
+      <div class="max-800">
+        <div class="user-header d-flex align-items-center mb-4 p-3 rounded-4 shadow">
+          <div class="icon-admin-circle me-3">
+             <i class="bi bi-person-workspace text-white"></i>
+          </div>
+          <div class="overflow-hidden">
+            <h2 class="text-white fw-bold m-0 text-capitalize text-truncate">
+              Hola, {{ admin.nombre || 'Administrador' }}
+            </h2>
+            <span class="badge bg-danger mt-1">Nivel: {{ admin.rol }}</span>
+          </div>
+        </div>
+
+        <div v-if="route.name !== 'AdminInicio'" class="mb-4">
+          <RouterLink to="/admin" class="btn-volver">
+            <i class="bi bi-arrow-left me-2"></i> Volver al Menú Principal
+          </RouterLink>
+        </div>
+
+        <RouterView />
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import { RouterView, RouterLink, useRoute } from 'vue-router';
@@ -50,41 +85,6 @@ onMounted(() => {
   }
 });
 </script>
-
-<template>
-  <div class="panel-layout">
-    <nav class="navbar navbar-dark bg-dark px-3 shadow-sm mb-4">
-      <div class="container-fluid d-flex justify-content-between align-items-center">
-        <span class="navbar-brand fw-bold">Panel Gestión AAAB</span>
-        <button @click="cerrarSesion" class="btn btn-outline-danger btn-sm px-3">Cerrar Sesión</button>
-      </div>
-    </nav>
-    
-    <div class="container py-2">
-      <div class="max-800">
-        <div class="user-header d-flex align-items-center mb-4 p-3 rounded-4 shadow">
-          <div class="icon-admin-circle me-3">
-             <i class="bi bi-person-workspace text-white"></i>
-          </div>
-          <div class="overflow-hidden">
-            <h2 class="text-white fw-bold m-0 text-capitalize text-truncate">
-              Hola, {{ admin.nombre || 'Administrador' }}
-            </h2>
-            <span class="badge bg-danger mt-1">Nivel: {{ admin.rol }}</span>
-          </div>
-        </div>
-
-        <div v-if="route.name !== 'AdminInicio'" class="mb-4">
-          <RouterLink to="/admin" class="btn-volver">
-            <i class="bi bi-arrow-left me-2"></i> Volver al Menú Principal
-          </RouterLink>
-        </div>
-
-        <RouterView />
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .panel-layout { 

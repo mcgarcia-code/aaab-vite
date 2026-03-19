@@ -1,3 +1,41 @@
+<template>
+  <div>
+    <section class="designaciones-hero text-white d-flex align-items-center justify-content-center">
+      <div class="container text-center text-md-start position-relative">
+        <div class="row align-items-center">
+          <div class="col-md-5 mb-4 mb-md-0">
+            <img
+              :src="designacionesImg"
+              alt="Últimas designaciones en móvil"
+              class="img-fluid designaciones-hero-img shadow-lg rounded"
+            />
+          </div>
+          <div class="col-md-7">
+            <p class="text-uppercase fw-bold mb-2 opacity-75">ÚLTIMA ACTUALIZACIÓN</p>
+            <h1 class="display-4 fw-bold mb-3">{{ torneo }}</h1>
+            <p class="lead mb-4">
+              ¡Grandes noticias! Ya se encuentran disponibles las designaciones para los
+              partidos del fin de semana.
+            </p>
+            <p class="mb-4 fs-5">
+              <strong>Fecha:</strong>
+              <span class="badge bg-danger fs-6 py-2 px-3 ms-2">{{ fechaDesignacion }}</span>
+            </p>
+            <a
+              :href="linkDescarga"
+              target="_blank"
+              class="btn btn-danger btn-lg text-uppercase fw-bold"
+              :disabled="linkDescarga === '#'"
+            >
+              <i class="bi bi-cloud-arrow-down-fill me-2"></i> Descargar
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
@@ -59,43 +97,6 @@ const fetchDesignaciones = async () => {
 onMounted(fetchDesignaciones);
 </script>
 
-<template>
-  <div>
-    <section class="designaciones-hero text-white d-flex align-items-center justify-content-center">
-      <div class="container text-center text-md-start position-relative">
-        <div class="row align-items-center">
-          <div class="col-md-5 mb-4 mb-md-0">
-            <img
-              :src="designacionesImg"
-              alt="Últimas designaciones en móvil"
-              class="img-fluid designaciones-hero-img shadow-lg rounded"
-            />
-          </div>
-          <div class="col-md-7">
-            <p class="text-uppercase fw-bold mb-2 opacity-75">ÚLTIMA ACTUALIZACIÓN</p>
-            <h1 class="display-4 fw-bold mb-3">{{ torneo }}</h1>
-            <p class="lead mb-4">
-              ¡Grandes noticias! Ya se encuentran disponibles las designaciones para los
-              partidos del fin de semana.
-            </p>
-            <p class="mb-4 fs-5">
-              <strong>Fecha:</strong>
-              <span class="badge bg-danger fs-6 py-2 px-3 ms-2">{{ fechaDesignacion }}</span>
-            </p>
-            <a
-              :href="linkDescarga"
-              target="_blank"
-              class="btn btn-danger btn-lg text-uppercase fw-bold"
-              :disabled="linkDescarga === '#'"
-            >
-              <i class="bi bi-cloud-arrow-down-fill me-2"></i> Descargar
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-</template>
 
 <style scoped>
 .designaciones-hero {

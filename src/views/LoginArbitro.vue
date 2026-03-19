@@ -1,3 +1,44 @@
+<template>
+  <div class="login-container d-flex align-items-center justify-content-center">
+    <div class="card shadow-lg p-4 login-card animate__animated animate__zoomIn">
+      <div class="text-center mb-4">
+        <img src="@/assets/fotos/logo.png" alt="Logo AAAB" class="logo-img mb-2">
+        <h4 class="fw-bold text-primary">Portal del Árbitro</h4>
+        <p class="text-muted small">Ingresá con tu email de registro</p>
+      </div>
+
+      <div v-if="errorMsg" class="alert alert-danger small p-2 text-center border-0">
+        {{ errorMsg }}
+      </div>
+
+      <form @submit.prevent="iniciarSesion">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Email</label>
+          <input v-model="email" type="email" class="form-control" placeholder="ejemplo@mail.com" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Contraseña</label>
+          <input v-model="password" type="password" class="form-control" placeholder="••••••••" required>
+        </div>
+
+        <button :disabled="cargando" type="submit" class="btn btn-primary w-100 fw-bold py-2 mt-2">
+          <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
+          {{ cargando ? 'INGRESANDO...' : 'ENTRAR' }}
+        </button>
+      </form>
+
+      <div class="text-center mt-4 border-top pt-3">
+        <p class="text-muted x-small mb-0">Asociación Argentina de Árbitros de Balonmano</p>
+        <p class="support-text mt-2">
+          Si tenés algún problema técnico comunicate con 
+          <a href="mailto:soporte@arbitroshandball.com.ar">soporte@arbitroshandball.com.ar</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -87,47 +128,6 @@ const iniciarSesion = async () => {
   }
 };
 </script>
-
-<template>
-  <div class="login-container d-flex align-items-center justify-content-center">
-    <div class="card shadow-lg p-4 login-card animate__animated animate__zoomIn">
-      <div class="text-center mb-4">
-        <img src="@/assets/fotos/logo.png" alt="Logo AAAB" class="logo-img mb-2">
-        <h4 class="fw-bold text-primary">Portal del Árbitro</h4>
-        <p class="text-muted small">Ingresá con tu email de registro</p>
-      </div>
-
-      <div v-if="errorMsg" class="alert alert-danger small p-2 text-center border-0">
-        {{ errorMsg }}
-      </div>
-
-      <form @submit.prevent="iniciarSesion">
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Email</label>
-          <input v-model="email" type="email" class="form-control" placeholder="ejemplo@mail.com" required>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Contraseña</label>
-          <input v-model="password" type="password" class="form-control" placeholder="••••••••" required>
-        </div>
-
-        <button :disabled="cargando" type="submit" class="btn btn-primary w-100 fw-bold py-2 mt-2">
-          <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
-          {{ cargando ? 'INGRESANDO...' : 'ENTRAR' }}
-        </button>
-      </form>
-
-      <div class="text-center mt-4 border-top pt-3">
-        <p class="text-muted x-small mb-0">Asociación Argentina de Árbitros de Balonmano</p>
-        <p class="support-text mt-2">
-          Si tenés algún problema técnico comunicate con 
-          <a href="mailto:soporte@arbitroshandball.com.ar">soporte@arbitroshandball.com.ar</a>
-        </p>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .login-container {

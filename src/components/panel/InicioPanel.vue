@@ -1,3 +1,21 @@
+<template>
+  <div class="row g-3 g-md-4 animate__animated animate__fadeIn">
+    
+    <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItems" :key="item.title">
+      <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
+        <div class="menu-card shadow-sm">
+          <div class="icon-circle">
+            <i :class="[item.icon, 'text-danger']"></i>
+          </div>
+          <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
+          <p class="small text-muted m-0">{{ item.desc }}</p>
+        </div>
+      </RouterLink>
+    </div>
+
+  </div>
+</template>
+
 <script setup>
 import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head'
@@ -41,23 +59,6 @@ const menuItems = [
 ];
 </script>
 
-<template>
-  <div class="row g-3 g-md-4 animate__animated animate__fadeIn">
-    
-    <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItems" :key="item.title">
-      <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
-        <div class="menu-card shadow-sm">
-          <div class="icon-circle">
-            <i :class="[item.icon, 'text-danger']"></i>
-          </div>
-          <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
-          <p class="small text-muted m-0">{{ item.desc }}</p>
-        </div>
-      </RouterLink>
-    </div>
-
-  </div>
-</template>
 <style scoped>
 .menu-card {
   background: #ffffff;

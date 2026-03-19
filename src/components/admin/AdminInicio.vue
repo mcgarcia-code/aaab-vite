@@ -35,8 +35,8 @@ const menuItems = [
   { 
     to: '/admin/secretaria', 
     title: 'Secretaría', 
-    icon: 'bi bi-people', 
-    desc: 'Gestionar legajos y datos de los árbitros.' 
+    icon: 'bi bi-pc-display-horizontal', 
+    desc: 'Gestionar datos personales y licencias de los árbitros.' 
   },
   { 
     to: '/admin/tribunal', 

@@ -1,146 +1,3 @@
-<script setup>
-import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
-
-useHead({
-  title: 'Escuela de Formación Arbitral | AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Programa de formación integral anual para árbitros de handball.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Escuela de Formación Arbitral | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Programa de formación integral anual para árbitros de handball.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
-  ],
-})
-
-const materias = ref([
-  {
-    title: 'Aspectos Reglamentarios',
-    icon: 'bi-book',
-    description: 'Estudio profundo de las 18 reglas del Reglamento de Handball.',
-    details: 'Exámenes parciales y examen final integrador (75% aprobación) .'
-  },
-  {
-    title: 'Preparación Física',
-    icon: 'bi-lightning-charge',
-    description: 'Entrenamiento específico anual para alcanzar los estándares de rendimiento exigidos.',
-    details: 'Evaluación mediante Shuttle Run Test (Mujeres 8.5 / Hombres 9.5).'
-  },
-  {
-    title: 'Análisis de Video y Gestoformas',
-    icon: 'bi-camera-video',
-    description: 'Taller de gestoformas, silbato y video-tests para unificación de criterios.',
-    details: 'Aprobación mediante el 50% de los video-tests realizados.'
-  },
-  {
-    title: 'Espacios de Encuentro',
-    icon: 'bi-people',
-    description: 'Charlas con psicólogos deportivos, árbitros referentes y entrenadores de formativas.',
-    details: 'Módulo formativo sin examen (Asistencia obligatoria del 75%).'
-  }
-])
-
-const totalModulos = computed(() => materias.value.length + 1)
-
-const cuerpoDocente = ref([
-  {
-    name: 'Mariana García',
-    role: 'Aspectos Reglamentarios, Práctica Arbitral',
-    bio: 'Árbitra Internacional / Profesora de Ed. Física',
-    image: new URL('../assets/fotos/mariana-garcia.webp', import.meta.url).href
-  },
-  {
-    name: 'Marcelo La Delfa',
-    role: 'Aspectos Reglamentarios, Taller de Silbato y Gestoformas, Práctica Arbitral',
-    bio: 'Árbitro Nacional / Profesor de Ed. Física',
-    image: new URL('../assets/fotos/marcelo-ladelfa.webp', import.meta.url).href
-  },
-  {
-    name: 'María Inés Paolantoni',
-    role: 'Aspectos Reglamentarios, Análisis de Video',
-    bio: 'Árbitra Internacional / Abogada',
-    image: new URL('../assets/fotos/ines-paolantoni.webp', import.meta.url).href
-  },
-  {
-    name: 'Tomas Moreno',
-    role: 'Preparador Físico',
-    bio: 'Árbitro Local / Profesor de Ed. Física especializado en alto rendimiento deportivo',
-    image: new URL('../assets/fotos/tomas-moreno.webp', import.meta.url).href
-  },
-  {
-    name: 'Facundo Altamirano',
-    role: 'Preparador Físico',
-    bio: 'Árbitro Regional / Profesor de Ed. Física',
-    image: new URL('../assets/fotos/facundo-altamirano.webp', import.meta.url).href
-  },
-  {
-    name: 'Mariela Policano',
-    role: 'Análisis de Video, Encuentros de Mini Handball',
-    bio: 'Árbitra Local',
-    image: new URL('../assets/fotos/mariela-policano.webp', import.meta.url).href
-  },
-  {
-    name: 'Bárbara Fernández',
-    role: 'Encuentros de Mini Handball',
-    bio: 'Árbitra Nacional',
-    image: new URL('../assets/fotos/barbara-fernandez.webp', import.meta.url).href
-  },
-  {
-    name: 'Francisco Cistriano',
-    role: 'Encuentros de Mini Handball',
-    bio: 'Árbitro Nacional / Licenciado en Ciencias Políticas',
-    image: new URL('../assets/fotos/francisco-cistriano.webp', import.meta.url).href
-  }
-])
-
-const staffInvitado = ref({
-  name: 'Espacios de Encuentro',
-  role: 'Staff Invitado',
-  bio: 'Psicólogos deportivos, Árbitros Referentes y Entrenadores de Formativas',
-  icon: 'bi-mortarboard'
-})
-
-const faqs = ref([
-  { q: '¿Qué días, en qué horario y dónde se cursa?', a: 'Las clases se dictan los días Martes de 19:30 a 21:30 horas en el ISEF N°2 Federico W. Dickens - Curapaligue 1150.', icon: 'bi-clock-history' },
-  { q: '¿Cuáles son los requisitos de edad para inscribirse?', a: 'Se requiere un mínimo de 18 años cumplidos al año siguiente del curso y un máximo de menos de 50 años al momento de la inscripción.', icon: 'bi-person-badge' },
-  { q: '¿Qué sucede si desapruebo un módulo?', a: 'Podés recursar únicamente la materia adeudada el año siguiente abonando el derecho de examen correspondiente.', icon: 'bi-patch-question' },
-  { q: '¿Es obligatorio ser jugador?', a: 'No, pero se requiere conocimiento básico (ex-jugadores, estudiantes de Ed. Física, entrenadores, etc.).', icon: 'bi-info-circle' },
-  { q: '¿Cuál es el régimen de asistencia requerido?', a: 'Se exige un mínimo del 75% de asistencia a las clases presenciales, entrenamientos y charlas obligatorias.', icon: 'bi-calendar-check' },
-  { q: '¿Cuál es la política de cuotas?', a: 'Se abonan 8 cuotas de Abril a Noviembre. En caso de abandono, los pagos realizados no son reembolsables.', icon: 'bi-credit-card' },
-  { q: '¿Cuándo se realizan las prácticas de arbitraje?', a: 'Se realizan encuentros de Mini Handball durante el ciclo lectivo y etapas de prácticas intensivas en partidos amistosos durante el receso invernal (julio) y la pretemporada (febrero).', icon: 'bi-arrow-right-circle'},
-  { q: '¿Cómo se evalúa la preparación física?', a: 'Se califica como Aprobado/Desaprobado mediante el Shuttle Run Test (Mujeres estadío 8.5 / Hombres estadío 9.5).', icon: 'bi-lightning-charge' },
-  { q: '¿Existe un compromiso ético al inscribirse?', a: 'Sí, el aspirante se compromete al respeto absoluto hacia el colectivo arbitral en ejercicio y al correcto manejo de su imagen en redes sociales.', icon: 'bi-shield-check' }
-])
-
-const infoInscripcion = ref({
-  title: 'Ciclo Lectivo 2026',
-  description: 'Nuestro programa anual está destinado a personas con conocimientos básicos y experiencia en el Handball, que deseen incorporarse a nuestra plantilla arbitral',
-  image: new URL('../assets/fotos/curso-avanzado.webp', import.meta.url).href,
-  startDate: 'Abril 2026',
-  duration: 'Anual (Abril a Noviembre)',
-  modality: 'Presencial',
-  detailsLink: 'https://drive.google.com/file/d/13cOvOnxxG1P3zoDBx4IrlUMbFdOO37hq/view?usp=sharing',
-  enrollLink: 'https://forms.gle/TxrzdSs1if8pX8n99',
-  scheduleLink: 'https://drive.google.com/file/d/1jb5t2ek3zIwSaXVFr4sR-ZMh8QeDMi1z/view?usp=sharing',
-})
-</script>
-
 <template>
   <div class="dark-background-section py-5">
     <div class="container my-5">
@@ -301,6 +158,149 @@ const infoInscripcion = ref({
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, computed } from 'vue'
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Escuela de Formación Arbitral | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Programa de formación integral anual para árbitros de handball.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Escuela de Formación Arbitral | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Programa de formación integral anual para árbitros de handball.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+})
+
+const materias = ref([
+  {
+    title: 'Aspectos Reglamentarios',
+    icon: 'bi-book',
+    description: 'Estudio profundo de las 18 reglas del Reglamento de Handball.',
+    details: 'Exámenes parciales y examen final integrador (75% aprobación) .'
+  },
+  {
+    title: 'Preparación Física',
+    icon: 'bi-lightning-charge',
+    description: 'Entrenamiento específico anual para alcanzar los estándares de rendimiento exigidos.',
+    details: 'Evaluación mediante Shuttle Run Test (Mujeres 8.5 / Hombres 9.5).'
+  },
+  {
+    title: 'Análisis de Video y Gestoformas',
+    icon: 'bi-camera-video',
+    description: 'Taller de gestoformas, silbato y video-tests para unificación de criterios.',
+    details: 'Aprobación mediante el 50% de los video-tests realizados.'
+  },
+  {
+    title: 'Espacios de Encuentro',
+    icon: 'bi-people',
+    description: 'Charlas con psicólogos deportivos, árbitros referentes y entrenadores de formativas.',
+    details: 'Módulo formativo sin examen (Asistencia obligatoria del 75%).'
+  }
+])
+
+const totalModulos = computed(() => materias.value.length + 1)
+
+const cuerpoDocente = ref([
+  {
+    name: 'Mariana García',
+    role: 'Aspectos Reglamentarios, Práctica Arbitral',
+    bio: 'Árbitra Internacional / Profesora de Ed. Física',
+    image: new URL('../assets/fotos/mariana-garcia.webp', import.meta.url).href
+  },
+  {
+    name: 'Marcelo La Delfa',
+    role: 'Aspectos Reglamentarios, Taller de Silbato y Gestoformas, Práctica Arbitral',
+    bio: 'Árbitro Nacional / Profesor de Ed. Física',
+    image: new URL('../assets/fotos/marcelo-ladelfa.webp', import.meta.url).href
+  },
+  {
+    name: 'María Inés Paolantoni',
+    role: 'Aspectos Reglamentarios, Análisis de Video',
+    bio: 'Árbitra Internacional / Abogada',
+    image: new URL('../assets/fotos/ines-paolantoni.webp', import.meta.url).href
+  },
+  {
+    name: 'Tomas Moreno',
+    role: 'Preparador Físico',
+    bio: 'Árbitro Local / Profesor de Ed. Física especializado en alto rendimiento deportivo',
+    image: new URL('../assets/fotos/tomas-moreno.webp', import.meta.url).href
+  },
+  {
+    name: 'Facundo Altamirano',
+    role: 'Preparador Físico',
+    bio: 'Árbitro Regional / Profesor de Ed. Física',
+    image: new URL('../assets/fotos/facundo-altamirano.webp', import.meta.url).href
+  },
+  {
+    name: 'Mariela Policano',
+    role: 'Análisis de Video, Encuentros de Mini Handball',
+    bio: 'Árbitra Local',
+    image: new URL('../assets/fotos/mariela-policano.webp', import.meta.url).href
+  },
+  {
+    name: 'Bárbara Fernández',
+    role: 'Encuentros de Mini Handball',
+    bio: 'Árbitra Nacional',
+    image: new URL('../assets/fotos/barbara-fernandez.webp', import.meta.url).href
+  },
+  {
+    name: 'Francisco Cistriano',
+    role: 'Encuentros de Mini Handball',
+    bio: 'Árbitro Nacional / Licenciado en Ciencias Políticas',
+    image: new URL('../assets/fotos/francisco-cistriano.webp', import.meta.url).href
+  }
+])
+
+const staffInvitado = ref({
+  name: 'Espacios de Encuentro',
+  role: 'Staff Invitado',
+  bio: 'Psicólogos deportivos, Árbitros Referentes y Entrenadores de Formativas',
+  icon: 'bi-mortarboard'
+})
+
+const faqs = ref([
+  { q: '¿Qué días, en qué horario y dónde se cursa?', a: 'Las clases se dictan los días Martes de 19:30 a 21:30 horas en el ISEF N°2 Federico W. Dickens - Curapaligue 1150.', icon: 'bi-clock-history' },
+  { q: '¿Cuáles son los requisitos de edad para inscribirse?', a: 'Se requiere un mínimo de 18 años cumplidos al año siguiente del curso y un máximo de menos de 50 años al momento de la inscripción.', icon: 'bi-person-badge' },
+  { q: '¿Qué sucede si desapruebo un módulo?', a: 'Podés recursar únicamente la materia adeudada el año siguiente abonando el derecho de examen correspondiente.', icon: 'bi-patch-question' },
+  { q: '¿Es obligatorio ser jugador?', a: 'No, pero se requiere conocimiento básico (ex-jugadores, estudiantes de Ed. Física, entrenadores, etc.).', icon: 'bi-info-circle' },
+  { q: '¿Cuál es el régimen de asistencia requerido?', a: 'Se exige un mínimo del 75% de asistencia a las clases presenciales, entrenamientos y charlas obligatorias.', icon: 'bi-calendar-check' },
+  { q: '¿Cuál es la política de cuotas?', a: 'Se abonan 8 cuotas de Abril a Noviembre. En caso de abandono, los pagos realizados no son reembolsables.', icon: 'bi-credit-card' },
+  { q: '¿Cuándo se realizan las prácticas de arbitraje?', a: 'Se realizan encuentros de Mini Handball durante el ciclo lectivo y etapas de prácticas intensivas en partidos amistosos durante el receso invernal (julio) y la pretemporada (febrero).', icon: 'bi-arrow-right-circle'},
+  { q: '¿Cómo se evalúa la preparación física?', a: 'Se califica como Aprobado/Desaprobado mediante el Shuttle Run Test (Mujeres estadío 8.5 / Hombres estadío 9.5).', icon: 'bi-lightning-charge' },
+  { q: '¿Existe un compromiso ético al inscribirse?', a: 'Sí, el aspirante se compromete al respeto absoluto hacia el colectivo arbitral en ejercicio y al correcto manejo de su imagen en redes sociales.', icon: 'bi-shield-check' }
+])
+
+const infoInscripcion = ref({
+  title: 'Ciclo Lectivo 2026',
+  description: 'Nuestro programa anual está destinado a personas con conocimientos básicos y experiencia en el Handball, que deseen incorporarse a nuestra plantilla arbitral',
+  image: new URL('../assets/fotos/curso-avanzado.webp', import.meta.url).href,
+  startDate: 'Abril 2026',
+  duration: 'Anual (Abril a Noviembre)',
+  modality: 'Presencial',
+  detailsLink: 'https://drive.google.com/file/d/13cOvOnxxG1P3zoDBx4IrlUMbFdOO37hq/view?usp=sharing',
+  enrollLink: 'https://forms.gle/TxrzdSs1if8pX8n99',
+  scheduleLink: 'https://drive.google.com/file/d/1jb5t2ek3zIwSaXVFr4sR-ZMh8QeDMi1z/view?usp=sharing',
+})
+</script>
 
 <style scoped>
 .dark-background-section {

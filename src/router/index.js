@@ -42,9 +42,9 @@ const routes = [
 
   {    
     path: '/admin',
-    
     component: () => import('../views/AdminPanel.vue'),
     meta: { requiresAuth: true, role: 'admin' }, 
+
     children: [
       { 
         path: '', 
@@ -53,17 +53,27 @@ const routes = [
       },
       { 
         path: 'secretaria', 
-        name: 'AdminSecretaria', 
+        name: 'SecretariaAdmin', 
         component: () => import('../components/admin/SecretariaAdmin.vue') 
       },
+          { 
+            path: 'secretaria/modificacion-datos', 
+            name: 'MoficacionDatos', 
+            component: () => import('../components/admin/ModificacionDatos.vue') 
+          },
+                    { 
+            path: 'secretaria/licencias', 
+            name: 'LicenciasAdmin', 
+            component: () => import('../components/admin/LicenciasAdmin.vue') 
+          },
       { 
         path: 'tribunal', 
-        name: 'AdminTribunal', 
+        name: 'TribunalAdmin', 
         component: () => import('../components/admin/TribunalAdmin.vue') 
       },
       { 
         path: 'tesoreria', 
-        name: 'AdminTesoreria', 
+        name: 'TesoreriaAdmin', 
         component: () => import('../components/admin/TesoreriaAdmin.vue') 
       },
     ]

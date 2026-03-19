@@ -1,3 +1,92 @@
+<template>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <div class="admin-panel">
+    <div class="header-section">
+      <div class="header-title-box">
+        <h2 class="title">Agenda de Contactos AAAB</h2>
+        <span class="counter">{{ arbitrosFiltrados.length }} personas encontradas</span>
+      </div>
+      <div class="header-actions">
+        <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-filter-mobile mobile-only">
+          <span class="material-icons">filter_alt</span>
+        </button>
+        <button @click="limpiarFiltros" class="btn-action btn-clear">
+          <span class="material-icons">filter_alt_off</span> 
+          <span class="btn-text">Limpiar Filtros</span>
+        </button>
+      </div>
+    </div>
+
+    <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only shadow">
+      <div class="filter-grid-mobile">
+        <input v-model="filtros.apellido" placeholder="Apellido..">
+        <input v-model="filtros.nombre" placeholder="Nombre..">
+        <input v-model="filtros.grupo" placeholder="Grupo..">
+        <input v-model="filtros.subgrupo" placeholder="Sub-grupo..">
+      </div>
+      <button @click="mostrarFiltrosMobile = false" class="btn-close-filters">Ver Contactos</button>
+    </div>
+
+    <div class="table-container shadow desktop-only">
+      <table>
+        <thead>
+          <tr>
+            <th>Apellido</th>
+            <th>Nombre</th>
+            <th class="text-center">Grupo</th>
+            <th class="text-center">Sub-Grupo</th>
+            <th class="text-center">Acciones</th>
+          </tr>
+          <tr class="filter-row">
+            <td><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar..."></td>
+            <td><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar..."></td>
+            <td><input v-model="filtros.grupo" class="filter-input-min" placeholder="G..."></td>
+            <td><input v-model="filtros.subgrupo" class="filter-input-min" placeholder="S..."></td>
+            <td></td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="a in arbitrosFiltrados" :key="a.id" :class="{'fila-ina': a.es_activo == 0}">
+            <td class="font-bold">{{ a.apellido }}</td>
+            <td class="font-bold">{{ a.nombre }}</td>
+            <td class="text-center">{{ a.grupo || '-' }}</td>
+            <td class="text-center">{{ a.subgrupo || '-' }}</td>
+            <td class="text-center">
+              <div class="actions-wrapper">
+                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa" title="WhatsApp">
+                  <span class="material-icons">chat</span>
+                </button>
+                <button v-if="a.celular" @click="copiarAlPortapapeles(a.celular)" class="btn-copy" title="Copiar Número">
+                  <span class="material-icons">content_copy</span>
+                </button>
+                <span v-else class="no-phone">Sin número</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mobile-only">
+      <div v-for="a in arbitrosFiltrados" :key="'mob-'+a.id" class="card-contacto" :class="{'fila-ina': a.es_activo == 0}">
+        <div class="card-main">
+          <div class="card-info">
+            <div class="card-name">{{ a.apellido }}, {{ a.nombre }}</div>
+            <div class="card-subtext">Grupo: {{ a.grupo || '-' }} | Sub: {{ a.subgrupo || '-' }}</div>
+            <button v-if="a.celular" @click="copiarAlPortapapeles(a.celular)" class="btn-copy-mobile">
+              <span class="material-icons">content_copy</span> {{ a.celular }}
+            </button>
+          </div>
+          <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa-circle">
+            <span class="material-icons">chat</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue';
 import axios from 'axios';
@@ -92,94 +181,7 @@ const arbitrosFiltrados = computed(() => {
 onMounted(cargarDatos);
 </script>
 
-<template>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  
-  <div class="admin-panel">
-    <div class="header-section">
-      <div class="header-title-box">
-        <h2 class="title">Agenda de Contactos AAAB</h2>
-        <span class="counter">{{ arbitrosFiltrados.length }} personas encontradas</span>
-      </div>
-      <div class="header-actions">
-        <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-filter-mobile mobile-only">
-          <span class="material-icons">filter_alt</span>
-        </button>
-        <button @click="limpiarFiltros" class="btn-action btn-clear">
-          <span class="material-icons">filter_alt_off</span> 
-          <span class="btn-text">Limpiar Filtros</span>
-        </button>
-      </div>
-    </div>
 
-    <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only shadow">
-      <div class="filter-grid-mobile">
-        <input v-model="filtros.apellido" placeholder="Apellido..">
-        <input v-model="filtros.nombre" placeholder="Nombre..">
-        <input v-model="filtros.grupo" placeholder="Grupo..">
-        <input v-model="filtros.subgrupo" placeholder="Sub-grupo..">
-      </div>
-      <button @click="mostrarFiltrosMobile = false" class="btn-close-filters">Ver Contactos</button>
-    </div>
-
-    <div class="table-container shadow desktop-only">
-      <table>
-        <thead>
-          <tr>
-            <th>Apellido</th>
-            <th>Nombre</th>
-            <th class="text-center">Grupo</th>
-            <th class="text-center">Sub-Grupo</th>
-            <th class="text-center">Acciones</th>
-          </tr>
-          <tr class="filter-row">
-            <td><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar..."></td>
-            <td><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar..."></td>
-            <td><input v-model="filtros.grupo" class="filter-input-min" placeholder="G..."></td>
-            <td><input v-model="filtros.subgrupo" class="filter-input-min" placeholder="S..."></td>
-            <td></td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="a in arbitrosFiltrados" :key="a.id" :class="{'fila-ina': a.es_activo == 0}">
-            <td class="font-bold">{{ a.apellido }}</td>
-            <td class="font-bold">{{ a.nombre }}</td>
-            <td class="text-center">{{ a.grupo || '-' }}</td>
-            <td class="text-center">{{ a.subgrupo || '-' }}</td>
-            <td class="text-center">
-              <div class="actions-wrapper">
-                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa" title="WhatsApp">
-                  <span class="material-icons">chat</span>
-                </button>
-                <button v-if="a.celular" @click="copiarAlPortapapeles(a.celular)" class="btn-copy" title="Copiar Número">
-                  <span class="material-icons">content_copy</span>
-                </button>
-                <span v-else class="no-phone">Sin número</span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="mobile-only">
-      <div v-for="a in arbitrosFiltrados" :key="'mob-'+a.id" class="card-contacto" :class="{'fila-ina': a.es_activo == 0}">
-        <div class="card-main">
-          <div class="card-info">
-            <div class="card-name">{{ a.apellido }}, {{ a.nombre }}</div>
-            <div class="card-subtext">Grupo: {{ a.grupo || '-' }} | Sub: {{ a.subgrupo || '-' }}</div>
-            <button v-if="a.celular" @click="copiarAlPortapapeles(a.celular)" class="btn-copy-mobile">
-              <span class="material-icons">content_copy</span> {{ a.celular }}
-            </button>
-          </div>
-          <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa-circle">
-            <span class="material-icons">chat</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .admin-panel { padding: 15px; background: #f8fafc; font-family: sans-serif; color: #000; }

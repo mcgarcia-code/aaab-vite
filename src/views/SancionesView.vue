@@ -1,93 +1,3 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import { api } from "@/api/api"
-import store from "@/stores/auth"
-import { useHead } from '@vueuse/head'
-
-// Título y descripción específicos para la página de Sanciones AAAB
-useHead({
-  title: 'Sanciones | AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Visualizá el listado oficial de sanciones para árbitros, con detalles completos de cada caso.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Sanciones | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Visualizá el listado oficial de sanciones para árbitros, con detalles completos de cada caso.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
-  ],
-})
-
-// --- STATE ---
-const nuevaSancion = ref({
-  arbitro: '',
-  motivo: '',
-  articulo: '',
-  sancion: '',
-  desde: '',
-  hasta: '',
-})
-const sanciones = ref(null)
-const arbitros = ref(null)
-const isAdmin = ref(false)
-
-// --- LIFECYCLE ---
-onMounted(() => {
-  fetchSanciones()
-  fetchArbitros()
-  isAdmin.value = store.getters.isAuthenticated
-})
-async function fetchSanciones(){
-  let s = {
-    entity:"sanciones",
-    action:"listar",
-  }
-  let data = await api.get(s)
-  sanciones.value = data.sanciones
-}
-async function fetchArbitros(){
-  let s = {
-    entity: "arbitros",
-    action: "listar"
-  }
-  let data = await api.get(s)
-  console.log(data)
-  arbitros.value = data.arbitros
-}
-// --- ACTIONS ---
-function guardarSancion() {
-  if (!nuevaSancion.value.arbitro) return
-  let d = {
-    entity:'sanciones',
-    action:'agregar',
-    data: nuevaSancion.value
-  }
-  api.post("/", d).then(()=>fetchSanciones());
-  nuevaSancion.value = {
-    arbitro: '',
-    motivo: '',
-    articulo: '',
-    sancion: '',
-    desde: '',
-    hasta: '',
-  }
-}
-</script>
-
 <template>
   <div class="dark-background-section py-5">
     <div class="container my-5">
@@ -190,6 +100,96 @@ function guardarSancion() {
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { api } from "@/api/api"
+import store from "@/stores/auth"
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Sanciones AAAB
+useHead({
+  title: 'Sanciones | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Visualizá el listado oficial de sanciones para árbitros, con detalles completos de cada caso.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Sanciones | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Visualizá el listado oficial de sanciones para árbitros, con detalles completos de cada caso.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+})
+
+// --- STATE ---
+const nuevaSancion = ref({
+  arbitro: '',
+  motivo: '',
+  articulo: '',
+  sancion: '',
+  desde: '',
+  hasta: '',
+})
+const sanciones = ref(null)
+const arbitros = ref(null)
+const isAdmin = ref(false)
+
+// --- LIFECYCLE ---
+onMounted(() => {
+  fetchSanciones()
+  fetchArbitros()
+  isAdmin.value = store.getters.isAuthenticated
+})
+async function fetchSanciones(){
+  let s = {
+    entity:"sanciones",
+    action:"listar",
+  }
+  let data = await api.get(s)
+  sanciones.value = data.sanciones
+}
+async function fetchArbitros(){
+  let s = {
+    entity: "arbitros",
+    action: "listar"
+  }
+  let data = await api.get(s)
+  console.log(data)
+  arbitros.value = data.arbitros
+}
+// --- ACTIONS ---
+function guardarSancion() {
+  if (!nuevaSancion.value.arbitro) return
+  let d = {
+    entity:'sanciones',
+    action:'agregar',
+    data: nuevaSancion.value
+  }
+  api.post("/", d).then(()=>fetchSanciones());
+  nuevaSancion.value = {
+    arbitro: '',
+    motivo: '',
+    articulo: '',
+    sancion: '',
+    desde: '',
+    hasta: '',
+  }
+}
+</script>
 
 <style scoped>
 /* Código CSS limpio y sin caracteres invisibles */

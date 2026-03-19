@@ -1,3 +1,66 @@
+<template>
+  <div class="dark-background-section py-5">
+    <div class="container my-5">
+      <div class="text-center mb-5">
+        <h1 class="fw-bold text-white">Preguntas Frecuentes</h1>
+        <p class="lead text-white-50">
+          Seleccioná una categoría para resolver tus dudas sobre protocolos, administración y reglamentos.
+        </p>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="accordion accordion-flush" id="faqAccordion">
+            <div
+              v-for="(categoria, catIndex) in categorias"
+              :key="categoria.titulo"
+              class="accordion-item"
+            >
+              <h2 class="accordion-header" :id="'heading' + catIndex">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  :data-bs-target="'#collapse' + catIndex"
+                  aria-expanded="false"
+                  :aria-controls="'collapse' + catIndex"
+                >
+                  <i :class="[categoria.icon, 'category-icon me-3']"></i>
+                  <div>
+                    <span class="category-title">{{ categoria.titulo }}</span>
+                    <small class="category-subtitle d-block">{{ categoria.subtitulo }}</small>
+                  </div>
+                </button>
+              </h2>
+              <div
+                :id="'collapse' + catIndex"
+                class="accordion-collapse collapse"
+                :aria-labelledby="'heading' + catIndex"
+                data-bs-parent="#faqAccordion"
+              >
+                <div class="accordion-body">
+                  <div class="list-group list-group-flush">
+                    <div
+                      v-for="(item, pIndex) in categoria.preguntas"
+                      :key="pIndex"
+                      class="py-3 border-bottom"
+                    >
+                      <h5 class="category-title text-danger fw-bold mb-2">
+                         <i class="bi bi-patch-question me-2"></i>{{ item.question }}
+                      </h5>
+                      <p class="mb-0 text-muted" v-html="item.answer"></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref } from 'vue';
 import { useHead } from '@vueuse/head';
@@ -256,69 +319,6 @@ const categorias = ref([
   }
 ]);
 </script>
-
-<template>
-  <div class="dark-background-section py-5">
-    <div class="container my-5">
-      <div class="text-center mb-5">
-        <h1 class="fw-bold text-white">Preguntas Frecuentes</h1>
-        <p class="lead text-white-50">
-          Seleccioná una categoría para resolver tus dudas sobre protocolos, administración y reglamentos.
-        </p>
-      </div>
-
-      <div class="row justify-content-center">
-        <div class="col-lg-10">
-          <div class="accordion accordion-flush" id="faqAccordion">
-            <div
-              v-for="(categoria, catIndex) in categorias"
-              :key="categoria.titulo"
-              class="accordion-item"
-            >
-              <h2 class="accordion-header" :id="'heading' + catIndex">
-                <button
-                  class="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  :data-bs-target="'#collapse' + catIndex"
-                  aria-expanded="false"
-                  :aria-controls="'collapse' + catIndex"
-                >
-                  <i :class="[categoria.icon, 'category-icon me-3']"></i>
-                  <div>
-                    <span class="category-title">{{ categoria.titulo }}</span>
-                    <small class="category-subtitle d-block">{{ categoria.subtitulo }}</small>
-                  </div>
-                </button>
-              </h2>
-              <div
-                :id="'collapse' + catIndex"
-                class="accordion-collapse collapse"
-                :aria-labelledby="'heading' + catIndex"
-                data-bs-parent="#faqAccordion"
-              >
-                <div class="accordion-body">
-                  <div class="list-group list-group-flush">
-                    <div
-                      v-for="(item, pIndex) in categoria.preguntas"
-                      :key="pIndex"
-                      class="py-3 border-bottom"
-                    >
-                      <h5 class="category-title text-danger fw-bold mb-2">
-                         <i class="bi bi-patch-question me-2"></i>{{ item.question }}
-                      </h5>
-                      <p class="mb-0 text-muted" v-html="item.answer"></p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .dark-background-section {

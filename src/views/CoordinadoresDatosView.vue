@@ -1,146 +1,3 @@
-<script setup>
-import { ref, onMounted, computed, reactive } from 'vue';
-import axios from 'axios';
-import * as XLSX from 'xlsx';
-import { useHead } from '@vueuse/head'
-
-// Título y descripción específicos para la página de coordinadores AAAB
-useHead({
-  title: 'Coordinadores: Base de datos | AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Base de datos para los coordinadores AAAB.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Coordinadores: Base de datos | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Base de datos para los coordinadores AAAB.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
-  ],
-})
-
-// --- CONFIGURACIÓN DE APIS ---
-const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
-
-const arbitros = ref([]);
-const mostrarFiltrosMobile = ref(false);
-
-const filtros = reactive({
-  apellido: '', nombre: '', licencia: '', es_activo: '', 
-  apto_medico: '', // Agregado filtro apto_medico
-  grupo: '', subgrupo: '', zona: '', movilidad: '', 
-  juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: ''
-});
-
-// --- LÓGICA DE CARGA ---
-const cargarDatos = async () => {
-  try {
-    const res = await axios.get(API_URL);
-    arbitros.value = Array.isArray(res.data) ? res.data : [];
-  } catch (err) { 
-    console.error("Error al cargar datos:", err); 
-  }
-};
-
-// --- LÓGICA DE COLORES ---
-const obtenerClaseFila = (a) => {
-  const tieneAprobada = Number(a.tiene_aprobada) > 0;
-  const tieneRechazada = Number(a.tiene_rechazada) > 0;
-  const esInactivo = a.es_activo == 0;
-
-  if (esInactivo || tieneAprobada) return 'fila-roja';
-  if (tieneRechazada) return 'fila-amarilla';
-  return '';
-};
-
-const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
-
-const mostrarFechaArg = (fecha) => {
-  if (!fecha) return '';
-  const partes = fecha.split('-');
-  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
-};
-
-const abrirWhatsApp = (numero) => {
-  if (!numero) return;
-  const limpio = String(numero).replace(/\D/g, '');
-  const prefijo = limpio.startsWith('54') ? limpio : `54${limpio}`;
-  window.open(`https://wa.me/${prefijo}`, '_blank');
-};
-
-const obtenerTextoLicencia = (a) => {
-  let textos = [];
-  const formatearVariasFechas = (cadenaFechas) => {
-    if (!cadenaFechas) return '';
-    return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
-  };
-  if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
-    textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
-  }
-  if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
-    textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
-  }
-  return textos.length > 0 ? textos.join(' | ') : '-';
-};
-
-const normalizarTexto = (valor) => {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-};
-
-const arbitrosFiltrados = computed(() => {
-  return arbitros.value.filter(a => {
-    const cumpleTexto = Object.keys(filtros).every(key => {
-      if (!filtros[key] || key === 'licencia') return true;
-      
-      // Lógica específica para filtros SI/NO (numéricos o booleanos)
-      if (key === 'es_activo' || key === 'apto_medico') {
-         return String(a[key]) === filtros[key];
-      }
-      
-      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
-    });
-    
-    let cumpleLicencia = true;
-    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada) > 0;
-    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada) > 0;
-    else if (filtros.licencia === 'sin_licencia') cumpleLicencia = Number(a.tiene_aprobada) === 0 && Number(a.tiene_rechazada) === 0;
-
-    return cumpleTexto && cumpleLicencia;
-  });
-});
-
-const exportarExcel = () => {
-  const datos = arbitrosFiltrados.value.map(a => ({
-    APELLIDO: a.apellido, NOMBRE: a.nombre, EDAD: a.edad,
-    CELULAR: a.celular,
-    LICENCIA: obtenerTextoLicencia(a),
-    ACTIVO: a.es_activo == 1 ? 'SI' : 'NO',
-    APTO_MEDICO: a.apto_medico == 1 ? 'SI' : 'NO',
-    GRUPO: a.grupo, SUBGRUPO: a.subgrupo,
-    ZONA: a.zona, MOVILIDAD: a.movilidad,
-    JUEGA: a.juega_handball, CLUB: a.donde_juega, OBS: a.observaciones
-  }));
-  const ws = XLSX.utils.json_to_sheet(datos);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Arbitros");
-  XLSX.writeFile(wb, "Lista_Arbitros.xlsx");
-};
-
-onMounted(cargarDatos);
-</script>
 
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -339,6 +196,151 @@ onMounted(cargarDatos);
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, onMounted, computed, reactive } from 'vue';
+import axios from 'axios';
+import * as XLSX from 'xlsx';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de coordinadores AAAB
+useHead({
+  title: 'Coordinadores: Base de datos | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Base de datos para los coordinadores AAAB.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Coordinadores: Base de datos | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Base de datos para los coordinadores AAAB.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+})
+
+// --- CONFIGURACIÓN DE APIS ---
+const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
+
+const arbitros = ref([]);
+const mostrarFiltrosMobile = ref(false);
+
+const filtros = reactive({
+  apellido: '', nombre: '', licencia: '', es_activo: '', 
+  apto_medico: '', // Agregado filtro apto_medico
+  grupo: '', subgrupo: '', zona: '', movilidad: '', 
+  juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: ''
+});
+
+// --- LÓGICA DE CARGA ---
+const cargarDatos = async () => {
+  try {
+    const res = await axios.get(API_URL);
+    arbitros.value = Array.isArray(res.data) ? res.data : [];
+  } catch (err) { 
+    console.error("Error al cargar datos:", err); 
+  }
+};
+
+// --- LÓGICA DE COLORES ---
+const obtenerClaseFila = (a) => {
+  const tieneAprobada = Number(a.tiene_aprobada) > 0;
+  const tieneRechazada = Number(a.tiene_rechazada) > 0;
+  const esInactivo = a.es_activo == 0;
+
+  if (esInactivo || tieneAprobada) return 'fila-roja';
+  if (tieneRechazada) return 'fila-amarilla';
+  return '';
+};
+
+const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
+
+const mostrarFechaArg = (fecha) => {
+  if (!fecha) return '';
+  const partes = fecha.split('-');
+  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
+};
+
+const abrirWhatsApp = (numero) => {
+  if (!numero) return;
+  const limpio = String(numero).replace(/\D/g, '');
+  const prefijo = limpio.startsWith('54') ? limpio : `54${limpio}`;
+  window.open(`https://wa.me/${prefijo}`, '_blank');
+};
+
+const obtenerTextoLicencia = (a) => {
+  let textos = [];
+  const formatearVariasFechas = (cadenaFechas) => {
+    if (!cadenaFechas) return '';
+    return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
+  };
+  if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
+    textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
+  }
+  if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
+    textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
+  }
+  return textos.length > 0 ? textos.join(' | ') : '-';
+};
+
+const normalizarTexto = (valor) => {
+  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+};
+
+const arbitrosFiltrados = computed(() => {
+  return arbitros.value.filter(a => {
+    const cumpleTexto = Object.keys(filtros).every(key => {
+      if (!filtros[key] || key === 'licencia') return true;
+      
+      // Lógica específica para filtros SI/NO (numéricos o booleanos)
+      if (key === 'es_activo' || key === 'apto_medico') {
+         return String(a[key]) === filtros[key];
+      }
+      
+      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
+    });
+    
+    let cumpleLicencia = true;
+    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada) > 0;
+    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada) > 0;
+    else if (filtros.licencia === 'sin_licencia') cumpleLicencia = Number(a.tiene_aprobada) === 0 && Number(a.tiene_rechazada) === 0;
+
+    return cumpleTexto && cumpleLicencia;
+  });
+});
+
+const exportarExcel = () => {
+  const datos = arbitrosFiltrados.value.map(a => ({
+    APELLIDO: a.apellido, NOMBRE: a.nombre, EDAD: a.edad,
+    CELULAR: a.celular,
+    LICENCIA: obtenerTextoLicencia(a),
+    ACTIVO: a.es_activo == 1 ? 'SI' : 'NO',
+    APTO_MEDICO: a.apto_medico == 1 ? 'SI' : 'NO',
+    GRUPO: a.grupo, SUBGRUPO: a.subgrupo,
+    ZONA: a.zona, MOVILIDAD: a.movilidad,
+    JUEGA: a.juega_handball, CLUB: a.donde_juega, OBS: a.observaciones
+  }));
+  const ws = XLSX.utils.json_to_sheet(datos);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Arbitros");
+  XLSX.writeFile(wb, "Lista_Arbitros.xlsx");
+};
+
+onMounted(cargarDatos);
+</script>
+
 
 <style scoped>
 .admin-panel { padding: 15px; background: #f8fafc; font-family: sans-serif; color: #000; min-height: 100vh; }

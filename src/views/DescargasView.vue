@@ -1,3 +1,71 @@
+<template>
+  <div class="dark-background-section py-5">
+    <div class="container my-5">
+      <div class="text-center mb-5">
+        <h1 class="fw-bold text-white">Centro de Descargas</h1>
+        <p class="lead text-white-50">
+          Selecciona una categoría para ver los documentos disponibles.
+        </p>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="accordion accordion-flush" id="downloadsAccordion">
+            <div
+              v-for="(categoria, index) in categorias"
+              :key="categoria.titulo"
+              class="accordion-item"
+            >
+              <h2 class="accordion-header" :id="'heading' + index">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  :data-bs-target="'#collapse' + index"
+                  aria-expanded="false"
+                  :aria-controls="'collapse' + index"
+                >
+                  <i :class="[categoria.icon, 'category-icon me-3']"></i>
+                  <div>
+                    <span class="category-title">{{ categoria.titulo }}</span>
+                    <small class="category-subtitle d-block">{{ categoria.subtitulo }}</small>
+                  </div>
+                </button>
+              </h2>
+              <div
+                :id="'collapse' + index"
+                class="accordion-collapse collapse"
+                :aria-labelledby="'heading' + index"
+                data-bs-parent="#downloadsAccordion"
+              >
+                <div class="accordion-body">
+                  <ul class="list-group list-group-flush">
+                    <li
+                      v-for="doc in categoria.documentos"
+                      :key="doc.nombre"
+                      class="list-group-item"
+                    >
+                      <a
+                        :href="doc.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="document-link"
+                      >
+                        <i class="bi bi-download me-2"></i>
+                        {{ doc.nombre }}
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
@@ -179,74 +247,6 @@ const categorias = ref([
   },
 ])
 </script>
-
-<template>
-  <div class="dark-background-section py-5">
-    <div class="container my-5">
-      <div class="text-center mb-5">
-        <h1 class="fw-bold text-white">Centro de Descargas</h1>
-        <p class="lead text-white-50">
-          Selecciona una categoría para ver los documentos disponibles.
-        </p>
-      </div>
-
-      <div class="row justify-content-center">
-        <div class="col-lg-10">
-          <div class="accordion accordion-flush" id="downloadsAccordion">
-            <div
-              v-for="(categoria, index) in categorias"
-              :key="categoria.titulo"
-              class="accordion-item"
-            >
-              <h2 class="accordion-header" :id="'heading' + index">
-                <button
-                  class="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  :data-bs-target="'#collapse' + index"
-                  aria-expanded="false"
-                  :aria-controls="'collapse' + index"
-                >
-                  <i :class="[categoria.icon, 'category-icon me-3']"></i>
-                  <div>
-                    <span class="category-title">{{ categoria.titulo }}</span>
-                    <small class="category-subtitle d-block">{{ categoria.subtitulo }}</small>
-                  </div>
-                </button>
-              </h2>
-              <div
-                :id="'collapse' + index"
-                class="accordion-collapse collapse"
-                :aria-labelledby="'heading' + index"
-                data-bs-parent="#downloadsAccordion"
-              >
-                <div class="accordion-body">
-                  <ul class="list-group list-group-flush">
-                    <li
-                      v-for="doc in categoria.documentos"
-                      :key="doc.nombre"
-                      class="list-group-item"
-                    >
-                      <a
-                        :href="doc.url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="document-link"
-                      >
-                        <i class="bi bi-download me-2"></i>
-                        {{ doc.nombre }}
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 /* Código CSS limpio y sin caracteres invisibles */
