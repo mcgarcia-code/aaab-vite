@@ -2,6 +2,18 @@
 import { ref, onMounted } from 'vue';
 import { RouterView, RouterLink, useRoute } from 'vue-router';
 import { auth } from '@/api/auth'; // Importamos tu servicio de autenticación
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de panel de inicio de árbitros AAAB
+useHead({
+  title: 'Panel de Inicio ADMIN | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Sección de administración para el panel de inicio de árbitros AAAB.',
+    },
+  ],
+})
 
 const route = useRoute();
 

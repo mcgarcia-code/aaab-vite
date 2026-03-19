@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
-import CarnetView from '../views/CarnetView.vue';
 import { auth } from '@/api/auth'; 
 
 const routes = [
@@ -12,8 +11,7 @@ const routes = [
   { path: '/designaciones', name: 'designaciones', component: () => import('../views/DesignacionesView.vue') },
   { path: '/tribunal-de-etica', name: 'tribunalEtica', component: () => import('../views/TribunalEticaView.vue') },
   { path: '/sanciones', name: 'sanciones', component: () => import('../views/SancionesView.vue') },
-  { path: '/carnet-digital', name: 'carnetDigital', component: CarnetView },
-  
+    
   {
     path: '/login-arbitro',
     name: 'LoginArbitro',

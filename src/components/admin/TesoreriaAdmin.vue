@@ -2,9 +2,9 @@
 import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head'
 
-// Título y descripción específicos para la página de Secretaría AAAB
+// Título y descripción específicos para la página de Tesorería AAAB
 useHead({
-  title: 'Secretaría | AAAB',
+  title: 'Tesorería | AAAB',
   meta: [
     {
       name: 'description',
