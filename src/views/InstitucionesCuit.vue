@@ -24,6 +24,7 @@ const cargarDatos = async () => {
       action: 'getInstitucionesCuit',
       payload: {}
     });
+    // Se asume que el campo 'celular' ya viene en el payload del PHP
     instituciones.value = res.payload;
   } catch (err) { 
     console.error("Error al cargar instituciones:", err); 
@@ -41,18 +42,22 @@ const copiarAlPortapapeles = async (texto, etiqueta) => {
 };
 
 const enviarFactura = (emailClub) => {
-  if (!emailClub || emailClub === 'NULL' || emailClub.trim() === '') {
-    alert("Esta institución no tiene un email válido registrado.");
-    return;
-  }
+  if (!emailClub || emailClub === 'NULL' || emailClub.trim() === '') return;
   
   const destinatario = emailClub.trim();
-  const cc = "facturas@arbitroshandball.com.ar";
+  const cc = "aaabfacturas@gmail.com";
   const subject = "Envío de Factura - Arbitraje AAAB";
   const body = "Estimados,\n\nAdjuntamos la factura correspondiente.\n\nSaludos cordiales.";
   
   const mailtoLink = `mailto:${destinatario}?cc=${cc}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.location.href = mailtoLink;
+};
+
+const enviarWhatsapp = (celular) => {
+  if (!celular || celular === 'NULL' || celular.trim() === '') return;
+  const numeroLimpio = celular.replace(/\D/g, '');
+  const mensaje = encodeURIComponent("Hola, nos comunicamos de Arbitraje AAAB por el envío de facturación.");
+  window.open(`https://wa.me/${numeroLimpio}?text=${mensaje}`, '_blank');
 };
 
 const normalizarTexto = (valor) => {
@@ -105,7 +110,7 @@ onMounted(cargarDatos);
       <table>
         <thead>
           <tr>
-            <th>Institución / Club</th>
+            <th class="col-institucion">Institución / Club</th>
             <th>CUIT</th>
             <th>Condición IVA</th>
             <th class="text-center">Acciones</th>
@@ -119,18 +124,32 @@ onMounted(cargarDatos);
         </thead>
         <tbody>
           <tr v-for="i in filtrados" :key="i.id" class="row-hover">
-            <td class="font-bold">{{ i.club }}</td>
+            <td class="font-bold col-institucion">{{ i.club }}</td>
             <td>{{ i.cuit || '-' }}</td> 
             <td><small>{{ i.condicion || '-' }}</small></td>
             <td class="text-center">
               <div class="actions-wrapper">
-                <button v-if="i.email && i.email !== 'NULL'" @click="enviarFactura(i.email)" class="btn-email" title="Enviar E-mail">
-                  <span class="material-icons">send</span>
-                </button>
-                <button v-if="i.email && i.email !== 'NULL'" @click="copiarAlPortapapeles(i.email, 'Email')" class="btn-copy" title="Copiar Email">
-                  <span class="material-icons">content_copy</span>
-                </button>
-                <span v-else class="no-data">Sin email</span>
+                <template v-if="i.email && i.email !== 'NULL' && i.email.trim() !== ''">
+                  <button @click="enviarFactura(i.email)" class="btn-email" title="Enviar E-mail">
+                    <span class="material-icons">send</span>
+                  </button>
+                  <button @click="copiarAlPortapapeles(i.email, 'Email')" class="btn-copy" title="Copiar Email">
+                    <span class="material-icons">content_copy</span>
+                  </button>
+                </template>
+
+                <template v-if="i.celular && i.celular !== 'NULL' && i.celular.trim() !== ''">
+                  <button @click="enviarWhatsapp(i.celular)" class="btn-whatsapp" title="Enviar WhatsApp">
+                    <span class="material-icons">chat</span>
+                  </button>
+                  <button @click="copiarAlPortapapeles(i.celular, 'Celular')" class="btn-copy" title="Copiar Celular">
+                    <span class="material-icons">phonelink_ring</span>
+                  </button>
+                </template>
+
+                <span v-if="(!i.email || i.email === 'NULL') && (!i.celular || i.celular === 'NULL')" class="no-data">
+                  Sin contacto
+                </span>
               </div>
             </td>
           </tr>
@@ -151,12 +170,24 @@ onMounted(cargarDatos);
                 <button v-if="i.cuit && i.cuit !== 'NULL'" @click="copiarAlPortapapeles(i.cuit, 'CUIT')" class="btn-copy-mobile">
                   <span class="material-icons">content_copy</span> Copiar CUIT
                 </button>
-                <button v-if="i.email && i.email !== 'NULL'" @click="copiarAlPortapapeles(i.email, 'Email')" class="btn-copy-mobile">
-                  <span class="material-icons">content_copy</span> Copiar E.mail
-                </button>
-                <button v-if="i.email && i.email !== 'NULL'" @click="enviarFactura(i.email)" class="btn-copy-mobile btn-send-mobile">
-                  <span class="material-icons">send</span> Enviar E-mail
-                </button>
+
+                <template v-if="i.email && i.email !== 'NULL' && i.email.trim() !== ''">
+                  <button @click="copiarAlPortapapeles(i.email, 'Email')" class="btn-copy-mobile">
+                    <span class="material-icons">content_copy</span> Copiar Email
+                  </button>
+                  <button @click="enviarFactura(i.email)" class="btn-copy-mobile btn-send-mobile">
+                    <span class="material-icons">send</span> Enviar Email
+                  </button>
+                </template>
+
+                <template v-if="i.celular && i.celular !== 'NULL' && i.celular.trim() !== ''">
+                  <button @click="copiarAlPortapapeles(i.celular, 'Celular')" class="btn-copy-mobile">
+                    <span class="material-icons">content_copy</span> Copiar Celular
+                  </button>
+                  <button @click="enviarWhatsapp(i.celular)" class="btn-copy-mobile btn-whatsapp-mobile">
+                    <span class="material-icons">chat</span> WhatsApp
+                  </button>
+                </template>
             </div>
           </div>
         </div>
@@ -185,25 +216,12 @@ onMounted(cargarDatos);
   transition: opacity 0.2s;
 }
 
-.btn-blue {
-  background-color: #3b82f6;
-  color: white;
-}
+.btn-blue { background-color: #3b82f6; color: white; }
+.btn-gray { background-color: #e9ecef; color: #000; }
+.btn-filter-icon .material-icons { font-size: 24px; }
+.btn-filter-icon:hover { opacity: 0.8; }
 
-.btn-gray {
-  background-color: #e9ecef;
-  color: #000;
-}
-
-.btn-filter-icon .material-icons {
-  font-size: 24px;
-}
-
-.btn-filter-icon:hover {
-  opacity: 0.8;
-}
-
-/* Mobile Filters Panel */
+/* Mobile Filters Panel (Igual al original) */
 .mobile-filter-panel { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
 .filter-container-mobile { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
 .filter-label { font-size: 0.8rem; font-weight: bold; color: #64748b; }
@@ -212,18 +230,22 @@ onMounted(cargarDatos);
 
 /* Table styling */
 .table-container { background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
 th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #475569; }
-td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-.row-hover:hover { background-color: #f1f5f9; transition: background 0.2s ease; }
+td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; }
 
+/* Columna institución achicada */
+.col-institucion { width: 25%; } 
+
+.row-hover:hover { background-color: #f1f5f9; transition: background 0.2s ease; }
 .filter-row td { background: #f8fafc; padding: 8px; }
 .filter-input { width: 90%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
 
 /* Desktop Actions */
-.actions-wrapper { display: flex; gap: 8px; justify-content: center; }
-.btn-email { background: #10b981; color: white; border: none; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.btn-copy { background: #e2e8f0; color: #475569; border: none; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.actions-wrapper { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
+.btn-email { background: #3b82f6; color: white; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.btn-whatsapp { background: #25D366; color: white; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.btn-copy { background: #e2e8f0; color: #475569; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
 /* Mobile Cards View */
 .card-contacto { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
@@ -231,7 +253,10 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 .card-subtext { font-size: 0.8rem; color: #64748b; margin: 8px 0 12px 0; }
 .card-actions-mobile { display: flex; flex-wrap: wrap; gap: 6px; }
 .btn-copy-mobile { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 10px; border-radius: 6px; font-size: 0.7rem; display: flex; align-items: center; gap: 4px; color: #475569; font-weight: bold; }
-.btn-send-mobile { background: #10B981; color: white; border: none; }
+.btn-send-mobile { background: #3b82f6; color: white; border: none; }
+.btn-whatsapp-mobile { background: #25D366; color: white; border: none; }
+
+.no-data { font-size: 0.75rem; color: #94a3b8; font-style: italic; }
 
 /* Visibility Classes */
 .desktop-only { display: block; }
