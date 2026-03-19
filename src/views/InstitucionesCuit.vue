@@ -82,11 +82,13 @@ const enviarFactura = (emailClub) => {
   window.location.href = mailtoLink;
 };
 
+// --- LÓGICA WHATSAPP ---
 const enviarWhatsapp = (celular) => {
   if (!celular || celular === 'NULL' || celular.trim() === '') return;
-  const numeroLimpio = celular.replace(/\D/g, '');
+  const numeroLimpio = String(celular).replace(/\D/g, '');
   const mensaje = encodeURIComponent("Hola, ¿Cómo estás? Me comunico por el envío de facturación de arbitraje de Handball.");
-  window.open(`https://wa.me/${numeroLimpio}?text=${mensaje}`, '_blank');
+  const prefijo = numeroLimpio.startsWith('54') ? numeroLimpio : `54${numeroLimpio}`;
+   window.open(`https://wa.me/${prefijo}?text=${mensaje}`, '_blank');
 };
 
 const normalizarTexto = (valor) => {
