@@ -5,6 +5,7 @@ import html2canvas from 'html2canvas';
 import QrcodeVue from 'qrcode.vue';
 import { useRouter } from 'vue-router';
 import { useHead } from '@vueuse/head'
+import logo from '@/assets/fotos/logo.png'
 
 // Título y descripción específicos para la página de Credencial Digital AAAB
 useHead({
@@ -129,8 +130,8 @@ const descargar = async () => {
 
         <div class="side-white">
           <div class="header-top">
-            <i class="bi bi-shield-check text-danger"></i> 
-            <span>CREDENCIAL DIGITAL AAAB</span>
+          <img :src="logo" alt="Logo AAAB" class="logo-credencial">
+          <span>CREDENCIAL DIGITAL</span>
           </div>
 
           <div class="info-vertical">
@@ -263,6 +264,24 @@ const descargar = async () => {
 .btn-download:hover:not(:disabled) { background: #a71d2a; transform: translateY(-2px); }
 
 .btn-download:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Estilo para el nuevo logo */
+.logo-credencial {
+  height: 90px; /* Ajusta el tamaño según necesites */
+  width: auto;
+  object-fit: contain;
+}
+
+/* Ajuste opcional para centrarlo mejor en el header */
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  color: #666;
+}
 
 /* --- RESPONSIVE --- */
 @media (max-width: 650px) {

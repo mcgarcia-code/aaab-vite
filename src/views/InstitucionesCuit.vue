@@ -85,7 +85,7 @@ const enviarFactura = (emailClub) => {
 const enviarWhatsapp = (celular) => {
   if (!celular || celular === 'NULL' || celular.trim() === '') return;
   const numeroLimpio = celular.replace(/\D/g, '');
-  const mensaje = encodeURIComponent("Hola, nos comunicamos de Arbitraje AAAB por el envío de facturación.");
+  const mensaje = encodeURIComponent("Hola, ¿Cómo estás? Me comunico por el envío de facturación de arbitraje de Handball.");
   window.open(`https://wa.me/${numeroLimpio}?text=${mensaje}`, '_blank');
 };
 
