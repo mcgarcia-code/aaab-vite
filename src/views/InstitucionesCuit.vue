@@ -11,6 +11,23 @@ useHead({
       name: 'description',
       content: 'Accedé al listado de instituciones y CUITs para realizar la facturación.',
     },
+    // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Instituciones y CUITs | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Accedé al listado de instituciones y CUITs para realizar la facturación.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

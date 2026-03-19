@@ -10,6 +10,23 @@ useHead({
       name: 'description',
       content: 'Sección de inicio para árbitros, con acceso a datos personales, disponibilidad, licencias y más.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Panel de Inicio | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Sección de inicio para árbitros, con acceso a datos personales, disponibilidad, licencias y más.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

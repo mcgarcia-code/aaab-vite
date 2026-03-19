@@ -9,6 +9,23 @@ useHead({
       name: 'description',
       content: 'Todo lo que necesitás saber sobre protocolos, administración y reglamentos de la AAAB.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Preguntas Frecuentes | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Todo lo que necesitás saber sobre protocolos, administración y reglamentos de la AAAB.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

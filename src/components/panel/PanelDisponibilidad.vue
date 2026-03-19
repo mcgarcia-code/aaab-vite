@@ -13,6 +13,23 @@ useHead({
       name: 'description',
       content: 'Modificá tu disponibilidad horaria para sábados y domingos, y gestioná tu movilidad y actividad deportiva desde un panel centralizado.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Disponibilidad Horaria | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Modificá tu disponibilidad horaria para sábados y domingos, y gestioná tu movilidad y actividad deportiva desde un panel centralizado.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

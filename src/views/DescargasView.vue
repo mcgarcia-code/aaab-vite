@@ -10,6 +10,23 @@ useHead({
       name: 'description',
       content: 'Accedé a reglamentos, planillas y todo el material oficial actualizado.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Descargas | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Accedé a reglamentos, planillas y todo el material oficial actualizado.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 // Los datos que estaban en data() ahora son un ref()

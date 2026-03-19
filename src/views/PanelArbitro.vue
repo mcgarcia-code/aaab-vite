@@ -11,6 +11,23 @@ useHead({
       name: 'description',
       content: 'Accede a tu panel de control como árbitro para consultar tus designaciones, sanciones y más.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Panel de Árbitro | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Accede a tu panel de control como árbitro para consultar tus designaciones, sanciones y más.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

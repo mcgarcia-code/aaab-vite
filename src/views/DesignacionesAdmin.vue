@@ -13,6 +13,23 @@ useHead({
       name: 'description',
       content: 'Administra y controla las designaciones de árbitros para los partidos del fin de semana.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Designaciones de Árbitros | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Administra y controla las designaciones de árbitros para los partidos del fin de semana.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

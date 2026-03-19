@@ -10,6 +10,23 @@ useHead({
       name: 'description',
       content: 'Consultá estatutos, sanciones y todos los documentos disciplinarios.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Sanciones y Tribunal de Ética | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Consultá estatutos, sanciones y todos los documentos disciplinarios.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 const documentos = ref([

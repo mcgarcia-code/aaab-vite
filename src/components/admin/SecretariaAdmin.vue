@@ -12,6 +12,23 @@ useHead({
       name: 'description',
       content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Secretaría | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

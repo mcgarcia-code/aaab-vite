@@ -6,12 +6,29 @@ import { useHead } from '@vueuse/head'
 
 // Título y descripción específicos para la página de panel de inicio de árbitros AAAB
 useHead({
-  title: 'Panel de Inicio ADMIN | AAAB',
+  title: 'Panel de Gestión  | AAAB',
   meta: [
     {
       name: 'description',
       content: 'Sección de administración para el panel de inicio de árbitros AAAB.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Panel de Gestión | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Sección de administración para el panel de inicio de árbitros AAAB.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

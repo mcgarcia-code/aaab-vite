@@ -18,6 +18,23 @@ useHead({
       name: 'description',
       content: 'Sitio oficial de la Asociación Argentina de Árbitros de Balonmano. Consultá las últimas designaciones, sanciones, reglamentos y todo el material de formación.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Inicio | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Sitio oficial de la Asociación Argentina de Árbitros de Balonmano. Consultá las últimas designaciones, sanciones, reglamentos y todo el material de formación.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

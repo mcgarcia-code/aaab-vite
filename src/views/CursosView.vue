@@ -10,6 +10,23 @@ useHead({
       name: 'description',
       content: 'Capacitate con nuestros cursos intensivos y regulares para todos los niveles.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Cursos de Árbitros | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Capacitate con nuestros cursos intensivos y regulares para todos los niveles.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

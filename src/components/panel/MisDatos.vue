@@ -13,6 +13,23 @@ useHead({
       name: 'description',
       content: 'Mis datos personales y de contacto.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Mis Datos | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Mis datos personales y de contacto.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

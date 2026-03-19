@@ -17,6 +17,23 @@ useHead({
       name: 'description',
       content: 'Consultá las designaciones de los partidos del fin de semana.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Designaciones | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Consultá las designaciones de los partidos del fin de semana.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

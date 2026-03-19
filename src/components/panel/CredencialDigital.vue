@@ -14,6 +14,23 @@ useHead({
       name: 'description',
       content: 'Accedé a tu credencial digital de la AAAB.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Credencial Digital | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Accedé a tu credencial digital de la AAAB.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

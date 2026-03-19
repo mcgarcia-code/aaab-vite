@@ -42,7 +42,7 @@ const routes = [
 
   {    
     path: '/admin',
-    // Mantenemos tu carga dinámica del layout
+    
     component: () => import('../views/AdminPanel.vue'),
     meta: { requiresAuth: true, role: 'admin' }, 
     children: [

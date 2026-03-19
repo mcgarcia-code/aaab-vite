@@ -9,6 +9,23 @@ useHead({
       name: 'description',
       content: 'Programa de formación integral anual para árbitros de handball.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Escuela de Formación Arbitral | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Programa de formación integral anual para árbitros de handball.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 

@@ -1,6 +1,35 @@
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue';
 import axios from 'axios';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de contactos celulares de árbitros AAAB
+useHead({
+  title: 'Contactos Celulares | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Lista de contactos celulares de árbitros AAAB.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Contactos Celulares | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Lista de contactos celulares de árbitros AAAB.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+})
 
 const arbitros = ref([]);
 const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 

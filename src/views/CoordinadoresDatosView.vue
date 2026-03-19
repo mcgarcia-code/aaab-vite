@@ -2,6 +2,35 @@
 import { ref, onMounted, computed, reactive } from 'vue';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de coordinadores AAAB
+useHead({
+  title: 'Coordinadores: Base de datos | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Base de datos para los coordinadores AAAB.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Coordinadores: Base de datos | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Base de datos para los coordinadores AAAB.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+})
 
 // --- CONFIGURACIÓN DE APIS ---
 const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 

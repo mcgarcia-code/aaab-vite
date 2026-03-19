@@ -2,6 +2,35 @@
 import { ref, onMounted } from 'vue'
 import { api } from "@/api/api"
 import store from "@/stores/auth"
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Sanciones AAAB
+useHead({
+  title: 'Sanciones | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Visualizá el listado oficial de sanciones para árbitros, con detalles completos de cada caso.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Sanciones | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Visualizá el listado oficial de sanciones para árbitros, con detalles completos de cada caso.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+})
 
 // --- STATE ---
 const nuevaSancion = ref({

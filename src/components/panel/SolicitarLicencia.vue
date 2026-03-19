@@ -12,6 +12,23 @@ useHead({
       name: 'description',
       content: 'Solicita tu licencia para ausentarte de tus compromisos arbitrales.',
     },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Solicitar Licencia | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Solicita tu licencia para ausentarte de tus compromisos arbitrales.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
 })
 
