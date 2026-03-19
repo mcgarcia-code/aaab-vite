@@ -4,6 +4,18 @@ import { api } from '@/api/api';
 import html2canvas from 'html2canvas';
 import QrcodeVue from 'qrcode.vue';
 import { useRouter } from 'vue-router';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Credencial Digital AAAB
+useHead({
+  title: 'Credencial Digital | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Accedé a tu credencial digital de la AAAB.',
+    },
+  ],
+})
 
 const router = useRouter();
 const credencialRef = ref(null);

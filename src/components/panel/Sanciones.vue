@@ -3,6 +3,18 @@ import { ref, onMounted } from 'vue';
 // 1. Importamos auth para la sesión y api para las peticiones con headers
 import { auth } from '@/api/auth';
 import { api } from '@/api/api';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Sanciones AAAB
+useHead({
+  title: 'Tus Sanciones | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Ve tu historial de sanciones y resoluciones vigentes.',
+    },
+  ],
+})
 
 // 2. Usamos el método getUser() que ya gestiona sessionStorage
 const arbitro = ref(auth.getUser() || {});

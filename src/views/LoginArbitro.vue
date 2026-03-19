@@ -4,6 +4,19 @@ import { useRouter } from 'vue-router';
 // 1. Importamos auth y api desde tu carpeta api
 import { auth } from '@/api/auth'; 
 import { api } from '@/api/api'; 
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Login
+useHead({
+  title: 'Iniciar Sesión | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Inicia sesión en tu cuenta de árbitro para acceder a tu panel de control.',
+    },
+  ],
+})
+
 
 const router = useRouter();
 const email = ref('');

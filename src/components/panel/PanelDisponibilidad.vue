@@ -3,6 +3,18 @@ import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 // 1. Importamos el centralizador de auth
 import { auth } from '@/api/auth';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Disponibilidad Horaria AAAB
+useHead({
+  title: 'Disponibilidad Horaria | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Modificá tu disponibilidad horaria para sábados y domingos, y gestioná tu movilidad y actividad deportiva desde un panel centralizado.',
+    },
+  ],
+})
 
 // 2. REEMPLAZO: Obtenemos el árbitro desde el sistema centralizado
 const arbitro = ref(auth.getUser() || {});

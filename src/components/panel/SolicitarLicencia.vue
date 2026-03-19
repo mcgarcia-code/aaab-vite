@@ -2,6 +2,18 @@
 import { ref, onMounted } from 'vue';
 import { auth } from '@/api/auth';
 import { api } from '@/api/api';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Solicitar Licencia AAAB
+useHead({
+  title: 'Solicitar Licencia | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Solicita tu licencia para ausentarte de tus compromisos arbitrales.',
+    },
+  ],
+})
 
 const arbitro = ref(auth.getUser() || {});
 const fechaSeleccionada = ref('');

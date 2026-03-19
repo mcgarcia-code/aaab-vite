@@ -1,5 +1,17 @@
 <script setup>
 import { RouterLink } from 'vue-router';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de panel de inicio de árbitros AAAB
+useHead({
+  title: 'Panel de Inicio | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Sección de inicio para árbitros, con acceso a datos personales, disponibilidad, licencias y más.',
+    },
+  ],
+})
 
 // Unificamos la lógica de los links: todos son rutas directas ahora
 const menuItems = [

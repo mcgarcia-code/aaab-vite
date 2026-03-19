@@ -1,6 +1,18 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Tribunal de Ética AAAB
+useHead({
+  title: 'Tribunal de Ética | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.',
+    },
+  ],
+})
 
 const API_URL_BE = 'https://arbitroshandball.com.ar/api/api.php';
 const API_URL_ARBITROS = 'https://arbitroshandball.com.ar/api/acciones.php';

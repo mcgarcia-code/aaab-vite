@@ -3,6 +3,19 @@ import { ref, onMounted, computed, reactive } from 'vue';
 import axios from 'axios';
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Designaciones ADMIN
+useHead({
+  title: 'Designaciones de Árbitros| AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Administra y controla las designaciones de árbitros para los partidos del fin de semana.',
+    },
+  ],
+})
+
 
 // --- CONFIGURACIÓN DE APIS ---
 const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 

@@ -3,6 +3,18 @@ import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 // 1. Importamos auth
 import { auth } from '@/api/auth';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Mis Datos
+useHead({
+  title: 'Mis Datos | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Mis datos personales y de contacto.',
+    },
+  ],
+})
 
 // 2. REEMPLAZO: Obtenemos el árbitro a través de auth
 const arbitro = ref(auth.getUser() || {});

@@ -1,6 +1,19 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { auth } from '@/api/auth'; 
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Panel de Árbitro
+useHead({
+  title: 'Panel de Árbitro | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Accede a tu panel de control como árbitro para consultar tus designaciones, sanciones y más.',
+    },
+  ],
+})
+
 
 const arbitro = ref(auth.getUser() || {});
 const urlFoto = `https://arbitroshandball.com.ar/resources/carnet-arbitros/${arbitro.value.dni}.webp`;

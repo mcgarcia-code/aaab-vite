@@ -1,6 +1,18 @@
 <script setup>
 import { ref, onMounted, computed, reactive } from 'vue';
 import { api } from '@/api/api'; 
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Instituciones y CUITs
+useHead({
+  title: 'Instituciones y CUITs| AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Accedé al listado de instituciones y CUITs para realizar la facturación.',
+    },
+  ],
+})
 
 const instituciones = ref([]);
 const mostrarFiltrosMobile = ref(false);

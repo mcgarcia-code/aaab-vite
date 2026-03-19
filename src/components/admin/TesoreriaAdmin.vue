@@ -1,5 +1,17 @@
 <script setup>
 import { RouterLink } from 'vue-router';
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos para la página de Secretaría AAAB
+useHead({
+  title: 'Secretaría | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.',
+    },
+  ],
+})
 
 const opcionesTesoreria = [
   { 
