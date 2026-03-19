@@ -46,7 +46,10 @@ const filtros = reactive({
   apto_medico: '', // Agregado para el filtro de Apto Físico
   grupo: '', subgrupo: '', zona: '', movilidad: '', 
   disponibilidad_sabado: '', disponibilidad_domingo: '',
-  juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: ''
+  juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: '',
+  // NUEVOS CAMPOS DE FILTRO
+  designado_sabado: '',
+  designado_domingo: ''
 });
 
 const designadosSabado = ref(new Set());
@@ -167,7 +170,7 @@ const normalizarTexto = (valor) => {
 const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     const cumpleTexto = Object.keys(filtros).every(key => {
-      if (!filtros[key] || key === 'licencia' || key === 'apto_medico') return true;
+      if (!filtros[key] || key === 'licencia' || key === 'apto_medico' || key === 'designado_sabado' || key === 'designado_domingo') return true;
       if (key === 'es_activo') return String(a[key]) === filtros[key];
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
@@ -177,14 +180,25 @@ const arbitrosFiltrados = computed(() => {
     else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada) > 0;
     else if (filtros.licencia === 'sin_licencia') cumpleLicencia = Number(a.tiene_aprobada) === 0 && Number(a.tiene_rechazada) === 0;
 
-    // Lógica para el filtro de Apto Médico (comparamos booleano con string "1"/"0")
+    // Lógica para el filtro de Apto Médico
     let cumpleApto = true;
     if (filtros.apto_medico !== '') {
       const valorFiltro = filtros.apto_medico === '1';
       cumpleApto = a.apto_medico === valorFiltro;
     }
 
-    return cumpleTexto && cumpleLicencia && cumpleApto;
+    // LÓGICA DE FILTROS PARA DESIGNACIONES (TILDES)
+    let cumpleDesignadoSab = true;
+    if (filtros.designado_sabado !== '') {
+      cumpleDesignadoSab = (filtros.designado_sabado === '1') === designadosSabado.value.has(a.id);
+    }
+
+    let cumpleDesignadoDom = true;
+    if (filtros.designado_domingo !== '') {
+      cumpleDesignadoDom = (filtros.designado_domingo === '1') === designadosDomingo.value.has(a.id);
+    }
+
+    return cumpleTexto && cumpleLicencia && cumpleApto && cumpleDesignadoSab && cumpleDesignadoDom;
   });
 });
 
@@ -270,6 +284,23 @@ onMounted(cargarDatos);
           </select>
         </div>
 
+        <div class="mobile-select-group">
+          <label>Designado Sáb:</label>
+          <select v-model="filtros.designado_sabado">
+            <option value="">Todos</option>
+            <option value="1">Designados</option>
+            <option value="0">No Designados</option>
+          </select>
+        </div>
+        <div class="mobile-select-group">
+          <label>Designado Dom:</label>
+          <select v-model="filtros.designado_domingo">
+            <option value="">Todos</option>
+            <option value="1">Designados</option>
+            <option value="0">No Designados</option>
+          </select>
+        </div>
+
         <div class="filter-row-mobile">
           <input v-model="filtros.grupo" placeholder="Grupo">
           <input v-model="filtros.subgrupo" placeholder="Sub-grupo">
@@ -310,8 +341,21 @@ onMounted(cargarDatos);
           <tr class="filter-row">
             <td class="sticky-col" style="left:0; z-index: 35;"><input v-model="filtros.apellido" class="filter-input"></td>
             <td class="sticky-col" style="left:140px; z-index: 35;"><input v-model="filtros.nombre" class="filter-input"></td>
-            <td class="sticky-col col-shrink" style="left:280px; z-index: 35;"></td>
-            <td class="sticky-col col-shrink sticky-col-final" style="left:330px; z-index: 35;"></td>
+            
+            <td class="sticky-col col-shrink" style="left:280px; z-index: 35;">
+              <select v-model="filtros.designado_sabado" class="filter-input">
+                <option value=""></option>
+                <option value="1">SI</option>
+                <option value="0">NO</option>
+              </select>
+            </td>
+            <td class="sticky-col col-shrink sticky-col-final" style="left:330px; z-index: 35;">
+              <select v-model="filtros.designado_domingo" class="filter-input">
+                <option value=""></option>
+                <option value="1">SI</option>
+                <option value="0">NO</option>
+              </select>
+            </td>
             
             <td class="sticky-col" style="left:380px; z-index: 35;">
               <select v-model="filtros.licencia" class="filter-input">
@@ -354,8 +398,22 @@ onMounted(cargarDatos);
           <tr v-for="a in arbitrosFiltrados" :key="a.id" :class="obtenerClaseFila(a)">
             <td class="sticky-col font-bold" style="left: 0;">{{ a.apellido }}</td>
             <td class="sticky-col font-bold" style="left: 140px;">{{ a.nombre }}</td>
-            <td class="sticky-col text-center col-shrink" style="left: 280px;"><input type="checkbox" :checked="designadosSabado.has(a.id)" @change="toggleDesignacion(a.id, 'S')" class="check"></td>
-            <td class="sticky-col text-center col-shrink sticky-col-final" style="left: 330px;"><input type="checkbox" :checked="designadosDomingo.has(a.id)" @change="toggleDesignacion(a.id, 'D')" class="check"></td>
+            
+            <td class="sticky-col text-center col-shrink" style="left: 280px;">
+              <input type="checkbox" 
+                :checked="designadosSabado.has(a.id)" 
+                :disabled="a.disponibilidad_sabado === 'NO'"
+                @change="toggleDesignacion(a.id, 'S')" 
+                class="check">
+            </td>
+            <td class="sticky-col text-center col-shrink sticky-col-final" style="left: 330px;">
+              <input type="checkbox" 
+                :checked="designadosDomingo.has(a.id)" 
+                :disabled="a.disponibilidad_domingo === 'NO'"
+                @change="toggleDesignacion(a.id, 'D')" 
+                class="check">
+            </td>
+
             <td class="sticky-col text-center text-xs" style="left: 380px; white-space: nowrap;">{{ obtenerTextoLicencia(a) }}</td>
             <td class="text-center col-shrink">
               <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa" title="Enviar WhatsApp">
@@ -447,6 +505,7 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 .dot-green { background-color: #22c55e; }
 .dot-red { background-color: #ef4444; }
 .check { transform: scale(1.1); cursor: pointer; }
+.check:disabled { cursor: not-allowed; opacity: 0.5; }
 .check-readonly { cursor: default; }
 .inactivo { background-color: #fca5a5 !important; }
 .font-bold { font-weight: bold; }
