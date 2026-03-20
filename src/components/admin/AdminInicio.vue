@@ -76,7 +76,7 @@ const menuItems = [
   { 
     to: '/admin/observaciones', 
     title: 'Carga de Observaciones', 
-    icon: 'bi bi-cash-stack', 
+    icon: 'bi bi-eye main-icon', 
     desc: 'Módulo para cargar observaciones sobre los árbitros',
     rolesPermitidos: ['admin', 'observador', 'coordinador general', 'secretario'] // <-- Coma agregada aquí
   },

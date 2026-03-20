@@ -99,7 +99,7 @@
           <div class="row g-3">
             <div class="col-md-6">
               <div class="referee-box shadow-sm">
-                <label class="fw-bold mb-2 text-secondary small">ÁRBITRO 1</label>
+                <label class="fw-bold mb-2 text-dark small">ÁRBITRO 1</label>
                 <select v-model="formulario.ref1_nombre" class="sacf-input mb-2" required>
                   <option value="" disabled>Seleccione Árbitro</option>
                   <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.nombre">{{ arb.nombre }}</option>
@@ -113,7 +113,7 @@
 
             <div class="col-md-6" v-if="formulario.ref_count === '2'">
               <div class="referee-box shadow-sm anim-fade">
-                <label class="fw-bold mb-2 text-secondary small">ÁRBITRO 2</label>
+                <label class="fw-bold mb-2 text-dark small">ÁRBITRO 2</label>
                 <select v-model="formulario.ref2_nombre" class="sacf-input mb-2" required>
                   <option value="" disabled>Seleccione Árbitro</option>
                   <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.nombre">{{ arb.nombre }}</option>
@@ -135,7 +135,7 @@
           </div>
 
           <div class="field-group">
-            <label class="form-label-custom">Puntaje Performance (Base) *</label>
+            <label class="form-label-custom mt-4">Puntaje Performance (Base) *</label>
             <div class="perf-scale-container">
               <div v-for="opcion in perfScoreOptions" :key="opcion.value"
                 class="perf-opt-item" :class="[{ 'is-active': formulario.perf_score == opcion.value }, 'tone-' + opcion.tone]"
@@ -147,7 +147,7 @@
           </div>
 
           <div class="field-group">
-            <label class="form-label-custom">Dificultad del Encuentro *</label>
+            <label class="form-label-custom mt-4">Dificultad del Encuentro *</label>
             <select v-model="formulario.diff_mult" class="sacf-input" required>
               <option value="" disabled>Seleccione dificultad</option>
               <option v-for="d in listas.dificultades" :key="d.valor" :value="d.valor">
@@ -366,7 +366,7 @@ const reiniciarFormulario = () => {
   font-weight: 700; 
   margin-bottom: 10px; 
   font-size: 0.75rem; 
-  color: #64748b;
+  color: #000000;
   text-transform: uppercase;
 }
 
@@ -405,7 +405,7 @@ const reiniciarFormulario = () => {
   cursor: pointer; 
   background: transparent; 
   font-weight: 700; 
-  color: #64748b; 
+  color: #000000; 
   border-radius: 10px; 
   transition: 0.2s;
 }
