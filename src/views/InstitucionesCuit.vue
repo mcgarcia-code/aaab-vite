@@ -29,10 +29,10 @@
       <table>
         <thead>
           <tr>
-            <th class="col-institucion">Institución / Club</th>
+            <th class="col-institucion">INSTITUCIÓN / CLUB</th>
             <th>CUIT</th>
-            <th>Condición IVA</th>
-            <th class="text-center">Acciones</th>
+            <th>CONDICIÓN IVA</th>
+            <th class="text-center">ACCIONES</th>
           </tr>
           <tr class="filter-row">
             <td><input v-model="filtros.club" class="filter-input" placeholder="Filtrar club..."></td>

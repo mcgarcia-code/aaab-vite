@@ -32,11 +32,11 @@
       <table>
         <thead>
           <tr>
-            <th>Apellido</th>
-            <th>Nombre</th>
-            <th class="text-center">Grupo</th>
-            <th class="text-center">Sub-Grupo</th>
-            <th class="text-center">Acciones</th>
+            <th>APELLIDO</th>
+            <th>NOMBRE</th>
+            <th class="text-center">GRUPO</th>
+            <th class="text-center">SUB-GRUPO</th>
+            <th class="text-center">ACCIONES</th>
           </tr>
           <tr class="filter-row">
             <td><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar..."></td>

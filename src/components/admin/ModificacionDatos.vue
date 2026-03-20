@@ -363,7 +363,7 @@ onMounted(cargarDatos);
 }
 
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
-.counter { font-size: 0.9rem; color: #000000; }
+.counter { font-size: 0.85rem; color: #000000; }
 
 .header-actions { display: flex; gap: 8px; }
 .btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
