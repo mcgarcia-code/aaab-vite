@@ -201,7 +201,7 @@ onMounted(obtenerTodasLasLicencias);
   border-left: 5px solid #ef4444; /* Línea roja lateral */
 }
 
-.header-title {font-family: sans-serif; font-size: 1.1rem; font-weight: bold; margin: 0; }
+.header-title {font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 1.1rem; font-weight: bold; margin: 0; }
 
 .header-subtitle {
   color: #475569;
@@ -331,7 +331,7 @@ onMounted(obtenerTodasLasLicencias);
   border-radius: 8px;
 }
 
-th { font-family: 'poppins', sans-serif; font-size: 0.7rem; color: #475569; text-transform: uppercase; font-weight: 800; }
+th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.7rem; color: #475569; text-transform: uppercase; font-weight: 800; }
 
 /* 2. Ajustes para Pantallas Medianas (Tablets) */
 @media (max-width: 992px) {

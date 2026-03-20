@@ -15,7 +15,7 @@ import AppFooter from './components/AppFooter.vue'
 <style>
 /* Estilos Globales */
 body {
-  font-family: 'sans-serif'; /* Aplicamos la nueva fuente a todo el sitio */
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
   background-color: #f8f9fa;
   overflow-x: hidden; /* Evita barras de scroll horizontales */
 }

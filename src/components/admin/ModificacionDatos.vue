@@ -345,7 +345,7 @@ onMounted(cargarDatos);
   max-width: 100%; 
   padding: 15px 0; 
   background: transparent; 
-  font-family: sans-serif; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
   color: #000; 
   min-height: 100vh; 
 }
@@ -421,7 +421,7 @@ thead td.sticky-col { z-index: 10 !important; }
 .col-apellido { left: 50px; width: 140px; }
 .col-nombre { left: 190px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 
-th { font-family: 'poppins', sans-serif; font-size: 0.75rem; color: #475569; text-transform: uppercase; font-weight: 800; }
+th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #475569; text-transform: uppercase; font-weight: 800; }
 .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
 .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #f37d7d !important; font-weight: bold; color: #000; }
 

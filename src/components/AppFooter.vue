@@ -106,8 +106,7 @@ import logo from '@/assets/fotos/logo.png'
 .main-footer {
   background-color: #212529;
   color: #ffffff;
-  font-family: 'sans-serif'; 
-}
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;}
 
 .footer-title {
   text-transform: uppercase;
