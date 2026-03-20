@@ -263,7 +263,7 @@ onMounted(cargarDatos);
 /* Table styling */
 .table-container { background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
-th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #475569; }
+th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #000000; }
 td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; }
 
 /* Columna institución achicada */
@@ -277,14 +277,14 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; ov
 .actions-wrapper { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
 .btn-email { background: #3b82f6; color: white; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .btn-whatsapp { background: #25D366; color: white; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.btn-copy { background: #e2e8f0; color: #475569; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.btn-copy { background: #e2e8f0; color: #000000; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
 /* Mobile Cards View */
 .card-contacto { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
 .card-name { font-weight: bold; font-size: 1rem; color: #1e293b; }
 .card-subtext { font-size: 0.8rem; color: #64748b; margin: 8px 0 12px 0; }
 .card-actions-mobile { display: flex; flex-wrap: wrap; gap: 6px; }
-.btn-copy-mobile { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 10px; border-radius: 6px; font-size: 0.7rem; display: flex; align-items: center; gap: 4px; color: #475569; font-weight: bold; }
+.btn-copy-mobile { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 10px; border-radius: 6px; font-size: 0.7rem; display: flex; align-items: center; gap: 4px; color: #000000; font-weight: bold; }
 .btn-send-mobile { background: #3b82f6; color: white; border: none; }
 .btn-whatsapp-mobile { background: #25D366; color: white; border: none; }
 

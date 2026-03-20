@@ -346,7 +346,7 @@ onMounted(cargarDatos);
 .admin-panel { padding: 15px; background: #f8fafc; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; min-height: 100vh; }
 .header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
-.counter { font-size: 0.85rem; color: #475569; }
+.counter { font-size: 0.85rem; color: #000000; }
 
 .header-actions { display: flex; gap: 8px; }
 .btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.75rem; transition: background 0.2s; }
@@ -398,7 +398,7 @@ th.sticky-col { z-index: 50 !important; background-color: #f1f5f9 !important; }
   .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background-color: #f8fafc; }
   
   .mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
-  .mobile-select-group label { font-size: 0.75rem; color: #475569; font-weight: bold; }
+  .mobile-select-group label { font-size: 0.75rem; color: #000000; font-weight: bold; }
   
   .filter-row-mobile { display: flex; gap: 10px; }
   .filter-row-mobile input { flex: 1; }
@@ -408,7 +408,7 @@ th.sticky-col { z-index: 50 !important; background-color: #f1f5f9 !important; }
   .card-arbitro { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
   .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; }
   .card-name { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
-  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; color: #475569; }
+  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; color: #000000; }
   .btn-wa-mobile { width: 100%; margin-top: 10px; background: #25d366; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
 }
 

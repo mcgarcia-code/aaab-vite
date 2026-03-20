@@ -204,7 +204,7 @@ onMounted(obtenerTodasLasLicencias);
 .header-title {font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 1.1rem; font-weight: bold; margin: 0; }
 
 .header-subtitle {
-  color: #475569;
+  color: #000000;
   font-size: 0.9rem;
 }
 
@@ -266,7 +266,7 @@ onMounted(obtenerTodasLasLicencias);
   background: #f8fafc;
   padding: 12px 15px;
   font-size: 0.75rem;
-  color: #475569;
+  color: #000000;
   text-transform: uppercase;
   border-bottom: 2px solid #e2e8f0;
 }
@@ -331,7 +331,7 @@ onMounted(obtenerTodasLasLicencias);
   border-radius: 8px;
 }
 
-th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.7rem; color: #475569; text-transform: uppercase; font-weight: 800; }
+th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.7rem; color: #000000; text-transform: uppercase; font-weight: 800; }
 
 /* 2. Ajustes para Pantallas Medianas (Tablets) */
 @media (max-width: 992px) {

@@ -471,10 +471,10 @@ onMounted(cargarDatos);
 
 
 <style scoped>
-.admin-panel { padding: 15px; background: #f8fafc; font-family: sans-serif; color: #000; }
+.admin-panel { padding: 15px; background: #f8fafc; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; }
 .header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
-.counter { font-size: 0.85rem; color: #475569; }
+.counter { font-size: 0.85rem; color: #000000; }
 .header-actions { display: flex; gap: 8px; }
 .btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.75rem; }
 .btn-clear { background: #e2e8f0; }
@@ -527,10 +527,10 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
   /* PANEL DE FILTROS IGUAL A LA IMAGEN */
   .mobile-filter-panel { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
   .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
-  .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background-color: #f8fafc; color: #475569; }
+  .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background-color: #f8fafc; color: #000000; }
   
   .mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
-  .mobile-select-group label { font-size: 0.75rem; color: #475569; font-weight: bold; margin-bottom: 2px; }
+  .mobile-select-group label { font-size: 0.75rem; color: #000000; font-weight: bold; margin-bottom: 2px; }
   
   .filter-row-mobile { display: flex; gap: 10px; }
   .filter-row-mobile input { flex: 1; }

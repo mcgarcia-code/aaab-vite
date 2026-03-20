@@ -191,13 +191,13 @@ onMounted(cargarDatos);
 
 .header-actions { display: flex; gap: 8px; }
 .btn-action { border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.8rem; }
-.btn-clear { background: #f1f5f9; color: #475569; }
+.btn-clear { background: #f1f5f9; color: #000000; }
 .btn-filter-mobile { background: #3b82f6; color: white; }
 
 /* TABLA DESKTOP */
 .table-container { background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #475569; }
+th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #000000; }
 td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 .filter-row td { background: #f8fafc; padding: 8px; }
 .filter-input { width: 90%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
@@ -208,7 +208,7 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 .btn-wa { background: #25d366; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: 0.3s; }
 .btn-wa:hover { transform: scale(1.1); background: #128c7e; }
 
-.btn-copy { background: #e2e8f0; color: #475569; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: 0.2s; }
+.btn-copy { background: #e2e8f0; color: #000000; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: 0.2s; }
 .btn-copy:hover { background: #cbd5e1; color: #1e293b; }
 
 .no-phone { color: #94a3b8; font-size: 0.75rem; font-style: italic; }
@@ -225,7 +225,7 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 .card-subtext { font-size: 0.8rem; color: #64748b; margin-top: 4px; margin-bottom: 6px; }
 .btn-wa-circle { background: #25d366; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3); flex-shrink: 0; }
 
-.btn-copy-mobile { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; display: flex; align-items: center; gap: 6px; color: #475569; cursor: pointer; }
+.btn-copy-mobile { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; display: flex; align-items: center; gap: 6px; color: #000000; cursor: pointer; }
 .btn-copy-mobile .material-icons { font-size: 16px; }
 
 /* ESTADOS */
