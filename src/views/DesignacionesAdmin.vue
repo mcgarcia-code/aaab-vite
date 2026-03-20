@@ -266,13 +266,27 @@ td.text-center { display: table-cell; text-align: center; vertical-align: middle
 
 table { width: max-content; border-collapse: separate; border-spacing: 0; font-size: 0.75rem; }
 
-th { background: #f1f5f9 !important; padding: 10px; position: sticky; top: 0; z-index: 30; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; }
-
-.filter-row td { position: sticky; top: 33px; z-index: 25; background: #f1f5f9 !important; padding: 4px; border-bottom: 2px solid #cbd5e1; }
-
+th { 
+  background: #f1f5f9 !important; 
+  padding: 10px; 
+  position: sticky; 
+  top: 0; 
+  z-index: 55; /* El nivel más alto */
+  border-bottom: 2px solid #cbd5e1; 
+  text-transform: uppercase; 
+}
+.filter-row td { 
+  position: sticky; 
+  top: 37px; /* Ajusta este valor según la altura real de tus <th> */
+  z-index: 55; /* Debe ser menor que el z-index de los <th> (50) pero mayor que las filas normales */
+  background: #f1f5f9 !important; 
+  padding: 4px; 
+  border-bottom: 2px solid #cbd5e1; 
+}
 
 
 /* FIX STICKY COLUMNS */
+
 
 .sticky-col { 
   position: sticky; 
@@ -282,9 +296,16 @@ th { background: #f1f5f9 !important; padding: 10px; position: sticky; top: 0; z-
   box-shadow: inset -1px 0 0 #e2e8f0; 
 }
 
-th.sticky-col { z-index: 50 !important; background-color: #f1f5f9 !important; }
+th.sticky-col { 
+  z-index: 100 !important; /* El valor más alto de la tabla */
+  background-color: #f1f5f9 !important; 
+}
 
-.filter-row .sticky-col { background-color: #f1f5f9 !important; }
+.filter-row .sticky-col { 
+  z-index: 90 !important; /* Un poco menos que el TH, pero más que las celdas normales */
+  background-color: #f1f5f9 !important; 
+}
+
 
 .sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
 
@@ -515,7 +536,7 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 
         <div class="mobile-select-group">
 
-          <label>Apto Físico:</label>
+          <label>Apto Médico:</label>
 
           <select v-model="filtros.apto_medico">
 
@@ -603,11 +624,11 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 
                 <th class="sticky-col text-center" style="left: 380px; z-index: 40; min-width: 160px;">Licencia</th>
 
-                <th class="col-shrink">WhatsApp</th>
+                <th class="col-shrink">WS</th>
 
                 <th style="width: 80px;">Activo</th>
 
-                <th class="text-center" style="width: 90px;">Apto Físico</th>
+                <th class="text-center" style="width: 90px;">Apto</th>
 
                 <th class="col-shrink">Grupo</th>
 
@@ -617,13 +638,13 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 
                 <th class="text-center">Movilidad</th>
 
-                <th class="col-shrink">Sáb Disp</th>
+                <th class="col-shrink">Sab</th>
 
                 <th>Desde</th>
 
                 <th>Hasta</th>
 
-                <th class="col-shrink">Dom Disp</th>
+                <th class="col-shrink">Dom</th>
 
                 <th>Desde</th>
 
