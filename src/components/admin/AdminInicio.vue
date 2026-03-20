@@ -1,3 +1,37 @@
+<template>
+
+  <div class="row g-3 g-md-4 animate__animated animate__fadeIn">
+
+   
+
+    <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItems" :key="item.title">
+
+      <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
+
+        <div class="menu-card shadow-sm">
+
+          <div class="icon-circle">
+
+            <i :class="[item.icon, 'text-danger']"></i>
+
+          </div>
+
+          <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
+
+          <p class="small text-muted m-0">{{ item.desc }}</p>
+
+        </div>
+
+      </RouterLink>
+
+    </div>
+
+
+
+  </div>
+
+</template>
+
 <script setup>
 import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head'
@@ -49,27 +83,28 @@ const menuItems = [
     title: 'Tesorería', 
     icon: 'bi bi-cash-stack', 
     desc: 'Módulo contable, pagos y stock de ropa' 
-  }
+  },
+  { 
+    to: '/admin/designaciones', 
+    title: 'Designaciones', 
+    icon: 'bi bi-cash-stack', 
+    desc: 'Módulo de designaciones, control de disponibilidad y asignación de partidos' 
+  },
+  { 
+    to: '/admin/desarrollo-arbitral', 
+    title: 'Desarrollo Arbitral', 
+    icon: 'bi bi-cash-stack', 
+    desc: 'Módulo de desarrollo arbitral, seguimiento de capacitaciones y evaluaciones' 
+  },
+    { 
+    to: '/admin/carga-observaciones', 
+    title: 'Carga de Observaciones', 
+    icon: 'bi bi-cash-stack', 
+    desc: 'Módulo para cargar observaciones sobre los árbitros' 
+  },
 ];
 </script>
 
-<template>
-  <div class="row g-3 g-md-4 animate__animated animate__fadeIn">
-    
-    <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItems" :key="item.title">
-      <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
-        <div class="menu-card shadow-sm">
-          <div class="icon-circle">
-            <i :class="[item.icon, 'text-danger']"></i>
-          </div>
-          <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
-          <p class="small text-muted m-0">{{ item.desc }}</p>
-        </div>
-      </RouterLink>
-    </div>
-
-  </div>
-</template>
 
 <style scoped>
 .menu-card {

@@ -1,3 +1,29 @@
+<template>
+  <div class="container py-4 animate__animated animate__fadeIn">
+    
+    <div class="text-center mb-5">
+      <i class="bi bi-pc-display-horizontal text-danger main-icon"></i>
+      <h2 class="fw-bold text-white mt-2">Secretaría</h2>
+      <p class="small text-white opacity-75 m-0">Gestión de datos personales y licencias de los árbitros.</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+      <div v-for="item in opcionesSecretaria" :key="item.title" class="col-12 col-sm-6">
+        <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
+          <div class="menu-card shadow-lg">
+            <div class="icon-circle">
+              <i :class="[item.icon, 'text-danger']"></i>
+            </div>
+            <h4 class="mt-3 fw-bold text-dark">{{ item.title }}</h4>
+            <p class="small text-muted m-0 px-2">{{ item.desc }}</p>
+          </div>
+        </RouterLink>
+      </div>
+    </div>
+
+  </div>
+</template>
+
 <script setup>
 import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head'
@@ -45,32 +71,6 @@ const opcionesSecretaria = [
   }
 ];
 </script>
-
-<template>
-  <div class="container py-4 animate__animated animate__fadeIn">
-    
-    <div class="text-center mb-5">
-      <i class="bi bi-pc-display-horizontal text-danger main-icon"></i>
-      <h2 class="fw-bold text-white mt-2">Secretaría</h2>
-      <p class="small text-white opacity-75 m-0">Gestión de datos personales y licencias de los árbitros.</p>
-    </div>
-
-    <div class="row g-4 justify-content-center">
-      <div v-for="item in opcionesSecretaria" :key="item.title" class="col-12 col-sm-6">
-        <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
-          <div class="menu-card shadow-lg">
-            <div class="icon-circle">
-              <i :class="[item.icon, 'text-danger']"></i>
-            </div>
-            <h4 class="mt-3 fw-bold text-dark">{{ item.title }}</h4>
-            <p class="small text-muted m-0 px-2">{{ item.desc }}</p>
-          </div>
-        </RouterLink>
-      </div>
-    </div>
-
-  </div>
-</template>
 
 <style scoped>
 

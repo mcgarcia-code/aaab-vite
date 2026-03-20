@@ -76,9 +76,9 @@
             <th class="sticky-col" style="left: 140px; z-index: 40; width: 140px;">Nombre</th>
             <th class="col-shrink">Edad</th>
             <th class="sticky-col sticky-col-final" style="left: 280px; z-index: 40; min-width: 160px;">Licencia</th>
-            <th class="col-shrink">WhatsApp</th>
+            <th class="col-shrink">WS</th>
             <th class="col-shrink">Activo</th>
-            <th class="col-shrink">Apto Med.</th>
+            <th class="col-shrink">Apto</th>
             <th class="col-shrink">Grupo</th>
             <th class="col-shrink">Sub</th>
             <th>Zona</th>
@@ -145,7 +145,9 @@
               <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa"><span class="material-icons">chat</span></button>
             </td>
             <td class="text-center"><span :class="['dot', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span></td>
-            <td class="text-center"><span :class="['dot', a.apto_medico == 1 ? 'dot-green' : 'dot-red']"></span></td>
+            <td class="text-center"><span v-if="a.apto_medico" class="material-icons icon-apto" title="Apto Físico">check_circle</span>
+                                    <span v-else class="material-icons icon-no-apto" title="No Apto Físico">cancel</span>
+            </td>
             <td class="text-center">{{ a.grupo }}</td>
             <td class="text-center">{{ a.subgrupo }}</td>
             <td>{{ a.zona }}</td>
@@ -358,26 +360,94 @@ onMounted(cargarDatos);
 .btn-text { line-height: 1; }
 
 .table-container { overflow: auto; max-height: 80vh; background: white; border: 1px solid #e2e8f0; border-radius: 4px; width: 100%; }
-table { width: max-content; border-collapse: separate; border-spacing: 0; font-size: 0.8rem; }
-th { background: #f1f5f9 !important; padding: 10px; position: sticky; top: 0; z-index: 30; border-bottom: 2px solid #cbd5e1; text-transform: uppercase; }
-.filter-row td { position: sticky; top: 33px; z-index: 25; background: #f1f5f9 !important; padding: 4px; border-bottom: 2px solid #cbd5e1; }
+table { 
+  width: max-content; 
+  border-collapse: collapse !important; /* Cambiado para eliminar espacios */
+  border-spacing: 0; 
+  font-size: 0.8rem; 
+}
+th { 
+  background: #f1f5f9 !important; 
+  padding: 10px; 
+  position: sticky; 
+  top: 0; 
+  z-index: 50; /* Bajamos el nivel para que el scroll horizontal pase por debajo de las columnas fijas */
+  border-bottom: 2px solid #cbd5e1; 
+  text-transform: uppercase; 
+}
 
-.sticky-col { position: sticky; z-index: 10; background-color: white !important; border-right: 1px solid #e2e8f0; padding-left: 12px; }
-th.sticky-col { z-index: 50 !important; background-color: #f1f5f9 !important; }
-.filter-row .sticky-col { background-color: #f1f5f9 !important; }
-.sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
+.filter-row td { 
+  position: sticky; 
+  top: 36px; /* Ajustado para que pegue justo al TH */
+  z-index: 40; /* Menor que el z-index de las columnas fijas (60) */
+  background: #f1f5f9 !important; 
+  padding: 4px; 
+  /* Agregamos la sombra que pediste */
+  box-shadow: 0 4px 6px -2px rgba(0,0,0,0.1), inset 0 -1px 0 #cbd5e1;
+}
+
+.sticky-col { 
+  position: sticky; 
+  z-index: 60 !important; /* Prioridad sobre el scroll horizontal */
+  background-color: white !important; 
+  box-shadow: inset -1px 0 0 #e2e8f0; 
+  padding-left: 12px; 
+  background-clip: padding-box; /* Evita que se vea el contenido de atrás en el borde */
+}
+th.sticky-col { 
+  z-index: 100 !important; /* El nivel más alto */
+  background-color: #f1f5f9 !important; 
+}
+.filter-row .sticky-col { 
+  z-index: 90 !important; /* Nivel alto para los filtros de las columnas fijas */
+  background-color: #f1f5f9 !important; 
+  box-shadow: 0 4px 6px -2px rgba(0,0,0,0.1), inset -1px -1px 0 #cbd5e1;
+}
+.sticky-col-final { 
+  /* Usamos sombra para el borde grueso final y que no ocupe espacio físico */
+  box-shadow: inset -3px 0 0 #cbd5e1, 0 4px 6px -2px rgba(0,0,0,0.1); 
+  border-right: none !important;
+}
+
+tbody tr:first-child td {
+  border-top: none !important;
+}
 
 .font-bold { font-weight: bold; }
-.col-shrink { width: 1px !important; white-space: nowrap !important; padding: 8px 10px !important; text-align: center; }
+.col-shrink { 
+  width: 50px !important; 
+  min-width: 50px !important;
+  white-space: nowrap !important; 
+  padding: 8px 0 !important; 
+  text-align: center; 
+}
+
+
 .filter-input { width: 100%; padding: 4px; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 2px; background: white; }
 .filter-input-min { width: 35px; text-align: center; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 2px; }
 
 .btn-wa { background: #25d366; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.dot-green { background-color: #22c55e; }
+.dot-green { background-color: #22c55e;}
 .dot-red { background-color: #ef4444; }
 .text-green { color: #22c55e; font-weight: bold; }
 .text-red { color: #ef4444; font-weight: bold; }
+
+/* Icono para Apto Físico: SÍ (Verde) */
+.icon-apto {
+  color: #22c55e !important; /* Verde esmeralda */
+  vertical-align: middle;
+  font-size: 1.5rem !important;
+  font-weight: bold;
+}
+
+/* Icono para Apto Físico: NO (Rojo) */
+.icon-no-apto {
+  color: #ef4444 !important; /* Rojo intenso */
+  vertical-align: middle;
+  font-size: 1.5rem !important;
+  font-weight: bold;
+}
 
 .fila-roja, .fila-roja .sticky-col { background-color: #fca5a5 !important; }
 .fila-amarilla, .fila-amarilla .sticky-col { background-color: #fef08a !important; }

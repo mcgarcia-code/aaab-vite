@@ -1,72 +1,69 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <div class="full-screen-wrapper">
-    <div class="container-fluid py-4 animate__animated animate__fadeIn">
-      
-      <div class="text-center mb-4">
-        <i class="bi bi-shield-exclamation text-danger main-icon"></i>
-        <h2 class="fw-bold text-white mt-2">Tribunal de Ética</h2>
-        <p class="small text-white m-0">Carga de sanciones disciplinarias</p>
-      </div>
+  <div class="container-fluid py-4 animate__animated animate__fadeIn">
+    
+    <div class="text-center mb-4">
+      <i class="bi bi-shield-exclamation text-danger main-icon"></i>
+      <h2 class="fw-bold text-white mt-2">Tribunal de Ética</h2>
+      <p class="small text-white m-0">Carga de sanciones disciplinarias</p>
+    </div>
 
-      <div class="row justify-content-center">
-        <div class="col-12 col-md-10 col-lg-7">
-          <div class="menu-card-static shadow-lg">
-            <div class="row g-3">
-              
-              <div class="col-12">
-                <label class="fw-bold text-dark small mb-1">Árbitro</label>
-                <select v-model="nuevaSancion.id_arbitro" class="form-select custom-input">
-                  <option value="">Seleccione un árbitro...</option>
-                  <option v-for="a in arbitros" :key="a.id" :value="a.id">
-                    {{ a.apellido }}, {{ a.nombre }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="fw-bold text-dark small mb-1">Artículo</label>
-                <input v-model="nuevaSancion.articulo" placeholder="Ej: Art. 42" class="form-control custom-input">
-              </div>
-
-              <div class="col-md-6">
-                <label class="fw-bold text-dark small mb-1">Sanción</label>
-                <input v-model="nuevaSancion.sancion_detalle" placeholder="Ej: 2 fechas" class="form-control custom-input">
-              </div>
-
-              <div class="col-12">
-                <label class="fw-bold text-dark small mb-1">Motivo / Descripción</label>
-                <textarea v-model="nuevaSancion.motivo" rows="3" class="form-control custom-input"></textarea>
-              </div>
-
-              <div class="col-md-6">
-                <label class="fw-bold text-dark small mb-1">Desde</label>
-                <input type="date" v-model="nuevaSancion.fecha_desde" class="form-control custom-input">
-              </div>
-
-              <div class="col-md-6">
-                <label class="fw-bold text-dark small mb-1">Hasta</label>
-                <input type="date" v-model="nuevaSancion.fecha_hasta" class="form-control custom-input">
-              </div>
-
-              <div class="col-12 mt-4">
-                <div v-if="mensaje.texto" :class="['alert py-2 mb-3 text-center small alert-' + mensaje.tipo]">
-                  {{ mensaje.texto }}
-                </div>
-                <button @click="guardarSancion" :disabled="cargando" class="btn-send shadow-sm">
-                  {{ cargando ? 'GUARDANDO...' : 'REGISTRAR SANCIÓN' }}
-                </button>
-              </div>
-
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-11 col-lg-10">
+        <div class="menu-card-static shadow-lg">
+          <div class="row g-3">
+            
+            <div class="col-12">
+              <label class="fw-bold text-dark small mb-1">Árbitro</label>
+              <select v-model="nuevaSancion.id_arbitro" class="form-select custom-input">
+                <option value="">Seleccione un árbitro...</option>
+                <option v-for="a in arbitros" :key="a.id" :value="a.id">
+                  {{ a.apellido }}, {{ a.nombre }}
+                </option>
+              </select>
             </div>
+
+            <div class="col-md-6">
+              <label class="fw-bold text-dark small mb-1">Artículo</label>
+              <input v-model="nuevaSancion.articulo" placeholder="Ej: Art. 42" class="form-control custom-input">
+            </div>
+
+            <div class="col-md-6">
+              <label class="fw-bold text-dark small mb-1">Sanción</label>
+              <input v-model="nuevaSancion.sancion_detalle" placeholder="Ej: 2 fechas" class="form-control custom-input">
+            </div>
+
+            <div class="col-12">
+              <label class="fw-bold text-dark small mb-1">Motivo / Descripción</label>
+              <textarea v-model="nuevaSancion.motivo" rows="3" class="form-control custom-input"></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label class="fw-bold text-dark small mb-1">Desde</label>
+              <input type="date" v-model="nuevaSancion.fecha_desde" class="form-control custom-input">
+            </div>
+
+            <div class="col-md-6">
+              <label class="fw-bold text-dark small mb-1">Hasta</label>
+              <input type="date" v-model="nuevaSancion.fecha_hasta" class="form-control custom-input">
+            </div>
+
+            <div class="col-12 mt-4">
+              <div v-if="mensaje.texto" :class="['alert py-2 mb-3 text-center small alert-' + mensaje.tipo]">
+                {{ mensaje.texto }}
+              </div>
+              <button @click="guardarSancion" :disabled="cargando" class="btn-send shadow-sm">
+                {{ cargando ? 'GUARDANDO...' : 'REGISTRAR SANCIÓN' }}
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
-
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -143,23 +140,16 @@ onMounted(cargarArbitros);
 </script>
 
 
-
 <style scoped>
-/* CONFIGURACIÓN DE PANTALLA COMPLETA */
-.full-screen-wrapper {
-  position: relative;
-  width: 100vw;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding: 0 20px;
-}
-
 .menu-card-static {
   background: #ffffff;
-  border-radius: 20px; /* Un poco más redondeado para matchear con InicioPanel */
+  border-radius: 20px;
   padding: 40px;
   border-bottom: 6px solid #dc2626;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.4) !important; /* Sombra fuerte para resaltar en el fondo oscuro */
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4) !important;
+  /* Centrado y con un tope máximo para que no se deforme en pantallas UltraWide */
+  margin: 0 auto;
+  max-width: 1200px; 
 }
 
 .main-icon {
@@ -215,6 +205,5 @@ onMounted(cargarArbitros);
 @media (max-width: 768px) {
   .menu-card-static { padding: 25px; }
   .main-icon { font-size: 2.8rem; }
-  .full-screen-wrapper { width: 100vw; padding: 0 15px; }
 }
 </style>

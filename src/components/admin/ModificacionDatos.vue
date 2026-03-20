@@ -385,37 +385,45 @@ onMounted(cargarDatos);
 table { 
   width: 100%;
   min-width: max-content; 
-  border-collapse: separate; 
+  border-collapse: collapse !important; /* <--- CAMBIO CRÍTICO */
   border-spacing: 0; 
   font-size: 0.85rem; 
 }
-
-/* FIX PARA COLUMNAS FIJAS */
 thead tr.main-header th { 
   position: sticky; 
   top: 0; 
-  z-index: 1000; 
+  z-index: 50; /* Bajamos de 1000 a 50 */
   background: #f8fafc; 
   border-bottom: 2px solid #e2e8f0; 
 }
 
 thead tr.filter-row td { 
   position: sticky;
-  top: 38px; /* Debe ser el alto aproximado del th para que no se pisen */
-  z-index: 999; 
-  background: #f8fafc !important; 
+  top: 36px; 
+  z-index: 40; /* Bajamos a 40 para que sea menor al z-index de .sticky-col (60) */
+  background: #f1F5F9 !important; 
   border-bottom: 2px solid #cbd5e1; 
+  
 }
 
+/* Localiza y reemplaza esta regla */
 .sticky-col { 
   position: sticky !important; 
-  z-index: 10; 
+  z-index: 60 !important; 
   background: white !important; 
-  border-right: 1px solid #e2e8f0 !important; 
+  box-shadow: inset -1px 0 0 #e2e8f0; 
+  background-clip: padding-box; 
+}
+thead th.sticky-col { 
+  z-index: 100 !important; /* El nivel más alto de la tabla */
+  background-color: #f1F5F9 !important; 
 }
 
-thead th.sticky-col { z-index: 1500 !important; }
-thead td.sticky-col { z-index: 10 !important; }
+/* Celdas de filtros fijas (ID, Apellido, Nombre) */
+thead td.sticky-col { 
+  z-index: 95 !important; /* Un escalón abajo del título, pero arriba del resto */
+  background-color: #f8fafc !important; 
+}
 
 .col-id { left: 0; width: 50px; text-align: center; }
 .col-apellido { left: 50px; width: 140px; }

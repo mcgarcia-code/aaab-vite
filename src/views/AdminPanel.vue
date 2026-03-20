@@ -7,8 +7,8 @@
       </div>
     </nav>
     
-    <div class="container py-2">
-      <div class="max-800">
+    <div class="container-fluid px-4 py-2">
+      <div class="mx-auto">
         <div class="user-header d-flex align-items-center mb-4 p-3 rounded-4 shadow">
           <div class="icon-admin-circle me-3">
              <i class="bi bi-person-workspace text-white"></i>
@@ -22,10 +22,11 @@
         </div>
 
         <div v-if="route.name !== 'AdminInicio'" class="mb-4">
-          <RouterLink to="/admin" class="btn-volver">
-            <i class="bi bi-arrow-left me-2"></i> Volver al Menú Principal
-          </RouterLink>
-        </div>
+  <button @click="handleVolver" class="btn-volver">
+    <i class="bi bi-arrow-left me-2"></i> 
+    {{ esRutaProfunda ? 'Volver atrás' : 'Volver al Menú Principal' }}
+  </button>
+</div>
 
         <RouterView />
       </div>
@@ -34,56 +35,53 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { RouterView, RouterLink, useRoute } from 'vue-router';
-import { auth } from '@/api/auth'; // Importamos tu servicio de autenticación
-import { useHead } from '@vueuse/head'
-
-// Título y descripción específicos para la página de panel de inicio de árbitros AAAB
-useHead({
-  title: 'Panel de Gestión  | AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Sección de administración para el panel de inicio de árbitros AAAB.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Panel de Gestión | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Sección de administración para el panel de inicio de árbitros AAAB.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
-  ],
-})
+import { ref, onMounted, computed } from 'vue';
+import { RouterView, useRoute, useRouter } from 'vue-router'; // Importamos useRouter
+import { auth } from '@/api/auth';
+import { useHead } from '@vueuse/head';
 
 const route = useRoute();
+const router = useRouter(); // Instanciamos el router
 
-// Creamos una referencia reactiva para el administrador
-// Obtenemos los datos (id, usuario, nombre, rol) desde el auth
+// 1. Detectar si estamos en un "hijo del hijo"
+// Si la URL tiene más de 2 segmentos (ej: /admin/usuarios/editar), es profunda.
+const esRutaProfunda = computed(() => {
+  const segmentos = route.path.split('/').filter(p => p !== '');
+  return segmentos.length > 2;
+});
+
+// 2. Función lógica del botón
+const handleVolver = () => {
+  if (esRutaProfunda.value) {
+    router.back(); // Si es hijo de una card, simplemente vuelve atrás
+  } else {
+    router.push('/admin'); // Si es una sección principal, vuelve al inicio
+  }
+};
+
 const admin = ref(auth.getUser() || {});
 
 const cerrarSesion = () => {
   auth.logout();
-  console.log("Cerrando sesión admin...");
 };
 
 onMounted(() => {
-  // Al montar, nos aseguramos de que los datos estén actualizados
   if (auth.isLoggedIn()) {
     admin.value = auth.getUser();
   }
 });
+
+// Configuración de Head (se mantiene igual)
+useHead({
+  title: 'Panel de Gestión  | AAAB',
+  meta: [
+    { name: 'description', content: 'Sección de administración para el panel de inicio de árbitros AAAB.' },
+    { property: 'og:title', content: 'Panel de Gestión | AAAB' },
+    { property: 'og:description', content: 'Sección de administración para el panel de inicio de árbitros AAAB.' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
+    { property: 'og:type', content: 'website' }
+  ],
+})
 </script>
 
 <style scoped>
@@ -93,10 +91,6 @@ onMounted(() => {
   padding-bottom: 40px;
 }
 
-.max-800 { 
-  max-width: 900px; 
-  margin: 0 auto; 
-}
 
 .user-header {
   background: rgba(255, 255, 255, 0.05);
@@ -124,21 +118,26 @@ onMounted(() => {
   align-items: center;
   color: #fff;
   text-decoration: none;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   padding: 8px 20px;
   border-radius: 50px;
   transition: 0.3s;
+  /* Agregamos esto para que el <button> se vea como el <a> */
+  border: none; 
+  cursor: pointer;
+  font-size: 1rem; /* Ajusta según necesites */
 }
 
 .btn-volver:hover {
   background: #dc2626;
   color: white;
+  /* Opcional: un pequeño levantamiento para que se sienta más interactivo */
+  transform: translateY(-1px);
 }
 
 /* --- RESPONSIVE --- */
 @media (max-width: 576px) {
   .icon-admin-circle { width: 60px; height: 60px; font-size: 1.5rem; }
   h2 { font-size: 1.25rem; }
-  .max-800 { padding: 0 10px; }
 }
 </style>
