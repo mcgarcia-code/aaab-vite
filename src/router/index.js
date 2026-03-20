@@ -19,7 +19,8 @@ const routes = [
     beforeEnter: (to, from, next) => {
       if (auth.isLoggedIn()) {
         const user = auth.getUser();
-        user?.rol === 'admin' ? next('/admin') : next('/panel-arbitro');
+        const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'observador'];
+        rolesStaff.includes(user?.rol) ? next('/admin') : next('/panel-arbitro');
       } else {
         next();
       }
@@ -43,8 +44,7 @@ const routes = [
   {    
     path: '/admin',
     component: () => import('../views/AdminPanel.vue'),
-    meta: { requiresAuth: true, role: 'admin' }, 
-
+    meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'observador'] }, 
     children: [
       { 
         path: '', 
@@ -54,30 +54,41 @@ const routes = [
       { 
         path: 'secretaria', 
         name: 'SecretariaAdmin', 
-        component: () => import('../components/admin/SecretariaAdmin.vue') 
+        component: () => import('../components/admin/SecretariaAdmin.vue'),
+        meta: { roles: ['admin', 'secretario', 'designador'] } 
       },
-          { 
-            path: 'secretaria/modificacion-datos', 
-            name: 'MoficacionDatos', 
-            component: () => import('../components/admin/ModificacionDatos.vue') 
-          },
-                    { 
-            path: 'secretaria/licencias', 
-            name: 'LicenciasAdmin', 
-            component: () => import('../components/admin/LicenciasAdmin.vue') 
-          },
+            { 
+              path: 'secretaria/modificacion-datos', 
+              name: 'MoficacionDatos', 
+              component: () => import('../components/admin/ModificacionDatos.vue'),
+              meta: { roles: ['admin', 'secretario'] }
+            },
+            { 
+              path: 'secretaria/licencias', 
+              name: 'LicenciasAdmin', 
+              component: () => import('../components/admin/LicenciasAdmin.vue'),
+              meta: { roles: ['admin', 'secretario'] }
+            },
       { 
         path: 'tribunal', 
         name: 'TribunalAdmin', 
-        component: () => import('../components/admin/TribunalAdmin.vue') 
+        component: () => import('../components/admin/TribunalAdmin.vue'),
+        meta: { roles: ['admin', 'etica', 'secretario'] } 
       },
       { 
         path: 'tesoreria', 
         name: 'TesoreriaAdmin', 
-        component: () => import('../components/admin/TesoreriaAdmin.vue') 
+        component: () => import('../components/admin/TesoreriaAdmin.vue'),
+        meta: { roles: ['admin', 'tesorero'] } 
       },
+      { 
+        path: 'observaciones', 
+        name: 'ObservacionesAdmin', 
+        component: () => import('../components/admin/ObservacionesAdmin.vue'),
+        meta: { roles: ['admin', 'observador', 'coordinador general','secretario'] } 
+      }
     ]
-  },
+  }, 
   
   {
     path: '/designaciones-aaab',
@@ -99,7 +110,6 @@ const routes = [
     name: 'CoordinadoresBase',
     component: () => import('../views/CoordinadoresDatosView.vue')
   }
-  
 ];
 
 const router = createRouter({
@@ -113,24 +123,27 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const estaLogueado = auth.isLoggedIn();
   const user = auth.getUser();
+  const userRole = user?.rol;
+
+  const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'observador'];
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!estaLogueado) {
-      next('/login-arbitro');
-      return;
-    } 
-
-    // REDIRECCIÓN LÓGICA: Si es admin y va a la ruta de árbitros, lo mandamos a /admin
-    if (to.path.startsWith('/panel-arbitro') && user?.rol === 'admin') {
-      next('/admin');
-      return;
+      return next('/login-arbitro');
     }
 
-    if (to.matched.some(record => record.meta.role === 'admin')) {
-      if (user?.rol === 'admin') {
+    if (to.path.startsWith('/panel-arbitro') && rolesStaff.includes(userRole)) {
+      return next('/admin');
+    }
+
+    const matchedRecord = [...to.matched].reverse().find(record => record.meta.roles);
+    const rolesPermitidos = matchedRecord ? matchedRecord.meta.roles : null;
+
+    if (rolesPermitidos) {
+      if (rolesPermitidos.includes(userRole)) {
         next();
       } else {
-        next('/panel-arbitro');
+        rolesStaff.includes(userRole) ? next('/admin') : next('/panel-arbitro');
       }
     } else {
       next();

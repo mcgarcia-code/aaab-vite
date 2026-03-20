@@ -1,108 +1,96 @@
 <template>
-
   <div class="row g-3 g-md-4 animate__animated animate__fadeIn">
 
-   
-
-    <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItems" :key="item.title">
-
+    <div class="col-12 col-sm-6 col-md-4" v-for="item in filteredMenu" :key="item.title">
       <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
-
         <div class="menu-card shadow-sm">
-
           <div class="icon-circle">
-
             <i :class="[item.icon, 'text-danger']"></i>
-
           </div>
-
           <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
-
           <p class="small text-muted m-0">{{ item.desc }}</p>
-
         </div>
-
       </RouterLink>
-
     </div>
-
-
-
   </div>
 
 </template>
 
 <script setup>
+import { auth } from '@/api/auth';
+import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
-import { useHead } from '@vueuse/head'
+import { useHead } from '@vueuse/head';
+
+const user = auth.getUser();
+const userRole = user ? user.rol : null;
 
 // Título y descripción específicos para la página de Gestion AAAB
 useHead({
-  title: 'Panel de Gestión| AAAB',
+  title: 'Panel de Gestión | AAAB',
   meta: [
-    {
-      name: 'description',
-      content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Panel de Gestión | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { name: 'description', content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.' },
+    { property: 'og:title', content: 'Panel de Gestión | AAAB' },
+    { property: 'og:description', content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
+    { property: 'og:type', content: 'website' }
   ],
-})
-
+});
 
 const menuItems = [
   { 
     to: '/admin/secretaria', 
     title: 'Secretaría', 
     icon: 'bi bi-pc-display-horizontal', 
-    desc: 'Gestionar datos personales y licencias de los árbitros.' 
+    desc: 'Gestionar datos personales y licencias de los árbitros.',
+    rolesPermitidos: ['admin', 'secretario', 'designador'] 
   },
   { 
     to: '/admin/tribunal', 
     title: 'Tribunal de Ética', 
     icon: 'bi bi-shield-exclamation', 
-    desc: 'Cargar sanciones, artículos y resoluciones.' 
+    desc: 'Cargar sanciones, artículos y resoluciones.',
+    rolesPermitidos: ['admin', 'etica', 'secretario'] 
   },
   { 
     to: '/admin/tesoreria', 
     title: 'Tesorería', 
     icon: 'bi bi-cash-stack', 
-    desc: 'Módulo contable, pagos y stock de ropa' 
+    desc: 'Módulo contable, pagos y stock de ropa',
+    rolesPermitidos: ['admin', 'tesorero'] 
   },
   { 
     to: '/admin/designaciones', 
     title: 'Designaciones', 
     icon: 'bi bi-cash-stack', 
-    desc: 'Módulo de designaciones, control de disponibilidad y asignación de partidos' 
+    desc: 'Módulo de designaciones, control de disponibilidad y asignación de partidos',
+    rolesPermitidos: ['admin', 'designador', 'secretario'] 
   },
   { 
     to: '/admin/desarrollo-arbitral', 
     title: 'Desarrollo Arbitral', 
     icon: 'bi bi-cash-stack', 
-    desc: 'Módulo de desarrollo arbitral, seguimiento de capacitaciones y evaluaciones' 
+    desc: 'Módulo de desarrollo arbitral, seguimiento de capacitaciones y evaluaciones',
+    rolesPermitidos: ['admin', 'coordinador general', 'secretario'] // <-- Coma agregada aquí
   },
-    { 
-    to: '/admin/carga-observaciones', 
+  { 
+    to: '/admin/observaciones', 
     title: 'Carga de Observaciones', 
     icon: 'bi bi-cash-stack', 
-    desc: 'Módulo para cargar observaciones sobre los árbitros' 
+    desc: 'Módulo para cargar observaciones sobre los árbitros',
+    rolesPermitidos: ['admin', 'observador', 'coordinador general', 'secretario'] // <-- Coma agregada aquí
   },
 ];
+
+const filteredMenu = computed(() => {
+  return menuItems.filter(item => {
+    // Si el usuario es 'admin' (superusuario), ve todo
+    if (userRole === 'admin') return true;
+    
+    // Verificamos si su rol está en la lista permitida
+    return item.rolesPermitidos && item.rolesPermitidos.includes(userRole);
+  });
+});
 </script>
 
 
