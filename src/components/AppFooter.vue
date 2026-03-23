@@ -33,7 +33,7 @@
                   <i class="bi bi-shield-check"></i>
                   <div class="contact-text">
                     <a href="mailto:representante@arbitroshandball.com.ar">Representante Arbitral</a>
-                    <span>Notas de los clubes y quejas sobre arbitrajes</span>
+                    <span>Comunicación oficial con los clubes</span>
                   </div>
                 </div>
               </div>
