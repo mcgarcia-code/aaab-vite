@@ -27,7 +27,7 @@ const routes = [
     }
   },
   
-  {
+{
     path: '/panel-arbitro',
     component: () => import('../components/panel-arbitro/PanelArbitro.vue'),
     meta: { requiresAuth: true }, 
@@ -37,11 +37,13 @@ const routes = [
       { path: 'datos', name: 'PanelDatos', component: () => import('../components/panel-arbitro/datos-personales/MisDatos.vue') },
       { path: 'disponibilidad', name: 'PanelDisponibilidad', component: () => import('../components/panel-arbitro/disponibilidad/PanelDisponibilidad.vue') },
       { path: 'sanciones', name: 'PanelSanciones', component: () => import('../components/panel-arbitro/sanciones/Sanciones.vue') },
-      { path: 'credencial', name: 'PanelCredencial', component: () => import('../components/panel-arbitro/credencial/CredencialDigital.vue') },  
+      { path: 'credencial', name: 'PanelCredencial', component: () => import('../components/panel-arbitro/credencial/CredencialDigital.vue') },
+      { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/Indumentaria.vue') },
+      { path: 'rendimiento', name: 'PanelRendimiento', component: () => import('../components/panel-arbitro/rendimiento/MiRendimiento.vue') },
     ]
   },
 
-  {    
+{    
     path: '/panel-admin',
     component: () => import('../components/panel-admin/AdminPanel.vue'),
     meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'observador'] }, 
@@ -51,44 +53,106 @@ const routes = [
         name: 'AdminInicio', 
         component: () => import('../components/panel-admin/AdminInicio.vue') 
       },
+
+      // --- SECRETARÍA ---
       { 
         path: 'secretaria', 
         name: 'SecretariaAdmin', 
         component: () => import('../components/panel-admin/secretaria/SecretariaAdmin.vue'),
         meta: { roles: ['admin', 'secretario', 'designador'] } 
       },
-            { 
-              path: 'secretaria/modificacion-datos', 
-              name: 'MoficacionDatos', 
-              component: () => import('../components/panel-admin/secretaria/ModificacionDatos.vue'),
-              meta: { roles: ['admin', 'secretario'] }
-            },
-            { 
-              path: 'secretaria/licencias', 
-              name: 'LicenciasAdmin', 
-              component: () => import('../components/panel-admin/secretaria/LicenciasAdmin.vue'),
-              meta: { roles: ['admin', 'secretario'] }
-            },
       { 
-        path: 'tribunal', 
-        name: 'TribunalAdmin', 
-        component: () => import('../components/panel-admin/etica/TribunalAdmin.vue'),
-        meta: { roles: ['admin', 'etica', 'secretario'] } 
+        path: 'secretaria/modificacion-datos', 
+        name: 'ModificacionDatos', 
+        component: () => import('../components/panel-admin/secretaria/ModificacionDatos.vue'),
+        meta: { roles: ['admin', 'secretario'] }
       },
       { 
+        path: 'secretaria/licencias', 
+        name: 'LicenciasAdmin', 
+        component: () => import('../components/panel-admin/secretaria/LicenciasAdmin.vue'),
+        meta: { roles: ['admin', 'secretario'] }
+      },
+      { 
+        path: 'secretaria/instituciones-cuits', 
+        name: 'InstitucionesCuits', 
+        component: () => import('../components/panel-admin/secretaria/InstitucionesCuits.vue'),
+        meta: { roles: ['admin', 'secretario'] }
+      },
+
+      // --- TRIBUNAL ---
+      { 
+        path: 'tribunal', 
+        name: 'TribunalAdmin',
+        component: () => import('../components/panel-admin/etica/TribunalAdmin.vue'),
+        meta: { roles: ['admin', 'etica', 'secretario'] }
+      },
+      { 
+        path: 'tribunal/sanciones', 
+        name: 'TribunalSanciones', 
+        component: () => import('../components/panel-admin/etica/SancionesListado.vue'),
+        meta: { roles: ['admin', 'etica', 'secretario'] }
+      },
+      { 
+        path: 'tribunal/cargar-sancion', 
+        name: 'TribunalCargar', 
+        component: () => import('../components/panel-admin/etica/CargarSanciones.vue'),
+        meta: { roles: ['admin', 'etica', 'secretario'] }
+      },
+
+      // --- TESORERÍA ---
+      { 
         path: 'tesoreria', 
-        name: 'TesoreriaAdmin', 
+        name: 'TesoreriaAdmin',
         component: () => import('../components/panel-admin/tesoreria/TesoreriaAdmin.vue'),
+        meta: { roles: ['admin', 'tesorero'] }
+      },
+      { 
+        path: 'tesoreria/aportes', 
+        name: 'TesoreriaAportes', 
+        component: () => import('../components/panel-admin/tesoreria/Aportes.vue'),
         meta: { roles: ['admin', 'tesorero'] } 
       },
       { 
+        path: 'tesoreria/indumentaria', 
+        name: 'TesoreriaIndumentaria',
+        component: () => import('../components/panel-admin/tesoreria/IndumentariaMenu.vue'),
+        meta: { roles: ['admin', 'tesorero'] }
+      },
+      { 
+        path: 'tesoreria/indumentaria/stock', 
+        name: 'IndumentariaStock', 
+        component: () => import('../components/panel-admin/tesoreria/StockIndumentaria.vue'),
+        meta: { roles: ['admin', 'tesorero'] }
+      },
+      { 
+        path: 'tesoreria/indumentaria/pedidos', 
+        name: 'IndumentariaPedidos', 
+        component: () => import('../components/panel-admin/tesoreria/PedidosRealizados.vue'),
+        meta: { roles: ['admin', 'tesorero'] }
+      },
+
+      // --- OBSERVACIONES ---
+      { 
         path: 'observaciones', 
-        name: 'ObservacionesAdmin', 
+        name: 'ObservacionesAdmin',
         component: () => import('../components/panel-admin/observadores/ObservacionesAdmin.vue'),
+        meta: { roles: ['admin', 'observador', 'coordinador general','secretario'] }
+      },
+      { 
+        path: 'observaciones/carga', 
+        name: 'ObservacionesCarga', 
+        component: () => import('../components/panel-admin/observadores/CargaObservaciones.vue'),
+        meta: { roles: ['admin', 'observador', 'coordinador general','secretario'] } 
+      },
+      { 
+        path: 'observaciones/mis-observaciones', 
+        name: 'ObservacionesMias', 
+        component: () => import('../components/panel-admin/observadores/MisObservaciones.vue'),
         meta: { roles: ['admin', 'observador', 'coordinador general','secretario'] } 
       }
     ]
-  }, 
+  },
   
   {
     path: '/designaciones-aaab',

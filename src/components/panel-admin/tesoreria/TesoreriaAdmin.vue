@@ -60,15 +60,15 @@ useHead({
 const opcionesTesoreria = [
   { 
     to: '/panel-admin/tesoreria/aportes', 
-    title: 'Carga de Aportes', 
+    title: 'Aportes', 
     icon: 'bi bi-cash-coin', 
     desc: 'Registrar pagos de cuotas y aportes mensuales.' 
   },
   { 
-    to: '/panel-admin/tesoreria/stock', 
-    title: 'Stock de Indumentaria', 
+    to: '/panel-admin/tesoreria/indumentaria', 
+    title: 'Indumentaria', 
     icon: 'bi bi-bag-check', 
-    desc: 'Control de inventario, talles y entregas.' 
+    desc: 'Control de inventario, talles y pedidos.' 
   }
 ];
 </script>

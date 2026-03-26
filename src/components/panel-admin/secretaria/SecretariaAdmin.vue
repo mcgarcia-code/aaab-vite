@@ -68,6 +68,12 @@ const opcionesSecretaria = [
     title: 'Licencias', 
     icon: 'bi bi-calendar-date-fill', 
     desc: 'Gestionar las licencias disponibles.' 
+  },
+  { 
+    to: '/panel-admin/secretaria/instituciones-cuits', 
+    title: 'Instituciones y CUITs', 
+    icon: 'bi bi-building-check', 
+    desc: 'Administrar datos fiscales y entidades vinculadas.' 
   }
 ];
 </script>

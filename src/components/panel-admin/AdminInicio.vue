@@ -62,22 +62,22 @@ const menuItems = [
   { 
     to: '/panel-admin/designaciones', 
     title: 'Designaciones', 
-    icon: 'bi bi-cash-stack', 
+    icon: 'bi bi-calendar4-week', 
     desc: 'Módulo de designaciones, control de disponibilidad y asignación de partidos',
     rolesPermitidos: ['admin', 'designador', 'secretario'] 
   },
   { 
     to: '/panel-admin/desarrollo-arbitral', 
     title: 'Desarrollo Arbitral', 
-    icon: 'bi bi-cash-stack', 
+    icon: 'bi bi-person-workspace', 
     desc: 'Módulo de desarrollo arbitral, seguimiento de capacitaciones y evaluaciones',
     rolesPermitidos: ['admin', 'coordinador general', 'secretario'] // <-- Coma agregada aquí
   },
   { 
     to: '/panel-admin/observaciones', 
-    title: 'Carga de Observaciones', 
+    title: 'Observaciones', 
     icon: 'bi bi-eye main-icon', 
-    desc: 'Módulo para cargar observaciones sobre los árbitros',
+    desc: 'Módulo para cargar y visualizar observaciones sobre los árbitros',
     rolesPermitidos: ['admin', 'observador', 'coordinador general', 'secretario'] // <-- Coma agregada aquí
   },
 ];

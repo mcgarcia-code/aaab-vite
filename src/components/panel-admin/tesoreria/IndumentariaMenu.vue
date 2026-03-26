@@ -1,0 +1,55 @@
+<template>
+  <div class="container py-4 animate__animated animate__fadeIn">
+    
+    <div class="text-center mb-5">
+      <i class="bi bi-bag-check text-danger main-icon"></i>
+      <h2 class="fw-bold text-white mt-2">Gestión de Indumentaria</h2>
+      <p class="small text-white opacity-75 m-0">Administración de stock y pedidos de árbitros</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+      <div class="col-12 col-sm-6">
+        <RouterLink to="/panel-admin/tesoreria/indumentaria/stock" class="text-decoration-none h-100 d-block">
+          <div class="menu-card shadow-lg">
+            <div class="icon-circle">
+              <i class="bi bi-box-seam text-danger"></i>
+            </div>
+            <h4 class="mt-3 fw-bold text-dark">Stock</h4>
+            <p class="small text-muted m-0 px-2">Control de talles y cantidades disponibles.</p>
+          </div>
+        </RouterLink>
+      </div>
+
+      <div class="col-12 col-sm-6">
+        <RouterLink to="/panel-admin/tesoreria/indumentaria/pedidos" class="text-decoration-none h-100 d-block">
+          <div class="menu-card shadow-lg">
+            <div class="icon-circle">
+              <i class="bi bi-list-check text-danger"></i>
+            </div>
+            <h4 class="mt-3 fw-bold text-dark">Pedidos Realizados</h4>
+            <p class="small text-muted m-0 px-2">Listado de solicitudes pendientes y entregadas.</p>
+          </div>
+        </RouterLink>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<script setup>
+import { RouterLink } from 'vue-router';
+
+</script>
+
+<style scoped>
+/* Reutilizo exactamente tus estilos */
+.main-icon { font-size: 3.2rem; filter: drop-shadow(0 0 8px rgba(220, 38, 38, 0.3)); }
+.menu-card { background: #ffffff; border-radius: 20px; padding: 40px 20px; text-align: center; transition: all 0.3s ease; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #f1f5f9; cursor: pointer; }
+.icon-circle { width: 80px; height: 80px; background: #fff5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; transition: all 0.3s ease; }
+.menu-card i { font-size: 2.8rem; }
+.menu-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.3) !important; border-bottom: 6px solid #dc2626; }
+.menu-card:hover .icon-circle { background: #dc2626; }
+.menu-card:hover i { color: white !important; transform: scale(1.1); }
+.text-danger { color: #dc2626 !important; }
+@media (max-width: 576px) { .menu-card { padding: 30px 15px; } .icon-circle { width: 70px; height: 70px; } .menu-card i { font-size: 2rem; } .main-icon { font-size: 2.5rem; } }
+</style>
