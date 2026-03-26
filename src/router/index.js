@@ -38,14 +38,12 @@ const routes = [
       { path: 'disponibilidad', name: 'PanelDisponibilidad', component: () => import('../components/panel-arbitro/disponibilidad/PanelDisponibilidad.vue') },
       { path: 'sanciones', name: 'PanelSanciones', component: () => import('../components/panel-arbitro/sanciones/Sanciones.vue') },
       { path: 'credencial', name: 'PanelCredencial', component: () => import('../components/panel-arbitro/credencial/CredencialDigital.vue') },
-      { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/Indumentaria.vue') },
       { path: 'rendimiento', name: 'PanelRendimiento', component: () => import('../components/panel-arbitro/rendimiento/MiRendimiento.vue') },
-      { 
-        path: 'indumentaria', 
-        name: 'PanelIndumentaria', 
-        component: () => import('../components/panel-arbitro/indumentaria/Indumentaria.vue') 
-      },
-     
+      { path: 'aportes', name: 'PanelAportes', component: () => import('../components/panel-arbitro/tesoreria/MisAportes.vue') },
+      { path: 'ref-flix', name: 'PanelRefFlix', beforeEnter() { window.location.href = 'https://www.arbitroshandball.com.ar' }},
+      
+      { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/Indumentaria.vue') },
+      
       { 
         path: 'indumentaria/nuevo', 
         name: 'RealizarPedido', 

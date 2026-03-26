@@ -1,209 +1,122 @@
 <template>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-  <div class="container-fluid py-4 animate__animated animate__fadeIn">
+  <div class="container py-4 animate__animated animate__fadeIn">
     
-    <div class="text-center mb-4">
-      <i class="bi bi-shield-exclamation text-danger main-icon"></i>
+    <div class="text-center mb-5">
+      <i class="bi bi-gavel text-danger main-icon"></i>
       <h2 class="fw-bold text-white mt-2">Tribunal de Ética</h2>
-      <p class="small text-white m-0">Carga de sanciones disciplinarias</p>
+      <p class="small text-white opacity-75 m-0">Gestión de medidas disciplinarias y resoluciones.</p>
     </div>
 
-    <div class="row justify-content-center">
-      <div class="col-12 col-md-11 col-lg-10">
-        <div class="menu-card-static shadow-lg">
-          <div class="row g-3">
-            
-            <div class="col-12">
-              <label class="fw-bold text-dark small mb-1">Árbitro</label>
-              <select v-model="nuevaSancion.id_arbitro" class="form-select custom-input">
-                <option value="">Seleccione un árbitro...</option>
-                <option v-for="a in arbitros" :key="a.id" :value="a.id">
-                  {{ a.apellido }}, {{ a.nombre }}
-                </option>
-              </select>
+    <div class="row g-4 justify-content-center">
+      <div v-for="item in opcionesTribunal" :key="item.title" class="col-12 col-sm-6">
+        <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
+          <div class="menu-card shadow-lg">
+            <div class="icon-circle">
+              <i :class="[item.icon, 'text-danger']"></i>
             </div>
-
-            <div class="col-md-6">
-              <label class="fw-bold text-dark small mb-1">Artículo</label>
-              <input v-model="nuevaSancion.articulo" placeholder="Ej: Art. 42" class="form-control custom-input">
-            </div>
-
-            <div class="col-md-6">
-              <label class="fw-bold text-dark small mb-1">Sanción</label>
-              <input v-model="nuevaSancion.sancion_detalle" placeholder="Ej: 2 fechas" class="form-control custom-input">
-            </div>
-
-            <div class="col-12">
-              <label class="fw-bold text-dark small mb-1">Motivo / Descripción</label>
-              <textarea v-model="nuevaSancion.motivo" rows="3" class="form-control custom-input"></textarea>
-            </div>
-
-            <div class="col-md-6">
-              <label class="fw-bold text-dark small mb-1">Desde</label>
-              <input type="date" v-model="nuevaSancion.fecha_desde" class="form-control custom-input">
-            </div>
-
-            <div class="col-md-6">
-              <label class="fw-bold text-dark small mb-1">Hasta</label>
-              <input type="date" v-model="nuevaSancion.fecha_hasta" class="form-control custom-input">
-            </div>
-
-            <div class="col-12 mt-4">
-              <div v-if="mensaje.texto" :class="['alert py-2 mb-3 text-center small alert-' + mensaje.tipo]">
-                {{ mensaje.texto }}
-              </div>
-              <button @click="guardarSancion" :disabled="cargando" class="btn-send shadow-sm">
-                {{ cargando ? 'GUARDANDO...' : 'REGISTRAR SANCIÓN' }}
-              </button>
-            </div>
-
+            <h4 class="mt-3 fw-bold text-dark">{{ item.title }}</h4>
+            <p class="small text-muted m-0 px-2">{{ item.desc }}</p>
           </div>
-        </div>
+        </RouterLink>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head'
 
-// Título y descripción específicos para la página de Tribunal de Ética AAAB
 useHead({
   title: 'Tribunal de Ética | AAAB',
   meta: [
     {
       name: 'description',
-      content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.',
+      content: 'Panel centralizado para la gestión de sanciones y ética profesional de la asociación.',
     },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Tribunal de Ética | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { property: 'og:title', content: 'Tribunal de Ética | AAAB' },
+    { property: 'og:description', content: 'Gestión de medidas disciplinarias de la asociación.' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
+    { property: 'og:type', content: 'website' }
   ],
 })
 
-const API_URL_BE = 'https://arbitroshandball.com.ar/api/api.php';
-const API_URL_ARBITROS = 'https://arbitroshandball.com.ar/api/acciones.php';
-
-const arbitros = ref([]);
-const cargando = ref(false);
-const mensaje = ref({ texto: '', tipo: '' });
-
-const nuevaSancion = ref({
-  id_arbitro: '', motivo: '', articulo: '', sancion_detalle: '', fecha_desde: '', fecha_hasta: ''
-});
-
-const cargarArbitros = async () => {
-  try {
-    const res = await axios.get(API_URL_ARBITROS);
-    arbitros.value = Array.isArray(res.data) ? res.data : [];
-  } catch (err) { console.error("Error:", err); }
-};
-
-const guardarSancion = async () => {
-  if (!nuevaSancion.value.id_arbitro || !nuevaSancion.value.fecha_desde) {
-    alert("Por favor completa el árbitro y la fecha de inicio.");
-    return;
+const opcionesTribunal = [
+  { 
+    to: '/panel-admin/tribunal/sanciones', 
+    title: 'Listado de Sanciones', 
+    icon: 'bi bi-journal-text', 
+    desc: 'Consultar, editar o dar de baja sanciones vigentes e históricas.' 
+  },
+  { 
+    to: '/panel-admin/tribunal/cargar-sancion', 
+    title: 'Cargar Sanción', 
+    icon: 'bi bi-shield-plus', 
+    desc: 'Registrar una nueva resolución disciplinaria en el legajo del árbitro.' 
   }
-  cargando.value = true;
-  try {
-    await axios.post(API_URL_BE, {
-      entity: 'sanciones',
-      action: 'crear_sancion',
-      payload: nuevaSancion.value
-    });
-    mensaje.value = { texto: 'Sanción registrada correctamente', tipo: 'success' };
-    Object.keys(nuevaSancion.value).forEach(k => nuevaSancion.value[k] = '');
-    setTimeout(() => mensaje.value.texto = '', 3000);
-  } catch {
-    mensaje.value = { texto: 'Error al conectar con el servidor', tipo: 'danger' };
-  } finally { cargando.value = false; }
-};
-
-onMounted(cargarArbitros);
+];
 </script>
 
-
 <style scoped>
-.menu-card-static {
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 40px;
-  border-bottom: 6px solid #dc2626;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.4) !important;
-  /* Centrado y con un tope máximo para que no se deforme en pantallas UltraWide */
-  margin: 0 auto;
-  max-width: 1200px; 
+/* Estilos idénticos a Tesorería/Secretaría para mantener la coherencia */
+.main-icon {
+  font-size: 3.2rem;
+  filter: drop-shadow(0 0 8px rgba(220, 38, 38, 0.3));
 }
 
-.main-icon {
-  font-size: 3.5rem;
-  filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.3));
+.menu-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px 20px;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #f1f5f9;
+  cursor: pointer;
+}
+
+.icon-circle {
+  width: 80px;
+  height: 80px;
+  background: #fff5f5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.menu-card i {
+  font-size: 2.8rem;
+}
+
+.menu-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.3) !important;
+  border-bottom: 6px solid #dc2626;
+}
+
+.menu-card:hover .icon-circle {
+  background: #dc2626;
+}
+
+.menu-card:hover i {
+  color: white !important;
+  transform: scale(1.1);
 }
 
 .text-danger { color: #dc2626 !important; }
 
-.custom-input {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 0.95rem;
-  background-color: #f8fafc;
-  transition: all 0.3s ease;
-}
-
-.custom-input:focus {
-  background-color: #fff;
-  border-color: #dc2626;
-  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15);
-  outline: none;
-}
-
-.btn-send {
-  width: 100%;
-  background-color: #dc2626;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 18px;
-  font-weight: bold;
-  font-size: 1rem;
-  letter-spacing: 1px;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.btn-send:hover:not(:disabled) {
-  transform: translateY(-4px);
-  background-color: #b91c1c;
-  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
-}
-
-.btn-send:disabled {
-  background-color: #fca5a5;
-  cursor: not-allowed;
-}
-
-.alert-success { background-color: #dcfce7; color: #166534; border-radius: 12px; border: none; }
-.alert-danger { background-color: #fee2e2; color: #991b1b; border-radius: 12px; border: none; }
-
-@media (max-width: 768px) {
-  .menu-card-static { padding: 25px; }
-  .main-icon { font-size: 2.8rem; }
+@media (max-width: 576px) {
+  .menu-card { padding: 30px 15px; }
+  .icon-circle { width: 70px; height: 70px; }
+  .menu-card i { font-size: 2rem; }
+  .main-icon { font-size: 2.5rem; }
 }
 </style>

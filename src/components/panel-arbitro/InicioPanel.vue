@@ -1,17 +1,27 @@
 <template>
   <div class="row g-3 g-md-4 animate__animated animate__fadeIn">
     
-    <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItems" :key="item.title">
-      <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
-        <div class="menu-card shadow-sm">
-          <div class="icon-circle">
-            <i :class="[item.icon, 'text-danger']"></i>
-          </div>
-          <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
-          <p class="small text-muted m-0">{{ item.desc }}</p>
-        </div>
-      </RouterLink>
+<div class="col-12 col-sm-6 col-md-4" v-for="item in menuItems" :key="item.title">
+  <a v-if="item.href" :href="item.href" target="_blank" rel="noopener noreferrer" class="text-decoration-none h-100 d-block">
+    <div class="menu-card shadow-sm">
+      <div class="icon-circle">
+        <i :class="[item.icon, 'text-danger']"></i>
+      </div>
+      <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
+      <p class="small text-muted m-0">{{ item.desc }}</p>
     </div>
+  </a>
+
+  <RouterLink v-else :to="item.to" class="text-decoration-none h-100 d-block">
+    <div class="menu-card shadow-sm">
+      <div class="icon-circle">
+        <i :class="[item.icon, 'text-danger']"></i>
+      </div>
+      <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
+      <p class="small text-muted m-0">{{ item.desc }}</p>
+    </div>
+  </RouterLink>
+</div>
 
   </div>
 </template>
@@ -54,9 +64,11 @@ const menuItems = [
   { to: '/panel-arbitro/disponibilidad', title: 'Disponibilidad', icon: 'bi bi-clock-history', desc: 'Modificá tus horarios.' },
   { to: '/panel-arbitro/licencia', title: 'Solicitar Licencia', icon: 'bi bi-calendar-check', desc: 'Inasistencias con antelación.' },
   { to: '/panel-arbitro/credencial', title: 'Credencial Digital', icon: 'bi bi-person-badge', desc: 'Carnet oficial 2026.' },
-  { to: '/panel-arbitro/sanciones', title: 'Tribunal de Ética', icon: 'bi bi-shield-exclamation', desc: 'Consultá sanciones.' },
+  { to: '/panel-arbitro/sanciones', title: 'Tribunal de Ética', icon: 'bi bi-shield-exclamation', desc: 'Consultá tus sanciones.' },
   { to: '/panel-arbitro/rendimiento', title: 'Mi Rendimiento', icon: 'bi bi-graph-up-arrow', desc: 'Estadísticas y partidos.' },
-  { to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Realizá pedidos de indumentaria.' }
+  { to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Realizá pedidos de indumentaria.' },
+  { to: '/panel-arbitro/aportes', title: 'Mis Aportes', icon: 'bi bi-cash-coin', desc: 'Consultá el estado de tus aportes.' },
+  { href: 'https://www.arbitroshandball.com.ar', title: 'Ref-Flix', icon: 'bi bi-cast', desc: 'Plataforma de videos' },
 ];
 </script>
 
