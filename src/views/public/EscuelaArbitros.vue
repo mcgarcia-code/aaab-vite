@@ -224,49 +224,49 @@ const cuerpoDocente = ref([
     name: 'Mariana García',
     role: 'Aspectos Reglamentarios, Práctica Arbitral',
     bio: 'Árbitra Internacional / Profesora de Ed. Física',
-    image: new URL('../assets/fotos/mariana-garcia.webp', import.meta.url).href
+    image: new URL('../../assets/fotos/mariana-garcia.webp', import.meta.url).href
   },
   {
     name: 'Marcelo La Delfa',
     role: 'Aspectos Reglamentarios, Taller de Silbato y Gestoformas, Práctica Arbitral',
     bio: 'Árbitro Nacional / Profesor de Ed. Física',
-    image: new URL('../assets/fotos/marcelo-ladelfa.webp', import.meta.url).href
+    image: new URL('../../assets/fotos/marcelo-ladelfa.webp', import.meta.url).href
   },
   {
     name: 'María Inés Paolantoni',
     role: 'Aspectos Reglamentarios, Análisis de Video',
     bio: 'Árbitra Internacional / Abogada',
-    image: new URL('../assets/fotos/ines-paolantoni.webp', import.meta.url).href
+    image: new URL('../../assets/fotos/ines-paolantoni.webp', import.meta.url).href
   },
   {
     name: 'Tomas Moreno',
     role: 'Preparador Físico',
     bio: 'Árbitro Local / Profesor de Ed. Física especializado en alto rendimiento deportivo',
-    image: new URL('../assets/fotos/tomas-moreno.webp', import.meta.url).href
+    image: new URL('../../assets/fotos/tomas-moreno.webp', import.meta.url).href
   },
   {
     name: 'Facundo Altamirano',
     role: 'Preparador Físico',
     bio: 'Árbitro Regional / Profesor de Ed. Física',
-    image: new URL('../assets/fotos/facundo-altamirano.webp', import.meta.url).href
+    image: new URL('../../assets/fotos/facundo-altamirano.webp', import.meta.url).href
   },
   {
     name: 'Mariela Policano',
     role: 'Análisis de Video, Encuentros de Mini Handball',
     bio: 'Árbitra Local',
-    image: new URL('../assets/fotos/mariela-policano.webp', import.meta.url).href
+    image: new URL('../../assets/fotos/mariela-policano.webp', import.meta.url).href
   },
   {
     name: 'Bárbara Fernández',
     role: 'Encuentros de Mini Handball',
     bio: 'Árbitra Nacional',
-    image: new URL('../assets/fotos/barbara-fernandez.webp', import.meta.url).href
+    image: new URL('../../assets/fotos/barbara-fernandez.webp', import.meta.url).href
   },
   {
     name: 'Francisco Cistriano',
     role: 'Encuentros de Mini Handball',
     bio: 'Árbitro Nacional / Licenciado en Ciencias Políticas',
-    image: new URL('../assets/fotos/francisco-cistriano.webp', import.meta.url).href
+    image: new URL('../../assets/fotos/francisco-cistriano.webp', import.meta.url).href
   }
 ])
 
@@ -292,7 +292,7 @@ const faqs = ref([
 const infoInscripcion = ref({
   title: 'Ciclo Lectivo 2026',
   description: 'Nuestro programa anual está destinado a personas con conocimientos básicos y experiencia en el Handball, que deseen incorporarse a nuestra plantilla arbitral',
-  image: new URL('../assets/fotos/curso-avanzado.webp', import.meta.url).href,
+  image: new URL('../../assets/fotos/curso-avanzado.webp', import.meta.url).href,
   startDate: 'Abril 2026',
   duration: 'Anual (Abril a Noviembre)',
   modality: 'Presencial',
@@ -304,7 +304,7 @@ const infoInscripcion = ref({
 
 <style scoped>
 .dark-background-section {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('../assets/fotos/cursos-background.webp');
+  background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('../../assets/fotos/cursos-background.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

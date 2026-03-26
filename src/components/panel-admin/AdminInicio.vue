@@ -39,42 +39,42 @@ useHead({
 
 const menuItems = [
   { 
-    to: '/admin/secretaria', 
+    to: '/panel-admin/secretaria', 
     title: 'Secretaría', 
     icon: 'bi bi-pc-display-horizontal', 
     desc: 'Gestionar datos personales y licencias de los árbitros.',
     rolesPermitidos: ['admin', 'secretario', 'designador'] 
   },
   { 
-    to: '/admin/tribunal', 
+    to: '/panel-admin/tribunal', 
     title: 'Tribunal de Ética', 
     icon: 'bi bi-shield-exclamation', 
     desc: 'Cargar sanciones, artículos y resoluciones.',
     rolesPermitidos: ['admin', 'etica', 'secretario'] 
   },
   { 
-    to: '/admin/tesoreria', 
+    to: '/panel-admin/tesoreria', 
     title: 'Tesorería', 
     icon: 'bi bi-cash-stack', 
     desc: 'Módulo contable, pagos y stock de ropa',
     rolesPermitidos: ['admin', 'tesorero'] 
   },
   { 
-    to: '/admin/designaciones', 
+    to: '/panel-admin/designaciones', 
     title: 'Designaciones', 
     icon: 'bi bi-cash-stack', 
     desc: 'Módulo de designaciones, control de disponibilidad y asignación de partidos',
     rolesPermitidos: ['admin', 'designador', 'secretario'] 
   },
   { 
-    to: '/admin/desarrollo-arbitral', 
+    to: '/panel-admin/desarrollo-arbitral', 
     title: 'Desarrollo Arbitral', 
     icon: 'bi bi-cash-stack', 
     desc: 'Módulo de desarrollo arbitral, seguimiento de capacitaciones y evaluaciones',
     rolesPermitidos: ['admin', 'coordinador general', 'secretario'] // <-- Coma agregada aquí
   },
   { 
-    to: '/admin/observaciones', 
+    to: '/panel-admin/observaciones', 
     title: 'Carga de Observaciones', 
     icon: 'bi bi-eye main-icon', 
     desc: 'Módulo para cargar observaciones sobre los árbitros',

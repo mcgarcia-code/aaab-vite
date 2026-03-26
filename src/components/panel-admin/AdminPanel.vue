@@ -22,11 +22,11 @@
         </div>
 
         <div v-if="route.name !== 'AdminInicio'" class="mb-4">
-  <button @click="handleVolver" class="btn-volver">
-    <i class="bi bi-arrow-left me-2"></i> 
-    {{ esRutaProfunda ? 'Volver atrás' : 'Volver al Menú Principal' }}
-  </button>
-</div>
+            <button @click="handleVolver" class="btn-volver">
+            <i class="bi bi-arrow-left me-2"></i> 
+                {{ esRutaProfunda ? 'Volver atrás' : 'Volver al Menú' }}
+            </button>
+        </div>
 
         <RouterView />
       </div>
@@ -44,7 +44,7 @@ const route = useRoute();
 const router = useRouter(); // Instanciamos el router
 
 // 1. Detectar si estamos en un "hijo del hijo"
-// Si la URL tiene más de 2 segmentos (ej: /admin/usuarios/editar), es profunda.
+// Si la URL tiene más de 2 segmentos (ej: /panel-admin/usuarios/editar), es profunda.
 const esRutaProfunda = computed(() => {
   const segmentos = route.path.split('/').filter(p => p !== '');
   return segmentos.length > 2;
@@ -55,7 +55,7 @@ const handleVolver = () => {
   if (esRutaProfunda.value) {
     router.back(); // Si es hijo de una card, simplemente vuelve atrás
   } else {
-    router.push('/admin'); // Si es una sección principal, vuelve al inicio
+    router.push('/panel-admin'); // Si es una sección principal, vuelve al inicio
   }
 };
 

@@ -1,14 +1,15 @@
+
 <template>
   <div class="container py-4 animate__animated animate__fadeIn">
     
     <div class="text-center mb-5">
-      <i class="bi bi-pc-display-horizontal text-danger main-icon"></i>
-      <h2 class="fw-bold text-white mt-2">Secretaría</h2>
-      <p class="small text-white opacity-75 m-0">Gestión de datos personales y licencias de los árbitros.</p>
+      <i class="bi bi-cash-stack text-danger main-icon"></i>
+      <h2 class="fw-bold text-white mt-2">Tesorería</h2>
+      <p class="small text-white opacity-75 m-0">Gestión contable y control de recursos</p>
     </div>
 
     <div class="row g-4 justify-content-center">
-      <div v-for="item in opcionesSecretaria" :key="item.title" class="col-12 col-sm-6">
+      <div v-for="item in opcionesTesoreria" :key="item.title" class="col-12 col-sm-6">
         <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
           <div class="menu-card shadow-lg">
             <div class="icon-circle">
@@ -28,9 +29,9 @@
 import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head'
 
-// Título y descripción específicos para la página de Secretaría AAAB
+// Título y descripción específicos para la página de Tesorería AAAB
 useHead({
-  title: 'Secretaría | AAAB',
+  title: 'Tesorería | AAAB',
   meta: [
     {
       name: 'description',
@@ -39,7 +40,7 @@ useHead({
         // --- ESTO ES LO QUE LEE WHATSAPP ---
     {
       property: 'og:title',
-      content: 'Secretaría | AAAB',
+      content: 'Tesorería | AAAB',
     },
     {
       property: 'og:description',
@@ -56,24 +57,25 @@ useHead({
   ],
 })
 
-const opcionesSecretaria = [
+const opcionesTesoreria = [
   { 
-    to: '/admin/secretaria/modificacion-datos', 
-    title: 'Modificación de Datos', 
-    icon: 'bi bi-people', 
-    desc: 'Actualizar información personal y disponibilidad de los árbitros.' 
+    to: '/panel-admin/tesoreria/aportes', 
+    title: 'Carga de Aportes', 
+    icon: 'bi bi-cash-coin', 
+    desc: 'Registrar pagos de cuotas y aportes mensuales.' 
   },
   { 
-    to: '/admin/secretaria/licencias', 
-    title: 'Licencias', 
-    icon: 'bi bi-calendar-date-fill', 
-    desc: 'Gestionar las licencias disponibles.' 
+    to: '/panel-admin/tesoreria/stock', 
+    title: 'Stock de Indumentaria', 
+    icon: 'bi bi-bag-check', 
+    desc: 'Control de inventario, talles y entregas.' 
   }
 ];
 </script>
 
-<style scoped>
 
+<style scoped>
+/* Quitamos los estilos de full-screen y mantenemos la estética de las cards */
 .main-icon {
   font-size: 3.2rem;
   filter: drop-shadow(0 0 8px rgba(220, 38, 38, 0.3));

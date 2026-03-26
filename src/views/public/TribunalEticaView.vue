@@ -108,7 +108,7 @@ const documentos = ref([
 /* Estilos para la sección principal con imagen de fondo oscuro */
 .dark-background-section {
   background-image:
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('../assets/fotos/etica-background.webp');
+    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('../../assets/fotos/etica-background.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

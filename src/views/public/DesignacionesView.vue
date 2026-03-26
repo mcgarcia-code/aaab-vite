@@ -102,7 +102,7 @@ onMounted(fetchDesignaciones);
 .designaciones-hero {
   min-height: 90vh;
   background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-    url('../assets/fotos/designaciones-hero.webp');
+    url('../../assets/fotos/designaciones-hero.webp');
   background-position: center;
   background-size: cover;
   color: white;

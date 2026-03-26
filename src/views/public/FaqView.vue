@@ -324,7 +324,7 @@ const categorias = ref([
 .dark-background-section {
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    url('../assets/fotos/descargas-background.webp');
+    url('../../assets/fotos/descargas-background.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

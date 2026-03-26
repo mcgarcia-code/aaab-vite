@@ -111,7 +111,7 @@ const iniciarSesion = async () => {
       
       // Redirección basada en rol
       if (res.payload.arbitro.rol === 'admin') {
-        router.push('/admin');
+        router.push('/panel-admin');
       } else {
         router.push('/panel-arbitro');
       }
