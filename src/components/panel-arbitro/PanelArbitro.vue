@@ -7,21 +7,23 @@
       </div>
     </nav>
     
-    <div class="container py-2">
-      <div class="max-800">
-        <div class="user-header d-flex align-items-center mb-4 p-3 rounded-4 shadow">
+    <div class="container-fluid px-4 py-2">
+      <div class="mx-auto"> <div class="user-header d-flex align-items-center mb-4 p-3 rounded-4 shadow">
           <img :src="urlFoto" @error="(e) => e.target.src = 'https://via.placeholder.com/150'" 
-               class="perfil-img me-3">
+               class="perfil-img me-3 shadow-sm">
           <div class="overflow-hidden">
-            <h2 class="text-white fw-bold m-0 text-capitalize text-truncate">Hola, {{ arbitro.nombre }}</h2>
+            <h2 class="text-white fw-bold m-0 text-capitalize text-truncate">
+              Hola, {{ arbitro.nombre }}
+            </h2>
             <span class="badge bg-danger mt-1">ID Árbitro: {{ arbitro.id }}</span>
           </div>
         </div>
 
-        <div v-if="$route.name !== 'PanelInicio'" class="mb-4">
-          <RouterLink to="/panel-arbitro" class="btn-volver">
-            <i class="bi bi-arrow-left me-2"></i> Volver al Menú
-          </RouterLink>
+        <div v-if="route.name !== 'PanelInicio'" class="mb-4">
+          <button @click="handleVolver" class="btn-volver">
+            <i class="bi bi-arrow-left me-2"></i> 
+            {{ esRutaProfunda ? 'Volver atrás' : 'Volver al Menú' }}
+          </button>
         </div>
 
         <RouterView />
@@ -31,41 +33,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { auth } from '@/api/auth'; 
-import { useHead } from '@vueuse/head'
+import { useHead } from '@vueuse/head';
 
-// Título y descripción específicos para la página de Panel de Árbitro
-useHead({
-  title: 'Panel de Árbitro | AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Accede a tu panel de control como árbitro para consultar tus designaciones, sanciones y más.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Panel de Árbitro | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Accede a tu panel de control como árbitro para consultar tus designaciones, sanciones y más.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
-  ],
-})
+const route = useRoute();
+const router = useRouter();
 
-
+// Datos del Árbitro
 const arbitro = ref(auth.getUser() || {});
 const urlFoto = `https://arbitroshandball.com.ar/resources/carnet-arbitros/${arbitro.value.dni}.webp`;
+
+// Lógica de navegación inteligente (Rutas hijas vs Rutas principales)
+const esRutaProfunda = computed(() => {
+  // Cuenta los segmentos de la URL. Si hay más de 2 (ej: /panel-arbitro/indumentaria/nuevo), es profunda.
+  const segmentos = route.path.split('/').filter(p => p !== '');
+  return segmentos.length > 2;
+});
+
+const handleVolver = () => {
+  if (esRutaProfunda.value) {
+    router.back(); // Si está dentro de una sección, vuelve un paso atrás
+  } else {
+    router.push('/panel-arbitro'); // Si es sección principal, vuelve al dashboard
+  }
+};
 
 const cerrarSesion = () => {
   auth.logout();
@@ -76,6 +69,16 @@ onMounted(() => {
     auth.startInactivityTimer();
   }
 });
+
+// SEO y Redes Sociales
+useHead({
+  title: 'Panel de Árbitro | AAAB',
+  meta: [
+    { name: 'description', content: 'Panel de control oficial para árbitros de la AAAB.' },
+    { property: 'og:title', content: 'Panel de Árbitro | AAAB' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' }
+  ],
+})
 </script>
 
 <style scoped>
@@ -113,10 +116,14 @@ onMounted(() => {
   align-items: center;
   color: #fff;
   text-decoration: none;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   padding: 8px 20px;
   border-radius: 50px;
   transition: 0.3s;
+  /* Agregamos esto para que el <button> se vea como el <a> */
+  border: none; 
+  cursor: pointer;
+  font-size: 1rem; /* Ajusta según necesites */
 }
 
 .btn-volver:hover {

@@ -263,10 +263,10 @@ const cuerpoDocente = ref([
     image: new URL('../../assets/fotos/barbara-fernandez.webp', import.meta.url).href
   },
   {
-    name: 'Francisco Cistriano',
+    name: 'Maria Jose Borrás Luque',
     role: 'Encuentros de Mini Handball',
-    bio: 'Árbitro Nacional / Licenciado en Ciencias Políticas',
-    image: new URL('../../assets/fotos/francisco-cistriano.webp', import.meta.url).href
+    bio: 'Árbitra Nacional / Profesora de Ed. Física',
+    image: new URL('../../assets/fotos/majo-borrasluque.webp', import.meta.url).href
   }
 ])
 

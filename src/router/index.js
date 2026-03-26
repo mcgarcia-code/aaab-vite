@@ -40,6 +40,23 @@ const routes = [
       { path: 'credencial', name: 'PanelCredencial', component: () => import('../components/panel-arbitro/credencial/CredencialDigital.vue') },
       { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/Indumentaria.vue') },
       { path: 'rendimiento', name: 'PanelRendimiento', component: () => import('../components/panel-arbitro/rendimiento/MiRendimiento.vue') },
+      { 
+        path: 'indumentaria', 
+        name: 'PanelIndumentaria', 
+        component: () => import('../components/panel-arbitro/indumentaria/Indumentaria.vue') 
+      },
+     
+      { 
+        path: 'indumentaria/nuevo', 
+        name: 'RealizarPedido', 
+        component: () => import('../components/panel-arbitro/indumentaria/RealizarPedido.vue') 
+      },
+      { 
+        path: 'indumentaria/mis-pedidos', 
+        name: 'MisPedidos', 
+        component: () => import('../components/panel-arbitro/indumentaria/MisPedidos.vue') 
+      },
+    
     ]
   },
 

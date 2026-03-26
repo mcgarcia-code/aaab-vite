@@ -80,6 +80,7 @@ const menuItems = [
     desc: 'Módulo para cargar y visualizar observaciones sobre los árbitros',
     rolesPermitidos: ['admin', 'observador', 'coordinador general', 'secretario'] // <-- Coma agregada aquí
   },
+  
 ];
 
 const filteredMenu = computed(() => {
