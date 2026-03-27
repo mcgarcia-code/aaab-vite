@@ -42,7 +42,7 @@ const routes = [
       { path: 'aportes', name: 'PanelAportes', component: () => import('../components/panel-arbitro/tesoreria/MisAportes.vue') },
       { path: 'ref-flix', name: 'PanelRefFlix', beforeEnter() { window.location.href = 'https://www.arbitroshandball.com.ar' }},
       
-      { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/Indumentaria.vue') },
+      { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/IndumentariaArbitro.vue') },
       
       { 
         path: 'indumentaria/nuevo', 
@@ -131,7 +131,7 @@ const routes = [
       { 
         path: 'tesoreria/indumentaria', 
         name: 'TesoreriaIndumentaria',
-        component: () => import('../components/panel-admin/tesoreria/IndumentariaMenu.vue'),
+        component: () => import('../components/panel-admin/tesoreria/IndumentariaAdmin.vue'),
         meta: { roles: ['admin', 'tesorero'] }
       },
       { 
