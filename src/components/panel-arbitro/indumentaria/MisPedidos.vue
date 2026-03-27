@@ -47,6 +47,8 @@ import { ref, onMounted } from 'vue';
 import { api } from '@/api/api';
 
 // Título y descripción específicos
+import { useHead } from '@vueuse/head';
+
 useHead({
   title: 'Mis Pedidos| AAAB',
   meta: [
