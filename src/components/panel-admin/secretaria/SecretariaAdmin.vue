@@ -74,7 +74,14 @@ const opcionesSecretaria = [
     title: 'Instituciones y CUITs', 
     icon: 'bi bi-building-check', 
     desc: 'Administrar datos fiscales y entidades vinculadas.' 
-  }
+  },
+  { 
+
+    to: '/panel-admin/secretaria/eventos-notificaciones', 
+    title: 'Eventos y Notificaciones', 
+    icon: 'bi bi-bell', 
+    desc: 'Gestionar eventos y notificaciones para los árbitros.' 
+ },
 ];
 </script>
 

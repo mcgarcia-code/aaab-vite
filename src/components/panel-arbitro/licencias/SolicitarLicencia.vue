@@ -7,10 +7,6 @@
         Las licencias deben solicitarse con un mínimo de <strong>10 días</strong> de antelación para aprobación automática. Las mismas son por día completo, no hay licencias parciales.
       </p>
 
-      <div v-if="mensaje.texto" :class="`alert alert-${mensaje.tipo} small py-2 shadow-sm border-0`" role="alert">
-        {{ mensaje.texto }}
-      </div>
-
       <div class="mb-3">
         <label class="form-label fw-bold small text-dark">Fecha de la Licencia</label>
         <input 
@@ -77,42 +73,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import { auth } from '@/api/auth';
 import { api } from '@/api/api';
-import { useHead } from '@vueuse/head'
+import { useHead } from '@vueuse/head';
 
-// Título y descripción específicos para la página de Solicitar Licencia AAAB
 useHead({
   title: 'Solicitar Licencia | AAAB',
   meta: [
-    {
-      name: 'description',
-      content: 'Solicita tu licencia para ausentarte de tus compromisos arbitrales.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Solicitar Licencia | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Solicita tu licencia para ausentarte de tus compromisos arbitrales.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { name: 'description', content: 'Solicita tu licencia para ausentarte de tus compromisos arbitrales.' }
   ],
-})
+});
+
+// Inyección del notificador global
+const notificar = inject('notificar');
 
 const arbitro = ref(auth.getUser() || {});
 const fechaSeleccionada = ref('');
-const mensaje = ref({ texto: '', tipo: '' });
 const cargando = ref(false);
 const licencias = ref([]);
 const fechaMinima = new Date().toISOString().split("T")[0];
@@ -121,23 +98,17 @@ const formatearFecha = (fechaStr) => {
   if (!fechaStr) return '';
   const soloFecha = fechaStr.split(' ')[0];
   const partes = soloFecha.split('-');
-  if (partes.length !== 3) return fechaStr;
-  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fechaStr;
 };
-
-// --- PETICIONES API (ADAPTADAS A API.PHP) ---
 
 const obtenerLicencias = async () => {
   if (!arbitro.value.id) return;
   try {
-    // Para GET, api.php suele requerir el payload como string JSON en la URL
     const res = await api.get({
       entity: 'licencias',
       action: 'obtenerHistorial',
       payload: JSON.stringify({ id_arbitro: arbitro.value.id })
     });
-    
-    // api.php devuelve el resultado de la función en .payload
     licencias.value = res.payload || [];
   } catch (err) {
     console.error("Error al cargar historial:", err);
@@ -153,18 +124,16 @@ const solicitarLicencia = async () => {
     const fechaPedido = new Date(fechaSeleccionada.value);
     fechaPedido.setHours(0, 0, 0, 0);
     const diffDias = Math.ceil((fechaPedido - hoy) / (1000 * 60 * 60 * 24));
-    return diffDias >= 7; // 7 días para aprobar la licencia
+    return diffDias >= 7; // Lógica de 7 días para aprobación
   })();
 
   const estadoFinal = enTermino ? 'aprobada' : 'rechazada';
   cargando.value = true;
-  mensaje.value = { texto: '', tipo: '' };
 
   try {
-    // Enviamos el objeto con entity, action y payload
     const res = await api.post({
       entity: 'licencias',
-      action: 'guardarLicencia',
+      action: 'crearLicencia',
       payload: {
         id_arbitro: arbitro.value.id,
         nombre_arbitro: arbitro.value.nombre,
@@ -174,25 +143,35 @@ const solicitarLicencia = async () => {
       }
     });
 
-    // Validamos 'res.ok' (de api.php) y 'res.payload.success' (de nuestra función)
     if (res.ok && res.payload.success) {
-      mensaje.value = { 
-        texto: enTermino 
-          ? "Licencia aceptada correctamente." 
-          : "Licencia rechazada por estar fuera de término (mínimo 9 días).", 
-        tipo: enTermino ? 'success' : 'danger' 
-      };
+      if (enTermino) {
+        notificar({
+          titulo: '¡Licencia Aceptada!',
+          mensaje: 'La licencia se ha registrado correctamente.',
+          tipo: 'success'
+        });
+      } else {
+        notificar({
+          titulo: 'Solicitud Rechazada',
+          mensaje: 'La licencia fue rechazada automáticamente por estar fuera de término (mínimo 10 días).',
+          tipo: 'danger'
+        });
+      }
       fechaSeleccionada.value = '';
       await obtenerLicencias();
     } else {
-      mensaje.value = { 
-        texto: res.payload?.message || "Error al procesar la solicitud.", 
-        tipo: 'danger' 
-      };
+      notificar({
+        titulo: 'Error',
+        mensaje: res.payload?.message || "No se pudo procesar la solicitud.",
+        tipo: 'danger'
+      });
     }
-  } catch (err) {
-    console.error("Error:", err);
-    mensaje.value = { texto: "Error de conexión con el servidor.", tipo: 'danger' };
+  } catch {
+    notificar({
+      titulo: 'Error de Red',
+      mensaje: 'No se pudo conectar con el servidor.',
+      tipo: 'danger'
+    });
   } finally {
     cargando.value = false;
   }

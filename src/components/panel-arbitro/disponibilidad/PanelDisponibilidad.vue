@@ -13,10 +13,6 @@
       </div>
       
       <div class="card-body p-3 p-md-4">
-        <div v-if="mensaje.texto" :class="`alert alert-${mensaje.tipo} mb-4 shadow-sm border-0`" role="alert">
-          {{ mensaje.texto }}
-        </div>
-
         <h6 class="text-danger fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">Movilidad</h6>
         <div class="row mb-4 border-bottom pb-3">
           <div class="col-12 d-flex flex-wrap gap-3 gap-md-4">
@@ -119,11 +115,10 @@
       </div>
     </div>
 
-    <div class="manual-section p-0 p-md-0 rounded-4 mb-5 mx-auto" style="max-width: 1000px; background: transparent; box-shadow: none;">
-        
+    <div class="manual-section p-0 mx-auto mt-4 mb-5" style="max-width: 1000px; background: transparent; box-shadow: none;">
         <div class="text-center text-white-50 mb-3 small">
             <i class="bi bi-shield-lock-fill me-1"></i>
-            Para evitar abusos, todas las solicitudes quedan registradas.
+            Todas las modificaciones quedan registradas en el sistema.
         </div>
         
         <div class="card border-0 shadow-sm overflow-hidden mb-4" style="border-radius: 12px;">
@@ -151,8 +146,8 @@
                         </tbody>
                     </table>
                 </div>
-                <div v-else class="text-center py-4">
-                    <p class="text-muted small m-0">Sin solicitudes previas de disponibilidad.</p>
+                <div v-else class="text-center py-4 text-muted small">
+                    Sin solicitudes previas de disponibilidad.
                 </div>
             </div>
         </div>
@@ -161,15 +156,13 @@
             <div class="alert alert-info border-0 shadow-sm mb-3 d-flex align-items-center info-mobile" style="background-color: #e0f7fa; color: #006064; border-radius: 10px;">
                 <i class="bi bi-info-circle-fill me-3 fs-5 d-none d-md-block"></i>
                 <div class="x-small-mobile">
-                    Solicitud para <strong>secretaría y designaciones</strong>.
+                    Informar cambios urgentes a <strong>secretaría y designaciones</strong>.
                 </div>
             </div>
 
             <div class="p-3 p-md-4 rounded-4 shadow-lg" style="background: #0c1624; border: 1px dashed rgba(255,255,255,0.2);">
                 <h6 class="text-white fw-bold small mb-2 text-uppercase">Informar cambio urgente</h6>
-                
                 <textarea v-model="solicitudManual" class="form-control mb-3 custom-textarea" rows="3" placeholder="Detallá aquí tu cambio de horarios..."></textarea>
-                
                 <button @click="enviarSolicitudManual" class="btn btn-danger w-100 fw-bold py-2 shadow" :disabled="cargando || !solicitudManual">
                     ENVIAR SOLICITUD FORMAL
                 </button>
@@ -181,47 +174,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, inject } from 'vue';
 import axios from 'axios';
-// 1. Importamos el centralizador de auth
 import { auth } from '@/api/auth';
 import { useHead } from '@vueuse/head'
 
-// Título y descripción específicos para la página de Disponibilidad Horaria AAAB
 useHead({
   title: 'Disponibilidad Horaria | AAAB',
   meta: [
-    {
-      name: 'description',
-      content: 'Modificá tu disponibilidad horaria para sábados y domingos, y gestioná tu movilidad y actividad deportiva desde un panel centralizado.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Disponibilidad Horaria | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Modificá tu disponibilidad horaria para sábados y domingos, y gestioná tu movilidad y actividad deportiva desde un panel centralizado.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { name: 'description', content: 'Gestioná tu disponibilidad horaria, movilidad y actividad deportiva.' }
   ],
 })
 
-// 2. REEMPLAZO: Obtenemos el árbitro desde el sistema centralizado
-const arbitro = ref(auth.getUser() || {});
+// Inyección del notificador global
+const notificar = inject('notificar');
 
+const arbitro = ref(auth.getUser() || {});
 const solicitudManual = ref('');
 const historial = ref([]);
 const cargando = ref(false);
-const mensaje = ref({ texto: '', tipo: '' });
 
 const movilidadSeleccionada = ref([]);
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
@@ -260,7 +231,6 @@ watch(() => arbitro.value.disponibilidad_domingo, (val) => {
   }
 });
 
-// NUEVO WATCH PARA LIMPIEZA DE CLUB Y CATEGORÍA
 watch(() => arbitro.value.juega_handball, (nuevoValor) => {
   if (nuevoValor === 'no') {
     arbitro.value.donde_juega = null;
@@ -273,16 +243,25 @@ const guardarCambiosDirectos = async () => {
   try {
     const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_perfil.php', arbitro.value);
     if (res.data.success) {
-      mensaje.value = { texto: "Disponibilidad actualizada correctamente.", tipo: 'success' };
-      
-      // 3. REEMPLAZO: Guardamos los cambios en el sessionStorage centralizado
+      notificar({
+        titulo: '¡Disponibilidad Actualizada!',
+        mensaje: 'Tus horarios y datos de movilidad se guardaron con éxito.',
+        tipo: 'success'
+      });
       auth.setUser(arbitro.value);
-      
     } else {
-      mensaje.value = { texto: res.data.message, tipo: 'danger' };
+      notificar({
+        titulo: 'Error',
+        mensaje: res.data.message || 'No se pudo actualizar la disponibilidad.',
+        tipo: 'danger'
+      });
     }
   } catch {
-    mensaje.value = { texto: "Error de conexión.", tipo: 'danger' };
+    notificar({
+      titulo: 'Error de Red',
+      mensaje: 'No se pudo conectar con el servidor.',
+      tipo: 'danger'
+    });
   } finally {
     cargando.value = false;
   }
@@ -300,12 +279,26 @@ const enviarSolicitudManual = async () => {
       mensaje: "SOLICITUD DISPONIBILIDAD: " + solicitudManual.value
     });
     if (res.data.success) {
-      mensaje.value = { texto: "Solicitud enviada con éxito.", tipo: 'success' };
+      notificar({
+        titulo: 'Solicitud Enviada',
+        mensaje: 'Tu pedido de cambio de disponibilidad fue enviado correctamente.',
+        tipo: 'success'
+      });
       solicitudManual.value = '';
       obtenerHistorial();
+    } else {
+      notificar({
+        titulo: 'Error',
+        mensaje: 'Hubo un problema al enviar la solicitud.',
+        tipo: 'danger'
+      });
     }
   } catch {
-    mensaje.value = { texto: "Error al enviar solicitud.", tipo: 'danger' };
+    notificar({
+      titulo: 'Error',
+      mensaje: 'Fallo en la comunicación con el servidor.',
+      tipo: 'danger'
+    });
   } finally {
     cargando.value = false;
   }

@@ -40,7 +40,7 @@ const routes = [
       { path: 'credencial', name: 'PanelCredencial', component: () => import('../components/panel-arbitro/credencial/CredencialDigital.vue') },
       { path: 'rendimiento', name: 'PanelRendimiento', component: () => import('../components/panel-arbitro/rendimiento/MiRendimiento.vue') },
       { path: 'aportes', name: 'PanelAportes', component: () => import('../components/panel-arbitro/tesoreria/MisAportes.vue') },
-      { path: 'ref-flix', name: 'PanelRefFlix', beforeEnter() { window.location.href = 'https://www.arbitroshandball.com.ar' }},
+      { path: 'ref-flix', name: 'PanelRefFlix', beforeEnter() { window.location.href = 'https://refflix.com.ar' }},
       
       { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/IndumentariaArbitro.vue') },
       
@@ -92,6 +92,13 @@ const routes = [
         path: 'secretaria/instituciones-cuits', 
         name: 'InstitucionesCuits', 
         component: () => import('../components/panel-admin/secretaria/InstitucionesCuits.vue'),
+        meta: { roles: ['admin', 'secretario'] }
+      },
+      
+      { 
+        path: 'secretaria/eventos-notificaciones', 
+        name: 'GestionEventos', 
+        component: () => import('../components/panel-admin/secretaria/GestionEventos.vue'),
         meta: { roles: ['admin', 'secretario'] }
       },
 

@@ -1,61 +1,62 @@
 <template>
   <div class="admin-panel animate__animated animate__fadeIn">
     
-    <div v-if="mensaje.texto" :class="['alert', `alert-${mensaje.tipo}`]" class="mb-3">
-       {{ mensaje.texto }}
-    </div>
-
     <div class="header-card shadow-sm">
-      <div class="header-info">
+      <div class="header-info text-start">
         <h2 class="header-title">Gestión de Licencias</h2>
-        <span class="header-subtitle">Total: {{ licenciasFiltradas.length }} registros</span>
+        <span class="header-subtitle">Total: {{ licenciasFiltradas.length }} licencias</span>
       </div>
       
       <div class="header-actions">
-        <button @click="limpiarFiltros" class="btn-custom btn-filter">
-          <span class="material-icons">filter_alt_off</span> <span>Limpiar</span>
+        <button @click="limpiarFiltros" class="btn-action btn-light-gray">
+          <span class="material-icons">filter_alt_off</span> <b>Filtros</b>
         </button>
-        <button @click="guardarCambios" class="btn-custom btn-save">
-          <span class="material-icons">save</span> <span>Guardar</span>
+        <button @click="guardarTodo" class="btn-action btn-blue" :disabled="cargando">
+          <span v-if="!cargando" class="material-icons">save</span>
+          <span v-else class="spinner-border spinner-border-sm me-1"></span>
+          <b>Guardar</b>
         </button>
-        <button @click="nuevaLicencia" class="btn-custom btn-new">
-          <span class="material-icons">add_circle</span> <span>Nuevo</span>
+        <button @click="abrirModalNuevo" class="btn-action btn-pink">
+          <span class="material-icons">person_add</span> <b>Nuevo</b>
+        </button>
+        <button @click="exportarExcel" class="btn-action btn-green">
+          <span class="material-icons">download</span> <b>Excel</b>
         </button>
       </div>
     </div>
 
-    <div class="table-container shadow-sm">
-      <div v-if="cargando" class="text-center p-5">Cargando...</div>
-      
-      <table v-else class="custom-table">
+    <div class="table-container shadow-sm mt-3">
+      <table class="custom-table w-100">
         <thead>
-          <tr>
-            <th style="width: 80px;">ID</th>
+          <tr class="header-row">
+            <th style="width: 70px;" class="text-center">ID</th>
             <th>APELLIDO</th>
             <th>NOMBRE</th>
             <th class="text-center">ESTADO</th>
-            <th>FECHA LICENCIA</th>
+            <th class="text-center">FECHA LICENCIA</th>
             <th class="text-center">ACCIONES</th>
           </tr>
           <tr class="filter-row">
-            <td></td>
-            <td><input v-model="filtros.apellido" placeholder="Filtrar.." class="filter-input"></td>
-            <td><input v-model="filtros.nombre" placeholder="Filtrar.." class="filter-input"></td>
-            <td>
-              <select v-model="filtros.estado" class="filter-input">
+            <td class="text-center">
+               <button @click="obtenerLicencias" class="btn-refresh"><span class="material-icons">refresh</span></button>
+            </td>
+            <td><input v-model="filtros.apellido" class="filter-input text-start" placeholder="Filtrar.."></td>
+            <td><input v-model="filtros.nombre" class="filter-input text-start" placeholder="Filtrar.."></td>
+            <td class="px-2">
+              <select v-model="filtros.estado" class="filter-input text-center">
                 <option value="">TODOS</option>
+                <option value="pendiente">PENDIENTE</option>
                 <option value="aprobada">APROBADA</option>
                 <option value="rechazada">RECHAZADA</option>
-                <option value="pendiente">PENDIENTE</option>
               </select>
             </td>
-            <td></td>
+            <td><input v-model="filtros.fecha" class="filter-input text-center" placeholder="DD/MM/YYYY"></td>
             <td></td>
           </tr>
         </thead>
         <tbody>
           <tr v-for="lic in licenciasFiltradas" :key="lic.id">
-            <td class="text-muted">#{{ lic.id }}</td>
+            <td class="text-center text-muted small">#{{ lic.id }}</td>
             <td class="fw-bold">{{ lic.apellido }}</td>
             <td class="fw-bold">{{ lic.nombre }}</td>
             <td class="text-center">
@@ -65,383 +66,328 @@
                 <option value="rechazada">RECHAZADA</option>
               </select>
             </td>
-            <td>
+            <td class="text-center">
               <input type="date" v-model="lic.fecha_licencia" class="date-input">
             </td>
             <td class="text-center">
-              <button @click="eliminarLicencia(lic.id)" class="btn-delete">
-                <span class="material-icons">delete</span>
-              </button>
+              <div class="action-buttons-group">
+                <button @click="eliminarLicencia(lic.id)" class="btn-action-icon btn-delete-row" title="Eliminar">
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <div v-if="mostrarModalNuevo" class="modal-overlay" @click.self="mostrarModalNuevo = false">
+      <div class="modal-content-custom animate__animated animate__zoomIn">
+        <h4 class="fw-bold mb-4">Registrar Licencia</h4>
+        <div class="mb-3 text-start">
+          <label class="small fw-bold">Seleccionar Árbitro</label>
+          <select v-model="nuevo.id_arbitro" class="form-select border-danger-subtle shadow-none">
+            <option value="" disabled>Elegir árbitro...</option>
+            <option v-for="arb in arbitrosLista" :key="arb.id" :value="arb.id">
+              {{ arb.apellido }}, {{ arb.nombre }}
+            </option>
+          </select>
+        </div>
+        <div class="mb-3 text-start">
+          <label class="small fw-bold">Fecha de Licencia</label>
+          <input v-model="nuevo.fecha_licencia" type="date" class="form-control shadow-none">
+        </div>
+        <div class="d-flex gap-2 mt-4">
+          <button @click="mostrarModalNuevo = false" class="btn btn-light w-100 rounded-pill">Cerrar</button>
+          <button @click="crearLicenciaAction" class="btn btn-danger w-100 rounded-pill fw-bold" :disabled="!nuevo.id_arbitro || !nuevo.fecha_licencia">CREAR</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, inject } from 'vue';
 import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
+import * as XLSX from 'xlsx';
+import { useHead } from '@vueuse/head'
 
 useHead({
-  title: 'Administración de Licencias | AAAB',
-  meta: [{ name: 'description', content: 'Panel de control para gestionar licencias de árbitros.' }],
+  title: 'Licencias | AAAB',
+  meta: [
+    { name: 'description', content: 'Administra y controla las licencias de los árbitros.' },
+    { property: 'og:title', content: 'Licencias | AAAB' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' }
+  ],
 })
 
-// --- ESTADO ---
+const notificar = inject('notificar');
+
 const licencias = ref([]);
+const licenciasOriginales = ref([]);
+const arbitrosLista = ref([]);
 const cargando = ref(false);
-const mensaje = ref({ texto: '', tipo: '' });
+const mostrarModalNuevo = ref(false);
+const nuevo = ref({ id_arbitro: '', fecha_licencia: '', estado: 'aprobada' });
+const filtros = ref({ nombre: '', apellido: '', estado: '', fecha: '' });
 
-const filtros = ref({
-  nombre: '',
-  apellido: '',
-  estado: ''
-});
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
-// --- FUNCIÓN DE NORMALIZACIÓN ---
-// Convierte "Árbitro" en "arbitro"
-const normalizar = (texto) => {
-  if (!texto) return '';
-  return texto
-    .toString()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, ""); // Elimina tildes y diéresis
-};
-
-// --- PROPIEDADES COMPUTADAS (FILTRADO MEJORADO) ---
 const licenciasFiltradas = computed(() => {
-  return licencias.value.filter(lic => {
-    // Normalizamos tanto el valor de la tabla como el valor escrito en el buscador
-    const nombreLic = normalizar(lic.nombre);
-    const nombreFiltro = normalizar(filtros.value.nombre);
-    
-    const apellidoLic = normalizar(lic.apellido);
-    const apellidoFiltro = normalizar(filtros.value.apellido);
-
-    const matchNombre = nombreLic.includes(nombreFiltro);
-    const matchApellido = apellidoLic.includes(apellidoFiltro);
-    const matchEstado = filtros.value.estado === '' || lic.estado === filtros.value.estado;
-
-    return matchNombre && matchApellido && matchEstado;
+  return licencias.value.filter(l => {
+    const matchApe = normalizar(l.apellido).includes(normalizar(filtros.value.apellido));
+    const matchNom = normalizar(l.nombre).includes(normalizar(filtros.value.nombre));
+    const matchEst = filtros.value.estado === '' || l.estado === filtros.value.estado;
+    const matchFec = formatearFechaVista(l.fecha_licencia).includes(filtros.value.fecha);
+    return matchApe && matchNom && matchEst && matchFec;
   });
 });
 
-// --- RESTO DE TUS MÉTODOS ---
-const obtenerTodasLasLicencias = async () => {
+const obtenerLicencias = async () => {
   cargando.value = true;
-  try {
-    const res = await api.get({
-      entity: 'licencias',
-      action: 'nosequeponer', // Recuerda cambiar esto por tu acción real
-      payload: {} 
-    });
-    licencias.value = res.payload || [];
-  } catch (err) {
-    console.error("Error al cargar licencias:", err);
-    mensaje.value = { texto: "Error al conectar con la base de datos.", tipo: 'danger' };
-  } finally {
-    cargando.value = false;
+  const res = await api.get({ entity: 'licencias', action: 'obtenerTodasLasLicencias' });
+  if (res.ok) {
+    licencias.value = res.payload;
+    licenciasOriginales.value = JSON.parse(JSON.stringify(res.payload));
+  }
+  cargando.value = false;
+};
+
+const obtenerArbitros = async () => {
+  const res = await api.get({ entity: 'usuarios', action: 'obtenerUsuarios' }); 
+  if (res.ok && Array.isArray(res.payload)) {
+    arbitrosLista.value = res.payload.sort((a, b) => (a.apellido || '').localeCompare(b.apellido || ''));
   }
 };
 
-const guardarCambios = async () => {
-  mensaje.value = { texto: "Los cambios se guardaron correctamente", tipo: 'success' };
-  console.log("Datos a enviar:", licencias.value);
-};
+const guardarTodo = async () => {
+  const modificadas = licencias.value.filter(lic => {
+    const original = licenciasOriginales.value.find(o => o.id === lic.id);
+    return original.estado !== lic.estado || original.fecha_licencia !== lic.fecha_licencia;
+  });
 
-const eliminarLicencia = async (id) => {
-  if (!confirm('¿Estás seguro de eliminar esta licencia?')) return;
-  
-  try {
+  if (modificadas.length === 0) {
+    notificar({ titulo: 'Sin cambios', mensaje: 'No detectamos modificaciones para guardar.', tipo: 'success' });
+    return;
+  }
+
+  cargando.value = true;
+  let errores = 0;
+
+  for (const lic of modificadas) {
     const res = await api.post({
       entity: 'licencias',
-      action: 'nosequeponer',
-      payload: { id }
+      action: 'actualizarLicencia',
+      payload: { id: lic.id, estado: lic.estado, fecha_licencia: lic.fecha_licencia }
     });
-    if (res.ok) {
-      licencias.value = licencias.value.filter(l => l.id !== id);
-    }
-  } catch (err) {
-    console.error("Error al eliminar:", err);
+    if (!res.ok) errores++;
+  }
+  
+  cargando.value = false;
+
+  if (errores === 0) {
+    licenciasOriginales.value = JSON.parse(JSON.stringify(licencias.value));
+    notificar({ titulo: '¡Cambios Guardados!', mensaje: `Se actualizaron ${modificadas.length} registros con éxito.` });
+  } else {
+    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al procesar los cambios.', tipo: 'danger' });
   }
 };
 
-const limpiarFiltros = () => {
-  filtros.value = { nombre: '', apellido: '', estado: '' };
+const crearLicenciaAction = async () => {
+  if(!nuevo.value.id_arbitro || !nuevo.value.fecha_licencia) return;
+  const res = await api.post({ 
+    entity: 'licencias', 
+    action: 'crearLicencia', 
+    payload: { ...nuevo.value, es_admin: true } 
+  });
+  if(res.ok) {
+    mostrarModalNuevo.value = false;
+    await obtenerLicencias();
+    notificar({ titulo: '¡Licencia Creada!', mensaje: 'El registro se guardó correctamente en la base de datos.' });
+    nuevo.value = { id_arbitro: '', fecha_licencia: '', estado: 'aprobada' };
+  }
 };
 
-const nuevaLicencia = () => {
-  alert("aun no implementado");
+const eliminarLicencia = (id) => {
+  notificar({
+    titulo: '¿Eliminar Licencia?',
+    mensaje: 'Esta acción es irreversible. El registro será borrado permanentemente.',
+    tipo: 'danger',
+    alConfirmar: async () => {
+      const res = await api.post({ entity: 'licencias', action: 'eliminarLicencia', payload: { id } });
+      if(res.ok) {
+        licencias.value = licencias.value.filter(l => l.id !== id);
+        notificar({ titulo: 'Registro Eliminado', mensaje: 'La licencia ha sido removida del sistema.', tipo: 'success' });
+      }
+    }
+  });
 };
 
-onMounted(obtenerTodasLasLicencias);
+const exportarExcel = () => {
+  const data = licenciasFiltradas.value.map(l => ({
+    'ID': l.id, 'Apellido': l.apellido, 'Nombre': l.nombre, 'Estado': l.estado.toUpperCase(), 'Fecha': formatearFechaVista(l.fecha_licencia)
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Licencias");
+  XLSX.writeFile(wb, "Licencias_AAAB.xlsx");
+};
+
+const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : '';
+const limpiarFiltros = () => filtros.value = { nombre: '', apellido: '', estado: '', fecha: '' };
+const abrirModalNuevo = () => mostrarModalNuevo.value = true;
+
+onMounted(() => {
+  obtenerLicencias();
+  obtenerArbitros();
+});
 </script>
 
-
 <style scoped>
-.admin-panel {
-  padding: 20px;
-  background-color: #0f172a; /* Fondo oscuro como el de tu imagen */
+.admin-panel { 
+  width: 100%;
+  max-width: 100%; 
+  padding: 20px; 
+  background-color: #0f172a; 
   min-height: 100vh;
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
 }
 
-/* --- CABECERA ESTILO GESTIÓN --- */
-.header-card {
-  background: white;
-  border-radius: 12px;
-  padding: 15px 25px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  border-left: 5px solid #ef4444; /* Línea roja lateral */
+.header-card { 
+  background: white; 
+  border-radius: 8px; 
+  padding: 12px 20px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  border-left: 5px solid #ef4444; 
 }
 
-.header-title {font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 1.1rem; font-weight: bold; margin: 0; }
+.header-title { font-size: 1.1rem; font-weight: bold; margin: 0; }
+.header-subtitle { font-size: 0.85rem; color: #475569; }
 
-.header-subtitle {
-  color: #000000;
-  font-size: 0.9rem;
+.header-actions { display: flex; gap: 8px; }
+
+.btn-action { 
+  display: flex; 
+  align-items: center; 
+  gap: 6px; 
+  padding: 8px 15px; 
+  border-radius: 6px; 
+  border: none; 
+  font-size: 0.8rem; 
+  cursor: pointer; 
 }
 
-/* --- BOTONES --- */
-.header-actions {
-  display: flex;
-  gap: 10px;
+.btn-light-gray { background: #f1f5f9; color: #475569; }
+.btn-blue { background: #3b82f6; color: white; }
+.btn-pink { background: #fee2e2; color: #ef4444; }
+.btn-green { background: #10b981; color: white; }
+
+/* MODIFICACIÓN CLAVE PARA EL SCROLL INMOVILIZADO */
+.table-container { 
+  background: white; 
+  border-radius: 4px; 
+  overflow-y: auto; /* Scroll vertical */
+  max-height: calc(100vh - 150px); /* Altura dinámica para que el scroll funcione dentro del panel */
+  margin-top: 15px; 
 }
 
-.btn-custom {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 600;
-  transition: 0.2s;
-  cursor: pointer;
+.custom-table { 
+  width: 100%; 
+  border-collapse: separate; /* Necesario para que el sticky funcione bien con los bordes */
+  border-spacing: 0;
 }
-.alert {
-  padding: 10px;
-  border-radius: 8px;
-  color: white;
-  background: #ef4444; /* por defecto danger */
-}
-.alert-success { background: #22c55e; }
 
-.btn-delete {
+/* Header inmovilizado */
+.custom-table thead th { 
+  position: sticky;
+  top: 0; /* Primera fila arriba de todo */
+  z-index: 10;
+  background: #f8fafc; 
+  padding: 12px; 
+  font-size: 0.75rem; 
+  font-weight: 900; 
+  border-bottom: 2px solid #e2e8f0; 
+  text-transform: uppercase;
+  color: #000;
+}
+
+/* Fila de filtros inmovilizada */
+.custom-table thead .filter-row td {
+  position: sticky;
+  top: 41px; /* Se posiciona justo debajo de los títulos (ajustar según altura de th) */
+  z-index: 9;
+  background: #f1f5f9;
+  border-bottom: 1px solid #cbd5e1;
+  padding: 8px;
+}
+
+.filter-input { 
+  width: 100%; 
+  padding: 4px 8px; 
+  border: 1px solid #cbd5e1; 
+  border-radius: 4px; 
+  font-size: 0.75rem; 
+}
+
+.status-select { 
+  padding: 4px 10px; 
+  border-radius: 20px; 
+  border: none; 
+  font-size: 0.7rem; 
+  font-weight: 700; 
+}
+
+.status-select.aprobada { background: #dcfce7; color: #15803d; }
+.status-select.pendiente { background: #fef9c3; color: #a16207; }
+.status-select.rechazada { background: #fee2e2; color: #b91c1c; }
+
+.date-input { 
+  border: 1px solid #e2e8f0; 
+  border-radius: 4px; 
+  padding: 2px 5px; 
+  font-size: 0.8rem; 
+}
+
+.action-buttons-group { display: flex; justify-content: center; gap: 5px; }
+
+.btn-action-icon {
   background: none;
   border: none;
-  color: #ef4444;
   cursor: pointer;
-}
-
-.date-input {
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
   padding: 4px;
-}
-
-.btn-filter { background: #e2e8f0; color: #1e293b; }
-.btn-save { background: #3b82f6; color: white; }
-.btn-new { background: #fee2e2; color: #ef4444; }
-
-/* --- TABLA --- */
-.table-container {
-  background: white;
-  border-radius: 12px;
-  overflow-x: auto;
-}
-
-.custom-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.custom-table th {
-  background: #f8fafc;
-  padding: 12px 15px;
-  font-size: 0.75rem;
-  color: #000000;
-  text-transform: uppercase;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.custom-table td {
-  padding: 12px 15px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #1e293b;
-}
-
-/* Inputs de Filtro */
-.filter-input {
-  width: 100%;
-  padding: 6px;
-  border: 1px solid #e2e8f0;
   border-radius: 4px;
-  font-size: 0.8rem;
+  transition: 0.2s;
 }
 
-/* Select de Estado */
-.status-select {
-  padding: 4px 8px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  border: 1px solid transparent;
-}
-.status-select.aprobada { background: #dcfce7; color: #166534; }
-.status-select.rechazada { background: #fee2e2; color: #991b1b; }
-.status-select.pendiente { background: #fef9c3; color: #854d0e; }
+.btn-delete-row { color: #ef4444; }
+.btn-delete-row:hover { background: #fee2e2; }
 
-/* --- RESPONSIVE --- */
+.btn-refresh { 
+  background: none; 
+  border: none; 
+  color: #64748b; 
+  cursor: pointer; 
+}
+
+.modal-overlay { 
+  position: fixed; 
+  top:0; left:0; width:100%; height:100%; 
+  background: rgba(0,0,0,0.5); 
+  display: flex; align-items: center; justify-content: center; 
+  z-index: 5000; 
+}
+
+.modal-content-custom { 
+  background: white; padding: 25px; border-radius: 12px; 
+  width: 320px; text-align: center; 
+}
+
 @media (max-width: 768px) {
-  .header-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-  
-  .header-actions {
-    width: 100%;
-    overflow-x: auto;
-  }
-  
-  .btn-custom span:not(.material-icons) {
-    display: none; /* En móviles ocultamos el texto y dejamos iconos */
-  }
-}
-/* --- ESTILOS EXISTENTES --- */
-.btn-icon { font-size: 18px; vertical-align: middle; }
-.header-admin { border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
-.badge { font-weight: 600; letter-spacing: 0.5px; }
-
-/* --- NUEVOS ESTILOS RESPONSIVE --- */
-
-/* 1. Contenedor de tabla con scroll suave en tablets */
-.table-container {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch; /* Mejora el scroll en iPhone/iPad */
-  background: white;
-  border-radius: 8px;
-}
-
-th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.7rem; color: #000000; text-transform: uppercase; font-weight: 800; }
-
-/* 2. Ajustes para Pantallas Medianas (Tablets) */
-@media (max-width: 992px) {
-  .header-section {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-  
-  .header-actions {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  /* Reducimos el tamaño de fuente para que entre más info */
-  table {
-    font-size: 0.85rem;
-  }
-}
-
-/* 3. Ajustes Críticos para Móviles (Smartphones) */
-@media (max-width: 768px) {
-  /* Ocultamos la tabla compleja en móviles muy chicos si prefieres usar el diseño de Cards */
-  .desktop-only {
-    display: none !important;
-  }
-
-  .mobile-only {
-    display: block !important;
-  }
-
-  /* Panel de filtros responsive */
-  .mobile-filter-panel {
-    background: #f8f9fa;
-    padding: 1rem;
-    border-radius: 12px;
-    margin-bottom: 1rem;
-    border: 1px solid #dee2e6;
-  }
-
-  .filter-grid-mobile {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Dos columnas de inputs */
-    gap: 10px;
-  }
-
-  .mobile-select-group {
-    display: flex;
-    flex-direction: column;
-    grid-column: span 2; /* Los select ocupan todo el ancho */
-  }
-
-  input, select {
-    width: 100%;
-    height: 45px; /* Más fáciles de tocar con el dedo */
-    font-size: 16px !important; /* Evita que iOS haga zoom automático al enfocar */
-  }
-
-  /* Botones de acción en móvil */
-  .btn-action {
-    padding: 10px;
-    flex: 1;
-    justify-content: center;
-  }
-
-  .btn-text {
-    display: none; /* Ocultamos texto, dejamos solo iconos para ahorrar espacio */
-  }
-}
-
-/* 4. Estilos de las "Cards" de Árbitros (El diseño que ya tenías al final del template) */
-.card-arbitro {
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-left: 5px solid #ccc;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.fila-roja { border-left-color: #dc3545 !important; background-color: #fff5f5; }
-.fila-amarilla { border-left-color: #ffc107 !important; background-color: #fffdf2; }
-.fila-des { border-left-color: #0d6efd !important; background-color: #f0f7ff; }
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10px;
-}
-
-.card-body p {
-  margin-bottom: 4px;
-  font-size: 0.9rem;
-  color: #444;
-}
-
-.btn-wa-mobile {
-  width: 100%;
-  background: #25D366;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 8px;
-  margin-top: 10px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  .header-card { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .header-actions { width: 100%; overflow-x: auto; }
+  .btn-action b { display: none; } 
+  .custom-table { min-width: 600px; }
 }
 </style>

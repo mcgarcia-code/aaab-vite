@@ -14,8 +14,10 @@
           <button @click="limpiarFiltros" class="btn-action btn-clear">
             <span class="material-icons">filter_alt_off</span> Filtros
           </button>
-          <button @click="guardarTodo" class="btn-action btn-blue">
-            <span class="material-icons">save</span> Guardar
+          <button @click="guardarTodo" class="btn-action btn-blue" :disabled="cargando">
+            <span v-if="!cargando" class="material-icons">save</span>
+            <span v-else class="spinner-border spinner-border-sm me-1"></span>
+            <b>Guardar</b>
           </button>
           <button @click="crearNuevo" class="btn-action btn-clear-checks">
             <span class="material-icons">person_add</span> Nuevo
@@ -91,8 +93,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="a in arbitrosFiltrados" :key="a.id || Math.random()" :class="{ 'fila-inactiva': a.es_activo == 0 }">
-              <td class="sticky-col col-id">{{ a.id || '-' }}</td>
+            <tr v-for="a in arbitrosFiltrados" :key="a.id || a.tempId" :class="{ 'fila-inactiva': a.es_activo == 0 }">
+              <td class="sticky-col col-id">{{ a.id || 'NUEVO' }}</td>
               <td class="sticky-col col-apellido"><input v-model="a.apellido" class="edit-input"></td>
               <td class="sticky-col col-nombre"><input v-model="a.nombre" class="edit-input"></td>
               <td class="col-xs-compact">
@@ -143,41 +145,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive } from 'vue';
+import { ref, onMounted, computed, reactive, inject } from 'vue';
 import { api } from '@/api/api'; 
 import * as XLSX from 'xlsx';
-import { useHead } from '@vueuse/head'
+import { useHead } from '@vueuse/head';
 
-// Título y descripción específicos para la página de Legajos AAAB
 useHead({
   title: 'Legajos | AAAB',
   meta: [
-    {
-      name: 'description',
-      content: 'Modifica los datos personales de los árbitros registrados en la Asociación Argentina de Árbitros de Handball. Administra y controla los aspectos internos de la asociación desde un panel centralizado.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Legajos | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png',
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { name: 'description', content: 'Gestión de árbitros registrados en la AAAB.' }
   ],
-})
+});
+
+const notificar = inject('notificar');
 
 const arbitros = ref([]);
+const arbitrosOriginales = ref([]); 
 const filtros = reactive({}); 
+const cargando = ref(false);
 
 const limpiarFiltros = () => {
   Object.keys(filtros).forEach(key => filtros[key] = '');
@@ -186,15 +171,11 @@ const limpiarFiltros = () => {
 const mostrarFechaArg = (fecha) => {
   if (!fecha) return '';
   const partes = fecha.split('-');
-  if (partes.length !== 3) return fecha;
-  return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
 };
 
 const normalizarTexto = (valor) => {
-  return String(valor || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
+  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 };
 
 const exportarExcel = () => {
@@ -212,19 +193,14 @@ const exportarExcel = () => {
 
 const cargarDatos = async () => {
   try {
-    const res = await api.get({
-      entity: 'arbitros',
-      action: 'getArbitros',
-    });
-
+    const res = await api.get({ entity: 'arbitros', action: 'getArbitros' });
     const respuesta = res.data || res;
     if (respuesta.ok && Array.isArray(respuesta.payload)) {
       arbitros.value = respuesta.payload.map(a => ({
         ...a,
         apto_medico: a.apto_medico == 1
       }));
-    } else {
-      arbitros.value = [];
+      arbitrosOriginales.value = JSON.parse(JSON.stringify(arbitros.value));
     }
   } catch (err) { 
     console.error("Error al cargar:", err); 
@@ -233,12 +209,14 @@ const cargarDatos = async () => {
 
 const crearNuevo = () => {
   arbitros.value.unshift({
+    tempId: Math.random(),
     apellido: '', nombre: '', grupo: '', subgrupo: '', dni: '', email: '', 
     direccion: '', provincia: '', localidad: '', zona: '', celular: '',
     fecha_nacimiento: '', observaciones: '', es_activo: 1, apto_medico: false 
   });
 };
 
+// --- FUNCIÓN ORIGINAL MANTENIDA ---
 const actualizarAptoFisico = async (arbitro) => {
   try {
     const response = await api.post({
@@ -258,68 +236,61 @@ const actualizarAptoFisico = async (arbitro) => {
 };
 
 const guardarTodo = async () => {
+  // Detección de cambios comparando con la copia original
+  const modificados = arbitros.value.filter(actual => {
+    if (!actual.id) return (actual.apellido || actual.nombre); 
+    const original = arbitrosOriginales.value.find(o => o.id === actual.id);
+    if (!original) return true;
+    return JSON.stringify(actual) !== JSON.stringify(original);
+  });
+
+  if (modificados.length === 0) {
+    notificar({ titulo: 'Sin cambios', mensaje: 'No detectamos modificaciones nuevas.', tipo: 'success' });
+    return;
+  }
+
   try {
-    const datosParaEnviar = arbitros.value
-      .filter(a => a.apellido || a.nombre)
-      .map(a => {
-        const clon = { ...a };
-        const camposLimpiar = [
-          'disponibilidad_sabado_desde', 
-          'disponibilidad_sabado_hasta', 
-          'disponibilidad_domingo_desde', 
-          'disponibilidad_domingo_hasta',
-          'fecha_nacimiento'
-        ];
-        
-        camposLimpiar.forEach(campo => {
-          if (clon[campo] === "" || clon[campo] === undefined) {
-            clon[campo] = null;
-          }
-        });
-        return clon;
+    cargando.value = true;
+    const datosParaEnviar = modificados.map(a => {
+      const clon = { ...a };
+      ['disponibilidad_sabado_desde', 'disponibilidad_sabado_hasta', 'disponibilidad_domingo_desde', 'disponibilidad_domingo_hasta', 'fecha_nacimiento'].forEach(campo => {
+        if (clon[campo] === "" || clon[campo] === undefined) clon[campo] = null;
       });
+      // Convertimos el booleano a 1 o 0 para la base de datos
+      clon.apto_medico = clon.apto_medico ? 1 : 0;
+      return clon;
+    });
 
     const res = await api.post({ 
       entity: 'datos_personales',
       action: 'guardarDatosArbitros', 
-      payload: {
-        listaArbitros: datosParaEnviar 
-      }
+      payload: { listaArbitros: datosParaEnviar }
     });
 
-    const respuesta = res.data || res;
-    if (respuesta.ok) {
-      alert("Los cambios fueron cargados exitosamente");
-      await cargarDatos();
+    if (res.ok) {
+      // AQUÍ DISPARA EL MODAL MODERNO DE ÉXITO
+      notificar({ 
+        titulo: '¡Guardado!', 
+        mensaje: `Se procesaron ${modificados.length} registros exitosamente.` 
+      });
+      await cargarDatos(); 
     } else {
-      alert("Hubo un problema al guardar: " + (respuesta.message || "Error desconocido"));
+      notificar({ titulo: 'Error', mensaje: res.message || 'Error al guardar.', tipo: 'danger' });
     }
-  } catch (err) { 
-    alert("Error al guardar"); 
-    console.error(err);
+  } catch{ 
+    notificar({ titulo: 'Error Fatal', mensaje: 'Error al conectar con el servidor.', tipo: 'danger' });
+  } finally {
+    cargando.value = false;
   }
 };
 
 const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     return Object.keys(filtros).every(key => {
-      if (filtros[key] === undefined || filtros[key] === null || filtros[key] === '') return true;
-
+      if (!filtros[key]) return true;
       const busqueda = filtros[key].toLowerCase();
-
-      if (key === 'es_activo') {
-        const valorReal = String(a[key]); 
-        if (busqueda === 'si') return valorReal === '1';
-        if (busqueda === 'no') return valorReal === '0';
-        return valorReal.includes(busqueda);
-      }
-
-      // Lógica para filtro Apto Médico (booleano)
-      if (key === 'apto_medico') {
-        if (busqueda === 'si') return a.apto_medico === true;
-        if (busqueda === 'no') return a.apto_medico === false;
-      }
-
+      if (key === 'es_activo') return (busqueda === 'si' ? a.es_activo == 1 : a.es_activo == 0);
+      if (key === 'apto_medico') return (busqueda === 'si' ? a.apto_medico : !a.apto_medico);
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
   });
@@ -334,20 +305,22 @@ onMounted(cargarDatos);
 .full-screen-wrapper {
   position: relative;
   /* Esto rompe el límite del padre sin usar cálculos de margen que fallan */
-  width: 100vw;
+  width: 99vw;
+  height: 100vh;
   margin-left: 50%;
   transform: translateX(-50%);
-  padding: 0 20px;
+  padding: 20px;
 }
 
 .admin-panel { 
   width: 100%;
   max-width: 100%; 
-  padding: 15px 0; 
-  background: transparent; 
+  padding: 20px; 
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000; 
-  min-height: 100vh; 
+  color: #000;  
+  background-color: #0f172a; 
+  min-height: 100vh;
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
 }
 
 .header-section { 
@@ -369,13 +342,13 @@ onMounted(cargarDatos);
 .btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
 .btn-clear { background: #e2e8f0; color: #000; }
 .btn-blue { background: #3b82f6; color: white; }
-.btn-clear-checks { background: #fee2e2; color: #991b1b; } 
+.btn-clear-checks { background: #fee2e2; color: #ef4444; } 
 .btn-export { background: #10b981; color: white; }
 
 .table-container { 
   width: 100%;
   overflow: auto; 
-  max-height: 75vh; 
+  max-height: 85vh; 
   background: white; 
   border-radius: 8px; 
   border: 1px solid #e2e8f0; 

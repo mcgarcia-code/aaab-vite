@@ -2,88 +2,115 @@
   <div class="container py-4 animate__animated animate__fadeIn">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
-        <h2 class="fw-bold text-white m-0">Control de Stock</h2>
-        <p class="small text-white opacity-75 m-0">Administración de indumentaria de árbitros</p>
+        <h2 class="fw-bold text-white m-0 fs-2">Inventario Agrupado</h2>
+        <p class="small text-white opacity-75 m-0">Gestioná el stock por modelo y talles</p>
       </div>
-      <button @click="abrirModal()" class="btn btn-danger rounded-pill px-4 shadow-sm">
-        <i class="bi bi-plus-lg me-2"></i>
+      <button @click="abrirModalNuevo()" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-danger">
+        <i class="bi bi-plus-lg me-2"></i> Item
       </button>
     </div>
 
-    <div class="input-group shadow-sm mb-3">
-      <span class="input-group-text bg-white border-end-0 rounded-pill-start">
-        <i class="bi bi-search text-muted"></i>
-      </span>
+    <div class="mb-4">
       <input 
         v-model="filtroTexto" 
         type="text" 
-        class="form-control border-start-0 rounded-pill-end" 
-        placeholder="Buscar por descripción..."
+        class="form-control rounded-pill shadow-sm px-4 border-0 input-filtro-custom" 
+        placeholder="Buscar modelo..."
       >
-      <button v-if="filtroTexto" @click="filtroTexto = ''" class="btn btn-light border-start-0 rounded-pill-end text-muted">
-        <i class="bi bi-x-circle"></i>
-      </button>
     </div>
 
-    <div class="card shadow-lg border-0 bg-white" style="border-radius: 20px; overflow: hidden;">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="bg-light d-none d-md-table-header-group">
-            <tr>
-              <th class="ps-4">Descripción</th>
-              <th class="text-center">Stock</th>
-              <th class="text-center">Precio Unitario</th>
-              <th class="text-end pe-4">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in stockFiltrado" :key="item.id" class="stock-row">
-              <td class="ps-4 fw-bold text-dark td-descripcion">
-                {{ item.descripcion }}
-              </td>
+    <div class="row g-3">
+      <div v-for="modelo in stockAgrupado" :key="modelo.nombre" class="col-6 col-md-4 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm tarjeta-stock-admin overflow-hidden">
+          
+          <div class="bg-white contenedor-foto-admin d-flex align-items-center justify-content-center position-relative">
+            <img :src="obtenerImagen(modelo.nombre)" class="img-fluid foto-gestion" alt="Modelo">
+            <button @click="abrirModalEdicion(modelo)" class="btn-editar-flotante shadow">
+              <i class="bi bi-pencil-fill"></i>
+            </button> 
+          </div>
 
-              <td class="text-center td-info td-cantidad" data-label="Cant.">
-                <span :class="['badge rounded-pill shadow-sm', item.cantidad < 5 ? 'bg-danger' : 'bg-secondary']">
-                  {{ item.cantidad }} u.
-                </span>
-              </td>
-              <td class="text-center text-muted td-info td-precio" data-label="Precio">
-                $ {{ item.precio_unitario }}
-              </td>
-              <td class="text-end pe-4 td-acciones">
-                <button @click="abrirModal(item)" class="btn btn-outline-dark btn-sm rounded-circle border-0">
-                  <i class="bi bi-pencil-square"></i>
-                </button>
-              </td>
-            </tr>
-            <tr v-if="stockFiltrado.length === 0">
-              <td colspan="4" class="text-center py-5 text-muted small">No hay coincidencias.</td>
-            </tr>
-          </tbody>
-        </table>
+          <div class="card-body p-3 cuerpo-gris-admin text-center d-flex flex-column">
+            <div class="contenedor-titulo-stock mb-2">
+              <h6 class="fw-bold text-dark m-0 text-uppercase text-truncate-2">
+                {{ modelo.nombre }}
+              </h6>
+            </div>
+            
+            <div class="d-flex flex-wrap justify-content-center gap-1 mb-3">
+              <span v-for="t in modelo.talles" :key="t.id" 
+                :class="['badge-talle', t.cantidad < 5 ? 'bajo-stock' : '']">
+                {{ t.talle }}: <b>{{ t.cantidad }}</b>
+              </span>
+            </div>
+
+            <div class="mt-auto pt-2 border-top text-center">
+              <span class="small text-muted">Precio Sugerido:</span>
+              <div class="fw-bold text-success fs-5">${{ modelo.precio_referencia }}</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div v-if="mostrarModal" class="modal-overlay d-flex align-items-center justify-content-center">
-      <div class="modal-content animate__animated animate__zoomIn p-4 shadow-lg">
-        <h4 class="fw-bold mb-4 text-center">{{ editando ? 'Editar Item' : 'Agregar Nuevo' }}</h4>
-        <div class="mb-3">
-          <label class="form-label small fw-bold text-muted">Descripción</label>
-          <input v-model="formulario.descripcion" type="text" class="form-control rounded-pill px-3" placeholder="Ej: Buzo Hummel XS">
+    <div v-if="mostrarModal" class="modal-overlay d-flex align-items-center justify-content-center px-3">
+      <div class="modal-content animate__animated animate__zoomIn p-4 shadow-lg border-0">
+        <div class="text-center mb-3">
+          <h4 class="fw-bold m-0">{{ editando ? 'Gestionar Stock' : 'Nuevo Modelo' }}</h4>
         </div>
-        <div class="row g-2">
-          <div class="col-6">
-            <label class="form-label small fw-bold text-muted">Stock</label>
-            <input v-model.number="formulario.cantidad" type="number" class="form-control rounded-pill px-3 text-center">
+
+        <div class="contenedor-formulario-scroll px-1">
+          <div v-if="!editando" class="mb-4">
+            <label class="form-label small fw-bold text-muted d-block">Imágenes del Modelo (.webp)</label>
+            <div v-for="(foto, idx) in formulario.fotos" :key="idx" class="d-flex align-items-center gap-2 mb-2">
+              <div @click="$refs['fileInput' + idx][0].click()" class="upload-box-mini p-2 border rounded-3 bg-light cursor-pointer flex-grow-1 text-center">
+                <i class="bi bi-image text-danger me-2"></i>
+                <span class="extra-small text-muted">{{ foto.nombreArchivo || 'Click para subir foto ' + (idx + 1) }}</span>
+                <input type="file" :ref="'fileInput' + idx" class="d-none" accept=".webp" @change="v => manejarArchivo(v, idx)">
+              </div>
+              <button v-if="formulario.fotos.length > 1" @click="eliminarSlotFoto(idx)" class="btn btn-sm btn-outline-danger border-0">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+            <button @click="agregarSlotFoto" class="btn btn-sm btn-outline-secondary w-100 rounded-pill mt-1 extra-small fw-bold">
+              <i class="bi bi-plus-circle me-1"></i> Agregar otra imagen
+            </button>
           </div>
-          <div class="col-6">
-            <label class="form-label small fw-bold text-muted">Precio Unitario</label>
-            <input v-model.number="formulario.precioUnitario" type="number" class="form-control rounded-pill px-3 text-center">
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted">Nombre del Modelo</label>
+            <input v-model="formulario.nombre" type="text" class="form-control rounded-pill px-3 shadow-sm border" placeholder="Ej: REMERA NEGRA - HUMMEL">
+          </div>
+
+          <label class="form-label small fw-bold text-muted">Stock por Talle y Precio (Obligatorio > 0)</label>
+          <div class="contenedor-edicion-talles mb-4">
+            <div v-for="(t, index) in formulario.talles" :key="index" class="fila-talle-edit mb-2 p-2 rounded-3 bg-light border">
+              <div class="row align-items-center g-2">
+                <div class="col-2 fw-bold text-danger text-center">{{ t.talle }}</div>
+                <div class="col-6">
+                  <div class="input-group input-group-sm border rounded-pill bg-white overflow-hidden shadow-sm">
+                    <button @click="t.cantidad > 0 ? t.cantidad-- : null" class="btn btn-light border-0 px-2">-</button>
+                    <input v-model.number="t.cantidad" type="number" class="form-control text-center border-0 fw-bold p-0">
+                    <button @click="t.cantidad++" class="btn btn-light border-0 px-2">+</button>
+                  </div>
+                </div>
+                <div class="col-4 text-end">
+                  <div class="position-relative">
+                    <span class="position-absolute start-0 top-50 translate-middle-y ms-2 extra-small text-muted">$</span>
+                    <input v-model.number="t.precio" type="number" class="form-control form-control-sm rounded-pill text-end fw-bold ps-3 shadow-sm" placeholder="0">
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="d-flex gap-2 mt-4 pt-2">
-          <button @click="cerrarModal" class="btn btn-light rounded-pill w-100 fw-bold">Cancelar</button>
-          <button @click="guardarItem" class="btn btn-danger rounded-pill w-100 fw-bold shadow">Guardar</button>
+
+        <div class="d-flex gap-2">
+          <button @click="cerrarModal" class="btn btn-light rounded-pill w-100 fw-bold border">Cerrar</button>
+          <button @click="guardarCambiosAgrupados" class="btn btn-danger rounded-pill w-100 fw-bold shadow text-uppercase" :disabled="cargando">
+            <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
+            Guardar Todo
+          </button>
         </div>
       </div>
     </div>
@@ -91,105 +118,197 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, inject } from 'vue';
 import { api } from '@/api/api';
 
-const listaStock = ref([]);
+// Inyectamos el notificador global
+const notificar = inject('notificar');
+
+const listaStockRaw = ref([]);
 const filtroTexto = ref('');
 const mostrarModal = ref(false);
 const editando = ref(false);
-const formulario = ref({ id: null, descripcion: '', cantidad: 0, precioUnitario: 0 });
+const cargando = ref(false);
+const formulario = ref({ nombre: '', talles: [], fotos: [] });
 
-const stockFiltrado = computed(() => {
-  let resultado = listaStock.value.filter(item => item.descripcion.toLowerCase().includes(filtroTexto.value.toLowerCase()));
-  return resultado.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
+const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '4XL', '5XL'];
+
+// --- Lógica de Fotos ---
+const agregarSlotFoto = () => { formulario.value.fotos.push({ nombreArchivo: '' }); };
+const eliminarSlotFoto = (idx) => { formulario.value.fotos.splice(idx, 1); };
+const manejarArchivo = (event, idx) => {
+  const file = event.target.files[0];
+  if (file) formulario.value.fotos[idx].nombreArchivo = file.name;
+};
+
+const stockAgrupado = computed(() => {
+  const mapa = {};
+  listaStockRaw.value.forEach(item => {
+    const nombreModelo = item.descripcion.split(/ - TALLE/i)[0].trim();
+    const talleNombre = item.descripcion.split(/TALLE /i)[1] || 'S/T';
+
+    if (!mapa[nombreModelo]) {
+      mapa[nombreModelo] = {
+        nombre: nombreModelo,
+        precio_referencia: item.precio_unitario,
+        talles: []
+      };
+    }
+    mapa[nombreModelo].talles.push({
+      id: item.id,
+      talle: talleNombre,
+      cantidad: item.cantidad,
+      precio: item.precio_unitario
+    });
+  });
+  return Object.values(mapa).filter(m => m.nombre.toLowerCase().includes(filtroTexto.value.toLowerCase())).sort((a, b) => a.nombre.localeCompare(b.nombre));
 });
 
 const obtenerStock = async () => {
-  const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
-  if (respuesta.ok) listaStock.value = respuesta.payload;
+  const res = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
+  if (res.ok) listaStockRaw.value = res.payload;
 };
 
-const guardarItem = async () => {
-  if (!formulario.value.descripcion || formulario.value.cantidad < 0) { alert("Complete los datos."); return; }
-  const accion = editando.value ? 'actualizarStock' : 'agregarItem';
-  const datosEnviar = { descripcion: formulario.value.descripcion, cantidad: parseInt(formulario.value.cantidad), precioUnitario: parseInt(formulario.value.precioUnitario) };
-  if (editando.value) datosEnviar.id = formulario.value.id;
-  const respuesta = await api.post({ entity: 'indumentaria', action: accion, payload: datosEnviar });
-  if (respuesta.ok) { await obtenerStock(); cerrarModal(); } else { alert("Error."); }
-};
+const abrirModalEdicion = (modelo) => {
+  editando.value = true;
+  const tallesExistentes = JSON.parse(JSON.stringify(modelo.talles));
+  const nombresExistentes = tallesExistentes.map(t => t.talle);
+  
+  tallesEstandar.forEach(talle => {
+    if (!nombresExistentes.includes(talle)) {
+      tallesExistentes.push({
+        id: null,
+        talle: talle,
+        cantidad: 0,
+        precio: modelo.precio_referencia
+      });
+    }
+  });
 
-const abrirModal = (item = null) => {
-  if (item) { editando.value = true; formulario.value = { id: item.id, descripcion: item.descripcion, cantidad: item.cantidad, precioUnitario: item.precio_unitario }; }
-  else { editando.value = false; formulario.value = { id: null, descripcion: '', cantidad: 0, precioUnitario: 0 }; }
+  const orden = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7 };
+  tallesExistentes.sort((a, b) => (orden[a.talle] || 99) - (orden[b.talle] || 99));
+
+  formulario.value = {
+    nombre: modelo.nombre,
+    talles: tallesExistentes,
+    fotos: []
+  };
   mostrarModal.value = true;
 };
 
+const abrirModalNuevo = () => {
+  editando.value = false;
+  formulario.value = { 
+    nombre: '', 
+    fotos: [{ nombreArchivo: '' }], 
+    talles: tallesEstandar.map(t => ({ id: null, talle: t, cantidad: 0, precio: 0 })) 
+  };
+  mostrarModal.value = true;
+};
+
+const guardarCambiosAgrupados = async () => {
+  if (!formulario.value.nombre) {
+    notificar({ titulo: 'Faltan datos', mensaje: 'El nombre del modelo es obligatorio.', tipo: 'danger' });
+    return;
+  }
+
+  // Solo procesamos talles que tengan stock o precio definidos
+  const itemsAProcesar = formulario.value.talles.filter(t => t.id || (t.cantidad > 0 && t.precio > 0));
+
+  if (itemsAProcesar.length === 0) {
+    notificar({ titulo: 'Atención', mensaje: 'Debes cargar stock y precio mayor a 0 en al menos un talle.', tipo: 'danger' });
+    return;
+  }
+
+  cargando.value = true;
+  let errores = 0;
+
+  for (const t of itemsAProcesar) {
+    const accion = t.id ? 'actualizarStock' : 'agregarItem';
+    const payload = { 
+      descripcion: `${formulario.value.nombre.toUpperCase()} - TALLE ${t.talle}`, 
+      cantidad: t.cantidad, 
+      precioUnitario: t.precio 
+    };
+    if (t.id) payload.id = t.id;
+
+    const res = await api.post({ entity: 'indumentaria', action: accion, payload });
+    if (!res.ok) errores++;
+  }
+  
+  cargando.value = false;
+
+  if (errores === 0) {
+    notificar({ titulo: '¡Éxito!', mensaje: 'Inventario actualizado correctamente.', tipo: 'success' });
+    await obtenerStock();
+    cerrarModal();
+  } else {
+    notificar({ titulo: 'Error', mensaje: 'Hubo problemas al guardar algunos talles. Verificá que tengan precio.', tipo: 'danger' });
+  }
+};
+
 const cerrarModal = () => { mostrarModal.value = false; };
+
+const obtenerImagen = (nombre) => {
+  const catalogoImagenes = {
+    "CHOMBAS - HUMMEL": "chomba-hummel.webp",
+    "REMERA AMARILLA - CH1": "amarillo-ch1.webp",
+    "REMERA NEGRA - HUMMEL": "negra-hummel.webp",
+    "REMERA NARANJA - HUMMEL": "naranja-hummel.webp",
+    "REMERA VERDE AGUA - HIGH RUNNER": "verde-agua-hr.webp",
+    "REMERA NEGRA - HIGH RUNNER": "negra-hr.webp",
+    "REMERA NARANJA - HIGH RUNNER": "naranja-hr.webp",
+    "REMERA CELESTE - HIGH RUNNER": "celeste-hr.webp",
+    "SHORT CABALLERO - HUMMEL": "short-hombre-hummel.webp",
+    "SHORT DAMA - HUMMEL": "short-mujer-hummel.webp",
+    "SHORT CABALLERO - HIGH RUNNER": "short-hombre-hr.webp",
+    "SHORT DAMA - HIGH RUNNER": "short-mujer-hr.webp",
+    "CHOMBAS - HIGH RUNNER": "chomba-hr.webp",
+    "BUZO - HUMMEL": "buzo-hummel.webp",
+    "CAMPERA - HIGH RUNNER": "campera-hr.webp",
+    "PANTALON LARGO - HIGH RUNNER": "pantalon-hr.webp"
+  };
+  const archivo = catalogoImagenes[nombre];
+  return archivo ? new URL(`/src/assets/fotos/${archivo}`, import.meta.url).href : "https://placehold.co/400x400?text=Sin+Foto";
+};
+
 onMounted(obtenerStock);
 </script>
 
 <style scoped>
-/* GENERAL Y DESKTOP */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1050; }
-.modal-content { background: white; border-radius: 25px; width: 92%; max-width: 420px; }
-.form-control:focus { border-color: #dc2626; box-shadow: 0 0 0 0.25rem rgba(220, 38, 38, 0.1); }
-.rounded-pill-start { border-radius: 50rem 0 0 50rem !important; }
-.rounded-pill-end { border-radius: 0 50rem 50rem 0 !important; }
-.btn-outline-dark:hover i { color: white; }
 
-/* --- RESPONSIVE MOBILE --- */
-@media (max-width: 767.98px) {
-  /* Título más chico */
-  h2 { font-size: 1.4rem; }
-  
-  /* Botón "Nuevo" comprimido */
-  .btn-danger { padding: 8px 15px !important; font-size: 0.9rem; }
 
-  /* Re-estructuramos la fila */
-  .stock-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #f1f5f9;
-    margin: 0;
-  }
+.tarjeta-stock-admin { border-radius: 20px; transition: all 0.3s ease; }
+.contenedor-foto-admin { height: 200px; padding: 15px; }
+.foto-gestion { max-height: 175%; max-width: 175%; object-fit: contain; mix-blend-mode: multiply; }
+.cuerpo-gris-admin { background-color: #f1f5f9; border-radius: 0 0 20px 20px; flex-grow: 1; padding: 12px !important; }
 
-  .table-responsive .table tbody tr:last-child {
-    border-bottom: none;
-  }
-
-  /* La descripción ocupa el 100% de la línea 1 */
-  .td-descripcion {
-    width: 100%;
-    font-size: 1rem;
-    padding: 0 0 8px 0 !important;
-    border: none !important;
-  }
-
-  /* EL CAMBIO CLAVE: Comprimimos cantidad, precio y editar en una línea horizontal */
-  .td-info, .td-acciones {
-    display: flex !important;
-    align-items: center !important;
-    padding: 0 !important;
-    border: none !important;
-    margin-right: 15px; /* Espacio entre los 3 elementos */
-  }
-
-  /* Cantidad */
-  .td-cantidad { order: 1; margin-right: 10px; }
-  .td-cantidad .badge { font-size: 0.8rem; padding: 6px 10px; }
-
-  /* Precio */
-  .td-precio { order: 2; font-size: 0.95rem; font-weight: 600; }
-
-  /* Acciones (Botón Editar) */
-  .td-acciones { order: 3; margin-right: 0; margin-left: auto; /* Lo empuja a la derecha */ }
-  .td-acciones button { 
-    padding: 0 !important; 
-    font-size: 1.2rem; /* Icono más grande */
-    color: #64748b; /* Color neutro */
-  }
+.input-filtro-custom {
+  font-size: 1rem !important;
+  padding: 0.375rem 0.75rem;
+  height: auto !important;
+  min-height: 32px; /* Para que no quede demasiado aplastado */
 }
+
+/* Para que al hacer clic no se ponga el borde azul de Bootstrap */
+.input-filtro-custom:focus {
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+  outline: none;
+}
+
+@media (max-width: 768px) {
+  .tarjeta-stock-admin { min-height: 380px; }
+  .contenedor-titulo-stock { min-height: 48px; display: flex; align-items: center; justify-content: center; }
+  .text-truncate-2 { font-size: 0.85rem; line-height: 1.2; }
+}
+
+.badge-talle { font-size: 0.65rem; background: white; padding: 3px 8px; border-radius: 8px; border: 1px solid #e2e8f0; color: #475569; }
+.bajo-stock { border-color: #fecaca; background: #fef2f2; color: #dc2626; }
+.btn-editar-flotante { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 50%; background: #212529; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; z-index: 5; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; }
+.modal-content { background: white; border-radius: 30px; width: 100%; max-width: 450px; max-height: 90vh; display: flex; flex-direction: column; }
+.contenedor-formulario-scroll { overflow-y: auto; flex-grow: 1; padding-bottom: 10px; }
+.upload-box-mini { border: 1px dashed #dee2e6; transition: all 0.2s; font-size: 0.75rem; }
+.upload-box-mini:hover { border-color: #dc2626; background: #fff5f5 !important; }
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 </style>

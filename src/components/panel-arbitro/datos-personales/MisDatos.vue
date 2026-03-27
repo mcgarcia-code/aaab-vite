@@ -23,10 +23,6 @@
       </div>
 
       <div class="card-body p-3 p-md-4">
-        <div v-if="mensaje.texto" :class="`alert alert-${mensaje.tipo} mb-4 border-0 shadow-sm`" role="alert">
-          {{ mensaje.texto }}
-        </div>
-
         <div class="row g-4 mb-4 border-bottom pb-4">
             <div class="col-12 col-md-4">
                 <label class="d-block small text-muted mb-1 text-uppercase fw-bold">Nombre y Apellido</label>
@@ -55,20 +51,14 @@
         <h6 class="text-danger fw-bold text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Información de contacto</h6>
         <div class="row g-3 mb-5">
             <div class="col-12 col-md-3">
-    <label class="small text-muted mb-1 d-block">Fecha de Nacimiento</label>
-    
-    <div v-if="edicionAbierta" class="date-custom-wrapper" :data-date="arbitro.fecha_nacimiento ? mostrarFechaArg(arbitro.fecha_nacimiento) : 'Seleccionar fecha'">
-        <input 
-            type="date" 
-            v-model="arbitro.fecha_nacimiento" 
-            class="form-control form-control-sm input-fecha-nativa"
-        >
-    </div>
-
-    <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">
-        {{ mostrarFechaArg(arbitro.fecha_nacimiento) }}
-    </span>
-</div>
+                <label class="small text-muted mb-1 d-block">Fecha de Nacimiento</label>
+                <div v-if="edicionAbierta" class="date-custom-wrapper" :data-date="arbitro.fecha_nacimiento ? mostrarFechaArg(arbitro.fecha_nacimiento) : 'Seleccionar fecha'">
+                    <input type="date" v-model="arbitro.fecha_nacimiento" class="form-control form-control-sm input-fecha-nativa">
+                </div>
+                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">
+                    {{ mostrarFechaArg(arbitro.fecha_nacimiento) }}
+                </span>
+            </div>
             <div class="col-12 col-md-5">
                 <label class="small text-muted mb-1 d-block">Email</label>
                 <input v-if="edicionAbierta" v-model="arbitro.email" type="email" class="form-control form-control-sm">
@@ -125,14 +115,6 @@
                     <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
                     ACTUALIZAR CLAVE
                 </button>
-            </div>
-            
-            <div v-if="passwordMensaje.texto" class="col-12 mt-3">
-                <div :class="`alert alert-${passwordMensaje.tipo} py-2 px-3 small border-0 mb-0 shadow-sm d-flex align-items-center animate__animated animate__fadeInUp`" role="alert">
-                    <i v-if="passwordMensaje.tipo === 'success'" class="bi bi-check-circle-fill me-2 fs-6"></i>
-                    <i v-else class="bi bi-exclamation-triangle-fill me-2 fs-6"></i>
-                    {{ passwordMensaje.texto }}
-                </div>
             </div>
         </div>
 
@@ -208,54 +190,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, inject } from 'vue';
 import axios from 'axios';
-// 1. Importamos auth
 import { auth } from '@/api/auth';
-import { useHead } from '@vueuse/head'
+import { useHead } from '@vueuse/head';
 
-// Título y descripción específicos para la página de Mis Datos
 useHead({
   title: 'Mis Datos | AAAB',
   meta: [
-    {
-      name: 'description',
-      content: 'Mis datos personales y de contacto.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Mis Datos | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Mis datos personales y de contacto.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { name: 'description', content: 'Mis datos personales y de contacto.' },
+    { property: 'og:title', content: 'Mis Datos | AAAB' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' }
   ],
-})
+});
 
-// 2. REEMPLAZO: Obtenemos el árbitro a través de auth
+// Inyectamos el notificador global
+const notificar = inject('notificar');
+
 const arbitro = ref(auth.getUser() || {});
 const opciones = ref({ provincias: [], localidades: [] });
 const localidadesFiltradas = ref([]);
-const mensaje = ref({ texto: '', tipo: '' });
 const cargando = ref(false);
 const solicitudCambio = ref('');
 const historialRectificaciones = ref([]);
-
 const nuevaPassword = ref('');
-const passwordMensaje = ref({ texto: '', tipo: '' });
 
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
-
 
 const mostrarFechaArg = (fecha) => {
     if (!fecha) return '';
@@ -300,32 +260,41 @@ const guardarCambios = async () => {
     try {
         const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_perfil.php', arbitro.value);
         if (res.data.success) {
-            mensaje.value = { texto: "Datos actualizados correctamente.", tipo: 'success' };
-            
-            // 3. REEMPLAZO: Actualizamos la sesión con los nuevos datos del árbitro
-            // Esto asegura que si cambia su nombre o grupo, se vea reflejado en todo el panel
+            notificar({
+              titulo: '¡Perfil Actualizado!',
+              mensaje: 'Tus datos se guardaron correctamente en el legajo.',
+              tipo: 'success'
+            });
             auth.setUser(arbitro.value);
-            
         } else {
-            mensaje.value = { texto: res.data.message, tipo: 'danger' };
+            notificar({
+              titulo: 'Error',
+              mensaje: res.data.message || 'No se pudieron actualizar los datos.',
+              tipo: 'danger'
+            });
         }
     } catch {
-        mensaje.value = { texto: "Error al conectar con el servidor.", tipo: 'danger' };
+        notificar({
+          titulo: 'Error de Conexión',
+          mensaje: 'No pudimos conectar con el servidor para guardar los cambios.',
+          tipo: 'danger'
+        });
     } finally {
         cargando.value = false;
     }
 };
 
-// ... El resto de las funciones (cambiarPassword, enviarSolicitudRectificacion) se mantienen igual ...
 const cambiarPassword = async () => {
     if (nuevaPassword.value.length < 6) {
-        passwordMensaje.value = { texto: "La contraseña debe tener al menos 6 caracteres.", tipo: 'danger' };
+        notificar({
+          titulo: 'Clave demasiado corta',
+          mensaje: 'La contraseña debe tener al menos 6 caracteres.',
+          tipo: 'danger'
+        });
         return;
     }
     
     cargando.value = true;
-    passwordMensaje.value = { texto: '', tipo: '' };
-
     try {
         const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_password.php', {
             id_arbitro: arbitro.value.id,
@@ -333,13 +302,25 @@ const cambiarPassword = async () => {
         });
 
         if (res.data.success) {
-            passwordMensaje.value = { texto: "Contraseña actualizada con éxito.", tipo: 'success' };
+            notificar({
+              titulo: '¡Clave Actualizada!',
+              mensaje: 'Tu nueva contraseña ha sido guardada con éxito.',
+              tipo: 'success'
+            });
             nuevaPassword.value = '';
         } else {
-            passwordMensaje.value = { texto: res.data.message, tipo: 'danger' };
+            notificar({
+              titulo: 'Error',
+              mensaje: res.data.message || 'No se pudo cambiar la contraseña.',
+              tipo: 'danger'
+            });
         }
     } catch {
-        passwordMensaje.value = { texto: "Error al actualizar la contraseña.", tipo: 'danger' };
+        notificar({
+          titulo: 'Error',
+          mensaje: 'Hubo un problema al intentar actualizar tu contraseña.',
+          tipo: 'danger'
+        });
     } finally {
         cargando.value = false;
     }
@@ -355,14 +336,28 @@ const enviarSolicitudRectificacion = async () => {
             apellido: arbitro.value.apellido,
             grupo: arbitro.value.grupo,
             mensaje: "RECTIFICACIÓN: " + solicitudCambio.value
-        });
+          });
         if (res.data.success) {
-            mensaje.value = { texto: "Solicitud enviada con éxito.", tipo: 'success' };
+            notificar({
+              titulo: 'Solicitud Enviada',
+              mensaje: 'Tu pedido de rectificación fue enviado a la asociación.',
+              tipo: 'success'
+            });
             solicitudCambio.value = '';
             obtenerHistorialRectificaciones();
+        } else {
+          notificar({
+            titulo: 'Error',
+            mensaje: 'No se pudo enviar la solicitud.',
+            tipo: 'danger'
+          });
         }
     } catch {
-        mensaje.value = { texto: "Error al enviar solicitud.", tipo: 'danger' };
+        notificar({
+          titulo: 'Error',
+          mensaje: 'Problema al conectar con el servidor para enviar la solicitud.',
+          tipo: 'danger'
+        });
     } finally {
         cargando.value = false;
     }

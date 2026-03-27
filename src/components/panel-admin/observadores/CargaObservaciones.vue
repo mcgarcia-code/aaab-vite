@@ -11,19 +11,7 @@
     </div>
 
     <main class="sacf-content">
-      
-      <div v-if="enviadoExitoso" class="sacf-success-card text-center p-5 animate__animated animate__zoomIn">
-        <div class="icon-check mb-3">✅</div>
-        <h2 class="fw-bold text-dark">¡Envío Exitoso!</h2>
-        <p class="text-muted">La observación ha sido registrada correctamente.</p>
-        <div class="mt-4">
-          <button class="sacf-btn btn-danger w-auto px-5 shadow-sm" @click="reiniciarFormulario">
-            Nueva observación
-          </button>
-        </div>
-      </div>
-
-      <form v-else @submit.prevent="enviarFormulario">
+      <form @submit.prevent="enviarFormulario">
         
         <section class="sacf-section">
           <h2 class="section-title">Datos del Partido</h2>
@@ -176,44 +164,23 @@
   </div>
 </template>
 
-
-
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch, inject } from 'vue';
 import { api } from '@/api/api';
-import { useHead } from '@vueuse/head'
+import { useHead } from '@vueuse/head';
 
-// Título y descripción específicos para la página de panel de inicio de árbitros AAAB
 useHead({
   title: 'Observación Arbitral | AAAB',
   meta: [
-    {
-      name: 'description',
-      content: 'Sección de carga de observaciones arbitrales para partidos de handball.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Observación Arbitral | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Sección de carga de observaciones arbitrales para partidos de handball.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { name: 'description', content: 'Carga de observaciones arbitrales para partidos de handball.' }
   ],
-})
+});
+
+// Inyectamos el notificador global
+const notificar = inject('notificar');
 
 const procesando = ref(false);
 const cargandoCategorias = ref(false);
-const enviadoExitoso = ref(false);
 
 const listas = reactive({
   categorias_especificas: [], 
@@ -249,9 +216,7 @@ const perfScoreOptions = [
   { value: '1', label: 'Mal', tone: 'red' }
 ];
 
-
 const pedirCategoriasEspecíficas = async () => {
-  
   if (formulario.partido_categoria === 'Inferiores') {
     if (!formulario.partido_genero || !formulario.inf_nivel) return;
   }
@@ -281,7 +246,6 @@ const pedirCategoriasEspecíficas = async () => {
   }
 };
 
-
 watch(() => [formulario.partido_genero, formulario.partido_categoria, formulario.inf_nivel], () => {
   pedirCategoriasEspecíficas();
 });
@@ -308,7 +272,11 @@ const puntajeCalculado = computed(() => {
 });
 
 const enviarFormulario = async () => {
-  if (!formulario.perf_score) return alert("Puntaje requerido");
+  if (!formulario.perf_score) {
+    notificar({ titulo: 'Dato Faltante', mensaje: 'Debes asignar un puntaje de performance.', tipo: 'danger' });
+    return;
+  }
+  
   procesando.value = true;
   try {
     const res = await api.post({
@@ -316,17 +284,35 @@ const enviarFormulario = async () => {
       action: 'guardarObservacion',
       payload: { ...formulario, puntaje_final: puntajeCalculado.value }
     });
-    if (res.ok) { enviadoExitoso.value = true; window.scrollTo(0,0); }
-  } finally { procesando.value = false; }
+
+    if (res.ok) {
+      notificar({
+        titulo: '¡Observación Guardada!',
+        mensaje: 'La evaluación se ha registrado correctamente en el sistema.',
+        tipo: 'success'
+      });
+      reiniciarFormulario();
+    } else {
+      notificar({
+        titulo: 'Error al Guardar',
+        mensaje: res.message || 'No se pudo procesar el envío.',
+        tipo: 'danger'
+      });
+    }
+  } catch{
+    notificar({ titulo: 'Error', mensaje: 'Fallo de conexión con el servidor.', tipo: 'danger' });
+  } finally {
+    procesando.value = false;
+  }
 };
 
 const reiniciarFormulario = () => {
   Object.assign(formulario, {
     partido_genero: '', partido_categoria: '', inf_nivel: '', id_categoria_especifica: '',
-    equipo_1: '', equipo_2: '', ref_count: '1', comentarios: '', perf_score: null, diff_mult: ''
+    equipo_1: '', equipo_2: '', ref_count: '1', ref1_nombre: '', ref1_group: '', 
+    ref2_nombre: '', ref2_group: '', comentarios: '', perf_score: null, diff_mult: ''
   });
-  enviadoExitoso.value = false;
-  window.scrollTo(0,0);
+  window.scrollTo(0, 0);
 };
 </script>
 
