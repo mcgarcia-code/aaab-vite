@@ -9,7 +9,7 @@
     </div>
 
     <div class="row g-4 justify-content-center">
-      <div v-for="item in opcionesTesoreria" :key="item.title" class="col-12 col-sm-6">
+      <div v-for="item in opcionesObservaciones" :key="item.title" class="col-12 col-sm-6">
         <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
           <div class="menu-card shadow-lg">
             <div class="icon-circle">
@@ -35,7 +35,7 @@ useHead({
   meta: [
     {
       name: 'description',
-      content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.',
+      content: 'Módulo para cargar y visualizar observaciones sobre los árbitros, con detalles y categorías para un seguimiento efectivo.',
     },
         // --- ESTO ES LO QUE LEE WHATSAPP ---
     {
@@ -44,7 +44,7 @@ useHead({
     },
     {
       property: 'og:description',
-      content: 'Módulo para cargar y visualizar observaciones sobre los árbitros',
+      content: 'Módulo para cargar y visualizar observaciones sobre los árbitros, con detalles y categorías para un seguimiento efectivo.',
     },
     {
       property: 'og:image',
@@ -57,7 +57,7 @@ useHead({
   ],
 })
 
-const opcionesTesoreria = [
+const opcionesObservaciones = [
   { 
     to: '/panel-admin/observaciones/carga', 
     title: 'Cargar Observaciones', 

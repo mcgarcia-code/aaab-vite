@@ -64,7 +64,7 @@ import { useHead } from '@vueuse/head'
 
 // Título y descripción específicos para la página de Sanciones AAAB
 useHead({
-  title: 'Tus Sanciones | AAAB',
+  title: 'Mis Sanciones | AAAB',
   meta: [
     {
       name: 'description',

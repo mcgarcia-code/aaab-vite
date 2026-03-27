@@ -38,7 +38,36 @@
 
 <script setup>
 import { RouterLink } from 'vue-router';
+import { useHead } from '@vueuse/head';
 
+// Título y descripción específicos para la página de Tesorería AAAB
+useHead({
+  title: 'Indumentaria | AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Menu de gestión de indumentaria para árbitros, control de stock y pedidos.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Indumentaria | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Menu de gestión de indumentaria para árbitros, control de stock y pedidos.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+
+})
 </script>
 
 <style scoped>

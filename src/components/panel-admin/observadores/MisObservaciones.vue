@@ -41,5 +41,35 @@
 </template>
 
 <script setup>
-// Lógica para traer las observaciones de la AAAB según el ID del usuario logueado
+import { useHead } from '@vueuse/head';
+
+// Título y descripción específicos para la página de Tesorería AAAB
+useHead({
+  title: 'Mis Observaciones Realizadas| AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Verifica y gestiona las evaluaciones de desempeño arbitral que has realizado para los árbitros de la Asociación Argentina de Árbitros de Balonmano.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Mis Observaciones Realizadas | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Verifica y gestiona las evaluaciones de desempeño arbitral que has realizado para los árbitros de la Asociación Argentina de Árbitros de Balonmano.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+
+})
+
 </script>

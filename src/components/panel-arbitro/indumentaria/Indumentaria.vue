@@ -3,7 +3,7 @@
     <div class="text-center mb-5">
       <i class="bi bi-bag-fill text-danger main-icon"></i>
       <h2 class="fw-bold text-white mt-2">Mi Indumentaria</h2>
-      <p class="small text-white opacity-75 m-0">Gestioná tu equipo oficial de la asociación.</p>
+      <p class="small text-white opacity-75 m-0">Gestioná tu indumentaria oficial de la asociación.</p>
     </div>
 
     <div class="row g-4 justify-content-center">
@@ -33,6 +33,38 @@
     </div>
   </div>
 </template>
+
+<script setup>
+import { useHead } from '@vueuse/head'
+
+// Título y descripción específicos
+useHead({
+  title: 'Indumentaria| AAAB',
+  meta: [
+    {
+      name: 'description',
+      content: 'Sección de gestión de aportes para los árbitros de la Asociación Argentina de Árbitros de Balonmano.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Indumentaria | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Sección de gestión de indumentaria para los árbitros de la Asociación Argentina de Árbitros de Balonmano.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
+  ],
+})
+</script>
 
 <style scoped>
 /* Copiá los mismos estilos de .menu-card que tenés en los otros Admin para mantener la estética */

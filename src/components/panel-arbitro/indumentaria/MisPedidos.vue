@@ -1,57 +1,115 @@
 <template>
-  <div class="animate__animated animate__fadeIn">
-    <div class="card shadow border-0">
-      <div class="card-header bg-white py-3">
-        <h4 class="text-danger fw-bold m-0">Próximamente</h4>
-        <p class="text-muted small m-0">Estamos trabajando en nuevas funcionalidades para vos.</p>
-      </div>
-      
-      <div class="card-body p-0">
-        <div class="text-center py-5">
-          <i class="bi bi-tools text-primary display-1 opacity-25"></i>
-          <h5 class="mt-3 fw-bold text-dark">Módulo en Desarrollo</h5>
-          <p class="text-muted small px-4">
-            Esta sección se encuentra actualmente en proceso de diseño y programación. 
-            ¡Muy pronto estará disponible!
-          </p>
-          <div class="mt-3">
-            <span class="badge rounded-pill bg-light text-dark border px-3">En proceso...</span>
+  <div class="container py-4 animate__animated animate__fadeIn">
+    <div class="mb-4">
+      <h2 class="fw-bold text-white m-0">Mis Pedidos</h2>
+      <p class="small text-white opacity-75">Seguimiento de tus solicitudes de indumentaria</p>
+    </div>
+
+    <div v-if="misPedidos.length > 0" class="row g-3">
+      <div v-for="pedido in misPedidos" :key="pedido.id" class="col-12">
+        <div class="card border-0 shadow-sm tarjeta-pedido-historial overflow-hidden">
+          <div class="card-body p-0">
+            <div class="d-flex align-items-center bg-white p-3">
+              <div class="flex-grow-1">
+                <div class="text-muted extra-small text-uppercase fw-bold">Pedido #{{ pedido.id }} - {{ formatearFecha(pedido.fecha_creacion) }}</div>
+                <div class="fw-bold text-dark fs-5">{{ pedido.descripcion }}</div>
+              </div>
+              <div class="text-end">
+                <span :class="['badge rounded-pill px-3 py-2', claseEstado(pedido.estado)]">
+                  {{ pedido.estado }}
+                </span>
+              </div>
+            </div>
+            
+            <div class="cuerpo-gris-pedido p-3 d-flex justify-content-between align-items-center">
+              <div class="small text-muted">
+                Cantidad: <strong>{{ pedido.cantidad }}</strong> | 
+                Precio Unit.: <strong>${{ pedido.precio_unitario }}</strong>
+              </div>
+              <div class="fw-bold text-danger fs-5">
+                Total: ${{ pedido.cantidad * pedido.precio_unitario }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="alert alert-secondary mt-4 border-0 shadow-sm">
-      <div class="d-flex align-items-center">
-        <i class="bi bi-info-circle-fill me-3 fs-4 text-dark"></i>
-        <div class="small text-dark">
-          Este panel se actualiza periódicamente con nuevas herramientas de gestión institucional.
-        </div>
-      </div>
+    <div v-else class="text-center py-5">
+      <i class="bi bi-box-seam text-white opacity-25 display-1"></i>
+      <p class="text-white mt-3">Todavía no realizaste ningún pedido.</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { useHead } from '@vueuse/head';
+import { ref, onMounted } from 'vue';
+import { api } from '@/api/api';
 
+// Título y descripción específicos
 useHead({
-  title: 'En Desarrollo | AAAB',
+  title: 'Mis Pedidos| AAAB',
   meta: [
-    { name: 'description', content: 'Sección en construcción de la Asociación Argentina de Árbitros de Balonmano.' }
+    {
+      name: 'description',
+      content: 'Seguimiento de tus solicitudes de indumentaria.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Mis Pedidos | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Seguimiento de tus solicitudes de indumentaria.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
-});
+})
+
+const misPedidos = ref([]);
+
+const cargarMisPedidos = async () => {
+  const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerMisPedidos' });
+  if (respuesta.ok) {
+    misPedidos.value = respuesta.payload;
+  }
+};
+
+const claseEstado = (estado) => {
+  const colores = {
+    'Creado': 'bg-secondary',
+    'En proceso': 'bg-info text-dark',
+    'Aceptado': 'bg-primary',
+    'Rechazado': 'bg-danger',
+    'Entregado': 'bg-success',
+  };
+  return colores[estado] || 'bg-dark';
+};
+
+const formatearFecha = (fecha) => {
+  return new Date(fecha).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' });
+};
+
+onMounted(cargarMisPedidos);
 </script>
 
 <style scoped>
-.card { border-radius: 15px; overflow: hidden; }
-.card-header { border-bottom: 1px solid #f1f5f9; }
+.tarjeta-pedido-historial { border-radius: 20px; }
+.extra-small { font-size: 0.7rem; }
+.cuerpo-gris-pedido { background-color: #f1f5f9; }
 
-.text-primary { color: #0d6efd !important; }
-.display-1 { font-size: 5rem; }
+.badge { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
 
 @media (max-width: 576px) {
-  .display-1 { font-size: 3.5rem; }
-  .card-header h4 { font-size: 1.2rem; }
+  .fs-5 { font-size: 1rem !important; }
+  .cuerpo-gris-pedido { flex-direction: column; align-items: flex-start !important; gap: 10px; }
 }
 </style>

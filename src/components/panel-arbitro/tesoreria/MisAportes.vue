@@ -35,12 +35,33 @@
 <script setup>
 import { useHead } from '@vueuse/head';
 
+// Título y descripción específicos
 useHead({
-  title: 'En Desarrollo | AAAB',
+  title: 'Mis Aportes| AAAB',
   meta: [
-    { name: 'description', content: 'Sección en construcción de la Asociación Argentina de Árbitros de Balonmano.' }
+    {
+      name: 'description',
+      content: 'Visualizá y gestioná tus aportes a la Asociación Argentina de Árbitros de Balonmano.',
+    },
+        // --- ESTO ES LO QUE LEE WHATSAPP ---
+    {
+      property: 'og:title',
+      content: 'Mis Aportes | AAAB',
+    },
+    {
+      property: 'og:description',
+      content: 'Sección de gestión de aportes para los árbitros de la Asociación Argentina de Árbitros de Balonmano.',
+    },
+    {
+      property: 'og:image',
+      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
+    },
+    {
+      property: 'og:type',
+      content: 'website',
+    }
   ],
-});
+})
 </script>
 
 <style scoped>
