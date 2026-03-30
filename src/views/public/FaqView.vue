@@ -251,7 +251,7 @@ const categorias = ref([
       },
       {
         question: "¿De cuánto es el aporte a la Asociación?",
-        answer: "El aporte es del <strong>8%</strong>. El pago es responsabilidad de cada árbitro; tras dos meses de deuda, se aplica un recargo del 25% mensual."
+        answer: "El aporte es del <strong>8%</strong>. El pago de los aportes es responsabilidad de cada árbitro. En el caso de que no se abone dentro de los 10 días hábiles de haberse enviado el e-mail, tendrá un recargo del 25%."
       },
       {
         question: "¿A quién contacto por deudas de clubes  o facturas adeudadas por los árbitros?",

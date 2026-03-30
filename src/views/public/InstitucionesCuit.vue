@@ -122,7 +122,7 @@ import { useHead } from '@vueuse/head'
 
 // Título y descripción específicos para la página de Instituciones y CUITs
 useHead({
-  title: 'Instituciones y CUITs| AAAB',
+  title: 'Instituciones y CUITs | AAAB',
   meta: [
     {
       name: 'description',
