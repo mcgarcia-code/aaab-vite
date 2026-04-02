@@ -135,7 +135,7 @@ const categorias = ref([
       },
       {
         question: "¿Cómo solicito una licencia?",
-        answer: "Deben pedirse por email a licencias@arbitroshandball.com.ar con <strong>10 días de anticipación</strong>. Son por día completo y no existen licencias parciales."
+        answer: "Deben pedirse a través de la plataforma, ingresando con tu usuario y contraseña. Las mismas se solicitan con <strong>10 días de anticipación</strong>. Son por día completo y no existen licencias parciales."
       },
       {
         question: "¿Qué pasa si llego tarde a un partido de Infantiles?",
@@ -144,7 +144,7 @@ const categorias = ref([
     ]
   },
   {
-    titulo: 'Protocolo en Cancha y Resultados',
+    titulo: 'Protocolo en Cancha, Planilla y Resultados',
     subtitulo: 'Horarios, validación de planillas digitales y resultados.',
     icon: 'bi bi-clipboard-check-fill',
     preguntas: [
@@ -158,7 +158,7 @@ const categorias = ref([
       },
       {
         question: "¿Cómo proceder si la planilla digital no funciona durante el partido?",
-        answer: "Si el sistema falla, la planilla debe realizarse en papel como respaldo y, al finalizar, es obligatorio completar el <a href='https://docs.google.com/forms/d/e/1FAIpQLSdVyMWo1ub6mSVfWycI1dfiwDZQnFT62uXTCOHAYYZLjqz1gQ/viewform?pli=1' target='_blank'>Formulario</a> y enviar los resultados por WhatsApp a Resultados."
+        answer: "Si el sistema falla, la planilla debe realizarse en papel como respaldo y, al finalizar, es obligatorio completar el <a href='https://docs.google.com/forms/d/e/1FAIpQLSdVyMWo1ub6mSVfWycI1dfiwDZQnFT62uXTCOHAYYZLjqz1gQ/viewform?pli=1' target='_blank'>Formulario</a> y enviar los resultados por <a href='https://wa.link/ztfre7' target='_blank'>WhatsApp</a>."
       },
             {
         question: "¿Es obligatorio el uso de auxiliares de mesa habilitados?",
@@ -170,19 +170,39 @@ const categorias = ref([
       },
       {
         question: "¿Qué datos envío al WhatsApp de Resultados?",
-        answer: "Enviar foto de la planilla al 11 3909-6838 inmediatamente al finalizar el partido con: Resultado, Categoría y Clubes (Ej: Juniors 'D' Caballeros: Larre 30 - Boca 30)."
+        answer: "Enviar foto de la planilla por <a href='https://wa.link/ztfre7' target='_blank'>WhatsApp</a> inmediatamente al finalizar el partido con: Resultado, Categoría y Clubes (Ej: Juniors 'D' Caballeros: Larre 30 - Boca 30)."
       },
       {
-        question: "¿Qué hago si hay diferencias entre la planilla digital y la de papel?",
-        answer: "Si no se puede editar en el sistema, debés completar el <a href='https://docs.google.com/forms/d/e/1FAIpQLSdVyMWo1ub6mSVfWycI1dfiwDZQnFT62uXTCOHAYYZLjqz1gQ/viewform?pli=1' target='_blank'>Formulario</a> y enviar foto de la planilla papel a Resultados."
+        question: "¿Tiene que coincidir la planilla digital y la física?",
+        answer: "Si. Antes de comenzar cada partido, es OBLIGATORIO  corroborar que la planilla digital coincida con la planilla física, tanto en jugadores como en entrenadores."
+      },
+        {
+        question: "¿Qué hago si al finalizar el partido, hay diferencias entre la planilla digital y la de papel?",
+        answer: "Si no se puede editar en el sistema, debés completar el <a href='https://docs.google.com/forms/d/e/1FAIpQLSdVyMWo1ub6mSVfWycI1dfiwDZQnFT62uXTCOHAYYZLjqz1gQ/viewform?pli=1' target='_blank'>Formulario</a> y enviar foto de la planilla por <a href='https://wa.link/ztfre7' target='_blank'>WhatsApp</a>."
       },
       {
         question: "¿Cuándo es el límite para enviar un informe escrito?",
         answer: "Los informes y fotos de planillas deben enviarse como máximo el <strong>lunes a las 12:00 pm</strong> a informes@arbitroshandball.com.ar."
       },
       {
-        question: "¿Qué sucede si un Oficial de equipo no está habilitado o llega tarde?",
-        answer: "Si no figura en el sistema digital, no puede participar. Si llega tarde pero está en planilla, puede participar; si al inicio no hay ningún oficial nivelado, el partido se suspende."
+        question: "¿Qué sucede si los oficiales de equipo no están habilitados en el sistema o llegan tarde?",
+        answer: "Si un oficial no figura en la planilla digital, no puede participar, a menos que el responsable del equipo confirme que está habilitado; en ese caso, el partido puede jugarse, pero es obligatorio completar el <a href='https://docs.google.com/forms/d/e/1FAIpQLSdVyMWo1ub6mSVfWycI1dfiwDZQnFT62uXTCOHAYYZLjqz1gQ/viewform?pli=1' target='_blank'>Formulario</a> y enviar los resultados por <a href='https://wa.link/ztfre7' target='_blank'>WhatsApp</a> para su verificación. Si el oficial figura en planilla pero llega tarde, puede participar; sin embargo, si al inicio del encuentro no hay ningún oficial nivelado presente, el partido se suspende."
+      },
+      {
+        question: "¿Qué pasa si un jugador/a o entrenador/a figura en la planilla física pero no aparece en la planilla digital?",
+        answer: "En caso de detectar que algún jugador o jugadora no figura en el sistema, se debe consultar al oficial responsable ( DT ) el motivo. Si este/a confirma que el/la jugador/a está habilitado/a, podrá participar del partido. Siempre que ocurra esta situación, se deberá enviar el informe correspondiente y completar el <a href='https://docs.google.com/forms/d/e/1FAIpQLSdVyMWo1ub6mSVfWycI1dfiwDZQnFT62uXTCOHAYYZLjqz1gQ/viewform?pli=1' target='_blank'>Formulario</a>"
+      },
+      {
+        question: "El equipo local tuvo un inconveniente con la planilla digital debido a que se apagó la computadora ¿Puede cargarla luego de manera offline antes de finalizar el partido?",
+        answer: "Si el sistema falla, la planilla debe realizarse en papel como respaldo y, al finalizar, es obligatorio completar el <a href='https://docs.google.com/forms/d/e/1FAIpQLSdVyMWo1ub6mSVfWycI1dfiwDZQnFT62uXTCOHAYYZLjqz1gQ/viewform?pli=1' target='_blank'>Formulario</a> y enviar los resultados por <a href='https://wa.link/ztfre7' target='_blank'>WhatsApp</a>."
+      },
+      {
+        question: "¿Qué hago si no me aparece el partido para validar?",
+        answer: "En caso de que no aparezca, es obligatorio completar el <a href='https://docs.google.com/forms/d/e/1FAIpQLSdVyMWo1ub6mSVfWycI1dfiwDZQnFT62uXTCOHAYYZLjqz1gQ/viewform?pli=1' target='_blank'>Formulario</a> y enviar los resultados por <a href='https://wa.link/ztfre7' target='_blank'>WhatsApp</a>."
+      },
+      {
+        question: "¿Qué hago si no puedo subir la foto de la planilla al formulario?o por problemas con la planilla digital?",
+        answer: "Si estás cargando desde el celular, probá usar Google Chrome en modo escritorio."
       }
     ]
   },
@@ -210,10 +230,18 @@ const categorias = ref([
     ]
   },
   {
-    titulo: 'Equipamiento y Seguridad',
-    subtitulo: 'Responsabilidades del club local y resguardo de árbitros.',
+    titulo: 'Indumentaria, Equipamiento y Seguridad',
+    subtitulo: 'Indumentaria de los equipos, responsabilidades del club local y resguardo de árbitros.',
     icon: 'bi bi-shield-shaded',
     preguntas: [
+      {
+        question: "¿Qué indumentaria deben usar los equipos?",
+        answer: "Las camisetas de los equipos deben poder ser distinguibles entre sí. Un equipo debe usar color claro y el otro equipo color oscuro."
+      },
+      {
+        question: "¿Qué pasa si tengo dudas si se diferencian los colores de las remeras de ambos equipos?",
+        answer: "Siempre debe jugar un equipo con indumentaria de color claro y el otro con color oscuro. Los colores deben diferenciarse claramente entre sí y también respecto de los arqueros rivales. En total, deben distinguirse cinco colores: arquero del equipo local, arquero del equipo visitante, jugadores del equipo local, jugadores del equipo visitante y árbitros. Si no se logra esta diferenciación, el equipo local debe cambiar su indumentaria. En caso de que no pueda resolverse, el partido deberá ser suspendido."
+      },
       {
         question: "¿Qué materiales debe presentar obligatoriamente el club local?",
         answer: "Dos pelotas oficiales, planilla de juego, reloj de mesa fijo, silbato, tarjetas (verdes, lesionados, excluidos) y arcos con redes en buen estado."
