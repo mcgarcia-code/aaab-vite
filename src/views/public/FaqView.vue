@@ -144,7 +144,7 @@ const categorias = ref([
     ]
   },
   {
-    titulo: 'Protocolo en Cancha, Planilla y Resultados',
+    titulo: 'Protocolo en Cancha, Planillas y Resultados',
     subtitulo: 'Horarios, validación de planillas digitales y resultados.',
     icon: 'bi bi-clipboard-check-fill',
     preguntas: [
@@ -201,7 +201,7 @@ const categorias = ref([
         answer: "En caso de que no aparezca, es obligatorio completar el <a href='https://docs.google.com/forms/d/e/1FAIpQLSdVyMWo1ub6mSVfWycI1dfiwDZQnFT62uXTCOHAYYZLjqz1gQ/viewform?pli=1' target='_blank'>Formulario</a> y enviar los resultados por <a href='https://wa.link/ztfre7' target='_blank'>WhatsApp</a>."
       },
       {
-        question: "¿Qué hago si no puedo subir la foto de la planilla al formulario?o por problemas con la planilla digital?",
+        question: "¿Qué hago si no puedo subir la foto de la planilla al formulario?",
         answer: "Si estás cargando desde el celular, probá usar Google Chrome en modo escritorio."
       }
     ]
