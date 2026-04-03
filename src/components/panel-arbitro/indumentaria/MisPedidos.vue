@@ -5,7 +5,7 @@
       <p class="small text-white opacity-75">Seguimiento de tus solicitudes de indumentaria</p>
     </div>
 
-    <div v-if="misPedidos.length > 0" class="row g-3">
+    <div v-if="misPedidos.length > 0" class="row g-3"> 
       <div v-for="pedido in misPedidos" :key="pedido.id" class="col-12">
         <div class="card border-0 shadow-sm tarjeta-pedido-historial overflow-hidden">
           <div class="card-body p-0">
