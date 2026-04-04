@@ -92,25 +92,25 @@ const iniciarSesion = async () => {
   errorMsg.value = '';
 
   try {
-    // 2. ADAPTACIÓN: Usamos api.post con la estructura entity/action/payload
-    // Esto llamará a api.php, el cual incluirá login.php (si así lo configuraste)
     const res = await api.post({
-      entity: 'login_arbitro', // Esto hará que api.php busque login_arbitro.php
-      action: 'login', // 
+      entity: 'login_arbitro',
+      action: 'login',
       payload: {
         email: email.value.trim(),
         password: password.value
       }
     });
 
-    // 3. ADAPTACIÓN: Verificamos 'res.ok' (como lo define tu api.php)
     if (res.ok && res.payload.success) {
-      
-      // Guardamos el objeto completo (incluyendo el token para el interceptor)
-      auth.setUser(res.payload.arbitro); 
+      const userData = {
+        arbitro: res.payload.arbitro,
+        token: res.payload.token
+      }
+      console.log(userData)
+      auth.setUser(userData) 
       
       // Redirección basada en rol
-      if (res.payload.arbitro.rol === 'admin') {
+      if (res.payload.admin) {
         router.push('/panel-admin');
       } else {
         router.push('/panel-arbitro');

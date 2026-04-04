@@ -191,7 +191,7 @@
 
 <script setup>
 import { ref, onMounted, watch, inject } from 'vue';
-import axios from 'axios';
+import { api } from '@/api/api'; 
 import { auth } from '@/api/auth';
 import { useHead } from '@vueuse/head';
 
@@ -226,8 +226,11 @@ const mostrarFechaArg = (fecha) => {
 
 const obtenerHistorialRectificaciones = async () => {
     try {
-        const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=rectificacion`);
-        historialRectificaciones.value = res.data;
+        const res = await api.get({
+            entity: 'datos_personales',
+            action: 'obtenerHistorial'
+        })
+        historialRectificaciones.value = res.payload;
     } catch {
         console.error("Error al cargar el historial de rectificaciones");
     }
@@ -236,8 +239,11 @@ const obtenerHistorialRectificaciones = async () => {
 onMounted(async () => {
     obtenerHistorialRectificaciones();
     try {
-        const res = await axios.get('https://arbitroshandball.com.ar/api/get_opciones.php');
-        opciones.value = res.data;
+        const {payload} = await api.get ({
+            entity: 'localidades',
+            action: 'obtenerProvinciasLocalidades'
+        })
+        opciones.value = payload;
         if (arbitro.value.provincia) {
             filtrarLocalidades(arbitro.value.provincia);
         }

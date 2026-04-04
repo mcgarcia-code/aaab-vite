@@ -1,5 +1,6 @@
 // src/api/auth.js
 
+const USER_TOKEN = 'token_aaab'
 const USER_KEY = 'user_aaab';
 const INACTIVITY_LIMIT = 60 * 60 * 1000; // 60 minutos
 let inactivityTimeout;
@@ -11,9 +12,10 @@ const resetHandler = () => auth.startInactivityTimer();
 export const auth = {
   setUser(userData) {
     // CAMBIO: Ahora usamos sessionStorage
-    sessionStorage.setItem(USER_KEY, JSON.stringify(userData));
-    window.dispatchEvent(new Event('storage')); 
-    this.startInactivityTimer();
+    sessionStorage.setItem(USER_KEY, JSON.stringify(userData.arbitro))
+    sessionStorage.setItem(USER_TOKEN, userData.token)
+    window.dispatchEvent(new Event('storage'));
+    this.startInactivityTimer()
   },
 
   getUser() {
@@ -23,11 +25,12 @@ export const auth = {
   },
 
   isLoggedIn() {
-    return !!sessionStorage.getItem(USER_KEY);
+    return !!sessionStorage.getItem(USER_TOKEN);
   },
 
   logout() {
-    sessionStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(USER_KEY)
+    sessionStorage.removeItem(USER_TOKEN)
     this.stopInactivityTimer();
     window.dispatchEvent(new Event('storage'));
     window.location.href = '/login-arbitro';

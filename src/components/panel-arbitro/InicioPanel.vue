@@ -126,7 +126,6 @@ const cargarAvisos = async () => {
     const res = await api.get({
       entity: 'eventos',
       action: 'obtenerDashboardAvisos',
-      payload: { id_arbitro: idReal }
     });
     
     if (res.ok) {

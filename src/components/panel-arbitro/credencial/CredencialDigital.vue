@@ -122,6 +122,7 @@ const arbitro = ref({
 const añoActual = new Date().getFullYear();
 
 const cargarDatos = async () => {
+  /*
   const userRaw = sessionStorage.getItem('user_aaab');
   if (!userRaw) {
     router.push('/login');
@@ -129,22 +130,24 @@ const cargarDatos = async () => {
   }
 
   const user = JSON.parse(userRaw);
-  
+  */
   try {
     const res = await api.get({
       entity: 'datos_personales', // Esto hará que api.php busque credencial.php
       action: 'obtenerPerfil',
-      payload: JSON.stringify({ dni: user.dni })
     });
 
     if (res.ok && res.payload) {
       arbitro.value = res.payload;
-    } else {
+    } 
+    /*
+    else {
       arbitro.value = user;
     }
+    */
   } catch (error) {
     console.error("Error al conectar con la API:", error);
-    arbitro.value = user;
+    //arbitro.value = user;
   } finally {
     cargando.value = false;
   }

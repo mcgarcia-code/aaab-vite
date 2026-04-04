@@ -1,37 +1,38 @@
 // src/api/api.js
-import axios from 'axios';
-
-const BASE_URL = "https://arbitroshandball.com.ar/api/api.php";
-
-// Creamos la instancia de Axios
-const apiClient = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json'
+const BASE_URL = 'https://arbitroshandball.com.ar/api/api.php'
+function obtenerHeaders() {
+  const headers = {
+    'Content-Type': 'application/json',
   }
-});
-
-// INTERCEPTOR: Agrega el Token automáticamente a CADA petición
-apiClient.interceptors.request.use((config) => {
-  const userRaw = sessionStorage.getItem('user_aaab');
-  if (userRaw) {
-    const user = JSON.parse(userRaw);
-    // Suponiendo que tu objeto usuario tiene un campo 'token'
-    // Si usas una API Key o similar, ajusta el nombre del Header aquí
-    if (user.token) {
-      config.headers['Authorization'] = `Bearer ${user.token}`;
-    }
-    
-    // Si tu backend necesita el ID del árbitro siempre, podés agregarlo también:
-    // config.headers['X-Arbitro-ID'] = user.id;
+  const token = sessionStorage.getItem('token_aaab')
+  if (!token) {
+    return headers
   }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  return headers
+}
 
-// Exportamos un objeto similar al que ya tenías para no romper tus componentes
+async function request(metodo, datos = {}) {
+  console.log(datos)
+  const config = {
+    method: metodo,
+    headers: obtenerHeaders(),
+  };
+  if (metodo === 'GET') {
+    datos.payload = JSON.stringify(datos.payload) ?? {}
+    const query = new URLSearchParams(datos).toString();
+    const url = query ? `${BASE_URL}?${query}` : BASE_URL;
+    const respuesta = await fetch(url, config);
+    return respuesta.json();
+  }
+  config.body = JSON.stringify(datos);
+  const respuesta = await fetch(BASE_URL, config);
+  return respuesta.json();
+}
+
 export const api = {
-  get: (params = {}) => apiClient.get('', { params }).then(res => res.data),
-  post: (data = {}) => apiClient.post('', data).then(res => res.data),
+  get: (params = {}) => request('GET', params),
+  post: (data = {}) => request('POST', data),
 };

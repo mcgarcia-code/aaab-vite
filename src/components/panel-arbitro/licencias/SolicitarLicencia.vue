@@ -107,7 +107,9 @@ const obtenerLicencias = async () => {
     const res = await api.get({
       entity: 'licencias',
       action: 'obtenerHistorial',
-      payload: JSON.stringify({ id_arbitro: arbitro.value.id })
+      payload: { 
+        id_arbitro: arbitro.value.id 
+      }
     });
     licencias.value = res.payload || [];
   } catch (err) {

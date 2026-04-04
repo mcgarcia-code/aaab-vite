@@ -25,7 +25,7 @@
           <button @click="exportarExcel" class="btn-action btn-export">
             <span class="material-icons">download</span> Excel
           </button>
-        </div>
+        </div> 
       </div>
 
       <div class="table-container shadow">
@@ -72,8 +72,16 @@
               <td class="col-dni-compact"><input v-model="filtros.dni" class="filter-input text-center"></td>
               <td><input v-model="filtros.email" class="filter-input"></td>
               <td><input v-model="filtros.direccion" class="filter-input"></td>
-              <td><input v-model="filtros.provincia" class="filter-input"></td>
-              <td><input v-model="filtros.localidad" class="filter-input"></td>
+              <td><selProvincia 
+                v-model="filtros.provincia"
+                :provincias="provincias" 
+                class="filter-input" />
+              </td>
+              <td><selLocalidad 
+                v-model="filtros.localidad"
+                :localidades="localidadesFiltradas"
+                class="filter-input" />
+              </td>
               <td><input v-model="filtros.zona" class="filter-input"></td>
               <td><input v-model="filtros.celular" class="filter-input"></td>
               <td><input v-model="filtros.fecha_nacimiento" class="filter-input"></td>
@@ -93,7 +101,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="a in arbitrosFiltrados" :key="a.id || a.tempId" :class="{ 'fila-inactiva': a.es_activo == 0 }">
+            <tr v-for="a in arbitrosPaginados" :key="a.id || a.tempId" :class="{ 'fila-inactiva': a.es_activo == 0 }">
               <td class="sticky-col col-id">{{ a.id || 'NUEVO' }}</td>
               <td class="sticky-col col-apellido"><input v-model="a.apellido" class="edit-input"></td>
               <td class="sticky-col col-nombre"><input v-model="a.nombre" class="edit-input"></td>
@@ -114,8 +122,8 @@
               <td class="col-dni-compact"><input v-model="a.dni" class="edit-input text-center"></td>
               <td><input v-model="a.email" class="edit-input"></td>
               <td><input v-model="a.direccion" class="edit-input"></td>
-              <td><input v-model="a.provincia" class="edit-input" readonly></td>
-              <td><input v-model="a.localidad" class="edit-input" readonly></td>
+              <td><input v-model="a.nombre_provincia" class="edit-input" readonly></td>
+              <td><input v-model="a.nombre_localidad" class="edit-input" readonly></td>
               <td><input v-model="a.zona" class="edit-input" readonly></td>
               <td><input v-model="a.celular" class="edit-input"></td>
               <td>
@@ -140,16 +148,39 @@
           </tbody>
         </table>
       </div>
+
+      <div class="paginacion">
+        <button
+          class="btn-paginacion"
+          @click="paginaActual--"
+          :disabled="paginaActual === 1"
+        >
+          Anterior
+        </button>
+
+        <span class="paginacion-texto">
+          Página {{ paginaActual }} de {{ totalPaginas }}
+        </span>
+
+        <button
+          class="btn-paginacion"
+          @click="paginaActual++"
+          :disabled="paginaActual === totalPaginas"
+        >
+          Siguiente
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, inject } from 'vue';
-import { api } from '@/api/api'; 
-import * as XLSX from 'xlsx';
-import { useHead } from '@vueuse/head';
-
+import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import { api } from '@/api/api' 
+import * as XLSX from 'xlsx'
+import { useHead } from '@vueuse/head'
+import selLocalidad from '@/components/select/selLocalidad.vue'
+import selProvincia from '@/components/select/selProvincia.vue'
 useHead({
   title: 'Legajos | AAAB',
   meta: [
@@ -163,6 +194,10 @@ const arbitros = ref([]);
 const arbitrosOriginales = ref([]); 
 const filtros = reactive({}); 
 const cargando = ref(false);
+const provincias = ref([])
+const localidades = ref([])
+const paginaActual = ref(1)
+const registrosPorPagina = 25
 
 const limpiarFiltros = () => {
   Object.keys(filtros).forEach(key => filtros[key] = '');
@@ -193,10 +228,9 @@ const exportarExcel = () => {
 
 const cargarDatos = async () => {
   try {
-    const res = await api.get({ entity: 'arbitros', action: 'getArbitros' });
-    const respuesta = res.data || res;
-    if (respuesta.ok && Array.isArray(respuesta.payload)) {
-      arbitros.value = respuesta.payload.map(a => ({
+    const {payload} = await api.get({ entity: 'arbitros', action: 'getArbitros' });
+    if (payload) {
+      arbitros.value = payload.map(a => ({
         ...a,
         apto_medico: a.apto_medico == 1
       }));
@@ -206,7 +240,14 @@ const cargarDatos = async () => {
     console.error("Error al cargar:", err); 
   }
 };
-
+const obtenerProvinciasLocalidades = async () => {
+  const { payload } = await api.get({
+    entity: 'localidades',
+    action: 'obtenerProvinciasLocalidades'
+  })
+  provincias.value = payload.provincias,
+  localidades.value = payload.localidades
+}
 const crearNuevo = () => {
   arbitros.value.unshift({
     tempId: Math.random(),
@@ -284,11 +325,16 @@ const guardarTodo = async () => {
   }
 };
 
+const localidadesFiltradas = computed(() => {
+  if (!filtros.provincia) return localidades.value;
+  return localidades.value.filter(localidad => String(localidad.provincia_id) === String(filtros.provincia));
+});
+
 const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     return Object.keys(filtros).every(key => {
       if (!filtros[key]) return true;
-      const busqueda = filtros[key].toLowerCase();
+      const busqueda = String(filtros[key]).toLowerCase();
       if (key === 'es_activo') return (busqueda === 'si' ? a.es_activo == 1 : a.es_activo == 0);
       if (key === 'apto_medico') return (busqueda === 'si' ? a.apto_medico : !a.apto_medico);
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
@@ -296,8 +342,40 @@ const arbitrosFiltrados = computed(() => {
   });
 });
 
+const totalPaginas = computed(() => {
+  const total = Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina);
+  return total || 1;
+});
+
+const arbitrosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina;
+  const fin = inicio + registrosPorPagina;
+  return arbitrosFiltrados.value.slice(inicio, fin);
+});
+
+watch([() => filtros.provincia, localidadesFiltradas], () => {
+  if (!filtros.localidad) return;
+  const localidadExiste = localidadesFiltradas.value.some(localidad => String(localidad.id) === String(filtros.localidad));
+  if (!localidadExiste) {
+    filtros.localidad = '';
+  }
+});
+
+watch(filtros, () => {
+  paginaActual.value = 1;
+}, { deep: true });
+
+watch(totalPaginas, (nuevoTotal) => {
+  if (paginaActual.value > nuevoTotal) {
+    paginaActual.value = nuevoTotal;
+  }
+});
+
 const totalFiltrados = computed(() => arbitrosFiltrados.value.length);
-onMounted(cargarDatos);
+onMounted(() => {
+  cargarDatos()
+  obtenerProvinciasLocalidades()
+})
 </script>
 
 <style scoped>
@@ -344,6 +422,36 @@ onMounted(cargarDatos);
 .btn-blue { background: #3b82f6; color: white; }
 .btn-clear-checks { background: #fee2e2; color: #ef4444; } 
 .btn-export { background: #10b981; color: white; }
+
+.paginacion {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.btn-paginacion {
+  border: none;
+  background: #f8fafc;
+  color: #0f172a;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-paginacion:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginacion-texto {
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
 
 .table-container { 
   width: 100%;
