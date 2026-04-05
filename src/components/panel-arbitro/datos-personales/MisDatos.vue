@@ -344,14 +344,14 @@ const enviarSolicitudRectificacion = async () => {
     if (!solicitudCambio.value.trim()) return;
     cargando.value = true;
     try {
-        const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_cambios.php', {
-            id_arbitro: arbitro.value.id,
-            nombre: arbitro.value.nombre,
-            apellido: arbitro.value.apellido,
-            grupo: arbitro.value.grupo,
-            mensaje: "RECTIFICACIÓN: " + solicitudCambio.value
-          });
-        if (res.data.success) {
+        const res = await api.post({
+            entity: 'licencias',
+            action: 'rectificarLicencia',
+            payload: {
+                mensaje: "RECTIFICACIÓN: " + solicitudCambio.value
+            }
+        })
+        if (res.ok) {
             notificar({
               titulo: 'Solicitud Enviada',
               mensaje: 'Tu pedido de rectificación fue enviado a la asociación.',
