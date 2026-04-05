@@ -154,7 +154,10 @@ const obtenerLicencias = async () => {
 };
 
 const obtenerArbitros = async () => {
-  const res = await api.get({ entity: 'usuarios', action: 'obtenerUsuarios' }); 
+  const res = await api.get({ 
+    entity: 'arbitros', 
+    action: 'getArbitros' 
+  }); 
   if (res.ok && Array.isArray(res.payload)) {
     arbitrosLista.value = res.payload.sort((a, b) => (a.apellido || '').localeCompare(b.apellido || ''));
   }

@@ -74,7 +74,6 @@
 
 <script setup>
 import { ref, onMounted, inject } from 'vue';
-import { auth } from '@/api/auth';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 
@@ -87,8 +86,6 @@ useHead({
 
 // Inyección del notificador global
 const notificar = inject('notificar');
-
-const arbitro = ref(auth.getUser() || {});
 const fechaSeleccionada = ref('');
 const cargando = ref(false);
 const licencias = ref([]);
@@ -102,14 +99,10 @@ const formatearFecha = (fechaStr) => {
 };
 
 const obtenerLicencias = async () => {
-  if (!arbitro.value.id) return;
   try {
     const res = await api.get({
       entity: 'licencias',
       action: 'obtenerHistorial',
-      payload: { 
-        id_arbitro: arbitro.value.id 
-      }
     });
     licencias.value = res.payload || [];
   } catch (err) {
@@ -137,9 +130,6 @@ const solicitarLicencia = async () => {
       entity: 'licencias',
       action: 'crearLicencia',
       payload: {
-        id_arbitro: arbitro.value.id,
-        nombre_arbitro: arbitro.value.nombre,
-        apellido_arbitro: arbitro.value.apellido,
         fecha_licencia: fechaSeleccionada.value,
         estado: estadoFinal
       }
@@ -180,7 +170,7 @@ const solicitarLicencia = async () => {
 };
 
 onMounted(() => {
-  if (arbitro.value.id) obtenerLicencias();
+  obtenerLicencias();
 });
 </script>
 

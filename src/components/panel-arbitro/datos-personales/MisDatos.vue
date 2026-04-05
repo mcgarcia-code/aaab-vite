@@ -264,8 +264,14 @@ watch(() => arbitro.value.provincia, (nuevoId) => {
 const guardarCambios = async () => {
     cargando.value = true;
     try {
-        const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_perfil.php', arbitro.value);
-        if (res.data.success) {
+        const res = await api.post({
+            entity: 'arbitros',
+            action: 'actualizarDatos',
+            payload: {
+                arbitro: arbitro.value
+            }
+        })
+        if (res.success) {
             notificar({
               titulo: '¡Perfil Actualizado!',
               mensaje: 'Tus datos se guardaron correctamente en el legajo.',
@@ -302,12 +308,14 @@ const cambiarPassword = async () => {
     
     cargando.value = true;
     try {
-        const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_password.php', {
-            id_arbitro: arbitro.value.id,
-            password: nuevaPassword.value
+        const res = await api.post({
+            entity: 'arbitros',
+            action: 'actualizarPassword',
+            payload: {
+                password: nuevaPassword.value
+            }
         });
-
-        if (res.data.success) {
+        if (res.ok) {
             notificar({
               titulo: '¡Clave Actualizada!',
               mensaje: 'Tu nueva contraseña ha sido guardada con éxito.',

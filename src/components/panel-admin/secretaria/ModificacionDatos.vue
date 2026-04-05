@@ -303,16 +303,15 @@ const guardarTodo = async () => {
     });
 
     const res = await api.post({ 
-      entity: 'datos_personales',
+      entity: 'arbitros',
       action: 'guardarDatosArbitros', 
       payload: { listaArbitros: datosParaEnviar }
     });
 
     if (res.ok) {
-      // AQUÍ DISPARA EL MODAL MODERNO DE ÉXITO
       notificar({ 
         titulo: '¡Guardado!', 
-        mensaje: `Se procesaron ${modificados.length} registros exitosamente.` 
+        mensaje: `Se procesaron ${modificados.length} registros exito6samente.` 
       });
       await cargarDatos(); 
     } else {
