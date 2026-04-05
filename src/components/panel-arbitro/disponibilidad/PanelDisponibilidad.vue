@@ -245,7 +245,7 @@ const guardarCambios = async () => {
     cargando.value = true;
     try {
         const res = await api.post({
-            entity: 'arbitros',
+            entity: 'datos_personales',
             action: 'actualizarDatos',
             payload: {
                 arbitro: arbitro.value
@@ -281,7 +281,7 @@ const enviarSolicitudRectificacion = async () => {
     cargando.value = true;
     try {
         const res = await api.post({
-            entity: 'arbitros',
+            entity: 'datos_personales',
             action: 'rectificarDatos',
             payload: {
                 tipo: "disponibilidad",
