@@ -126,7 +126,7 @@
                 <h6 class="m-0 fw-bold text-dark small">Historial de Solicitudes</h6>
             </div>
             <div class="card-body p-0 bg-white">
-                <div v-if="historial.length > 0" class="table-responsive">
+                <div v-if="historialRectificaciones.length > 0" class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light">
                             <tr class="x-small text-uppercase text-muted">
@@ -136,7 +136,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(h, i) in historial" :key="i">
+                            <tr v-for="(h, i) in historialRectificaciones" :key="i">
                                 <td class="ps-3 small fw-bold text-dark">{{ h.fecha }}</td>
                                 <td class="small text-dark">{{ h.mensaje }}</td>
                                 <td class="text-center">

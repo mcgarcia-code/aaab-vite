@@ -20,11 +20,11 @@
     </div>
 
     <div class="row g-3">
-      <div v-for="modelo in stockAgrupado" :key="modelo.nombre" class="col-6 col-md-4 col-lg-3">
+      <div v-for="(modelo, key) in listaStock" :key="key" class="col-6 col-md-4 col-lg-3">
         <div class="card h-100 border-0 shadow-sm tarjeta-stock-admin overflow-hidden">
           
           <div class="bg-white contenedor-foto-admin d-flex align-items-center justify-content-center position-relative">
-            <img :src="obtenerImagen(modelo.nombre)" class="img-fluid foto-gestion" alt="Modelo">
+            <img :src="obtenerImagen(modelo.archivo_imagen)" class="img-fluid foto-gestion" alt="Modelo">
             <button @click="abrirModalEdicion(modelo)" class="btn-editar-flotante shadow">
               <i class="bi bi-pencil-fill"></i>
             </button> 
@@ -33,20 +33,20 @@
           <div class="card-body p-3 cuerpo-gris-admin text-center d-flex flex-column">
             <div class="contenedor-titulo-stock mb-2">
               <h6 class="fw-bold text-dark m-0 text-uppercase text-truncate-2">
-                {{ modelo.nombre }}
+                {{ modelo.descripcion }}
               </h6>
             </div>
             
             <div class="d-flex flex-wrap justify-content-center gap-1 mb-3">
-              <span v-for="t in modelo.talles" :key="t.id" 
-                :class="['badge-talle', t.cantidad < 5 ? 'bajo-stock' : '']">
-                {{ t.talle }}: <b>{{ t.cantidad }}</b>
+              <span v-for="(item, k) in modelo.items" :key="k" 
+                :class="['badge-talle', item.cantidad < 5 ? 'bajo-stock' : '']">
+                {{ item.talle }}: <b>{{ item.cantidad }}</b>
               </span>
             </div>
 
             <div class="mt-auto pt-2 border-top text-center">
               <span class="small text-muted">Precio Sugerido:</span>
-              <div class="fw-bold text-success fs-5">${{ modelo.precio_referencia }}</div>
+              <div class="fw-bold text-success fs-5">${{ modelo.precio_unitario }}</div>
             </div>
           </div>
         </div>
@@ -79,12 +79,12 @@
 
           <div class="mb-3">
             <label class="form-label small fw-bold text-muted">Nombre del Modelo</label>
-            <input v-model="formulario.nombre" type="text" class="form-control rounded-pill px-3 shadow-sm border" placeholder="Ej: REMERA NEGRA - HUMMEL">
+            <input v-model="formulario.descripcion" type="text" class="form-control rounded-pill px-3 shadow-sm border" placeholder="Ej: REMERA NEGRA - HUMMEL">
           </div>
 
           <label class="form-label small fw-bold text-muted">Stock por Talle y Precio (Obligatorio > 0)</label>
           <div class="contenedor-edicion-talles mb-4">
-            <div v-for="(t, index) in formulario.talles" :key="index" class="fila-talle-edit mb-2 p-2 rounded-3 bg-light border">
+            <div v-for="(t, index) in formulario.items" :key="index" class="fila-talle-edit mb-2 p-2 rounded-3 bg-light border">
               <div class="row align-items-center g-2">
                 <div class="col-2 fw-bold text-danger text-center">{{ t.talle }}</div>
                 <div class="col-6">
@@ -97,7 +97,7 @@
                 <div class="col-4 text-end">
                   <div class="position-relative">
                     <span class="position-absolute start-0 top-50 translate-middle-y ms-2 extra-small text-muted">$</span>
-                    <input v-model.number="t.precio" type="number" class="form-control form-control-sm rounded-pill text-end fw-bold ps-3 shadow-sm" placeholder="0">
+                    <input v-model.number="t.precio_unitario" type="number" class="form-control form-control-sm rounded-pill text-end fw-bold ps-3 shadow-sm" placeholder="0">
                   </div>
                 </div>
               </div>
@@ -124,7 +124,7 @@ import { api } from '@/api/api';
 // Inyectamos el notificador global
 const notificar = inject('notificar');
 
-const listaStockRaw = ref([]);
+const listaStock = ref([]);
 const filtroTexto = ref('');
 const mostrarModal = ref(false);
 const editando = ref(false);
@@ -140,7 +140,7 @@ const manejarArchivo = (event, idx) => {
   const file = event.target.files[0];
   if (file) formulario.value.fotos[idx].nombreArchivo = file.name;
 };
-
+/*
 const stockAgrupado = computed(() => {
   const mapa = {};
   listaStockRaw.value.forEach(item => {
@@ -163,34 +163,40 @@ const stockAgrupado = computed(() => {
   });
   return Object.values(mapa).filter(m => m.nombre.toLowerCase().includes(filtroTexto.value.toLowerCase())).sort((a, b) => a.nombre.localeCompare(b.nombre));
 });
+*/
 
 const obtenerStock = async () => {
   const res = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
-  if (res.ok) listaStockRaw.value = res.payload;
+  if (res.ok) listaStock.value = res.payload;
 };
 
 const abrirModalEdicion = (modelo) => {
   editando.value = true;
-  const tallesExistentes = JSON.parse(JSON.stringify(modelo.talles));
-  const nombresExistentes = tallesExistentes.map(t => t.talle);
+
+  let tallesExistentes = []
+  modelo.items.forEach(v=>{
+    tallesExistentes.push(v.talle)
+  });
   
   tallesEstandar.forEach(talle => {
-    if (!nombresExistentes.includes(talle)) {
-      tallesExistentes.push({
+    if (!tallesExistentes.includes(talle)) {
+      modelo.items.push({
         id: null,
         talle: talle,
         cantidad: 0,
-        precio: modelo.precio_referencia
+        precio_unitario: modelo.precio_unitario,
       });
     }
   });
 
   const orden = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7 };
-  tallesExistentes.sort((a, b) => (orden[a.talle] || 99) - (orden[b.talle] || 99));
+  modelo.items.sort((a, b) => (orden[a.talle] || 99) - (orden[b.talle] || 99));
 
   formulario.value = {
-    nombre: modelo.nombre,
-    talles: tallesExistentes,
+    id_item: modelo.id_item,
+    descripcion: modelo.descripcion,
+    precioUnitario: modelo.precio_unitario,
+    items: modelo.items,
     fotos: []
   };
   mostrarModal.value = true;
@@ -199,7 +205,7 @@ const abrirModalEdicion = (modelo) => {
 const abrirModalNuevo = () => {
   editando.value = false;
   formulario.value = { 
-    nombre: '', 
+    descripcion: '', 
     fotos: [{ nombreArchivo: '' }], 
     talles: tallesEstandar.map(t => ({ id: null, talle: t, cantidad: 0, precio: 0 })) 
   };
@@ -207,13 +213,13 @@ const abrirModalNuevo = () => {
 };
 
 const guardarCambiosAgrupados = async () => {
-  if (!formulario.value.nombre) {
+  if (!formulario.value.descripcion) {
     notificar({ titulo: 'Faltan datos', mensaje: 'El nombre del modelo es obligatorio.', tipo: 'danger' });
     return;
   }
 
   // Solo procesamos talles que tengan stock o precio definidos
-  const itemsAProcesar = formulario.value.talles.filter(t => t.id || (t.cantidad > 0 && t.precio > 0));
+  const itemsAProcesar = formulario.value.items.filter(t => t.id || (t.cantidad > 0 && t.precio_unitario > 0));
 
   if (itemsAProcesar.length === 0) {
     notificar({ titulo: 'Atención', mensaje: 'Debes cargar stock y precio mayor a 0 en al menos un talle.', tipo: 'danger' });
@@ -221,24 +227,23 @@ const guardarCambiosAgrupados = async () => {
   }
 
   cargando.value = true;
-  let errores = 0;
-
+  let items = []
   for (const t of itemsAProcesar) {
-    const accion = t.id ? 'actualizarStock' : 'agregarItem';
-    const payload = { 
-      descripcion: `${formulario.value.nombre.toUpperCase()} - TALLE ${t.talle}`, 
-      cantidad: t.cantidad, 
-      precioUnitario: t.precio 
-    };
-    if (t.id) payload.id = t.id;
-
-    const res = await api.post({ entity: 'indumentaria', action: accion, payload });
-    if (!res.ok) errores++;
+    items.push({
+      id: t.id,
+      talle: t.talle,
+      cantidad: t.cantidad,
+      precioUnitario: t.precio_unitario
+    })
   }
-  
-  cargando.value = false;
-
-  if (errores === 0) {
+  const payload = {
+    id_item: formulario.value.id_item,
+    precioUnitario: formulario.value.precioUnitario,
+    descripcion: `${formulario.value.descripcion.toUpperCase()}`,
+    items: items
+  }
+  const res = await api.post({ entity: 'indumentaria', action: 'actualizarStock', payload });
+  if (res.ok) {
     notificar({ titulo: '¡Éxito!', mensaje: 'Inventario actualizado correctamente.', tipo: 'success' });
     await obtenerStock();
     cerrarModal();
@@ -247,29 +252,13 @@ const guardarCambiosAgrupados = async () => {
   }
 };
 
-const cerrarModal = () => { mostrarModal.value = false; };
+const cerrarModal = () => { 
+  cargando.value = false
+  mostrarModal.value = false
+};
 
 const obtenerImagen = (nombre) => {
-  const catalogoImagenes = {
-    "CHOMBAS - HUMMEL": "chomba-hummel.webp",
-    "REMERA AMARILLA - CH1": "amarillo-ch1.webp",
-    "REMERA NEGRA - HUMMEL": "negra-hummel.webp",
-    "REMERA NARANJA - HUMMEL": "naranja-hummel.webp",
-    "REMERA VERDE AGUA - HIGH RUNNER": "verde-agua-hr.webp",
-    "REMERA NEGRA - HIGH RUNNER": "negra-hr.webp",
-    "REMERA NARANJA - HIGH RUNNER": "naranja-hr.webp",
-    "REMERA CELESTE - HIGH RUNNER": "celeste-hr.webp",
-    "SHORT CABALLERO - HUMMEL": "short-hombre-hummel.webp",
-    "SHORT DAMA - HUMMEL": "short-mujer-hummel.webp",
-    "SHORT CABALLERO - HIGH RUNNER": "short-hombre-hr.webp",
-    "SHORT DAMA - HIGH RUNNER": "short-mujer-hr.webp",
-    "CHOMBAS - HIGH RUNNER": "chomba-hr.webp",
-    "BUZO - HUMMEL": "buzo-hummel.webp",
-    "CAMPERA - HIGH RUNNER": "campera-hr.webp",
-    "PANTALON LARGO - HIGH RUNNER": "pantalon-hr.webp"
-  };
-  const archivo = catalogoImagenes[nombre];
-  return archivo ? new URL(`/src/assets/fotos/${archivo}`, import.meta.url).href : "https://placehold.co/400x400?text=Sin+Foto";
+  return nombre ? new URL(`/src/assets/fotos/${nombre}`, import.meta.url).href : "https://placehold.co/400x400?text=Sin+Foto";
 };
 
 onMounted(obtenerStock);
