@@ -78,8 +78,8 @@ const routes = [
       },
       { 
         path: 'secretaria/modificacion-datos', 
-        name: 'ModificacionDatos', 
-        component: () => import('../components/panel-admin/secretaria/ModificacionDatos.vue'),
+        name: 'LegajosPersonales', 
+        component: () => import('../components/panel-admin/secretaria/LegajosPersonales.vue'),
         meta: { roles: ['admin', 'secretario'] }
       },
       { 

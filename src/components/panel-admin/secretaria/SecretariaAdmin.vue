@@ -59,7 +59,7 @@ useHead({
 const opcionesSecretaria = [
   { 
     to: '/panel-admin/secretaria/modificacion-datos', 
-    title: 'Modificación de Datos', 
+    title: 'Legajos Personales', 
     icon: 'bi bi-people', 
     desc: 'Actualizar información personal y disponibilidad de los árbitros.' 
   },

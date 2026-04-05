@@ -206,7 +206,6 @@ useHead({
 
 // Inyectamos el notificador global
 const notificar = inject('notificar');
-
 const arbitro = ref(auth.getUser() || {});
 const opciones = ref({ provincias: [], localidades: [] });
 const localidadesFiltradas = ref([]);
@@ -214,7 +213,6 @@ const cargando = ref(false);
 const solicitudCambio = ref('');
 const historialRectificaciones = ref([]);
 const nuevaPassword = ref('');
-
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
 
 const mostrarFechaArg = (fecha) => {
@@ -228,37 +226,49 @@ const obtenerHistorialRectificaciones = async () => {
     try {
         const res = await api.get({
             entity: 'datos_personales',
-            action: 'obtenerHistorial'
-        })
-        historialRectificaciones.value = res.payload;
-    } catch {
-        console.error("Error al cargar el historial de rectificaciones");
+            action: 'obtenerHistorial',
+            payload: { tipo: "datos_personales" }
+        });
+        historialRectificaciones.value = res.payload || [];
+    } catch (error) {
+        console.error("Error al cargar el historial de rectificaciones", error);
     }
 };
-
 onMounted(async () => {
     obtenerHistorialRectificaciones();
-    try {
-        const {payload} = await api.get ({
-            entity: 'localidades',
-            action: 'obtenerProvinciasLocalidades'
-        })
-        opciones.value = payload;
-        if (arbitro.value.provincia) {
-            filtrarLocalidades(arbitro.value.provincia);
+
+    if (edicionAbierta.value) {
+        try {
+            const { payload } = await api.get({
+                entity: 'localidades',
+                action: 'obtenerProvinciasLocalidades'
+            });
+            
+            opciones.value = payload;
+
+            if (arbitro.value.provincia) {
+                filtrarLocalidades(arbitro.value.provincia);
+            }
+        } catch (error) {
+            console.error("Error al cargar provincias/localidades", error);
         }
-    } catch {
-        console.error("Error al cargar provincias/localidades");
     }
 });
 
 const filtrarLocalidades = (provId) => {
-    if (!opciones.value.localidades) return;
-    localidadesFiltradas.value = opciones.value.localidades.filter(l => l.provincia_id == provId);
+    
+    if (!opciones.value.localidades || !edicionAbierta.value) return;
+    
+    localidadesFiltradas.value = opciones.value.localidades.filter(
+        l => l.provincia_id == provId
+    );
 };
 
 watch(() => arbitro.value.provincia, (nuevoId) => {
-    filtrarLocalidades(nuevoId);
+    // Evitamos cálculos innecesarios si no se puede editar
+    if (edicionAbierta.value) {
+        filtrarLocalidades(nuevoId);
+    }
 });
 
 const guardarCambios = async () => {
@@ -345,37 +355,36 @@ const enviarSolicitudRectificacion = async () => {
     cargando.value = true;
     try {
         const res = await api.post({
-            entity: 'licencias',
-            action: 'rectificarLicencia',
+            entity: 'arbitros',
+            action: 'rectificarDatos',
             payload: {
+                tipo: "datos_personales",
                 mensaje: "RECTIFICACIÓN: " + solicitudCambio.value
             }
-        })
-        if (res.ok) {
+        });
+
+        if (res.ok || res.success) { // Normalizado para ambos casos
             notificar({
-              titulo: 'Solicitud Enviada',
-              mensaje: 'Tu pedido de rectificación fue enviado a la asociación.',
-              tipo: 'success'
+                titulo: 'Solicitud Enviada',
+                mensaje: 'Tu pedido de rectificación fue enviado a la asociación.',
+                tipo: 'success'
             });
             solicitudCambio.value = '';
-            obtenerHistorialRectificaciones();
+            await obtenerHistorialRectificaciones(); // Refresca la lista
         } else {
-          notificar({
-            titulo: 'Error',
-            mensaje: 'No se pudo enviar la solicitud.',
-            tipo: 'danger'
-          });
+            throw new Error();
         }
     } catch {
         notificar({
-          titulo: 'Error',
-          mensaje: 'Problema al conectar con el servidor para enviar la solicitud.',
-          tipo: 'danger'
+            titulo: 'Error',
+            mensaje: 'No se pudo enviar la solicitud.',
+            tipo: 'danger'
         });
     } finally {
         cargando.value = false;
     }
 };
+
 </script>
 
 <style scoped>

@@ -108,7 +108,7 @@
           </div>
         </div>
 
-        <button v-if="edicionAbierta" @click="guardarCambiosDirectos" class="btn btn-success w-100 fw-bold shadow-sm py-2" :disabled="cargando">
+        <button v-if="edicionAbierta" @click="guardarCambios" class="btn btn-success w-100 fw-bold shadow-sm py-2" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
           ACTUALIZAR DISPONIBILIDAD
         </button>
@@ -162,8 +162,8 @@
 
             <div class="p-3 p-md-4 rounded-4 shadow-lg" style="background: #0c1624; border: 1px dashed rgba(255,255,255,0.2);">
                 <h6 class="text-white fw-bold small mb-2 text-uppercase">Informar cambio urgente</h6>
-                <textarea v-model="solicitudManual" class="form-control mb-3 custom-textarea" rows="3" placeholder="Detallá aquí tu cambio de horarios..."></textarea>
-                <button @click="enviarSolicitudManual" class="btn btn-danger w-100 fw-bold py-2 shadow" :disabled="cargando || !solicitudManual">
+                <textarea v-model="solicitudCambio" class="form-control mb-3 custom-textarea" rows="3" placeholder="Detallá aquí tu cambio de horarios..."></textarea>
+                <button @click="enviarSolicitudRectificacion" class="btn btn-danger w-100 fw-bold py-2 shadow" :disabled="cargando || !solicitudCambio">
                     ENVIAR SOLICITUD FORMAL
                 </button>
             </div>
@@ -175,8 +175,8 @@
 
 <script setup>
 import { ref, onMounted, watch, inject } from 'vue';
-import axios from 'axios';
 import { auth } from '@/api/auth';
+import { api } from '@/api/api'; 
 import { useHead } from '@vueuse/head'
 
 useHead({
@@ -188,26 +188,29 @@ useHead({
 
 // Inyección del notificador global
 const notificar = inject('notificar');
-
 const arbitro = ref(auth.getUser() || {});
-const solicitudManual = ref('');
-const historial = ref([]);
+const solicitudCambio = ref('');
+const historialRectificaciones = ref([]);
 const cargando = ref(false);
-
 const movilidadSeleccionada = ref([]);
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
 
-const obtenerHistorial = async () => {
-  try {
-    const res = await axios.get(`https://arbitroshandball.com.ar/api/obtener_historial.php?id_arbitro=${arbitro.value.id}&tipo=disponibilidad`);
-    historial.value = res.data;
-  } catch {
-    console.error("Error al cargar el historial");
-  }
+const obtenerHistorialRectificaciones = async () => {
+    try {
+        const res = await api.get({
+            entity: 'datos_personales',
+            action: 'obtenerHistorial',
+            payload: { tipo: "disponibilidad" }
+        });
+        
+        historialRectificaciones.value = res.payload || []; 
+    } catch (error) {
+        console.error("Error al cargar el historial de rectificaciones", error);
+    }
 };
 
 onMounted(() => {
-  obtenerHistorial();
+  obtenerHistorialRectificaciones();
   if (arbitro.value.movilidad) {
     movilidadSeleccionada.value = arbitro.value.movilidad.split(',');
   }
@@ -238,70 +241,74 @@ watch(() => arbitro.value.juega_handball, (nuevoValor) => {
   }
 });
 
-const guardarCambiosDirectos = async () => {
-  cargando.value = true;
-  try {
-    const res = await axios.post('https://arbitroshandball.com.ar/api/actualizar_perfil.php', arbitro.value);
-    if (res.data.success) {
-      notificar({
-        titulo: '¡Disponibilidad Actualizada!',
-        mensaje: 'Tus horarios y datos de movilidad se guardaron con éxito.',
-        tipo: 'success'
-      });
-      auth.setUser(arbitro.value);
-    } else {
-      notificar({
-        titulo: 'Error',
-        mensaje: res.data.message || 'No se pudo actualizar la disponibilidad.',
-        tipo: 'danger'
-      });
+const guardarCambios = async () => {
+    cargando.value = true;
+    try {
+        const res = await api.post({
+            entity: 'arbitros',
+            action: 'actualizarDatos',
+            payload: {
+                arbitro: arbitro.value
+            }
+        })
+        if (res.success) {
+            notificar({
+              titulo: '¡Perfil Actualizado!',
+              mensaje: 'Tus datos se guardaron correctamente en el legajo.',
+              tipo: 'success'
+            });
+            auth.setUser(arbitro.value);
+        } else {
+            notificar({
+              titulo: 'Error',
+              mensaje: res.data.message || 'No se pudieron actualizar los datos.',
+              tipo: 'danger'
+            });
+        }
+    } catch {
+        notificar({
+          titulo: 'Error de Conexión',
+          mensaje: 'No pudimos conectar con el servidor para guardar los cambios.',
+          tipo: 'danger'
+        });
+    } finally {
+        cargando.value = false;
     }
-  } catch {
-    notificar({
-      titulo: 'Error de Red',
-      mensaje: 'No se pudo conectar con el servidor.',
-      tipo: 'danger'
-    });
-  } finally {
-    cargando.value = false;
-  }
 };
 
-const enviarSolicitudManual = async () => {
-  if (!solicitudManual.value.trim()) return;
-  cargando.value = true;
-  try {
-    const res = await axios.post('https://arbitroshandball.com.ar/api/solicitar_cambios.php', {
-      id_arbitro: arbitro.value.id,
-      nombre: arbitro.value.nombre,
-      apellido: arbitro.value.apellido,
-      grupo: arbitro.value.grupo,
-      mensaje: "SOLICITUD DISPONIBILIDAD: " + solicitudManual.value
-    });
-    if (res.data.success) {
-      notificar({
-        titulo: 'Solicitud Enviada',
-        mensaje: 'Tu pedido de cambio de disponibilidad fue enviado correctamente.',
-        tipo: 'success'
-      });
-      solicitudManual.value = '';
-      obtenerHistorial();
-    } else {
-      notificar({
-        titulo: 'Error',
-        mensaje: 'Hubo un problema al enviar la solicitud.',
-        tipo: 'danger'
-      });
+const enviarSolicitudRectificacion = async () => {
+    if (!solicitudCambio.value.trim()) return;
+    cargando.value = true;
+    try {
+        const res = await api.post({
+            entity: 'arbitros',
+            action: 'rectificarDatos',
+            payload: {
+                tipo: "disponibilidad",
+                mensaje: "RECTIFICACIÓN: " + solicitudCambio.value
+            }
+        });
+
+        if (res.ok || res.success) {
+            notificar({
+                titulo: 'Solicitud Enviada',
+                mensaje: 'Tu pedido de rectificación fue enviado a la asociación.',
+                tipo: 'success'
+            });
+            solicitudCambio.value = '';
+            await obtenerHistorialRectificaciones();
+        } else {
+            throw new Error();
+        }
+    } catch {
+        notificar({
+            titulo: 'Error',
+            mensaje: 'No se pudo enviar la solicitud.',
+            tipo: 'danger'
+        });
+    } finally {
+        cargando.value = false;
     }
-  } catch {
-    notificar({
-      titulo: 'Error',
-      mensaje: 'Fallo en la comunicación con el servidor.',
-      tipo: 'danger'
-    });
-  } finally {
-    cargando.value = false;
-  }
 };
 </script>
 
