@@ -48,7 +48,7 @@ useHead({
       name: 'description',
       content: 'Menu de gestión de indumentaria para árbitros, control de stock y pedidos.',
     },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
+       
     {
       property: 'og:title',
       content: 'Indumentaria | AAAB',

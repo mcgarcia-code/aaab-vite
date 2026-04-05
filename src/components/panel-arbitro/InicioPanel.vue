@@ -107,6 +107,13 @@ const menuItems = [
   // { to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Realizá pedidos de indumentaria.' },
   { to: '/panel-arbitro/aportes', title: 'Mis Aportes', icon: 'bi bi-cash-coin', desc: 'Consultá el estado de tus aportes.' },
   { href: 'https://refflix.com.ar', title: 'Ref-Flix', icon: 'bi bi-cast', desc: 'Plataforma de videos' },
+{ 
+    to: '/panel-arbitro/observaciones', 
+    title: 'Observaciones', 
+    icon: 'bi bi-eye', 
+    desc: 'Módulo para cargar y visualizar observaciones',
+    rolesPermitidos: [2, 4,] 
+  },
 ];
 
 // --- LÓGICA DE NOTIFICACIONES ---

@@ -59,13 +59,13 @@ useHead({
 
 const opcionesObservaciones = [
   { 
-    to: '/panel-admin/observaciones/carga', 
+    to: '/panel-arbitro/observaciones/carga', 
     title: 'Cargar Observaciones', 
     icon: 'bi bi-cloud-upload', 
     desc: 'Registrar observaciones sobre los árbitros, con detalles y categorías para un seguimiento efectivo.' 
   },
   { 
-    to: '/panel-admin/observaciones/mis-observaciones', 
+    to: '/panel-arbitro/observaciones/mis-observaciones', 
     title: 'Mis Observaciones', 
     icon: 'bi bi-envelope-check', 
     desc: 'Visualizar las observaciones realizadas por vos.' 

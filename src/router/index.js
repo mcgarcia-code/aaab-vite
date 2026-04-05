@@ -41,7 +41,26 @@ const routes = [
       { path: 'rendimiento', name: 'PanelRendimiento', component: () => import('../components/panel-arbitro/rendimiento/MiRendimiento.vue') },
       { path: 'aportes', name: 'PanelAportes', component: () => import('../components/panel-arbitro/tesoreria/MisAportes.vue') },
       { path: 'ref-flix', name: 'PanelRefFlix', beforeEnter() { window.location.href = 'https://refflix.com.ar' }},
-      
+      // --- OBSERVACIONES ---
+      { 
+        path: 'observaciones', 
+        name: 'Observaciones',
+        component: () => import('../components/panel-arbitro/observadores/ObservacionesPanel.vue'),
+        meta: { roles: ['observador', 'coordinador'] }
+      },
+      { 
+        path: 'observaciones/carga', 
+        name: 'ObservacionesCarga', 
+        component: () => import('../components/panel-arbitro/observadores/CargaObservaciones.vue'),
+        meta: { roles: ['observador', 'coordinador'] }
+      },
+      { 
+        path: 'observaciones/mis-observaciones', 
+        name: 'ObservacionesMias', 
+        component: () => import('../components/panel-arbitro/observadores/MisObservaciones.vue'),
+        meta: { roles: ['observador', 'coordinador'] } 
+      },
+       // --- OBSERVACIONES ---
       { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/IndumentariaArbitro.vue') },
       
       { 
@@ -130,6 +149,12 @@ const routes = [
         meta: { roles: ['admin', 'tesorero'] }
       },
       { 
+        path: 'tesoreria/datos-personales', 
+        name: 'DatosPersonales', 
+        component: () => import('../components/panel-admin/tesoreria/DatosPersonales.vue'),
+        meta: { roles: ['admin', 'tesorero'] }
+      },
+      { 
         path: 'tesoreria/aportes', 
         name: 'TesoreriaAportes', 
         component: () => import('../components/panel-admin/tesoreria/Aportes.vue'),
@@ -153,26 +178,7 @@ const routes = [
         component: () => import('../components/panel-admin/tesoreria/PedidosRealizados.vue'),
         meta: { roles: ['admin', 'tesorero'] }
       },
-
-      // --- OBSERVACIONES ---
-      { 
-        path: 'observaciones', 
-        name: 'ObservacionesAdmin',
-        component: () => import('../components/panel-admin/observadores/ObservacionesAdmin.vue'),
-        meta: { roles: ['admin', 'observador', 'coordinador general','secretario'] }
-      },
-      { 
-        path: 'observaciones/carga', 
-        name: 'ObservacionesCarga', 
-        component: () => import('../components/panel-admin/observadores/CargaObservaciones.vue'),
-        meta: { roles: ['admin', 'observador', 'coordinador general','secretario'] } 
-      },
-      { 
-        path: 'observaciones/mis-observaciones', 
-        name: 'ObservacionesMias', 
-        component: () => import('../components/panel-admin/observadores/MisObservaciones.vue'),
-        meta: { roles: ['admin', 'observador', 'coordinador general','secretario'] } 
-      }
+    
     ]
   },
   

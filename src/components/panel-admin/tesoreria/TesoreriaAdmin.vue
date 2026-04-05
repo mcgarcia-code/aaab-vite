@@ -59,6 +59,12 @@ useHead({
 
 const opcionesTesoreria = [
   { 
+    to: '/panel-admin/tesoreria/datos-personales', 
+    title: 'Datos Personales', 
+    icon: 'bi bi-person-lines-fill', 
+    desc: 'Información personal de los miembros.' 
+  },
+  { 
     to: '/panel-admin/tesoreria/aportes', 
     title: 'Aportes', 
     icon: 'bi bi-cash-coin', 
@@ -69,7 +75,8 @@ const opcionesTesoreria = [
     title: 'Indumentaria', 
     icon: 'bi bi-bag-check', 
     desc: 'Control de inventario, talles y pedidos.' 
-  }
+  },
+
 ];
 </script>
 

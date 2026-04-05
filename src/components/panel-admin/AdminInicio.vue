@@ -73,14 +73,8 @@ const menuItems = [
     desc: 'Módulo de desarrollo arbitral, seguimiento de capacitaciones y evaluaciones',
     rolesPermitidos: ['admin', 'coordinador general', 'secretario'] // <-- Coma agregada aquí
   },
-  { 
-    to: '/panel-admin/observaciones', 
-    title: 'Observaciones', 
-    icon: 'bi bi-eye main-icon', 
-    desc: 'Módulo para cargar y visualizar observaciones sobre los árbitros',
-    rolesPermitidos: ['admin', 'observador', 'coordinador general', 'secretario'] // <-- Coma agregada aquí
-  },
-  
+
+
 ];
 
 const filteredMenu = computed(() => {

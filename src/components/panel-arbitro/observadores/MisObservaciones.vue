@@ -6,7 +6,7 @@
         <p class="text-gray-500 text-sm">Historial de evaluaciones de desempeño arbitral.</p>
       </div>
       <router-link 
-        to="/panel-admin/observaciones/carga" 
+        to="/panel-arbitro/observaciones/carga" 
         class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-800 transition shadow-sm"
       >
         + Nueva Evaluación
