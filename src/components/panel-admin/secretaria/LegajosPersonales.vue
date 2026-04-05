@@ -35,8 +35,9 @@
               <th class="sticky-col col-id">ID</th>
               <th class="sticky-col col-apellido">Apellido</th>
               <th class="sticky-col col-nombre">Nombre</th>
-              <th class="col-xs-compact">Activo</th> 
-              <th class="col-xs-compact">Apto Med.</th> 
+              <th class="col-xs-compact">Activo</th>
+              <th class="col-xs-compact">Rol</th>
+              <th class="col-xs-compact">Apto Med.</th>
               <th class="col-xs-compact">Grupo</th>
               <th class="col-xs-compact">Subg.</th>
               <th class="col-dni-compact">DNI</th>
@@ -66,22 +67,23 @@
               <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar.."></td>
               <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar.."></td>
               <td class="col-xs-compact"><input v-model="filtros.es_activo" class="filter-input text-center" placeholder="SI/NO"></td>
+              <td class="col-xs-compact">
+                <select v-model="filtros.rol" class="filter-input">
+                  <option value="">Todos</option>
+                  <option :value="0">Ninguno</option>
+                  <option :value="1">Árbitro</option>
+                  <option :value="2">Observador</option>
+                  <option :value="4">Coordinador</option>
+                </select>
+              </td>
               <td class="col-xs-compact"><input v-model="filtros.apto_medico" class="filter-input text-center" placeholder="SI/NO"></td> 
               <td class="col-xs-compact"><input v-model="filtros.grupo" class="filter-input text-center"></td>
               <td class="col-xs-compact"><input v-model="filtros.subgrupo" class="filter-input text-center"></td>
               <td class="col-dni-compact"><input v-model="filtros.dni" class="filter-input text-center"></td>
               <td><input v-model="filtros.email" class="filter-input"></td>
               <td><input v-model="filtros.direccion" class="filter-input"></td>
-              <td><selProvincia 
-                v-model="filtros.provincia"
-                :provincias="provincias" 
-                class="filter-input" />
-              </td>
-              <td><selLocalidad 
-                v-model="filtros.localidad"
-                :localidades="localidadesFiltradas"
-                class="filter-input" />
-              </td>
+              <td><selProvincia v-model="filtros.provincia" :provincias="provincias" class="filter-input" /></td>
+              <td><selLocalidad v-model="filtros.localidad" :localidades="localidadesFiltradas" class="filter-input" /></td>
               <td><input v-model="filtros.zona" class="filter-input"></td>
               <td><input v-model="filtros.celular" class="filter-input"></td>
               <td><input v-model="filtros.fecha_nacimiento" class="filter-input"></td>
@@ -114,6 +116,14 @@
                   </select>
                 </div>
               </td>
+              <td class="col-xs-compact">
+                <select v-model="a.rol" class="small-select select-compact fw-bold">
+                  <option :value="1">Árbitro</option>
+                  <option :value="2">Observador</option>
+                  <option :value="4">Coordinador</option>
+                  <option :value="0">Ninguno</option>
+                </select>
+              </td>
               <td :class="[{ 'inactivo': !a.apto_medico }, 'text-center']">
                 <input type="checkbox" v-model="a.apto_medico" @change="actualizarAptoFisico(a)">
               </td>
@@ -122,9 +132,22 @@
               <td class="col-dni-compact"><input v-model="a.dni" class="edit-input text-center"></td>
               <td><input v-model="a.email" class="edit-input"></td>
               <td><input v-model="a.direccion" class="edit-input"></td>
-              <td><input v-model="a.nombre_provincia" class="edit-input" readonly></td>
-              <td><input v-model="a.nombre_localidad" class="edit-input" readonly></td>
-              <td><input v-model="a.zona" class="edit-input" readonly></td>
+              
+              <!-- Provincia Editable -->
+              <td>
+                <selProvincia v-model="a.provincia" :provincias="provincias" class="small-select" />
+              </td>
+
+              <!-- Localidad Editable -->
+              <td>
+                <selLocalidad 
+                  v-model="a.localidad" 
+                  :localidades="localidades.filter(l => l.provincia_id == a.provincia)" 
+                  class="small-select" 
+                />
+              </td>
+
+              <td><input v-model="a.zona" class="edit-input"></td>
               <td><input v-model="a.celular" class="edit-input"></td>
               <td>
                 <div class="date-custom-wrapper" :data-date="a.fecha_nacimiento ? mostrarFechaArg(a.fecha_nacimiento) : ''">
@@ -150,29 +173,69 @@
       </div>
 
       <div class="paginacion">
-        <button
-          class="btn-paginacion"
-          @click="paginaActual--"
-          :disabled="paginaActual === 1"
-        >
-          Anterior
-        </button>
-
-        <span class="paginacion-texto">
-          Página {{ paginaActual }} de {{ totalPaginas }}
-        </span>
-
-        <button
-          class="btn-paginacion"
-          @click="paginaActual++"
-          :disabled="paginaActual === totalPaginas"
-        >
-          Siguiente
-        </button>
+        <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+        <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
       </div>
     </div>
+
+    <!-- MODAL EXCEL -->
+    <div v-if="mostrarModalExcel" class="modal-overlay-exito animate__animated animate__fadeIn">
+      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 750px;">
+        <div class="icon-circle-exito bg-success-light">
+          <span class="material-icons">description</span>
+        </div>
+        <h4 class="fw-bold mt-3">Exportar Listado</h4>
+        <p class="text-muted small mb-3">Marcá las columnas que querés incluir en el Excel</p>
+        <div class="row g-2 text-start my-3" style="max-height: 250px; overflow-y: auto; background: #f8fafc; padding: 15px; border-radius: 20px;">
+          <div v-for="col in columnasExcel" :key="col.id" class="col-6">
+            <div class="d-flex align-items-center gap-2 p-1">
+              <input type="checkbox" v-model="col.visible" :id="'col-'+col.id" style="width:18px; height:18px; cursor:pointer;">
+              <label :for="'col-'+col.id" class="mb-0 small cursor-pointer" style="color: #1e293b;">{{ col.label }}</label>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2 justify-content-center mt-4">
+          <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</button>
+          <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm">DESCARGAR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL ALTA -->
+    <div v-if="mostrarModalAlta" class="modal-overlay-exito animate__animated animate__fadeIn">
+      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 850px; width: 95%;">
+        <div class="icon-circle-exito bg-success-light">
+          <span class="material-icons">person_add</span>
+        </div>
+        <h4 class="fw-bold mt-3">Registrar Nuevo Árbitro</h4>
+        <div class="row g-3 text-start mt-3" style="max-height: 60vh; overflow-y: auto; padding: 15px;">
+          <div class="col-md-4"><label class="small fw-bold">Apellido *</label><input v-model="nuevoA.apellido" class="filter-input"></div>
+          <div class="col-md-4"><label class="small fw-bold">Nombre *</label><input v-model="nuevoA.nombre" class="filter-input"></div>
+          <div class="col-md-4"><label class="small fw-bold">DNI</label><input v-model="nuevoA.dni" class="filter-input"></div>
+          <div class="col-md-6"><label class="small fw-bold">Email (Usuario) *</label><input v-model="nuevoA.email" class="filter-input"></div>
+          <div class="col-md-6"><label class="small fw-bold">Password *</label><input v-model="nuevoA.password" type="text" class="filter-input"></div>
+          <div class="col-md-4">
+            <label class="small fw-bold">Rol</label>
+            <select v-model="nuevoA.rol" class="filter-input">
+              <option :value="1">Árbitro</option>
+              <option :value="2">Observador</option>
+              <option :value="4">Coordinador</option>
+            </select>
+          </div>
+          <div class="col-md-4"><label class="small fw-bold">Provincia</label><selProvincia v-model="nuevoA.provincia" :provincias="provincias" class="filter-input" /></div>
+          <div class="col-md-4"><label class="small fw-bold">Localidad</label><selLocalidad v-model="nuevoA.localidad" :localidades="localidades.filter(l => l.provincia_id == nuevoA.provincia)" class="filter-input" /></div>
+        </div>
+        <div class="d-flex gap-2 justify-content-center mt-4">
+          <button @click="mostrarModalAlta = false" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</button>
+          <button @click="confirmarAlta" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargando">CREAR ÁRBITRO</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
@@ -181,6 +244,7 @@ import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
 import selLocalidad from '@/components/select/selLocalidad.vue'
 import selProvincia from '@/components/select/selProvincia.vue'
+
 useHead({
   title: 'Legajos | AAAB',
   meta: [
@@ -192,12 +256,24 @@ const notificar = inject('notificar');
 
 const arbitros = ref([]);
 const arbitrosOriginales = ref([]); 
-const filtros = reactive({}); 
+const filtros = reactive({
+  rol: '' 
+}); 
 const cargando = ref(false);
 const provincias = ref([])
 const localidades = ref([])
 const paginaActual = ref(1)
-const registrosPorPagina = 25
+const registrosPorPagina = 10;
+
+const obtenerNombreRol = (bitRol) => {
+  const roles = {
+    0: 'Ninguno',
+    1: 'Árbitro',
+    2: 'Observador',
+    4: 'Coordinador'
+  };
+  return roles[bitRol] || 'Desconocido';
+};
 
 const limpiarFiltros = () => {
   Object.keys(filtros).forEach(key => filtros[key] = '');
@@ -214,25 +290,87 @@ const normalizarTexto = (valor) => {
 };
 
 const exportarExcel = () => {
-  const datosParaExcel = arbitrosFiltrados.value.map(a => ({
-    ...a,
-    fecha_nacimiento: mostrarFechaArg(a.fecha_nacimiento),
-    es_activo: a.es_activo == 1 ? 'SI' : 'NO',
-    apto_medico: a.apto_medico ? 'SI' : 'NO'
-  }));
+  mostrarModalExcel.value = true;
+};
+
+const mostrarModalExcel = ref(false);
+const columnasExcel = ref([
+  { id: 'apellido', label: 'Apellido', visible: true },
+  { id: 'nombre', label: 'Nombre', visible: true },
+  { id: 'dni', label: 'DNI', visible: true },
+  { id: 'rol', label: 'Rol', visible: true }, 
+  { id: 'grupo', label: 'Grupo', visible: true },
+  { id: 'subgrupo', label: 'Subgrupo', visible: true },
+  { id: 'es_activo', label: 'Estado', visible: false },
+  { id: 'apto_medico', label: 'Apto Médico', visible: false },
+  { id: 'email', label: 'Email', visible: false },
+  { id: 'direccion', label: 'Dirección', visible: false },
+  { id: 'nombre_provincia', label: 'Provincia', visible: false },
+  { id: 'nombre_localidad', label: 'Localidad', visible: false },
+  { id: 'zona', label: 'Zona', visible: false },
+  { id: 'celular', label: 'Celular', visible: false },
+  { id: 'fecha_nacimiento', label: 'F. Nacimiento', visible: false },
+  { id: 'telefonocontacto', label: 'Tel. Contacto', visible: false },
+  { id: 'parentescocontacto', label: 'Parentesco', visible: false },
+  { id: 'movilidad', label: 'Movilidad', visible: false },
+  { id: 'disponibilidad_sabado', label: 'Sáb. Disp.', visible: false },
+  { id: 'disponibilidad_sabado_desde', label: 'Sáb. Desde', visible: false },
+  { id: 'disponibilidad_sabado_hasta', label: 'Sáb. Hasta.', visible: false },
+  { id: 'disponibilidad_domingo', label: 'Dom. Disp.', visible: false },
+  { id: 'disponibilidad_domingo_desde', label: 'Dom. Desde', visible: false },
+  { id: 'disponibilidad_domingo_hasta', label: 'Dom. Hasta', visible: false },
+  { id: 'juega_handball', label: 'Juega', visible: false },
+  { id: 'donde_juega', label: 'Club', visible: false },
+  { id: 'categoria_handball', label: 'Cat. Juega', visible: false },
+  { id: 'observaciones', label: 'Observaciones', visible: false },
+]);
+
+const mostrarModalAlta = ref(false);
+const nuevoA = ref({
+  apellido: '', nombre: '', dni: '', email: '', password: '', 
+  rol: 1, provincia: '', localidad: '', grupo: '', subgrupo: '', celular: '', es_activo: 1
+});
+
+
+const ejecutarDescargaExcel = () => {
+  const columnasSeleccionadas = columnasExcel.value.filter(c => c.visible);
+  
+  const datosParaExcel = arbitrosFiltrados.value.map(a => {
+    let fila = {};
+    columnasSeleccionadas.forEach(col => {
+      let valor = a[col.id];
+
+      if (col.id === 'rol') {
+        valor = obtenerNombreRol(a.rol);
+      } else if (col.id === 'es_activo') {
+        valor = (valor == 1 ? 'SI' : 'NO');
+      } else if (col.id === 'apto_medico') {
+        valor = (valor ? 'SI' : 'NO');
+      } else if (col.id === 'fecha_nacimiento') {
+        valor = mostrarFechaArg(valor);
+      }
+      
+      fila[col.label] = valor || '';
+    });
+    return fila;
+  });
+
   const worksheet = XLSX.utils.json_to_sheet(datosParaExcel);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Arbitros");
-  XLSX.writeFile(workbook, "Lista_Arbitros_AAAB.xlsx");
+  XLSX.writeFile(workbook, "Reporte_AAAB.xlsx");
+  
+  mostrarModalExcel.value = false;
 };
 
 const cargarDatos = async () => {
   try {
-    const {payload} = await api.get({ entity: 'arbitros', action: 'getArbitros' });
+    const { payload } = await api.get({ entity: 'arbitros', action: 'getArbitros' });
     if (payload) {
       arbitros.value = payload.map(a => ({
         ...a,
-        apto_medico: a.apto_medico == 1
+        apto_medico: a.apto_medico == 1,
+        rol: a.rol !== null ? parseInt(a.rol) : 0 
       }));
       arbitrosOriginales.value = JSON.parse(JSON.stringify(arbitros.value));
     }
@@ -240,24 +378,51 @@ const cargarDatos = async () => {
     console.error("Error al cargar:", err); 
   }
 };
+
 const obtenerProvinciasLocalidades = async () => {
   const { payload } = await api.get({
     entity: 'localidades',
     action: 'obtenerProvinciasLocalidades'
   })
-  provincias.value = payload.provincias,
-  localidades.value = payload.localidades
+  provincias.value = payload.provincias;
+  localidades.value = payload.localidades;
 }
+
 const crearNuevo = () => {
-  arbitros.value.unshift({
-    tempId: Math.random(),
-    apellido: '', nombre: '', grupo: '', subgrupo: '', dni: '', email: '', 
-    direccion: '', provincia: '', localidad: '', zona: '', celular: '',
-    fecha_nacimiento: '', observaciones: '', es_activo: 1, apto_medico: false 
-  });
+  // Limpiamos el objeto y abrimos el modal en lugar de insertarlo directo en la tabla
+  nuevoA.value = {
+    apellido: '', nombre: '', dni: '', email: '', password: '', 
+    rol: 1, provincia: '', localidad: '', grupo: '', subgrupo: '', celular: '', es_activo: 1
+  };
+  mostrarModalAlta.value = true;
 };
 
-// --- FUNCIÓN ORIGINAL MANTENIDA ---
+const confirmarAlta = async () => {
+  if (!nuevoA.value.apellido || !nuevoA.value.nombre || !nuevoA.value.email || !nuevoA.value.password) {
+    notificar({ titulo: 'Faltan datos', mensaje: 'Apellido, Nombre, Email y Password son requeridos.', tipo: 'danger' });
+    return;
+  }
+  
+  cargando.value = true;
+  try {
+    const res = await api.post({ 
+      entity: 'arbitros',
+      action: 'guardarDatosArbitros', 
+      payload: { listaArbitros: [nuevoA.value] } // Enviamos el nuevo como una lista de 1
+    });
+
+    if (res.ok || res.success) {
+      notificar({ titulo: 'Éxito', mensaje: 'Árbitro creado correctamente.', tipo: 'success' });
+      mostrarModalAlta.value = false;
+      await cargarDatos(); // Recargamos la tabla
+    }
+  } catch{
+    notificar({ titulo: 'Error', mensaje: 'No se pudo crear el árbitro.', tipo: 'danger' });
+  } finally {
+    cargando.value = false;
+  }
+};
+
 const actualizarAptoFisico = async (arbitro) => {
   try {
     const response = await api.post({
@@ -265,7 +430,7 @@ const actualizarAptoFisico = async (arbitro) => {
       action: 'actualizarAptoFisico',
       payload: {
         id_arbitro: arbitro.id,
-        apto_medico: arbitro.apto_medico 
+        apto_medico: arbitro.apto_medico
       }
     });
     console.log("Respuesta actualización apto:", response);
@@ -277,7 +442,6 @@ const actualizarAptoFisico = async (arbitro) => {
 };
 
 const guardarTodo = async () => {
-  // Detección de cambios comparando con la copia original
   const modificados = arbitros.value.filter(actual => {
     if (!actual.id) return (actual.apellido || actual.nombre); 
     const original = arbitrosOriginales.value.find(o => o.id === actual.id);
@@ -294,11 +458,15 @@ const guardarTodo = async () => {
     cargando.value = true;
     const datosParaEnviar = modificados.map(a => {
       const clon = { ...a };
+      
+      // Convertimos campos vacíos a null
       ['disponibilidad_sabado_desde', 'disponibilidad_sabado_hasta', 'disponibilidad_domingo_desde', 'disponibilidad_domingo_hasta', 'fecha_nacimiento'].forEach(campo => {
         if (clon[campo] === "" || clon[campo] === undefined) clon[campo] = null;
       });
-      // Convertimos el booleano a 1 o 0 para la base de datos
+
       clon.apto_medico = clon.apto_medico ? 1 : 0;
+      clon.rol = parseInt(clon.rol); // Aseguramos que el rol viaje como entero
+      
       return clon;
     });
 
@@ -308,16 +476,16 @@ const guardarTodo = async () => {
       payload: { listaArbitros: datosParaEnviar }
     });
 
-    if (res.ok) {
+    if (res.ok || res.success) {
       notificar({ 
         titulo: '¡Guardado!', 
-        mensaje: `Se procesaron ${modificados.length} registros exito6samente.` 
+        mensaje: `Se procesaron ${modificados.length} registros exitosamente.` 
       });
       await cargarDatos(); 
     } else {
       notificar({ titulo: 'Error', mensaje: res.message || 'Error al guardar.', tipo: 'danger' });
     }
-  } catch{ 
+  } catch { 
     notificar({ titulo: 'Error Fatal', mensaje: 'Error al conectar con el servidor.', tipo: 'danger' });
   } finally {
     cargando.value = false;
@@ -333,9 +501,15 @@ const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     return Object.keys(filtros).every(key => {
       if (!filtros[key]) return true;
+
+      if (key === 'rol') {
+          return a.rol == filtros.rol;
+      }
+
       const busqueda = String(filtros[key]).toLowerCase();
       if (key === 'es_activo') return (busqueda === 'si' ? a.es_activo == 1 : a.es_activo == 0);
       if (key === 'apto_medico') return (busqueda === 'si' ? a.apto_medico : !a.apto_medico);
+      
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
   });
@@ -371,9 +545,10 @@ watch(totalPaginas, (nuevoTotal) => {
 });
 
 const totalFiltrados = computed(() => arbitrosFiltrados.value.length);
+
 onMounted(() => {
-  cargarDatos()
-  obtenerProvinciasLocalidades()
+  cargarDatos();
+  obtenerProvinciasLocalidades();
 })
 </script>
 
@@ -522,7 +697,25 @@ th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; c
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-active { background: #10b981; }
 .dot-inactive { background: #ef4444; }
-.select-compact { border: none; font-weight: bold; background: transparent; cursor: pointer; font-size: 0.8rem; }
+.select-compact {
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.8rem;
+  width: 100%;
+  padding: 2px;
+}
+
+.select-compact:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+/* Color específico para destacar el rol según el valor (Opcional) */
+select.select-compact {
+  color: #1e293b;
+  text-align-last: center; /* Centra el texto en Chrome */
+}
 
 .col-xs-compact { width: 70px; text-align: center; }
 .inactivo { background-color: #fee2e2 !important; }
@@ -532,6 +725,53 @@ th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; c
 .date-custom-wrapper::before { content: attr(data-date); position: absolute; left: 4px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.85rem; }
 .input-fecha-nativa { color: transparent !important; cursor: pointer; }
 .input-fecha-nativa::-webkit-calendar-picker-indicator { position: absolute; right: 0; cursor: pointer; }
+
+
+.modal-overlay-exito {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modal-content-exito {
+  background: white;
+  border-radius: 30px;
+  padding: 40px;
+  width: 90%;
+  max-width: 750px;
+  text-align: center;
+}
+
+.icon-circle-exito {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.small-select {
+  width: 100%;
+  font-size: 0.8rem;
+  padding: 2px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+.small-select:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.bg-success-light { background: #dcfce7; color: #166534; }
 
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
@@ -546,4 +786,5 @@ th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; c
   .btn-action { font-size: 0.7rem; padding: 6px 8px; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
 }
+
 </style>
