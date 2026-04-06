@@ -22,6 +22,8 @@ export default defineConfig({
         '/sanciones',
         '/preguntas-frecuentes',
         '/catalogo',
+
+        
       ],
 
       generateRobotsTxt: false 
