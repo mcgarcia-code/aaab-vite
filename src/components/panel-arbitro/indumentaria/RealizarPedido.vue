@@ -58,7 +58,7 @@
                 <div class="col-7">
                   <label class="extra-small-label fw-bold text-muted">Talle:</label>
                   <select v-model="prenda.itemSeleccionado" @change="validarCantidad(prenda)" class="form-select form-select-sm rounded-pill shadow-sm border-danger-subtle bg-white">
-                    <option v-for="(t, k) in prenda.items" :key="k" :value="t.id">
+                    <option v-for="(t, k) in prenda.items" :key="k" :value="k">
                       {{ t.talle }}
                     </option>
                   </select>
@@ -210,14 +210,14 @@ const cambiarFoto = (prenda, delta) => {
 };
 
 const obtenerStockMaximo = (prenda) => {
-  const talleInfo = prenda.items.find(t => t.id === prenda.itemSeleccionado);
-  return talleInfo ? talleInfo.cantidad : 0;
+  const talleInfo = prenda.items[prenda.itemSeleccionado]
+  return talleInfo ? talleInfo.cantidad : 0
 };
 
 const validarCantidad = (prenda) => {
-  const max = obtenerStockMaximo(prenda);
-  if (prenda.cantidadSeleccionada > max) prenda.cantidadSeleccionada = max;
-  if (prenda.cantidadSeleccionada < 1) prenda.cantidadSeleccionada = 1;
+  const max = obtenerStockMaximo(prenda)
+  if (prenda.cantidadSeleccionada > max) prenda.cantidadSeleccionada = max
+  if (prenda.cantidadSeleccionada < 1) prenda.cantidadSeleccionada = 1
 };
 
 const abrirZoom = (url) => { imagenZoom.value = url; };
@@ -262,22 +262,19 @@ const totalCarrito = computed(() => {
   return carrito.value.reduce((total, p) => total + (p.precio * p.cantidad), 0);
 });
 
-const agregarAlCarrito = (index) => {
-  console.log(stockFiltrado[index])
-  return
-  const itemTalle = prenda.tallesDisponibles.find(t => t.talle === prenda.talleSeleccionado);
-  
+const agregarAlCarrito = (prenda) => {
+  const itemTalle = prenda.items[prenda.itemSeleccionado]
   // Validamos que haya stock real antes de agregar
-  if (itemTalle.cantidadStock <= 0) {
+  if (itemTalle.cantidad <= 0) {
     notificar({ titulo: 'Sin Stock', mensaje: 'Lo sentimos, este talle se acaba de agotar.', tipo: 'danger' });
     return;
   }
-
   carrito.value.push({
-    id: itemTalle.id,
-    descripcion: prenda.descripcionLimpia,
-    precio: prenda.precio_unitario,
-    talle: prenda.talleSeleccionado,
+    id_item: prenda.id_item,
+    id_talle: itemTalle.id,
+    descripcion: prenda.descripcion,
+    precio: itemTalle.precio_unitario,
+    talle: itemTalle.talle,
     cantidad: prenda.cantidadSeleccionada
   });
   mostrarCarrito.value = true;

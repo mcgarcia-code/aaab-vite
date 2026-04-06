@@ -24,7 +24,7 @@
                 <div class="fw-bold text-dark">{{ p.nombre }} {{ p.apellido }}</div>
                 <div class="small text-muted">ID: #{{ p.id }}</div>
               </td>
-              <td>{{ p.descripcion }}</td>
+              <td>{{ p.descripcion }} - TALLE {{ p.talle }}</td>
               <td class="text-center">{{ p.cantidad }}</td>
               <td class="text-center fw-bold">$ {{ p.cantidad * p.precioUnitario }}</td>
               <td class="text-center">
@@ -39,9 +39,10 @@
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="border-radius: 12px;">
                     <li><h6 class="dropdown-header small">Cambiar Estado</h6></li>
-                    <li><button @click="cambiarEstado(p.id, 'Pendiente')" class="dropdown-item rounded-2">Pendiente</button></li>
-                    <li><button @click="cambiarEstado(p.id, 'Entregado')" class="dropdown-item rounded-2 text-success">Entregado</button></li>
-                    <li><button @click="cambiarEstado(p.id, 'Cancelado')" class="dropdown-item rounded-2 text-danger">Cancelado</button></li>
+                    <li><button @click="cambiarEstado(p.id, 'pendiente')" class="dropdown-item rounded-2">Pendiente</button></li>
+                    <li><button @click="cambiarEstado(p.id, 'entregado')" class="dropdown-item rounded-2 text-success">Entregado</button></li>
+                    <li><button @click="cambiarEstado(p.id, 'cancelado')" class="dropdown-item rounded-2 text-danger">Cancelado</button></li>
+                    <li><button @click="cambiarEstado(p.id, 'otros')" class="dropdown-item rounded-2 text-danger">Otros</button></li>
                   </ul>
                 </div>
               </td>
@@ -58,19 +59,18 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { api } from '@/api/api';
 
-const API_URL_BE = 'https://arbitroshandball.com.ar/api/api.php';
 const pedidos = ref([]);
 
 // Cargar Pedidos (GET)
 const fetchPedidos = async () => {
   try {
-    const url = `${API_URL_BE}?entity=indumentaria&action=obtenerPedidos`;
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.ok) {
-      pedidos.value = data.payload;
-    }
+    const {payload} = await api.get({
+      entity: "indumentaria",
+      action: 'obtenerPedidos'
+    })
+    pedidos.value = payload
   } catch (error) {
     console.error("Error cargando pedidos:", error);
   }
@@ -79,26 +79,20 @@ const fetchPedidos = async () => {
 // Actualizar Estado (POST)
 const cambiarEstado = async (idPedido, nuevoEstado) => {
   try {
-    const response = await fetch(API_URL_BE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        entity: 'indumentaria',
-        action: 'actualizarPedido',
-        payload: {
-          id: idPedido,
-          estado: nuevoEstado
-        }
-      })
-    });
-    
-    const data = await response.json();
-    if (data.ok) {
+    const res = await api.post({
+      entity: 'indumentaria',
+      action: 'actualizarPedido',
+      payload: {
+        id: idPedido,
+        estado: nuevoEstado
+      }
+    })
+    if (res.ok) {
       // Actualizamos solo el item en la lista local para no recargar todo el GET
       const index = pedidos.value.findIndex(p => p.id === idPedido);
       if (index !== -1) pedidos.value[index].estado = nuevoEstado;
     } else {
-      alert("No se pudo actualizar el estado: " + data.message);
+      alert("No se pudo actualizar el estado")
     }
   } catch (error) {
     console.error("Error en la conexión:", error);
