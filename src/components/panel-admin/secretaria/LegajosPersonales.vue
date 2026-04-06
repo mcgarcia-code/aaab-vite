@@ -23,7 +23,8 @@
         </div>
       </div>
 
-      <div class="table-container shadow">
+      <!-- TABLA DESKTOP -->
+      <div class="table-container shadow desktop-only">
         <table>
           <thead>
             <tr class="main-header">
@@ -145,6 +146,38 @@
         </table>
       </div>
 
+      <!-- VISTA MOBILE (CARDS) -->
+      <div class="mobile-only">
+        <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card-arbitro" :class="{ 'fila-inactiva': a.es_activo == 0 }">
+          <div class="card-header">
+            <div class="card-name">
+              <span :class="['status-dot', a.es_activo == 1 ? 'dot-active' : 'dot-inactive']" style="margin-right: 5px;"></span>
+              <strong>{{ a.apellido }}, {{ a.nombre }}</strong>
+            </div>
+            <div class="text-xs" style="color: #64748b;">ID: {{ a.id }}</div>
+          </div>
+          
+          <div class="card-body">
+            <div class="card-row">
+              <span><strong>Rol:</strong> {{ obtenerNombreRol(a.rol) }}</span>
+              <span><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
+            </div>
+            
+            <div class="card-info">
+              <p><strong>Apto Médico:</strong> {{ a.apto_medico ? 'SÍ' : 'NO' }}</p>
+              <p v-if="a.celular"><strong>Celular:</strong> {{ a.celular }}</p>
+              <p v-if="a.email"><strong>Email:</strong> {{ a.email }}</p>
+              <p v-if="a.zona"><strong>Zona:</strong> {{ a.zona }}</p>
+            </div>
+            
+            <button @click="editarArbitro(a)" class="btn-editar-mobile">
+              <span class="material-icons">edit</span> Editar Información
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGINACIÓN -->
       <div class="paginacion">
         <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
         <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
@@ -570,10 +603,12 @@ onMounted(() => { cargarDatos(); obtenerProvinciasLocalidades() })
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
-  height: 100vh;
+  min-height: 100vh; /* Cambiamos height fijo por min-height */
+  height: auto;      /* Permitimos que crezca hacia abajo en móvil */
   margin-left: 50%;
   transform: translateX(-50%);
   padding: 20px;
+  padding-bottom: 80px; /* Espacio extra para que no toque el footer */
 }
 
 .admin-panel { 
@@ -584,6 +619,7 @@ onMounted(() => { cargarDatos(); obtenerProvinciasLocalidades() })
   color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
+  height: 100%; /* Asegura que el fondo oscuro cubra todo el alto */
 }
 
 .header-section { 
@@ -598,7 +634,12 @@ onMounted(() => { cargarDatos(); obtenerProvinciasLocalidades() })
   align-items: center; 
 }
 
-.title { font-size: 1.1rem; font-weight: bold; margin: 0; }
+.header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
 .counter { font-size: 0.85rem; color: #000000; }
 
 .header-actions { display: flex; gap: 8px; }
@@ -690,23 +731,29 @@ thead td.sticky-col {
 
 th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000000; text-transform: uppercase; font-weight: 800; }
 .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
-.fila-inactiva td, .fila-inactiva .sticky-col { background-color: #f37d7d !important; font-weight: bold; color: #000; }
 
-.edit-input { width: 100%; padding: 4px; border: 1px solid transparent; background: transparent; font-size: 0.85rem; }
-.edit-input:focus { background: white; border-color: #3b82f6; outline: none; }
+/* --- AQUI MODIFICAMOS EL ESTADO INACTIVO PARA QUE SEA ROJO OSCURO --- */
+.fila-inactiva td, .fila-inactiva .sticky-col { 
+  background-color: #ef4444 !important; 
+  font-weight: bold; 
+  color: #fff !important; 
+}
+
+.edit-input { width: 100%; padding: 4px; border: 1px solid transparent; background: transparent; font-size: 0.85rem; color: inherit; }
+.edit-input:focus { background: white; border-color: #3b82f6; outline: none; color: #000; }
 .edit-textarea { width: 250px; height: 30px; border: 1px solid transparent; background: transparent; font-size: 0.85rem; font-family: inherit; resize: none; padding: 4px; transition: all 0.2s; }
-.edit-textarea:focus { height: 80px; background: white; border-color: #3b82f6; outline: none; }
+.edit-textarea:focus { height: 80px; background: white; border-color: #3b82f6; outline: none; color: #000; }
 
 .status-wrapper { display: flex; align-items: center; gap: 5px; justify-content: center; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-active { background: #10b981; }
-.dot-inactive { background: #ef4444; }
+.dot-inactive { background: #fff; border: 1px solid #fff; } /* Cambiado a blanco para contraste */
 .select-compact { border: 1px solid transparent; background: transparent; cursor: pointer; font-size: 0.8rem; width: 100%; padding: 2px; }
 .select-compact:hover { border-color: #cbd5e1; background: #f8fafc; }
 select.select-compact { color: #1e293b; text-align-last: center; }
 
 .col-xs-compact { width: 70px; text-align: center; }
-.inactivo { background-color: #fee2e2 !important; }
+.inactivo { background-color: #fee2e2 !important; color: #000 !important; }
 .col-dni-compact { width: 90px; text-align: center; }
 
 .date-custom-wrapper { position: relative; display: flex; align-items: center; width: 110px; }
@@ -715,22 +762,96 @@ select.select-compact { color: #1e293b; text-align-last: center; }
 .input-fecha-nativa::-webkit-calendar-picker-indicator { position: absolute; right: 0; cursor: pointer; }
 
 .modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.modal-content-exito { background: white; border-radius: 30px; padding: 40px; width: 90%; max-width: 750px; text-align: center; }
+.modal-content-exito { background: white; border-radius: 30px; padding: 40px; width: 90%; max-width: 750px; text-align: center; color: #000; }
 .icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
 .small-select { width: 100%; font-size: 0.8rem; padding: 2px; border: 1px solid transparent; background: transparent; cursor: pointer; }
 .small-select:hover { background: #f8fafc; border-color: #cbd5e1; }
 .bg-success-light { background: #dcfce7; color: #166534; }
 
+/* VISTA MOBILE CARDS */
+.mobile-only { display: none; }
+.desktop-only { display: block; }
+
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+  
+  .card-arbitro {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+  .card-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+    color: #0f172a;
+  }
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+  .card-info p {
+    font-size: 0.85rem;
+    color: #475569;
+    margin: 4px 0;
+  }
+  .btn-editar-mobile {
+    width: 100%;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    cursor: pointer;
+  }
+  .card-arbitro.fila-inactiva {
+    background-color: #ef4444 !important; /* Rojo modificado a pedido */
+    border-color: #dc2626;
+  }
+  .card-arbitro.fila-inactiva .card-name,
+  .card-arbitro.fila-inactiva .card-row,
+  .card-arbitro.fila-inactiva .card-info p,
+  .card-arbitro.fila-inactiva .card-header .text-xs {
+    color: #fff !important;
+  }
+  .card-arbitro.fila-inactiva .btn-editar-mobile {
+    background: #fff;
+    border-color: #fff;
+    color: #ef4444; /* Letra roja sobre boton blanco */
+  }
+}
+
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .header-actions { width: 100%; justify-content: space-between; flex-wrap: nowrap; gap: 8px;}
-  .btn-action { flex: 1; justify-content: center; min-width: 0; white-space: nowrap; }
+  .header-actions { width: 100%; justify-content: flex-end; flex-wrap: nowrap; gap: 10px; }
 }
+
 @media (max-width: 600px) {
   .admin-panel { padding: 10px; }
   .header-section { padding: 10px; }
   .title { font-size: 1rem; }
-  .btn-action { font-size: 0.7rem; padding: 6px 8px; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
 }
 
@@ -738,7 +859,7 @@ select.select-compact { color: #1e293b; text-align-last: center; }
 .cell-ro {
   padding: 4px;
   font-size: 0.85rem;
-  color: #000;
+  color: inherit; 
   white-space: nowrap;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -770,7 +891,7 @@ select.select-compact { color: #1e293b; text-align-last: center; }
 }
 
 .checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 5px; }
-.checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; cursor: pointer; }
+.checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; cursor: pointer; color: #000; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
 
 /* RECALCULO DE OFFSET PARA COLUMNA ACCIONES */

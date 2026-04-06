@@ -108,7 +108,7 @@ const routes = [
       },
               // --- FACTURACION ---
       { 
-        path: 'facturacion', 
+        path: 'facturacion',
         name: 'InstitucionesCuits', 
         component: () => import('../components/panel-arbitro/facturacion/InstitucionesCuit.vue') 
       },
