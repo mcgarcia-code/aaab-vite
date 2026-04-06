@@ -194,9 +194,8 @@ const eventosFiltrados = computed(() => {
       const grupo = normalizarTexto(e.grupo);
       const subgrupo = normalizarTexto(e.subgrupo);
       
-      // Creamos una cadena combinada "3a" o "3-a" para que coincida con lo que escribas
-      const grupoCompleto = grupo + subgrupo; // Ejemplo: "3a"
-      const grupoConGuion = grupo + "-" + subgrupo; // Ejemplo: "3-a"
+      const grupoCompleto = grupo + subgrupo; // "3a"
+      const grupoConGuion = grupo + "-" + subgrupo; // "3-a"
       
       return titulo.includes(search) || 
              grupo.includes(search) || 
@@ -206,15 +205,40 @@ const eventosFiltrados = computed(() => {
     });
   }
 
-  // 2. Ordenamos el resultado por fecha (descendente)
+  // 2. Obtenemos la fecha de HOY exacta en formato YYYY-MM-DD
+  // Esto evita problemas de husos horarios y asegura que el corte sea a la medianoche.
+  const fechaActual = new Date();
+  const año = fechaActual.getFullYear();
+  const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
+  const dia = String(fechaActual.getDate()).padStart(2, '0');
+  const hoyStr = `${año}-${mes}-${dia}`;
+
+  // 3. Ordenamos el resultado
   return [...resultado].sort((a, b) => {
-    const fechaA = new Date(a.fecha_evento).getTime();
-    const fechaB = new Date(b.fecha_evento).getTime();
-    return fechaB - fechaA;
+    // Asumimos que a.fecha_evento viene de la base de datos como "YYYY-MM-DD"
+    const fechaA = a.fecha_evento || '';
+    const fechaB = b.fecha_evento || '';
+
+    // Si la fecha del evento es menor a "hoyStr", es porque ya fue (ayer o antes)
+    const esPasadoA = fechaA < hoyStr;
+    const esPasadoB = fechaB < hoyStr;
+
+    // A. Separación principal: Si uno es pasado y el otro vigente, hundimos el pasado al fondo
+    if (esPasadoA && !esPasadoB) return 1;  // A se va al fondo
+    if (!esPasadoA && esPasadoB) return -1; // B se va al fondo
+
+    // B. Si AMBOS son vigentes (hoy o futuro): 
+    // Ordenamos de más cercana a más lejana (Ascendente)
+    if (!esPasadoA && !esPasadoB) {
+      return fechaA.localeCompare(fechaB); 
+    }
+
+    // C. Si AMBOS son del pasado:
+    // Los ordenamos dejando el pasado más reciente arriba (Descendente)
+    // Ejemplo: 5 de abril aparece antes que 1 de abril.
+    return fechaB.localeCompare(fechaA);
   });
 });
-
-// --- EL RESTO DEL CÓDIGO SE MANTIENE IGUAL ---
 
 // COMPUTADOS DE PAGINACIÓN
 const totalPaginas = computed(() => Math.ceil(eventosFiltrados.value.length / registrosPorPagina) || 1);
