@@ -1,4 +1,6 @@
 <template>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
   <div class="admin-panel animate__animated animate__fadeIn">
     
     <div class="header-card shadow-sm">
@@ -33,7 +35,8 @@
             <th>APELLIDO</th>
             <th>NOMBRE</th>
             <th class="text-center">ESTADO</th>
-            <th class="text-center">FECHA LICENCIA</th>
+            <th class="text-center">F. SOLICITUD</th>
+            <th class="text-center">F. LICENCIA</th>
             <th class="text-center">ACCIONES</th>
           </tr>
           <tr class="filter-row">
@@ -50,12 +53,13 @@
                 <option value="rechazada">RECHAZADA</option>
               </select>
             </td>
+            <td><input v-model="filtros.fecha_solicitud" class="filter-input text-center" placeholder="DD/MM/YYYY"></td>
             <td><input v-model="filtros.fecha" class="filter-input text-center" placeholder="DD/MM/YYYY"></td>
             <td></td>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="lic in licenciasFiltradas" :key="lic.id">
+          <tr v-for="lic in licenciasPaginadas" :key="lic.id">
             <td class="text-center text-muted small">#{{ lic.id }}</td>
             <td class="fw-bold">{{ lic.apellido }}</td>
             <td class="fw-bold">{{ lic.nombre }}</td>
@@ -65,6 +69,9 @@
                 <option value="aprobada">APROBADA</option>
                 <option value="rechazada">RECHAZADA</option>
               </select>
+            </td>
+            <td class="text-center">
+              <input type="date" v-model="lic.fecha_solicitud" class="date-input">
             </td>
             <td class="text-center">
               <input type="date" v-model="lic.fecha_licencia" class="date-input">
@@ -81,6 +88,13 @@
       </table>
     </div>
 
+    <!-- Controles de Paginación -->
+    <div class="paginacion">
+      <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+      <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+      <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
+    </div>
+
     <div v-if="mostrarModalNuevo" class="modal-overlay" @click.self="mostrarModalNuevo = false">
       <div class="modal-content-custom animate__animated animate__zoomIn">
         <h4 class="fw-bold mb-4">Registrar Licencia</h4>
@@ -94,12 +108,16 @@
           </select>
         </div>
         <div class="mb-3 text-start">
-          <label class="small fw-bold">Fecha de Licencia</label>
+          <label class="small fw-bold">Fecha de Solicitud</label>
+          <input v-model="nuevo.fecha_solicitud" type="date" class="form-control shadow-none">
+        </div>
+        <div class="mb-3 text-start">
+          <label class="small fw-bold">Fecha de Licencia (Ausencia)</label>
           <input v-model="nuevo.fecha_licencia" type="date" class="form-control shadow-none">
         </div>
         <div class="d-flex gap-2 mt-4">
           <button @click="mostrarModalNuevo = false" class="btn btn-light w-100 rounded-pill">Cerrar</button>
-          <button @click="crearLicenciaAction" class="btn btn-danger w-100 rounded-pill fw-bold" :disabled="!nuevo.id_arbitro || !nuevo.fecha_licencia">CREAR</button>
+          <button @click="crearLicenciaAction" class="btn btn-danger w-100 rounded-pill fw-bold" :disabled="!nuevo.id_arbitro || !nuevo.fecha_licencia || !nuevo.fecha_solicitud">CREAR</button>
         </div>
       </div>
     </div>
@@ -107,7 +125,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue';
+import { ref, onMounted, computed, inject, watch } from 'vue';
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head'
@@ -128,8 +146,16 @@ const licenciasOriginales = ref([]);
 const arbitrosLista = ref([]);
 const cargando = ref(false);
 const mostrarModalNuevo = ref(false);
-const nuevo = ref({ id_arbitro: '', fecha_licencia: '', estado: 'aprobada' });
-const filtros = ref({ nombre: '', apellido: '', estado: '', fecha: '' });
+
+// Agregada fecha_solicitud al modelo nuevo
+const nuevo = ref({ id_arbitro: '', fecha_solicitud: '', fecha_licencia: '', estado: 'aprobada' });
+
+// Agregado fecha_solicitud a los filtros
+const filtros = ref({ nombre: '', apellido: '', estado: '', fecha: '', fecha_solicitud: '' });
+
+// Variables de paginación
+const registrosPorPagina = 10;
+const paginaActual = ref(1);
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
@@ -139,9 +165,27 @@ const licenciasFiltradas = computed(() => {
     const matchNom = normalizar(l.nombre).includes(normalizar(filtros.value.nombre));
     const matchEst = filtros.value.estado === '' || l.estado === filtros.value.estado;
     const matchFec = formatearFechaVista(l.fecha_licencia).includes(filtros.value.fecha);
-    return matchApe && matchNom && matchEst && matchFec;
+    const matchFecSol = formatearFechaVista(l.fecha_solicitud).includes(filtros.value.fecha_solicitud);
+    
+    return matchApe && matchNom && matchEst && matchFec && matchFecSol;
   });
 });
+
+// Lógica Computada para Paginación
+const totalPaginas = computed(() => {
+  return Math.ceil(licenciasFiltradas.value.length / registrosPorPagina) || 1;
+});
+
+const licenciasPaginadas = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina;
+  const fin = inicio + registrosPorPagina;
+  return licenciasFiltradas.value.slice(inicio, fin);
+});
+
+// Watcher para reiniciar la página cuando se busca con un filtro
+watch(filtros, () => {
+  paginaActual.value = 1;
+}, { deep: true });
 
 const obtenerLicencias = async () => {
   cargando.value = true;
@@ -166,7 +210,9 @@ const obtenerArbitros = async () => {
 const guardarTodo = async () => {
   const modificadas = licencias.value.filter(lic => {
     const original = licenciasOriginales.value.find(o => o.id === lic.id);
-    return original.estado !== lic.estado || original.fecha_licencia !== lic.fecha_licencia;
+    return original.estado !== lic.estado || 
+           original.fecha_licencia !== lic.fecha_licencia ||
+           original.fecha_solicitud !== lic.fecha_solicitud;
   });
 
   if (modificadas.length === 0) {
@@ -181,7 +227,12 @@ const guardarTodo = async () => {
     const res = await api.post({
       entity: 'licencias',
       action: 'actualizarLicencia',
-      payload: { id: lic.id, estado: lic.estado, fecha_licencia: lic.fecha_licencia }
+      payload: { 
+        id: lic.id, 
+        estado: lic.estado, 
+        fecha_licencia: lic.fecha_licencia,
+        fecha_solicitud: lic.fecha_solicitud
+      }
     });
     if (!res.ok) errores++;
   }
@@ -197,7 +248,7 @@ const guardarTodo = async () => {
 };
 
 const crearLicenciaAction = async () => {
-  if(!nuevo.value.id_arbitro || !nuevo.value.fecha_licencia) return;
+  if(!nuevo.value.id_arbitro || !nuevo.value.fecha_licencia || !nuevo.value.fecha_solicitud) return;
   const res = await api.post({ 
     entity: 'licencias', 
     action: 'crearLicencia', 
@@ -207,7 +258,7 @@ const crearLicenciaAction = async () => {
     mostrarModalNuevo.value = false;
     await obtenerLicencias();
     notificar({ titulo: '¡Licencia Creada!', mensaje: 'El registro se guardó correctamente en la base de datos.' });
-    nuevo.value = { id_arbitro: '', fecha_licencia: '', estado: 'aprobada' };
+    nuevo.value = { id_arbitro: '', fecha_solicitud: '', fecha_licencia: '', estado: 'aprobada' };
   }
 };
 
@@ -221,6 +272,11 @@ const eliminarLicencia = (id) => {
       if(res.ok) {
         licencias.value = licencias.value.filter(l => l.id !== id);
         notificar({ titulo: 'Registro Eliminado', mensaje: 'La licencia ha sido removida del sistema.', tipo: 'success' });
+        
+        // Ajustar paginación si eliminamos el último elemento de la página
+        if (licenciasPaginadas.value.length === 0 && paginaActual.value > 1) {
+          paginaActual.value--;
+        }
       }
     }
   });
@@ -228,7 +284,12 @@ const eliminarLicencia = (id) => {
 
 const exportarExcel = () => {
   const data = licenciasFiltradas.value.map(l => ({
-    'ID': l.id, 'Apellido': l.apellido, 'Nombre': l.nombre, 'Estado': l.estado.toUpperCase(), 'Fecha': formatearFechaVista(l.fecha_licencia)
+    'ID': l.id, 
+    'Apellido': l.apellido, 
+    'Nombre': l.nombre, 
+    'Estado': l.estado.toUpperCase(), 
+    'Fecha Solicitud': formatearFechaVista(l.fecha_solicitud),
+    'Fecha Licencia': formatearFechaVista(l.fecha_licencia)
   }));
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
@@ -237,8 +298,14 @@ const exportarExcel = () => {
 };
 
 const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : '';
-const limpiarFiltros = () => filtros.value = { nombre: '', apellido: '', estado: '', fecha: '' };
-const abrirModalNuevo = () => mostrarModalNuevo.value = true;
+const limpiarFiltros = () => filtros.value = { nombre: '', apellido: '', estado: '', fecha: '', fecha_solicitud: '' };
+
+const abrirModalNuevo = () => {
+  // Autocompletamos la fecha de solicitud con el día de hoy por comodidad
+  const hoy = new Date().toISOString().split('T')[0];
+  nuevo.value.fecha_solicitud = hoy;
+  mostrarModalNuevo.value = true;
+};
 
 onMounted(() => {
   obtenerLicencias();
@@ -287,25 +354,23 @@ onMounted(() => {
 .btn-pink { background: #fee2e2; color: #ef4444; }
 .btn-green { background: #10b981; color: white; }
 
-/* MODIFICACIÓN CLAVE PARA EL SCROLL INMOVILIZADO */
 .table-container { 
   background: white; 
   border-radius: 4px; 
-  overflow-y: auto; /* Scroll vertical */
-  max-height: calc(100vh - 150px); /* Altura dinámica para que el scroll funcione dentro del panel */
+  overflow-y: auto; 
+  max-height: calc(100vh - 150px); 
   margin-top: 15px; 
 }
 
 .custom-table { 
   width: 100%; 
-  border-collapse: separate; /* Necesario para que el sticky funcione bien con los bordes */
+  border-collapse: separate; 
   border-spacing: 0;
 }
 
-/* Header inmovilizado */
 .custom-table thead th { 
   position: sticky;
-  top: 0; /* Primera fila arriba de todo */
+  top: 0; 
   z-index: 10;
   background: #f8fafc; 
   padding: 12px; 
@@ -316,10 +381,9 @@ onMounted(() => {
   color: #000;
 }
 
-/* Fila de filtros inmovilizada */
 .custom-table thead .filter-row td {
   position: sticky;
-  top: 41px; /* Se posiciona justo debajo de los títulos (ajustar según altura de th) */
+  top: 41px; 
   z-index: 9;
   background: #f1f5f9;
   border-bottom: 1px solid #cbd5e1;
@@ -385,6 +449,33 @@ onMounted(() => {
 .modal-content-custom { 
   background: white; padding: 25px; border-radius: 12px; 
   width: 320px; text-align: center; 
+}
+
+/* --- NUEVOS ESTILOS PARA PAGINACIÓN --- */
+.paginacion { 
+  display: flex; 
+  justify-content: flex-end; 
+  align-items: center; 
+  gap: 12px; 
+  margin-top: 15px; 
+}
+.paginacion-texto { 
+  color: white; 
+  font-size: 0.85rem; 
+  font-weight: 600; 
+}
+.btn-paginacion { 
+  border: none; 
+  background: #f8fafc; 
+  color: #0f172a; 
+  padding: 8px 14px; 
+  border-radius: 6px; 
+  font-weight: 700; 
+  cursor: pointer; 
+}
+.btn-paginacion:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
 }
 
 @media (max-width: 768px) {
