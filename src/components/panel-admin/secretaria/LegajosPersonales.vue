@@ -485,7 +485,7 @@ const cargarSolicitudes = async () => {
   cargandoSolicitudes.value = true
   try {
     // Recordá apuntar al endpoint de PHP correcto que traiga TODAS las solicitudes
-    const res = await api.get({ entity: 'historial', action: 'getTodasLasSolicitudes' })
+    const res = await api.get({ entity: 'datos_personales', action: 'getTodasLasSolicitudes' })
     if (res.payload) {
       solicitudes.value = res.payload
     }
@@ -504,7 +504,7 @@ const abrirModalSolicitudes = () => {
 const aprobarSolicitud = async (solicitud) => {
   try {
     const res = await api.post({ 
-      entity: 'historial', 
+      entity: 'datos_personales', 
       action: 'cambiarEstadoSolicitud', 
       payload: { id_historial: solicitud.id, nuevo_estado: 'aprobado' } 
     })
