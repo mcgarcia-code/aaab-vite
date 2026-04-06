@@ -8,12 +8,16 @@
     </nav>
     
     <div class="container-fluid px-4 py-2">
-      <div class="mx-auto"> <div class="user-header d-flex align-items-center mb-4 p-3 rounded-4 shadow">
+      <div class="mx-auto"> 
+        <div class="user-header d-flex align-items-center mb-4 p-3 rounded-4 shadow">
           <img :src="urlFoto" @error="(e) => e.target.src = 'https://via.placeholder.com/150'" 
                class="perfil-img me-3 shadow-sm">
-          <div class="overflow-hidden">
-            <h2 class="text-white fw-bold m-0 text-capitalize text-truncate">
-              Hola, {{ arbitro.nombre }} 👋
+          
+          <!-- Quitamos el overflow-hidden de este div -->
+          <div>
+            <!-- Quitamos text-truncate, usamos nombreFormateado y agregamos la clase saludo-texto -->
+            <h2 class="text-white fw-bold m-0 saludo-texto">
+              Hola, {{ nombreFormateado }} 👋
             </h2>
             <span class="badge bg-danger mt-1">ID Árbitro: {{ arbitro.id }}</span>
           </div>
@@ -45,18 +49,23 @@ const router = useRouter();
 const arbitro = ref(auth.getUser() || {});
 const urlFoto = `https://arbitroshandball.com.ar/resources/carnet-arbitros/${arbitro.value.dni}.webp`;
 
-// Lógica de navegación inteligente (Rutas hijas vs Rutas principales)
+// Computada para formatear el nombre correctamente (De "MARIANA CELESTE" a "Mariana Celeste")
+const nombreFormateado = computed(() => {
+  const nombre = arbitro.value.nombre || '';
+  return nombre.toLowerCase().replace(/\b\w/g, letra => letra.toUpperCase());
+});
+
+// Lógica de navegación inteligente
 const esRutaProfunda = computed(() => {
-  // Cuenta los segmentos de la URL. Si hay más de 2 (ej: /panel-arbitro/indumentaria/nuevo), es profunda.
   const segmentos = route.path.split('/').filter(p => p !== '');
   return segmentos.length > 2;
 });
 
 const handleVolver = () => {
   if (esRutaProfunda.value) {
-    router.back(); // Si está dentro de una sección, vuelve un paso atrás
+    router.back();
   } else {
-    router.push('/panel-arbitro'); // Si es sección principal, vuelve al dashboard
+    router.push('/panel-arbitro');
   }
 };
 
@@ -84,7 +93,7 @@ useHead({
 <style scoped>
 .panel-layout { 
   min-height: 100vh; 
-  background-color: #0f172a; /* Azul oscuro original */
+  background-color: #0f172a; 
   padding-bottom: 40px;
 }
 
@@ -94,7 +103,7 @@ useHead({
 }
 
 .user-header {
-  background: rgba(255, 255, 255, 0.05); /* Fondo sutil traslúcido */
+  background: rgba(255, 255, 255, 0.05); 
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -120,19 +129,24 @@ useHead({
   padding: 8px 20px;
   border-radius: 50px;
   transition: 0.3s;
-  /* Agregamos esto para que el <button> se vea como el <a> */
   border: none; 
   cursor: pointer;
-  font-size: 1rem; /* Ajusta según necesites */
+  font-size: 1rem; 
 }
 
 .btn-volver:hover {
   background: #dc2626;
 }
 
+/* Control de altura de línea para que se vea bien si envuelve */
+.saludo-texto {
+  line-height: 1.2;
+}
+
 /* Responsive para el header */
 @media (max-width: 576px) {
   .perfil-img { width: 60px; height: 60px; }
-  h2 { font-size: 1.25rem; }
+  /* Achicamos la fuente ligeramente en celular para dar más espacio */
+  .saludo-texto { font-size: 1.15rem; margin-bottom: 3px !important; }
 }
 </style>

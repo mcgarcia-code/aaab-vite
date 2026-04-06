@@ -46,7 +46,7 @@
           
           <div class="sidebar-body p-3">
             <div class="notif-group mb-4">
-              <label class="notif-label">PRÓXIMAS FECHAS</label>
+              <label class="notif-label">PRÓXIMAS REUNIONES</label>
               
               <div v-if="avisos.eventos.length > 0">
                 <div class="notif-item" v-for="ev in avisos.eventos" :key="ev.id">
@@ -192,7 +192,7 @@ onMounted(cargarAvisos);
 /* SIDEBAR STYLES */
 .sidebar-notificaciones { background: white; border-radius: 25px; overflow: hidden; height: 100%; min-height: 500px; }
 .sidebar-header { background: #f8fafc; padding: 20px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; letter-spacing: 1px; }
-.notif-label { font-size: 0.7rem; font-weight: 800; color: #adb5bd; margin-bottom: 15px; display: block; letter-spacing: 0.5px; text-transform: uppercase; }
+.notif-label { font-size: 0.7rem; font-weight: 800; color: #000000; margin-bottom: 15px; display: block; letter-spacing: 0.5px; text-transform: uppercase; }
 .notif-item { 
   display: flex; 
   align-items: center; /* <--- ESTA ES LA LÍNEA MÁGICA */
