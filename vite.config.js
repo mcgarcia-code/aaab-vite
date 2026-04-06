@@ -21,12 +21,9 @@ export default defineConfig({
         '/tribunal-de-etica',
         '/sanciones',
         '/preguntas-frecuentes',
-        '/carnet-digital',
         '/catalogo',
       ],
 
-      // DESACTIVAMOS la generación automática de robots.txt
-      // porque ya tienes uno manual en la carpeta /public
       generateRobotsTxt: false 
     }),
   ],
