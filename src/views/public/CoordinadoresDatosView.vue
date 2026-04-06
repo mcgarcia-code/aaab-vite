@@ -178,7 +178,7 @@
         </div>
         <div class="card-body">
           <div class="card-row">
-            <span><strong>Gr:</strong> {{ a.grupo }}-{{ a.subgrupo }}</span>
+            <span><strong>Grupo:</strong> {{ a.grupo }} - {{ a.subgrupo }}</span>
             <span><strong>Apto Médico:</strong> <span :class="a.apto_medico == 1 ? 'text-green' : 'text-red'">{{ a.apto_medico == 1 ? 'SÍ' : 'NO' }}</span></span>
           </div>
           <div class="card-row">
@@ -302,11 +302,11 @@ const normalizarTexto = (valor) => {
 };
 
 const arbitrosFiltrados = computed(() => {
-  return arbitros.value.filter(a => {
+  // 1. Primero aplicamos los filtros existentes
+  const resultadoFiltrado = arbitros.value.filter(a => {
     const cumpleTexto = Object.keys(filtros).every(key => {
       if (!filtros[key] || key === 'licencia') return true;
       
-      // Lógica específica para filtros SI/NO (numéricos o booleanos)
       if (key === 'es_activo' || key === 'apto_medico') {
          return String(a[key]) === filtros[key];
       }
@@ -320,6 +320,19 @@ const arbitrosFiltrados = computed(() => {
     else if (filtros.licencia === 'sin_licencia') cumpleLicencia = Number(a.tiene_aprobada) === 0 && Number(a.tiene_rechazada) === 0;
 
     return cumpleTexto && cumpleLicencia;
+  });
+
+  // 2. Ahora ordenamos el resultado alfabéticamente
+  return resultadoFiltrado.sort((a, b) => {
+    // Comparamos apellidos usando localeCompare para manejar acentos y eñes correctamente
+    const compApellido = (a.apellido || '').localeCompare(b.apellido || '');
+    
+    // Si los apellidos son iguales, ordenamos por nombre
+    if (compApellido === 0) {
+      return (a.nombre || '').localeCompare(b.nombre || '');
+    }
+    
+    return compApellido;
   });
 });
 

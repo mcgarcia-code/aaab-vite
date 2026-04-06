@@ -216,11 +216,17 @@ const normalizarTexto = (valor) => {
 };
 
 const filtrados = computed(() => {
-  return instituciones.value.filter(i => {
+  // 1. Primero filtramos según los inputs de búsqueda
+  const listaFiltrada = instituciones.value.filter(i => {
     const matchClub = normalizarTexto(i.club).includes(normalizarTexto(filtros.club));
     const matchCuit = normalizarTexto(i.cuit).includes(normalizarTexto(filtros.cuit));
     const matchCondicion = normalizarTexto(i.condicion).includes(normalizarTexto(filtros.condicion));
     return matchClub && matchCuit && matchCondicion;
+  });
+
+  // 2. Luego ordenamos el resultado alfabéticamente por el nombre del club
+  return listaFiltrada.sort((a, b) => {
+    return (a.club || '').localeCompare(b.club || '');
   });
 });
 

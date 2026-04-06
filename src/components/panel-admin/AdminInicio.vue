@@ -75,7 +75,7 @@ const menuItems = [
     to: '/panel-admin/designaciones', 
     title: 'Designaciones', 
     icon: 'bi bi-calendar4-week', 
-    desc: 'Disponibilidad y partidos.',
+    desc: 'Disponibilidad, licencias y partidos',
     rolesPermitidos: ['admin', 'designador', 'secretario'] 
   },
   { 
@@ -90,7 +90,7 @@ const menuItems = [
     title: 'Facturación', 
     icon: 'bi bi-receipt', 
     desc: 'Administrar datos fiscales y entidades vinculadas',
-    rolesPermitidos: ['admin', 'tesorero'] 
+    rolesPermitidos: ['admin', 'tesorero', 'facturacion'] 
   },
 ];
 

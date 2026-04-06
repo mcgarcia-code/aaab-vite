@@ -21,7 +21,7 @@
                 </div>
                 <div class="card-text">
                   <h5 class="fw-bold mb-0">{{ item.title }}</h5>
-                  <p class="extra-small m-0 text-muted text-truncate">{{ item.desc }}</p>
+                  <p class="extra-small m-0 text-muted">{{ item.desc }}</p>
                 </div>
                 <div class="card-arrow">
                   <i class="bi bi-chevron-right"></i>
@@ -57,7 +57,7 @@
                   </div>
                   <div class="event-info">
                     <strong :class="{'text-danger': ev.categoria === 'urgente'}">{{ ev.titulo }}</strong>
-                    <p class="mb-0 text-truncate">{{ ev.descripcion || 'Lugar a confirmar' }}</p>
+                    <p class="mb-0">{{ ev.descripcion || 'Lugar a confirmar' }}</p>
                   </div>
                 </div>
               </div>
@@ -106,14 +106,12 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head';
 import { api } from '@/api/api';
 import { auth } from '@/api/auth';
 
 useHead({ title: 'Panel de Inicio | AAAB' })
 
-// ... (menuItems y lógica de script se mantienen igual)
 const menuItems = [
   { to: '/panel-arbitro/datos', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Ver legajo y seguridad.' },
   { to: '/panel-arbitro/disponibilidad', title: 'Disponibilidad', icon: 'bi bi-clock-history', desc: 'Modificá tus horarios.' },
@@ -211,8 +209,21 @@ onMounted(cargarAvisos);
   display: flex; gap: 12px; margin-bottom: 6px; background: #fdfdfd; padding: 8px; border-radius: 12px; border: 1px solid #f8fafc;
 }
 .event-info { flex: 1; min-width: 0; }
-.event-info strong { font-size: 0.8rem; color: #1e293b; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.event-info p { font-size: 0.72rem; color: #64748b; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.event-info strong { 
+  font-size: 0.8rem; 
+  color: #1e293b; 
+  display: block; 
+  line-height: 1.2; 
+  white-space: normal; /* Asegura que el título pueda saltar de línea */
+}
+.event-info p { 
+  font-size: 0.72rem; 
+  color: #64748b; 
+  margin: 0; 
+  overflow: visible; /* Permite que se vea el texto */
+  text-overflow: clip; 
+  white-space: normal; /* Fundamental para que el texto baje a la siguiente línea */
+}
 
 .reminder-pill { background: #fffbeb; color: #92400e; padding: 8px 12px; border-radius: 10px; font-size: 0.72rem; border-left: 3px solid #f59e0b; margin-bottom: 5px; }
 .empty-msg { font-size: 0.7rem; color: #94a3b8; font-style: italic; }

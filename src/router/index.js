@@ -19,7 +19,7 @@ const routes = [
     beforeEnter: (to, from, next) => {
       if (auth.isLoggedIn()) {
         const user = auth.getUser();
-        const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'observador'];
+        const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general','facturacion'];
         rolesStaff.includes(user?.rol) ? next('/panel-admin') : next('/panel-arbitro');
       } else {
         next();
@@ -112,7 +112,7 @@ const routes = [
   {    
     path: '/panel-admin',
     component: () => import('../components/panel-admin/AdminPanel.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'observador'] }, 
+    meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general','facturacion'] }, 
     children: [
       { 
         path: '', 
@@ -131,26 +131,32 @@ const routes = [
         path: 'secretaria/modificacion-datos', 
         name: 'LegajosPersonales', 
         component: () => import('../components/panel-admin/secretaria/LegajosPersonales.vue'),
-        meta: { roles: ['admin', 'secretario'] }
+        meta: { roles: ['admin', 'secretario', 'designador'] } 
       },
       { 
         path: 'secretaria/licencias', 
         name: 'LicenciasAdmin', 
         component: () => import('../components/panel-admin/secretaria/LicenciasAdmin.vue'),
-        meta: { roles: ['admin', 'secretario'] }
-      },
-      { 
-        path: 'secretaria/instituciones-cuits', 
-        name: 'InstitucionesCuits', 
-        component: () => import('../components/panel-admin/facturacion/InstitucionesCuits.vue'),
-        meta: { roles: ['admin', 'secretario'] }
-      },
-      
+        meta: { roles: ['admin', 'secretario', 'designador'] } 
+      },      
       { 
         path: 'secretaria/eventos-notificaciones', 
         name: 'GestionEventos', 
         component: () => import('../components/panel-admin/secretaria/GestionEventos.vue'),
-        meta: { roles: ['admin', 'secretario'] }
+        meta: { roles: ['admin', 'secretario', 'designador'] } 
+      },
+      // --- DESIGNACIONES ---
+      { 
+        path: 'designaciones', 
+        name: 'DesignacionesAdmin',
+        component: () => import('../components/panel-admin/designaciones/DesignacionesAdmin.vue'),
+        meta: { roles: ['admin', 'secretario', 'designador'] } 
+      },
+      { 
+        path: 'designaciones/disponibilidad-licencias', 
+        name: 'DisponibilidadLicencias', 
+        component: () => import('../components/panel-admin/designaciones/DisponibilidadLicencias.vue'),
+        meta: { roles: ['admin', 'secretario', 'designador'] } 
       },
 
       // --- TRIBUNAL ---
@@ -215,16 +221,10 @@ const routes = [
         path: 'facturacion', 
         name: 'InstitucionesCuitsAdmin', 
         component: () => import('../components/panel-admin/facturacion/InstitucionesCuits.vue'),
-        meta: { roles: ['admin', 'tesorero'] }
+        meta: { roles: ['admin', 'secretario', 'tesorero','facturacion'] } 
       },
     
     ]
-  },
-  
-  {
-    path: '/designaciones-aaab',
-    name: 'Designaciones',
-    component: () => import('../components/panel-admin/designaciones/DesignacionesAdmin.vue')
   },
   {
     path: '/contactos-celulares',
@@ -256,7 +256,7 @@ router.beforeEach((to, from, next) => {
   const user = auth.getUser();
   const userRole = user?.rol;
 
-  const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'observador'];
+  const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general','facturacion'];
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!estaLogueado) {

@@ -23,7 +23,6 @@ export default defineConfig({
         '/preguntas-frecuentes',
         '/carnet-digital',
         '/catalogo',
-        '/designaciones-aaab' 
       ],
 
       // DESACTIVAMOS la generación automática de robots.txt

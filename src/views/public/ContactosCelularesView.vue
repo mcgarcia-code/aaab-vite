@@ -170,11 +170,25 @@ const normalizarTexto = (valor) => {
 };
 
 const arbitrosFiltrados = computed(() => {
-  return arbitros.value.filter(a => {
+  // 1. Primero filtramos el array original
+  const filtrados = arbitros.value.filter(a => {
     return Object.keys(filtros).every(key => {
       if (!filtros[key]) return true;
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
+  });
+
+  // 2. Luego ordenamos el resultado alfabéticamente
+  return filtrados.sort((a, b) => {
+    // Primero comparamos por apellido
+    const compApellido = (a.apellido || '').localeCompare(b.apellido || '');
+    
+    // Si los apellidos son iguales, comparamos por nombre
+    if (compApellido === 0) {
+      return (a.nombre || '').localeCompare(b.nombre || '');
+    }
+    
+    return compApellido;
   });
 });
 
