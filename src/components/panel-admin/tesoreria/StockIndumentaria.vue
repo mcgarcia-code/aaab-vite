@@ -134,15 +134,20 @@ const listaStock = ref([]);
 const filtroTexto = ref('');
 const mostrarModal = ref(false);
 const editando = ref(false);
-const cargando = ref(false);
+const cargando = ref(false)
+const archivos = ref([])
 const formulario = ref({ nombre: '', talles: [], fotos: [] });
 
 const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '4XL', '5XL'];
 
 // --- Lógica de Fotos ---
 const agregarSlotFoto = () => { formulario.value.fotos.push({ nombreArchivo: '' }); };
-const eliminarSlotFoto = (idx) => { formulario.value.fotos.splice(idx, 1); };
+const eliminarSlotFoto = (idx) => {
+  archivos.value.splice(idx, 1)
+  formulario.value.fotos.splice(idx, 1) 
+};
 const manejarArchivo = (event, idx) => {
+  archivos.value.push(event.target.files[0])
   const file = event.target.files[0];
   if (file) formulario.value.fotos[idx].nombreArchivo = file.name;
 };
@@ -253,10 +258,14 @@ const guardarCambiosAgrupados = async () => {
     });
   }
   else {
+    const formData = new FormData()
+    archivos.value.forEach(file => {
+      formData.append('archivos[]', file)
+    })
     res = await api.post({
       entity: 'indumentaria',
       action: 'agregarItem',
-      payload: formulario.value
+      payload: formData//formulario.value
     })
   }
   if (res.ok) {
