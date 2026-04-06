@@ -45,11 +45,13 @@
           </div>
           
           <div class="sidebar-body p-3">
+            
+            <!-- PRÓXIMAS REUNIONES Y URGENTES COMBINADOS -->
             <div class="notif-group mb-4">
               <label class="notif-label">PRÓXIMAS REUNIONES</label>
               
-              <div v-if="avisos.eventos.length > 0">
-                <div class="notif-item" v-for="ev in avisos.eventos" :key="ev.id">
+              <div v-if="proximasFechas.length > 0">
+                <div class="notif-item" v-for="ev in proximasFechas" :key="ev.id">
                   <div class="notif-date text-uppercase">
                     {{ formatearFechaCorta(ev.fecha_evento) }}
                   </div>
@@ -62,29 +64,36 @@
               <p v-else class="text-muted small ps-2">No hay eventos próximos.</p>
             </div>
 
+            <!-- CUMPLEAÑOS -->
             <div class="notif-group mb-4">
               <label class="notif-label">CUMPLEAÑOS 🎂</label>
-              <div v-if="avisos.cumpleanos.length > 0">
+              <div v-if="avisos.cumpleanos && avisos.cumpleanos.length > 0">
                 <div v-for="cumple in avisos.cumpleanos" :key="cumple.nombre" class="d-flex align-items-center mb-3">
-                  <div :class="['badge-cumple me-3', esHoy(cumple.dia_mes) ? 'hoy' : '']">
-                    {{ cumple.dia_mes }}
+                  <div :class="['badge-cumple me-3', esHoy(cumple.fecha_nacimiento) ? 'hoy' : '']">
+                    {{ cumple.fecha_nacimiento }}
                   </div>
                   <div class="notif-content">
                     <strong class="small">{{ cumple.nombre }} {{ cumple.apellido }}</strong>
-                    <span v-if="esHoy(cumple.dia_mes)" class="badge bg-danger extra-mini animate__animated animate__pulse animate__infinite">¡HOY!</span>
+                    <span v-if="esHoy(cumple.fecha_nacimiento)" class="badge bg-danger extra-mini animate__animated animate__pulse animate__infinite">¡HOY!</span>
                   </div>
                 </div>
               </div>
               <p v-else class="text-muted small ps-2">Sin cumpleaños cercanos.</p>
             </div>
 
+            <!-- RECORDATORIOS -->
             <div class="notif-group">
               <label class="notif-label">RECORDATORIOS</label>
-              <div class="alert alert-warning py-2 px-3 border-0 rounded-4 mb-2">
-                <i class="bi bi-shield-check me-2"></i>
-                <span class="extra-small">Entrada en calor <strong>OBLIGATORIA</strong> para todos</span>
+              <div v-if="avisos.recordatorio && avisos.recordatorio.length > 0">
+                <div v-for="rec in avisos.recordatorio" :key="rec.id" class="alert alert-warning py-2 px-3 border-0 rounded-4 mb-2 d-flex align-items-center">
+                  <i class="bi bi-shield-check me-2 fs-5 opacity-75"></i>
+                  <!-- Usamos descripcion porque es el campo que se guarda en eventos -->
+                  <span class="extra-small lh-sm" v-html="rec.descripcion"></span>
+                </div>
               </div>
+              <p v-else class="text-muted small ps-2">No hay recordatorios activos.</p>
             </div>
+
           </div>
         </aside>
       </div>
@@ -126,7 +135,6 @@ const menuItems = [
 const menuItemsFiltrados = computed(() => {
   const sesion = auth.getUser();
   
-  // Creamos una copia del array para no modificar el original
   let itemsDinamicos = [...menuItems]; 
 
   if ([1,2].includes(sesion.id)){
@@ -139,16 +147,25 @@ const menuItemsFiltrados = computed(() => {
 });
 
 // --- LÓGICA DE NOTIFICACIONES ---
-const avisos = ref({ eventos: [], cumpleanos: [] });
+// Objeto reactivo mapeado exactamente como te lo devuelve el backend
+const avisos = ref({ reunion: [], urgente: [], cumpleanos: [], recordatorio: [] });
 const cargando = ref(true);
+
+// Propiedad computada para fusionar y ordenar las reuniones y los urgentes
+const proximasFechas = computed(() => {
+  const reuniones = avisos.value.reunion || [];
+  const urgentes = avisos.value.urgente || [];
+  
+  // Unimos los dos arrays
+  const combinados = [...reuniones, ...urgentes];
+  
+  // Opcional y recomendado: los ordenamos por fecha para que tengan sentido visual
+  return combinados.sort((a, b) => new Date(a.fecha_evento) - new Date(b.fecha_evento));
+});
 
 const cargarAvisos = async () => {
   const sesion = auth.getUser();
-  
-  // IMPORTANTE: Buscamos el ID dentro de 'arbitro' según tu login_arbitro.php
   const idReal = sesion?.arbitro?.id || sesion?.id;
-
-  console.log("Cargando avisos para ID:", idReal);
 
   try {
     const res = await api.get({
@@ -195,7 +212,7 @@ onMounted(cargarAvisos);
 .notif-label { font-size: 0.7rem; font-weight: 800; color: #000000; margin-bottom: 15px; display: block; letter-spacing: 0.5px; text-transform: uppercase; }
 .notif-item { 
   display: flex; 
-  align-items: center; /* <--- ESTA ES LA LÍNEA MÁGICA */
+  align-items: center; 
   gap: 15px; 
   margin-bottom: 15px; 
   padding-bottom: 15px; 
@@ -214,7 +231,6 @@ onMounted(cargarAvisos);
 .extra-mini { font-size: 0.6rem; padding: 2px 5px; }
 
 @media (max-width: 991px) {
-  /* Modificamos esto para que no haya un margen extraño si está arriba de todo */
   .sidebar-notificaciones { min-height: auto; margin-bottom: 20px; }
 }
 </style>

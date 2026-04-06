@@ -521,8 +521,9 @@ const localidadesFiltradas = computed(() => {
   return localidades.value.filter(l => String(l.provincia_id) === String(filtros.provincia))
 })
 
-const arbitrosFiltrados = computed(() =>
-  arbitros.value.filter(a =>
+const arbitrosFiltrados = computed(() => {
+  // 1. Primero filtramos los datos como ya lo tenías
+  const filtrados = arbitros.value.filter(a =>
     Object.keys(filtros).every(key => {
       if (!filtros[key]) return true
       if (key === 'rol') return a.rol == filtros.rol
@@ -532,7 +533,19 @@ const arbitrosFiltrados = computed(() =>
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]))
     })
   )
-)
+
+  // 2. Luego ordenamos el resultado alfabéticamente
+  return filtrados.sort((a, b) => {
+    // Comparamos los apellidos en español
+    const comparacionApellido = String(a.apellido || '').localeCompare(String(b.apellido || ''), 'es')
+    
+    // Si los apellidos son distintos, ordenamos por apellido
+    if (comparacionApellido !== 0) return comparacionApellido
+    
+    // Si los apellidos son iguales, desempatamos ordenando por nombre
+    return String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es')
+  })
+})
 
 const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1)
 const arbitrosPaginados = computed(() => {

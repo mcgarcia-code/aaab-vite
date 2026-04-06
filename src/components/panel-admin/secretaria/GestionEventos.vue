@@ -2,6 +2,7 @@
   <div class="container-fluid py-3 py-md-4 animate__animated animate__fadeIn">
     <div class="row g-3 g-md-4">
       
+      <!-- FORMULARIO DE NUEVO EVENTO -->
       <div class="col-12 col-lg-4 order-1">
         <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
           <div class="card-header bg-danger text-white py-3 border-0">
@@ -12,13 +13,13 @@
           <div class="card-body p-3 p-md-4">
             <form @submit.prevent="confirmarGuardado">
               <div class="mb-3">
-                <label class="form-label small fw-bold text-dark">Título del Evento</label>
-                <input v-model="form.titulo" type="text" class="form-control form-control-lg rounded-3 border-light-subtle shadow-none custom-input fs-6" placeholder="Ej: Reunión de Árbitros" required>
+                <label class="form-label small fw-bold text-dark">Tema del Evento</label>
+                <input v-model="form.titulo" type="text" class="form-control form-control-lg rounded-3 border-light-subtle shadow-none custom-input fs-6" placeholder="Ej: Sanciones Disciplinarias.." required>
               </div>
               
               <div class="mb-3">
-                <label class="form-label small fw-bold text-dark">Descripción / Link</label>
-                <textarea v-model="form.descripcion" class="form-control rounded-3 border-light-subtle shadow-none fs-6" rows="2" placeholder="Detalles o link de Zoom/Meet..."></textarea>
+                <label class="form-label small fw-bold text-dark">Lugar / Descripción</label>
+                <textarea v-model="form.descripcion" class="form-control rounded-3 border-light-subtle shadow-none fs-6" rows="2" placeholder="Ej: Lugar de la reunión.."></textarea>
               </div>
 
               <div class="row g-2">
@@ -72,8 +73,9 @@
         </div>
       </div>
 
+      <!-- HISTORIAL DE EVENTOS -->
       <div class="col-12 col-lg-8 order-2">
-        <div class="card shadow-sm border-0 rounded-4 h-100">
+        <div class="card shadow-sm border-0 rounded-4 h-100 d-flex flex-column overflow-hidden">
           <div class="card-header bg-white py-3">
             <div class="row align-items-center g-3">
               <div class="col-12 col-md-4 text-center text-md-start">
@@ -89,7 +91,7 @@
             </div>
           </div>
           
-          <div class="card-body p-0">
+          <div class="card-body p-0 flex-grow-1 bg-white">
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0 text-center">
                 <thead>
@@ -101,7 +103,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="evento in eventosFiltrados" :key="evento.id" class="border-bottom border-light">
+                  <tr v-for="evento in eventosPaginados" :key="evento.id" class="border-bottom border-light">
                     <td class="fw-bold text-dark d-none d-md-table-cell">{{ formatearFecha(evento.fecha_evento) }}</td>
                     
                     <td class="text-start ps-3 ps-md-4">
@@ -131,7 +133,7 @@
                       </button>
                     </td>
                   </tr>
-                  <tr v-if="eventosFiltrados.length === 0">
+                  <tr v-if="eventosPaginados.length === 0">
                     <td colspan="4" class="py-5 text-muted">
                       <i class="bi bi-info-circle d-block fs-2 mb-2"></i>
                       No se encontraron eventos.
@@ -142,13 +144,21 @@
             </div>
           </div>
         </div>
+
+        <!-- PAGINACIÓN POR FUERA DE LA TARJETA BLANCA (Mismo estilo) -->
+        <div class="paginacion">
+          <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+          <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+          <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas || totalPaginas === 0">Siguiente</button>
+        </div>
+
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, inject, computed } from 'vue';
+import { ref, reactive, onMounted, inject, computed, watch } from 'vue';
 import { api } from '@/api/api';
 
 const notificar = inject('notificar');
@@ -159,13 +169,70 @@ const gruposOficiales = ['Pre Liga', 'LH', '1', '2', '3', '4', 'SR'];
 const form = reactive({ titulo: '', descripcion: '', fecha_evento: '', alcance: 'general', grupo: '', subgrupo: '', categoria: 'reunion' });
 const listaEventos = ref([]);
 
+// VARIABLES PARA PAGINACIÓN
+const paginaActual = ref(1);
+const registrosPorPagina = 8;
+
+// --- FUNCIÓN DE NORMALIZACIÓN ---
+// Elimina tildes y convierte a minúsculas
+const normalizarTexto = (texto) => {
+  return String(texto || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+};
+
 const eventosFiltrados = computed(() => {
-  if (!filtroBusqueda.value) return listaEventos.value;
-  const search = filtroBusqueda.value.toLowerCase();
-  return listaEventos.value.filter(e => 
-    e.titulo.toLowerCase().includes(search) || 
-    (e.grupo && e.grupo.toLowerCase().includes(search))
-  );
+  let resultado = listaEventos.value;
+
+  // 1. Aplicamos el filtro de búsqueda normalizado
+  if (filtroBusqueda.value) {
+    const search = normalizarTexto(filtroBusqueda.value);
+    
+    resultado = resultado.filter(e => {
+      const titulo = normalizarTexto(e.titulo);
+      const grupo = normalizarTexto(e.grupo);
+      const subgrupo = normalizarTexto(e.subgrupo);
+      
+      // Creamos una cadena combinada "3a" o "3-a" para que coincida con lo que escribas
+      const grupoCompleto = grupo + subgrupo; // Ejemplo: "3a"
+      const grupoConGuion = grupo + "-" + subgrupo; // Ejemplo: "3-a"
+      
+      return titulo.includes(search) || 
+             grupo.includes(search) || 
+             subgrupo.includes(search) || 
+             grupoCompleto.includes(search) || 
+             grupoConGuion.includes(search);
+    });
+  }
+
+  // 2. Ordenamos el resultado por fecha (descendente)
+  return [...resultado].sort((a, b) => {
+    const fechaA = new Date(a.fecha_evento).getTime();
+    const fechaB = new Date(b.fecha_evento).getTime();
+    return fechaB - fechaA;
+  });
+});
+
+// --- EL RESTO DEL CÓDIGO SE MANTIENE IGUAL ---
+
+// COMPUTADOS DE PAGINACIÓN
+const totalPaginas = computed(() => Math.ceil(eventosFiltrados.value.length / registrosPorPagina) || 1);
+
+const eventosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina;
+  return eventosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
+});
+
+// WATCHERS DE PAGINACIÓN
+watch(filtroBusqueda, () => {
+  paginaActual.value = 1;
+});
+
+watch(totalPaginas, (nuevoTotal) => {
+  if (paginaActual.value > nuevoTotal) {
+    paginaActual.value = nuevoTotal;
+  }
 });
 
 const esLink = (texto) => {
@@ -227,8 +294,6 @@ onMounted(obtenerEventos);
   .badge-category { font-size: 0.65rem; padding: 2px 8px; }
 }
 
-/* SE ELIMINÓ EL ESTILO shadow-hover:hover AQUÍ */
-
 /* ESTILOS DE COLORES Y BOTONES */
 .custom-input:focus {
   border-color: #dc3545 !important;
@@ -246,4 +311,36 @@ onMounted(obtenerEventos);
 
 .table-responsive::-webkit-scrollbar { display: none; }
 .table-responsive { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* =========================================
+   ESTILOS DE PAGINACIÓN EXACTOS AL OTRO ARCHIVO
+   ========================================= */
+.paginacion { 
+  display: flex; 
+  justify-content: flex-end; 
+  align-items: center; 
+  gap: 12px; 
+  margin-top: 15px; 
+  flex-wrap: wrap;
+}
+
+.btn-paginacion { 
+  border: none; 
+  background: #f8fafc; 
+  color: #0f172a; 
+  padding: 8px 14px; 
+  border-radius: 6px; 
+  font-weight: 700; 
+  cursor: pointer; 
+}
+
+.btn-paginacion:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginacion-texto { 
+  color: white; 
+  font-size: 0.85rem; 
+}
 </style>
