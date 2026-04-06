@@ -90,7 +90,7 @@ const menuItems = [
     title: 'Facturación', 
     icon: 'bi bi-receipt', 
     desc: 'Administrar datos fiscales y entidades vinculadas',
-    rolesPermitidos: ['admin', 'tesorero', 'facturacion'] 
+    rolesPermitidos: ['admin', 'secretario', 'facturacion'] 
   },
 ];
 
