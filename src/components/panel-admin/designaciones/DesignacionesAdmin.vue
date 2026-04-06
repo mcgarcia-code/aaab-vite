@@ -156,6 +156,8 @@ const opcionesDesignaciones = [
   .icon-box { width: 48px; height: 48px; min-width: 48px; font-size: 1.3rem; }
   .card-text h5 { font-size: 1rem; }
 }
+
+
 </style>
 
 

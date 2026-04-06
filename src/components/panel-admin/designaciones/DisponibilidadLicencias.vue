@@ -685,8 +685,8 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .header-actions { width: 100%; justify-content: space-between; flex-wrap: wrap; }
-  .btn-action { flex: 1; justify-content: center; min-width: 45%; }
+  .header-actions { width: 100%; justify-content: space-between; flex-wrap: nowrap; gap: 8px;}
+  .btn-action { flex: 1; justify-content: center; min-width: 0; white-space: nowrap; }
 }
 
 @media (max-width: 600px) {
