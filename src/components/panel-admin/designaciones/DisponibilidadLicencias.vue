@@ -272,7 +272,6 @@
 
 <script setup>
 import { ref, onMounted, computed, reactive, watch } from 'vue'; // Importamos watch
-import axios from 'axios';
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head'
@@ -287,9 +286,6 @@ useHead({
     { property: 'og:type', content: 'website' }
   ],
 })
-
-const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
-const API_URL_BE = 'https://arbitroshandball.com.ar/api/api.php'; 
 
 const arbitros = ref([]);
 const mostrarFiltrosMobile = ref(false);
@@ -313,9 +309,12 @@ const registrosPorPagina = 8;
 
 const cargarDatos = async () => {
   try {
-    const res = await axios.get(API_URL);
-    arbitros.value = Array.isArray(res.data)
-      ? res.data.map(a => ({
+    const {payload} = await api.get({
+      entity: "arbitros",
+      action:"getArbitros"
+    })
+    arbitros.value = payload
+      ? payload.map(a => ({
           ...a,
           apto_medico: a.apto_medico == 1,
         }))
@@ -348,7 +347,7 @@ const toggleDesignacion = async (id, dia) => {
   if (nuevoValor) set.add(id); else set.delete(id);
   
   try {
-    await axios.post(API_URL_BE, {
+    await api.post({
       entity: 'designaciones',
       action: 'actualizar_tilde',
       payload: { id_arbitro: id, dia: dia, checked: nuevoValor } 
@@ -363,7 +362,7 @@ const limpiarChecks = async () => {
     designadosSabado.value.clear();
     designadosDomingo.value.clear();
     try {
-      await axios.post(API_URL_BE, {
+      await api.post({
         entity: 'designaciones',
         action: 'limpiarTildesDesignaciones',
         payload: {}
