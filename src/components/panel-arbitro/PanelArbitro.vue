@@ -13,7 +13,7 @@
                class="perfil-img me-3 shadow-sm">
           <div class="overflow-hidden">
             <h2 class="text-white fw-bold m-0 text-capitalize text-truncate">
-              Hola, {{ arbitro.nombre }}
+              Hola, {{ arbitro.nombre }} 👋
             </h2>
             <span class="badge bg-danger mt-1">ID Árbitro: {{ arbitro.id }}</span>
           </div>

@@ -1,7 +1,11 @@
 <template>
   <div class="animate__animated animate__fadeIn">
     <div class="row g-4">
-      <div class="col-12 col-lg-8 col-xl-9">
+      
+      <!-- COLUMNA TARJETAS: 
+           En móvil será la segunda (order-2)
+           En PC será la primera (order-lg-1) -->
+      <div class="col-12 col-lg-8 col-xl-9 order-2 order-lg-1">
         <div class="row g-3 g-md-4">
           <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItemsFiltrados" :key="item.title">
             <a v-if="item.href" :href="item.href" target="_blank" rel="noopener noreferrer" class="text-decoration-none h-100 d-block">
@@ -27,7 +31,10 @@
         </div>
       </div>
 
-      <div class="col-12 col-lg-4 col-xl-3">
+      <!-- COLUMNA AVISOS/SIDEBAR: 
+           En móvil será la primera (order-1) 
+           En PC será la segunda (order-lg-2) -->
+      <div class="col-12 col-lg-4 col-xl-3 order-1 order-lg-2">
         <aside class="sidebar-notificaciones shadow-sm animate__animated animate__fadeInRight">
           <div class="sidebar-header d-flex align-items-center justify-content-between">
             <div>
@@ -115,22 +122,26 @@ const menuItems = [
     rolesPermitidos: [2,4]
   },
 ];
+
 const menuItemsFiltrados = computed(() => {
   const sesion = auth.getUser();
+  
+  // Creamos una copia del array para no modificar el original
+  let itemsDinamicos = [...menuItems]; 
+
   if ([1,2].includes(sesion.id)){
-    // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-    menuItems.push({ to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Realizá pedidos de indumentaria.' })
+    itemsDinamicos.push({ to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Realizá pedidos de indumentaria.' });
   }
-  return menuItems.filter((item) => {
+
+  return itemsDinamicos.filter((item) => {
     return !item.rolesPermitidos || item.rolesPermitidos.includes(sesion.rol);
   });
-  
 });
+
 // --- LÓGICA DE NOTIFICACIONES ---
 const avisos = ref({ eventos: [], cumpleanos: [] });
 const cargando = ref(true);
 
-// Dentro de tu script de InicioPanel.vue
 const cargarAvisos = async () => {
   const sesion = auth.getUser();
   
@@ -171,7 +182,6 @@ onMounted(cargarAvisos);
 </script>
 
 <style scoped>
-/* (Mantenemos tus estilos de menu-card anteriores...) */
 .menu-card { background: #ffffff; border-radius: 20px; padding: 35px 15px; text-align: center; transition: all 0.3s ease; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #f1f5f9; cursor: pointer; }
 .icon-circle { width: 75px; height: 75px; background: #fff5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; transition: all 0.3s ease; }
 .menu-card i { font-size: 2.2rem; }
@@ -183,7 +193,14 @@ onMounted(cargarAvisos);
 .sidebar-notificaciones { background: white; border-radius: 25px; overflow: hidden; height: 100%; min-height: 500px; }
 .sidebar-header { background: #f8fafc; padding: 20px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; letter-spacing: 1px; }
 .notif-label { font-size: 0.7rem; font-weight: 800; color: #adb5bd; margin-bottom: 15px; display: block; letter-spacing: 0.5px; text-transform: uppercase; }
-.notif-item { display: flex; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f8fafc; }
+.notif-item { 
+  display: flex; 
+  align-items: center; /* <--- ESTA ES LA LÍNEA MÁGICA */
+  gap: 15px; 
+  margin-bottom: 15px; 
+  padding-bottom: 15px; 
+  border-bottom: 1px solid #f8fafc; 
+}
 .notif-date { background: #fff5f5; color: #dc2626; font-weight: 800; font-size: 0.75rem; padding: 8px; border-radius: 12px; text-align: center; min-width: 55px; line-height: 1.2; }
 .notif-content strong { display: block; font-size: 0.85rem; color: #334155; }
 
@@ -197,6 +214,7 @@ onMounted(cargarAvisos);
 .extra-mini { font-size: 0.6rem; padding: 2px 5px; }
 
 @media (max-width: 991px) {
-  .sidebar-notificaciones { margin-top: 20px; min-height: auto; }
+  /* Modificamos esto para que no haya un margen extraño si está arriba de todo */
+  .sidebar-notificaciones { min-height: auto; margin-bottom: 20px; }
 }
 </style>
