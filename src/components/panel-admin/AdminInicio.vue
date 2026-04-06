@@ -85,6 +85,13 @@ const menuItems = [
     desc: 'Capacitaciones y evaluaciones.',
     rolesPermitidos: ['admin', 'coordinador general', 'secretario'] 
   },
+    { 
+    to: '/panel-admin/facturacion', 
+    title: 'Facturación', 
+    icon: 'bi bi-receipt', 
+    desc: 'Administrar datos fiscales y entidades vinculadas',
+    rolesPermitidos: ['admin', 'tesorero'] 
+  },
 ];
 
 const filteredMenu = computed(() => {

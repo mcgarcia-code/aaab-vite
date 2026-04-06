@@ -142,7 +142,7 @@ const routes = [
       { 
         path: 'secretaria/instituciones-cuits', 
         name: 'InstitucionesCuits', 
-        component: () => import('../components/panel-admin/secretaria/InstitucionesCuits.vue'),
+        component: () => import('../components/panel-admin/facturacion/InstitucionesCuits.vue'),
         meta: { roles: ['admin', 'secretario'] }
       },
       
@@ -208,6 +208,13 @@ const routes = [
         path: 'tesoreria/indumentaria/pedidos', 
         name: 'IndumentariaPedidos', 
         component: () => import('../components/panel-admin/tesoreria/PedidosRealizados.vue'),
+        meta: { roles: ['admin', 'tesorero'] }
+      },
+        // --- FACTURACION ---
+      { 
+        path: 'facturacion', 
+        name: 'InstitucionesCuitsAdmin', 
+        component: () => import('../components/panel-admin/facturacion/InstitucionesCuits.vue'),
         meta: { roles: ['admin', 'tesorero'] }
       },
     

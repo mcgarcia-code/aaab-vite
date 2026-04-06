@@ -1,10 +1,11 @@
+
 <template>
   <div class="animate__animated animate__fadeIn container-fluid p-0">
-    <div class="row g-4">
+    <div class="row g-3 g-md-4">
       
       <!-- COLUMNA PRINCIPAL (MÓDULOS) -->
       <div class="col-12 col-lg-8 col-xl-9 order-2 order-lg-1">
-        <div class="row g-3 g-md-4">
+        <div class="row g-3">
           <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItemsFiltrados" :key="item.title">
             <component 
               :is="item.href ? 'a' : 'RouterLink'"
@@ -14,13 +15,13 @@
               rel="noopener noreferrer"
               class="text-decoration-none h-100 d-block"
             >
-              <div class="modern-menu-card">
+              <div class="modern-menu-card shadow-sm">
                 <div class="icon-box">
                   <i :class="item.icon"></i>
                 </div>
                 <div class="card-text">
-                  <h5 class="fw-bold mb-1">{{ item.title }}</h5>
-                  <p class="extra-small m-0 text-muted">{{ item.desc }}</p>
+                  <h5 class="fw-bold mb-0">{{ item.title }}</h5>
+                  <p class="extra-small m-0 text-muted text-truncate">{{ item.desc }}</p>
                 </div>
                 <div class="card-arrow">
                   <i class="bi bi-chevron-right"></i>
@@ -31,20 +32,20 @@
         </div>
       </div>
 
-      <!-- SIDEBAR (PC) / TOP CARD (MOBILE) -->
+      <!-- SIDEBAR / AVISOS (CON SCROLL EN PC) -->
       <div class="col-12 col-lg-4 col-xl-3 order-1 order-lg-2">
         <aside class="sidebar-professional shadow-sm">
           <div class="sidebar-header">
             <div class="d-flex align-items-center">
-              <div class="bell-glow me-3">
-                <i class="bi bi-bell-fill"></i>
-              </div>
-              <span class="fw-black ls-1">AVISOS Y EVENTOS</span>
+              <i class="bi bi-bell-fill me-2 text-danger fs-5"></i>
+              <span class="fw-black ls-1 text-uppercase">Avisos y Eventos</span>
             </div>
             <div v-if="cargando" class="spinner-border spinner-border-sm text-danger"></div>
           </div>
           
-          <div class="sidebar-scroll-area">
+          <!-- CONTENEDOR CON SCROLL CONDICIONAL -->
+          <div class="sidebar-scroll-container p-3">
+            
             <!-- REUNIONES -->
             <div class="notif-section">
               <label class="section-label">PRÓXIMAS REUNIONES</label>
@@ -56,17 +57,17 @@
                   </div>
                   <div class="event-info">
                     <strong :class="{'text-danger': ev.categoria === 'urgente'}">{{ ev.titulo }}</strong>
-                    <p class="text-truncate">{{ ev.descripcion || 'Lugar a confirmar' }}</p>
+                    <p class="mb-0 text-truncate">{{ ev.descripcion || 'Lugar a confirmar' }}</p>
                   </div>
                 </div>
               </div>
-              <p v-else class="empty-msg">Sin eventos próximos.</p>
+              <p v-else class="empty-msg">No hay eventos próximos.</p>
             </div>
 
             <!-- CUMPLEAÑOS -->
             <div class="notif-section">
               <label class="section-label">CUMPLEAÑOS 🎂</label>
-              <div v-if="avisos.cumpleanos && avisos.cumpleanos.length > 0" class="cumple-container-mobile">
+              <div v-if="avisos.cumpleanos && avisos.cumpleanos.length > 0">
                 <div v-for="cumple in avisos.cumpleanos" :key="cumple.nombre" class="event-card-modern">
                   <div :class="['cal-box', esHoy(cumple.fecha_nacimiento) ? 'today-bg' : '']">
                     <span class="day">{{ cumple.fecha_nacimiento.split('/')[0] }}</span>
@@ -74,16 +75,19 @@
                       {{ obtenerMesNombre(cumple.fecha_nacimiento.split('/')[1]) }}
                     </span>
                   </div>
-                  <div class="event-info">
-                    <strong class="mb-0">{{ cumple.nombre }} {{ cumple.apellido }}</strong>
-                    <span v-if="esHoy(cumple.fecha_nacimiento)" class="badge-hoy">CUMPLEAÑOS HOY</span>
+                  <div class="event-info d-flex align-items-center">
+                    <div>
+                      <strong class="mb-0">{{ cumple.nombre }} {{ cumple.apellido }}</strong>
+                      <span v-if="esHoy(cumple.fecha_nacimiento)" class="badge-hoy">¡ES HOY!</span>
+                    </div>
                   </div>
                 </div>
               </div>
+              <p v-else class="empty-msg">Sin cumpleaños cercanos.</p>
             </div>
 
             <!-- RECORDATORIOS -->
-            <div class="notif-section border-0">
+            <div class="notif-section border-0 mb-0 pb-0">
               <label class="section-label">RECORDATORIOS</label>
               <div v-if="avisos.recordatorio && avisos.recordatorio.length > 0">
                 <div v-for="rec in avisos.recordatorio" :key="rec.id" class="reminder-pill">
@@ -91,6 +95,7 @@
                   <span v-html="rec.descripcion"></span>
                 </div>
               </div>
+              <p v-else class="empty-msg">No hay recordatorios.</p>
             </div>
           </div>
         </aside>
@@ -108,7 +113,7 @@ import { auth } from '@/api/auth';
 
 useHead({ title: 'Panel de Inicio | AAAB' })
 
-// ... (menuItems y menuItemsFiltrados iguales a los que tenías)
+// ... (menuItems y lógica de script se mantienen igual)
 const menuItems = [
   { to: '/panel-arbitro/datos', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Ver legajo y seguridad.' },
   { to: '/panel-arbitro/disponibilidad', title: 'Disponibilidad', icon: 'bi bi-clock-history', desc: 'Modificá tus horarios.' },
@@ -163,123 +168,77 @@ onMounted(cargarAvisos);
 </script>
 
 <style scoped>
-/* --- ESTILO DE TARJETAS (BENTO) --- */
+/* --- TARJETAS MÓDULOS --- */
 .modern-menu-card {
-  background: white;
-  border-radius: 18px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  border: 1px solid #f1f5f9;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white; border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 12px; border: 1px solid #f1f5f9; transition: all 0.2s ease;
 }
 .icon-box {
-  width: 48px; height: 48px; min-width: 48px;
-  background: #f8fafc; color: #dc2626;
-  border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
-  transition: 0.3s;
+  width: 45px; height: 45px; min-width: 45px; background: #fef2f2; color: #dc2626; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
 }
-.card-text h5 { font-size: 0.95rem; color: #0f172a; margin-bottom: 2px; }
-.extra-small { font-size: 0.75rem; color: #64748b; }
+.card-text h5 { font-size: 0.95rem; color: #1e293b; }
+.extra-small { font-size: 0.75rem; }
 .card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; }
 
-.modern-menu-card:hover { 
-  transform: translateY(-4px); 
-  border-color: #fca5a5; 
-  box-shadow: 0 10px 20px rgba(0,0,0,0.04) !important;
-}
-.modern-menu-card:hover .icon-box { background: #dc2626; color: white; transform: rotate(-5deg); }
+.modern-menu-card:hover { transform: translateY(-3px); border-color: #fca5a5; box-shadow: 0 5px 15px rgba(0,0,0,0.05) !important; }
+.modern-menu-card:hover .icon-box { background: #dc2626; color: white; }
 
 /* --- SIDEBAR PROFESIONAL --- */
 .sidebar-professional {
-  background: #ffffff;
-  border-radius: 22px;
-  border: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
+  background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden;
+  display: flex; flex-direction: column;
 }
 .sidebar-header {
-  padding: 18px 24px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
-  border-radius: 22px 22px 0 0;
-  display: flex; justify-content: space-between; align-items: center;
+  background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;
 }
-.bell-glow {
-  color: #dc2626;
-  font-size: 1.2rem;
-  animation: pulse-red 2s infinite;
-}
-.fw-black { font-weight: 900; font-size: 0.8rem; color: #1e293b; }
-.ls-1 { letter-spacing: 1px; }
+.fw-black { font-weight: 800; font-size: 0.85rem; color: #1e293b; }
 
-/* SECCIONES SIDEBAR */
-.notif-section { padding: 20px; border-bottom: 1px solid #f1f5f9; }
-.section-label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; display: block; margin-bottom: 12px; }
+/* SECCIONES */
+.notif-section { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #000000; }
+.section-label { font-size: 0.65rem; font-weight: 800; color: #000000; display: block; margin-bottom: 8px; letter-spacing: 0.5px; }
 
-/* CALBOX UNIFICADO */
+/* BLOQUE CALENDARIO */
 .cal-box {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: #f1f5f9; border-radius: 10px; min-width: 45px; height: 45px;
+  background: #f1f5f9; border-radius: 10px; min-width: 44px; height: 44px;
 }
-.cal-box .day { font-weight: 900; font-size: 1.1rem; line-height: 1; color: #1e293b; }
-.cal-box .month { font-size: 0.6rem; font-weight: 800; }
+.cal-box .day { font-weight: 800; font-size: 1rem; line-height: 1; color: #1e293b; }
+.cal-box .month { font-size: 0.6rem; font-weight: 700; }
 .today-bg { background: #dc2626 !important; color: white !important; }
 .today-bg .day { color: white !important; }
 
 /* EVENT CARDS */
 .event-card-modern {
-  display: flex; gap: 12px; margin-bottom: 10px;
-  background: #ffffff; padding: 10px; border-radius: 14px; border: 1px solid #f8fafc;
-  transition: 0.2s;
+  display: flex; gap: 12px; margin-bottom: 6px; background: #fdfdfd; padding: 8px; border-radius: 12px; border: 1px solid #f8fafc;
 }
 .event-info { flex: 1; min-width: 0; }
-.event-info strong { font-size: 0.8rem; color: #1e293b; display: block; }
-.event-info p { font-size: 0.72rem; color: #64748b; margin: 0; }
-.badge-hoy { color: #dc2626; font-size: 0.6rem; font-weight: 800; }
+.event-info strong { font-size: 0.8rem; color: #1e293b; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.event-info p { font-size: 0.72rem; color: #64748b; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.reminder-pill { background: #fffbeb; color: #92400e; padding: 10px; border-radius: 12px; font-size: 0.72rem; border-left: 4px solid #f59e0b; margin-bottom: 8px; }
+.reminder-pill { background: #fffbeb; color: #92400e; padding: 8px 12px; border-radius: 10px; font-size: 0.72rem; border-left: 3px solid #f59e0b; margin-bottom: 5px; }
+.empty-msg { font-size: 0.7rem; color: #94a3b8; font-style: italic; }
 
-/* --- RESPONSIVE (MAGIA UX) --- */
+/* --- MAGIA DEL SCROLL CONDICIONAL --- */
+
+/* En Escritorio: Altura fija y scroll */
 @media (min-width: 992px) {
   .sidebar-professional {
-    position: sticky;
-    top: 20px;
-    height: calc(100vh - 40px);
+    position: sticky; top: 20px;
+    max-height: calc(100vh - 100px); /* Altura máxima para que no sea infinita */
   }
-  .sidebar-scroll-area {
+  .sidebar-scroll-container {
     overflow-y: auto;
-    flex: 1;
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: #cbd5e1 transparent;
   }
+  /* Estilo del scroll para Chrome/Safari */
+  .sidebar-scroll-container::-webkit-scrollbar { width: 5px; }
+  .sidebar-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 }
 
+/* En Móvil: Todo seguido, sin scroll interno y bien compacto */
 @media (max-width: 991px) {
-  .sidebar-professional {
-    border-radius: 20px;
-    margin-bottom: 20px;
-  }
-  .sidebar-scroll-area {
-    display: flex;
-    overflow-x: auto;
-    padding: 10px;
-    gap: 15px;
-    -webkit-overflow-scrolling: touch;
-  }
-  .notif-section {
-    min-width: 280px;
-    padding: 10px;
-    border-bottom: 0;
-    border-right: 1px solid #f1f5f9;
-  }
-  .sidebar-header {
-    padding: 12px 20px;
-  }
-}
-
-@keyframes pulse-red {
-  0% { transform: scale(1); text-shadow: 0 0 0 rgba(220, 38, 38, 0); }
-  50% { transform: scale(1.1); text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
-  100% { transform: scale(1); text-shadow: 0 0 0 rgba(220, 38, 38, 0); }
+  .sidebar-professional { margin-bottom: 10px; }
+  .sidebar-scroll-container { overflow-y: visible; padding: 12px !important; }
+  .notif-section { margin-bottom: 8px; padding-bottom: 8px; }
 }
 </style>

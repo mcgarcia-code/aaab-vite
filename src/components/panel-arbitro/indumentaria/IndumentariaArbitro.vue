@@ -1,35 +1,58 @@
 <template>
-  <div class="container py-2 animate__animated animate__fadeIn">
-    <div class="text-center mb-5">
-      <i class="bi bi-bag-fill text-danger main-icon"></i>
-      <h2 class="fw-bold text-white mt-2">Mi Indumentaria</h2>
-      <p class="small text-white opacity-75 m-0">Gestioná tu indumentaria oficial de la asociación.</p>
+  <div class="container py-4 animate__animated animate__fadeIn">
+    
+    <!-- HEADER DEL MÓDULO -->
+    <div class="dashboard-header mb-5 text-center text-md-start">
+      <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
+        <div class="main-icon-container">
+          <i class="bi bi-bag-fill text-danger"></i>
+        </div>
+        <div>
+          <h2 class="fw-bold text-white m-0">Mi Indumentaria</h2>
+          <p class="small text-white opacity-75 m-0">Gestioná tu equipamiento oficial de la asociación</p>
+        </div>
+      </div>
     </div>
 
-    <div class="row g-4 justify-content-center">
-      <div class="col-12 col-sm-6">
+    <!-- GRILLA DE OPCIONES (ESTILO NEO-BENTO HORIZONTAL) -->
+    <div class="row g-3 g-md-4 justify-content-center">
+      
+      <!-- SOLICITAR -->
+      <div class="col-12 col-md-6 col-xl-5">
         <RouterLink to="/panel-arbitro/indumentaria/nuevo" class="text-decoration-none h-100 d-block">
-          <div class="menu-card shadow-lg">
-            <div class="icon-circle">
-              <i class="bi bi-cart-plus text-danger"></i>
+          <div class="modern-menu-card shadow-sm">
+            <div class="icon-box">
+              <i class="bi bi-cart-plus"></i>
             </div>
-            <h4 class="mt-3 fw-bold text-dark">Solicitar Indumentaria</h4>
-            <p class="small text-muted m-0 px-2">Realizar un nuevo pedido de indumentaria.</p>
+            <div class="card-text">
+              <h5 class="fw-bold mb-1">Solicitar Indumentaria</h5>
+              <p class="extra-small m-0 text-muted">Realizar un nuevo pedido de indumentaria oficial.</p>
+            </div>
+            <div class="card-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
           </div>
         </RouterLink>
       </div>
 
-      <div class="col-12 col-sm-6">
+      <!-- MIS PEDIDOS -->
+      <div class="col-12 col-md-6 col-xl-5">
         <RouterLink to="/panel-arbitro/indumentaria/mis-pedidos" class="text-decoration-none h-100 d-block">
-          <div class="menu-card shadow-lg">
-            <div class="icon-circle">
-              <i class="bi bi-list-check text-danger"></i>
+          <div class="modern-menu-card shadow-sm">
+            <div class="icon-box">
+              <i class="bi bi-list-check"></i>
             </div>
-            <h4 class="mt-3 fw-bold text-dark">Mis Pedidos</h4>
-            <p class="small text-muted m-0 px-2">Consultar el estado de tus solicitudes previas.</p>
+            <div class="card-text">
+              <h5 class="fw-bold mb-1">Mis Pedidos</h5>
+              <p class="extra-small m-0 text-muted">Consultar el historial y estado de tus solicitudes.</p>
+            </div>
+            <div class="card-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
           </div>
         </RouterLink>
       </div>
+
     </div>
   </div>
 </template>
@@ -37,42 +60,103 @@
 <script setup>
 import { useHead } from '@vueuse/head'
 
-// Título y descripción específicos
 useHead({
-  title: 'Indumentaria| AAAB',
+  title: 'Indumentaria | AAAB',
   meta: [
-    {
-      name: 'description',
-      content: 'Sección de gestión de aportes para los árbitros de la Asociación Argentina de Árbitros de Balonmano.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Indumentaria | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Sección de gestión de indumentaria para los árbitros de la Asociación Argentina de Árbitros de Balonmano.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { name: 'description', content: 'Gestión de indumentaria oficial para los árbitros de la AAAB.' },
+    { property: 'og:title', content: 'Indumentaria | AAAB' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
+    { property: 'og:type', content: 'website' }
   ],
 })
 </script>
 
 <style scoped>
-/* Copiá los mismos estilos de .menu-card que tenés en los otros Admin para mantener la estética */
-.main-icon { font-size: 3.2rem; filter: drop-shadow(0 0 8px rgba(220, 38, 38, 0.3)); }
-.menu-card { background: #ffffff; border-radius: 20px; padding: 40px 20px; text-align: center; transition: all 0.3s ease; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #f1f5f9; }
-.icon-circle { width: 80px; height: 80px; background: #fff5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
-.menu-card i { font-size: 2.8rem; }
-.menu-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.3) !important; border-bottom: 6px solid #dc2626; }
-.menu-card:hover .icon-circle { background: #dc2626; }
-.menu-card:hover i { color: white !important; }
+/* Icono Principal del Header */
+.main-icon-container {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tarjeta Moderna Horizontal (Neo-Bento) */
+.modern-menu-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+}
+
+.icon-box {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.card-text {
+  flex: 1;
+}
+
+.card-text h5 {
+  font-size: 1.05rem;
+  color: #1e293b;
+  margin: 0;
+}
+
+.extra-small {
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.card-arrow {
+  color: #cbd5e1;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+/* --- EFECTOS HOVER --- */
+.modern-menu-card:hover {
+  transform: translateY(-5px);
+  border-color: #fca5a5;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.modern-menu-card:hover .icon-box {
+  background: #dc2626;
+  color: white;
+  transform: scale(1.05);
+}
+
+.modern-menu-card:hover .card-arrow {
+  color: #dc2626;
+  transform: translateX(4px);
+}
+
+/* Ajustes Responsive */
+@media (max-width: 768px) {
+  .dashboard-header { margin-bottom: 30px; }
+  .modern-menu-card { padding: 16px; }
+  .icon-box { width: 48px; height: 48px; min-width: 48px; font-size: 1.3rem; }
+  .card-text h5 { font-size: 0.95rem; }
+}
 </style>

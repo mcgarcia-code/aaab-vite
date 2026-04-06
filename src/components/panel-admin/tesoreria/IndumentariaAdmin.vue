@@ -1,38 +1,59 @@
 <template>
   <div class="container py-4 animate__animated animate__fadeIn">
     
-    <div class="text-center mb-5">
-      <i class="bi bi-bag-check text-danger main-icon"></i>
-      <h2 class="fw-bold text-white mt-2">Gestión de Indumentaria</h2>
-      <p class="small text-white opacity-75 m-0">Administración de stock y pedidos de árbitros</p>
+    <!-- HEADER DEL MÓDULO -->
+    <div class="dashboard-header mb-5 text-center text-md-start">
+      <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
+        <div class="main-icon-container">
+          <i class="bi bi-bag-check text-danger"></i>
+        </div>
+        <div>
+          <h2 class="fw-bold text-white m-0">Gestión de Indumentaria</h2>
+          <p class="small text-white opacity-75 m-0">Administración de stock y pedidos de árbitros</p>
+        </div>
+      </div>
     </div>
 
-    <div class="row g-4 justify-content-center">
-      <div class="col-12 col-sm-6">
+    <!-- GRILLA DE OPCIONES (ESTILO NEO-BENTO HORIZONTAL) -->
+    <div class="row g-3 g-md-4 justify-content-center">
+      
+      <!-- STOCK -->
+      <div class="col-12 col-md-6 col-xl-5">
         <RouterLink to="/panel-admin/tesoreria/indumentaria/stock" class="text-decoration-none h-100 d-block">
-          <div class="menu-card shadow-lg">
-            <div class="icon-circle">
-              <i class="bi bi-box-seam text-danger"></i>
+          <div class="modern-menu-card shadow-sm">
+            <div class="icon-box">
+              <i class="bi bi-box-seam"></i>
             </div>
-            <h4 class="mt-3 fw-bold text-dark">Stock</h4>
-            <p class="small text-muted m-0 px-2">Control de talles y cantidades disponibles.</p>
+            <div class="card-text">
+              <h5 class="fw-bold mb-1">Stock</h5>
+              <p class="extra-small m-0 text-muted">Control de talles, ingresos y cantidades disponibles.</p>
+            </div>
+            <div class="card-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
           </div>
         </RouterLink>
       </div>
 
-      <div class="col-12 col-sm-6">
+      <!-- PEDIDOS REALIZADOS -->
+      <div class="col-12 col-md-6 col-xl-5">
         <RouterLink to="/panel-admin/tesoreria/indumentaria/pedidos" class="text-decoration-none h-100 d-block">
-          <div class="menu-card shadow-lg">
-            <div class="icon-circle">
-              <i class="bi bi-list-check text-danger"></i>
+          <div class="modern-menu-card shadow-sm">
+            <div class="icon-box">
+              <i class="bi bi-list-check"></i>
             </div>
-            <h4 class="mt-3 fw-bold text-dark">Pedidos Realizados</h4>
-            <p class="small text-muted m-0 px-2">Listado de solicitudes pendientes y entregadas.</p>
+            <div class="card-text">
+              <h5 class="fw-bold mb-1">Pedidos Realizados</h5>
+              <p class="extra-small m-0 text-muted">Listado de solicitudes, estados de entrega y pendientes.</p>
+            </div>
+            <div class="card-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
           </div>
         </RouterLink>
       </div>
-    </div>
 
+    </div>
   </div>
 </template>
 
@@ -40,45 +61,103 @@
 import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head';
 
-// Título y descripción específicos para la página de Tesorería AAAB
 useHead({
-  title: 'Indumentaria | AAAB',
+  title: 'Gestión de Indumentaria | AAAB',
   meta: [
-    {
-      name: 'description',
-      content: 'Menu de gestión de indumentaria para árbitros, control de stock y pedidos.',
-    },
-       
-    {
-      property: 'og:title',
-      content: 'Indumentaria | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Menu de gestión de indumentaria para árbitros, control de stock y pedidos.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { name: 'description', content: 'Administración de stock y pedidos de indumentaria para árbitros AAAB.' },
+    { property: 'og:title', content: 'Gestión de Indumentaria | AAAB' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
+    { property: 'og:type', content: 'website' }
   ],
-
 })
 </script>
 
 <style scoped>
-/* Reutilizo exactamente tus estilos */
-.main-icon { font-size: 3.2rem; filter: drop-shadow(0 0 8px rgba(220, 38, 38, 0.3)); }
-.menu-card { background: #ffffff; border-radius: 20px; padding: 40px 20px; text-align: center; transition: all 0.3s ease; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #f1f5f9; cursor: pointer; }
-.icon-circle { width: 80px; height: 80px; background: #fff5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; transition: all 0.3s ease; }
-.menu-card i { font-size: 2.8rem; }
-.menu-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.3) !important; border-bottom: 6px solid #dc2626; }
-.menu-card:hover .icon-circle { background: #dc2626; }
-.menu-card:hover i { color: white !important; transform: scale(1.1); }
-.text-danger { color: #dc2626 !important; }
-@media (max-width: 576px) { .menu-card { padding: 30px 15px; } .icon-circle { width: 70px; height: 70px; } .menu-card i { font-size: 2rem; } .main-icon { font-size: 2.5rem; } }
-</style>
+/* Icono Principal del Header */
+.main-icon-container {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tarjeta Moderna Horizontal (Neo-Bento) */
+.modern-menu-card {
+  background: white;
+  border-radius: 20px;
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+}
+
+.icon-box {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.card-text {
+  flex: 1;
+}
+
+.card-text h5 {
+  font-size: 1.05rem;
+  color: #1e293b;
+  margin: 0;
+}
+
+.extra-small {
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.card-arrow {
+  color: #cbd5e1;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+/* --- EFECTOS HOVER --- */
+.modern-menu-card:hover {
+  transform: translateY(-5px);
+  border-color: #fca5a5;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.modern-menu-card:hover .icon-box {
+  background: #dc2626;
+  color: white;
+  transform: scale(1.05);
+}
+
+.modern-menu-card:hover .card-arrow {
+  color: #dc2626;
+  transform: translateX(4px);
+}
+
+/* Ajustes Responsive */
+@media (max-width: 768px) {
+  .dashboard-header { margin-bottom: 30px; }
+  .modern-menu-card { padding: 18px; }
+  .icon-box { width: 48px; height: 48px; min-width: 48px; font-size: 1.3rem; }
+  .card-text h5 { font-size: 1rem; }
+}
+</style>```
