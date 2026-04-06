@@ -261,10 +261,10 @@
           <div class="col-md-8">
             <label class="small fw-bold">Movilidad</label>
             <div class="checkbox-group">
-              <label class="checkbox-item"><input type="checkbox" value="Moto" v-model="movilidadArray"> Moto</label>
-              <label class="checkbox-item"><input type="checkbox" value="Transporte Público" v-model="movilidadArray"> Transporte Público</label>
-              <label class="checkbox-item"><input type="checkbox" value="Auto" v-model="movilidadArray"> Auto</label>
-              <label class="checkbox-item"><input type="checkbox" value="Bici" v-model="movilidadArray"> Bici</label>
+              <label class="checkbox-item"><input type="checkbox" value="moto" v-model="movilidadArray"> Moto</label>
+              <label class="checkbox-item"><input type="checkbox" value="transporte publico" v-model="movilidadArray"> Transporte Público</label>
+              <label class="checkbox-item"><input type="checkbox" value="auto" v-model="movilidadArray"> Auto</label>
+              <label class="checkbox-item"><input type="checkbox" value="bici" v-model="movilidadArray"> Bici</label>
             </div>
           </div>
 
@@ -370,7 +370,11 @@ const crearNuevo = () => {
 
 const editarArbitro = (arbitro) => {
   formModal.value = { ...arbitro }
-  movilidadArray.value = arbitro.movilidad ? arbitro.movilidad.split(', ') : []
+  movilidadArray.value = []
+  let movilidades = arbitro.movilidad ? arbitro.movilidad.split(',') : []
+  movilidades.forEach(v => {
+    movilidadArray.value.push(v.trim())
+  })
   modoModal.value = 'editar'
   mostrarModal.value = true
 }

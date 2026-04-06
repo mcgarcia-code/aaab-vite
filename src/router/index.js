@@ -109,8 +109,7 @@ const routes = [
     
     ]
   },
-
-{    
+  {    
     path: '/panel-admin',
     component: () => import('../components/panel-admin/AdminPanel.vue'),
     meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'observador'] }, 
