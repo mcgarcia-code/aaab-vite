@@ -48,7 +48,13 @@
             <!-- SECCIÓN: REUNIONES -->
             <div class="notif-section">
               <label class="section-label" @click="toggleSeccion('reuniones')">
-                <span>PRÓXIMAS REUNIONES</span>
+                <div class="d-flex align-items-center gap-2">
+                  <span>PRÓXIMAS REUNIONES</span>
+                  <!-- Globitos contadores visibles solo al estar colapsado -->
+                  <span v-show="!seccionesAbiertas.reuniones && proximasFechas.length > 0" class="badge-count">
+                    {{ proximasFechas.length }}
+                  </span>
+                </div>
                 <i :class="['bi', seccionesAbiertas.reuniones ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
               </label>
               
@@ -72,7 +78,12 @@
             <!-- SECCIÓN: CUMPLEAÑOS -->
             <div class="notif-section">
               <label class="section-label" @click="toggleSeccion('cumpleanos')">
-                <span>CUMPLEAÑOS 🎂</span>
+                <div class="d-flex align-items-center gap-2">
+                  <span>CUMPLEAÑOS 🎂</span>
+                  <span v-show="!seccionesAbiertas.cumpleanos && avisos.cumpleanos && avisos.cumpleanos.length > 0" class="badge-count">
+                    {{ avisos.cumpleanos.length }}
+                  </span>
+                </div>
                 <i :class="['bi', seccionesAbiertas.cumpleanos ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
               </label>
 
@@ -100,7 +111,12 @@
             <!-- SECCIÓN: RECORDATORIOS -->
             <div class="notif-section border-0 mb-0 pb-0">
               <label class="section-label" @click="toggleSeccion('recordatorios')">
-                <span>RECORDATORIOS</span>
+                <div class="d-flex align-items-center gap-2">
+                  <span>RECORDATORIOS</span>
+                  <span v-show="!seccionesAbiertas.recordatorios && avisos.recordatorio && avisos.recordatorio.length > 0" class="badge-count">
+                    {{ avisos.recordatorio.length }}
+                  </span>
+                </div>
                 <i :class="['bi', seccionesAbiertas.recordatorios ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
               </label>
 
@@ -239,6 +255,19 @@ onMounted(cargarAvisos);
 }
 .section-label:hover { opacity: 0.7; }
 .section-label i { font-size: 0.9rem; color: #dc2626; transition: transform 0.2s ease; }
+
+/* --- GLOBITO CONTADOR --- */
+.badge-count {
+  background-color: #fef2f2;
+  color: #dc2626;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .collapse-content {
   margin-top: 8px;
