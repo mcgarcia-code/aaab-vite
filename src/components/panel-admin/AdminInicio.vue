@@ -1,19 +1,39 @@
 <template>
-  <div class="row g-3 g-md-4 animate__animated animate__fadeIn">
+  <div class="container-fluid py-4 animate__animated animate__fadeIn">
+    
+    <!-- HEADER DE BIENVENIDA -->
+    <div class="dashboard-header mb-5">
+      <h3 class="text-white">¡Bienvenido al Panel de Gestión!</h3>
+      <p class="text-white">Seleccioná un módulo para gestionar la AAAB</p>
+    </div>
 
-    <div class="col-12 col-sm-6 col-md-4" v-for="item in filteredMenu" :key="item.title">
-      <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
-        <div class="menu-card shadow-sm">
-          <div class="icon-circle">
-            <i :class="[item.icon, 'text-danger']"></i>
+    <!-- GRILLA DE MENÚ -->
+    <div class="row g-4">
+      <div class="col-12 col-sm-6 col-lg-4" v-for="item in filteredMenu" :key="item.title">
+        <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
+          <div class="modern-card">
+            
+            <!-- ICONO CON FONDO SUAVE -->
+            <div class="icon-box">
+              <i :class="item.icon"></i>
+            </div>
+            
+            <!-- TEXTO DE LA TARJETA -->
+            <div class="card-body-text">
+              <h5 class="card-title">{{ item.title }}</h5>
+              <p class="card-desc">{{ item.desc }}</p>
+            </div>
+
+            <!-- INDICADOR DE ACCIÓN -->
+            <div class="card-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+
           </div>
-          <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
-          <p class="small text-muted m-0">{{ item.desc }}</p>
-        </div>
-      </RouterLink>
+        </RouterLink>
+      </div>
     </div>
   </div>
-
 </template>
 
 <script setup>
@@ -25,16 +45,8 @@ import { useHead } from '@vueuse/head';
 const user = auth.getUser();
 const userRole = user ? user.rol : null;
 
-// Título y descripción específicos para la página de Gestion AAAB
 useHead({
   title: 'Panel de Gestión | AAAB',
-  meta: [
-    { name: 'description', content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.' },
-    { property: 'og:title', content: 'Panel de Gestión | AAAB' },
-    { property: 'og:description', content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.' },
-    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
-    { property: 'og:type', content: 'website' }
-  ],
 });
 
 const menuItems = [
@@ -42,102 +54,139 @@ const menuItems = [
     to: '/panel-admin/secretaria', 
     title: 'Secretaría', 
     icon: 'bi bi-pc-display-horizontal', 
-    desc: 'Gestionar datos personales y licencias de los árbitros.',
+    desc: 'Datos personales y licencias.',
     rolesPermitidos: ['admin', 'secretario', 'designador'] 
   },
   { 
     to: '/panel-admin/tribunal', 
     title: 'Tribunal de Ética', 
     icon: 'bi bi-shield-exclamation', 
-    desc: 'Cargar sanciones, artículos y resoluciones.',
+    desc: 'Sanciones y resoluciones.',
     rolesPermitidos: ['admin', 'etica', 'secretario'] 
   },
   { 
     to: '/panel-admin/tesoreria', 
     title: 'Tesorería', 
     icon: 'bi bi-cash-stack', 
-    desc: 'Módulo contable, pagos y stock de ropa',
+    desc: 'Contabilidad y stock de ropa.',
     rolesPermitidos: ['admin', 'tesorero'] 
   },
   { 
     to: '/panel-admin/designaciones', 
     title: 'Designaciones', 
     icon: 'bi bi-calendar4-week', 
-    desc: 'Módulo de designaciones, control de disponibilidad y asignación de partidos',
+    desc: 'Disponibilidad y partidos.',
     rolesPermitidos: ['admin', 'designador', 'secretario'] 
   },
   { 
     to: '/panel-admin/desarrollo-arbitral', 
     title: 'Desarrollo Arbitral', 
     icon: 'bi bi-person-workspace', 
-    desc: 'Módulo de desarrollo arbitral, seguimiento de capacitaciones y evaluaciones',
-    rolesPermitidos: ['admin', 'coordinador general', 'secretario'] // <-- Coma agregada aquí
+    desc: 'Capacitaciones y evaluaciones.',
+    rolesPermitidos: ['admin', 'coordinador general', 'secretario'] 
   },
-
-
 ];
 
 const filteredMenu = computed(() => {
   return menuItems.filter(item => {
-    // Si el usuario es 'admin' (superusuario), ve todo
     if (userRole === 'admin') return true;
-    
-    // Verificamos si su rol está en la lista permitida
     return item.rolesPermitidos && item.rolesPermitidos.includes(userRole);
   });
 });
 </script>
 
-
 <style scoped>
-.menu-card {
+/* Estilos del Header */
+.dashboard-header h3 {
+  font-size: 1.75rem;
+  letter-spacing: -0.5px;
+}
+
+/* Tarjeta Moderna Horizontal */
+.modern-card {
   background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 20px;
-  padding: 35px 15px;
-  text-align: center;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  padding: 24px;
   height: 100%;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  border: 1px solid #f1f5f9;
+  gap: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
   cursor: pointer;
 }
 
-.icon-circle {
-  width: 75px;
-  height: 75px;
-  background: #fff5f5;
-  border-radius: 50%;
+/* Caja de Icono */
+.icon-box {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  background: #f8fafc; /* Gris muy claro */
+  color: #dc2626;      /* Rojo AAAB */
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 5px;
+  font-size: 1.5rem;
   transition: all 0.3s ease;
 }
 
-.menu-card i { font-size: 2.2rem; }
-
-/* Efecto Hover */
-.menu-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 25px rgba(0,0,0,0.2) !important;
-  border-bottom: 5px solid #dc2626;
+/* Contenido de texto */
+.card-body-text {
+  flex: 1;
 }
 
-.menu-card:hover .icon-circle { background: #dc2626; }
-.menu-card:hover i { color: white !important; transform: scale(1.1); }
-
-/* --- RESPONSIVE --- */
-@media (max-width: 576px) {
-  .menu-card { padding: 25px 10px; }
-  .icon-circle { width: 60px; height: 60px; }
-  .menu-card i { font-size: 1.8rem; }
-  .menu-card h5 { font-size: 1.1rem; }
+.card-title {
+  margin: 0 0 2px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a; /* Azul muy oscuro casi negro */
 }
 
-@media (min-width: 577px) and (max-width: 992px) {
-  .menu-card { padding: 30px 15px; }
+.card-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b; /* Gris intermedio */
+  line-height: 1.4;
+}
+
+/* Flecha derecha */
+.card-arrow {
+  color: #cbd5e1;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+/* --- EFECTOS INTERACTIVOS (HOVER) --- */
+
+.modern-card:hover {
+  border-color: #f87171; /* Rojo suave */
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
+}
+
+.modern-card:hover .icon-box {
+  background: #dc2626;
+  color: #ffffff;
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.modern-card:hover .card-arrow {
+  color: #dc2626;
+  transform: translateX(5px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modern-card {
+    padding: 20px;
+  }
+  .icon-box {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    font-size: 1.2rem;
+  }
 }
 </style>

@@ -1,99 +1,97 @@
 <template>
-  <div class="animate__animated animate__fadeIn">
+  <div class="animate__animated animate__fadeIn container-fluid p-0">
     <div class="row g-4">
       
-      <!-- COLUMNA TARJETAS: 
-           En móvil será la segunda (order-2)
-           En PC será la primera (order-lg-1) -->
+      <!-- COLUMNA PRINCIPAL (MÓDULOS) -->
       <div class="col-12 col-lg-8 col-xl-9 order-2 order-lg-1">
         <div class="row g-3 g-md-4">
           <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItemsFiltrados" :key="item.title">
-            <a v-if="item.href" :href="item.href" target="_blank" rel="noopener noreferrer" class="text-decoration-none h-100 d-block">
-              <div class="menu-card shadow-sm">
-                <div class="icon-circle">
-                  <i :class="[item.icon, 'text-danger']"></i>
+            <component 
+              :is="item.href ? 'a' : 'RouterLink'"
+              :href="item.href"
+              :to="item.to"
+              :target="item.href ? '_blank' : null"
+              rel="noopener noreferrer"
+              class="text-decoration-none h-100 d-block"
+            >
+              <div class="modern-menu-card">
+                <div class="icon-box">
+                  <i :class="item.icon"></i>
                 </div>
-                <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
-                <p class="small text-muted m-0">{{ item.desc }}</p>
-              </div>
-            </a>
-
-            <RouterLink v-else :to="item.to" class="text-decoration-none h-100 d-block">
-              <div class="menu-card shadow-sm">
-                <div class="icon-circle">
-                  <i :class="[item.icon, 'text-danger']"></i>
+                <div class="card-text">
+                  <h5 class="fw-bold mb-1">{{ item.title }}</h5>
+                  <p class="extra-small m-0 text-muted">{{ item.desc }}</p>
                 </div>
-                <h5 class="mt-3 fw-bold text-dark">{{ item.title }}</h5>
-                <p class="small text-muted m-0">{{ item.desc }}</p>
+                <div class="card-arrow">
+                  <i class="bi bi-chevron-right"></i>
+                </div>
               </div>
-            </RouterLink>
+            </component>
           </div>
         </div>
       </div>
 
-      <!-- COLUMNA AVISOS/SIDEBAR: 
-           En móvil será la primera (order-1) 
-           En PC será la segunda (order-lg-2) -->
+      <!-- SIDEBAR (PC) / TOP CARD (MOBILE) -->
       <div class="col-12 col-lg-4 col-xl-3 order-1 order-lg-2">
-        <aside class="sidebar-notificaciones shadow-sm animate__animated animate__fadeInRight">
-          <div class="sidebar-header d-flex align-items-center justify-content-between">
-            <div>
-              <i class="bi bi-bell-fill me-2 text-danger"></i>
-              <span class="fw-bold">AVISOS Y EVENTOS</span>
+        <aside class="sidebar-professional shadow-sm">
+          <div class="sidebar-header">
+            <div class="d-flex align-items-center">
+              <div class="bell-glow me-3">
+                <i class="bi bi-bell-fill"></i>
+              </div>
+              <span class="fw-black ls-1">AVISOS Y EVENTOS</span>
             </div>
-            <div v-if="cargando" class="spinner-border spinner-border-sm text-danger" role="status"></div>
+            <div v-if="cargando" class="spinner-border spinner-border-sm text-danger"></div>
           </div>
           
-          <div class="sidebar-body p-3">
-            
-            <!-- PRÓXIMAS REUNIONES Y URGENTES COMBINADOS -->
-            <div class="notif-group mb-4">
-              <label class="notif-label">PRÓXIMAS REUNIONES</label>
-              
+          <div class="sidebar-scroll-area">
+            <!-- REUNIONES -->
+            <div class="notif-section">
+              <label class="section-label">PRÓXIMAS REUNIONES</label>
               <div v-if="proximasFechas.length > 0">
-                <div class="notif-item" v-for="ev in proximasFechas" :key="ev.id">
-                  <div class="notif-date text-uppercase">
-                    {{ formatearFechaCorta(ev.fecha_evento) }}
+                <div class="event-card-modern" v-for="ev in proximasFechas" :key="ev.id">
+                  <div class="cal-box">
+                    <span class="day">{{ ev.fecha_evento.split('-')[2] }}</span>
+                    <span class="month text-danger">{{ obtenerMesCorta(ev.fecha_evento) }}</span>
                   </div>
-                  <div class="notif-content">
+                  <div class="event-info">
                     <strong :class="{'text-danger': ev.categoria === 'urgente'}">{{ ev.titulo }}</strong>
-                    <span class="text-muted small d-block">{{ ev.descripcion }}</span>
+                    <p class="text-truncate">{{ ev.descripcion || 'Lugar a confirmar' }}</p>
                   </div>
                 </div>
               </div>
-              <p v-else class="text-muted small ps-2">No hay eventos próximos.</p>
+              <p v-else class="empty-msg">Sin eventos próximos.</p>
             </div>
 
             <!-- CUMPLEAÑOS -->
-            <div class="notif-group mb-4">
-              <label class="notif-label">CUMPLEAÑOS 🎂</label>
-              <div v-if="avisos.cumpleanos && avisos.cumpleanos.length > 0">
-                <div v-for="cumple in avisos.cumpleanos" :key="cumple.nombre" class="d-flex align-items-center mb-3">
-                  <div :class="['badge-cumple me-3', esHoy(cumple.fecha_nacimiento) ? 'hoy' : '']">
-                    {{ cumple.fecha_nacimiento }}
+            <div class="notif-section">
+              <label class="section-label">CUMPLEAÑOS 🎂</label>
+              <div v-if="avisos.cumpleanos && avisos.cumpleanos.length > 0" class="cumple-container-mobile">
+                <div v-for="cumple in avisos.cumpleanos" :key="cumple.nombre" class="event-card-modern">
+                  <div :class="['cal-box', esHoy(cumple.fecha_nacimiento) ? 'today-bg' : '']">
+                    <span class="day">{{ cumple.fecha_nacimiento.split('/')[0] }}</span>
+                    <span :class="['month', esHoy(cumple.fecha_nacimiento) ? 'text-white' : 'text-danger']">
+                      {{ obtenerMesNombre(cumple.fecha_nacimiento.split('/')[1]) }}
+                    </span>
                   </div>
-                  <div class="notif-content">
-                    <strong class="small">{{ cumple.nombre }} {{ cumple.apellido }}</strong>
-                    <span v-if="esHoy(cumple.fecha_nacimiento)" class="badge bg-danger extra-mini animate__animated animate__pulse animate__infinite">¡HOY!</span>
+                  <div class="event-info">
+                    <strong class="mb-0">{{ cumple.nombre }} {{ cumple.apellido }}</strong>
+                    <span v-if="esHoy(cumple.fecha_nacimiento)" class="badge-hoy">CUMPLEAÑOS HOY</span>
                   </div>
                 </div>
               </div>
-              <p v-else class="text-muted small ps-2">Sin cumpleaños cercanos.</p>
             </div>
 
             <!-- RECORDATORIOS -->
-            <div class="notif-group">
-              <label class="notif-label">RECORDATORIOS</label>
+            <div class="notif-section border-0">
+              <label class="section-label">RECORDATORIOS</label>
               <div v-if="avisos.recordatorio && avisos.recordatorio.length > 0">
-                <div v-for="rec in avisos.recordatorio" :key="rec.id" class="alert alert-warning py-2 px-3 border-0 rounded-4 mb-2 d-flex align-items-center">
-                  <i class="bi bi-shield-check me-2 fs-5 opacity-75"></i>
-                  <!-- Usamos descripcion porque es el campo que se guarda en eventos -->
-                  <span class="extra-small lh-sm" v-html="rec.descripcion"></span>
+                <div v-for="rec in avisos.recordatorio" :key="rec.id" class="reminder-pill">
+                  <i class="bi bi-info-circle-fill me-2"></i>
+                  <span v-html="rec.descripcion"></span>
                 </div>
               </div>
-              <p v-else class="text-muted small ps-2">No hay recordatorios activos.</p>
             </div>
-
           </div>
         </aside>
       </div>
@@ -108,11 +106,9 @@ import { useHead } from '@vueuse/head';
 import { api } from '@/api/api';
 import { auth } from '@/api/auth';
 
-useHead({
-  title: 'Panel de Inicio | AAAB',
-  meta: [{ name: 'description', content: 'Panel de control para árbitros AAAB.' }],
-})
+useHead({ title: 'Panel de Inicio | AAAB' })
 
+// ... (menuItems y menuItemsFiltrados iguales a los que tenías)
 const menuItems = [
   { to: '/panel-arbitro/datos', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Ver legajo y seguridad.' },
   { to: '/panel-arbitro/disponibilidad', title: 'Disponibilidad', icon: 'bi bi-clock-history', desc: 'Modificá tus horarios.' },
@@ -120,74 +116,42 @@ const menuItems = [
   { to: '/panel-arbitro/credencial', title: 'Credencial Digital', icon: 'bi bi-person-badge', desc: 'Carnet oficial 2026.' },
   { to: '/panel-arbitro/sanciones', title: 'Tribunal de Ética', icon: 'bi bi-shield-exclamation', desc: 'Consultá tus sanciones.' },
   { to: '/panel-arbitro/rendimiento', title: 'Mi Rendimiento', icon: 'bi bi-graph-up-arrow', desc: 'Estadísticas y partidos.' },
-  
   { to: '/panel-arbitro/aportes', title: 'Mis Aportes', icon: 'bi bi-cash-coin', desc: 'Consultá el estado de tus aportes.' },
   { href: 'https://refflix.com.ar', title: 'Ref-Flix', icon: 'bi bi-cast', desc: 'Plataforma de videos' },
-  { 
-    to: '/panel-arbitro/observaciones', 
-    title: 'Observaciones', 
-    icon: 'bi bi-eye', 
-    desc: 'Módulo para cargar y visualizar observaciones',
-    rolesPermitidos: [2,4]
-  },
+  { to: '/panel-arbitro/observaciones', title: 'Observaciones', icon: 'bi bi-eye', desc: 'Cargar y visualizar observaciones', rolesPermitidos: [2,4] },
 ];
 
 const menuItemsFiltrados = computed(() => {
   const sesion = auth.getUser();
-  
+  if (!sesion) return [];
   let itemsDinamicos = [...menuItems]; 
-
-  if ([1,2].includes(sesion.id)){
-    itemsDinamicos.push({ to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Realizá pedidos de indumentaria.' });
-  }
-
-  return itemsDinamicos.filter((item) => {
-    return !item.rolesPermitidos || item.rolesPermitidos.includes(sesion.rol);
-  });
+  if ([1,2].includes(sesion.id)) itemsDinamicos.push({ to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Pedidos de indumentaria.' });
+  return itemsDinamicos.filter((item) => !item.rolesPermitidos || item.rolesPermitidos.includes(sesion.rol));
 });
 
-// --- LÓGICA DE NOTIFICACIONES ---
-// Objeto reactivo mapeado exactamente como te lo devuelve el backend
 const avisos = ref({ reunion: [], urgente: [], cumpleanos: [], recordatorio: [] });
 const cargando = ref(true);
 
-// Propiedad computada para fusionar y ordenar las reuniones y los urgentes
 const proximasFechas = computed(() => {
-  const reuniones = avisos.value.reunion || [];
-  const urgentes = avisos.value.urgente || [];
-  
-  // Unimos los dos arrays
-  const combinados = [...reuniones, ...urgentes];
-  
-  // Opcional y recomendado: los ordenamos por fecha para que tengan sentido visual
+  const combinados = [...(avisos.value.reunion || []), ...(avisos.value.urgente || [])];
   return combinados.sort((a, b) => new Date(a.fecha_evento) - new Date(b.fecha_evento));
 });
 
 const cargarAvisos = async () => {
-  const sesion = auth.getUser();
-  const idReal = sesion?.arbitro?.id || sesion?.id;
-
   try {
-    const res = await api.get({
-      entity: 'eventos',
-      action: 'obtenerDashboardAvisos',
-    });
-    
-    if (res.ok) {
-      avisos.value = res.payload;
-    }
-  } catch (e) {
-    console.error("Falla de conexión con eventos.php", e);
-  } finally {
-    cargando.value = false;
-  }
+    const res = await api.get({ entity: 'eventos', action: 'obtenerDashboardAvisos' });
+    if (res.ok) avisos.value = res.payload;
+  } catch (e) { console.error(e); } finally { cargando.value = false; }
 };
 
-const formatearFechaCorta = (f) => {
-  const date = new Date(f + 'T00:00:00'); // Forzamos hora local
-  const dia = date.getDate();
-  const mes = date.toLocaleString('es-AR', { month: 'short' }).replace('.', '');
-  return `${dia} ${mes}`;
+const obtenerMesNombre = (n) => {
+  const meses = ['', 'ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+  return meses[parseInt(n)];
+};
+
+const obtenerMesCorta = (f) => {
+  const date = new Date(f + 'T00:00:00');
+  return date.toLocaleString('es-AR', { month: 'short' }).replace('.', '').toUpperCase();
 };
 
 const esHoy = (diaMes) => {
@@ -199,38 +163,123 @@ onMounted(cargarAvisos);
 </script>
 
 <style scoped>
-.menu-card { background: #ffffff; border-radius: 20px; padding: 35px 15px; text-align: center; transition: all 0.3s ease; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid #f1f5f9; cursor: pointer; }
-.icon-circle { width: 75px; height: 75px; background: #fff5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; transition: all 0.3s ease; }
-.menu-card i { font-size: 2.2rem; }
-.menu-card:hover { transform: translateY(-8px); box-shadow: 0 12px 25px rgba(0,0,0,0.2) !important; border-bottom: 5px solid #dc2626; }
-.menu-card:hover .icon-circle { background: #dc2626; }
-.menu-card:hover i { color: white !important; transform: scale(1.1); }
-
-/* SIDEBAR STYLES */
-.sidebar-notificaciones { background: white; border-radius: 25px; overflow: hidden; height: 100%; min-height: 500px; }
-.sidebar-header { background: #f8fafc; padding: 20px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; letter-spacing: 1px; }
-.notif-label { font-size: 0.7rem; font-weight: 800; color: #000000; margin-bottom: 15px; display: block; letter-spacing: 0.5px; text-transform: uppercase; }
-.notif-item { 
-  display: flex; 
-  align-items: center; 
-  gap: 15px; 
-  margin-bottom: 15px; 
-  padding-bottom: 15px; 
-  border-bottom: 1px solid #f8fafc; 
+/* --- ESTILO DE TARJETAS (BENTO) --- */
+.modern-menu-card {
+  background: white;
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.notif-date { background: #fff5f5; color: #dc2626; font-weight: 800; font-size: 0.75rem; padding: 8px; border-radius: 12px; text-align: center; min-width: 55px; line-height: 1.2; }
-.notif-content strong { display: block; font-size: 0.85rem; color: #334155; }
-
-.badge-cumple { 
-  background: #f1f5f9; color: #475569; font-weight: 700; font-size: 0.75rem; 
-  padding: 5px 10px; border-radius: 10px; min-width: 50px; text-align: center;
+.icon-box {
+  width: 48px; height: 48px; min-width: 48px;
+  background: #f8fafc; color: #dc2626;
+  border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
+  transition: 0.3s;
 }
-.badge-cumple.hoy { background: #dc2626; color: white; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3); }
+.card-text h5 { font-size: 0.95rem; color: #0f172a; margin-bottom: 2px; }
+.extra-small { font-size: 0.75rem; color: #64748b; }
+.card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; }
 
-.extra-small { font-size: 0.75rem; font-weight: 600; }
-.extra-mini { font-size: 0.6rem; padding: 2px 5px; }
+.modern-menu-card:hover { 
+  transform: translateY(-4px); 
+  border-color: #fca5a5; 
+  box-shadow: 0 10px 20px rgba(0,0,0,0.04) !important;
+}
+.modern-menu-card:hover .icon-box { background: #dc2626; color: white; transform: rotate(-5deg); }
+
+/* --- SIDEBAR PROFESIONAL --- */
+.sidebar-professional {
+  background: #ffffff;
+  border-radius: 22px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-header {
+  padding: 18px 24px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 22px 22px 0 0;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.bell-glow {
+  color: #dc2626;
+  font-size: 1.2rem;
+  animation: pulse-red 2s infinite;
+}
+.fw-black { font-weight: 900; font-size: 0.8rem; color: #1e293b; }
+.ls-1 { letter-spacing: 1px; }
+
+/* SECCIONES SIDEBAR */
+.notif-section { padding: 20px; border-bottom: 1px solid #f1f5f9; }
+.section-label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; display: block; margin-bottom: 12px; }
+
+/* CALBOX UNIFICADO */
+.cal-box {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: #f1f5f9; border-radius: 10px; min-width: 45px; height: 45px;
+}
+.cal-box .day { font-weight: 900; font-size: 1.1rem; line-height: 1; color: #1e293b; }
+.cal-box .month { font-size: 0.6rem; font-weight: 800; }
+.today-bg { background: #dc2626 !important; color: white !important; }
+.today-bg .day { color: white !important; }
+
+/* EVENT CARDS */
+.event-card-modern {
+  display: flex; gap: 12px; margin-bottom: 10px;
+  background: #ffffff; padding: 10px; border-radius: 14px; border: 1px solid #f8fafc;
+  transition: 0.2s;
+}
+.event-info { flex: 1; min-width: 0; }
+.event-info strong { font-size: 0.8rem; color: #1e293b; display: block; }
+.event-info p { font-size: 0.72rem; color: #64748b; margin: 0; }
+.badge-hoy { color: #dc2626; font-size: 0.6rem; font-weight: 800; }
+
+.reminder-pill { background: #fffbeb; color: #92400e; padding: 10px; border-radius: 12px; font-size: 0.72rem; border-left: 4px solid #f59e0b; margin-bottom: 8px; }
+
+/* --- RESPONSIVE (MAGIA UX) --- */
+@media (min-width: 992px) {
+  .sidebar-professional {
+    position: sticky;
+    top: 20px;
+    height: calc(100vh - 40px);
+  }
+  .sidebar-scroll-area {
+    overflow-y: auto;
+    flex: 1;
+  }
+}
 
 @media (max-width: 991px) {
-  .sidebar-notificaciones { min-height: auto; margin-bottom: 20px; }
+  .sidebar-professional {
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .sidebar-scroll-area {
+    display: flex;
+    overflow-x: auto;
+    padding: 10px;
+    gap: 15px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .notif-section {
+    min-width: 280px;
+    padding: 10px;
+    border-bottom: 0;
+    border-right: 1px solid #f1f5f9;
+  }
+  .sidebar-header {
+    padding: 12px 20px;
+  }
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(1); text-shadow: 0 0 0 rgba(220, 38, 38, 0); }
+  50% { transform: scale(1.1); text-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
+  100% { transform: scale(1); text-shadow: 0 0 0 rgba(220, 38, 38, 0); }
 }
 </style>

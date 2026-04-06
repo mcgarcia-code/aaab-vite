@@ -15,7 +15,7 @@
           </div>
           <div class="overflow-hidden">
             <h2 class="text-white fw-bold m-0 text-capitalize text-truncate">
-              Hola, {{ admin.nombre || 'Administrador' }}
+              Hola, {{ admin.nombre || 'Administrador' }}👋
             </h2>
             <span class="badge bg-danger mt-1">Nivel: {{ admin.rol }}</span>
           </div>
