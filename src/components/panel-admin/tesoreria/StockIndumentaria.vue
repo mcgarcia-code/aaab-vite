@@ -53,6 +53,7 @@
       </div>
     </div>
 
+    <Teleport to="body">
     <div v-if="mostrarModal" class="modal-overlay d-flex align-items-center justify-content-center px-3">
       <div class="modal-content animate__animated animate__zoomIn p-4 shadow-lg border-0">
         <div class="text-center mb-3">
@@ -120,6 +121,7 @@
         </div>
       </div>
     </div>
+    </Teleport>
   </div>
 </template>
 

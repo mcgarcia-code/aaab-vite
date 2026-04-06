@@ -95,6 +95,7 @@
       <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
     </div>
 
+    <Teleport to="body">
     <div v-if="mostrarModalNuevo" class="modal-overlay" @click.self="mostrarModalNuevo = false">
       <div class="modal-content-custom animate__animated animate__zoomIn">
         <h4 class="fw-bold mb-4">Registrar Licencia</h4>
@@ -121,6 +122,7 @@
         </div>
       </div>
     </div>
+    </Teleport>
   </div>
 </template>
 

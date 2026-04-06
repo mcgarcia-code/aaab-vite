@@ -11,6 +11,17 @@
         </div>
 
         <div class="header-actions">
+          <!-- NUEVO BOTÓN DE SOLICITUDES -->
+          
+          <button @click="abrirModalSolicitudes" class="btn-action btn-blue position-relative">
+            <span class="material-icons">notifications</span> Solicitudes
+            <!-- Badge contador -->
+            <span v-if="solicitudesPendientes.length > 0" class="badge-notif">
+              {{ solicitudesPendientes.length }}
+            </span>
+          </button>
+      
+
           <button @click="limpiarFiltros" class="btn-action btn-clear">
             <span class="material-icons">filter_alt_off</span> Filtros
           </button>
@@ -186,6 +197,7 @@
     </div>
 
     <!-- MODAL EXCEL -->
+    <Teleport to="body">
     <div v-if="mostrarModalExcel" class="modal-overlay-exito animate__animated animate__fadeIn">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 750px;">
         <div class="icon-circle-exito bg-success-light">
@@ -207,8 +219,10 @@
         </div>
       </div>
     </div>
+    </Teleport>
 
     <!-- MODAL ALTA / EDICIÓN -->
+    <Teleport to="body">
     <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 900px; width: 95%;">
 
@@ -347,6 +361,68 @@
 
       </div>
     </div>
+    </Teleport>
+
+    <!-- MODAL SOLICITUDES / HISTORIAL -->
+    <Teleport to="body">
+    <div v-if="mostrarModalSolicitudes" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
+      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 800px; width: 95%; text-align: left;">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+          <h4 class="fw-bold m-0 d-flex align-items-center gap-2">
+            <span class="material-icons text-primary">history</span> 
+            Solicitudes de Cambios
+          </h4>
+          <button @click="mostrarModalSolicitudes = false" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;">
+            <span class="material-icons" style="font-size: 18px; line-height: 1;">close</span>
+          </button>
+        </div>
+
+        <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+          <div v-if="cargandoSolicitudes" class="text-center py-4">
+            <span class="spinner-border text-primary"></span>
+            <p class="text-muted mt-2 small">Cargando solicitudes...</p>
+          </div>
+          
+          <div v-else-if="solicitudes.length === 0" class="text-center py-4 text-muted">
+            <span class="material-icons" style="font-size: 40px; color: #cbd5e1;">inbox</span>
+            <p class="mt-2">No hay solicitudes recientes.</p>
+          </div>
+
+          <div v-else v-for="sol in solicitudes" :key="sol.id" class="solicitud-card shadow-sm mb-3" :class="{'bg-light': sol.estado === 'aprobado'}">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
+                <strong class="d-block text-dark mb-1">{{ sol.arbitro_nombre }}</strong>
+                <p class="m-0 small text-secondary" style="white-space: pre-line;">{{ sol.mensaje }}</p>
+              </div>
+              <div class="d-flex flex-column align-items-end gap-2">
+                <span class="badge" :class="sol.estado === 'enviado' ? 'bg-warning text-dark' : 'bg-success'">
+                  {{ sol.estado.toUpperCase() }}
+                </span>
+                
+                <div class="d-flex gap-1" v-if="sol.estado === 'enviado'">
+                  <!-- Botón que abre el modal de edición del árbitro -->
+                  <button @click="abrirEdicionDesdeSolicitud(sol.id_arbitro)" 
+                          class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 fw-bold" 
+                          style="font-size: 0.7rem; padding: 4px 8px;"
+                          title="Abrir legajo para editar">
+                    <span class="material-icons" style="font-size: 14px;">edit</span> LEGAJO
+                  </button>
+                  
+                  <!-- Botón para aprobar -->
+                  <button @click="aprobarSolicitud(sol)" 
+                          class="btn btn-sm btn-dark fw-bold" 
+                          style="font-size: 0.7rem; padding: 4px 8px;">
+                    APROBAR
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </Teleport>
 
   </div>
 </template>
@@ -378,6 +454,11 @@ const mostrarModal = ref(false)
 const modoModal = ref('nuevo')
 const movilidadArray = ref([])
 
+// --- VARIABLES PARA SOLICITUDES ---
+const solicitudes = ref([])
+const mostrarModalSolicitudes = ref(false)
+const cargandoSolicitudes = ref(false)
+
 const formModalVacio = () => ({
   id: null,
   apellido: '', nombre: '', dni: '', email: '', password: '',
@@ -393,6 +474,64 @@ const formModalVacio = () => ({
 })
 
 const formModal = ref(formModalVacio())
+
+
+const solicitudesPendientes = computed(() => 
+  solicitudes.value.filter(s => s.estado === 'enviado')
+)
+
+// --- FUNCIONES PARA SOLICITUDES ---
+const cargarSolicitudes = async () => {
+  cargandoSolicitudes.value = true
+  try {
+    // Recordá apuntar al endpoint de PHP correcto que traiga TODAS las solicitudes
+    const res = await api.get({ entity: 'historial', action: 'getTodasLasSolicitudes' })
+    if (res.payload) {
+      solicitudes.value = res.payload
+    }
+  } catch (error) {
+    console.error('Error cargando solicitudes', error)
+  } finally {
+    cargandoSolicitudes.value = false
+  }
+}
+
+const abrirModalSolicitudes = () => {
+  cargarSolicitudes()
+  mostrarModalSolicitudes.value = true
+}
+
+const aprobarSolicitud = async (solicitud) => {
+  try {
+    const res = await api.post({ 
+      entity: 'historial', 
+      action: 'cambiarEstadoSolicitud', 
+      payload: { id_historial: solicitud.id, nuevo_estado: 'aprobado' } 
+    })
+    
+    if (res.ok || res.success) {
+      notificar({ titulo: 'Aprobado', mensaje: 'Se aprobó la solicitud de cambios.', tipo: 'success' })
+      solicitud.estado = 'aprobado'
+      await cargarDatos() 
+    } else {
+      notificar({ titulo: 'Error', mensaje: 'No se pudo aprobar.', tipo: 'danger' })
+    }
+  } catch{
+    notificar({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
+  }
+}
+
+const abrirEdicionDesdeSolicitud = (id_arbitro) => {
+  const arbitroEncontrado = arbitros.value.find(a => a.id == id_arbitro)
+  
+  if (arbitroEncontrado) {
+    mostrarModalSolicitudes.value = false
+    editarArbitro(arbitroEncontrado)
+  } else {
+    notificar({ titulo: 'No encontrado', mensaje: 'No se encontraron los datos de este árbitro en la lista actual.', tipo: 'danger' })
+  }
+}
+// ----------------------------------
 
 const crearNuevo = () => {
   formModal.value = formModalVacio()
@@ -555,7 +694,6 @@ const localidadesFiltradas = computed(() => {
 })
 
 const arbitrosFiltrados = computed(() => {
-  // 1. Primero filtramos los datos como ya lo tenías
   const filtrados = arbitros.value.filter(a =>
     Object.keys(filtros).every(key => {
       if (!filtros[key]) return true
@@ -567,15 +705,9 @@ const arbitrosFiltrados = computed(() => {
     })
   )
 
-  // 2. Luego ordenamos el resultado alfabéticamente
   return filtrados.sort((a, b) => {
-    // Comparamos los apellidos en español
     const comparacionApellido = String(a.apellido || '').localeCompare(String(b.apellido || ''), 'es')
-    
-    // Si los apellidos son distintos, ordenamos por apellido
     if (comparacionApellido !== 0) return comparacionApellido
-    
-    // Si los apellidos son iguales, desempatamos ordenando por nombre
     return String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es')
   })
 })
@@ -595,7 +727,11 @@ watch([() => filtros.provincia, localidadesFiltradas], () => {
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal })
 
-onMounted(() => { cargarDatos(); obtenerProvinciasLocalidades() })
+onMounted(() => { 
+  cargarDatos()
+  obtenerProvinciasLocalidades()
+  cargarSolicitudes() // Inicializamos las solicitudes
+})
 </script>
 
 <style scoped>
@@ -603,12 +739,12 @@ onMounted(() => { cargarDatos(); obtenerProvinciasLocalidades() })
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
-  min-height: 100vh; /* Cambiamos height fijo por min-height */
-  height: auto;      /* Permitimos que crezca hacia abajo en móvil */
+  min-height: 100vh; 
+  height: auto;      
   margin-left: 50%;
   transform: translateX(-50%);
   padding: 20px;
-  padding-bottom: 80px; /* Espacio extra para que no toque el footer */
+  padding-bottom: 80px; 
 }
 
 .admin-panel { 
@@ -619,7 +755,7 @@ onMounted(() => { cargarDatos(); obtenerProvinciasLocalidades() })
   color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
-  height: 100%; /* Asegura que el fondo oscuro cubra todo el alto */
+  height: 100%; 
 }
 
 .header-section { 
@@ -645,7 +781,6 @@ onMounted(() => { cargarDatos(); obtenerProvinciasLocalidades() })
 .header-actions { display: flex; gap: 8px; }
 .btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
 .btn-clear { background: #e2e8f0; color: #000; }
-.btn-blue { background: #3b82f6; color: white; }
 .btn-clear-checks { background: #fee2e2; color: #ef4444; } 
 .btn-export { background: #10b981; color: white; }
 
@@ -732,7 +867,6 @@ thead td.sticky-col {
 th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000000; text-transform: uppercase; font-weight: 800; }
 .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
 
-/* --- AQUI MODIFICAMOS EL ESTADO INACTIVO PARA QUE SEA ROJO OSCURO --- */
 .fila-inactiva td, .fila-inactiva .sticky-col { 
   background-color: #ef4444 !important; 
   font-weight: bold; 
@@ -747,7 +881,7 @@ th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; c
 .status-wrapper { display: flex; align-items: center; gap: 5px; justify-content: center; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-active { background: #10b981; }
-.dot-inactive { background: #fff; border: 1px solid #fff; } /* Cambiado a blanco para contraste */
+.dot-inactive { background: #fff; border: 1px solid #fff; }
 .select-compact { border: 1px solid transparent; background: transparent; cursor: pointer; font-size: 0.8rem; width: 100%; padding: 2px; }
 .select-compact:hover { border-color: #cbd5e1; background: #f8fafc; }
 select.select-compact { color: #1e293b; text-align-last: center; }
@@ -827,7 +961,7 @@ select.select-compact { color: #1e293b; text-align-last: center; }
     cursor: pointer;
   }
   .card-arbitro.fila-inactiva {
-    background-color: #ef4444 !important; /* Rojo modificado a pedido */
+    background-color: #ef4444 !important;
     border-color: #dc2626;
   }
   .card-arbitro.fila-inactiva .card-name,
@@ -839,13 +973,14 @@ select.select-compact { color: #1e293b; text-align-last: center; }
   .card-arbitro.fila-inactiva .btn-editar-mobile {
     background: #fff;
     border-color: #fff;
-    color: #ef4444; /* Letra roja sobre boton blanco */
+    color: #ef4444; 
   }
 }
 
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .header-actions { width: 100%; justify-content: flex-end; flex-wrap: nowrap; gap: 10px; }
+  /* Cambiamos flex-wrap a 'wrap' para que bajen si no entran */
+  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
 }
 
 @media (max-width: 600px) {
@@ -853,6 +988,14 @@ select.select-compact { color: #1e293b; text-align-last: center; }
   .header-section { padding: 10px; }
   .title { font-size: 1rem; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
+  
+  /* Hacemos que los botones ocupen el 50% en celular (grilla 2x2) */
+  .header-actions { justify-content: space-between; gap: 8px; }
+  .btn-action { 
+    flex: 1 1 calc(50% - 8px); /* Ocupan la mitad menos el gap */
+    justify-content: center; 
+    padding: 10px; /* Un poco más grandes para tocarlos fácil */
+  }
 }
 
 /* ─── CLASES NUEVAS PARA SOLO LECTURA Y MODAL ─── */
@@ -894,9 +1037,44 @@ select.select-compact { color: #1e293b; text-align-last: center; }
 .checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; cursor: pointer; color: #000; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
 
-/* RECALCULO DE OFFSET PARA COLUMNA ACCIONES */
 .col-id { left: 0; width: 50px; text-align: center; }
 .col-acciones { left: 50px; width: 80px; }
 .col-apellido { left: 130px; width: 140px; }
 .col-nombre { left: 270px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
+
+/* --- ESTILOS AGREGADOS PARA SOLICITUDES --- */
+.btn-blue { background: #3b82f6; color: white; }
+
+.badge-notif {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: #ef4444;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+.solicitud-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  padding: 12px 15px;
+  transition: all 0.2s;
+}
+
+.solicitud-card.bg-light {
+  border-left: 4px solid #10b981; 
+  opacity: 0.8;
+}
+
+.text-xs { font-size: 0.75rem; }
 </style>
