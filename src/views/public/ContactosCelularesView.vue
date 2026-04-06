@@ -47,7 +47,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="a in arbitrosFiltrados" :key="a.id" :class="{'fila-ina': a.es_activo == 0}">
+          <!-- USAMOS arbitrosPaginados EN LUGAR DE arbitrosFiltrados -->
+          <tr v-for="a in arbitrosPaginados" :key="a.id" :class="{'fila-ina': a.es_activo == 0}">
             <td class="font-bold">{{ a.apellido }}</td>
             <td class="font-bold">{{ a.nombre }}</td>
             <td class="text-center">{{ a.grupo || '-' }}</td>
@@ -69,7 +70,8 @@
     </div>
 
     <div class="mobile-only">
-      <div v-for="a in arbitrosFiltrados" :key="'mob-'+a.id" class="card-contacto" :class="{'fila-ina': a.es_activo == 0}">
+      <!-- USAMOS arbitrosPaginados EN LUGAR DE arbitrosFiltrados -->
+      <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card-contacto" :class="{'fila-ina': a.es_activo == 0}">
         <div class="card-main">
           <div class="card-info">
             <div class="card-name">{{ a.apellido }}, {{ a.nombre }}</div>
@@ -84,39 +86,30 @@
         </div>
       </div>
     </div>
+
+    <!-- CONTROLES DE PAGINACIÓN -->
+    <div class="paginacion" v-if="totalPaginas > 1">
+      <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+      <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+      <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive } from 'vue';
+import { ref, onMounted, computed, reactive, watch } from 'vue'; // Se agregó watch
 import axios from 'axios';
 import { useHead } from '@vueuse/head'
 
-// Título y descripción específicos para la página de contactos celulares de árbitros AAAB
 useHead({
   title: 'Contactos Celulares | AAAB',
   meta: [
-    {
-      name: 'description',
-      content: 'Lista de contactos celulares de árbitros AAAB.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Contactos Celulares | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Lista de contactos celulares de árbitros AAAB.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { name: 'description', content: 'Lista de contactos celulares de árbitros AAAB.' },
+    { property: 'og:title', content: 'Contactos Celulares | AAAB' },
+    { property: 'og:description', content: 'Lista de contactos celulares de árbitros AAAB.' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
+    { property: 'og:type', content: 'website' }
   ],
 })
 
@@ -124,13 +117,13 @@ const arbitros = ref([]);
 const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
 const mostrarFiltrosMobile = ref(false);
 
-// Filtros específicos
 const filtros = reactive({
-  apellido: '', 
-  nombre: '', 
-  grupo: '', 
-  subgrupo: ''
+  apellido: '', nombre: '', grupo: '', subgrupo: ''
 });
+
+// --- VARIABLES DE PAGINACIÓN ---
+const paginaActual = ref(1);
+const registrosPorPagina = 10;
 
 const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
 
@@ -143,7 +136,6 @@ const cargarDatos = async () => {
   }
 };
 
-// --- LÓGICA WHATSAPP ---
 const abrirWhatsApp = (numero) => {
   if (!numero) return;
   const limpio = String(numero).replace(/\D/g, '');
@@ -151,7 +143,6 @@ const abrirWhatsApp = (numero) => {
   window.open(`https://wa.me/${prefijo}`, '_blank');
 };
 
-// --- LÓGICA COPIAR ---
 const copiarAlPortapapeles = async (numero) => {
   if (!numero) return;
   try {
@@ -163,14 +154,10 @@ const copiarAlPortapapeles = async (numero) => {
 };
 
 const normalizarTexto = (valor) => {
-  return String(valor || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
+  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 };
 
 const arbitrosFiltrados = computed(() => {
-  // 1. Primero filtramos el array original
   const filtrados = arbitros.value.filter(a => {
     return Object.keys(filtros).every(key => {
       if (!filtros[key]) return true;
@@ -178,27 +165,36 @@ const arbitrosFiltrados = computed(() => {
     });
   });
 
-  // 2. Luego ordenamos el resultado alfabéticamente
   return filtrados.sort((a, b) => {
-    // Primero comparamos por apellido
     const compApellido = (a.apellido || '').localeCompare(b.apellido || '');
-    
-    // Si los apellidos son iguales, comparamos por nombre
     if (compApellido === 0) {
       return (a.nombre || '').localeCompare(b.nombre || '');
     }
-    
     return compApellido;
   });
+});
+
+// --- CÁLCULOS DE PAGINACIÓN ---
+const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1);
+
+const arbitrosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina;
+  return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
+});
+
+// Reseteamos la paginación al filtrar
+watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
+
+// Ajuste seguro de páginas
+watch(totalPaginas, (nuevoTotal) => { 
+  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
 });
 
 onMounted(cargarDatos);
 </script>
 
-
-
 <style scoped>
-.admin-panel { padding: 15px; background: #f8fafc; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; }
+.admin-panel { padding: 15px; background: #f8fafc; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; min-height: 100vh;}
 .header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #25d366; align-items: center; }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #1e293b; }
 .counter { font-size: 0.85rem; color: #64748b; }
@@ -209,11 +205,11 @@ onMounted(cargarDatos);
 .btn-filter-mobile { background: #3b82f6; color: white; }
 
 /* TABLA DESKTOP */
-.table-container { background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
+.table-container { background: white; border-radius: 8px; overflow: auto; border: 1px solid #e2e8f0; max-height: 75vh; }
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #000000; }
+th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #000000; position: sticky; top: 0; z-index: 10; }
 td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-.filter-row td { background: #f8fafc; padding: 8px; }
+.filter-row td { background: #f8fafc; padding: 8px; position: sticky; top: 45px; z-index: 10; border-bottom: 2px solid #cbd5e1;}
 .filter-input { width: 90%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
 .filter-input-min { width: 60px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; }
 
@@ -226,6 +222,29 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 .btn-copy:hover { background: #cbd5e1; color: #1e293b; }
 
 .no-phone { color: #94a3b8; font-size: 0.75rem; font-style: italic; }
+
+/* CLASES DE PAGINACIÓN */
+.paginacion {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 15px;
+}
+.btn-paginacion {
+  border: none;
+  background: #e2e8f0;
+  color: #1e293b;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-paginacion:hover:not(:disabled) { background: #cbd5e1; }
+.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
+.paginacion-texto { color: #1e293b; font-size: 0.85rem; font-weight: 600; }
 
 /* MOBILE CARDS */
 .mobile-filter-panel { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
@@ -243,10 +262,18 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 .btn-copy-mobile .material-icons { font-size: 16px; }
 
 /* ESTADOS */
-.fila-ina { opacity: 0.6; background-color: #f8fafc; }
 .font-bold { font-weight: 600; }
 .text-center { text-align: center; }
 .shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+
+/* ESTADO INACTIVO MODIFICADO */
+.fila-ina, .fila-ina td, .card-contacto.fila-ina { 
+  background-color: #fca5a5 !important; /* Rojo claro derivado de tu paleta */
+  opacity: 1 !important; 
+}
+.card-contacto.fila-ina .card-subtext {
+  color: #000000 !important;
+}
 
 .desktop-only { display: block; }
 .mobile-only { display: none; }

@@ -1,23 +1,28 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   
-  <div class="admin-panel">
-    <div class="header-section">
-      <div class="header-title-box">
+  <div class="admin-panel animate__animated animate__fadeIn">
+    
+    <!-- CABECERA UNIFICADA -->
+    <div class="header-section shadow-sm">
+      <div class="header-info">
         <h2 class="title">Instituciones y CUITs</h2>
-        <span class="counter">{{ filtrados.length }} encontradas</span>
+        <span class="counter">Total: {{ filtrados.length }} instituciones encontradas</span>
       </div>
+
       <div class="header-actions">
-        <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-filter-icon btn-blue mobile-only-flex">
+        <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex">
           <span class="material-icons">filter_alt</span>
         </button>
-        <button @click="limpiarFiltros" class="btn-filter-icon btn-gray">
+        <button @click="limpiarFiltros" class="btn-action btn-clear">
           <span class="material-icons">filter_alt_off</span>
+          <span class="btn-text desktop-only">Limpiar Filtros</span>
         </button>
       </div>
     </div>
 
-    <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only shadow">
+    <!-- PANEL MÓVIL -->
+    <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only shadow-sm">
       <div class="filter-container-mobile">
         <label class="filter-label">Filtrar por Club</label>
         <input v-model="filtros.club" placeholder="Nombre de la institución..." class="mobile-input">
@@ -25,6 +30,7 @@
       <button @click="mostrarFiltrosMobile = false" class="btn-close-filters">Ver Resultados</button>
     </div>
 
+    <!-- TABLA DESKTOP -->
     <div class="table-container shadow desktop-only">
       <table>
         <thead>
@@ -42,7 +48,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="i in filtrados" :key="i.id" class="row-hover">
+          <!-- USAMOS institucionesPaginadas EN LUGAR DE filtrados -->
+          <tr v-for="i in institucionesPaginadas" :key="i.id" class="row-hover">
             <td class="font-bold col-institucion">{{ i.club }}</td>
             <td>{{ i.cuit || '-' }}</td> 
             <td><small>{{ i.condicion || '-' }}</small></td>
@@ -76,8 +83,10 @@
       </table>
     </div>
 
+    <!-- VISTA MOBILE -->
     <div class="mobile-only">
-      <div v-for="i in filtrados" :key="'mob-'+i.id" class="card-contacto">
+      <!-- USAMOS institucionesPaginadas EN LUGAR DE filtrados -->
+      <div v-for="i in institucionesPaginadas" :key="'mob-'+i.id" class="card-contacto">
         <div class="card-main">
           <div class="card-info">
             <div class="card-name">{{ i.club }}</div>
@@ -112,39 +121,30 @@
         </div>
       </div>
     </div>
+
+    <!-- CONTROLES DE PAGINACIÓN -->
+    <div class="paginacion" v-if="totalPaginas > 1">
+      <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+      <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+      <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive } from 'vue';
+import { ref, onMounted, computed, reactive, watch } from 'vue'; 
 import { api } from '@/api/api'; 
 import { useHead } from '@vueuse/head'
 
-// Título y descripción específicos para la página de Instituciones y CUITs
 useHead({
   title: 'Instituciones y CUITs | AAAB',
   meta: [
-    {
-      name: 'description',
-      content: 'Accedé al listado de instituciones y CUITs para realizar la facturación.',
-    },
-    // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Instituciones y CUITs | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Accedé al listado de instituciones y CUITs para realizar la facturación.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { name: 'description', content: 'Accedé al listado de instituciones y CUITs para realizar la facturación.' },
+    { property: 'og:title', content: 'Instituciones y CUITs | AAAB' },
+    { property: 'og:description', content: 'Accedé al listado de instituciones y CUITs para realizar la facturación.' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
+    { property: 'og:type', content: 'website' }
   ],
 })
 
@@ -152,10 +152,12 @@ const instituciones = ref([]);
 const mostrarFiltrosMobile = ref(false);
 
 const filtros = reactive({
-  club: '', 
-  cuit: '', 
-  condicion: ''
+  club: '', cuit: '', condicion: ''
 });
+
+// --- VARIABLES DE PAGINACIÓN ---
+const paginaActual = ref(1);
+const registrosPorPagina = 10;
 
 const limpiarFiltros = () => {
   filtros.club = '';
@@ -170,7 +172,6 @@ const cargarDatos = async () => {
       action: 'getInstitucionesCuit',
       payload: {}
     });
-    // Se asume que el campo 'celular' ya viene en el payload del PHP
     instituciones.value = res.payload;
   } catch (err) { 
     console.error("Error al cargar instituciones:", err); 
@@ -189,34 +190,27 @@ const copiarAlPortapapeles = async (texto, etiqueta) => {
 
 const enviarFactura = (emailClub) => {
   if (!emailClub || emailClub === 'NULL' || emailClub.trim() === '') return;
-  
   const destinatario = emailClub.trim();
   const cc = "aaabfacturas@gmail.com";
   const subject = "Envío de Factura - Arbitraje AAAB";
   const body = "Estimados,\n\nAdjuntamos la factura correspondiente.\n\nSaludos cordiales.";
-  
   const mailtoLink = `mailto:${destinatario}?cc=${cc}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   window.location.href = mailtoLink;
 };
 
-// --- LÓGICA WHATSAPP ---
 const enviarWhatsapp = (celular) => {
   if (!celular || celular === 'NULL' || celular.trim() === '') return;
   const numeroLimpio = String(celular).replace(/\D/g, '');
   const mensaje = encodeURIComponent("Hola, ¿Cómo estás? Me comunico por el envío de facturación de arbitraje de Handball.");
   const prefijo = numeroLimpio.startsWith('54') ? numeroLimpio : `54${numeroLimpio}`;
-   window.open(`https://wa.me/${prefijo}?text=${mensaje}`, '_blank');
+  window.open(`https://wa.me/${prefijo}?text=${mensaje}`, '_blank');
 };
 
 const normalizarTexto = (valor) => {
-  return String(valor || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
+  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 };
 
 const filtrados = computed(() => {
-  // 1. Primero filtramos según los inputs de búsqueda
   const listaFiltrada = instituciones.value.filter(i => {
     const matchClub = normalizarTexto(i.club).includes(normalizarTexto(filtros.club));
     const matchCuit = normalizarTexto(i.cuit).includes(normalizarTexto(filtros.cuit));
@@ -224,75 +218,198 @@ const filtrados = computed(() => {
     return matchClub && matchCuit && matchCondicion;
   });
 
-  // 2. Luego ordenamos el resultado alfabéticamente por el nombre del club
   return listaFiltrada.sort((a, b) => {
     return (a.club || '').localeCompare(b.club || '');
   });
 });
 
+// --- CÁLCULOS DE PAGINACIÓN ---
+const totalPaginas = computed(() => Math.ceil(filtrados.value.length / registrosPorPagina) || 1);
+
+const institucionesPaginadas = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina;
+  return filtrados.value.slice(inicio, inicio + registrosPorPagina);
+});
+
+// Reseteamos a la página 1 si el usuario escribe en un filtro
+watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
+
+// Si al borrar se reducen las páginas y quedamos fuera de rango, ajustamos.
+watch(totalPaginas, (nuevoTotal) => { 
+  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
+});
+
 onMounted(cargarDatos);
 </script>
 
-
 <style scoped>
-.admin-panel { padding: 15px; background: #f8fafc; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #334155; }
-.header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #3b82f6; align-items: center; }
-.title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #1e293b; }
-.counter { font-size: 0.85rem; color: #64748b; }
-
-.header-actions { display: flex; gap: 10px; }
-
-.btn-filter-icon {
-  border: none;
-  width: 42px;
-  height: 52px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: opacity 0.2s;
+/* 1. ESTILOS BASE ADAPTADOS A LA VISTA INTERNA */
+.admin-panel { 
+  width: 100%;
+  padding: 15px; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  color: #000;  
+  min-height: calc(100vh - 100px); /* Asume que hay un header superior general */
+  padding-bottom: 80px; /* Para que en mobile no toque el footer */
 }
 
-.btn-blue { background-color: #3b82f6; color: white; }
-.btn-gray { background-color: #e9ecef; color: #000; }
-.btn-filter-icon .material-icons { font-size: 24px; }
-.btn-filter-icon:hover { opacity: 0.8; }
+.header-section { 
+  background: white; 
+  padding: 15px; 
+  border-radius: 8px; 
+  display: flex; 
+  justify-content: space-between; 
+  margin-bottom: 15px; 
+  border-left: 5px solid #3b82f6; /* Color azul para esta vista */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+  align-items: center; 
+}
 
-/* Mobile Filters Panel (Igual al original) */
-.mobile-filter-panel { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
-.filter-container-mobile { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-.filter-label { font-size: 0.8rem; font-weight: bold; color: #64748b; }
-.mobile-input { padding: 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background-color: #fbfcfd; outline: none; }
-.btn-close-filters { width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; }
+.header-info {
+  display: flex;
+  flex-direction: column;
+}
 
-/* Table styling */
-.table-container { background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; table-layout: fixed; }
-th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #000000; }
-td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; }
+.title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
+.counter { font-size: 0.85rem; color: #000000; }
+
+.header-actions { display: flex; gap: 8px; }
+
+/* Botones idénticos a Gestión de Árbitros adaptados para esta vista */
+.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
+.btn-clear { background: #e2e8f0; color: #000; }
+.btn-blue { background: #3b82f6; color: white; }
+
+/* CLASES DE PAGINACIÓN */
+.paginacion {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.btn-paginacion {
+  border: none;
+  background: #f8fafc;
+  color: #0f172a;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-paginacion:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginacion-texto {
+  color: #0f172a;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* 2. ESTILOS PROPIOS DE LA TABLA "INSTITUCIONES" */
+.table-container { 
+  width: 100%;
+  overflow: auto; 
+  max-height: 75vh; 
+  background: white; 
+  border-radius: 8px; 
+  border: 1px solid #e2e8f0; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; }
+
+th { 
+  background: #f8fafc !important; 
+  padding: 10px; 
+  position: sticky; 
+  top: 0; 
+  z-index: 50; 
+  border-bottom: 2px solid #e2e8f0; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  font-size: 0.75rem; 
+  color: #000000; 
+  text-transform: uppercase; 
+  font-weight: 800; 
+  text-align: left;
+}
+
+td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; color: #000;}
 
 /* Columna institución achicada */
 .col-institucion { width: 25%; } 
 
 .row-hover:hover { background-color: #f1f5f9; transition: background 0.2s ease; }
-.filter-row td { background: #f8fafc; padding: 8px; }
-.filter-input { width: 90%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
 
-/* Desktop Actions */
+.filter-row td { 
+  position: sticky; 
+  top: 36px; /* Ajuste para el sticky del header */
+  z-index: 40; 
+  background: #f1F5F9 !important; 
+  padding: 4px; 
+  border-bottom: 2px solid #cbd5e1; 
+}
+.filter-input { width: 90%; padding: 4px; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 4px; }
+
+/* Botones de Acciones en Tabla */
 .actions-wrapper { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
 .btn-email { background: #3b82f6; color: white; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .btn-whatsapp { background: #25D366; color: white; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .btn-copy { background: #e2e8f0; color: #000000; border: none; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
 /* Mobile Cards View */
-.card-contacto { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
-.card-name { font-weight: bold; font-size: 1rem; color: #1e293b; }
-.card-subtext { font-size: 0.8rem; color: #64748b; margin: 8px 0 12px 0; }
-.card-actions-mobile { display: flex; flex-wrap: wrap; gap: 6px; }
-.btn-copy-mobile { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 8px 10px; border-radius: 6px; font-size: 0.7rem; display: flex; align-items: center; gap: 4px; color: #000000; font-weight: bold; }
+.mobile-filter-panel { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+.filter-container-mobile { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+.filter-label { font-size: 0.8rem; font-weight: bold; color: #64748b; }
+.mobile-input { padding: 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background-color: #fbfcfd; outline: none; }
+.btn-close-filters { width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; }
+
+/* --- TARJETAS MOBILE --- */
+.card-contacto { 
+  background: #ffffff; 
+  padding: 16px; 
+  border-radius: 12px; 
+  margin-bottom: 15px; 
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
+  position: relative; 
+  z-index: 20; 
+}
+
+.card-name { font-weight: 800; font-size: 1.1rem; color: #1e293b; }
+.card-subtext { font-size: 0.85rem; color: #64748b; margin: 8px 0 15px 0; line-height: 1.4; }
+
+/* --- GRILLA DE BOTONES MOBILE --- */
+.card-actions-mobile { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 10px; 
+}
+
+.btn-copy-mobile { 
+  background: #f8fafc; 
+  border: 1px solid #cbd5e1; 
+  padding: 10px 5px; 
+  border-radius: 8px; 
+  font-size: 0.75rem; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 6px; 
+  color: #0f172a; 
+  font-weight: 700; 
+  width: 100%;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
 .btn-send-mobile { background: #3b82f6; color: white; border: none; }
 .btn-whatsapp-mobile { background: #25D366; color: white; border: none; }
+.btn-whatsapp-mobile, .btn-send-mobile { box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
 
 .no-data { font-size: 0.75rem; color: #94a3b8; font-style: italic; }
 
@@ -301,9 +418,20 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; ov
 .mobile-only { display: none; }
 .mobile-only-flex { display: none; }
 
+@media (max-width: 1024px) {
+  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .header-actions { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+  .btn-action { flex: 1; justify-content: center; min-width: 45%; }
+}
+
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
   .mobile-only-flex { display: flex !important; }
+  .admin-panel { padding: 10px; padding-bottom: 60px; }
+}
+
+@media (min-width: 768px) {
+  .header-actions .btn-text { display: inline; }
 }
 </style>

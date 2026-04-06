@@ -106,6 +106,12 @@ const routes = [
         name: 'MisPedidos', 
         component: () => import('../components/panel-arbitro/indumentaria/MisPedidos.vue') 
       },
+              // --- FACTURACION ---
+      { 
+        path: 'facturacion', 
+        name: 'InstitucionesCuits', 
+        component: () => import('../components/panel-arbitro/facturacion/InstitucionesCuit.vue') 
+      },
     
     ]
   },
@@ -234,7 +240,7 @@ const routes = [
   {
     path: '/instituciones-cuit',
     name: 'InstitucionesCuit',
-    component: () => import('../views/public/InstitucionesCuit.vue')
+    component: () => import('../views/public/InstitucionesCuitPublic.vue')
   },
   {
     path: '/coordinadores-base',

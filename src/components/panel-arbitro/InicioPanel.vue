@@ -1,4 +1,3 @@
-
 <template>
   <div class="animate__animated animate__fadeIn container-fluid p-0">
     <div class="row g-3 g-md-4">
@@ -46,57 +45,76 @@
           <!-- CONTENEDOR CON SCROLL CONDICIONAL -->
           <div class="sidebar-scroll-container p-3">
             
-            <!-- REUNIONES -->
+            <!-- SECCIÓN: REUNIONES -->
             <div class="notif-section">
-              <label class="section-label">PRÓXIMAS REUNIONES</label>
-              <div v-if="proximasFechas.length > 0">
-                <div class="event-card-modern" v-for="ev in proximasFechas" :key="ev.id">
-                  <div class="cal-box">
-                    <span class="day">{{ ev.fecha_evento.split('-')[2] }}</span>
-                    <span class="month text-danger">{{ obtenerMesCorta(ev.fecha_evento) }}</span>
-                  </div>
-                  <div class="event-info">
-                    <strong :class="{'text-danger': ev.categoria === 'urgente'}">{{ ev.titulo }}</strong>
-                    <p class="mb-0">{{ ev.descripcion || 'Lugar a confirmar' }}</p>
-                  </div>
-                </div>
-              </div>
-              <p v-else class="empty-msg">No hay eventos próximos.</p>
-            </div>
-
-            <!-- CUMPLEAÑOS -->
-            <div class="notif-section">
-              <label class="section-label">CUMPLEAÑOS 🎂</label>
-              <div v-if="avisos.cumpleanos && avisos.cumpleanos.length > 0">
-                <div v-for="cumple in avisos.cumpleanos" :key="cumple.nombre" class="event-card-modern">
-                  <div :class="['cal-box', esHoy(cumple.fecha_nacimiento) ? 'today-bg' : '']">
-                    <span class="day">{{ cumple.fecha_nacimiento.split('/')[0] }}</span>
-                    <span :class="['month', esHoy(cumple.fecha_nacimiento) ? 'text-white' : 'text-danger']">
-                      {{ obtenerMesNombre(cumple.fecha_nacimiento.split('/')[1]) }}
-                    </span>
-                  </div>
-                  <div class="event-info d-flex align-items-center">
-                    <div>
-                      <strong class="mb-0">{{ cumple.nombre }} {{ cumple.apellido }}</strong>
-                      <span v-if="esHoy(cumple.fecha_nacimiento)" class="badge-hoy">¡ES HOY!</span>
+              <label class="section-label" @click="toggleSeccion('reuniones')">
+                <span>PRÓXIMAS REUNIONES</span>
+                <i :class="['bi', seccionesAbiertas.reuniones ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
+              </label>
+              
+              <div v-show="seccionesAbiertas.reuniones" class="collapse-content animate__animated animate__fadeIn">
+                <div v-if="proximasFechas.length > 0">
+                  <div class="event-card-modern" v-for="ev in proximasFechas" :key="ev.id">
+                    <div class="cal-box">
+                      <span class="day">{{ ev.fecha_evento.split('-')[2] }}</span>
+                      <span class="month text-danger">{{ obtenerMesCorta(ev.fecha_evento) }}</span>
+                    </div>
+                    <div class="event-info">
+                      <strong :class="{'text-danger': ev.categoria === 'urgente'}">{{ ev.titulo }}</strong>
+                      <p class="mb-0">{{ ev.descripcion || 'Lugar a confirmar' }}</p>
                     </div>
                   </div>
                 </div>
+                <p v-else class="empty-msg">No hay eventos próximos.</p>
               </div>
-              <p v-else class="empty-msg">Sin cumpleaños cercanos.</p>
             </div>
 
-            <!-- RECORDATORIOS -->
-            <div class="notif-section border-0 mb-0 pb-0">
-              <label class="section-label">RECORDATORIOS</label>
-              <div v-if="avisos.recordatorio && avisos.recordatorio.length > 0">
-                <div v-for="rec in avisos.recordatorio" :key="rec.id" class="reminder-pill">
-                  <i class="bi bi-info-circle-fill me-2"></i>
-                  <span v-html="rec.descripcion"></span>
+            <!-- SECCIÓN: CUMPLEAÑOS -->
+            <div class="notif-section">
+              <label class="section-label" @click="toggleSeccion('cumpleanos')">
+                <span>CUMPLEAÑOS 🎂</span>
+                <i :class="['bi', seccionesAbiertas.cumpleanos ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
+              </label>
+
+              <div v-show="seccionesAbiertas.cumpleanos" class="collapse-content animate__animated animate__fadeIn">
+                <div v-if="avisos.cumpleanos && avisos.cumpleanos.length > 0">
+                  <div v-for="cumple in avisos.cumpleanos" :key="cumple.nombre" class="event-card-modern">
+                    <div :class="['cal-box', esHoy(cumple.fecha_nacimiento) ? 'today-bg' : '']">
+                      <span class="day">{{ cumple.fecha_nacimiento.split('/')[0] }}</span>
+                      <span :class="['month', esHoy(cumple.fecha_nacimiento) ? 'text-white' : 'text-danger']">
+                        {{ obtenerMesNombre(cumple.fecha_nacimiento.split('/')[1]) }}
+                      </span>
+                    </div>
+                    <div class="event-info d-flex align-items-center">
+                      <div>
+                        <strong class="mb-0">{{ cumple.nombre }} {{ cumple.apellido }}</strong>
+                        <span v-if="esHoy(cumple.fecha_nacimiento)" class="badge-hoy">¡ES HOY!</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+                <p v-else class="empty-msg">Sin cumpleaños cercanos.</p>
               </div>
-              <p v-else class="empty-msg">No hay recordatorios.</p>
             </div>
+
+            <!-- SECCIÓN: RECORDATORIOS -->
+            <div class="notif-section border-0 mb-0 pb-0">
+              <label class="section-label" @click="toggleSeccion('recordatorios')">
+                <span>RECORDATORIOS</span>
+                <i :class="['bi', seccionesAbiertas.recordatorios ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
+              </label>
+
+              <div v-show="seccionesAbiertas.recordatorios" class="collapse-content animate__animated animate__fadeIn">
+                <div v-if="avisos.recordatorio && avisos.recordatorio.length > 0">
+                  <div v-for="rec in avisos.recordatorio" :key="rec.id" class="reminder-pill">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <span v-html="rec.descripcion"></span>
+                  </div>
+                </div>
+                <p v-else class="empty-msg">No hay recordatorios.</p>
+              </div>
+            </div>
+
           </div>
         </aside>
       </div>
@@ -105,12 +123,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useHead } from '@vueuse/head';
 import { api } from '@/api/api';
 import { auth } from '@/api/auth';
 
 useHead({ title: 'Panel de Inicio | AAAB' })
+
+// --- CONTROL DE COLAPSABLES ---
+const seccionesAbiertas = reactive({
+  reuniones: true,      // Por defecto abierta
+  cumpleanos: false,    // Por defecto cerrada
+  recordatorios: true   // Por defecto abierta
+});
+
+const toggleSeccion = (seccion) => {
+  seccionesAbiertas[seccion] = !seccionesAbiertas[seccion];
+};
+// -----------------------------
 
 const menuItems = [
   { to: '/panel-arbitro/datos', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Ver legajo y seguridad.' },
@@ -122,6 +152,7 @@ const menuItems = [
   { to: '/panel-arbitro/aportes', title: 'Mis Aportes', icon: 'bi bi-cash-coin', desc: 'Consultá el estado de tus aportes.' },
   { href: 'https://refflix.com.ar', title: 'Ref-Flix', icon: 'bi bi-cast', desc: 'Plataforma de videos' },
   { to: '/panel-arbitro/observaciones', title: 'Observaciones', icon: 'bi bi-eye', desc: 'Cargar y visualizar observaciones', rolesPermitidos: [2,4] },
+  { to: '/panel-arbitro/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Consultá los datos fiscales de los Clubes'},
 ];
 
 const menuItemsFiltrados = computed(() => {
@@ -190,9 +221,29 @@ onMounted(cargarAvisos);
 }
 .fw-black { font-weight: 800; font-size: 0.85rem; color: #1e293b; }
 
-/* SECCIONES */
+/* SECCIONES COLAPSABLES */
 .notif-section { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #000000; }
-.section-label { font-size: 0.65rem; font-weight: 800; color: #000000; display: block; margin-bottom: 8px; letter-spacing: 0.5px; }
+
+.section-label { 
+  font-size: 0.65rem; 
+  font-weight: 800; 
+  color: #000000; 
+  display: flex; 
+  justify-content: space-between; /* Icono a la derecha */
+  align-items: center;
+  margin-bottom: 8px; 
+  letter-spacing: 0.5px; 
+  cursor: pointer; /* Indicar que es clickeable */
+  padding: 5px 0;
+  user-select: none;
+}
+.section-label:hover { opacity: 0.7; }
+.section-label i { font-size: 0.9rem; color: #dc2626; transition: transform 0.2s ease; }
+
+.collapse-content {
+  margin-top: 8px;
+  animation-duration: 0.3s; /* Animación más rápida para los menús */
+}
 
 /* BLOQUE CALENDARIO */
 .cal-box {
@@ -214,39 +265,35 @@ onMounted(cargarAvisos);
   color: #1e293b; 
   display: block; 
   line-height: 1.2; 
-  white-space: normal; /* Asegura que el título pueda saltar de línea */
+  white-space: normal; 
 }
 .event-info p { 
   font-size: 0.72rem; 
   color: #64748b; 
   margin: 0; 
-  overflow: visible; /* Permite que se vea el texto */
+  overflow: visible; 
   text-overflow: clip; 
-  white-space: normal; /* Fundamental para que el texto baje a la siguiente línea */
+  white-space: normal; 
 }
 
 .reminder-pill { background: #fffbeb; color: #92400e; padding: 8px 12px; border-radius: 10px; font-size: 0.72rem; border-left: 3px solid #f59e0b; margin-bottom: 5px; }
 .empty-msg { font-size: 0.7rem; color: #94a3b8; font-style: italic; }
 
 /* --- MAGIA DEL SCROLL CONDICIONAL --- */
-
-/* En Escritorio: Altura fija y scroll */
 @media (min-width: 992px) {
   .sidebar-professional {
     position: sticky; top: 20px;
-    max-height: calc(100vh - 100px); /* Altura máxima para que no sea infinita */
+    max-height: calc(100vh - 100px);
   }
   .sidebar-scroll-container {
     overflow-y: auto;
-    scrollbar-width: thin; /* Firefox */
+    scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
   }
-  /* Estilo del scroll para Chrome/Safari */
   .sidebar-scroll-container::-webkit-scrollbar { width: 5px; }
   .sidebar-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 }
 
-/* En Móvil: Todo seguido, sin scroll interno y bien compacto */
 @media (max-width: 991px) {
   .sidebar-professional { margin-bottom: 10px; }
   .sidebar-scroll-container { overflow-y: visible; padding: 12px !important; }

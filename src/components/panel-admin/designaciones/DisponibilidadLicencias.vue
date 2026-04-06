@@ -505,10 +505,12 @@ onMounted(cargarDatos);
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
-  height: 100vh;
+  min-height: 100vh; /* Cambiamos height fijo por min-height */
+  height: auto;      /* Permitimos que crezca hacia abajo en móvil */
   margin-left: 50%;
   transform: translateX(-50%);
   padding: 20px;
+  padding-bottom: 80px; /* Espacio extra para que no toque el footer */
 }
 
 .admin-panel { 
@@ -519,6 +521,7 @@ onMounted(cargarDatos);
   color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
+  height: 100%; /* Asegura que el fondo oscuro cubra todo el alto */
 }
 
 .header-section { 
