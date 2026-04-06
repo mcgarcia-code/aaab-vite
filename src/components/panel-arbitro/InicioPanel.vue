@@ -3,7 +3,7 @@
     <div class="row g-4">
       <div class="col-12 col-lg-8 col-xl-9">
         <div class="row g-3 g-md-4">
-          <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItems" :key="item.title">
+          <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItemsFiltrados" :key="item.title">
             <a v-if="item.href" :href="item.href" target="_blank" rel="noopener noreferrer" class="text-decoration-none h-100 d-block">
               <div class="menu-card shadow-sm">
                 <div class="icon-circle">
@@ -86,7 +86,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head';
 import { api } from '@/api/api';
@@ -104,18 +104,23 @@ const menuItems = [
   { to: '/panel-arbitro/credencial', title: 'Credencial Digital', icon: 'bi bi-person-badge', desc: 'Carnet oficial 2026.' },
   { to: '/panel-arbitro/sanciones', title: 'Tribunal de Ética', icon: 'bi bi-shield-exclamation', desc: 'Consultá tus sanciones.' },
   { to: '/panel-arbitro/rendimiento', title: 'Mi Rendimiento', icon: 'bi bi-graph-up-arrow', desc: 'Estadísticas y partidos.' },
-  // { to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Realizá pedidos de indumentaria.' },
+  { to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Realizá pedidos de indumentaria.' },
   { to: '/panel-arbitro/aportes', title: 'Mis Aportes', icon: 'bi bi-cash-coin', desc: 'Consultá el estado de tus aportes.' },
   { href: 'https://refflix.com.ar', title: 'Ref-Flix', icon: 'bi bi-cast', desc: 'Plataforma de videos' },
-{ 
+  { 
     to: '/panel-arbitro/observaciones', 
     title: 'Observaciones', 
     icon: 'bi bi-eye', 
     desc: 'Módulo para cargar y visualizar observaciones',
-    rolesPermitidos: [2, 4,] 
+    rolesPermitidos: [2,4]
   },
 ];
-
+const menuItemsFiltrados = computed(() => {
+  const sesion = auth.getUser();
+  return menuItems.filter((item) => {
+    return !item.rolesPermitidos || item.rolesPermitidos.includes(sesion.rol);
+  });
+});
 // --- LÓGICA DE NOTIFICACIONES ---
 const avisos = ref({ eventos: [], cumpleanos: [] });
 const cargando = ref(true);

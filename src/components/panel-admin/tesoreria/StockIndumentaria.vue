@@ -60,49 +60,55 @@
         </div>
 
         <div class="contenedor-formulario-scroll px-1">
-          <div v-if="!editando" class="mb-4">
-            <label class="form-label small fw-bold text-muted d-block">Imágenes del Modelo (.webp)</label>
-            <div v-for="(foto, idx) in formulario.fotos" :key="idx" class="d-flex align-items-center gap-2 mb-2">
-              <div @click="$refs['fileInput' + idx][0].click()" class="upload-box-mini p-2 border rounded-3 bg-light cursor-pointer flex-grow-1 text-center">
-                <i class="bi bi-image text-danger me-2"></i>
-                <span class="extra-small text-muted">{{ foto.nombreArchivo || 'Click para subir foto ' + (idx + 1) }}</span>
-                <input type="file" :ref="'fileInput' + idx" class="d-none" accept=".webp" @change="v => manejarArchivo(v, idx)">
+          <template v-if="!editando">
+            <div class="mb-4">
+              <label class="form-label small fw-bold text-muted d-block">Imágenes del Modelo (.webp)</label>
+              <div v-for="(foto, idx) in formulario.fotos" :key="idx" class="d-flex align-items-center gap-2 mb-2">
+                <div @click="$refs['fileInput' + idx][0].click()" class="upload-box-mini p-2 border rounded-3 bg-light cursor-pointer flex-grow-1 text-center">
+                  <i class="bi bi-image text-danger me-2"></i>
+                  <span class="extra-small text-muted">{{ foto.nombreArchivo || 'Click para subir foto ' + (idx + 1) }}</span>
+                  <input type="file" :ref="'fileInput' + idx" class="d-none" accept=".webp" @change="v => manejarArchivo(v, idx)">
+                </div>
+                <button v-if="formulario.fotos.length > 1" @click="eliminarSlotFoto(idx)" class="btn btn-sm btn-outline-danger border-0">
+                  <i class="bi bi-trash"></i>
+                </button>
               </div>
-              <button v-if="formulario.fotos.length > 1" @click="eliminarSlotFoto(idx)" class="btn btn-sm btn-outline-danger border-0">
-                <i class="bi bi-trash"></i>
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">Nombre del Modelo</label>
+                <input v-model="formulario.descripcion" type="text" class="form-control rounded-pill px-3 shadow-sm border" placeholder="Ej: REMERA NEGRA - HUMMEL">
+              </div>
+              <button @click="agregarSlotFoto" class="btn btn-sm btn-outline-secondary w-100 rounded-pill mt-1 extra-small fw-bold">
+                <i class="bi bi-plus-circle me-1"></i> Agregar otra imagen
               </button>
             </div>
-            <button @click="agregarSlotFoto" class="btn btn-sm btn-outline-secondary w-100 rounded-pill mt-1 extra-small fw-bold">
-              <i class="bi bi-plus-circle me-1"></i> Agregar otra imagen
-            </button>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">Nombre del Modelo</label>
-            <input v-model="formulario.descripcion" type="text" class="form-control rounded-pill px-3 shadow-sm border" placeholder="Ej: REMERA NEGRA - HUMMEL">
-          </div>
-
-          <label class="form-label small fw-bold text-muted">Stock por Talle y Precio (Obligatorio > 0)</label>
-          <div class="contenedor-edicion-talles mb-4">
-            <div v-for="(t, index) in formulario.items" :key="index" class="fila-talle-edit mb-2 p-2 rounded-3 bg-light border">
-              <div class="row align-items-center g-2">
-                <div class="col-2 fw-bold text-danger text-center">{{ t.talle }}</div>
-                <div class="col-6">
-                  <div class="input-group input-group-sm border rounded-pill bg-white overflow-hidden shadow-sm">
-                    <button @click="t.cantidad > 0 ? t.cantidad-- : null" class="btn btn-light border-0 px-2">-</button>
-                    <input v-model.number="t.cantidad" type="number" class="form-control text-center border-0 fw-bold p-0">
-                    <button @click="t.cantidad++" class="btn btn-light border-0 px-2">+</button>
+          </template>
+          <template v-else>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted">Nombre del Modelo</label>
+              <input v-model="formulario.descripcion" type="text" class="form-control rounded-pill px-3 shadow-sm border" placeholder="Ej: REMERA NEGRA - HUMMEL">
+            </div>
+            <label class="form-label small fw-bold text-muted">Stock por Talle y Precio (Obligatorio > 0)</label>
+            <div class="contenedor-edicion-talles mb-4">
+              <div v-for="(t, index) in formulario.items" :key="index" class="fila-talle-edit mb-2 p-2 rounded-3 bg-light border">
+                <div class="row align-items-center g-2">
+                  <div class="col-2 fw-bold text-danger text-center">{{ t.talle }}</div>
+                  <div class="col-6">
+                    <div class="input-group input-group-sm border rounded-pill bg-white overflow-hidden shadow-sm">
+                      <button @click="t.cantidad > 0 ? t.cantidad-- : null" class="btn btn-light border-0 px-2">-</button>
+                      <input v-model.number="t.cantidad" type="number" class="form-control text-center border-0 fw-bold p-0">
+                      <button @click="t.cantidad++" class="btn btn-light border-0 px-2">+</button>
+                    </div>
                   </div>
-                </div>
-                <div class="col-4 text-end">
-                  <div class="position-relative">
-                    <span class="position-absolute start-0 top-50 translate-middle-y ms-2 extra-small text-muted">$</span>
-                    <input v-model.number="t.precio_unitario" type="number" class="form-control form-control-sm rounded-pill text-end fw-bold ps-3 shadow-sm" placeholder="0">
+                  <div class="col-4 text-end">
+                    <div class="position-relative">
+                      <span class="position-absolute start-0 top-50 translate-middle-y ms-2 extra-small text-muted">$</span>
+                      <input v-model.number="t.precio_unitario" type="number" class="form-control form-control-sm rounded-pill text-end fw-bold ps-3 shadow-sm" placeholder="0">
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </template>
         </div>
 
         <div class="d-flex gap-2">
@@ -118,7 +124,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import { api } from '@/api/api';
 
 // Inyectamos el notificador global
@@ -207,7 +213,7 @@ const abrirModalNuevo = () => {
   formulario.value = { 
     descripcion: '', 
     fotos: [{ nombreArchivo: '' }], 
-    talles: tallesEstandar.map(t => ({ id: null, talle: t, cantidad: 0, precio: 0 })) 
+    //talles: tallesEstandar.map(t => ({ id: null, talle: t, cantidad: 0, precio: 0 })) 
   };
   mostrarModal.value = true;
 };
@@ -217,32 +223,42 @@ const guardarCambiosAgrupados = async () => {
     notificar({ titulo: 'Faltan datos', mensaje: 'El nombre del modelo es obligatorio.', tipo: 'danger' });
     return;
   }
-
-  // Solo procesamos talles que tengan stock o precio definidos
-  const itemsAProcesar = formulario.value.items.filter(t => t.id || (t.cantidad > 0 && t.precio_unitario > 0));
-
-  if (itemsAProcesar.length === 0) {
-    notificar({ titulo: 'Atención', mensaje: 'Debes cargar stock y precio mayor a 0 en al menos un talle.', tipo: 'danger' });
-    return;
+  let res
+  if (editando.value) {
+    const itemsAProcesar = formulario.value.items.filter(t => t.id || (t.cantidad > 0 && t.precio_unitario > 0));
+    if (itemsAProcesar.length === 0) {
+      notificar({ titulo: 'Atención', mensaje: 'Debes cargar stock y precio mayor a 0 en al menos un talle.', tipo: 'danger' });
+      return;
+    }
+    cargando.value = true;
+    let items = []
+    for (const t of itemsAProcesar) {
+      items.push({
+        id: t.id,
+        talle: t.talle,
+        cantidad: t.cantidad,
+        precioUnitario: t.precio_unitario
+      })
+    }
+    const payload = {
+      id_item: formulario.value.id_item,
+      precioUnitario: formulario.value.precioUnitario,
+      descripcion: `${formulario.value.descripcion.toUpperCase()}`,
+      items: items
+    }
+    res = await api.post({ 
+      entity: 'indumentaria', 
+      action: 'actualizarStock', 
+      payload 
+    });
   }
-
-  cargando.value = true;
-  let items = []
-  for (const t of itemsAProcesar) {
-    items.push({
-      id: t.id,
-      talle: t.talle,
-      cantidad: t.cantidad,
-      precioUnitario: t.precio_unitario
+  else {
+    res = await api.post({
+      entity: 'indumentaria',
+      action: 'agregarItem',
+      payload: formulario.value
     })
   }
-  const payload = {
-    id_item: formulario.value.id_item,
-    precioUnitario: formulario.value.precioUnitario,
-    descripcion: `${formulario.value.descripcion.toUpperCase()}`,
-    items: items
-  }
-  const res = await api.post({ entity: 'indumentaria', action: 'actualizarStock', payload });
   if (res.ok) {
     notificar({ titulo: '¡Éxito!', mensaje: 'Inventario actualizado correctamente.', tipo: 'success' });
     await obtenerStock();
