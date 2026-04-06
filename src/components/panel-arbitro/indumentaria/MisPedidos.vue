@@ -79,7 +79,7 @@ useHead({
 const misPedidos = ref([]);
 
 const cargarMisPedidos = async () => {
-  const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerMisPedidos' });
+  const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerPedidosArbitro' });
   if (respuesta.ok) {
     misPedidos.value = respuesta.payload;
   }
