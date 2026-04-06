@@ -18,7 +18,7 @@
     </div>
 
     <div class="row g-3">
-      <div v-for="prenda in stockFiltrado" :key="prenda.descripcionLimpia" class="col-6 col-md-4 col-lg-3 text-center">
+      <div v-for="(prenda, key) in stockFiltrado" :key="key" class="col-6 col-md-4 col-lg-3 text-center">
         <div class="card h-100 border-0 shadow-sm tarjeta-prenda-invertida overflow-hidden">
           
           <div class="bg-white position-relative contenedor-imagen-superior">
@@ -36,7 +36,7 @@
               </div>
             </div>
 
-            <template v-if="obtenerTotalImagenes(prenda.descripcionLimpia) > 1">
+            <template v-if="obtenerTotalImagenes(prenda.descripcion) > 1">
               <button @click.stop="cambiarFoto(prenda, -1)" class="btn-nav-foto start-0 ms-1">
                 <i class="bi bi-chevron-left"></i>
               </button>
@@ -50,15 +50,15 @@
           </div>
           
           <div class="card-body p-2 p-md-3 d-flex flex-column cuerpo-gris-inferior">
-            <h6 class="fw-bold text-dark mb-1 text-uppercase extra-small-mobile">{{ prenda.descripcionLimpia }}</h6>
+            <h6 class="fw-bold text-dark mb-1 text-uppercase extra-small-mobile">{{ prenda.descripcion }}</h6>
             <h5 class="fw-bold text-danger mb-2 mb-md-3">$ {{ prenda.precio_unitario }}</h5>
             
             <div class="mt-auto">
               <div class="row g-2 mb-2 text-start">
                 <div class="col-7">
                   <label class="extra-small-label fw-bold text-muted">Talle:</label>
-                  <select v-model="prenda.talleSeleccionado" @change="validarCantidad(prenda)" class="form-select form-select-sm rounded-pill shadow-sm border-danger-subtle bg-white">
-                    <option v-for="t in prenda.tallesDisponibles" :key="t.id" :value="t.talle">
+                  <select v-model="prenda.itemSeleccionado" @change="validarCantidad(prenda)" class="form-select form-select-sm rounded-pill shadow-sm border-danger-subtle bg-white">
+                    <option v-for="(t, k) in prenda.items" :key="k" :value="t.id">
                       {{ t.talle }}
                     </option>
                   </select>
@@ -191,7 +191,7 @@ const catalogoImagenes = {
 };
 
 const obtenerImagenActual = (prenda) => {
-  const fotos = catalogoImagenes[prenda.descripcionLimpia] || [];
+  const fotos = prenda.archivo_imagen.split(",") || [];
   const index = prenda.fotoActualIndex || 0;
   const archivo = fotos[index] || fotos[0];
   if (archivo) {
@@ -203,15 +203,15 @@ const obtenerImagenActual = (prenda) => {
 const obtenerTotalImagenes = (desc) => (catalogoImagenes[desc] || []).length;
 
 const cambiarFoto = (prenda, delta) => {
-  const total = obtenerTotalImagenes(prenda.descripcionLimpia);
+  const total = obtenerTotalImagenes(prenda.descripcion);
   let current = prenda.fotoActualIndex || 0;
   current = (current + delta + total) % total;
   prenda.fotoActualIndex = current;
 };
 
 const obtenerStockMaximo = (prenda) => {
-  const talleInfo = prenda.tallesDisponibles.find(t => t.talle === prenda.talleSeleccionado);
-  return talleInfo ? talleInfo.cantidadStock : 0;
+  const talleInfo = prenda.items.find(t => t.id === prenda.itemSeleccionado);
+  return talleInfo ? talleInfo.cantidad : 0;
 };
 
 const validarCantidad = (prenda) => {
@@ -225,7 +225,8 @@ const abrirZoom = (url) => { imagenZoom.value = url; };
 const cargarStock = async () => {
   const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
   if (respuesta.ok) {
-    const rawData = respuesta.payload;
+    listaAgrupada.value = respuesta.payload;
+    /*
     const mapaAgrupado = {};
     rawData.forEach(item => {
       const descripcionLimpia = item.descripcion.split(/ - TALLE/i)[0].trim();
@@ -247,20 +248,23 @@ const cargarStock = async () => {
       });
     });
     listaAgrupada.value = Object.values(mapaAgrupado);
+    */
   }
 };
 
 const stockFiltrado = computed(() => {
   return listaAgrupada.value
-    .filter(p => p.descripcionLimpia.toLowerCase().includes(busqueda.value.toLowerCase()))
-    .sort((a, b) => a.descripcionLimpia.localeCompare(b.descripcionLimpia));
+    .filter(p => p.descripcion.toLowerCase().includes(busqueda.value.toLowerCase()))
+    .sort((a, b) => a.descripcion.localeCompare(b.descripcion));
 });
 
 const totalCarrito = computed(() => {
   return carrito.value.reduce((total, p) => total + (p.precio * p.cantidad), 0);
 });
 
-const agregarAlCarrito = (prenda) => {
+const agregarAlCarrito = (index) => {
+  console.log(stockFiltrado[index])
+  return
   const itemTalle = prenda.tallesDisponibles.find(t => t.talle === prenda.talleSeleccionado);
   
   // Validamos que haya stock real antes de agregar

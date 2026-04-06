@@ -159,6 +159,3 @@ const opcionesDesignaciones = [
 
 
 </style>
-
-
-
