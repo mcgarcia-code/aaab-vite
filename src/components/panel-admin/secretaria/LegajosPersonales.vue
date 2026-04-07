@@ -11,26 +11,48 @@
         </div>
 
         <div class="header-actions">
-          <!-- NUEVO BOTÓN DE SOLICITUDES -->
-          
-          <button @click="abrirModalSolicitudes" class="btn-action btn-blue position-relative">
-            <span class="material-icons">notifications</span> Solicitudes
-            <!-- Badge contador -->
+          <!-- BOTÓN FILTROS (SOLO MOBILE) -->
+          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
+            <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+          </button>
+
+          <!-- BOTÓN DE SOLICITUDES GENERALES -->
+          <button @click="abrirModalSolicitudes" class="btn-action btn-blue position-relative" title="Solicitudes pendientes">
+            <span class="material-icons">notifications</span> <span class="btn-text">Solicitudes</span>
             <span v-if="solicitudesPendientes.length > 0" class="badge-notif">
               {{ solicitudesPendientes.length }}
             </span>
           </button>
-      
 
-          <button @click="limpiarFiltros" class="btn-action btn-clear">
-            <span class="material-icons">filter_alt_off</span> Filtros
+          <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
+            <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
           </button>
-          <button @click="crearNuevo" class="btn-action btn-clear-checks">
-            <span class="material-icons">person_add</span> Nuevo
+          <button @click="crearNuevo" class="btn-action btn-clear-checks" title="Nuevo Árbitro">
+            <span class="material-icons">person_add</span> <span class="btn-text">Nuevo</span>
           </button>
-          <button @click="exportarExcel" class="btn-action btn-export">
-            <span class="material-icons">download</span> Excel
+          <button @click="exportarExcel" class="btn-action btn-export" title="Exportar a Excel">
+            <span class="material-icons">download</span> <span class="btn-text">Excel</span>
           </button>
+        </div>
+      </div>
+
+      <!-- PANEL DE FILTROS DESPLEGABLE (SOLO MOBILE) -->
+      <div v-if="mostrarFiltrosMobile" class="mobile-only mb-3 animate__animated animate__fadeInDown animate__faster">
+        <div class="bg-white p-3 rounded shadow-sm border border-light-subtle">
+          <label class="small fw-bold mb-2 d-block text-muted text-uppercase">Filtrar Árbitros</label>
+          <div class="row g-2">
+            <div class="col-6"><input v-model="filtros.apellido" class="filter-input-mobile" placeholder="Apellido..."></div>
+            <div class="col-6"><input v-model="filtros.nombre" class="filter-input-mobile" placeholder="Nombre..."></div>
+            <div class="col-6"><input v-model="filtros.dni" class="filter-input-mobile" placeholder="DNI..."></div>
+            <div class="col-6">
+              <select v-model="filtros.rol" class="filter-input-mobile">
+                <option value="">Rol (Todos)</option>
+                <option :value="1">Árbitro</option>
+                <option :value="2">Observador</option>
+                <option :value="4">Coordinador</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -40,7 +62,7 @@
           <thead>
             <tr class="main-header">
               <th class="sticky-col col-id">ID</th>
-              <th class="sticky-col col-acciones">Acciones</th>
+              <th class="sticky-col col-acciones text-center">Acciones</th>
               <th class="sticky-col col-apellido">Apellido</th>
               <th class="sticky-col col-nombre">Nombre</th>
               <th class="col-xs-compact">Activo</th>
@@ -115,9 +137,15 @@
             <tr v-for="a in arbitrosPaginados" :key="a.id" :class="{ 'fila-inactiva': a.es_activo == 0 }">
               <td class="sticky-col col-id cell-ro text-center">{{ a.id }}</td>
               <td class="sticky-col col-acciones cell-ro text-center">
-                <button @click="editarArbitro(a)" class="btn-editar" title="Editar árbitro">
-                  <span class="material-icons" style="font-size:16px;">edit</span>
-                </button>
+                <div class="d-flex justify-content-center gap-1">
+                  <button @click="editarArbitro(a)" class="btn-editar" title="Editar árbitro">
+                    <span class="material-icons" style="font-size:16px;">edit</span>
+                  </button>
+                  <!-- NUEVO: Botón historial -->
+                  <button @click="verHistorialArbitro(a)" class="btn-historial" title="Ver historial de cambios">
+                    <span class="material-icons" style="font-size:16px;">manage_search</span>
+                  </button>
+                </div>
               </td>
               <td class="sticky-col col-apellido cell-ro">{{ a.apellido }}</td>
               <td class="sticky-col col-nombre cell-ro">{{ a.nombre }}</td>
@@ -181,9 +209,14 @@
               <p v-if="a.zona"><strong>Zona:</strong> {{ a.zona }}</p>
             </div>
             
-            <button @click="editarArbitro(a)" class="btn-editar-mobile">
-              <span class="material-icons">edit</span> Editar Información
-            </button>
+            <div class="d-flex gap-2 mt-3">
+              <button @click="editarArbitro(a)" class="btn-editar-mobile flex-grow-1">
+                <span class="material-icons" style="font-size: 18px;">edit</span> Editar
+              </button>
+              <button @click="verHistorialArbitro(a)" class="btn-historial-mobile">
+                <span class="material-icons" style="font-size: 18px;">manage_search</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -424,6 +457,59 @@
     </div>
     </Teleport>
 
+    <!-- MODAL HISTORIAL INDIVIDUAL DEL ÁRBITRO -->
+    <Teleport to="body">
+    <div v-if="mostrarModalHistorialArbitro" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10002;">
+      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 700px; width: 95%; text-align: left;">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+          <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
+            <span class="material-icons text-warning">manage_search</span> 
+            Historial de {{ arbitroSeleccionado.apellido }}, {{ arbitroSeleccionado.nombre }}
+          </h5>
+          <button @click="mostrarModalHistorialArbitro = false" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;">
+            <span class="material-icons" style="font-size: 18px; line-height: 1;">close</span>
+          </button>
+        </div>
+
+        <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+          <div v-if="cargandoHistorialArbitro" class="text-center py-4">
+            <span class="spinner-border text-warning"></span>
+          </div>
+          
+          <div v-else-if="historialArbitro.length === 0" class="text-center py-4 text-muted">
+            <span class="material-icons d-block fs-1 mb-2">history_toggle_off</span>
+            Este árbitro nunca solicitó cambios.
+          </div>
+
+          <div v-else class="table-responsive">
+            <table class="table table-sm table-hover align-middle" style="font-size: 0.85rem;">
+              <thead class="table-light">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Mensaje</th>
+                  <th class="text-center">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="h in historialArbitro" :key="h.id">
+                  <td class="text-nowrap text-muted fw-bold">{{ h.fecha }}</td>
+                  <td class="text-uppercase" style="font-size: 0.75rem;">{{ h.tipo_solicitud || 'general' }}</td>
+                  <td style="white-space: pre-line;">{{ h.mensaje }}</td>
+                  <td class="text-center">
+                    <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : 'bg-warning text-dark'">
+                      {{ h.estado.toUpperCase() }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    </Teleport>
+
   </div>
 </template>
 
@@ -454,10 +540,19 @@ const mostrarModal = ref(false)
 const modoModal = ref('nuevo')
 const movilidadArray = ref([])
 
+// Variable para controlar la visibilidad de los filtros en mobile
+const mostrarFiltrosMobile = ref(false)
+
 // --- VARIABLES PARA SOLICITUDES ---
 const solicitudes = ref([])
 const mostrarModalSolicitudes = ref(false)
 const cargandoSolicitudes = ref(false)
+
+// --- VARIABLES PARA HISTORIAL INDIVIDUAL ---
+const mostrarModalHistorialArbitro = ref(false)
+const historialArbitro = ref([])
+const arbitroSeleccionado = ref({})
+const cargandoHistorialArbitro = ref(false)
 
 const formModalVacio = () => ({
   id: null,
@@ -480,11 +575,10 @@ const solicitudesPendientes = computed(() =>
   solicitudes.value.filter(s => s.estado === 'enviado')
 )
 
-// --- FUNCIONES PARA SOLICITUDES ---
+// --- FUNCIONES PARA SOLICITUDES GENERALES ---
 const cargarSolicitudes = async () => {
   cargandoSolicitudes.value = true
   try {
-    // Recordá apuntar al endpoint de PHP correcto que traiga TODAS las solicitudes
     const res = await api.get({ entity: 'datos_personales', action: 'getTodasLasSolicitudes' })
     if (res.payload) {
       solicitudes.value = res.payload
@@ -531,6 +625,30 @@ const abrirEdicionDesdeSolicitud = (id_arbitro) => {
     notificar({ titulo: 'No encontrado', mensaje: 'No se encontraron los datos de este árbitro en la lista actual.', tipo: 'danger' })
   }
 }
+
+// --- FUNCIONES PARA HISTORIAL INDIVIDUAL ---
+const verHistorialArbitro = async (arbitro) => {
+  arbitroSeleccionado.value = arbitro
+  mostrarModalHistorialArbitro.value = true
+  cargandoHistorialArbitro.value = true
+  historialArbitro.value = []
+  
+  try {
+    const res = await api.get({ 
+      entity: 'datos_personales', 
+      action: 'obtenerHistorialAdmin', 
+      payload: { id_arbitro: arbitro.id } 
+    })
+    if (res.payload) {
+      historialArbitro.value = res.payload
+    }
+  } catch{
+    notificar({ titulo: 'Error', mensaje: 'No se pudo cargar el historial', tipo: 'danger' })
+  } finally {
+    cargandoHistorialArbitro.value = false
+  }
+}
+
 // ----------------------------------
 
 const crearNuevo = () => {
@@ -902,6 +1020,12 @@ select.select-compact { color: #1e293b; text-align-last: center; }
 .small-select:hover { background: #f8fafc; border-color: #cbd5e1; }
 .bg-success-light { background: #dcfce7; color: #166534; }
 
+/* SPAN DEL TEXTO PARA OCULTAR EN MOBILE Y CLASE PARA EL BOTÓN EXTRA */
+.btn-text { display: inline; }
+.btn-blue { background: #3b82f6; color: white; }
+.mobile-only-flex { display: none; }
+.filter-input-mobile { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; }
+
 /* VISTA MOBILE CARDS */
 .mobile-only { display: none; }
 .desktop-only { display: block; }
@@ -946,7 +1070,6 @@ select.select-compact { color: #1e293b; text-align-last: center; }
     margin: 4px 0;
   }
   .btn-editar-mobile {
-    width: 100%;
     background: #eff6ff;
     border: 1px solid #bfdbfe;
     color: #1d4ed8;
@@ -957,9 +1080,22 @@ select.select-compact { color: #1e293b; text-align-last: center; }
     justify-content: center;
     align-items: center;
     gap: 8px;
-    margin-top: 12px;
     cursor: pointer;
   }
+  
+  /* ESTILOS DEL NUEVO BOTÓN HISTORIAL EN MOBILE */
+  .btn-historial-mobile {
+    background: #fef3c7; 
+    border: 1px solid #fde047; 
+    color: #d97706; 
+    padding: 10px 14px; 
+    border-radius: 6px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    cursor: pointer;
+  }
+
   .card-arbitro.fila-inactiva {
     background-color: #ef4444 !important;
     border-color: #dc2626;
@@ -975,26 +1111,50 @@ select.select-compact { color: #1e293b; text-align-last: center; }
     border-color: #fff;
     color: #ef4444; 
   }
+  .card-arbitro.fila-inactiva .btn-historial-mobile {
+    background: #fff;
+    border-color: #fff;
+    color: #d97706; 
+  }
 }
 
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  /* Cambiamos flex-wrap a 'wrap' para que bajen si no entran */
   .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
 }
 
+/* =======================================
+   AQUÍ ESTÁ LA MAGIA DEL RESPONSIVE MÓVIL 
+   ======================================= */
 @media (max-width: 600px) {
   .admin-panel { padding: 10px; }
-  .header-section { padding: 10px; }
+  .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
   .title { font-size: 1rem; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
   
-  /* Hacemos que los botones ocupen el 50% en celular (grilla 2x2) */
-  .header-actions { justify-content: space-between; gap: 8px; }
+  /* Botones en una sola fila, ocultando el texto */
+  .header-actions { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: nowrap; 
+    justify-content: space-between; 
+    gap: 8px; 
+  }
   .btn-action { 
-    flex: 1 1 calc(50% - 8px); /* Ocupan la mitad menos el gap */
+    flex: 1 1 auto; 
+    padding: 10px 0; 
     justify-content: center; 
-    padding: 10px; /* Un poco más grandes para tocarlos fácil */
+  }
+  
+  /* Desaparece el texto en móvil, queda solo el ícono */
+  .btn-text { 
+    display: none !important; 
+  }
+  
+  /* Aparece el botón extra para ver los filtros en móvil */
+  .mobile-only-flex { 
+    display: flex !important; 
   }
 }
 
@@ -1022,6 +1182,14 @@ select.select-compact { color: #1e293b; text-align-last: center; }
 }
 .btn-editar:hover { background: #dbeafe; }
 
+/* BOTÓN DE HISTORIAL (ESCRITORIO) */
+.btn-historial { 
+  display: inline-flex; align-items: center; justify-content: center; 
+  background: #fef3c7; border: 1px solid #fde047; color: #d97706; 
+  border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; 
+}
+.btn-historial:hover { background: #fde047; }
+
 .seccion-titulo {
   font-size: 0.75rem;
   font-weight: 700;
@@ -1043,8 +1211,6 @@ select.select-compact { color: #1e293b; text-align-last: center; }
 .col-nombre { left: 270px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 
 /* --- ESTILOS AGREGADOS PARA SOLICITUDES --- */
-.btn-blue { background: #3b82f6; color: white; }
-
 .badge-notif {
   position: absolute;
   top: -6px;
