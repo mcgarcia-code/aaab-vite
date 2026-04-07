@@ -1,266 +1,416 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <div class="admin-panel animate__animated animate__fadeIn">
-    
-    <div class="header-card shadow-sm">
-      <div class="header-info text-start">
-        <h2 class="header-title">Gestión de Licencias</h2>
-        <span class="header-subtitle">Total: {{ licenciasFiltradas.length }} licencias</span>
+  <div class="full-screen-wrapper">
+    <div class="admin-panel animate__animated animate__fadeIn">
+
+      <!-- CABECERA -->
+      <div class="header-section shadow-sm">
+        <div class="header-info">
+          <h2 class="title">Gestión de Licencias</h2>
+          <span class="counter">Total: {{ licenciasFiltradas.length }} licencias</span>
+        </div>
+
+        <div class="header-actions">
+          <!-- BOTÓN FILTROS (SOLO MOBILE) -->
+          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
+            <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+          </button>
+
+          <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
+            <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
+          </button>
+          
+          <button @click="abrirModalNuevo" class="btn-action btn-clear-checks" title="Nueva Licencia">
+            <span class="material-icons">person_add</span> <span class="btn-text">Nuevo</span>
+          </button>
+          
+          <button @click="exportarExcel" class="btn-action btn-export" title="Exportar a Excel">
+            <span class="material-icons">download</span> <span class="btn-text">Excel</span>
+          </button>
+        </div>
       </div>
-      
-      <div class="header-actions">
-        <button @click="limpiarFiltros" class="btn-action btn-light-gray">
-          <span class="material-icons">filter_alt_off</span> <b>Filtros</b>
-        </button>
-        <button @click="guardarTodo" class="btn-action btn-blue" :disabled="cargando">
-          <span v-if="!cargando" class="material-icons">save</span>
-          <span v-else class="spinner-border spinner-border-sm me-1"></span>
-          <b>Guardar</b>
-        </button>
-        <button @click="abrirModalNuevo" class="btn-action btn-pink">
-          <span class="material-icons">person_add</span> <b>Nuevo</b>
-        </button>
-        <button @click="exportarExcel" class="btn-action btn-green">
-          <span class="material-icons">download</span> <b>Excel</b>
-        </button>
-      </div>
-    </div>
 
-    <div class="table-container shadow-sm mt-3">
-      <table class="custom-table w-100">
-        <thead>
-          <tr class="header-row">
-            <th style="width: 70px;" class="text-center">ID</th>
-            <th>APELLIDO</th>
-            <th>NOMBRE</th>
-            <th class="text-center">ESTADO</th>
-            <th class="text-center">F. SOLICITUD</th>
-            <th class="text-center">F. LICENCIA</th>
-            <th class="text-center">ACCIONES</th>
-          </tr>
-          <tr class="filter-row">
-            <td class="text-center">
-               <button @click="obtenerLicencias" class="btn-refresh"><span class="material-icons">refresh</span></button>
-            </td>
-            <td><input v-model="filtros.apellido" class="filter-input text-start" placeholder="Filtrar.."></td>
-            <td><input v-model="filtros.nombre" class="filter-input text-start" placeholder="Filtrar.."></td>
-            <td class="px-2">
-              <select v-model="filtros.estado" class="filter-input text-center">
-                <option value="">TODOS</option>
-                <option value="pendiente">PENDIENTE</option>
-                <option value="aprobada">APROBADA</option>
-                <option value="rechazada">RECHAZADA</option>
-              </select>
-            </td>
-            <td><input v-model="filtros.fecha_solicitud" class="filter-input text-center" placeholder="DD/MM/YYYY"></td>
-            <td><input v-model="filtros.fecha" class="filter-input text-center" placeholder="DD/MM/YYYY"></td>
-            <td></td>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="lic in licenciasPaginadas" :key="lic.id">
-            <td class="text-center text-muted small">#{{ lic.id }}</td>
-            <td class="fw-bold">{{ lic.apellido }}</td>
-            <td class="fw-bold">{{ lic.nombre }}</td>
-            <td class="text-center">
-              <select v-model="lic.estado" :class="['status-select', lic.estado]">
-                <option value="pendiente">PENDIENTE</option>
-                <option value="aprobada">APROBADA</option>
-                <option value="rechazada">RECHAZADA</option>
-              </select>
-            </td>
-            <td class="text-center">
-              <input type="date" v-model="lic.fecha_solicitud" class="date-input">
-            </td>
-            <td class="text-center">
-              <input type="date" v-model="lic.fecha_licencia" class="date-input">
-            </td>
-            <td class="text-center">
-              <div class="action-buttons-group">
-                <button @click="eliminarLicencia(lic.id)" class="btn-action-icon btn-delete-row" title="Eliminar">
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <!-- PANEL DE FILTROS DESPLEGABLE (SOLO MOBILE) -->
+      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="small fw-bold text-muted text-uppercase">Filtrar Licencias</span>
+          <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
+            <span class="material-icons" style="font-size: 20px;">close</span>
+          </button>
+        </div>
 
-    <!-- Controles de Paginación -->
-    <div class="paginacion">
-      <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
-      <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-      <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
-    </div>
-
-    <Teleport to="body">
-    <div v-if="mostrarModalNuevo" class="modal-overlay" @click.self="mostrarModalNuevo = false">
-      <div class="modal-content-custom animate__animated animate__zoomIn">
-        <h4 class="fw-bold mb-4">Registrar Licencia</h4>
-        <div class="mb-3 text-start">
-          <label class="small fw-bold">Seleccionar Árbitro</label>
-          <select v-model="nuevo.id_arbitro" class="form-select border-danger-subtle shadow-none">
-            <option value="" disabled>Elegir árbitro...</option>
-            <option v-for="arb in arbitrosLista" :key="arb.id" :value="arb.id">
-              {{ arb.apellido }}, {{ arb.nombre }}
-            </option>
+        <div class="filter-grid-mobile">
+          <input v-model="filtros.apellido" placeholder="Apellido...">
+          <input v-model="filtros.nombre" placeholder="Nombre...">
+          
+          <select v-model="filtros.estado" class="full-width">
+            <option value="">Estado (Todos)</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="aprobada">Aprobada</option>
+            <option value="rechazada">Rechazada</option>
           </select>
+          
+          <input type="text" v-model="filtros.fecha_solicitud" placeholder="F. Solicitud (DD/MM/AAAA)">
+          <input type="text" v-model="filtros.fecha" placeholder="F. Ausencia (DD/MM/AAAA)">
         </div>
-        <div class="mb-3 text-start">
-          <label class="small fw-bold">Fecha de Solicitud</label>
-          <input v-model="nuevo.fecha_solicitud" type="date" class="form-control shadow-none">
+        
+        <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0">Aplicar Filtros</button>
+      </div>
+
+      <!-- TABLA DESKTOP -->
+      <div class="table-container shadow desktop-only">
+        <table>
+          <thead>
+            <tr class="main-header">
+              <th class="sticky-col col-id">ID</th>
+              <th class="sticky-col col-acciones text-center">Acciones</th>
+              <th class="sticky-col col-apellido">Apellido</th>
+              <th class="sticky-col col-nombre">Nombre</th>
+              <th class="text-center" style="min-width: 120px;">Estado</th>
+              <th class="text-center">F. Solicitud</th>
+              <th class="text-center">F. Licencia</th>
+            </tr>
+            <tr class="filter-row">
+              <td class="sticky-col col-id">
+                <button @click="obtenerLicencias" class="btn-refresh w-100" title="Recargar"><span class="material-icons" style="font-size: 16px;">refresh</span></button>
+              </td>
+              <td class="sticky-col col-acciones"></td>
+              <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar.."></td>
+              <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar.."></td>
+              <td>
+                <select v-model="filtros.estado" class="filter-input text-center">
+                  <option value="">TODOS</option>
+                  <option value="pendiente">PENDIENTE</option>
+                  <option value="aprobada">APROBADA</option>
+                  <option value="rechazada">RECHAZADA</option>
+                </select>
+              </td>
+              <td><input v-model="filtros.fecha_solicitud" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
+              <td><input v-model="filtros.fecha" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="lic in licenciasPaginadas" :key="lic.id">
+              <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ lic.id }}</td>
+              <td class="sticky-col col-acciones cell-ro text-center">
+                <div class="d-flex justify-content-center gap-1">
+                  <button @click="editarLicencia(lic)" class="btn-editar" title="Editar Licencia">
+                    <span class="material-icons" style="font-size:16px;">edit</span>
+                  </button>
+                  <button @click="verHistorialLicencia(lic)" class="btn-historial" title="Ver Historial">
+                    <span class="material-icons" style="font-size:16px;">manage_search</span>
+                  </button>
+                  <button @click="eliminarLicencia(lic.id)" class="btn-eliminar" title="Eliminar">
+                    <span class="material-icons" style="font-size:16px;">delete</span>
+                  </button>
+                </div>
+              </td>
+              <td class="sticky-col col-apellido cell-ro fw-bold">{{ lic.apellido }}</td>
+              <td class="sticky-col col-nombre cell-ro fw-bold">{{ lic.nombre }}</td>
+              <td class="text-center cell-ro">
+                <span :class="['badge-status', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
+              </td>
+              <td class="text-center cell-ro">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
+              <td class="text-center cell-ro fw-bold text-primary">{{ formatearFechaVista(lic.fecha_licencia) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- VISTA MOBILE (CARDS) -->
+      <div class="mobile-only">
+        <div v-for="lic in licenciasPaginadas" :key="'mob-'+lic.id" class="card-licencia">
+          <div class="card-header">
+            <div class="card-name">
+              <strong>{{ lic.apellido }}, {{ lic.nombre }}</strong>
+            </div>
+            <div class="text-xs" style="color: #64748b;">ID: {{ lic.id }}</div>
+          </div>
+          
+          <div class="card-body">
+            <div class="card-row">
+              <span><strong>Estado:</strong> <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span></span>
+            </div>
+            
+            <div class="card-info">
+              <p><strong>F. Solicitud:</strong> {{ formatearFechaVista(lic.fecha_solicitud) }}</p>
+              <p><strong>F. Licencia:</strong> <span class="text-primary fw-bold">{{ formatearFechaVista(lic.fecha_licencia) }}</span></p>
+            </div>
+            
+            <div class="d-flex gap-2 mt-3">
+              <button @click="editarLicencia(lic)" class="btn-editar-mobile flex-grow-1">
+                <span class="material-icons" style="font-size: 18px;">edit</span> Editar
+              </button>
+              <button @click="verHistorialLicencia(lic)" class="btn-historial-mobile">
+                <span class="material-icons" style="font-size: 18px;">manage_search</span>
+              </button>
+              <button @click="eliminarLicencia(lic.id)" class="btn-eliminar-mobile">
+                <span class="material-icons" style="font-size: 18px;">delete</span>
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="mb-3 text-start">
-          <label class="small fw-bold">Fecha de Licencia (Ausencia)</label>
-          <input v-model="nuevo.fecha_licencia" type="date" class="form-control shadow-none">
+        
+        <div v-if="licenciasPaginadas.length === 0" class="text-center p-4 bg-white rounded shadow-sm">
+          <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
+          <p class="text-muted mt-2 mb-0">No se encontraron licencias.</p>
         </div>
-        <div class="d-flex gap-2 mt-4">
-          <button @click="mostrarModalNuevo = false" class="btn btn-light w-100 rounded-pill">Cerrar</button>
-          <button @click="crearLicenciaAction" class="btn btn-danger w-100 rounded-pill fw-bold" :disabled="!nuevo.id_arbitro || !nuevo.fecha_licencia || !nuevo.fecha_solicitud">CREAR</button>
+      </div>
+
+      <!-- PAGINACIÓN -->
+      <div class="paginacion" v-if="totalPaginas > 1">
+        <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+        <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
+      </div>
+
+    </div>
+
+    <!-- MODAL ALTA / EDICIÓN -->
+    <Teleport to="body">
+    <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
+      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 500px; width: 95%;">
+
+        <div class="icon-circle-exito" :class="modoModal === 'editar' ? 'bg-info-light' : 'bg-success-light'">
+          <span class="material-icons">{{ modoModal === 'editar' ? 'edit' : 'calendar_today' }}</span>
+        </div>
+        <h4 class="fw-bold mt-3">
+          {{ modoModal === 'editar' ? 'Editar Licencia' : 'Registrar Licencia' }}
+        </h4>
+        <p v-if="modoModal === 'editar'" class="text-muted small mb-3">ID #{{ formModal.id }} — {{ formModal.apellido }}, {{ formModal.nombre }}</p>
+
+        <div class="row g-3 text-start mt-2">
+          
+          <div class="col-12" v-if="modoModal === 'nuevo'">
+            <label class="small fw-bold">Seleccionar Árbitro *</label>
+            <select v-model="formModal.id_arbitro" class="form-select border-primary-subtle shadow-none">
+              <option value="" disabled>Elegir árbitro...</option>
+              <option v-for="arb in arbitrosLista" :key="arb.id" :value="arb.id">
+                {{ arb.apellido }}, {{ arb.nombre }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-6">
+            <label class="small fw-bold">Fecha Solicitud *</label>
+            <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none">
+          </div>
+          
+          <div class="col-6">
+            <label class="small fw-bold">Fecha Ausencia *</label>
+            <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-danger-subtle">
+          </div>
+
+          <div class="col-12">
+            <label class="small fw-bold">Estado</label>
+            <select v-model="formModal.estado" class="form-select shadow-none">
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobada">Aprobada</option>
+              <option value="rechazada">Rechazada</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="d-flex gap-2 justify-content-center mt-4">
+          <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</button>
+          <button @click="modoModal === 'editar' ? confirmarEdicion() : confirmarAlta()" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargando || !formModal.fecha_licencia">
+            <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
+            {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR LICENCIA' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+    </Teleport>
+
+    <!-- MODAL HISTORIAL DE LA LICENCIA -->
+    <Teleport to="body">
+    <div v-if="mostrarModalHistorial" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10002;">
+      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 600px; width: 95%; text-align: left;">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+          <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
+            <span class="material-icons text-warning">manage_search</span> 
+            Historial de la Licencia #{{ licenciaSeleccionada?.id }}
+          </h5>
+          <button @click="mostrarModalHistorial = false" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;">
+            <span class="material-icons" style="font-size: 18px; line-height: 1;">close</span>
+          </button>
+        </div>
+
+        <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+          <div v-if="cargandoHistorial" class="text-center py-4">
+            <span class="spinner-border text-warning"></span>
+          </div>
+          
+          <div v-else-if="historialLicencia.length === 0" class="text-center py-4 text-muted">
+            <span class="material-icons d-block fs-1 mb-2">history_toggle_off</span>
+            No hay registros en el historial para esta licencia.
+          </div>
+
+          <div v-else class="table-responsive">
+            <table class="table table-sm table-hover align-middle" style="font-size: 0.85rem;">
+              <thead class="table-light">
+                <tr>
+                  <th>Fecha Modificación</th>
+                  <th>Modificado por</th>
+                  <th class="text-center">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="h in historialLicencia" :key="h.id">
+                  <td class="text-nowrap text-muted fw-bold">{{ h.fecha_registro }}</td>
+                  <td>{{ h.usuario || 'Sistema' }}</td>
+                  <td class="text-center">
+                    <span :class="['badge-status-sm', h.estado_nuevo]">{{ h.estado_nuevo.toUpperCase() }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
     </Teleport>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject, watch } from 'vue';
-import { api } from '@/api/api';
-import * as XLSX from 'xlsx';
+import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import { api } from '@/api/api'
+import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
 
 useHead({
-  title: 'Licencias | AAAB',
-  meta: [
-    { name: 'description', content: 'Administra y controla las licencias de los árbitros.' },
-    { property: 'og:title', content: 'Licencias | AAAB' },
-    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' }
-  ],
+  title: 'Gestión de Licencias | AAAB',
+  meta: [{ name: 'description', content: 'Gestión de licencias solicitadas por los árbitros.' }],
 })
 
-const notificar = inject('notificar');
+const notificar = inject('notificar')
 
-const licencias = ref([]);
-const licenciasOriginales = ref([]);
-const arbitrosLista = ref([]);
-const cargando = ref(false);
-const mostrarModalNuevo = ref(false);
+const licencias = ref([])
+const arbitrosLista = ref([])
+const cargando = ref(false)
 
-// Agregada fecha_solicitud al modelo nuevo
-const nuevo = ref({ id_arbitro: '', fecha_solicitud: '', fecha_licencia: '', estado: 'aprobada' });
+const filtros = reactive({
+  apellido: '', nombre: '', estado: '', fecha: '', fecha_solicitud: ''
+})
 
-// Agregado fecha_solicitud a los filtros
-const filtros = ref({ nombre: '', apellido: '', estado: '', fecha: '', fecha_solicitud: '' });
+const mostrarFiltrosMobile = ref(false)
 
-// Variables de paginación
-const registrosPorPagina = 10;
-const paginaActual = ref(1);
+// Paginación
+const paginaActual = ref(1)
+const registrosPorPagina = 10
 
+// Variables para Modal (Alta/Edición)
+const mostrarModal = ref(false)
+const modoModal = ref('nuevo')
+const formModal = ref({ id: null, id_arbitro: '', fecha_solicitud: '', fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '' })
+
+// Variables para Historial
+const mostrarModalHistorial = ref(false)
+const cargandoHistorial = ref(false)
+const licenciaSeleccionada = ref(null)
+const historialLicencia = ref([])
+
+// Normalizar texto para búsqueda
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : '';
 
+// Filtros y paginación
 const licenciasFiltradas = computed(() => {
   return licencias.value.filter(l => {
-    const matchApe = normalizar(l.apellido).includes(normalizar(filtros.value.apellido));
-    const matchNom = normalizar(l.nombre).includes(normalizar(filtros.value.nombre));
-    const matchEst = filtros.value.estado === '' || l.estado === filtros.value.estado;
-    const matchFec = formatearFechaVista(l.fecha_licencia).includes(filtros.value.fecha);
-    const matchFecSol = formatearFechaVista(l.fecha_solicitud).includes(filtros.value.fecha_solicitud);
-    
+    const matchApe = normalizar(l.apellido).includes(normalizar(filtros.apellido));
+    const matchNom = normalizar(l.nombre).includes(normalizar(filtros.nombre));
+    const matchEst = filtros.estado === '' || l.estado === filtros.estado;
+    const matchFec = formatearFechaVista(l.fecha_licencia).includes(filtros.fecha);
+    const matchFecSol = formatearFechaVista(l.fecha_solicitud).includes(filtros.fecha_solicitud);
     return matchApe && matchNom && matchEst && matchFec && matchFecSol;
   });
 });
 
-// Lógica Computada para Paginación
-const totalPaginas = computed(() => {
-  return Math.ceil(licenciasFiltradas.value.length / registrosPorPagina) || 1;
-});
-
+const totalPaginas = computed(() => Math.ceil(licenciasFiltradas.value.length / registrosPorPagina) || 1);
 const licenciasPaginadas = computed(() => {
   const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  const fin = inicio + registrosPorPagina;
-  return licenciasFiltradas.value.slice(inicio, fin);
+  return licenciasFiltradas.value.slice(inicio, inicio + registrosPorPagina);
 });
 
-// Watcher para reiniciar la página cuando se busca con un filtro
-watch(filtros, () => {
-  paginaActual.value = 1;
-}, { deep: true });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
+watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo });
 
+// API Calls
 const obtenerLicencias = async () => {
   cargando.value = true;
   const res = await api.get({ entity: 'licencias', action: 'obtenerTodasLasLicencias' });
-  if (res.ok) {
-    licencias.value = res.payload;
-    licenciasOriginales.value = JSON.parse(JSON.stringify(res.payload));
-  }
+  if (res.ok) licencias.value = res.payload;
   cargando.value = false;
 };
 
 const obtenerArbitros = async () => {
-  const res = await api.get({ 
-    entity: 'arbitros', 
-    action: 'getArbitros' 
-  }); 
+  const res = await api.get({ entity: 'arbitros', action: 'getArbitros' }); 
   if (res.ok && Array.isArray(res.payload)) {
     arbitrosLista.value = res.payload.sort((a, b) => (a.apellido || '').localeCompare(b.apellido || ''));
   }
 };
 
-const guardarTodo = async () => {
-  const modificadas = licencias.value.filter(lic => {
-    const original = licenciasOriginales.value.find(o => o.id === lic.id);
-    return original.estado !== lic.estado || 
-           original.fecha_licencia !== lic.fecha_licencia ||
-           original.fecha_solicitud !== lic.fecha_solicitud;
-  });
-
-  if (modificadas.length === 0) {
-    notificar({ titulo: 'Sin cambios', mensaje: 'No detectamos modificaciones para guardar.', tipo: 'success' });
-    return;
-  }
-
-  cargando.value = true;
-  let errores = 0;
-
-  for (const lic of modificadas) {
-    const res = await api.post({
-      entity: 'licencias',
-      action: 'actualizarLicencia',
-      payload: { 
-        id: lic.id, 
-        estado: lic.estado, 
-        fecha_licencia: lic.fecha_licencia,
-        fecha_solicitud: lic.fecha_solicitud
-      }
-    });
-    if (!res.ok) errores++;
-  }
-  
-  cargando.value = false;
-
-  if (errores === 0) {
-    licenciasOriginales.value = JSON.parse(JSON.stringify(licencias.value));
-    notificar({ titulo: '¡Cambios Guardados!', mensaje: `Se actualizaron ${modificadas.length} registros con éxito.` });
-  } else {
-    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al procesar los cambios.', tipo: 'danger' });
-  }
+// Acciones Modales
+const abrirModalNuevo = () => {
+  const hoy = new Date().toISOString().split('T')[0];
+  formModal.value = { id: null, id_arbitro: '', fecha_solicitud: hoy, fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '' };
+  modoModal.value = 'nuevo';
+  mostrarModal.value = true;
 };
 
-const crearLicenciaAction = async () => {
-  if(!nuevo.value.id_arbitro || !nuevo.value.fecha_licencia || !nuevo.value.fecha_solicitud) return;
+const editarLicencia = (lic) => {
+  formModal.value = { ...lic };
+  modoModal.value = 'editar';
+  mostrarModal.value = true;
+};
+
+const cerrarModal = () => {
+  mostrarModal.value = false;
+};
+
+const confirmarAlta = async () => {
+  cargando.value = true;
   const res = await api.post({ 
     entity: 'licencias', 
     action: 'crearLicencia', 
-    payload: { ...nuevo.value, es_admin: true } 
+    payload: { ...formModal.value, es_admin: true } 
   });
-  if(res.ok) {
-    mostrarModalNuevo.value = false;
-    await obtenerLicencias();
-    notificar({ titulo: '¡Licencia Creada!', mensaje: 'El registro se guardó correctamente en la base de datos.' });
-    nuevo.value = { id_arbitro: '', fecha_solicitud: '', fecha_licencia: '', estado: 'aprobada' };
+  cargando.value = false;
+
+  if (res.ok) {
+    mostrarModal.value = false;
+    obtenerLicencias();
+    notificar({ titulo: 'Éxito', mensaje: 'Licencia registrada correctamente.', tipo: 'success' });
+  } else {
+    notificar({ titulo: 'Error', mensaje: 'No se pudo registrar la licencia.', tipo: 'danger' });
+  }
+};
+
+const confirmarEdicion = async () => {
+  cargando.value = true;
+  const res = await api.post({
+    entity: 'licencias',
+    action: 'actualizarLicencia',
+    payload: { 
+      id: formModal.value.id, 
+      estado: formModal.value.estado, 
+      fecha_licencia: formModal.value.fecha_licencia,
+      fecha_solicitud: formModal.value.fecha_solicitud
+    }
+  });
+  cargando.value = false;
+
+  if (res.ok) {
+    mostrarModal.value = false;
+    obtenerLicencias();
+    notificar({ titulo: 'Guardado', mensaje: 'Licencia actualizada correctamente.', tipo: 'success' });
+  } else {
+    notificar({ titulo: 'Error', mensaje: 'No se pudieron guardar los cambios.', tipo: 'danger' });
   }
 };
 
@@ -273,15 +423,32 @@ const eliminarLicencia = (id) => {
       const res = await api.post({ entity: 'licencias', action: 'eliminarLicencia', payload: { id } });
       if(res.ok) {
         licencias.value = licencias.value.filter(l => l.id !== id);
-        notificar({ titulo: 'Registro Eliminado', mensaje: 'La licencia ha sido removida del sistema.', tipo: 'success' });
-        
-        // Ajustar paginación si eliminamos el último elemento de la página
-        if (licenciasPaginadas.value.length === 0 && paginaActual.value > 1) {
-          paginaActual.value--;
-        }
+        notificar({ titulo: 'Eliminado', mensaje: 'La licencia ha sido removida.', tipo: 'success' });
       }
     }
   });
+};
+
+const verHistorialLicencia = async (lic) => {
+  licenciaSeleccionada.value = lic;
+  mostrarModalHistorial.value = true;
+  cargandoHistorial.value = true;
+  historialLicencia.value = [];
+  
+  try {
+    const res = await api.get({ 
+      entity: 'licencias', 
+      action: 'obtenerHistorialLicencia', 
+      payload: { id_licencia: lic.id } 
+    });
+    if (res.payload) {
+      historialLicencia.value = res.payload;
+    }
+  } catch (error) {
+    console.error("Error al cargar historial", error);
+  } finally {
+    cargandoHistorial.value = false;
+  }
 };
 
 const exportarExcel = () => {
@@ -299,191 +466,295 @@ const exportarExcel = () => {
   XLSX.writeFile(wb, "Licencias_AAAB.xlsx");
 };
 
-const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : '';
-const limpiarFiltros = () => filtros.value = { nombre: '', apellido: '', estado: '', fecha: '', fecha_solicitud: '' };
-
-const abrirModalNuevo = () => {
-  // Autocompletamos la fecha de solicitud con el día de hoy por comodidad
-  const hoy = new Date().toISOString().split('T')[0];
-  nuevo.value.fecha_solicitud = hoy;
-  mostrarModalNuevo.value = true;
+const limpiarFiltros = () => {
+  filtros.nombre = ''; filtros.apellido = ''; filtros.estado = ''; filtros.fecha = ''; filtros.fecha_solicitud = '';
 };
 
-onMounted(() => {
-  obtenerLicencias();
+onMounted(() => { 
+  obtenerLicencias(); 
   obtenerArbitros();
 });
 </script>
 
 <style scoped>
+/* ====================================================
+   AJUSTES GENERALES DEL CONTENEDOR Y FOOTER
+   ==================================================== */
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh; 
+  height: auto !important; 
+  margin-left: 50%;
+  transform: translateX(-50%);
+  padding: 20px;
+  padding-bottom: 120px; /* Evita que choque con el footer móvil */
+}
+
 .admin-panel { 
   width: 100%;
   max-width: 100%; 
   padding: 20px; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
 }
 
-.header-card { 
+.header-section { 
   background: white; 
+  padding: 15px; 
   border-radius: 8px; 
-  padding: 12px 20px; 
   display: flex; 
   justify-content: space-between; 
-  align-items: center; 
+  margin-bottom: 15px; 
   border-left: 5px solid #ef4444; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+  align-items: center; 
 }
 
-.header-title { font-size: 1.1rem; font-weight: bold; margin: 0; }
-.header-subtitle { font-size: 0.85rem; color: #475569; }
+.title { font-size: 1.1rem; font-weight: bold; margin: 0; }
+.counter { font-size: 0.85rem; color: #000000; }
 
 .header-actions { display: flex; gap: 8px; }
-
-.btn-action { 
-  display: flex; 
-  align-items: center; 
-  gap: 6px; 
-  padding: 8px 15px; 
-  border-radius: 6px; 
-  border: none; 
-  font-size: 0.8rem; 
-  cursor: pointer; 
-}
-
-.btn-light-gray { background: #f1f5f9; color: #475569; }
+.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
+.btn-clear { background: #e2e8f0; color: #000; }
 .btn-blue { background: #3b82f6; color: white; }
-.btn-pink { background: #fee2e2; color: #ef4444; }
-.btn-green { background: #10b981; color: white; }
+.btn-clear-checks { background: #fee2e2; color: #ef4444; } 
+.btn-export { background: #10b981; color: white; }
 
-.table-container { 
-  background: white; 
-  border-radius: 4px; 
-  overflow-y: auto; 
-  max-height: calc(100vh - 150px); 
-  margin-top: 15px; 
+.paginacion {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
 }
 
-.custom-table { 
-  width: 100%; 
-  border-collapse: separate; 
-  border-spacing: 0;
-}
-
-.custom-table thead th { 
-  position: sticky;
-  top: 0; 
-  z-index: 10;
-  background: #f8fafc; 
-  padding: 12px; 
-  font-size: 0.75rem; 
-  font-weight: 900; 
-  border-bottom: 2px solid #e2e8f0; 
-  text-transform: uppercase;
-  color: #000;
-}
-
-.custom-table thead .filter-row td {
-  position: sticky;
-  top: 41px; 
-  z-index: 9;
-  background: #f1f5f9;
-  border-bottom: 1px solid #cbd5e1;
-  padding: 8px;
-}
-
-.filter-input { 
-  width: 100%; 
-  padding: 4px 8px; 
-  border: 1px solid #cbd5e1; 
-  border-radius: 4px; 
-  font-size: 0.75rem; 
-}
-
-.status-select { 
-  padding: 4px 10px; 
-  border-radius: 20px; 
-  border: none; 
-  font-size: 0.7rem; 
-  font-weight: 700; 
-}
-
-.status-select.aprobada { background: #dcfce7; color: #15803d; }
-.status-select.pendiente { background: #fef9c3; color: #a16207; }
-.status-select.rechazada { background: #fee2e2; color: #b91c1c; }
-
-.date-input { 
-  border: 1px solid #e2e8f0; 
-  border-radius: 4px; 
-  padding: 2px 5px; 
-  font-size: 0.8rem; 
-}
-
-.action-buttons-group { display: flex; justify-content: center; gap: 5px; }
-
-.btn-action-icon {
-  background: none;
+.btn-paginacion {
   border: none;
+  background: #f8fafc;
+  color: #0f172a;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: 0.2s;
 }
 
-.btn-delete-row { color: #ef4444; }
-.btn-delete-row:hover { background: #fee2e2; }
+.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
+.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
 
-.btn-refresh { 
-  background: none; 
-  border: none; 
-  color: #64748b; 
-  cursor: pointer; 
+/* ====================================================
+   SOLUCIÓN DE LA TABLA: Huecos y Espaciado
+   ==================================================== */
+.table-container { 
+  width: 100%;
+  overflow: auto; 
+  max-height: 85vh; 
+  background: white; 
+  border-radius: 8px; 
+  border: 1px solid #e2e8f0; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
 }
 
-.modal-overlay { 
-  position: fixed; 
-  top:0; left:0; width:100%; height:100%; 
-  background: rgba(0,0,0,0.5); 
-  display: flex; align-items: center; justify-content: center; 
-  z-index: 5000; 
-}
-
-.modal-content-custom { 
-  background: white; padding: 25px; border-radius: 12px; 
-  width: 320px; text-align: center; 
-}
-
-/* --- NUEVOS ESTILOS PARA PAGINACIÓN --- */
-.paginacion { 
-  display: flex; 
-  justify-content: flex-end; 
-  align-items: center; 
-  gap: 12px; 
-  margin-top: 15px; 
-}
-.paginacion-texto { 
-  color: white; 
+table { 
+  width: 100%;
+  min-width: max-content; 
+  /* SEPARATE es fundamental para que el box-shadow y sticky funcionen bien juntos */
+  border-collapse: separate !important; 
+  border-spacing: 0; 
   font-size: 0.85rem; 
-  font-weight: 600; 
 }
-.btn-paginacion { 
-  border: none; 
-  background: #f8fafc; 
-  color: #0f172a; 
-  padding: 8px 14px; 
+
+/* TH PRINCIPAL */
+thead tr.main-header th { 
+  position: sticky; 
+  top: 0; 
+  z-index: 50; 
+  background: #f8fafc !important; 
+  padding: 12px 8px; 
+  border-bottom: 1px solid #cbd5e1; /* Borde normal inferior */
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  font-size: 0.75rem; 
+  color: #000; 
+  text-transform: uppercase; 
+  font-weight: 800; 
+  margin: 0;
+}
+
+/* FILA DE FILTROS */
+thead tr.filter-row td { 
+  position: sticky;
+  /* Top 35px hace que se meta un poquito por abajo del TH y mate el hueco blanco */
+  top: 35px; 
+  z-index: 40; 
+  background: #f1f5f9 !important; 
+  /* Padding extra abajo para empujar los datos */
+  padding: 6px 8px 12px 8px; 
+  /* Borde grueso abajo para generar separación */
+  border-bottom: 4px solid #e2e8f0; 
+  margin: 0;
+}
+
+/* COLUMNAS CONGELADAS (ID, Acciones, Apellido, Nombre) */
+.col-id { left: 0; width: 50px; text-align: center; }
+.col-acciones { left: 50px; width: 110px; }
+.col-apellido { left: 160px; width: 140px; }
+.col-nombre { left: 300px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
+
+.sticky-col { 
+  position: sticky !important; 
+  z-index: 60 !important; 
+  background: white !important; 
+  border-right: 1px solid #e2e8f0; 
+}
+thead tr.main-header th.sticky-col { 
+  z-index: 100 !important; 
+  background-color: #f8fafc !important; 
+}
+thead tr.filter-row td.sticky-col { 
+  z-index: 95 !important; 
+  background-color: #f1f5f9 !important; 
+}
+
+/* CELDAS DE DATOS */
+.cell-ro {
+  padding: 10px 8px; /* Un poco más de aire a las filas */
+  font-size: 0.85rem;
+  color: #000;
+  white-space: nowrap;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
+
+/* BOTONES DE ACCIÓN EN TABLA */
+.btn-editar, .btn-historial, .btn-eliminar {
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 6px; padding: 4px; cursor: pointer; transition: 0.2s; border: none;
+}
+.btn-editar { background: #eff6ff; color: #1d4ed8; }
+.btn-editar:hover { background: #dbeafe; }
+
+.btn-historial { background: #fef3c7; color: #d97706; }
+.btn-historial:hover { background: #fde047; }
+
+.btn-eliminar { background: #fee2e2; color: #dc2626; }
+.btn-eliminar:hover { background: #fecaca; }
+
+/* BADGES ESTADO */
+.badge-status {
+  padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+}
+.badge-status.aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
+.badge-status.rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+.badge-status-sm {
+  padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700;
+}
+.badge-status-sm.aprobada { background: #dcfce7; color: #15803d; }
+.badge-status-sm.pendiente { background: #fef9c3; color: #a16207; }
+.badge-status-sm.rechazada { background: #fee2e2; color: #b91c1c; }
+
+.btn-refresh { background: none; border: none; color: #64748b; cursor: pointer; }
+
+/* MODALES */
+.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+.modal-content-exito { background: white; border-radius: 30px; padding: 40px; width: 90%; max-width: 750px; text-align: center; }
+.icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.bg-success-light { background: #dcfce7; color: #166534; }
+.bg-info-light { background: #e0f2fe; color: #0369a1; }
+
+
+/* =======================================
+   VISTA MOBILE / RESPONSIVE (ARREGLADO)
+   ======================================= */
+.desktop-only { display: block; }
+.mobile-only { display: none; }
+.mobile-only-flex { display: none; }
+.btn-text { display: inline; }
+
+/* PANEL DE FILTROS MÓVIL CON CSS GRID LIMPIO */
+.mobile-filter-panel { 
+  background: white; 
+  padding: 15px 20px; 
+  border-radius: 8px; 
+  border: 1px solid #e2e8f0; 
+  margin-bottom: 15px;
+}
+.filter-grid-mobile { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 12px; 
+}
+.filter-grid-mobile input, 
+.filter-grid-mobile select { 
+  padding: 10px; 
+  border: 1px solid #cbd5e1; 
   border-radius: 6px; 
-  font-weight: 700; 
-  cursor: pointer; 
+  font-size: 0.85rem; 
+  width: 100%; 
+  outline: none; 
+  background: #f8fafc;
 }
-.btn-paginacion:disabled { 
-  opacity: 0.5; 
-  cursor: not-allowed; 
+.filter-grid-mobile select.full-width {
+  grid-column: span 2;
+}
+
+@media (max-width: 1024px) {
+  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
 }
 
 @media (max-width: 768px) {
-  .header-card { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .header-actions { width: 100%; overflow-x: auto; }
-  .btn-action b { display: none; } 
-  .custom-table { min-width: 600px; }
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+  
+  .card-licencia {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  .card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px;
+  }
+  .card-name { font-size: 1.05rem; color: #0f172a; }
+  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
+  .card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
+  
+  .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
+  .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+  .btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+}
+
+@media (max-width: 600px) {
+  .admin-panel { padding: 10px; }
+  .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .title { font-size: 1rem; }
+  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
+  
+  .header-actions { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: nowrap; 
+    justify-content: center; 
+    gap: 8px; 
+  }
+  .btn-action { 
+    flex: none;
+    width: 42px; 
+    height: 42px; 
+    padding: 0;
+    justify-content: center; 
+  }
+  .btn-text { display: none !important; }
+  .mobile-only-flex { display: flex !important; }
 }
 </style>

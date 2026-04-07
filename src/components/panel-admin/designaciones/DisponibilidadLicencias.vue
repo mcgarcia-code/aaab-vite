@@ -21,7 +21,8 @@
             <span class="btn-text">Filtros</span>
           </button>
 
-          <button @click="limpiarChecks" class="btn-action btn-clear-checks desktop-only">
+          <!-- Modificamos el click para que llame a la nueva función con el modal -->
+          <button @click="solicitarLimpiarChecks" class="btn-action btn-clear-checks desktop-only">
             <span class="material-icons" style="font-size: 18px; line-height: 1;">check_box_outline_blank</span>
             <span class="btn-text" style="line-height: 1;">Tildes</span>
           </button>
@@ -271,7 +272,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, watch } from 'vue'; // Importamos watch
+import { ref, onMounted, computed, reactive, watch, inject } from 'vue'; // Añadimos inject
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head'
@@ -286,6 +287,10 @@ useHead({
     { property: 'og:type', content: 'website' }
   ],
 })
+
+// INYECTAMOS EL CONFIRMAR Y EL NOTIFICAR
+const notificar = inject('notificar');
+const confirmar = inject('confirmar');
 
 const arbitros = ref([]);
 const mostrarFiltrosMobile = ref(false);
@@ -337,6 +342,7 @@ const cargarDatos = async () => {
     }
   } catch (err) { 
     console.error("Error al cargar datos:", err); 
+    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
   }
 };
 
@@ -354,22 +360,45 @@ const toggleDesignacion = async (id, dia) => {
     });
   } catch (err) {
     console.error("Error al guardar tilde:", err);
+    if (nuevoValor) set.delete(id); else set.add(id); // Revertimos visualmente si falla
+    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la designación.', tipo: 'danger' });
   }
 };
 
+// NUEVA FUNCIÓN QUE USA EL MODAL CONFIRMAR
+const solicitarLimpiarChecks = async () => {
+  const confirmacion = await confirmar({
+    titulo: 'Limpiar Designaciones',
+    mensaje: '¿Estás seguro que deseas limpiar todos los tildes de designación? Esta acción no se puede deshacer.',
+    textoConfirmar: 'Sí, limpiar tildes',
+    textoCancelar: 'Cancelar',
+    tipo: 'warning'
+  });
+
+  if (confirmacion) {
+    limpiarChecks();
+  }
+};
+
+// LA FUNCIÓN ORIGINAL AHORA SE LLAMA SOLO SI EL USUARIO ACEPTÓ
 const limpiarChecks = async () => {
-  if (confirm("¿Limpiar tildes de designación?")) {
-    designadosSabado.value.clear();
-    designadosDomingo.value.clear();
-    try {
-      await api.post({
-        entity: 'designaciones',
-        action: 'limpiarTildesDesignaciones',
-        payload: {}
-      });
-    } catch (err) {
-      console.error("Error al limpiar tildes en BE:", err);
+  try {
+    const res = await api.post({
+      entity: 'designaciones',
+      action: 'limpiarTildesDesignaciones',
+      payload: {}
+    });
+
+    if (res && !res.error) {
+      designadosSabado.value.clear();
+      designadosDomingo.value.clear();
+      notificar({ titulo: 'Éxito', mensaje: 'Se limpiaron todas las designaciones.', tipo: 'success' });
+    } else {
+      throw new Error("Error del servidor");
     }
+  } catch (err) {
+    console.error("Error al limpiar tildes en BE:", err);
+    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al limpiar las designaciones.', tipo: 'danger' });
   }
 };
 

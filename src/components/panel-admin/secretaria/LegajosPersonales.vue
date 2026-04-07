@@ -534,7 +534,7 @@ const cargando = ref(false)
 const provincias = ref([])
 const localidades = ref([])
 const paginaActual = ref(1)
-const registrosPorPagina = 10
+const registrosPorPagina = 8
 
 const mostrarModal = ref(false)
 const modoModal = ref('nuevo')
@@ -853,16 +853,18 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ESTILOS EXACTOS DE TU CÓDIGO ORIGINAL */
+/* ====================================================
+   AJUSTES GENERALES DEL CONTENEDOR Y FOOTER
+   ==================================================== */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
   min-height: 100vh; 
-  height: auto;      
+  height: auto !important; 
   margin-left: 50%;
   transform: translateX(-50%);
   padding: 20px;
-  padding-bottom: 80px; 
+  padding-bottom: 120px; /* Evita que choque con el footer móvil */
 }
 
 .admin-panel { 
@@ -873,7 +875,6 @@ onMounted(() => {
   color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
-  height: 100%; 
 }
 
 .header-section { 
@@ -888,50 +889,49 @@ onMounted(() => {
   align-items: center; 
 }
 
-.header-info {
-  display: flex;
-  flex-direction: column;
-}
-
+.header-info { display: flex; flex-direction: column; }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
 .counter { font-size: 0.85rem; color: #000000; }
 
+/* ====================================================
+   BOTONES DE ACCIÓN (CABECERA)
+   ==================================================== */
 .header-actions { display: flex; gap: 8px; }
-.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
+
+.btn-action { 
+  border: none; 
+  padding: 8px 12px; 
+  border-radius: 6px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  gap: 5px; 
+  font-size: 0.75rem; 
+  transition: opacity 0.2s, transform 0.1s; 
+}
+.btn-action:hover { opacity: 0.85; }
+.btn-action:active { transform: scale(0.95); }
+
 .btn-clear { background: #e2e8f0; color: #000; }
 .btn-clear-checks { background: #fee2e2; color: #ef4444; } 
 .btn-export { background: #10b981; color: white; }
+.btn-blue { background: #3b82f6; color: white; }
 
-.paginacion {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-}
+.btn-text { display: inline; }
 
-.btn-paginacion {
-  border: none;
-  background: #f8fafc;
-  color: #0f172a;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-}
+/* ====================================================
+   PAGINACIÓN
+   ==================================================== */
+.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 15px; }
+.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
+.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
 
-.btn-paginacion:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.paginacion-texto {
-  color: white;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
+/* ====================================================
+   TABLA DESKTOP (ARREGLO HUECOS Y SEPARACIÓN)
+   ==================================================== */
 .table-container { 
   width: 100%;
   overflow: auto; 
@@ -945,45 +945,60 @@ onMounted(() => {
 table { 
   width: 100%;
   min-width: max-content; 
-  border-collapse: collapse !important; 
+  border-collapse: separate !important; /* Importante para el renderizado sticky */
   border-spacing: 0; 
   font-size: 0.85rem; 
 }
+
 thead tr.main-header th { 
   position: sticky; 
   top: 0; 
   z-index: 50; 
-  background: #f8fafc; 
-  border-bottom: 2px solid #e2e8f0; 
+  background: #f8fafc !important; 
+  padding: 12px 8px; 
+  border-bottom: 1px solid #cbd5e1; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  font-size: 0.75rem; 
+  color: #000; 
+  text-transform: uppercase; 
+  font-weight: 800; 
+  margin: 0;
 }
 
 thead tr.filter-row td { 
   position: sticky;
-  top: 36px; 
+  top: 35px; /* Ajuste milimétrico para solapar y matar el hueco blanco */
   z-index: 40; 
   background: #f1F5F9 !important; 
-  border-bottom: 2px solid #cbd5e1; 
+  padding: 6px 8px 12px 8px; 
+  border-bottom: 4px solid #e2e8f0; /* Borde grueso para separar datos */
+  margin: 0;
 }
+
+/* COLUMNAS CONGELADAS */
+.col-id { left: 0; width: 50px; text-align: center; }
+.col-acciones { left: 50px; width: 80px; }
+.col-apellido { left: 130px; width: 140px; }
+.col-nombre { left: 270px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 
 .sticky-col { 
   position: sticky !important; 
   z-index: 60 !important; 
   background: white !important; 
-  box-shadow: inset -1px 0 0 #e2e8f0; 
-  background-clip: padding-box; 
+  border-right: 1px solid #e2e8f0;
 }
-thead th.sticky-col { 
-  z-index: 100 !important; 
-  background-color: #f1F5F9 !important; 
-}
+thead th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
 
-thead td.sticky-col { 
-  z-index: 95 !important; 
-  background-color: #f8fafc !important; 
+/* CELDAS Y ESTADOS DE FILA */
+.cell-ro {
+  padding: 10px 8px;
+  font-size: 0.85rem;
+  color: inherit; 
+  white-space: nowrap;
+  border-bottom: 1px solid #f1f5f9;
 }
-
-th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000000; text-transform: uppercase; font-weight: 800; }
-.filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
+.obs-cell { white-space: normal; min-width: 200px; }
 
 .fila-inactiva td, .fila-inactiva .sticky-col { 
   background-color: #ef4444 !important; 
@@ -991,256 +1006,160 @@ th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; c
   color: #fff !important; 
 }
 
-.edit-input { width: 100%; padding: 4px; border: 1px solid transparent; background: transparent; font-size: 0.85rem; color: inherit; }
-.edit-input:focus { background: white; border-color: #3b82f6; outline: none; color: #000; }
-.edit-textarea { width: 250px; height: 30px; border: 1px solid transparent; background: transparent; font-size: 0.85rem; font-family: inherit; resize: none; padding: 4px; transition: all 0.2s; }
-.edit-textarea:focus { height: 80px; background: white; border-color: #3b82f6; outline: none; color: #000; }
+.filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
 
+/* BOTONES DE EDICIÓN E HISTORIAL EN TABLA */
+.btn-editar { display: inline-flex; align-items: center; justify-content: center; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; }
+.btn-editar:hover { background: #dbeafe; }
+
+.btn-historial { display: inline-flex; align-items: center; justify-content: center; background: #fef3c7; border: 1px solid #fde047; color: #d97706; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; }
+.btn-historial:hover { background: #fde047; }
+
+/* OTROS ELEMENTOS DE LA TABLA */
 .status-wrapper { display: flex; align-items: center; gap: 5px; justify-content: center; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-active { background: #10b981; }
 .dot-inactive { background: #fff; border: 1px solid #fff; }
-.select-compact { border: 1px solid transparent; background: transparent; cursor: pointer; font-size: 0.8rem; width: 100%; padding: 2px; }
-.select-compact:hover { border-color: #cbd5e1; background: #f8fafc; }
-select.select-compact { color: #1e293b; text-align-last: center; }
-
 .col-xs-compact { width: 70px; text-align: center; }
 .inactivo { background-color: #fee2e2 !important; color: #000 !important; }
 .col-dni-compact { width: 90px; text-align: center; }
 
-.date-custom-wrapper { position: relative; display: flex; align-items: center; width: 110px; }
-.date-custom-wrapper::before { content: attr(data-date); position: absolute; left: 4px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.85rem; }
-.input-fecha-nativa { color: transparent !important; cursor: pointer; }
-.input-fecha-nativa::-webkit-calendar-picker-indicator { position: absolute; right: 0; cursor: pointer; }
 
-.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.modal-content-exito { background: white; border-radius: 30px; padding: 40px; width: 90%; max-width: 750px; text-align: center; color: #000; }
-.icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
-.small-select { width: 100%; font-size: 0.8rem; padding: 2px; border: 1px solid transparent; background: transparent; cursor: pointer; }
-.small-select:hover { background: #f8fafc; border-color: #cbd5e1; }
-.bg-success-light { background: #dcfce7; color: #166534; }
-
-/* SPAN DEL TEXTO PARA OCULTAR EN MOBILE Y CLASE PARA EL BOTÓN EXTRA */
-.btn-text { display: inline; }
-.btn-blue { background: #3b82f6; color: white; }
-.mobile-only-flex { display: none; }
-.filter-input-mobile { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; }
-
-/* VISTA MOBILE CARDS */
-.mobile-only { display: none; }
-.desktop-only { display: block; }
-
-@media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-  
-  .card-arbitro {
-    background: white;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 12px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  }
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-  }
-  .card-name {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 1.05rem;
-    color: #0f172a;
-  }
-  .card-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    color: #475569;
-    margin-bottom: 8px;
-  }
-  .card-info p {
-    font-size: 0.85rem;
-    color: #475569;
-    margin: 4px 0;
-  }
-  .btn-editar-mobile {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    color: #1d4ed8;
-    padding: 10px;
-    border-radius: 6px;
-    font-weight: bold;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-  }
-  
-  /* ESTILOS DEL NUEVO BOTÓN HISTORIAL EN MOBILE */
-  .btn-historial-mobile {
-    background: #fef3c7; 
-    border: 1px solid #fde047; 
-    color: #d97706; 
-    padding: 10px 14px; 
-    border-radius: 6px; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    cursor: pointer;
-  }
-
-  .card-arbitro.fila-inactiva {
-    background-color: #ef4444 !important;
-    border-color: #dc2626;
-  }
-  .card-arbitro.fila-inactiva .card-name,
-  .card-arbitro.fila-inactiva .card-row,
-  .card-arbitro.fila-inactiva .card-info p,
-  .card-arbitro.fila-inactiva .card-header .text-xs {
-    color: #fff !important;
-  }
-  .card-arbitro.fila-inactiva .btn-editar-mobile {
-    background: #fff;
-    border-color: #fff;
-    color: #ef4444; 
-  }
-  .card-arbitro.fila-inactiva .btn-historial-mobile {
-    background: #fff;
-    border-color: #fff;
-    color: #d97706; 
-  }
+/* ====================================================
+   PANEL DE FILTROS MÓVIL (NUEVO DISEÑO EN GRILLA CSS)
+   ==================================================== */
+.mobile-filter-panel { 
+  background: white; 
+  padding: 15px 20px; 
+  border-radius: 8px; 
+  border: 1px solid #e2e8f0; 
+  margin-bottom: 15px;
 }
+.filter-grid-mobile { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 12px; 
+}
+.form-group-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.form-group-mobile.full-width {
+  grid-column: span 2;
+}
+.form-group-mobile label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+}
+.form-group-mobile input, 
+.form-group-mobile select { 
+  padding: 8px 10px; 
+  border: 1px solid #cbd5e1; 
+  border-radius: 6px; 
+  font-size: 0.85rem; 
+  width: 100%; 
+  outline: none; 
+  background: #f8fafc;
+  color: #0f172a;
+}
+.form-group-mobile input:focus, 
+.form-group-mobile select:focus {
+  border-color: #3b82f6;
+  background: white;
+}
+.btn-close-filters { 
+  width: 100%; 
+  padding: 10px; 
+  background: #3b82f6; 
+  color: white; 
+  border: none; 
+  border-radius: 6px; 
+  font-weight: bold; 
+  font-size: 0.9rem;
+}
+
+
+/* ====================================================
+   MODALES (ESTILOS GENERALES)
+   ==================================================== */
+.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+.modal-content-exito { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 750px; text-align: center; color: #000; }
+.icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.bg-success-light { background: #dcfce7; color: #166534; }
+.bg-info-light { background: #e0f2fe; color: #0369a1; }
+
+.seccion-titulo { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; margin-top: 15px; width: 100%; }
+.checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 5px; }
+.checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; cursor: pointer; color: #000; }
+
+.badge-notif { position: absolute; top: -6px; right: -6px; background-color: #ef4444; color: white; font-size: 0.65rem; font-weight: bold; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+.solicitud-card { background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 12px 15px; transition: all 0.2s; }
+.solicitud-card.bg-light { border-left: 4px solid #10b981; opacity: 0.8; }
+.text-xs { font-size: 0.75rem; }
+
+
+/* =======================================
+   VISTA MOBILE Y RESPONSIVIDAD
+   ======================================= */
+.desktop-only { display: block; }
+.mobile-only { display: none; }
+.mobile-only-flex { display: none; }
 
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
   .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
 }
 
-/* =======================================
-   AQUÍ ESTÁ LA MAGIA DEL RESPONSIVE MÓVIL 
-   ======================================= */
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+  
+  /* ESTILOS DE LAS CARJETAS DE ÁRBITROS */
+  .card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+  .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
+  .card-name { display: flex; align-items: center; gap: 8px; font-size: 1.05rem; color: #0f172a; }
+  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
+  .card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
+  
+  .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
+  .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+
+  /* FILA ROJA / INACTIVA */
+  .card-arbitro.fila-inactiva { background-color: #ef4444 !important; border-color: #dc2626; }
+  .card-arbitro.fila-inactiva .card-name,
+  .card-arbitro.fila-inactiva .card-row,
+  .card-arbitro.fila-inactiva .card-info p,
+  .card-arbitro.fila-inactiva .card-header .text-xs { color: #fff !important; }
+  .card-arbitro.fila-inactiva .btn-editar-mobile { background: #fff; border-color: #fff; color: #ef4444; }
+  .card-arbitro.fila-inactiva .btn-historial-mobile { background: #fff; border-color: #fff; color: #d97706; }
+}
+
 @media (max-width: 600px) {
   .admin-panel { padding: 10px; }
   .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
   .title { font-size: 1rem; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
   
-  /* Botones en una sola fila, ocultando el texto */
+  /* Botones 42x42 en una sola fila centrados */
   .header-actions { 
     width: 100%; 
     display: flex; 
     flex-direction: row; 
     flex-wrap: nowrap; 
-    justify-content: space-between; 
+    justify-content: center; 
     gap: 8px; 
   }
   .btn-action { 
-    flex: 1 1 auto; 
-    padding: 10px 0; 
+    flex: none; 
+    width: 42px; 
+    height: 42px; 
+    padding: 0; 
     justify-content: center; 
   }
   
-  /* Desaparece el texto en móvil, queda solo el ícono */
-  .btn-text { 
-    display: none !important; 
-  }
-  
-  /* Aparece el botón extra para ver los filtros en móvil */
-  .mobile-only-flex { 
-    display: flex !important; 
-  }
+  .btn-text { display: none !important; }
+  .mobile-only-flex { display: flex !important; }
 }
-
-/* ─── CLASES NUEVAS PARA SOLO LECTURA Y MODAL ─── */
-.cell-ro {
-  padding: 4px;
-  font-size: 0.85rem;
-  color: inherit; 
-  white-space: nowrap;
-  border-bottom: 1px solid #e2e8f0;
-}
-.obs-cell { white-space: normal; min-width: 200px; }
-
-.btn-editar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1d4ed8;
-  border-radius: 6px;
-  padding: 4px 8px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-.btn-editar:hover { background: #dbeafe; }
-
-/* BOTÓN DE HISTORIAL (ESCRITORIO) */
-.btn-historial { 
-  display: inline-flex; align-items: center; justify-content: center; 
-  background: #fef3c7; border: 1px solid #fde047; color: #d97706; 
-  border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; 
-}
-.btn-historial:hover { background: #fde047; }
-
-.seccion-titulo {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #64748b;
-  border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 4px;
-  margin-top: 15px;
-  width: 100%;
-}
-
-.checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 5px; }
-.checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; cursor: pointer; color: #000; }
-.bg-info-light { background: #e0f2fe; color: #0369a1; }
-
-.col-id { left: 0; width: 50px; text-align: center; }
-.col-acciones { left: 50px; width: 80px; }
-.col-apellido { left: 130px; width: 140px; }
-.col-nombre { left: 270px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-
-/* --- ESTILOS AGREGADOS PARA SOLICITUDES --- */
-.badge-notif {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background-color: #ef4444;
-  color: white;
-  font-size: 0.65rem;
-  font-weight: bold;
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid white;
-}
-
-.solicitud-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-left: 4px solid #3b82f6;
-  border-radius: 8px;
-  padding: 12px 15px;
-  transition: all 0.2s;
-}
-
-.solicitud-card.bg-light {
-  border-left: 4px solid #10b981; 
-  opacity: 0.8;
-}
-
-.text-xs { font-size: 0.75rem; }
 </style>

@@ -171,6 +171,7 @@
                 <option value="Consumidor Final">Consumidor Final</option>
                 <option value="Exento">Exento</option>
                 <option value="Responsable Inscripto">Responsable Inscripto</option>
+                <option value="IVA Inscripto">IVA Inscripto</option>
                 <option value="Monotributo">Monotributo</option>
               </select>
             </div>
@@ -369,7 +370,7 @@ onMounted(() => {
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
 .counter { font-size: 0.85rem; color: #000000; }
 .header-actions { display: flex; gap: 8px; }
-.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
+.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
 .btn-blue { background: #3b82f6; color: white; }
 .btn-clear { background: #e2e8f0; color: #000; }
 .btn-clear-checks { background: #fee2e2; color: #ef4444; } 
@@ -438,18 +439,20 @@ th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; c
   .title { font-size: 1rem; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
   
-  /* Botones en una sola fila, ocultando el texto */
+  /* Botones en una sola fila, cuadrados y centrados */
   .header-actions { 
     width: 100%; 
     display: flex; 
     flex-direction: row; 
     flex-wrap: nowrap; 
-    justify-content: flex-end; 
+    justify-content: center; 
     gap: 8px; 
   }
   .btn-action { 
-    flex: 0 0 auto; 
-    padding: 10px 14px; 
+    flex: none; 
+    width: 42px; 
+    height: 42px; 
+    padding: 0; 
     justify-content: center; 
   }
   
