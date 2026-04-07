@@ -114,7 +114,7 @@
               <td><input v-model="filtros.email" class="filter-input"></td>
               <td><input v-model="filtros.direccion" class="filter-input"></td>
               <td><selProvincia v-model="filtros.provincia" :provincias="provincias" class="filter-input" /></td>
-              <td><selLocalidad v-model="filtros.localidad" :localidades="localidadesFiltradas" class="filter-input" /></td>
+              <td><selLocalidad v-model="filtros.localidad" :localidadesFiltradas="localidadesFiltradas" class="filter-input" /></td>
               <td><input v-model="filtros.zona" class="filter-input"></td>
               <td><input v-model="filtros.celular" class="filter-input"></td>
               <td><input v-model="filtros.fecha_nacimiento" class="filter-input"></td>
@@ -264,11 +264,20 @@
         <h4 class="fw-bold mt-3">
           {{ modoModal === 'editar' ? `Editar árbitro — ${formModal.apellido} ${formModal.nombre}` : 'Registrar Nuevo Árbitro' }}
         </h4>
-        <p v-if="modoModal === 'editar'" class="text-muted small mb-1">ID #{{ formModal.id }}</p>
+        <p v-if="modoModal === 'editar'" class="text-muted small mb-3">ID #{{ formModal.id }}</p>
 
-        <div class="row g-3 text-start mt-3" style="max-height: 60vh; overflow-y: auto; padding: 15px;">
+        <!-- RECORDATORIO DE SOLICITUD (Aparece solo si venimos de la campanita de notificaciones) -->
+        <div v-if="mensajeSolicitudActiva" class="alert alert-warning border-0 text-start shadow-sm d-flex align-items-start gap-3 p-3 mb-3 mx-auto" style="border-radius: 12px;">
+          <span class="material-icons text-warning mt-1">assignment_late</span>
+          <div>
+            <strong class="d-block text-dark mb-1" style="font-size: 0.85rem; text-transform: uppercase;">Solicitud del árbitro:</strong>
+            <span class="text-dark" style="font-size: 0.85rem; white-space: pre-line; line-height: 1.4;">{{ mensajeSolicitudActiva }}</span>
+          </div>
+        </div>
 
-          <div class="col-12 seccion-titulo">Datos básicos</div>
+        <div class="row g-3 text-start mt-1" style="max-height: 55vh; overflow-y: auto; padding: 15px;">
+
+          <div class="col-12 seccion-titulo mt-0">Datos básicos</div>
           <div class="col-md-4"><label class="small fw-bold">Apellido *</label><input v-model="formModal.apellido" class="filter-input"></div>
           <div class="col-md-4"><label class="small fw-bold">Nombre *</label><input v-model="formModal.nombre" class="filter-input"></div>
           <div class="col-md-4"><label class="small fw-bold">DNI</label><input v-model="formModal.dni" class="filter-input"></div>
@@ -397,7 +406,6 @@
 
     <!-- MODAL SOLICITUDES / HISTORIAL -->
     <Teleport to="body">
-    <!-- FIX APLICADO ACÁ: z-index a 1050 -->
     <div v-if="mostrarModalSolicitudes" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 800px; width: 95%; text-align: left;">
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
@@ -410,20 +418,42 @@
           </button>
         </div>
 
-        <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
+        <!-- NUEVO: NAVEGACIÓN DE PESTAÑAS (TABS) -->
+        <div class="d-flex gap-2 mb-3 border-bottom pb-3 overflow-auto" style="white-space: nowrap;">
+          <button class="btn btn-sm fw-bold rounded-pill px-3" 
+                  :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm' : 'btn-light text-muted'" 
+                  @click="tabActivo = 'enviado'">
+            PENDIENTES 
+            <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-primary ms-1 rounded-pill">{{ solicitudesPendientes.length }}</span>
+          </button>
+          <button class="btn btn-sm fw-bold rounded-pill px-3" 
+                  :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm' : 'btn-light text-muted'" 
+                  @click="tabActivo = 'aprobado'">
+            APROBADAS
+          </button>
+          <button class="btn btn-sm fw-bold rounded-pill px-3" 
+                  :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm' : 'btn-light text-muted'" 
+                  @click="tabActivo = 'rechazado'">
+            RECHAZADAS
+          </button>
+        </div>
+
+        <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
           <div v-if="cargandoSolicitudes" class="text-center py-4">
             <span class="spinner-border text-primary"></span>
             <p class="text-muted mt-2 small">Cargando solicitudes...</p>
           </div>
           
-          <div v-else-if="solicitudes.length === 0" class="text-center py-4 text-muted">
-            <span class="material-icons" style="font-size: 40px; color: #cbd5e1;">inbox</span>
-            <p class="mt-2">No hay solicitudes recientes.</p>
+          <div v-else-if="solicitudesMostradas.length === 0" class="text-center py-5 text-muted">
+            <span class="material-icons mb-2" style="font-size: 40px; color: #cbd5e1;">
+              {{ tabActivo === 'enviado' ? 'inbox' : (tabActivo === 'aprobado' ? 'check_circle_outline' : 'highlight_off') }}
+            </span>
+            <p class="mb-0 fw-bold">No hay solicitudes {{ tabActivo === 'enviado' ? 'pendientes' : tabActivo + 's' }}.</p>
           </div>
 
-          <div v-else v-for="sol in solicitudes" :key="sol.id" class="solicitud-card shadow-sm mb-3" :class="{'bg-light': sol.estado === 'aprobado'}">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
+          <div v-else v-for="sol in solicitudesMostradas" :key="sol.id" class="solicitud-card shadow-sm mb-3" :class="{'bg-light': sol.estado === 'aprobado', 'border-danger-subtle': sol.estado === 'rechazado'}">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+              <div style="flex: 1; min-width: 250px;">
                 <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
                 <strong class="d-block text-dark mb-1">{{ sol.arbitro_nombre }}</strong>
                 <p class="m-0 small text-secondary" style="white-space: pre-line;">{{ sol.mensaje }}</p>
@@ -434,7 +464,7 @@
                 </span>
                 
                 <div class="d-flex gap-1" v-if="sol.estado === 'enviado'">
-                  <button @click="abrirEdicionDesdeSolicitud(sol.id_arbitro)" 
+                  <button @click="abrirEdicionDesdeSolicitud(sol)" 
                           class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 fw-bold" 
                           style="font-size: 0.7rem; padding: 4px 8px;"
                           title="Abrir legajo para editar">
@@ -463,13 +493,13 @@
 
     <!-- MODAL HISTORIAL INDIVIDUAL DEL ÁRBITRO -->
     <Teleport to="body">
-    <!-- FIX APLICADO ACÁ TAMBIÉN: z-index a 1050 -->
     <div v-if="mostrarModalHistorialArbitro" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
-      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 700px; width: 95%; text-align: left;">
+      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 850px; width: 95%; text-align: left;">
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
           <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
             <span class="material-icons text-warning">manage_search</span> 
             Historial de {{ arbitroSeleccionado.apellido }}, {{ arbitroSeleccionado.nombre }}
+            <span v-if="!cargandoHistorialArbitro" class="badge bg-dark rounded-pill fs-6 ms-2" title="Total de solicitudes pedidas">{{ historialArbitro.length }}</span>
           </h5>
           <button @click="mostrarModalHistorialArbitro = false" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;">
             <span class="material-icons" style="font-size: 18px; line-height: 1;">close</span>
@@ -486,29 +516,51 @@
             Este árbitro nunca solicitó cambios.
           </div>
 
-          <div v-else class="table-responsive">
-            <table class="table table-sm table-hover align-middle" style="font-size: 0.85rem;">
-              <thead class="table-light">
-                <tr>
-                  <th>Fecha</th>
-                  <th>Tipo</th>
-                  <th>Mensaje</th>
-                  <th class="text-center">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="h in historialArbitro" :key="h.id">
-                  <td class="text-nowrap text-muted fw-bold">{{ h.fecha }}</td>
-                  <td class="text-uppercase" style="font-size: 0.75rem;">{{ h.tipo_solicitud || 'general' }}</td>
-                  <td style="white-space: pre-line;">{{ h.mensaje }}</td>
-                  <td class="text-center">
-                    <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
-                      {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div v-else>
+            <!-- VISTA DESKTOP: TABLA -->
+            <div class="table-responsive desktop-only">
+              <table class="table table-sm table-hover align-middle" style="font-size: 0.85rem; table-layout: fixed; width: 100%;">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 120px;">Fecha</th>
+                    <th style="width: 100px;">Tipo</th>
+                    <th>Mensaje</th>
+                    <th class="text-center" style="width: 100px;">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="h in historialArbitro" :key="h.id">
+                    <td class="text-muted fw-bold">{{ h.fecha }}</td>
+                    <td class="text-uppercase" style="font-size: 0.75rem;">{{ h.tipo_solicitud || 'general' }}</td>
+                    <td style="white-space: pre-wrap; word-wrap: break-word;">{{ h.mensaje }}</td>
+                    <td class="text-center">
+                      <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
+                        {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- VISTA MOBILE: CARDS -->
+            <div class="mobile-only">
+              <div v-for="h in historialArbitro" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded p-3 mb-2 shadow-sm bg-light">
+                <div class="d-flex justify-content-between align-items-start mb-2 border-bottom pb-2">
+                  <div>
+                    <span class="d-block fw-bold text-dark" style="font-size: 0.85rem;">{{ h.fecha }}</span>
+                    <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">TIPO: {{ h.tipo_solicitud || 'GENERAL' }}</span>
+                  </div>
+                  <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
+                    {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
+                  </span>
+                </div>
+                <div class="text-dark mt-2" style="font-size: 0.85rem; white-space: pre-wrap; word-wrap: break-word;">
+                  {{ h.mensaje }}
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -545,15 +597,17 @@ const mostrarModal = ref(false)
 const modoModal = ref('nuevo')
 const movilidadArray = ref([])
 
-// Variable para controlar la visibilidad de los filtros en mobile
+const mensajeSolicitudActiva = ref('')
+
 const mostrarFiltrosMobile = ref(false)
 
-// --- VARIABLES PARA SOLICITUDES ---
 const solicitudes = ref([])
 const mostrarModalSolicitudes = ref(false)
 const cargandoSolicitudes = ref(false)
 
-// --- VARIABLES PARA HISTORIAL INDIVIDUAL ---
+// NUEVO: Variable para manejar la pestaña activa de las solicitudes
+const tabActivo = ref('enviado') // Por defecto arranca en 'enviado' (Pendientes)
+
 const mostrarModalHistorialArbitro = ref(false)
 const historialArbitro = ref([])
 const arbitroSeleccionado = ref({})
@@ -575,12 +629,15 @@ const formModalVacio = () => ({
 
 const formModal = ref(formModalVacio())
 
-
 const solicitudesPendientes = computed(() => 
   solicitudes.value.filter(s => s.estado === 'enviado')
 )
 
-// --- FUNCIONES PARA SOLICITUDES GENERALES ---
+// NUEVO: Propiedad computada para filtrar la vista actual del modal
+const solicitudesMostradas = computed(() => {
+  return solicitudes.value.filter(s => s.estado === tabActivo.value)
+})
+
 const cargarSolicitudes = async () => {
   cargandoSolicitudes.value = true
   try {
@@ -597,6 +654,7 @@ const cargarSolicitudes = async () => {
 
 const abrirModalSolicitudes = () => {
   cargarSolicitudes()
+  tabActivo.value = 'enviado' // Nos aseguramos de que siempre abra en pendientes
   mostrarModalSolicitudes.value = true
 }
 
@@ -645,18 +703,18 @@ const rechazarSolicitud = async (solicitud) => {
   })
 }
 
-const abrirEdicionDesdeSolicitud = (id_arbitro) => {
-  const arbitroEncontrado = arbitros.value.find(a => a.id == id_arbitro)
+const abrirEdicionDesdeSolicitud = (sol) => {
+  const arbitroEncontrado = arbitros.value.find(a => a.id == sol.id_arbitro)
   
   if (arbitroEncontrado) {
     mostrarModalSolicitudes.value = false
+    mensajeSolicitudActiva.value = sol.mensaje 
     editarArbitro(arbitroEncontrado)
   } else {
     notificar({ titulo: 'No encontrado', mensaje: 'No se encontraron los datos de este árbitro en la lista actual.', tipo: 'danger' })
   }
 }
 
-// --- FUNCIONES PARA HISTORIAL INDIVIDUAL ---
 const verHistorialArbitro = async (arbitro) => {
   arbitroSeleccionado.value = arbitro
   mostrarModalHistorialArbitro.value = true
@@ -679,11 +737,10 @@ const verHistorialArbitro = async (arbitro) => {
   }
 }
 
-// ----------------------------------
-
 const crearNuevo = () => {
   formModal.value = formModalVacio()
   movilidadArray.value = []
+  mensajeSolicitudActiva.value = '' 
   modoModal.value = 'nuevo'
   mostrarModal.value = true
 }
@@ -701,6 +758,7 @@ const editarArbitro = (arbitro) => {
 
 const cerrarModal = () => {
   mostrarModal.value = false
+  mensajeSolicitudActiva.value = '' 
 }
 
 const confirmarAlta = async () => {
@@ -717,7 +775,7 @@ const confirmarAlta = async () => {
     })
     if (res.ok || res.success) {
       notificar({ titulo: 'Éxito', mensaje: 'Árbitro creado correctamente.', tipo: 'success' })
-      mostrarModal.value = false
+      cerrarModal()
       await cargarDatos()
     }
   } catch {
@@ -741,7 +799,7 @@ const confirmarEdicion = async () => {
     })
     if (res.ok || res.success) {
       notificar({ titulo: '¡Guardado!', mensaje: 'Árbitro actualizado correctamente.' })
-      mostrarModal.value = false
+      cerrarModal()
       await cargarDatos()
     } else {
       notificar({ titulo: 'Error', mensaje: res.message || 'Error al guardar.', tipo: 'danger' })
@@ -878,7 +936,7 @@ watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) pagin
 onMounted(() => { 
   cargarDatos()
   obtenerProvinciasLocalidades()
-  cargarSolicitudes() // Inicializamos las solicitudes
+  cargarSolicitudes()
 })
 </script>
 
@@ -948,6 +1006,7 @@ onMounted(() => {
 .btn-clear-checks { background: #fee2e2; color: #ef4444; } 
 .btn-export { background: #10b981; color: white; }
 .btn-blue { background: #3b82f6; color: white; }
+.btn-light { background-color: #f8fafc; border: 1px solid #e2e8f0; }
 
 .btn-text { display: inline; }
 
@@ -1127,6 +1186,7 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
 .badge-notif { position: absolute; top: -6px; right: -6px; background-color: #ef4444; color: white; font-size: 0.65rem; font-weight: bold; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
 .solicitud-card { background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 12px 15px; transition: all 0.2s; }
 .solicitud-card.bg-light { border-left: 4px solid #10b981; opacity: 0.8; }
+.solicitud-card.border-danger-subtle { border-left: 4px solid #ef4444; opacity: 0.8; }
 .text-xs { font-size: 0.75rem; }
 
 

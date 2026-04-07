@@ -301,7 +301,7 @@ const filtros = reactive({
 
 // VARIABLES PARA PAGINACIÓN
 const paginaActual = ref(1);
-const registrosPorPagina = 9; 
+const registrosPorPagina = 8; 
 
 // --- FUNCIÓN DE NORMALIZACIÓN ---
 const normalizarTexto = (texto) => {

@@ -171,7 +171,7 @@
                 <option value="Consumidor Final">Consumidor Final</option>
                 <option value="Exento">Exento</option>
                 <option value="Responsable Inscripto">Responsable Inscripto</option>
-                <option value="IVA Inscripto">IVA Inscripto</option>
+                <option value="Inscripto">Inscripto</option>
                 <option value="Monotributo">Monotributo</option>
               </select>
             </div>
