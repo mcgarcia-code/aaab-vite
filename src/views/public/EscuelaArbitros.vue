@@ -263,10 +263,10 @@ const cuerpoDocente = ref([
     image: new URL('../../assets/fotos/barbara-fernandez.webp', import.meta.url).href
   },
   {
-    name: 'Maria Jose Borrás Luque',
+    name: 'Nicolás Cimiotto',
     role: 'Encuentros de Mini Handball',
-    bio: 'Árbitra Nacional / Profesora de Ed. Física',
-    image: new URL('../../assets/fotos/majo-borrasluque.webp', import.meta.url).href
+    bio: 'Árbitro Local / Técnico Químico',
+    image: new URL('../../assets/fotos/nicolas-cimiotto.webp', import.meta.url).href
   }
 ])
 
