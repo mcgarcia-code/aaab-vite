@@ -280,6 +280,7 @@
 <script setup>
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
+import { auth } from '@/api/auth'
 import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
 
@@ -441,7 +442,7 @@ const eliminarLicencia = (id) => {
 };
 
 const verHistorialLicencia = async (lic) => {
-  console.log(lic)
+  const user = auth.getUser()
   licenciaSeleccionada.value = lic;
   mostrarModalHistorial.value = true;
   cargandoHistorial.value = true;
