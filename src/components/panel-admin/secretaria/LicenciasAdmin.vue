@@ -20,11 +20,11 @@
           <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
             <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
           </button>
-          
+
           <button @click="abrirModalNuevo" class="btn-action btn-clear-checks" title="Nueva Licencia">
             <span class="material-icons">person_add</span> <span class="btn-text">Nuevo</span>
           </button>
-          
+
           <button @click="exportarExcel" class="btn-action btn-export" title="Exportar a Excel">
             <span class="material-icons">download</span> <span class="btn-text">Excel</span>
           </button>
@@ -43,18 +43,18 @@
         <div class="filter-grid-mobile">
           <input v-model="filtros.apellido" placeholder="Apellido...">
           <input v-model="filtros.nombre" placeholder="Nombre...">
-          
+
           <select v-model="filtros.estado" class="full-width">
             <option value="">Estado (Todos)</option>
             <option value="pendiente">Pendiente</option>
             <option value="aprobada">Aprobada</option>
             <option value="rechazada">Rechazada</option>
           </select>
-          
+
           <input type="text" v-model="filtros.fecha_solicitud" placeholder="F. Solicitud (DD/MM/AAAA)">
           <input type="text" v-model="filtros.fecha" placeholder="F. Ausencia (DD/MM/AAAA)">
         </div>
-        
+
         <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0">Aplicar Filtros</button>
       </div>
 
@@ -127,17 +127,17 @@
             </div>
             <div class="text-xs" style="color: #64748b;">ID: {{ lic.id }}</div>
           </div>
-          
+
           <div class="card-body">
             <div class="card-row">
               <span><strong>Estado:</strong> <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span></span>
             </div>
-            
+
             <div class="card-info">
               <p><strong>F. Solicitud:</strong> {{ formatearFechaVista(lic.fecha_solicitud) }}</p>
               <p><strong>F. Licencia:</strong> <span class="text-primary fw-bold">{{ formatearFechaVista(lic.fecha_licencia) }}</span></p>
             </div>
-            
+
             <div class="d-flex gap-2 mt-3">
               <button @click="editarLicencia(lic)" class="btn-editar-mobile flex-grow-1">
                 <span class="material-icons" style="font-size: 18px;">edit</span> Editar
@@ -151,7 +151,7 @@
             </div>
           </div>
         </div>
-        
+
         <div v-if="licenciasPaginadas.length === 0" class="text-center p-4 bg-white rounded shadow-sm">
           <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
           <p class="text-muted mt-2 mb-0">No se encontraron licencias.</p>
@@ -181,7 +181,7 @@
         <p v-if="modoModal === 'editar'" class="text-muted small mb-3">ID #{{ formModal.id }} — {{ formModal.apellido }}, {{ formModal.nombre }}</p>
 
         <div class="row g-3 text-start mt-2">
-          
+
           <div class="col-12" v-if="modoModal === 'nuevo'">
             <label class="small fw-bold">Seleccionar Árbitro *</label>
             <select v-model="formModal.id_arbitro" class="form-select border-primary-subtle shadow-none">
@@ -196,7 +196,7 @@
             <label class="small fw-bold">Fecha Solicitud *</label>
             <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none">
           </div>
-          
+
           <div class="col-6">
             <label class="small fw-bold">Fecha Ausencia *</label>
             <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-danger-subtle">
@@ -231,8 +231,8 @@
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 600px; width: 95%; text-align: left;">
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
           <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
-            <span class="material-icons text-warning">manage_search</span> 
-            Historial de la Licencia #{{ licenciaSeleccionada?.id }}
+            <span class="material-icons text-warning">manage_search</span>
+            Historial de las licencias de {{ licenciaSeleccionada?.apellido }}, {{ licenciaSeleccionada?.nombre }}
           </h5>
           <button @click="mostrarModalHistorial = false" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;">
             <span class="material-icons" style="font-size: 18px; line-height: 1;">close</span>
@@ -243,7 +243,7 @@
           <div v-if="cargandoHistorial" class="text-center py-4">
             <span class="spinner-border text-warning"></span>
           </div>
-          
+
           <div v-else-if="historialLicencia.length === 0" class="text-center py-4 text-muted">
             <span class="material-icons d-block fs-1 mb-2">history_toggle_off</span>
             No hay registros en el historial para esta licencia.
@@ -260,10 +260,10 @@
               </thead>
               <tbody>
                 <tr v-for="h in historialLicencia" :key="h.id">
-                  <td class="text-nowrap text-muted fw-bold">{{ h.fecha_registro }}</td>
+                  <td class="text-nowrap text-muted fw-bold">{{ h.fecha_solicitud }}</td>
                   <td>{{ h.usuario || 'Sistema' }}</td>
                   <td class="text-center">
-                    <span :class="['badge-status-sm', h.estado_nuevo]">{{ h.estado_nuevo.toUpperCase() }}</span>
+                    <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -343,13 +343,19 @@ watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.val
 // API Calls
 const obtenerLicencias = async () => {
   cargando.value = true;
-  const res = await api.get({ entity: 'licencias', action: 'obtenerTodasLasLicencias' });
+  const res = await api.get({
+    entity: 'licencias',
+    action: 'obtenerTodasLasLicencias'
+  });
   if (res.ok) licencias.value = res.payload;
   cargando.value = false;
 };
 
 const obtenerArbitros = async () => {
-  const res = await api.get({ entity: 'arbitros', action: 'getArbitros' }); 
+  const res = await api.get({
+    entity: 'arbitros',
+    action: 'getArbitros'
+  });
   if (res.ok && Array.isArray(res.payload)) {
     arbitrosLista.value = res.payload.sort((a, b) => (a.apellido || '').localeCompare(b.apellido || ''));
   }
@@ -364,9 +370,10 @@ const abrirModalNuevo = () => {
 };
 
 const editarLicencia = (lic) => {
-  formModal.value = { ...lic };
-  modoModal.value = 'editar';
-  mostrarModal.value = true;
+  console.log(lic)
+  formModal.value = { ...lic }
+  modoModal.value = 'editar'
+  mostrarModal.value = true
 };
 
 const cerrarModal = () => {
@@ -375,10 +382,10 @@ const cerrarModal = () => {
 
 const confirmarAlta = async () => {
   cargando.value = true;
-  const res = await api.post({ 
-    entity: 'licencias', 
-    action: 'crearLicencia', 
-    payload: { ...formModal.value, es_admin: true } 
+  const res = await api.post({
+    entity: 'licencias',
+    action: 'crearLicencia',
+    payload: { ...formModal.value, es_admin: true }
   });
   cargando.value = false;
 
@@ -396,9 +403,9 @@ const confirmarEdicion = async () => {
   const res = await api.post({
     entity: 'licencias',
     action: 'actualizarLicencia',
-    payload: { 
-      id: formModal.value.id, 
-      estado: formModal.value.estado, 
+    payload: {
+      id: formModal.value.id,
+      estado: formModal.value.estado,
       fecha_licencia: formModal.value.fecha_licencia,
       fecha_solicitud: formModal.value.fecha_solicitud
     }
@@ -420,7 +427,11 @@ const eliminarLicencia = (id) => {
     mensaje: 'Esta acción es irreversible. El registro será borrado permanentemente.',
     tipo: 'danger',
     alConfirmar: async () => {
-      const res = await api.post({ entity: 'licencias', action: 'eliminarLicencia', payload: { id } });
+      const res = await api.post({
+        entity: 'licencias',
+        action: 'eliminarLicencia',
+        payload: { id }
+      });
       if(res.ok) {
         licencias.value = licencias.value.filter(l => l.id !== id);
         notificar({ titulo: 'Eliminado', mensaje: 'La licencia ha sido removida.', tipo: 'success' });
@@ -430,16 +441,17 @@ const eliminarLicencia = (id) => {
 };
 
 const verHistorialLicencia = async (lic) => {
+  console.log(lic)
   licenciaSeleccionada.value = lic;
   mostrarModalHistorial.value = true;
   cargandoHistorial.value = true;
   historialLicencia.value = [];
-  
+
   try {
-    const res = await api.get({ 
-      entity: 'licencias', 
-      action: 'obtenerHistorialLicencia', 
-      payload: { id_licencia: lic.id } 
+    const res = await api.get({
+      entity: 'licencias',
+      action: 'obtenerHistorial',
+      payload: { id_arbitro: lic.id_arbitro }
     });
     if (res.payload) {
       historialLicencia.value = res.payload;
@@ -453,10 +465,10 @@ const verHistorialLicencia = async (lic) => {
 
 const exportarExcel = () => {
   const data = licenciasFiltradas.value.map(l => ({
-    'ID': l.id, 
-    'Apellido': l.apellido, 
-    'Nombre': l.nombre, 
-    'Estado': l.estado.toUpperCase(), 
+    'ID': l.id,
+    'Apellido': l.apellido,
+    'Nombre': l.nombre,
+    'Estado': l.estado.toUpperCase(),
     'Fecha Solicitud': formatearFechaVista(l.fecha_solicitud),
     'Fecha Licencia': formatearFechaVista(l.fecha_licencia)
   }));
@@ -470,8 +482,8 @@ const limpiarFiltros = () => {
   filtros.nombre = ''; filtros.apellido = ''; filtros.estado = ''; filtros.fecha = ''; filtros.fecha_solicitud = '';
 };
 
-onMounted(() => { 
-  obtenerLicencias(); 
+onMounted(() => {
+  obtenerLicencias();
   obtenerArbitros();
 });
 </script>
@@ -483,34 +495,34 @@ onMounted(() => {
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
-  min-height: 100vh; 
-  height: auto !important; 
+  min-height: 100vh;
+  height: auto !important;
   margin-left: 50%;
   transform: translateX(-50%);
   padding: 20px;
   padding-bottom: 120px; /* Evita que choque con el footer móvil */
 }
 
-.admin-panel { 
+.admin-panel {
   width: 100%;
-  max-width: 100%; 
-  padding: 20px; 
+  max-width: 100%;
+  padding: 20px;
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;  
-  background-color: #0f172a; 
+  color: #000;
+  background-color: #0f172a;
   min-height: 100vh;
 }
 
-.header-section { 
-  background: white; 
-  padding: 15px; 
-  border-radius: 8px; 
-  display: flex; 
-  justify-content: space-between; 
-  margin-bottom: 15px; 
-  border-left: 5px solid #ef4444; 
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-  align-items: center; 
+.header-section {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  border-left: 5px solid #ef4444;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  align-items: center;
 }
 
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
@@ -520,7 +532,7 @@ onMounted(() => {
 .btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
 .btn-clear { background: #e2e8f0; color: #000; }
 .btn-blue { background: #3b82f6; color: white; }
-.btn-clear-checks { background: #fee2e2; color: #ef4444; } 
+.btn-clear-checks { background: #fee2e2; color: #ef4444; }
 .btn-export { background: #10b981; color: white; }
 
 .paginacion {
@@ -548,52 +560,52 @@ onMounted(() => {
 /* ====================================================
    SOLUCIÓN DE LA TABLA: Huecos y Espaciado
    ==================================================== */
-.table-container { 
+.table-container {
   width: 100%;
-  overflow: auto; 
-  max-height: 85vh; 
-  background: white; 
-  border-radius: 8px; 
-  border: 1px solid #e2e8f0; 
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+  overflow: auto;
+  max-height: 85vh;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
-table { 
+table {
   width: 100%;
-  min-width: max-content; 
+  min-width: max-content;
   /* SEPARATE es fundamental para que el box-shadow y sticky funcionen bien juntos */
-  border-collapse: separate !important; 
-  border-spacing: 0; 
-  font-size: 0.85rem; 
+  border-collapse: separate !important;
+  border-spacing: 0;
+  font-size: 0.85rem;
 }
 
 /* TH PRINCIPAL */
-thead tr.main-header th { 
-  position: sticky; 
-  top: 0; 
-  z-index: 50; 
-  background: #f8fafc !important; 
-  padding: 12px 8px; 
+thead tr.main-header th {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #f8fafc !important;
+  padding: 12px 8px;
   border-bottom: 1px solid #cbd5e1; /* Borde normal inferior */
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem; 
-  color: #000; 
-  text-transform: uppercase; 
-  font-weight: 800; 
+  font-size: 0.75rem;
+  color: #000;
+  text-transform: uppercase;
+  font-weight: 800;
   margin: 0;
 }
 
 /* FILA DE FILTROS */
-thead tr.filter-row td { 
+thead tr.filter-row td {
   position: sticky;
   /* Top 35px hace que se meta un poquito por abajo del TH y mate el hueco blanco */
-  top: 35px; 
-  z-index: 40; 
-  background: #f1f5f9 !important; 
+  top: 35px;
+  z-index: 40;
+  background: #f1f5f9 !important;
   /* Padding extra abajo para empujar los datos */
-  padding: 6px 8px 12px 8px; 
+  padding: 6px 8px 12px 8px;
   /* Borde grueso abajo para generar separación */
-  border-bottom: 4px solid #e2e8f0; 
+  border-bottom: 4px solid #e2e8f0;
   margin: 0;
 }
 
@@ -603,19 +615,19 @@ thead tr.filter-row td {
 .col-apellido { left: 160px; width: 140px; }
 .col-nombre { left: 300px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 
-.sticky-col { 
-  position: sticky !important; 
-  z-index: 60 !important; 
-  background: white !important; 
-  border-right: 1px solid #e2e8f0; 
+.sticky-col {
+  position: sticky !important;
+  z-index: 60 !important;
+  background: white !important;
+  border-right: 1px solid #e2e8f0;
 }
-thead tr.main-header th.sticky-col { 
-  z-index: 100 !important; 
-  background-color: #f8fafc !important; 
+thead tr.main-header th.sticky-col {
+  z-index: 100 !important;
+  background-color: #f8fafc !important;
 }
-thead tr.filter-row td.sticky-col { 
-  z-index: 95 !important; 
-  background-color: #f1f5f9 !important; 
+thead tr.filter-row td.sticky-col {
+  z-index: 95 !important;
+  background-color: #f1f5f9 !important;
 }
 
 /* CELDAS DE DATOS */
@@ -677,26 +689,26 @@ thead tr.filter-row td.sticky-col {
 .btn-text { display: inline; }
 
 /* PANEL DE FILTROS MÓVIL CON CSS GRID LIMPIO */
-.mobile-filter-panel { 
-  background: white; 
-  padding: 15px 20px; 
-  border-radius: 8px; 
-  border: 1px solid #e2e8f0; 
+.mobile-filter-panel {
+  background: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
   margin-bottom: 15px;
 }
-.filter-grid-mobile { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 12px; 
+.filter-grid-mobile {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
-.filter-grid-mobile input, 
-.filter-grid-mobile select { 
-  padding: 10px; 
-  border: 1px solid #cbd5e1; 
-  border-radius: 6px; 
-  font-size: 0.85rem; 
-  width: 100%; 
-  outline: none; 
+.filter-grid-mobile input,
+.filter-grid-mobile select {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  width: 100%;
+  outline: none;
   background: #f8fafc;
 }
 .filter-grid-mobile select.full-width {
@@ -711,7 +723,7 @@ thead tr.filter-row td.sticky-col {
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
-  
+
   .card-licencia {
     background: white;
     border-radius: 8px;
@@ -727,7 +739,7 @@ thead tr.filter-row td.sticky-col {
   .card-name { font-size: 1.05rem; color: #0f172a; }
   .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
   .card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
-  
+
   .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
   .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
   .btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
@@ -738,21 +750,21 @@ thead tr.filter-row td.sticky-col {
   .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
   .title { font-size: 1rem; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
-  
-  .header-actions { 
-    width: 100%; 
-    display: flex; 
-    flex-direction: row; 
-    flex-wrap: nowrap; 
-    justify-content: center; 
-    gap: 8px; 
+
+  .header-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 8px;
   }
-  .btn-action { 
+  .btn-action {
     flex: none;
-    width: 42px; 
-    height: 42px; 
+    width: 42px;
+    height: 42px;
     padding: 0;
-    justify-content: center; 
+    justify-content: center;
   }
   .btn-text { display: none !important; }
   .mobile-only-flex { display: flex !important; }
