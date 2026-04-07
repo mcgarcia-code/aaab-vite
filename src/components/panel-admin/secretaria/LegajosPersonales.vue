@@ -141,7 +141,6 @@
                   <button @click="editarArbitro(a)" class="btn-editar" title="Editar árbitro">
                     <span class="material-icons" style="font-size:16px;">edit</span>
                   </button>
-                  <!-- NUEVO: Botón historial -->
                   <button @click="verHistorialArbitro(a)" class="btn-historial" title="Ver historial de cambios">
                     <span class="material-icons" style="font-size:16px;">manage_search</span>
                   </button>
@@ -231,7 +230,7 @@
 
     <!-- MODAL EXCEL -->
     <Teleport to="body">
-    <div v-if="mostrarModalExcel" class="modal-overlay-exito animate__animated animate__fadeIn">
+    <div v-if="mostrarModalExcel" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 750px;">
         <div class="icon-circle-exito bg-success-light">
           <span class="material-icons">description</span>
@@ -256,7 +255,7 @@
 
     <!-- MODAL ALTA / EDICIÓN -->
     <Teleport to="body">
-    <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn">
+    <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 900px; width: 95%;">
 
         <div class="icon-circle-exito" :class="modoModal === 'editar' ? 'bg-info-light' : 'bg-success-light'">
@@ -398,7 +397,8 @@
 
     <!-- MODAL SOLICITUDES / HISTORIAL -->
     <Teleport to="body">
-    <div v-if="mostrarModalSolicitudes" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
+    <!-- FIX APLICADO ACÁ: z-index a 1050 -->
+    <div v-if="mostrarModalSolicitudes" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 800px; width: 95%; text-align: left;">
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
           <h4 class="fw-bold m-0 d-flex align-items-center gap-2">
@@ -429,12 +429,11 @@
                 <p class="m-0 small text-secondary" style="white-space: pre-line;">{{ sol.mensaje }}</p>
               </div>
               <div class="d-flex flex-column align-items-end gap-2">
-                <span class="badge" :class="sol.estado === 'enviado' ? 'bg-warning text-dark' : 'bg-success'">
-                  {{ sol.estado.toUpperCase() }}
+                <span class="badge" :class="sol.estado === 'aprobado' ? 'bg-success' : (sol.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
+                  {{ sol.estado ? sol.estado.toUpperCase() : 'ENVIADO' }}
                 </span>
                 
                 <div class="d-flex gap-1" v-if="sol.estado === 'enviado'">
-                  <!-- Botón que abre el modal de edición del árbitro -->
                   <button @click="abrirEdicionDesdeSolicitud(sol.id_arbitro)" 
                           class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 fw-bold" 
                           style="font-size: 0.7rem; padding: 4px 8px;"
@@ -442,7 +441,12 @@
                     <span class="material-icons" style="font-size: 14px;">edit</span> LEGAJO
                   </button>
                   
-                  <!-- Botón para aprobar -->
+                  <button @click="rechazarSolicitud(sol)" 
+                          class="btn btn-sm btn-danger fw-bold" 
+                          style="font-size: 0.7rem; padding: 4px 8px;">
+                    RECHAZAR
+                  </button>
+
                   <button @click="aprobarSolicitud(sol)" 
                           class="btn btn-sm btn-dark fw-bold" 
                           style="font-size: 0.7rem; padding: 4px 8px;">
@@ -459,7 +463,8 @@
 
     <!-- MODAL HISTORIAL INDIVIDUAL DEL ÁRBITRO -->
     <Teleport to="body">
-    <div v-if="mostrarModalHistorialArbitro" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10002;">
+    <!-- FIX APLICADO ACÁ TAMBIÉN: z-index a 1050 -->
+    <div v-if="mostrarModalHistorialArbitro" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 700px; width: 95%; text-align: left;">
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
           <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
@@ -497,8 +502,8 @@
                   <td class="text-uppercase" style="font-size: 0.75rem;">{{ h.tipo_solicitud || 'general' }}</td>
                   <td style="white-space: pre-line;">{{ h.mensaje }}</td>
                   <td class="text-center">
-                    <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : 'bg-warning text-dark'">
-                      {{ h.estado.toUpperCase() }}
+                    <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
+                      {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
                     </span>
                   </td>
                 </tr>
@@ -606,13 +611,38 @@ const aprobarSolicitud = async (solicitud) => {
     if (res.ok || res.success) {
       notificar({ titulo: 'Aprobado', mensaje: 'Se aprobó la solicitud de cambios.', tipo: 'success' })
       solicitud.estado = 'aprobado'
-      await cargarDatos() 
     } else {
       notificar({ titulo: 'Error', mensaje: 'No se pudo aprobar.', tipo: 'danger' })
     }
   } catch{
     notificar({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
   }
+}
+
+const rechazarSolicitud = async (solicitud) => {
+  notificar({
+    titulo: '¿Rechazar solicitud?',
+    mensaje: '¿Estás seguro de que querés rechazar este pedido del árbitro?',
+    tipo: 'warning',
+    alConfirmar: async () => {
+      try {
+        const res = await api.post({ 
+          entity: 'datos_personales', 
+          action: 'cambiarEstadoSolicitud', 
+          payload: { id_historial: solicitud.id, nuevo_estado: 'rechazado' } 
+        })
+        
+        if (res.ok || res.success) {
+          notificar({ titulo: 'Rechazado', mensaje: 'Se rechazó la solicitud correctamente.', tipo: 'success' })
+          solicitud.estado = 'rechazado'
+        } else {
+          notificar({ titulo: 'Error', mensaje: 'No se pudo rechazar.', tipo: 'danger' })
+        }
+      } catch{
+        notificar({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
+      }
+    }
+  })
 }
 
 const abrirEdicionDesdeSolicitud = (id_arbitro) => {
