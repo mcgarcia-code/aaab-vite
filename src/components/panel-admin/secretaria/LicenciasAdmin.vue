@@ -232,7 +232,9 @@
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
           <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
             <span class="material-icons text-warning">manage_search</span>
-            Historial de las licencias de {{ licenciaSeleccionada?.apellido }}, {{ licenciaSeleccionada?.nombre }}
+            Historial de {{ licenciaSeleccionada?.apellido }}, {{ licenciaSeleccionada?.nombre }}
+            <!-- BADGE CON EL TOTAL DE LICENCIAS -->
+            <span v-if="!cargandoHistorial" class="badge bg-dark rounded-pill fs-6 ms-2" title="Total de licencias pedidas">{{ historialLicencia.length }}</span>
           </h5>
           <button @click="mostrarModalHistorial = false" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;">
             <span class="material-icons" style="font-size: 18px; line-height: 1;">close</span>
@@ -253,15 +255,15 @@
             <table class="table table-sm table-hover align-middle" style="font-size: 0.85rem;">
               <thead class="table-light">
                 <tr>
-                  <th>Fecha Modificación</th>
-                  <th>Modificado por</th>
+                  <th>F. Solicitud</th>
+                  <th>F. Ausencia</th>
                   <th class="text-center">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="h in historialLicencia" :key="h.id">
-                  <td class="text-nowrap text-muted fw-bold">{{ h.fecha_solicitud }}</td>
-                  <td>{{ h.usuario || 'Sistema' }}</td>
+                  <td class="text-nowrap text-muted fw-bold">{{ formatearFechaVista(h.fecha_solicitud) }}</td>
+                  <td class="text-nowrap text-primary fw-bold">{{ formatearFechaVista(h.fecha_licencia) }}</td>
                   <td class="text-center">
                     <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
                   </td>
@@ -280,7 +282,6 @@
 <script setup>
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
-import { auth } from '@/api/auth'
 import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
 
@@ -442,7 +443,6 @@ const eliminarLicencia = (id) => {
 };
 
 const verHistorialLicencia = async (lic) => {
-  const user = auth.getUser()
   licenciaSeleccionada.value = lic;
   mostrarModalHistorial.value = true;
   cargandoHistorial.value = true;

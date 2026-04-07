@@ -139,8 +139,11 @@
                             <tr v-for="(h, i) in historialRectificaciones" :key="i">
                                 <td class="ps-3 small fw-bold text-dark">{{ h.fecha }}</td>
                                 <td class="small text-dark">{{ h.mensaje }}</td>
+                                <!-- ACÁ ESTÁ EL FIX: ESTADO DINÁMICO Y COLORES -->
                                 <td class="text-center">
-                                    <span class="badge bg-secondary x-small">ENVIADO</span>
+                                    <span :class="['badge x-small', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]">
+                                      {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
+                                    </span>
                                 </td>
                             </tr>
                         </tbody>
@@ -357,7 +360,7 @@ const enviarSolicitudRectificacion = async () => {
     }
 }
 
-/* Mejora la visualización del estado ENVIADO */
+/* Mejora la visualización del estado */
 .x-small {
     font-size: 0.65rem;
     font-weight: 800;

@@ -272,7 +272,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, watch, inject } from 'vue'; // Añadimos inject
+import { ref, onMounted, computed, reactive, watch, inject } from 'vue'; 
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head'
@@ -288,9 +288,8 @@ useHead({
   ],
 })
 
-// INYECTAMOS EL CONFIRMAR Y EL NOTIFICAR
+// INYECTAMOS SOLO NOTIFICAR (EL MODAL GLOBAL CONFIRMAR SE LLAMA A TRAVÉS DE ESTE)
 const notificar = inject('notificar');
-const confirmar = inject('confirmar');
 
 const arbitros = ref([]);
 const mostrarFiltrosMobile = ref(false);
@@ -365,22 +364,17 @@ const toggleDesignacion = async (id, dia) => {
   }
 };
 
-// NUEVA FUNCIÓN QUE USA EL MODAL CONFIRMAR
-const solicitarLimpiarChecks = async () => {
-  const confirmacion = await confirmar({
+// FIX: Usamos `notificar` con el callback `alConfirmar`, como en todos tus otros códigos.
+const solicitarLimpiarChecks = () => {
+  notificar({
     titulo: 'Limpiar Designaciones',
     mensaje: '¿Estás seguro que deseas limpiar todos los tildes de designación? Esta acción no se puede deshacer.',
-    textoConfirmar: 'Sí, limpiar tildes',
-    textoCancelar: 'Cancelar',
-    tipo: 'warning'
+    tipo: 'warning',
+    alConfirmar: () => limpiarChecks() // Pasamos la función real a ejecutar si el usuario acepta
   });
-
-  if (confirmacion) {
-    limpiarChecks();
-  }
 };
 
-// LA FUNCIÓN ORIGINAL AHORA SE LLAMA SOLO SI EL USUARIO ACEPTÓ
+// FUNCIÓN REAL QUE HACE LA PETICIÓN
 const limpiarChecks = async () => {
   try {
     const res = await api.post({
@@ -389,7 +383,7 @@ const limpiarChecks = async () => {
       payload: {}
     });
 
-    if (res && !res.error) {
+    if (res.ok || res.success) {
       designadosSabado.value.clear();
       designadosDomingo.value.clear();
       notificar({ titulo: 'Éxito', mensaje: 'Se limpiaron todas las designaciones.', tipo: 'success' });
@@ -507,7 +501,6 @@ watch(totalPaginas, (nuevoTotal) => {
 
 
 const exportarExcel = () => {
-  // Nota: Usamos arbitrosFiltrados para que Excel exporte TODO lo buscado, no solo 10 registros.
   const datos = arbitrosFiltrados.value.map(a => ({
     APELLIDO: a.apellido, NOMBRE: a.nombre,
     CELULAR: a.celular,
