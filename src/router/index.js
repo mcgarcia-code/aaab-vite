@@ -109,7 +109,7 @@ const routes = [
               // --- FACTURACION ---
       { 
         path: 'facturacion',
-        name: 'InstitucionesCuits', 
+        name: 'InstitucionesCuit', 
         component: () => import('../components/panel-arbitro/facturacion/InstitucionesCuit.vue') 
       },
     
@@ -225,8 +225,8 @@ const routes = [
         // --- FACTURACION ---
       { 
         path: 'facturacion', 
-        name: 'InstitucionesCuitsAdmin', 
-        component: () => import('../components/panel-admin/facturacion/InstitucionesCuits.vue'),
+        name: 'InstitucionesCuitAdmin', 
+        component: () => import('../components/panel-admin/facturacion/InstitucionesCuitAdmin.vue'),
         meta: { roles: ['admin', 'secretario', 'tesorero','facturacion'] } 
       },
     
@@ -236,11 +236,6 @@ const routes = [
     path: '/contactos-celulares',
     name: 'ContactosCelulares',
     component: () => import('../views/public/ContactosCelularesView.vue')
-  },
-  {
-    path: '/instituciones-cuit',
-    name: 'InstitucionesCuit',
-    component: () => import('../views/public/InstitucionesCuitPublic.vue')
   },
   {
     path: '/coordinadores-base',
