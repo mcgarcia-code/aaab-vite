@@ -843,6 +843,7 @@ const normalizarTexto = (valor) => String(valor || '').normalize('NFD').replace(
 const exportarExcel = () => { mostrarModalExcel.value = true }
 const mostrarModalExcel = ref(false)
 const columnasExcel = ref([
+  { id: 'id', label: 'ID', visible: true },
   { id: 'apellido', label: 'Apellido', visible: true }, { id: 'nombre', label: 'Nombre', visible: true }, { id: 'dni', label: 'DNI', visible: true },
   { id: 'rol', label: 'Rol', visible: true }, { id: 'grupo', label: 'Grupo', visible: true }, { id: 'subgrupo', label: 'Subgrupo', visible: true },
   { id: 'es_activo', label: 'Estado', visible: false }, { id: 'apto_medico', label: 'Apto Médico', visible: false }, { id: 'email', label: 'Email', visible: false },
