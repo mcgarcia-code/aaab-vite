@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/public/HomeView.vue';
 import { auth } from '@/api/auth'; 
 
+
+ // --- PUBLIC ---
 const routes = [
   { path: '/', name: 'inicio', component: HomeView },
   { path: '/descargas', name: 'descargas', component: () => import('../views/public/DescargasView.vue') },
@@ -11,7 +13,10 @@ const routes = [
   { path: '/designaciones', name: 'designaciones', component: () => import('../views/public/DesignacionesView.vue') },
   { path: '/tribunal-de-etica', name: 'tribunalEtica', component: () => import('../views/public/TribunalEticaView.vue') },
   { path: '/sanciones', name: 'sanciones', component: () => import('../views/public/SancionesView.vue') },
-    
+  {path: '/contactos-celulares', name: 'ContactosCelulares', component: () => import('../views/public/ContactosCelularesView.vue') },
+  { path: '/coordinadores-base', name: 'CoordinadoresBase', component: () => import('../views/public/CoordinadoresDatosView.vue') },  
+
+   // --- LOGIN ---
   {
     path: '/login-arbitro',
     name: 'LoginArbitro',
@@ -27,6 +32,7 @@ const routes = [
     }
   },
   
+   // --- PANEL ARBITRO ---
 {
     path: '/panel-arbitro',
     component: () => import('../components/panel-arbitro/PanelArbitro.vue'),
@@ -115,6 +121,8 @@ const routes = [
     
     ]
   },
+
+  // --- PANEL ADMIN ---
   {    
     path: '/panel-admin',
     component: () => import('../components/panel-admin/AdminPanel.vue'),
@@ -232,16 +240,7 @@ const routes = [
     
     ]
   },
-  {
-    path: '/contactos-celulares',
-    name: 'ContactosCelulares',
-    component: () => import('../views/public/ContactosCelularesView.vue')
-  },
-  {
-    path: '/coordinadores-base',
-    name: 'CoordinadoresBase',
-    component: () => import('../views/public/CoordinadoresDatosView.vue')
-  }
+
 ];
 
 const router = createRouter({
