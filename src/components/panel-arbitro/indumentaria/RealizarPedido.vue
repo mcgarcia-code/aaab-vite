@@ -1,152 +1,235 @@
 <template>
-  <div class="container py-4 animate__animated animate__fadeIn">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h2 class="fw-bold text-white m-0">Solicitar Indumentaria</h2>
-        <p class="small text-white opacity-75 m-0">Seleccioná tus prendas y armá tu pedido</p>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <div class="full-screen-wrapper">
+    <div class="admin-panel animate__animated animate__fadeIn">
+
+      <!-- CABECERA ESTÁNDAR -->
+      <div class="header-section shadow-sm">
+        <div class="header-info">
+          <h2 class="title">Solicitar Indumentaria</h2>
+          <span class="counter">Armá tu pedido de temporada</span>
+        </div>
+
+        <div class="header-actions">
+          <RouterLink to="/panel-arbitro/indumentaria/mis-pedidos" class="text-decoration-none">
+            <button class="btn-action btn-clear" title="Ver Mis Pedidos">
+              <span class="material-icons">history</span> <span class="btn-text">Mis Pedidos</span>
+            </button>
+          </RouterLink>
+
+          <button @click="mostrarCarrito = true" class="btn-action btn-blue position-relative" title="Ver Carrito">
+            <span class="material-icons">shopping_cart</span> <span class="btn-text">Ver Carrito</span>
+            <span v-if="carrito.length > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.6rem; transform: translate(-30%, -30%) !important;">
+              {{ carrito.length }}
+            </span>
+          </button>
+        </div>
       </div>
-      <button @click="mostrarCarrito = true" class="btn btn-light rounded-pill px-3 shadow-sm position-relative">
-        <i class="bi bi-cart3 fs-5 text-danger"></i>
-        <span v-if="carrito.length > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-          {{ carrito.length }}
-        </span>
-      </button>
-    </div>
 
-    <div class="mb-4">
-      <input v-model="busqueda" type="text" class="form-control rounded-pill shadow-sm px-4 border-0" placeholder="Buscar prenda...">
-    </div>
+      <!-- BUSCADOR -->
+      <div class="mb-4">
+        <input 
+          v-model="busqueda" 
+          type="text" 
+          class="form-control rounded-pill shadow-sm px-4 border-0 input-filtro-custom" 
+          placeholder="Buscar prenda o modelo..."
+        >
+      </div>
 
-    <div class="row g-3">
-      <div v-for="(prenda, key) in stockFiltrado" :key="key" class="col-6 col-md-4 col-lg-3 text-center">
-        <div class="card h-100 border-0 shadow-sm tarjeta-prenda-invertida overflow-hidden">
-          
-          <div class="bg-white position-relative contenedor-imagen-superior">
-            <div 
-              class="d-flex align-items-center justify-content-center h-100 cursor-zoom"
-              @click="abrirZoom(obtenerImagenActual(prenda))"
-            >
-              <img 
-                :src="obtenerImagenActual(prenda)" 
-                class="img-fluid foto-prenda animate__animated animate__fadeIn animate__faster"
-                alt="Indumentaria"
-              >
-              <div class="zoom-icon-overlay">
-                <i class="bi bi-search"></i>
-              </div>
-            </div>
-
-            <template v-if="obtenerTotalImagenes(prenda.descripcion) > 1">
-              <button @click.stop="cambiarFoto(prenda, -1)" class="btn-nav-foto start-0 ms-1">
-                <i class="bi bi-chevron-left"></i>
-              </button>
-              <button @click.stop="cambiarFoto(prenda, 1)" class="btn-nav-foto end-0 me-1">
-                <i class="bi bi-chevron-right"></i>
-              </button>
-              <div class="indicador-fotos">
-                {{ (prenda.fotoActualIndex || 0) + 1 }} / {{ obtenerTotalImagenes(prenda.descripcionLimpia) }}
-              </div>
-            </template>
-          </div>
-          
-          <div class="card-body p-2 p-md-3 d-flex flex-column cuerpo-gris-inferior">
-            <h6 class="fw-bold text-dark mb-1 text-uppercase extra-small-mobile">{{ prenda.descripcion }}</h6>
-            <h5 class="fw-bold text-danger mb-2 mb-md-3">$ {{ prenda.precio_unitario }}</h5>
+      <!-- GRILLA DE PRODUCTOS RESPONSIVE -->
+      <div class="row g-3">
+        <!-- USAMOS stockPaginado EN LUGAR DE stockFiltrado -->
+        <div v-for="(prenda, key) in stockPaginado" :key="key" class="col-12 col-md-4 col-lg-3 text-center">
+          <div class="card h-100 border-0 shadow-sm tarjeta-prenda-invertida overflow-hidden">
             
-            <div class="mt-auto">
-              <div class="row g-2 mb-2 text-start">
-                <div class="col-7">
-                  <label class="extra-small-label fw-bold text-muted">Talle:</label>
-                  <select v-model="prenda.itemSeleccionado" @change="validarCantidad(prenda)" class="form-select form-select-sm rounded-pill shadow-sm border-danger-subtle bg-white">
-                    <option v-for="(t, k) in prenda.items" :key="k" :value="k">
-                      {{ t.talle }}
-                    </option>
-                  </select>
-                </div>
-                <div class="col-5">
-                  <label class="extra-small-label fw-bold text-muted">Cant:</label>
-                  <input 
-                    type="number" 
-                    v-model.number="prenda.cantidadSeleccionada" 
-                    min="1" 
-                    :max="obtenerStockMaximo(prenda)"
-                    @input="validarCantidad(prenda)"
-                    class="form-control form-control-sm rounded-pill shadow-sm border-danger-subtle text-center"
-                  >
-                </div>
-                <div class="col-12 mt-0">
-                  <span class="text-muted" style="font-size: 0.65rem;">Stock disp: {{ obtenerStockMaximo(prenda) }}</span>
+            <div class="bg-white position-relative contenedor-imagen-superior">
+              <div 
+                class="d-flex align-items-center justify-content-center h-100 cursor-zoom"
+                @click="abrirZoom(obtenerImagenActual(prenda))"
+              >
+                <img 
+                  :src="obtenerImagenActual(prenda)" 
+                  class="img-fluid foto-prenda animate__animated animate__fadeIn animate__faster"
+                  alt="Indumentaria"
+                >
+                <div class="zoom-icon-overlay">
+                  <span class="material-icons" style="font-size: 16px;">search</span>
                 </div>
               </div>
 
-              <button 
-                @click="agregarAlCarrito(prenda)" 
-                :disabled="obtenerStockMaximo(prenda) <= 0"
-                class="btn btn-danger btn-sm w-100 rounded-pill fw-bold shadow-sm py-2"
-              >
-                {{ obtenerStockMaximo(prenda) > 0 ? 'Agregar' : 'Sin Stock' }}
-              </button>
+              <template v-if="obtenerTotalImagenes(prenda) > 1">
+                <button @click.stop="cambiarFoto(prenda, -1)" class="btn-nav-foto start-0 ms-1">
+                  <span class="material-icons">chevron_left</span>
+                </button>
+                <button @click.stop="cambiarFoto(prenda, 1)" class="btn-nav-foto end-0 me-1">
+                  <span class="material-icons">chevron_right</span>
+                </button>
+                <div class="indicador-fotos">
+                  {{ (prenda.fotoActualIndex || 0) + 1 }} / {{ obtenerTotalImagenes(prenda) }}
+                </div>
+              </template>
+            </div>
+            
+            <div class="card-body p-3 d-flex flex-column cuerpo-gris-inferior">
+              <h6 class="fw-bold text-dark mb-1 text-uppercase extra-small-mobile">{{ prenda.descripcion }}</h6>
+              <h5 class="fw-bold text-danger mb-2 mb-md-3">$ {{ prenda.precio_unitario }}</h5>
+              
+              <div class="mt-auto">
+                <div class="row g-2 mb-2 text-start">
+                  <div class="col-7">
+                    <label class="extra-small-label fw-bold text-muted">Talle:</label>
+                    <select v-model="prenda.itemSeleccionado" @change="validarCantidad(prenda)" class="form-select form-select-sm rounded-pill shadow-sm border-secondary-subtle bg-white">
+                      <option v-for="(t, k) in prenda.items" :key="k" :value="k">
+                        {{ t.talle }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-5">
+                    <label class="extra-small-label fw-bold text-muted">Cant:</label>
+                    <input 
+                      type="number" 
+                      v-model.number="prenda.cantidadSeleccionada" 
+                      min="1" 
+                      :max="permitePedidoSinStock(prenda) ? 99 : obtenerStockMaximo(prenda)"
+                      @input="validarCantidad(prenda)"
+                      class="form-control form-control-sm rounded-pill shadow-sm border-secondary-subtle text-center"
+                    >
+                  </div>
+                  
+                  <!-- INDICADOR DE STOCK INTELIGENTE -->
+                  <div class="col-12 mt-0 text-center">
+                    <span v-if="obtenerStockMaximo(prenda) > 0" class="badge rounded-pill bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">
+                      Disp: {{ obtenerStockMaximo(prenda) }}
+                    </span>
+                    <span v-else-if="permitePedidoSinStock(prenda)" class="badge rounded-pill bg-warning-subtle text-dark border border-warning" style="font-size: 0.65rem;">
+                      A Pedido (Demora de fábrica)
+                    </span>
+                    <span v-else class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem;">
+                      Agotado Definitivamente
+                    </span>
+                  </div>
+                </div>
+
+                <!-- BOTÓN DINÁMICO -->
+                <button 
+                  @click="agregarAlCarrito(prenda)" 
+                  :disabled="obtenerStockMaximo(prenda) <= 0 && !permitePedidoSinStock(prenda)"
+                  :class="['btn btn-sm w-100 rounded-pill fw-bold shadow-sm py-2 d-flex align-items-center justify-content-center gap-1 mt-2', (obtenerStockMaximo(prenda) <= 0 && permitePedidoSinStock(prenda)) ? 'btn-warning text-dark' : 'btn-danger text-white']"
+                >
+                  <span class="material-icons" style="font-size: 16px;">
+                    {{ (obtenerStockMaximo(prenda) > 0 || permitePedidoSinStock(prenda)) ? 'add_shopping_cart' : 'remove_shopping_cart' }}
+                  </span>
+                  {{ obtenerStockMaximo(prenda) > 0 ? 'AGREGAR' : (permitePedidoSinStock(prenda) ? 'ENCARGAR' : 'SIN STOCK') }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <div v-if="stockPaginado.length === 0" class="text-center p-5 bg-white rounded shadow-sm border mt-3">
+        <span class="material-icons text-muted" style="font-size: 48px;">inventory_2</span>
+        <p class="text-muted mt-2 mb-0">No se encontraron prendas.</p>
+      </div>
+
+      <!-- PAGINACIÓN -->
+      <div class="paginacion" v-if="totalPaginas > 1">
+        <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+        <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
+      </div>
+
     </div>
 
+    <!-- MODAL IMAGEN ZOOM -->
     <div v-if="imagenZoom" class="modal-zoom-overlay animate__animated animate__fadeIn" @click="imagenZoom = null">
-      <button class="btn-cerrar-zoom" @click.stop="imagenZoom = null"><i class="bi bi-x-lg"></i></button>
+      <button class="btn-cerrar-zoom shadow" @click.stop="imagenZoom = null">
+        <span class="material-icons">close</span>
+      </button>
       <img :src="imagenZoom" class="img-zoom-full animate__animated animate__zoomIn" @click.stop>
     </div>
 
-    <div v-if="mostrarCarrito" class="modal-overlay d-flex align-items-center justify-content-center px-3">
-      <div class="modal-content p-4 shadow-lg animate__animated animate__fadeInUp">
-        <h4 class="fw-bold mb-4 text-dark"><i class="bi bi-cart-check text-danger me-2"></i>Tu Pedido</h4>
-        <div v-if="carrito.length === 0" class="text-center py-4 text-muted">El carrito está vacío</div>
-        <div v-else class="contenedor-items-carrito mb-4 px-1">
+    <!-- MODAL CARRITO -->
+    <Teleport to="body">
+    <div v-if="mostrarCarrito" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10000;">
+      <div class="modal-content-exito p-4 shadow-lg animate__animated animate__zoomIn" style="max-width: 450px; width: 95%;">
+        
+        <h4 class="fw-bold mb-4 text-dark d-flex align-items-center justify-content-center gap-2">
+          <span class="material-icons text-danger fs-3">shopping_cart_checkout</span> Tu Pedido
+        </h4>
+        
+        <div v-if="carrito.length === 0" class="text-center py-5 text-muted bg-light rounded border">
+          <span class="material-icons fs-1 mb-2">remove_shopping_cart</span>
+          <p class="m-0">El carrito está vacío</p>
+        </div>
+        
+        <div v-else class="contenedor-items-carrito mb-4 px-1 text-start">
           <div v-for="(p, i) in carrito" :key="i" class="d-flex justify-content-between align-items-center border-bottom py-2">
             <div>
               <div class="fw-bold small text-dark">{{ p.descripcion }}</div>
-              <div class="text-muted extra-small">Talle: {{ p.talle }} | Cant: {{ p.cantidad }} | ${{ p.precio * p.cantidad }}</div>
+              <div class="text-muted extra-small">Talle: <strong>{{ p.talle }}</strong> | Cant: <strong>{{ p.cantidad }}</strong> | ${{ p.precio * p.cantidad }}</div>
             </div>
-            <button @click="carrito.splice(i, 1)" class="btn btn-sm text-danger border-0"><i class="bi bi-trash"></i></button>
+            <button @click="carrito.splice(i, 1)" class="btn btn-sm text-danger border-0 p-1">
+              <span class="material-icons" style="font-size: 18px;">delete</span>
+            </button>
           </div>
-          <div class="d-flex justify-content-between mt-3 fw-bold fs-5 text-danger">
-            <span>Total:</span><span>$ {{ totalCarrito }}</span>
+          <div class="d-flex justify-content-between mt-3 fw-bold fs-5 text-danger bg-danger-subtle p-2 rounded">
+            <span>TOTAL:</span><span>$ {{ totalCarrito }}</span>
           </div>
         </div>
+        
         <div class="d-flex gap-2">
-          <button @click="mostrarCarrito = false" class="btn btn-light w-100 rounded-pill fw-bold border text-uppercase" style="font-size: 0.8rem;">Seguir comprando</button>
-          <button v-if="carrito.length > 0" @click="confirmarPedido" class="btn btn-danger w-100 rounded-pill fw-bold shadow text-uppercase" style="font-size: 0.8rem;">Finalizar pedido</button>
+          <button @click="mostrarCarrito = false" class="btn btn-light w-100 rounded-pill fw-bold border" style="font-size: 0.8rem;">SEGUIR MIRANDO</button>
+          <button v-if="carrito.length > 0" @click="confirmarPedido" class="btn btn-dark w-100 rounded-pill fw-bold shadow" style="font-size: 0.8rem;">FINALIZAR</button>
         </div>
       </div>
     </div>
+    </Teleport>
 
-    <div v-if="mostrarPago" class="modal-overlay d-flex align-items-center justify-content-center px-3">
-      <div class="modal-content p-4 text-center animate__animated animate__zoomIn">
-        <i class="bi bi-wallet2 text-danger display-4 mb-3"></i>
-        <h4 class="fw-bold">Confirmar Transferencia</h4>
-        <div class="small text-muted mb-4 text-start bg-light p-3 rounded-4 border">
-          Total a pagar: <strong class="text-danger">$ {{ totalCarrito }}</strong>
-          <hr class="my-2">
-          <strong>Nombre y Apellido:</strong> Adrian Manzanos<br>
+    <!-- MODAL PAGO Y CONFIRMACIÓN -->
+    <Teleport to="body">
+    <div v-if="mostrarPago" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
+      <div class="modal-content-exito p-4 text-center animate__animated animate__zoomIn" style="max-width: 450px; width: 95%;">
+        
+        <div class="icon-circle-exito bg-danger-subtle mb-3 text-danger" style="width: 70px; height: 70px; font-size: 35px;">
+          <span class="material-icons" style="font-size: inherit;">account_balance_wallet</span>
+        </div>
+        
+        <h4 class="fw-bold">Abonar Pedido</h4>
+        
+        <div class="small text-muted mb-4 text-start bg-light p-3 rounded border">
+          <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+            <span>Total a transferir:</span>
+            <strong class="text-danger fs-6">$ {{ totalCarrito }}</strong>
+          </div>
           <strong>CBU:</strong> 0170182740000032568543<br>
           <strong>Alias:</strong> Adrianmanzanos.bbva<br>
+          <strong>Titular:</strong> Adrian Manzanos<br>
           <strong>Banco:</strong> BBVA
         </div>
-        <div class="alert alert-info extra-small py-2 border-0 mb-4">
-          Para confirmar el pedido, enviá el comprobante a <b>tesoreria@arbitroshandball.com.ar</b>.
+        
+        <div class="alert alert-info extra-small py-2 border-0 mb-4 fw-bold">
+          <span class="material-icons align-middle me-1" style="font-size: 14px;">info</span>
+          Recordá enviar el comprobante a tesoreria@arbitroshandball.com.ar
         </div>
+        
         <button @click="realizarPedidoFinal" class="btn btn-danger w-100 rounded-pill fw-bold shadow-lg py-3" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
           {{ cargando ? 'PROCESANDO...' : 'CONFIRMAR PEDIDO' }}
         </button>
-        <button @click="mostrarPago = false" class="btn btn-link text-muted small text-decoration-none mt-2">Volver</button>
+        <button @click="mostrarPago = false" class="btn btn-link text-muted small text-decoration-none mt-2 w-100">Cancelar</button>
       </div>
     </div>
+    </Teleport>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue';
+// Agregamos onUnmounted y watch
+import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue';
+import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 
@@ -160,7 +243,6 @@ useHead({
   ],
 });
 
-// Inyectamos el notificador global
 const notificar = inject('notificar');
 
 const listaAgrupada = ref([]);
@@ -171,27 +253,24 @@ const mostrarPago = ref(false);
 const cargando = ref(false);
 const imagenZoom = ref(null);
 
-const catalogoImagenes = {
-  "CHOMBAS - HUMMEL": ["chomba-hummel.webp", "chomba-back-hummel.webp"],
-  "REMERA AMARILLA - CH1": ["amarillo-ch1.webp"],
-  "REMERA NEGRA - HUMMEL": ["negra-hummel.webp"],
-  "REMERA NARANJA - HUMMEL": ["naranja-hummel.webp"],
-  "REMERA VERDE AGUA - HIGH RUNNER": ["verde-agua-hr.webp"],
-  "REMERA NEGRA - HIGH RUNNER": ["negra-hr.webp"],
-  "REMERA NARANJA - HIGH RUNNER": ["naranja-hr.webp"],
-  "REMERA CELESTE - HIGH RUNNER": ["celeste-hr.webp"],
-  "SHORT CABALLERO - HUMMEL": ["short-hombre-hummel.webp"],
-  "SHORT DAMA - HUMMEL": ["short-mujer-hummel.webp"],
-  "SHORT CABALLERO - HIGH RUNNER": ["short-hombre-hr.webp"],
-  "SHORT DAMA - HIGH RUNNER": ["short-mujer-hr.webp"],
-  "CHOMBAS - HIGH RUNNER": ["chomba-hr.webp"],
-  "BUZO - HUMMEL": ["buzo-hummel.webp"],
-  "CAMPERA - HIGH RUNNER": ["campera-hr.webp"],
-  "PANTALON LARGO - HIGH RUNNER": ["pantalon-hr.webp"]
+// Mapa de orden para talles
+const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9 };
+
+// --- LÓGICA DE PAGINACIÓN RESPONSIVE ---
+const anchoPantalla = ref(window.innerWidth);
+const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
+
+const paginaActual = ref(1);
+const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 5 : 12);
+
+const permitePedidoSinStock = (prenda) => {
+  if (!prenda || !prenda.descripcion) return false;
+  const descripcion = prenda.descripcion.toUpperCase();
+  return descripcion.includes('HUMMEL') || descripcion.includes('CH1');
 };
 
 const obtenerImagenActual = (prenda) => {
-  const fotos = prenda.archivo_imagen.split(",") || [];
+  const fotos = prenda.archivo_imagen ? prenda.archivo_imagen.split(",") : [];
   const index = prenda.fotoActualIndex || 0;
   const archivo = fotos[index] || fotos[0];
   if (archivo) {
@@ -200,62 +279,75 @@ const obtenerImagenActual = (prenda) => {
   return "https://placehold.co/400x400?text=Indumentaria";
 };
 
-const obtenerTotalImagenes = (desc) => (catalogoImagenes[desc] || []).length;
+const obtenerTotalImagenes = (prenda) => {
+  return prenda.archivo_imagen && prenda.archivo_imagen.trim() !== '' 
+         ? prenda.archivo_imagen.split(",").length 
+         : 0;
+};
 
 const cambiarFoto = (prenda, delta) => {
-  const total = obtenerTotalImagenes(prenda.descripcion);
+  const total = obtenerTotalImagenes(prenda);
+  if (total <= 1) return;
   let current = prenda.fotoActualIndex || 0;
   current = (current + delta + total) % total;
   prenda.fotoActualIndex = current;
 };
 
 const obtenerStockMaximo = (prenda) => {
-  const talleInfo = prenda.items[prenda.itemSeleccionado]
-  return talleInfo ? talleInfo.cantidad : 0
+  const talleInfo = prenda.items[prenda.itemSeleccionado];
+  return talleInfo ? talleInfo.cantidad : 0;
 };
 
 const validarCantidad = (prenda) => {
-  const max = obtenerStockMaximo(prenda)
-  if (prenda.cantidadSeleccionada > max) prenda.cantidadSeleccionada = max
-  if (prenda.cantidadSeleccionada < 1) prenda.cantidadSeleccionada = 1
+  const max = obtenerStockMaximo(prenda);
+  const permiteSinStock = permitePedidoSinStock(prenda);
+
+  if (!permiteSinStock && prenda.cantidadSeleccionada > max) {
+    prenda.cantidadSeleccionada = max;
+  }
+  if (prenda.cantidadSeleccionada < 1) {
+    prenda.cantidadSeleccionada = 1;
+  }
 };
 
 const abrirZoom = (url) => { imagenZoom.value = url; };
 
 const cargarStock = async () => {
   const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
+  
   if (respuesta.ok) {
-    listaAgrupada.value = respuesta.payload;
-    /*
-    const mapaAgrupado = {};
-    rawData.forEach(item => {
-      const descripcionLimpia = item.descripcion.split(/ - TALLE/i)[0].trim();
-      const talleEncontrado = item.descripcion.split(/TALLE /i)[1] || 'S/T';
-      if (!mapaAgrupado[descripcionLimpia]) {
-        mapaAgrupado[descripcionLimpia] = {
-          descripcionLimpia,
-          precio_unitario: item.precio_unitario,
-          tallesDisponibles: [],
-          talleSeleccionado: talleEncontrado,
-          cantidadSeleccionada: 1,
-          fotoActualIndex: 0
-        };
-      }
-      mapaAgrupado[descripcionLimpia].tallesDisponibles.push({ 
-        id: item.id, 
-        talle: talleEncontrado,
-        cantidadStock: item.cantidad 
-      });
+    listaAgrupada.value = respuesta.payload.map(prenda => {
+      // Ordenamos los talles para el menú desplegable (Select)
+      prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
+      
+      return {
+        ...prenda,
+        itemSeleccionado: 0,
+        cantidadSeleccionada: 1,
+        fotoActualIndex: 0
+      };
     });
-    listaAgrupada.value = Object.values(mapaAgrupado);
-    */
   }
 };
 
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+
 const stockFiltrado = computed(() => {
   return listaAgrupada.value
-    .filter(p => p.descripcion.toLowerCase().includes(busqueda.value.toLowerCase()))
+    .filter(p => normalizar(p.descripcion).includes(normalizar(busqueda.value)))
     .sort((a, b) => a.descripcion.localeCompare(b.descripcion));
+});
+
+const totalPaginas = computed(() => Math.ceil(stockFiltrado.value.length / registrosPorPagina.value) || 1);
+const stockPaginado = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina.value;
+  return stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value);
+});
+
+watch(busqueda, () => { paginaActual.value = 1 });
+watch(totalPaginas, (nuevo) => { 
+  if (nuevo === 0) paginaActual.value = 1;
+  else if (paginaActual.value > nuevo) paginaActual.value = nuevo; 
 });
 
 const totalCarrito = computed(() => {
@@ -263,12 +355,14 @@ const totalCarrito = computed(() => {
 });
 
 const agregarAlCarrito = (prenda) => {
-  const itemTalle = prenda.items[prenda.itemSeleccionado]
-  // Validamos que haya stock real antes de agregar
-  if (itemTalle.cantidad <= 0) {
-    notificar({ titulo: 'Sin Stock', mensaje: 'Lo sentimos, este talle se acaba de agotar.', tipo: 'danger' });
+  const itemTalle = prenda.items[prenda.itemSeleccionado];
+  const permiteSinStock = permitePedidoSinStock(prenda);
+
+  if (itemTalle.cantidad <= 0 && !permiteSinStock) {
+    notificar({ titulo: 'Agotado', mensaje: 'Lo sentimos, este modelo de ' + prenda.descripcion + ' no admite encargos a fábrica.', tipo: 'danger' });
     return;
   }
+
   carrito.value.push({
     id_item: prenda.id_item,
     id_talle: itemTalle.id,
@@ -277,6 +371,11 @@ const agregarAlCarrito = (prenda) => {
     talle: itemTalle.talle,
     cantidad: prenda.cantidadSeleccionada
   });
+  
+  if (itemTalle.cantidad <= 0) {
+    notificar({ titulo: 'Prenda encargada', mensaje: 'Agregaste un artículo sin stock inmediato. Esto se enviará a fabricación.', tipo: 'warning' });
+  }
+
   mostrarCarrito.value = true;
 };
 
@@ -297,18 +396,14 @@ const realizarPedidoFinal = async () => {
     if (respuesta.ok) {
       notificar({
         titulo: '¡Pedido Recibido!',
-        mensaje: 'Tu pedido se registró con éxito. Recordá enviar el comprobante de transferencia.',
+        mensaje: 'Tu pedido se registró con éxito. Recordá enviar el comprobante.',
         tipo: 'success'
       });
       carrito.value = [];
       mostrarPago.value = false;
-      await cargarStock(); // Refrescamos stock después del pedido
+      await cargarStock();
     } else {
-      notificar({
-        titulo: 'Error',
-        mensaje: 'No pudimos procesar tu pedido. Intentá nuevamente.',
-        tipo: 'danger'
-      });
+      notificar({ titulo: 'Error', mensaje: 'No pudimos procesar tu pedido.', tipo: 'danger' });
     }
   } catch{
     notificar({ titulo: 'Error de Red', mensaje: 'Error al conectar con el servidor.', tipo: 'danger' });
@@ -317,91 +412,74 @@ const realizarPedidoFinal = async () => {
   }
 };
 
-onMounted(cargarStock);
+onMounted(() => {
+  window.addEventListener('resize', actualizarAncho);
+  cargarStock();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', actualizarAncho);
+});
 </script>
 
 <style scoped>
-.tarjeta-prenda-invertida { 
-  border-radius: 20px; 
-  transition: all 0.3s ease; 
-  border: none !important; 
-  background-color: #f1f5f9; 
-  display: flex;
-  flex-direction: column;
-}
+/* ESTILOS (IGUALES A TU CÓDIGO) */
+.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; }
+.admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; }
+.header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
+.title { font-size: 1.1rem; font-weight: bold; margin: 0; }
+.counter { font-size: 0.85rem; color: #000000; }
+.header-actions { display: flex; gap: 8px; }
+.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
+.btn-clear { background: #e2e8f0; color: #000; }
+.btn-blue { background: #3b82f6; color: white; }
 
-@media (min-width: 992px) {
-  .tarjeta-prenda-invertida:hover { 
-    transform: translateY(-5px); 
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important; 
-  }
-}
+.input-filtro-custom { font-size: 1rem !important; padding: 0.5rem 1rem; height: auto !important; }
+.input-filtro-custom:focus { box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important; outline: none; }
 
-/* ZOOM & IMAGEN */
+.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
+.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
+.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
+
+.tarjeta-prenda-invertida { border-radius: 16px; transition: all 0.3s ease; background-color: #f8fafc; border: 1px solid #e2e8f0 !important; display: flex; flex-direction: column; }
+@media (min-width: 992px) { .tarjeta-prenda-invertida:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important; border-color: #cbd5e1 !important; } }
+
 .cursor-zoom { cursor: zoom-in; width: 100%; height: 100%; }
-.zoom-icon-overlay {
-  position: absolute; top: 10px; right: 10px;
-  background: rgba(0,0,0,0.05); color: #666;
-  border-radius: 50%; width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; transition: opacity 0.3s; z-index: 2;
-}
+.zoom-icon-overlay { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.05); color: #666; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; z-index: 2; }
 .contenedor-imagen-superior:hover .zoom-icon-overlay { opacity: 1; }
+.contenedor-imagen-superior { background-color: #ffffff; height: 180px; overflow: hidden; border-radius: 16px 16px 0 0; z-index: 1; }
+.foto-prenda { max-width: 175%; max-height: 175%; object-fit: contain; mix-blend-mode: multiply; pointer-events: none; }
 
-.contenedor-imagen-superior { 
-  background-color: #ffffff;
-  height: 180px; 
-  overflow: hidden; 
-  border-radius: 20px 20px 0 0;
-  z-index: 1;
-}
+.btn-nav-foto { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #dc2626; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.indicador-fotos { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.5); color: white; font-size: 0.65rem; padding: 2px 10px; border-radius: 12px; z-index: 5; }
 
-.foto-prenda {
-  max-width: 175%;
-  max-height: 175%;
-  object-fit: contain;
-  mix-blend-mode: multiply;
-  pointer-events: none; /* Evita que la img bloquee el click del div zoom */
-}
-
-/* BOTONES GALERÍA */
-.btn-nav-foto {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  background: rgba(255,255,255,0.8); border: none; border-radius: 50%;
-  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-  color: #dc2626; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.indicador-fotos {
-  position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
-  background: rgba(0,0,0,0.5); color: white; font-size: 0.65rem;
-  padding: 2px 10px; border-radius: 12px; z-index: 5;
-}
-
-.cuerpo-gris-inferior {
-  padding: 12px !important;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: #f1f5f9;
-  border-radius: 0 0 20px 20px;
-}
-
-.extra-small-mobile { font-size: 0.8rem; line-height: 1.2; }
-.extra-small-label { font-size: 0.65rem; display: block; margin-bottom: 2px; }
+.cuerpo-gris-inferior { padding: 15px !important; flex-grow: 1; display: flex; flex-direction: column; background-color: #f8fafc; border-radius: 0 0 16px 16px; }
+.extra-small-mobile { font-size: 0.85rem; line-height: 1.2; }
+.extra-small-label { font-size: 0.7rem; display: block; margin-bottom: 2px; }
 h5 { font-size: 1.2rem; }
 
-.form-select-sm, .form-control-sm { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
-.btn-danger { background-color: #dc2626; border: none; }
+.form-select-sm, .form-control-sm { font-size: 0.75rem; padding: 0.3rem 0.5rem; }
+
+.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+.modal-content-exito { background: white; border-radius: 20px; border: none; }
+.contenedor-items-carrito { max-height: 250px; overflow-y: auto; }
+.icon-circle-exito { border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+
+.modal-zoom-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 11000; display: flex; align-items: center; justify-content: center; }
+.img-zoom-full { max-width: 95%; max-height: 85vh; border-radius: 10px; }
+.btn-cerrar-zoom { position: absolute; top: 20px; right: 20px; background: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; display:flex; align-items: center; justify-content:center; color: #dc2626; z-index: 11001; }
 
 @media (max-width: 768px) {
   .contenedor-imagen-superior { height: 150px; }
 }
 
-/* MODALES */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1050; display: flex; align-items: center; justify-content: center; }
-.modal-content { background: white; border-radius: 30px; width: 92%; max-width: 420px; border: none; }
-.contenedor-items-carrito { max-height: 250px; overflow-y: auto; }
-.modal-zoom-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 3000; display: flex; align-items: center; justify-content: center; }
-.img-zoom-full { max-width: 95%; max-height: 85vh; border-radius: 10px; }
-.btn-cerrar-zoom { position: absolute; top: 20px; right: 20px; background: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; z-index: 3001; }
+@media (max-width: 600px) {
+  .admin-panel { padding: 10px; }
+  .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .title { font-size: 1rem; }
+  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
+  .header-actions { width: 100%; display: flex; flex-direction: row; justify-content: space-between; }
+  .btn-text { display: none !important; }
+}
 </style>

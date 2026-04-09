@@ -39,11 +39,21 @@
       <div class="col-12 col-md-6 col-xl-5">
         <RouterLink to="/panel-admin/tesoreria/indumentaria/pedidos" class="text-decoration-none h-100 d-block">
           <div class="modern-menu-card shadow-sm">
-            <div class="icon-box">
+            <div class="icon-box position-relative">
               <i class="bi bi-list-check"></i>
+              <!-- PUNTITO DE NOTIFICACIÓN SOBRE EL ÍCONO -->
+              <span v-if="pedidosNuevos > 0" class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle animate__animated animate__pulse animate__infinite">
+                <span class="visually-hidden">Nuevos pedidos</span>
+              </span>
             </div>
             <div class="card-text">
-              <h5 class="fw-bold mb-1">Pedidos Realizados</h5>
+              <h5 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                Pedidos Realizados
+                <!-- BADGE CON EL NÚMERO -->
+                <span v-if="pedidosNuevos > 0" class="badge bg-danger rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.65rem;">
+                  {{ pedidosNuevos }} NUEVO{{ pedidosNuevos > 1 ? 'S' : '' }}
+                </span>
+              </h5>
               <p class="extra-small m-0 text-muted">Listado de solicitudes, estados de entrega y pendientes.</p>
             </div>
             <div class="card-arrow">
@@ -58,8 +68,10 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head';
+import { api } from '@/api/api';
 
 useHead({
   title: 'Gestión de Indumentaria | AAAB',
@@ -69,7 +81,26 @@ useHead({
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
     { property: 'og:type', content: 'website' }
   ],
-})
+});
+
+// Variable reactiva para guardar la cantidad de pedidos nuevos
+const pedidosNuevos = ref(0);
+
+// Función silenciosa para contar los pedidos en estado "creado"
+const cargarNotificaciones = async () => {
+  try {
+    const res = await api.get({ entity: 'indumentaria', action: 'obtenerPedidos' });
+    if (res.ok && res.payload) {
+      pedidosNuevos.value = res.payload.filter(p => p.estado && p.estado.toLowerCase() === 'creado').length;
+    }
+  } catch (error) {
+    console.error("Error cargando notificaciones:", error);
+  }
+};
+
+onMounted(() => {
+  cargarNotificaciones();
+});
 </script>
 
 <style scoped>
@@ -160,4 +191,4 @@ useHead({
   .icon-box { width: 48px; height: 48px; min-width: 48px; font-size: 1.3rem; }
   .card-text h5 { font-size: 1rem; }
 }
-</style>```
+</style>

@@ -1,330 +1,472 @@
 <template>
-  <div class="container py-4 animate__animated animate__fadeIn">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h2 class="fw-bold text-white m-0 fs-2">Inventario Agrupado</h2>
-        <p class="small text-white opacity-75 m-0">Gestioná el stock por modelo y talles</p>
-      </div>
-      <button @click="abrirModalNuevo()" class="btn btn-light rounded-pill px-4 shadow-sm fw-bold text-danger">
-        <i class="bi bi-plus-lg me-2"></i> Item
-      </button>
-    </div>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-    <div class="mb-4">
-      <input 
-        v-model="filtroTexto" 
-        type="text" 
-        class="form-control rounded-pill shadow-sm px-4 border-0 input-filtro-custom" 
-        placeholder="Buscar modelo..."
-      >
-    </div>
+  <div class="full-screen-wrapper">
+    <div class="admin-panel animate__animated animate__fadeIn">
 
-    <div class="row g-3">
-      <div v-for="(modelo, key) in listaStock" :key="key" class="col-6 col-md-4 col-lg-3">
-        <div class="card h-100 border-0 shadow-sm tarjeta-stock-admin overflow-hidden">
-          
-          <div class="bg-white contenedor-foto-admin d-flex align-items-center justify-content-center position-relative">
-            <img :src="obtenerImagen(modelo.archivo_imagen)" class="img-fluid foto-gestion" alt="Modelo">
-            <button @click="abrirModalEdicion(modelo)" class="btn-editar-flotante shadow">
-              <i class="bi bi-pencil-fill"></i>
-            </button> 
-          </div>
-
-          <div class="card-body p-3 cuerpo-gris-admin text-center d-flex flex-column">
-            <div class="contenedor-titulo-stock mb-2">
-              <h6 class="fw-bold text-dark m-0 text-uppercase text-truncate-2">
-                {{ modelo.descripcion }}
-              </h6>
-            </div>
-            
-            <div class="d-flex flex-wrap justify-content-center gap-1 mb-3">
-              <span v-for="(item, k) in modelo.items" :key="k" 
-                :class="['badge-talle', item.cantidad < 5 ? 'bajo-stock' : '']">
-                {{ item.talle }}: <b>{{ item.cantidad }}</b>
-              </span>
-            </div>
-
-            <div class="mt-auto pt-2 border-top text-center">
-              <span class="small text-muted">Precio Sugerido:</span>
-              <div class="fw-bold text-success fs-5">${{ modelo.precio_unitario }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <Teleport to="body">
-    <div v-if="mostrarModal" class="modal-overlay d-flex align-items-center justify-content-center px-3">
-      <div class="modal-content animate__animated animate__zoomIn p-4 shadow-lg border-0">
-        <div class="text-center mb-3">
-          <h4 class="fw-bold m-0">{{ editando ? 'Gestionar Stock' : 'Nuevo Modelo' }}</h4>
+      <!-- CABECERA ESTÁNDAR -->
+      <div class="header-section shadow-sm">
+        <div class="header-info">
+          <h2 class="title">Gestión de Inventario</h2>
+          <span class="counter">Total: {{ stockFiltrado.length }} modelos</span>
         </div>
 
-        <div class="contenedor-formulario-scroll px-1">
-          <template v-if="!editando">
-            <div class="mb-4">
-              <label class="form-label small fw-bold text-muted d-block">Imágenes del Modelo (.webp)</label>
-              <div v-for="(foto, idx) in formulario.fotos" :key="idx" class="d-flex align-items-center gap-2 mb-2">
-                <div @click="$refs['fileInput' + idx][0].click()" class="upload-box-mini p-2 border rounded-3 bg-light cursor-pointer flex-grow-1 text-center">
-                  <i class="bi bi-image text-danger me-2"></i>
-                  <span class="extra-small text-muted">{{ foto.nombreArchivo || 'Click para subir foto ' + (idx + 1) }}</span>
-                  <input type="file" :ref="'fileInput' + idx" class="d-none" accept=".webp" @change="v => manejarArchivo(v, idx)">
-                </div>
-                <button v-if="formulario.fotos.length > 1" @click="eliminarSlotFoto(idx)" class="btn btn-sm btn-outline-danger border-0">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-              <div class="mb-3">
-                <label class="form-label small fw-bold text-muted">Nombre del Modelo</label>
-                <input v-model="formulario.descripcion" type="text" class="form-control rounded-pill px-3 shadow-sm border" placeholder="Ej: REMERA NEGRA - HUMMEL">
-              </div>
-              <button @click="agregarSlotFoto" class="btn btn-sm btn-outline-secondary w-100 rounded-pill mt-1 extra-small fw-bold">
-                <i class="bi bi-plus-circle me-1"></i> Agregar otra imagen
-              </button>
-            </div>
-          </template>
-          <template v-else>
-            <div class="mb-3">
-              <label class="form-label small fw-bold text-muted">Nombre del Modelo</label>
-              <input v-model="formulario.descripcion" type="text" class="form-control rounded-pill px-3 shadow-sm border" placeholder="Ej: REMERA NEGRA - HUMMEL">
-            </div>
-            <label class="form-label small fw-bold text-muted">Stock por Talle y Precio (Obligatorio > 0)</label>
-            <div class="contenedor-edicion-talles mb-4">
-              <div v-for="(t, index) in formulario.items" :key="index" class="fila-talle-edit mb-2 p-2 rounded-3 bg-light border">
-                <div class="row align-items-center g-2">
-                  <div class="col-2 fw-bold text-danger text-center">{{ t.talle }}</div>
-                  <div class="col-6">
-                    <div class="input-group input-group-sm border rounded-pill bg-white overflow-hidden shadow-sm">
-                      <button @click="t.cantidad > 0 ? t.cantidad-- : null" class="btn btn-light border-0 px-2">-</button>
-                      <input v-model.number="t.cantidad" type="number" class="form-control text-center border-0 fw-bold p-0">
-                      <button @click="t.cantidad++" class="btn btn-light border-0 px-2">+</button>
-                    </div>
-                  </div>
-                  <div class="col-4 text-end">
-                    <div class="position-relative">
-                      <span class="position-absolute start-0 top-50 translate-middle-y ms-2 extra-small text-muted">$</span>
-                      <input v-model.number="t.precio_unitario" type="number" class="form-control form-control-sm rounded-pill text-end fw-bold ps-3 shadow-sm" placeholder="0">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
-        </div>
+        <div class="header-actions">
+          <!-- BOTÓN FILTROS (SOLO MOBILE) -->
+          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
+            <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+          </button>
 
-        <div class="d-flex gap-2">
-          <button @click="cerrarModal" class="btn btn-light rounded-pill w-100 fw-bold border">Cerrar</button>
-          <button @click="guardarCambiosAgrupados" class="btn btn-danger rounded-pill w-100 fw-bold shadow text-uppercase" :disabled="cargando">
-            <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
-            Guardar Todo
+          <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
+            <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
+          </button>
+
+          <button @click="abrirModalNuevo" class="btn-action btn-clear-checks" title="Nuevo Modelo">
+            <span class="material-icons">add_box</span> <span class="btn-text">Nuevo Item</span>
+          </button>
+
+          <button @click="exportarExcel" class="btn-action btn-export" title="Exportar a Excel">
+            <span class="material-icons">download</span> <span class="btn-text">Excel</span>
           </button>
         </div>
       </div>
+
+      <!-- PANEL DE FILTROS DESPLEGABLE (SOLO MOBILE) -->
+      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only-flex flex-column animate__animated animate__fadeInDown animate__faster shadow-sm mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="small fw-bold text-muted text-uppercase">Filtrar Inventario</span>
+          <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
+            <span class="material-icons" style="font-size: 20px;">close</span>
+          </button>
+        </div>
+        <input v-model="filtros.modelo" placeholder="Buscar modelo..." class="form-control bg-light shadow-none border-secondary-subtle">
+        <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0">Aplicar Filtro</button>
+      </div>
+
+      <!-- FILTRO DESKTOP BÁSICO -->
+      <div class="mb-4 desktop-only">
+        <input 
+          v-model="filtros.modelo" 
+          type="text" 
+          class="form-control rounded-pill shadow-sm px-4 border-0 input-filtro-custom" 
+          placeholder="Buscar modelo..."
+        >
+      </div>
+
+      <!-- GRILLA DE CARDS RESPONSIVE -->
+      <div class="row g-3">
+        <div v-for="modelo in stockPaginado" :key="modelo.id_item" class="col-12 col-md-4 col-lg-3">
+          <div class="card h-100 border-0 shadow-sm tarjeta-stock-admin overflow-hidden">
+            
+            <div class="bg-white contenedor-foto-admin d-flex align-items-center justify-content-center position-relative">
+              <img :src="obtenerImagen(modelo.archivo_imagen)" class="img-fluid foto-gestion" alt="Modelo">
+              <button @click="abrirModalEdicion(modelo)" class="btn-editar-flotante shadow">
+                <i class="bi bi-pencil-fill"></i>
+              </button> 
+            </div>
+
+            <div class="card-body p-3 cuerpo-gris-admin text-center d-flex flex-column">
+              <div class="contenedor-titulo-stock mb-2">
+                <h6 class="fw-bold text-dark m-0 text-uppercase text-truncate-2">
+                  {{ modelo.descripcion }}
+                </h6>
+              </div>
+              
+              <div class="d-flex flex-wrap justify-content-center gap-1 mb-3">
+                <span v-for="(item, k) in modelo.items" :key="k" 
+                  :class="['badge-talle', item.cantidad < 5 ? 'bajo-stock' : '']">
+                  {{ item.talle }}: <b>{{ item.cantidad }}</b>
+                </span>
+              </div>
+
+              <div class="mt-auto pt-2 border-top text-center">
+                <span class="small text-muted">Precio Sugerido:</span>
+                <div class="fw-bold text-success fs-5">${{ modelo.precio_unitario }}</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div v-if="stockPaginado.length === 0" class="text-center p-5 bg-white rounded shadow-sm border mt-3">
+        <span class="material-icons text-muted" style="font-size: 48px;">inventory_2</span>
+        <p class="text-muted mt-2 mb-0">No se encontró indumentaria.</p>
+      </div>
+
+      <!-- PAGINACIÓN -->
+      <div class="paginacion" v-if="totalPaginas > 1">
+        <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+        <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
+      </div>
+
+    </div>
+
+    <!-- MODAL ALTA / EDICIÓN "TODO EN UNO" -->
+    <Teleport to="body">
+    <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
+      <div class="modal-content-exito animate__animated animate__zoomIn p-0 overflow-hidden" style="max-width: 650px; width: 95%;">
+        
+        <!-- Header del Modal -->
+        <div class="p-4 border-bottom text-center" :class="modoModal === 'editar' ? 'bg-light' : 'bg-danger-subtle'">
+          <div class="icon-circle-exito bg-white shadow-sm mb-2" style="width: 60px; height: 60px;">
+            <span class="material-icons" :class="modoModal === 'editar' ? 'text-primary' : 'text-danger'">{{ modoModal === 'editar' ? 'inventory' : 'add_circle' }}</span>
+          </div>
+          <h4 class="fw-bold m-0 text-dark">{{ modoModal === 'editar' ? 'Gestionar Modelo' : 'Nuevo Modelo' }}</h4>
+          <p v-if="modoModal === 'editar'" class="text-muted small m-0 mt-1">ID #{{ formModal.id_item }}</p>
+        </div>
+
+        <div class="p-4" style="max-height: 60vh; overflow-y: auto;">
+          <div class="row g-3 text-start">
+            
+            <div class="col-12">
+              <label class="small fw-bold">Nombre del Modelo *</label>
+              <input v-model="formModal.descripcion" type="text" class="form-control shadow-none" placeholder="Ej: REMERA NEGRA - HUMMEL">
+            </div>
+
+            <!-- CARGA DE FOTOS MÚLTIPLES -->
+            <div class="col-12">
+              <label class="small fw-bold">Imágenes del Modelo (.webp, .png, .jpg)</label>
+              <div class="border rounded p-3 text-center bg-light" style="border-style: dashed !important;">
+                
+                <input type="file" @change="manejarArchivos" accept="image/*" multiple class="form-control form-control-sm mb-2 shadow-none">
+                
+                <!-- Lista de archivos con botón para eliminar -->
+                <div v-if="archivosSeleccionados.length > 0" class="text-start mt-2">
+                  <span class="extra-small fw-bold text-success d-block mb-2">Archivos seleccionados ({{ archivosSeleccionados.length }}):</span>
+                  <ul class="list-group mb-0 gap-1">
+                    <li v-for="(file, i) in archivosSeleccionados" :key="i" class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 border border-secondary-subtle rounded shadow-sm">
+                      <span class="extra-small text-muted text-truncate" style="max-width: 85%;">{{ file.name }}</span>
+                      <button @click="eliminarArchivo(i)" class="btn btn-sm btn-light text-danger rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 22px; height: 22px;" title="Quitar imagen">
+                        <span class="material-icons" style="font-size: 14px;">close</span>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+                <span class="extra-small text-muted" v-else>Seleccioná una o más imágenes.</span>
+                
+              </div>
+            </div>
+
+            <div class="col-12 mt-4">
+              <label class="small fw-bold mb-2 d-block border-bottom pb-1">Stock y Precio por Talle</label>
+              
+              <div v-for="(t, index) in formModal.items" :key="index" class="row g-2 align-items-center mb-2 p-2 bg-light rounded border">
+                <div class="col-2 fw-bold text-center text-danger">{{ t.talle }}</div>
+                
+                <div class="col-5">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white text-muted" style="font-size: 0.75rem;">Cant:</span>
+                    <input v-model.number="t.cantidad" type="number" min="0" class="form-control text-center shadow-none fw-bold">
+                  </div>
+                </div>
+
+                <div class="col-5">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white text-muted" style="font-size: 0.75rem;">$</span>
+                    <input v-model.number="t.precio_unitario" type="number" min="0" class="form-control text-end shadow-none fw-bold" placeholder="Precio">
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 border-top d-flex gap-2 justify-content-end bg-light">
+          <button @click="cerrarModal" class="btn btn-light border px-4 fw-bold rounded-pill">CANCELAR</button>
+          <button @click="guardarCambios" class="btn btn-danger px-4 fw-bold shadow-sm rounded-pill" :disabled="cargando">
+            <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
+            GUARDAR
+          </button>
+        </div>
+
+      </div>
     </div>
     </Teleport>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue';
+import { ref, onMounted, onUnmounted, computed, reactive, inject, watch } from 'vue';
 import { api } from '@/api/api';
+import * as XLSX from 'xlsx';
+import { useHead } from '@vueuse/head';
 
-// Inyectamos el notificador global
+useHead({
+  title: 'Inventario | AAAB',
+  meta: [{ name: 'description', content: 'Gestión de inventario de indumentaria.' }],
+});
+
 const notificar = inject('notificar');
 
 const listaStock = ref([]);
-const filtroTexto = ref('');
+const cargando = ref(false);
+
+const filtros = reactive({ modelo: '' });
+const mostrarFiltrosMobile = ref(false);
+
+// --- LÓGICA DE PAGINACIÓN RESPONSIVE ---
+const anchoPantalla = ref(window.innerWidth);
+const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
+
+const paginaActual = ref(1);
+const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 5 : 12);
+
+// Modal Variables
 const mostrarModal = ref(false);
-const editando = ref(false);
-const cargando = ref(false)
-const archivos = ref([])
-const formulario = ref({ nombre: '', talles: [], fotos: [] });
+const modoModal = ref('nuevo');
+const archivosSeleccionados = ref([]);
 
-const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '4XL', '5XL'];
+// Talles actualizados según requerimiento (sin 5XL)
+const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
+// Mapa de orden para asegurar que siempre se ordenen de menor a mayor
+const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9 };
 
-// --- Lógica de Fotos ---
-const agregarSlotFoto = () => { formulario.value.fotos.push({ nombreArchivo: '' }); };
-const eliminarSlotFoto = (idx) => {
-  archivos.value.splice(idx, 1)
-  formulario.value.fotos.splice(idx, 1) 
-};
-const manejarArchivo = (event, idx) => {
-  archivos.value.push(event.target.files[0])
-  const file = event.target.files[0];
-  if (file) formulario.value.fotos[idx].nombreArchivo = file.name;
-};
-/*
-const stockAgrupado = computed(() => {
-  const mapa = {};
-  listaStockRaw.value.forEach(item => {
-    const nombreModelo = item.descripcion.split(/ - TALLE/i)[0].trim();
-    const talleNombre = item.descripcion.split(/TALLE /i)[1] || 'S/T';
+const formModal = ref({ id_item: null, descripcion: '', precioUnitario: 0, items: [] });
 
-    if (!mapa[nombreModelo]) {
-      mapa[nombreModelo] = {
-        nombre: nombreModelo,
-        precio_referencia: item.precio_unitario,
-        talles: []
-      };
-    }
-    mapa[nombreModelo].talles.push({
-      id: item.id,
-      talle: talleNombre,
-      cantidad: item.cantidad,
-      precio: item.precio_unitario
-    });
-  });
-  return Object.values(mapa).filter(m => m.nombre.toLowerCase().includes(filtroTexto.value.toLowerCase())).sort((a, b) => a.nombre.localeCompare(b.nombre));
+// Filtros y Paginación
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+
+const stockFiltrado = computed(() => {
+  return listaStock.value.filter(l => normalizar(l.descripcion).includes(normalizar(filtros.modelo)));
 });
-*/
 
+const totalPaginas = computed(() => Math.ceil(stockFiltrado.value.length / registrosPorPagina.value) || 1);
+const stockPaginado = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina.value;
+  return stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value);
+});
+
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
+watch(totalPaginas, (nuevo) => { 
+  if (nuevo === 0) paginaActual.value = 1;
+  else if (paginaActual.value > nuevo) paginaActual.value = nuevo; 
+});
+
+// API Calls
 const obtenerStock = async () => {
+  cargando.value = true;
   const res = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
-  if (res.ok) listaStock.value = res.payload;
+  if (res.ok) {
+    // Ordenamos los talles de cada modelo apenas llegan de la BD
+    res.payload.forEach(modelo => {
+      modelo.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
+    });
+    listaStock.value = res.payload;
+  }
+  cargando.value = false;
+};
+
+// Acciones Modal
+const abrirModalNuevo = () => {
+  modoModal.value = 'nuevo';
+  archivosSeleccionados.value = [];
+  formModal.value = { 
+    id_item: null, 
+    descripcion: '', 
+    precioUnitario: 0, 
+    items: tallesEstandar.map(t => ({ id: null, talle: t, cantidad: 0, precio_unitario: 0 })) 
+  };
+  mostrarModal.value = true;
 };
 
 const abrirModalEdicion = (modelo) => {
-  editando.value = true;
-
-  let tallesExistentes = []
-  modelo.items.forEach(v=>{
-    tallesExistentes.push(v.talle)
-  });
+  modoModal.value = 'editar';
+  archivosSeleccionados.value = [];
   
+  // Asegurar que estén todos los talles
+  let tallesExistentes = modelo.items.map(v => v.talle);
+  let itemsCombinados = [...modelo.items];
+
   tallesEstandar.forEach(talle => {
     if (!tallesExistentes.includes(talle)) {
-      modelo.items.push({
-        id: null,
-        talle: talle,
-        cantidad: 0,
-        precio_unitario: modelo.precio_unitario,
-      });
+      itemsCombinados.push({ id: null, talle: talle, cantidad: 0, precio_unitario: modelo.precio_unitario });
     }
   });
 
-  const orden = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7 };
-  modelo.items.sort((a, b) => (orden[a.talle] || 99) - (orden[b.talle] || 99));
+  // Orden correcto de los talles
+  itemsCombinados.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
 
-  formulario.value = {
+  formModal.value = {
     id_item: modelo.id_item,
     descripcion: modelo.descripcion,
     precioUnitario: modelo.precio_unitario,
-    items: modelo.items,
-    fotos: []
+    items: JSON.parse(JSON.stringify(itemsCombinados)) // Copia profunda
   };
+  
   mostrarModal.value = true;
 };
 
-const abrirModalNuevo = () => {
-  editando.value = false;
-  formulario.value = { 
-    descripcion: '', 
-    fotos: [{ nombreArchivo: '' }], 
-    //talles: tallesEstandar.map(t => ({ id: null, talle: t, cantidad: 0, precio: 0 })) 
-  };
-  mostrarModal.value = true;
+const manejarArchivos = (event) => {
+  archivosSeleccionados.value = Array.from(event.target.files);
 };
 
-const guardarCambiosAgrupados = async () => {
-  if (!formulario.value.descripcion) {
+const eliminarArchivo = (index) => {
+  archivosSeleccionados.value.splice(index, 1);
+};
+
+const guardarCambios = async () => {
+  if (!formModal.value.descripcion) {
     notificar({ titulo: 'Faltan datos', mensaje: 'El nombre del modelo es obligatorio.', tipo: 'danger' });
     return;
   }
-  let res
-  if (editando.value) {
-    const itemsAProcesar = formulario.value.items.filter(t => t.id || (t.cantidad > 0 && t.precio_unitario > 0));
-    if (itemsAProcesar.length === 0) {
-      notificar({ titulo: 'Atención', mensaje: 'Debes cargar stock y precio mayor a 0 en al menos un talle.', tipo: 'danger' });
-      return;
-    }
-    cargando.value = true;
-    let items = []
-    for (const t of itemsAProcesar) {
-      items.push({
-        id: t.id,
-        talle: t.talle,
-        cantidad: t.cantidad,
-        precioUnitario: t.precio_unitario
-      })
-    }
+
+  // 1. Buscamos el precio principal (el primero mayor a 0)
+  const precioRef = formModal.value.items.find(t => t.precio_unitario > 0)?.precio_unitario || 0;
+
+  if (precioRef <= 0) {
+    notificar({ titulo: 'Atención', mensaje: 'Debes ingresar un precio válido en al menos un talle.', tipo: 'warning' });
+    return;
+  }
+
+  // 2. FORZAMOS A GUARDAR TODOS LOS TALLES. 
+  const itemsTodos = formModal.value.items.map(t => ({
+    id: t.id,
+    talle: t.talle,
+    cantidad: t.cantidad || 0,
+    precioUnitario: t.precio_unitario > 0 ? t.precio_unitario : precioRef
+  }));
+
+  cargando.value = true;
+  let res;
+
+  if (modoModal.value === 'editar') {
     const payload = {
-      id_item: formulario.value.id_item,
-      precioUnitario: formulario.value.precioUnitario,
-      descripcion: `${formulario.value.descripcion.toUpperCase()}`,
-      items: items
-    }
-    res = await api.post({ 
-      entity: 'indumentaria', 
-      action: 'actualizarStock', 
-      payload 
-    });
-  }
-  else {
-    const formData = new FormData()
-    archivos.value.forEach(file => {
-      formData.append('archivos[]', file)
-    })
-    res = await api.post({
-      entity: 'indumentaria',
-      action: 'agregarItem',
-      payload: formData//formulario.value
-    })
-  }
-  if (res.ok) {
-    notificar({ titulo: '¡Éxito!', mensaje: 'Inventario actualizado correctamente.', tipo: 'success' });
-    await obtenerStock();
-    cerrarModal();
+      id_item: formModal.value.id_item,
+      descripcion: formModal.value.descripcion.toUpperCase(),
+      precioUnitario: precioRef,
+      items: itemsTodos
+    };
+    res = await api.post({ entity: 'indumentaria', action: 'actualizarStock', payload });
   } else {
-    notificar({ titulo: 'Error', mensaje: 'Hubo problemas al guardar algunos talles. Verificá que tengan precio.', tipo: 'danger' });
+    const formData = new FormData();
+    formData.append('descripcion', formModal.value.descripcion.toUpperCase());
+    formData.append('items', JSON.stringify(itemsTodos));
+    
+    if (archivosSeleccionados.value.length > 0) {
+      archivosSeleccionados.value.forEach(file => {
+        formData.append('fotos[]', file);
+      });
+    }
+
+    res = await api.post({ entity: 'indumentaria', action: 'agregarItem', payload: formData });
   }
+
+  if (res.ok) {
+    notificar({ titulo: '¡Éxito!', mensaje: 'Inventario guardado correctamente.', tipo: 'success' });
+    cerrarModal();
+    await obtenerStock();
+  } else {
+    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al guardar el inventario.', tipo: 'danger' });
+  }
+  
+  cargando.value = false;
 };
 
 const cerrarModal = () => { 
-  cargando.value = false
-  mostrarModal.value = false
+  mostrarModal.value = false;
+  cargando.value = false;
 };
+
+const limpiarFiltros = () => { filtros.modelo = ''; };
 
 const obtenerImagen = (nombre) => {
-  return nombre ? new URL(`/src/assets/fotos/${nombre}`, import.meta.url).href : "https://placehold.co/400x400?text=Sin+Foto";
+  const primeraFoto = nombre ? nombre.split(',')[0] : null;
+  return primeraFoto ? new URL(`/src/assets/fotos/${primeraFoto}`, import.meta.url).href : "https://placehold.co/400x400?text=Indumentaria";
 };
 
-onMounted(obtenerStock);
+const exportarExcel = () => {
+  const data = stockFiltrado.value.map(item => {
+    let row = { 'ID Item': item.id_item, 'Modelo': item.descripcion, 'Precio Referencia': `$${item.precio_unitario}` };
+    tallesEstandar.forEach(talle => {
+      const stock = item.items.find(i => i.talle === talle);
+      row[`Stock ${talle}`] = stock ? stock.cantidad : 0;
+    });
+    return row;
+  });
+  
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Inventario");
+  XLSX.writeFile(wb, "Inventario_Indumentaria.xlsx");
+};
+
+// Lifecycle hooks
+onMounted(() => {
+  window.addEventListener('resize', actualizarAncho);
+  obtenerStock();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', actualizarAncho);
+});
 </script>
 
 <style scoped>
+/* ESTILOS (IGUALES A TU CÓDIGO) */
+.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; }
+.admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; }
+.header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
+.title { font-size: 1.1rem; font-weight: bold; margin: 0; }
+.counter { font-size: 0.85rem; color: #000000; }
+.header-actions { display: flex; gap: 8px; }
+.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
+.btn-clear { background: #e2e8f0; color: #000; }
+.btn-blue { background: #3b82f6; color: white; }
+.btn-clear-checks { background: #fee2e2; color: #ef4444; }
+.btn-export { background: #10b981; color: white; }
 
+.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
+.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
+.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
+
+.input-filtro-custom { font-size: 1rem !important; padding: 0.5rem 1rem; height: auto !important; }
+.input-filtro-custom:focus { box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important; outline: none; }
 
 .tarjeta-stock-admin { border-radius: 20px; transition: all 0.3s ease; }
+.tarjeta-stock-admin:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important; }
 .contenedor-foto-admin { height: 200px; padding: 15px; }
 .foto-gestion { max-height: 175%; max-width: 175%; object-fit: contain; mix-blend-mode: multiply; }
 .cuerpo-gris-admin { background-color: #f1f5f9; border-radius: 0 0 20px 20px; flex-grow: 1; padding: 12px !important; }
 
-.input-filtro-custom {
-  font-size: 1rem !important;
-  padding: 0.375rem 0.75rem;
-  height: auto !important;
-  min-height: 32px; /* Para que no quede demasiado aplastado */
-}
+.contenedor-titulo-stock { min-height: 40px; display: flex; align-items: center; justify-content: center; }
+.text-truncate-2 { font-size: 0.85rem; line-height: 1.2; }
 
-/* Para que al hacer clic no se ponga el borde azul de Bootstrap */
-.input-filtro-custom:focus {
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
-  outline: none;
+.badge-talle { font-size: 0.65rem; background: white; padding: 3px 8px; border-radius: 8px; border: 1px solid #e2e8f0; color: #475569; white-space: nowrap; }
+.bajo-stock { border-color: #fecaca; background: #fef2f2; color: #dc2626; }
+
+.btn-editar-flotante { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 50%; background: #212529; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; z-index: 5; transition: background 0.2s; }
+.btn-editar-flotante:hover { background: #ef4444; }
+
+.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
+.modal-content-exito { background: white; border-radius: 16px; border: none; }
+.icon-circle-exito { border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+
+.desktop-only { display: block; }
+.mobile-only-flex { display: none; }
+.btn-text { display: inline; }
+
+@media (max-width: 1024px) {
+  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
 }
 
 @media (max-width: 768px) {
-  .tarjeta-stock-admin { min-height: 380px; }
-  .contenedor-titulo-stock { min-height: 48px; display: flex; align-items: center; justify-content: center; }
-  .text-truncate-2 { font-size: 0.85rem; line-height: 1.2; }
+  .desktop-only { display: none !important; }
+  .mobile-only-flex { display: flex !important; }
 }
 
-.badge-talle { font-size: 0.65rem; background: white; padding: 3px 8px; border-radius: 8px; border: 1px solid #e2e8f0; color: #475569; }
-.bajo-stock { border-color: #fecaca; background: #fef2f2; color: #dc2626; }
-.btn-editar-flotante { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 50%; background: #212529; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; z-index: 5; }
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 2000; }
-.modal-content { background: white; border-radius: 30px; width: 100%; max-width: 450px; max-height: 90vh; display: flex; flex-direction: column; }
-.contenedor-formulario-scroll { overflow-y: auto; flex-grow: 1; padding-bottom: 10px; }
-.upload-box-mini { border: 1px dashed #dee2e6; transition: all 0.2s; font-size: 0.75rem; }
-.upload-box-mini:hover { border-color: #dc2626; background: #fff5f5 !important; }
-input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+@media (max-width: 600px) {
+  .admin-panel { padding: 10px; }
+  .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .title { font-size: 1rem; }
+  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
+  .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; gap: 8px; }
+  .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
+  .btn-text { display: none !important; }
+}
 </style>
