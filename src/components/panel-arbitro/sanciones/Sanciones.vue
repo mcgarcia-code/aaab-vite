@@ -63,7 +63,7 @@
               <tr v-for="s in sancionesPaginadas" :key="s.id">
                 <td class="sticky-col col-id text-center">
                   <!-- ERROR SOLUCIONADO -->
-                  <span :class="s.activo == 1 ? 'badge bg-danger rounded-pill px-3' : 'badge bg-secondary rounded-pill px-3'">
+                  <span :class="s.estado_dinamico == 1 ? 'badge bg-danger rounded-pill px-3' : 'badge bg-secondary rounded-pill px-3'">
                     {{ s.estado_dinamico == 1 ? 'VIGENTE' : 'CUMPLIDA' }}
                   </span>
                 </td>
@@ -89,9 +89,9 @@
               <div class="d-flex justify-content-between align-items-center">
                 <strong class="text-danger">{{ s.sancion }}</strong>
                 <!-- ERROR SOLUCIONADO -->
-                <span :class="s.activo == 1 ? 'badge bg-danger rounded-pill' : 'badge bg-secondary rounded-pill'">
-                  {{ s.activo == 1 ? 'VIGENTE' : 'CUMPLIDA' }}
-                </span>
+                <span :class="s.estado_dinamico == 1 ? 'badge bg-danger rounded-pill' : 'badge bg-secondary rounded-pill'">
+                  {{ s.estado_dinamico == 1 ? 'VIGENTE' : 'CUMPLIDA' }}
+                </span> 
               </div>
             </div>
             <div class="card-body pt-2">
