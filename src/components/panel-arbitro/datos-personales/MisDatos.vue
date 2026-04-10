@@ -118,8 +118,8 @@
             </div>
         </div>
 
-        <div v-if="edicionAbierta" class="mt-5 pt-3 border-top text-end">
-            <button @click="guardarCambios" class="btn btn-success fw-bold px-5 shadow-sm w-100-mobile" :disabled="cargando">
+        <div v-if="edicionAbierta" class="mt-4 pt-4 border-top">
+            <button @click="guardarCambios" class="btn btn-success w-100 fw-bold shadow-sm py-2" :disabled="cargando">
                 <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
                 GUARDAR CAMBIOS EN LEGAJO
             </button>
