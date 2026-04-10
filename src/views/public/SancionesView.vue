@@ -48,24 +48,24 @@
                     <td class="fw-bold">{{ s.arbitro || s.apellido + ', ' + s.nombre }}</td>
                     <td class="text-muted small">{{ s.motivo }}</td>
                     <td>{{ s.articulo || '—' }}</td>
-                    <td class="fw-bold text-danger">{{ s.sancion }}</td>
-                    <td class="small">{{ formatFecha(s.desde) }}</td>
+                    <td class="fw-bold" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">
+                      {{ s.sancion || 'Sin sanción' }}
+                    </td>
+                    <td class="small">{{ s.desde_formateada || '-' }}</td>
                     <td class="small">
                       <span v-if="s.es_indefinido == 1" class="badge bg-dark rounded-pill">Indefinida</span>
-                      <span v-else>{{ formatFecha(s.hasta) }}</span>
+                      <span v-else>{{ s.hasta_formateada || '-' }}</span>
                     </td>
                     <td class="text-center">
-                      <!-- 🔧 CORREGIDO -->
-                      <span :class="s.activo == 1 ? 'badge bg-danger' : 'badge bg-secondary'">
-                        {{ s.activo == 1 ? 'Vigente' : 'Cumplida' }}
-                      </span>
+                      <span v-if="s.estado_dinamico == 1" class="badge bg-danger">Vigente</span>
+                      <span v-else-if="s.estado_dinamico == 3" class="badge bg-warning text-dark">En proceso</span>
+                      <span v-else class="badge bg-secondary">Cumplida</span>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            <!-- Paginación -->
             <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
               <button
                 class="btn btn-light rounded-pill px-4 fw-bold shadow-sm"
@@ -105,6 +105,10 @@ const sanciones = ref([])
 const cargando = ref(false)
 const filtro = ref('')
 
+// Configuración de Paginación
+const paginaActual = ref(1)
+const registrosPorPagina = 10
+
 const fetchSanciones = async () => {
   cargando.value = true
   try {
@@ -121,16 +125,39 @@ const fetchSanciones = async () => {
 
 const sancionesFiltradas = computed(() => {
     let res = sanciones.value;
+    
+    // 1. Filtrado por texto
     if (filtro.value) {
-        res = res.filter(s => s.arbitro.toLowerCase().includes(filtro.value.toLowerCase()));
+        const textoBusqueda = filtro.value.toLowerCase();
+        res = res.filter(s => 
+          (s.arbitro || '').toLowerCase().includes(textoBusqueda) ||
+          (s.motivo || '').toLowerCase().includes(textoBusqueda)
+        );
     }
-    return res;
+    
+    // 2. Ordenamiento: Vigentes (1) y En Proceso (3) arriba. Cumplidas (2) abajo.
+    return res.sort((a, b) => {
+        const pesoA = (a.estado_dinamico == 1 || a.estado_dinamico == 3) ? 0 : 1;
+        const pesoB = (b.estado_dinamico == 1 || b.estado_dinamico == 3) ? 0 : 1;
+        return pesoA - pesoB;
+    });
 });
 
-const sancionesPaginadas = computed(() => sancionesFiltradas.value);
+// Paginación Calculada
+const totalPaginas = computed(() => Math.ceil(sancionesFiltradas.value.length / registrosPorPagina) || 1);
+
+const sancionesPaginadas = computed(() => {
+    const inicio = (paginaActual.value - 1) * registrosPorPagina;
+    return sancionesFiltradas.value.slice(inicio, inicio + registrosPorPagina);
+});
+
+// Reiniciar a la página 1 si el usuario escribe en el buscador
+watch(filtro, () => {
+    paginaActual.value = 1;
+});
+
 onMounted(fetchSanciones);
 </script>
-
 
 <style scoped>
 .dark-background-section {
@@ -166,6 +193,9 @@ onMounted(fetchSanciones);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.table tbody td { font-size: 0.85rem; }
+.table tbody td { 
+  font-size: 0.85rem; 
+  vertical-align: middle;
+}
 .text-danger { color: #ef4444 !important; }
 </style>
