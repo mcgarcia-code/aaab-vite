@@ -11,63 +11,80 @@
       <div class="row justify-content-center">
         <div class="col-lg-10">
 
-          <!-- Filtro búsqueda pública -->
           <div class="mb-4">
             <input
               v-model="filtro"
-              class="form-control buscador-publico"
+              class="form-control buscador-publico shadow-sm"
               placeholder="🔍 Buscar por árbitro o motivo..."
             >
           </div>
 
-          <!-- Cargando -->
           <div v-if="cargando" class="text-center py-5">
-            <div class="spinner-border text-danger" role="status"></div>
+            <div class="spinner-border text-danger"></div>
             <p class="text-white mt-3">Cargando sanciones...</p>
           </div>
 
-          <!-- Sin resultados -->
           <div v-else-if="sancionesFiltradas.length === 0" class="text-center py-5">
             <i class="bi bi-shield-check display-1 text-success"></i>
             <p class="text-white mt-3">No hay sanciones registradas.</p>
           </div>
 
-          <!-- Tabla -->
-          <div v-else class="table-responsive shadow rounded">
-            <table class="table table-striped table-hover mb-0">
-              <thead class="table-dark">
-                <tr>
-                  <th>Árbitro</th>
-                  <th>Motivo</th>
-                  <th>Artículo</th>
-                  <th>Sanción</th>
-                  <th>Desde</th>
-                  <th>Hasta</th>
-                  <th class="text-center">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="s in sancionesFiltradas" :key="s.id">
-                  <td class="fw-bold">{{ s.apellido }}, {{ s.nombre }}</td>
-                  <td class="text-muted small">{{ s.motivo }}</td>
-                  <td>{{ s.articulo || '—' }}</td>
-                  <td class="fw-bold text-danger">{{ s.sancion }}</td>
-                  <td class="small">{{ formatFecha(s.desde) }}</td>
-                  <td class="small">
-                    <span v-if="s.es_indefinido == 1" class="badge bg-dark rounded-pill">Indefinida</span>
-                    <span v-else>{{ formatFecha(s.hasta) }}</span>
-                  </td>
-                  <td class="text-center">
-                    <span :class="['badge rounded-pill', s.activo == 1 ? 'bg-danger' : 'bg-success']">
-                      {{ s.activo == 1 ? 'Vigente' : 'Cumplida' }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div v-else>
+            <div class="table-responsive shadow rounded bg-white">
+              <table class="table table-striped table-hover mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Árbitro</th>
+                    <th>Motivo</th>
+                    <th>Artículo</th>
+                    <th>Sanción</th>
+                    <th>Desde</th>
+                    <th>Hasta</th>
+                    <th class="text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="s in sancionesPaginadas" :key="s.id">
+                    <td class="fw-bold">{{ s.arbitro || s.apellido + ', ' + s.nombre }}</td>
+                    <td class="text-muted small">{{ s.motivo }}</td>
+                    <td>{{ s.articulo || '—' }}</td>
+                    <td class="fw-bold text-danger">{{ s.sancion }}</td>
+                    <td class="small">{{ formatFecha(s.desde) }}</td>
+                    <td class="small">
+                      <span v-if="s.es_indefinido == 1" class="badge bg-dark rounded-pill">Indefinida</span>
+                      <span v-else>{{ formatFecha(s.hasta) }}</span>
+                    </td>
+                    <td class="text-center">
+                      <!-- 🔧 CORREGIDO -->
+                      <span :class="s.activo == 1 ? 'badge bg-danger' : 'badge bg-secondary'">
+                        {{ s.activo == 1 ? 'Vigente' : 'Cumplida' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Paginación -->
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
+              <button
+                class="btn btn-light rounded-pill px-4 fw-bold shadow-sm"
+                @click="paginaActual--"
+                :disabled="paginaActual === 1"
+              >Anterior</button>
+
+              <span class="text-white fw-bold small">
+                Página {{ paginaActual }} de {{ totalPaginas }}
+              </span>
+
+              <button
+                class="btn btn-light rounded-pill px-4 fw-bold shadow-sm"
+                @click="paginaActual++"
+                :disabled="paginaActual === totalPaginas"
+              >Siguiente</button>
+            </div>
           </div>
 
-          <!-- Nota al pie -->
           <p class="text-white-50 small text-center mt-4">
             <i class="bi bi-info-circle me-1"></i>
             Las resoluciones son de cumplimiento obligatorio según el reglamento vigente de la AAAB.
@@ -80,59 +97,40 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import axios from 'axios';
-import { useHead } from '@vueuse/head';
+import { ref, computed, onMounted, watch } from 'vue'
+import axios from 'axios'
 
-useHead({
-  title: 'Sanciones | AAAB',
-  meta: [
-    { name: 'description', content: 'Listado oficial de sanciones disciplinarias de la AAAB.' },
-    { property: 'og:title', content: 'Sanciones | AAAB' },
-    { property: 'og:description', content: 'Visualizá el listado oficial de sanciones para árbitros.' },
-    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
-    { property: 'og:type', content: 'website' },
-  ],
-});
-
-// Esta vista es PÚBLICA — no requiere token, se llama directamente
-const API_URL = 'https://arbitroshandball.com.ar/api/api.php';
-
-const sanciones  = ref([]);
-const cargando   = ref(false);
-const filtro     = ref('');
-
-const formatFecha = (fecha) => {
-  if (!fecha) return '—';
-  const [y, m, d] = fecha.split('-');
-  return `${d}/${m}/${y}`;
-};
-
-const sancionesFiltradas = computed(() => {
-  const q = filtro.value.toLowerCase().trim();
-  if (!q) return sanciones.value;
-  return sanciones.value.filter(s =>
-    `${s.apellido} ${s.nombre} ${s.motivo}`.toLowerCase().includes(q)
-  );
-});
+const API_URL = 'https://arbitroshandball.com.ar/api/api.php'
+const sanciones = ref([])
+const cargando = ref(false)
+const filtro = ref('')
 
 const fetchSanciones = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
-    // NOTA: si esta ruta requiere JWT, mover a api.get igual que las demás
     const res = await axios.get(API_URL, {
-      params: { entity: 'sanciones', action: 'listar_publico' }
-    });
-    sanciones.value = res.data?.payload ?? [];
+      params: { entity: 'sanciones', action: 'obtenerSanciones' }
+    })
+    sanciones.value = res.data?.payload ?? []
   } catch (err) {
-    console.error('Error cargando sanciones públicas:', err);
+    console.error(err)
   } finally {
     cargando.value = false;
   }
-};
+}
 
+const sancionesFiltradas = computed(() => {
+    let res = sanciones.value;
+    if (filtro.value) {
+        res = res.filter(s => s.arbitro.toLowerCase().includes(filtro.value.toLowerCase()));
+    }
+    return res;
+});
+
+const sancionesPaginadas = computed(() => sancionesFiltradas.value);
 onMounted(fetchSanciones);
 </script>
+
 
 <style scoped>
 .dark-background-section {
