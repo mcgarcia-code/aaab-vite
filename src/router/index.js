@@ -243,6 +243,8 @@ const routes = [
         component: () => import('../components/panel-admin/facturacion/InstitucionesCuitAdmin.vue'),
         meta: { roles: ['admin', 'secretario', 'tesorero','facturacion'] } 
       },
+
+      // --- FALTA DESARROLLO ARBITRAL
     
     ]
   },

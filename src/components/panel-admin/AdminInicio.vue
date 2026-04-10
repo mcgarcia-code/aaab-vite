@@ -62,7 +62,7 @@ const menuItems = [
     title: 'Tribunal de Ética', 
     icon: 'bi bi-shield-exclamation', 
     desc: 'Sanciones y resoluciones.',
-    rolesPermitidos: ['admin', 'etica', 'secretario'] 
+    rolesPermitidos: ['admin', 'etica', 'secretario', 'designador'] 
   },
   { 
     to: '/panel-admin/tesoreria', 
@@ -90,7 +90,7 @@ const menuItems = [
     title: 'Facturación', 
     icon: 'bi bi-receipt', 
     desc: 'Administrar datos fiscales y entidades vinculadas',
-    rolesPermitidos: ['admin', 'secretario', 'facturacion'] 
+    rolesPermitidos: ['admin', 'secretario', 'facturacion', 'tesorero'] 
   },
 ];
 
