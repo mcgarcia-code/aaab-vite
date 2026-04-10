@@ -64,7 +64,7 @@
                 <td class="sticky-col col-id text-center">
                   <!-- ERROR SOLUCIONADO -->
                   <span :class="s.activo == 1 ? 'badge bg-danger rounded-pill px-3' : 'badge bg-secondary rounded-pill px-3'">
-                    {{ s.activo == 1 ? 'VIGENTE' : 'CUMPLIDA' }}
+                    {{ s.estado_dinamico == 1 ? 'VIGENTE' : 'CUMPLIDA' }}
                   </span>
                 </td>
                 <td class="cell-ro">
