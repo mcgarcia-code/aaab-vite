@@ -184,19 +184,19 @@ const routes = [
         path: 'tribunal', 
         name: 'TribunalAdmin',
         component: () => import('../components/panel-admin/etica/TribunalAdmin.vue'),
-        meta: { roles: ['admin', 'etica', 'secretario'] }
+        meta: { roles: ['admin', 'etica', 'secretario', 'designador'] }
       },
       { 
         path: 'tribunal/sanciones', 
         name: 'TribunalSanciones', 
         component: () => import('../components/panel-admin/etica/SancionesListado.vue'),
-        meta: { roles: ['admin', 'etica', 'secretario'] }
+        meta: { roles: ['admin', 'etica', 'secretario', 'designador'] }
       },
       { 
         path: 'tribunal/cargar-sancion', 
         name: 'TribunalCargar', 
         component: () => import('../components/panel-admin/etica/CargarSanciones.vue'),
-        meta: { roles: ['admin', 'etica', 'secretario'] }
+        meta: { roles: ['admin', 'etica', 'secretario', 'designador'] }
       },
 
       // --- TESORERÍA ---

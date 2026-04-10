@@ -35,6 +35,7 @@
             <option value="vigente">Vigente</option>
             <option value="cumplida">Cumplida</option>
             <option value="en_proceso">En Proceso</option>
+            <option value="anulada">Anulada</option>
           </select>
 
           <input type="text" v-model="filtros.desde" placeholder="Desde (DD/MM/AAAA)">
@@ -75,6 +76,7 @@
                   <option value="vigente">VIGENTE</option>
                   <option value="cumplida">CUMPLIDA</option>
                   <option value="en_proceso">EN PROCESO</option>
+                  <option value="anulada">ANULADA</option>
                 </select>
               </td>
             </tr>
@@ -91,7 +93,9 @@
               </td>
               <td class="sticky-col col-arbitro cell-ro fw-bold">{{ s.arbitro }}</td>
               <td class="cell-ro">{{ s.motivo }} <br> <small class="text-muted">Art. {{ s.articulo }}</small></td>
-              <td class="cell-ro text-center fw-bold" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">{{ s.sancion || 'Sin sanción' }}</td>
+              <td class="cell-ro text-center">
+                <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
+              </td>
               <td class="cell-ro text-center">{{ s.desde_formateada || '-' }}</td>
               <td class="cell-ro text-center">
                 <span v-if="s.es_indefinido == 1" class="text-muted">Indefinido</span>
@@ -109,24 +113,29 @@
 
       <div class="mobile-only mt-3">
         <div v-for="s in sancionesPaginadas" :key="'mob-'+s.id" class="card-licencia">
-          <div class="card-header">
-            <div class="card-name">
-              <strong>{{ s.arbitro }}</strong>
+          <div class="card-header border-bottom-0 pb-2 px-3 pt-3">
+            <div class="d-flex justify-content-start align-items-center gap-2">
+              <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" style="font-size: 1.1rem;">
+                {{ s.sancion }}
+              </span>
+              <span :class="obtenerClaseEstado(s.estado_dinamico, true)" style="font-size: 0.7rem; padding: 3px 10px;">
+                {{ obtenerTextoEstado(s.estado_dinamico) }}
+              </span>
             </div>
-             <span :class="obtenerClaseEstado(s.estado_dinamico, true)">
-              {{ obtenerTextoEstado(s.estado_dinamico) }}
-            </span>
           </div>
-
-          <div class="card-body">
-            <div class="card-info">
-              <p><strong>Art:</strong> {{ s.articulo }}</p>
-              <p><strong>Motivo:</strong> <span class="text-muted">{{ s.motivo }}</span></p>
-              <p><strong>Sanción:</strong> <span class="fw-bold" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">{{ s.sancion || 'Sin sanción' }}</span></p>
-            </div>
-            <div class="d-flex justify-content-between mt-2 pt-2 border-top">
-              <p class="mb-0 small"><strong>Desde:</strong> {{ s.desde_formateada || '-' }}</p>
-              <p class="mb-0 small"><strong>Hasta:</strong> {{ s.es_indefinido == 1 ? 'Indefinido' : (s.hasta_formateada || '-') }}</p>
+          <div class="card-body pt-0 px-3 pb-3">
+            <p class="text-dark mb-3 mt-2 lh-sm" style="font-size: 0.9rem;">
+              <span v-if="s.articulo" class="fw-bold text-dark">Art. {{ s.articulo }}</span>
+              <span v-if="s.articulo && s.motivo"> - </span>
+              <span class="text-muted">{{ s.motivo }}</span>
+            </p>
+            <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center" style="background-color: #f8fafc !important;">
+              <span class="text-dark" style="font-size: 0.85rem;">Desde: <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong></span>
+              <span class="text-dark" style="font-size: 0.85rem;">Hasta: 
+                <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
+                <strong class="text-danger" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
+                <strong class="text-muted" v-else>-</strong>
+              </span>
             </div>
             <div class="d-flex gap-2 mt-3">
               <button @click="editarSancion(s)" class="btn-editar-mobile flex-grow-1"><span class="material-icons" style="font-size: 18px;">edit</span> Editar</button>
@@ -163,7 +172,6 @@
           </div>
 
           <div class="row g-3 text-start">
-            
             <div class="col-12">
               <label class="small fw-bold text-dark mb-1">Artículo *</label>
               <input v-model="formModal.articulo" type="text" class="form-control custom-input shadow-none">
@@ -177,7 +185,8 @@
             <div class="col-12">
               <label class="small fw-bold text-dark mb-1">Tipo de Sanción</label>
               <select v-model="tipoSancion" class="form-select custom-input shadow-none">
-                <option value="">Sin sanción</option>
+                <option value="">En proceso</option>
+                <option value="anulada">Anulada (Sin sanción)</option>
                 <option value="amonestacion">Amonestación</option>
                 <option value="dias">Por Días</option>
                 <option value="meses">Por Meses</option>
@@ -190,12 +199,12 @@
               <input type="number" min="1" v-model="cantidadSancion" class="form-control custom-input shadow-none">
             </div>
 
-            <div class="col-md-6" v-if="tipoSancion !== ''">
+            <div class="col-md-6" v-if="['amonestacion', 'dias', 'meses', 'anios'].includes(tipoSancion)">
               <label class="small fw-bold text-dark mb-1">Fecha de Inicio *</label>
               <input type="date" v-model="formModal.desde" class="form-control custom-input shadow-none">
             </div>
             
-            <div class="col-12" v-if="tipoSancion !== '' && tipoSancion !== 'amonestacion'">
+            <div class="col-12" v-if="['dias','meses','anios'].includes(tipoSancion)">
               <div class="form-check mt-1">
                 <input class="form-check-input" type="checkbox" v-model="formModal.es_indefinido" :true-value="1" :false-value="0" id="checkIndefinido">
                 <label class="form-check-label small text-muted" for="checkIndefinido">
@@ -203,7 +212,6 @@
                 </label>
               </div>
             </div>
-
           </div>
           
           <div class="d-flex gap-3 justify-content-center mt-5">
@@ -259,7 +267,9 @@
                       <span style="color: #0f172a;">Art. {{ h.articulo }}</span><br>
                       <span class="text-muted small">{{ h.motivo }}</span>
                     </td>
-                    <td class="py-2 fw-bold" :class="h.estado_dinamico == 3 ? 'text-muted' : 'text-primary'">{{ h.sancion || 'Sin sanción' }}</td>
+                    <td class="py-2">
+                      <span :class="obtenerClaseTextoSancion(h.estado_dinamico)">{{ h.sancion }}</span>
+                    </td>
                     <td class="text-nowrap small py-2" style="color: #475569;">
                       D: {{ h.desde_formateada || h.desde || '-' }}<br>
                       H: <span class="text-primary">{{ h.es_indefinido == 1 ? 'Indefinido' : (h.hasta_formateada || h.hasta || '-') }}</span>
@@ -278,7 +288,6 @@
         </div>
       </div>
     </Teleport>
-
   </div>
 </template>
 
@@ -298,12 +307,7 @@ const cargando = ref(false)
 const cargandoProceso = ref(false)
 
 const filtros = reactive({
-  arbitro: '',
-  motivo: '',
-  sancion: '',
-  desde: '',
-  hasta: '',
-  estado: ''
+  arbitro: '', motivo: '', sancion: '', desde: '', hasta: '', estado: ''
 })
 
 const mostrarFiltrosMobile = ref(false)
@@ -316,14 +320,7 @@ const tipoSancion = ref('')
 const cantidadSancion = ref('')
 
 const formModal = ref({
-  id: null,
-  arbitro: '',
-  motivo: '',
-  articulo: '',
-  sancion_dias: 0,
-  desde: '',
-  es_amonestacion: 0,
-  es_indefinido: 0
+  id: null, arbitro: '', motivo: '', articulo: '', sancion_dias: 0, desde: '', es_amonestacion: 0, es_indefinido: 0
 })
 
 // MODAL HISTORIAL
@@ -332,40 +329,39 @@ const cargandoHistorial = ref(false)
 const arbitroHistorial = ref(null)
 const historialSanciones = ref([])
 
-// ✅ NORMALIZAR TEXTO
-const normalizar = (t) =>
-  t
-    ? t.toString().toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-    : ''
-
-// ✅ FECHA CORREGIDA
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 const revertirFechaParaInput = (fecha) => {
-  if (!fecha) return ''
-  if (fecha.includes('-')) return fecha
-
-  const partes = fecha.split('/')
-  if (partes.length !== 3) return ''
-
-  const [dia, mes, anio] = partes
-  return `${anio}-${mes}-${dia}`
+  if (!fecha) return '';
+  if (fecha.includes('-')) return fecha;
+  const partes = fecha.split('/');
+  if (partes.length !== 3) return '';
+  return `${partes[2]}-${partes[1]}-${partes[0]}`;
 }
 
-// ✅ FUNCIONES AUXILIARES PARA ESTADOS
+// ==========================================
+// LÓGICA VISUAL DE ESTADOS Y SANCIONES (Mapeada con el Backend)
+// ==========================================
 const obtenerTextoEstado = (estado_dinamico) => {
-  if (estado_dinamico == 1) return 'VIGENTE'
-  if (estado_dinamico == 2) return 'CUMPLIDA'
-  if (estado_dinamico == 3) return 'EN PROCESO'
-  return 'DESCONOCIDO'
+  if (estado_dinamico == 1) return 'VIGENTE';
+  if (estado_dinamico == 2) return 'CUMPLIDA';
+  if (estado_dinamico == 3) return 'EN PROCESO';
+  if (estado_dinamico == 4) return 'ANULADA';
+  return 'DESCONOCIDO';
 }
 
 const obtenerClaseEstado = (estado_dinamico, es_sm = false) => {
-  const prefijo = es_sm ? 'badge-status-sm' : 'badge-status'
-  if (estado_dinamico == 1) return `${prefijo} rechazada` // Vigente (Rojo)
-  if (estado_dinamico == 2) return `${prefijo} aprobada`  // Cumplida (Verde)
-  if (estado_dinamico == 3) return `${prefijo} pendiente` // En proceso (Amarillo/Gris según diseño de licencias)
-  return `${prefijo}`
+  const prefijo = es_sm ? 'badge-status-sm' : 'badge-status';
+  if (estado_dinamico == 1) return `${prefijo} rechazada`; // Vigente (Rojo)
+  if (estado_dinamico == 2) return `${prefijo} aprobada`;  // Cumplida (Verde)
+  if (estado_dinamico == 3) return `${prefijo} pendiente text-dark`; // En proceso (Amarillo)
+  if (estado_dinamico == 4) return `${prefijo} anulada`; // Anulada (Negro/Blanco)
+  return `${prefijo}`;
+}
+
+const obtenerClaseTextoSancion = (estado_dinamico) => {
+  if (estado_dinamico == 4) return 'text-anulada fw-bold';
+  if (estado_dinamico == 3) return 'text-en-proceso fw-bold';
+  return 'text-danger fw-bold';
 }
 
 // FILTROS
@@ -375,41 +371,33 @@ const sancionesFiltradas = computed(() => {
     const matchMot = normalizar((s.motivo || '') + ' ' + (s.articulo || '')).includes(normalizar(filtros.motivo))
     const matchSan = normalizar(s.sancion || '').includes(normalizar(filtros.sancion))
     const matchDes = (s.desde || '').includes(filtros.desde)
-
     const textoHasta = s.es_indefinido == 1 ? 'indefinido' : (s.hasta || '')
     const matchHas = normalizar(textoHasta).includes(normalizar(filtros.hasta))
 
     let matchEst = true
-    if (filtros.estado === 'vigente') matchEst = s.estado_dinamico == 1
-    if (filtros.estado === 'cumplida') matchEst = s.estado_dinamico == 2
-    if (filtros.estado === 'en_proceso') matchEst = s.estado_dinamico == 3 // Añadido el filtro En Proceso
+    if (filtros.estado === 'vigente') matchEst = (s.estado_dinamico == 1);
+    if (filtros.estado === 'cumplida') matchEst = (s.estado_dinamico == 2);
+    if (filtros.estado === 'en_proceso') matchEst = (s.estado_dinamico == 3);
+    if (filtros.estado === 'anulada') matchEst = (s.estado_dinamico == 4);
 
     return matchArb && matchMot && matchSan && matchDes && matchHas && matchEst
   })
 })
 
-const totalPaginas = computed(() =>
-  Math.ceil(sancionesFiltradas.value.length / registrosPorPagina) || 1
-)
-
+const totalPaginas = computed(() => Math.ceil(sancionesFiltradas.value.length / registrosPorPagina) || 1)
 const sancionesPaginadas = computed(() => {
   const inicio = (paginaActual.value - 1) * registrosPorPagina
   return sancionesFiltradas.value.slice(inicio, inicio + registrosPorPagina)
 })
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
-watch(totalPaginas, (nuevo) => {
-  if (paginaActual.value > nuevo) paginaActual.value = nuevo
-})
+watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 // FETCH
 const fetchSanciones = async () => {
   cargando.value = true
   try {
-    const res = await api.get({
-      entity: 'sanciones',
-      action: 'obtenerSanciones'
-    })
+    const res = await api.get({ entity: 'sanciones', action: 'obtenerSanciones' })
     sanciones.value = res.payload ?? res ?? []
   } catch (err) {
     console.error("Error:", err)
@@ -426,27 +414,19 @@ const editarSancion = (s) => {
     motivo: s.motivo,
     articulo: s.articulo,
     desde: revertirFechaParaInput(s.desde),
-    es_indefinido: s.es_indefinido || 0
+    es_indefinido: 0 // SIEMPRE DESMARCADO AL ABRIR EL MODAL
   }
 
   tipoSancion.value = ''
   cantidadSancion.value = ''
 
-  if (s.es_amonestacion == 1) {
+  if (s.estado_dinamico == 4) {
+    tipoSancion.value = 'anulada'
+  } else if (s.es_amonestacion == 1) {
     tipoSancion.value = 'amonestacion'
   } else if (s.sancion_dias > 0) {
-    // Si viene en días, hay que hacer la lógica inversa aproximada si fue guardado como meses o años.
-    // Esto es muy básico, lo ideal sería guardar el tipo de sanción real en la DB, pero como no está:
-    if (s.sancion_dias % 365 === 0) {
-      tipoSancion.value = 'anios'
-      cantidadSancion.value = s.sancion_dias / 365
-    } else if (s.sancion_dias % 30 === 0) {
-      tipoSancion.value = 'meses'
-      cantidadSancion.value = s.sancion_dias / 30
-    } else {
-      tipoSancion.value = 'dias'
-      cantidadSancion.value = s.sancion_dias
-    }
+    tipoSancion.value = 'dias'
+    cantidadSancion.value = s.sancion_dias
   }
 
   mostrarModalEditar.value = true
@@ -454,12 +434,11 @@ const editarSancion = (s) => {
 
 // GUARDAR
 const confirmarEdicion = async () => {
-  if (tipoSancion.value !== '' && !formModal.value.desde) {
+  if (['amonestacion', 'dias', 'meses', 'anios'].includes(tipoSancion.value) && !formModal.value.desde) {
     return notificar({ titulo: 'Dato Faltante', mensaje: 'Debe ingresar la fecha de inicio.', tipo: 'warning' })
   }
 
-  if (['dias','meses','anios'].includes(tipoSancion.value) &&
-      (!cantidadSancion.value || cantidadSancion.value <= 0)) {
+  if (['dias','meses','anios'].includes(tipoSancion.value) && (!cantidadSancion.value || cantidadSancion.value <= 0)) {
     return notificar({ titulo: 'Dato Faltante', mensaje: 'Debe ingresar una cantidad válida.', tipo: 'warning' })
   }
 
@@ -467,8 +446,11 @@ const confirmarEdicion = async () => {
 
   let diasCalculados = 0
   let amonestacion = 0
+  let es_anulada = 0
 
-  if (tipoSancion.value === 'amonestacion') {
+  if (tipoSancion.value === 'anulada') {
+    es_anulada = 1 // Enviamos la bandera para que el backend lo marque activo=0
+  } else if (tipoSancion.value === 'amonestacion') {
     amonestacion = 1
   } else if (tipoSancion.value === 'dias') {
     diasCalculados = parseInt(cantidadSancion.value)
@@ -483,8 +465,9 @@ const confirmarEdicion = async () => {
     motivo: formModal.value.motivo,
     articulo: formModal.value.articulo,
     sancion_dias: diasCalculados,
-    desde: formModal.value.desde,
+    desde: formModal.value.desde || null,
     es_amonestacion: amonestacion,
+    es_anulada: es_anulada, // Nuevo campo para el backend
     es_indefinido: formModal.value.es_indefinido ? 1 : 0
   }
 
@@ -515,11 +498,7 @@ const eliminarSancionRegistro = (id) => {
     tipo: 'danger',
     tieneAccion: true,
     alConfirmar: async () => {
-      await api.post({
-        entity: 'sanciones',
-        action: 'eliminarSancion',
-        payload: { id }
-      })
+      await api.post({ entity: 'sanciones', action: 'eliminarSancion', payload: { id } })
       fetchSanciones()
     }
   })
@@ -552,7 +531,7 @@ const exportarExcel = () => {
     ID: s.id,
     Árbitro: s.arbitro,
     Motivo: s.motivo,
-    Sanción: s.sancion || 'En proceso',
+    Sanción: s.sancion,
     Desde: s.desde_formateada || s.desde,
     Hasta: s.es_indefinido == 1 ? 'Indefinido' : (s.hasta_formateada || s.hasta),
     Estado: obtenerTextoEstado(s.estado_dinamico)
@@ -564,59 +543,19 @@ const exportarExcel = () => {
   XLSX.writeFile(wb, "Sanciones_AAAB.xlsx")
 }
 
-// LIMPIAR
 const limpiarFiltros = () => {
-  filtros.arbitro = ''
-  filtros.motivo = ''
-  filtros.sancion = ''
-  filtros.desde = ''
-  filtros.hasta = ''
-  filtros.estado = ''
+  filtros.arbitro = ''; filtros.motivo = ''; filtros.sancion = ''; filtros.desde = ''; filtros.hasta = ''; filtros.estado = '';
 }
 
 onMounted(fetchSanciones)
 </script>
 
 <style scoped>
-/* ====================================================
-   AJUSTES GENERALES DEL CONTENEDOR Y FOOTER
-   ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto !important;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding: 20px;
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  max-width: 100%;
-  padding: 20px;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;
-  background-color: #0f172a;
-  min-height: 100vh;
-}
-
-.header-section {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  border-left: 5px solid #dc2626;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  align-items: center;
-}
-
+.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; }
+.admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; }
+.header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #dc2626; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
 .counter { font-size: 0.85rem; color: #000000; }
-
 .header-actions { display: flex; gap: 8px; }
 .btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
 .btn-clear { background: #e2e8f0; color: #000; }
@@ -624,242 +563,96 @@ onMounted(fetchSanciones)
 .btn-clear-checks { background: #fee2e2; color: #ef4444; }
 .btn-export { background: #10b981; color: white; }
 
-.paginacion {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.btn-paginacion {
-  border: none;
-  background: #f8fafc;
-  color: #0f172a;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
+.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
+.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
 .paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
 
-/* ====================================================
-   SOLUCIÓN DE LA TABLA: Huecos y Espaciado
-   ==================================================== */
-.table-container {
-  width: 100%;
-  overflow: auto;
-  max-height: 85vh;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
+.table-container { width: 100%; overflow: auto; max-height: 85vh; background: white; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
+thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #f8fafc !important; padding: 12px 8px; border-bottom: 1px solid #cbd5e1; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0; }
+thead tr.filter-row td { position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important; padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; margin: 0; }
 
-table {
-  width: 100%;
-  min-width: max-content;
-  border-collapse: separate !important;
-  border-spacing: 0;
-  font-size: 0.85rem;
-}
-
-/* TH PRINCIPAL */
-thead tr.main-header th {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: #f8fafc !important;
-  padding: 12px 8px;
-  border-bottom: 1px solid #cbd5e1;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem;
-  color: #000;
-  text-transform: uppercase;
-  font-weight: 800;
-  margin: 0;
-}
-
-/* FILA DE FILTROS */
-thead tr.filter-row td {
-  position: sticky;
-  top: 35px;
-  z-index: 40;
-  background: #f1f5f9 !important;
-  padding: 6px 8px 12px 8px;
-  border-bottom: 4px solid #e2e8f0;
-  margin: 0;
-}
-
-/* COLUMNAS CONGELADAS */
 .col-id { left: 0; width: 50px; text-align: center; }
 .col-acciones { left: 50px; width: 110px; }
 .col-arbitro { left: 160px; width: 180px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 
-.sticky-col {
-  position: sticky !important;
-  z-index: 60 !important;
-  background: white !important;
-  border-right: 1px solid #e2e8f0;
-}
-thead tr.main-header th.sticky-col {
-  z-index: 100 !important;
-  background-color: #f8fafc !important;
-}
-thead tr.filter-row td.sticky-col {
-  z-index: 95 !important;
-  background-color: #f1f5f9 !important;
-}
+.sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
+thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
 
-/* CELDAS DE DATOS */
-.cell-ro {
-  padding: 10px 8px;
-  font-size: 0.85rem;
-  color: #000;
-  white-space: nowrap;
-  border-bottom: 1px solid #f1f5f9;
-}
-
+.cell-ro { padding: 10px 8px; font-size: 0.85rem; color: #000; white-space: nowrap; border-bottom: 1px solid #f1f5f9; }
 .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
 
-/* BOTONES DE ACCIÓN EN TABLA */
-.btn-editar, .btn-historial, .btn-eliminar {
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 6px; padding: 4px; cursor: pointer; transition: 0.2s; border: none;
-}
+.btn-editar, .btn-historial, .btn-eliminar { display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; padding: 4px; cursor: pointer; transition: 0.2s; border: none; }
 .btn-editar { background: #eff6ff; color: #1d4ed8; }
 .btn-editar:hover { background: #dbeafe; }
-
 .btn-historial { background: #fef3c7; color: #d97706; }
 .btn-historial:hover { background: #fde047; }
-
 .btn-eliminar { background: #fee2e2; color: #dc2626; }
 .btn-eliminar:hover { background: #fecaca; }
 
-/* REFRESH REESTILIZADO IGUAL A LA FOTO */
-.btn-refresh { 
-  background: transparent; 
-  border: none; 
-  cursor: pointer; 
-  transition: transform 0.2s ease;
-  padding: 0;
-}
-.btn-refresh:hover {
-  transform: rotate(45deg);
-}
+.btn-refresh { background: transparent; border: none; cursor: pointer; transition: transform 0.2s ease; padding: 0; }
+.btn-refresh:hover { transform: rotate(45deg); }
 
-/* BADGES ESTADO (Ahora incluye Pendiente) */
-.badge-status {
-  padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
-}
+/* ====================================================
+   NUEVOS ESTILOS PARA ESTADOS (Amarillo En Proceso, Negro Anulada)
+   ==================================================== */
+.text-en-proceso { color: #d97706 !important; } /* Amarillo Oscuro / Dorado */
+.text-anulada { color: #0f172a !important; }    /* Azul Marino Oscuro / Negro */
+
+.badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-block; text-align: center;}
 .badge-status.aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 .badge-status.rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-.badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; } /* Estilo para EN PROCESO */
+.badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; } /* EN PROCESO (Amarillo) */
+.badge-status.anulada { background: #0f172a; color: #ffffff; border: 1px solid #0f172a; }   /* ANULADA (Negro/Blanco) */
 
-.badge-status-sm {
-  padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700;
-}
+.badge-status-sm { padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; display: inline-block; text-align: center;}
 .badge-status-sm.aprobada { background: #dcfce7; color: #15803d; }
 .badge-status-sm.rechazada { background: #fee2e2; color: #b91c1c; }
-.badge-status-sm.pendiente { background: #fef9c3; color: #a16207; } /* Estilo para EN PROCESO */
+.badge-status-sm.pendiente { background: #fef9c3; color: #a16207; }
+.badge-status-sm.anulada { background: #0f172a; color: #ffffff; }
 
-/* MODALES BASE */
 .modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1040; }
 .modal-content-exito { background: white; border-radius: 30px; padding: 40px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
 .icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
 .bg-info-light { background: #e0f2fe; color: #0284c7; }
 
-.custom-input {
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 0.95rem;
-  background-color: #ffffff;
-  transition: all 0.3s ease;
-}
-.custom-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-  outline: none;
-}
+.custom-input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; background-color: #ffffff; transition: all 0.3s ease; }
+.custom-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); outline: none; }
 
-/* =======================================
-   VISTA MOBILE / RESPONSIVE
-   ======================================= */
 .desktop-only { display: block; }
 .mobile-only { display: none; }
 .mobile-only-flex { display: none; }
 .btn-text { display: inline; }
 
-.mobile-filter-panel {
-  background: white;
-  padding: 15px 20px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 15px;
-}
-.filter-grid-mobile {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.filter-grid-mobile input,
-.filter-grid-mobile select {
-  padding: 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  width: 100%;
-  outline: none;
-  background: #f8fafc;
-}
-.filter-grid-mobile select.full-width {
-  grid-column: span 2;
-}
+.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.filter-grid-mobile input, .filter-grid-mobile select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; width: 100%; outline: none; background: #f8fafc; }
+.filter-grid-mobile select.full-width { grid-column: span 2; }
 
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
   .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
 }
-
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
-
   .card-licencia { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
   .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
   .card-name { font-size: 1.05rem; color: #0f172a; }
-
   .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
   .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
   .btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
 }
-
 @media (max-width: 600px) {
   .admin-panel { padding: 10px; }
   .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
   .title { font-size: 1rem; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
-  
-  .header-actions {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: center;
-    gap: 8px;
-  }
-  .btn-action {
-    flex: none;
-    width: 42px;
-    height: 42px;
-    padding: 0;
-    justify-content: center;
-  }
+  .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; gap: 8px; }
+  .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
   .btn-text { display: none !important; }
   .mobile-only-flex { display: flex !important; }
 }
-</style>   
+</style>  

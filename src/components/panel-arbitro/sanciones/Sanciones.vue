@@ -41,6 +41,7 @@
             <option value="vigente">Vigente</option>
             <option value="cumplida">Cumplida</option>
             <option value="en_proceso">En Proceso</option>
+            <option value="anulada">Anulada</option>
           </select>
           <input v-model="filtros.sancion" placeholder="Buscar Sanción...">
           <input v-model="filtros.motivo_articulo" placeholder="Motivo / Art...">
@@ -92,6 +93,7 @@
                     <option value="vigente">VIGENTE</option>
                     <option value="cumplida">CUMPLIDA</option>
                     <option value="en_proceso">EN PROCESO</option>
+                    <option value="anulada">ANULADA</option>
                   </select>
                 </td>
                 <td><input v-model="filtros.sancion" class="filter-input shadow-none w-100" placeholder="Filtrar.."></td>
@@ -108,7 +110,7 @@
                   </span>
                 </td>
                 <td class="cell-ro">
-                  <span class="fw-bold" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">{{ s.sancion || 'Sin sanción' }}</span>
+                  <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
                 </td>
                 <td class="cell-ro text-wrap" style="min-width: 250px;">
                   <span class="fw-bold text-dark" v-if="s.articulo">Art. {{ s.articulo }} - </span>
@@ -129,10 +131,10 @@
             
             <div class="card-header border-bottom-0 pb-2 px-3 pt-3">
               <div class="d-flex justify-content-start align-items-center gap-2">
-                <span class="fw-bold" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'" style="font-size: 1.1rem;">
-                  {{ s.sancion || 'Sin sanción' }}
+                <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" style="font-size: 1.1rem;">
+                  {{ s.sancion }}
                 </span>
-                <span :class="obtenerClaseEstado(s.estado_dinamico)" style="font-size: 0.7rem; padding: 3px 10px;">
+                <span :class="obtenerClaseEstado(s.estado_dinamico, true)" style="font-size: 0.7rem; padding: 3px 10px;">
                   {{ obtenerTextoEstado(s.estado_dinamico) }}
                 </span>
               </div>
@@ -178,7 +180,6 @@ const arbitro = ref(auth.getUser() || {});
 const sanciones = ref([]);
 const cargando = ref(false);
 
-// FILTROS
 const filtros = reactive({
   motivo_articulo: '',
   sancion: '',
@@ -188,7 +189,6 @@ const filtros = reactive({
 });
 const mostrarFiltrosMobile = ref(false);
 
-// PAGINACIÓN
 const paginaActual = ref(1);
 const registrosPorPagina = 10;
 
@@ -196,25 +196,34 @@ const limpiarFiltros = () => {
   filtros.motivo_articulo = ''; filtros.sancion = ''; filtros.desde = ''; filtros.hasta = ''; filtros.estado = '';
 };
 
-// NORMALIZADOR
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
-// LÓGICA DE ESTADOS
-const obtenerTextoEstado = (estado) => {
-  if (estado == 1) return 'VIGENTE';
-  if (estado == 2) return 'CUMPLIDA';
-  if (estado == 3) return 'EN PROCESO';
+// ==========================================
+// LÓGICA VISUAL DE ESTADOS Y SANCIONES (Mapeada con el Backend)
+// ==========================================
+const obtenerTextoEstado = (estado_dinamico) => {
+  if (estado_dinamico == 1) return 'VIGENTE';
+  if (estado_dinamico == 2) return 'CUMPLIDA';
+  if (estado_dinamico == 3) return 'EN PROCESO';
+  if (estado_dinamico == 4) return 'ANULADA';
   return 'DESCONOCIDO';
-};
+}
 
-const obtenerClaseEstado = (estado) => {
-  if (estado == 1) return 'badge bg-danger rounded-pill';
-  if (estado == 2) return 'badge bg-success rounded-pill';
-  if (estado == 3) return 'badge bg-warning text-dark rounded-pill';
-  return 'badge bg-secondary rounded-pill';
-};
+const obtenerClaseEstado = (estado_dinamico, es_sm = false) => {
+  const prefijo = es_sm ? 'badge-status-sm' : 'badge-status';
+  if (estado_dinamico == 1) return `${prefijo} rechazada`; // Vigente (Rojo)
+  if (estado_dinamico == 2) return `${prefijo} aprobada`;  // Cumplida (Verde)
+  if (estado_dinamico == 3) return `${prefijo} pendiente text-dark`; // En proceso (Amarillo)
+  if (estado_dinamico == 4) return `${prefijo} anulada`; // Anulada (Negro/Blanco)
+  return `${prefijo}`;
+}
 
-// COMPUTEDS DE FILTRADO Y PAGINACIÓN
+const obtenerClaseTextoSancion = (estado_dinamico) => {
+  if (estado_dinamico == 4) return 'text-anulada fw-bold';
+  if (estado_dinamico == 3) return 'text-en-proceso fw-bold';
+  return 'text-danger fw-bold';
+}
+
 const sancionesFiltradas = computed(() => {
   return sanciones.value.filter(s => {
     const matchMotArt = normalizar((s.motivo || '') + ' ' + (s.articulo || '')).includes(normalizar(filtros.motivo_articulo));
@@ -223,9 +232,10 @@ const sancionesFiltradas = computed(() => {
     const matchHas = (s.hasta_formateada || '').includes(filtros.hasta);
 
     let matchEst = true;
-    if (filtros.estado === 'vigente') matchEst = s.estado_dinamico == 1;
-    if (filtros.estado === 'cumplida') matchEst = s.estado_dinamico == 2;
-    if (filtros.estado === 'en_proceso') matchEst = s.estado_dinamico == 3;
+    if (filtros.estado === 'vigente') matchEst = (s.estado_dinamico == 1);
+    if (filtros.estado === 'cumplida') matchEst = (s.estado_dinamico == 2);
+    if (filtros.estado === 'en_proceso') matchEst = (s.estado_dinamico == 3);
+    if (filtros.estado === 'anulada') matchEst = (s.estado_dinamico == 4);
 
     return matchMotArt && matchSan && matchDes && matchHas && matchEst;
   });
@@ -241,7 +251,6 @@ const sancionesPaginadas = computed(() => {
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
 watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo });
 
-// LLAMADA A LA API
 const obtenerSancionesLocales = async () => {
   cargando.value = true;
   try {
@@ -294,12 +303,28 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
 .paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
 
+/* NUEVOS ESTILOS PARA ESTADOS */
+.text-en-proceso { color: #d97706 !important; }
+.text-anulada { color: #0f172a !important; }
+
+.badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-block; text-align: center;}
+.badge-status.aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-status.rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
+.badge-status.anulada { background: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
+
+.badge-status-sm { padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; display: inline-block; text-align: center;}
+.badge-status-sm.aprobada { background: #dcfce7; color: #15803d; }
+.badge-status-sm.rechazada { background: #fee2e2; color: #b91c1c; }
+.badge-status-sm.pendiente { background: #fef9c3; color: #a16207; }
+.badge-status-sm.anulada { background: #0f172a; color: #ffffff; }
+
 /* VISTAS MOBILE / DESKTOP */
 .desktop-only { display: block; }
 .mobile-only { display: none; }
 .mobile-only-flex { display: none; }
 
-.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
 .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .filter-grid-mobile input, .filter-grid-mobile select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; width: 100%; outline: none; background: #f8fafc; }
 .filter-grid-mobile select.full-width { grid-column: span 2; }
@@ -307,7 +332,6 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
-  
   .card-licencia { background: white; border-radius: 8px; margin-bottom: 15px; }
 }
 

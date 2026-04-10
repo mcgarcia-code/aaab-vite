@@ -13,7 +13,7 @@
         </div>
 
         <div class="header-actions">
-          <router-link to="/panel-admin/tribunal" class="text-decoration-none">
+          <router-link to="/panel-admin/tribunal/sanciones" class="text-decoration-none">
             <button class="btn-action btn-clear" title="Volver al Listado">
               <span class="material-icons">list</span>
               <span class="btn-text">Ver Listado</span>
@@ -81,12 +81,15 @@
               <div v-for="s in ultimasSanciones" :key="s.id" class="mb-3 border-bottom pb-3">
                 <div class="d-flex justify-content-between align-items-start mb-1">
                   <strong class="text-dark small">{{ s.arbitro || s.arbitro_nombre || s.id_arbitro }}</strong>
-                  <span class="badge" :class="s.estado_dinamico === 1 ? 'bg-danger' : 'bg-secondary'">
-                    {{ s.estado_dinamico === 1 ? 'VIGENTE' : 'CERRADA' }}
+                  <span :class="obtenerClaseEstado(s.estado_dinamico)">
+                    {{ obtenerTextoEstado(s.estado_dinamico) }}
                   </span>
                 </div>
-                <div class="small text-muted" style="line-height: 1.3;">
-                  <strong>Art. {{ s.articulo }}</strong> - {{ s.motivo }}
+                <div class="small text-muted mt-1" style="line-height: 1.3;">
+                  <strong class="text-dark">Art. {{ s.articulo }}</strong> - {{ s.motivo }}
+                </div>
+                <div class="small mt-1" :class="obtenerClaseTextoSancion(s.estado_dinamico)">
+                  {{ obtenerTextoSancion(s) }}
                 </div>
               </div>
             </div>
@@ -108,7 +111,6 @@ useHead({
   title: 'Cargar Sanción | AAAB'
 });
 
-// Inyectamos el notificador (Si falla el inject, hace un console error)
 const notificar = inject('notificar', (opts) => {
     console.error("No se encontró el notificador global", opts);
     alert(opts.mensaje);
@@ -126,6 +128,35 @@ const sancionVacia = () => ({
 });
 
 const nuevaSancion = ref(sancionVacia());
+
+// LÓGICA VISUAL
+const obtenerTextoEstado = (estado_dinamico) => {
+  if (estado_dinamico == 1) return 'VIGENTE';
+  if (estado_dinamico == 2) return 'CUMPLIDA';
+  if (estado_dinamico == 3) return 'EN PROCESO';
+  if (estado_dinamico == 4) return 'ANULADA';
+  return 'DESCONOCIDO';
+};
+
+const obtenerClaseEstado = (estado_dinamico) => {
+  if (estado_dinamico == 1) return 'badge-status rechazada';
+  if (estado_dinamico == 2) return 'badge-status aprobada';
+  if (estado_dinamico == 3) return 'badge-status pendiente text-dark';
+  if (estado_dinamico == 4) return 'badge-status anulada';
+  return 'badge-status';
+};
+
+const obtenerTextoSancion = (s) => {
+  if (s.estado_dinamico == 4) return 'Anulada';
+  if (s.estado_dinamico == 3) return 'En proceso';
+  return s.sancion || 'En proceso';
+};
+
+const obtenerClaseTextoSancion = (estado_dinamico) => {
+  if (estado_dinamico == 4) return 'text-anulada fw-bold';
+  if (estado_dinamico == 3) return 'text-en-proceso fw-bold';
+  return 'text-danger fw-bold';
+};
 
 const cargarArbitros = async () => {
   try {
@@ -172,7 +203,6 @@ const guardarSancion = async () => {
       payload: nuevaSancion.value,
     });
     
-    // Asumimos que si no es explícitamente ok=false, funcionó
     if (res?.ok !== false) {
       notificar({ titulo: '¡Proceso Iniciado!', mensaje: 'La sanción se registró y se notificó al árbitro.', tipo: 'success' });
       nuevaSancion.value = sancionVacia();
@@ -196,120 +226,59 @@ onMounted(() => {
 
 <style scoped>
 /* ESTILOS WRAPPER ESTÁNDAR */
-.full-screen-wrapper { 
-  position: relative; 
-  width: 99vw; 
-  min-height: 100vh; 
-  height: auto !important; 
-  margin-left: 50%; 
-  transform: translateX(-50%); 
-  padding: 20px; 
-  padding-bottom: 120px; 
-}
-.admin-panel { 
-  width: 100%; 
-  max-width: 100%; 
-  padding: 20px; 
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; 
-  color: #000; 
-  background-color: #0f172a; 
-  min-height: 100vh; 
-  border-radius: 12px;
-}
-.header-section { 
-  background: white; 
-  padding: 15px 25px; 
-  border-radius: 8px; 
-  display: flex; 
-  justify-content: space-between; 
-  margin-bottom: 15px; 
-  border-left: 5px solid #ef4444; 
-  align-items: center; 
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-}
+.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; }
+.admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
+
+/* CABECERA ORIGINAL */
+.header-section { background: white; padding: 15px 25px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #dc2626; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
 .counter { font-size: 0.85rem; color: #64748b; }
 
 .header-actions { display: flex; gap: 8px; }
-.btn-action { 
-  border: none; 
-  padding: 8px 12px; 
-  border-radius: 4px; 
-  font-weight: bold; 
-  cursor: pointer; 
-  display: flex; 
-  align-items: center; 
-  gap: 5px; 
-  font-size: 0.75rem; 
-  transition: opacity 0.2s; 
-}
-.btn-clear { background: #e2e8f0; color: #000; }
+.btn-action { border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.85rem; transition: opacity 0.2s; }
+.btn-clear { background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; }
 
 /* GRILLA DIVIDIDA */
-.menu-card-static {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 30px;
-  border-top: 4px solid #dc2626;
-}
+.menu-card-static { background: #ffffff; border-radius: 12px; padding: 30px; border-top: 4px solid #dc2626; }
+.side-card { background: #f8fafc; border-radius: 12px; padding: 25px; border-top: 4px solid #64748b; }
 
-.side-card {
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 25px;
-  border-top: 4px solid #64748b;
-}
+.custom-input { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 0.95rem; background-color: #f8fafc; transition: all 0.3s ease; resize: vertical; }
+.custom-input:focus { background-color: #fff; border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.15); outline: none; }
+.custom-input:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
 
-.custom-input {
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 0.95rem;
-  background-color: #f8fafc;
-  transition: all 0.3s ease;
-  resize: vertical;
-}
-.custom-input:focus {
-  background-color: #fff;
-  border-color: #dc2626;
-  box-shadow: 0 0 0 3px rgba(220,38,38,0.15);
-  outline: none;
-}
-.custom-input:disabled {
-  background-color: #f1f5f9;
-  color: #94a3b8;
-  cursor: not-allowed;
-}
-
-.btn-send {
-  width: 100%;
-  background-color: #dc2626;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 14px;
-  font-weight: bold;
-  font-size: 1rem;
-  letter-spacing: 0.5px;
-  transition: all 0.2s;
-  cursor: pointer;
-}
+.btn-send { width: 100%; background-color: #dc2626; color: white; border: none; border-radius: 8px; padding: 14px; font-weight: bold; font-size: 1rem; letter-spacing: 0.5px; transition: all 0.2s; cursor: pointer; }
 .btn-send:hover:not(:disabled) { background-color: #b91c1c; }
 .btn-send:disabled { background-color: #fca5a5; cursor: not-allowed; }
 
-/* RESPONSIVE */
+/* BADGES ESTÉTICA OFICIAL */
+.text-en-proceso { color: #d97706 !important; }
+.text-anulada { color: #0f172a !important; }
+
+.badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; display: inline-block; text-align: center; letter-spacing: 0.5px;}
+.badge-status.aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge-status.rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; } 
+.badge-status.anulada { background: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
+
+/* RESPONSIVE CORRECTO (BOTÓN EN LA MISMA LÍNEA) */
 @media (max-width: 991px) {
   .menu-card-static, .side-card { padding: 20px; }
 }
 
 @media (max-width: 600px) {
   .admin-panel { padding: 10px; border-radius: 0; }
-  .header-section { padding: 15px; flex-direction: column; align-items: flex-start; gap: 12px; }
   .full-screen-wrapper { padding: 0; width: 100vw; }
-  .btn-action .btn-text { display: none; } /* Oculta texto del botón volver en móviles */
+  
+  /* ESTA ES LA CLAVE: flex-direction row obliga a mantenerse en la misma línea */
+  .header-section { padding: 15px; flex-direction: row; align-items: center; justify-content: space-between; }
+  .header-info h2 { font-size: 1rem !important; }
+  
+  /* El botón se achica y esconde el texto */
+  .header-actions { width: auto; display: flex; flex-direction: row; gap: 8px; }
+  .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
+  .btn-action span.material-icons { margin: 0; }
+  .btn-text { display: none !important; }
 }
 
-.animate__animated {
-  animation-duration: 0.5s;
-}
+.animate__animated { animation-duration: 0.5s; }
 </style>
