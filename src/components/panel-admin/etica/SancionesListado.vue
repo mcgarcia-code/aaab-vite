@@ -266,18 +266,15 @@ const verHistorialArbitro = async (sancion) => {
   cargandoHistorial.value = true
 
   try {
-    const res = await api.get({
+    const { payload } = await api.get({
       entity: 'sanciones',
       action: 'obtenerSancionesArbitro',
       payload: { id_arbitro: sancion.id_arbitro }
     })
 
-    historialSanciones.value = res.payload ?? res ?? []
-  } catch {
-    historialSanciones.value = sanciones.value.filter(
-      s => s.id_arbitro === sancion.id_arbitro
-    )
-  } finally {
+    historialSanciones.value = payload ?? []
+  } 
+  finally {
     cargandoHistorial.value = false
   }
 }

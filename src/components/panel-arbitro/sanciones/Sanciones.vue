@@ -72,10 +72,10 @@
                   <span class="text-muted" style="font-size: 0.75rem;" v-if="s.articulo">Art. {{ s.articulo }}</span>
                 </td>
                 <td class="cell-ro">{{ s.motivo }}</td>
-                <td class="text-center cell-ro fw-bold">{{ formatFecha(s.desde) }}</td>
+                <td class="text-center cell-ro fw-bold">{{ s.desde_formateada }}</td>
                 <td class="text-center cell-ro fw-bold text-danger">
                   <span v-if="s.es_indefinido == 1" class="badge bg-dark rounded-pill">Indefinido</span>
-                  <span v-else>{{ formatFecha(s.hasta) }}</span>
+                  <span v-else>{{ s.hasta_formateada }}</span>
                 </td>
               </tr>
             </tbody>
