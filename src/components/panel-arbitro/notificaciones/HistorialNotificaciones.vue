@@ -29,7 +29,7 @@
       </div>
 
       <!-- TABLA DE HISTORIAL RESPONSIVE -->
-      <div v-else class="bg-white rounded shadow-sm border overflow-hidden">
+      <div v-else class="bg-white rounded shadow-sm border overflow-hidden mobile-transparent-bg">
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0 custom-table">
             <thead class="table-light text-muted small border-bottom">
@@ -44,12 +44,12 @@
               <tr v-for="notif in notificacionesPaginadas" :key="notif.id" :class="{'fila-no-leida': Number(notif.leida) === 0}">
                 
                 <!-- FECHA -->
-                <td class="ps-4 text-muted small fw-bold text-nowrap" data-label="FECHA">
+                <td class="ps-4 text-muted small fw-bold text-nowrap" data-label="Fecha">
                   {{ notif.fecha }}
                 </td>
 
                 <!-- TIPO (Badge) -->
-                <td data-label="TIPO">
+                <td data-label="Asunto">
                   <span class="badge rounded-pill fw-bold d-inline-flex align-items-center gap-1" :class="getEstiloBadge(notif.tipo)">
                     <span class="material-icons" style="font-size: 14px;">{{ getIcono(notif.tipo) }}</span>
                     {{ notif.titulo }}
@@ -57,12 +57,12 @@
                 </td>
 
                 <!-- MENSAJE -->
-                <td class="text-dark small" data-label="MENSAJE">
+                <td class="text-dark small td-mensaje" data-label="Mensaje">
                   {{ notif.mensaje }}
                 </td>
 
                 <!-- ESTADO -->
-                <td class="text-center pe-4" data-label="ESTADO">
+                <td class="text-center pe-4 text-mobile-left" data-label="Estado">
                   <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
                     <span class="material-icons text-primary" style="font-size: 14px;">done_all</span> Leída
                   </span>
@@ -164,7 +164,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ESTILOS WRAPPER ESTÁNDAR (Como en indumentaria) */
+/* ESTILOS WRAPPER ESTÁNDAR */
 .full-screen-wrapper { 
   position: relative; 
   width: 99vw; 
@@ -252,10 +252,19 @@ onMounted(() => {
   background-color: rgba(220, 38, 38, 0.03) !important;
 }
 
-/* Ajustes Responsive (Tablas apiladas) */
+/* ========================================================
+   ESTILOS MOBILE (Diseño tipo Tarjeta)
+   ======================================================== */
 @media (max-width: 768px) {
+  .mobile-transparent-bg {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
   .table-responsive {
     border: none;
+    overflow-x: visible; /* Evita que las sombras se corten */
   }
   
   .custom-table thead {
@@ -267,31 +276,50 @@ onMounted(() => {
     width: 100%;
   }
 
+  /* LA FILA SE CONVIERTE EN TARJETA */
   .custom-table tr {
-    margin-bottom: 15px;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 10px;
+    background-color: #ffffff !important;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    position: relative; /* Para posicionar el estado si quisieras */
   }
 
+  /* RESET DE CELDAS PARA MODO TARJETA */
   .custom-table td {
-    text-align: right;
-    padding: 10px 15px !important;
+    text-align: left;
+    padding: 6px 0 !important;
     border: none;
-    position: relative;
-    padding-left: 40% !important;
+    font-size: 0.9rem;
   }
 
+  .text-mobile-left {
+    text-align: left !important;
+  }
+
+  .td-mensaje {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    border-top: 1px dashed #e2e8f0 !important;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #475569 !important;
+  }
+
+  /* ETIQUETAS GENERADAS AUTOMÁTICAMENTE (Negrita a la izquierda) */
   .custom-table td::before {
-    content: attr(data-label);
-    position: absolute;
-    left: 15px;
-    width: 35%;
-    padding-right: 10px;
-    white-space: nowrap;
-    text-align: left;
-    font-weight: bold;
-    font-size: 0.75rem;
-    color: #64748b;
+    content: attr(data-label) ": ";
+    font-weight: 700;
+    color: #1e293b;
+    margin-right: 5px;
+    font-size: 0.85rem;
+  }
+
+  /* Ajustes específicos para que los badges no rompan el diseño en línea */
+  .custom-table td .badge {
+    vertical-align: middle;
   }
 }
 

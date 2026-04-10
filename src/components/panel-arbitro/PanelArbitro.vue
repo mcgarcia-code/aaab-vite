@@ -27,8 +27,9 @@
           <div class="dropdown me-2">
             <button class="btn position-relative border-0 bg-transparent p-2 d-flex align-items-center notification-btn" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
               <i class="bi bi-bell-fill fs-3 text-white"></i>
-              <!-- Puntito rojo de alerta -->
-              <span v-if="notificacionesNoLeidas > 0" class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle" style="transform: translate(-30%, 30%) !important;">
+              <!-- CONTADOR ROJO DE ALERTA -->
+              <span v-if="notificacionesNoLeidas > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="transform: translate(-30%, 30%) !important; font-size: 0.65rem; padding: 0.35em 0.5em;">
+                {{ notificacionesNoLeidas }}
                 <span class="visually-hidden">Notificaciones nuevas</span>
               </span>
             </button>
