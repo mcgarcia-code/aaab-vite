@@ -214,8 +214,17 @@ onMounted(cargarAvisos);
 
 <style scoped>
 /* --- TARJETAS MÓDULOS --- */
+/* --- TARJETAS MÓDULOS (Panel Árbitro) --- */
 .modern-menu-card {
-  background: white; border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 12px; border: 1px solid #f1f5f9; transition: all 0.2s ease;
+  background: white; 
+  border-radius: 16px; 
+  padding: 15px; 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  border: 1px solid #f1f5f9; 
+  transition: all 0.2s ease;
+  cursor: pointer; /* <--- ESTA ES LA LÍNEA QUE TENÉS QUE AGREGAR */
 }
 .icon-box {
   width: 45px; height: 45px; min-width: 45px; background: #fef2f2; color: #dc2626; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
