@@ -37,14 +37,15 @@
             <ul class="dropdown-menu dropdown-menu-end shadow-lg py-0 overflow-hidden dropdown-notificaciones">
               <!-- Cabecera del Dropdown -->
               <li class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
-                <h6 class="m-0 fw-bold text-dark">Notificaciones</h6>
-                <span v-if="notificacionesNoLeidas > 0" class="badge bg-danger rounded-pill">{{ notificacionesNoLeidas }} nuevas</span>
+                <h6 class="m-0 fw-bold text-dark">Nuevas Notificaciones</h6>
+                <span v-if="notificacionesNoLeidas > 0" class="badge bg-danger rounded-pill">{{ notificacionesNoLeidas }}</span>
               </li>
               
-              <!-- Lista de Notificaciones (Con Scroll) -->
+              <!-- Lista de Notificaciones (Solo pendientes) -->
               <div class="notification-list">
-                <li v-for="notif in notificaciones" :key="notif.id" class="border-bottom" :class="{'bg-light bg-opacity-50': !notif.leida}">
-                  <a class="dropdown-item py-3 px-3 cursor-pointer text-wrap" @click.stop="marcarLeida(notif)">
+                <!-- Usamos notificacionesPendientes en lugar de notificaciones -->
+                <li v-for="notif in notificacionesPendientes" :key="notif.id" class="border-bottom bg-light bg-opacity-50">
+                  <a class="dropdown-item py-3 px-3 cursor-pointer text-wrap" @click.stop="marcarLeidas()">
                     <div class="d-flex gap-3 align-items-start">
                       <div class="icon-circle flex-shrink-0 shadow-sm" :class="getIconoNotificacion(notif.tipo).bg">
                         <i :class="['bi', getIconoNotificacion(notif.tipo).icono, 'text-white']"></i>
@@ -52,7 +53,7 @@
                       <div class="flex-grow-1">
                         <p class="mb-1 text-dark small fw-bold" style="line-height: 1.2;">
                           {{ notif.titulo }}
-                          <span v-if="!notif.leida" class="d-inline-block ms-1 bg-danger rounded-circle" style="width: 6px; height: 6px;"></span>
+                          <span class="d-inline-block ms-1 bg-danger rounded-circle" style="width: 6px; height: 6px;"></span>
                         </p>
                         <p class="mb-1 text-muted" style="font-size: 0.75rem; line-height: 1.3;">{{ notif.mensaje }}</p>
                         <small class="text-muted fw-bold" style="font-size: 0.65rem;">{{ notif.fecha }}</small>
@@ -61,16 +62,21 @@
                   </a>
                 </li>
 
-                <!-- Mensaje si no hay notificaciones -->
-                <li v-if="notificaciones.length === 0" class="p-4 text-center text-muted">
+                <!-- Mensaje si no hay notificaciones nuevas -->
+                <li v-if="notificacionesPendientes.length === 0" class="p-4 text-center text-muted">
                   <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-50"></i>
-                  <small>No tenés notificaciones</small>
+                  <small>No tenés notificaciones nuevas</small>
                 </li>
               </div>
 
               <!-- Pie del Dropdown -->
-              <li v-if="notificacionesNoLeidas > 0" class="p-2 text-center border-top bg-light">
-                <button @click.stop="marcarTodasLeidas" class="btn btn-link btn-sm text-decoration-none text-muted small fw-bold">Marcar todas como leídas</button>
+              <li class="p-2 text-center border-top bg-light d-flex flex-column gap-2">
+                <button v-if="notificacionesNoLeidas > 0" @click.stop="marcarLeidas" class="btn btn-link btn-sm text-decoration-none text-muted small fw-bold p-0">
+                  Marcar como leídas
+                </button>
+                <RouterLink to="/panel-arbitro/historial-notificaciones" class="btn btn-link btn-sm text-decoration-none text-primary small fw-bold p-0">
+                  Ver historial completo
+                </RouterLink>
               </li>
             </ul>
           </div>
@@ -129,59 +135,47 @@ const cerrarSesion = () => {
 // LÓGICA DE NOTIFICACIONES
 // =======================================================
 
-const notificaciones = ref([
-  { id: 1, tipo: 'indumentaria', titulo: 'Pedido en Proceso', mensaje: 'Tu pedido de indumentaria #15 ahora está EN PROCESO.', fecha: 'Hoy, 10:30 hs', leida: false },
-  { id: 2, tipo: 'licencia', titulo: 'Licencia Aprobada', mensaje: 'Tu solicitud de ausencia para el 15/10 fue aprobada por la administración.', fecha: 'Ayer, 18:45 hs', leida: false },
-  { id: 3, tipo: 'datos', titulo: 'Datos Actualizados', mensaje: 'Tus datos personales fueron verificados y actualizados en el padrón.', fecha: 'Hace 2 días', leida: true }
-]);
+const notificaciones = ref([]);
 
-const notificacionesNoLeidas = computed(() => notificaciones.value.filter(n => !n.leida).length);
+// 1. Filtramos solo las que no están leídas para mostrarlas en la campanita
+const notificacionesPendientes = computed(() => {
+  return notificaciones.value.filter(n => Number(n.leida) === 0);
+});
+
+// 2. El contador ahora se basa en el filtro anterior
+const notificacionesNoLeidas = computed(() => notificacionesPendientes.value.length);
 
 const getIconoNotificacion = (tipo) => {
   switch (tipo) {
-    case 'indumentaria': return { icono: 'bi-bag-check', bg: 'bg-primary' };
-    case 'licencia': return { icono: 'bi-calendar2-check', bg: 'bg-success' };
-    case 'disponibilidad': return { icono: 'bi-clock-history', bg: 'bg-warning text-dark' };
-    case 'datos': return { icono: 'bi-person-check', bg: 'bg-info' };
-    default: return { icono: 'bi-info-circle', bg: 'bg-secondary' };
+    case 'success': return { icono: 'bi-check-circle', bg: 'bg-success' };
+    case 'danger': return { icono: 'bi-exclamation-octagon', bg: 'bg-danger' };
+    case 'warning': return { icono: 'bi-exclamation-triangle', bg: 'bg-warning text-dark' };
+    case 'info': return { icono: 'bi-info-circle', bg: 'bg-primary' };
+    default: return { icono: 'bi-bell', bg: 'bg-secondary' };
   }
-};
-
-const marcarLeida = async (notif) => {
-  if (notif.leida) return;
-  
-  notif.leida = true;
-  /* 
-  try {
-    await api.post({ entity: 'notificaciones', action: 'marcarLeida', payload: { id: notif.id } });
-  } catch (error) {
-    console.error(error);
-  }
-  */
-};
-
-const marcarTodasLeidas = async () => {
-  notificaciones.value.forEach(n => n.leida = true);
-  /* 
-  try {
-    await api.post({ entity: 'notificaciones', action: 'marcarTodasLeidas', payload: { id_arbitro: arbitro.value.id } });
-  } catch (error) {
-    console.error(error);
-  }
-  */
 };
 
 const obtenerNotificaciones = async () => {
-  /*
   try {
-    const res = await api.get({ entity: 'notificaciones', action: 'obtenerDelArbitro', payload: { id_arbitro: arbitro.value.id } });
+    const res = await api.get({ entity: 'notificaciones', action: 'obtenerNotificaciones' });
     if (res.ok) {
       notificaciones.value = res.payload;
     }
   } catch (error) {
     console.error('Error cargando notificaciones', error);
   }
-  */
+};
+
+const marcarLeidas = async () => {
+  try {
+    const res = await api.post({ entity: 'notificaciones', action: 'marcarLeidas' });
+    if (res.ok) {
+      // Actualizamos localmente para que desaparezcan del dropdown al instante
+      notificaciones.value.forEach(n => n.leida = 1);
+    }
+  } catch (error) {
+    console.error('Error al marcar como leídas', error);
+  }
 };
 
 onMounted(() => {
@@ -213,15 +207,12 @@ useHead({
   margin: 0 auto; 
 }
 
-/* =========================================
-   LA MAGIA ESTÁ ACÁ: z-index y position
-   ========================================= */
 .user-header {
   background: rgba(255, 255, 255, 0.05); 
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  position: relative; /* Asegura que el header actúe como ancla */
-  z-index: 90; /* Coloca el header y su menú por encima de todo (router-view) */
+  position: relative; 
+  z-index: 90; 
 }
 
 .perfil-img { 
@@ -259,9 +250,6 @@ useHead({
   line-height: 1.2;
 }
 
-/* =========================================
-   ESTILOS DEL DROPDOWN DE NOTIFICACIONES
-   ========================================= */
 .notification-btn {
   border-radius: 50%;
   width: 48px;
@@ -276,7 +264,7 @@ useHead({
 .dropdown-notificaciones {
   width: 350px; 
   border-radius: 12px; 
-  margin-top: 15px; /* Un poco más de margen para que no toque el botón */
+  margin-top: 15px; 
 }
 
 .cursor-pointer {
@@ -326,9 +314,6 @@ useHead({
   background: #94a3b8; 
 }
 
-/* =========================================
-   AJUSTES RESPONSIVE (CELULAR)
-   ========================================= */
 @media (max-width: 576px) {
   .perfil-img { width: 55px; height: 55px; }
   .saludo-texto { font-size: 1.1rem; margin-bottom: 2px !important; }
@@ -336,20 +321,19 @@ useHead({
   .notification-btn { width: 40px; height: 40px; }
   .notification-btn i { font-size: 1.25rem !important; }
 
-  /* Ajuste de la tabla de notificaciones para celular */
   .dropdown-notificaciones {
     position: absolute !important;
-    top: 110% !important; /* Desplazamos hacia abajo */
-    right: -10px !important; /* Ajuste para alinear con el borde derecho */
+    top: 110% !important; 
+    right: -10px !important; 
     left: auto !important;
-    width: calc(100vw - 40px) !important; /* Ocupa el ancho ajustado sin salirse */
+    width: calc(100vw - 40px) !important; 
     max-width: 400px !important;
     margin-top: 10px !important;
-    z-index: 1060 !important; /* Aseguramos que nada lo tape en mobile */
+    z-index: 1060 !important; 
   }
   
   .notification-list {
-    max-height: 50vh; /* Para que en teléfonos chicos no se rompa */
+    max-height: 50vh; 
   }
 }
 </style>

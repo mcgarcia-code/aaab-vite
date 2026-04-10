@@ -208,6 +208,10 @@ const cargando = ref(false);
 const filtros = reactive({ modelo: '' });
 const mostrarFiltrosMobile = ref(false);
 
+// ESCALA OFICIAL Y ORDEN
+const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
+const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9 };
+
 // --- LÓGICA DE PAGINACIÓN RESPONSIVE ---
 const anchoPantalla = ref(window.innerWidth);
 const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
@@ -219,11 +223,6 @@ const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 5 : 12);
 const mostrarModal = ref(false);
 const modoModal = ref('nuevo');
 const archivosSeleccionados = ref([]);
-
-// Talles actualizados según requerimiento (sin 5XL)
-const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
-// Mapa de orden para asegurar que siempre se ordenen de menor a mayor
-const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9 };
 
 const formModal = ref({ id_item: null, descripcion: '', precioUnitario: 0, items: [] });
 
@@ -240,6 +239,13 @@ const stockPaginado = computed(() => {
   return stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value);
 });
 
+watch(paginaActual, () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth' // Esto hace que suba con un efecto suave
+  });
+});
+
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
 watch(totalPaginas, (nuevo) => { 
   if (nuevo === 0) paginaActual.value = 1;
@@ -251,8 +257,10 @@ const obtenerStock = async () => {
   cargando.value = true;
   const res = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
   if (res.ok) {
-    // Ordenamos los talles de cada modelo apenas llegan de la BD
+    // 1. Convertimos XXXL a 3XL y filtramos 5XL apenas llegan de la BD
     res.payload.forEach(modelo => {
+      modelo.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
+      modelo.items = modelo.items.filter(i => tallesEstandar.includes(i.talle));
       modelo.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
     });
     listaStock.value = res.payload;
@@ -277,9 +285,12 @@ const abrirModalEdicion = (modelo) => {
   modoModal.value = 'editar';
   archivosSeleccionados.value = [];
   
-  // Asegurar que estén todos los talles
-  let tallesExistentes = modelo.items.map(v => v.talle);
-  let itemsCombinados = [...modelo.items];
+  // Convertimos XXXL a 3XL para la edición y filtramos 5XL
+  let itemsCombinados = JSON.parse(JSON.stringify(modelo.items));
+  itemsCombinados.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
+  itemsCombinados = itemsCombinados.filter(i => tallesEstandar.includes(i.talle));
+
+  let tallesExistentes = itemsCombinados.map(v => v.talle);
 
   tallesEstandar.forEach(talle => {
     if (!tallesExistentes.includes(talle)) {
@@ -294,7 +305,7 @@ const abrirModalEdicion = (modelo) => {
     id_item: modelo.id_item,
     descripcion: modelo.descripcion,
     precioUnitario: modelo.precio_unitario,
-    items: JSON.parse(JSON.stringify(itemsCombinados)) // Copia profunda
+    items: itemsCombinados
   };
   
   mostrarModal.value = true;

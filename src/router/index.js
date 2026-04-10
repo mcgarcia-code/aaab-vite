@@ -4,6 +4,7 @@ import HomeView from '../views/public/HomeView.vue';
 import { auth } from '@/api/auth'; 
 
 
+
  // --- PUBLIC ---
 const routes = [
   { path: '/', name: 'inicio', component: HomeView },
@@ -118,6 +119,11 @@ const routes = [
         name: 'InstitucionesCuit', 
         component: () => import('../components/panel-arbitro/facturacion/InstitucionesCuit.vue') 
       },
+      {
+        path: 'historial-notificaciones',
+        name: 'HistorialNotificaciones',
+        component: () => import('../components/panel-arbitro/notificaciones/HistorialNotificaciones.vue') 
+    }
     
     ]
   },

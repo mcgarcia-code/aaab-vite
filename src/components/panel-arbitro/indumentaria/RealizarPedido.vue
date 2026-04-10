@@ -227,7 +227,6 @@
 </template>
 
 <script setup>
-// Agregamos onUnmounted y watch
 import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue';
 import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';
@@ -253,7 +252,8 @@ const mostrarPago = ref(false);
 const cargando = ref(false);
 const imagenZoom = ref(null);
 
-// Mapa de orden para talles
+// ESCALA OFICIAL Y ORDEN
+const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
 const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9 };
 
 // --- LÓGICA DE PAGINACIÓN RESPONSIVE ---
@@ -281,8 +281,8 @@ const obtenerImagenActual = (prenda) => {
 
 const obtenerTotalImagenes = (prenda) => {
   return prenda.archivo_imagen && prenda.archivo_imagen.trim() !== '' 
-         ? prenda.archivo_imagen.split(",").length 
-         : 0;
+          ? prenda.archivo_imagen.split(",").length 
+          : 0;
 };
 
 const cambiarFoto = (prenda, delta) => {
@@ -317,7 +317,11 @@ const cargarStock = async () => {
   
   if (respuesta.ok) {
     listaAgrupada.value = respuesta.payload.map(prenda => {
-      // Ordenamos los talles para el menú desplegable (Select)
+      // 1. Convertimos XXXL a 3XL y filtramos 5XL
+      prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
+      prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
+      
+      // 2. Ordenamos talles
       prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
       
       return {
@@ -342,6 +346,13 @@ const totalPaginas = computed(() => Math.ceil(stockFiltrado.value.length / regis
 const stockPaginado = computed(() => {
   const inicio = (paginaActual.value - 1) * registrosPorPagina.value;
   return stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value);
+});
+
+watch(paginaActual, () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth' // Esto hace que suba con un efecto suave
+  });
 });
 
 watch(busqueda, () => { paginaActual.value = 1 });
@@ -423,7 +434,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ESTILOS (IGUALES A TU CÓDIGO) */
+/* ESTILOS WRAPPER ESTÁNDAR */
 .full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; }
 .admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; }
 .header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
@@ -442,6 +453,7 @@ onUnmounted(() => {
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
 .paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
 
+/* CARDS TIENDA */
 .tarjeta-prenda-invertida { border-radius: 16px; transition: all 0.3s ease; background-color: #f8fafc; border: 1px solid #e2e8f0 !important; display: flex; flex-direction: column; }
 @media (min-width: 992px) { .tarjeta-prenda-invertida:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important; border-color: #cbd5e1 !important; } }
 
@@ -461,6 +473,7 @@ h5 { font-size: 1.2rem; }
 
 .form-select-sm, .form-control-sm { font-size: 0.75rem; padding: 0.3rem 0.5rem; }
 
+/* MODALES */
 .modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
 .modal-content-exito { background: white; border-radius: 20px; border: none; }
 .contenedor-items-carrito { max-height: 250px; overflow-y: auto; }
