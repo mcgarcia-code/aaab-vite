@@ -36,7 +36,7 @@
         <aside class="sidebar-professional shadow-sm">
           <div class="sidebar-header">
             <div class="d-flex align-items-center">
-              <i class="bi bi-bell-fill me-2 text-danger fs-5"></i>
+              <i class="bi bi-calendar3 me-2 text-danger fs-5"></i>
               <span class="fw-black ls-1 text-uppercase">Avisos y Eventos</span>
             </div>
             <div v-if="cargando" class="spinner-border spinner-border-sm text-danger"></div>
