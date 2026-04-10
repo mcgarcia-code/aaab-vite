@@ -862,4 +862,4 @@ thead tr.filter-row td.sticky-col {
   .btn-text { display: none !important; }
   .mobile-only-flex { display: flex !important; }
 }
-</style>
+</style>   
