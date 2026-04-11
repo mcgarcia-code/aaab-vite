@@ -4,7 +4,6 @@
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <!-- CABECERA -->
       <div class="header-section shadow-sm">
         <div class="header-info">
           <h2 class="title">Gestión de Eventos y Avisos</h2>
@@ -12,7 +11,6 @@
         </div>
 
         <div class="header-actions">
-          <!-- BOTÓN FILTROS (SOLO MOBILE) -->
           <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
             <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
           </button>
@@ -27,7 +25,6 @@
         </div>
       </div>
 
-      <!-- PANEL DE FILTROS DESPLEGABLE (SOLO MOBILE) -->
       <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <span class="small fw-bold text-muted text-uppercase">Filtrar Eventos</span>
@@ -63,7 +60,6 @@
         <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0">Aplicar Filtros</button>
       </div>
 
-      <!-- TABLA DESKTOP -->
       <div class="table-container shadow desktop-only">
         <table>
           <thead>
@@ -83,7 +79,7 @@
                 <button @click="obtenerEventos" class="btn-refresh w-100" title="Recargar"><span class="material-icons" style="font-size: 16px;">refresh</span></button>
               </td>
               <td class="col-tema"><input v-model="filtros.busqueda" class="filter-input" placeholder="Buscar tema o lugar..."></td>
-              <td class="col-desc"><!-- El input de búsqueda abarca descripción también --></td>
+              <td class="col-desc"></td>
               <td>
                 <select v-model="filtros.categoria" class="filter-input text-center">
                   <option value="">TODAS</option>
@@ -130,14 +126,6 @@
         </table>
       </div>
 
-      <!-- PAGINACIÓN -->
-      <div class="paginacion" v-if="totalPaginas > 1">
-        <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
-        <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-        <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas || totalPaginas === 0">Siguiente</button>
-      </div>
-
-      <!-- VISTA MOBILE (CARDS) -->
       <div class="mobile-only mt-3">
         <div v-for="evento in eventosPaginados" :key="'mob-'+evento.id" class="card-arbitro">
           <div class="card-header">
@@ -181,9 +169,16 @@
         </div>
       </div>
 
+      <div class="d-flex justify-content-end mt-4 w-100" v-if="eventosFiltrados.length > 0">
+        <div class="paginacion m-0" v-if="totalPaginas > 1">
+          <button class="btn-paginacion" @click="cambiarPagina(-1)" :disabled="paginaActual === 1">Anterior</button>
+          <span class="paginacion-texto text-dark">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+          <button class="btn-paginacion" @click="cambiarPagina(1)" :disabled="paginaActual === totalPaginas || totalPaginas === 0">Siguiente</button>
+        </div>
+      </div>
+
     </div>
 
-    <!-- MODAL ALTA / EDICIÓN -->
     <Teleport to="body">
     <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 600px; width: 95%;">
@@ -301,7 +296,7 @@ const filtros = reactive({
 
 // VARIABLES PARA PAGINACIÓN
 const paginaActual = ref(1);
-const registrosPorPagina = 8; 
+const registrosPorPagina = 8; // Vuelto a dejar en 8 fijos
 
 // --- FUNCIÓN DE NORMALIZACIÓN ---
 const normalizarTexto = (texto) => {
@@ -387,6 +382,22 @@ watch(totalPaginas, (nuevoTotal) => {
     paginaActual.value = nuevoTotal;
   }
 });
+
+// NUEVA FUNCIÓN: Cambiar página y scrollear arriba
+const cambiarPagina = (delta) => {
+  paginaActual.value += delta;
+  
+  // Damos un milisegundo para que Vue renderice y luego subimos
+  setTimeout(() => {
+    // Para compu: Subir la barra de la tabla
+    const tableContainer = document.querySelector('.table-container');
+    if (tableContainer) {
+      tableContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // Para celu: Subir la ventana entera
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 50);
+};
 
 const esLink = (texto) => {
   return texto && (texto.startsWith('http') || texto.includes('zoom.us') || texto.includes('meet.google'));
@@ -536,10 +547,11 @@ onMounted(obtenerEventos);
 /* ====================================================
    PAGINACIÓN
    ==================================================== */
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 15px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
+.paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
 
 /* ====================================================
    TABLA DESKTOP 
@@ -547,7 +559,6 @@ onMounted(obtenerEventos);
 .table-container { 
   width: 100%;
   overflow: auto; 
-  /* SE ELIMINÓ EL MIN-HEIGHT PARA QUE QUEDE PEGADO A LA PAGINACIÓN */
   max-height: calc(100vh - 220px); 
   background: white; 
   border-radius: 8px; 
@@ -578,10 +589,10 @@ thead tr.main-header th {
   margin: 0;
 }
 
-/* FILA DE FILTROS FIJA (CORREGIDA LA ALTURA) */
+/* FILA DE FILTROS FIJA */
 thead tr.filter-row td { 
   position: sticky;
-  top: 41px; /* ALTURA EXACTA PARA QUE QUEDE CONGELADA DEBAJO DEL HEADER */
+  top: 41px; 
   z-index: 40; 
   background: #f1F5F9 !important; 
   padding: 6px 8px 10px 8px; 

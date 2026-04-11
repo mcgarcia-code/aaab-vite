@@ -11,7 +11,6 @@
         </div>
 
         <div class="header-actions">
-          <!-- BOTÓN FILTRO (SOLO MOBILE) -->
           <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
             <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
           </button>
@@ -28,21 +27,34 @@
         </div>
       </div>
 
-      <!-- PANEL DE FILTROS DESPLEGABLE (SOLO MOBILE) -->
-      <div v-if="mostrarFiltrosMobile" class="mobile-only mb-3 animate__animated animate__fadeInDown animate__faster">
-        <div class="bg-white p-3 rounded shadow-sm border border-light-subtle">
-          <label class="small fw-bold mb-2 d-block text-muted text-uppercase">Filtrar Instituciones</label>
-          <input v-model="filtros.club" class="filter-input-mobile mb-2" placeholder="Buscar club...">
-          <div class="row g-2">
-            <div class="col-6"><input v-model="filtros.cuit" class="filter-input-mobile" placeholder="CUIT..."></div>
-            <div class="col-6"><input v-model="filtros.condicion" class="filter-input-mobile" placeholder="IVA..."></div>
-            <div class="col-6"><input v-model="filtros.email" class="filter-input-mobile" placeholder="Email..."></div>
-            <div class="col-6"><input v-model="filtros.celular" class="filter-input-mobile" placeholder="Celular..."></div>
-          </div>
+      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">FILTRAR INSTITUCIONES</span>
+          <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
+            <span class="material-icons" style="font-size: 20px;">close</span>
+          </button>
         </div>
+
+        <div class="filter-grid-mobile">
+          <input v-model="filtros.club" class="filter-input-mobile full-width" placeholder="Buscar club...">
+          <input v-model="filtros.cuit" class="filter-input-mobile" placeholder="CUIT...">
+          <select v-model="filtros.condicion" class="filter-input-mobile">
+            <option value="">Todos</option>
+            <option value="Consumidor Final">Consumidor Final</option>
+            <option value="Exento">Exento</option>
+            <option value="Responsable Inscripto">Resp. Inscripto</option>
+            <option value="Inscripto">Inscripto</option>
+            <option value="Monotributo">Monotributo</option>
+          </select>
+          <input v-model="filtros.email" class="filter-input-mobile" placeholder="Email...">
+          <input v-model="filtros.celular" class="filter-input-mobile" placeholder="Celular...">
+        </div>
+
+        <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm" style="font-size: 0.95rem;">
+          Aplicar Filtros
+        </button>
       </div>
 
-      <!-- TABLA DESKTOP -->
       <div class="table-container shadow desktop-only">
         <table>
           <thead>
@@ -96,29 +108,29 @@
         </table>
       </div>
 
-      <!-- VISTA MOBILE (CARDS) -->
-      <div class="mobile-only">
-        <div v-for="inst in institucionesPaginadas" :key="'mob-'+inst.id" class="card-arbitro">
-          <div class="card-header">
-            <div class="card-name">
-              <span class="material-icons text-primary" style="font-size: 18px; margin-right: 5px;">domain</span>
-              <strong>{{ inst.club }}</strong>
+      <div class="mobile-only mt-3">
+        <div v-for="inst in institucionesPaginadas" :key="'mob-'+inst.id" class="card-arbitro shadow-sm border border-light-subtle rounded-4 mb-3 bg-white">
+          
+          <div class="card-header border-bottom pb-2 px-3 pt-3 d-flex justify-content-between align-items-start">
+            <div class="card-name d-flex align-items-center gap-2">
+              <span class="material-icons text-primary" style="font-size: 20px;">domain</span>
+              <strong style="font-size: 1.05rem;">{{ inst.club }}</strong>
             </div>
-            <div class="text-xs" style="color: #64748b;">ID: {{ inst.id }}</div>
+            <span class="text-muted small fw-bold mt-1">#{{ inst.id }}</span>
           </div>
           
-          <div class="card-body">
-            <div class="card-row">
-              <span><strong>CUIT:</strong> {{ inst.cuit || '-' }}</span>
-              <span><strong>IVA:</strong> {{ inst.condicion || '-' }}</span>
+          <div class="card-body px-3 py-3">
+            <div class="d-flex justify-content-between bg-light p-2 rounded border mb-3">
+              <span class="text-dark small"><strong>CUIT:</strong> {{ inst.cuit || '-' }}</span>
+              <span class="text-dark small"><strong>IVA:</strong> {{ inst.condicion || '-' }}</span>
             </div>
             
-            <div class="card-info">
-              <p v-if="inst.email"><strong class="text-dark">Email:</strong> {{ inst.email }}</p>
-              <p v-if="inst.celular"><strong class="text-dark">Celular:</strong> {{ inst.celular }}</p>
+            <div class="mb-3">
+              <p v-if="inst.email" class="mb-1 small"><strong class="text-dark">Email:</strong> {{ inst.email }}</p>
+              <p v-if="inst.celular" class="mb-0 small"><strong class="text-dark">Celular:</strong> {{ inst.celular }}</p>
             </div>
             
-            <div class="d-flex gap-2 mt-3">
+            <div class="d-flex gap-2 border-top pt-3">
               <button @click="editarInstitucion(inst)" class="btn-editar-mobile flex-grow-1">
                 <span class="material-icons" style="font-size: 18px;">edit</span> Editar
               </button>
@@ -128,17 +140,22 @@
             </div>
           </div>
         </div>
+
+        <div v-if="institucionesPaginadas.length === 0" class="text-center p-4 bg-white rounded shadow-sm border border-light-subtle">
+          <span class="material-icons text-muted" style="font-size: 40px;">domain_disabled</span>
+          <p class="text-muted mt-2 mb-0 fw-bold">Sin resultados</p>
+          <p class="text-muted small">No se encontraron instituciones.</p>
+        </div>
       </div>
 
-      <!-- PAGINACIÓN -->
-      <div class="paginacion">
+      <div class="paginacion" v-if="totalPaginas > 1">
         <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
         <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
         <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas || totalPaginas === 0">Siguiente</button>
       </div>
+
     </div>
 
-    <!-- MODAL ALTA / EDICIÓN -->
     <Teleport to="body">
       <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn">
         <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 600px; width: 95%;">
@@ -376,10 +393,8 @@ onMounted(() => {
 .btn-clear-checks { background: #fee2e2; color: #ef4444; } 
 .btn-export { background: #10b981; color: white; }
 
-/* SPAN DEL TEXTO PARA OCULTAR EN MOBILE Y CLASE PARA EL BOTÓN EXTRA */
 .btn-text { display: inline; }
 .mobile-only-flex { display: none; }
-.filter-input-mobile { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px; font-size: 0.85rem; }
 
 .paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
 .btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
@@ -418,28 +433,60 @@ th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; c
 .mobile-only { display: none; }
 .desktop-only { display: block; }
 
+/* PANEL DE FILTROS MÓVIL (DISEÑO LICENCIAS) */
+.mobile-filter-panel { 
+  background: white; 
+  padding: 15px 20px; 
+  border-radius: 8px; 
+  border: 1px solid #e2e8f0; 
+  margin-bottom: 15px;
+}
+
+.filter-grid-mobile { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 12px; 
+}
+
+.filter-input-mobile {
+  padding: 10px; 
+  border: 1px solid #cbd5e1; 
+  border-radius: 6px; 
+  font-size: 0.85rem; 
+  width: 100%; 
+  outline: none; 
+  background: #f8fafc;
+  color: #334155;
+}
+
+.filter-grid-mobile input.full-width {
+  grid-column: span 2; 
+}
+
+.filter-input-mobile:focus {
+  border-color: #3b82f6;
+  background: white;
+}
+
+.filter-input-mobile::placeholder {
+  color: #94a3b8;
+}
+
+
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
-  .card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-  .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
-  .card-name { display: flex; align-items: center; gap: 8px; font-size: 1.05rem; color: #0f172a; }
-  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-  .card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
+
   .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 8px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
   .btn-eliminar-mobile { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 8px 12px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
 }
 
-/* =======================================
-   AQUÍ ESTÁ LA MAGIA DEL RESPONSIVE MÓVIL 
-   ======================================= */
 @media (max-width: 600px) {
   .admin-panel { padding: 10px; }
   .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
   .title { font-size: 1rem; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
   
-  /* Botones en una sola fila, cuadrados y centrados */
   .header-actions { 
     width: 100%; 
     display: flex; 
@@ -456,14 +503,7 @@ th { font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; c
     justify-content: center; 
   }
   
-  /* Desaparece el texto en móvil, queda solo el ícono */
-  .btn-text { 
-    display: none !important; 
-  }
-  
-  /* Aparece el botón extra para ver los filtros en móvil */
-  .mobile-only-flex { 
-    display: flex !important; 
-  }
+  .btn-text { display: none !important; }
+  .mobile-only-flex { display: flex !important; }
 }
 </style>

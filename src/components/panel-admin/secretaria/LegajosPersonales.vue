@@ -48,23 +48,29 @@
         </div>
       </div>
 
-      <div v-if="mostrarFiltrosMobile" class="mobile-only mb-3 animate__animated animate__fadeInDown animate__faster">
-        <div class="bg-white p-3 rounded shadow-sm border border-light-subtle">
-          <label class="small fw-bold mb-2 d-block text-muted text-uppercase">Filtrar Árbitros</label>
-          <div class="row g-2">
-            <div class="col-6"><input v-model="filtros.apellido" class="filter-input-mobile" placeholder="Apellido..."></div>
-            <div class="col-6"><input v-model="filtros.nombre" class="filter-input-mobile" placeholder="Nombre..."></div>
-            <div class="col-6"><input v-model="filtros.dni" class="filter-input-mobile" placeholder="DNI..."></div>
-            <div class="col-6">
-              <select v-model="filtros.rol" class="filter-input-mobile">
-                <option value="">Rol (Todos)</option>
-                <option :value="1">Árbitro</option>
-                <option :value="2">Observador</option>
-                <option :value="4">Coordinador</option>
-              </select>
-            </div>
-          </div>
+<div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
+          <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
+            <span class="material-icons" style="font-size: 20px;">close</span>
+          </button>
         </div>
+
+        <div class="filter-grid-mobile">
+          <input v-model="filtros.apellido" class="filter-input-mobile" placeholder="Apellido...">
+          <input v-model="filtros.nombre" class="filter-input-mobile" placeholder="Nombre...">
+          <input v-model="filtros.dni" class="filter-input-mobile" placeholder="DNI...">
+          <select v-model="filtros.rol" class="filter-input-mobile">
+            <option value="">Rol (Todos)</option>
+            <option :value="1">Árbitro</option>
+            <option :value="2">Observador</option>
+            <option :value="4">Coordinador</option>
+          </select>
+        </div>
+
+        <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm" style="font-size: 0.95rem;">
+          Aplicar Filtros
+        </button>
       </div>
 
       <div class="table-container shadow desktop-only">
@@ -413,37 +419,39 @@
     </div>
     </Teleport>
 
-    <Teleport to="body">
+<Teleport to="body">
     <div v-if="mostrarModalSolicitudes" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 800px; width: 95%; text-align: left;">
-        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-          <h4 class="fw-bold m-0 d-flex align-items-center gap-2">
+        
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 gap-2">
+          <h4 class="fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.1rem;">
             <span class="material-icons text-primary">history</span> 
             Solicitudes de Cambios
           </h4>
-          <button @click="mostrarModalSolicitudes = false" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;">
+          <button @click="mostrarModalSolicitudes = false" class="btn btn-light rounded-circle flex-shrink-0" style="width: 35px; height: 35px; padding: 0;">
             <span class="material-icons" style="font-size: 18px; line-height: 1;">close</span>
           </button>
         </div>
 
-        <div class="d-flex gap-2 mb-3 border-bottom pb-3 overflow-auto" style="white-space: nowrap;">
-          <button class="btn btn-sm fw-bold rounded-pill px-3" 
+        <div class="d-flex justify-content-between gap-1 mb-3 border-bottom pb-3 w-100">
+          <button class="btn btn-sm fw-bold rounded-pill px-1 flex-fill tab-mobile" 
                   :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm' : 'btn-light text-muted'" 
                   @click="tabActivo = 'enviado'">
             PENDIENTES 
-            <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-primary ms-1 rounded-pill">{{ solicitudesPendientes.length }}</span>
+            <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-primary ms-1 rounded-pill p-1" style="font-size: 0.6rem;">{{ solicitudesPendientes.length }}</span>
           </button>
-          <button class="btn btn-sm fw-bold rounded-pill px-3" 
+          <button class="btn btn-sm fw-bold rounded-pill px-1 flex-fill tab-mobile" 
                   :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm' : 'btn-light text-muted'" 
                   @click="tabActivo = 'aprobado'">
             APROBADAS
           </button>
-          <button class="btn btn-sm fw-bold rounded-pill px-3" 
+          <button class="btn btn-sm fw-bold rounded-pill px-1 flex-fill tab-mobile" 
                   :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm' : 'btn-light text-muted'" 
                   @click="tabActivo = 'rechazado'">
             RECHAZADAS
           </button>
         </div>
+
 
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
           <div v-if="cargandoSolicitudes" class="text-center py-4">
@@ -1011,7 +1019,7 @@ onMounted(() => {
   margin-left: 50%;
   transform: translateX(-50%);
   padding: 20px;
-  padding-bottom: 120px; /* Evita que choque con el footer móvil */
+  padding-bottom: 120px; 
 }
 
 .admin-panel { 
@@ -1078,7 +1086,7 @@ onMounted(() => {
 .paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
 
 /* ====================================================
-   TABLA DESKTOP (ARREGLO HUECOS Y SEPARACIÓN)
+   TABLA DESKTOP
    ==================================================== */
 .table-container { 
   width: 100%;
@@ -1093,7 +1101,7 @@ onMounted(() => {
 table { 
   width: 100%;
   min-width: max-content; 
-  border-collapse: separate !important; /* Importante para el renderizado sticky */
+  border-collapse: separate !important; 
   border-spacing: 0; 
   font-size: 0.85rem; 
 }
@@ -1115,11 +1123,11 @@ thead tr.main-header th {
 
 thead tr.filter-row td { 
   position: sticky;
-  top: 35px; /* Ajuste milimétrico para solapar y matar el hueco blanco */
+  top: 35px; 
   z-index: 40; 
   background: #f1F5F9 !important; 
   padding: 6px 8px 12px 8px; 
-  border-bottom: 4px solid #e2e8f0; /* Borde grueso para separar datos */
+  border-bottom: 4px solid #e2e8f0; 
   margin: 0;
 }
 
@@ -1156,14 +1164,12 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
 
 .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
 
-/* BOTONES DE EDICIÓN E HISTORIAL EN TABLA */
 .btn-editar { display: inline-flex; align-items: center; justify-content: center; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; }
 .btn-editar:hover { background: #dbeafe; }
 
 .btn-historial { display: inline-flex; align-items: center; justify-content: center; background: #fef3c7; border: 1px solid #fde047; color: #d97706; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; }
 .btn-historial:hover { background: #fde047; }
 
-/* OTROS ELEMENTOS DE LA TABLA */
 .status-wrapper { display: flex; align-items: center; gap: 5px; justify-content: center; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-active { background: #10b981; }
@@ -1172,68 +1178,44 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
 .inactivo { background-color: #fee2e2 !important; color: #000 !important; }
 .col-dni-compact { width: 90px; text-align: center; }
 
-
 /* ====================================================
-   PANEL DE FILTROS MÓVIL (NUEVO DISEÑO EN GRILLA CSS)
-   ==================================================== */
-.mobile-filter-panel { 
-  background: white; 
-  padding: 15px 20px; 
-  border-radius: 8px; 
-  border: 1px solid #e2e8f0; 
-  margin-bottom: 15px;
-}
-.filter-grid-mobile { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 12px; 
-}
-.form-group-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.form-group-mobile.full-width {
-  grid-column: span 2;
-}
-.form-group-mobile label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
-}
-.form-group-mobile input, 
-.form-group-mobile select { 
-  padding: 8px 10px; 
-  border: 1px solid #cbd5e1; 
-  border-radius: 6px; 
-  font-size: 0.85rem; 
-  width: 100%; 
-  outline: none; 
-  background: #f8fafc;
-  color: #0f172a;
-}
-.form-group-mobile input:focus, 
-.form-group-mobile select:focus {
-  border-color: #3b82f6;
-  background: white;
-}
-.btn-close-filters { 
-  width: 100%; 
-  padding: 10px; 
-  background: #3b82f6; 
-  color: white; 
-  border: none; 
-  border-radius: 6px; 
-  font-weight: bold; 
-  font-size: 0.9rem;
-}
-
-
-/* ====================================================
-   MODALES (ESTILOS GENERALES)
+   MODALES (ESTILOS GENERALES Y SOLICITUDES MOBILE)
    ==================================================== */
 .modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
 .modal-content-exito { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 750px; text-align: center; color: #000; }
+
+/* ESTOS AJUSTES ARREGLAN EL MODAL DE SOLICITUDES EN MOBILE */
+@media (max-width: 768px) {
+  .modal-content-exito {
+    padding: 15px !important; /* Menos padding lateral en mobile */
+    max-height: 90vh !important; /* Límite de alto para no desbordar la pantalla */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Aseguramos que el contenido principal haga scroll en mobile */
+  .modal-content-exito > div[style*="overflow-y: auto"] {
+    max-height: unset !important; /* Quitamos el 55vh fijo */
+    flex-grow: 1; /* Ocupa el espacio disponible */
+    overflow-y: auto;
+  }
+  
+  /* Achicamos la tarjeta individual de solicitud */
+  .solicitud-card {
+    padding: 10px !important;
+  }
+  
+  .solicitud-card .d-flex.flex-wrap.gap-3 > div:first-child {
+    min-width: 100% !important; /* Fuerza a que el nombre/texto ocupe todo el ancho arriba */
+    margin-bottom: 10px;
+  }
+  
+  .solicitud-card .d-flex.flex-column.align-items-end {
+    align-items: flex-start !important; /* Alinear a la izquierda en mobile */
+    width: 100%;
+  }
+}
+
 .icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
 .bg-success-light { background: #dcfce7; color: #166534; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
@@ -1255,6 +1237,58 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
 .desktop-only { display: block; }
 .mobile-only { display: none; }
 .mobile-only-flex { display: none; }
+
+/* ====================================================
+   PANEL DE FILTROS MÓVIL (DISEÑO LICENCIAS)
+   ==================================================== */
+.mobile-filter-panel {
+  background: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 15px;
+}
+
+.filter-grid-mobile {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.filter-grid-mobile input,
+.filter-grid-mobile select,
+.filter-input-mobile {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  width: 100%;
+  outline: none;
+  background: #ffffff; /* Fondo blanco como en la captura */
+  color: #334155;
+}
+
+.filter-grid-mobile input:focus,
+.filter-grid-mobile select:focus,
+.filter-input-mobile:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+.filter-grid-mobile input::placeholder,
+.filter-input-mobile::placeholder {
+  color: #94a3b8;
+}
+
+/* Hacer que el select (Rol/Estado) ocupe el 100% del ancho si tiene la clase full-width */
+.filter-grid-mobile select.full-width {
+  grid-column: span 2;
+}
+
+.btn-blue { 
+  background: #3b82f6; 
+  color: white; 
+}
 
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
@@ -1290,8 +1324,17 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
   .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
   .title { font-size: 1rem; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
+
+  .modal-content-exito {
+    padding: 15px !important;
+  }
+  .tab-mobile {
+    font-size: 0.65rem !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+    letter-spacing: -0.3px;
+  }
   
-  /* Botones 42x42 en una sola fila centrados */
   .header-actions { 
     width: 100%; 
     display: flex; 

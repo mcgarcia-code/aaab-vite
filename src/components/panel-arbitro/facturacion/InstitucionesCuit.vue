@@ -29,7 +29,7 @@
           <label class="filter-label">Filtrar por Club</label>
           <input v-model="filtros.club" placeholder="Nombre de la institución..." class="mobile-input">
         </div>
-        <button @click="mostrarFiltrosMobile = false" class="btn-close-filters">Ver Resultados</button>
+        <button @click="mostrarFiltrosMobile = false" class="btn-close-filters">Aplicar Filtros</button>
       </div>
 
       <!-- TABLA DESKTOP -->

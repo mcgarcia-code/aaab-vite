@@ -111,9 +111,15 @@
         </table>
       </div>
 
-      <div class="mobile-only mt-3">
-        <div v-for="s in sancionesPaginadas" :key="'mob-'+s.id" class="card-licencia">
-          <div class="card-header border-bottom-0 pb-2 px-3 pt-3">
+<div class="mobile-only mt-3">
+        <div v-for="s in sancionesPaginadas" :key="'mob-'+s.id" class="card-licencia border-light-subtle shadow-sm mb-3 bg-white rounded">
+          
+          <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
+            <div class="fw-bold text-dark" style="font-size: 1.05rem;">{{ s.arbitro }}</div>
+            <span class="text-muted small fw-bold">#{{ s.id }}</span>
+          </div>
+
+          <div class="px-3 pt-1 pb-2">
             <div class="d-flex justify-content-start align-items-center gap-2">
               <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" style="font-size: 1.1rem;">
                 {{ s.sancion }}
@@ -123,12 +129,14 @@
               </span>
             </div>
           </div>
+          
           <div class="card-body pt-0 px-3 pb-3">
-            <p class="text-dark mb-3 mt-2 lh-sm" style="font-size: 0.9rem;">
+            <p class="text-dark mb-3 mt-1 lh-sm" style="font-size: 0.9rem;">
               <span v-if="s.articulo" class="fw-bold text-dark">Art. {{ s.articulo }}</span>
               <span v-if="s.articulo && s.motivo"> - </span>
               <span class="text-muted">{{ s.motivo }}</span>
             </p>
+            
             <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center" style="background-color: #f8fafc !important;">
               <span class="text-dark" style="font-size: 0.85rem;">Desde: <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong></span>
               <span class="text-dark" style="font-size: 0.85rem;">Hasta: 
@@ -137,6 +145,7 @@
                 <strong class="text-muted" v-else>-</strong>
               </span>
             </div>
+            
             <div class="d-flex gap-2 mt-3">
               <button @click="editarSancion(s)" class="btn-editar-mobile flex-grow-1"><span class="material-icons" style="font-size: 18px;">edit</span> Editar</button>
               <button @click="verHistorialArbitro(s)" class="btn-historial-mobile"><span class="material-icons" style="font-size: 18px;">manage_search</span></button>
@@ -228,63 +237,93 @@
 
     <Teleport to="body">
       <div v-if="mostrarModalHistorial" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1040;">
-        <div class="modal-content-exito animate__animated animate__zoomIn p-4" style="max-width: 650px; width: 95%; text-align: left; border-radius: 20px;">
+        
+        <div class="modal-content-exito d-flex flex-column animate__animated animate__zoomIn p-0 mx-auto" style="max-width: 700px; width: 95%; max-height: 90vh; text-align: left; border-radius: 20px; background: #ffffff; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden;">
           
-          <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-            <h5 class="fw-bold m-0 d-flex align-items-center gap-2" style="color: #0f172a;">
-              <span class="material-icons text-warning">manage_search</span>
-              Historial de {{ arbitroHistorial?.arbitro || 'Árbitro' }}
-              <span v-if="!cargandoHistorial" class="badge bg-dark rounded-pill fs-6 ms-2 d-flex align-items-center justify-content-center" style="min-width: 28px; min-height: 28px;">{{ historialSanciones.length }}</span>
-            </h5>
-            <button @click="mostrarModalHistorial = false" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; background: #f8fafc; border: 1px solid #f1f5f9; padding: 0;">
-              <span class="material-icons" style="font-size: 20px; color: #000;">close</span>
-            </button>
+          <div class="flex-shrink-0 p-3 p-md-4 border-bottom bg-white" style="position: relative; z-index: 10;">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="fw-bold m-0 d-flex align-items-center gap-2" style="color: #0f172a; font-size: 1.15rem;">
+                <span class="material-icons text-warning" style="font-size: 24px;">manage_search</span>
+                Historial de {{ arbitroHistorial?.arbitro || 'Árbitro' }}
+                <span v-if="!cargandoHistorial" class="badge bg-dark rounded-pill fs-6 ms-2 d-flex align-items-center justify-content-center" style="min-width: 28px; min-height: 28px;">{{ historialSanciones.length }}</span>
+              </h5>
+              <button @click="mostrarModalHistorial = false" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background: #f8fafc; border: 1px solid #f1f5f9; padding: 0;">
+                <span class="material-icons" style="font-size: 18px; color: #000;">close</span>
+              </button>
+            </div>
           </div>
 
-          <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
-            <div v-if="cargandoHistorial" class="text-center py-4">
+          <div class="flex-grow-1 p-3 p-md-4 bg-white" style="overflow-y: auto;">
+            <div v-if="cargandoHistorial" class="text-center py-5">
               <span class="spinner-border text-warning"></span>
             </div>
 
-            <div v-else-if="historialSanciones.length === 0" class="text-center py-4 text-muted">
-              <span class="material-icons d-block fs-1 mb-2">history_toggle_off</span>
-              No hay registros en el historial para este árbitro.
+            <div v-else-if="historialSanciones.length === 0" class="text-center py-5 text-muted bg-light rounded-4 shadow-sm border border-light-subtle">
+              <span class="material-icons d-block mb-3" style="font-size: 50px; color: #cbd5e1;">history_toggle_off</span>
+              <p class="mb-0 fw-bold fs-5 text-dark">Sin registros</p>
+              <p class="small">No hay sanciones previas en el historial.</p>
             </div>
 
-            <div v-else class="table-responsive">
-              <table class="table table-sm table-borderless align-middle" style="font-size: 0.85rem;">
-                <thead style="border-bottom: 1px solid #e2e8f0;">
-                  <tr class="text-dark">
-                    <th class="pb-2">Art. / Motivo</th>
-                    <th class="pb-2">Sanción</th>
-                    <th class="pb-2">Fechas</th>
-                    <th class="text-center pb-2">Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="h in historialSanciones" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
-                    <td class="py-2">
-                      <span style="color: #0f172a;">Art. {{ h.articulo }}</span><br>
-                      <span class="text-muted small">{{ h.motivo }}</span>
-                    </td>
-                    <td class="py-2">
-                      <span :class="obtenerClaseTextoSancion(h.estado_dinamico)">{{ h.sancion }}</span>
-                    </td>
-                    <td class="text-nowrap small py-2" style="color: #475569;">
-                      D: {{ h.desde_formateada || h.desde || '-' }}<br>
-                      H: <span class="text-primary">{{ h.es_indefinido == 1 ? 'Indefinido' : (h.hasta_formateada || h.hasta || '-') }}</span>
-                    </td>
-                    <td class="text-center py-2">
-                      <span :class="obtenerClaseEstado(h.estado_dinamico, true)">
-                        {{ obtenerTextoEstado(h.estado_dinamico) }}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div v-else>
+              <div class="table-responsive desktop-only">
+                <table class="table table-sm table-borderless align-middle m-0" style="font-size: 0.85rem;">
+                  <thead style="border-bottom: 2px solid #e2e8f0;">
+                    <tr class="text-dark">
+                      <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Art. / Motivo</th>
+                      <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Sanción</th>
+                      <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Fechas</th>
+                      <th class="text-center pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="h in historialSanciones" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
+                      <td class="py-3 pe-2">
+                        <span class="fw-bold" style="color: #0f172a; font-size: 0.9rem;">Art. {{ h.articulo }}</span><br>
+                        <span class="text-muted" style="font-size: 0.8rem;">{{ h.motivo }}</span>
+                      </td>
+                      <td class="py-3 pe-2">
+                        <span :class="obtenerClaseTextoSancion(h.estado_dinamico)" style="font-size: 0.9rem;">{{ h.sancion }}</span>
+                      </td>
+                      <td class="text-nowrap py-3 pe-2" style="color: #475569; font-size: 0.8rem;">
+                        <strong class="text-dark">D:</strong> {{ h.desde_formateada || h.desde || '-' }}<br>
+                        <strong class="text-dark">H:</strong> 
+                        <span :class="h.es_indefinido == 1 ? 'text-primary fw-bold' : ''">
+                          {{ h.es_indefinido == 1 ? 'Indefinido' : (h.hasta_formateada || h.hasta || '-') }}
+                        </span>
+                      </td>
+                      <td class="text-center py-3">
+                        <span :class="obtenerClaseEstado(h.estado_dinamico, true)" style="padding: 4px 8px; font-size: 0.7rem;">
+                          {{ obtenerTextoEstado(h.estado_dinamico) }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="mobile-only">
+                <div v-for="h in historialSanciones" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-4 p-3 mb-3 shadow-sm bg-light">
+                  <div class="d-flex justify-content-between align-items-start mb-2 border-bottom pb-2">
+                    <div>
+                      <span class="d-block fw-bold text-dark" style="font-size: 0.95rem;">Art. {{ h.articulo }}</span>
+                      <span class="text-muted" style="font-size: 0.8rem;">{{ h.motivo }}</span>
+                    </div>
+                    <span :class="obtenerClaseEstado(h.estado_dinamico, true)" style="padding: 4px 8px; font-size: 0.65rem; text-align: center;">
+                      {{ obtenerTextoEstado(h.estado_dinamico) }}
+                    </span>
+                  </div>
+                  <div class="mt-2 mb-3">
+                    <span :class="obtenerClaseTextoSancion(h.estado_dinamico)" style="font-size: 0.95rem;">{{ h.sancion }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center text-muted small bg-white p-2 rounded border border-light-subtle">
+                    <span><strong>Desde:</strong> {{ h.desde_formateada || h.desde || '-' }}</span>
+                    <span><strong>Hasta:</strong> <span :class="h.es_indefinido == 1 ? 'text-primary fw-bold' : ''">{{ h.es_indefinido == 1 ? 'Indefinido' : (h.hasta_formateada || h.hasta || '-') }}</span></span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
-          
         </div>
       </div>
     </Teleport>

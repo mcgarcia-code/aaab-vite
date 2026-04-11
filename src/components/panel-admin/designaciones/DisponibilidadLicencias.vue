@@ -93,7 +93,7 @@
           
           <input v-model="filtros.zona" placeholder="Zona..">
         </div>
-        <button @click="mostrarFiltrosMobile = false" class="btn-close-filters">Ver Resultados</button>
+        <button @click="mostrarFiltrosMobile = false" class="btn-close-filters">Aplicar Filtros</button>
       </div>
 
       <!-- CONTENEDOR DE LA TABLA -->
@@ -728,7 +728,7 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
   .mobile-select-group label { font-size: 0.75rem; color: #000000; font-weight: bold; margin-bottom: 2px; }
   .filter-row-mobile { display: flex; gap: 10px; }
   .filter-row-mobile input { flex: 1; }
-  .btn-close-filters { width: 100%; background: #1e293b; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+  .btn-close-filters { width: 100%; background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
 
   .card-arbitro { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
   .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
