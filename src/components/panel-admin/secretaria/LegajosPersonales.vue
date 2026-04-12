@@ -11,17 +11,29 @@
         </div>
 
         <div class="header-actions">
-          <!-- BOTÓN FILTROS (SOLO MOBILE) -->
           <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
             <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
           </button>
 
-          <!-- BOTÓN DE SOLICITUDES GENERALES -->
           <button @click="abrirModalSolicitudes" class="btn-action btn-blue position-relative" title="Solicitudes pendientes">
             <span class="material-icons">notifications</span> <span class="btn-text">Solicitudes</span>
             <span v-if="solicitudesPendientes.length > 0" class="badge-notif">
               {{ solicitudesPendientes.length }}
             </span>
+          </button>
+
+          <button 
+              @click="toggleEdicionGlobal" 
+              class="btn-action d-flex align-items-center gap-1 text-white shadow-sm"
+              :class="edicionAbierta ? 'bg-danger' : 'bg-success'"
+              :title="edicionAbierta ? 'Bloquear Edición para todos' : 'Permitir Edición para todos'"
+            >
+              <span class="material-icons" style="font-size: 18px;">
+                {{ edicionAbierta ? 'lock_open' : 'lock' }}
+              </span>
+              <span class="btn-text fw-bold">
+                {{ edicionAbierta ? 'Cerrar Edición' : 'Abrir Edición' }}
+              </span>
           </button>
 
           <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
@@ -36,27 +48,31 @@
         </div>
       </div>
 
-      <!-- PANEL DE FILTROS DESPLEGABLE (SOLO MOBILE) -->
-      <div v-if="mostrarFiltrosMobile" class="mobile-only mb-3 animate__animated animate__fadeInDown animate__faster">
-        <div class="bg-white p-3 rounded shadow-sm border border-light-subtle">
-          <label class="small fw-bold mb-2 d-block text-muted text-uppercase">Filtrar Árbitros</label>
-          <div class="row g-2">
-            <div class="col-6"><input v-model="filtros.apellido" class="filter-input-mobile" placeholder="Apellido..."></div>
-            <div class="col-6"><input v-model="filtros.nombre" class="filter-input-mobile" placeholder="Nombre..."></div>
-            <div class="col-6"><input v-model="filtros.dni" class="filter-input-mobile" placeholder="DNI..."></div>
-            <div class="col-6">
-              <select v-model="filtros.rol" class="filter-input-mobile">
-                <option value="">Rol (Todos)</option>
-                <option :value="1">Árbitro</option>
-                <option :value="2">Observador</option>
-                <option :value="4">Coordinador</option>
-              </select>
-            </div>
-          </div>
+<div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
+          <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
+            <span class="material-icons" style="font-size: 20px;">close</span>
+          </button>
         </div>
+
+        <div class="filter-grid-mobile">
+          <input v-model="filtros.apellido" class="filter-input-mobile" placeholder="Apellido...">
+          <input v-model="filtros.nombre" class="filter-input-mobile" placeholder="Nombre...">
+          <input v-model="filtros.dni" class="filter-input-mobile" placeholder="DNI...">
+          <select v-model="filtros.rol" class="filter-input-mobile">
+            <option value="">Rol (Todos)</option>
+            <option :value="1">Árbitro</option>
+            <option :value="2">Observador</option>
+            <option :value="4">Coordinador</option>
+          </select>
+        </div>
+
+        <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm" style="font-size: 0.95rem;">
+          Aplicar Filtros
+        </button>
       </div>
 
-      <!-- TABLA DESKTOP -->
       <div class="table-container shadow desktop-only">
         <table>
           <thead>
@@ -184,7 +200,6 @@
         </table>
       </div>
 
-      <!-- VISTA MOBILE (CARDS) -->
       <div class="mobile-only">
         <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card-arbitro" :class="{ 'fila-inactiva': a.es_activo == 0 }">
           <div class="card-header">
@@ -220,7 +235,6 @@
         </div>
       </div>
 
-      <!-- PAGINACIÓN -->
       <div class="paginacion">
         <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
         <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
@@ -228,7 +242,6 @@
       </div>
     </div>
 
-    <!-- MODAL EXCEL -->
     <Teleport to="body">
     <div v-if="mostrarModalExcel" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 750px;">
@@ -253,146 +266,148 @@
     </div>
     </Teleport>
 
-    <!-- MODAL ALTA / EDICIÓN -->
     <Teleport to="body">
     <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
-      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 900px; width: 95%;">
+      <div class="modal-content-exito d-flex flex-column animate__animated animate__zoomIn" style="max-width: 900px; width: 95%; max-height: 95vh; padding: 25px;">
 
-        <div class="icon-circle-exito" :class="modoModal === 'editar' ? 'bg-info-light' : 'bg-success-light'">
-          <span class="material-icons">{{ modoModal === 'editar' ? 'edit' : 'person_add' }}</span>
-        </div>
-        <h4 class="fw-bold mt-3">
-          {{ modoModal === 'editar' ? `Editar árbitro — ${formModal.apellido} ${formModal.nombre}` : 'Registrar Nuevo Árbitro' }}
-        </h4>
-        <p v-if="modoModal === 'editar'" class="text-muted small mb-3">ID #{{ formModal.id }}</p>
+        <div class="flex-shrink-0 text-center">
+          <div class="icon-circle-exito mx-auto" :class="modoModal === 'editar' ? 'bg-info-light' : 'bg-success-light'">
+            <span class="material-icons">{{ modoModal === 'editar' ? 'edit' : 'person_add' }}</span>
+          </div>
+          <h4 class="fw-bold mt-3">
+            {{ modoModal === 'editar' ? `Editar árbitro — ${formModal.apellido} ${formModal.nombre}` : 'Registrar Nuevo Árbitro' }}
+          </h4>
+          <p v-if="modoModal === 'editar'" class="text-muted small mb-3">ID #{{ formModal.id }}</p>
 
-        <!-- RECORDATORIO DE SOLICITUD (Aparece solo si venimos de la campanita de notificaciones) -->
-        <div v-if="mensajeSolicitudActiva" class="alert alert-warning border-0 text-start shadow-sm d-flex align-items-start gap-3 p-3 mb-3 mx-auto" style="border-radius: 12px;">
-          <span class="material-icons text-warning mt-1">assignment_late</span>
-          <div>
-            <strong class="d-block text-dark mb-1" style="font-size: 0.85rem; text-transform: uppercase;">Solicitud del árbitro:</strong>
-            <span class="text-dark" style="font-size: 0.85rem; white-space: pre-line; line-height: 1.4;">{{ mensajeSolicitudActiva }}</span>
-          </div>
-        </div>
-
-        <div class="row g-3 text-start mt-1" style="max-height: 55vh; overflow-y: auto; padding: 15px;">
-
-          <div class="col-12 seccion-titulo mt-0">Datos básicos</div>
-          <div class="col-md-4"><label class="small fw-bold">Apellido *</label><input v-model="formModal.apellido" class="filter-input"></div>
-          <div class="col-md-4"><label class="small fw-bold">Nombre *</label><input v-model="formModal.nombre" class="filter-input"></div>
-          <div class="col-md-4"><label class="small fw-bold">DNI</label><input v-model="formModal.dni" class="filter-input"></div>
-          <div class="col-md-6"><label class="small fw-bold">Email (Usuario) *</label><input v-model="formModal.email" class="filter-input"></div>
-          <div class="col-md-6">
-            <label class="small fw-bold">
-              {{ modoModal === 'nuevo' ? 'Password *' : 'Password (dejar vacío para no cambiar)' }}
-            </label>
-            <input v-model="formModal.password" type="text" class="filter-input" :placeholder="modoModal === 'editar' ? '••••••••' : ''">
-          </div>
-
-          <div class="col-12 seccion-titulo">Clasificación</div>
-          <div class="col-md-3">
-            <label class="small fw-bold">Rol</label>
-            <select v-model="formModal.rol" class="filter-input">
-              <option :value="1">Árbitro</option>
-              <option :value="2">Observador</option>
-              <option :value="4">Coordinador</option>
-              <option :value="0">Ninguno</option>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <label class="small fw-bold">Estado</label>
-            <select v-model="formModal.es_activo" class="filter-input">
-              <option :value="1">Activo</option>
-              <option :value="0">Inactivo</option>
-            </select>
-          </div>
-          <div class="col-md-2">
-            <label class="small fw-bold">Grupo</label>
-            <select v-model="formModal.grupo" class="filter-input">
-              <option value="LH">LH</option>
-              <option value="Pre Liga">Pre Liga</option>
-              <option value="SR">SR</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
-          </div>
-          <div class="col-md-2" v-if="formModal.grupo == '3'">
-            <label class="small fw-bold">Subgrupo</label>
-            <select v-model="formModal.subgrupo" class="filter-input">
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-            </select>
-          </div>
-          <div class="col-md-2" v-else></div>
-          <div class="col-md-2">
-            <label class="small fw-bold">Apto Médico</label>
-            <select v-model="formModal.apto_medico" class="filter-input">
-              <option :value="true">SI</option>
-              <option :value="false">NO</option>
-            </select>
-          </div>
-
-          <div class="col-12 seccion-titulo">Ubicación</div>
-          <div class="col-md-4"><label class="small fw-bold">Provincia</label><selProvincia v-model="formModal.provincia" :provincias="provincias" class="filter-input" /></div>
-          <div class="col-md-4"><label class="small fw-bold">Localidad</label><selLocalidad v-model="formModal.localidad" :localidades="localidades.filter(l => l.provincia_id == formModal.provincia)" class="filter-input" /></div>
-          <div class="col-md-4"><label class="small fw-bold">Zona</label><input v-model="formModal.zona" class="filter-input"></div>
-          <div class="col-12"><label class="small fw-bold">Dirección</label><input v-model="formModal.direccion" class="filter-input"></div>
-
-          <div class="col-12 seccion-titulo">Contacto y Movilidad</div>
-          <div class="col-md-4"><label class="small fw-bold">Celular</label><input v-model="formModal.celular" class="filter-input"></div>
-          <div class="col-md-4"><label class="small fw-bold">Tel. Contacto</label><input v-model="formModal.telefonocontacto" class="filter-input"></div>
-          <div class="col-md-4"><label class="small fw-bold">Parentesco</label><input v-model="formModal.parentescocontacto" class="filter-input"></div>
-          <div class="col-md-4"><label class="small fw-bold">F. Nacimiento</label><input type="date" v-model="formModal.fecha_nacimiento" class="filter-input"></div>
-          <div class="col-md-8">
-            <label class="small fw-bold">Movilidad</label>
-            <div class="checkbox-group">
-              <label class="checkbox-item"><input type="checkbox" value="moto" v-model="movilidadArray"> Moto</label>
-              <label class="checkbox-item"><input type="checkbox" value="transporte publico" v-model="movilidadArray"> Transporte Público</label>
-              <label class="checkbox-item"><input type="checkbox" value="auto" v-model="movilidadArray"> Auto</label>
-              <label class="checkbox-item"><input type="checkbox" value="bici" v-model="movilidadArray"> Bici</label>
+          <div v-if="mensajeSolicitudActiva" class="alert alert-warning border-0 text-start shadow-sm d-flex align-items-start gap-3 p-3 mb-3 mx-auto" style="border-radius: 12px;">
+            <span class="material-icons text-warning mt-1">assignment_late</span>
+            <div>
+              <strong class="d-block text-dark mb-1" style="font-size: 0.85rem; text-transform: uppercase;">Solicitud del árbitro:</strong>
+              <span class="text-dark" style="font-size: 0.85rem; white-space: pre-line; line-height: 1.4;">{{ mensajeSolicitudActiva }}</span>
             </div>
           </div>
-
-          <div class="col-12 seccion-titulo">Disponibilidad</div>
-          <div class="col-md-2">
-            <label class="small fw-bold">Sáb. Disp.</label>
-            <select v-model="formModal.disponibilidad_sabado" class="filter-input">
-              <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
-            </select>
-          </div>
-          <div class="col-md-2"><label class="small fw-bold">Sáb. Desde</label><input type="time" v-model="formModal.disponibilidad_sabado_desde" class="filter-input"></div>
-          <div class="col-md-2"><label class="small fw-bold">Sáb. Hasta</label><input type="time" v-model="formModal.disponibilidad_sabado_hasta" class="filter-input"></div>
-          <div class="col-md-2">
-            <label class="small fw-bold">Dom. Disp.</label>
-            <select v-model="formModal.disponibilidad_domingo" class="filter-input">
-              <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
-            </select>
-          </div>
-          <div class="col-md-2"><label class="small fw-bold">Dom. Desde</label><input type="time" v-model="formModal.disponibilidad_domingo_desde" class="filter-input"></div>
-          <div class="col-md-2"><label class="small fw-bold">Dom. Hasta</label><input type="time" v-model="formModal.disponibilidad_domingo_hasta" class="filter-input"></div>
-
-          <div class="col-12 seccion-titulo">Handball</div>
-          <div class="col-md-4">
-            <label class="small fw-bold">Juega handball</label>
-            <select v-model="formModal.juega_handball" class="filter-input">
-              <option value="SI">SI</option>
-              <option value="NO">NO</option>
-            </select>
-          </div>
-          <div class="col-md-4"><label class="small fw-bold">Club</label><input v-model="formModal.donde_juega" class="filter-input" :disabled="formModal.juega_handball !== 'SI'"></div>
-          <div class="col-md-4"><label class="small fw-bold">Categoría</label><input v-model="formModal.categoria_handball" class="filter-input" :disabled="formModal.juega_handball !== 'SI'"></div>
-
-          <div class="col-12 seccion-titulo">Observaciones</div>
-          <div class="col-12">
-            <textarea v-model="formModal.observaciones" class="filter-input" rows="3" style="height:auto; resize:vertical;"></textarea>
-          </div>
-
         </div>
 
-        <div class="d-flex gap-2 justify-content-center mt-4">
+        <div class="flex-grow-1" style="overflow-y: auto; padding-right: 10px;">
+          <div class="row g-3 text-start m-0 pb-3">
+
+            <div class="col-12 seccion-titulo mt-0">Datos básicos</div>
+            <div class="col-md-4"><label class="small fw-bold">Apellido *</label><input v-model="formModal.apellido" class="filter-input"></div>
+            <div class="col-md-4"><label class="small fw-bold">Nombre *</label><input v-model="formModal.nombre" class="filter-input"></div>
+            <div class="col-md-4"><label class="small fw-bold">DNI</label><input v-model="formModal.dni" class="filter-input"></div>
+            <div class="col-md-6"><label class="small fw-bold">Email (Usuario) *</label><input v-model="formModal.email" class="filter-input"></div>
+            <div class="col-md-6">
+              <label class="small fw-bold">
+                {{ modoModal === 'nuevo' ? 'Password *' : 'Password (dejar vacío para no cambiar)' }}
+              </label>
+              <input v-model="formModal.password" type="text" class="filter-input" :placeholder="modoModal === 'editar' ? '••••••••' : ''">
+            </div>
+
+            <div class="col-12 seccion-titulo">Clasificación</div>
+            <div class="col-md-3">
+              <label class="small fw-bold">Rol</label>
+              <select v-model="formModal.rol" class="filter-input">
+                <option :value="1">Árbitro</option>
+                <option :value="2">Observador</option>
+                <option :value="4">Coordinador</option>
+                <option :value="0">Ninguno</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="small fw-bold">Estado</label>
+              <select v-model="formModal.es_activo" class="filter-input">
+                <option :value="1">Activo</option>
+                <option :value="0">Inactivo</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="small fw-bold">Grupo</label>
+              <select v-model="formModal.grupo" class="filter-input">
+                <option value="LH">LH</option>
+                <option value="Pre Liga">Pre Liga</option>
+                <option value="SR">SR</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+            </div>
+            <div class="col-md-2" v-if="formModal.grupo == '3'">
+              <label class="small fw-bold">Subgrupo</label>
+              <select v-model="formModal.subgrupo" class="filter-input">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+              </select>
+            </div>
+            <div class="col-md-2" v-else></div>
+            <div class="col-md-2">
+              <label class="small fw-bold">Apto Médico</label>
+              <select v-model="formModal.apto_medico" class="filter-input">
+                <option :value="true">SI</option>
+                <option :value="false">NO</option>
+              </select>
+            </div>
+
+            <div class="col-12 seccion-titulo">Ubicación</div>
+            <div class="col-md-4"><label class="small fw-bold">Provincia</label><selProvincia v-model="formModal.provincia" :provincias="provincias" class="filter-input" /></div>
+            <div class="col-md-4"><label class="small fw-bold">Localidad</label><selLocalidad v-model="formModal.localidad" :localidades="localidades.filter(l => l.provincia_id == formModal.provincia)" class="filter-input" /></div>
+            <div class="col-md-4"><label class="small fw-bold">Zona</label><input v-model="formModal.zona" class="filter-input"></div>
+            <div class="col-12"><label class="small fw-bold">Dirección</label><input v-model="formModal.direccion" class="filter-input"></div>
+
+            <div class="col-12 seccion-titulo">Contacto y Movilidad</div>
+            <div class="col-md-4"><label class="small fw-bold">Celular</label><input v-model="formModal.celular" class="filter-input"></div>
+            <div class="col-md-4"><label class="small fw-bold">Tel. Contacto</label><input v-model="formModal.telefonocontacto" class="filter-input"></div>
+            <div class="col-md-4"><label class="small fw-bold">Parentesco</label><input v-model="formModal.parentescocontacto" class="filter-input"></div>
+            <div class="col-md-4"><label class="small fw-bold">F. Nacimiento</label><input type="date" v-model="formModal.fecha_nacimiento" class="filter-input"></div>
+            <div class="col-md-8">
+              <label class="small fw-bold">Movilidad</label>
+              <div class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox" value="moto" v-model="movilidadArray"> Moto</label>
+                <label class="checkbox-item"><input type="checkbox" value="transporte publico" v-model="movilidadArray"> Transporte Público</label>
+                <label class="checkbox-item"><input type="checkbox" value="auto" v-model="movilidadArray"> Auto</label>
+                <label class="checkbox-item"><input type="checkbox" value="bici" v-model="movilidadArray"> Bici</label>
+              </div>
+            </div>
+
+            <div class="col-12 seccion-titulo">Disponibilidad</div>
+            <div class="col-md-2">
+              <label class="small fw-bold">Sáb. Disp.</label>
+              <select v-model="formModal.disponibilidad_sabado" class="filter-input">
+                <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
+              </select>
+            </div>
+            <div class="col-md-2"><label class="small fw-bold">Sáb. Desde</label><input type="time" v-model="formModal.disponibilidad_sabado_desde" class="filter-input"></div>
+            <div class="col-md-2"><label class="small fw-bold">Sáb. Hasta</label><input type="time" v-model="formModal.disponibilidad_sabado_hasta" class="filter-input"></div>
+            <div class="col-md-2">
+              <label class="small fw-bold">Dom. Disp.</label>
+              <select v-model="formModal.disponibilidad_domingo" class="filter-input">
+                <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
+              </select>
+            </div>
+            <div class="col-md-2"><label class="small fw-bold">Dom. Desde</label><input type="time" v-model="formModal.disponibilidad_domingo_desde" class="filter-input"></div>
+            <div class="col-md-2"><label class="small fw-bold">Dom. Hasta</label><input type="time" v-model="formModal.disponibilidad_domingo_hasta" class="filter-input"></div>
+
+            <div class="col-12 seccion-titulo">Handball</div>
+            <div class="col-md-4">
+              <label class="small fw-bold">Juega handball</label>
+              <select v-model="formModal.juega_handball" class="filter-input">
+                <option value="SI">SI</option>
+                <option value="NO">NO</option>
+              </select>
+            </div>
+            <div class="col-md-4"><label class="small fw-bold">Club</label><input v-model="formModal.donde_juega" class="filter-input" :disabled="formModal.juega_handball !== 'SI'"></div>
+            <div class="col-md-4"><label class="small fw-bold">Categoría</label><input v-model="formModal.categoria_handball" class="filter-input" :disabled="formModal.juega_handball !== 'SI'"></div>
+
+            <div class="col-12 seccion-titulo">Observaciones</div>
+            <div class="col-12">
+              <textarea v-model="formModal.observaciones" class="filter-input" rows="3" style="height:auto; resize:vertical;"></textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="flex-shrink-0 d-flex gap-2 justify-content-center mt-3 pt-3 border-top">
           <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</button>
           <button @click="modoModal === 'editar' ? confirmarEdicion() : confirmarAlta()" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargando">
             <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
@@ -404,39 +419,39 @@
     </div>
     </Teleport>
 
-    <!-- MODAL SOLICITUDES / HISTORIAL -->
-    <Teleport to="body">
+<Teleport to="body">
     <div v-if="mostrarModalSolicitudes" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 800px; width: 95%; text-align: left;">
-        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-          <h4 class="fw-bold m-0 d-flex align-items-center gap-2">
+        
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2 gap-2">
+          <h4 class="fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.1rem;">
             <span class="material-icons text-primary">history</span> 
             Solicitudes de Cambios
           </h4>
-          <button @click="mostrarModalSolicitudes = false" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;">
+          <button @click="mostrarModalSolicitudes = false" class="btn btn-light rounded-circle flex-shrink-0" style="width: 35px; height: 35px; padding: 0;">
             <span class="material-icons" style="font-size: 18px; line-height: 1;">close</span>
           </button>
         </div>
 
-        <!-- NUEVO: NAVEGACIÓN DE PESTAÑAS (TABS) -->
-        <div class="d-flex gap-2 mb-3 border-bottom pb-3 overflow-auto" style="white-space: nowrap;">
-          <button class="btn btn-sm fw-bold rounded-pill px-3" 
+        <div class="d-flex justify-content-between gap-1 mb-3 border-bottom pb-3 w-100">
+          <button class="btn btn-sm fw-bold rounded-pill px-1 flex-fill tab-mobile" 
                   :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm' : 'btn-light text-muted'" 
                   @click="tabActivo = 'enviado'">
             PENDIENTES 
-            <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-primary ms-1 rounded-pill">{{ solicitudesPendientes.length }}</span>
+            <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-primary ms-1 rounded-pill p-1" style="font-size: 0.6rem;">{{ solicitudesPendientes.length }}</span>
           </button>
-          <button class="btn btn-sm fw-bold rounded-pill px-3" 
+          <button class="btn btn-sm fw-bold rounded-pill px-1 flex-fill tab-mobile" 
                   :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm' : 'btn-light text-muted'" 
                   @click="tabActivo = 'aprobado'">
             APROBADAS
           </button>
-          <button class="btn btn-sm fw-bold rounded-pill px-3" 
+          <button class="btn btn-sm fw-bold rounded-pill px-1 flex-fill tab-mobile" 
                   :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm' : 'btn-light text-muted'" 
                   @click="tabActivo = 'rechazado'">
             RECHAZADAS
           </button>
         </div>
+
 
         <div style="max-height: 55vh; overflow-y: auto; padding-right: 5px;">
           <div v-if="cargandoSolicitudes" class="text-center py-4">
@@ -491,7 +506,6 @@
     </div>
     </Teleport>
 
-    <!-- MODAL HISTORIAL INDIVIDUAL DEL ÁRBITRO -->
     <Teleport to="body">
     <div v-if="mostrarModalHistorialArbitro" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 850px; width: 95%; text-align: left;">
@@ -517,7 +531,6 @@
           </div>
 
           <div v-else>
-            <!-- VISTA DESKTOP: TABLA -->
             <div class="table-responsive desktop-only">
               <table class="table table-sm table-hover align-middle" style="font-size: 0.85rem; table-layout: fixed; width: 100%;">
                 <thead class="table-light">
@@ -543,7 +556,6 @@
               </table>
             </div>
 
-            <!-- VISTA MOBILE: CARDS -->
             <div class="mobile-only">
               <div v-for="h in historialArbitro" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded p-3 mb-2 shadow-sm bg-light">
                 <div class="d-flex justify-content-between align-items-start mb-2 border-bottom pb-2">
@@ -583,7 +595,8 @@ useHead({
   meta: [{ name: 'description', content: 'Gestión de árbitros registrados en la AAAB.' }],
 })
 
-const notificar = inject('notificar')
+// 1. INYECTAMOS EL NOTIFICADOR UNA SOLA VEZ AL PRINCIPIO
+const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 
 const arbitros = ref([])
 const filtros = reactive({ rol: '' })
@@ -605,13 +618,15 @@ const solicitudes = ref([])
 const mostrarModalSolicitudes = ref(false)
 const cargandoSolicitudes = ref(false)
 
-// NUEVO: Variable para manejar la pestaña activa de las solicitudes
-const tabActivo = ref('enviado') // Por defecto arranca en 'enviado' (Pendientes)
+const tabActivo = ref('enviado') 
 
 const mostrarModalHistorialArbitro = ref(false)
 const historialArbitro = ref([])
 const arbitroSeleccionado = ref({})
 const cargandoHistorialArbitro = ref(false)
+
+// VARIABLE PARA EL CANDADO GLOBAL DE EDICIÓN
+const edicionAbierta = ref(false);
 
 const formModalVacio = () => ({
   id: null,
@@ -633,7 +648,6 @@ const solicitudesPendientes = computed(() =>
   solicitudes.value.filter(s => s.estado === 'enviado')
 )
 
-// NUEVO: Propiedad computada para filtrar la vista actual del modal
 const solicitudesMostradas = computed(() => {
   return solicitudes.value.filter(s => s.estado === tabActivo.value)
 })
@@ -654,7 +668,7 @@ const cargarSolicitudes = async () => {
 
 const abrirModalSolicitudes = () => {
   cargarSolicitudes()
-  tabActivo.value = 'enviado' // Nos aseguramos de que siempre abra en pendientes
+  tabActivo.value = 'enviado' 
   mostrarModalSolicitudes.value = true
 }
 
@@ -682,6 +696,7 @@ const rechazarSolicitud = async (solicitud) => {
     titulo: '¿Rechazar solicitud?',
     mensaje: '¿Estás seguro de que querés rechazar este pedido del árbitro?',
     tipo: 'warning',
+    tieneAccion: true,
     alConfirmar: async () => {
       try {
         const res = await api.post({ 
@@ -798,7 +813,7 @@ const confirmarEdicion = async () => {
       payload: { listaArbitros: [prepararPayload(formModal.value)] },
     })
     if (res.ok || res.success) {
-      notificar({ titulo: '¡Guardado!', mensaje: 'Árbitro actualizado correctamente.' })
+      notificar({ titulo: '¡Guardado!', mensaje: 'Árbitro actualizado correctamente.', tipo: 'success' })
       cerrarModal()
       await cargarDatos()
     } else {
@@ -814,7 +829,7 @@ const confirmarEdicion = async () => {
 const prepararPayload = (a) => {
   const clon = { ...a }
   clon.movilidad = movilidadArray.value.join(', ')
-  if (clon.grupo != '3') clon.subgrupo = null;
+  if (clon.grupo != '3') clon.subgrupo = null
 
   ;['disponibilidad_sabado_desde', 'disponibilidad_sabado_hasta',
     'disponibilidad_domingo_desde', 'disponibilidad_domingo_hasta',
@@ -934,10 +949,61 @@ watch([() => filtros.provincia, localidadesFiltradas], () => {
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal })
 
+// ----------------------------------------------------
+// LÓGICA DE CANDADO GLOBAL DE EDICIÓN
+// ----------------------------------------------------
+
+const cargarEstadoEdicion = async () => {
+  try {
+    const res = await api.get({
+      entity: 'arbitros',
+      action: 'obtenerEstadoEdicionGlobal'
+    });
+    if (res?.ok && res.payload) {
+      edicionAbierta.value = res.payload.estado === 1;
+    }
+  } catch (error) {
+    console.error("Error al cargar estado de edición:", error);
+  }
+};
+
+const toggleEdicionGlobal = async () => {
+  const nuevoEstado = edicionAbierta.value ? 0 : 1;
+  const textoAccion = nuevoEstado === 1 ? 'HABILITAR' : 'CERRAR';
+
+  notificar({
+    titulo: '¿Estás seguro?',
+    mensaje: `Esto va a ${textoAccion} la edición de legajos para TODOS los árbitros del panel.`,
+    tipo: 'warning',
+    tieneAccion: true,
+    alConfirmar: async () => {
+      try {
+        const res = await api.post({
+          entity: 'arbitros',
+          action: 'actualizarEdicionGlobal',
+          payload: { estado: nuevoEstado }
+        });
+
+        if (res?.ok) {
+          edicionAbierta.value = nuevoEstado === 1;
+          notificar({ 
+            titulo: '¡Actualizado!', 
+            mensaje: `La edición ha sido ${nuevoEstado === 1 ? 'habilitada' : 'cerrada'} correctamente.`, 
+            tipo: 'success' 
+          });
+        }
+      } catch{
+        notificar({ titulo: 'Error', mensaje: 'Hubo un problema al actualizar el estado.', tipo: 'danger' });
+      }
+    }
+  });
+};
+
 onMounted(() => { 
   cargarDatos()
   obtenerProvinciasLocalidades()
   cargarSolicitudes()
+  cargarEstadoEdicion() 
 })
 </script>
 
@@ -953,7 +1019,7 @@ onMounted(() => {
   margin-left: 50%;
   transform: translateX(-50%);
   padding: 20px;
-  padding-bottom: 120px; /* Evita que choque con el footer móvil */
+  padding-bottom: 120px; 
 }
 
 .admin-panel { 
@@ -1020,7 +1086,7 @@ onMounted(() => {
 .paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
 
 /* ====================================================
-   TABLA DESKTOP (ARREGLO HUECOS Y SEPARACIÓN)
+   TABLA DESKTOP
    ==================================================== */
 .table-container { 
   width: 100%;
@@ -1035,7 +1101,7 @@ onMounted(() => {
 table { 
   width: 100%;
   min-width: max-content; 
-  border-collapse: separate !important; /* Importante para el renderizado sticky */
+  border-collapse: separate !important; 
   border-spacing: 0; 
   font-size: 0.85rem; 
 }
@@ -1057,11 +1123,11 @@ thead tr.main-header th {
 
 thead tr.filter-row td { 
   position: sticky;
-  top: 35px; /* Ajuste milimétrico para solapar y matar el hueco blanco */
+  top: 35px; 
   z-index: 40; 
   background: #f1F5F9 !important; 
   padding: 6px 8px 12px 8px; 
-  border-bottom: 4px solid #e2e8f0; /* Borde grueso para separar datos */
+  border-bottom: 4px solid #e2e8f0; 
   margin: 0;
 }
 
@@ -1098,14 +1164,12 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
 
 .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
 
-/* BOTONES DE EDICIÓN E HISTORIAL EN TABLA */
 .btn-editar { display: inline-flex; align-items: center; justify-content: center; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; }
 .btn-editar:hover { background: #dbeafe; }
 
 .btn-historial { display: inline-flex; align-items: center; justify-content: center; background: #fef3c7; border: 1px solid #fde047; color: #d97706; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; }
 .btn-historial:hover { background: #fde047; }
 
-/* OTROS ELEMENTOS DE LA TABLA */
 .status-wrapper { display: flex; align-items: center; gap: 5px; justify-content: center; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-active { background: #10b981; }
@@ -1114,68 +1178,44 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
 .inactivo { background-color: #fee2e2 !important; color: #000 !important; }
 .col-dni-compact { width: 90px; text-align: center; }
 
-
 /* ====================================================
-   PANEL DE FILTROS MÓVIL (NUEVO DISEÑO EN GRILLA CSS)
-   ==================================================== */
-.mobile-filter-panel { 
-  background: white; 
-  padding: 15px 20px; 
-  border-radius: 8px; 
-  border: 1px solid #e2e8f0; 
-  margin-bottom: 15px;
-}
-.filter-grid-mobile { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 12px; 
-}
-.form-group-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.form-group-mobile.full-width {
-  grid-column: span 2;
-}
-.form-group-mobile label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
-}
-.form-group-mobile input, 
-.form-group-mobile select { 
-  padding: 8px 10px; 
-  border: 1px solid #cbd5e1; 
-  border-radius: 6px; 
-  font-size: 0.85rem; 
-  width: 100%; 
-  outline: none; 
-  background: #f8fafc;
-  color: #0f172a;
-}
-.form-group-mobile input:focus, 
-.form-group-mobile select:focus {
-  border-color: #3b82f6;
-  background: white;
-}
-.btn-close-filters { 
-  width: 100%; 
-  padding: 10px; 
-  background: #3b82f6; 
-  color: white; 
-  border: none; 
-  border-radius: 6px; 
-  font-weight: bold; 
-  font-size: 0.9rem;
-}
-
-
-/* ====================================================
-   MODALES (ESTILOS GENERALES)
+   MODALES (ESTILOS GENERALES Y SOLICITUDES MOBILE)
    ==================================================== */
 .modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
 .modal-content-exito { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 750px; text-align: center; color: #000; }
+
+/* ESTOS AJUSTES ARREGLAN EL MODAL DE SOLICITUDES EN MOBILE */
+@media (max-width: 768px) {
+  .modal-content-exito {
+    padding: 15px !important; /* Menos padding lateral en mobile */
+    max-height: 90vh !important; /* Límite de alto para no desbordar la pantalla */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Aseguramos que el contenido principal haga scroll en mobile */
+  .modal-content-exito > div[style*="overflow-y: auto"] {
+    max-height: unset !important; /* Quitamos el 55vh fijo */
+    flex-grow: 1; /* Ocupa el espacio disponible */
+    overflow-y: auto;
+  }
+  
+  /* Achicamos la tarjeta individual de solicitud */
+  .solicitud-card {
+    padding: 10px !important;
+  }
+  
+  .solicitud-card .d-flex.flex-wrap.gap-3 > div:first-child {
+    min-width: 100% !important; /* Fuerza a que el nombre/texto ocupe todo el ancho arriba */
+    margin-bottom: 10px;
+  }
+  
+  .solicitud-card .d-flex.flex-column.align-items-end {
+    align-items: flex-start !important; /* Alinear a la izquierda en mobile */
+    width: 100%;
+  }
+}
+
 .icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
 .bg-success-light { background: #dcfce7; color: #166534; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
@@ -1197,6 +1237,58 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
 .desktop-only { display: block; }
 .mobile-only { display: none; }
 .mobile-only-flex { display: none; }
+
+/* ====================================================
+   PANEL DE FILTROS MÓVIL (DISEÑO LICENCIAS)
+   ==================================================== */
+.mobile-filter-panel {
+  background: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 15px;
+}
+
+.filter-grid-mobile {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.filter-grid-mobile input,
+.filter-grid-mobile select,
+.filter-input-mobile {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  width: 100%;
+  outline: none;
+  background: #ffffff; /* Fondo blanco como en la captura */
+  color: #334155;
+}
+
+.filter-grid-mobile input:focus,
+.filter-grid-mobile select:focus,
+.filter-input-mobile:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+.filter-grid-mobile input::placeholder,
+.filter-input-mobile::placeholder {
+  color: #94a3b8;
+}
+
+/* Hacer que el select (Rol/Estado) ocupe el 100% del ancho si tiene la clase full-width */
+.filter-grid-mobile select.full-width {
+  grid-column: span 2;
+}
+
+.btn-blue { 
+  background: #3b82f6; 
+  color: white; 
+}
 
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
@@ -1232,8 +1324,17 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
   .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
   .title { font-size: 1rem; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
+
+  .modal-content-exito {
+    padding: 15px !important;
+  }
+  .tab-mobile {
+    font-size: 0.65rem !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+    letter-spacing: -0.3px;
+  }
   
-  /* Botones 42x42 en una sola fila centrados */
   .header-actions { 
     width: 100%; 
     display: flex; 
