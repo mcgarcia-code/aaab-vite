@@ -118,7 +118,7 @@ const categorias = ref([
     documentos: [
       {
         nombre: 'Aranceles Arbitrales',
-        url: 'https://drive.google.com/file/d/1Q1zZt2go59F2oUwPk8tpKUpQUDVBYQlU/view?usp=sharing',
+        url: 'https://drive.google.com/file/d/1V63gp4oYWYVRAxWFJiFdi8v69tyF4r-q/view?usp=sharing',
       },
       {
         nombre: 'Función Tablero Casa del Handball',
