@@ -1,11 +1,9 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   
-  <!-- ENVOLTORIO PARA CENTRADO Y PANTALLA COMPLETA (Igual que Gestión de Árbitros) -->
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
       
-      <!-- CABECERA UNIFICADA -->
       <div class="header-section shadow-sm">
         <div class="header-info">
           <h2 class="title">Instituciones y CUITs</h2>
@@ -23,7 +21,6 @@
         </div>
       </div>
 
-      <!-- PANEL MÓVIL -->
       <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only shadow-sm">
         <div class="filter-container-mobile">
           <label class="filter-label">Filtrar por Club</label>
@@ -32,7 +29,6 @@
         <button @click="mostrarFiltrosMobile = false" class="btn-close-filters">Aplicar Filtros</button>
       </div>
 
-      <!-- TABLA DESKTOP -->
       <div class="table-container shadow desktop-only">
         <table>
           <thead>
@@ -50,7 +46,6 @@
             </tr>
           </thead>
           <tbody>
-            <!-- USAMOS institucionesPaginadas EN LUGAR DE filtrados -->
             <tr v-for="i in institucionesPaginadas" :key="i.id" class="row-hover">
               <td class="font-bold col-institucion">{{ i.club }}</td>
               <td>{{ i.cuit || '-' }}</td> 
@@ -85,9 +80,7 @@
         </table>
       </div>
 
-      <!-- VISTA MOBILE -->
       <div class="mobile-only">
-        <!-- USAMOS institucionesPaginadas EN LUGAR DE filtrados -->
         <div v-for="i in institucionesPaginadas" :key="'mob-'+i.id" class="card-contacto">
           <div class="card-main">
             <div class="card-info">
@@ -124,7 +117,6 @@
         </div>
       </div>
 
-      <!-- CONTROLES DE PAGINACIÓN -->
       <div class="paginacion" v-if="totalPaginas > 1">
         <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
         <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
@@ -136,9 +128,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, watch } from 'vue'; // Agregamos watch
+import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
 import { api } from '@/api/api'; 
-import { useHead } from '@vueuse/head'
+import { useHead } from '@vueuse/head';
 
 useHead({
   title: 'Instituciones y CUITs | AAAB',
@@ -149,7 +141,9 @@ useHead({
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
     { property: 'og:type', content: 'website' }
   ],
-})
+});
+
+const notificar = inject('notificar');
 
 const instituciones = ref([]);
 const mostrarFiltrosMobile = ref(false);
@@ -185,20 +179,23 @@ const copiarAlPortapapeles = async (texto, etiqueta) => {
   if (!texto || texto === 'NULL' || texto.trim() === '') return;
   try {
     await navigator.clipboard.writeText(texto.trim());
-    alert(`${etiqueta} copiado: ${texto}`);
+    notificar({ titulo: 'Copiado', mensaje: `${etiqueta} copiado: ${texto}`, tipo: 'success' });
   } catch (err) {
     console.error('Error al copiar:', err);
+    notificar({ titulo: 'Error', mensaje: 'No se pudo copiar el texto', tipo: 'danger' });
   }
 };
 
 const enviarFactura = (emailClub) => {
-  if (!emailClub || emailClub === 'NULL' || emailClub.trim() === '') return;
+  if (!emailClub || String(emailClub).toUpperCase() === 'NULL' || emailClub.trim() === '') return;
   const destinatario = emailClub.trim();
   const cc = "aaabfacturas@gmail.com";
   const subject = "Envío de Factura - Arbitraje AAAB";
   const body = "Estimados,\n\nAdjuntamos la factura correspondiente.\n\nSaludos cordiales.";
   const mailtoLink = `mailto:${destinatario}?cc=${cc}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailtoLink;
+  
+  // En lugar de window.location.href, usamos window.open
+  window.open(mailtoLink, '_self');
 };
 
 const enviarWhatsapp = (celular) => {
@@ -250,12 +247,12 @@ onMounted(cargarDatos);
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
-  min-height: 100vh; /* Cambiamos height por min-height */
-  height: auto;      /* Permitimos que crezca con el contenido */
+  min-height: 100vh;
+  height: auto;
   margin-left: 50%;
   transform: translateX(-50%);
   padding: 20px;
-  padding-bottom: 80px; /* Damos un margen extra al final para separar bien del footer */
+  padding-bottom: 80px;
 }
 
 .admin-panel { 
@@ -266,7 +263,7 @@ onMounted(cargarDatos);
   color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
-  height: 100%; /* Asegura que el panel cubra todo el wrapper */
+  height: 100%;
 }
 
 .header-section { 
@@ -276,7 +273,7 @@ onMounted(cargarDatos);
   display: flex; 
   justify-content: space-between; 
   margin-bottom: 15px; 
-  border-left: 5px solid #3b82f6; /* Color azul para esta vista */
+  border-left: 5px solid #3b82f6;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
   align-items: center; 
 }
@@ -364,7 +361,7 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; ov
 
 .filter-row td { 
   position: sticky; 
-  top: 36px; /* Ajuste para el sticky del header */
+  top: 36px;
   z-index: 40; 
   background: #f1F5F9 !important; 
   padding: 4px; 
@@ -392,9 +389,7 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; ov
   border-radius: 12px; 
   margin-bottom: 15px; 
   border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Sombreado suave */
-  
-  /* ESTO EVITA QUE EL LOGO DE FONDO SE SUPERPONGA */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   position: relative; 
   z-index: 20; 
 }
@@ -405,7 +400,7 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; ov
 /* --- GRILLA DE BOTONES MOBILE --- */
 .card-actions-mobile { 
   display: grid; 
-  grid-template-columns: 1fr 1fr; /* Fuerza a que haya exactamente 2 botones por fila */
+  grid-template-columns: 1fr 1fr;
   gap: 10px; 
 }
 
@@ -417,7 +412,7 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; ov
   font-size: 0.75rem; 
   display: flex; 
   align-items: center; 
-  justify-content: center; /* Centra el ícono y el texto */
+  justify-content: center;
   gap: 6px; 
   color: #0f172a; 
   font-weight: 700; 
@@ -437,7 +432,6 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; ov
   border: none; 
 }
 
-/* Opcional: Hacer que los botones principales destaquen más si quedan impares */
 .btn-whatsapp-mobile, .btn-send-mobile {
   box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
