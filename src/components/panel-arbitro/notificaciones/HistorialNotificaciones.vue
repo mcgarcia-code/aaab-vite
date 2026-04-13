@@ -1,87 +1,93 @@
 <template>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <!-- CABECERA ESTÁNDAR -->
-      <div class="header-section shadow-sm mb-4">
-        <div class="header-info">
-          <h2 class="title d-flex align-items-center gap-2">
-            <span class="material-icons text-danger">history</span>
+      <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+        
+        <div class="card-header bg-white py-3 border-bottom">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
+            <span class="material-icons">history</span>
             Historial de Notificaciones
-          </h2>
-          <span class="counter">Revisá todos tus avisos y alertas pasadas.</span>
+          </h4>
+          <p class="text-muted small m-0 mt-1">Revisá todos tus avisos y alertas pasadas.</p>
         </div>
-      </div>
 
-      <!-- ESTADO DE CARGA -->
-      <div v-if="cargando" class="text-center p-5 bg-white rounded shadow-sm border">
-        <div class="spinner-border text-danger" role="status">
-          <span class="visually-hidden">Cargando...</span>
+        <div class="card-body bg-white p-3 p-md-4">
+          
+          <div v-if="cargando" class="text-center my-5">
+            <div class="spinner-border text-danger" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="text-muted mt-2 small">Cargando historial...</p>
+          </div>
+
+          <div v-else-if="notificaciones.length === 0" class="text-center p-5 rounded border bg-light shadow-sm">
+            <span class="material-icons text-muted opacity-50 d-block mb-3" style="font-size: 48px;">notifications_off</span>
+            <h5 class="fw-bold text-dark mt-3">Historial limpio</h5>
+            <p class="text-muted small m-0">No tenés ninguna notificación registrada.</p>
+          </div>
+
+          <div v-else class="border rounded shadow-sm overflow-hidden mobile-transparent-bg">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 custom-table">
+                <thead class="table-light text-muted small border-bottom">
+                  <tr>
+                    <th scope="col" class="ps-4 py-3" style="width: 15%;">Fecha</th>
+                    <th scope="col" class="py-3" style="width: 20%;">Tipo</th>
+                    <th scope="col" class="py-3" style="width: 50%;">Mensaje</th>
+                    <th scope="col" class="text-center pe-4 py-3" style="width: 15%;">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="notif in notificacionesPaginadas" :key="notif.id" :class="{'fila-no-leida': Number(notif.leida) === 0}">
+                    
+                    <td class="ps-4 text-muted small fw-bold text-nowrap" data-label="Fecha">
+                      {{ notif.fecha }}
+                    </td>
+
+                    <td data-label="Asunto">
+                      <span class="badge rounded-pill fw-bold d-inline-flex align-items-center gap-1" :class="getEstiloBadge(notif.tipo)">
+                        <span class="material-icons" style="font-size: 14px;">{{ getIcono(notif.tipo) }}</span>
+                        {{ notif.titulo }}
+                      </span>
+                    </td>
+
+                    <td class="text-dark small td-mensaje" data-label="Mensaje">
+                      {{ notif.mensaje }}
+                    </td>
+
+                    <td class="text-center pe-4 text-mobile-left" data-label="Estado">
+                      <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
+                        <span class="material-icons text-primary" style="font-size: 14px;">done_all</span> Leída
+                      </span>
+                      <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
+                        Nueva
+                      </span>
+                    </td>
+
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="paginacion mt-4" v-if="totalPaginas > 1 && !cargando && notificaciones.length > 0">
+            <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+            <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
+          </div>
+
         </div>
-        <p class="text-muted mt-2 small">Cargando historial...</p>
-      </div>
-
-      <!-- MENSAJE VACÍO -->
-      <div v-else-if="notificaciones.length === 0" class="text-center p-5 bg-white rounded shadow-sm border">
-        <span class="material-icons text-muted opacity-50 d-block mb-3" style="font-size: 48px;">notifications_off</span>
-        <h5 class="text-dark fw-bold">Historial limpio</h5>
-        <p class="text-muted small m-0">No tenés ninguna notificación registrada.</p>
-      </div>
-
-      <!-- TABLA DE HISTORIAL RESPONSIVE -->
-      <div v-else class="bg-white rounded shadow-sm border overflow-hidden mobile-transparent-bg">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0 custom-table">
-            <thead class="table-light text-muted small border-bottom">
-              <tr>
-                <th scope="col" class="ps-4 py-3" style="width: 15%;">Fecha</th>
-                <th scope="col" class="py-3" style="width: 20%;">Tipo</th>
-                <th scope="col" class="py-3" style="width: 50%;">Mensaje</th>
-                <th scope="col" class="text-center pe-4 py-3" style="width: 15%;">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="notif in notificacionesPaginadas" :key="notif.id" :class="{'fila-no-leida': Number(notif.leida) === 0}">
-                
-                <!-- FECHA -->
-                <td class="ps-4 text-muted small fw-bold text-nowrap" data-label="Fecha">
-                  {{ notif.fecha }}
-                </td>
-
-                <!-- TIPO (Badge) -->
-                <td data-label="Asunto">
-                  <span class="badge rounded-pill fw-bold d-inline-flex align-items-center gap-1" :class="getEstiloBadge(notif.tipo)">
-                    <span class="material-icons" style="font-size: 14px;">{{ getIcono(notif.tipo) }}</span>
-                    {{ notif.titulo }}
-                  </span>
-                </td>
-
-                <!-- MENSAJE -->
-                <td class="text-dark small td-mensaje" data-label="Mensaje">
-                  {{ notif.mensaje }}
-                </td>
-
-                <!-- ESTADO -->
-                <td class="text-center pe-4 text-mobile-left" data-label="Estado">
-                  <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
-                    <span class="material-icons text-primary" style="font-size: 14px;">done_all</span> Leída
-                  </span>
-                  <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
-                    Nueva
-                  </span>
-                </td>
-
-              </tr>
-            </tbody>
-          </table>
+      </div> <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
+          <div class="small text-dark lh-sm">
+            Cualquier duda o consulta realizar a <a href="mailto:secretaria@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none">secretaria@arbitroshandball.com.ar</a>
+          </div>
         </div>
-      </div>
-
-      <!-- PAGINACIÓN -->
-      <div class="paginacion mt-4" v-if="totalPaginas > 1">
-        <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
-        <span class="paginacion-texto text-dark">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-        <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
       </div>
 
     </div>
@@ -184,28 +190,7 @@ onMounted(() => {
   color: #000; 
   background-color: #0f172a; 
   min-height: 100vh; 
-}
-
-.header-section { 
-  background: white; 
-  padding: 15px; 
-  border-radius: 8px; 
-  display: flex; 
-  justify-content: space-between; 
-  margin-bottom: 15px; 
-  border-left: 5px solid #ef4444; 
-  align-items: center; 
-}
-
-.title { 
-  font-size: 1.1rem; 
-  font-weight: bold; 
-  margin: 0; 
-}
-
-.counter { 
-  font-size: 0.85rem; 
-  color: #000000; 
+  border-radius: 12px;
 }
 
 /* PAGINACIÓN */
@@ -214,24 +199,25 @@ onMounted(() => {
   justify-content: flex-end; 
   align-items: center; 
   gap: 12px; 
-  margin-top: 12px; 
 }
 .btn-paginacion { 
-  border: none; 
+  border: 1px solid #cbd5e1; 
   background: #f8fafc; 
   color: #0f172a; 
-  padding: 8px 14px; 
+  padding: 8px 16px; 
   border-radius: 6px; 
   font-size: 0.8rem; 
   font-weight: 700; 
   cursor: pointer; 
+  transition: background 0.2s;
 }
+.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
 .btn-paginacion:disabled { 
   opacity: 0.5; 
   cursor: not-allowed; 
 }
 .paginacion-texto { 
-  color: white !important; 
+  color: #0f172a !important; 
   font-size: 0.85rem; 
   font-weight: 600; 
 }
@@ -325,8 +311,7 @@ onMounted(() => {
 
 /* Ajustes Extra para móviles pequeños */
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; }
-  .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .admin-panel { padding: 10px; border-radius: 0; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
 }
 </style>

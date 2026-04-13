@@ -5,165 +5,167 @@
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="header-section shadow-sm mb-4 p-3 bg-white rounded" style="border-left: 5px solid #dc2626;">
-        <div class="d-flex justify-content-between align-items-center w-100">
-          <div class="header-info">
-            <h2 class="title d-flex align-items-center gap-2 m-0 fs-5">
-              <span class="material-icons text-danger" style="transform: rotate(-15deg);">gavel</span> Mis Sanciones
-            </h2>
-            <span class="counter text-dark mt-1 d-block" style="font-size: 0.85rem;">
-              Total: {{ sancionesFiltradas.length }} resoluciones en tu legajo
-            </span>
+      <div class="card shadow border-0 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+        
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div>
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
+              <span class="material-icons" style="transform: rotate(-15deg);">gavel</span> Mis Sanciones
+            </h4>
+            <p class="text-muted small m-0 mt-1">Total: {{ sancionesFiltradas.length }} resoluciones en tu legajo</p>
           </div>
           
-          <div class="header-actions d-flex gap-2 align-items-center">
+          <div class="header-actions d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex shadow-sm rounded border-0 p-2 d-flex align-items-center justify-content-center text-white" style="background-color: #3b82f6;">
               <span class="material-icons" style="font-size: 20px;">filter_alt</span>
             </button>
             
+            <button @click="limpiarFiltros" class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center" title="Limpiar Filtros" style="background-color: #f8fafc !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
+              <span class="material-icons" style="font-size: 22px; color: #64748b;">filter_alt_off</span>
+            </button>
+
             <button @click="obtenerSancionesLocales" class="btn-refresh bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center" title="Actualizar" style="background-color: #f1f5f9 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
               <span class="material-icons" style="font-size: 22px; color: #0f172a;">refresh</span>
             </button>
           </div>
         </div>
-      </div>
 
-      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <span class="small fw-bold text-muted text-uppercase">Filtrar Sanciones</span>
-          <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-            <span class="material-icons" style="font-size: 20px;">close</span>
-          </button>
+        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm border-bottom p-3" style="background-color: #f8fafc; margin-bottom: 0; border-radius: 0;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="small fw-bold text-muted text-uppercase">Filtrar Sanciones</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1 shadow-sm" style="line-height: 1; background: white;">
+              <span class="material-icons" style="font-size: 20px;">close</span>
+            </button>
+          </div>
+          <div class="filter-grid-mobile">
+            <select v-model="filtros.estado" class="full-width">
+              <option value="">Estado (Todos)</option>
+              <option value="vigente">Vigente</option>
+              <option value="cumplida">Cumplida</option>
+              <option value="en_proceso">En Proceso</option>
+              <option value="anulada">Anulada</option>
+            </select>
+            <input v-model="filtros.sancion" placeholder="Buscar Sanción...">
+            <input v-model="filtros.motivo_articulo" placeholder="Motivo / Art...">
+            <input type="text" v-model="filtros.desde" placeholder="Desde (DD/MM/AAAA)">
+            <input type="text" v-model="filtros.hasta" placeholder="Hasta (DD/MM/AAAA)">
+          </div>
+          <div class="mt-3">
+            <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 fw-bold border-0 py-2 shadow-sm" style="background-color: #3b82f6;">Aplicar Filtros</button>
+          </div>
         </div>
-        <div class="filter-grid-mobile">
-          <select v-model="filtros.estado" class="full-width">
-            <option value="">Estado (Todos)</option>
-            <option value="vigente">Vigente</option>
-            <option value="cumplida">Cumplida</option>
-            <option value="en_proceso">En Proceso</option>
-            <option value="anulada">Anulada</option>
-          </select>
-          <input v-model="filtros.sancion" placeholder="Buscar Sanción...">
-          <input v-model="filtros.motivo_articulo" placeholder="Motivo / Art...">
-          <input type="text" v-model="filtros.desde" placeholder="Desde (DD/MM/AAAA)">
-          <input type="text" v-model="filtros.hasta" placeholder="Hasta (DD/MM/AAAA)">
-        </div>
-        <div class="d-flex gap-2 mt-3">
-          <button @click="limpiarFiltros" class="btn btn-light w-50 fw-bold border">Limpiar</button>
-          <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-50 fw-bold border-0" style="background-color: #3b82f6;">Aplicar</button>
-        </div>
-      </div>
 
-      <div class="alert alert-secondary border-0 shadow-sm mb-4">
+        <div class="card-body bg-white p-3 p-md-4">
+          
+          <div v-if="cargando" class="text-center text-white my-5">
+            <div class="spinner-border text-danger" role="status"></div>
+            <p class="mt-2 text-muted">Buscando en legajo...</p>
+          </div>
+
+          <div v-else-if="sancionesFiltradas.length === 0" class="text-center p-5 rounded border bg-light shadow-sm">
+            <span class="material-icons text-success" style="font-size: 60px;">verified</span>
+            <h5 class="fw-bold text-dark mt-3">Sin resultados</h5>
+            <p class="text-muted small m-0">No se encontraron medidas disciplinarias con los filtros aplicados.</p>
+          </div>
+
+          <div v-else>
+            <div class="table-container shadow-sm desktop-only border" style="border-radius: 8px;">
+              <table>
+                <thead>
+                  <tr class="main-header">
+                    <th class="sticky-col col-id text-center" style="width: 130px;">Estado</th>
+                    <th style="width: 160px;">Sanción</th>
+                    <th>Motivo / Art.</th>
+                    <th class="text-center" style="width: 140px;">Desde</th>
+                    <th class="text-center" style="width: 140px;">Hasta</th>
+                  </tr>
+                  <tr class="filter-row">
+                    <td class="sticky-col col-id text-center">
+                      <select v-model="filtros.estado" class="filter-input text-center shadow-none w-100">
+                        <option value="">TODOS</option>
+                        <option value="vigente">VIGENTE</option>
+                        <option value="cumplida">CUMPLIDA</option>
+                        <option value="en_proceso">EN PROCESO</option>
+                        <option value="anulada">ANULADA</option>
+                      </select>
+                    </td>
+                    <td><input v-model="filtros.sancion" class="filter-input shadow-none w-100" placeholder="Filtrar.."></td>
+                    <td><input v-model="filtros.motivo_articulo" class="filter-input shadow-none w-100" placeholder="Filtrar.."></td>
+                    <td><input v-model="filtros.desde" class="filter-input text-center shadow-none w-100" placeholder="DD/MM/AAAA"></td>
+                    <td><input v-model="filtros.hasta" class="filter-input text-center shadow-none w-100" placeholder="DD/MM/AAAA"></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="s in sancionesPaginadas" :key="s.id">
+                    <td class="sticky-col col-id text-center cell-ro">
+                      <span :class="obtenerClaseEstado(s.estado_dinamico)">
+                        {{ obtenerTextoEstado(s.estado_dinamico) }}
+                      </span>
+                    </td>
+                    <td class="cell-ro">
+                      <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
+                    </td>
+                    <td class="cell-ro text-wrap" style="min-width: 250px;">
+                      <span class="fw-bold text-dark" v-if="s.articulo">Art. {{ s.articulo }} - </span>
+                      <span class="text-muted">{{ s.motivo }}</span>
+                    </td>
+                    <td class="text-center cell-ro fw-bold text-dark">{{ s.desde_formateada || '-' }}</td>
+                    <td class="text-center cell-ro fw-bold" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">
+                      <span v-if="s.es_indefinido == 1">Indefinido</span>
+                      <span v-else>{{ s.hasta_formateada || '-' }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mobile-only mt-3">
+              <div v-for="s in sancionesPaginadas" :key="'mob-'+s.id" class="card-licencia shadow-sm border">
+                <div class="card-header border-bottom-0 pb-2 px-3 pt-3">
+                  <div class="d-flex justify-content-start align-items-center gap-2">
+                    <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" style="font-size: 1.1rem;">
+                      {{ s.sancion }}
+                    </span>
+                    <span :class="obtenerClaseEstado(s.estado_dinamico, true)" style="font-size: 0.7rem; padding: 3px 10px;">
+                      {{ obtenerTextoEstado(s.estado_dinamico) }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="card-body pt-0 px-3 pb-3">
+                  <p class="text-dark mb-3 mt-2 lh-sm" style="font-size: 0.9rem;">
+                    <span v-if="s.articulo" class="fw-bold text-dark">Art. {{ s.articulo }}</span>
+                    <span v-if="s.articulo && s.motivo"> - </span>
+                    <span class="text-muted">{{ s.motivo }}</span>
+                  </p>
+                  
+                  <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center" style="background-color: #f8fafc !important;">
+                    <span class="text-dark" style="font-size: 0.85rem;">Desde: <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong></span>
+                    <span class="text-dark" style="font-size: 0.85rem;">Hasta: 
+                      <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
+                      <strong class="text-danger" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
+                      <strong class="text-muted" v-else>-</strong>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="paginacion" v-if="totalPaginas > 1">
+              <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+              <span class="paginacion-texto text-dark">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
+            </div>
+          </div>
+        </div>
+
+      </div> <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
         <div class="d-flex align-items-center">
-          <i class="bi bi-info-square-fill me-3 fs-4 text-secondary"></i>
+          <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
           <div class="small text-dark lh-sm">
-            Las resoluciones del Tribunal de Ética son de cumplimiento obligatorio según el reglamento vigente.
+            Las resoluciones del Tribunal de Ética son de cumplimiento obligatorio.
             Para consultas, comunicate a <a href="mailto:etica@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none">etica@arbitroshandball.com.ar</a>
           </div>
-        </div>
-      </div>
-
-      <div v-if="cargando" class="text-center text-white my-5">
-        <div class="spinner-border text-danger" role="status"></div>
-        <p class="mt-2 text-muted">Buscando en legajo...</p>
-      </div>
-
-      <div v-else-if="sancionesFiltradas.length === 0" class="text-center p-5 bg-white rounded shadow-sm border mt-4">
-        <span class="material-icons text-success" style="font-size: 60px;">verified</span>
-        <h5 class="fw-bold text-dark mt-3">Sin resultados</h5>
-        <p class="text-muted small m-0">No se encontraron medidas disciplinarias con los filtros aplicados.</p>
-      </div>
-
-      <div v-else>
-        <div class="table-container shadow desktop-only">
-          <table>
-            <thead>
-              <tr class="main-header">
-                <th class="sticky-col col-id text-center" style="width: 130px;">Estado</th>
-                <th style="width: 160px;">Sanción</th>
-                <th>Motivo / Art.</th>
-                <th class="text-center" style="width: 140px;">Desde</th>
-                <th class="text-center" style="width: 140px;">Hasta</th>
-              </tr>
-              <tr class="filter-row">
-                <td class="sticky-col col-id text-center">
-                  <select v-model="filtros.estado" class="filter-input text-center shadow-none w-100">
-                    <option value="">TODOS</option>
-                    <option value="vigente">VIGENTE</option>
-                    <option value="cumplida">CUMPLIDA</option>
-                    <option value="en_proceso">EN PROCESO</option>
-                    <option value="anulada">ANULADA</option>
-                  </select>
-                </td>
-                <td><input v-model="filtros.sancion" class="filter-input shadow-none w-100" placeholder="Filtrar.."></td>
-                <td><input v-model="filtros.motivo_articulo" class="filter-input shadow-none w-100" placeholder="Filtrar.."></td>
-                <td><input v-model="filtros.desde" class="filter-input text-center shadow-none w-100" placeholder="DD/MM/AAAA"></td>
-                <td><input v-model="filtros.hasta" class="filter-input text-center shadow-none w-100" placeholder="DD/MM/AAAA"></td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="s in sancionesPaginadas" :key="s.id">
-                <td class="sticky-col col-id text-center cell-ro">
-                  <span :class="obtenerClaseEstado(s.estado_dinamico)">
-                    {{ obtenerTextoEstado(s.estado_dinamico) }}
-                  </span>
-                </td>
-                <td class="cell-ro">
-                  <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
-                </td>
-                <td class="cell-ro text-wrap" style="min-width: 250px;">
-                  <span class="fw-bold text-dark" v-if="s.articulo">Art. {{ s.articulo }} - </span>
-                  <span class="text-muted">{{ s.motivo }}</span>
-                </td>
-                <td class="text-center cell-ro fw-bold text-dark">{{ s.desde_formateada || '-' }}</td>
-                <td class="text-center cell-ro fw-bold" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">
-                  <span v-if="s.es_indefinido == 1">Indefinido</span>
-                  <span v-else>{{ s.hasta_formateada || '-' }}</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="mobile-only mt-3">
-          <div v-for="s in sancionesPaginadas" :key="'mob-'+s.id" class="card-licencia shadow-sm border">
-            
-            <div class="card-header border-bottom-0 pb-2 px-3 pt-3">
-              <div class="d-flex justify-content-start align-items-center gap-2">
-                <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" style="font-size: 1.1rem;">
-                  {{ s.sancion }}
-                </span>
-                <span :class="obtenerClaseEstado(s.estado_dinamico, true)" style="font-size: 0.7rem; padding: 3px 10px;">
-                  {{ obtenerTextoEstado(s.estado_dinamico) }}
-                </span>
-              </div>
-            </div>
-
-            <div class="card-body pt-0 px-3 pb-3">
-              <p class="text-dark mb-3 mt-2 lh-sm" style="font-size: 0.9rem;">
-                <span v-if="s.articulo" class="fw-bold text-dark">Art. {{ s.articulo }}</span>
-                <span v-if="s.articulo && s.motivo"> - </span>
-                <span class="text-muted">{{ s.motivo }}</span>
-              </p>
-              
-              <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center" style="background-color: #f8fafc !important;">
-                <span class="text-dark" style="font-size: 0.85rem;">Desde: <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong></span>
-                <span class="text-dark" style="font-size: 0.85rem;">Hasta: 
-                  <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
-                  <strong class="text-danger" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
-                  <strong class="text-muted" v-else>-</strong>
-                </span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="paginacion" v-if="totalPaginas > 1">
-          <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
-          <span class="paginacion-texto text-dark">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
         </div>
       </div>
 

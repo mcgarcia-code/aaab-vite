@@ -1,9 +1,11 @@
 <template>
-  <div class="animate__animated animate__fadeIn container py-4">
+  <div class="animate__animated animate__fadeIn container-fluid py-4">
     
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4" style="border-radius: 15px; max-width: 1000px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
-        <h4 class="text-danger fw-bold m-0">Legajo Personal</h4>
+        <h4 class="text-danger fw-bold m-0 d-flex align-items-center">
+          <i class="bi bi-person me-2"></i> Legajo Personal
+        </h4>
         
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
             <span v-if="arbitro.apto_medico == 1" class="badge bg-success px-3 py-2 shadow-sm d-flex align-items-center gap-2">
@@ -127,7 +129,7 @@
       </div>
     </div>
 
-    <div class="card border-0 shadow mx-auto mb-4 overflow-hidden" style="border-radius: 15px; max-width: 1000px;">
+    <div class="card border-0 shadow mx-auto mb-4 overflow-hidden w-100" style="border-radius: 15px;">
         <div class="card-header bg-white py-2 ps-3 border-bottom">
             <h6 class="m-0 fw-bold text-dark small">Historial de Rectificaciones</h6>
         </div>
@@ -145,7 +147,6 @@
                         <tr v-for="(h, i) in historialRectificaciones" :key="i">
                             <td class="ps-3 small fw-bold text-dark">{{ h.fecha }}</td>
                             <td class="small text-dark">{{ h.mensaje }}</td>
-                            <!-- ACÁ ESTÁ EL FIX: ESTADO DINÁMICO Y COLORES -->
                             <td class="text-center">
                                 <span :class="['badge x-small', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem;">
                                     {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
@@ -161,7 +162,7 @@
         </div>
     </div>
 
-    <div v-if="!edicionAbierta" class="manual-section p-0 mx-auto mt-4" style="max-width: 1000px; background: transparent; box-shadow: none;">
+    <div v-if="!edicionAbierta" class="manual-section p-0 mx-auto mt-4 w-100" style="background: transparent; box-shadow: none;">
         <div class="text-center text-white-50 mb-3 small">
             <i class="bi bi-info-circle-fill me-1"></i>
             La edición directa está cerrada. Podés enviar una solicitud formal aquí.

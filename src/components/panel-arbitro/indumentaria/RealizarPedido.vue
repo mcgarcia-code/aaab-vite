@@ -1,148 +1,162 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <!-- CABECERA ESTÁNDAR -->
-      <div class="header-section shadow-sm">
-        <div class="header-info">
-          <h2 class="title">Solicitar Indumentaria</h2>
-          <span class="counter">Armá tu pedido de temporada</span>
-        </div>
+      <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+        
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div>
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
+              <i class="bi bi-shop me-1"></i> Solicitar Indumentaria
+            </h4>
+            <p class="text-muted small m-0 mt-1">Armá tu pedido de temporada</p>
+          </div>
+          
+          <div class="header-actions d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
+            <RouterLink to="/panel-arbitro/indumentaria/mis-pedidos" class="text-decoration-none">
+              <button class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Ver Mis Pedidos" style="background-color: #f8fafc !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
+                <span class="material-icons" style="font-size: 22px; color: #64748b;">history</span>
+                <span class="btn-text desktop-only fw-bold text-secondary" style="font-size: 0.8rem;">Mis Pedidos</span>
+              </button>
+            </RouterLink>
 
-        <div class="header-actions">
-          <RouterLink to="/panel-arbitro/indumentaria/mis-pedidos" class="text-decoration-none">
-            <button class="btn-action btn-clear" title="Ver Mis Pedidos">
-              <span class="material-icons">history</span> <span class="btn-text">Mis Pedidos</span>
+            <button @click="mostrarCarrito = true" class="btn-blue position-relative rounded shadow-sm border-0 p-2 d-flex align-items-center justify-content-center gap-2 text-white" title="Ver Carrito" style="background-color: #3b82f6;">
+              <span class="material-icons" style="font-size: 20px;">shopping_cart</span>
+              <span class="btn-text desktop-only fw-bold text-white" style="font-size: 0.8rem;">Ver Carrito</span>
+              <span v-if="carrito.length > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.6rem; transform: translate(-30%, -30%) !important;">
+                {{ carrito.length }}
+              </span>
             </button>
-          </RouterLink>
-
-          <button @click="mostrarCarrito = true" class="btn-action btn-blue position-relative" title="Ver Carrito">
-            <span class="material-icons">shopping_cart</span> <span class="btn-text">Ver Carrito</span>
-            <span v-if="carrito.length > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.6rem; transform: translate(-30%, -30%) !important;">
-              {{ carrito.length }}
-            </span>
-          </button>
+          </div>
         </div>
-      </div>
 
-      <!-- BUSCADOR -->
-      <div class="mb-4">
-        <input 
-          v-model="busqueda" 
-          type="text" 
-          class="form-control rounded-pill shadow-sm px-4 border-0 input-filtro-custom" 
-          placeholder="Buscar prenda o modelo..."
-        >
-      </div>
-
-      <!-- GRILLA DE PRODUCTOS RESPONSIVE -->
-      <div class="row g-3">
-        <!-- USAMOS stockPaginado EN LUGAR DE stockFiltrado -->
-        <div v-for="(prenda, key) in stockPaginado" :key="key" class="col-12 col-md-4 col-lg-3 text-center">
-          <div class="card h-100 border-0 shadow-sm tarjeta-prenda-invertida overflow-hidden">
-            
-            <div class="bg-white position-relative contenedor-imagen-superior">
-              <div 
-                class="d-flex align-items-center justify-content-center h-100 cursor-zoom"
-                @click="abrirZoom(obtenerImagenActual(prenda))"
+        <div class="card-body bg-white p-3 p-md-4">
+          
+          <div class="mb-4">
+            <div class="input-group shadow-sm rounded-pill overflow-hidden border border-secondary-subtle">
+              <span class="input-group-text bg-light border-0 text-muted ps-4"><i class="bi bi-search"></i></span>
+              <input 
+                v-model="busqueda" 
+                type="text" 
+                class="form-control border-0 py-2 py-md-3 bg-light shadow-none input-filtro-custom" 
+                placeholder="Buscar prenda o modelo..."
               >
-                <img 
-                  :src="obtenerImagenActual(prenda)" 
-                  class="img-fluid foto-prenda animate__animated animate__fadeIn animate__faster"
-                  alt="Indumentaria"
-                >
-                <div class="zoom-icon-overlay">
-                  <span class="material-icons" style="font-size: 16px;">search</span>
-                </div>
-              </div>
-
-              <template v-if="obtenerTotalImagenes(prenda) > 1">
-                <button @click.stop="cambiarFoto(prenda, -1)" class="btn-nav-foto start-0 ms-1">
-                  <span class="material-icons">chevron_left</span>
-                </button>
-                <button @click.stop="cambiarFoto(prenda, 1)" class="btn-nav-foto end-0 me-1">
-                  <span class="material-icons">chevron_right</span>
-                </button>
-                <div class="indicador-fotos">
-                  {{ (prenda.fotoActualIndex || 0) + 1 }} / {{ obtenerTotalImagenes(prenda) }}
-                </div>
-              </template>
             </div>
-            
-            <div class="card-body p-3 d-flex flex-column cuerpo-gris-inferior">
-              <h6 class="fw-bold text-dark mb-1 text-uppercase extra-small-mobile">{{ prenda.descripcion }}</h6>
-              <h5 class="fw-bold text-danger mb-2 mb-md-3">$ {{ prenda.precio_unitario }}</h5>
-              
-              <div class="mt-auto">
-                <div class="row g-2 mb-2 text-start">
-                  <div class="col-7">
-                    <label class="extra-small-label fw-bold text-muted">Talle:</label>
-                    <select v-model="prenda.itemSeleccionado" @change="validarCantidad(prenda)" class="form-select form-select-sm rounded-pill shadow-sm border-secondary-subtle bg-white">
-                      <option v-for="(t, k) in prenda.items" :key="k" :value="k">
-                        {{ t.talle }}
-                      </option>
-                    </select>
-                  </div>
-                  <div class="col-5">
-                    <label class="extra-small-label fw-bold text-muted">Cant:</label>
-                    <input 
-                      type="number" 
-                      v-model.number="prenda.cantidadSeleccionada" 
-                      min="1" 
-                      :max="permitePedidoSinStock(prenda) ? 99 : obtenerStockMaximo(prenda)"
-                      @input="validarCantidad(prenda)"
-                      class="form-control form-control-sm rounded-pill shadow-sm border-secondary-subtle text-center"
+          </div>
+
+          <div class="row g-3">
+            <div v-for="(prenda, key) in stockPaginado" :key="key" class="col-12 col-md-4 col-lg-3 text-center">
+              <div class="card h-100 border-0 shadow-sm tarjeta-prenda-invertida overflow-hidden">
+                
+                <div class="bg-white position-relative contenedor-imagen-superior">
+                  <div 
+                    class="d-flex align-items-center justify-content-center h-100 cursor-zoom"
+                    @click="abrirZoom(obtenerImagenActual(prenda))"
+                  >
+                    <img 
+                      :src="obtenerImagenActual(prenda)" 
+                      class="img-fluid foto-prenda animate__animated animate__fadeIn animate__faster"
+                      alt="Indumentaria"
                     >
+                    <div class="zoom-icon-overlay">
+                      <span class="material-icons" style="font-size: 16px;">search</span>
+                    </div>
                   </div>
+
+                  <template v-if="obtenerTotalImagenes(prenda) > 1">
+                    <button @click.stop="cambiarFoto(prenda, -1)" class="btn-nav-foto start-0 ms-1">
+                      <span class="material-icons">chevron_left</span>
+                    </button>
+                    <button @click.stop="cambiarFoto(prenda, 1)" class="btn-nav-foto end-0 me-1">
+                      <span class="material-icons">chevron_right</span>
+                    </button>
+                    <div class="indicador-fotos">
+                      {{ (prenda.fotoActualIndex || 0) + 1 }} / {{ obtenerTotalImagenes(prenda) }}
+                    </div>
+                  </template>
+                </div>
+                
+                <div class="card-body p-3 d-flex flex-column cuerpo-gris-inferior">
+                  <h6 class="fw-bold text-dark mb-1 text-uppercase extra-small-mobile">{{ prenda.descripcion }}</h6>
+                  <h5 class="fw-bold text-danger mb-2 mb-md-3">$ {{ prenda.precio_unitario }}</h5>
                   
-                  <!-- INDICADOR DE STOCK INTELIGENTE -->
-                  <div class="col-12 mt-0 text-center">
-                    <span v-if="obtenerStockMaximo(prenda) > 0" class="badge rounded-pill bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">
-                      Disp: {{ obtenerStockMaximo(prenda) }}
-                    </span>
-                    <span v-else-if="permitePedidoSinStock(prenda)" class="badge rounded-pill bg-warning-subtle text-dark border border-warning" style="font-size: 0.65rem;">
-                      A Pedido (Demora de fábrica)
-                    </span>
-                    <span v-else class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem;">
-                      Agotado Definitivamente
-                    </span>
+                  <div class="mt-auto">
+                    <div class="row g-2 mb-2 text-start">
+                      <div class="col-7">
+                        <label class="extra-small-label fw-bold text-muted">Talle:</label>
+                        <select v-model="prenda.itemSeleccionado" @change="validarCantidad(prenda)" class="form-select form-select-sm rounded-pill shadow-sm border-secondary-subtle bg-white">
+                          <option v-for="(t, k) in prenda.items" :key="k" :value="k">
+                            {{ t.talle }}
+                          </option>
+                        </select>
+                      </div>
+                      <div class="col-5">
+                        <label class="extra-small-label fw-bold text-muted">Cant:</label>
+                        <input 
+                          type="number" 
+                          v-model.number="prenda.cantidadSeleccionada" 
+                          min="1" 
+                          :max="permitePedidoSinStock(prenda) ? 99 : obtenerStockMaximo(prenda)"
+                          @input="validarCantidad(prenda)"
+                          class="form-control form-control-sm rounded-pill shadow-sm border-secondary-subtle text-center"
+                        >
+                      </div>
+                      
+                      <div class="col-12 mt-0 text-center">
+                        <span v-if="obtenerStockMaximo(prenda) > 0" class="badge rounded-pill bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">
+                          Disp: {{ obtenerStockMaximo(prenda) }}
+                        </span>
+                        <span v-else-if="permitePedidoSinStock(prenda)" class="badge rounded-pill bg-warning-subtle text-dark border border-warning" style="font-size: 0.65rem;">
+                          A Pedido (Demora de fábrica)
+                        </span>
+                        <span v-else class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem;">
+                          Agotado Definitivamente
+                        </span>
+                      </div>
+                    </div>
+
+                    <button 
+                      @click="agregarAlCarrito(prenda)" 
+                      :disabled="obtenerStockMaximo(prenda) <= 0 && !permitePedidoSinStock(prenda)"
+                      :class="['btn btn-sm w-100 rounded-pill fw-bold shadow-sm py-2 d-flex align-items-center justify-content-center gap-1 mt-2', (obtenerStockMaximo(prenda) <= 0 && permitePedidoSinStock(prenda)) ? 'btn-warning text-dark' : 'btn-danger text-white']"
+                    >
+                      <span class="material-icons" style="font-size: 16px;">
+                        {{ (obtenerStockMaximo(prenda) > 0 || permitePedidoSinStock(prenda)) ? 'add_shopping_cart' : 'remove_shopping_cart' }}
+                      </span>
+                      {{ obtenerStockMaximo(prenda) > 0 ? 'AGREGAR' : (permitePedidoSinStock(prenda) ? 'ENCARGAR' : 'SIN STOCK') }}
+                    </button>
                   </div>
                 </div>
-
-                <!-- BOTÓN DINÁMICO -->
-                <button 
-                  @click="agregarAlCarrito(prenda)" 
-                  :disabled="obtenerStockMaximo(prenda) <= 0 && !permitePedidoSinStock(prenda)"
-                  :class="['btn btn-sm w-100 rounded-pill fw-bold shadow-sm py-2 d-flex align-items-center justify-content-center gap-1 mt-2', (obtenerStockMaximo(prenda) <= 0 && permitePedidoSinStock(prenda)) ? 'btn-warning text-dark' : 'btn-danger text-white']"
-                >
-                  <span class="material-icons" style="font-size: 16px;">
-                    {{ (obtenerStockMaximo(prenda) > 0 || permitePedidoSinStock(prenda)) ? 'add_shopping_cart' : 'remove_shopping_cart' }}
-                  </span>
-                  {{ obtenerStockMaximo(prenda) > 0 ? 'AGREGAR' : (permitePedidoSinStock(prenda) ? 'ENCARGAR' : 'SIN STOCK') }}
-                </button>
               </div>
             </div>
+          </div>
+
+          <div v-if="stockPaginado.length === 0" class="text-center p-5 bg-light rounded border mt-3">
+            <span class="material-icons text-muted" style="font-size: 48px;">inventory_2</span>
+            <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron prendas.</p>
+          </div>
+
+          <div class="paginacion" v-if="totalPaginas > 1">
+            <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+            <span class="paginacion-texto text-dark">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
+          </div>
+
+        </div>
+      </div> <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
+          <div class="small text-dark lh-sm">
+            Por dudas o consultas enviar e-mail a <a href="mailto:tesoreria@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none">tesoreria@arbitroshandball.com.ar</a>
           </div>
         </div>
       </div>
 
-      <div v-if="stockPaginado.length === 0" class="text-center p-5 bg-white rounded shadow-sm border mt-3">
-        <span class="material-icons text-muted" style="font-size: 48px;">inventory_2</span>
-        <p class="text-muted mt-2 mb-0">No se encontraron prendas.</p>
-      </div>
-
-      <!-- PAGINACIÓN -->
-      <div class="paginacion" v-if="totalPaginas > 1">
-        <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
-        <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-        <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
-      </div>
-
     </div>
 
-    <!-- MODAL IMAGEN ZOOM -->
     <div v-if="imagenZoom" class="modal-zoom-overlay animate__animated animate__fadeIn" @click="imagenZoom = null">
       <button class="btn-cerrar-zoom shadow" @click.stop="imagenZoom = null">
         <span class="material-icons">close</span>
@@ -150,7 +164,6 @@
       <img :src="imagenZoom" class="img-zoom-full animate__animated animate__zoomIn" @click.stop>
     </div>
 
-    <!-- MODAL CARRITO -->
     <Teleport to="body">
     <div v-if="mostrarCarrito" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10000;">
       <div class="modal-content-exito p-4 shadow-lg animate__animated animate__zoomIn" style="max-width: 450px; width: 95%;">
@@ -187,7 +200,6 @@
     </div>
     </Teleport>
 
-    <!-- MODAL PAGO Y CONFIRMACIÓN -->
     <Teleport to="body">
     <div v-if="mostrarPago" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
       <div class="modal-content-exito p-4 text-center animate__animated animate__zoomIn" style="max-width: 450px; width: 95%;">
@@ -351,7 +363,7 @@ const stockPaginado = computed(() => {
 watch(paginaActual, () => {
   window.scrollTo({
     top: 0,
-    behavior: 'smooth' // Esto hace que suba con un efecto suave
+    behavior: 'smooth'
   });
 });
 
@@ -434,24 +446,42 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ESTILOS WRAPPER ESTÁNDAR */
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; }
-.admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; }
-.header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
-.title { font-size: 1.1rem; font-weight: bold; margin: 0; }
-.counter { font-size: 0.85rem; color: #000000; }
-.header-actions { display: flex; gap: 8px; }
-.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
-.btn-clear { background: #e2e8f0; color: #000; }
-.btn-blue { background: #3b82f6; color: white; }
+.full-screen-wrapper { 
+  position: relative; 
+  width: 99vw; 
+  min-height: 100vh; 
+  height: auto !important; 
+  margin-left: 50%; 
+  transform: translateX(-50%); 
+  padding: 20px; 
+  padding-bottom: 120px; 
+  box-sizing: border-box;
+}
+.admin-panel { 
+  width: 100%; 
+  max-width: 100%; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; 
+  color: #000; 
+  background-color: #0f172a; 
+  min-height: 100vh; 
+  border-radius: 12px;
+  padding: 20px;
+}
 
-.input-filtro-custom { font-size: 1rem !important; padding: 0.5rem 1rem; height: auto !important; }
-.input-filtro-custom:focus { box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important; outline: none; }
+.btn-action, .btn-clear { 
+  border: none; 
+  cursor: pointer; 
+}
+.btn-clear:hover { background-color: #e2e8f0 !important; }
 
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+.input-filtro-custom { font-size: 1rem !important; height: auto !important; }
+.input-filtro-custom:focus { outline: none; }
+
+.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 20px; }
+.btn-paginacion { border: 1px solid #cbd5e1; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s;}
+.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
+.paginacion-texto { color: #0f172a; font-size: 0.85rem; font-weight: 600; }
 
 /* CARDS TIENDA */
 .tarjeta-prenda-invertida { border-radius: 16px; transition: all 0.3s ease; background-color: #f8fafc; border: 1px solid #e2e8f0 !important; display: flex; flex-direction: column; }
@@ -483,16 +513,19 @@ h5 { font-size: 1.2rem; }
 .img-zoom-full { max-width: 95%; max-height: 85vh; border-radius: 10px; }
 .btn-cerrar-zoom { position: absolute; top: 20px; right: 20px; background: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; display:flex; align-items: center; justify-content:center; color: #dc2626; z-index: 11001; }
 
+.desktop-only { display: block; }
+
 @media (max-width: 768px) {
+  .desktop-only { display: none !important; }
   .contenedor-imagen-superior { height: 150px; }
 }
 
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; }
-  .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
-  .title { font-size: 1rem; }
+  .admin-panel { padding: 10px; border-radius: 0; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
-  .header-actions { width: 100%; display: flex; flex-direction: row; justify-content: space-between; }
-  .btn-text { display: none !important; }
+}
+
+@media (min-width: 768px) {
+  .btn-text { display: inline; }
 }
 </style>

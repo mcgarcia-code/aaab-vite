@@ -1,15 +1,23 @@
 <template>
-  <div class="animate__animated animate__fadeIn container py-4 page-bg">
+  <div class="animate__animated animate__fadeIn container-fluid py-4 page-bg">
     
-    <div class="card shadow border-0 mb-4 mx-auto" style="border-radius: 15px; max-width: 1000px;">
+    <div class="card shadow border-0 mb-4 mx-auto w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <div>
-          <h4 class="text-danger fw-bold m-0">Disponibilidad Horaria</h4>
-          <p class="text-muted small m-0">Gestioná tus horarios y actividad deportiva.</p>
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center">
+            <i class="bi bi-clock me-2"></i> Disponibilidad Horaria
+          </h4>
+          <p class="text-muted small m-0 mt-1">Gestioná tus horarios y actividad deportiva.</p>
         </div>
-        <span :class="edicionAbierta ? 'badge bg-success' : 'badge bg-secondary'" class="px-3 py-2 shadow-sm w-fit-mobile">
-          {{ edicionAbierta ? 'Edición Abierta' : 'Edición Cerrada' }}
-        </span>
+        
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+          <span v-if="edicionAbierta" class="badge bg-success px-3 py-2 shadow-sm w-fit-mobile">
+            <i class="bi bi-pencil-square me-1"></i> Edición Abierta
+          </span>
+          <span v-else class="badge bg-secondary px-3 py-2 shadow-sm w-fit-mobile">
+            <i class="bi bi-lock-fill me-1"></i> Edición Cerrada
+          </span>
+        </div>
       </div>
       
       <div class="card-body p-3 p-md-4">
@@ -115,7 +123,7 @@
       </div>
     </div>
 
-    <div class="manual-section p-0 mx-auto mt-4 mb-5" style="max-width: 1000px; background: transparent; box-shadow: none;">
+    <div class="manual-section p-0 mx-auto mt-4 mb-5 w-100" style="background: transparent; box-shadow: none;">
         <div class="text-center text-white-50 mb-3 small">
             <i class="bi bi-shield-lock-fill me-1"></i>
             Todas las modificaciones quedan registradas en el sistema.
@@ -139,7 +147,6 @@
                             <tr v-for="(h, i) in historialRectificaciones" :key="i">
                                 <td class="ps-3 small fw-bold text-dark">{{ h.fecha }}</td>
                                 <td class="small text-dark">{{ h.mensaje }}</td>
-                                <!-- ACÁ ESTÁ EL FIX: ESTADO DINÁMICO Y COLORES -->
                                 <td class="text-center">
                                     <span :class="['badge x-small', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]">
                                       {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}

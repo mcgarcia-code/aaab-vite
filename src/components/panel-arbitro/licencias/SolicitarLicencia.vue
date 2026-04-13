@@ -1,74 +1,86 @@
 <template>
-  <div class="animate__animated animate__fadeIn container py-2 px-0 px-md-2">
+  <div class="animate__animated animate__fadeIn container-fluid py-4">
     
-    <div class="card shadow p-3 p-md-4 border-0 mb-4 mx-auto" style="max-width: 800px;">
-      <h4 class="text-danger fw-bold mb-2">Solicitar Nueva Licencia</h4>
-      <p class="text-muted x-small-mobile mb-3">
-        Las licencias deben solicitarse con un mínimo de <strong>10 días</strong> de antelación para aprobación automática. Las mismas son por día completo, no hay licencias parciales.
-      </p>
+    <div class="row g-4">
+      <div class="col-12 col-lg-4">
+        <div class="card shadow p-3 p-md-4 border-0 h-100" style="border-radius: 15px;">
+          <h4 class="text-danger fw-bold mb-3 d-flex align-items-center">
+            <i class="bi bi-calendar me-2"></i> Solicitar Licencia
+          </h4>
+          <p class="text-muted x-small-mobile mb-4">
+            Las licencias deben solicitarse con un mínimo de <strong>10 días</strong> de antelación para aprobación automática. Las mismas son por día completo, no hay licencias parciales.
+          </p>
 
-      <div class="mb-3">
-        <label class="form-label fw-bold small text-dark">Fecha de la Licencia</label>
-        <input 
-          type="date" 
-          :min="fechaMinima" 
-          v-model="fechaSeleccionada" 
-          class="form-control form-control-lg custom-input-date shadow-none"
-          onkeydown="return false"
-        >
-      </div>
+          <div class="mb-4">
+            <label class="form-label fw-bold small text-dark">Fecha de la Licencia</label>
+            <input 
+              type="date" 
+              :min="fechaMinima" 
+              v-model="fechaSeleccionada" 
+              class="form-control form-control-lg custom-input-date shadow-none"
+              onkeydown="return false"
+            >
+          </div>
 
-      <button 
-        @click="solicitarLicencia" 
-        :disabled="!fechaSeleccionada || cargando" 
-        class="btn btn-primary w-100 fw-bold py-3 py-md-2 shadow-sm"
-      >
-        <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
-        {{ cargando ? 'PROCESANDO...' : 'ENVIAR SOLICITUD' }}
-      </button>
-    </div>
-
-    <div class="historial-seccion mx-auto" style="max-width: 800px;">
-      <h6 class="text-white mb-3 small fw-bold text-uppercase px-2" style="letter-spacing: 1px;">Mi Historial de Licencias</h6>
-      
-      <div class="card card-historial shadow border-0 overflow-hidden">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead>
-              <tr class="text-uppercase">
-                <th class="ps-3">Fecha</th>
-                <th class="d-none d-md-table-cell">Solicitada</th>
-                <th class="text-center pe-3">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(lic, index) in licencias" :key="index">
-                <td class="ps-3 align-middle fw-bold text-dark">
-                  <div class="d-flex flex-column">
-                    <span>{{ formatearFecha(lic.fecha_licencia) }}</span>
-                    <span class="d-md-none text-muted" style="font-size: 0.65rem;">Solic: {{ formatearFecha(lic.fecha_solicitud) }}</span>
-                  </div>
-                </td>
-                <td class="align-middle text-muted small d-none d-md-table-cell">
-                    {{ formatearFecha(lic.fecha_solicitud) }}
-                </td>
-                <td class="text-center align-middle pe-3">
-                  <span :class="lic.estado === 'aprobada' ? 'badge bg-success' : 'badge bg-danger'" class="status-badge">
-                    {{ lic.estado.toUpperCase() }}
-                  </span>
-                </td>
-              </tr>
-              <tr v-if="licencias.length === 0">
-                <td colspan="3" class="text-center text-muted py-5 small">
-                  No tenés licencias registradas.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="mt-auto">
+            <button 
+              @click="solicitarLicencia" 
+              :disabled="!fechaSeleccionada || cargando" 
+              class="btn btn-primary w-100 fw-bold py-3 py-md-2 shadow-sm"
+            >
+              <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
+              {{ cargando ? 'PROCESANDO...' : 'ENVIAR SOLICITUD' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
+      <div class="col-12 col-lg-8">
+        <div class="card shadow border-0 overflow-hidden h-100" style="border-radius: 15px;">
+          <div class="card-header bg-white py-3 border-bottom">
+            <h6 class="m-0 fw-bold text-dark small text-uppercase" style="letter-spacing: 1px;">Mi Historial de Licencias</h6>
+          </div>
+          
+          <div class="card-body p-0 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                  <tr class="text-uppercase text-muted" style="font-size: 0.75rem;">
+                    <th class="ps-3 py-3">Fecha</th>
+                    <th class="d-none d-md-table-cell py-3">Solicitada</th>
+                    <th class="text-center pe-3 py-3">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(lic, index) in licencias" :key="index">
+                    <td class="ps-3 align-middle fw-bold text-dark">
+                      <div class="d-flex flex-column">
+                        <span>{{ formatearFecha(lic.fecha_licencia) }}</span>
+                        <span class="d-md-none text-muted" style="font-size: 0.65rem;">Solic: {{ formatearFecha(lic.fecha_solicitud) }}</span>
+                      </div>
+                    </td>
+                    <td class="align-middle text-muted small d-none d-md-table-cell">
+                        {{ formatearFecha(lic.fecha_solicitud) }}
+                    </td>
+                    <td class="text-center align-middle pe-3">
+                      <span :class="lic.estado === 'aprobada' ? 'badge bg-success' : 'badge bg-danger'" class="status-badge">
+                        {{ lic.estado.toUpperCase() }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr v-if="licencias.length === 0">
+                    <td colspan="3" class="text-center text-muted py-5 small">
+                      No tenés licencias registradas.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
   </div>
 </template>
 
@@ -246,11 +258,9 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
 }
 
 @media (max-width: 576px) {
-    /* En pantallas muy pequeñas, reducimos el padding lateral del container 
-       que pusiste como px-0 para ganar cada pixel disponible */
-    .container {
-        padding-left: 5px !important;
-        padding-right: 5px !important;
+    .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
     }
 
     /* Reducimos el padding de las celdas de la tabla para que el 
@@ -260,7 +270,7 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
     }
     
     .status-badge {
-        font-size: 0.55rem; /* Un pelín más chico para evitar que se rompa en dos líneas */
+        font-size: 0.55rem;
     }
 }
 </style>
