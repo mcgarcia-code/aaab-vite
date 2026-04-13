@@ -1,183 +1,193 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="header-section shadow-sm">
-        <div class="header-info">
-          <h2 class="title">Gestión de Eventos y Avisos</h2>
-          <span class="counter">Total: {{ eventosFiltrados.length }} eventos</span>
-        </div>
-
-        <div class="header-actions">
-          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
-            <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
-          </button>
-
-          <button @click="limpiarFiltrosTabla" class="btn-action btn-clear" title="Limpiar Filtros">
-            <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
-          </button>
-          
-          <button @click="abrirModalNuevo" class="btn-action btn-clear-checks" title="Nuevo Evento">
-            <span class="material-icons">add_alert</span> <span class="btn-text">Nuevo</span>
-          </button>
-        </div>
-      </div>
-
-      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <span class="small fw-bold text-muted text-uppercase">Filtrar Eventos</span>
-          <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-            <span class="material-icons" style="font-size: 20px;">close</span>
-          </button>
-        </div>
-
-        <div class="filter-grid-mobile">
-          <div class="form-group-mobile full-width">
-            <label>Tema o Descripción</label>
-            <input v-model="filtros.busqueda" placeholder="Buscar palabra clave...">
-          </div>
-          <div class="form-group-mobile">
-            <label>Fecha</label>
-            <input type="date" v-model="filtros.fecha">
-          </div>
-          <div class="form-group-mobile">
-            <label>Categoría</label>
-            <select v-model="filtros.categoria">
-              <option value="">Todas</option>
-              <option value="reunion">Reunión</option>
-              <option value="recordatorio">Recordatorio</option>
-              <option value="urgente">Urgente</option>
-            </select>
-          </div>
-          <div class="form-group-mobile full-width">
-            <label>Grupo</label>
-            <input v-model="filtros.grupo" placeholder="Ej: Pre Liga, 3-A...">
-          </div>
-        </div>
+      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
         
-        <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0">Aplicar Filtros</button>
-      </div>
+        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
+          <div class="header-info">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
+              <i class="bi bi-megaphone me-1"></i> Gestión de Eventos y Avisos
+            </h4>
+            <span class="counter mt-1 d-block">Total: {{ eventosFiltrados.length }} eventos</span>
+          </div>
 
-      <div class="table-container shadow desktop-only">
-        <table>
-          <thead>
-            <tr class="main-header">
-              <th class="sticky-col col-id text-center">Fecha</th>
-              <th class="sticky-col col-acciones text-center">Acciones</th>
-              <th class="col-tema">Tema del Evento</th>
-              <th class="col-desc">Lugar / Descripción</th>
-              <th class="text-center" style="width: 130px;">Categoría</th>
-              <th class="text-center" style="width: 150px;">Alcance / Grupo</th>
-            </tr>
-            <tr class="filter-row">
-              <td class="sticky-col col-id text-center">
-                <input type="date" v-model="filtros.fecha" class="filter-input text-center">
-              </td>
-              <td class="sticky-col col-acciones text-center">
-                <button @click="obtenerEventos" class="btn-refresh w-100" title="Recargar"><span class="material-icons" style="font-size: 16px;">refresh</span></button>
-              </td>
-              <td class="col-tema"><input v-model="filtros.busqueda" class="filter-input" placeholder="Buscar tema o lugar..."></td>
-              <td class="col-desc"></td>
-              <td>
-                <select v-model="filtros.categoria" class="filter-input text-center">
-                  <option value="">TODAS</option>
-                  <option value="reunion">REUNIÓN</option>
-                  <option value="recordatorio">RECORDATORIO</option>
-                  <option value="urgente">URGENTE</option>
-                </select>
-              </td>
-              <td><input v-model="filtros.grupo" class="filter-input text-center" placeholder="Buscar grupo.."></td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="evento in eventosPaginados" :key="evento.id">
-              <td class="sticky-col col-id cell-ro text-center fw-bold">{{ formatearFecha(evento.fecha_evento) }}</td>
-              <td class="sticky-col col-acciones cell-ro text-center">
-                <div class="d-flex justify-content-center gap-1">
-                  <button @click="cargarDatosEdicion(evento)" class="btn-editar" title="Editar Evento">
-                    <span class="material-icons" style="font-size:16px;">edit</span>
-                  </button>
-                  <button @click="confirmarEliminacion(evento.id)" class="btn-eliminar" title="Eliminar Evento">
-                    <span class="material-icons" style="font-size:16px;">delete</span>
-                  </button>
-                </div>
-              </td>
-              <td class="cell-ro col-tema fw-bold">{{ evento.titulo }}</td>
-              <td class="cell-ro col-desc text-muted">
-                {{ evento.descripcion || '-' }}
-                <div v-if="esLink(evento.descripcion)" class="mt-1">
-                  <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none" style="font-size: 0.75rem;">
-                    <i class="bi bi-link-45deg"></i> ABRIR ENLACE
-                  </a>
-                </div>
-              </td>
-              <td class="text-center cell-ro">
-                <span :class="['badge-category', `cat-${evento.categoria}`]">{{ evento.categoria }}</span>
-              </td>
-              <td class="text-center cell-ro">
-                <span :class="['badge-status-sm', !evento.grupo ? 'bg-dark text-white' : 'bg-danger-subtle text-danger']">
-                  {{ !evento.grupo ? 'TODOS' : (evento.subgrupo ? `${evento.grupo}-${evento.subgrupo}` : evento.grupo) }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+          <div class="header-actions">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
+              <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+            </button>
 
-      <div class="mobile-only mt-3">
-        <div v-for="evento in eventosPaginados" :key="'mob-'+evento.id" class="card-arbitro">
-          <div class="card-header">
-            <div class="card-name fw-bold" style="font-size: 1rem; line-height: 1.2;">
-              {{ evento.titulo }}
+            <button @click="limpiarFiltrosTabla" class="btn-action btn-clear" title="Limpiar Filtros">
+              <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
+            </button>
+            
+            <button @click="abrirModalNuevo" class="btn-action btn-clear-checks" title="Nuevo Evento">
+              <span class="material-icons">add_alert</span> <span class="btn-text">Nuevo</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster border-bottom" style="margin-bottom: 0; border-radius: 0; box-shadow: none; background-color: #f8fafc;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="small fw-bold text-muted text-uppercase">Filtrar Eventos</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+              <span class="material-icons" style="font-size: 20px;">close</span>
+            </button>
+          </div>
+
+          <div class="filter-grid-mobile">
+            <div class="form-group-mobile full-width">
+              <label>Tema o Descripción</label>
+              <input v-model="filtros.busqueda" placeholder="Buscar palabra clave...">
             </div>
-            <div class="text-xs text-primary fw-bold">{{ formatearFecha(evento.fecha_evento) }}</div>
+            <div class="form-group-mobile">
+              <label>Fecha</label>
+              <input type="date" v-model="filtros.fecha">
+            </div>
+            <div class="form-group-mobile">
+              <label>Categoría</label>
+              <select v-model="filtros.categoria">
+                <option value="">Todas</option>
+                <option value="reunion">Reunión</option>
+                <option value="recordatorio">Recordatorio</option>
+                <option value="urgente">Urgente</option>
+              </select>
+            </div>
+            <div class="form-group-mobile full-width">
+              <label>Grupo</label>
+              <input v-model="filtros.grupo" placeholder="Ej: Pre Liga, 3-A...">
+            </div>
           </div>
           
-          <div class="card-body">
-            <div class="mb-2 d-flex align-items-center flex-wrap gap-2">
-              <span :class="['badge-category', `cat-${evento.categoria}`]">{{ evento.categoria }}</span>
-              <span :class="['badge-status-sm', !evento.grupo ? 'bg-dark text-white' : 'bg-danger-subtle text-danger']">
-                Alcance: {{ !evento.grupo ? 'TODOS' : (evento.subgrupo ? `${evento.grupo}-${evento.subgrupo}` : evento.grupo) }}
-              </span>
-            </div>
-            
-            <div class="card-info mt-2">
-              <p class="text-muted" style="white-space: pre-line;">{{ evento.descripcion || 'Sin descripción' }}</p>
-              <div v-if="esLink(evento.descripcion)" class="mt-2">
-                <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none">
-                  <span class="material-icons align-middle" style="font-size: 16px;">link</span> Abrir Enlace
-                </a>
+          <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm">Aplicar Filtros</button>
+        </div>
+
+        <div class="card-body p-3 p-md-4">
+          
+          <div class="table-container shadow-sm desktop-only">
+            <table>
+              <thead>
+                <tr class="main-header">
+                  <th class="sticky-col col-id text-center">Fecha</th>
+                  <th class="sticky-col col-acciones text-center">Acciones</th>
+                  <th class="col-tema">Tema del Evento</th>
+                  <th class="col-desc">Lugar / Descripción</th>
+                  <th class="text-center" style="width: 130px;">Categoría</th>
+                  <th class="text-center" style="width: 150px;">Alcance / Grupo</th>
+                </tr>
+                <tr class="filter-row">
+                  <td class="sticky-col col-id text-center">
+                    <input type="date" v-model="filtros.fecha" class="filter-input text-center">
+                  </td>
+                  <td class="sticky-col col-acciones text-center">
+                    <button @click="obtenerEventos" class="btn-refresh w-100" title="Recargar"><span class="material-icons" style="font-size: 16px;">refresh</span></button>
+                  </td>
+                  <td class="col-tema"><input v-model="filtros.busqueda" class="filter-input" placeholder="Buscar tema o lugar..."></td>
+                  <td class="col-desc"></td>
+                  <td>
+                    <select v-model="filtros.categoria" class="filter-input text-center">
+                      <option value="">TODAS</option>
+                      <option value="reunion">REUNIÓN</option>
+                      <option value="recordatorio">RECORDATORIO</option>
+                      <option value="urgente">URGENTE</option>
+                    </select>
+                  </td>
+                  <td><input v-model="filtros.grupo" class="filter-input text-center" placeholder="Buscar grupo.."></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="evento in eventosPaginados" :key="evento.id">
+                  <td class="sticky-col col-id cell-ro text-center fw-bold">{{ formatearFecha(evento.fecha_evento) }}</td>
+                  <td class="sticky-col col-acciones cell-ro text-center">
+                    <div class="d-flex justify-content-center gap-1">
+                      <button @click="cargarDatosEdicion(evento)" class="btn-editar" title="Editar Evento">
+                        <span class="material-icons" style="font-size:16px;">edit</span>
+                      </button>
+                      <button @click="confirmarEliminacion(evento.id)" class="btn-eliminar" title="Eliminar Evento">
+                        <span class="material-icons" style="font-size:16px;">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                  <td class="cell-ro col-tema fw-bold">{{ evento.titulo }}</td>
+                  <td class="cell-ro col-desc text-muted">
+                    {{ evento.descripcion || '-' }}
+                    <div v-if="esLink(evento.descripcion)" class="mt-1">
+                      <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none" style="font-size: 0.75rem;">
+                        <i class="bi bi-link-45deg"></i> ABRIR ENLACE
+                      </a>
+                    </div>
+                  </td>
+                  <td class="text-center cell-ro">
+                    <span :class="['badge-category', `cat-${evento.categoria}`]">{{ evento.categoria }}</span>
+                  </td>
+                  <td class="text-center cell-ro">
+                    <span class="badge-status-sm bg-dark text-white">
+                      {{ !evento.grupo ? 'TODOS' : (evento.subgrupo ? `${evento.grupo}-${evento.subgrupo}` : evento.grupo) }}
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="eventosPaginados.length === 0">
+                  <td colspan="6" class="text-center py-5 text-muted bg-light italic">No se encontraron eventos.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mobile-only mt-3">
+            <div v-for="evento in eventosPaginados" :key="'mob-'+evento.id" class="card-arbitro">
+              <div class="card-header">
+                <div class="card-name fw-bold" style="font-size: 1rem; line-height: 1.2;">
+                  {{ evento.titulo }}
+                </div>
+                <div class="text-xs text-primary fw-bold">{{ formatearFecha(evento.fecha_evento) }}</div>
+              </div>
+              
+              <div class="card-body">
+                <div class="mb-2 d-flex align-items-center flex-wrap gap-2">
+                  <span :class="['badge-category', `cat-${evento.categoria}`]">{{ evento.categoria }}</span>
+                  <span class="badge-status-sm bg-dark text-white">
+                    Alcance: {{ !evento.grupo ? 'TODOS' : (evento.subgrupo ? `${evento.grupo}-${evento.subgrupo}` : evento.grupo) }}
+                  </span>
+                </div>
+                
+                <div class="card-info mt-2">
+                  <p class="text-muted" style="white-space: pre-line;">{{ evento.descripcion || 'Sin descripción' }}</p>
+                  <div v-if="esLink(evento.descripcion)" class="mt-2">
+                    <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none">
+                      <span class="material-icons align-middle" style="font-size: 16px;">link</span> Abrir Enlace
+                    </a>
+                  </div>
+                </div>
+                
+                <div class="d-flex gap-2 mt-3 pt-2 border-top">
+                  <button @click="cargarDatosEdicion(evento)" class="btn-editar-mobile flex-grow-1">
+                    <span class="material-icons" style="font-size: 18px;">edit</span> Editar
+                  </button>
+                  <button @click="confirmarEliminacion(evento.id)" class="btn-eliminar-mobile flex-grow-1">
+                    <span class="material-icons" style="font-size: 18px;">delete</span> Eliminar
+                  </button>
+                </div>
               </div>
             </div>
             
-            <div class="d-flex gap-2 mt-3 pt-2 border-top">
-              <button @click="cargarDatosEdicion(evento)" class="btn-editar-mobile flex-grow-1">
-                <span class="material-icons" style="font-size: 18px;">edit</span> Editar
-              </button>
-              <button @click="confirmarEliminacion(evento.id)" class="btn-eliminar-mobile flex-grow-1">
-                <span class="material-icons" style="font-size: 18px;">delete</span> Eliminar
-              </button>
+            <div v-if="eventosPaginados.length === 0" class="text-center p-4 bg-white rounded shadow-sm border mt-2">
+              <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
+              <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron eventos.</p>
             </div>
           </div>
-        </div>
-        
-        <div v-if="eventosPaginados.length === 0" class="text-center p-4 bg-white rounded shadow-sm">
-          <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-          <p class="text-muted mt-2 mb-0">No se encontraron eventos.</p>
-        </div>
-      </div>
 
-      <div class="d-flex justify-content-end mt-4 w-100" v-if="eventosFiltrados.length > 0">
-        <div class="paginacion m-0" v-if="totalPaginas > 1">
-          <button class="btn-paginacion" @click="cambiarPagina(-1)" :disabled="paginaActual === 1">Anterior</button>
-          <span class="paginacion-texto text-dark">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button class="btn-paginacion" @click="cambiarPagina(1)" :disabled="paginaActual === totalPaginas || totalPaginas === 0">Siguiente</button>
-        </div>
-      </div>
+          <div class="d-flex justify-content-end mt-4 w-100" v-if="eventosFiltrados.length > 0">
+            <div class="paginacion m-0" v-if="totalPaginas > 1">
+              <button class="btn-paginacion shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual === 1">Anterior</button>
+              <span class="paginacion-texto text-dark fw-bold">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn-paginacion shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual === totalPaginas || totalPaginas === 0">Siguiente</button>
+            </div>
+          </div>
 
-    </div>
+        </div> </div> </div>
 
     <Teleport to="body">
     <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
@@ -383,19 +393,16 @@ watch(totalPaginas, (nuevoTotal) => {
   }
 });
 
-// NUEVA FUNCIÓN: Cambiar página y scrollear arriba
+// NUEVA FUNCIÓN: Cambiar página y scrollear arriba SOLO EN MOBILE
 const cambiarPagina = (delta) => {
   paginaActual.value += delta;
   
-  // Damos un milisegundo para que Vue renderice y luego subimos
   setTimeout(() => {
-    // Para compu: Subir la barra de la tabla
-    const tableContainer = document.querySelector('.table-container');
-    if (tableContainer) {
-      tableContainer.scrollTo({ top: 0, behavior: 'smooth' });
+    // Verificamos si estamos en una pantalla de celular (menos de 768px de ancho)
+    if (window.innerWidth <= 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    // Para celu: Subir la ventana entera
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Si estamos en PC, no hace nada más que cambiar la página
   }, 50);
 };
 
@@ -636,7 +643,12 @@ tbody td.sticky-col { z-index: 30 !important; }
   border-bottom: 1px solid #f1f5f9;
 }
 
-.filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
+/* Aplicamos el font-size de 16px para evitar el zoom en inputs móviles y desktop si hace falta */
+.filter-input { font-size: 16px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
+
+@media (min-width: 769px) {
+  .filter-input { font-size: 0.75rem; height: 28px; }
+}
 
 /* BOTONES DE EDICIÓN E HISTORIAL EN TABLA */
 .btn-editar, .btn-eliminar { display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: none;}
@@ -697,12 +709,20 @@ tbody td.sticky-col { z-index: 30 !important; }
   padding: 8px 10px; 
   border: 1px solid #cbd5e1; 
   border-radius: 6px; 
-  font-size: 0.85rem; 
+  font-size: 16px; /* 16px para evitar zoom en iOS */
   width: 100%; 
   outline: none; 
   background: #f8fafc;
   color: #0f172a;
 }
+
+@media (min-width: 769px) {
+  .form-group-mobile input, 
+  .form-group-mobile select { 
+    font-size: 0.85rem; 
+  }
+}
+
 .form-group-mobile input:focus, 
 .form-group-mobile select:focus {
   border-color: #3b82f6;
@@ -735,7 +755,7 @@ tbody td.sticky-col { z-index: 30 !important; }
   
   .mobile-only { 
     display: block !important; 
-    min-height: 65vh; 
+    /* ELIMINADO EL MIN-HEIGHT QUE CAUSABA EL ESPACIO BLANCO */
   }
   
   /* ESTILOS DE LAS TARJETAS MÓVILES */

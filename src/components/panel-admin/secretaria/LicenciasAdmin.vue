@@ -1,173 +1,177 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <!-- CABECERA -->
-      <div class="header-section shadow-sm">
-        <div class="header-info">
-          <h2 class="title">Gestión de Licencias</h2>
-          <span class="counter">Total: {{ licenciasFiltradas.length }} licencias</span>
+      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
+        
+        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0;">
+          <div class="header-info">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
+              <i class="bi bi-calendar-event me-1"></i> Gestión de Licencias
+            </h4>
+            <span class="counter mt-1 d-block">Total: {{ licenciasFiltradas.length }} licencias</span>
+          </div>
+
+          <div class="header-actions">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
+              <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+            </button>
+
+            <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
+              <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
+            </button>
+
+            <button @click="abrirModalNuevo" class="btn-action btn-clear-checks" title="Nueva Licencia">
+              <span class="material-icons">person_add</span> <span class="btn-text">Nuevo</span>
+            </button>
+
+            <button @click="exportarExcel" class="btn-action btn-export" title="Exportar a Excel">
+              <span class="material-icons">download</span> <span class="btn-text">Excel</span>
+            </button>
+          </div>
         </div>
 
-        <div class="header-actions">
-          <!-- BOTÓN FILTROS (SOLO MOBILE) -->
-          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
-            <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
-          </button>
+        <div class="card-body p-3 p-md-4">
+          
+          <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="small fw-bold text-muted text-uppercase">Filtrar Licencias</span>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
+                <span class="material-icons" style="font-size: 20px;">close</span>
+              </button>
+            </div>
 
-          <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
-            <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
-          </button>
+            <div class="filter-grid-mobile">
+              <input v-model="filtros.apellido" placeholder="Apellido...">
+              <input v-model="filtros.nombre" placeholder="Nombre...">
 
-          <button @click="abrirModalNuevo" class="btn-action btn-clear-checks" title="Nueva Licencia">
-            <span class="material-icons">person_add</span> <span class="btn-text">Nuevo</span>
-          </button>
+              <select v-model="filtros.estado" class="full-width">
+                <option value="">Estado (Todos)</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="aprobada">Aprobada</option>
+                <option value="rechazada">Rechazada</option>
+              </select>
 
-          <button @click="exportarExcel" class="btn-action btn-export" title="Exportar a Excel">
-            <span class="material-icons">download</span> <span class="btn-text">Excel</span>
-          </button>
-        </div>
-      </div>
+              <input type="text" v-model="filtros.fecha_solicitud" placeholder="F. Solicitud (DD/MM/AAAA)">
+              <input type="text" v-model="filtros.fecha" placeholder="F. Ausencia (DD/MM/AAAA)">
+            </div>
 
-      <!-- PANEL DE FILTROS DESPLEGABLE (SOLO MOBILE) -->
-      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <span class="small fw-bold text-muted text-uppercase">Filtrar Licencias</span>
-          <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-            <span class="material-icons" style="font-size: 20px;">close</span>
-          </button>
-        </div>
+            <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0">Aplicar Filtros</button>
+          </div>
 
-        <div class="filter-grid-mobile">
-          <input v-model="filtros.apellido" placeholder="Apellido...">
-          <input v-model="filtros.nombre" placeholder="Nombre...">
+          <div class="table-container shadow desktop-only">
+            <table>
+              <thead>
+                <tr class="main-header">
+                  <th class="sticky-col col-id">ID</th>
+                  <th class="sticky-col col-acciones text-center">Acciones</th>
+                  <th class="sticky-col col-apellido">Apellido</th>
+                  <th class="sticky-col col-nombre">Nombre</th>
+                  <th class="text-center" style="min-width: 120px;">Estado</th>
+                  <th class="text-center">F. Solicitud</th>
+                  <th class="text-center">F. Licencia</th>
+                </tr>
+                <tr class="filter-row">
+                  <td class="sticky-col col-id">
+                    <button @click="obtenerLicencias" class="btn-refresh w-100" title="Recargar"><span class="material-icons" style="font-size: 16px;">refresh</span></button>
+                  </td>
+                  <td class="sticky-col col-acciones"></td>
+                  <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar.."></td>
+                  <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar.."></td>
+                  <td>
+                    <select v-model="filtros.estado" class="filter-input text-center">
+                      <option value="">TODOS</option>
+                      <option value="pendiente">PENDIENTE</option>
+                      <option value="aprobada">APROBADA</option>
+                      <option value="rechazada">RECHAZADA</option>
+                    </select>
+                  </td>
+                  <td><input v-model="filtros.fecha_solicitud" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
+                  <td><input v-model="filtros.fecha" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="lic in licenciasPaginadas" :key="lic.id">
+                  <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ lic.id }}</td>
+                  <td class="sticky-col col-acciones cell-ro text-center">
+                    <div class="d-flex justify-content-center gap-1">
+                      <button @click="editarLicencia(lic)" class="btn-editar" title="Editar Licencia">
+                        <span class="material-icons" style="font-size:16px;">edit</span>
+                      </button>
+                      <button @click="verHistorialLicencia(lic)" class="btn-historial" title="Ver Historial">
+                        <span class="material-icons" style="font-size:16px;">manage_search</span>
+                      </button>
+                      <button @click="eliminarLicencia(lic.id)" class="btn-eliminar" title="Eliminar">
+                        <span class="material-icons" style="font-size:16px;">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                  <td class="sticky-col col-apellido cell-ro fw-bold">{{ lic.apellido }}</td>
+                  <td class="sticky-col col-nombre cell-ro fw-bold">{{ lic.nombre }}</td>
+                  <td class="text-center cell-ro">
+                    <span :class="['badge-status', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
+                  </td>
+                  <td class="text-center cell-ro">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
+                  <td class="text-center cell-ro fw-bold text-primary">{{ formatearFechaVista(lic.fecha_licencia) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-          <select v-model="filtros.estado" class="full-width">
-            <option value="">Estado (Todos)</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="aprobada">Aprobada</option>
-            <option value="rechazada">Rechazada</option>
-          </select>
+          <div class="mobile-only">
+            <div v-for="lic in licenciasPaginadas" :key="'mob-'+lic.id" class="card-licencia">
+              <div class="card-header">
+                <div class="card-name">
+                  <strong>{{ lic.apellido }}, {{ lic.nombre }}</strong>
+                </div>
+                <div class="text-xs" style="color: #64748b;">ID: {{ lic.id }}</div>
+              </div>
 
-          <input type="text" v-model="filtros.fecha_solicitud" placeholder="F. Solicitud (DD/MM/AAAA)">
-          <input type="text" v-model="filtros.fecha" placeholder="F. Ausencia (DD/MM/AAAA)">
-        </div>
+              <div class="card-body">
+                <div class="card-row">
+                  <span><strong>Estado:</strong> <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span></span>
+                </div>
 
-        <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0">Aplicar Filtros</button>
-      </div>
+                <div class="card-info">
+                  <p><strong>F. Solicitud:</strong> {{ formatearFechaVista(lic.fecha_solicitud) }}</p>
+                  <p><strong>F. Licencia:</strong> <span class="text-primary fw-bold">{{ formatearFechaVista(lic.fecha_licencia) }}</span></p>
+                </div>
 
-      <!-- TABLA DESKTOP -->
-      <div class="table-container shadow desktop-only">
-        <table>
-          <thead>
-            <tr class="main-header">
-              <th class="sticky-col col-id">ID</th>
-              <th class="sticky-col col-acciones text-center">Acciones</th>
-              <th class="sticky-col col-apellido">Apellido</th>
-              <th class="sticky-col col-nombre">Nombre</th>
-              <th class="text-center" style="min-width: 120px;">Estado</th>
-              <th class="text-center">F. Solicitud</th>
-              <th class="text-center">F. Licencia</th>
-            </tr>
-            <tr class="filter-row">
-              <td class="sticky-col col-id">
-                <button @click="obtenerLicencias" class="btn-refresh w-100" title="Recargar"><span class="material-icons" style="font-size: 16px;">refresh</span></button>
-              </td>
-              <td class="sticky-col col-acciones"></td>
-              <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar.."></td>
-              <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar.."></td>
-              <td>
-                <select v-model="filtros.estado" class="filter-input text-center">
-                  <option value="">TODOS</option>
-                  <option value="pendiente">PENDIENTE</option>
-                  <option value="aprobada">APROBADA</option>
-                  <option value="rechazada">RECHAZADA</option>
-                </select>
-              </td>
-              <td><input v-model="filtros.fecha_solicitud" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
-              <td><input v-model="filtros.fecha" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="lic in licenciasPaginadas" :key="lic.id">
-              <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ lic.id }}</td>
-              <td class="sticky-col col-acciones cell-ro text-center">
-                <div class="d-flex justify-content-center gap-1">
-                  <button @click="editarLicencia(lic)" class="btn-editar" title="Editar Licencia">
-                    <span class="material-icons" style="font-size:16px;">edit</span>
+                <div class="d-flex gap-2 mt-3">
+                  <button @click="editarLicencia(lic)" class="btn-editar-mobile flex-grow-1">
+                    <span class="material-icons" style="font-size: 18px;">edit</span> Editar
                   </button>
-                  <button @click="verHistorialLicencia(lic)" class="btn-historial" title="Ver Historial">
-                    <span class="material-icons" style="font-size:16px;">manage_search</span>
+                  <button @click="verHistorialLicencia(lic)" class="btn-historial-mobile">
+                    <span class="material-icons" style="font-size: 18px;">manage_search</span>
                   </button>
-                  <button @click="eliminarLicencia(lic.id)" class="btn-eliminar" title="Eliminar">
-                    <span class="material-icons" style="font-size:16px;">delete</span>
+                  <button @click="eliminarLicencia(lic.id)" class="btn-eliminar-mobile">
+                    <span class="material-icons" style="font-size: 18px;">delete</span>
                   </button>
                 </div>
-              </td>
-              <td class="sticky-col col-apellido cell-ro fw-bold">{{ lic.apellido }}</td>
-              <td class="sticky-col col-nombre cell-ro fw-bold">{{ lic.nombre }}</td>
-              <td class="text-center cell-ro">
-                <span :class="['badge-status', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
-              </td>
-              <td class="text-center cell-ro">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
-              <td class="text-center cell-ro fw-bold text-primary">{{ formatearFechaVista(lic.fecha_licencia) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- VISTA MOBILE (CARDS) -->
-      <div class="mobile-only">
-        <div v-for="lic in licenciasPaginadas" :key="'mob-'+lic.id" class="card-licencia">
-          <div class="card-header">
-            <div class="card-name">
-              <strong>{{ lic.apellido }}, {{ lic.nombre }}</strong>
-            </div>
-            <div class="text-xs" style="color: #64748b;">ID: {{ lic.id }}</div>
-          </div>
-
-          <div class="card-body">
-            <div class="card-row">
-              <span><strong>Estado:</strong> <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span></span>
+              </div>
             </div>
 
-            <div class="card-info">
-              <p><strong>F. Solicitud:</strong> {{ formatearFechaVista(lic.fecha_solicitud) }}</p>
-              <p><strong>F. Licencia:</strong> <span class="text-primary fw-bold">{{ formatearFechaVista(lic.fecha_licencia) }}</span></p>
-            </div>
-
-            <div class="d-flex gap-2 mt-3">
-              <button @click="editarLicencia(lic)" class="btn-editar-mobile flex-grow-1">
-                <span class="material-icons" style="font-size: 18px;">edit</span> Editar
-              </button>
-              <button @click="verHistorialLicencia(lic)" class="btn-historial-mobile">
-                <span class="material-icons" style="font-size: 18px;">manage_search</span>
-              </button>
-              <button @click="eliminarLicencia(lic.id)" class="btn-eliminar-mobile">
-                <span class="material-icons" style="font-size: 18px;">delete</span>
-              </button>
+            <div v-if="licenciasPaginadas.length === 0" class="text-center p-4 bg-light rounded shadow-sm border mt-2">
+              <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
+              <p class="text-muted mt-2 mb-0">No se encontraron licencias.</p>
             </div>
           </div>
-        </div>
 
-        <div v-if="licenciasPaginadas.length === 0" class="text-center p-4 bg-white rounded shadow-sm">
-          <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-          <p class="text-muted mt-2 mb-0">No se encontraron licencias.</p>
+          <div class="d-flex justify-content-end mt-4 w-100" v-if="licenciasFiltradas.length > 0">
+            <div class="paginacion m-0" v-if="totalPaginas > 1">
+              <button class="btn-paginacion" @click="cambiarPagina(-1)" :disabled="paginaActual === 1">Anterior</button>
+              <span class="paginacion-texto text-dark">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn-paginacion" @click="cambiarPagina(1)" :disabled="paginaActual === totalPaginas">Siguiente</button>
+            </div>
+          </div>
+
         </div>
       </div>
-
-      <!-- PAGINACIÓN -->
-      <div class="paginacion" v-if="totalPaginas > 1">
-        <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
-        <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-        <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
-      </div>
-
     </div>
 
-    <!-- MODAL ALTA / EDICIÓN -->
     <Teleport to="body">
     <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 500px; width: 95%;">
@@ -225,7 +229,6 @@
     </div>
     </Teleport>
 
-    <!-- MODAL HISTORIAL DE LA LICENCIA -->
     <Teleport to="body">
     <div v-if="mostrarModalHistorial" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10002;">
       <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 600px; width: 95%; text-align: left;">
@@ -233,7 +236,6 @@
           <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
             <span class="material-icons text-warning">manage_search</span>
             Historial de {{ licenciaSeleccionada?.apellido }}, {{ licenciaSeleccionada?.nombre }}
-            <!-- BADGE CON EL TOTAL DE LICENCIAS -->
             <span v-if="!cargandoHistorial" class="badge bg-dark rounded-pill fs-6 ms-2" title="Total de licencias pedidas">{{ historialLicencia.length }}</span>
           </h5>
           <button @click="mostrarModalHistorial = false" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;">
@@ -302,26 +304,21 @@ const filtros = reactive({
 
 const mostrarFiltrosMobile = ref(false)
 
-// Paginación
 const paginaActual = ref(1)
 const registrosPorPagina = 10
 
-// Variables para Modal (Alta/Edición)
 const mostrarModal = ref(false)
 const modoModal = ref('nuevo')
 const formModal = ref({ id: null, id_arbitro: '', fecha_solicitud: '', fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '' })
 
-// Variables para Historial
 const mostrarModalHistorial = ref(false)
 const cargandoHistorial = ref(false)
 const licenciaSeleccionada = ref(null)
 const historialLicencia = ref([])
 
-// Normalizar texto para búsqueda
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : '';
 
-// Filtros y paginación
 const licenciasFiltradas = computed(() => {
   return licencias.value.filter(l => {
     const matchApe = normalizar(l.apellido).includes(normalizar(filtros.apellido));
@@ -342,7 +339,18 @@ const licenciasPaginadas = computed(() => {
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
 watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo });
 
-// API Calls
+// NUEVA FUNCIÓN: Cambiar página y scrollear arriba SOLO EN MOBILE
+const cambiarPagina = (delta) => {
+  paginaActual.value += delta;
+  
+  setTimeout(() => {
+    // Verificamos si estamos en una pantalla de celular (menos de 768px de ancho)
+    if (window.innerWidth <= 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, 50);
+};
+
 const obtenerLicencias = async () => {
   cargando.value = true;
   const res = await api.get({
@@ -363,7 +371,6 @@ const obtenerArbitros = async () => {
   }
 };
 
-// Acciones Modales
 const abrirModalNuevo = () => {
   const hoy = new Date().toISOString().split('T')[0];
   formModal.value = { id: null, id_arbitro: '', fecha_solicitud: hoy, fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '' };
@@ -372,7 +379,6 @@ const abrirModalNuevo = () => {
 };
 
 const editarLicencia = (lic) => {
-  console.log(lic)
   formModal.value = { ...lic }
   modoModal.value = 'editar'
   mostrarModal.value = true
@@ -501,7 +507,7 @@ onMounted(() => {
   margin-left: 50%;
   transform: translateX(-50%);
   padding: 20px;
-  padding-bottom: 120px; /* Evita que choque con el footer móvil */
+  padding-bottom: 120px; 
 }
 
 .admin-panel {
@@ -536,27 +542,14 @@ onMounted(() => {
 .btn-clear-checks { background: #fee2e2; color: #ef4444; }
 .btn-export { background: #10b981; color: white; }
 
-.paginacion {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.btn-paginacion {
-  border: none;
-  background: #f8fafc;
-  color: #0f172a;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
+/* ====================================================
+   PAGINACIÓN
+   ==================================================== */
+.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
+.paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
 
 /* ====================================================
    SOLUCIÓN DE LA TABLA: Huecos y Espaciado
@@ -574,20 +567,18 @@ onMounted(() => {
 table {
   width: 100%;
   min-width: max-content;
-  /* SEPARATE es fundamental para que el box-shadow y sticky funcionen bien juntos */
   border-collapse: separate !important;
   border-spacing: 0;
   font-size: 0.85rem;
 }
 
-/* TH PRINCIPAL */
 thead tr.main-header th {
   position: sticky;
   top: 0;
   z-index: 50;
   background: #f8fafc !important;
   padding: 12px 8px;
-  border-bottom: 1px solid #cbd5e1; /* Borde normal inferior */
+  border-bottom: 1px solid #cbd5e1; 
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
   font-size: 0.75rem;
   color: #000;
@@ -596,21 +587,16 @@ thead tr.main-header th {
   margin: 0;
 }
 
-/* FILA DE FILTROS */
 thead tr.filter-row td {
   position: sticky;
-  /* Top 35px hace que se meta un poquito por abajo del TH y mate el hueco blanco */
   top: 35px;
   z-index: 40;
   background: #f1f5f9 !important;
-  /* Padding extra abajo para empujar los datos */
   padding: 6px 8px 12px 8px;
-  /* Borde grueso abajo para generar separación */
   border-bottom: 4px solid #e2e8f0;
   margin: 0;
 }
 
-/* COLUMNAS CONGELADAS (ID, Acciones, Apellido, Nombre) */
 .col-id { left: 0; width: 50px; text-align: center; }
 .col-acciones { left: 50px; width: 110px; }
 .col-apellido { left: 160px; width: 140px; }
@@ -631,18 +617,20 @@ thead tr.filter-row td.sticky-col {
   background-color: #f1f5f9 !important;
 }
 
-/* CELDAS DE DATOS */
 .cell-ro {
-  padding: 10px 8px; /* Un poco más de aire a las filas */
+  padding: 10px 8px; 
   font-size: 0.85rem;
   color: #000;
   white-space: nowrap;
   border-bottom: 1px solid #f1f5f9;
 }
 
-.filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
+.filter-input { font-size: 16px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
 
-/* BOTONES DE ACCIÓN EN TABLA */
+@media (min-width: 769px) {
+  .filter-input { font-size: 0.75rem; height: 28px; }
+}
+
 .btn-editar, .btn-historial, .btn-eliminar {
   display: inline-flex; align-items: center; justify-content: center;
   border-radius: 6px; padding: 4px; cursor: pointer; transition: 0.2s; border: none;
@@ -656,7 +644,6 @@ thead tr.filter-row td.sticky-col {
 .btn-eliminar { background: #fee2e2; color: #dc2626; }
 .btn-eliminar:hover { background: #fecaca; }
 
-/* BADGES ESTADO */
 .badge-status {
   padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
 }
@@ -675,11 +662,10 @@ thead tr.filter-row td.sticky-col {
 
 /* MODALES */
 .modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.modal-content-exito { background: white; border-radius: 30px; padding: 40px; width: 90%; max-width: 750px; text-align: center; }
+.modal-content-exito { background: white; border-radius: 30px; padding: 40px; width: 90%; max-width: 750px; text-align: center; color: #000; }
 .icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
 .bg-success-light { background: #dcfce7; color: #166534; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
-
 
 /* =======================================
    VISTA MOBILE / RESPONSIVE (ARREGLADO)
@@ -689,7 +675,6 @@ thead tr.filter-row td.sticky-col {
 .mobile-only-flex { display: none; }
 .btn-text { display: inline; }
 
-/* PANEL DE FILTROS MÓVIL CON CSS GRID LIMPIO */
 .mobile-filter-panel {
   background: white;
   padding: 15px 20px;
@@ -707,10 +692,16 @@ thead tr.filter-row td.sticky-col {
   padding: 10px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: 16px;
   width: 100%;
   outline: none;
   background: #f8fafc;
+}
+@media (min-width: 769px) {
+  .filter-grid-mobile input,
+  .filter-grid-mobile select {
+    font-size: 0.85rem;
+  }
 }
 .filter-grid-mobile select.full-width {
   grid-column: span 2;

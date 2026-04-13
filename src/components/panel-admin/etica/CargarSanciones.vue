@@ -1,104 +1,108 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="header-section shadow-sm mb-4">
-        <div class="header-info">
-          <h2 class="title d-flex align-items-center gap-2">
-            <span class="material-icons text-danger">gavel</span> Cargar Sanción
-          </h2>
-          <span class="counter">Tribunal de Ética - El estado inicial será <strong>EN PROCESO</strong></span>
-        </div>
+      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
+        
+        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
+          <div class="header-info">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
+              <span class="material-icons">gavel</span> Cargar Sanción
+            </h4>
+            <span class="counter mt-1 d-block text-muted">Tribunal de Ética - El estado inicial será <strong>EN PROCESO</strong></span>
+          </div>
 
-        <div class="header-actions">
-          <router-link to="/panel-admin/tribunal/sanciones" class="text-decoration-none">
-            <button class="btn-action btn-clear" title="Volver al Listado">
-              <span class="material-icons">list</span>
-              <span class="btn-text">Ver Listado</span>
-            </button>
-          </router-link>
-        </div>
-      </div>
-
-      <div class="row g-4">
-
-        <div class="col-12 col-lg-8">
-          <div class="menu-card-static shadow-sm border">
-            <form @submit.prevent="guardarSancion">
-              <div class="row g-3">
-
-                <div class="col-12">
-                  <label class="fw-bold text-dark small mb-1">Árbitro Involucrado *</label>
-                  <select v-model="nuevaSancion.id_arbitro" class="form-select custom-input" required :disabled="cargando">
-                    <option value="" disabled>Seleccione un árbitro...</option>
-                    <option v-for="a in arbitros" :key="a.id" :value="a.id">
-                      {{ a.apellido }}, {{ a.nombre }}
-                    </option>
-                  </select>
-                </div>
-
-                <div class="col-12">
-                  <label class="fw-bold text-dark small mb-1">Artículo (Reglamento) *</label>
-                  <input type="text" v-model="nuevaSancion.articulo" placeholder="Ej: Art. 42 inc B" class="form-control custom-input" required :disabled="cargando">
-                </div>
-
-                <div class="col-12">
-                  <label class="fw-bold text-dark small mb-1">Motivo / Descripción de los hechos *</label>
-                  <textarea v-model="nuevaSancion.motivo" rows="5" class="form-control custom-input" placeholder="Detalle los motivos por los cuales se inicia este proceso..." required :disabled="cargando"></textarea>
-                </div>
-
-                <div class="col-12 mt-4 pt-3 border-top">
-                  <button type="submit" :disabled="cargando" class="btn-send shadow-sm">
-                    <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
-                    {{ cargando ? 'INICIANDO PROCESO...' : 'REGISTRAR SANCIÓN' }}
-                  </button>
-                </div>
-
-              </div>
-            </form>
+          <div class="header-actions">
+            <router-link to="/panel-admin/tribunal/sanciones" class="text-decoration-none">
+              <button class="btn-action btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Volver al Listado" style="background-color: #ffffff !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
+                <span class="material-icons" style="font-size: 22px; color: #64748b;">list</span>
+                <span class="btn-text desktop-only fw-bold text-secondary" style="font-size: 0.8rem;">Ver Listado</span>
+              </button>
+            </router-link>
           </div>
         </div>
 
-        <div class="col-12 col-lg-4">
-          <div class="side-card shadow-sm border h-100">
+        <div class="card-body p-3 p-md-4" style="background-color: #f8fafc;">
+          <div class="row g-4">
 
-            <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
-              <span class="material-icons">history</span> Últimos Registros
-            </h6>
+            <div class="col-12 col-lg-8">
+              <div class="menu-card-static border-0">
+                <form @submit.prevent="guardarSancion">
+                  <div class="row g-3">
 
-            <div v-if="cargandoHistorial" class="text-center text-muted my-4">
-              <div class="spinner-border spinner-border-sm mb-2 text-danger"></div><br>
-              <span class="small">Cargando...</span>
+                    <div class="col-12">
+                      <label class="fw-bold text-dark small mb-1">Árbitro Involucrado *</label>
+                      <select v-model="nuevaSancion.id_arbitro" class="form-select custom-input" required :disabled="cargando">
+                        <option value="" disabled>Seleccione un árbitro...</option>
+                        <option v-for="a in arbitros" :key="a.id" :value="a.id">
+                          {{ a.apellido }}, {{ a.nombre }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="col-12">
+                      <label class="fw-bold text-dark small mb-1">Artículo (Reglamento) *</label>
+                      <input type="text" v-model="nuevaSancion.articulo" placeholder="Ej: Art. 42 inc B" class="form-control custom-input" required :disabled="cargando">
+                    </div>
+
+                    <div class="col-12">
+                      <label class="fw-bold text-dark small mb-1">Motivo / Descripción de los hechos *</label>
+                      <textarea v-model="nuevaSancion.motivo" rows="5" class="form-control custom-input" placeholder="Detalle los motivos por los cuales se inicia este proceso..." required :disabled="cargando"></textarea>
+                    </div>
+
+                    <div class="col-12 mt-4 pt-3 border-top">
+                      <button type="submit" :disabled="cargando" class="btn-send shadow-sm">
+                        <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
+                        {{ cargando ? 'INICIANDO PROCESO...' : 'REGISTRAR SANCIÓN' }}
+                      </button>
+                    </div>
+
+                  </div>
+                </form>
+              </div>
             </div>
 
-            <div v-else-if="ultimasSanciones.length === 0" class="text-muted text-center my-4 small">
-              Sin registros recientes
-            </div>
+            <div class="col-12 col-lg-4">
+              <div class="side-card border-0 h-100">
 
-            <div v-else>
-              <div v-for="s in ultimasSanciones" :key="s.id" class="mb-3 border-bottom pb-3">
-                <div class="d-flex justify-content-between align-items-start mb-1">
-                  <strong class="text-dark small">{{ s.arbitro || s.arbitro_nombre || s.id_arbitro }}</strong>
-                  <span :class="obtenerClaseEstado(s.estado_dinamico)">
-                    {{ obtenerTextoEstado(s.estado_dinamico) }}
-                  </span>
+                <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                  <span class="material-icons">history</span> Últimos Registros
+                </h6>
+
+                <div v-if="cargandoHistorial" class="text-center text-muted my-4">
+                  <div class="spinner-border spinner-border-sm mb-2 text-danger"></div><br>
+                  <span class="small">Cargando...</span>
                 </div>
-                <div class="small text-muted mt-1" style="line-height: 1.3;">
-                  <strong class="text-dark">Art. {{ s.articulo }}</strong> - {{ s.motivo }}
+
+                <div v-else-if="ultimasSanciones.length === 0" class="text-muted text-center my-4 small">
+                  Sin registros recientes
                 </div>
-                <div class="small mt-1" :class="obtenerClaseTextoSancion(s.estado_dinamico)">
-                  {{ obtenerTextoSancion(s) }}
+
+                <div v-else>
+                  <div v-for="s in ultimasSanciones" :key="s.id" class="mb-3 border-bottom pb-3">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                      <strong class="text-dark small">{{ s.arbitro || s.arbitro_nombre || s.id_arbitro }}</strong>
+                      <span :class="obtenerClaseEstado(s.estado_dinamico)">
+                        {{ obtenerTextoEstado(s.estado_dinamico) }}
+                      </span>
+                    </div>
+                    <div class="small text-muted mt-1" style="line-height: 1.3;">
+                      <strong class="text-dark">Art. {{ s.articulo }}</strong> - {{ s.motivo }}
+                    </div>
+                    <div class="small mt-1" :class="obtenerClaseTextoSancion(s.estado_dinamico)">
+                      {{ obtenerTextoSancion(s) }}
+                    </div>
+                  </div>
                 </div>
+
               </div>
             </div>
 
           </div>
-        </div>
-
-      </div>
-    </div>
+        </div> </div> </div>
   </div>
 </template>
 
@@ -180,6 +184,10 @@ const cargarUltimasSanciones = async () => {
   try {
     const data = await api.get({ entity: 'sanciones', action: 'obtenerSanciones' });
     let lista = Array.isArray(data) ? data : (data.payload ?? []);
+    
+    // ORDENAR DE MÁS RECIENTE A MÁS ANTIGUA (MAYOR ID PRIMERO)
+    lista.sort((a, b) => b.id - a.id);
+
     ultimasSanciones.value = lista.slice(0, 5); 
   } catch (err) {
     console.error('Error cargando historial:', err);
@@ -223,14 +231,13 @@ onMounted(() => {
   cargarUltimasSanciones();
 });
 </script>
-
 <style scoped>
 /* ESTILOS WRAPPER ESTÁNDAR */
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; }
+.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; box-sizing: border-box; }
 .admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
 
 /* CABECERA ORIGINAL */
-.header-section { background: white; padding: 15px 25px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #dc2626; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.header-section { background: white; padding: 15px 25px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
 .counter { font-size: 0.85rem; color: #64748b; }
 
@@ -238,9 +245,9 @@ onMounted(() => {
 .btn-action { border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.85rem; transition: opacity 0.2s; }
 .btn-clear { background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; }
 
-/* GRILLA DIVIDIDA */
-.menu-card-static { background: #ffffff; border-radius: 12px; padding: 30px; border-top: 4px solid #dc2626; }
-.side-card { background: #f8fafc; border-radius: 12px; padding: 25px; border-top: 4px solid #64748b; }
+/* GRILLA DIVIDIDA - Sombras intensificadas para resaltar sobre fondo #f8fafc */
+.menu-card-static { background: #ffffff; border-radius: 12px; padding: 30px; border-top: 4px solid #dc2626; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); }
+.side-card { background: #ffffff; border-radius: 12px; padding: 25px; border-top: 4px solid #64748b; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); }
 
 .custom-input { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 0.95rem; background-color: #f8fafc; transition: all 0.3s ease; resize: vertical; }
 .custom-input:focus { background-color: #fff; border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.15); outline: none; }
@@ -260,7 +267,7 @@ onMounted(() => {
 .badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; } 
 .badge-status.anulada { background: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
 
-/* RESPONSIVE CORRECTO (BOTÓN EN LA MISMA LÍNEA) */
+/* RESPONSIVE CORRECTO */
 @media (max-width: 991px) {
   .menu-card-static, .side-card { padding: 20px; }
 }
@@ -269,11 +276,10 @@ onMounted(() => {
   .admin-panel { padding: 10px; border-radius: 0; }
   .full-screen-wrapper { padding: 0; width: 100vw; }
   
-  /* ESTA ES LA CLAVE: flex-direction row obliga a mantenerse en la misma línea */
   .header-section { padding: 15px; flex-direction: row; align-items: center; justify-content: space-between; }
-  .header-info h2 { font-size: 1rem !important; }
+  .header-info h4 { font-size: 1.1rem !important; }
+  .header-info span { font-size: 0.75rem !important; }
   
-  /* El botón se achica y esconde el texto */
   .header-actions { width: auto; display: flex; flex-direction: row; gap: 8px; }
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
   .btn-action span.material-icons { margin: 0; }
