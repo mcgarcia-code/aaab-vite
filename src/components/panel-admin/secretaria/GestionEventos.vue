@@ -675,14 +675,23 @@ tbody td.sticky-col { z-index: 30 !important; }
 /* Smartphones (Hasta 600px) */
 @media (max-width: 600px) {
   /* AIRE A LOS COSTADOS EN MÓVIL */
-  .full-screen-wrapper { 
-    padding: 0 12px !important; 
-    width: 100% !important; 
-    margin: 0 !important; 
-    transform: none !important; 
-    left: 0 !important;
-  }
-  .admin-panel { padding: 15px 0 !important; border-radius: 0; }
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto;
+  margin-left: 50%;
+  transform: translateX(-50%);
+      /* Top en 0, pero conservando los 15px laterales originales para celulares */
+  padding: 0 15px 20px 15px !important; 
+  box-sizing: border-box !important;
+}
+    
+.admin-panel { 
+      padding: 0 !important; 
+      border-radius: 0; 
+      box-sizing: border-box !important;
+}
   
   /* CABECERA: Título Izquierda, Botones Centro */
   .header-section { 

@@ -601,8 +601,23 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 
 /* LA CLAVE DE LA ESTRUCTURA MÓVIL EXACTA */
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0; width: 100vw; }
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto;
+  margin-left: 50%;
+  transform: translateX(-50%);
+      /* Top en 0, pero conservando los 15px laterales originales para celulares */
+  padding: 0 15px 20px 15px !important; 
+  box-sizing: border-box !important;
+}
+    
+.admin-panel { 
+      padding: 0 !important; 
+      border-radius: 0; 
+      box-sizing: border-box !important;
+}
   
   /* Titulo a la izquierda (respetando borde rojo), botones centrados abajo */
   .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }

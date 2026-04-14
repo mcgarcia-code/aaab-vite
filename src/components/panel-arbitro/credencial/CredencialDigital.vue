@@ -1,4 +1,3 @@
-
 <template>
   <div class="page-container">
     <div v-if="cargando" class="loader-full">

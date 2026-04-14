@@ -5,9 +5,9 @@
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto" style="border-radius: 15px; overflow: hidden; margin-bottom: 1.5rem;">
         
-        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
           <div>
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
               <span class="material-icons" style="transform: rotate(-15deg);">gavel</span> Mis Sanciones
@@ -16,12 +16,13 @@
           </div>
           
           <div class="header-actions d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex shadow-sm rounded border-0 p-2 d-flex align-items-center justify-content-center text-white" style="background-color: #3b82f6;">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue d-flex d-md-none shadow-sm rounded border-0 p-2 align-items-center justify-content-center text-white" style="background-color: #3b82f6;">
               <span class="material-icons" style="font-size: 20px;">filter_alt</span>
             </button>
             
-            <button @click="limpiarFiltros" class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center" title="Limpiar Filtros" style="background-color: #f8fafc !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
+            <button @click="limpiarFiltros" class="btn-clear d-none d-md-flex bg-light rounded shadow-sm border p-2 align-items-center justify-content-center gap-2" title="Limpiar Filtros" style="background-color: #f8fafc !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
               <span class="material-icons" style="font-size: 22px; color: #64748b;">filter_alt_off</span>
+              <span class="fw-bold text-secondary" style="font-size: 0.8rem;">Limpiar Filtros</span>
             </button>
 
             <button @click="obtenerSancionesLocales" class="btn-refresh bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center" title="Actualizar" style="background-color: #f1f5f9 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
@@ -152,14 +153,16 @@
             </div>
 
             <div class="paginacion" v-if="totalPaginas > 1">
-              <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+              <button class="btn-paginacion" @click="cambiarPagina(-1)" :disabled="paginaActual === 1">Anterior</button>
               <span class="paginacion-texto text-dark">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
+              <button class="btn-paginacion" @click="cambiarPagina(1)" :disabled="paginaActual === totalPaginas">Siguiente</button>
             </div>
           </div>
         </div>
 
-      </div> <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
+      </div> 
+      
+      <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
         <div class="d-flex align-items-center">
           <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
           <div class="small text-dark lh-sm">
@@ -201,7 +204,7 @@ const limpiarFiltros = () => {
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
 // ==========================================
-// LÓGICA VISUAL DE ESTADOS Y SANCIONES (Mapeada con el Backend)
+// LÓGICA VISUAL DE ESTADOS Y SANCIONES 
 // ==========================================
 const obtenerTextoEstado = (estado_dinamico) => {
   if (estado_dinamico == 1) return 'VIGENTE';
@@ -213,10 +216,10 @@ const obtenerTextoEstado = (estado_dinamico) => {
 
 const obtenerClaseEstado = (estado_dinamico, es_sm = false) => {
   const prefijo = es_sm ? 'badge-status-sm' : 'badge-status';
-  if (estado_dinamico == 1) return `${prefijo} rechazada`; // Vigente (Rojo)
-  if (estado_dinamico == 2) return `${prefijo} aprobada`;  // Cumplida (Verde)
-  if (estado_dinamico == 3) return `${prefijo} pendiente text-dark`; // En proceso (Amarillo)
-  if (estado_dinamico == 4) return `${prefijo} anulada`; // Anulada (Negro/Blanco)
+  if (estado_dinamico == 1) return `${prefijo} rechazada`; 
+  if (estado_dinamico == 2) return `${prefijo} aprobada`;  
+  if (estado_dinamico == 3) return `${prefijo} pendiente text-dark`; 
+  if (estado_dinamico == 4) return `${prefijo} anulada`; 
   return `${prefijo}`;
 }
 
@@ -250,6 +253,17 @@ const sancionesPaginadas = computed(() => {
   return sancionesFiltradas.value.slice(inicio, inicio + registrosPorPagina);
 });
 
+// --- LÓGICA DE PAGINACIÓN CON SCROLL MÓVIL ---
+const cambiarPagina = (delta) => {
+  paginaActual.value += delta;
+  
+  setTimeout(() => {
+    if (window.innerWidth <= 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, 50);
+};
+
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
 watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo });
 
@@ -273,39 +287,61 @@ onMounted(obtenerSancionesLocales);
 </script>
 
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; }
-.admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
+/* ====================================================
+   1. ESTRUCTURA BASE MAESTRA
+   ==================================================== */
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto !important;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  /* Top en 0, pero volvemos a respetar los 20px laterales para que quede igual que el header */
+  padding: 0 20px 20px 20px; 
+  padding-bottom: 120px;
+}
 
-/* REFRESH REESTILIZADO IGUAL A LA FOTO */
+.admin-panel { 
+  width: 100%;
+  max-width: 100%; 
+  /* Mantenemos los 20px laterales */
+  padding: 0 20px 20px 20px; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  color: #000;  
+  background-color: #0f172a; 
+  min-height: 100vh;
+  border-radius: 12px;
+}
+
+/* Cabecera Estándar */
+.header-section { 
+    background: white; padding: 15px 25px; border-radius: 8px; 
+    display: flex; justify-content: space-between; margin-bottom: 15px; 
+    border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+    align-items: center; 
+}
+.header-info { display: flex; flex-direction: column; }
+.header-actions { display: flex; gap: 8px; }
+.btn-action { 
+    border: none; padding: 8px 12px; border-radius: 4px; 
+    font-weight: bold; cursor: pointer; display: flex; 
+    align-items: center; justify-content: center; gap: 5px; 
+    font-size: 0.75rem; transition: opacity 0.2s; 
+}
+.btn-text { display: inline; }
+
+/* ====================================================
+   2. COMPONENTES Y BOTONES
+   ==================================================== */
 .btn-refresh:hover { transform: rotate(45deg); }
 
-/* TABLA DESKTOP */
-.table-container { width: 100%; overflow: auto; max-height: 85vh; background: white; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #f8fafc !important; padding: 12px 10px; border-bottom: 1px solid #cbd5e1; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0; }
-
-/* FILTROS TABLA */
-thead tr.filter-row td { position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important; padding: 6px 10px 12px 10px; border-bottom: 4px solid #e2e8f0; margin: 0; }
-.filter-input { font-size: 0.75rem; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 8px; box-sizing: border-box; }
-.filter-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
-
-/* COLUMNAS CONGELADAS */
-.col-id { left: 0; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-.sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
-thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
-
-/* CELDAS */
-.cell-ro { padding: 14px 10px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-
-/* PAGINACIÓN */
 .paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 15px; }
 .btn-paginacion { border: 1px solid #cbd5e1; background: #f8fafc; color: #0f172a; padding: 8px 16px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
 .btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
 .paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
 
-/* NUEVOS ESTILOS PARA ESTADOS */
 .text-en-proceso { color: #d97706 !important; }
 .text-anulada { color: #0f172a !important; }
 
@@ -321,25 +357,89 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 .badge-status-sm.pendiente { background: #fef9c3; color: #a16207; }
 .badge-status-sm.anulada { background: #0f172a; color: #ffffff; }
 
-/* VISTAS MOBILE / DESKTOP */
+/* ====================================================
+   3. TABLA DESKTOP
+   ==================================================== */
+.table-container { width: 100%; overflow: auto; max-height: 85vh; background: white; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
+
+thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #f8fafc !important; padding: 12px 10px; border-bottom: 1px solid #cbd5e1; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0; }
+
+thead tr.filter-row td { position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important; padding: 6px 10px 12px 10px; border-bottom: 4px solid #e2e8f0; margin: 0; }
+.filter-input { font-size: 0.75rem; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 8px; box-sizing: border-box; }
+.filter-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+
+.col-id { left: 0; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
+.sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
+thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
+
+.cell-ro { padding: 14px 10px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+/* ====================================================
+   4. 📱 RESPONSIVE DESIGN (Tiered Layout)
+   ==================================================== */
 .desktop-only { display: block; }
 .mobile-only { display: none; }
-.mobile-only-flex { display: none; }
 
-.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filter-grid-mobile input, .filter-grid-mobile select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; width: 100%; outline: none; background: #f8fafc; }
-.filter-grid-mobile select.full-width { grid-column: span 2; }
-
-@media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-  .card-licencia { background: white; border-radius: 8px; margin-bottom: 15px; }
+/* --- Laptops y Tablets Grandes (Hasta 1024px) --- */
+@media (max-width: 1024px) {
+    .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
 }
 
+/* --- Tablets y Móviles (Hasta 768px) --- */
+@media (max-width: 768px) {
+    .desktop-only { display: none !important; }
+    .mobile-only { display: block !important; }
+    
+    .card-licencia { background: white; border-radius: 8px; margin-bottom: 15px; }
+
+    .mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+    .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    
+    .filter-grid-mobile input, .filter-grid-mobile select { 
+        padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; 
+        font-size: 16px; width: 100%; outline: none; background: #f8fafc; 
+    }
+    .filter-grid-mobile select.full-width { grid-column: span 2; }
+}
+
+/* --- Smartphones (Hasta 600px) --- */
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
-  .mobile-only-flex { display: flex !important; }
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto;
+  margin-left: 50%;
+  transform: translateX(-50%);
+      /* Top en 0, pero conservando los 15px laterales originales para celulares */
+  padding: 0 15px 20px 15px !important; 
+  box-sizing: border-box !important;
+}
+    
+    .admin-panel { 
+      padding: 0 !important; 
+      border-radius: 0; 
+      box-sizing: border-box !important;
+    }
+
+    .header-section { 
+        padding: 15px !important; flex-direction: column; 
+        align-items: flex-start; text-align: left; gap: 15px; 
+    }
+    .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
+    .header-info h4, h4 { font-size: 1.2rem !important; margin: 0; text-align: left; }
+    
+    .header-actions { 
+        width: 100%; display: flex; flex-direction: row; 
+        flex-wrap: wrap; justify-content: center; gap: 8px; 
+    }
+    .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
+    .btn-text { display: none !important; }
+    
+    .filter-grid-mobile { grid-template-columns: 1fr; }
+    .filter-grid-mobile select.full-width { grid-column: span 1; }
 }
 </style>

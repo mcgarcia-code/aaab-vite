@@ -280,8 +280,23 @@ onMounted(() => {
 }
 
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0; width: 100vw; }
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto;
+  margin-left: 50%;
+  transform: translateX(-50%);
+      /* Top en 0, pero conservando los 15px laterales originales para celulares */
+  padding: 0 15px 20px 15px !important; 
+  box-sizing: border-box !important;
+}
+    
+.admin-panel { 
+      padding: 0 !important; 
+      border-radius: 0; 
+      box-sizing: border-box !important;
+}
   
   /* ESTA ES LA CLAVE: flex-direction row obliga a mantenerse en la misma línea */
   .header-section { padding: 15px; flex-direction: row; align-items: center; justify-content: space-between; }

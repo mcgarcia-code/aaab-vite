@@ -582,15 +582,23 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 
 /* Smartphones (Hasta 600px) */
 @media (max-width: 600px) {
-  /* AIRE EN MÓVILES: Márgenes de 12px para evitar pegarse a los bordes */
-  .full-screen-wrapper { 
-    padding: 0 12px !important; 
-    width: 100% !important; 
-    margin: 0 !important; 
-    transform: none !important; 
-    left: 0 !important; 
-  }
-  .admin-panel { padding: 15px 0 !important; border-radius: 0; }
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto;
+  margin-left: 50%;
+  transform: translateX(-50%);
+      /* Top en 0, pero conservando los 15px laterales originales para celulares */
+  padding: 0 15px 20px 15px !important; 
+  box-sizing: border-box !important;
+}
+    
+.admin-panel { 
+      padding: 0 !important; 
+      border-radius: 0; 
+      box-sizing: border-box !important;
+}
   
   /* ESTRUCTURA CABECERA: Título Izquierda, Botones Centro */
   .header-section { 
@@ -613,10 +621,13 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
   .btn-action span.material-icons { margin: 0; }
   .btn-text { display: none !important; }
-
-  /* Ajuste específico para el padding de modales en móviles */
+  .mobile-only-flex { display: flex !important; }
+  
+  /* AJUSTE DE PADDING EN MODALES MÓVILES (Agregar/Editar Eventos) */
   .modal-content-exito {
-    padding: 30px 15px !important;
+    padding: 30px 20px !important; /* Libera los costados pero mantiene aire arriba y abajo */
+    max-height: 90vh; /* Evita que el modal sea más alto que la pantalla */
+    overflow-y: auto; /* Scroll interno si el formulario de evento es largo */
   }
 }
 

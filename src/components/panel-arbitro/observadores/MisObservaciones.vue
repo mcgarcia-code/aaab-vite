@@ -158,27 +158,28 @@ onMounted(obtenerObservaciones);
 </script>
 
 <style scoped>
-.full-screen-wrapper { 
-  position: relative; 
-  width: 99vw; 
-  min-height: 100vh; 
-  height: auto !important; 
-  margin-left: 50%; 
-  transform: translateX(-50%); 
-  padding: 20px; 
-  padding-bottom: 120px; 
-  box-sizing: border-box;
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto !important;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  /* Top en 0, pero volvemos a respetar los 20px laterales para que quede igual que el header */
+  padding: 0 20px 20px 20px; 
+  padding-bottom: 120px;
 }
 
 .admin-panel { 
-  width: 100%; 
+  width: 100%;
   max-width: 100%; 
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; 
-  color: #000; 
+  /* Mantenemos los 20px laterales */
+  padding: 0 20px 20px 20px; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  color: #000;  
   background-color: #0f172a; 
-  min-height: 100vh; 
+  min-height: 100vh;
   border-radius: 12px;
-  padding: 20px;
 }
 
 .btn-clear:hover { background-color: #e2e8f0 !important; }
@@ -227,8 +228,23 @@ thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #f8
 }
 
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
+ .full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto;
+  margin-left: 50%;
+  transform: translateX(-50%);
+      /* Top en 0, pero conservando los 15px laterales originales para celulares */
+  padding: 0 15px 20px 15px !important; 
+  box-sizing: border-box !important;
+}
+    
+    .admin-panel { 
+      padding: 0 !important; 
+      border-radius: 0; 
+      box-sizing: border-box !important;
+    }
 }
 
 @media (min-width: 768px) {

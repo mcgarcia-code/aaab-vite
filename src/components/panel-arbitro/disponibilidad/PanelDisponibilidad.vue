@@ -1,7 +1,7 @@
 <template>
-  <div class="animate__animated animate__fadeIn container-fluid py-4 page-bg">
+  <div class="animate__animated animate__fadeIn">
     
-    <div class="card shadow border-0 mb-4 mx-auto w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <div>
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center">
@@ -323,53 +323,110 @@ const enviarSolicitudRectificacion = async () => {
 </script>
 
 <style scoped>
-/* (Se mantienen tus mismos estilos) */
+/* ====================================================
+   1. ESTRUCTURA BASE MAESTRA
+   ==================================================== */
+.full-screen-wrapper {
+    position: relative; width: 99vw; min-height: 100vh; height: auto;
+    margin-left: 50%; transform: translateX(-50%);
+    padding: 20px; padding-bottom: 80px;
+}
+
+.admin-panel { 
+    width: 100%; max-width: 100%; padding: 20px; 
+    font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+    color: #000; background-color: #0f172a; 
+    min-height: 100vh; height: 100%; border-radius: 12px;
+}
+
+/* Cabecera Estándar (Por si el componente la usa) */
+.header-section { 
+    background: white; padding: 15px 25px; border-radius: 8px; 
+    display: flex; justify-content: space-between; margin-bottom: 15px; 
+    border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+    align-items: center; 
+}
+.header-info { display: flex; flex-direction: column; }
+.header-actions { display: flex; gap: 8px; }
+.btn-action { 
+    border: none; padding: 8px 12px; border-radius: 4px; 
+    font-weight: bold; cursor: pointer; display: flex; 
+    align-items: center; justify-content: center; gap: 5px; 
+    font-size: 0.75rem; transition: opacity 0.2s; 
+}
+.btn-text { display: inline; }
+
+/* ====================================================
+   2. COMPONENTES ESPECÍFICOS DE ESTA VISTA
+   ==================================================== */
 .form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }
 .manual-section { background-color: #0c1624; border-radius: 1rem; }
 .btn-danger { background-color: #dc2626 !important; border: none; }
 .text-white-50 { color: rgba(255, 255, 255, 0.5) !important; }
 
 .custom-textarea {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    border: none;
-    border-radius: 8px;
+    background-color: #ffffff !important; color: #000000 !important;
+    border: none; border-radius: 8px;
 }
 .custom-textarea::placeholder { color: #6c757d; }
 
+.x-small { font-size: 0.65rem; font-weight: 800; }
+
+/* ====================================================
+   3. 📱 RESPONSIVE DESIGN (Tiered Layout)
+   ==================================================== */
+.desktop-only { display: block; }
+.mobile-only { display: none; }
+
+/* --- Laptops y Tablets Grandes (Hasta 1024px) --- */
+@media (max-width: 1024px) {
+    .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+}
+
+/* --- Tablets y Móviles (Hasta 768px) --- */
 @media (max-width: 768px) {
+    .desktop-only { display: none !important; }
+    .mobile-only { display: block !important; }
+
     .w-fit-mobile { width: fit-content; }
     .x-small-mobile { font-size: 0.75rem; }
     .info-mobile { padding: 0.75rem; }
 }
 
-@media (max-width: 576px) {
-    /* Reduce un poco el tamaño de los inputs de tiempo para que quepan bien */
-    input[type="time"] {
-        padding-left: 5px;
-        padding-right: 5px;
-        font-size: 0.85rem;
-    }
-
-    /* Ajusta el padding de la card para ganar espacio */
-    .card-body {
-        padding: 1rem !important;
-    }
-
-    /* Asegura que los checkboxes no queden pegados al borde */
-    .form-check {
-        margin-right: 5px;
+/* --- Smartphones (Hasta 600px) --- */
+@media (max-width: 600px) {
+    /* AIRE LATERAL DE 10px */
+    .full-screen-wrapper { 
+        padding: 0 10px !important; 
+        width: 100% !important; 
+        margin: 0 !important; 
+        transform: none !important; 
+        left: 0 !important;
     }
     
-    /* Evita que el título de la página sea demasiado grande */
-    h4 {
-        font-size: 1.2rem;
-    }
-}
+    .admin-panel { padding: 15px 0 !important; border-radius: 0; }
 
-/* Mejora la visualización del estado */
-.x-small {
-    font-size: 0.65rem;
-    font-weight: 800;
+    /* CABECERA ESTÁNDAR MÓVIL: Título Izquierda, Botones Centro */
+    .header-section { 
+        padding: 15px !important; flex-direction: column; 
+        align-items: flex-start; text-align: left; gap: 15px; 
+    }
+    .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
+    .header-info h4, h4 { font-size: 1.2rem !important; margin: 0; text-align: left; }
+    
+    .header-actions { 
+        width: 100%; display: flex; flex-direction: row; 
+        flex-wrap: wrap; justify-content: center; gap: 8px; 
+    }
+    .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
+    .btn-text { display: none !important; }
+
+    /* AJUSTES ESPECÍFICOS DEL COMPONENTE */
+    .manual-section { margin: 0 !important; width: 100% !important; }
+    
+    input[type="time"] { padding-left: 5px; padding-right: 5px; font-size: 0.85rem; }
+    .card-body { padding: 1rem !important; }
+    .form-check { margin-right: 5px; }
 }
 </style>

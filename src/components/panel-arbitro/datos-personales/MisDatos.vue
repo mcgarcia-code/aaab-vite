@@ -1,5 +1,5 @@
 <template>
-  <div class="animate__animated animate__fadeIn container-fluid py-4">
+  <div class="animate__animated animate__fadeIn">
     
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
@@ -392,6 +392,9 @@ const enviarSolicitudRectificacion = async () => {
 </script>
 
 <style scoped>
+/* ====================================================
+   1. ESTILOS BASE Y COMPONENTES
+   ==================================================== */
 .form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }
 .x-small { font-size: 0.75rem; }
 .badge { letter-spacing: 1px; }
@@ -419,6 +422,9 @@ const enviarSolicitudRectificacion = async () => {
     color: rgba(255, 255, 255, 0.5) !important; 
 }
 
+/* ====================================================
+   2. ESTADOS (PILLS)
+   ==================================================== */
 .status-pill {
     font-size: 0.85rem;
     font-weight: bold;
@@ -448,6 +454,11 @@ const enviarSolicitudRectificacion = async () => {
     animation-duration: 0.5s;
 }
 
+/* ====================================================
+   3. 📱 RESPONSIVE DESIGN
+   ==================================================== */
+
+/* --- Tablets y Móviles (Hasta 768px) --- */
 @media (max-width: 768px) {
     .w-fit-mobile { 
         width: fit-content !important; 
@@ -465,6 +476,29 @@ const enviarSolicitudRectificacion = async () => {
     
     label {
         margin-top: 5px;
+    }
+}
+
+/* --- Smartphones (Hasta 600px) --- */
+@media (max-width: 600px) {
+    /* AIRE LATERAL DE 10px: La tarjeta queda ancha pero no toca el borde */
+    .full-screen-wrapper { 
+        padding: 0 10px !important; 
+        width: 100% !important; 
+        margin: 0 !important; 
+        transform: none !important; 
+        left: 0 !important;
+    }
+    
+    .admin-panel { 
+        padding: 15px 0 !important; 
+        border-radius: 0; 
+    }
+
+    /* Aseguramos que la sección principal respete el ancho disponible */
+    .manual-section {
+        margin: 0 !important;
+        width: 100% !important;
     }
 }
 </style>

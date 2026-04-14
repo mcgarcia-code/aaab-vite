@@ -346,18 +346,20 @@ useHead({
   .notification-btn i { font-size: 1.25rem !important; }
 
   /* Dropdown de Notificaciones (Ajuste para pantalla completa en ancho) */
-  .dropdown-notificaciones {
-    position: absolute !important;
-    top: 110% !important; 
-    right: -5px !important; /* Ajustado para que no toque el borde */
-    left: auto !important;
-    width: calc(100vw - 30px) !important; 
-    max-width: 400px !important;
-    margin-top: 10px !important;
-    z-index: 1060 !important; 
-    border-radius: 12px !important; /* Coherencia con tus cards de 12px */
-    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
-  }
+.dropdown-notificaciones {
+  position: fixed !important; /* 🔥 clave */
+  top: 70px !important; /* ajustá según tu header */
+
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+
+  width: calc(100vw - 30px) !important;
+  max-width: 400px !important;
+
+  z-index: 1060 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
+}
   
   .notification-list {
     max-height: 50vh; 

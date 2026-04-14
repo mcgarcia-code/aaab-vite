@@ -5,7 +5,7 @@
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+     <div class="card shadow border-0 w-100 mx-auto" style="border-radius: 15px; overflow: hidden; margin-bottom: 1.5rem;">
         
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div>
@@ -16,7 +16,7 @@
           </div>
           
           <div class="header-actions d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex shadow-sm rounded border-0 p-2 d-flex align-items-center justify-content-center text-white" style="background-color: #3b82f6;">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex shadow-sm rounded border-0 p-2 align-items-center justify-content-center text-white" style="background-color: #3b82f6;">
               <span class="material-icons" style="font-size: 20px;">filter_alt</span>
             </button>
             
@@ -139,17 +139,19 @@
           </div>
 
           <div class="paginacion" v-if="totalPaginas > 1">
-            <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
+            <button class="btn-paginacion" @click="cambiarPagina(-1)" :disabled="paginaActual === 1">Anterior</button>
             <span class="paginacion-texto text-dark">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
+            <button class="btn-paginacion" @click="cambiarPagina(1)" :disabled="paginaActual === totalPaginas">Siguiente</button>
           </div>
 
         </div>
-      </div> <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
+      </div> 
+      
+      <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
         <div class="d-flex align-items-center">
           <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
           <div class="small text-dark lh-sm">
-            Cualquier dato erróneo, solicitar el cambio a <a href="mailto:facturas@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none">facturas@arbitroshandball.com.ar</a>
+            Consultas a <a href="mailto:facturas@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none">facturas@arbitroshandball.com.ar</a>
           </div>
         </div>
       </div>
@@ -185,7 +187,7 @@ const filtros = reactive({
 
 // --- VARIABLES DE PAGINACIÓN ---
 const paginaActual = ref(1);
-const registrosPorPagina = 10;
+const registrosPorPagina = 7;
 
 const limpiarFiltros = () => {
   filtros.club = '';
@@ -225,7 +227,6 @@ const enviarFactura = (emailClub) => {
   const body = "Estimados,\n\nAdjuntamos la factura correspondiente.\n\nSaludos cordiales.";
   const mailtoLink = `mailto:${destinatario}?cc=${cc}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   
-  // En lugar de window.location.href, usamos window.open
   window.open(mailtoLink, '_self');
 };
 
@@ -262,6 +263,17 @@ const institucionesPaginadas = computed(() => {
   return filtrados.value.slice(inicio, inicio + registrosPorPagina);
 });
 
+// --- NUEVA FUNCIÓN DE PAGINACIÓN CON SCROLL MÓVIL ---
+const cambiarPagina = (delta) => {
+  paginaActual.value += delta;
+  
+  setTimeout(() => {
+    if (window.innerWidth <= 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, 50);
+};
+
 // Reseteamos a la página 1 si el usuario escribe en un filtro
 watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
 
@@ -274,38 +286,49 @@ onMounted(cargarDatos);
 </script>
 
 <style scoped>
-/* ESTILOS BASE */
+/* ====================================================
+   1. ESTRUCTURA BASE MAESTRA
+   ==================================================== */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
   min-height: 100vh;
-  height: auto;
+  height: auto !important;
   margin-left: 50%;
   transform: translateX(-50%);
-  padding: 20px;
-  padding-bottom: 80px;
+  padding: 0 20px 20px 20px; 
+  padding-bottom: 120px;
 }
 
 .admin-panel { 
   width: 100%;
   max-width: 100%; 
-  padding: 20px; 
+  padding: 0 20px 20px 20px; 
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
   color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
-  height: 100%;
   border-radius: 12px;
 }
 
-/* BOTONES ACCIÓN */
-.btn-action, .btn-clear { 
-  border: none; 
-  cursor: pointer; 
+/* Cabecera Estándar (Por si el componente la usa) */
+.header-section { 
+    background: white; padding: 15px 25px; border-radius: 8px; 
+    display: flex; justify-content: space-between; margin-bottom: 15px; 
+    border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+    align-items: center; 
 }
+.header-info { display: flex; flex-direction: column; }
+.header-actions { display: flex; gap: 8px; }
+.btn-action, .btn-clear { border: none; cursor: pointer; }
 .btn-clear:hover { background-color: #e2e8f0 !important; }
+.btn-text { display: inline; }
 
-/* PAGINACIÓN */
+.no-data { font-size: 0.75rem; color: #94a3b8; font-style: italic; }
+
+/* ====================================================
+   2. PAGINACIÓN
+   ==================================================== */
 .paginacion {
   display: flex;
   justify-content: flex-end;
@@ -313,150 +336,140 @@ onMounted(cargarDatos);
   gap: 12px;
   margin-top: 20px;
 }
-
 .btn-paginacion {
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  color: #0f172a;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s;
+  border: 1px solid #cbd5e1; background: #f8fafc; color: #0f172a;
+  padding: 8px 16px; border-radius: 6px; font-size: 0.8rem;
+  font-weight: 700; cursor: pointer; transition: background 0.2s;
 }
-
 .btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
 .paginacion-texto { color: #0f172a; font-size: 0.85rem; font-weight: 600; }
 
-/* TABLAS DESKTOP */
+/* ====================================================
+   3. TABLA DESKTOP Y FILTROS
+   ==================================================== */
 .table-container { 
-  width: 100%;
-  overflow: auto; 
-  max-height: 75vh; 
-  background: white; 
+  width: 100%; overflow: auto; max-height: 75vh; background: white; 
 }
-
 table { width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; min-width: 800px; }
 
 th { 
-  background: #f8fafc !important; 
-  padding: 12px 10px; 
-  position: sticky; 
-  top: 0; 
-  z-index: 50; 
-  border-bottom: 2px solid #e2e8f0; 
+  background: #f8fafc !important; padding: 12px 10px; position: sticky; 
+  top: 0; z-index: 50; border-bottom: 2px solid #e2e8f0; 
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem; 
-  color: #000000; 
-  text-transform: uppercase; 
-  font-weight: 800; 
-  text-align: left;
+  font-size: 0.75rem; color: #000000; text-transform: uppercase; 
+  font-weight: 800; text-align: left;
 }
-
 td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; color: #000;}
 
 .col-institucion { width: 35%; } 
-
 .row-hover:hover { background-color: #f1f5f9; transition: background 0.2s ease; }
 
 .filter-row td { 
-  position: sticky; 
-  top: 40px;
-  z-index: 40; 
-  background: #f1F5F9 !important; 
-  padding: 6px 10px 12px 10px; 
-  border-bottom: 4px solid #e2e8f0; 
+  position: sticky; top: 40px; z-index: 40; background: #f1F5F9 !important; 
+  padding: 6px 10px 12px 10px; border-bottom: 4px solid #e2e8f0; 
 }
 
 .filter-input { 
-  width: 100%; 
-  padding: 6px 8px; 
-  border: 1px solid #cbd5e1; 
-  font-size: 0.8rem; 
-  border-radius: 4px; 
-  box-sizing: border-box;
+  width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; 
+  font-size: 0.8rem; border-radius: 4px; box-sizing: border-box;
 }
-.filter-input:focus {
-  border-color: #3b82f6; 
-  outline: none; 
-  box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
-}
+.filter-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
 
-/* BOTONES TABLA DESKTOP */
+/* Botones Tabla Desktop */
 .actions-wrapper { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .btn-email, .btn-whatsapp, .btn-copy { 
-  border: none; 
-  width: 32px; 
-  height: 32px; 
-  border-radius: 6px; 
-  cursor: pointer; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  transition: opacity 0.2s;
+  border: none; width: 32px; height: 32px; border-radius: 6px; 
+  cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s;
 }
 .btn-email { background: #3b82f6; color: white; }
 .btn-whatsapp { background: #25D366; color: white; }
 .btn-copy { background: #e2e8f0; color: #000000; }
-
 .btn-email:hover, .btn-whatsapp:hover, .btn-copy:hover { opacity: 0.85; }
 
-/* MOBILE CARDS */
+/* ====================================================
+   4. CARDS MÓVILES (Estilos base)
+   ==================================================== */
 .card-contacto { 
-  background: #ffffff; 
-  padding: 16px; 
-  border-radius: 12px; 
-  margin-bottom: 15px; 
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: #ffffff; padding: 16px; border-radius: 12px; margin-bottom: 15px; 
+  border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
-
 .card-name { font-weight: 800; font-size: 1.1rem; color: #1e293b; }
 .card-subtext { font-size: 0.85rem; color: #64748b; margin: 8px 0 15px 0; line-height: 1.4; }
 
-.card-actions-mobile { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr;
-  gap: 10px; 
-}
-
+.card-actions-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .btn-copy-mobile { 
-  background: #f8fafc; 
-  border: 1px solid #cbd5e1; 
-  padding: 10px 5px; 
-  border-radius: 8px; 
-  font-size: 0.75rem; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center;
-  gap: 6px; 
-  color: #0f172a; 
-  font-weight: 700; 
-  width: 100%;
+  background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px 5px; border-radius: 8px; 
+  font-size: 0.75rem; display: flex; align-items: center; justify-content: center;
+  gap: 6px; color: #0f172a; font-weight: 700; width: 100%;
 }
-
 .btn-send-mobile { background: #3b82f6; color: white; border: none; }
 .btn-whatsapp-mobile { background: #25D366; color: white; border: none; }
 
-.no-data { font-size: 0.75rem; color: #94a3b8; font-style: italic; }
-
-/* VISIBILIDAD */
+/* ====================================================
+   5. 📱 RESPONSIVE DESIGN (Tiered Layout)
+   ==================================================== */
 .desktop-only { display: block; }
 .mobile-only { display: none; }
-.mobile-only-flex { display: none; }
+.mobile-only-flex { display: none !important; } 
 
+/* Desktop */
+@media (min-width: 769px) {
+  .btn-text { display: inline; }
+}
+
+/* --- Laptops y Tablets Grandes (Hasta 1024px) --- */
+@media (max-width: 1024px) {
+    .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+}
+
+/* --- Tablets y Móviles (Hasta 768px) --- */
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
   .mobile-only-flex { display: flex !important; }
+  
   .admin-panel { padding: 10px; border-radius: 0; }
   .full-screen-wrapper { padding: 0 10px; width: 100vw; }
 }
 
-@media (min-width: 768px) {
-  .btn-text { display: inline; }
+/* --- Smartphones (Hasta 600px - Estandarizado) --- */
+@media (max-width: 600px) {
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto;
+  margin-left: 50%;
+  transform: translateX(-50%);
+      /* Top en 0, pero conservando los 15px laterales originales para celulares */
+  padding: 0 15px 20px 15px !important; 
+  box-sizing: border-box !important;
 }
+    
+    .admin-panel { 
+      padding: 0 !important; 
+      border-radius: 0; 
+      box-sizing: border-box !important;
+    }
 
+
+    .header-section { 
+        padding: 15px !important; flex-direction: column; 
+        align-items: flex-start; text-align: left; gap: 15px; 
+    }
+    .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
+    .header-info h4, h4 { font-size: 1.2rem !important; margin: 0; text-align: left; }
+    
+    .header-actions { 
+        width: 100%; display: flex; flex-direction: row; 
+        flex-wrap: wrap; justify-content: center; gap: 8px; 
+    }
+    .btn-action { 
+        flex: none; width: 42px; height: 42px; padding: 0; 
+        justify-content: center; align-items: center; border-radius: 6px; 
+    }
+    .btn-text { display: none !important; }
+}
 </style>
