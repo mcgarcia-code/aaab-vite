@@ -22,11 +22,11 @@
             
             <button @click="limpiarFiltros" class="btn-action btn-clear">
               <span class="material-icons">filter_alt_off</span>
-              <span class="btn-text">Filtros</span>
+              <span class="btn-text">Limpiar</span>
             </button>
 
-            <button @click="solicitarLimpiarChecks" class="btn-action btn-clear-checks desktop-only">
-              <span class="material-icons" style="font-size: 18px; line-height: 1;">check_box_outline_blank</span>
+            <button @click="solicitarLimpiarChecks" class="btn-action btn-clear-checks desktop-only" style="padding-left: 8px; padding-right: 10px;">
+              <span class="material-icons" style="font-size: 16px; line-height: 1;">check_box_outline_blank</span>
               <span class="btn-text" style="line-height: 1;">Tildes</span>
             </button>
 
@@ -157,7 +157,7 @@
                   <td class="sticky-col" style="left:380px; z-index: 35;">
                     <select v-model="filtros.licencia" class="filter-input shadow-none">
                       <option value="">Todas</option>
-                      <option value="sin_licencia">Sin Lic</option>
+                      <option value="sin_licencia">Sin Licencia</option>
                       <option value="aprobada">Aprobada</option>
                       <option value="rechazada">Rechazada</option>
                     </select>
@@ -242,7 +242,7 @@
                 <tr v-if="arbitrosPaginados.length === 0">
                   <td colspan="22" class="text-center py-5 text-muted bg-light italic border-0">
                     <span class="material-icons d-block mb-2" style="font-size: 40px;">search_off</span>
-                    <p class="m-0 fw-bold">No se encontraron árbitros.</p>
+                    <p class="m-0 fw-bold">No se encontraron registros.</p>
                   </td>
                 </tr>
               </tbody>
@@ -251,26 +251,36 @@
 
           <div class="mobile-only mt-3">
             <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card-arbitro shadow-sm border border-light-subtle mb-3" :class="obtenerClaseFila(a)">
-              <div class="card-header">
-                <div class="card-name text-dark"><span :class="['dot-sm', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span> <strong class="ms-1">{{ a.apellido }}, {{ a.nombre }}</strong></div>
-                <div class="card-lic text-xs fw-bold">{{ obtenerTextoLicencia(a) }}</div>
+              
+              <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
+                <div class="card-name text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
+                  {{ a.apellido }}, {{ a.nombre }}
+                </div>
+                <div class="text-xs fw-bold" style="color: #000;">{{ obtenerTextoLicencia(a) }}</div>
               </div>
-              <div class="card-body">
-                <div class="card-row text-dark"><span><strong>Gr:</strong> {{ a.grupo }}-{{ a.subgrupo }}</span><span><strong>Zona:</strong> {{ a.zona }}</span></div>
-                <div class="card-info bg-light p-2 rounded border mt-2">
-                  <p class="text-dark m-0">
+              
+              <div class="card-body pt-0 px-3 pb-3">
+                <div class="card-row text-dark mb-2">
+                  <span style="font-size: 0.9rem;"><strong>Gr:</strong> {{ a.grupo }}-<strong>Zona:</strong> {{ a.zona }}</span>
+                </div>
+                
+                <div class="mb-2">
+                  <p class="text-dark m-0" style="font-size: 0.9rem;">
                     <strong>Apto Físico: </strong>
-                    <span v-if="a.apto_medico" class="material-icons icon-apto align-middle" style="font-size: 16px;" title="Apto Físico">check_circle</span>
-                    <span v-else class="material-icons icon-no-apto align-middle" style="font-size: 16px;" title="No Apto Físico">cancel</span>
+                    <span v-if="a.apto_medico" class="material-icons icon-apto align-middle" style="font-size: 18px;" title="Apto Físico">check_circle</span>
+                    <span v-else class="material-icons icon-no-apto align-middle" style="font-size: 18px;" title="No Apto Físico">cancel</span>
                   </p>
-                  <p class="text-dark mt-1 mb-0"><strong>Juega:</strong> {{ a.juega_handball }} <span v-if="a.juega_handball === 'SI'">en {{ a.donde_juega }}</span></p>
-                  <div class="border-top border-secondary-subtle mt-2 pt-2">
-                    <p class="text-dark mb-1"><strong>Sáb:</strong> {{ a.disponibilidad_sabado }} <span v-if="a.disponibilidad_sabado === 'SI'">({{ a.disponibilidad_sabado_desde }}-{{ a.disponibilidad_sabado_hasta }})</span></p>
-                    <p class="text-dark m-0"><strong>Dom:</strong> {{ a.disponibilidad_domingo }} <span v-if="a.disponibilidad_domingo === 'SI'">({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</span></p>
-                  </div>
-                  <p v-if="a.observaciones" class="text-dark mt-2 mb-0 border-top border-secondary-subtle pt-2"><strong>Obs:</strong> {{ a.observaciones }}</p>
                 </div>
 
+                <div class="mb-3">
+                  <p class="text-dark mt-1 mb-0" style="font-size: 0.9rem;"><strong>Juega:</strong> {{ a.juega_handball }} <span v-if="a.juega_handball === 'SI'">en {{ a.donde_juega }}</span></p>
+                </div>
+                
+                <div class="mb-3">
+                  <p class="text-dark mb-1" style="font-size: 0.9rem;"><strong>Sáb:</strong> {{ a.disponibilidad_sabado }} <span v-if="a.disponibilidad_sabado === 'SI' || a.disponibilidad_sabado === 'OTROS'">({{ a.disponibilidad_sabado_desde }}-{{ a.disponibilidad_sabado_hasta }})</span><span v-else>(-)</span></p>
+                  <p class="text-dark m-0" style="font-size: 0.9rem;"><strong>Dom:</strong> {{ a.disponibilidad_domingo }} <span v-if="a.disponibilidad_domingo === 'SI' || a.disponibilidad_domingo === 'OTROS'">({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</span><span v-else>(-)</span></p>
+                </div>
+                
                 <div class="d-flex gap-2 mt-3 pt-2 border-top border-secondary-subtle">
                   <div class="flex-grow-1 text-center">
                     <label class="d-block small fw-bold text-dark mb-1">Designar SÁB</label>
@@ -290,15 +300,15 @@
                   </div>
                 </div>
 
-                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa-mobile shadow-sm mt-3">
-                  <span class="material-icons">chat</span> Contactar
+                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa-mobile shadow-sm mt-3" style="background: #25d366;">
+                  <span class="material-icons">chat</span> Contactar por WhatsApp
                 </button>
               </div>
             </div>
 
-            <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-white rounded shadow-sm border">
+            <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-light rounded shadow-sm border mt-3">
               <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-              <p class="text-muted mt-2 mb-0">No se encontraron registros.</p>
+              <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron registros.</p>
             </div>
           </div>
 
@@ -310,7 +320,9 @@
             </div>
           </div>
 
-        </div> </div> </div>
+        </div> 
+      </div> 
+    </div>
   </div>
 </template>
 
@@ -331,6 +343,7 @@ useHead({
   ],
 })
 
+// INYECTAMOS SOLO NOTIFICAR (EL MODAL GLOBAL CONFIRMAR SE LLAMA A TRAVÉS DE ESTE)
 const notificar = inject('notificar');
 
 const arbitros = ref([]);
@@ -401,20 +414,22 @@ const toggleDesignacion = async (id, dia) => {
     });
   } catch (err) {
     console.error("Error al guardar tilde:", err);
-    if (nuevoValor) set.delete(id); else set.add(id);
+    if (nuevoValor) set.delete(id); else set.add(id); // Revertimos visualmente si falla
     notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la designación.', tipo: 'danger' });
   }
 };
 
+// FIX: Usamos `notificar` con el callback `alConfirmar`, como en todos tus otros códigos.
 const solicitarLimpiarChecks = () => {
   notificar({
     titulo: 'Limpiar Designaciones',
     mensaje: '¿Estás seguro que deseas limpiar todos los tildes de designación? Esta acción no se puede deshacer.',
     tipo: 'warning',
-    alConfirmar: () => limpiarChecks()
+    alConfirmar: () => limpiarChecks() // Pasamos la función real a ejecutar si el usuario acepta
   });
 };
 
+// FUNCIÓN REAL QUE HACE LA PETICIÓN
 const limpiarChecks = async () => {
   try {
     const res = await api.post({
@@ -523,6 +538,7 @@ const arbitrosFiltrados = computed(() => {
   });
 });
 
+// --- CÁLCULOS DE PAGINACIÓN ---
 const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1);
 
 const arbitrosPaginados = computed(() => {
@@ -530,20 +546,14 @@ const arbitrosPaginados = computed(() => {
   return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
 });
 
-// NUEVA FUNCIÓN: Cambiar página y scrollear arriba SOLO EN MOBILE
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, 50);
-};
-
+// Reseteamos a la página 1 si el usuario escribe en un filtro
 watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
+
+// Si al borrar se reducen las páginas y quedamos fuera de rango, ajustamos.
 watch(totalPaginas, (nuevoTotal) => { 
   if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
 });
+
 
 const exportarExcel = () => {
   const datos = arbitrosFiltrados.value.map(a => ({
@@ -568,19 +578,15 @@ onMounted(cargarDatos);
 </script>
 
 <style scoped>
-/* ====================================================
-   WRAPPERS GENERALES
-   ==================================================== */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
-  min-height: 100vh;
-  height: auto !important; 
+  min-height: 100vh; /* Cambiamos height fijo por min-height */
+  height: auto;      /* Permitimos que crezca hacia abajo en móvil */
   margin-left: 50%;
   transform: translateX(-50%);
   padding: 20px;
-  padding-bottom: 120px;
-  box-sizing: border-box;
+  padding-bottom: 80px; /* Espacio extra para que no toque el footer */
 }
 
 .admin-panel { 
@@ -591,31 +597,35 @@ onMounted(cargarDatos);
   color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
-  border-radius: 12px;
+  height: 100%; /* Asegura que el fondo oscuro cubra todo el alto */
 }
 
-/* ====================================================
-   CABECERA
-   ==================================================== */
 .header-section { 
   background: white; 
-  padding: 15px 25px; 
+  padding: 15px; 
   border-radius: 8px; 
   display: flex; 
   justify-content: space-between; 
   margin-bottom: 15px; 
-  align-items: center; 
+  border-left: 5px solid #ef4444; 
   box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+  align-items: center; 
 }
 
-.header-info { display: flex; flex-direction: column; }
+.header-info {
+  display: flex;
+  flex-direction: column;
+}
+
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
-.counter { font-size: 0.85rem; color: #64748b; }
+.counter { font-size: 0.85rem; color: #000000; }
 
 .header-actions { display: flex; gap: 8px; }
-.btn-action { border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.85rem; transition: opacity 0.2s; }
-.btn-clear { background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; }
-.btn-clear-checks { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; } 
+
+/* Botones idénticos a Gestión de Árbitros */
+.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
+.btn-clear { background: #e2e8f0; color: #000; }
+.btn-clear-checks { background: #fee2e2; color: #ef4444; } 
 .btn-export { background: #10b981; color: white; }
 .btn-filter-mobile { background: #3b82f6; color: white; }
 
@@ -627,9 +637,8 @@ onMounted(cargarDatos);
 .btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
 .paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
-/* ====================================================
-   TABLA DESKTOP
-   ==================================================== */
+
+
 td.text-center { display: table-cell; text-align: center; vertical-align: middle; }
 .btn-wa { background: #25d366; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto; transition: 0.2s; }
 .btn-wa:hover { transform: scale(1.1); }
@@ -638,7 +647,7 @@ td.text-center { display: table-cell; text-align: center; vertical-align: middle
 .table-container { 
   width: 100%;
   overflow: auto; 
-  max-height: 75vh;  
+  max-height: 75vh;  /* Reducido un poquito para dar lugar a la paginación */
   background: white; 
   border-radius: 8px; 
   border: 1px solid #e2e8f0; 
@@ -684,30 +693,39 @@ th {
   background-clip: padding-box; 
 }
 
-th.sticky-col { z-index: 100 !important; background-color: #f1F5F9 !important; }
-.filter-row .sticky-col { z-index: 90 !important; background-color: #f8fafc !important; }
+th.sticky-col { 
+  z-index: 100 !important; 
+  background-color: #f1F5F9 !important; 
+}
+
+.filter-row .sticky-col { 
+  z-index: 90 !important; 
+  background-color: #f8fafc !important; 
+}
+
 .sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
 
-.col-shrink { width: 50px !important; min-width: 50px !important; max-width: 50px !important; white-space: nowrap !important; padding: 8px 0 !important; text-align: center; }
-
-/* Evitar Zoom en iOS */
-.filter-input { font-size: 16px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
-.filter-input-min { font-size: 16px; width: 35px; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; outline: none;}
-
-@media (min-width: 769px) { 
-  .filter-input { font-size: 0.75rem; height: 28px; } 
-  .filter-input-min { font-size: 0.75rem; height: 28px; } 
+.col-shrink { 
+  width: 50px !important; 
+  min-width: 50px !important; 
+  max-width: 50px !important;
+  white-space: nowrap !important; 
+  padding: 8px 0 !important; 
+  text-align: center; 
 }
+
+.filter-input { width: 100%; padding: 2px; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 4px; }
+.filter-input-min { width: 35px; text-align: center; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 4px; }
 
 td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.dot-sm { width: 8px; height: 8px; border-radius: 50%; display: inline-block; vertical-align: middle;}
 .dot-green { background-color: #22c55e; }
 .dot-red { background-color: #ef4444; }
 
-.check { cursor: pointer; }
+.check { transform: scale(1.1); cursor: pointer; }
 .check:disabled { cursor: not-allowed; opacity: 0.5; }
+.check-readonly { cursor: default; }
 
 .icon-apto { color: #22c55e; vertical-align: middle; font-size: 1.5rem; }
 .icon-no-apto { color: #ef4444; vertical-align: middle; font-size: 1.5rem; }
@@ -717,15 +735,7 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 .obs-wrapper { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; padding: 4px; border-radius: 4px; }
 .obs-wrapper:focus { position: absolute; width: 300px; white-space: normal; background: #fff; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #3b82f6; padding: 10px; left: -150px; top: 0; }
 
-.fila-roja, .fila-roja .sticky-col { background-color: #fca5a5 !important; color: #000 !important; }
-.fila-amarilla, .fila-amarilla .sticky-col { background-color: #fef08a !important; color: #000 !important; }
-.fila-des, .fila-des .sticky-col { background-color: #93e2ab !important; }
-
-/* ====================================================
-   MOBILE Y RESPONSIVE
-   ==================================================== */
 .mobile-only { display: none; }
-.desktop-only { display: block; }
 
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
@@ -733,45 +743,36 @@ td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
   .btn-action { flex: 1; justify-content: center; min-width: 0; white-space: nowrap; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
+  .admin-panel { padding: 10px; }
+  .header-section { padding: 10px; }
+  .title { font-size: 1rem; }
+  .btn-action { font-size: 0.7rem; padding: 6px 8px; }
+  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
+
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
-}
+  .header-actions .btn-text { display: none !important; }
 
-@media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0; width: 100vw; }
-  
-  /* 1. Pasamos la cabecera a columna y alineamos a la izquierda */
-  .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }
-  
-  /* 2. Aseguramos que el título tome todo el ancho disponible */
-  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
-  .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
-  .header-info span { font-size: 0.85rem !important; }
-  
-  /* 3. Centramos los botones abajo */
-  .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
-  .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
-  .btn-text { display: none !important; }
-
-  /* PANEL DE FILTROS MÓVIL (Intacto) */
-  .mobile-filter-panel { padding: 15px 20px; }
+  .mobile-filter-panel { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
   .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
-  .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; background-color: #f8fafc; color: #334155; outline: none; }
-  .filter-grid-mobile input:focus, .filter-grid-mobile select:focus { border-color: #3b82f6; background: white;}
+  .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background-color: #f8fafc; color: #000000; }
   .mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
-  .mobile-select-group label { font-size: 0.75rem; color: #64748b; font-weight: bold; margin-bottom: 2px; }
+  .mobile-select-group label { font-size: 0.75rem; color: #000000; font-weight: bold; margin-bottom: 2px; }
   .filter-row-mobile { display: flex; gap: 10px; }
   .filter-row-mobile input { flex: 1; }
-  .btn-close-filters { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
+  .btn-close-filters { width: 100%; background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
 
-  /* CARDS ÁRBITRO (Intacto) */
-  .card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; }
-  .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
-  .card-name { font-size: 1.05rem; color: #0f172a; display: flex; align-items: center;}
-  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; }
+  .card-arbitro { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
+  .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
 }
 
-.animate__animated { animation-duration: 0.5s; }
+@media (min-width: 768px) {
+  .header-actions .btn-text { display: inline; }
+}
+
+.fila-roja, .fila-roja .sticky-col { background-color: #fca5a5 !important; color: #000 !important; }
+.fila-amarilla, .fila-amarilla .sticky-col { background-color: #fef08a !important; color: #000 !important; }
+.fila-des, .fila-des .sticky-col { background-color: #93e2ab !important; }
+
 </style>
