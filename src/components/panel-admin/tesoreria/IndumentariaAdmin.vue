@@ -1,66 +1,69 @@
 <template>
-  <div class="container py-4 animate__animated animate__fadeIn">
-    
-    <!-- HEADER DEL MÓDULO -->
-    <div class="dashboard-header mb-5 text-center text-md-start">
-      <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
-        <div class="main-icon-container">
-          <i class="bi bi-bag-check text-danger"></i>
-        </div>
-        <div>
-          <h2 class="fw-bold text-white m-0">Gestión de Indumentaria</h2>
-          <p class="small text-white opacity-75 m-0">Administración de stock y pedidos de árbitros</p>
-        </div>
-      </div>
-    </div>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
-    <!-- GRILLA DE OPCIONES (ESTILO NEO-BENTO HORIZONTAL) -->
-    <div class="row g-3 g-md-4 justify-content-center">
-      
-      <!-- STOCK -->
-      <div class="col-12 col-md-6 col-xl-5">
-        <RouterLink to="/panel-admin/tesoreria/indumentaria/stock" class="text-decoration-none h-100 d-block">
-          <div class="modern-menu-card shadow-sm">
-            <div class="icon-box">
-              <i class="bi bi-box-seam"></i>
-            </div>
-            <div class="card-text">
-              <h5 class="fw-bold mb-1">Stock</h5>
-              <p class="extra-small m-0 text-muted">Control de talles, ingresos y cantidades disponibles.</p>
-            </div>
-            <div class="card-arrow">
-              <i class="bi bi-chevron-right"></i>
-            </div>
+  <div class="full-screen-wrapper">
+    <div class="admin-panel animate__animated animate__fadeIn">
+
+      <div class="dashboard-header mb-5 text-center text-md-start">
+        <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
+          <div class="main-icon-container">
+            <i class="bi bi-bag-check text-danger"></i>
           </div>
-        </RouterLink>
+          <div>
+            <h4 class="fw-bold text-white m-0">Gestión de Indumentaria</h4>
+            <p class="small text-white opacity-75 m-0">Administración de stock y pedidos de árbitros</p>
+          </div>
+        </div>
       </div>
 
-      <!-- PEDIDOS REALIZADOS -->
-      <div class="col-12 col-md-6 col-xl-5">
-        <RouterLink to="/panel-admin/tesoreria/indumentaria/pedidos" class="text-decoration-none h-100 d-block">
-          <div class="modern-menu-card shadow-sm">
-            <div class="icon-box position-relative">
-              <i class="bi bi-list-check"></i>
-              <!-- PUNTITO DE NOTIFICACIÓN SOBRE EL ÍCONO -->
-              <span v-if="pedidosNuevos > 0" class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle animate__animated animate__pulse animate__infinite">
-                <span class="visually-hidden">Nuevos pedidos</span>
-              </span>
+      <div class="row g-3 g-md-4 justify-content-center w-100 mx-0">
+        
+        <div class="col-12 col-md-6">
+          <RouterLink to="/panel-admin/tesoreria/indumentaria/stock" class="text-decoration-none h-100 d-block">
+            <div class="modern-menu-card shadow-sm">
+              <div class="icon-box">
+                <i class="bi bi-box-seam"></i>
+              </div>
+              <div class="card-text">
+                <h5 class="fw-bold mb-1">Stock</h5>
+                <p class="extra-small m-0 text-muted">Control de talles, ingresos y cantidades disponibles.</p>
+              </div>
+              <div class="card-arrow">
+                <i class="bi bi-chevron-right"></i>
+              </div>
             </div>
-            <div class="card-text">
-              <h5 class="fw-bold mb-1 d-flex align-items-center gap-2">
-                Pedidos Realizados
-                <!-- BADGE CON EL NÚMERO -->
-                <span v-if="pedidosNuevos > 0" class="badge bg-danger rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.65rem;">
-                  {{ pedidosNuevos }} NUEVO{{ pedidosNuevos > 1 ? 'S' : '' }}
+          </RouterLink>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <RouterLink to="/panel-admin/tesoreria/indumentaria/pedidos" class="text-decoration-none h-100 d-block">
+            <div class="modern-menu-card shadow-sm">
+              
+              <div class="icon-box">
+                <i class="bi bi-list-check"></i>
+                <span v-if="pedidosNuevos > 0" class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle animate__animated animate__pulse animate__infinite">
+                  <span class="visually-hidden">Nuevos pedidos</span>
                 </span>
-              </h5>
-              <p class="extra-small m-0 text-muted">Listado de solicitudes, estados de entrega y pendientes.</p>
+              </div>
+              
+              <div class="card-text">
+                <h5 class="fw-bold mb-1 d-flex align-items-center gap-2 flex-wrap">
+                  Pedidos Realizados
+                  <span v-if="pedidosNuevos > 0" class="badge bg-danger rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.65rem;">
+                    {{ pedidosNuevos }} NUEVO{{ pedidosNuevos > 1 ? 'S' : '' }}
+                  </span>
+                </h5>
+                <p class="extra-small m-0 text-muted">Listado de solicitudes, estados de entrega y pendientes.</p>
+              </div>
+              
+              <div class="card-arrow">
+                <i class="bi bi-chevron-right"></i>
+              </div>
+              
             </div>
-            <div class="card-arrow">
-              <i class="bi bi-chevron-right"></i>
-            </div>
-          </div>
-        </RouterLink>
+          </RouterLink>
+        </div>
+
       </div>
 
     </div>
@@ -104,6 +107,29 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ====================================================
+   WRAPPERS GENERALES
+   ==================================================== */
+.full-screen-wrapper { 
+  position: relative; 
+  width: 99vw; 
+  min-height: 100vh; 
+  height: auto !important; 
+  margin-left: 50%; 
+  transform: translateX(-50%); 
+  padding: 20px; 
+  padding-bottom: 120px; 
+}
+
+.admin-panel { 
+  width: 100%; 
+  max-width: 100%; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; 
+  background-color: #0f172a; 
+  min-height: 100vh; 
+  padding: 20px;
+}
+
 /* Icono Principal del Header */
 .main-icon-container {
   width: 60px;
@@ -190,5 +216,10 @@ onMounted(() => {
   .modern-menu-card { padding: 18px; }
   .icon-box { width: 48px; height: 48px; min-width: 48px; font-size: 1.3rem; }
   .card-text h5 { font-size: 1rem; }
+}
+
+@media (max-width: 600px) {
+  .admin-panel { padding: 10px; border-radius: 0; }
+  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
 }
 </style>

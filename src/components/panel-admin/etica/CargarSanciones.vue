@@ -9,10 +9,10 @@
         
         <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
           <div class="header-info">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
               <span class="material-icons">gavel</span> Cargar Sanción
             </h4>
-            <span class="counter mt-1 d-block text-muted">Tribunal de Ética - El estado inicial será <strong>EN PROCESO</strong></span>
+            <span class="counter mt-1 d-block text-muted">El estado inicial será <strong>EN PROCESO</strong></span>
           </div>
 
           <div class="header-actions">
@@ -29,7 +29,7 @@
           <div class="row g-4">
 
             <div class="col-12 col-lg-8">
-              <div class="menu-card-static border-0">
+              <div class="menu-card-static border-0 shadow-sm">
                 <form @submit.prevent="guardarSancion">
                   <div class="row g-3">
 
@@ -66,7 +66,7 @@
             </div>
 
             <div class="col-12 col-lg-4">
-              <div class="side-card border-0 h-100">
+              <div class="side-card border-0 h-100 shadow-sm">
 
                 <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
                   <span class="material-icons">history</span> Últimos Registros
@@ -231,6 +231,7 @@ onMounted(() => {
   cargarUltimasSanciones();
 });
 </script>
+
 <style scoped>
 /* ESTILOS WRAPPER ESTÁNDAR */
 .full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; box-sizing: border-box; }
@@ -267,7 +268,13 @@ onMounted(() => {
 .badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; } 
 .badge-status.anulada { background: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
 
-/* RESPONSIVE CORRECTO */
+/* PAGINACIÓN (por si lo necesitamos en un futuro) */
+.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
+.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
+.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
+
+/* RESPONSIVE CORRECTO (BOTÓN EN LA MISMA LÍNEA) */
 @media (max-width: 991px) {
   .menu-card-static, .side-card { padding: 20px; }
 }
@@ -276,10 +283,12 @@ onMounted(() => {
   .admin-panel { padding: 10px; border-radius: 0; }
   .full-screen-wrapper { padding: 0; width: 100vw; }
   
+  /* ESTA ES LA CLAVE: flex-direction row obliga a mantenerse en la misma línea */
   .header-section { padding: 15px; flex-direction: row; align-items: center; justify-content: space-between; }
-  .header-info h4 { font-size: 1.1rem !important; }
-  .header-info span { font-size: 0.75rem !important; }
+  .header-info h4 { font-size: 1.25rem !important; }
+  .header-info span { font-size: 0.85rem !important; }
   
+  /* El botón se achica y esconde el texto */
   .header-actions { width: auto; display: flex; flex-direction: row; gap: 8px; }
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
   .btn-action span.material-icons { margin: 0; }

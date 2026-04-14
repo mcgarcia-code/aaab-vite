@@ -1,213 +1,222 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <!-- CABECERA -->
-      <div class="header-section shadow-sm">
-        <div class="header-info">
-          <h2 class="title d-flex align-items-center gap-2">
-            Gestión de Pedidos
-            <!-- GLOBO DE NOTIFICACIÓN DE PEDIDOS NUEVOS -->
-            <span v-if="pedidosNuevos > 0" class="badge bg-danger rounded-pill px-2 py-1 fs-6 d-flex align-items-center animate__animated animate__pulse">
-              <span class="material-icons me-1" style="font-size: 14px;">notifications_active</span>
-              {{ pedidosNuevos }} Nuevo{{ pedidosNuevos > 1 ? 's' : '' }}
-            </span>
-          </h2>
-          <span class="counter">Total: {{ pedidosFiltrados.length }} pedidos</span>
-        </div>
+      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
 
-        <div class="header-actions">
-          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
-            <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
-          </button>
-
-          <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
-            <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
-          </button>
-
-          <button @click="exportarExcel" class="btn-action btn-export" title="Exportar Reporte">
-            <span class="material-icons">download</span> <span class="btn-text">Exportar Excel</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- PANEL DE FILTROS DESPLEGABLE (SOLO MOBILE) -->
-      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <span class="small fw-bold text-muted text-uppercase">Filtrar Pedidos</span>
-          <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-            <span class="material-icons" style="font-size: 20px;">close</span>
-          </button>
-        </div>
-
-        <div class="filter-grid-mobile">
-          <input v-model="filtros.arbitro" placeholder="Buscar árbitro...">
-          <input v-model="filtros.prenda" placeholder="Buscar prenda...">
-          <input v-model="filtros.fecha" placeholder="Fecha (DD/MM/YY)...">
-          
-          <select v-model="filtros.estado" class="full-width">
-            <option value="">Estado (Todos)</option>
-            <option value="creado">Creado</option>
-            <option value="en proceso">En Proceso</option>
-            <option value="aceptado">Aceptado</option>
-            <option value="entregado">Entregado</option>
-            <option value="rechazado">Rechazado</option>
-          </select>
-        </div>
-
-        <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0">Aplicar Filtros</button>
-      </div>
-
-      <!-- TABLA DESKTOP -->
-      <div class="table-container shadow desktop-only">
-        <table>
-          <thead>
-            <tr class="main-header">
-              <th class="sticky-col col-id">ID</th>
-              <th class="sticky-col col-acciones text-center">Acciones</th>
-              <th class="sticky-col col-arbitro">Árbitro</th>
-              <th>Prenda solicitada</th>
-              <th class="text-center">Cant.</th>
-              <th class="text-center">Total</th>
-              <th class="text-center">Fecha</th>
-              <th class="text-center">Estado</th>
-            </tr>
-            <tr class="filter-row">
-              <td class="sticky-col col-id">
-                <button @click="obtenerPedidos" class="btn-refresh w-100" title="Recargar"><span class="material-icons" style="font-size: 16px;">refresh</span></button>
-              </td>
-              <td class="sticky-col col-acciones"></td>
-              <td class="sticky-col col-arbitro"><input v-model="filtros.arbitro" class="filter-input" placeholder="Filtrar.."></td>
-              <td><input v-model="filtros.prenda" class="filter-input" placeholder="Filtrar prenda.."></td>
-              <td></td>
-              <td></td>
-              <td><input v-model="filtros.fecha" class="filter-input text-center" placeholder="DD/MM/YY"></td>
-              <td>
-                <select v-model="filtros.estado" class="filter-input text-center">
-                  <option value="">TODOS</option>
-                  <option value="creado">CREADO</option>
-                  <option value="en proceso">EN PROCESO</option>
-                  <option value="aceptado">ACEPTADO</option>
-                  <option value="entregado">ENTREGADO</option>
-                  <option value="rechazado">RECHAZADO</option>
-                </select>
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="p in pedidosPaginados" :key="p.id">
-              <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ p.id }}</td>
-              <td class="sticky-col col-acciones cell-ro text-center">
-                <div class="d-flex justify-content-center gap-1">
-                  <button @click="abrirModalEstado(p)" class="btn-editar" title="Cambiar Estado">
-                    <span class="material-icons" style="font-size:16px;">edit</span>
-                  </button>
-                  <button @click="verHistorial(p)" class="btn-historial" title="Ver pedidos de este árbitro">
-                    <span class="material-icons" style="font-size:16px;">person_search</span>
-                  </button>
-                </div>
-              </td>
-              <td class="sticky-col col-arbitro cell-ro fw-bold text-uppercase">{{ p.apellido }}, {{ p.nombre }}</td>
-              <td class="cell-ro">{{ p.descripcion }} <span class="fw-bold text-danger ms-1">({{ p.talle }})</span></td>
-              <td class="text-center cell-ro fw-bold">{{ p.cantidad }}</td>
-              <td class="text-center cell-ro fw-bold text-success">$ {{ p.cantidad * p.precioUnitario }}</td>
-              <td class="text-center cell-ro text-muted fw-bold">{{ p.fecha_creacion || 'S/F' }}</td>
-              <td class="text-center cell-ro">
-                <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- VISTA MOBILE (CARDS) -->
-      <div class="mobile-only">
-        <div v-for="p in pedidosPaginados" :key="'mob-'+p.id" class="card-licencia">
-          <div class="card-header">
-            <div class="card-name text-uppercase">
-              <strong>{{ p.apellido }}, {{ p.nombre }}</strong>
-            </div>
-            <div class="text-xs text-muted fw-bold">
-              ID: #{{ p.id }} <span class="mx-1">•</span> {{ p.fecha_creacion || 'S/F' }}
-            </div>
+        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
+          <div class="header-info">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2 flex-wrap" style="font-size: 1.25rem;">
+              <i class="bi bi-cart-fill me-1"></i> Gestión de Pedidos
+              <span v-if="pedidosNuevos > 0" class="badge bg-danger rounded-pill px-2 py-1 fs-6 d-flex align-items-center animate__animated animate__pulse">
+                <span class="material-icons me-1" style="font-size: 14px;">notifications_active</span>
+                {{ pedidosNuevos }} Nuevo{{ pedidosNuevos > 1 ? 's' : '' }}
+              </span>
+            </h4>
+            <span class="counter mt-1 d-block text-muted">Total: {{ pedidosFiltrados.length }} pedidos</span>
           </div>
 
-          <div class="card-body">
-            <div class="card-row">
-              <span><strong>Estado:</strong> <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span></span>
-            </div>
+          <div class="header-actions">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
+              <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+            </button>
 
-            <div class="card-info bg-light p-2 rounded border mt-2">
-              <p class="fw-bold m-0 text-dark">{{ p.descripcion }} <span class="text-danger">({{ p.talle }})</span></p>
-              <div class="d-flex justify-content-between mt-1 border-top pt-1">
-                <span>Cant: <strong>{{ p.cantidad }}</strong></span>
-                <span class="text-success fw-bold">Total: ${{ p.cantidad * p.precioUnitario }}</span>
+            <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
+              <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
+            </button>
+
+            <button @click="exportarExcel" class="btn-action btn-export" title="Exportar Reporte">
+              <span class="material-icons">download</span> <span class="btn-text">Exportar Excel</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="small fw-bold text-muted text-uppercase">Filtrar Pedidos</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
+              <span class="material-icons" style="font-size: 20px;">close</span>
+            </button>
+          </div>
+
+          <div class="filter-grid-mobile">
+            <input v-model="filtros.arbitro" class="filter-input-mobile" placeholder="Buscar árbitro...">
+            <input v-model="filtros.prenda" class="filter-input-mobile" placeholder="Buscar prenda...">
+            <input v-model="filtros.fecha" class="filter-input-mobile" placeholder="Fecha (DD/MM/YY)...">
+            
+            <select v-model="filtros.estado" class="filter-input-mobile full-width">
+              <option value="">Estado (Todos)</option>
+              <option value="creado">Creado</option>
+              <option value="en proceso">En Proceso</option>
+              <option value="aceptado">Aceptado</option>
+              <option value="entregado">Entregado</option>
+              <option value="rechazado">Rechazado</option>
+            </select>
+          </div>
+
+          <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm" style="font-size: 0.95rem;">Aplicar Filtros</button>
+        </div>
+
+        <div class="card-body p-3 p-md-4">
+          
+          <div class="table-container shadow-sm desktop-only border" style="border-radius: 8px;">
+            <table>
+              <thead>
+                <tr class="main-header">
+                  <th class="sticky-col col-id">ID</th>
+                  <th class="sticky-col col-acciones text-center">Acciones</th>
+                  <th class="sticky-col col-arbitro">Árbitro</th>
+                  <th>Prenda solicitada</th>
+                  <th class="text-center">Cant.</th>
+                  <th class="text-center">Total</th>
+                  <th class="text-center">Fecha</th>
+                  <th class="text-center">Estado</th>
+                </tr>
+                <tr class="filter-row">
+                  <td class="sticky-col col-id text-center">
+                    <button @click="obtenerPedidos" class="btn-refresh mx-auto d-flex align-items-center justify-content-center" title="Recargar">
+                      <span class="material-icons" style="font-size: 16px;">refresh</span>
+                    </button>
+                  </td>
+                  <td class="sticky-col col-acciones"></td>
+                  <td class="sticky-col col-arbitro"><input v-model="filtros.arbitro" class="filter-input shadow-none" placeholder="Filtrar.."></td>
+                  <td><input v-model="filtros.prenda" class="filter-input shadow-none" placeholder="Filtrar prenda.."></td>
+                  <td></td>
+                  <td></td>
+                  <td><input v-model="filtros.fecha" class="filter-input shadow-none text-center" placeholder="DD/MM/YY"></td>
+                  <td>
+                    <select v-model="filtros.estado" class="filter-input shadow-none text-center">
+                      <option value="">TODOS</option>
+                      <option value="creado">CREADO</option>
+                      <option value="en proceso">EN PROCESO</option>
+                      <option value="aceptado">ACEPTADO</option>
+                      <option value="entregado">ENTREGADO</option>
+                      <option value="rechazado">RECHAZADO</option>
+                    </select>
+                  </td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="p in pedidosPaginados" :key="p.id" class="row-hover">
+                  <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ p.id }}</td>
+                  <td class="sticky-col col-acciones cell-ro text-center">
+                    <div class="d-flex justify-content-center gap-1">
+                      <button @click="abrirModalEstado(p)" class="btn-editar border shadow-sm rounded p-1" title="Cambiar Estado">
+                        <span class="material-icons text-primary" style="font-size:16px;">edit</span>
+                      </button>
+                      <button @click="verHistorial(p)" class="btn-historial border shadow-sm rounded p-1" title="Ver pedidos de este árbitro">
+                        <span class="material-icons text-warning" style="font-size:16px;">person_search</span>
+                      </button>
+                    </div>
+                  </td>
+                  <td class="sticky-col col-arbitro cell-ro fw-bold text-uppercase text-dark">{{ p.apellido }}, {{ p.nombre }}</td>
+                  <td class="cell-ro text-dark">{{ p.descripcion }} <span class="fw-bold text-danger ms-1">({{ p.talle }})</span></td>
+                  <td class="text-center cell-ro fw-bold">{{ p.cantidad }}</td>
+                  <td class="text-center cell-ro fw-bold text-success">$ {{ p.cantidad * p.precioUnitario }}</td>
+                  <td class="text-center cell-ro text-muted fw-bold">{{ p.fecha_creacion || 'S/F' }}</td>
+                  <td class="text-center cell-ro">
+                    <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
+                  </td>
+                </tr>
+
+                <tr v-if="pedidosPaginados.length === 0">
+                  <td colspan="8" class="text-center py-5 text-muted bg-light italic border-0">
+                    <span class="material-icons d-block mb-2" style="font-size: 40px;">remove_shopping_cart</span>
+                    <p class="m-0 fw-bold">No hay ningún pedido registrado.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mobile-only mt-3">
+            <div v-for="p in pedidosPaginados" :key="'mob-'+p.id" class="card-licencia border-light-subtle shadow-sm mb-3 bg-white rounded">
+              <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
+                <div class="card-name text-uppercase text-dark fw-bold" style="font-size: 1.05rem;">
+                  {{ p.apellido }}, {{ p.nombre }}
+                </div>
+                <div class="text-xs text-muted fw-bold">
+                  #{{ p.id }} <span class="mx-1">•</span> {{ p.fecha_creacion || 'S/F' }}
+                </div>
+              </div>
+
+              <div class="card-body pt-0 px-3 pb-3">
+                <div class="card-row mb-2">
+                  <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]" style="font-size: 0.7rem; padding: 3px 10px;">{{ (p.estado || 'N/A').toUpperCase() }}</span>
+                </div>
+
+                <div class="card-info bg-light p-2 rounded border mt-2">
+                  <p class="fw-bold m-0 text-dark">{{ p.descripcion }} <span class="text-danger">({{ p.talle }})</span></p>
+                  <div class="d-flex justify-content-between mt-1 border-top border-secondary-subtle pt-1">
+                    <span class="text-dark small">Cant: <strong>{{ p.cantidad }}</strong></span>
+                    <span class="text-success fw-bold small">Total: ${{ p.cantidad * p.precioUnitario }}</span>
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                  <button @click="abrirModalEstado(p)" class="btn-editar-mobile flex-grow-1 border shadow-sm">
+                    <span class="material-icons" style="font-size: 18px;">edit</span> Estado
+                  </button>
+                  <button @click="verHistorial(p)" class="btn-historial-mobile border shadow-sm px-3" title="Ver sus pedidos">
+                    <span class="material-icons" style="font-size: 18px;">person_search</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div class="d-flex gap-2 mt-3">
-              <button @click="abrirModalEstado(p)" class="btn-editar-mobile flex-grow-1">
-                <span class="material-icons" style="font-size: 18px;">edit</span> Estado
-              </button>
-              <button @click="verHistorial(p)" class="btn-historial-mobile" title="Ver sus pedidos">
-                <span class="material-icons" style="font-size: 18px;">person_search</span>
-              </button>
+            <div v-if="pedidosPaginados.length === 0" class="text-center p-4 bg-light rounded shadow-sm border mt-3">
+              <span class="material-icons text-muted" style="font-size: 40px;">remove_shopping_cart</span>
+              <p class="text-muted mt-2 mb-0 fw-bold">No hay ningún pedido registrado.</p>
             </div>
           </div>
-        </div>
 
-        <div v-if="pedidosPaginados.length === 0" class="text-center p-4 bg-white rounded shadow-sm border">
-          <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-          <p class="text-muted mt-2 mb-0">No se encontraron pedidos.</p>
-        </div>
-      </div>
+          <div class="d-flex justify-content-end w-100 mt-3" v-if="pedidosFiltrados.length > 0">
+            <div class="paginacion" v-if="totalPaginas > 1">
+              <button class="btn-paginacion shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual === 1">Anterior</button>
+              <span class="paginacion-texto text-dark fw-bold">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn-paginacion shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual === totalPaginas">Siguiente</button>
+            </div>
+          </div>
 
-      <!-- PAGINACIÓN -->
-      <div class="paginacion" v-if="totalPaginas > 1">
-        <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
-        <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-        <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
-      </div>
+        </div> </div> </div>
 
-    </div>
-
-    <!-- MODAL CAMBIO DE ESTADO -->
     <Teleport to="body">
     <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
-      <div class="modal-content-exito animate__animated animate__zoomIn p-4" style="max-width: 450px; width: 95%;">
+      <div class="modal-content-exito animate__animated animate__zoomIn p-4 shadow-lg" style="max-width: 450px; width: 95%; border-radius: 20px;">
 
-        <div class="icon-circle-exito bg-info-light mb-3">
-          <span class="material-icons">local_shipping</span>
+        <div class="icon-circle-exito bg-info-subtle text-info mb-3 mx-auto" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+          <span class="material-icons" style="font-size: 32px;">local_shipping</span>
         </div>
-        <h4 class="fw-bold m-0">Gestionar Pedido</h4>
-        <p class="text-muted small mt-1 mb-4">Pedido #{{ pedidoActual.id }} — {{ pedidoActual.apellido }}, {{ pedidoActual.nombre }}</p>
+        <h4 class="fw-bold m-0 text-dark text-center">Gestionar Pedido</h4>
+        <p class="text-muted small mt-1 mb-4 text-center">Pedido #{{ pedidoActual.id }} — {{ pedidoActual.apellido }}, {{ pedidoActual.nombre }}</p>
 
-        <div class="text-start bg-light p-3 rounded border mb-4">
+        <div class="text-start bg-light p-3 rounded border mb-4 border-secondary-subtle">
           <p class="m-0 fw-bold small text-dark">{{ pedidoActual.descripcion }} ({{ pedidoActual.talle }})</p>
-          <p class="m-0 small text-muted">Fecha: {{ pedidoActual.fecha_creacion || 'S/F' }} | Cant: {{ pedidoActual.cantidad }} | Total: ${{ pedidoActual.cantidad * pedidoActual.precioUnitario }}</p>
+          <p class="m-0 small text-muted mt-1">Fecha: <strong class="text-dark">{{ pedidoActual.fecha_creacion || 'S/F' }}</strong> | Cant: <strong class="text-dark">{{ pedidoActual.cantidad }}</strong> | Total: <strong class="text-success">${{ pedidoActual.cantidad * pedidoActual.precioUnitario }}</strong></p>
         </div>
 
         <div class="text-start">
-          <label class="small fw-bold mb-1">Actualizar Estado</label>
-          <select v-model="nuevoEstado" class="form-select shadow-none border-primary-subtle fw-bold">
+          <label class="small fw-bold mb-1 text-dark">Actualizar Estado</label>
+          <select v-model="nuevoEstado" class="form-select shadow-none border-primary-subtle fw-bold custom-input">
             <option value="creado">Creado (A Pagar)</option>
             <option value="en proceso">En Proceso</option>
             <option value="aceptado">Aceptado (Preparando)</option>
             <option value="entregado">Entregado</option>
             <option value="rechazado">Rechazado / Cancelado</option>
           </select>
-          <p class="extra-small text-muted mt-2 mb-0">
+          <p class="extra-small text-muted mt-2 mb-0" style="font-size: 0.75rem;">
             * <b>Aceptado:</b> Bloquea el stock.<br>
             * <b>Entregado:</b> Descuenta el stock definitivamente.<br>
             * <b>Rechazado:</b> Devuelve el stock a la base.
           </p>
         </div>
 
-        <div class="d-flex gap-2 justify-content-center mt-4">
-          <button @click="cerrarModal" class="btn btn-light rounded-pill w-100 fw-bold border">CANCELAR</button>
-          <button @click="guardarEstado" class="btn btn-dark rounded-pill w-100 fw-bold shadow-sm" :disabled="cargando">
+        <div class="d-flex gap-3 justify-content-center mt-5">
+          <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold" style="background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; width: 100%;">CANCELAR</button>
+          <button @click="guardarEstado" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargando" style="background: #1e293b; width: 100%;">
             <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
             GUARDAR
           </button>
@@ -217,41 +226,42 @@
     </div>
     </Teleport>
 
-    <!-- MODAL HISTORIAL DE PEDIDOS DEL ÁRBITRO -->
     <Teleport to="body">
     <div v-if="mostrarModalHistorial" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10002;">
-      <div class="modal-content-exito animate__animated animate__zoomIn p-4" style="max-width: 650px; width: 95%; text-align: left;">
+      <div class="modal-content-exito d-flex flex-column animate__animated animate__zoomIn p-0 mx-auto shadow-lg" style="max-width: 650px; width: 95%; max-height: 90vh; text-align: left; border-radius: 20px; background: #ffffff; overflow: hidden;">
         
-        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-          <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
-            <span class="material-icons text-warning">history</span>
-            Historial de {{ arbitroHistorialNombre }}
-            <span class="badge bg-dark rounded-pill fs-6 ms-2">{{ historialArbitro.length }}</span>
-          </h5>
-          <button @click="mostrarModalHistorial = false" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;">
-            <span class="material-icons" style="font-size: 18px; line-height: 1;">close</span>
-          </button>
+        <div class="flex-shrink-0 p-3 p-md-4 border-bottom bg-white" style="position: relative; z-index: 10;">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold m-0 d-flex align-items-center gap-2" style="color: #0f172a; font-size: 1.15rem;">
+              <span class="material-icons text-warning" style="font-size: 24px;">history</span>
+              Historial de {{ arbitroHistorialNombre }}
+              <span class="badge bg-dark rounded-pill fs-6 ms-2 d-flex align-items-center justify-content-center" style="min-width: 28px; min-height: 28px;">{{ historialArbitro.length }}</span>
+            </h5>
+            <button @click="mostrarModalHistorial = false" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background: #f8fafc; border: 1px solid #f1f5f9; padding: 0;">
+              <span class="material-icons" style="font-size: 18px; color: #000;">close</span>
+            </button>
+          </div>
         </div>
 
-        <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
-          <div class="table-responsive">
-            <table class="table table-sm table-hover align-middle" style="font-size: 0.85rem;">
-              <thead class="table-light">
+        <div class="flex-grow-1 p-3 p-md-4 bg-white" style="max-height: 60vh; overflow-y: auto;">
+          <div class="table-responsive border rounded shadow-sm">
+            <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem;">
+              <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
                 <tr>
-                  <th>Fecha</th>
-                  <th>Prenda</th>
-                  <th class="text-center">Cant</th>
-                  <th class="text-end">Total</th>
-                  <th class="text-center">Estado</th>
+                  <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Fecha</th>
+                  <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Prenda</th>
+                  <th class="text-center py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Cant</th>
+                  <th class="text-end py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Total</th>
+                  <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Estado</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="h in historialArbitro" :key="h.id">
-                  <td class="text-nowrap text-muted fw-bold">{{ h.fecha_creacion || 'S/F' }}</td>
-                  <td>{{ h.descripcion }} <span class="text-danger fw-bold">({{ h.talle }})</span></td>
-                  <td class="text-center fw-bold">{{ h.cantidad }}</td>
-                  <td class="text-end fw-bold text-success">${{ h.cantidad * h.precioUnitario }}</td>
-                  <td class="text-center">
+                <tr v-for="h in historialArbitro" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
+                  <td class="text-nowrap text-muted fw-bold ps-3 py-3">{{ h.fecha_creacion || 'S/F' }}</td>
+                  <td class="py-3 text-dark">{{ h.descripcion }} <span class="text-danger fw-bold">({{ h.talle }})</span></td>
+                  <td class="text-center fw-bold py-3 text-dark">{{ h.cantidad }}</td>
+                  <td class="text-end fw-bold text-success py-3">${{ h.cantidad * h.precioUnitario }}</td>
+                  <td class="text-center pe-3 py-3">
                     <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">{{ (h.estado || 'N/A').toUpperCase() }}</span>
                   </td>
                 </tr>
@@ -300,7 +310,7 @@ const mostrarModalHistorial = ref(false);
 const historialArbitro = ref([]);
 const arbitroHistorialNombre = ref('');
 
-// --- NUEVO: COMPUTED PARA CONTAR PEDIDOS EN ESTADO "CREADO" ---
+// COMPUTED PARA CONTAR PEDIDOS EN ESTADO "CREADO"
 const pedidosNuevos = computed(() => {
   return pedidos.value.filter(p => p.estado && p.estado.toLowerCase() === 'creado').length;
 });
@@ -327,6 +337,16 @@ const pedidosPaginados = computed(() => {
   return pedidosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
 });
 
+// FUNCIÓN: Cambiar página y scrollear arriba SOLO EN MOBILE
+const cambiarPagina = (delta) => {
+  paginaActual.value += delta;
+  setTimeout(() => {
+    if (window.innerWidth <= 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, 50);
+};
+
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
 watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo });
 
@@ -336,7 +356,7 @@ const obtenerPedidos = async () => {
   try {
     const res = await api.get({ entity: 'indumentaria', action: 'obtenerPedidos' });
     if (res.ok) pedidos.value = res.payload;
-  } catch (error) {
+  } catch {
     notificar({ titulo: 'Error', mensaje: 'Problema al cargar los pedidos.', tipo: 'danger' });
   }
   cargando.value = false;
@@ -379,7 +399,6 @@ const guardarEstado = async () => {
 // Acciones Tabla (Historial en Modal)
 const verHistorial = (pedido) => {
   arbitroHistorialNombre.value = `${pedido.apellido}, ${pedido.nombre}`;
-  // Filtramos la lista completa (pedidos.value) para este árbitro y ordenamos por ID descendente
   historialArbitro.value = pedidos.value
     .filter(p => p.apellido === pedido.apellido && p.nombre === pedido.nombre)
     .sort((a, b) => b.id - a.id);
@@ -485,21 +504,24 @@ onMounted(obtenerPedidos);
 /* ====================================================
    ESTILOS GENERALES Y CABECERA
    ==================================================== */
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; }
-.admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; }
-.header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
-.title { font-size: 1.1rem; font-weight: bold; margin: 0; }
-.counter { font-size: 0.85rem; color: #000000; }
+.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; box-sizing: border-box;}
+.admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; border-radius: 12px;}
+
+.header-section { background: white; padding: 15px 25px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
+.title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000;}
+.counter { font-size: 0.85rem; color: #64748b; }
+
 .header-actions { display: flex; gap: 8px; }
-.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
+.btn-action { border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.85rem; transition: opacity 0.2s; }
 .btn-clear { background: #e2e8f0; color: #000; }
 .btn-blue { background: #3b82f6; color: white; }
 .btn-export { background: #10b981; color: white; }
 
+/* ESTILOS EXACTOS DE PAGINACIÓN SOLICITADOS */
 .paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
 .btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
+.paginacion-texto { color: #0f172a; font-size: 0.85rem; font-weight: 600; }
 
 /* ====================================================
    TABLA DESKTOP ESTRUCTURA
@@ -518,7 +540,8 @@ thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: 
 thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
 
 .cell-ro { padding: 10px 8px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; }
-.filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
+.filter-input { font-size: 16px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
+@media (min-width: 769px) { .filter-input { font-size: 0.75rem; height: 28px; } }
 
 /* BOTONES TABLA */
 .btn-editar { display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; padding: 4px; cursor: pointer; transition: 0.2s; border: none; background: #eff6ff; color: #1d4ed8; }
@@ -540,6 +563,8 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 .modal-content-exito { background: white; border-radius: 20px; border: none; text-align: center; }
 .icon-circle-exito { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
+.custom-input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; background-color: #ffffff; transition: all 0.3s ease; }
+.custom-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); outline: none; }
 
 /* MOBILE / RESPONSIVE */
 .desktop-only { display: block; }
@@ -549,8 +574,12 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 
 .mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
 .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filter-grid-mobile input, .filter-grid-mobile select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; width: 100%; outline: none; background: #f8fafc; }
+.filter-input-mobile { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; width: 100%; outline: none; background: #f8fafc; }
 .filter-grid-mobile select.full-width { grid-column: span 2; }
+
+@media (min-width: 769px) {
+  .filter-input-mobile { font-size: 0.85rem; }
+}
 
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
@@ -567,19 +596,29 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
   .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
   
   .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-  .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; width: 45px; }
+  .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; width: 45px; }
 }
 
+/* LA CLAVE DE LA ESTRUCTURA MÓVIL EXACTA */
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; }
-  .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
-  .title { font-size: 1rem; }
-  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
-  .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; gap: 8px; }
+  .admin-panel { padding: 10px; border-radius: 0; }
+  .full-screen-wrapper { padding: 0; width: 100vw; }
+  
+  /* Titulo a la izquierda (respetando borde rojo), botones centrados abajo */
+  .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }
+  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%;}
+  .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
+  .header-info span.counter { font-size: 0.75rem !important; }
+  
+  .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
+  .btn-action span.material-icons { margin: 0; }
   .btn-text { display: none !important; }
   .mobile-only-flex { display: flex !important; }
+  
   .filter-grid-mobile { grid-template-columns: 1fr; }
   .filter-grid-mobile select.full-width { grid-column: span 1; }
 }
+
+.animate__animated { animation-duration: 0.5s; }
 </style>

@@ -9,7 +9,7 @@
         
         <div class="header-section" style="margin-bottom: 0; box-shadow: none; border-radius: 0; border-bottom: 1px solid #e2e8f0; padding: 20px;">
           <div class="header-info">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
               <i class="bi bi-shield-exclamation me-1"></i> Historial de Sanciones
             </h4>
             <span class="counter mt-1 d-block">Total: {{ sancionesFiltradas.length }} sanciones</span>

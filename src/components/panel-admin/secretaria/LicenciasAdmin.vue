@@ -9,7 +9,7 @@
         
         <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0;">
           <div class="header-info">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
               <i class="bi bi-calendar-event me-1"></i> Gestión de Licencias
             </h4>
             <span class="counter mt-1 d-block">Total: {{ licenciasFiltradas.length }} licencias</span>
