@@ -1,272 +1,327 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <!-- CABECERA -->
-      <div class="header-section shadow-sm">
-        <div class="header-info">
-          <h2 class="title">Control de Designaciones</h2>
-          <span class="counter">Total: {{ arbitrosFiltrados.length }} árbitros</span>
-        </div>
-
-        <div class="header-actions">
-          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-filter-mobile mobile-only">
-            <span class="material-icons">filter_alt</span>
-          </button>
-          
-          <button @click="limpiarFiltros" class="btn-action btn-clear">
-            <span class="material-icons">filter_alt_off</span>
-            <span class="btn-text">Filtros</span>
-          </button>
-
-          <!-- Modificamos el click para que llame a la nueva función con el modal -->
-          <button @click="solicitarLimpiarChecks" class="btn-action btn-clear-checks desktop-only">
-            <span class="material-icons" style="font-size: 18px; line-height: 1;">check_box_outline_blank</span>
-            <span class="btn-text" style="line-height: 1;">Tildes</span>
-          </button>
-
-          <button @click="exportarExcel" class="btn-action btn-export">
-            <span class="material-icons">download</span>
-            <span class="btn-text">Excel</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- MODAL DE FILTROS MOBILE -->
-      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only">
-        <div class="filter-grid-mobile">
-          <input v-model="filtros.apellido" placeholder="Apellido..">
-          <input v-model="filtros.nombre" placeholder="Nombre..">
-          
-          <div class="mobile-select-group">
-            <label>Estado Activo:</label>
-            <select v-model="filtros.es_activo">
-              <option value="">Todos los estados</option>
-              <option value="1">Sólo Activos</option>
-              <option value="0">Sólo Inactivos</option>
-            </select>
+      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
+        
+        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
+          <div class="header-info">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2 flex-wrap" style="font-size: 1.25rem;">
+              <i class="bi bi-calendar-check-fill me-1"></i> Control de Designaciones
+            </h4>
+            <span class="counter mt-1 d-block text-muted">Total: {{ arbitrosFiltrados.length }} árbitros</span>
           </div>
 
-          <div class="mobile-select-group">
-            <label>Licencia:</label>
-            <select v-model="filtros.licencia">
-              <option value="">Todos los Árbitros</option>
-              <option value="sin_licencia">Sin Licencia</option>
-              <option value="aprobada">Licencias Aprobadas</option>
-              <option value="rechazada">Licencias Rechazadas</option>
-            </select>
-          </div>
+          <div class="header-actions">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-filter-mobile mobile-only">
+              <span class="material-icons">filter_alt</span>
+            </button>
+            
+            <button @click="limpiarFiltros" class="btn-action btn-clear">
+              <span class="material-icons">filter_alt_off</span>
+              <span class="btn-text">Limpiar</span>
+            </button>
 
-          <div class="mobile-select-group">
-            <label>Apto Médico:</label>
-            <select v-model="filtros.apto_medico">
-              <option value="">Todos</option>
-              <option value="1">Sólo Aptos</option>
-              <option value="0">No Aptos</option>
-            </select>
-          </div>
+            <button @click="solicitarLimpiarChecks" class="btn-action btn-clear-checks desktop-only" style="padding-left: 8px; padding-right: 10px;">
+              <span class="material-icons" style="font-size: 16px; line-height: 1;">check_box_outline_blank</span>
+              <span class="btn-text" style="line-height: 1;">Tildes</span>
+            </button>
 
-          <div class="mobile-select-group">
-            <label>Designado Sáb:</label>
-            <select v-model="filtros.designado_sabado">
-              <option value="">Todos</option>
-              <option value="1">Designados</option>
-              <option value="0">No Designados</option>
-            </select>
-          </div>
-
-          <div class="mobile-select-group">
-            <label>Designado Dom:</label>
-            <select v-model="filtros.designado_domingo">
-              <option value="">Todos</option>
-              <option value="1">Designados</option>
-              <option value="0">No Designados</option>
-            </select>
-          </div>
-
-          <div class="filter-row-mobile">
-            <input v-model="filtros.grupo" placeholder="Grupo">
-            <input v-model="filtros.subgrupo" placeholder="Sub-grupo">
-          </div>
-          
-          <input v-model="filtros.zona" placeholder="Zona..">
-        </div>
-        <button @click="mostrarFiltrosMobile = false" class="btn-close-filters">Aplicar Filtros</button>
-      </div>
-
-      <!-- CONTENEDOR DE LA TABLA -->
-      <div class="table-container shadow desktop-only">
-        <table>
-          <thead>
-            <tr>
-              <th class="sticky-col" style="left: 0; z-index: 40; width: 140px;">Apellido</th>
-              <th class="sticky-col" style="left: 140px; z-index: 40; width: 140px;">Nombre</th>
-              <th class="sticky-col col-shrink sticky-col-final" style="left: 280px; z-index: 40;">SÁB</th>
-              <th class="sticky-col col-shrink" style="left: 330px; z-index: 40;">DOM</th>
-              <th class="sticky-col text-center" style="left: 380px; z-index: 40; min-width: 160px;">Licencia</th>
-              <th class="col-shrink">WS</th>
-              <th style="width: 80px;">Activo</th>
-              <th class="text-center" style="width: 90px;">Apto</th>
-              <th class="col-shrink">Grupo</th>
-              <th class="col-shrink">Sub</th>
-              <th class="text-center">Zona</th>
-              <th class="text-center">Movilidad</th>
-              <th class="col-shrink">Sab</th>
-              <th>Desde</th>
-              <th>Hasta</th>
-              <th class="col-shrink">Dom</th>
-              <th>Desde</th>
-              <th>Hasta</th>
-              <th class="col-shrink">Juega</th>
-              <th class="text-center">Club</th>
-              <th class="text-center">Cat</th>
-              <th class="text-center">Observaciones</th>
-            </tr>
-            <tr class="filter-row">
-              <td class="sticky-col" style="left:0; z-index: 35;"><input v-model="filtros.apellido" class="filter-input"></td>
-              <td class="sticky-col" style="left:140px; z-index: 35;"><input v-model="filtros.nombre" class="filter-input"></td>
-              
-              <td class="sticky-col col-shrink" style="left:280px; z-index: 35;">
-                <select v-model="filtros.designado_sabado" class="filter-input">
-                  <option value=""></option>
-                  <option value="1">SI</option>
-                  <option value="0">NO</option>
-                </select>
-              </td>
-              <td class="sticky-col col-shrink sticky-col-final" style="left:330px; z-index: 35;">
-                <select v-model="filtros.designado_domingo" class="filter-input">
-                  <option value=""></option>
-                  <option value="1">SI</option>
-                  <option value="0">NO</option>
-                </select>
-              </td>
-              
-              <td class="sticky-col" style="left:380px; z-index: 35;">
-                <select v-model="filtros.licencia" class="filter-input">
-                  <option value="">Todas</option>
-                  <option value="sin_licencia">Sin Licencia</option>
-                  <option value="aprobada">Licencias Aprobadas</option>
-                  <option value="rechazada">Licencias Rechazadas</option>
-                </select>
-              </td>
-              <td></td>
-              <td class="bg-filter">
-                <select v-model="filtros.es_activo" class="filter-input">
-                  <option value="">Todos</option>
-                  <option value="1">SÍ</option>
-                  <option value="0">NO</option>
-                </select>
-              </td>
-              <td class="bg-filter text-center">
-                <select v-model="filtros.apto_medico" class="filter-input">
-                  <option value="">Todos</option>
-                  <option value="1">SÍ</option>
-                  <option value="0">NO</option>
-                </select>
-              </td>
-              <td class="bg-filter col-shrink"><input v-model="filtros.grupo" class="filter-input-min"></td>
-              <td class="bg-filter col-shrink"><input v-model="filtros.subgrupo" class="filter-input-min"></td>
-              <td class="bg-filter"><input v-model="filtros.zona" class="filter-input"></td>
-              <td class="bg-filter"><input v-model="filtros.movilidad" class="filter-input"></td>
-              <td class="bg-filter col-shrink"><input v-model="filtros.disponibilidad_sabado" class="filter-input-min"></td>
-              <td class="bg-filter"></td><td class="bg-filter"></td>
-              <td class="bg-filter col-shrink"><input v-model="filtros.disponibilidad_domingo" class="filter-input-min"></td>
-              <td class="bg-filter"></td><td class="bg-filter"></td>
-              <td class="bg-filter col-shrink"><input v-model="filtros.juega_handball" class="filter-input-min"></td>
-              <td class="bg-filter"><input v-model="filtros.donde_juega" class="filter-input"></td>
-              <td class="bg-filter"><input v-model="filtros.categoria_handball" class="filter-input"></td>
-              <td class="bg-filter"><input v-model="filtros.observaciones" class="filter-input"></td>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- USAMOS arbitrosPaginados EN LUGAR DE arbitrosFiltrados -->
-            <tr v-for="a in arbitrosPaginados" :key="a.id" :class="obtenerClaseFila(a)">
-              <td class="sticky-col font-bold" style="left: 0;">{{ a.apellido }}</td>
-              <td class="sticky-col font-bold" style="left: 140px;">{{ a.nombre }}</td>
-              
-              <td class="sticky-col text-center col-shrink" style="left: 280px;">
-                <input type="checkbox"
-                  :checked="designadosSabado.has(a.id)"
-                  :disabled="a.disponibilidad_sabado === 'NO'"
-                  @change="toggleDesignacion(a.id, 'S')"
-                  class="check">
-              </td>
-              <td class="sticky-col text-center col-shrink sticky-col-final" style="left: 330px;">
-                <input type="checkbox"
-                  :checked="designadosDomingo.has(a.id)"
-                  :disabled="a.disponibilidad_domingo === 'NO'"
-                  @change="toggleDesignacion(a.id, 'D')"
-                  class="check">
-              </td>
-
-              <td class="sticky-col text-center text-xs" style="left: 380px; white-space: nowrap;">{{ obtenerTextoLicencia(a) }}</td>
-              <td class="text-center col-shrink">
-                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa" title="Enviar WhatsApp">
-                  <span class="material-icons">chat</span>
-                </button>
-                <span v-else>-</span>
-              </td>
-              <td class="text-center col-shrink"><span :class="['dot', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span></td>
-              <td class="text-center">
-                <span v-if="a.apto_medico" class="material-icons icon-apto" title="Apto Físico">check_circle</span>
-                <span v-else class="material-icons icon-no-apto" title="No Apto Físico">cancel</span>
-              </td>
-              <td class="text-center col-shrink">{{ a.grupo }}</td>
-              <td class="text-center col-shrink">{{ a.subgrupo }}</td>
-              <td>{{ a.zona }}</td>
-              <td>{{ a.movilidad }}</td>
-              <td class="text-center col-shrink">{{ a.disponibilidad_sabado }}</td>
-              <td>{{ a.disponibilidad_sabado_desde }}</td>
-              <td>{{ a.disponibilidad_sabado_hasta }}</td>
-              <td class="text-center col-shrink">{{ a.disponibilidad_domingo }}</td>
-              <td>{{ a.disponibilidad_domingo_desde }}</td>
-              <td>{{ a.disponibilidad_domingo_hasta }}</td>
-              <td class="text-center col-shrink">{{ a.juega_handball }}</td>
-              <td>{{ a.donde_juega }}</td>
-              <td>{{ a.categoria_handball }}</td>
-              <td class="col-obs-container"><div class="obs-wrapper" tabindex="0">{{ a.observaciones || '-' }}</div></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- VISTA MOBILE -->
-      <div class="mobile-only">
-        <!-- USAMOS arbitrosPaginados EN LUGAR DE arbitrosFiltrados -->
-        <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card-arbitro" :class="obtenerClaseFila(a)">
-          <div class="card-header">
-            <div class="card-name"><span :class="['dot-sm', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span> <strong>{{ a.apellido }}, {{ a.nombre }}</strong></div>
-            <div class="card-lic text-xs">{{ obtenerTextoLicencia(a) }}</div>
-          </div>
-          <div class="card-body">
-            <div class="card-row"><span><strong>Gr:</strong> {{ a.grupo }}-{{ a.subgrupo }}</span><span><strong>Zona:</strong> {{ a.zona }}</span></div>
-            <div class="card-info">
-              <p>
-                <strong>Apto Físico: </strong>
-                <span v-if="a.apto_medico" class="material-icons icon-apto" title="Apto Físico">check_circle</span>
-                <span v-else class="material-icons icon-no-apto" title="No Apto Físico">cancel</span>
-              </p>
-              <p><strong>Juega:</strong> {{ a.juega_handball }} <span v-if="a.juega_handball === 'SI'">en {{ a.donde_juega }}</span></p>
-              <p><strong>Sáb:</strong> {{ a.disponibilidad_sabado }} ({{ a.disponibilidad_sabado_desde }}-{{ a.disponibilidad_sabado_hasta }})</p>
-              <p><strong>Dom:</strong> {{ a.disponibilidad_domingo }} ({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</p>
-              <p v-if="a.observaciones"><strong>Obs:</strong> {{ a.observaciones }}</p>
-            </div>
-            <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa-mobile">
-              <span class="material-icons">chat</span> Contactar por WhatsApp
+            <button @click="exportarExcel" class="btn-action btn-export">
+              <span class="material-icons">download</span>
+              <span class="btn-text">Excel</span>
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- CONTROLES DE PAGINACIÓN -->
-      <div class="paginacion">
-        <button class="btn-paginacion" @click="paginaActual--" :disabled="paginaActual === 1">Anterior</button>
-        <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-        <button class="btn-paginacion" @click="paginaActual++" :disabled="paginaActual === totalPaginas">Siguiente</button>
-      </div>
+        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
+              <span class="material-icons" style="font-size: 20px;">close</span>
+            </button>
+          </div>
 
+          <div class="filter-grid-mobile">
+            <input v-model="filtros.apellido" placeholder="Apellido..">
+            <input v-model="filtros.nombre" placeholder="Nombre..">
+            
+            <div class="mobile-select-group">
+              <label>Estado Activo:</label>
+              <select v-model="filtros.es_activo">
+                <option value="">Todos los estados</option>
+                <option value="1">Sólo Activos</option>
+                <option value="0">Sólo Inactivos</option>
+              </select>
+            </div>
+
+            <div class="mobile-select-group">
+              <label>Licencia:</label>
+              <select v-model="filtros.licencia">
+                <option value="">Todos los Árbitros</option>
+                <option value="sin_licencia">Sin Licencia</option>
+                <option value="aprobada">Licencias Aprobadas</option>
+                <option value="rechazada">Licencias Rechazadas</option>
+              </select>
+            </div>
+
+            <div class="mobile-select-group">
+              <label>Apto Médico:</label>
+              <select v-model="filtros.apto_medico">
+                <option value="">Todos</option>
+                <option value="1">Sólo Aptos</option>
+                <option value="0">No Aptos</option>
+              </select>
+            </div>
+
+            <div class="mobile-select-group">
+              <label>Designado Sáb:</label>
+              <select v-model="filtros.designado_sabado">
+                <option value="">Todos</option>
+                <option value="1">Designados</option>
+                <option value="0">No Designados</option>
+              </select>
+            </div>
+
+            <div class="mobile-select-group">
+              <label>Designado Dom:</label>
+              <select v-model="filtros.designado_domingo">
+                <option value="">Todos</option>
+                <option value="1">Designados</option>
+                <option value="0">No Designados</option>
+              </select>
+            </div>
+
+            <div class="filter-row-mobile">
+              <input v-model="filtros.grupo" placeholder="Grupo">
+              <input v-model="filtros.subgrupo" placeholder="Sub-grupo">
+            </div>
+            
+            <input v-model="filtros.zona" placeholder="Zona..">
+          </div>
+          
+          <button @click="mostrarFiltrosMobile = false" class="btn-close-filters w-100 mt-2">Aplicar Filtros</button>
+        </div>
+
+        <div class="card-body p-3 p-md-4">
+
+          <div class="table-container shadow-sm desktop-only border" style="border-radius: 8px;">
+            <table>
+              <thead>
+                <tr>
+                  <th class="sticky-col" style="left: 0; z-index: 40; width: 140px;">Apellido</th>
+                  <th class="sticky-col" style="left: 140px; z-index: 40; width: 140px;">Nombre</th>
+                  <th class="sticky-col col-shrink sticky-col-final" style="left: 280px; z-index: 40;">SÁB</th>
+                  <th class="sticky-col col-shrink" style="left: 330px; z-index: 40;">DOM</th>
+                  <th class="sticky-col text-center" style="left: 380px; z-index: 40; min-width: 160px;">Licencia</th>
+                  <th class="col-shrink">WS</th>
+                  <th style="width: 80px;">Activo</th>
+                  <th class="text-center" style="width: 90px;">Apto</th>
+                  <th class="col-shrink">Grupo</th>
+                  <th class="col-shrink">Sub</th>
+                  <th class="text-center">Zona</th>
+                  <th class="text-center">Movilidad</th>
+                  <th class="col-shrink">Sab</th>
+                  <th>Desde</th>
+                  <th>Hasta</th>
+                  <th class="col-shrink">Dom</th>
+                  <th>Desde</th>
+                  <th>Hasta</th>
+                  <th class="col-shrink">Juega</th>
+                  <th class="text-center">Club</th>
+                  <th class="text-center">Cat</th>
+                  <th class="text-center">Observaciones</th>
+                </tr>
+                <tr class="filter-row">
+                  <td class="sticky-col" style="left:0; z-index: 35;"><input v-model="filtros.apellido" class="filter-input shadow-none"></td>
+                  <td class="sticky-col" style="left:140px; z-index: 35;"><input v-model="filtros.nombre" class="filter-input shadow-none"></td>
+                  
+                  <td class="sticky-col col-shrink" style="left:280px; z-index: 35;">
+                    <select v-model="filtros.designado_sabado" class="filter-input shadow-none text-center p-0">
+                      <option value=""></option>
+                      <option value="1">SI</option>
+                      <option value="0">NO</option>
+                    </select>
+                  </td>
+                  <td class="sticky-col col-shrink sticky-col-final" style="left:330px; z-index: 35;">
+                    <select v-model="filtros.designado_domingo" class="filter-input shadow-none text-center p-0">
+                      <option value=""></option>
+                      <option value="1">SI</option>
+                      <option value="0">NO</option>
+                    </select>
+                  </td>
+                  
+                  <td class="sticky-col" style="left:380px; z-index: 35;">
+                    <select v-model="filtros.licencia" class="filter-input shadow-none">
+                      <option value="">Todas</option>
+                      <option value="sin_licencia">Sin Licencia</option>
+                      <option value="aprobada">Aprobada</option>
+                      <option value="rechazada">Rechazada</option>
+                    </select>
+                  </td>
+                  <td></td>
+                  <td class="bg-filter">
+                    <select v-model="filtros.es_activo" class="filter-input shadow-none text-center">
+                      <option value="">Todo</option>
+                      <option value="1">SÍ</option>
+                      <option value="0">NO</option>
+                    </select>
+                  </td>
+                  <td class="bg-filter text-center">
+                    <select v-model="filtros.apto_medico" class="filter-input shadow-none text-center">
+                      <option value="">Todo</option>
+                      <option value="1">SÍ</option>
+                      <option value="0">NO</option>
+                    </select>
+                  </td>
+                  <td class="bg-filter col-shrink"><input v-model="filtros.grupo" class="filter-input-min shadow-none"></td>
+                  <td class="bg-filter col-shrink"><input v-model="filtros.subgrupo" class="filter-input-min shadow-none"></td>
+                  <td class="bg-filter"><input v-model="filtros.zona" class="filter-input shadow-none"></td>
+                  <td class="bg-filter"><input v-model="filtros.movilidad" class="filter-input shadow-none"></td>
+                  <td class="bg-filter col-shrink"><input v-model="filtros.disponibilidad_sabado" class="filter-input-min shadow-none"></td>
+                  <td class="bg-filter"></td><td class="bg-filter"></td>
+                  <td class="bg-filter col-shrink"><input v-model="filtros.disponibilidad_domingo" class="filter-input-min shadow-none"></td>
+                  <td class="bg-filter"></td><td class="bg-filter"></td>
+                  <td class="bg-filter col-shrink"><input v-model="filtros.juega_handball" class="filter-input-min shadow-none"></td>
+                  <td class="bg-filter"><input v-model="filtros.donde_juega" class="filter-input shadow-none"></td>
+                  <td class="bg-filter"><input v-model="filtros.categoria_handball" class="filter-input shadow-none"></td>
+                  <td class="bg-filter"><input v-model="filtros.observaciones" class="filter-input shadow-none"></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="a in arbitrosPaginados" :key="a.id" :class="obtenerClaseFila(a)">
+                  <td class="sticky-col font-bold" style="left: 0;">{{ a.apellido }}</td>
+                  <td class="sticky-col font-bold" style="left: 140px;">{{ a.nombre }}</td>
+                  
+                  <td class="sticky-col text-center col-shrink" style="left: 280px;">
+                    <input type="checkbox"
+                      :checked="designadosSabado.has(a.id)"
+                      :disabled="a.disponibilidad_sabado === 'NO'"
+                      @change="toggleDesignacion(a.id, 'S')"
+                      class="check">
+                  </td>
+                  <td class="sticky-col text-center col-shrink sticky-col-final" style="left: 330px;">
+                    <input type="checkbox"
+                      :checked="designadosDomingo.has(a.id)"
+                      :disabled="a.disponibilidad_domingo === 'NO'"
+                      @change="toggleDesignacion(a.id, 'D')"
+                      class="check">
+                  </td>
+
+                  <td class="sticky-col text-center text-xs" style="left: 380px; white-space: nowrap;">{{ obtenerTextoLicencia(a) }}</td>
+                  <td class="text-center col-shrink">
+                    <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa shadow-sm" title="Enviar WhatsApp">
+                      <span class="material-icons" style="font-size: 16px;">chat</span>
+                    </button>
+                    <span v-else class="text-muted">-</span>
+                  </td>
+                  <td class="text-center col-shrink"><span :class="['dot', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span></td>
+                  <td class="text-center">
+                    <span v-if="a.apto_medico" class="material-icons icon-apto" title="Apto Físico">check_circle</span>
+                    <span v-else class="material-icons icon-no-apto" title="No Apto Físico">cancel</span>
+                  </td>
+                  <td class="text-center col-shrink">{{ a.grupo }}</td>
+                  <td class="text-center col-shrink">{{ a.subgrupo }}</td>
+                  <td>{{ a.zona }}</td>
+                  <td>{{ a.movilidad }}</td>
+                  <td class="text-center col-shrink">{{ a.disponibilidad_sabado }}</td>
+                  <td>{{ a.disponibilidad_sabado_desde }}</td>
+                  <td>{{ a.disponibilidad_sabado_hasta }}</td>
+                  <td class="text-center col-shrink">{{ a.disponibilidad_domingo }}</td>
+                  <td>{{ a.disponibilidad_domingo_desde }}</td>
+                  <td>{{ a.disponibilidad_domingo_hasta }}</td>
+                  <td class="text-center col-shrink">{{ a.juega_handball }}</td>
+                  <td>{{ a.donde_juega }}</td>
+                  <td>{{ a.categoria_handball }}</td>
+                  <td class="col-obs-container"><div class="obs-wrapper" tabindex="0">{{ a.observaciones || '-' }}</div></td>
+                </tr>
+
+                <tr v-if="arbitrosPaginados.length === 0">
+                  <td colspan="22" class="text-center py-5 text-muted bg-light italic border-0">
+                    <span class="material-icons d-block mb-2" style="font-size: 40px;">search_off</span>
+                    <p class="m-0 fw-bold">No se encontraron registros.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mobile-only mt-3">
+            <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card-arbitro shadow-sm border border-light-subtle mb-3" :class="obtenerClaseFila(a)">
+              
+              <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
+                <div class="card-name text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
+                  {{ a.apellido }}, {{ a.nombre }}
+                </div>
+                <div class="text-xs fw-bold" style="color: #000;">{{ obtenerTextoLicencia(a) }}</div>
+              </div>
+              
+              <div class="card-body pt-0 px-3 pb-3">
+                <div class="card-row text-dark mb-2">
+                  <span style="font-size: 0.9rem;"><strong>Gr:</strong> {{ a.grupo }}-<strong>Zona:</strong> {{ a.zona }}</span>
+                </div>
+                
+                <div class="mb-2">
+                  <p class="text-dark m-0" style="font-size: 0.9rem;">
+                    <strong>Apto Físico: </strong>
+                    <span v-if="a.apto_medico" class="material-icons icon-apto align-middle" style="font-size: 18px;" title="Apto Físico">check_circle</span>
+                    <span v-else class="material-icons icon-no-apto align-middle" style="font-size: 18px;" title="No Apto Físico">cancel</span>
+                  </p>
+                </div>
+
+                <div class="mb-3">
+                  <p class="text-dark mt-1 mb-0" style="font-size: 0.9rem;"><strong>Juega:</strong> {{ a.juega_handball }} <span v-if="a.juega_handball === 'SI'">en {{ a.donde_juega }}</span></p>
+                </div>
+                
+                <div class="mb-3">
+                  <p class="text-dark mb-1" style="font-size: 0.9rem;"><strong>Sáb:</strong> {{ a.disponibilidad_sabado }} <span v-if="a.disponibilidad_sabado === 'SI' || a.disponibilidad_sabado === 'OTROS'">({{ a.disponibilidad_sabado_desde }}-{{ a.disponibilidad_sabado_hasta }})</span><span v-else>(-)</span></p>
+                  <p class="text-dark m-0" style="font-size: 0.9rem;"><strong>Dom:</strong> {{ a.disponibilidad_domingo }} <span v-if="a.disponibilidad_domingo === 'SI' || a.disponibilidad_domingo === 'OTROS'">({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</span><span v-else>(-)</span></p>
+                </div>
+                
+                <div class="d-flex gap-2 mt-3 pt-2 border-top border-secondary-subtle">
+                  <div class="flex-grow-1 text-center">
+                    <label class="d-block small fw-bold text-dark mb-1">Designar SÁB</label>
+                    <input type="checkbox"
+                      :checked="designadosSabado.has(a.id)"
+                      :disabled="a.disponibilidad_sabado === 'NO'"
+                      @change="toggleDesignacion(a.id, 'S')"
+                      class="check" style="transform: scale(1.3);">
+                  </div>
+                  <div class="flex-grow-1 text-center border-start border-secondary-subtle">
+                    <label class="d-block small fw-bold text-dark mb-1">Designar DOM</label>
+                    <input type="checkbox"
+                      :checked="designadosDomingo.has(a.id)"
+                      :disabled="a.disponibilidad_domingo === 'NO'"
+                      @change="toggleDesignacion(a.id, 'D')"
+                      class="check" style="transform: scale(1.3);">
+                  </div>
+                </div>
+
+                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa-mobile shadow-sm mt-3" style="background: #25d366;">
+                  <span class="material-icons">chat</span> Contactar por WhatsApp
+                </button>
+              </div>
+            </div>
+
+            <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-light rounded shadow-sm border mt-3">
+              <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
+              <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron registros.</p>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end w-100 mt-3" v-if="arbitrosFiltrados.length > 0">
+            <div class="paginacion" v-if="totalPaginas > 1">
+              <button class="btn-paginacion shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual === 1">Anterior</button>
+              <span class="paginacion-texto text-dark fw-bold">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn-paginacion shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual === totalPaginas || totalPaginas === 0">Siguiente</button>
+            </div>
+          </div>
+
+        </div> 
+      </div> 
     </div>
   </div>
 </template>
@@ -303,6 +358,14 @@ const filtros = reactive({
   designado_sabado: '',
   designado_domingo: ''
 });
+
+const cambiarPagina = (direccion) => {
+  const nuevaPagina = paginaActual.value + direccion;
+
+  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value) {
+    paginaActual.value = nuevaPagina;
+  }
+};
 
 const designadosSabado = ref(new Set());
 const designadosDomingo = ref(new Set());
@@ -574,36 +637,14 @@ onMounted(cargarDatos);
 .btn-export { background: #10b981; color: white; }
 .btn-filter-mobile { background: #3b82f6; color: white; }
 
-/* CLASES DE PAGINACIÓN */
-.paginacion {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.btn-paginacion {
-  border: none;
-  background: #f8fafc;
-  color: #0f172a;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn-paginacion:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.paginacion-texto {
-  color: white;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
+/* ====================================================
+   PAGINACIÓN
+   ==================================================== */
+.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
+.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
+.paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
 
 
 td.text-center { display: table-cell; text-align: center; vertical-align: middle; }

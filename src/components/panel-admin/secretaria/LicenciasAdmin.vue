@@ -7,7 +7,7 @@
 
       <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
         
-        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0;">
+        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
           <div class="header-info">
             <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
               <i class="bi bi-calendar-event me-1"></i> Gestión de Licencias
@@ -494,10 +494,9 @@ onMounted(() => {
   obtenerArbitros();
 });
 </script>
-
 <style scoped>
 /* ====================================================
-   AJUSTES GENERALES DEL CONTENEDOR Y FOOTER
+   1. BASE Y ESTRUCTURA GENERAL
    ==================================================== */
 .full-screen-wrapper {
   position: relative;
@@ -535,101 +534,22 @@ onMounted(() => {
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
 .counter { font-size: 0.85rem; color: #000000; }
 
+/* ====================================================
+   2. COMPONENTES (BOTONES Y BADGES)
+   ==================================================== */
 .header-actions { display: flex; gap: 8px; }
-.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
+
+.btn-action { 
+  border: none; padding: 8px 12px; border-radius: 4px; 
+  font-weight: bold; cursor: pointer; display: flex; 
+  align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; 
+}
+
 .btn-clear { background: #e2e8f0; color: #000; }
 .btn-blue { background: #3b82f6; color: white; }
 .btn-clear-checks { background: #fee2e2; color: #ef4444; }
 .btn-export { background: #10b981; color: white; }
-
-/* ====================================================
-   PAGINACIÓN
-   ==================================================== */
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
-
-/* ====================================================
-   SOLUCIÓN DE LA TABLA: Huecos y Espaciado
-   ==================================================== */
-.table-container {
-  width: 100%;
-  overflow: auto;
-  max-height: 85vh;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-table {
-  width: 100%;
-  min-width: max-content;
-  border-collapse: separate !important;
-  border-spacing: 0;
-  font-size: 0.85rem;
-}
-
-thead tr.main-header th {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: #f8fafc !important;
-  padding: 12px 8px;
-  border-bottom: 1px solid #cbd5e1; 
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem;
-  color: #000;
-  text-transform: uppercase;
-  font-weight: 800;
-  margin: 0;
-}
-
-thead tr.filter-row td {
-  position: sticky;
-  top: 35px;
-  z-index: 40;
-  background: #f1f5f9 !important;
-  padding: 6px 8px 12px 8px;
-  border-bottom: 4px solid #e2e8f0;
-  margin: 0;
-}
-
-.col-id { left: 0; width: 50px; text-align: center; }
-.col-acciones { left: 50px; width: 110px; }
-.col-apellido { left: 160px; width: 140px; }
-.col-nombre { left: 300px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-
-.sticky-col {
-  position: sticky !important;
-  z-index: 60 !important;
-  background: white !important;
-  border-right: 1px solid #e2e8f0;
-}
-thead tr.main-header th.sticky-col {
-  z-index: 100 !important;
-  background-color: #f8fafc !important;
-}
-thead tr.filter-row td.sticky-col {
-  z-index: 95 !important;
-  background-color: #f1f5f9 !important;
-}
-
-.cell-ro {
-  padding: 10px 8px; 
-  font-size: 0.85rem;
-  color: #000;
-  white-space: nowrap;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.filter-input { font-size: 16px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
-
-@media (min-width: 769px) {
-  .filter-input { font-size: 0.75rem; height: 28px; }
-}
+.btn-refresh { background: none; border: none; color: #64748b; cursor: pointer; }
 
 .btn-editar, .btn-historial, .btn-eliminar {
   display: inline-flex; align-items: center; justify-content: center;
@@ -637,13 +557,12 @@ thead tr.filter-row td.sticky-col {
 }
 .btn-editar { background: #eff6ff; color: #1d4ed8; }
 .btn-editar:hover { background: #dbeafe; }
-
 .btn-historial { background: #fef3c7; color: #d97706; }
 .btn-historial:hover { background: #fde047; }
-
 .btn-eliminar { background: #fee2e2; color: #dc2626; }
 .btn-eliminar:hover { background: #fecaca; }
 
+/* Estados y Badges */
 .badge-status {
   padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
 }
@@ -658,70 +577,110 @@ thead tr.filter-row td.sticky-col {
 .badge-status-sm.pendiente { background: #fef9c3; color: #a16207; }
 .badge-status-sm.rechazada { background: #fee2e2; color: #b91c1c; }
 
-.btn-refresh { background: none; border: none; color: #64748b; cursor: pointer; }
+/* Paginación */
+.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+.btn-paginacion { 
+  border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; 
+  border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; 
+}
+.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
+.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
+.paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
 
-/* MODALES */
-.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.modal-content-exito { background: white; border-radius: 30px; padding: 40px; width: 90%; max-width: 750px; text-align: center; color: #000; }
-.icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+/* ====================================================
+   3. TABLA (STICKY Y CELDAS)
+   ==================================================== */
+.table-container {
+  width: 100%; overflow: auto; max-height: 85vh;
+  background: white; border-radius: 8px; border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+table {
+  width: 100%; min-width: max-content;
+  border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem;
+}
+
+thead tr.main-header th {
+  position: sticky; top: 0; z-index: 50; background: #f8fafc !important;
+  padding: 12px 8px; border-bottom: 1px solid #cbd5e1; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
+}
+
+thead tr.filter-row td {
+  position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important;
+  padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; margin: 0;
+}
+
+.sticky-col {
+  position: sticky !important; z-index: 60 !important;
+  background: white !important; border-right: 1px solid #e2e8f0;
+}
+thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
+
+.col-id { left: 0; width: 50px; text-align: center; }
+.col-acciones { left: 50px; width: 110px; }
+.col-apellido { left: 160px; width: 140px; }
+.col-nombre { left: 300px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
+
+.cell-ro {
+  padding: 10px 8px; font-size: 0.85rem; color: #000;
+  white-space: nowrap; border-bottom: 1px solid #f1f5f9;
+}
+
+.filter-input { 
+  font-size: 16px; height: 32px; border: 1px solid #cbd5e1; 
+  border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;
+}
+
+@media (min-width: 769px) { .filter-input { font-size: 0.75rem; height: 28px; } }
+
+/* ====================================================
+   4. MODALES
+   ==================================================== */
+.modal-overlay-exito { 
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+  background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); 
+  display: flex; align-items: center; justify-content: center; z-index: 10000; 
+}
+.modal-content-exito { 
+  background: white; border-radius: 30px; padding: 40px; 
+  width: 90%; max-width: 750px; text-align: center; color: #000; 
+}
+.icon-circle-exito { 
+  width: 80px; height: 80px; border-radius: 50%; 
+  display: flex; align-items: center; justify-content: center; margin: 0 auto; 
+}
 .bg-success-light { background: #dcfce7; color: #166534; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
 
-/* =======================================
-   VISTA MOBILE / RESPONSIVE (ARREGLADO)
-   ======================================= */
+/* ====================================================
+   5. 📱 RESPONSIVE DESIGN (TIERED LAYOUT)
+   ==================================================== */
 .desktop-only { display: block; }
 .mobile-only { display: none; }
 .mobile-only-flex { display: none; }
 .btn-text { display: inline; }
 
-.mobile-filter-panel {
-  background: white;
-  padding: 15px 20px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 15px;
-}
-.filter-grid-mobile {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.filter-grid-mobile input,
-.filter-grid-mobile select {
-  padding: 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 16px;
-  width: 100%;
-  outline: none;
-  background: #f8fafc;
-}
-@media (min-width: 769px) {
-  .filter-grid-mobile input,
-  .filter-grid-mobile select {
-    font-size: 0.85rem;
-  }
-}
-.filter-grid-mobile select.full-width {
-  grid-column: span 2;
-}
-
+/* Tablet y Laptops (Hasta 1024px) */
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
   .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
 }
 
+/* Tablets y Móviles (Hasta 768px) */
 @media (max-width: 768px) {
+  .full-screen-wrapper { padding: 10px; }
+  .admin-panel { padding: 10px; }
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
 
+  /* Estilos de las tarjetas móviles */
   .card-licencia {
-    background: white;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 12px;
-    border: 1px solid #e2e8f0;
+    background: white; border-radius: 8px; padding: 15px; 
+    margin-bottom: 12px; border: 1px solid #e2e8f0; 
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
   .card-header {
@@ -732,33 +691,66 @@ thead tr.filter-row td.sticky-col {
   .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
   .card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
 
+  /* Filtros Móviles */
+  .mobile-filter-panel {
+    background: white; padding: 15px 20px; border-radius: 8px;
+    border: 1px solid #e2e8f0; margin-bottom: 15px;
+  }
+  .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .filter-grid-mobile input, .filter-grid-mobile select {
+    padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; 
+    width: 100%; outline: none; background: #f8fafc;
+  }
+  .filter-grid-mobile select.full-width { grid-column: span 2; }
+
+  /* Botones en Cards */
   .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
   .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
   .btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
 }
 
+/* Smartphones (Hasta 600px) */
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; }
-  .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
-  .title { font-size: 1rem; }
-  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
+  /* AIRE A LOS COSTADOS: Importante para que no se pegue al margen */
+  .full-screen-wrapper { 
+    padding: 0 12px !important; 
+    width: 100% !important; 
+    margin: 0 !important; 
+    transform: none !important; 
+    left: 0 !important;
+  }
+  .admin-panel { padding: 15px 0 !important; border-radius: 0; }
 
+  /* CABECERA: Título Izquierda, Botones Centro */
+  .header-section { 
+    padding: 15px !important; 
+    flex-direction: column; 
+    align-items: flex-start; /* Respetamos el borde rojo a la izquierda */
+    text-align: left; 
+    gap: 15px; 
+  }
+
+  .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
+  .title { font-size: 1.25rem !important; margin: 0; text-align: left; }
+  .counter { font-size: 0.85rem !important; }
+
+  /* Botones de acción centrados horizontalmente debajo */
   .header-actions {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: center;
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: wrap; 
+    justify-content: center; 
     gap: 8px;
   }
   .btn-action {
-    flex: none;
-    width: 42px;
-    height: 42px;
-    padding: 0;
-    justify-content: center;
+    flex: none; width: 42px; height: 42px; padding: 0; justify-content: center;
   }
   .btn-text { display: none !important; }
   .mobile-only-flex { display: flex !important; }
+
+  /* Liberar columnas fijas para evitar rotura de tabla */
+  .sticky-col { position: static !important; box-shadow: none !important; }
+  .col-nombre { box-shadow: none !important; }
 }
 </style>

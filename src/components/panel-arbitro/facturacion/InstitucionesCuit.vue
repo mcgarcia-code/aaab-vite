@@ -458,4 +458,5 @@ td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middl
 @media (min-width: 768px) {
   .btn-text { display: inline; }
 }
+
 </style>

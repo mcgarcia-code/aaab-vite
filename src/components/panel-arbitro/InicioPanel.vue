@@ -317,10 +317,19 @@ onMounted(cargarAvisos);
 .reminder-pill { background: #fffbeb; color: #92400e; padding: 8px 12px; border-radius: 10px; font-size: 0.72rem; border-left: 3px solid #f59e0b; margin-bottom: 5px; }
 .empty-msg { font-size: 0.7rem; color: #94a3b8; font-style: italic; }
 
-/* --- MAGIA DEL SCROLL CONDICIONAL --- */
+/* ====================================================
+   📱 RESPONSIVE DESIGN & SIDEBAR SCROLL
+   ==================================================== */
+
+.desktop-only { display: block; }
+.mobile-only { display: none; }
+
+/* --- 1. PANTALLAS GRANDES Y LAPTOPS (Desde 992px) --- */
 @media (min-width: 992px) {
+  /* Scroll Condicional del Sidebar */
   .sidebar-professional {
-    position: sticky; top: 20px;
+    position: sticky; 
+    top: 20px;
     max-height: calc(100vh - 100px);
   }
   .sidebar-scroll-container {
@@ -332,9 +341,69 @@ onMounted(cargarAvisos);
   .sidebar-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 }
 
+/* --- 2. TABLETS Y LAPTOPS CHICAS (Hasta 1024px) --- */
+@media (max-width: 1024px) {
+  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+}
+
+/* --- 3. DISPOSITIVOS MEDIANOS (Hasta 991px) --- */
 @media (max-width: 991px) {
   .sidebar-professional { margin-bottom: 10px; }
   .sidebar-scroll-container { overflow-y: visible; padding: 12px !important; }
   .notif-section { margin-bottom: 8px; padding-bottom: 8px; }
 }
+
+/* --- 4. TABLETS Y MÓVILES (Hasta 768px) --- */
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+
+  /* Estilos base de tarjetas móviles para coherencia */
+  .card-arbitro { 
+    background: white; border-radius: 8px; padding: 15px; 
+    margin-bottom: 12px; border: 1px solid #e2e8f0; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+  }
+}
+
+/* --- 5. SMARTPHONES (Hasta 600px) --- */
+@media (max-width: 600px) {
+  .admin-panel { padding: 10px; border-radius: 0; }
+  .full-screen-wrapper { padding: 0; width: 100vw; }
+
+  /* ESTRUCTURA CABECERA: Título Izquierda, Botones Centro */
+  .header-section { 
+    padding: 15px; 
+    flex-direction: column; 
+    align-items: flex-start; 
+    text-align: left; 
+    gap: 15px; 
+  }
+
+  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+  
+  /* Fuentes específicas solicitadas */
+  .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
+  .header-info span.counter { font-size: 0.85rem !important; }
+
+  /* Centrado de botones 42x42 */
+  .header-actions { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 8px; 
+  }
+
+  .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
+  .btn-text { display: none !important; }
+
+  /* Ajustes de scroll móvil */
+  .sidebar-scroll-container { padding: 8px !important; }
+}
+
+.animate__animated { animation-duration: 0.5s; }
+
 </style>

@@ -184,7 +184,11 @@ const filteredMenu = computed(() => {
   transform: translateX(5px);
 }
 
-/* Responsive */
+/* ====================================================
+   📱 RESPONSIVE DESIGN (Cards Modernas)
+   ==================================================== */
+
+/* --- 1. TABLETS Y MÓVILES (Hasta 768px) --- */
 @media (max-width: 768px) {
   .modern-card {
     padding: 20px;
@@ -195,5 +199,56 @@ const filteredMenu = computed(() => {
     min-width: 48px;
     font-size: 1.2rem;
   }
+  
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
 }
+
+/* --- 2. SMARTPHONES (Hasta 600px) --- */
+@media (max-width: 600px) {
+  .admin-panel { padding: 10px; border-radius: 0; }
+  .full-screen-wrapper { padding: 0; width: 100vw; }
+
+  /* ESTRUCTURA CABECERA: Título Izquierda, Botones Centro */
+  .header-section { 
+    padding: 15px; 
+    flex-direction: column; 
+    align-items: flex-start; 
+    text-align: left; 
+    gap: 15px; 
+  }
+
+  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+  
+  /* Tamaños de fuente estándar para el sistema */
+  .header-info h4, h2 { 
+    font-size: 1.25rem !important; 
+    justify-content: flex-start; 
+    margin: 0;
+  }
+  .header-info span.counter { font-size: 0.85rem !important; }
+
+  /* Centrado de botones de acción 42x42 */
+  .header-actions { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 8px; 
+  }
+
+  .btn-action { 
+    flex: none; 
+    width: 42px; 
+    height: 42px; 
+    padding: 0; 
+    justify-content: center; 
+  }
+  
+  .btn-text { display: none !important; }
+  .mobile-only-flex { display: flex !important; }
+}
+
+.animate__animated { animation-duration: 0.5s; }
 </style>

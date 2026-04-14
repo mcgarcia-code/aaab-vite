@@ -284,7 +284,7 @@ import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head';
 
 useHead({
-  title: 'Gestión de Pedidos | AAAB',
+  title: 'Pedidos Realizados | AAAB',
   meta: [{ name: 'description', content: 'Administración de pedidos de indumentaria.' }],
 });
 
