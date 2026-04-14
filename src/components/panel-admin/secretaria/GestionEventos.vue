@@ -738,48 +738,100 @@ tbody td.sticky-col { z-index: 30 !important; }
 .bg-success-light { background: #dcfce7; color: #166534; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
 
-/* =======================================
-   VISTA MOBILE Y RESPONSIVIDAD
-   ======================================= */
+/* ====================================================
+   📱 RESPONSIVE DESIGN (Tiered Layout)
+   ==================================================== */
+
 .desktop-only { display: block; }
 .mobile-only { display: none; }
 .mobile-only-flex { display: none; }
 
+/* --- 1. LAPTOPS Y TABLETS GRANDES (Hasta 1024px) --- */
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
   .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
 }
 
+/* --- 2. TABLETS Y MÓVILES (Hasta 768px) --- */
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
-  
-  .mobile-only { 
-    display: block !important; 
-    /* ELIMINADO EL MIN-HEIGHT QUE CAUSABA EL ESPACIO BLANCO */
-  }
+  .mobile-only { display: block !important; }
   
   /* ESTILOS DE LAS TARJETAS MÓVILES */
-  .card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-  .card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
+  .card-arbitro { 
+    background: white; 
+    border-radius: 8px; 
+    padding: 15px; 
+    margin-bottom: 12px; 
+    border: 1px solid #e2e8f0; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+  }
+  .card-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    border-bottom: 1px solid #f1f5f9; 
+    padding-bottom: 10px; 
+    margin-bottom: 10px; 
+  }
   .card-name { font-size: 1.05rem; color: #0f172a; }
   .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
   
-  .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-  .btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; font-weight: bold;}
+  /* BOTONES DE ACCIÓN EN CARDS */
+  .btn-editar-mobile { 
+    background: #eff6ff; 
+    border: 1px solid #bfdbfe; 
+    color: #1d4ed8; 
+    padding: 10px; 
+    border-radius: 6px; 
+    font-weight: bold; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 8px; 
+    cursor: pointer; 
+  }
+  .btn-eliminar-mobile { 
+    background: #fee2e2; 
+    border: 1px solid #fecaca; 
+    color: #dc2626; 
+    padding: 10px 14px; 
+    border-radius: 6px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 8px; 
+    cursor: pointer; 
+    font-weight: bold;
+  }
 }
 
+/* --- 3. SMARTPHONES (Hasta 600px) --- */
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; }
-  .header-section { padding: 10px; flex-direction: column; align-items: flex-start; gap: 12px; }
-  .title { font-size: 1rem; }
-  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
+  .admin-panel { padding: 10px; border-radius: 0; }
+  .full-screen-wrapper { padding: 0; width: 100vw; }
   
-  /* Botones 42x42 en una sola fila centrados */
+  /* CABECERA: Título izquierda, botones centrados abajo */
+  .header-section { 
+    padding: 15px; 
+    flex-direction: column; 
+    align-items: flex-start; 
+    text-align: left; 
+    gap: 15px; 
+  }
+  
+  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+  
+  /* Tamaños de fuente solicitados */
+  .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
+  .header-info span.counter { font-size: 0.85rem !important; }
+  
+  /* Botones 42x42 centrados */
   .header-actions { 
     width: 100%; 
     display: flex; 
     flex-direction: row; 
-    flex-wrap: nowrap; 
+    flex-wrap: wrap; 
     justify-content: center; 
     gap: 8px; 
   }
@@ -793,5 +845,14 @@ tbody td.sticky-col { z-index: 30 !important; }
   
   .btn-text { display: none !important; }
   .mobile-only-flex { display: flex !important; }
+
+  /* Ajuste de inputs para evitar zoom en iOS */
+  .filter-grid-mobile input, 
+  .filter-grid-mobile select { 
+    font-size: 16px !important; 
+  }
 }
+
+.animate__animated { animation-duration: 0.5s; }
+
 </style>

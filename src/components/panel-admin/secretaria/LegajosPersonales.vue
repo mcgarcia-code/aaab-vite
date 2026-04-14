@@ -1323,27 +1323,41 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
 .filter-grid-mobile select.full-width {
   grid-column: span 2;
 }
+/* ====================================================
+   📱 RESPONSIVE DESIGN (Adaptación Multi-Dispositivo)
+   ==================================================== */
 
-@media (max-width: 1024px) {
-  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+/* --- 1. DESKTOP & PANTALLAS GRANDES (Desde 768px en adelante) --- */
+@media (min-width: 768px) {
+  .header-actions .btn-text { display: inline; }
 }
 
+/* --- 2. LAPTOPS Y TABLETS GRANDES (Hasta 1024px) --- */
+@media (max-width: 1024px) {
+  /* Ajuste de la cabecera para que no colapse si hay muchos botones */
+  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+  .btn-action { flex: 1; justify-content: center; min-width: 0; white-space: nowrap; }
+}
+
+/* --- 3. TABLETS Y MÓVILES EN HORIZONTAL (Hasta 768px) --- */
 @media (max-width: 768px) {
+  /* Ocultar tabla de escritorio y mostrar cards móviles */
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
   
-  /* ESTILOS DE LAS CARJETAS DE ÁRBITROS */
+  /* ESTILOS DE LAS CARDS DE ÁRBITROS */
   .card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
   .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
   .card-name { display: flex; align-items: center; gap: 8px; font-size: 1.05rem; color: #0f172a; }
   .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
   .card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
   
+  /* BOTONES DENTRO DE LAS CARDS */
   .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
   .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
 
-  /* FILA INACTIVA */
+  /* ESTADO INACTIVO (FILA ROJA EN MOBILE) */
   .card-arbitro.fila-inactiva { background-color: #ef4444 !important; border-color: #dc2626; }
   .card-arbitro.fila-inactiva .card-name,
   .card-arbitro.fila-inactiva .card-row,
@@ -1353,42 +1367,47 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
   .card-arbitro.fila-inactiva .btn-historial-mobile { background: #fff; border-color: #fff; color: #d97706; }
 }
 
+/* --- 4. SMARTPHONES (Hasta 600px) --- */
 @media (max-width: 600px) {
+  /* Ajuste de contenedor principal para aprovechar toda la pantalla */
   .admin-panel { padding: 10px; border-radius: 0; }
   .full-screen-wrapper { padding: 0; width: 100vw; }
   
-  /* 1. Pasamos la cabecera a columna y alineamos a la izquierda */
+  /* CABECERA MÓVIL: Título a la izquierda, botones centrados abajo */
   .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }
   
-  /* 2. Aseguramos que el título tome todo el ancho disponible */
   .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
   .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
   .header-info span.counter { font-size: 0.85rem !important; }
   
-  /* 3. Centramos los botones abajo */
   .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
   .btn-text { display: none !important; }
   .mobile-only-flex { display: flex !important; }
 
-  /* PANEL DE FILTROS MÓVIL (Intacto) */
+  /* PANEL DE FILTROS MÓVIL */
   .mobile-filter-panel { padding: 15px 20px; }
   .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+  
+  /* Inputs: font-size 16px crucial para evitar zoom automático en iPhones (iOS) */
   .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; background-color: #f8fafc; color: #334155; outline: none; }
   .filter-grid-mobile input:focus, .filter-grid-mobile select:focus { border-color: #3b82f6; background: white;}
+  
   .mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
   .mobile-select-group label { font-size: 0.75rem; color: #64748b; font-weight: bold; margin-bottom: 2px; }
+  
   .filter-row-mobile { display: flex; gap: 10px; }
   .filter-row-mobile input { flex: 1; }
+  .filter-grid-mobile select.full-width { grid-column: span 1; }
+  
   .btn-close-filters { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
 
+  /* Ajustes en modales/pestañas para pantallas muy chicas */
   .tab-mobile { font-size: 0.65rem !important; padding-left: 2px !important; padding-right: 2px !important; letter-spacing: -0.3px; }
   .modal-content-exito { padding: 15px !important; }
 }
 
-@media (min-width: 768px) {
-  .header-actions .btn-text { display: inline; }
-}
-
+/* Animaciones Globales */
 .animate__animated { animation-duration: 0.5s; }
+
 </style>

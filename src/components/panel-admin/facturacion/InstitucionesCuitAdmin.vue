@@ -436,18 +436,31 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 .col-club { left: 150px; width: 220px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 
 .filter-input { font-size: 16px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
-@media (min-width: 769px) { .filter-input { font-size: 0.75rem; height: 28px; } }
+
+/* ====================================================
+   📱 RESPONSIVE & DISPOSITIVOS
+   ==================================================== */
+
+.desktop-only { display: block; }
+.mobile-only { display: none; }
+.mobile-only-flex { display: none; }
+
+/* --- 1. AJUSTES TABLA Y FILTROS DESKTOP --- */
+@media (min-width: 769px) { 
+  .filter-input { font-size: 0.75rem; height: 28px; } 
+}
 
 .cell-ro { padding: 10px 8px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; }
 .seccion-titulo { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; margin-top: 15px; width: 100%; }
 
+/* Botones de acción en tabla */
 .btn-editar, .btn-eliminar { display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
 .btn-editar { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
 .btn-editar:hover { background: #dbeafe; }
 .btn-eliminar { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
 .btn-eliminar:hover { background: #fee2e2; }
 
-/* MODALES */
+/* --- 2. MODALES --- */
 .modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
 .modal-content-exito { background: white; border-radius: 20px; border: none; text-align: center; }
 .icon-circle-exito { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
@@ -457,45 +470,60 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 .custom-input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; background-color: #ffffff; transition: all 0.3s ease; }
 .custom-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); outline: none; }
 
-.mobile-only { display: none; }
-.desktop-only { display: block; }
-.mobile-only-flex { display: none; }
-
-/* PANEL DE FILTROS MÓVIL */
-.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;}
-.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filter-input-mobile { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #334155;}
-.filter-grid-mobile input.full-width { grid-column: span 2; }
-.filter-input-mobile:focus { border-color: #3b82f6; background: white;}
-.filter-input-mobile::placeholder { color: #94a3b8;}
-
+/* --- 3. TABLETS Y MÓVILES (Hasta 768px) --- */
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
   .mobile-only-flex { display: flex !important; }
 
+  /* PANEL DE FILTROS MÓVIL */
+  .mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;}
+  .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .filter-input-mobile { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #334155;}
+  .filter-grid-mobile input.full-width { grid-column: span 2; }
+  .filter-input-mobile:focus { border-color: #3b82f6; background: white;}
+  .filter-input-mobile::placeholder { color: #94a3b8;}
+
+  /* Botones en Cards móviles */
   .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 8px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
   .btn-eliminar-mobile { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 8px 12px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
 }
 
-/* LA CLAVE DE LA ESTRUCTURA MÓVIL EXACTA */
+/* --- 4. SMARTPHONES (Hasta 600px) --- */
 @media (max-width: 600px) {
   .admin-panel { padding: 10px; border-radius: 0; }
   .full-screen-wrapper { padding: 0; width: 100vw; }
   
-  /* Titulo a la izquierda (respetando borde rojo), botones centrados abajo */
-  .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }
+  /* ESTRUCTURA CABECERA: Título Izquierda, Botones Centro */
+  .header-section { 
+    padding: 15px; 
+    flex-direction: column; 
+    align-items: flex-start; 
+    text-align: left; 
+    gap: 15px; 
+  }
+  
   .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%;}
   
-  /* Fuentes específicas para móvil que pediste */
+  /* Fuentes específicas */
   .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
   .header-info span.counter { font-size: 0.85rem !important; }
   
-  .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  /* Centrado de botones de acción */
+  .header-actions { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 8px; 
+  }
+  
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
   .btn-action span.material-icons { margin: 0; }
   .btn-text { display: none !important; }
 }
 
 .animate__animated { animation-duration: 0.5s; }
+
 </style>
