@@ -1,18 +1,18 @@
 <template>
   <div class="animate__animated animate__fadeIn container-fluid p-0">
     <div class="row g-3 g-md-4">
-      
+
       <!-- COLUMNA PRINCIPAL (MÓDULOS) -->
       <div class="col-12 col-lg-8 col-xl-9 order-2 order-lg-1">
-        <div class="row g-3">
-          <div class="col-12 col-sm-6 col-md-4" v-for="item in menuItemsFiltrados" :key="item.title">
-            <component 
+        <div class="row g-3 align-items-stretch">
+          <div class="col-12 col-sm-6 col-md-4 d-flex" v-for="item in menuItemsFiltrados" :key="item.title">
+            <component
               :is="item.href ? 'a' : 'RouterLink'"
               :href="item.href"
               :to="item.to"
               :target="item.href ? '_blank' : null"
               rel="noopener noreferrer"
-              class="text-decoration-none h-100 d-block"
+              class="text-decoration-none d-flex w-100 h-100"
             >
               <div class="modern-menu-card shadow-sm">
                 <div class="icon-box">
@@ -41,10 +41,10 @@
             </div>
             <div v-if="cargando" class="spinner-border spinner-border-sm text-danger"></div>
           </div>
-          
+
           <!-- CONTENEDOR CON SCROLL CONDICIONAL -->
           <div class="sidebar-scroll-container p-3">
-            
+
             <!-- SECCIÓN: REUNIONES -->
             <div class="notif-section">
               <label class="section-label" @click="toggleSeccion('reuniones')">
@@ -57,7 +57,7 @@
                 </div>
                 <i :class="['bi', seccionesAbiertas.reuniones ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
               </label>
-              
+
               <div v-show="seccionesAbiertas.reuniones" class="collapse-content animate__animated animate__fadeIn">
                 <div v-if="proximasFechas.length > 0">
                   <div class="event-card-modern" v-for="ev in proximasFechas" :key="ev.id">
@@ -174,7 +174,7 @@ const menuItems = [
 const menuItemsFiltrados = computed(() => {
   const sesion = auth.getUser();
   if (!sesion) return [];
-  let itemsDinamicos = [...menuItems]; 
+  let itemsDinamicos = [...menuItems];
   if ([1,2].includes(sesion.id)) itemsDinamicos.push({ to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Pedidos de indumentaria.' });
   return itemsDinamicos.filter((item) => !item.rolesPermitidos || item.rolesPermitidos.includes(sesion.rol));
 });
@@ -216,22 +216,28 @@ onMounted(cargarAvisos);
 /* --- TARJETAS MÓDULOS --- */
 /* --- TARJETAS MÓDULOS (Panel Árbitro) --- */
 .modern-menu-card {
-  background: white; 
-  border-radius: 16px; 
-  padding: 15px; 
-  display: flex; 
-  align-items: center; 
-  gap: 12px; 
-  border: 1px solid #f1f5f9; 
+  background: white;
+  border-radius: 16px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #f1f5f9;
   transition: all 0.2s ease;
+  width: 100%;
+  height: 100%;
   cursor: pointer; /* <--- ESTA ES LA LÍNEA QUE TENÉS QUE AGREGAR */
 }
 .icon-box {
   width: 45px; height: 45px; min-width: 45px; background: #fef2f2; color: #dc2626; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
 }
+.card-text {
+  flex: 1;
+  min-width: 0;
+}
 .card-text h5 { font-size: 0.95rem; color: #1e293b; }
 .extra-small { font-size: 0.75rem; }
-.card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; }
+.card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; align-self: center; }
 
 .modern-menu-card:hover { transform: translateY(-3px); border-color: #fca5a5; box-shadow: 0 5px 15px rgba(0,0,0,0.05) !important; }
 .modern-menu-card:hover .icon-box { background: #dc2626; color: white; }
@@ -249,15 +255,15 @@ onMounted(cargarAvisos);
 /* SECCIONES COLAPSABLES */
 .notif-section { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #000000; }
 
-.section-label { 
-  font-size: 0.65rem; 
-  font-weight: 800; 
-  color: #000000; 
-  display: flex; 
+.section-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #000000;
+  display: flex;
   justify-content: space-between; /* Icono a la derecha */
   align-items: center;
-  margin-bottom: 8px; 
-  letter-spacing: 0.5px; 
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
   cursor: pointer; /* Indicar que es clickeable */
   padding: 5px 0;
   user-select: none;
@@ -298,20 +304,20 @@ onMounted(cargarAvisos);
   display: flex; gap: 12px; margin-bottom: 6px; background: #fdfdfd; padding: 8px; border-radius: 12px; border: 1px solid #f8fafc;
 }
 .event-info { flex: 1; min-width: 0; }
-.event-info strong { 
-  font-size: 0.8rem; 
-  color: #1e293b; 
-  display: block; 
-  line-height: 1.2; 
-  white-space: normal; 
+.event-info strong {
+  font-size: 0.8rem;
+  color: #1e293b;
+  display: block;
+  line-height: 1.2;
+  white-space: normal;
 }
-.event-info p { 
-  font-size: 0.72rem; 
-  color: #64748b; 
-  margin: 0; 
-  overflow: visible; 
-  text-overflow: clip; 
-  white-space: normal; 
+.event-info p {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .reminder-pill { background: #fffbeb; color: #92400e; padding: 8px 12px; border-radius: 10px; font-size: 0.72rem; border-left: 3px solid #f59e0b; margin-bottom: 5px; }
@@ -328,7 +334,7 @@ onMounted(cargarAvisos);
 @media (min-width: 992px) {
   /* Scroll Condicional del Sidebar */
   .sidebar-professional {
-    position: sticky; 
+    position: sticky;
     top: 20px;
     max-height: calc(100vh - 100px);
   }
@@ -360,10 +366,10 @@ onMounted(cargarAvisos);
   .mobile-only { display: block !important; }
 
   /* Estilos base de tarjetas móviles para coherencia */
-  .card-arbitro { 
-    background: white; border-radius: 8px; padding: 15px; 
-    margin-bottom: 12px; border: 1px solid #e2e8f0; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+  .card-arbitro {
+    background: white; border-radius: 8px; padding: 15px;
+    margin-bottom: 12px; border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
 }
 
@@ -373,28 +379,28 @@ onMounted(cargarAvisos);
   .full-screen-wrapper { padding: 0; width: 100vw; }
 
   /* ESTRUCTURA CABECERA: Título Izquierda, Botones Centro */
-  .header-section { 
-    padding: 15px; 
-    flex-direction: column; 
-    align-items: flex-start; 
-    text-align: left; 
-    gap: 15px; 
+  .header-section {
+    padding: 15px;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 15px;
   }
 
   .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
-  
+
   /* Fuentes específicas solicitadas */
   .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
   .header-info span.counter { font-size: 0.85rem !important; }
 
   /* Centrado de botones 42x42 */
-  .header-actions { 
-    width: 100%; 
-    display: flex; 
-    flex-direction: row; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 8px; 
+  .header-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
   }
 
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }

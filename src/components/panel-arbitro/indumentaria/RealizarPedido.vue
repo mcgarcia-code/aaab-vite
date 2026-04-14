@@ -6,7 +6,7 @@
     <div class="admin-panel animate__animated animate__fadeIn">
 
       <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
-        
+
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div>
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
@@ -14,7 +14,7 @@
             </h4>
             <p class="text-muted small m-0 mt-1">Armá tu pedido de temporada</p>
           </div>
-          
+
           <div class="header-actions d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
             <RouterLink to="/panel-arbitro/indumentaria/mis-pedidos" class="text-decoration-none">
               <button class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Ver Mis Pedidos" style="background-color: #f8fafc !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
@@ -34,14 +34,14 @@
         </div>
 
         <div class="card-body bg-white p-3 p-md-4">
-          
+
           <div class="mb-4">
             <div class="input-group shadow-sm rounded-pill overflow-hidden border border-secondary-subtle">
               <span class="input-group-text bg-light border-0 text-muted ps-4"><i class="bi bi-search"></i></span>
-              <input 
-                v-model="busqueda" 
-                type="text" 
-                class="form-control border-0 py-2 py-md-3 bg-light shadow-none input-filtro-custom" 
+              <input
+                v-model="busqueda"
+                type="text"
+                class="form-control border-0 py-2 py-md-3 bg-light shadow-none input-filtro-custom"
                 placeholder="Buscar prenda o modelo..."
               >
             </div>
@@ -50,14 +50,14 @@
           <div class="row g-3">
             <div v-for="(prenda, key) in stockPaginado" :key="key" class="col-12 col-md-4 col-lg-3 text-center">
               <div class="card h-100 border-0 shadow-sm tarjeta-prenda-invertida overflow-hidden" style="border-radius: 12px;">
-                
+
                 <div class="bg-white position-relative contenedor-imagen-superior">
-                  <div 
+                  <div
                     class="d-flex align-items-center justify-content-center h-100 cursor-zoom"
                     @click="abrirZoom(obtenerImagenActual(prenda))"
                   >
-                    <img 
-                      :src="obtenerImagenActual(prenda)" 
+                    <img
+                      :src="obtenerImagenActual(prenda)"
                       class="img-fluid foto-prenda animate__animated animate__fadeIn animate__faster"
                       alt="Indumentaria"
                     >
@@ -78,11 +78,11 @@
                     </div>
                   </template>
                 </div>
-                
+
                 <div class="card-body p-3 d-flex flex-column cuerpo-gris-inferior">
                   <h6 class="fw-bold text-dark mb-1 text-uppercase extra-small-mobile">{{ prenda.descripcion }}</h6>
                   <h5 class="fw-bold text-danger mb-2 mb-md-3">$ {{ prenda.precio_unitario }}</h5>
-                  
+
                   <div class="mt-auto">
                     <div class="row g-2 mb-2 text-start">
                       <div class="col-7">
@@ -95,16 +95,16 @@
                       </div>
                       <div class="col-5">
                         <label class="extra-small-label fw-bold text-muted">Cant:</label>
-                        <input 
-                          type="number" 
-                          v-model.number="prenda.cantidadSeleccionada" 
-                          min="1" 
+                        <input
+                          type="number"
+                          v-model.number="prenda.cantidadSeleccionada"
+                          min="1"
                           :max="permitePedidoSinStock(prenda) ? 99 : obtenerStockMaximo(prenda)"
                           @input="validarCantidad(prenda)"
                           class="form-control form-control-sm rounded-pill shadow-sm border-secondary-subtle text-center"
                         >
                       </div>
-                      
+
                       <div class="col-12 mt-0 text-center">
                         <span v-if="obtenerStockMaximo(prenda) > 0" class="badge rounded-pill bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">
                           Disp: {{ obtenerStockMaximo(prenda) }}
@@ -118,8 +118,8 @@
                       </div>
                     </div>
 
-                    <button 
-                      @click="agregarAlCarrito(prenda)" 
+                    <button
+                      @click="agregarAlCarrito(prenda)"
                       :disabled="obtenerStockMaximo(prenda) <= 0 && !permitePedidoSinStock(prenda)"
                       :class="['btn btn-sm w-100 rounded-pill fw-bold shadow-sm py-2 d-flex align-items-center justify-content-center gap-1 mt-2', (obtenerStockMaximo(prenda) <= 0 && permitePedidoSinStock(prenda)) ? 'btn-warning text-dark' : 'btn-danger text-white']"
                     >
@@ -146,8 +146,8 @@
           </div>
 
         </div>
-      </div> 
-      
+      </div>
+
       <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
         <div class="d-flex align-items-center">
           <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
@@ -169,16 +169,16 @@
     <Teleport to="body">
     <div v-if="mostrarCarrito" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10000;">
       <div class="modal-content-exito p-4 shadow-lg animate__animated animate__zoomIn" style="max-width: 450px; width: 95%;">
-        
+
         <h4 class="fw-bold mb-4 text-dark d-flex align-items-center justify-content-center gap-2">
           <span class="material-icons text-danger fs-3">shopping_cart_checkout</span> Tu Pedido
         </h4>
-        
+
         <div v-if="carrito.length === 0" class="text-center py-5 text-muted bg-light rounded border">
           <span class="material-icons fs-1 mb-2">remove_shopping_cart</span>
           <p class="m-0">El carrito está vacío</p>
         </div>
-        
+
         <div v-else class="contenedor-items-carrito mb-4 px-1 text-start">
           <div v-for="(p, i) in carrito" :key="i" class="d-flex justify-content-between align-items-center border-bottom py-2">
             <div>
@@ -193,7 +193,7 @@
             <span>TOTAL:</span><span>$ {{ totalCarrito }}</span>
           </div>
         </div>
-        
+
         <div class="d-flex gap-2">
           <button @click="mostrarCarrito = false" class="btn btn-light w-100 rounded-pill fw-bold border" style="font-size: 0.8rem;">SEGUIR MIRANDO</button>
           <button v-if="carrito.length > 0" @click="confirmarPedido" class="btn btn-dark w-100 rounded-pill fw-bold shadow" style="font-size: 0.8rem;">FINALIZAR</button>
@@ -205,13 +205,13 @@
     <Teleport to="body">
     <div v-if="mostrarPago" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
       <div class="modal-content-exito p-4 text-center animate__animated animate__zoomIn" style="max-width: 450px; width: 95%;">
-        
+
         <div class="icon-circle-exito bg-danger-subtle mb-3 text-danger" style="width: 70px; height: 70px; font-size: 35px;">
           <span class="material-icons" style="font-size: inherit;">account_balance_wallet</span>
         </div>
-        
+
         <h4 class="fw-bold">Abonar Pedido</h4>
-        
+
         <div class="small text-muted mb-4 text-start bg-light p-3 rounded border">
           <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
             <span>Total a transferir:</span>
@@ -222,12 +222,12 @@
           <strong>Titular:</strong> Adrian Manzanos<br>
           <strong>Banco:</strong> BBVA
         </div>
-        
+
         <div class="alert alert-info extra-small py-2 border-0 mb-4 fw-bold">
           <span class="material-icons align-middle me-1" style="font-size: 14px;">info</span>
           Para que tu pedido sea ACEPTADO, debes enviar el comprobante a tesoreria@arbitroshandball.com.ar
         </div>
-        
+
         <button @click="realizarPedidoFinal" class="btn btn-danger w-100 rounded-pill fw-bold shadow-lg py-3" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
           {{ cargando ? 'PROCESANDO...' : 'CONFIRMAR PEDIDO' }}
@@ -279,6 +279,7 @@ const paginaActual = ref(1);
 const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 5 : 12);
 
 const permitePedidoSinStock = (prenda) => {
+  return prenda.admite_encargo
   if (!prenda || !prenda.descripcion) return false;
   const descripcion = prenda.descripcion.toUpperCase();
   return descripcion.includes('HUMMEL') || descripcion.includes('CH1');
@@ -296,8 +297,8 @@ const obtenerImagenActual = (prenda) => {
 };
 
 const obtenerTotalImagenes = (prenda) => {
-  return prenda.archivo_imagen && prenda.archivo_imagen.trim() !== '' 
-          ? prenda.archivo_imagen.split(",").length 
+  return prenda.archivo_imagen && prenda.archivo_imagen.trim() !== ''
+          ? prenda.archivo_imagen.split(",").length
           : 0;
 };
 
@@ -330,16 +331,16 @@ const abrirZoom = (url) => { imagenZoom.value = url; };
 
 const cargarStock = async () => {
   const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
-  
+
   if (respuesta.ok) {
     listaAgrupada.value = respuesta.payload.map(prenda => {
       // 1. Convertimos XXXL a 3XL y filtramos 5XL
       prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
       prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
-      
+
       // 2. Ordenamos talles
       prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
-      
+
       return {
         ...prenda,
         itemSeleccionado: 0,
@@ -372,9 +373,9 @@ watch(paginaActual, () => {
 });
 
 watch(busqueda, () => { paginaActual.value = 1 });
-watch(totalPaginas, (nuevo) => { 
+watch(totalPaginas, (nuevo) => {
   if (nuevo === 0) paginaActual.value = 1;
-  else if (paginaActual.value > nuevo) paginaActual.value = nuevo; 
+  else if (paginaActual.value > nuevo) paginaActual.value = nuevo;
 });
 
 const totalCarrito = computed(() => {
@@ -414,9 +415,9 @@ const agregarAlCarrito = (prenda) => {
   mostrarCarrito.value = true;
 };
 
-const confirmarPedido = () => { 
-  mostrarCarrito.value = false; 
-  mostrarPago.value = true; 
+const confirmarPedido = () => {
+  mostrarCarrito.value = false;
+  mostrarPago.value = true;
 };
 
 const realizarPedidoFinal = async () => {
@@ -468,301 +469,301 @@ onUnmounted(() => {
   margin-left: 50%;
   transform: translateX(-50%);
   /* Top en 0, pero volvemos a respetar los 20px laterales para que quede igual que el header */
-  padding: 0 20px 20px 20px; 
+  padding: 0 20px 20px 20px;
   padding-bottom: 120px;
 }
 
-.admin-panel { 
+.admin-panel {
   width: 100%;
-  max-width: 100%; 
+  max-width: 100%;
   /* Mantenemos los 20px laterales */
-  padding: 0 20px 20px 20px; 
+  padding: 0 20px 20px 20px;
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;  
-  background-color: #0f172a; 
+  color: #000;
+  background-color: #0f172a;
   min-height: 100vh;
   border-radius: 12px;
 }
 
-h5 { 
-  font-size: 1.2rem; 
+h5 {
+  font-size: 1.2rem;
 }
 
-.desktop-only { 
-  display: block; 
+.desktop-only {
+  display: block;
 }
 
 /* ====================================================
    2. BOTONES E INPUTS
    ==================================================== */
-.btn-action, .btn-clear { 
-  border: none; 
-  cursor: pointer; 
+.btn-action, .btn-clear {
+  border: none;
+  cursor: pointer;
 }
 
-.btn-clear:hover { 
-  background-color: #e2e8f0 !important; 
+.btn-clear:hover {
+  background-color: #e2e8f0 !important;
 }
 
-.input-filtro-custom { 
-  font-size: 1rem !important; 
-  height: auto !important; 
+.input-filtro-custom {
+  font-size: 1rem !important;
+  height: auto !important;
 }
 
-.input-filtro-custom:focus { 
-  outline: none; 
+.input-filtro-custom:focus {
+  outline: none;
 }
 
-.form-select-sm, .form-control-sm { 
-  font-size: 0.75rem; 
-  padding: 0.3rem 0.5rem; 
+.form-select-sm, .form-control-sm {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.5rem;
 }
 
 /* ====================================================
    3. PAGINACIÓN
    ==================================================== */
-.paginacion { 
-  display: flex; 
-  justify-content: flex-end; 
-  align-items: center; 
-  gap: 12px; 
-  margin-top: 20px; 
+.paginacion {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
 }
 
-.btn-paginacion { 
-  border: 1px solid #cbd5e1; 
-  background: #f8fafc; 
-  color: #0f172a; 
-  padding: 8px 14px; 
-  border-radius: 6px; 
-  font-size: 0.8rem; 
-  font-weight: 700; 
-  cursor: pointer; 
+.btn-paginacion {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #0f172a;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
   transition: background 0.2s;
 }
 
-.btn-paginacion:hover:not(:disabled) { 
-  background: #e2e8f0; 
+.btn-paginacion:hover:not(:disabled) {
+  background: #e2e8f0;
 }
 
-.btn-paginacion:disabled { 
-  opacity: 0.5; 
-  cursor: not-allowed; 
+.btn-paginacion:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.paginacion-texto { 
-  color: #0f172a; 
-  font-size: 0.85rem; 
-  font-weight: 600; 
+.paginacion-texto {
+  color: #0f172a;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 /* ====================================================
    4. CARDS TIENDA (PRODUCTOS)
    ==================================================== */
-.tarjeta-prenda-invertida { 
-  border-radius: 16px; 
-  transition: all 0.3s ease; 
-  background-color: #f8fafc; 
-  border: 1px solid #e2e8f0 !important; 
-  display: flex; 
-  flex-direction: column; 
+.tarjeta-prenda-invertida {
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0 !important;
+  display: flex;
+  flex-direction: column;
 }
 
-.contenedor-imagen-superior { 
-  background-color: #ffffff; 
-  height: 180px; 
-  overflow: hidden; 
-  border-radius: 16px 16px 0 0; 
-  z-index: 1; 
+.contenedor-imagen-superior {
+  background-color: #ffffff;
+  height: 180px;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+  z-index: 1;
 }
 
-.contenedor-imagen-superior:hover .zoom-icon-overlay { 
-  opacity: 1; 
+.contenedor-imagen-superior:hover .zoom-icon-overlay {
+  opacity: 1;
 }
 
-.foto-prenda { 
-  max-width: 175%; 
-  max-height: 175%; 
-  object-fit: contain; 
-  mix-blend-mode: multiply; 
-  pointer-events: none; 
+.foto-prenda {
+  max-width: 175%;
+  max-height: 175%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  pointer-events: none;
 }
 
-.cuerpo-gris-inferior { 
-  padding: 15px !important; 
-  flex-grow: 1; 
-  display: flex; 
-  flex-direction: column; 
-  background-color: #f8fafc; 
-  border-radius: 0 0 16px 16px; 
+.cuerpo-gris-inferior {
+  padding: 15px !important;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  border-radius: 0 0 16px 16px;
 }
 
-.extra-small-mobile { 
-  font-size: 0.85rem; 
-  line-height: 1.2; 
+.extra-small-mobile {
+  font-size: 0.85rem;
+  line-height: 1.2;
 }
 
-.extra-small-label { 
-  font-size: 0.7rem; 
-  display: block; 
-  margin-bottom: 2px; 
+.extra-small-label {
+  font-size: 0.7rem;
+  display: block;
+  margin-bottom: 2px;
 }
 
 /* ====================================================
    5. CONTROLES DE FOTO Y ZOOM
    ==================================================== */
-.cursor-zoom { 
-  cursor: zoom-in; 
-  width: 100%; 
-  height: 100%; 
+.cursor-zoom {
+  cursor: zoom-in;
+  width: 100%;
+  height: 100%;
 }
 
-.zoom-icon-overlay { 
-  position: absolute; 
-  top: 10px; 
-  right: 10px; 
-  background: rgba(0,0,0,0.05); 
-  color: #666; 
-  border-radius: 50%; 
-  width: 28px; 
-  height: 28px; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  opacity: 0; 
-  transition: opacity 0.3s; 
-  z-index: 2; 
+.zoom-icon-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.05);
+  color: #666;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 2;
 }
 
-.btn-nav-foto { 
-  position: absolute; 
-  top: 50%; 
-  transform: translateY(-50%); 
-  background: rgba(255,255,255,0.8); 
-  border: none; 
-  border-radius: 50%; 
-  width: 32px; 
-  height: 32px; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  color: #dc2626; 
-  z-index: 10; 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+.btn-nav-foto {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.8);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.indicador-fotos { 
-  position: absolute; 
-  bottom: 8px; 
-  left: 50%; 
-  transform: translateX(-50%); 
-  background: rgba(0,0,0,0.5); 
-  color: white; 
-  font-size: 0.65rem; 
-  padding: 2px 10px; 
-  border-radius: 12px; 
-  z-index: 5; 
+.indicador-fotos {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.5);
+  color: white;
+  font-size: 0.65rem;
+  padding: 2px 10px;
+  border-radius: 12px;
+  z-index: 5;
 }
 
 /* ====================================================
    6. MODALES (CARRITO Y ZOOM)
    ==================================================== */
-.modal-overlay-exito { 
-  position: fixed; 
-  top: 0; 
-  left: 0; 
-  width: 100%; 
-  height: 100%; 
-  background: rgba(15, 23, 42, 0.7); 
-  backdrop-filter: blur(8px); 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  z-index: 10000; 
+.modal-overlay-exito {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
 }
 
-.modal-content-exito { 
-  background: white; 
-  border-radius: 20px; 
-  border: none; 
+.modal-content-exito {
+  background: white;
+  border-radius: 20px;
+  border: none;
 }
 
-.contenedor-items-carrito { 
-  max-height: 250px; 
-  overflow-y: auto; 
+.contenedor-items-carrito {
+  max-height: 250px;
+  overflow-y: auto;
 }
 
-.icon-circle-exito { 
-  border-radius: 50%; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  margin: 0 auto; 
+.icon-circle-exito {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
 }
 
-.modal-zoom-overlay { 
-  position: fixed; 
-  top: 0; 
-  left: 0; 
-  width: 100%; 
-  height: 100%; 
-  background: rgba(0,0,0,0.9); 
-  backdrop-filter: blur(8px); 
-  z-index: 11000; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.modal-zoom-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  backdrop-filter: blur(8px);
+  z-index: 11000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.img-zoom-full { 
-  max-width: 95%; 
-  max-height: 85vh; 
-  border-radius: 10px; 
+.img-zoom-full {
+  max-width: 95%;
+  max-height: 85vh;
+  border-radius: 10px;
 }
 
-.btn-cerrar-zoom { 
-  position: absolute; 
-  top: 20px; 
-  right: 20px; 
-  background: white; 
-  border: none; 
-  border-radius: 50%; 
-  width: 40px; 
-  height: 40px; 
-  font-size: 1.2rem; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  color: #dc2626; 
-  z-index: 11001; 
+.btn-cerrar-zoom {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  z-index: 11001;
 }
 
 /* ====================================================
    7. RESPONSIVE (MEDIA QUERIES)
    ==================================================== */
-@media (min-width: 992px) { 
-  .tarjeta-prenda-invertida:hover { 
-    transform: translateY(-5px); 
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important; 
-    border-color: #cbd5e1 !important; 
-  } 
+@media (min-width: 992px) {
+  .tarjeta-prenda-invertida:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+    border-color: #cbd5e1 !important;
+  }
 }
 
 @media (min-width: 768px) {
-  .btn-text { 
-    display: inline; 
+  .btn-text {
+    display: inline;
   }
 }
 
 @media (max-width: 768px) {
-  .desktop-only { 
-    display: none !important; 
+  .desktop-only {
+    display: none !important;
   }
-  .contenedor-imagen-superior { 
-    height: 150px; 
+  .contenedor-imagen-superior {
+    height: 150px;
   }
-  .btn-text { 
-    display: inline; 
+  .btn-text {
+    display: inline;
   }
 }
 
@@ -775,58 +776,58 @@ h5 {
     margin-left: 50%;
     transform: translateX(-50%);
     /* Top en 0, pero conservando los 15px laterales originales para celulares */
-    padding: 0 15px 20px 15px !important; 
+    padding: 0 15px 20px 15px !important;
     box-sizing: border-box !important;
   }
-    
-  .admin-panel { 
-    padding: 0 !important; 
-    border-radius: 0; 
+
+  .admin-panel {
+    padding: 0 !important;
+    border-radius: 0;
     box-sizing: border-box !important;
   }
-  
-  .header-section { 
-    padding: 15px !important; 
-    flex-direction: column; 
-    align-items: flex-start; 
-    text-align: left; 
-    gap: 15px; 
+
+  .header-section {
+    padding: 15px !important;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 15px;
   }
-  
-  .header-info { 
-    width: 100%; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: flex-start; 
+
+  .header-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
-  
-  .header-info h4, h4 { 
-    font-size: 1.2rem !important; 
-    margin: 0; 
-    text-align: left; 
+
+  .header-info h4, h4 {
+    font-size: 1.2rem !important;
+    margin: 0;
+    text-align: left;
   }
-    
-  .header-actions { 
-    width: 100%; 
-    display: flex; 
-    flex-direction: row; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 8px; 
+
+  .header-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
   }
-  
-  .btn-action { 
-    flex: none; 
-    width: 42px; 
-    height: 42px; 
-    padding: 0; 
-    justify-content: center; 
-    align-items: center; 
-    border-radius: 6px; 
+
+  .btn-action {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+    border-radius: 6px;
   }
-  
-  .btn-text { 
-    display: none !important; 
+
+  .btn-text {
+    display: none !important;
   }
 }
 </style>
