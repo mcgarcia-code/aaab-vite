@@ -208,9 +208,10 @@
             <option value="rechazado">Rechazado / Cancelado</option>
           </select>
           <p class="extra-small text-muted mt-2 mb-0" style="font-size: 0.75rem;">
-            * <b>Aceptado:</b> Bloquea el stock.<br>
-            * <b>Entregado:</b> Descuenta el stock definitivamente.<br>
-            * <b>Rechazado:</b> Devuelve el stock a la base.
+            * <b>En Proceso:</b> Verificas si hay stock.<br>
+            * <b>Aceptado:</b> Hay stock disponible y recibís el pago<br>
+            * <b>Entregado:</b> Una vez entregado se descuenta el stock definitivamente.<br>
+            * <b>Rechazado:</b> No hay stock. Se devuelve el stock a la base.
           </p>
         </div>
 

@@ -27,7 +27,7 @@
               <span class="material-icons" style="font-size: 20px;">shopping_cart</span>
               <span class="btn-text desktop-only fw-bold text-white" style="font-size: 0.8rem;">Ver Carrito</span>
               <span v-if="carrito.length > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.6rem; transform: translate(-30%, -30%) !important;">
-                {{ carrito.length }}
+                {{ totalArticulosCarrito }}
               </span>
             </button>
           </div>
@@ -49,7 +49,7 @@
 
           <div class="row g-3">
             <div v-for="(prenda, key) in stockPaginado" :key="key" class="col-12 col-md-4 col-lg-3 text-center">
-              <div class="card h-100 border-0 shadow-sm tarjeta-prenda-invertida overflow-hidden">
+              <div class="card h-100 border-0 shadow-sm tarjeta-prenda-invertida overflow-hidden" style="border-radius: 12px;">
                 
                 <div class="bg-white position-relative contenedor-imagen-superior">
                   <div 
@@ -134,7 +134,7 @@
             </div>
           </div>
 
-          <div v-if="stockPaginado.length === 0" class="text-center p-5 bg-light rounded border mt-3">
+          <div v-if="stockPaginado.length === 0" class="text-center p-5 bg-light rounded border mt-3" style="border-radius: 12px !important;">
             <span class="material-icons text-muted" style="font-size: 48px;">inventory_2</span>
             <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron prendas.</p>
           </div>
@@ -146,7 +146,9 @@
           </div>
 
         </div>
-      </div> <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
+      </div> 
+      
+      <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
         <div class="d-flex align-items-center">
           <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
           <div class="small text-dark lh-sm">
@@ -223,7 +225,7 @@
         
         <div class="alert alert-info extra-small py-2 border-0 mb-4 fw-bold">
           <span class="material-icons align-middle me-1" style="font-size: 14px;">info</span>
-          Recordá enviar el comprobante a tesoreria@arbitroshandball.com.ar
+          Para que tu pedido sea ACEPTADO, debes enviar el comprobante a tesoreria@arbitroshandball.com.ar
         </div>
         
         <button @click="realizarPedidoFinal" class="btn btn-danger w-100 rounded-pill fw-bold shadow-lg py-3" :disabled="cargando">
@@ -244,6 +246,7 @@ import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 import { WEB_URL } from '@/config/env'
+
 useHead({
   title: 'Realizar Pedido | AAAB',
   meta: [
@@ -284,7 +287,8 @@ const permitePedidoSinStock = (prenda) => {
 const obtenerImagenActual = (prenda) => {
   const fotos = prenda.archivo_imagen ? prenda.archivo_imagen.split(",") : [];
   const index = prenda.fotoActualIndex || 0;
-  const archivo = fotos[index] || fotos[0];
+  // Detalle corregido: Se agregó .trim() para evitar URLs rotas por espacios
+  const archivo = fotos[index]?.trim() || fotos[0]?.trim();
   if (archivo) {
     return `${WEB_URL}/fotos/${archivo}`
   }
@@ -377,6 +381,11 @@ const totalCarrito = computed(() => {
   return carrito.value.reduce((total, p) => total + (p.precio * p.cantidad), 0);
 });
 
+// Computed nuevo para que el contador del badge sume la cantidad real de prendas y no la cantidad de filas
+const totalArticulosCarrito = computed(() => {
+  return carrito.value.reduce((total, p) => total + p.cantidad, 0);
+});
+
 const agregarAlCarrito = (prenda) => {
   const itemTalle = prenda.items[prenda.itemSeleccionado];
   const permiteSinStock = permitePedidoSinStock(prenda);
@@ -386,17 +395,20 @@ const agregarAlCarrito = (prenda) => {
     return;
   }
 
-  carrito.value.push({
-    id_item: prenda.id_item,
-    id_talle: itemTalle.id,
-    descripcion: prenda.descripcion,
-    precio: itemTalle.precio_unitario,
-    talle: itemTalle.talle,
-    cantidad: prenda.cantidadSeleccionada
-  });
-  
-  if (itemTalle.cantidad <= 0) {
-    notificar({ titulo: 'Prenda encargada', mensaje: 'Agregaste un artículo sin stock inmediato. Esto se enviará a fabricación.', tipo: 'warning' });
+  // Detalle corregido: Agrupar items idénticos en el carrito en lugar de crear nuevas filas
+  const itemExistente = carrito.value.find(p => p.id_item === prenda.id_item && p.id_talle === itemTalle.id);
+
+  if (itemExistente) {
+    itemExistente.cantidad += prenda.cantidadSeleccionada;
+  } else {
+    carrito.value.push({
+      id_item: prenda.id_item,
+      id_talle: itemTalle.id,
+      descripcion: prenda.descripcion,
+      precio: itemTalle.precio_unitario,
+      talle: itemTalle.talle,
+      cantidad: prenda.cantidadSeleccionada
+    });
   }
 
   mostrarCarrito.value = true;
@@ -444,8 +456,10 @@ onUnmounted(() => {
   window.removeEventListener('resize', actualizarAncho);
 });
 </script>
-
 <style scoped>
+/* ====================================================
+   1. LAYOUT BASE Y UTILIDADES
+   ==================================================== */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
@@ -470,79 +484,349 @@ onUnmounted(() => {
   border-radius: 12px;
 }
 
+h5 { 
+  font-size: 1.2rem; 
+}
+
+.desktop-only { 
+  display: block; 
+}
+
+/* ====================================================
+   2. BOTONES E INPUTS
+   ==================================================== */
 .btn-action, .btn-clear { 
   border: none; 
   cursor: pointer; 
 }
-.btn-clear:hover { background-color: #e2e8f0 !important; }
 
-.input-filtro-custom { font-size: 1rem !important; height: auto !important; }
-.input-filtro-custom:focus { outline: none; }
-
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 20px; }
-.btn-paginacion { border: 1px solid #cbd5e1; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s;}
-.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #0f172a; font-size: 0.85rem; font-weight: 600; }
-
-/* CARDS TIENDA */
-.tarjeta-prenda-invertida { border-radius: 16px; transition: all 0.3s ease; background-color: #f8fafc; border: 1px solid #e2e8f0 !important; display: flex; flex-direction: column; }
-@media (min-width: 992px) { .tarjeta-prenda-invertida:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important; border-color: #cbd5e1 !important; } }
-
-.cursor-zoom { cursor: zoom-in; width: 100%; height: 100%; }
-.zoom-icon-overlay { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.05); color: #666; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; z-index: 2; }
-.contenedor-imagen-superior:hover .zoom-icon-overlay { opacity: 1; }
-.contenedor-imagen-superior { background-color: #ffffff; height: 180px; overflow: hidden; border-radius: 16px 16px 0 0; z-index: 1; }
-.foto-prenda { max-width: 175%; max-height: 175%; object-fit: contain; mix-blend-mode: multiply; pointer-events: none; }
-
-.btn-nav-foto { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #dc2626; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-.indicador-fotos { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.5); color: white; font-size: 0.65rem; padding: 2px 10px; border-radius: 12px; z-index: 5; }
-
-.cuerpo-gris-inferior { padding: 15px !important; flex-grow: 1; display: flex; flex-direction: column; background-color: #f8fafc; border-radius: 0 0 16px 16px; }
-.extra-small-mobile { font-size: 0.85rem; line-height: 1.2; }
-.extra-small-label { font-size: 0.7rem; display: block; margin-bottom: 2px; }
-h5 { font-size: 1.2rem; }
-
-.form-select-sm, .form-control-sm { font-size: 0.75rem; padding: 0.3rem 0.5rem; }
-
-/* MODALES */
-.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.modal-content-exito { background: white; border-radius: 20px; border: none; }
-.contenedor-items-carrito { max-height: 250px; overflow-y: auto; }
-.icon-circle-exito { border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
-
-.modal-zoom-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 11000; display: flex; align-items: center; justify-content: center; }
-.img-zoom-full { max-width: 95%; max-height: 85vh; border-radius: 10px; }
-.btn-cerrar-zoom { position: absolute; top: 20px; right: 20px; background: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.2rem; display:flex; align-items: center; justify-content:center; color: #dc2626; z-index: 11001; }
-
-.desktop-only { display: block; }
-
-@media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .contenedor-imagen-superior { height: 150px; }
+.btn-clear:hover { 
+  background-color: #e2e8f0 !important; 
 }
 
-@media (max-width: 600px) {
- .full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto;
-  margin-left: 50%;
-  transform: translateX(-50%);
-      /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important; 
-  box-sizing: border-box !important;
+.input-filtro-custom { 
+  font-size: 1rem !important; 
+  height: auto !important; 
 }
-    
-    .admin-panel { 
-      padding: 0 !important; 
-      border-radius: 0; 
-      box-sizing: border-box !important;
-    }
+
+.input-filtro-custom:focus { 
+  outline: none; 
+}
+
+.form-select-sm, .form-control-sm { 
+  font-size: 0.75rem; 
+  padding: 0.3rem 0.5rem; 
+}
+
+/* ====================================================
+   3. PAGINACIÓN
+   ==================================================== */
+.paginacion { 
+  display: flex; 
+  justify-content: flex-end; 
+  align-items: center; 
+  gap: 12px; 
+  margin-top: 20px; 
+}
+
+.btn-paginacion { 
+  border: 1px solid #cbd5e1; 
+  background: #f8fafc; 
+  color: #0f172a; 
+  padding: 8px 14px; 
+  border-radius: 6px; 
+  font-size: 0.8rem; 
+  font-weight: 700; 
+  cursor: pointer; 
+  transition: background 0.2s;
+}
+
+.btn-paginacion:hover:not(:disabled) { 
+  background: #e2e8f0; 
+}
+
+.btn-paginacion:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
+}
+
+.paginacion-texto { 
+  color: #0f172a; 
+  font-size: 0.85rem; 
+  font-weight: 600; 
+}
+
+/* ====================================================
+   4. CARDS TIENDA (PRODUCTOS)
+   ==================================================== */
+.tarjeta-prenda-invertida { 
+  border-radius: 16px; 
+  transition: all 0.3s ease; 
+  background-color: #f8fafc; 
+  border: 1px solid #e2e8f0 !important; 
+  display: flex; 
+  flex-direction: column; 
+}
+
+.contenedor-imagen-superior { 
+  background-color: #ffffff; 
+  height: 180px; 
+  overflow: hidden; 
+  border-radius: 16px 16px 0 0; 
+  z-index: 1; 
+}
+
+.contenedor-imagen-superior:hover .zoom-icon-overlay { 
+  opacity: 1; 
+}
+
+.foto-prenda { 
+  max-width: 175%; 
+  max-height: 175%; 
+  object-fit: contain; 
+  mix-blend-mode: multiply; 
+  pointer-events: none; 
+}
+
+.cuerpo-gris-inferior { 
+  padding: 15px !important; 
+  flex-grow: 1; 
+  display: flex; 
+  flex-direction: column; 
+  background-color: #f8fafc; 
+  border-radius: 0 0 16px 16px; 
+}
+
+.extra-small-mobile { 
+  font-size: 0.85rem; 
+  line-height: 1.2; 
+}
+
+.extra-small-label { 
+  font-size: 0.7rem; 
+  display: block; 
+  margin-bottom: 2px; 
+}
+
+/* ====================================================
+   5. CONTROLES DE FOTO Y ZOOM
+   ==================================================== */
+.cursor-zoom { 
+  cursor: zoom-in; 
+  width: 100%; 
+  height: 100%; 
+}
+
+.zoom-icon-overlay { 
+  position: absolute; 
+  top: 10px; 
+  right: 10px; 
+  background: rgba(0,0,0,0.05); 
+  color: #666; 
+  border-radius: 50%; 
+  width: 28px; 
+  height: 28px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  opacity: 0; 
+  transition: opacity 0.3s; 
+  z-index: 2; 
+}
+
+.btn-nav-foto { 
+  position: absolute; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  background: rgba(255,255,255,0.8); 
+  border: none; 
+  border-radius: 50%; 
+  width: 32px; 
+  height: 32px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  color: #dc2626; 
+  z-index: 10; 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+}
+
+.indicador-fotos { 
+  position: absolute; 
+  bottom: 8px; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  background: rgba(0,0,0,0.5); 
+  color: white; 
+  font-size: 0.65rem; 
+  padding: 2px 10px; 
+  border-radius: 12px; 
+  z-index: 5; 
+}
+
+/* ====================================================
+   6. MODALES (CARRITO Y ZOOM)
+   ==================================================== */
+.modal-overlay-exito { 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(15, 23, 42, 0.7); 
+  backdrop-filter: blur(8px); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 10000; 
+}
+
+.modal-content-exito { 
+  background: white; 
+  border-radius: 20px; 
+  border: none; 
+}
+
+.contenedor-items-carrito { 
+  max-height: 250px; 
+  overflow-y: auto; 
+}
+
+.icon-circle-exito { 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  margin: 0 auto; 
+}
+
+.modal-zoom-overlay { 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(0,0,0,0.9); 
+  backdrop-filter: blur(8px); 
+  z-index: 11000; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+
+.img-zoom-full { 
+  max-width: 95%; 
+  max-height: 85vh; 
+  border-radius: 10px; 
+}
+
+.btn-cerrar-zoom { 
+  position: absolute; 
+  top: 20px; 
+  right: 20px; 
+  background: white; 
+  border: none; 
+  border-radius: 50%; 
+  width: 40px; 
+  height: 40px; 
+  font-size: 1.2rem; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  color: #dc2626; 
+  z-index: 11001; 
+}
+
+/* ====================================================
+   7. RESPONSIVE (MEDIA QUERIES)
+   ==================================================== */
+@media (min-width: 992px) { 
+  .tarjeta-prenda-invertida:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important; 
+    border-color: #cbd5e1 !important; 
+  } 
 }
 
 @media (min-width: 768px) {
-  .btn-text { display: inline; }
+  .btn-text { 
+    display: inline; 
+  }
+}
+
+@media (max-width: 768px) {
+  .desktop-only { 
+    display: none !important; 
+  }
+  .contenedor-imagen-superior { 
+    height: 150px; 
+  }
+  .btn-text { 
+    display: inline; 
+  }
+}
+
+@media (max-width: 600px) {
+  .full-screen-wrapper {
+    position: relative;
+    width: 99vw;
+    min-height: 100vh;
+    height: auto;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    /* Top en 0, pero conservando los 15px laterales originales para celulares */
+    padding: 0 15px 20px 15px !important; 
+    box-sizing: border-box !important;
+  }
+    
+  .admin-panel { 
+    padding: 0 !important; 
+    border-radius: 0; 
+    box-sizing: border-box !important;
+  }
+  
+  .header-section { 
+    padding: 15px !important; 
+    flex-direction: column; 
+    align-items: flex-start; 
+    text-align: left; 
+    gap: 15px; 
+  }
+  
+  .header-info { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start; 
+  }
+  
+  .header-info h4, h4 { 
+    font-size: 1.2rem !important; 
+    margin: 0; 
+    text-align: left; 
+  }
+    
+  .header-actions { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 8px; 
+  }
+  
+  .btn-action { 
+    flex: none; 
+    width: 42px; 
+    height: 42px; 
+    padding: 0; 
+    justify-content: center; 
+    align-items: center; 
+    border-radius: 6px; 
+  }
+  
+  .btn-text { 
+    display: none !important; 
+  }
 }
 </style>

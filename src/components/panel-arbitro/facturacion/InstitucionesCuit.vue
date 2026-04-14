@@ -453,8 +453,6 @@ td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middl
       border-radius: 0; 
       box-sizing: border-box !important;
     }
-
-
     .header-section { 
         padding: 15px !important; flex-direction: column; 
         align-items: flex-start; text-align: left; gap: 15px; 

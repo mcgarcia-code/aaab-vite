@@ -170,7 +170,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ESTILOS WRAPPER ESTÁNDAR */
+/* ====================================================
+   1. LAYOUT BASE
+   ==================================================== */
 .full-screen-wrapper { 
   position: relative; 
   width: 99vw; 
@@ -193,13 +195,16 @@ onMounted(() => {
   border-radius: 12px;
 }
 
-/* PAGINACIÓN */
+/* ====================================================
+   2. PAGINACIÓN
+   ==================================================== */
 .paginacion { 
   display: flex; 
   justify-content: flex-end; 
   align-items: center; 
   gap: 12px; 
 }
+
 .btn-paginacion { 
   border: 1px solid #cbd5e1; 
   background: #f8fafc; 
@@ -211,18 +216,25 @@ onMounted(() => {
   cursor: pointer; 
   transition: background 0.2s;
 }
-.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
+
+.btn-paginacion:hover:not(:disabled) { 
+  background: #e2e8f0; 
+}
+
 .btn-paginacion:disabled { 
   opacity: 0.5; 
   cursor: not-allowed; 
 }
+
 .paginacion-texto { 
   color: #0f172a !important; 
   font-size: 0.85rem; 
   font-weight: 600; 
 }
 
-/* TABLA PERSONALIZADA */
+/* ====================================================
+   3. TABLA PERSONALIZADA
+   ==================================================== */
 .custom-table th {
   font-weight: 600;
   text-transform: uppercase;
@@ -238,9 +250,16 @@ onMounted(() => {
   background-color: rgba(220, 38, 38, 0.03) !important;
 }
 
-/* ========================================================
-   ESTILOS MOBILE (Diseño tipo Tarjeta)
-   ======================================================== */
+/* ====================================================
+   4. RESPONSIVE DESIGN (MEDIA QUERIES)
+   ==================================================== */
+
+/* --- Laptops y Tablets Grandes (Hasta 1024px) --- */
+@media (max-width: 1024px) {
+  /* Espacio reservado para futuros ajustes en pantallas medianas */
+}
+
+/* --- Tablets y Móviles (Hasta 768px) --- */
 @media (max-width: 768px) {
   .mobile-transparent-bg {
     background-color: transparent !important;
@@ -257,7 +276,10 @@ onMounted(() => {
     display: none; 
   }
 
-  .custom-table, .custom-table tbody, .custom-table tr, .custom-table td {
+  .custom-table, 
+  .custom-table tbody, 
+  .custom-table tr, 
+  .custom-table td {
     display: block;
     width: 100%;
   }
@@ -309,9 +331,18 @@ onMounted(() => {
   }
 }
 
-/* Ajustes Extra para móviles pequeños */
+/* --- Smartphones (Hasta 600px) --- */
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
+  .full-screen-wrapper { 
+    width: 100vw; 
+    padding: 0 10px; 
+    box-sizing: border-box !important; /* Evita el scroll horizontal */
+  }
+  
+  .admin-panel { 
+    padding: 10px; 
+    border-radius: 0; 
+    box-sizing: border-box !important; 
+  }
 }
 </style>

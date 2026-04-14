@@ -325,6 +325,9 @@ const reiniciarFormulario = () => {
 </script>
 
 <style scoped>
+/* ====================================================
+   1. LAYOUT BASE (ESCRITORIO POR DEFECTO)
+   ==================================================== */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
@@ -349,9 +352,17 @@ const reiniciarFormulario = () => {
   border-radius: 12px;
 }
 
-/* SECCIONES FORMULARIO */
-.sacf-section { padding: 35px; border-bottom: 1px solid #f1f5f9; }
-.bg-light-soft { background-color: #fafbfc; }
+/* ====================================================
+   2. SECCIONES Y CONTENEDORES
+   ==================================================== */
+.sacf-section { 
+  padding: 35px; 
+  border-bottom: 1px solid #f1f5f9; 
+}
+
+.bg-light-soft { 
+  background-color: #fafbfc; 
+}
 
 .section-title { 
   font-size: 0.85rem; 
@@ -364,7 +375,39 @@ const reiniciarFormulario = () => {
   letter-spacing: 1.2px;
 }
 
-/* INPUTS Y LABELS */
+.grid-2 { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 15px; 
+}
+
+.referee-box { 
+  background: #ffffff; 
+  padding: 25px; 
+  border-radius: 16px; 
+  border: 1px solid #e2e8f0;
+}
+
+.total-score-card { 
+  margin-top: 35px; 
+  padding: 30px; 
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #fff; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  border-radius: 16px; 
+}
+
+.total-score-card strong { 
+  font-size: 2.8rem; 
+  color: #ff4d4d; 
+  text-shadow: 0 0 20px rgba(255, 77, 77, 0.5); 
+}
+
+/* ====================================================
+   3. FORMULARIOS E INPUTS
+   ==================================================== */
 .form-label-custom {
   display: block; 
   font-weight: 700; 
@@ -392,9 +435,6 @@ const reiniciarFormulario = () => {
   outline: none;
 }
 
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-/* RADIOS */
 .custom-radio-group { 
   display: flex; 
   gap: 4px; 
@@ -402,6 +442,7 @@ const reiniciarFormulario = () => {
   padding: 5px; 
   border-radius: 14px; 
 }
+
 .custom-radio-group button { 
   flex: 1; 
   border: none; 
@@ -413,27 +454,47 @@ const reiniciarFormulario = () => {
   border-radius: 10px; 
   transition: 0.2s;
 }
+
 .custom-radio-group button.active { 
   background: #dc2626; 
   color: white; 
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); 
 }
 
-/* PERFORMANCE SCALE */
-.perf-scale-container { display: flex; flex-direction: column; gap: 12px; }
-.perf-opt-item {
-  display: flex; align-items: center; padding: 18px; border: 2px solid #f1f5f9; border-radius: 14px; cursor: pointer;
-  background: #fff; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-left: 6px solid #cbd5e1;
+.btn-danger { 
+  background-color: #dc2626 !important; 
+  border: none; 
 }
-.perf-opt-item:hover { transform: translateX(8px); border-color: #cbd5e1; }
 
-.perf-num { font-size: 1.7rem; font-weight: 900; min-width: 55px; color: #0f172a; }
-.perf-desc { font-size: 0.85rem; font-weight: 700; color: #475569; margin-left: 15px; line-height: 1.3; }
+.btn-danger:hover:not(:disabled) { 
+  background-color: #b91c1c !important; 
+}
 
-.tone-green { border-left-color: #10b981; }
-.tone-lgreen { border-left-color: #84cc16; }
-.tone-yellow { border-left-color: #f59e0b; }
-.tone-red { border-left-color: #ef4444; }
+/* ====================================================
+   4. ESCALA DE RENDIMIENTO (PERFORMANCE SCALE)
+   ==================================================== */
+.perf-scale-container { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+}
+
+.perf-opt-item {
+  display: flex; 
+  align-items: center; 
+  padding: 18px; 
+  border: 2px solid #f1f5f9; 
+  border-radius: 14px; 
+  cursor: pointer;
+  background: #fff; 
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+  border-left: 6px solid #cbd5e1;
+}
+
+.perf-opt-item:hover { 
+  transform: translateX(8px); 
+  border-color: #cbd5e1; 
+}
 
 .perf-opt-item.is-active { 
   border-color: #dc2626; 
@@ -442,70 +503,106 @@ const reiniciarFormulario = () => {
   box-shadow: 0 10px 25px rgba(220, 38, 38, 0.15);
 }
 
-/* RESULTADO FINAL */
-.total-score-card { 
-  margin-top: 35px; 
-  padding: 30px; 
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  color: #fff; 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  border-radius: 16px; 
-}
-.total-score-card strong { font-size: 2.8rem; color: #ff4d4d; text-shadow: 0 0 20px rgba(255, 77, 77, 0.5); }
-
-.btn-danger { background-color: #dc2626 !important; border: none; }
-.btn-danger:hover:not(:disabled) { background-color: #b91c1c !important; }
-
-.referee-box { 
-  background: #ffffff; 
-  padding: 25px; 
-  border-radius: 16px; 
-  border: 1px solid #e2e8f0;
+.perf-num { 
+  font-size: 1.7rem; 
+  font-weight: 900; 
+  min-width: 55px; 
+  color: #0f172a; 
 }
 
+.perf-desc { 
+  font-size: 0.85rem; 
+  font-weight: 700; 
+  color: #475569; 
+  margin-left: 15px; 
+  line-height: 1.3; 
+}
+
+.tone-green { border-left-color: #10b981; }
+.tone-lgreen { border-left-color: #84cc16; }
+.tone-yellow { border-left-color: #f59e0b; }
+.tone-red { border-left-color: #ef4444; }
+
+/* ====================================================
+   5. ANIMACIONES
+   ==================================================== */
+.anim-fade { 
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); 
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ====================================================
+   6. MEDIA QUERIES (RESPONSIVE)
+   ==================================================== */
+
+/* --- Laptops y Tablets (De 768px para arriba) --- */
 @media (min-width: 768px) {
-  .perf-scale-container { flex-direction: row; gap: 8px; }
-  .perf-opt-item {
-    flex: 1; flex-direction: column; padding: 25px 10px; text-align: center;
-    border-left: 2px solid #f1f5f9; border-bottom: 6px solid #cbd5e1;
+  .perf-scale-container { 
+    flex-direction: row; 
+    gap: 8px; 
   }
-  .perf-opt-item:hover { transform: translateY(-8px); }
-  .perf-desc { margin-left: 0; margin-top: 12px; font-size: 0.7rem; }
+  .perf-opt-item {
+    flex: 1; 
+    flex-direction: column; 
+    padding: 25px 10px; 
+    text-align: center;
+    border-left: 2px solid #f1f5f9; 
+    border-bottom: 6px solid #cbd5e1;
+  }
+  .perf-opt-item:hover { 
+    transform: translateY(-8px); 
+  }
+  .perf-desc { 
+    margin-left: 0; 
+    margin-top: 12px; 
+    font-size: 0.7rem; 
+  }
   .tone-green { border-bottom-color: #10b981; }
   .tone-lgreen { border-bottom-color: #84cc16; }
   .tone-yellow { border-bottom-color: #f59e0b; }
   .tone-red { border-bottom-color: #ef4444; }
-  .perf-opt-item.is-active { border-bottom-color: #dc2626; transform: translateY(-10px); }
+  .perf-opt-item.is-active { 
+    border-bottom-color: #dc2626; 
+    transform: translateY(-10px); 
+  }
 }
 
+/* --- Laptops y Tablets Grandes (Hasta 1024px) --- */
+@media (max-width: 1024px) {
+  /* Espacio reservado para futuros ajustes en pantallas medianas */
+}
+
+/* --- Tablets y Móviles (Hasta 768px) --- */
+@media (max-width: 768px) {
+  /* Espacio reservado para futuros ajustes en tablets */
+}
+
+/* --- Smartphones (Hasta 600px) --- */
 @media (max-width: 600px) {
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto;
-  margin-left: 50%;
-  transform: translateX(-50%);
-      /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important; 
-  box-sizing: border-box !important;
-}
-    
-.admin-panel { 
-      padding: 0 !important; 
-      border-radius: 0; 
-      box-sizing: border-box !important;
-}
+  .full-screen-wrapper {
+    position: relative;
+    width: 99vw;
+    min-height: 100vh;
+    height: auto;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    /* Top en 0, pero conservando los 15px laterales originales para celulares */
+    padding: 0 15px 20px 15px !important; 
+    box-sizing: border-box !important;
+  }
+      
+  .admin-panel { 
+    padding: 0 !important; 
+    border-radius: 0; 
+    box-sizing: border-box !important;
+  }
 
-
-  .sacf-section { padding: 20px; }
-}
-
-.anim-fade { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  .sacf-section { 
+    padding: 20px; 
+  }
 }
 </style>

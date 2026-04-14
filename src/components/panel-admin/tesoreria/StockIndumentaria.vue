@@ -224,7 +224,7 @@ const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
 
 const paginaActual = ref(1);
 // 6 registros en móvil, 12 en escritorio
-const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 6 : 12);
+const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 6 : 15);
 
 // Modal Variables
 const mostrarModal = ref(false);

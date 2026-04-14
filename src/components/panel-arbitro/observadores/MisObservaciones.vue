@@ -158,6 +158,9 @@ onMounted(obtenerObservaciones);
 </script>
 
 <style scoped>
+/* ====================================================
+   1. LAYOUT BASE (ESCRITORIO POR DEFECTO)
+   ==================================================== */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
@@ -182,11 +185,66 @@ onMounted(obtenerObservaciones);
   border-radius: 12px;
 }
 
-.btn-clear:hover { background-color: #e2e8f0 !important; }
+.header-section { 
+  background: white; 
+  padding: 15px 25px; 
+  border-radius: 8px; 
+  display: flex; 
+  justify-content: space-between; 
+  margin-bottom: 15px; 
+  border-left: 5px solid #ef4444; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+  align-items: center; 
+}
 
-.input-filtro-custom { font-size: 1rem !important; height: auto !important; }
-.input-filtro-custom:focus { outline: none; }
+.header-info { 
+  display: flex; 
+  flex-direction: column; 
+}
 
+.header-actions { 
+  display: flex; 
+  gap: 8px; 
+}
+
+/* ====================================================
+   2. BOTONES E INPUTS
+   ==================================================== */
+.btn-action { 
+  border: none; 
+  padding: 8px 12px; 
+  border-radius: 4px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 5px; 
+  font-size: 0.75rem; 
+  transition: opacity 0.2s; 
+}
+
+.btn-clear {
+  border: none;
+  cursor: pointer;
+}
+
+.btn-clear:hover { 
+  background-color: #e2e8f0 !important; 
+}
+
+.input-filtro-custom { 
+  font-size: 1rem !important; 
+  height: auto !important; 
+}
+
+.input-filtro-custom:focus { 
+  outline: none; 
+}
+
+/* ====================================================
+   3. PAGINACIÓN
+   ==================================================== */
 .paginacion { 
   display: flex; 
   justify-content: flex-end; 
@@ -194,6 +252,7 @@ onMounted(obtenerObservaciones);
   gap: 12px; 
   margin-top: 20px; 
 }
+
 .btn-paginacion { 
   border: 1px solid #cbd5e1; 
   background: #f8fafc; 
@@ -205,49 +264,179 @@ onMounted(obtenerObservaciones);
   cursor: pointer; 
   transition: background 0.2s;
 }
-.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #0f172a !important; font-size: 0.85rem; font-weight: 600; }
 
-.table-container { width: 100%; overflow: auto; max-height: 85vh; background: white; }
-table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #f8fafc !important; padding: 12px 10px; border-bottom: 2px solid #e2e8f0; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0; text-align: left; }
+.btn-paginacion:hover:not(:disabled) { 
+  background: #e2e8f0; 
+}
 
-.cell-ro { padding: 14px 10px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; vertical-align: middle;}
-.row-hover:hover { background-color: #f1f5f9; transition: background 0.2s ease; }
+.btn-paginacion:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
+}
 
-.desktop-only { display: block; }
-.mobile-only { display: none; }
+.paginacion-texto { 
+  color: #0f172a !important; 
+  font-size: 0.85rem; 
+  font-weight: 600; 
+}
 
+/* ====================================================
+   4. TABLA Y CELDAS
+   ==================================================== */
+.table-container { 
+  width: 100%; 
+  overflow: auto; 
+  max-height: 85vh; 
+  background: white; 
+}
+
+table { 
+  width: 100%; 
+  min-width: max-content; 
+  border-collapse: separate !important; 
+  border-spacing: 0; 
+  font-size: 0.85rem; 
+}
+
+thead tr.main-header th { 
+  position: sticky; 
+  top: 0; 
+  z-index: 50; 
+  background: #f8fafc !important; 
+  padding: 12px 10px; 
+  border-bottom: 2px solid #e2e8f0; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; 
+  font-size: 0.75rem; 
+  color: #000; 
+  text-transform: uppercase; 
+  font-weight: 800; 
+  margin: 0; 
+  text-align: left; 
+}
+
+.cell-ro { 
+  padding: 14px 10px; 
+  font-size: 0.85rem; 
+  color: #000; 
+  border-bottom: 1px solid #f1f5f9; 
+  vertical-align: middle;
+}
+
+.row-hover:hover { 
+  background-color: #f1f5f9; 
+  transition: background 0.2s ease; 
+}
+
+/* ====================================================
+   5. UTILIDADES RESPONSIVE
+   ==================================================== */
+.desktop-only { 
+  display: block; 
+}
+
+.mobile-only { 
+  display: none; 
+}
+
+@media (min-width: 768px) {
+  .btn-text { 
+    display: inline; 
+  }
+}
+
+/* ====================================================
+   6. MEDIA QUERIES (ADAPTACIÓN A PANTALLAS CHICAS)
+   ==================================================== */
+
+/* --- Laptops y Tablets Grandes (Hasta 1024px) --- */
+@media (max-width: 1024px) {
+  .header-section { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 15px; 
+  }
+  .header-actions { 
+    width: 100%; 
+    justify-content: flex-start; 
+    flex-wrap: wrap; 
+    gap: 10px; 
+  }
+}
+
+/* --- Tablets y Móviles (Hasta 768px) --- */
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
 
-  .card-licencia { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-  .card-name { font-size: 1.05rem; color: #0f172a; }
+  .card-licencia { 
+    background: white; 
+    border-radius: 8px; 
+    padding: 15px; 
+    margin-bottom: 12px; 
+    border: 1px solid #e2e8f0; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+  }
+  
+  .card-name { 
+    font-size: 1.05rem; 
+    color: #0f172a; 
+  }
 }
 
+/* --- Smartphones (Hasta 600px) --- */
 @media (max-width: 600px) {
- .full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto;
-  margin-left: 50%;
-  transform: translateX(-50%);
-      /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important; 
-  box-sizing: border-box !important;
-}
+  .full-screen-wrapper {
+    /* Mantiene los 15px laterales que pediste para celulares */
+    padding: 0 15px 20px 15px !important; 
+  }
     
-    .admin-panel { 
-      padding: 0 !important; 
-      border-radius: 0; 
-      box-sizing: border-box !important;
-    }
-}
-
-@media (min-width: 768px) {
-  .btn-text { display: inline; }
+  .admin-panel { 
+    padding: 0 !important; 
+    border-radius: 0; 
+  }
+  
+  .header-section { 
+    padding: 15px !important; 
+    flex-direction: column; 
+    align-items: flex-start; 
+    text-align: left; 
+    gap: 15px; 
+  }
+  
+  .header-info { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start; 
+  }
+  
+  .header-info h4, h4 { 
+    font-size: 1.2rem !important; 
+    margin: 0; 
+    text-align: left; 
+  }
+  
+  .header-actions { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 8px; 
+  }
+  
+  .btn-action { 
+    flex: none; 
+    width: 42px; 
+    height: 42px; 
+    padding: 0; 
+    justify-content: center; 
+    align-items: center; 
+    border-radius: 6px; 
+  }
+  
+  .btn-text { 
+    display: none !important; 
+  }
 }
 </style>

@@ -257,10 +257,16 @@ thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: 
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
-
   .card-licencia { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
   .card-name { font-size: 1.05rem; color: #0f172a; }
+  .contenedor-imagen-superior { height: 150px; }
+  .btn-text { display: inline; }
 }
+
+@media (min-width: 768px) {
+  .btn-text { display: inline; }
+}
+
 
 @media (max-width: 600px) {
  .full-screen-wrapper {
@@ -280,9 +286,24 @@ thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: 
       border-radius: 0; 
       box-sizing: border-box !important;
     }
+    .header-section { 
+        padding: 15px !important; flex-direction: column; 
+        align-items: flex-start; text-align: left; gap: 15px; 
+    }
+    .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
+    .header-info h4, h4 { font-size: 1.2rem !important; margin: 0; text-align: left; }
+    
+    .header-actions { 
+        width: 100%; display: flex; flex-direction: row; 
+        flex-wrap: wrap; justify-content: center; gap: 8px; 
+    }
+    .btn-action { 
+        flex: none; width: 42px; height: 42px; padding: 0; 
+        justify-content: center; align-items: center; border-radius: 6px; 
+    }
+    .btn-text { display: none !important; }
+
 }
 
-@media (min-width: 768px) {
-  .btn-text { display: inline; }
-}
+
 </style>
