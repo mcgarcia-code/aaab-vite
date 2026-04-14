@@ -62,9 +62,14 @@
                 
                 <div class="bg-white contenedor-foto-admin d-flex align-items-center justify-content-center position-relative border-bottom">
                   <img :src="obtenerImagen(modelo.archivo_imagen)" class="img-fluid foto-gestion" alt="Modelo">
-                  <button @click="abrirModalEdicion(modelo)" class="btn-editar-flotante shadow">
-                    <i class="bi bi-pencil-fill"></i>
-                  </button> 
+                  <div class="acciones-flotantes-modelo">
+                    <button @click="abrirModalEdicion(modelo)" class="btn-editar-flotante shadow" title="Editar item">
+                      <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button @click="eliminarItem(modelo)" class="btn-eliminar-flotante shadow" title="Eliminar item">
+                      <i class="bi bi-trash-fill"></i>
+                    </button>
+                  </div>
                 </div>
 
                 <div class="card-body p-3 cuerpo-gris-admin text-center d-flex flex-column">
@@ -148,7 +153,7 @@
               </div>
             </div>
 
-            <div class="col-12 mt-4">
+            <div v-if="modoModal === 'editar'" class="col-12 mt-4">
               <label class="small fw-bold mb-2 d-block border-bottom pb-1">Stock y Precio por Talle</label>
               
               <div v-for="(t, index) in formModal.items" :key="index" class="row g-2 align-items-center mb-2 p-2 bg-light rounded border border-secondary-subtle">
@@ -193,6 +198,8 @@ import { ref, onMounted, onUnmounted, computed, reactive, inject, watch } from '
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head';
+import { WEB_URL } from '@/config/env'
+
 
 useHead({
   title: 'Inventario | AAAB',
@@ -279,7 +286,7 @@ const abrirModalNuevo = () => {
     id_item: null, 
     descripcion: '', 
     precioUnitario: 0, 
-    items: tallesEstandar.map(t => ({ id: null, talle: t, cantidad: 0, precio_unitario: 0 })) 
+    items: []
   };
   mostrarModal.value = true;
 };
@@ -314,6 +321,42 @@ const abrirModalEdicion = (modelo) => {
   mostrarModal.value = true;
 };
 
+const confirmarEliminacionItem = async (item) => {
+  const r = await api.post({
+    entity: 'indumentaria',
+    action: 'eliminarItem',
+    payload: { id_item: item.id_item }
+  });
+
+  if (r.ok) {
+    const indice = listaStock.value.findIndex(modelo => modelo.id_item === item.id_item);
+    if (indice !== -1) {
+      listaStock.value.splice(indice, 1);
+    }
+
+    notificar({
+      titulo: 'Item eliminado',
+      mensaje: 'El item fue eliminado correctamente.',
+      tipo: 'success'
+    });
+  } else {
+    notificar({
+      titulo: 'Error',
+      mensaje: 'No se pudo eliminar el item.',
+      tipo: 'danger'
+    });
+  }
+};
+
+const eliminarItem = (item) => {
+  notificar({
+    titulo: '¿Eliminar Item?',
+    mensaje: `Se eliminará "${item.descripcion}" del inventario.`,
+    tipo: 'danger',
+    alConfirmar: () => confirmarEliminacionItem(item)
+  });
+};
+
 const manejarArchivos = (event) => {
   archivosSeleccionados.value = Array.from(event.target.files);
 };
@@ -329,20 +372,24 @@ const guardarCambios = async () => {
   }
 
   // 1. Buscamos el precio principal (el primero mayor a 0)
-  const precioRef = formModal.value.items.find(t => t.precio_unitario > 0)?.precio_unitario || 0;
+  const precioRef = modoModal.value === 'editar'
+    ? formModal.value.items.find(t => t.precio_unitario > 0)?.precio_unitario || 0
+    : 0;
 
-  if (precioRef <= 0) {
+  if (modoModal.value === 'editar' && precioRef <= 0) {
     notificar({ titulo: 'Atención', mensaje: 'Debes ingresar un precio válido en al menos un talle.', tipo: 'warning' });
     return;
   }
 
   // 2. FORZAMOS A GUARDAR TODOS LOS TALLES. 
-  const itemsTodos = formModal.value.items.map(t => ({
+  const itemsTodos = modoModal.value === 'editar'
+    ? formModal.value.items.map(t => ({
     id: t.id,
     talle: t.talle,
     cantidad: t.cantidad || 0,
     precioUnitario: t.precio_unitario > 0 ? t.precio_unitario : precioRef
-  }));
+    }))
+    : [];
 
   cargando.value = true;
   let res;
@@ -358,7 +405,7 @@ const guardarCambios = async () => {
   } else {
     const formData = new FormData();
     formData.append('descripcion', formModal.value.descripcion.toUpperCase());
-    formData.append('items', JSON.stringify(itemsTodos));
+    formData.append('items', JSON.stringify([]));
     
     if (archivosSeleccionados.value.length > 0) {
       archivosSeleccionados.value.forEach(file => {
@@ -366,7 +413,7 @@ const guardarCambios = async () => {
       });
     }
 
-    res = await api.post({ entity: 'indumentaria', action: 'agregarItem', payload: formData });
+    res = await api.postFile({ entity: 'indumentaria', action: 'agregarItem', payload: formData });
   }
 
   if (res.ok) {
@@ -389,7 +436,7 @@ const limpiarFiltros = () => { filtros.modelo = ''; };
 
 const obtenerImagen = (nombre) => {
   const primeraFoto = nombre ? nombre.split(',')[0] : null;
-  return primeraFoto ? new URL(`/src/assets/fotos/${primeraFoto}`, import.meta.url).href : "https://placehold.co/400x400?text=Indumentaria";
+  return primeraFoto ? `${WEB_URL}/fotos/${encodeURIComponent(primeraFoto)}` : "  https://placehold.co/400x400?text=Indumentaria";
 };
 
 const exportarExcel = () => {
@@ -458,8 +505,11 @@ onUnmounted(() => {
 .input-filtro-custom { font-size: 1rem !important; padding: 0.5rem 1rem; height: auto !important; border-color: #cbd5e1 !important; }
 .input-filtro-custom:focus { box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important; outline: none; border-color: #3b82f6 !important;}
 
-.btn-editar-flotante { position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 50%; background: #212529; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; z-index: 5; transition: background 0.2s; }
+.acciones-flotantes-modelo { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 5; }
+.btn-editar-flotante { width: 32px; height: 32px; border-radius: 50%; background: #212529; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: background 0.2s; }
 .btn-editar-flotante:hover { background: #ef4444; }
+.btn-eliminar-flotante { width: 32px; height: 32px; border-radius: 50%; background: #b91c1c; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: background 0.2s; }
+.btn-eliminar-flotante:hover { background: #7f1d1d; }
 
 .modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
 .modal-content-exito { background: white; border-radius: 16px; border: none; }
