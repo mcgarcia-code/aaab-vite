@@ -243,7 +243,7 @@ import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue';
 import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
-
+import { WEB_URL } from '@/config/env'
 useHead({
   title: 'Realizar Pedido | AAAB',
   meta: [
@@ -286,7 +286,7 @@ const obtenerImagenActual = (prenda) => {
   const index = prenda.fotoActualIndex || 0;
   const archivo = fotos[index] || fotos[0];
   if (archivo) {
-    return new URL(`/src/assets/fotos/${archivo}`, import.meta.url).href;
+    return `${WEB_URL}/fotos/${archivo}`
   }
   return "https://placehold.co/400x400?text=Indumentaria";
 };
