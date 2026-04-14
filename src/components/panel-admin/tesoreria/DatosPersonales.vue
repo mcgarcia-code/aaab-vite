@@ -298,9 +298,10 @@ onMounted(cargarDatos);
 
 /* PAGINACIÓN CON TUS ESTILOS EXACTOS */
 .paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
+.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
+.paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
 
 .table-container { 
   width: 100%; overflow: auto; max-height: 75vh; 
@@ -360,98 +361,135 @@ thead tr.filter-row td.sticky-col {
 .dot-inactive { background: #ef4444; }
 
 /* ====================================================
-   ESTILOS MOBILE (CARDS Y FILTROS)
+   📱 RESPONSIVE DESIGN UNIFICADO (Tiered Layout)
    ==================================================== */
+
+/* --- Estilos base para visibilidad --- */
 .desktop-only { display: block; }
 .mobile-only { display: none; }
 .mobile-only-flex { display: none; }
 
-.mobile-filter-panel { 
-  background: white; 
-  padding: 15px 20px; 
-  border-radius: 8px; 
-  border: 1px solid #e2e8f0; 
-  margin-bottom: 15px;
+/* --- 1. LAPTOPS Y TABLETS GRANDES (Hasta 1024px) --- */
+@media (max-width: 1024px) {
+  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+  .btn-action { flex: 1; justify-content: center; min-width: 0; white-space: nowrap; }
 }
 
-.filter-grid-mobile { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 12px; 
-}
-
-.filter-input-mobile {
-  padding: 10px; 
-  border: 1px solid #cbd5e1; 
-  border-radius: 6px; 
-  font-size: 16px; /* Para evitar el zoom en iOS */
-  width: 100%; 
-  outline: none; 
-  background: #f8fafc;
-  color: #334155;
-}
-
-@media (min-width: 769px) {
-  .filter-input-mobile {
-    font-size: 0.85rem;
-  }
-}
-
-.filter-grid-mobile select.filter-input-mobile {
-  grid-column: span 2; 
-}
-
-.filter-input-mobile:focus {
-  border-color: #3b82f6;
-  background: white;
-}
-
-.filter-input-mobile::placeholder {
-  color: #94a3b8;
-}
-
-/* =========================================
-   MEDIA QUERIES PARA RESPONSIVE DESIGN
-   ========================================= */
+/* --- 2. TABLETS Y MÓVILES (Hasta 768px) --- */
 @media (max-width: 768px) {
   .full-screen-wrapper { padding: 10px; }
   .admin-panel { padding: 10px; }
 
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
-
-  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+  .mobile-only-flex { display: flex !important; }
   
-  .paginacion { justify-content: center; }
+  .paginacion { justify-content: center; margin-top: 20px; }
 
-  /* Estilos de las tarjetas (cards) */
-  .card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-  .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
-  .card-name { display: flex; align-items: center; gap: 8px; font-size: 1.05rem; color: #0f172a; }
-  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-  .card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
-  .text-xs { font-size: 0.75rem; }
+  /* PANEL DE FILTROS MÓVIL */
+  .mobile-filter-panel { 
+    background: white; 
+    padding: 15px 20px; 
+    border-radius: 8px; 
+    border: 1px solid #e2e8f0; 
+    margin-bottom: 15px;
+  }
+  .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .filter-input-mobile {
+    padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; 
+    font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #334155;
+  }
 
-  /* Color para filas inactivas en formato tarjeta */
+  /* ESTILOS DE LAS CARDS DE ÁRBITROS (Detallado) */
+  .card-arbitro { 
+    background: white; 
+    border-radius: 8px; 
+    padding: 15px; 
+    margin-bottom: 12px; 
+    border: 1px solid #e2e8f0; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+  }
+  .card-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    border-bottom: 1px solid #f1f5f9; 
+    padding-bottom: 10px; 
+    margin-bottom: 10px; 
+  }
+  .card-name { font-size: 1.05rem; color: #0f172a; }
+  .card-row { display: flex; justify-content: space-between; font-size: 0.9rem; color: #475569; margin-bottom: 8px; }
+  .card-info p { font-size: 0.9rem; color: #475569; margin: 4px 0; }
+  
+  /* Estados de Fila en Cards */
+  .card-arbitro.fila-roja { background-color: #fca5a5 !important; border-color: #ef4444; }
+  .card-arbitro.fila-amarilla { background-color: #fef08a !important; border-color: #facc15; }
+  .card-arbitro.fila-des { background-color: #93e2ab !important; border-color: #22c55e; }
   .card-arbitro.fila-inactiva { background-color: #ef4444 !important; border-color: #dc2626; }
-  .card-arbitro.fila-inactiva .card-name,
-  .card-arbitro.fila-inactiva .card-row,
-  .card-arbitro.fila-inactiva .card-info p,
-  .card-arbitro.fila-inactiva .card-header .text-xs { color: #fff !important; }
+  
+  /* Reset de texto para cards coloreadas */
+  .card-arbitro.fila-roja .card-name, .card-arbitro.fila-roja .card-row, 
+  .card-arbitro.fila-roja .card-info p, .card-arbitro.fila-inactiva .card-name { 
+    color: #000 !important; 
+  }
 }
 
+/* --- 3. SMARTPHONES (Hasta 600px) --- */
 @media (max-width: 600px) {
-  .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; gap: 8px; }
-  .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
-  .btn-text { display: none !important; }
-  .mobile-only-flex { display: flex !important; }
+  /* Corrección de márgenes: Damos 12px de "aire" a los costados */
+  .full-screen-wrapper { 
+    padding: 0 12px !important; 
+    width: 100% !important; 
+    margin: 0 !important; 
+    transform: none !important; 
+    left: 0 !important;
+  }
+  .admin-panel { border-radius: 0; padding: 15px 0 !important; }
 
-  /* Ajustes en tablas chicas para liberar las columnas fijas */
+  /* CABECERA: Título a la izquierda, Botones centro */
+  .header-section { 
+    padding: 15px !important; 
+    flex-direction: column; 
+    align-items: flex-start; /* Título siempre a la izquierda */
+    text-align: left; 
+    gap: 15px; 
+  }
+
+  .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
+  
+  /* Fuentes solicitadas */
+  .header-info h4, h2 { font-size: 1.25rem !important; margin: 0; text-align: left; }
+  .header-info span.counter { font-size: 0.85rem !important; }
+
+  /* BOTONES DE ACCIÓN: Centrados abajo */
+  .header-actions { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: wrap; 
+    justify-content: center; /* Centramos los botones */
+    gap: 10px; 
+  }
+
+  .btn-action { 
+    flex: none; 
+    width: 42px; 
+    height: 42px; 
+    padding: 0; 
+    justify-content: center; 
+  }
+
+  .btn-text { display: none !important; }
+
+  /* Liberar tablas para evitar desbordes */
   .sticky-col { position: static !important; box-shadow: none !important; }
   .col-nombre { box-shadow: none !important; }
-  thead tr.main-header th.sticky-col, thead tr.filter-row td.sticky-col { z-index: 10 !important; }
-  thead tr.main-header th { z-index: 20 !important; }
-  thead tr.filter-row td { z-index: 15 !important; }
+  
+  /* Ajuste de filtros para ocupar el ancho total en móvil */
+  .filter-grid-mobile { grid-template-columns: 1fr; }
 }
+
+.animate__animated { animation-duration: 0.5s; }
+
 </style>

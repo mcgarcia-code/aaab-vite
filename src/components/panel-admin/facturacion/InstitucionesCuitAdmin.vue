@@ -9,7 +9,7 @@
         
         <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
           <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2 flex-wrap" style="font-size: 1.25rem;">
               <i class="bi bi-building me-1"></i> Gestión de Instituciones
             </h4>
             <span class="counter mt-1 d-block text-muted">Total: {{ totalFiltrados }} clubes</span>
@@ -167,17 +167,19 @@
 
     <Teleport to="body">
       <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
-        <div class="modal-content-exito animate__animated animate__zoomIn shadow-lg" style="max-width: 600px; width: 95%; border-radius: 20px;">
+        <div class="modal-content-exito animate__animated animate__zoomIn shadow-lg p-4 p-md-5" style="max-width: 600px; width: 95%; border-radius: 20px;">
 
-          <div class="icon-circle-exito bg-info-subtle mb-3" :class="modoModal === 'editar' ? 'text-primary' : 'text-success'">
-            <span class="material-icons" style="font-size: 32px;">{{ modoModal === 'editar' ? 'domain' : 'domain_add' }}</span>
+          <div class="flex-shrink-0 text-center mb-4">
+            <div class="icon-circle-exito bg-info-subtle mb-3" :class="modoModal === 'editar' ? 'text-primary' : 'text-success'">
+              <span class="material-icons" style="font-size: 32px;">{{ modoModal === 'editar' ? 'domain' : 'domain_add' }}</span>
+            </div>
+            <h4 class="fw-bold m-0 text-dark">
+              {{ modoModal === 'editar' ? 'Editar Institución' : 'Registrar Nueva Institución' }}
+            </h4>
+            <p v-if="modoModal === 'editar'" class="text-muted small mt-1 mb-0">{{ formModal.club }} (ID #{{ formModal.id }})</p>
           </div>
-          <h4 class="fw-bold m-0 text-dark">
-            {{ modoModal === 'editar' ? 'Editar Institución' : 'Registrar Nueva Institución' }}
-          </h4>
-          <p v-if="modoModal === 'editar'" class="text-muted small mt-1 mb-0">{{ formModal.club }} (ID #{{ formModal.id }})</p>
 
-          <div class="row g-3 text-start mt-3" style="max-height: 60vh; overflow-y: auto; padding: 15px;">
+          <div class="row g-3 text-start mt-2" style="max-height: 60vh; overflow-y: auto; padding: 5px;">
             <div class="col-12 seccion-titulo border-secondary-subtle">Datos de la Institución</div>
             
             <div class="col-12">
@@ -215,7 +217,7 @@
             </div>
           </div>
 
-          <div class="d-flex gap-3 justify-content-center mt-4">
+          <div class="d-flex gap-3 justify-content-center mt-4 pt-4 border-top">
             <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold" style="background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; width: 100%;">CANCELAR</button>
             <button @click="guardarDatos" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargando" style="background: #1e293b; width: 100%;">
               <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
@@ -398,36 +400,100 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 80px; box-sizing: border-box; }
-.admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
+/* ====================================================
+   1. BASE Y ESTRUCTURA GENERAL
+   ==================================================== */
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto !important;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  padding: 20px;
+  padding-bottom: 120px; 
+}
 
-/* CABECERA ORIGINAL */
-.header-section { background: white; padding: 15px 25px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
+.admin-panel {
+  width: 100%;
+  max-width: 100%;
+  padding: 20px;
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  color: #000;
+  background-color: #0f172a;
+  min-height: 100vh;
+  border-radius: 12px;
+}
+
+.header-section {
+  background: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  border-left: 5px solid #ef4444;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  align-items: center;
+}
+
 .header-info { display: flex; flex-direction: column; }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
 .counter { font-size: 0.85rem; color: #000000; }
 
 .header-actions { display: flex; gap: 8px; }
-.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
+.btn-action { 
+  border: none; padding: 8px 12px; border-radius: 4px; 
+  font-weight: bold; cursor: pointer; display: flex; 
+  align-items: center; justify-content: center; gap: 5px; 
+  font-size: 0.75rem; transition: opacity 0.2s; 
+}
+
 .btn-blue { background: #3b82f6; color: white; }
 .btn-clear { background: #e2e8f0; color: #000; }
 .btn-clear-checks { background: #fee2e2; color: #ef4444; } 
 .btn-export { background: #10b981; color: white; }
 .btn-text { display: inline; }
 
-/* ESTILOS EXACTOS DE PAGINACIÓN SOLICITADOS */
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+/* ====================================================
+   2. PAGINACIÓN
+   ==================================================== */
+.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+.btn-paginacion { 
+  border: none; background: #f8fafc; color: #0f172a; 
+  padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; 
+  font-weight: 700; cursor: pointer; transition: background 0.2s; 
+}
+.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #0f172a; font-size: 0.85rem; font-weight: 600; } /* Ajustado color a oscuro para fondo blanco */
+.paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
 
-/* TABLA DESKTOP ESTRUCTURA */
-.table-container { width: 100%; overflow: auto; max-height: 85vh; background: white; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+/* ====================================================
+   3. TABLA DESKTOP ESTRUCTURA
+   ==================================================== */
+.table-container { 
+  width: 100%; overflow: auto; max-height: 85vh; 
+  background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+}
 table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #f8fafc !important; padding: 12px 8px; border-bottom: 1px solid #cbd5e1; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;}
-thead tr.filter-row td { position: sticky; top: 35px; z-index: 40; background: #f1F5F9 !important; padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; margin: 0; }
 
-.sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; box-shadow: inset -1px 0 0 #e2e8f0; background-clip: padding-box; }
+thead tr.main-header th { 
+  position: sticky; top: 0; z-index: 50; background: #f8fafc !important; 
+  padding: 12px 8px; border-bottom: 1px solid #cbd5e1; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; 
+  font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
+}
+thead tr.filter-row td { 
+  position: sticky; top: 35px; z-index: 40; background: #f1F5F9 !important; 
+  padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; margin: 0; 
+}
+
+.sticky-col { 
+  position: sticky !important; z-index: 60 !important; 
+  background: white !important; border-right: 1px solid #e2e8f0; 
+  box-shadow: inset -1px 0 0 #e2e8f0; background-clip: padding-box; 
+}
 thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
 thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
 
@@ -435,42 +501,67 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 .col-acciones { left: 60px; width: 90px; }
 .col-club { left: 150px; width: 220px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 
+.cell-ro { padding: 10px 8px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; }
 .filter-input { font-size: 16px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
 
-/* ====================================================
-   📱 RESPONSIVE & DISPOSITIVOS
-   ==================================================== */
-
-.desktop-only { display: block; }
-.mobile-only { display: none; }
-.mobile-only-flex { display: none; }
-
-/* --- 1. AJUSTES TABLA Y FILTROS DESKTOP --- */
 @media (min-width: 769px) { 
   .filter-input { font-size: 0.75rem; height: 28px; } 
 }
 
-.cell-ro { padding: 10px 8px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; }
+/* Componentes de Tabla */
 .seccion-titulo { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; margin-top: 15px; width: 100%; }
 
-/* Botones de acción en tabla */
-.btn-editar, .btn-eliminar { display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+.btn-editar, .btn-eliminar { 
+  display: inline-flex; align-items: center; justify-content: center; 
+  border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; 
+}
 .btn-editar { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
 .btn-editar:hover { background: #dbeafe; }
 .btn-eliminar { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
 .btn-eliminar:hover { background: #fee2e2; }
 
-/* --- 2. MODALES --- */
-.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.modal-content-exito { background: white; border-radius: 20px; border: none; text-align: center; }
-.icon-circle-exito { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+/* ====================================================
+   4. MODALES
+   ==================================================== */
+.modal-overlay-exito { 
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+  background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); 
+  display: flex; align-items: center; justify-content: center; z-index: 10000; 
+}
+
+/* Modales ajustados con más padding */
+.modal-content-exito { 
+  background: white; border-radius: 20px; border: none; text-align: center; 
+  padding: 40px !important; /* Padding base generoso */
+}
+
+.icon-circle-exito { 
+  width: 70px; height: 70px; border-radius: 50%; display: flex; 
+  align-items: center; justify-content: center; margin: 0 auto; 
+}
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
 .bg-success-light { background: #dcfce7; color: #166534; }
 
-.custom-input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; background-color: #ffffff; transition: all 0.3s ease; }
+.custom-input { 
+  border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; 
+  font-size: 0.95rem; background-color: #ffffff; transition: all 0.3s ease; 
+}
 .custom-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); outline: none; }
 
-/* --- 3. TABLETS Y MÓVILES (Hasta 768px) --- */
+/* ====================================================
+   5. 📱 RESPONSIVE DESIGN (Tiered Layout)
+   ==================================================== */
+.desktop-only { display: block; }
+.mobile-only { display: none; }
+.mobile-only-flex { display: none; }
+
+/* Laptops y Tablets (Hasta 1024px) */
+@media (max-width: 1024px) {
+  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+}
+
+/* Tablets y Móviles (Hasta 768px) */
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
@@ -489,41 +580,45 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
   .btn-eliminar-mobile { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 8px 12px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
 }
 
-/* --- 4. SMARTPHONES (Hasta 600px) --- */
+/* Smartphones (Hasta 600px) */
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0; width: 100vw; }
+  /* AIRE EN MÓVILES: Márgenes de 12px para evitar pegarse a los bordes */
+  .full-screen-wrapper { 
+    padding: 0 12px !important; 
+    width: 100% !important; 
+    margin: 0 !important; 
+    transform: none !important; 
+    left: 0 !important; 
+  }
+  .admin-panel { padding: 15px 0 !important; border-radius: 0; }
   
   /* ESTRUCTURA CABECERA: Título Izquierda, Botones Centro */
   .header-section { 
-    padding: 15px; 
+    padding: 15px !important; 
     flex-direction: column; 
-    align-items: flex-start; 
+    align-items: flex-start; /* Mantiene la barra roja a la izq */
     text-align: left; 
     gap: 15px; 
   }
   
   .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%;}
-  
-  /* Fuentes específicas */
   .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
   .header-info span.counter { font-size: 0.85rem !important; }
   
   /* Centrado de botones de acción */
   .header-actions { 
-    width: 100%; 
-    display: flex; 
-    flex-direction: row; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 8px; 
+    width: 100%; display: flex; flex-direction: row; 
+    flex-wrap: wrap; justify-content: center; gap: 10px; 
   }
-  
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
   .btn-action span.material-icons { margin: 0; }
   .btn-text { display: none !important; }
+
+  /* Ajuste específico para el padding de modales en móviles */
+  .modal-content-exito {
+    padding: 30px 15px !important;
+  }
 }
 
 .animate__animated { animation-duration: 0.5s; }
-
 </style>

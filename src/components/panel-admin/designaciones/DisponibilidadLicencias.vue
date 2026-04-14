@@ -359,6 +359,14 @@ const filtros = reactive({
   designado_domingo: ''
 });
 
+const cambiarPagina = (direccion) => {
+  const nuevaPagina = paginaActual.value + direccion;
+
+  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value) {
+    paginaActual.value = nuevaPagina;
+  }
+};
+
 const designadosSabado = ref(new Set());
 const designadosDomingo = ref(new Set());
 

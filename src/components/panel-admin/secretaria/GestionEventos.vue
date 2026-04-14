@@ -484,7 +484,7 @@ onMounted(obtenerEventos);
 
 <style scoped>
 /* ====================================================
-   AJUSTES GENERALES DEL CONTENEDOR Y FOOTER
+   1. BASE Y ESTRUCTURA GENERAL
    ==================================================== */
 .full-screen-wrapper {
   position: relative;
@@ -505,11 +505,13 @@ onMounted(obtenerEventos);
   color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
+  border-radius: 12px; /* Coherencia con el resto del sistema */
 }
 
+/* Cabecera Desktop */
 .header-section { 
   background: white; 
-  padding: 15px; 
+  padding: 15px 25px; 
   border-radius: 8px; 
   display: flex; 
   justify-content: space-between; 
@@ -524,22 +526,15 @@ onMounted(obtenerEventos);
 .counter { font-size: 0.85rem; color: #000000; }
 
 /* ====================================================
-   BOTONES DE ACCIÓN (CABECERA)
+   2. BOTONES Y COMPONENTES
    ==================================================== */
 .header-actions { display: flex; gap: 8px; }
 
 .btn-action { 
-  border: none; 
-  padding: 8px 12px; 
-  border-radius: 6px; 
-  font-weight: bold; 
-  cursor: pointer; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center;
-  gap: 5px; 
-  font-size: 0.75rem; 
-  transition: opacity 0.2s, transform 0.1s; 
+  border: none; padding: 8px 12px; border-radius: 6px; 
+  font-weight: bold; cursor: pointer; display: flex; 
+  align-items: center; justify-content: center; gap: 5px; 
+  font-size: 0.75rem; transition: opacity 0.2s, transform 0.1s; 
 }
 .btn-action:hover { opacity: 0.85; }
 .btn-action:active { transform: scale(0.95); }
@@ -548,311 +543,181 @@ onMounted(obtenerEventos);
 .btn-clear-checks { background: #fee2e2; color: #ef4444; } 
 .btn-export { background: #10b981; color: white; }
 .btn-blue { background: #3b82f6; color: white; }
-
 .btn-text { display: inline; }
 
-/* ====================================================
-   PAGINACIÓN
-   ==================================================== */
+.btn-editar, .btn-eliminar { 
+  display: inline-flex; align-items: center; justify-content: center; 
+  border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: none;
+}
+.btn-editar { background: #eff6ff; color: #1d4ed8; }
+.btn-editar:hover { background: #dbeafe; }
+.btn-eliminar { background: #fee2e2; color: #dc2626; }
+.btn-eliminar:hover { background: #fecaca; }
+.btn-refresh { background: none; border: none; color: #64748b; cursor: pointer; }
+
+/* Paginación */
 .paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
 .btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
 .btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
 .btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
 .paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
 
-/* ====================================================
-   TABLA DESKTOP 
-   ==================================================== */
-.table-container { 
-  width: 100%;
-  overflow: auto; 
-  max-height: calc(100vh - 220px); 
-  background: white; 
-  border-radius: 8px; 
-  border: 1px solid #e2e8f0; 
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-}
-
-table { 
-  width: 100%;
-  min-width: max-content; 
-  border-collapse: separate !important; 
-  border-spacing: 0; 
-  font-size: 0.85rem; 
-}
-
-thead tr.main-header th { 
-  position: sticky; 
-  top: 0; 
-  z-index: 50; 
-  background: #f8fafc !important; 
-  padding: 12px 8px; 
-  border-bottom: 1px solid #cbd5e1; 
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem; 
-  color: #000; 
-  text-transform: uppercase; 
-  font-weight: 800; 
-  margin: 0;
-}
-
-/* FILA DE FILTROS FIJA */
-thead tr.filter-row td { 
-  position: sticky;
-  top: 41px; 
-  z-index: 40; 
-  background: #f1F5F9 !important; 
-  padding: 6px 8px 10px 8px; 
-  border-bottom: 2px solid #cbd5e1; 
-  margin: 0;
-}
-
-/* COLUMNAS CONGELADAS Y LIMITES DE ANCHO */
-.col-id { left: 0; width: 100px; text-align: center; } /* Fecha */
-.col-acciones { left: 100px; width: 90px; }
-
-.col-tema { 
-  min-width: 180px; 
-  max-width: 250px; 
-  white-space: normal !important; 
-  word-wrap: break-word; 
-}
-.col-desc { 
-  min-width: 180px; 
-  max-width: 300px; 
-  white-space: normal !important; 
-  word-wrap: break-word; 
-}
-
-.sticky-col { 
-  position: sticky !important; 
-  background: white !important; 
-  border-right: 1px solid #e2e8f0;
-}
-
-/* INTERSECCIONES DE CONGELADO (Z-INDEX) */
-thead tr.main-header th.sticky-col { z-index: 60 !important; background-color: #f8fafc !important; }
-thead tr.filter-row td.sticky-col { z-index: 55 !important; background-color: #f1f5f9 !important; }
-tbody td.sticky-col { z-index: 30 !important; }
-
-/* CELDAS Y ESTADOS DE FILA */
-.cell-ro {
-  padding: 10px 8px;
-  font-size: 0.85rem;
-  color: inherit; 
-  border-bottom: 1px solid #f1f5f9;
-}
-
-/* Aplicamos el font-size de 16px para evitar el zoom en inputs móviles y desktop si hace falta */
-.filter-input { font-size: 16px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
-
-@media (min-width: 769px) {
-  .filter-input { font-size: 0.75rem; height: 28px; }
-}
-
-/* BOTONES DE EDICIÓN E HISTORIAL EN TABLA */
-.btn-editar, .btn-eliminar { display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: none;}
-.btn-editar { background: #eff6ff; color: #1d4ed8; }
-.btn-editar:hover { background: #dbeafe; }
-.btn-eliminar { background: #fee2e2; color: #dc2626; }
-.btn-eliminar:hover { background: #fecaca; }
-
-.btn-refresh { background: none; border: none; color: #64748b; cursor: pointer; }
-
-/* BADGES ESTADO EVENTOS */
+/* Badges de Eventos */
 .badge-category {
-  font-size: 0.65rem;
-  padding: 4px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  font-weight: 800;
-  display: inline-block;
+  font-size: 0.65rem; padding: 4px 8px; border-radius: 6px;
+  text-transform: uppercase; font-weight: 800; display: inline-block;
 }
 .cat-reunion { background: #e0f2fe; color: #0369a1; }
 .cat-recordatorio { background: #fef9c3; color: #a16207; }
 .cat-urgente { background: #fee2e2; color: #b91c1c; }
-
-.badge-status-sm {
-  padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;
-}
+.badge-status-sm { padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; }
 
 /* ====================================================
-   PANEL DE FILTROS MÓVIL (NUEVO DISEÑO EN GRILLA CSS)
+   3. TABLA DESKTOP
    ==================================================== */
-.mobile-filter-panel { 
-  background: white; 
-  padding: 15px 20px; 
-  border-radius: 8px; 
-  border: 1px solid #e2e8f0; 
-  margin-bottom: 15px;
+.table-container { 
+  width: 100%; overflow: auto; max-height: calc(100vh - 220px); 
+  background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
 }
-.filter-grid-mobile { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 12px; 
+table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
+
+thead tr.main-header th { 
+  position: sticky; top: 0; z-index: 50; background: #f8fafc !important; 
+  padding: 12px 8px; border-bottom: 1px solid #cbd5e1; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
 }
-.form-group-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.form-group-mobile.full-width {
-  grid-column: span 2;
-}
-.form-group-mobile label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
-}
-.form-group-mobile input, 
-.form-group-mobile select { 
-  padding: 8px 10px; 
-  border: 1px solid #cbd5e1; 
-  border-radius: 6px; 
-  font-size: 16px; /* 16px para evitar zoom en iOS */
-  width: 100%; 
-  outline: none; 
-  background: #f8fafc;
-  color: #0f172a;
+thead tr.filter-row td { 
+  position: sticky; top: 41px; z-index: 40; background: #f1F5F9 !important; 
+  padding: 6px 8px 10px 8px; border-bottom: 2px solid #cbd5e1; margin: 0;
 }
 
-@media (min-width: 769px) {
-  .form-group-mobile input, 
-  .form-group-mobile select { 
-    font-size: 0.85rem; 
-  }
-}
+.col-id { left: 0; width: 100px; text-align: center; } 
+.col-acciones { left: 100px; width: 90px; }
+.col-tema { min-width: 180px; max-width: 250px; white-space: normal !important; word-wrap: break-word; }
+.col-desc { min-width: 180px; max-width: 300px; white-space: normal !important; word-wrap: break-word; }
 
-.form-group-mobile input:focus, 
-.form-group-mobile select:focus {
-  border-color: #3b82f6;
-  background: white;
-}
+.sticky-col { position: sticky !important; background: white !important; border-right: 1px solid #e2e8f0; }
+thead tr.main-header th.sticky-col { z-index: 60 !important; background-color: #f8fafc !important; }
+thead tr.filter-row td.sticky-col { z-index: 55 !important; background-color: #f1f5f9 !important; }
+tbody td.sticky-col { z-index: 30 !important; }
+
+.cell-ro { padding: 10px 8px; font-size: 0.85rem; color: inherit; border-bottom: 1px solid #f1f5f9; }
+
+.filter-input { font-size: 16px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
+@media (min-width: 769px) { .filter-input { font-size: 0.75rem; height: 28px; } }
 
 /* ====================================================
-   MODALES (ESTILOS GENERALES)
+   4. MODALES (Con más aire para Eventos)
    ==================================================== */
-.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.modal-content-exito { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 750px; text-align: center; color: #000; }
-.icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.modal-overlay-exito { 
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+  background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); 
+  display: flex; align-items: center; justify-content: center; z-index: 10000; 
+}
+.modal-content-exito { 
+  background: white; border-radius: 20px; 
+  padding: 40px !important; /* Más padding para que respire en Desktop */
+  width: 90%; max-width: 750px; text-align: center; color: #000; 
+}
+.icon-circle-exito { 
+  width: 80px; height: 80px; border-radius: 50%; 
+  display: flex; align-items: center; justify-content: center; margin: 0 auto; 
+}
 .bg-success-light { background: #dcfce7; color: #166534; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
 
 /* ====================================================
-   📱 RESPONSIVE DESIGN (Tiered Layout)
+   5. 📱 RESPONSIVE DESIGN (Tiered Layout)
    ==================================================== */
-
 .desktop-only { display: block; }
 .mobile-only { display: none; }
 .mobile-only-flex { display: none; }
 
-/* --- 1. LAPTOPS Y TABLETS GRANDES (Hasta 1024px) --- */
+/* Laptops y Tablets Grandes (Hasta 1024px) */
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
   .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
 }
 
-/* --- 2. TABLETS Y MÓVILES (Hasta 768px) --- */
+/* Tablets y Móviles (Hasta 768px) */
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
   
-  /* ESTILOS DE LAS TARJETAS MÓVILES */
+  /* PANEL DE FILTROS MÓVIL */
+  .mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+  .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  
+  .form-group-mobile { display: flex; flex-direction: column; gap: 4px; }
+  .form-group-mobile.full-width { grid-column: span 2; }
+  .form-group-mobile label { font-size: 0.75rem; font-weight: 700; color: #64748b; }
+  .form-group-mobile input, .form-group-mobile select { 
+    padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; 
+    font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #0f172a;
+  }
+  .form-group-mobile input:focus, .form-group-mobile select:focus { border-color: #3b82f6; background: white; }
+
+  /* TARJETAS MÓVILES */
   .card-arbitro { 
-    background: white; 
-    border-radius: 8px; 
-    padding: 15px; 
-    margin-bottom: 12px; 
-    border: 1px solid #e2e8f0; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+    background: white; border-radius: 8px; padding: 15px; 
+    margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
   }
-  .card-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: flex-start; 
-    border-bottom: 1px solid #f1f5f9; 
-    padding-bottom: 10px; 
-    margin-bottom: 10px; 
-  }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
   .card-name { font-size: 1.05rem; color: #0f172a; }
   .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
   
-  /* BOTONES DE ACCIÓN EN CARDS */
-  .btn-editar-mobile { 
-    background: #eff6ff; 
-    border: 1px solid #bfdbfe; 
-    color: #1d4ed8; 
-    padding: 10px; 
-    border-radius: 6px; 
-    font-weight: bold; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    gap: 8px; 
-    cursor: pointer; 
-  }
-  .btn-eliminar-mobile { 
-    background: #fee2e2; 
-    border: 1px solid #fecaca; 
-    color: #dc2626; 
-    padding: 10px 14px; 
-    border-radius: 6px; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    gap: 8px; 
-    cursor: pointer; 
-    font-weight: bold;
-  }
+  .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
+  .btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; font-weight: bold;}
 }
 
-/* --- 3. SMARTPHONES (Hasta 600px) --- */
+/* Smartphones (Hasta 600px) */
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0; width: 100vw; }
+  /* AIRE A LOS COSTADOS EN MÓVIL */
+  .full-screen-wrapper { 
+    padding: 0 12px !important; 
+    width: 100% !important; 
+    margin: 0 !important; 
+    transform: none !important; 
+    left: 0 !important;
+  }
+  .admin-panel { padding: 15px 0 !important; border-radius: 0; }
   
-  /* CABECERA: Título izquierda, botones centrados abajo */
+  /* CABECERA: Título Izquierda, Botones Centro */
   .header-section { 
-    padding: 15px; 
+    padding: 15px !important; 
     flex-direction: column; 
-    align-items: flex-start; 
+    align-items: flex-start; /* Barra roja y título a la izquierda */
     text-align: left; 
     gap: 15px; 
   }
   
   .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
-  
-  /* Tamaños de fuente solicitados */
   .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
   .header-info span.counter { font-size: 0.85rem !important; }
   
-  /* Botones 42x42 centrados */
+  /* Botones de acción 42x42 centrados abajo */
   .header-actions { 
-    width: 100%; 
-    display: flex; 
-    flex-direction: row; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 8px; 
+    width: 100%; display: flex; flex-direction: row; 
+    flex-wrap: wrap; justify-content: center; gap: 10px; 
   }
-  .btn-action { 
-    flex: none; 
-    width: 42px; 
-    height: 42px; 
-    padding: 0; 
-    justify-content: center; 
-  }
-  
+  .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
+  .btn-action span.material-icons { margin: 0; }
   .btn-text { display: none !important; }
   .mobile-only-flex { display: flex !important; }
 
-  /* Ajuste de inputs para evitar zoom en iOS */
-  .filter-grid-mobile input, 
-  .filter-grid-mobile select { 
-    font-size: 16px !important; 
+  /* AJUSTE DE PADDING EN MODALES MÓVILES (Agregar/Editar Eventos) */
+  .modal-content-exito {
+    padding: 30px 20px !important; /* Libera los costados pero mantiene aire arriba y abajo */
+    max-height: 90vh; /* Evita que el modal sea más alto que la pantalla */
+    overflow-y: auto; /* Scroll interno si el formulario de evento es largo */
   }
+
+  /* Filtros móviles responsivos */
+  .filter-grid-mobile { grid-template-columns: 1fr; }
+  .form-group-mobile.full-width { grid-column: span 1; }
 }
 
 .animate__animated { animation-duration: 0.5s; }
-
 </style>
