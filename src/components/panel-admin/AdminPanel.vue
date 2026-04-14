@@ -135,9 +135,73 @@ useHead({
   transform: translateY(-1px);
 }
 
-/* --- RESPONSIVE --- */
-@media (max-width: 576px) {
-  .icon-admin-circle { width: 60px; height: 60px; font-size: 1.5rem; }
-  h2 { font-size: 1.25rem; }
+/* ====================================================
+   📱 RESPONSIVE DESIGN (Módulos Administrativos)
+   ==================================================== */
+
+/* --- 1. TABLETS Y DISPOSITIVOS MEDIANOS (Hasta 768px) --- */
+@media (max-width: 768px) {
+  .icon-admin-circle { width: 70px; height: 70px; font-size: 1.75rem; }
+  h2 { font-size: 1.4rem; }
 }
+
+/* --- 2. SMARTPHONES (Hasta 600px) --- */
+@media (max-width: 600px) {
+  .admin-panel { padding: 10px; border-radius: 0; }
+  .full-screen-wrapper { padding: 0; width: 100vw; }
+
+  /* Ajuste de Icono: quitamos '0 auto' para que no se centre */
+  .icon-admin-circle { 
+    width: 60px; 
+    height: 60px; 
+    font-size: 1.5rem; 
+    margin: 0; /* Alineado a la izquierda */
+  }
+
+  /* ESTRUCTURA CABECERA */
+  .header-section { 
+    padding: 15px; 
+    flex-direction: column; 
+    align-items: flex-start; /* Todo el contenido al inicio (izquierda) */
+    text-align: left; 
+    gap: 15px; 
+  }
+
+  .header-info { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start; 
+  }
+  
+  /* Forzamos que el texto esté alineado a la izquierda/justificado */
+  h2, .header-info h4, .header-info p { 
+    font-size: 1.25rem !important; 
+    margin: 0; 
+    text-align: left; /* O 'justify' si prefieres que bloquee los bordes */
+    width: 100%;
+  }
+
+  /* Centrado de botones: Esto se mantiene centrado debajo como pediste */
+  .header-actions { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 8px; 
+  }
+
+  .btn-action { 
+    flex: none; 
+    width: 42px; 
+    height: 42px; 
+    padding: 0; 
+    justify-content: center; 
+  }
+  
+  .btn-text { display: none !important; }
+}
+
+.animate__animated { animation-duration: 0.5s; }
 </style>
