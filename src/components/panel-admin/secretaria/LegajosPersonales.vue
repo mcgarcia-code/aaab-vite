@@ -53,7 +53,7 @@
           </div>
         </div>
 
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
+        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
             <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
@@ -79,7 +79,6 @@
         </div>
 
         <div class="card-body p-3 p-md-4">
-          
           <div class="table-container shadow-sm desktop-only border" style="border-radius: 8px;">
             <table>
               <thead>
@@ -157,7 +156,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="a in arbitrosPaginados" :key="a.id" :class="{ 'fila-inactiva': a.es_activo == 0 }" class="row-hover">
+                <tr v-for="a in arbitrosPaginados" :key="a.id" :class="{ 'fila-inactiva': a.es_activo == 0 }">
                   <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ a.id }}</td>
                   <td class="sticky-col col-acciones cell-ro text-center">
                     <div class="d-flex justify-content-center gap-1">
@@ -192,18 +191,17 @@
                   <td class="cell-ro text-dark">{{ a.telefonocontacto }}</td>
                   <td class="cell-ro text-dark">{{ a.parentescocontacto }}</td>
                   <td class="cell-ro text-dark">{{ a.movilidad }}</td>
-                  <td class="cell-ro text-center text-dark">{{ a.disponibilidad_sabado }}</td>
+                  <td class="col-dni-compact cell-ro text-center text-dark">{{ a.disponibilidad_sabado }}</td>
                   <td class="cell-ro text-dark">{{ a.disponibilidad_sabado_desde }}</td>
                   <td class="cell-ro text-dark">{{ a.disponibilidad_sabado_hasta }}</td>
-                  <td class="cell-ro text-center text-dark">{{ a.disponibilidad_domingo }}</td>
+                  <td class="col-dni-compact cell-ro text-center text-dark">{{ a.disponibilidad_domingo }}</td>
                   <td class="cell-ro text-dark">{{ a.disponibilidad_domingo_desde }}</td>
                   <td class="cell-ro text-dark">{{ a.disponibilidad_domingo_hasta }}</td>
-                  <td class="cell-ro text-center text-dark">{{ a.juega_handball }}</td>
+                  <td class="col-dni-compact cell-ro text-center text-dark">{{ a.juega_handball }}</td>
                   <td class="cell-ro text-dark">{{ a.donde_juega }}</td>
                   <td class="cell-ro text-dark">{{ a.categoria_handball }}</td>
-                  <td class="cell-ro obs-cell text-dark">{{ a.observaciones }}</td>
+                  <td class="cell-ro text-dark">{{ a.observaciones }}</td>
                 </tr>
-
                 <tr v-if="arbitrosPaginados.length === 0">
                   <td colspan="30" class="text-center py-5 text-muted bg-light italic border-0">
                     <span class="material-icons d-block mb-2" style="font-size: 40px;">search_off</span>
@@ -215,7 +213,7 @@
           </div>
 
           <div class="mobile-only mt-3">
-            <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card-arbitro shadow-sm border border-light-subtle mb-3 bg-white" :class="{ 'fila-inactiva': a.es_activo == 0 }">
+            <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card-arbitro shadow-sm border-light-subtle bg-white" :class="{ 'fila-inactiva': a.es_activo == 0 }">
               <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
                 <div class="card-name text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
                   <span :class="['status-dot d-inline-block me-1', a.es_activo == 1 ? 'dot-active' : 'dot-inactive']" style="vertical-align: middle;"></span>
@@ -247,7 +245,7 @@
                 </div>
               </div>
             </div>
-
+            
             <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-light rounded shadow-sm border mt-3">
               <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
               <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron registros.</p>
@@ -262,7 +260,9 @@
             </div>
           </div>
 
-        </div> </div> </div>
+        </div>
+      </div>
+    </div>
 
     <Teleport to="body">
     <div v-if="mostrarModalExcel" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
@@ -272,8 +272,7 @@
         </div>
         <h4 class="fw-bold mt-3 text-dark text-center m-0">Exportar Listado</h4>
         <p class="text-muted small mb-3 text-center">Marcá las columnas que querés incluir en el Excel</p>
-        
-        <div class="row g-2 text-start my-3 mx-auto shadow-sm" style="max-height: 300px; overflow-y: auto; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
+        <div class="row g-2 text-start my-3 mx-auto shadow-sm" style="max-height: 250px; overflow-y: auto; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
           <div v-for="col in columnasExcel" :key="col.id" class="col-12 col-sm-6">
             <div class="d-flex align-items-center gap-2 p-1 bg-white rounded border border-light-subtle">
               <input type="checkbox" v-model="col.visible" :id="'col-'+col.id" style="width:18px; height:18px; cursor:pointer;" class="shadow-none">
@@ -281,7 +280,6 @@
             </div>
           </div>
         </div>
-
         <div class="d-flex gap-3 justify-content-center mt-4">
           <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold" style="background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; width: 100%;">CANCELAR</button>
           <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" style="background: #1e293b; width: 100%;">DESCARGAR</button>
@@ -294,20 +292,24 @@
     <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
       <div class="modal-content-exito d-flex flex-column animate__animated animate__zoomIn shadow-lg mx-auto" style="max-width: 900px; width: 95%; max-height: 95vh; padding: 25px; border-radius: 20px; background: #ffffff;">
 
-        <div class="flex-shrink-0 text-center border-bottom pb-3 mb-3">
-          <div class="icon-circle-exito mx-auto mb-2" :class="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-            <span class="material-icons" style="font-size: 28px;">{{ modoModal === 'editar' ? 'edit' : 'person_add' }}</span>
-          </div>
-          <h4 class="fw-bold m-0 text-dark">
-            {{ modoModal === 'editar' ? `Editar árbitro — ${formModal.apellido} ${formModal.nombre}` : 'Registrar Nuevo Árbitro' }}
-          </h4>
-          <p v-if="modoModal === 'editar'" class="text-muted small mt-1 m-0">ID #{{ formModal.id }}</p>
-
-          <div v-if="mensajeSolicitudActiva" class="alert alert-warning border-warning-subtle text-start shadow-sm d-flex align-items-start gap-3 p-3 mt-3 mx-auto" style="border-radius: 12px; background-color: #fffbeb;">
-            <span class="material-icons text-warning mt-1">assignment_late</span>
+<div class="flex-shrink-0 border-bottom pb-3 mb-3">
+          <div class="d-flex flex-column align-items-center justify-content-center text-center mb-3 gap-2">
+            <div class="icon-circle-exito flex-shrink-0 mx-auto" :class="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+              <span class="material-icons" style="font-size: 28px;">{{ modoModal === 'editar' ? 'edit' : 'person_add' }}</span>
+            </div>
             <div>
+              <h4 class="fw-bold m-0 text-dark">
+                {{ modoModal === 'editar' ? `Editar árbitro — ${formModal.apellido} ${formModal.nombre}` : 'Registrar Nuevo Árbitro' }}
+              </h4>
+              <p v-if="modoModal === 'editar'" class="text-muted small mt-1 m-0">ID #{{ formModal.id }}</p>
+            </div>
+          </div>
+
+          <div v-if="mensajeSolicitudActiva" class="alert alert-warning border-warning-subtle text-start shadow-sm d-flex align-items-start gap-3 p-3 mt-2 w-100" style="border-radius: 12px; background-color: #fffbeb;">
+            <span class="material-icons text-warning mt-1">assignment_late</span>
+            <div class="w-100">
               <strong class="d-block text-dark mb-1" style="font-size: 0.85rem; text-transform: uppercase;">Solicitud del árbitro:</strong>
-              <span class="text-dark" style="font-size: 0.85rem; white-space: pre-line; line-height: 1.4;">{{ mensajeSolicitudActiva }}</span>
+              <div class="text-dark" style="font-size: 0.85rem; white-space: pre-line; line-height: 1.5; text-align: justify;">{{ mensajeSolicitudActiva }}</div>
             </div>
           </div>
         </div>
@@ -499,7 +501,7 @@
               <div style="flex: 1; min-width: 250px;">
                 <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
                 <strong class="d-block text-dark mb-1 fs-6 text-uppercase">{{ sol.arbitro_nombre }}</strong>
-                <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle" style="white-space: pre-line; line-height: 1.4;">{{ sol.mensaje }}</p>
+                <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle" style="white-space: pre-line; line-height: 1.4; text-align: justify;">{{ sol.mensaje }}</p>
               </div>
               
               <div class="d-flex flex-column align-items-end gap-2 w-mobile-100">
@@ -623,7 +625,6 @@ useHead({
   meta: [{ name: 'description', content: 'Gestión de árbitros registrados en la AAAB.' }],
 })
 
-// INYECTAMOS EL NOTIFICADOR UNA SOLA VEZ AL PRINCIPIO
 const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 
 const arbitros = ref([])
@@ -653,7 +654,6 @@ const historialArbitro = ref([])
 const arbitroSeleccionado = ref({})
 const cargandoHistorialArbitro = ref(false)
 
-// VARIABLE PARA EL CANDADO GLOBAL DE EDICIÓN
 const edicionAbierta = ref(false);
 
 const formModalVacio = () => ({
@@ -987,10 +987,6 @@ watch([() => filtros.provincia, localidadesFiltradas], () => {
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal })
 
-// ----------------------------------------------------
-// LÓGICA DE CANDADO GLOBAL DE EDICIÓN
-// ----------------------------------------------------
-
 const cargarEstadoEdicion = async () => {
   try {
     const res = await api.get({
@@ -1047,7 +1043,7 @@ onMounted(() => {
 
 <style scoped>
 /* ====================================================
-   AJUSTES GENERALES DEL CONTENEDOR
+   AJUSTES GENERALES DEL CONTENEDOR Y FOOTER
    ==================================================== */
 .full-screen-wrapper {
   position: relative;
@@ -1328,11 +1324,6 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
   grid-column: span 2;
 }
 
-.btn-blue { 
-  background: #3b82f6; 
-  color: white; 
-}
-
 @media (max-width: 1024px) {
   .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
   .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
@@ -1363,25 +1354,36 @@ thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !importa
 }
 
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0;}
+  .admin-panel { padding: 10px; border-radius: 0; }
   .full-screen-wrapper { padding: 0; width: 100vw; }
-
-  /* CABECERA CENTRADA MÓVIL */
+  
+  /* 1. Pasamos la cabecera a columna y alineamos a la izquierda */
   .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }
-  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%;}
+  
+  /* 2. Aseguramos que el título tome todo el ancho disponible */
+  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
   .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
   .header-info span.counter { font-size: 0.85rem !important; }
   
+  /* 3. Centramos los botones abajo */
   .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
   .btn-text { display: none !important; }
   .mobile-only-flex { display: flex !important; }
 
-  .modal-content-exito { padding: 15px !important; }
+  /* PANEL DE FILTROS MÓVIL (Intacto) */
+  .mobile-filter-panel { padding: 15px 20px; }
+  .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
+  .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; background-color: #f8fafc; color: #334155; outline: none; }
+  .filter-grid-mobile input:focus, .filter-grid-mobile select:focus { border-color: #3b82f6; background: white;}
+  .mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
+  .mobile-select-group label { font-size: 0.75rem; color: #64748b; font-weight: bold; margin-bottom: 2px; }
+  .filter-row-mobile { display: flex; gap: 10px; }
+  .filter-row-mobile input { flex: 1; }
+  .btn-close-filters { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
+
   .tab-mobile { font-size: 0.65rem !important; padding-left: 2px !important; padding-right: 2px !important; letter-spacing: -0.3px; }
-  
-  .filter-grid-mobile { grid-template-columns: 1fr; }
-  .filter-grid-mobile select.full-width { grid-column: span 1; }
+  .modal-content-exito { padding: 15px !important; }
 }
 
 @media (min-width: 768px) {
