@@ -237,7 +237,7 @@ import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
 
 useHead({
-  title: 'Instituciones | AAAB',
+  title: 'Instituciones y Cuits | AAAB',
   meta: [{ name: 'description', content: 'Gestión de Instituciones y Clubes.' }],
 })
 

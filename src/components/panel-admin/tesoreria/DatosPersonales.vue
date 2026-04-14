@@ -21,7 +21,7 @@
             </button>
 
             <button @click="limpiarFiltros" class="btn-action btn-clear">
-              <span class="material-icons">filter_alt_off</span> <span class="btn-text">Filtros</span>
+              <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
             </button>
             <button @click="exportarExcel" class="btn-action btn-export">
               <span class="material-icons">download</span> <span class="btn-text">Excel</span>
@@ -156,6 +156,17 @@
 import { ref, onMounted, computed, reactive, watch } from 'vue'
 import { api } from '@/api/api' 
 import * as XLSX from 'xlsx'
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Datos Personales | AAAB',
+  meta: [
+    { name: 'description', content: 'Consulta de datos personales de árbitros.' },
+    { property: 'og:title', content: 'Datos Personales | AAAB' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
+    { property: 'og:type', content: 'website' }
+  ],
+});
 
 const listaCompleta = ref([]);
 const mostrarFiltrosMobile = ref(false); 
