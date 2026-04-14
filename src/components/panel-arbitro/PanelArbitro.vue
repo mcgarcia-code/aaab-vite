@@ -315,26 +315,65 @@ useHead({
   background: #94a3b8; 
 }
 
-@media (max-width: 576px) {
+/* ====================================================
+   📱 RESPONSIVE DESIGN (Perfil y Notificaciones)
+   ==================================================== */
+
+/* --- 1. TABLETS Y MÓVILES EN HORIZONTAL (Hasta 768px) --- */
+@media (max-width: 768px) {
+  .perfil-img { width: 60px; height: 60px; }
+  .saludo-texto { font-size: 1.2rem; }
+}
+
+/* --- 2. SMARTPHONES (Hasta 600px) --- */
+@media (max-width: 600px) {
+  /* Imagen de Perfil y Saludo */
   .perfil-img { width: 55px; height: 55px; }
-  .saludo-texto { font-size: 1.1rem; margin-bottom: 2px !important; }
+  .saludo-texto { 
+    font-size: 1.1rem; 
+    margin-bottom: 2px !important; 
+    text-align: left; /* Mantiene coherencia con tus títulos a la izquierda */
+  }
   
-  .notification-btn { width: 40px; height: 40px; }
+  /* Botón de Notificaciones (40x42 para mantener proporción con botones de acción) */
+  .notification-btn { 
+    width: 42px; 
+    height: 42px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+  }
   .notification-btn i { font-size: 1.25rem !important; }
 
+  /* Dropdown de Notificaciones (Ajuste para pantalla completa en ancho) */
   .dropdown-notificaciones {
     position: absolute !important;
     top: 110% !important; 
-    right: -10px !important; 
+    right: -5px !important; /* Ajustado para que no toque el borde */
     left: auto !important;
-    width: calc(100vw - 40px) !important; 
+    width: calc(100vw - 30px) !important; 
     max-width: 400px !important;
     margin-top: 10px !important;
     z-index: 1060 !important; 
+    border-radius: 12px !important; /* Coherencia con tus cards de 12px */
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
   }
   
   .notification-list {
     max-height: 50vh; 
+    overflow-y: auto;
+  }
+  
+  /* Si este componente tiene botones de acción, se centran aquí */
+  .header-actions { 
+    width: 100%; 
+    display: flex; 
+    justify-content: center; 
+    gap: 10px;
+    margin-top: 5px;
   }
 }
+
+.animate__animated { animation-duration: 0.5s; }
+
 </style>
