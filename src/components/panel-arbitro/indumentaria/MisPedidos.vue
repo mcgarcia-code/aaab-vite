@@ -54,6 +54,7 @@
                   <th class="text-center">Total Abonado</th>
                   <th class="text-center">Fecha</th>
                   <th class="text-center">Estado</th>
+                  <th class="text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -66,9 +67,21 @@
                   <td class="text-center cell-ro">
                     <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
                   </td>
+                  <td class="text-center cell-ro">
+                    <button 
+                      v-if="p.estado && p.estado.toLowerCase() === 'creado'" 
+                      @click="cancelarPedido(p.id)" 
+                      class="btn btn-sm btn-outline-danger shadow-sm rounded-pill d-inline-flex align-items-center gap-1" 
+                      title="Cancelar Pedido" 
+                      style="font-size: 0.75rem; padding: 2px 10px;"
+                    >
+                      <span class="material-icons" style="font-size: 14px;">cancel</span> Cancelar
+                    </button>
+                    <span v-else class="text-muted small">-</span>
+                  </td>
                 </tr>
                 <tr v-if="pedidosPaginados.length === 0">
-                  <td colspan="6" class="text-center py-5 text-muted bg-light">No se encontraron pedidos.</td>
+                  <td colspan="7" class="text-center py-5 text-muted bg-light">No se encontraron pedidos.</td>
                 </tr>
               </tbody>
             </table>
@@ -94,6 +107,12 @@
                   <span class="text-dark small">Cant: <strong>{{ p.cantidad }}</strong></span>
                   <span class="text-success fw-bold fs-6">Total: ${{ p.cantidad * p.precio_unitario }}</span>
                 </div>
+
+                <div v-if="p.estado && p.estado.toLowerCase() === 'creado'" class="mt-2 text-end">
+                  <button @click="cancelarPedido(p.id)" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill w-100 d-flex justify-content-center align-items-center gap-1" style="font-size: 0.8rem;">
+                    <span class="material-icons" style="font-size: 16px;">cancel</span> Cancelar Pedido
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -110,12 +129,13 @@
           </div>
 
         </div>
-      </div> </div>
+      </div> 
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, inject } from 'vue';
 import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
@@ -129,6 +149,8 @@ useHead({
     { property: 'og:type', content: 'website' }
   ],
 });
+
+const notificar = inject('notificar');
 
 const pedidos = ref([]);
 const busqueda = ref('');
@@ -157,12 +179,37 @@ const pedidosPaginados = computed(() => {
 watch(busqueda, () => { paginaActual.value = 1 });
 watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo });
 
-// API
+// API: Obtener Pedidos
 const obtenerPedidos = async () => {
   cargando.value = true;
   const res = await api.get({ entity: 'indumentaria', action: 'obtenerPedidosArbitro' });
   if (res.ok) pedidos.value = res.payload;
   cargando.value = false;
+};
+
+// API: Cancelar Pedido
+const cancelarPedido = async (id) => {
+  if (!confirm('¿Estás seguro que querés cancelar este pedido?')) return;
+  
+  cargando.value = true;
+  try {
+    const res = await api.post({ 
+      entity: 'indumentaria', 
+      action: 'actualizarPedido',
+      payload: { id_pedido: id, estado: 'cancelado' }
+    });
+
+    if (res.ok) {
+      notificar({ titulo: 'Pedido cancelado', mensaje: 'El pedido ha sido cancelado con éxito.', tipo: 'success' });
+      await obtenerPedidos(); // Refrescamos la lista para ver el cambio de estado
+    } else {
+      notificar({ titulo: 'Error', mensaje: 'No se pudo cancelar el pedido.', tipo: 'danger' });
+    }
+  } catch {
+    notificar({ titulo: 'Error de Red', mensaje: 'Ocurrió un problema al conectar con el servidor.', tipo: 'danger' });
+  } finally {
+    cargando.value = false;
+  }
 };
 
 // Estilos visuales
@@ -174,6 +221,7 @@ const obtenerClaseEstado = (estado) => {
     case 'aceptado': return 'estado-aceptado';
     case 'entregado': return 'estado-entregado';
     case 'rechazado': return 'estado-rechazado';
+    case 'cancelado': return 'estado-cancelado';
     default: return 'estado-creado';
   }
 };
@@ -182,6 +230,9 @@ onMounted(obtenerPedidos);
 </script>
 
 <style scoped>
+/* ====================================================
+   1. LAYOUT BASE
+   ==================================================== */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
@@ -206,11 +257,25 @@ onMounted(obtenerPedidos);
   border-radius: 12px;
 }
 
-.btn-clear:hover { background-color: #e2e8f0 !important; }
+/* ====================================================
+   2. BOTONES E INPUTS
+   ==================================================== */
+.btn-clear:hover { 
+  background-color: #e2e8f0 !important; 
+}
 
-.input-filtro-custom { font-size: 1rem !important; height: auto !important; }
-.input-filtro-custom:focus { outline: none; }
+.input-filtro-custom { 
+  font-size: 1rem !important; 
+  height: auto !important; 
+}
 
+.input-filtro-custom:focus { 
+  outline: none; 
+}
+
+/* ====================================================
+   3. PAGINACIÓN
+   ==================================================== */
 .paginacion { 
   display: flex; 
   justify-content: flex-end; 
@@ -218,6 +283,7 @@ onMounted(obtenerPedidos);
   gap: 12px; 
   margin-top: 20px; 
 }
+
 .btn-paginacion { 
   border: 1px solid #cbd5e1; 
   background: #f8fafc; 
@@ -229,81 +295,212 @@ onMounted(obtenerPedidos);
   cursor: pointer; 
   transition: background 0.2s;
 }
-.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #0f172a !important; font-size: 0.85rem; font-weight: 600; }
 
-.table-container { width: 100%; overflow: auto; max-height: 85vh; background: white; }
-table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #f8fafc !important; padding: 12px 10px; border-bottom: 2px solid #e2e8f0; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0; }
+.btn-paginacion:hover:not(:disabled) { 
+  background: #e2e8f0; 
+}
 
-.col-id { left: 0; width: 80px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-.sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+.btn-paginacion:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
+}
 
-.cell-ro { padding: 14px 10px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; vertical-align: middle;}
-.row-hover:hover { background-color: #f1f5f9; transition: background 0.2s ease; }
+.paginacion-texto { 
+  color: #0f172a !important; 
+  font-size: 0.85rem; 
+  font-weight: 600; 
+}
 
-.badge-status-sm { padding: 4px 10px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; white-space: nowrap; }
+/* ====================================================
+   4. TABLAS Y CELDAS
+   ==================================================== */
+.table-container { 
+  width: 100%; 
+  overflow: auto; 
+  max-height: 85vh; 
+  background: white; 
+}
+
+table { 
+  width: 100%; 
+  min-width: max-content; 
+  border-collapse: separate !important; 
+  border-spacing: 0; 
+  font-size: 0.85rem; 
+}
+
+thead tr.main-header th { 
+  position: sticky; 
+  top: 0; 
+  z-index: 50; 
+  background: #f8fafc !important; 
+  padding: 12px 10px; 
+  border-bottom: 2px solid #e2e8f0; 
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; 
+  font-size: 0.75rem; 
+  color: #000; 
+  text-transform: uppercase; 
+  font-weight: 800; 
+  margin: 0; 
+}
+
+.col-id { 
+  left: 0; 
+  width: 80px; 
+  box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); 
+}
+
+.sticky-col { 
+  position: sticky !important; 
+  z-index: 60 !important; 
+  background: white !important; 
+  border-right: 1px solid #e2e8f0; 
+}
+
+thead tr.main-header th.sticky-col { 
+  z-index: 100 !important; 
+  background-color: #f8fafc !important; 
+}
+
+.cell-ro { 
+  padding: 14px 10px; 
+  font-size: 0.85rem; 
+  color: #000; 
+  border-bottom: 1px solid #f1f5f9; 
+  vertical-align: middle;
+}
+
+.row-hover:hover { 
+  background-color: #f1f5f9; 
+  transition: background 0.2s ease; 
+}
+
+/* ====================================================
+   5. BADGES (ESTADOS DE PEDIDO)
+   ==================================================== */
+.badge-status-sm { 
+  padding: 4px 10px; 
+  border-radius: 12px; 
+  font-size: 0.65rem; 
+  font-weight: 700; 
+  white-space: nowrap; 
+}
+
 .estado-creado { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 .estado-proceso { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
 .estado-aceptado { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
 .estado-entregado { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 .estado-rechazado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.estado-cancelado { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
 
+/* ====================================================
+   6. UTILIDADES RESPONSIVE
+   ==================================================== */
 .desktop-only { display: block; }
 .mobile-only { display: none; }
 
+/* ====================================================
+   7. MEDIA QUERIES
+   ==================================================== */
+
+/* --- Laptops y Tablets Grandes (Hasta 1024px) --- */
+@media (max-width: 1024px) {
+  /* Espacio reservado para futuros ajustes en pantallas medianas */
+}
+
+/* --- Tablets y Móviles (Hasta 768px) --- */
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
-  .card-licencia { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-  .card-name { font-size: 1.05rem; color: #0f172a; }
-  .contenedor-imagen-superior { height: 150px; }
-  .btn-text { display: inline; }
+  
+  .card-licencia { 
+    background: white; 
+    border-radius: 8px; 
+    padding: 15px; 
+    margin-bottom: 12px; 
+    border: 1px solid #e2e8f0; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+  }
+  
+  .card-name { 
+    font-size: 1.05rem; 
+    color: #0f172a; 
+  }
+  
+  .contenedor-imagen-superior { 
+    height: 150px; 
+  }
 }
 
 @media (min-width: 768px) {
-  .btn-text { display: inline; }
+  .btn-text { 
+    display: inline; 
+  }
 }
 
-
+/* --- Smartphones (Hasta 600px) --- */
 @media (max-width: 600px) {
- .full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto;
-  margin-left: 50%;
-  transform: translateX(-50%);
-      /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important; 
-  box-sizing: border-box !important;
+  .full-screen-wrapper {
+    position: relative;
+    width: 99vw;
+    min-height: 100vh;
+    height: auto;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    /* Top en 0, pero conservando los 15px laterales originales para celulares */
+    padding: 0 15px 20px 15px !important; 
+    box-sizing: border-box !important;
+  }
+      
+  .admin-panel { 
+    padding: 0 !important; 
+    border-radius: 0; 
+    box-sizing: border-box !important;
+  }
+  
+  .header-section { 
+    padding: 15px !important; 
+    flex-direction: column; 
+    align-items: flex-start; 
+    text-align: left; 
+    gap: 15px; 
+  }
+  
+  .header-info { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start; 
+  }
+  
+  .header-info h4, h4 { 
+    font-size: 1.2rem !important; 
+    margin: 0; 
+    text-align: left; 
+  }
+  
+  .header-actions { 
+    width: 100%; 
+    display: flex; 
+    flex-direction: row; 
+    flex-wrap: wrap; 
+    justify-content: center; 
+    gap: 8px; 
+  }
+  
+  .btn-action { 
+    flex: none; 
+    width: 42px; 
+    height: 42px; 
+    padding: 0; 
+    justify-content: center; 
+    align-items: center; 
+    border-radius: 6px; 
+  }
+  
+  .btn-text { 
+    display: none !important; 
+  }
 }
-    
-    .admin-panel { 
-      padding: 0 !important; 
-      border-radius: 0; 
-      box-sizing: border-box !important;
-    }
-    .header-section { 
-        padding: 15px !important; flex-direction: column; 
-        align-items: flex-start; text-align: left; gap: 15px; 
-    }
-    .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
-    .header-info h4, h4 { font-size: 1.2rem !important; margin: 0; text-align: left; }
-    
-    .header-actions { 
-        width: 100%; display: flex; flex-direction: row; 
-        flex-wrap: wrap; justify-content: center; gap: 8px; 
-    }
-    .btn-action { 
-        flex: none; width: 42px; height: 42px; padding: 0; 
-        justify-content: center; align-items: center; border-radius: 6px; 
-    }
-    .btn-text { display: none !important; }
-
-}
-
-
 </style>
+
