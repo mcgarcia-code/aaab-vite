@@ -146,17 +146,19 @@ onMounted(() => {
 
 /* Tarjeta Moderna Horizontal (Neo-Bento) */
 .modern-menu-card {
-  background: white;
-  border-radius: 20px;
-  padding: 22px;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  padding: 15px;
+  height: 100%;
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 16px;
-  border: 1px solid #f1f5f9;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  height: 100%;
+  gap: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  cursor: pointer;
 }
-
 .icon-box {
   width: 52px;
   height: 52px;
@@ -173,19 +175,19 @@ onMounted(() => {
 
 .card-text {
   flex: 1;
+  min-width: 0;
 }
 
 .card-text h5 {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   color: #1e293b;
   margin: 0;
 }
 
 .extra-small {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   line-height: 1.3;
 }
-
 .card-arrow {
   color: #cbd5e1;
   font-size: 1.2rem;
@@ -194,11 +196,10 @@ onMounted(() => {
 
 /* --- EFECTOS HOVER --- */
 .modern-menu-card:hover {
+  border-color: #f87171; /* Rojo suave */
   transform: translateY(-5px);
-  border-color: #fca5a5;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
 }
-
 .modern-menu-card:hover .icon-box {
   background: #dc2626;
   color: white;

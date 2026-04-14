@@ -96,27 +96,46 @@ const opcionesObservaciones = [
 }
 
 .modern-menu-card {
-  background: white; border-radius: 20px;
-  padding: 20px; display: flex; align-items: center; gap: 16px;
-  border: 1px solid #f1f5f9; transition: all 0.3s ease; height: 100%;
+  background: white;
+  border-radius: 16px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  height: 100%;
+  cursor: pointer; /* <--- ESTA ES LA LÍNEA QUE TENÉS QUE AGREGAR */
 }
-
 .icon-box {
-  width: 52px; height: 52px; min-width: 52px;
-  background: #fef2f2; color: #dc2626;
-  border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  background: #fef2f2;
+  color: #dc2626;      /* Rojo AAAB */
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.5rem;
+  transition: all 0.3s ease;
 }
-
-.card-text { flex: 1; }
-.card-text h5 { font-size: 1.05rem; color: #1e293b; margin: 0; }
-.extra-small { font-size: 0.8rem; line-height: 1.3; }
-.card-arrow { color: #cbd5e1; font-size: 1.2rem; }
+.card-text {
+  flex: 1;
+  min-width: 0;
+}
+.card-text h5 { font-size: 0.95rem; color: #1e293b; }
+.extra-small { font-size: 0.75rem; }
+.card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; align-self: center; }
 
 .modern-menu-card:hover {
-  transform: translateY(-5px); border-color: #fca5a5;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  border-color: #f87171; /* Rojo suave */
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
 }
+
+.modern-menu-card:hover .icon-box { background: #dc2626; color: white; }
 
 @media (max-width: 768px) {
   .modern-menu-card { padding: 8px 24px; }

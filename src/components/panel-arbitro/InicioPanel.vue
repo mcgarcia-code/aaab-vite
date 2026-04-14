@@ -19,7 +19,7 @@
                   <i :class="item.icon"></i>
                 </div>
                 <div class="card-text">
-                  <h5 class="fw-bold mb-0">{{ item.title }}</h5>
+                  <h5 class="fw-bold mb-1">{{ item.title }}</h5>
                   <p class="extra-small m-0 text-muted">{{ item.desc }}</p>
                 </div>
                 <div class="card-arrow">
@@ -223,13 +223,23 @@ onMounted(cargarAvisos);
   align-items: center;
   gap: 12px;
   border: 1px solid #f1f5f9;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   height: 100%;
   cursor: pointer; /* <--- ESTA ES LA LÍNEA QUE TENÉS QUE AGREGAR */
 }
 .icon-box {
-  width: 45px; height: 45px; min-width: 45px; background: #fef2f2; color: #dc2626; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  background: #fef2f2;
+  color: #dc2626;      /* Rojo AAAB */
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
 }
 .card-text {
   flex: 1;
@@ -239,8 +249,13 @@ onMounted(cargarAvisos);
 .extra-small { font-size: 0.75rem; }
 .card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; align-self: center; }
 
-.modern-menu-card:hover { transform: translateY(-3px); border-color: #fca5a5; box-shadow: 0 5px 15px rgba(0,0,0,0.05) !important; }
-.modern-menu-card:hover .icon-box { background: #dc2626; color: white; }
+.modern-menu-card:hover {
+  border-color: #f87171; /* Rojo suave */
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
+}
+
+.modern-menu-card:hover .icon-box {background: #dc2626; color: white; }
 
 /* --- SIDEBAR PROFESIONAL --- */
 .sidebar-professional {

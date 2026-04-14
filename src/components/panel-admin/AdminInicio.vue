@@ -112,14 +112,15 @@ const filteredMenu = computed(() => {
 /* Tarjeta Moderna Horizontal */
 .modern-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 24px;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  padding: 15px;
   height: 100%;
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: 16px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 12px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   cursor: pointer;
 }
@@ -129,7 +130,7 @@ const filteredMenu = computed(() => {
   width: 56px;
   height: 56px;
   min-width: 56px;
-  background: #f8fafc; /* Gris muy claro */
+  background: #fef2f2;
   color: #dc2626;      /* Rojo AAAB */
   border-radius: 16px;
   display: flex;
@@ -142,6 +143,7 @@ const filteredMenu = computed(() => {
 /* Contenido de texto */
 .card-body-text {
   flex: 1;
+  min-width: 0;
 }
 
 .card-title {
@@ -176,7 +178,6 @@ const filteredMenu = computed(() => {
 .modern-card:hover .icon-box {
   background: #dc2626;
   color: #ffffff;
-  transform: scale(1.1) rotate(-5deg);
 }
 
 .modern-card:hover .card-arrow {
