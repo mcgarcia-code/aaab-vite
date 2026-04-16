@@ -56,6 +56,7 @@
             <option value="sin_licencia">Sin Licencia</option>
             <option value="aprobada">Licencias Aprobadas</option>
             <option value="rechazada">Licencias Rechazadas</option>
+            <option value="pendiente">Licencias Pendientes</option>
           </select>
         </div>
 
@@ -104,6 +105,7 @@
                 <option value="sin_licencia">Sin Licencia</option>
                 <option value="aprobada">Licencia Aprobadas</option>
                 <option value="rechazada">Licencia Rechazadas</option>
+                <option value="pendiente">Licencia Pendientes</option>
               </select>
             </td>
             <td></td> 
@@ -260,10 +262,11 @@ const cargarDatos = async () => {
 const obtenerClaseFila = (a) => {
   const tieneAprobada = Number(a.tiene_aprobada) > 0;
   const tieneRechazada = Number(a.tiene_rechazada) > 0;
+  const tienePendiente = Number(a.tiene_pendiente) > 0; // NUEVO
   const esInactivo = a.es_activo == 0;
 
   if (esInactivo || tieneAprobada) return 'fila-roja';
-  if (tieneRechazada) return 'fila-amarilla';
+  if (tieneRechazada || tienePendiente) return 'fila-amarilla'; // Agregamos tienePendiente acá
   return '';
 };
 
@@ -288,12 +291,18 @@ const obtenerTextoLicencia = (a) => {
     if (!cadenaFechas) return '';
     return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
   };
+  
   if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
     textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
+  }
+  // NUEVO: Agregamos la lectura de las pendientes
+  if (Number(a.tiene_pendiente) > 0 && a.fecha_licencia_pendiente) {
+    textos.push(`PEN: ${formatearVariasFechas(a.fecha_licencia_pendiente)}`);
   }
   if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
     textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
   }
+  
   return textos.length > 0 ? textos.join(' | ') : '-';
 };
 
@@ -316,8 +325,14 @@ const arbitrosFiltrados = computed(() => {
     
     let cumpleLicencia = true;
     if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada) > 0;
+    else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente) > 0; // NUEVO
     else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada) > 0;
-    else if (filtros.licencia === 'sin_licencia') cumpleLicencia = Number(a.tiene_aprobada) === 0 && Number(a.tiene_rechazada) === 0;
+    else if (filtros.licencia === 'sin_licencia') {
+      // MODIFICADO: Agregamos que tampoco tenga pendientes para ser considerado "sin licencia"
+      cumpleLicencia = Number(a.tiene_aprobada) === 0 && 
+                       Number(a.tiene_rechazada) === 0 && 
+                       Number(a.tiene_pendiente) === 0;
+    }
 
     return cumpleTexto && cumpleLicencia;
   });
