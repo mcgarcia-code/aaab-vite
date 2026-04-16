@@ -65,6 +65,7 @@
                 <option value="sin_licencia">Sin Licencia</option>
                 <option value="aprobada">Licencias Aprobadas</option>
                 <option value="rechazada">Licencias Rechazadas</option>
+                <option value="pendiente">Licencias Pendientes</option>
               </select>
             </div>
 
@@ -160,6 +161,7 @@
                       <option value="sin_licencia">Sin Licencia</option>
                       <option value="aprobada">Aprobada</option>
                       <option value="rechazada">Rechazada</option>
+                      <option value="pendiente">Pendiente</option>
                     </select>
                   </td>
                   <td></td>
@@ -462,17 +464,21 @@ const limpiarChecks = async () => {
 const obtenerClaseFila = (a) => {
   const tieneAprobada = Number(a.tiene_aprobada) > 0;
   const tieneRechazada = Number(a.tiene_rechazada) > 0;
+  const tienePendiente = Number(a.tiene_pendiente) > 0; // NUEVO: Capturamos pendiente
   const esInactivo = a.es_activo == 0;
+  
   const tildadoSabado = designadosSabado.value.has(a.id);
   const tildadoDomingo = designadosDomingo.value.has(a.id);
+  
   if ((tildadoSabado && tildadoDomingo) || esInactivo || tieneAprobada) {
     return 'fila-roja';
   }
-  if (tieneRechazada) return 'fila-amarilla';
+  // MODIFICADO: Pinta de amarillo si tiene rechazada O pendiente
+  if (tieneRechazada || tienePendiente) return 'fila-amarilla'; 
+  
   if (tildadoSabado || tildadoDomingo) return 'fila-des';
   return '';
 };
-
 const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
 
 const mostrarFechaArg = (fecha) => {
@@ -494,12 +500,18 @@ const obtenerTextoLicencia = (a) => {
     if (!cadenaFechas) return '';
     return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
   };
+  
   if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
     textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
+  }
+  // NUEVO: Agregamos la lectura de las pendientes
+  if (Number(a.tiene_pendiente) > 0 && a.fecha_licencia_pendiente) {
+    textos.push(`PEN: ${formatearVariasFechas(a.fecha_licencia_pendiente)}`);
   }
   if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
     textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
   }
+  
   return textos.length > 0 ? textos.join(' | ') : '-';
 };
 
@@ -516,9 +528,14 @@ const arbitrosFiltrados = computed(() => {
     });
 
     let cumpleLicencia = true;
-    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada) > 0;
-    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada) > 0;
-    else if (filtros.licencia === 'sin_licencia') cumpleLicencia = Number(a.tiene_aprobada) === 0 && Number(a.tiene_rechazada) === 0;
+    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0;
+    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada || 0) > 0;
+    else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente || 0) > 0; 
+    else if (filtros.licencia === 'sin_licencia') {
+      cumpleLicencia = Number(a.tiene_aprobada || 0) === 0 && 
+                       Number(a.tiene_rechazada || 0) === 0 && 
+                       Number(a.tiene_pendiente || 0) === 0;
+    }
 
     let cumpleApto = true;
     if (filtros.apto_medico !== '') {
@@ -544,7 +561,7 @@ const arbitrosFiltrados = computed(() => {
     if (compApellido === 0) return (a.nombre || '').localeCompare(b.nombre || '');
     return compApellido;
   });
-});
+  });
 
 // --- CÁLCULOS DE PAGINACIÓN ---
 const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1);
