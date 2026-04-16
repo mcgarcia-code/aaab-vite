@@ -288,6 +288,27 @@ onMounted(() => {
   background-color: #b91c1c !important; 
 }
 
+/* ---> NUEVO: AJUSTES DE TAMAÑO PARA SELECTORES (DROPDOWNS) <--- */
+select.form-select, 
+select.filter-input,
+.filter-grid-mobile select,
+select.full-width {
+  font-size: 0.85rem !important;           /* Achica la letra para que no quede tosca */
+  padding: 0.35rem 2rem 0.35rem 0.75rem !important; /* Reduce el aire interno del botón */
+  height: auto !important;                 /* Permite que el padding defina la altura */
+  min-height: 36px !important;             /* Altura mínima para que quede prolijo */
+  border-radius: 6px !important;           /* Suaviza los bordes un poco más */
+  line-height: 1.5;                        /* Centra el texto verticalmente */
+}
+
+/* Ajuste por si usás form-select-lg en la vista principal */
+select.form-select-lg {
+  font-size: 0.9rem !important;            /* Texto apenitas más grande que el normal */
+  padding-top: 0.45rem !important;         /* Acomoda el aire de arriba */
+  padding-bottom: 0.45rem !important;      /* Acomoda el aire de abajo */
+  min-height: 40px !important;             /* Se asegura de que no quede más chico de 40px */
+}
+
 /* ESTILOS PARA EL INPUT DE FECHA */
 .custom-input-date {
   color: #000000 !important;
