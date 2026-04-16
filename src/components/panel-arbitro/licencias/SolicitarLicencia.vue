@@ -132,7 +132,7 @@ const licencias = ref([]);
 const fechaHoyStr = new Date().toISOString().split("T")[0];
 const fechaMinima10Dias = computed(() => {
   const hoy = new Date();
-  hoy.setDate(hoy.getDate() + 10);
+  hoy.setDate(hoy.getDate() + 7);
   return hoy.toISOString().split("T")[0];
 });
 
@@ -169,7 +169,7 @@ const solicitarLicencia = async () => {
     fechaPedido.setHours(0, 0, 0, 0);
     const diffDias = Math.ceil((fechaPedido - hoy) / (1000 * 60 * 60 * 24));
     // MODIFICADO: Corregido a 10 días según tu regla de negocio
-    return diffDias >= 10; 
+    return diffDias >= 7; 
   })();
 
   // MODIFICADO: Determinamos el estado inicial en el front para mandar al payload
@@ -288,7 +288,7 @@ onMounted(() => {
   background-color: #b91c1c !important; 
 }
 
-/* ---> NUEVO: AJUSTES DE TAMAÑO PARA SELECTORES (DROPDOWNS) <--- */
+/* ---> NUEVO: AJUSTES DE TAMAÑO PARA SELECT LICENCIAS<--- */
 select.form-select, 
 select.filter-input,
 .filter-grid-mobile select,

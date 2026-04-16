@@ -361,7 +361,7 @@ const filtros = reactive({
 
 const mostrarFiltrosMobile = ref(false)
 const paginaActual = ref(1)
-const registrosPorPagina = 10
+const registrosPorPagina = 7
 
 const mostrarModalEditar = ref(false)
 const tipoSancion = ref('')

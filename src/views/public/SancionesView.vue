@@ -30,7 +30,7 @@
           </div>
 
           <div v-else>
-            <div class="table-responsive shadow rounded bg-white">
+            <div class="table-responsive shadow rounded bg-white desktop-only">
               <table class="table table-striped table-hover mb-0">
                 <thead class="table-dark">
                   <tr>
@@ -66,22 +66,62 @@
               </table>
             </div>
 
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
+            <div class="mobile-only">
+              <div v-for="s in sancionesPaginadas" :key="'mob-'+s.id" class="card-sancion mb-3 bg-white shadow-sm rounded">
+                <div class="card-sancion-header">
+                  <div>
+                    <strong class="d-block text-dark" style="font-size: 1.05rem;">{{ s.arbitro || s.apellido + ', ' + s.nombre }}</strong>
+                    <span class="text-muted small" v-if="s.articulo">Art. {{ s.articulo }}</span>
+                  </div>
+                  <div>
+                    <span v-if="s.estado_dinamico == 1" class="badge bg-danger">Vigente</span>
+                    <span v-else-if="s.estado_dinamico == 3" class="badge bg-warning text-dark">En proceso</span>
+                    <span v-else class="badge bg-secondary">Cumplida</span>
+                  </div>
+                </div>
+                
+                <div class="card-sancion-body">
+                  <p class="mb-2 text-muted small"><strong>Motivo:</strong> {{ s.motivo }}</p>
+                  <p class="mb-2">
+                    <strong>Sanción:</strong> 
+                    <span :class="s.estado_dinamico == 3 ? 'text-muted fw-bold' : 'text-danger fw-bold'">{{ s.sancion || 'Sin sanción' }}</span>
+                  </p>
+                  <div class="d-flex justify-content-between mt-3 pt-2 border-top">
+                    <div class="small">
+                      <span class="text-muted">Desde:</span> <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong>
+                    </div>
+                    <div class="small">
+                      <span class="text-muted">Hasta:</span> 
+                      <strong v-if="s.es_indefinido == 1" class="text-dark">Indefinida</strong>
+                      <strong v-else class="text-dark">{{ s.hasta_formateada || '-' }}</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="position-relative d-flex align-items-center mt-4" v-if="totalPaginas > 1">
+              
               <button
                 class="btn btn-light rounded-pill px-4 fw-bold shadow-sm"
-                @click="paginaActual--"
+                @click="cambiarPagina(-1)"
                 :disabled="paginaActual === 1"
-              >Anterior</button>
+              >
+                Anterior
+              </button>
 
-              <span class="text-white fw-bold small">
+              <span class="text-white fw-bold small position-absolute top-50 start-50 translate-middle">
                 Página {{ paginaActual }} de {{ totalPaginas }}
               </span>
 
               <button
-                class="btn btn-light rounded-pill px-4 fw-bold shadow-sm"
-                @click="paginaActual++"
+                class="btn btn-light rounded-pill px-4 fw-bold shadow-sm ms-auto"
+                @click="cambiarPagina(1)"
                 :disabled="paginaActual === totalPaginas"
-              >Siguiente</button>
+              >
+                Siguiente
+              </button>
+
             </div>
           </div>
 
@@ -97,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import axios from 'axios'
 
 const API_URL = 'https://arbitroshandball.com.ar/api/api.php'
@@ -105,9 +145,9 @@ const sanciones = ref([])
 const cargando = ref(false)
 const filtro = ref('')
 
-// Configuración de Paginación
+// Configuración de Paginación Dinámica
 const paginaActual = ref(1)
-const registrosPorPagina = 10
+const registrosPorPagina = ref(20) // Por defecto para escritorio
 
 const fetchSanciones = async () => {
   cargando.value = true
@@ -120,6 +160,18 @@ const fetchSanciones = async () => {
     console.error(err)
   } finally {
     cargando.value = false;
+  }
+}
+
+// Función para ajustar registros según tamaño de pantalla
+const chequearResolucion = () => {
+  const esMobile = window.innerWidth <= 768;
+  const nuevaCantidad = esMobile ? 10 : 20;
+  
+  // Solo reseteamos la página si la cantidad realmente cambió para evitar parpadeos
+  if (registrosPorPagina.value !== nuevaCantidad) {
+    registrosPorPagina.value = nuevaCantidad;
+    paginaActual.value = 1; 
   }
 }
 
@@ -143,20 +195,38 @@ const sancionesFiltradas = computed(() => {
     });
 });
 
-// Paginación Calculada
-const totalPaginas = computed(() => Math.ceil(sancionesFiltradas.value.length / registrosPorPagina) || 1);
+// Paginación Calculada (Usando .value en registrosPorPagina)
+const totalPaginas = computed(() => Math.ceil(sancionesFiltradas.value.length / registrosPorPagina.value) || 1);
 
 const sancionesPaginadas = computed(() => {
-    const inicio = (paginaActual.value - 1) * registrosPorPagina;
-    return sancionesFiltradas.value.slice(inicio, inicio + registrosPorPagina);
+    const inicio = (paginaActual.value - 1) * registrosPorPagina.value;
+    return sancionesFiltradas.value.slice(inicio, inicio + registrosPorPagina.value);
 });
+
+// Cambio de página con scroll hacia arriba en móviles
+const cambiarPagina = (delta) => {
+  paginaActual.value += delta;
+  setTimeout(() => {
+    if (window.innerWidth <= 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, 50);
+}
 
 // Reiniciar a la página 1 si el usuario escribe en el buscador
 watch(filtro, () => {
     paginaActual.value = 1;
 });
 
-onMounted(fetchSanciones);
+onMounted(() => {
+  fetchSanciones();
+  chequearResolucion();
+  window.addEventListener('resize', chequearResolucion);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', chequearResolucion);
+});
 </script>
 
 <style scoped>
@@ -198,4 +268,30 @@ onMounted(fetchSanciones);
   vertical-align: middle;
 }
 .text-danger { color: #ef4444 !important; }
+
+/* ====================================================
+   RESPONSIVE DESIGN Y CARDS MÓVILES
+   ==================================================== */
+.desktop-only { display: block; }
+.mobile-only { display: none; }
+
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+
+  .card-sancion {
+    border-left: 4px solid #dc2626;
+    padding: 15px;
+    overflow: hidden;
+  }
+  
+  .card-sancion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 10px;
+  }
+}
 </style>
