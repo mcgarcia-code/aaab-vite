@@ -1,22 +1,19 @@
 <template>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white rounded-4 overflow-hidden">
         
-        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
+        <div class="header-section border-bottom p-3 p-md-4 shadow-none rounded-0 mb-0">
           <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
-              <i class="bi bi-megaphone me-1"></i> Gestión de Eventos y Avisos
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
+              <i class="bi bi-megaphone me-1"></i> Gestión de Eventos
             </h4>
             <span class="counter mt-1 d-block">Total: {{ eventosFiltrados.length }} eventos</span>
           </div>
 
           <div class="header-actions">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue d-flex d-md-none" title="Mostrar Filtros">
               <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
             </button>
 
@@ -30,10 +27,10 @@
           </div>
         </div>
 
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster border-bottom" style="margin-bottom: 0; border-radius: 0; box-shadow: none; background-color: #f8fafc;">
+        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-block d-md-none animate__animated animate__fadeInDown animate__faster border-bottom bg-light p-3">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-muted text-uppercase">Filtrar Eventos</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-white border shadow-sm p-1">
               <span class="material-icons" style="font-size: 20px;">close</span>
             </button>
           </div>
@@ -62,12 +59,12 @@
             </div>
           </div>
           
-          <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm">Aplicar Filtros</button>
+          <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded-2 fw-bold border-0 shadow-sm">Aplicar Filtros</button>
         </div>
 
         <div class="card-body p-3 p-md-4">
           
-          <div class="table-container shadow-sm desktop-only">
+          <div class="table-container shadow-sm d-none d-md-block">
             <table>
               <thead>
                 <tr class="main-header">
@@ -115,7 +112,7 @@
                   <td class="cell-ro col-desc text-muted">
                     {{ evento.descripcion || '-' }}
                     <div v-if="esLink(evento.descripcion)" class="mt-1">
-                      <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none" style="font-size: 0.75rem;">
+                      <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none small">
                         <i class="bi bi-link-45deg"></i> ABRIR ENLACE
                       </a>
                     </div>
@@ -136,16 +133,16 @@
             </table>
           </div>
 
-          <div class="mobile-only mt-3">
+          <div class="d-block d-md-none mt-3">
             <div v-for="evento in eventosPaginados" :key="'mob-'+evento.id" class="card-arbitro">
-              <div class="card-header">
-                <div class="card-name fw-bold" style="font-size: 1rem; line-height: 1.2;">
+              <div class="card-header border-bottom mb-2 pb-2">
+                <div class="card-name fw-bold text-dark">
                   {{ evento.titulo }}
                 </div>
-                <div class="text-xs text-primary fw-bold">{{ formatearFecha(evento.fecha_evento) }}</div>
+                <div class="small text-primary fw-bold">{{ formatearFecha(evento.fecha_evento) }}</div>
               </div>
               
-              <div class="card-body">
+              <div class="card-body p-0">
                 <div class="mb-2 d-flex align-items-center flex-wrap gap-2">
                   <span :class="['badge-category', `cat-${evento.categoria}`]">{{ evento.categoria }}</span>
                   <span class="badge-status-sm bg-dark text-white">
@@ -154,9 +151,9 @@
                 </div>
                 
                 <div class="card-info mt-2">
-                  <p class="text-muted" style="white-space: pre-line;">{{ evento.descripcion || 'Sin descripción' }}</p>
+                  <p class="text-muted small mb-0" style="white-space: pre-line;">{{ evento.descripcion || 'Sin descripción' }}</p>
                   <div v-if="esLink(evento.descripcion)" class="mt-2">
-                    <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none">
+                    <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none small">
                       <span class="material-icons align-middle" style="font-size: 16px;">link</span> Abrir Enlace
                     </a>
                   </div>
@@ -173,129 +170,101 @@
               </div>
             </div>
             
-            <div v-if="eventosPaginados.length === 0" class="text-center p-4 bg-white rounded shadow-sm border mt-2">
+            <div v-if="eventosPaginados.length === 0" class="text-center p-4 bg-white rounded-3 border mt-2 shadow-sm">
               <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
               <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron eventos.</p>
             </div>
           </div>
 
-<div 
-  class="d-flex justify-content-center align-items-center gap-3 mt-4"
-  v-if="totalPaginas > 1"
->
-
-  <!-- ANTERIOR -->
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(-1)"
-    :disabled="paginaActual <= 1"
-  >
-    <i class="bi bi-chevron-left"></i> Ant
-  </button>
-
-  <!-- TEXTO -->
-  <span class="fw-bold text-dark small">
-    Página {{ paginaActual }} de {{ totalPaginas }}
-  </span>
-
-  <!-- SIGUIENTE -->
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(1)"
-    :disabled="paginaActual >= totalPaginas"
-  >
-    Sig <i class="bi bi-chevron-right"></i>
-  </button>
-
-</div>
-
-        </div>
-      </div>
-
-    </div>
-
-
-    <Teleport to="body">
-    <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
-      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 600px; width: 95%;">
-
-        <div class="icon-circle-exito" :class="modoEdicion ? 'bg-info-light' : 'bg-success-light'">
-          <span class="material-icons">{{ modoEdicion ? 'edit' : 'notification_add' }}</span>
-        </div>
-        <h4 class="fw-bold mt-3">
-          {{ modoEdicion ? 'Editar Evento' : 'Nuevo Evento' }}
-        </h4>
-        <p class="text-muted small mb-3">Completá los datos para enviar el aviso a los árbitros.</p>
-
-        <form @submit.prevent="confirmarGuardado" class="text-start">
-          <div class="row g-3">
-            <div class="col-12">
-              <label class="small fw-bold text-dark">Tema del Evento *</label>
-              <input v-model="form.titulo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Reunión general, Sanciones..." required>
-            </div>
-
-            <div class="col-12">
-              <label class="small fw-bold text-dark">Lugar o Descripción *</label>
-              <textarea v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Ej: Link de Zoom, sede física, o texto del aviso..." required></textarea>
-            </div>
-
-            <div class="col-md-6">
-              <label class="small fw-bold text-dark">Fecha del Evento *</label>
-              <input v-model="form.fecha_evento" type="date" class="form-control shadow-none border-secondary-subtle" required>
-            </div>
-
-            <div class="col-md-6">
-              <label class="small fw-bold text-dark">Categoría *</label>
-              <select v-model="form.categoria" class="form-select shadow-none border-secondary-subtle">
-                <option value="reunion">Reunión</option>
-                <option value="recordatorio">Recordatorio</option>
-                <option value="urgente">Urgente</option>
-              </select>
-            </div>
-
-            <div class="col-12">
-              <hr class="my-1 border-secondary-subtle">
-            </div>
-
-            <div class="col-12">
-              <label class="small fw-bold text-danger">Alcance de Visibilidad</label>
-              <select v-model="form.alcance" class="form-select shadow-none border-danger-subtle" @change="limpiarAlcance">
-                <option value="general">Para Todos los Árbitros</option>
-                <option value="grupo">Solo a un Grupo / Subgrupo específico</option>
-              </select>
-            </div>
-
-            <div v-if="form.alcance === 'grupo'" class="col-md-6 animate__animated animate__fadeIn">
-              <label class="small fw-bold text-dark">Grupo *</label>
-              <select v-model="form.grupo" class="form-select shadow-none border-secondary-subtle" required @change="form.subgrupo = ''">
-                <option value="" disabled>Elegir grupo...</option>
-                <option v-for="g in gruposOficiales" :key="g" :value="g">{{ g }}</option>
-              </select>
-            </div>
-
-            <div v-if="form.alcance === 'grupo' && form.grupo === '3'" class="col-md-6 animate__animated animate__fadeIn">
-              <label class="small fw-bold text-dark">Subgrupo (Opcional)</label>
-              <select v-model="form.subgrupo" class="form-select shadow-none border-secondary-subtle">
-                <option value="">Todo el Grupo 3</option>
-                <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-              </select>
-            </div>
-
-          </div>
-
-          <div class="d-flex gap-2 justify-content-center mt-4 pt-3 border-top">
-            <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</button>
-            <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="procesando">
-              <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
-              {{ procesando ? 'GUARDANDO...' : (modoEdicion ? 'GUARDAR CAMBIOS' : 'PUBLICAR EVENTO') }}
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+              <i class="bi bi-chevron-left"></i> Ant
+            </button>
+            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+              Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
-        </form>
 
+        </div>
       </div>
     </div>
-    </Teleport>
 
+    <Teleport to="body">
+      <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn">
+        <div class="modal-content-exito animate__animated animate__zoomIn">
+          <div class="icon-circle-exito mb-3" :class="modoEdicion ? 'bg-info-light' : 'bg-success-light'">
+            <span class="material-icons">{{ modoEdicion ? 'edit' : 'notification_add' }}</span>
+          </div>
+          <h4 class="fw-bold">{{ modoEdicion ? 'Editar Evento' : 'Nuevo Evento' }}</h4>
+          <p class="text-muted small mb-4">Completá los datos para enviar el aviso a los árbitros.</p>
+
+          <form @submit.prevent="confirmarGuardado" class="text-start">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="small fw-bold text-dark">Tema del Evento *</label>
+                <input v-model="form.titulo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Reunión general..." required>
+              </div>
+
+              <div class="col-12">
+                <label class="small fw-bold text-dark">Lugar o Descripción *</label>
+                <textarea v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Ej: Link de Zoom..." required></textarea>
+              </div>
+
+              <div class="col-md-6">
+                <label class="small fw-bold text-dark">Fecha del Evento *</label>
+                <input v-model="form.fecha_evento" type="date" class="form-control shadow-none border-secondary-subtle" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="small fw-bold text-dark">Categoría *</label>
+                <select v-model="form.categoria" class="form-select shadow-none border-secondary-subtle">
+                  <option value="reunion">Reunión</option>
+                  <option value="recordatorio">Recordatorio</option>
+                  <option value="urgente">Urgente</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <hr class="my-2 border-secondary-subtle opacity-25">
+              </div>
+
+              <div class="col-12">
+                <label class="small fw-bold text-danger">Alcance de Visibilidad</label>
+                <select v-model="form.alcance" class="form-select shadow-none border-danger-subtle" @change="limpiarAlcance">
+                  <option value="general">Para Todos los Árbitros</option>
+                  <option value="grupo">Solo a un Grupo / Subgrupo específico</option>
+                </select>
+              </div>
+
+              <div v-if="form.alcance === 'grupo'" class="col-md-6 animate__animated animate__fadeIn">
+                <label class="small fw-bold text-dark">Grupo *</label>
+                <select v-model="form.grupo" class="form-select shadow-none border-secondary-subtle" required @change="form.subgrupo = ''">
+                  <option value="" disabled>Elegir grupo...</option>
+                  <option v-for="g in gruposOficiales" :key="g" :value="g">{{ g }}</option>
+                </select>
+              </div>
+
+              <div v-if="form.alcance === 'grupo' && form.grupo === '3'" class="col-md-6 animate__animated animate__fadeIn">
+                <label class="small fw-bold text-dark">Subgrupo (Opcional)</label>
+                <select v-model="form.subgrupo" class="form-select shadow-none border-secondary-subtle">
+                  <option value="">Todo el Grupo 3</option>
+                  <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 justify-content-center mt-4 pt-3 border-top">
+              <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</button>
+              <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="procesando">
+                <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
+                {{ procesando ? 'GUARDANDO...' : (modoEdicion ? 'GUARDAR CAMBIOS' : 'PUBLICAR EVENTO') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -510,249 +479,180 @@ onMounted(obtenerEventos);
 
 <style scoped>
 /* ====================================================
-   1. BASE Y ESTRUCTURA GENERAL
+   1. BASE (MOBILE FIRST - CELULARES POR DEFECTO)
    ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
+
+/* Contenedor principal exacto como lo solicitaste */
+.full-screen-wrapper { 
+  position: relative; 
+  width: 99vw; 
   min-height: 100vh; 
   height: auto !important; 
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding: 20px;
+  margin-left: 50%; 
+  transform: translateX(-50%); 
+  padding: 20px; 
   padding-bottom: 120px; 
 }
 
+/* Estilos de estructura base (Celulares) */
 .admin-panel { 
   width: 100%;
   max-width: 100%; 
-  padding: 20px; 
+  padding: 0; 
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
   color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
-  border-radius: 12px; /* Coherencia con el resto del sistema */
+  border-radius: 0; 
+  box-sizing: border-box;
 }
 
-/* Cabecera Desktop */
+/* Cabecera Móvil */
 .header-section { 
   background: white; 
-  padding: 15px 25px; 
-  border-radius: 8px; 
+  padding: 15px; 
   display: flex; 
-  justify-content: space-between; 
-  margin-bottom: 15px; 
+  flex-direction: column; 
+  align-items: flex-start; 
+  text-align: left; 
+  gap: 15px; 
   border-left: 5px solid #ef4444; 
   box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-  align-items: center; 
 }
-
-.header-info { display: flex; flex-direction: column; }
-.title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
+.header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+.title { font-size: 1.25rem; font-weight: bold; margin: 0; color: #000; }
 .counter { font-size: 0.85rem; color: #000000; }
 
-/* ====================================================
-   2. BOTONES Y COMPONENTES
-   ==================================================== */
-.header-actions { display: flex; gap: 8px; }
-
+/* Botones Móvil (42x42 centrados) */
+.header-actions { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .btn-action { 
-  border: none; padding: 8px 12px; border-radius: 6px; 
-  font-weight: bold; cursor: pointer; display: flex; 
-  align-items: center; justify-content: center; gap: 5px; 
-  font-size: 0.75rem; transition: opacity 0.2s, transform 0.1s; 
+  border: none; border-radius: 6px; font-weight: bold; cursor: pointer; 
+  display: flex; align-items: center; justify-content: center; 
+  transition: opacity 0.2s, transform 0.1s; 
+  flex: none; width: 42px; height: 42px; padding: 0; 
 }
 .btn-action:hover { opacity: 0.85; }
 .btn-action:active { transform: scale(0.95); }
+.btn-text { display: none; } /* Oculto en móvil */
 
 .btn-clear { background: #e2e8f0; color: #000; }
 .btn-clear-checks { background: #fee2e2; color: #ef4444; } 
-.btn-export { background: #10b981; color: white; }
 .btn-blue { background: #3b82f6; color: white; }
-.btn-text { display: inline; }
 
-.btn-editar, .btn-eliminar { 
-  display: inline-flex; align-items: center; justify-content: center; 
-  border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: none;
+/* Visibilidad de Capas Base */
+.desktop-only { display: none; }
+.mobile-only { display: block; }
+.mobile-only-flex { display: flex; }
+
+/* Filtros Móvil */
+.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+.filter-grid-mobile { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.form-group-mobile { display: flex; flex-direction: column; gap: 4px; }
+.form-group-mobile.full-width { grid-column: span 1; }
+.form-group-mobile label { font-size: 0.75rem; font-weight: 700; color: #64748b; }
+.form-group-mobile input, .form-group-mobile select { 
+  padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; 
+  font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #0f172a;
 }
-.btn-editar { background: #eff6ff; color: #1d4ed8; }
-.btn-editar:hover { background: #dbeafe; }
-.btn-eliminar { background: #fee2e2; color: #dc2626; }
-.btn-eliminar:hover { background: #fecaca; }
-.btn-refresh { background: none; border: none; color: #64748b; cursor: pointer; }
+.form-group-mobile input:focus, .form-group-mobile select:focus { border-color: #3b82f6; background: white; }
 
-/* Paginación */
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
+/* Tarjetas Móviles (Listado) */
+.card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
+.card-name { font-size: 1.05rem; color: #0f172a; }
+.btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
+.btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; font-weight: bold;}
 
-/* Badges de Eventos */
-.badge-category {
-  font-size: 0.65rem; padding: 4px 8px; border-radius: 6px;
-  text-transform: uppercase; font-weight: 800; display: inline-block;
-}
+/* Badges */
+.badge-category { font-size: 0.65rem; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 800; display: inline-block; }
 .cat-reunion { background: #e0f2fe; color: #0369a1; }
 .cat-recordatorio { background: #fef9c3; color: #a16207; }
 .cat-urgente { background: #fee2e2; color: #b91c1c; }
 .badge-status-sm { padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; }
 
-/* ====================================================
-   3. TABLA DESKTOP
-   ==================================================== */
-.table-container { 
-  width: 100%; overflow: auto; max-height: calc(100vh - 220px); 
-  background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-}
-table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-
-thead tr.main-header th { 
-  position: sticky; top: 0; z-index: 50; background: #f8fafc !important; 
-  padding: 12px 8px; border-bottom: 1px solid #cbd5e1; 
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
-}
-thead tr.filter-row td { 
-  position: sticky; top: 41px; z-index: 40; background: #f1F5F9 !important; 
-  padding: 6px 8px 10px 8px; border-bottom: 2px solid #cbd5e1; margin: 0;
-}
-
-.col-id { left: 0; width: 100px; text-align: center; } 
-.col-acciones { left: 100px; width: 90px; }
-.col-tema { min-width: 180px; max-width: 250px; white-space: normal !important; word-wrap: break-word; }
-.col-desc { min-width: 180px; max-width: 300px; white-space: normal !important; word-wrap: break-word; }
-
-.sticky-col { position: sticky !important; background: white !important; border-right: 1px solid #e2e8f0; }
-thead tr.main-header th.sticky-col { z-index: 60 !important; background-color: #f8fafc !important; }
-thead tr.filter-row td.sticky-col { z-index: 55 !important; background-color: #f1f5f9 !important; }
-tbody td.sticky-col { z-index: 30 !important; }
-
-.cell-ro { padding: 10px 8px; font-size: 0.85rem; color: inherit; border-bottom: 1px solid #f1f5f9; }
-
-.filter-input { font-size: 16px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
-@media (min-width: 769px) { .filter-input { font-size: 0.75rem; height: 28px; } }
-
-/* ====================================================
-   4. MODALES (Con más aire para Eventos)
-   ==================================================== */
-.modal-overlay-exito { 
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-  background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); 
-  display: flex; align-items: center; justify-content: center; z-index: 10000; 
-}
-.modal-content-exito { 
-  background: white; border-radius: 20px; 
-  padding: 40px !important; /* Más padding para que respire en Desktop */
-  width: 90%; max-width: 750px; text-align: center; color: #000; 
-}
-.icon-circle-exito { 
-  width: 80px; height: 80px; border-radius: 50%; 
-  display: flex; align-items: center; justify-content: center; margin: 0 auto; 
-}
+/* Modal Móvil */
+.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px; box-sizing: border-box; }
+.modal-content-exito { background: white; border-radius: 20px; padding: 30px 20px !important; width: 100%; max-width: 90%; max-height: 90vh; overflow-y: auto; text-align: center; color: #000; }
+.icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
 .bg-success-light { background: #dcfce7; color: #166534; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
 
-/* ====================================================
-   5. 📱 RESPONSIVE DESIGN (Tiered Layout)
-   ==================================================== */
-.desktop-only { display: block; }
-.mobile-only { display: none; }
-.mobile-only-flex { display: none; }
-
-/* Laptops y Tablets Grandes (Hasta 1024px) */
-@media (max-width: 1024px) {
-  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
-}
-
-/* Tablets y Móviles (Hasta 768px) */
-@media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-  
-  /* PANEL DE FILTROS MÓVIL */
-  .mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-  .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  
-  .form-group-mobile { display: flex; flex-direction: column; gap: 4px; }
-  .form-group-mobile.full-width { grid-column: span 2; }
-  .form-group-mobile label { font-size: 0.75rem; font-weight: 700; color: #64748b; }
-  .form-group-mobile input, .form-group-mobile select { 
-    padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; 
-    font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #0f172a;
-  }
-  .form-group-mobile input:focus, .form-group-mobile select:focus { border-color: #3b82f6; background: white; }
-
-  /* TARJETAS MÓVILES */
-  .card-arbitro { 
-    background: white; border-radius: 8px; padding: 15px; 
-    margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-  }
-  .card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
-  .card-name { font-size: 1.05rem; color: #0f172a; }
-  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-  
-  .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-  .btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; font-weight: bold;}
-}
-
-/* Smartphones (Hasta 600px) */
-@media (max-width: 600px) {
-  /* AIRE A LOS COSTADOS EN MÓVIL */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto;
-  margin-left: 50%;
-  transform: translateX(-50%);
-      /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important; 
-  box-sizing: border-box !important;
-}
-    
-.admin-panel { 
-      padding: 0 !important; 
-      border-radius: 0; 
-      box-sizing: border-box !important;
-}
-  
-  /* CABECERA: Título Izquierda, Botones Centro */
-  .header-section { 
-    padding: 15px !important; 
-    flex-direction: column; 
-    align-items: flex-start; /* Barra roja y título a la izquierda */
-    text-align: left; 
-    gap: 15px; 
-  }
-  
-  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
-  .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
-  .header-info span.counter { font-size: 0.85rem !important; }
-  
-  /* Botones de acción 42x42 centrados abajo */
-  .header-actions { 
-    width: 100%; display: flex; flex-direction: row; 
-    flex-wrap: wrap; justify-content: center; gap: 10px; 
-  }
-  .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
-  .btn-action span.material-icons { margin: 0; }
-  .btn-text { display: none !important; }
-  .mobile-only-flex { display: flex !important; }
-
-  /* AJUSTE DE PADDING EN MODALES MÓVILES (Agregar/Editar Eventos) */
-  .modal-content-exito {
-    padding: 30px 20px !important; /* Libera los costados pero mantiene aire arriba y abajo */
-    max-height: 90vh; /* Evita que el modal sea más alto que la pantalla */
-    overflow-y: auto; /* Scroll interno si el formulario de evento es largo */
-  }
-
-  /* Filtros móviles responsivos */
-  .filter-grid-mobile { grid-template-columns: 1fr; }
-  .form-group-mobile.full-width { grid-column: span 1; }
-}
-
+/* Utilitarios compartidos */
+.btn-editar, .btn-eliminar { display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: none; }
+.btn-editar { background: #eff6ff; color: #1d4ed8; }
+.btn-editar:hover { background: #dbeafe; }
+.btn-eliminar { background: #fee2e2; color: #dc2626; }
+.btn-eliminar:hover { background: #fecaca; }
+.btn-refresh { background: none; border: none; color: #64748b; cursor: pointer; }
 .animate__animated { animation-duration: 0.5s; }
+
+
+/* ====================================================
+   2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
+   ==================================================== */
+@media (min-width: 768px) {
+  
+  /* Expansión del contenedor principal */
+  .admin-panel { padding: 20px; border-radius: 12px; }
+  
+  /* Cambio de visibilidad */
+  .desktop-only { display: block; }
+  .mobile-only { display: none; }
+  .mobile-only-flex { display: none; }
+
+  /* Reestructuración Cabecera */
+  .header-section { flex-direction: row; align-items: center; justify-content: space-between; border-radius: 8px; padding: 15px 25px; }
+  .header-info { width: auto; align-items: flex-start; }
+  .title { font-size: 1.1rem; }
+  
+  /* Reestructuración Botones */
+  .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; }
+  .btn-action { width: auto; height: auto; padding: 8px 12px; gap: 5px; font-size: 0.75rem; }
+  .btn-text { display: inline; }
+
+  /* Filtros a 2 columnas */
+  .filter-grid-mobile { grid-template-columns: 1fr 1fr; }
+  .form-group-mobile.full-width { grid-column: span 2; }
+  
+  /* Modal respira mejor, se asegura el scroll interno si excede la pantalla */
+  .modal-content-exito { padding: 40px !important; max-width: 750px; overflow-y: auto; }
+
+  /* TABLA DESKTOP (Aparece en vez de las tarjetas) */
+  .table-container { 
+    width: 100%; overflow: auto; max-height: calc(100vh - 220px); 
+    background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+  }
+  table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
+  
+  thead tr.main-header th { 
+    position: sticky; top: 0; z-index: 50; background: #f8fafc !important; 
+    padding: 12px 8px; border-bottom: 1px solid #cbd5e1; 
+    font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
+  }
+  thead tr.filter-row td { 
+    position: sticky; top: 41px; z-index: 40; background: #f1F5F9 !important; 
+    padding: 6px 8px 10px 8px; border-bottom: 2px solid #cbd5e1; margin: 0;
+  }
+  
+  .col-id { left: 0; width: 100px; text-align: center; } 
+  .col-acciones { left: 100px; width: 90px; }
+  .col-tema { min-width: 180px; max-width: 250px; white-space: normal !important; word-wrap: break-word; }
+  .col-desc { min-width: 180px; max-width: 300px; white-space: normal !important; word-wrap: break-word; }
+  
+  .sticky-col { position: sticky !important; background: white !important; border-right: 1px solid #e2e8f0; }
+  thead tr.main-header th.sticky-col { z-index: 60 !important; background-color: #f8fafc !important; }
+  thead tr.filter-row td.sticky-col { z-index: 55 !important; background-color: #f1f5f9 !important; }
+  tbody td.sticky-col { z-index: 30 !important; }
+  
+  .cell-ro { padding: 10px 8px; font-size: 0.85rem; color: inherit; border-bottom: 1px solid #f1f5f9; }
+  .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
+}
+
+/* ====================================================
+   3. PANTALLAS GRANDES (Desde 1024px hacia arriba)
+   ==================================================== */
+@media (min-width: 1024px) {
+  /* Si en el futuro querés darle más aire o restringir anchos en monitores muy grandes, va acá */
+}
 </style>
