@@ -101,13 +101,35 @@
             <p class="text-muted mt-2 mb-0 fw-bold">No se encontró indumentaria.</p>
           </div>
 
-          <div class="d-flex justify-content-end w-100 mt-3" v-if="stockFiltrado.length > 0">
-            <div class="paginacion" v-if="totalPaginas > 1">
-              <button class="btn-paginacion" @click="cambiarPagina(-1)" :disabled="paginaActual === 1">Anterior</button>
-              <span class="paginacion-texto">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn-paginacion" @click="cambiarPagina(1)" :disabled="paginaActual === totalPaginas">Siguiente</button>
-            </div>
-          </div>
+<div 
+  class="d-flex justify-content-center align-items-center gap-3 mt-4"
+  v-if="totalPaginas > 1"
+>
+
+  <!-- ANTERIOR -->
+  <button
+    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+    @click="cambiarPagina(-1)"
+    :disabled="paginaActual <= 1"
+  >
+    <i class="bi bi-chevron-left"></i> Ant
+  </button>
+
+  <!-- TEXTO -->
+  <span class="fw-bold text-dark small">
+    Página {{ paginaActual }} de {{ totalPaginas }}
+  </span>
+
+  <!-- SIGUIENTE -->
+  <button
+    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+    @click="cambiarPagina(1)"
+    :disabled="paginaActual >= totalPaginas"
+  >
+    Sig <i class="bi bi-chevron-right"></i>
+  </button>
+
+</div>
 
         </div> </div> </div>
 

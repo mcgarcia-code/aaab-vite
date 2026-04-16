@@ -50,13 +50,13 @@
       </div>
 
       <div class="col-12 col-lg-8">
-        <div class="card shadow border-0 overflow-hidden h-100" style="border-radius: 15px;">
-          <div class="card-header bg-white py-3 border-bottom">
+        <div class="card shadow border-0 overflow-hidden h-100 d-flex flex-column" style="border-radius: 15px;">
+          <div class="card-header bg-white py-3 border-bottom flex-shrink-0">
             <h6 class="m-0 fw-bold text-dark small text-uppercase" style="letter-spacing: 1px;">Mi Historial de Licencias</h6>
           </div>
           
-          <div class="card-body p-0 bg-white">
-            <div class="table-responsive">
+          <div class="card-body p-0 bg-white flex-grow-1">
+            <div class="table-responsive h-100">
               <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light">
                   <tr class="text-uppercase text-muted" style="font-size: 0.75rem;">
@@ -67,7 +67,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(lic, index) in licencias" :key="index">
+                  <tr v-for="(lic, index) in licenciasPaginadas" :key="index">
                     <td class="ps-3 align-middle fw-bold text-dark">
                       <div class="d-flex flex-column">
                         <span>{{ formatearFecha(lic.fecha_licencia) }}</span>
@@ -100,6 +100,38 @@
               </table>
             </div>
           </div>
+          
+          
+              <div 
+                class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-4"
+                v-if="totalPaginas > 1"
+              >
+
+                <!-- ANTERIOR -->
+                <button
+                  class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+                  @click="cambiarPagina(-1)"
+                  :disabled="paginaActual <= 1"
+                >
+                  <i class="bi bi-chevron-left"></i> Ant
+                </button>
+
+                <!-- TEXTO -->
+                <span class="fw-bold text-dark small">
+                  Página {{ paginaActual }} de {{ totalPaginas }}
+                </span>
+
+                <!-- SIGUIENTE -->
+                <button
+                  class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+                  @click="cambiarPagina(1)"
+                  :disabled="paginaActual >= totalPaginas"
+                >
+                  Sig <i class="bi bi-chevron-right"></i>
+                </button>
+
+              </div>
+
         </div>
       </div>
       
@@ -108,7 +140,6 @@
 </template>
 
 <script setup>
-// MODIFICADO: Importamos computed
 import { ref, onMounted, inject, computed } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
@@ -123,21 +154,42 @@ useHead({
 // Inyección del notificador global
 const notificar = inject('notificar');
 const fechaSeleccionada = ref('');
-// NUEVO: Estado reactivo para el motivo
 const motivoSeleccionado = ref('particular');
 const cargando = ref(false);
 const licencias = ref([]);
 
-// NUEVO: Lógica de fechas dinámicas
+// NUEVO: Variables de Paginación
+const paginaActual = ref(1);
+const registrosPorPagina = 4;
+
+const cambiarPagina = (delta) => {
+  paginaActual.value += delta;
+  setTimeout(() => {
+    // Detectamos si es pantalla móvil
+    if (window.innerWidth <= 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, 50);
+};
+
+// NUEVO: Cálculos para Paginación
+const totalPaginas = computed(() => Math.ceil(licencias.value.length / registrosPorPagina) || 1);
+
+const licenciasPaginadas = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina;
+  return licencias.value.slice(inicio, inicio + registrosPorPagina);
+});
+
+// Lógica de fechas dinámicas
 const fechaHoyStr = new Date().toISOString().split("T")[0];
-const fechaMinima10Dias = computed(() => {
+const fechaMinima7Dias = computed(() => {
   const hoy = new Date();
   hoy.setDate(hoy.getDate() + 7);
   return hoy.toISOString().split("T")[0];
 });
 
 const fechaMinimaDinamica = computed(() => {
-  return motivoSeleccionado.value === 'particular' ? fechaMinima10Dias.value : fechaHoyStr;
+  return motivoSeleccionado.value === 'particular' ? fechaMinima7Dias.value : fechaHoyStr;
 });
 
 const formatearFecha = (fechaStr) => {
@@ -147,13 +199,21 @@ const formatearFecha = (fechaStr) => {
   return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fechaStr;
 };
 
+const parseFecha = (fechaStr) => {
+  const [dia, mes, anio] = fechaStr.split('/');
+  return new Date(`20${anio}-${mes}-${dia}`);
+};
+
 const obtenerLicencias = async () => {
   try {
     const res = await api.get({
       entity: 'licencias',
       action: 'obtenerHistorial',
     });
-    licencias.value = res.payload || [];
+    licencias.value = (res.payload || []).sort((a, b) => {
+      return parseFecha(b.fecha_licencia) - parseFecha(a.fecha_licencia);
+    });
+    paginaActual.value = 1;
   } catch (err) {
     console.error("Error al cargar historial:", err);
   }
@@ -168,11 +228,9 @@ const solicitarLicencia = async () => {
     const fechaPedido = new Date(fechaSeleccionada.value);
     fechaPedido.setHours(0, 0, 0, 0);
     const diffDias = Math.ceil((fechaPedido - hoy) / (1000 * 60 * 60 * 24));
-    // MODIFICADO: Corregido a 10 días según tu regla de negocio
     return diffDias >= 7; 
   })();
 
-  // MODIFICADO: Determinamos el estado inicial en el front para mandar al payload
   let estadoFinal = '';
   if (motivoSeleccionado.value === 'lesion_enfermedad') {
     estadoFinal = 'pendiente';
@@ -189,13 +247,11 @@ const solicitarLicencia = async () => {
       payload: {
         fecha_licencia: fechaSeleccionada.value,
         estado: estadoFinal,
-        // NUEVO: Mandamos el motivo al backend
         motivo: motivoSeleccionado.value 
       }
     });
 
     if (res.ok && res.payload.success) {
-      // MODIFICADO: Usamos el mensaje que viene del backend y ajustamos los colores
       notificar({
         titulo: motivoSeleccionado.value === 'lesion_enfermedad' ? 'Licencia Pendiente' : (enTermino ? '¡Licencia Aceptada!' : 'Solicitud Rechazada'),
         mensaje: res.payload.message || 'Procesado correctamente.',

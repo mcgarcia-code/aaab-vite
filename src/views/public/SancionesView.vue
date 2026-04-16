@@ -83,7 +83,7 @@
                 <div class="card-sancion-body">
                   <p class="mb-2 text-muted small"><strong>Motivo:</strong> {{ s.motivo }}</p>
                   <p class="mb-2">
-                    <strong>Sanción:</strong> 
+                    <strong>Sanción: </strong> 
                     <span :class="s.estado_dinamico == 3 ? 'text-muted fw-bold' : 'text-danger fw-bold'">{{ s.sancion || 'Sin sanción' }}</span>
                   </p>
                   <div class="d-flex justify-content-between mt-3 pt-2 border-top">
@@ -100,29 +100,36 @@
               </div>
             </div>
 
-            <div class="position-relative d-flex align-items-center mt-4" v-if="totalPaginas > 1">
-              
-              <button
-                class="btn btn-light rounded-pill px-4 fw-bold shadow-sm"
-                @click="cambiarPagina(-1)"
-                :disabled="paginaActual === 1"
+                        <div 
+                class="d-flex justify-content-center align-items-center gap-3 mt-4"
+                v-if="totalPaginas > 1"
               >
-                Anterior
-              </button>
 
-              <span class="text-white fw-bold small position-absolute top-50 start-50 translate-middle">
-                Página {{ paginaActual }} de {{ totalPaginas }}
-              </span>
+                <!-- ANTERIOR -->
+                <button
+                  class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+                  @click="cambiarPagina(-1)"
+                  :disabled="paginaActual <= 1"
+                >
+                  <i class="bi bi-chevron-left"></i> Ant
+                </button>
 
-              <button
-                class="btn btn-light rounded-pill px-4 fw-bold shadow-sm ms-auto"
-                @click="cambiarPagina(1)"
-                :disabled="paginaActual === totalPaginas"
-              >
-                Siguiente
-              </button>
+                <!-- TEXTO -->
+                <span class="fw-bold text-white small">
+                  Página {{ paginaActual }} de {{ totalPaginas }}
+                </span>
 
-            </div>
+                <!-- SIGUIENTE -->
+                <button
+                  class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+                  @click="cambiarPagina(1)"
+                  :disabled="paginaActual >= totalPaginas"
+                >
+                  Sig <i class="bi bi-chevron-right"></i>
+                </button>
+
+              </div>
+
           </div>
 
           <p class="text-white-50 small text-center mt-4">

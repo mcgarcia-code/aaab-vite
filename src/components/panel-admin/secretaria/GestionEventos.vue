@@ -179,15 +179,41 @@
             </div>
           </div>
 
-          <div class="d-flex justify-content-end mt-4 w-100" v-if="eventosFiltrados.length > 0">
-            <div class="paginacion m-0" v-if="totalPaginas > 1">
-              <button class="btn-paginacion shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual === 1">Anterior</button>
-              <span class="paginacion-texto text-dark fw-bold">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn-paginacion shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual === totalPaginas || totalPaginas === 0">Siguiente</button>
-            </div>
-          </div>
+<div 
+  class="d-flex justify-content-center align-items-center gap-3 mt-4"
+  v-if="totalPaginas > 1"
+>
 
-        </div> </div> </div>
+  <!-- ANTERIOR -->
+  <button
+    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+    @click="cambiarPagina(-1)"
+    :disabled="paginaActual <= 1"
+  >
+    <i class="bi bi-chevron-left"></i> Ant
+  </button>
+
+  <!-- TEXTO -->
+  <span class="fw-bold text-dark small">
+    Página {{ paginaActual }} de {{ totalPaginas }}
+  </span>
+
+  <!-- SIGUIENTE -->
+  <button
+    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+    @click="cambiarPagina(1)"
+    :disabled="paginaActual >= totalPaginas"
+  >
+    Sig <i class="bi bi-chevron-right"></i>
+  </button>
+
+</div>
+
+        </div>
+      </div>
+
+    </div>
+
 
     <Teleport to="body">
     <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
