@@ -1,11 +1,15 @@
 <template>
   <div class="animate__animated animate__fadeIn">
     
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+   <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
-        <h4 class="text-danger fw-bold m-0 d-flex align-items-center">
-          <i class="bi bi-person me-2"></i> Legajo Personal
-        </h4>
+        <div>
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center">
+            <i class="bi bi-person me-2"></i> Legajo Personal
+          </h4>
+          <p class="text-muted small m-0 mt-1">Modificá tus datos personales</p>
+        </div>
+
         
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
             <span v-if="arbitro.apto_medico == 1" class="badge bg-success px-3 py-2 shadow-sm d-flex align-items-center gap-2">
@@ -395,32 +399,22 @@ const enviarSolicitudRectificacion = async () => {
 /* ====================================================
    1. ESTILOS BASE Y COMPONENTES
    ==================================================== */
-.form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }
-.x-small { font-size: 0.75rem; }
-.badge { letter-spacing: 1px; }
-
-.manual-section { 
-    border-radius: 1rem;
-}
-
+   
+.form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem;}
+.x-small { font-size: 0.65rem; }
+.manual-section { background-color: #0c1624; border-radius: 1rem; }
+.btn-danger { background-color: #dc2626 !important; border: none; }
+.text-white-50 { color: rgba(255, 255, 255, 0.5) !important; }
 .custom-textarea {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    border: none;
-    border-radius: 8px;
+    background-color: #ffffff !important; color: #000000 !important;
+    border: none; border-radius: 8px;
 }
+
 .custom-textarea::placeholder {
     color: #6c757d;
 }
 
-.btn-danger { 
-    background-color: #dc2626 !important; 
-    border: none; 
-}
-
-.text-white-50 { 
-    color: rgba(255, 255, 255, 0.5) !important; 
-}
+.badge { letter-spacing: 1px; }
 
 /* ====================================================
    2. ESTADOS (PILLS)

@@ -238,7 +238,18 @@ onMounted(() => {
 .admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
 
 /* CABECERA ORIGINAL */
-.header-section { background: white; padding: 15px 25px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.header-section { 
+  background: white; 
+  padding: 15px 25px; 
+  border-radius: 8px; 
+  display: flex; 
+  justify-content: space-between; 
+  margin-bottom: 15px; 
+  border-left: 5px solid #ef4444; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+  align-items: center; 
+}
+
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
 .counter { font-size: 0.85rem; color: #64748b; }
 

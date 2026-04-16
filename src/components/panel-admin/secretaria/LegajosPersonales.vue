@@ -1071,6 +1071,7 @@ onMounted(() => {
 /* ====================================================
    CABECERA UNIFICADA
    ==================================================== */
+
 .header-section { 
   background: white; 
   padding: 15px 25px; 
@@ -1078,8 +1079,9 @@ onMounted(() => {
   display: flex; 
   justify-content: space-between; 
   margin-bottom: 15px; 
-  align-items: center; 
+  border-left: 5px solid #ef4444; 
   box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+  align-items: center; 
 }
 
 .header-info { display: flex; flex-direction: column; }

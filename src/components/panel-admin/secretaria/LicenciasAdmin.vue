@@ -71,6 +71,7 @@
                   <th class="sticky-col col-apellido">Apellido</th>
                   <th class="sticky-col col-nombre">Nombre</th>
                   <th class="text-center" style="min-width: 120px;">Estado</th>
+                  <th class="text-center">Motivo</th>
                   <th class="text-center">F. Solicitud</th>
                   <th class="text-center">F. Licencia</th>
                 </tr>
@@ -89,6 +90,7 @@
                       <option value="rechazada">RECHAZADA</option>
                     </select>
                   </td>
+                  <td></td>
                   <td><input v-model="filtros.fecha_solicitud" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
                   <td><input v-model="filtros.fecha" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
                 </tr>
@@ -114,6 +116,9 @@
                   <td class="text-center cell-ro">
                     <span :class="['badge-status', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
                   </td>
+                  <td class="text-center cell-ro text-muted small">
+                    {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}
+                  </td>
                   <td class="text-center cell-ro">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
                   <td class="text-center cell-ro fw-bold text-primary">{{ formatearFechaVista(lic.fecha_licencia) }}</td>
                 </tr>
@@ -136,6 +141,7 @@
                 </div>
 
                 <div class="card-info">
+                  <p><strong>Motivo:</strong> {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión / Enfermedad' : 'Particular' }}</p>
                   <p><strong>F. Solicitud:</strong> {{ formatearFechaVista(lic.fecha_solicitud) }}</p>
                   <p><strong>F. Licencia:</strong> <span class="text-primary fw-bold">{{ formatearFechaVista(lic.fecha_licencia) }}</span></p>
                 </div>
@@ -174,7 +180,7 @@
 
     <Teleport to="body">
     <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
-      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 500px; width: 95%;">
+      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 600px; width: 95%;">
 
         <div class="icon-circle-exito" :class="modoModal === 'editar' ? 'bg-info-light' : 'bg-success-light'">
           <span class="material-icons">{{ modoModal === 'editar' ? 'edit' : 'calendar_today' }}</span>
@@ -196,6 +202,23 @@
             </select>
           </div>
 
+          <div class="col-12 col-md-6">
+            <label class="small fw-bold">Motivo</label>
+            <select v-model="formModal.motivo" class="form-select shadow-none">
+              <option value="particular">Particular</option>
+              <option value="lesion_enfermedad">Lesión / Enfermedad</option>
+            </select>
+          </div>
+          
+          <div class="col-12 col-md-6">
+            <label class="small fw-bold">Estado</label>
+            <select v-model="formModal.estado" class="form-select shadow-none">
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobada">Aprobada</option>
+              <option value="rechazada">Rechazada</option>
+            </select>
+          </div>
+
           <div class="col-6">
             <label class="small fw-bold">Fecha Solicitud *</label>
             <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none">
@@ -204,15 +227,6 @@
           <div class="col-6">
             <label class="small fw-bold">Fecha Ausencia *</label>
             <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-danger-subtle">
-          </div>
-
-          <div class="col-12">
-            <label class="small fw-bold">Estado</label>
-            <select v-model="formModal.estado" class="form-select shadow-none">
-              <option value="pendiente">Pendiente</option>
-              <option value="aprobada">Aprobada</option>
-              <option value="rechazada">Rechazada</option>
-            </select>
           </div>
 
         </div>
@@ -259,6 +273,7 @@
                 <tr>
                   <th>F. Solicitud</th>
                   <th>F. Ausencia</th>
+                  <th>Motivo</th>
                   <th class="text-center">Estado</th>
                 </tr>
               </thead>
@@ -266,6 +281,7 @@
                 <tr v-for="h in historialLicencia" :key="h.id">
                   <td class="text-nowrap text-muted fw-bold">{{ formatearFechaVista(h.fecha_solicitud) }}</td>
                   <td class="text-nowrap text-primary fw-bold">{{ formatearFechaVista(h.fecha_licencia) }}</td>
+                  <td class="text-muted">{{ h.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</td>
                   <td class="text-center">
                     <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
                   </td>
@@ -309,7 +325,8 @@ const registrosPorPagina = 10
 
 const mostrarModal = ref(false)
 const modoModal = ref('nuevo')
-const formModal = ref({ id: null, id_arbitro: '', fecha_solicitud: '', fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '' })
+// MODIFICADO: Agregué motivo al estado inicial del formModal
+const formModal = ref({ id: null, id_arbitro: '', fecha_solicitud: '', fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '', motivo: 'particular' })
 
 const mostrarModalHistorial = ref(false)
 const cargandoHistorial = ref(false)
@@ -339,12 +356,10 @@ const licenciasPaginadas = computed(() => {
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
 watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo });
 
-// NUEVA FUNCIÓN: Cambiar página y scrollear arriba SOLO EN MOBILE
 const cambiarPagina = (delta) => {
   paginaActual.value += delta;
   
   setTimeout(() => {
-    // Verificamos si estamos en una pantalla de celular (menos de 768px de ancho)
     if (window.innerWidth <= 768) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -373,13 +388,15 @@ const obtenerArbitros = async () => {
 
 const abrirModalNuevo = () => {
   const hoy = new Date().toISOString().split('T')[0];
-  formModal.value = { id: null, id_arbitro: '', fecha_solicitud: hoy, fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '' };
+  // MODIFICADO: Reiniciar motivo a particular por defecto
+  formModal.value = { id: null, id_arbitro: '', fecha_solicitud: hoy, fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '', motivo: 'particular' };
   modoModal.value = 'nuevo';
   mostrarModal.value = true;
 };
 
 const editarLicencia = (lic) => {
-  formModal.value = { ...lic }
+  // MODIFICADO: Asegurarse de que el motivo se cargue al editar
+  formModal.value = { ...lic, motivo: lic.motivo || 'particular' }
   modoModal.value = 'editar'
   mostrarModal.value = true
 };
@@ -411,11 +428,14 @@ const confirmarEdicion = async () => {
   const res = await api.post({
     entity: 'licencias',
     action: 'actualizarLicencia',
+    // Ojo: Según el backend PHP actual, actualizarLicencia no guarda cambios de "motivo", 
+    // pero lo enviamos por si a futuro ajustás la query SQL del UPDATE.
     payload: {
       id: formModal.value.id,
       estado: formModal.value.estado,
       fecha_licencia: formModal.value.fecha_licencia,
-      fecha_solicitud: formModal.value.fecha_solicitud
+      fecha_solicitud: formModal.value.fecha_solicitud,
+      motivo: formModal.value.motivo
     }
   });
   cargando.value = false;
@@ -455,7 +475,7 @@ const verHistorialLicencia = async (lic) => {
   historialLicencia.value = [];
 
   try {
-    const res = await api.get({
+    const res = await await api.get({
       entity: 'licencias',
       action: 'obtenerHistorial',
       payload: { id_arbitro: lic.id_arbitro }
@@ -476,6 +496,8 @@ const exportarExcel = () => {
     'Apellido': l.apellido,
     'Nombre': l.nombre,
     'Estado': l.estado.toUpperCase(),
+    // NUEVO: Agregado al Excel
+    'Motivo': l.motivo === 'lesion_enfermedad' ? 'Lesión/Enfermedad' : 'Particular',
     'Fecha Solicitud': formatearFechaVista(l.fecha_solicitud),
     'Fecha Licencia': formatearFechaVista(l.fecha_licencia)
   }));
@@ -494,6 +516,7 @@ onMounted(() => {
   obtenerArbitros();
 });
 </script>
+
 <style scoped>
 /* ====================================================
    1. BASE Y ESTRUCTURA GENERAL
@@ -567,14 +590,18 @@ onMounted(() => {
   padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
 }
 .badge-status.aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
+
+/* MODIFICADO: Color de Pendiente cambiado a un amarillo fuerte (estilo warning) */
+.badge-status.pendiente { background: #ffc107; color: #212529; border: 1px solid #e0a800; }
 .badge-status.rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 
 .badge-status-sm {
   padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700;
 }
 .badge-status-sm.aprobada { background: #dcfce7; color: #15803d; }
-.badge-status-sm.pendiente { background: #fef9c3; color: #a16207; }
+
+/* MODIFICADO: Color de Pendiente para versión small móvil */
+.badge-status-sm.pendiente { background: #ffc107; color: #212529; }
 .badge-status-sm.rechazada { background: #fee2e2; color: #b91c1c; }
 
 /* Paginación */

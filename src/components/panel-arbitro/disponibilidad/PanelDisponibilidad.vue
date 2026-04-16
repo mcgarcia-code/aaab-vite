@@ -359,18 +359,20 @@ const enviarSolicitudRectificacion = async () => {
 /* ====================================================
    2. COMPONENTES ESPECÍFICOS DE ESTA VISTA
    ==================================================== */
+
+   
 .form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }
+.x-small { font-size: 0.65rem; font-weight: 800; }
 .manual-section { background-color: #0c1624; border-radius: 1rem; }
 .btn-danger { background-color: #dc2626 !important; border: none; }
 .text-white-50 { color: rgba(255, 255, 255, 0.5) !important; }
-
 .custom-textarea {
     background-color: #ffffff !important; color: #000000 !important;
     border: none; border-radius: 8px;
 }
 .custom-textarea::placeholder { color: #6c757d; }
 
-.x-small { font-size: 0.65rem; font-weight: 800; }
+
 
 /* ====================================================
    3. 📱 RESPONSIVE DESIGN (Tiered Layout)

@@ -8,17 +8,31 @@
             <i class="bi bi-calendar me-2"></i> Solicitar Licencia
           </h4>
           <p class="text-muted x-small-mobile mb-4">
-            Las licencias deben solicitarse con un mínimo de <strong>10 días</strong> de antelación para aprobación automática. Las mismas son por día completo, no hay licencias parciales.
+            Las licencias particulares deben solicitarse con un mínimo de <strong>10 días</strong> de antelación. Las mismas son por día completo, no hay licencias parciales.
           </p>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold small text-dark">Motivo de la Licencia</label>
+            <select v-model="motivoSeleccionado" class="form-select form-select-lg shadow-none" :disabled="cargando">
+              <option value="particular">Particular</option>
+              <option value="lesion_enfermedad">Lesión / Enfermedad</option>
+            </select>
+          </div>
+
+          <div v-if="motivoSeleccionado === 'lesion_enfermedad'" class="alert alert-warning small py-2 px-3 mb-3 border-0" style="border-radius: 8px;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            Tu licencia quedará <strong>Pendiente</strong>. Tenés 72 hs para enviar el certificado médico a <strong>licencias@arbitroshandball.com.ar</strong>, sino será rechazada y enviada al Tribunal de Ética. Avisá a tu coordinador.
+          </div>
 
           <div class="mb-4">
             <label class="form-label fw-bold small text-dark">Fecha de la Licencia</label>
             <input 
               type="date" 
-              :min="fechaMinima" 
+              :min="fechaMinimaDinamica" 
               v-model="fechaSeleccionada" 
               class="form-control form-control-lg custom-input-date shadow-none"
               onkeydown="return false"
+              :disabled="cargando"
             >
           </div>
 
@@ -48,6 +62,7 @@
                   <tr class="text-uppercase text-muted" style="font-size: 0.75rem;">
                     <th class="ps-3 py-3">Fecha</th>
                     <th class="d-none d-md-table-cell py-3">Solicitada</th>
+                    <th class="d-none d-md-table-cell py-3">Motivo</th>
                     <th class="text-center pe-3 py-3">Estado</th>
                   </tr>
                 </thead>
@@ -56,20 +71,28 @@
                     <td class="ps-3 align-middle fw-bold text-dark">
                       <div class="d-flex flex-column">
                         <span>{{ formatearFecha(lic.fecha_licencia) }}</span>
-                        <span class="d-md-none text-muted" style="font-size: 0.65rem;">Solic: {{ formatearFecha(lic.fecha_solicitud) }}</span>
+                        <span class="d-md-none text-muted" style="font-size: 0.65rem;">
+                          Solic: {{ formatearFecha(lic.fecha_solicitud) }}
+                        </span>
+                        <span class="d-md-none text-muted fw-normal" style="font-size: 0.65rem;">
+                          Motivo: {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}
+                        </span>
                       </div>
                     </td>
                     <td class="align-middle text-muted small d-none d-md-table-cell">
                         {{ formatearFecha(lic.fecha_solicitud) }}
                     </td>
+                    <td class="align-middle text-muted small d-none d-md-table-cell">
+                        {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enfermedad' : 'Particular' }}
+                    </td>
                     <td class="text-center align-middle pe-3">
-                      <span :class="lic.estado === 'aprobada' ? 'badge bg-success' : 'badge bg-danger'" class="status-badge">
+                      <span :class="{'badge': true, 'bg-success': lic.estado === 'aprobada', 'bg-danger': lic.estado === 'rechazada' || lic.estado === 'borrada', 'bg-warning text-dark': lic.estado === 'pendiente'}" class="status-badge">
                         {{ lic.estado.toUpperCase() }}
                       </span>
                     </td>
                   </tr>
                   <tr v-if="licencias.length === 0">
-                    <td colspan="3" class="text-center text-muted py-5 small">
+                    <td colspan="4" class="text-center text-muted py-5 small">
                       No tenés licencias registradas.
                     </td>
                   </tr>
@@ -85,7 +108,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue';
+// MODIFICADO: Importamos computed
+import { ref, onMounted, inject, computed } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 
@@ -99,9 +123,22 @@ useHead({
 // Inyección del notificador global
 const notificar = inject('notificar');
 const fechaSeleccionada = ref('');
+// NUEVO: Estado reactivo para el motivo
+const motivoSeleccionado = ref('particular');
 const cargando = ref(false);
 const licencias = ref([]);
-const fechaMinima = new Date().toISOString().split("T")[0];
+
+// NUEVO: Lógica de fechas dinámicas
+const fechaHoyStr = new Date().toISOString().split("T")[0];
+const fechaMinima10Dias = computed(() => {
+  const hoy = new Date();
+  hoy.setDate(hoy.getDate() + 10);
+  return hoy.toISOString().split("T")[0];
+});
+
+const fechaMinimaDinamica = computed(() => {
+  return motivoSeleccionado.value === 'particular' ? fechaMinima10Dias.value : fechaHoyStr;
+});
 
 const formatearFecha = (fechaStr) => {
   if (!fechaStr) return '';
@@ -131,10 +168,18 @@ const solicitarLicencia = async () => {
     const fechaPedido = new Date(fechaSeleccionada.value);
     fechaPedido.setHours(0, 0, 0, 0);
     const diffDias = Math.ceil((fechaPedido - hoy) / (1000 * 60 * 60 * 24));
-    return diffDias >= 7; // Lógica de 7 días para aprobación
+    // MODIFICADO: Corregido a 10 días según tu regla de negocio
+    return diffDias >= 10; 
   })();
 
-  const estadoFinal = enTermino ? 'aprobada' : 'rechazada';
+  // MODIFICADO: Determinamos el estado inicial en el front para mandar al payload
+  let estadoFinal = '';
+  if (motivoSeleccionado.value === 'lesion_enfermedad') {
+    estadoFinal = 'pendiente';
+  } else {
+    estadoFinal = enTermino ? 'aprobada' : 'rechazada';
+  }
+
   cargando.value = true;
 
   try {
@@ -143,25 +188,23 @@ const solicitarLicencia = async () => {
       action: 'crearLicencia',
       payload: {
         fecha_licencia: fechaSeleccionada.value,
-        estado: estadoFinal
+        estado: estadoFinal,
+        // NUEVO: Mandamos el motivo al backend
+        motivo: motivoSeleccionado.value 
       }
     });
 
     if (res.ok && res.payload.success) {
-      if (enTermino) {
-        notificar({
-          titulo: '¡Licencia Aceptada!',
-          mensaje: 'La licencia se ha registrado correctamente.',
-          tipo: 'success'
-        });
-      } else {
-        notificar({
-          titulo: 'Solicitud Rechazada',
-          mensaje: 'La licencia fue rechazada automáticamente por estar fuera de término (mínimo 10 días).',
-          tipo: 'danger'
-        });
-      }
+      // MODIFICADO: Usamos el mensaje que viene del backend y ajustamos los colores
+      notificar({
+        titulo: motivoSeleccionado.value === 'lesion_enfermedad' ? 'Licencia Pendiente' : (enTermino ? '¡Licencia Aceptada!' : 'Solicitud Rechazada'),
+        mensaje: res.payload.message || 'Procesado correctamente.',
+        tipo: motivoSeleccionado.value === 'lesion_enfermedad' ? 'warning' : (enTermino ? 'success' : 'danger')
+      });
+      
+      // Reseteo del formulario
       fechaSeleccionada.value = '';
+      motivoSeleccionado.value = 'particular';
       await obtenerLicencias();
     } else {
       notificar({
