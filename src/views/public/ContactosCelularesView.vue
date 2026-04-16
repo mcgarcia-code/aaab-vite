@@ -122,8 +122,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, watch } from 'vue'; // Se agregó watch
-import axios from 'axios';
+import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
+import { api } from '@/api/api';
 import { useHead } from '@vueuse/head'
 
 useHead({
@@ -138,7 +138,6 @@ useHead({
 })
 
 const arbitros = ref([]);
-const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
 const mostrarFiltrosMobile = ref(false);
 
 const filtros = reactive({
@@ -151,12 +150,32 @@ const registrosPorPagina = 10;
 
 const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
 
+const notificar = inject('notificar');
+
+// --- LÓGICA DE CARGA ---
 const cargarDatos = async () => {
   try {
-    const res = await axios.get(API_URL);
-    arbitros.value = Array.isArray(res.data) ? res.data : [];
+    const {payload} = await api.get({
+      entity: "arbitros",
+      action:"getArbitros"
+    })
+    arbitros.value = payload || [];
   } catch (err) { 
-    console.error("Error al cargar contactos:", err); 
+    console.error("Error al cargar datos:", err); 
+    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
+  }
+};
+
+const cambiarPagina = (delta) => {
+  const nueva = paginaActual.value + delta;
+
+  if (nueva < 1 || nueva > totalPaginas.value) return;
+
+  paginaActual.value = nueva;
+
+  // opcional: scroll en mobile
+  if (window.innerWidth <= 768) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 };
 
@@ -212,6 +231,7 @@ watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
 // Ajuste seguro de páginas
 watch(totalPaginas, (nuevoTotal) => { 
   if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
+  if (paginaActual.value < 1) paginaActual.value = 1;
 });
 
 onMounted(cargarDatos);
@@ -246,29 +266,6 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 .btn-copy:hover { background: #cbd5e1; color: #1e293b; }
 
 .no-phone { color: #94a3b8; font-size: 0.75rem; font-style: italic; }
-
-/* CLASES DE PAGINACIÓN */
-.paginacion {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  margin-top: 15px;
-}
-.btn-paginacion {
-  border: none;
-  background: #e2e8f0;
-  color: #1e293b;
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-paginacion:hover:not(:disabled) { background: #cbd5e1; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #1e293b; font-size: 0.85rem; font-weight: 600; }
 
 /* MOBILE CARDS */
 .mobile-filter-panel { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }

@@ -202,8 +202,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive } from 'vue';
-import axios from 'axios';
+import { ref, onMounted, computed, reactive, inject } from 'vue';
+import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head'
 
@@ -235,8 +235,7 @@ useHead({
   ],
 })
 
-// --- CONFIGURACIÓN DE APIS ---
-const API_URL = 'https://arbitroshandball.com.ar/api/acciones.php'; 
+
 
 const arbitros = ref([]);
 const mostrarFiltrosMobile = ref(false);
@@ -248,13 +247,24 @@ const filtros = reactive({
   juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: ''
 });
 
+const notificar = inject('notificar');
+
 // --- LÓGICA DE CARGA ---
 const cargarDatos = async () => {
   try {
-    const res = await axios.get(API_URL);
-    arbitros.value = Array.isArray(res.data) ? res.data : [];
+    const {payload} = await api.get({
+      entity: "arbitros",
+      action:"getArbitros"
+    })
+    arbitros.value = payload
+      ? payload.map(a => ({
+          ...a,
+          apto_medico: a.apto_medico == 1,
+        }))
+      : [];
   } catch (err) { 
     console.error("Error al cargar datos:", err); 
+    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
   }
 };
 
