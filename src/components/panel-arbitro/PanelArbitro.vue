@@ -9,7 +9,7 @@
     
     <div class="container-fluid px-4 py-2">
       <div class="mx-auto"> 
-        <!-- HEADER DEL ÁRBITRO CON NOTIFICACIONES INTEGRADAS -->
+        
         <div class="user-header d-flex align-items-center justify-content-between mb-4 p-3 rounded-4 shadow">
           <div class="d-flex align-items-center">
             <img :src="urlFoto" @error="(e) => e.target.src = 'https://via.placeholder.com/150'" 
@@ -23,28 +23,22 @@
             </div>
           </div>
 
-          <!-- CAMPANA DE NOTIFICACIONES -->
           <div class="dropdown me-2">
             <button class="btn position-relative border-0 bg-transparent p-2 d-flex align-items-center notification-btn" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
               <i class="bi bi-bell-fill fs-3 text-white"></i>
-              <!-- CONTADOR ROJO DE ALERTA -->
               <span v-if="notificacionesNoLeidas > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="transform: translate(-30%, 30%) !important; font-size: 0.65rem; padding: 0.35em 0.5em;">
                 {{ notificacionesNoLeidas }}
                 <span class="visually-hidden">Notificaciones nuevas</span>
               </span>
             </button>
             
-            <!-- Menú Desplegable -->
             <ul class="dropdown-menu dropdown-menu-end shadow-lg py-0 overflow-hidden dropdown-notificaciones">
-              <!-- Cabecera del Dropdown -->
               <li class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
                 <h6 class="m-0 fw-bold text-dark">Nuevas Notificaciones</h6>
                 <span v-if="notificacionesNoLeidas > 0" class="badge bg-danger rounded-pill">{{ notificacionesNoLeidas }}</span>
               </li>
               
-              <!-- Lista de Notificaciones (Solo pendientes) -->
               <div class="notification-list">
-                <!-- Usamos notificacionesPendientes en lugar de notificaciones -->
                 <li v-for="notif in notificacionesPendientes" :key="notif.id" class="border-bottom bg-light bg-opacity-50">
                   <a class="dropdown-item py-3 px-3 cursor-pointer text-wrap" @click.stop="marcarLeidas()">
                     <div class="d-flex gap-3 align-items-start">
@@ -63,14 +57,12 @@
                   </a>
                 </li>
 
-                <!-- Mensaje si no hay notificaciones nuevas -->
                 <li v-if="notificacionesPendientes.length === 0" class="p-4 text-center text-muted">
                   <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-50"></i>
                   <small>No tenés notificaciones nuevas</small>
                 </li>
               </div>
 
-              <!-- Pie del Dropdown -->
               <li class="p-2 text-center border-top bg-light d-flex flex-column gap-2">
                 <button v-if="notificacionesNoLeidas > 0" @click.stop="marcarLeidas" class="btn btn-link btn-sm text-decoration-none text-muted small fw-bold p-0">
                   Marcar como leídas
@@ -171,7 +163,6 @@ const marcarLeidas = async () => {
   try {
     const res = await api.post({ entity: 'notificaciones', action: 'marcarLeidas' });
     if (res.ok) {
-      // Actualizamos localmente para que desaparezcan del dropdown al instante
       notificaciones.value.forEach(n => n.leida = 1);
     }
   } catch (error) {
@@ -201,11 +192,6 @@ useHead({
   min-height: 100vh; 
   background-color: #0f172a; 
   padding-bottom: 40px;
-}
-
-.max-800 { 
-  max-width: 900px; 
-  margin: 0 auto; 
 }
 
 .user-header {
@@ -258,6 +244,7 @@ useHead({
   justify-content: center;
   transition: background 0.3s;
 }
+
 .notification-btn:hover, .notification-btn:focus {
   background: rgba(255, 255, 255, 0.1) !important;
 }
@@ -319,23 +306,21 @@ useHead({
    📱 RESPONSIVE DESIGN (Perfil y Notificaciones)
    ==================================================== */
 
-/* --- 1. TABLETS Y MÓVILES EN HORIZONTAL (Hasta 768px) --- */
+/* --- TABLETS Y MÓVILES EN HORIZONTAL (Hasta 768px) --- */
 @media (max-width: 768px) {
   .perfil-img { width: 60px; height: 60px; }
   .saludo-texto { font-size: 1.2rem; }
 }
 
-/* --- 2. SMARTPHONES (Hasta 600px) --- */
+/* --- SMARTPHONES (Hasta 600px) --- */
 @media (max-width: 600px) {
-  /* Imagen de Perfil y Saludo */
   .perfil-img { width: 55px; height: 55px; }
   .saludo-texto { 
     font-size: 1.1rem; 
     margin-bottom: 2px !important; 
-    text-align: left; /* Mantiene coherencia con tus títulos a la izquierda */
+    text-align: left; 
   }
   
-  /* Botón de Notificaciones (40x42 para mantener proporción con botones de acción) */
   .notification-btn { 
     width: 42px; 
     height: 42px; 
@@ -345,37 +330,24 @@ useHead({
   }
   .notification-btn i { font-size: 1.25rem !important; }
 
-  /* Dropdown de Notificaciones (Ajuste para pantalla completa en ancho) */
-.dropdown-notificaciones {
-  position: fixed !important; /* 🔥 clave */
-  top: 70px !important; /* ajustá según tu header */
-
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-
-  width: calc(100vw - 30px) !important;
-  max-width: 400px !important;
-
-  z-index: 1060 !important;
-  border-radius: 12px !important;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
-}
+  /* Dropdown centrado y adaptado para móviles */
+  .dropdown-notificaciones {
+    position: fixed !important; 
+    top: 70px !important; 
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: calc(100vw - 30px) !important;
+    max-width: 400px !important;
+    z-index: 1060 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
+  }
   
   .notification-list {
     max-height: 50vh; 
     overflow-y: auto;
   }
-  
-  /* Si este componente tiene botones de acción, se centran aquí */
-  .header-actions { 
-    width: 100%; 
-    display: flex; 
-    justify-content: center; 
-    gap: 10px;
-    margin-top: 5px;
-  }
 }
 
 .animate__animated { animation-duration: 0.5s; }
-
 </style>

@@ -81,7 +81,7 @@ const handleKeydown = (e) => {
   if (e.key === 'Escape' && props.show) cerrar();
 };
 
-// 🔥 FOCUS TRAP
+// FOCUS TRAP
 const handleTab = (e) => {
   if (!props.show || e.key !== 'Tab') return;
 

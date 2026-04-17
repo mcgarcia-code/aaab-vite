@@ -10,7 +10,6 @@
           <p class="text-muted small m-0 mt-1">Modificá tus datos personales</p>
         </div>
 
-        
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
             <span v-if="arbitro.apto_medico == 1" class="badge bg-success px-3 py-2 shadow-sm d-flex align-items-center gap-2">
                 <i class="bi bi-heart-pulse-fill"></i> APTO MÉDICO: SÍ
@@ -242,6 +241,7 @@ const obtenerHistorialRectificaciones = async () => {
         console.error("Error al cargar el historial de rectificaciones", error);
     }
 };
+
 onMounted(async () => {
     obtenerHistorialRectificaciones();
 
@@ -264,7 +264,6 @@ onMounted(async () => {
 });
 
 const filtrarLocalidades = (provId) => {
-    
     if (!opciones.value.localidades || !edicionAbierta.value) return;
     
     localidadesFiltradas.value = opciones.value.localidades.filter(
@@ -273,7 +272,6 @@ const filtrarLocalidades = (provId) => {
 };
 
 watch(() => arbitro.value.provincia, (nuevoId) => {
-    // Evitamos cálculos innecesarios si no se puede editar
     if (edicionAbierta.value) {
         filtrarLocalidades(nuevoId);
     }
@@ -371,14 +369,14 @@ const enviarSolicitudRectificacion = async () => {
             }
         });
 
-        if (res.ok || res.success) { // Normalizado para ambos casos
+        if (res.ok || res.success) {
             notificar({
                 titulo: 'Solicitud Enviada',
                 mensaje: 'Tu pedido de rectificación fue enviado a la asociación.',
                 tipo: 'success'
             });
             solicitudCambio.value = '';
-            await obtenerHistorialRectificaciones(); // Refresca la lista
+            await obtenerHistorialRectificaciones();
         } else {
             throw new Error();
         }
@@ -392,14 +390,12 @@ const enviarSolicitudRectificacion = async () => {
         cargando.value = false;
     }
 };
-
 </script>
 
 <style scoped>
 /* ====================================================
    1. ESTILOS BASE Y COMPONENTES
    ==================================================== */
-   
 .form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem;}
 .x-small { font-size: 0.65rem; }
 .manual-section { background-color: #0c1624; border-radius: 1rem; }
@@ -409,11 +405,7 @@ const enviarSolicitudRectificacion = async () => {
     background-color: #ffffff !important; color: #000000 !important;
     border: none; border-radius: 8px;
 }
-
-.custom-textarea::placeholder {
-    color: #6c757d;
-}
-
+.custom-textarea::placeholder { color: #6c757d; }
 .badge { letter-spacing: 1px; }
 
 /* ====================================================
@@ -444,15 +436,9 @@ const enviarSolicitudRectificacion = async () => {
 }
 .status-inactive i { color: #ef4444; }
 
-.animate__fadeInUp {
-    animation-duration: 0.5s;
-}
-
 /* ====================================================
    3. 📱 RESPONSIVE DESIGN
    ==================================================== */
-
-/* --- Tablets y Móviles (Hasta 768px) --- */
 @media (max-width: 768px) {
     .w-fit-mobile { 
         width: fit-content !important; 
@@ -464,35 +450,7 @@ const enviarSolicitudRectificacion = async () => {
         display: block;
     }
 
-    .fs-5 {
-        font-size: 1.1rem !important;
-    }
-    
-    label {
-        margin-top: 5px;
-    }
-}
-
-/* --- Smartphones (Hasta 600px) --- */
-@media (max-width: 600px) {
-    /* AIRE LATERAL DE 10px: La tarjeta queda ancha pero no toca el borde */
-    .full-screen-wrapper { 
-        padding: 0 10px !important; 
-        width: 100% !important; 
-        margin: 0 !important; 
-        transform: none !important; 
-        left: 0 !important;
-    }
-    
-    .admin-panel { 
-        padding: 15px 0 !important; 
-        border-radius: 0; 
-    }
-
-    /* Aseguramos que la sección principal respete el ancho disponible */
-    .manual-section {
-        margin: 0 !important;
-        width: 100% !important;
-    }
+    .fs-5 { font-size: 1.1rem !important; }
+    label { margin-top: 5px; }
 }
 </style>

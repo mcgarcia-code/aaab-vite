@@ -101,36 +101,27 @@
             </div>
           </div>
           
-          
-              <div 
-                class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-4"
-                v-if="totalPaginas > 1"
-              >
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-4" v-if="totalPaginas > 1">
+            <button
+              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+              @click="cambiarPagina(-1)"
+              :disabled="paginaActual <= 1"
+            >
+              <i class="bi bi-chevron-left"></i> Ant
+            </button>
 
-                <!-- ANTERIOR -->
-                <button
-                  class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-                  @click="cambiarPagina(-1)"
-                  :disabled="paginaActual <= 1"
-                >
-                  <i class="bi bi-chevron-left"></i> Ant
-                </button>
+            <span class="fw-bold text-dark small">
+              Página {{ paginaActual }} de {{ totalPaginas }}
+            </span>
 
-                <!-- TEXTO -->
-                <span class="fw-bold text-dark small">
-                  Página {{ paginaActual }} de {{ totalPaginas }}
-                </span>
-
-                <!-- SIGUIENTE -->
-                <button
-                  class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-                  @click="cambiarPagina(1)"
-                  :disabled="paginaActual >= totalPaginas"
-                >
-                  Sig <i class="bi bi-chevron-right"></i>
-                </button>
-
-              </div>
+            <button
+              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+              @click="cambiarPagina(1)"
+              :disabled="paginaActual >= totalPaginas"
+            >
+              Sig <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
 
         </div>
       </div>
@@ -158,7 +149,7 @@ const motivoSeleccionado = ref('particular');
 const cargando = ref(false);
 const licencias = ref([]);
 
-// NUEVO: Variables de Paginación
+// Variables de Paginación
 const paginaActual = ref(1);
 const registrosPorPagina = 4;
 
@@ -172,7 +163,7 @@ const cambiarPagina = (delta) => {
   }, 50);
 };
 
-// NUEVO: Cálculos para Paginación
+// Cálculos para Paginación
 const totalPaginas = computed(() => Math.ceil(licencias.value.length / registrosPorPagina) || 1);
 
 const licenciasPaginadas = computed(() => {
@@ -287,54 +278,9 @@ onMounted(() => {
 
 <style scoped>
 /* ====================================================
-   1. ESTRUCTURA BASE MAESTRA
-   ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto !important;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  /* Reducimos el de arriba a 5px, dejamos 20px a los lados y abajo */
-  padding: 5px 20px 20px 20px; 
-  padding-bottom: 120px;
-}
-
-.admin-panel { 
-  width: 100%;
-  max-width: 100%; 
-  /* Reducimos el de arriba a 5px, dejamos 20px a los lados y abajo */
-  padding: 5px 20px 20px 20px; 
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;  
-  background-color: #0f172a; 
-  min-height: 100vh;
-  border-radius: 12px;
-}
-
-/* Cabecera Estándar (Por si el componente la usa) */
-.header-section { 
-    background: white; padding: 15px 25px; border-radius: 8px; 
-    display: flex; justify-content: space-between; margin-bottom: 15px; 
-    border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-    align-items: center; 
-}
-.header-info { display: flex; flex-direction: column; }
-.header-actions { display: flex; gap: 8px; }
-.btn-action { 
-    border: none; padding: 8px 12px; border-radius: 4px; 
-    font-weight: bold; cursor: pointer; display: flex; 
-    align-items: center; justify-content: center; gap: 5px; 
-    font-size: 0.75rem; transition: opacity 0.2s; 
-}
-.btn-text { display: inline; }
-
-/* ====================================================
-   2. COMPONENTES ESPECÍFICOS DE ESTA VISTA
+   COMPONENTES Y BOTONES
    ==================================================== */
 .card { border-radius: 15px; background: #ffffff; }
-.card-historial { border-radius: 12px; }
 
 .btn-primary { 
   background-color: #dc2626 !important; 
@@ -344,25 +290,15 @@ onMounted(() => {
   background-color: #b91c1c !important; 
 }
 
-/* ---> NUEVO: AJUSTES DE TAMAÑO PARA SELECT LICENCIAS<--- */
+/* AJUSTES DE TAMAÑO PARA SELECTS */
 select.form-select, 
-select.filter-input,
-.filter-grid-mobile select,
-select.full-width {
-  font-size: 0.85rem !important;           /* Achica la letra para que no quede tosca */
-  padding: 0.35rem 2rem 0.35rem 0.75rem !important; /* Reduce el aire interno del botón */
-  height: auto !important;                 /* Permite que el padding defina la altura */
-  min-height: 36px !important;             /* Altura mínima para que quede prolijo */
-  border-radius: 6px !important;           /* Suaviza los bordes un poco más */
-  line-height: 1.5;                        /* Centra el texto verticalmente */
-}
-
-/* Ajuste por si usás form-select-lg en la vista principal */
 select.form-select-lg {
-  font-size: 0.9rem !important;            /* Texto apenitas más grande que el normal */
-  padding-top: 0.45rem !important;         /* Acomoda el aire de arriba */
-  padding-bottom: 0.45rem !important;      /* Acomoda el aire de abajo */
-  min-height: 40px !important;             /* Se asegura de que no quede más chico de 40px */
+  font-size: 0.9rem !important; 
+  padding: 0.45rem 2rem 0.45rem 0.75rem !important; 
+  height: auto !important; 
+  min-height: 40px !important; 
+  border-radius: 6px !important; 
+  line-height: 1.5; 
 }
 
 /* ESTILOS PARA EL INPUT DE FECHA */
@@ -419,69 +355,26 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
 .bg-danger { background-color: #ef4444 !important; }
 
 /* ====================================================
-   3. 📱 RESPONSIVE DESIGN (Tiered Layout)
+   📱 RESPONSIVE DESIGN
    ==================================================== */
 .desktop-only { display: block; }
 .mobile-only { display: none; }
 
-/* --- Laptops y Tablets Grandes (Hasta 1024px) --- */
-@media (max-width: 1024px) {
-    .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-    .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
-}
-
-/* --- Tablets y Móviles (Hasta 768px) --- */
 @media (max-width: 768px) {
-    .desktop-only { display: none !important; }
-    .mobile-only { display: block !important; }
-
-    .x-small-mobile { font-size: 0.8rem; }
-    .status-badge { min-width: 70px; padding: 5px 8px; }
-    h4 { font-size: 1.25rem; }
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+  
+  .x-small-mobile { font-size: 0.8rem; }
+  .status-badge { min-width: 70px; padding: 5px 8px; }
+  h4 { font-size: 1.25rem; }
 }
 
-/* --- Smartphones (Hasta 600px - Estandarizado) --- */
 @media (max-width: 600px) {
-    /* AIRE LATERAL DE 10px */
-    .full-screen-wrapper { 
-        padding: 0 10px !important; 
-        width: 100% !important; 
-        margin: 0 !important; 
-        transform: none !important; 
-        left: 0 !important;
-    }
-    
-    .admin-panel { padding: 15px 0 !important; border-radius: 0; }
-    
-    .container-fluid {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
-    }
-
-    /* CABECERA ESTÁNDAR MÓVIL */
-    .header-section { 
-        padding: 15px !important; flex-direction: column; 
-        align-items: flex-start; text-align: left; gap: 15px; 
-    }
-    .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
-    .header-info h4, h4 { font-size: 1.2rem !important; margin: 0; text-align: left; }
-    
-    .header-actions { 
-        width: 100%; display: flex; flex-direction: row; 
-        flex-wrap: wrap; justify-content: center; gap: 8px; 
-    }
-    .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
-    .btn-text { display: none !important; }
-
-    /* AJUSTES ESPECÍFICOS DEL COMPONENTE EN MÓVIL */
-    /* Reducimos el padding de las celdas de la tabla para que el 
-       badge de estado no quede pegado al borde */
-    .table td, .table th {
-        padding: 10px 5px !important;
-    }
-    
-    .status-badge {
-        font-size: 0.55rem;
-    }
+  .table td, .table th {
+    padding: 10px 5px !important;
+  }
+  .status-badge {
+    font-size: 0.55rem;
+  }
 }
 </style>

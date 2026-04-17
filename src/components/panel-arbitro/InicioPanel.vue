@@ -1,8 +1,7 @@
 <template>
-  <div class="animate__animated animate__fadeIn container-fluid p-0">
+  <div class="container-fluid p-0 animate__animated animate__fadeIn">
     <div class="row g-3 g-md-4">
 
-      <!-- COLUMNA PRINCIPAL (MÓDULOS) -->
       <div class="col-12 col-lg-8 col-xl-9 order-2 order-lg-1">
         <div class="row g-3 align-items-stretch">
           <div class="col-12 col-sm-6 col-md-4 d-flex" v-for="item in menuItemsFiltrados" :key="item.title">
@@ -31,7 +30,6 @@
         </div>
       </div>
 
-      <!-- SIDEBAR / AVISOS (CON SCROLL EN PC) -->
       <div class="col-12 col-lg-4 col-xl-3 order-1 order-lg-2">
         <aside class="sidebar-professional shadow-sm">
           <div class="sidebar-header">
@@ -42,15 +40,12 @@
             <div v-if="cargando" class="spinner-border spinner-border-sm text-danger"></div>
           </div>
 
-          <!-- CONTENEDOR CON SCROLL CONDICIONAL -->
           <div class="sidebar-scroll-container p-3">
 
-            <!-- SECCIÓN: REUNIONES -->
             <div class="notif-section">
               <label class="section-label" @click="toggleSeccion('reuniones')">
                 <div class="d-flex align-items-center gap-2">
                   <span>PRÓXIMAS REUNIONES</span>
-                  <!-- Globitos contadores visibles solo al estar colapsado -->
                   <span v-show="!seccionesAbiertas.reuniones && proximasFechas.length > 0" class="badge-count">
                     {{ proximasFechas.length }}
                   </span>
@@ -75,7 +70,6 @@
               </div>
             </div>
 
-            <!-- SECCIÓN: CUMPLEAÑOS -->
             <div class="notif-section">
               <label class="section-label" @click="toggleSeccion('cumpleanos')">
                 <div class="d-flex align-items-center gap-2">
@@ -99,7 +93,7 @@
                     <div class="event-info d-flex align-items-center">
                       <div>
                         <strong class="mb-0">{{ cumple.nombre }} {{ cumple.apellido }}</strong>
-                        <span v-if="esHoy(cumple.fecha_nacimiento)" class="badge-hoy">¡ES HOY!</span>
+                        <span v-if="esHoy(cumple.fecha_nacimiento)" class="badge-hoy ms-2 bg-danger text-white rounded px-1" style="font-size: 0.6rem;">¡ES HOY!</span>
                       </div>
                     </div>
                   </div>
@@ -108,7 +102,6 @@
               </div>
             </div>
 
-            <!-- SECCIÓN: RECORDATORIOS -->
             <div class="notif-section border-0 mb-0 pb-0">
               <label class="section-label" @click="toggleSeccion('recordatorios')">
                 <div class="d-flex align-items-center gap-2">
@@ -148,15 +141,14 @@ useHead({ title: 'Panel de Inicio | AAAB' })
 
 // --- CONTROL DE COLAPSABLES ---
 const seccionesAbiertas = reactive({
-  reuniones: true,      // Por defecto abierta
-  cumpleanos: false,    // Por defecto cerrada
-  recordatorios: true   // Por defecto abierta
+  reuniones: true,
+  cumpleanos: false,
+  recordatorios: true
 });
 
 const toggleSeccion = (seccion) => {
   seccionesAbiertas[seccion] = !seccionesAbiertas[seccion];
 };
-// -----------------------------
 
 const menuItems = [
   { to: '/panel-arbitro/datos', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Ver legajo y seguridad.' },
@@ -214,7 +206,6 @@ onMounted(cargarAvisos);
 
 <style scoped>
 /* --- TARJETAS MÓDULOS --- */
-/* --- TARJETAS MÓDULOS (Panel Árbitro) --- */
 .modern-menu-card {
   background: white;
   border-radius: 16px;
@@ -226,14 +217,15 @@ onMounted(cargarAvisos);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   height: 100%;
-  cursor: pointer; /* <--- ESTA ES LA LÍNEA QUE TENÉS QUE AGREGAR */
+  cursor: pointer; 
 }
+
 .icon-box {
   width: 56px;
   height: 56px;
   min-width: 56px;
   background: #fef2f2;
-  color: #dc2626;      /* Rojo AAAB */
+  color: #dc2626;
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -241,6 +233,7 @@ onMounted(cargarAvisos);
   font-size: 1.5rem;
   transition: all 0.3s ease;
 }
+
 .card-text {
   flex: 1;
   min-width: 0;
@@ -250,43 +243,52 @@ onMounted(cargarAvisos);
 .card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; align-self: center; }
 
 .modern-menu-card:hover {
-  border-color: #f87171; /* Rojo suave */
+  border-color: #f87171; 
   transform: translateY(-5px);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
 }
 
-.modern-menu-card:hover .icon-box {background: #dc2626; color: white; }
+.modern-menu-card:hover .icon-box { background: #dc2626; color: white; }
 
 /* --- SIDEBAR PROFESIONAL --- */
 .sidebar-professional {
-  background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden;
-  display: flex; flex-direction: column;
+  background: #ffffff; 
+  border-radius: 20px; 
+  border: 1px solid #e2e8f0; 
+  overflow: hidden;
+  display: flex; 
+  flex-direction: column;
 }
+
 .sidebar-header {
-  background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;
+  background: #f8fafc; 
+  padding: 15px 20px; 
+  border-bottom: 1px solid #e2e8f0; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
 }
 .fw-black { font-weight: 800; font-size: 0.85rem; color: #1e293b; }
 
 /* SECCIONES COLAPSABLES */
-.notif-section { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #000000; }
+.notif-section { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #e2e8f0; }
 
 .section-label {
   font-size: 0.65rem;
   font-weight: 800;
   color: #000000;
   display: flex;
-  justify-content: space-between; /* Icono a la derecha */
+  justify-content: space-between; 
   align-items: center;
   margin-bottom: 8px;
   letter-spacing: 0.5px;
-  cursor: pointer; /* Indicar que es clickeable */
+  cursor: pointer; 
   padding: 5px 0;
   user-select: none;
 }
 .section-label:hover { opacity: 0.7; }
 .section-label i { font-size: 0.9rem; color: #dc2626; transition: transform 0.2s ease; }
 
-/* --- GLOBITO CONTADOR --- */
 .badge-count {
   background-color: #fef2f2;
   color: #dc2626;
@@ -301,7 +303,7 @@ onMounted(cargarAvisos);
 
 .collapse-content {
   margin-top: 8px;
-  animation-duration: 0.3s; /* Animación más rápida para los menús */
+  animation-duration: 0.3s; 
 }
 
 /* BLOQUE CALENDARIO */
@@ -342,12 +344,8 @@ onMounted(cargarAvisos);
    📱 RESPONSIVE DESIGN & SIDEBAR SCROLL
    ==================================================== */
 
-.desktop-only { display: block; }
-.mobile-only { display: none; }
-
-/* --- 1. PANTALLAS GRANDES Y LAPTOPS (Desde 992px) --- */
+/* --- PANTALLAS GRANDES Y LAPTOPS (Desde 992px) --- */
 @media (min-width: 992px) {
-  /* Scroll Condicional del Sidebar */
   .sidebar-professional {
     position: sticky;
     top: 20px;
@@ -362,69 +360,17 @@ onMounted(cargarAvisos);
   .sidebar-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 }
 
-/* --- 2. TABLETS Y LAPTOPS CHICAS (Hasta 1024px) --- */
-@media (max-width: 1024px) {
-  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
-}
-
-/* --- 3. DISPOSITIVOS MEDIANOS (Hasta 991px) --- */
+/* --- DISPOSITIVOS MEDIANOS (Hasta 991px) --- */
 @media (max-width: 991px) {
   .sidebar-professional { margin-bottom: 10px; }
   .sidebar-scroll-container { overflow-y: visible; padding: 12px !important; }
   .notif-section { margin-bottom: 8px; padding-bottom: 8px; }
 }
 
-/* --- 4. TABLETS Y MÓVILES (Hasta 768px) --- */
+/* --- MÓVILES --- */
 @media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-
-  /* Estilos base de tarjetas móviles para coherencia */
-  .card-arbitro {
-    background: white; border-radius: 8px; padding: 15px;
-    margin-bottom: 12px; border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  }
-}
-
-/* --- 5. SMARTPHONES (Hasta 600px) --- */
-@media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0; width: 100vw; }
-
-  /* ESTRUCTURA CABECERA: Título Izquierda, Botones Centro */
-  .header-section {
-    padding: 15px;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-    gap: 15px;
-  }
-
-  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
-
-  /* Fuentes específicas solicitadas */
-  .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
-  .header-info span.counter { font-size: 0.85rem !important; }
-
-  /* Centrado de botones 42x42 */
-  .header-actions {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
-  .btn-text { display: none !important; }
-
-  /* Ajustes de scroll móvil */
-  .sidebar-scroll-container { padding: 8px !important; }
+  .modern-menu-card { padding: 18px; }
 }
 
 .animate__animated { animation-duration: 0.5s; }
-
 </style>
