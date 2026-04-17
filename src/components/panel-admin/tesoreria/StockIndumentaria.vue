@@ -505,11 +505,6 @@ onUnmounted(() => {
 .btn-clear-checks { background: #fee2e2; color: #ef4444; }
 .btn-export { background: #10b981; color: white; }
 
-/* ESTILOS EXACTOS DE PAGINACIÓN */
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #0f172a; font-size: 0.85rem; font-weight: 600; }
 
 /* CARDS DE STOCK - Con mayor sombra y borde para resaltar sobre el fondo blanco */
 .tarjeta-stock-admin { border-radius: 20px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important; border: 1px solid #e2e8f0 !important; }

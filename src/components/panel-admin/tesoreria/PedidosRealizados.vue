@@ -540,11 +540,6 @@ onMounted(obtenerPedidos);
 .btn-blue { background: #3b82f6; color: white; }
 .btn-export { background: #10b981; color: white; }
 
-/* ESTILOS EXACTOS DE PAGINACIÓN SOLICITADOS */
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #0f172a; font-size: 0.85rem; font-weight: 600; }
 
 /* ====================================================
    TABLA DESKTOP ESTRUCTURA

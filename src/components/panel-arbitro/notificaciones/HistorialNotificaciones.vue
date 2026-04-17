@@ -220,43 +220,6 @@ onMounted(() => {
 }
 
 /* ====================================================
-   2. PAGINACIÓN
-   ==================================================== */
-.paginacion { 
-  display: flex; 
-  justify-content: flex-end; 
-  align-items: center; 
-  gap: 12px; 
-}
-
-.btn-paginacion { 
-  border: 1px solid #cbd5e1; 
-  background: #f8fafc; 
-  color: #0f172a; 
-  padding: 8px 16px; 
-  border-radius: 6px; 
-  font-size: 0.8rem; 
-  font-weight: 700; 
-  cursor: pointer; 
-  transition: background 0.2s;
-}
-
-.btn-paginacion:hover:not(:disabled) { 
-  background: #e2e8f0; 
-}
-
-.btn-paginacion:disabled { 
-  opacity: 0.5; 
-  cursor: not-allowed; 
-}
-
-.paginacion-texto { 
-  color: #0f172a !important; 
-  font-size: 0.85rem; 
-  font-weight: 600; 
-}
-
-/* ====================================================
    3. TABLA PERSONALIZADA
    ==================================================== */
 .custom-table th {

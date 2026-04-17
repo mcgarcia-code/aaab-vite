@@ -172,12 +172,6 @@ const opcionesDesignaciones = [
   transform: translateX(4px);
 }
 
-/* --- PAGINACIÓN (Estilos pedidos) --- */
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
-
 /* Ajustes Responsive */
 @media (max-width: 768px) {
   .modern-menu-card { 

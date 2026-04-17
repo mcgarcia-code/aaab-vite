@@ -634,16 +634,6 @@ onMounted(() => {
 .badge-status-sm.pendiente { background: #ffc107; color: #212529; }
 .badge-status-sm.rechazada { background: #fee2e2; color: #b91c1c; }
 
-/* Paginación */
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
-.btn-paginacion { 
-  border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; 
-  border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; 
-}
-.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
-
 /* ====================================================
    3. TABLA (STICKY Y CELDAS)
    ==================================================== */

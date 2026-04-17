@@ -625,216 +625,213 @@ onMounted(cargarDatos);
 </script>
 
 <style scoped>
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh; /* Cambiamos height fijo por min-height */
-  height: auto;      /* Permitimos que crezca hacia abajo en móvil */
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding: 20px;
-  padding-bottom: 80px; /* Espacio extra para que no toque el footer */
+/* ====================================================
+   1. BASE (MOBILE FIRST - CELULARES POR DEFECTO)
+   ==================================================== */
+
+/* Contenedor principal */
+.full-screen-wrapper { 
+  position: relative; 
+  width: 99vw; 
+  min-height: 100vh; 
+  height: auto !important; 
+  margin-left: 50%; 
+  transform: translateX(-50%); 
+  padding: 20px; 
+  padding-bottom: 120px; 
+  box-sizing: border-box;
 }
 
+/* Ajuste de padding exclusivo para celulares */
+@media (max-width: 767px) {
+  .full-screen-wrapper { padding: 0 15px 20px 15px !important; }
+}
+
+/* Estructura base (Celulares) */
 .admin-panel { 
   width: 100%;
   max-width: 100%; 
-  padding: 20px; 
+  padding: 0; 
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
   color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
-  height: 100%; /* Asegura que el fondo oscuro cubra todo el alto */
+  border-radius: 0; 
 }
 
+/* Cabecera Móvil */
 .header-section { 
   background: white; 
   padding: 15px; 
-  border-radius: 8px; 
   display: flex; 
-  justify-content: space-between; 
-  margin-bottom: 15px; 
+  flex-direction: column; 
+  align-items: flex-start; 
+  text-align: left; 
+  gap: 15px; 
   border-left: 5px solid #ef4444; 
   box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-  align-items: center; 
 }
+.header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+.title { font-size: 1.25rem; font-weight: bold; margin: 0; color: #000; }
+.counter { font-size: 0.85rem; color: #64748b; }
 
-.header-info {
-  display: flex;
-  flex-direction: column;
+/* Botones Móvil: En una sola línea sin desbordar */
+.header-actions { 
+  width: 100%; 
+  display: flex; 
+  flex-direction: row; 
+  flex-wrap: nowrap; 
+  justify-content: center; 
+  gap: 8px; 
+  overflow-x: auto; 
 }
+.btn-action { 
+  border: none; border-radius: 6px; font-weight: bold; cursor: pointer; 
+  display: flex; align-items: center; justify-content: center; 
+  transition: opacity 0.2s, transform 0.1s; 
+  flex: none; width: 42px; height: 42px; padding: 0; 
+}
+.btn-action:hover { opacity: 0.85; }
+.btn-action:active { transform: scale(0.95); }
+.btn-text { display: none; } /* Oculto en móvil */
 
-.title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
-.counter { font-size: 0.85rem; color: #000000; }
-
-.header-actions { display: flex; gap: 8px; }
-
-/* Botones idénticos a Gestión de Árbitros */
-.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
-.btn-clear { background: #e2e8f0; color: #000; }
-.btn-clear-checks { background: #fee2e2; color: #ef4444; } 
+.btn-clear { background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; }
+.btn-clear-checks { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; } 
 .btn-export { background: #10b981; color: white; }
 .btn-filter-mobile { background: #3b82f6; color: white; }
 
-/* ====================================================
-   PAGINACIÓN
-   ==================================================== */
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-.btn-paginacion:hover:not(:disabled) { background: #e2e8f0; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #000; font-size: 0.85rem; font-weight: 600; }
+/* Visibilidad de Capas Base */
+.desktop-only { display: none !important; }
+.mobile-only { display: block !important; }
+.mobile-only-flex { display: flex !important; }
 
+/* Filtros Móvil */
+.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+.filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; }
+.filter-grid-mobile input, .filter-grid-mobile select {
+  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; 
+  font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #334155;
+}
+.filter-grid-mobile input:focus, .filter-grid-mobile select:focus { border-color: #3b82f6; background: white; }
+.filter-grid-mobile input::placeholder { color: #94a3b8; }
+.mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
+.mobile-select-group label { font-size: 0.75rem; color: #000; font-weight: bold; margin-bottom: 2px; }
+.filter-row-mobile { display: flex; gap: 10px; }
+.filter-row-mobile input { flex: 1; }
+.btn-close-filters { background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; }
 
-td.text-center { display: table-cell; text-align: center; vertical-align: middle; }
-.btn-wa { background: #25d366; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto; transition: 0.2s; }
-.btn-wa:hover { transform: scale(1.1); }
+/* Tarjetas Móviles (Listado) */
+.card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
+.card-name { font-size: 1.05rem; color: #0f172a; }
+.card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
+.text-xs { font-size: 0.75rem; }
+
+/* Botones Móviles (Cards) */
+.btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; width: 100%;}
+.btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
 .btn-wa-mobile { width: 100%; margin-top: 10px; background: #25d366; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; }
 
-.table-container { 
-  width: 100%;
-  overflow: auto; 
-  max-height: 75vh;  /* Reducido un poquito para dar lugar a la paginación */
-  background: white; 
-  border-radius: 8px; 
-  border: 1px solid #e2e8f0; 
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-}
-
-table { 
-  width: 100%;
-  min-width: max-content; 
-  border-collapse: collapse !important; 
-  border-spacing: 0; 
-  font-size: 0.85rem; 
-}
-
-th { 
-  background: #f8fafc !important; 
-  padding: 10px; 
-  position: sticky; 
-  top: 0; 
-  z-index: 50; 
-  border-bottom: 2px solid #e2e8f0; 
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem; 
-  color: #000000; 
-  text-transform: uppercase; 
-  font-weight: 800; 
-}
-
-.filter-row td { 
-  position: sticky; 
-  top: 37px; 
-  z-index: 40; 
-  background: #f1F5F9 !important; 
-  padding: 4px; 
-  border-bottom: 2px solid #cbd5e1; 
-}
-
-.sticky-col { 
-  position: sticky !important; 
-  z-index: 10; 
-  background-color: white !important; 
-  box-shadow: inset -1px 0 0 #e2e8f0; 
-  background-clip: padding-box; 
-}
-
-th.sticky-col { 
-  z-index: 100 !important; 
-  background-color: #f1F5F9 !important; 
-}
-
-.filter-row .sticky-col { 
-  z-index: 90 !important; 
-  background-color: #f8fafc !important; 
-}
-
-.sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
-
-.col-shrink { 
-  width: 50px !important; 
-  min-width: 50px !important; 
-  max-width: 50px !important;
-  white-space: nowrap !important; 
-  padding: 8px 0 !important; 
-  text-align: center; 
-}
-
-.filter-input { width: 100%; padding: 2px; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 4px; }
-.filter-input-min { width: 35px; text-align: center; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 4px; }
-
-td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
-
-.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-.dot-green { background-color: #22c55e; }
-.dot-red { background-color: #ef4444; }
-
-.check { transform: scale(1.1); cursor: pointer; }
-.check:disabled { cursor: not-allowed; opacity: 0.5; }
-.check-readonly { cursor: default; }
-
+/* Componentes Visuales (Móvil) */
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+.dot-active { background: #10b981; }
+.dot-inactive { background: #ff0000; border: 1px solid #ff0000; }
 .icon-apto { color: #22c55e; vertical-align: middle; font-size: 1.5rem; }
 .icon-no-apto { color: #ef4444; vertical-align: middle; font-size: 1.5rem; }
-.font-bold { font-weight: bold; }
+.check { transform: scale(1.3); cursor: pointer; margin: 0 auto; display: block;}
+.check:disabled { cursor: not-allowed; opacity: 0.5; }
 
-.col-obs-container { width: 150px; position: relative; }
-.obs-wrapper { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; padding: 4px; border-radius: 4px; }
-.obs-wrapper:focus { position: absolute; width: 300px; white-space: normal; background: #fff; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #3b82f6; padding: 10px; left: -150px; top: 0; }
+/* Colores de Filas/Cards */
+.fila-roja { background-color: #fca5a5 !important; border-color: #ef4444 !important; }
+.fila-amarilla { background-color: #fef08a !important; border-color: #eab308 !important; }
+.fila-des { background-color: #93e2ab !important; border-color: #22c55e !important; }
+.fila-roja .card-name, .fila-roja .text-dark, .fila-roja .small, .fila-roja .text-xs,
+.fila-amarilla .card-name, .fila-amarilla .text-dark, .fila-amarilla .small, .fila-amarilla .text-xs,
+.fila-des .card-name, .fila-des .text-dark, .fila-des .small, .fila-des .text-xs { color: #000 !important; }
 
-.mobile-only { display: none; }
+/* Botones en Filas Especiales (Móvil) */
+.fila-roja .btn-editar-mobile { background: #fff; border-color: #fff; color: #ef4444; }
+.fila-roja .btn-historial-mobile { background: #fff; border-color: #fff; color: #d97706; }
 
-@media (max-width: 1024px) {
-  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .header-actions { width: 100%; justify-content: space-between; flex-wrap: nowrap; gap: 8px;}
-  .btn-action { flex: 1; justify-content: center; min-width: 0; white-space: nowrap; }
-}
+.animate__animated { animation-duration: 0.5s; }
 
-@media (max-width: 600px) {
- .full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto;
-  margin-left: 50%;
-  transform: translateX(-50%);
-      /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important; 
-  box-sizing: border-box !important;
-}
-    
-.admin-panel { 
-      padding: 0 !important; 
-      border-radius: 0; 
-      box-sizing: border-box !important;
-}
-  .title { font-size: 1rem; }
-  .btn-action { font-size: 0.7rem; padding: 6px 8px; }
-  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
 
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-  .header-actions .btn-text { display: none !important; }
-
-  .mobile-filter-panel { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-  .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
-  .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background-color: #f8fafc; color: #000000; }
-  .mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
-  .mobile-select-group label { font-size: 0.75rem; color: #000000; font-weight: bold; margin-bottom: 2px; }
-  .filter-row-mobile { display: flex; gap: 10px; }
-  .filter-row-mobile input { flex: 1; }
-  .btn-close-filters { width: 100%; background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-
-  .card-arbitro { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; }
-  .card-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 8px; }
-}
-
+/* ====================================================
+   2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
+   ==================================================== */
 @media (min-width: 768px) {
-  .header-actions .btn-text { display: inline; }
+  
+  .admin-panel { padding: 20px; border-radius: 12px; }
+  
+  /* Cambio de visibilidad */
+  .desktop-only { display: block !important; }
+  .mobile-only { display: none !important; }
+  .mobile-only-flex { display: none !important; }
+
+  /* Reestructuración Cabecera */
+  .header-section { flex-direction: row; align-items: center; justify-content: space-between; border-radius: 8px; padding: 15px 25px; }
+  .header-info { width: auto; align-items: flex-start; }
+  .title { font-size: 1.1rem; }
+  
+  /* Reestructuración Botones */
+  .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; overflow-x: visible; }
+  .btn-action { width: auto; height: auto; padding: 8px 12px; gap: 5px; font-size: 0.85rem; justify-content: flex-start; }
+  .btn-text { display: inline !important; }
+  
+  /* TABLA DESKTOP */
+  .table-container { 
+    width: 100%; overflow: auto; max-height: 75vh; 
+    background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+  }
+  table { width: 100%; min-width: max-content; border-collapse: collapse !important; border-spacing: 0; font-size: 0.85rem; }
+  
+  th { 
+    position: sticky; top: 0; z-index: 50; background: #f8fafc !important; 
+    padding: 10px; border-bottom: 2px solid #e2e8f0; 
+    font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+    font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800;
+  }
+  .filter-row td { 
+    position: sticky; top: 37px; z-index: 40; background: #f1F5F9 !important; 
+    padding: 4px; border-bottom: 2px solid #cbd5e1; 
+  }
+  td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
+  td.text-center { display: table-cell; text-align: center; vertical-align: middle; }
+  
+  /* Columnas Fijas (Sticky) */
+  .sticky-col { position: sticky !important; z-index: 10; background: white !important; box-shadow: inset -1px 0 0 #e2e8f0; background-clip: padding-box; }
+  th.sticky-col { z-index: 100 !important; background-color: #f1F5F9 !important; }
+  .filter-row .sticky-col { z-index: 90 !important; background-color: #f8fafc !important; }
+  .sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
+  
+  .col-shrink { width: 50px !important; min-width: 50px !important; max-width: 50px !important; white-space: nowrap !important; padding: 8px 0 !important; text-align: center; }
+  
+  /* Inputs de Filtro Desktop */
+  .filter-input { width: 100%; padding: 2px; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 4px; outline: none; }
+  .filter-input-min { width: 35px; text-align: center; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 4px; outline: none; }
+  
+  /* Botón WhatsApp Desktop */
+  .btn-wa { background: #25d366; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto; transition: 0.2s; }
+  .btn-wa:hover { transform: scale(1.1); }
+  
+  /* Celdas Observaciones (Hover Expand) */
+  .col-obs-container { width: 150px; position: relative; }
+  .obs-wrapper { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; padding: 4px; border-radius: 4px; }
+  .obs-wrapper:focus { position: absolute; width: 300px; white-space: normal; background: #fff; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #3b82f6; padding: 10px; left: -150px; top: 0; outline: none;}
+
+  .font-bold { font-weight: bold; }
+  
+  /* Filas Coloreadas Desktop */
+  .fila-roja td, .fila-roja .sticky-col { background-color: #fca5a5 !important; color: #000 !important; }
+  .fila-amarilla td, .fila-amarilla .sticky-col { background-color: #fef08a !important; color: #000 !important; }
+  .fila-des td, .fila-des .sticky-col { background-color: #93e2ab !important; color: #000 !important;}
 }
 
-.fila-roja, .fila-roja .sticky-col { background-color: #fca5a5 !important; color: #000 !important; }
-.fila-amarilla, .fila-amarilla .sticky-col { background-color: #fef08a !important; color: #000 !important; }
-.fila-des, .fila-des .sticky-col { background-color: #93e2ab !important; }
-
+/* ====================================================
+   3. PANTALLAS GRANDES (Desde 1024px hacia arriba)
+   ==================================================== */
+@media (min-width: 1024px) {
+  /* Si en el futuro querés darle más aire o restringir anchos en monitores muy grandes, va acá */
+}
 </style>

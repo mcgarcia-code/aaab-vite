@@ -279,12 +279,6 @@ onMounted(() => {
 .badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; } 
 .badge-status.anulada { background: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
 
-/* PAGINACIÓN (por si lo necesitamos en un futuro) */
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 12px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: white; font-size: 0.85rem; font-weight: 600; }
-
 /* RESPONSIVE CORRECTO (BOTÓN EN LA MISMA LÍNEA) */
 @media (max-width: 991px) {
   .menu-card-static, .side-card { padding: 20px; }

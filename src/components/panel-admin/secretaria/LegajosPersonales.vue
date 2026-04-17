@@ -1159,19 +1159,19 @@ onMounted(() => {
 .btn-eliminar-mobile { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold;}
 
 /* Estado Inactivo (Móvil) */
-.card-arbitro.fila-inactiva { background-color: #ef4444 !important; border-color: #dc2626; }
+.card-arbitro.fila-inactiva { background-color: #fca5a5 !important; border-color: #dc2626; }
 .card-arbitro.fila-inactiva .card-name,
 .card-arbitro.fila-inactiva .card-row,
 .card-arbitro.fila-inactiva .card-info p,
 .card-arbitro.fila-inactiva .card-header .text-xs { color: #000000 !important; }
-.card-arbitro.fila-inactiva .btn-editar-mobile { background: #fff; border-color: #fff; color: #ef4444; }
-.card-arbitro.fila-inactiva .btn-historial-mobile { background: #fff; border-color: #fff; color: #d97706; }
+.card-arbitro.fila-inactiva .btn-editar-mobile { background: #fff; border-color: #fff; color: #000000 ; }
+.card-arbitro.fila-inactiva .btn-historial-mobile { background: #fff; border-color: #fff; color: #000000; }
 
 /* Estados Generales y Badges */
 .status-wrapper { display: flex; align-items: center; gap: 5px; justify-content: center; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-active { background: #10b981; }
-.dot-inactive { background: #fff; border: 1px solid #ccc; }
+.dot-inactive { background: #ff0000; border: 1px solid #ff0000; }
 .read-only-text { padding: 10px 5px; font-size: 0.85rem; color: #1e293b; }
 
 .text-xs { font-size: 0.75rem; }
@@ -1261,7 +1261,7 @@ onMounted(() => {
   .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
   
   /* Filas Inactivas y Hover */
-  .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #ef4444 !important; font-weight: bold; color: #fff !important; }
+  .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #fca5a5 !important; font-weight: bold; color: #000000 !important; }
   .row-hover:hover td { background-color: #f8fafc; }
   .fila-inactiva.row-hover:hover td, .fila-inactiva.row-hover:hover .sticky-col { background-color: #dc2626 !important; }
 }
