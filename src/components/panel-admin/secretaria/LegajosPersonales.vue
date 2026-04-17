@@ -165,7 +165,7 @@
                   <td><input v-model="filtros.email" class="filter-input shadow-none"></td>
                   <td><input v-model="filtros.direccion" class="filter-input shadow-none"></td>
                   <td><selProvincia v-model="filtros.provincia" :provincias="provincias" class="filter-input shadow-none" /></td>
-                  <td><selLocalidad v-model="filtros.localidad" :localidadesFiltradas="localidadesFiltradas" class="filter-input shadow-none" /></td>
+                  <td><selLocalidad v-model="filtros.localidad" :localidades="localidadesFiltradas" class="filter-input shadow-none" /></td>
                   <td><input v-model="filtros.zona" class="filter-input shadow-none"></td>
                   <td><input v-model="filtros.celular" class="filter-input shadow-none"></td>
                   <td><input v-model="filtros.fecha_nacimiento" class="filter-input shadow-none"></td>
@@ -1007,7 +1007,7 @@ const obtenerProvinciasLocalidades = async () => {
 
 const localidadesFiltradas = computed(() => {
   if (!filtros.provincia) return localidades.value
-  return localidades.value.filter(l => String(l.provincia_id) === String(filtros.provincia))
+  return localidades.value.filter(l => Number(l.provincia_id) === Number(filtros.provincia))
 })
 
 const arbitrosFiltrados = computed(() => {
