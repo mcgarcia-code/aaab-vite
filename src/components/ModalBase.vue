@@ -15,7 +15,6 @@
         tabindex="-1"
       >
         
-        <!-- HEADER -->
         <div class="flex-shrink-0 p-3 border-bottom bg-white position-relative">
 
           <button 
@@ -46,12 +45,10 @@
           </div>
         </div>
 
-        <!-- BODY -->
         <div class="flex-grow-1 p-3 p-md-4 bg-white" style="overflow-y: auto;">
           <slot></slot>
         </div>
 
-        <!-- FOOTER -->
         <div v-if="$slots.footer" class="p-3 border-top bg-light d-flex justify-content-center gap-3">
           <slot name="footer"></slot>
         </div>
@@ -107,18 +104,18 @@ const handleTab = (e) => {
 };
 
 
+// Observador unificado y corregido
 watch(() => props.show, async (val) => {
   if (val) {
+    // Solo bloqueamos el scroll
     document.body.style.overflow = 'hidden';
-    document.body.style.pointerEvents = 'none';
-  } else {
-    document.body.style.overflow = '';
-    document.body.style.pointerEvents = '';
-  }
-
-  if (val) {
+    
+    // Enfocamos el modal
     await nextTick();
     modalRef.value?.focus();
+  } else {
+    // Restauramos el scroll
+    document.body.style.overflow = '';
   }
 });
 
@@ -130,6 +127,9 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
   window.removeEventListener('keydown', handleTab);
+  
+  // Por seguridad, restauramos el scroll si el componente se destruye
+  document.body.style.overflow = '';
 });
 
 
@@ -154,13 +154,12 @@ const modalStyle = computed(() => ({
   backdrop-filter: blur(6px);
   display: flex;
   justify-content: center;
-  align-items: center; /*  siempre centrado */
+  align-items: center; /* siempre centrado */
   padding: 10px;
-  pointer-events: auto;
+  /* Eliminé el pointer-events: auto ya que por defecto los div lo tienen, y ya no afecta el body */
 }
 
 .modal-content-exito {
-  pointer-events: auto;
   outline: none;
 }
 

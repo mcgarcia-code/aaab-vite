@@ -4,7 +4,7 @@
     <div 
       v-if="visible" 
       class="modal-overlay-exito animate__animated animate__fadeIn"
-      @click.self="cerrar"  <!-- 👈 CLICK FUERA -->
+      @click.self="cerrar"
     >
       <div 
         ref="modalRef"
@@ -69,28 +69,25 @@ const handleAccion = () => {
   }
 };
 
-
-//  ESC
+// ESC para cerrar
 const handleKeydown = (e) => {
   if (e.key === 'Escape' && props.visible) {
     cerrar();
   }
 };
 
-
-
+// Observar cuando se abre o cierra el modal para bloquear/desbloquear el scroll
 watch(() => props.visible, async (val) => {
   if (val) {
-    document.body.style.overflow = 'hidden';
-    document.body.style.pointerEvents = 'none'; 
-  } else {
-    document.body.style.overflow = '';
-    document.body.style.pointerEvents = '';
-  }
-
-  if (val) {
+    // Bloquea el scroll del fondo
+    document.body.style.overflow = 'hidden'; 
+    
+    // Enfoca el modal para accesibilidad y eventos de teclado
     await nextTick();
     modalRef.value?.focus();
+  } else {
+    // Restaura el scroll del fondo al cerrar
+    document.body.style.overflow = '';
   }
 });
 
@@ -100,6 +97,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
+  // Por seguridad, aseguramos que el scroll regrese a la normalidad si el componente se destruye
+  document.body.style.overflow = '';
 });
 </script>
 
@@ -107,7 +106,7 @@ onUnmounted(() => {
 .modal-overlay-exito {
   position: fixed;
   inset: 0;
-  pointer-events: auto;
+  /* El overlay intercepta los clics automáticamente */
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(8px);
   display: flex;
@@ -119,13 +118,12 @@ onUnmounted(() => {
 
 .modal-content-exito {
   background: white;
-  border-radius: 20px; /* 👈 más mobile friendly */
+  border-radius: 20px;
   padding: 30px;
   width: 100%;
   max-width: 380px;
   text-align: center;
   outline: none;
-  pointer-events: auto;
 }
 
 .icon-circle-exito {
