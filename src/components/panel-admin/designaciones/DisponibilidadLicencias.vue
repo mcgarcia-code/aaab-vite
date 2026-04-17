@@ -422,16 +422,21 @@ const subiendoArchivo = ref(false);
 const formPublicar = reactive({
   torneo: '',
   fecha: '',
-  archivo: null
+  archivoBase64: '',
+  nombreArchivo: ''
 });
 
-
-// --- AGREGAR ESTA FUNCIÓN ---
+// 2. Convertimos el Excel a texto
 const manejarArchivo = (event) => {
   const file = event.target.files[0];
-  if (file) {
-    formPublicar.archivo = file;
-  }
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.readAsDataURL(file); // Lo pasa a texto Base64
+  reader.onload = () => {
+    formPublicar.archivoBase64 = reader.result;
+    formPublicar.nombreArchivo = file.name;
+  };
 };
 
 
@@ -701,39 +706,35 @@ watch(totalPaginas, (nuevoTotal) => {
   if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
 });
 
-// Función para enviar los datos al servidor usando TU estándar
 const enviarDesignaciones = async () => {
-  // 1. Validamos que estén todos los datos
-  if (!formPublicar.torneo || !formPublicar.fecha || !formPublicar.archivo) {
+  if (!formPublicar.torneo || !formPublicar.fecha || !formPublicar.archivoBase64) {
     notificar({ titulo: 'Atención', mensaje: 'Completá todos los campos y seleccioná un archivo.', tipo: 'warning' });
     return;
   }
 
   subiendoArchivo.value = true;
 
-  // 2. Creamos un FormData (Necesario porque estamos enviando un archivo, no solo texto)
-  const formData = new FormData();
-  formData.append('torneo', formPublicar.torneo);
-  formData.append('fecha', formPublicar.fecha);
-  formData.append('archivo', formPublicar.archivo); // Este es el File object del input
-
   try {
-    // 3. Usamos tu estándar de consumo de API
+    // Mandamos el payload como un objeto común y corriente
     const res = await api.post({
-      entity: 'designaciones',       // El archivo PHP (sin .php)
-      action: 'subirDesignaciones',  // La función que creamos arriba en camelCase
-      payload: formData              // Pasamos el FormData completo
+      entity: 'designaciones',
+      action: 'subirDesignaciones',
+      payload: {
+        torneo: formPublicar.torneo,
+        fecha: formPublicar.fecha,
+        archivoBase64: formPublicar.archivoBase64,
+        nombreArchivo: formPublicar.nombreArchivo
+      }
     });
 
-    // 4. Evaluamos la respuesta según cómo esté configurado tu wrapper api (res.ok o res.success)
     if (res.success || res.ok) {
       notificar({ titulo: 'Éxito', mensaje: 'Las designaciones ya están visibles para el público.', tipo: 'success' });
 
-      // Cerramos modal y limpiamos formulario
       mostrarModalSubida.value = false;
       formPublicar.torneo = '';
       formPublicar.fecha = '';
-      formPublicar.archivo = null;
+      formPublicar.archivoBase64 = '';
+      formPublicar.nombreArchivo = '';
     } else {
       throw new Error(res.mensaje || 'Error del servidor al subir designaciones.');
     }
