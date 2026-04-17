@@ -1,9 +1,9 @@
 <template>
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
-      
+
       <div class="card shadow border-0 w-100 mx-auto bg-white main-card">
-        
+
         <div class="header-section border-bottom p-4">
           <div class="header-info">
             <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
@@ -104,6 +104,12 @@
                   <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ s.id }}</td>
                   <td class="sticky-col col-acciones cell-ro text-center">
                     <div class="d-flex justify-content-center gap-1">
+
+                      <button v-if="s.estado_dinamico == 3" @click="gestionarDescargo(s)" class="btn-editar position-relative" title="Ver Descargos" :style="s.tiene_nuevos ? 'background-color: #dc3545; color: white; border-color: #dc3545;' : 'background-color: #3b82f6; color: white; border-color: #3b82f6;'">
+                        <span class="material-icons">chat</span>
+                        <span v-if="s.tiene_nuevos" class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle"></span>
+                      </button>
+
                       <button @click="editarSancion(s)" class="btn-editar" title="Editar"><span class="material-icons">edit</span></button>
                       <button @click="verHistorialArbitro(s)" class="btn-historial" title="Historial"><span class="material-icons">manage_search</span></button>
                       <button @click="eliminarSancionRegistro(s.id)" class="btn-eliminar" title="Eliminar"><span class="material-icons">delete</span></button>
@@ -146,31 +152,36 @@
                   </span>
                 </div>
               </div>
-              
+
               <div class="card-body pt-0 px-3 pb-3">
                 <p class="text-dark mb-3 mt-1 lh-sm small">
                   <span v-if="s.articulo" class="fw-bold">Art. {{ s.articulo }}</span>
                   <span v-if="s.articulo && s.motivo"> - </span>
                   <span class="text-muted">{{ s.motivo }}</span>
                 </p>
-                
+
                 <div class="bg-light-custom p-2 rounded border d-flex justify-content-between align-items-center">
                   <span class="small">Desde: <strong>{{ s.desde_formateada || '-' }}</strong></span>
-                  <span class="small">Hasta: 
+                  <span class="small">Hasta:
                     <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
                     <strong class="text-danger" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
                     <strong class="text-muted" v-else>-</strong>
                   </span>
                 </div>
-                
-                <div class="d-flex gap-2 mt-3">
+
+                <div class="d-flex gap-2 mt-3 flex-wrap">
+                  <button v-if="s.estado_dinamico == 3" @click="gestionarDescargo(s)" class="btn-editar-mobile flex-grow-1 position-relative" :style="s.tiene_nuevos ? 'background-color: #fee2e2; color: #dc2626; border-color: #fca5a5;' : 'background-color: #eff6ff; color: #3b82f6; border-color: #bfdbfe;'">
+                    <span class="material-icons">chat</span> {{ s.tiene_nuevos ? 'Nuevos' : 'Descargos' }}
+                    <span v-if="s.tiene_nuevos" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="margin-left: -15px;"></span>
+                  </button>
+
                   <button @click="editarSancion(s)" class="btn-editar-mobile flex-grow-1"><span class="material-icons">edit</span> Editar</button>
                   <button @click="verHistorialArbitro(s)" class="btn-historial-mobile"><span class="material-icons">manage_search</span></button>
                   <button @click="eliminarSancionRegistro(s.id)" class="btn-eliminar-mobile"><span class="material-icons">delete</span></button>
                 </div>
               </div>
             </div>
-            
+
             <div v-if="sancionesPaginadas.length === 0" class="text-center p-4 bg-white rounded shadow-sm">
               <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
               <p class="text-muted mt-2 mb-0">No se encontraron sanciones.</p>
@@ -191,20 +202,13 @@
       </div>
     </div>
 
-<ModalBase 
-      :show="mostrarModalEditar" 
-      @close="mostrarModalEditar = false"
-      icono="edit"
-      maxWidth="500px"
-    >
-<template #header>
-  <div class="text-center">
-    <div>Editar Sanción</div>
-    <div class="text-muted small" style="font-size: 0.85rem;">
-      ID #{{ formModal.id }} — {{ formModal.arbitro }}
-    </div>
-  </div>
-</template>
+    <ModalBase :show="mostrarModalEditar" @close="mostrarModalEditar = false" icono="edit" maxWidth="500px">
+      <template #header>
+        <div class="text-center">
+          <div>Editar Sanción</div>
+          <div class="text-muted small" style="font-size: 0.85rem;">ID #{{ formModal.id }} — {{ formModal.arbitro }}</div>
+        </div>
+      </template>
 
       <div class="row g-3 text-start">
         <div class="col-12">
@@ -238,7 +242,7 @@
           <label class="small fw-bold text-dark mb-1">Fecha de Inicio *</label>
           <input type="date" v-model="formModal.desde" class="form-control shadow-none border-secondary-subtle">
         </div>
-        
+
         <div class="col-12" v-if="['dias','meses','anios'].includes(tipoSancion)">
           <div class="form-check mt-1">
             <input class="form-check-input" type="checkbox" v-model="formModal.es_indefinido" :true-value="1" :false-value="0" id="checkIndefinido">
@@ -248,7 +252,7 @@
           </div>
         </div>
       </div>
-      
+
       <template #footer>
         <div class="w-100 d-flex justify-content-center gap-3">
           <button @click="mostrarModalEditar = false" class="btn btn-light rounded-pill px-4 fw-bold border">CANCELAR</button>
@@ -260,26 +264,15 @@
       </template>
     </ModalBase>
 
-
-    <ModalBase 
-      :show="mostrarModalHistorial" 
-      @close="mostrarModalHistorial = false"
-      icono="manage_search"
-      colorIcono="bg-warning text-dark"
-      maxWidth="700px"
-    >
-    <template #header>
-      <div class="text-center">
-        <div>
-          Historial de {{ arbitroHistorial?.arbitro || 'Árbitro' }}
+    <ModalBase :show="mostrarModalHistorial" @close="mostrarModalHistorial = false" icono="manage_search" colorIcono="bg-warning text-dark" maxWidth="700px">
+      <template #header>
+        <div class="text-center">
+          <div>Historial de {{ arbitroHistorial?.arbitro || 'Árbitro' }}</div>
+          <div v-if="!cargandoHistorial" class="mt-1">
+            <span class="badge bg-dark rounded-pill">{{ historialSanciones.length }}</span>
+          </div>
         </div>
-        <div v-if="!cargandoHistorial" class="mt-1">
-          <span class="badge bg-dark rounded-pill">
-            {{ historialSanciones.length }}
-          </span>
-        </div>
-      </div>
-    </template>
+      </template>
 
       <div v-if="cargandoHistorial" class="text-center py-5">
         <span class="spinner-border text-warning"></span>
@@ -313,7 +306,7 @@
                 </td>
                 <td class="text-nowrap py-3 pe-2" style="color: #475569; font-size: 0.8rem;">
                   <strong class="text-dark">D:</strong> {{ h.desde_formateada || h.desde || '-' }}<br>
-                  <strong class="text-dark">H:</strong> 
+                  <strong class="text-dark">H:</strong>
                   <span :class="h.es_indefinido == 1 ? 'text-primary fw-bold' : ''">
                     {{ h.es_indefinido == 1 ? 'Indefinido' : (h.hasta_formateada || h.hasta || '-') }}
                   </span>
@@ -327,7 +320,6 @@
             </tbody>
           </table>
         </div>
-
         <div class="d-block d-md-none">
           <div v-for="h in historialSanciones" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-4 p-3 mb-3 shadow-sm bg-light">
             <div class="d-flex justify-content-between align-items-start mb-2 border-bottom pb-2">
@@ -351,13 +343,76 @@
       </div>
     </ModalBase>
 
-   
+    <ModalBase
+      :show="mostrarModalDescargo"
+      @close="mostrarModalDescargo = false; fetchSanciones()"
+      icono="forum"
+      maxWidth="600px"
+    >
+      <template #header>
+        <div class="text-center">
+          <div>Descargos: {{ sancionActiva?.arbitro }}</div>
+          <div class="text-muted small">Sanción Art. {{ sancionActiva?.articulo }}</div>
+        </div>
+      </template>
+
+      <div class="chat-container bg-light border rounded p-3 mb-3" style="height: 300px; overflow-y: auto;">
+        <div v-if="cargandoDescargos" class="text-center mt-4"><span class="spinner-border text-primary"></span></div>
+        <div v-else-if="historialDescargos.length === 0" class="text-center text-muted mt-4">Esperando descargo del árbitro.</div>
+
+        <div v-for="d in historialDescargos" :key="d.id" class="mb-3 d-flex flex-column" :class="d.emisor_tipo === 'admin' ? 'align-items-end' : 'align-items-start'">
+          <div :class="d.emisor_tipo === 'admin' ? 'bg-dark text-white' : 'bg-white border text-dark'" class="p-2 rounded shadow-sm" style="max-width: 85%;">
+            <div class="small fw-bold mb-1">{{ d.emisor_tipo === 'admin' ? 'Tribunal de Ética' : sancionActiva?.arbitro }}</div>
+            <div>{{ d.mensaje }}</div>
+
+            <div v-if="d.archivos && d.archivos.length > 0" class="mt-2 border-top pt-2" :class="d.emisor_tipo === 'admin' ? 'border-secondary' : ''">
+              <div v-for="arc in d.archivos" :key="arc.url_completa" class="small mb-1">
+                <div v-if="arc.archivo_nombre.match(/\.(jpeg|jpg|gif|png)$/i)" class="mt-1">
+                  <a :href="arc.url_completa" target="_blank" title="Ver imagen completa">
+                    <img :src="arc.url_completa" class="img-thumbnail" style="max-height: 80px; max-width: 100%; object-fit: cover; cursor: pointer;" :alt="arc.archivo_nombre">
+                  </a>
+                </div>
+                <div v-else>
+                  <a :href="arc.url_completa" target="_blank" :class="d.emisor_tipo === 'admin' ? 'text-white text-decoration-underline' : 'text-primary'">
+                    <i class="bi bi-paperclip"></i> {{ arc.archivo_nombre }}
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="text-end" style="font-size: 0.7rem; opacity: 0.8; margin-top: 4px;">{{ d.fecha_formateada }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-12">
+          <textarea v-model="nuevoMensaje" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Escribir respuesta al árbitro..."></textarea>
+        </div>
+        <div class="col-12">
+          <input type="file" ref="fileInput" multiple class="form-control form-control-sm shadow-none border-secondary-subtle" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="w-100 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <button @click="cerrarSancionDesdeDescargo" class="btn btn-outline-danger fw-bold shadow-sm rounded-pill px-3">
+             RESOLVER SANCIÓN
+          </button>
+          <button @click="enviarDescargoAdmin" class="btn btn-dark fw-bold rounded-pill px-4 shadow-sm" :disabled="enviandoDescargo || (!nuevoMensaje && !fileInput?.files?.length)">
+            <span v-if="enviandoDescargo" class="spinner-border spinner-border-sm me-1"></span>
+            RESPONDER
+          </button>
+        </div>
+      </template>
+    </ModalBase>
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
+import { auth } from '@/api/auth'
 import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
@@ -366,6 +421,7 @@ useHead({ title: 'Gestión de Sanciones | AAAB' })
 
 const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 
+const adminLogueado = ref(auth.getUser() || { id: 1 })
 const sanciones = ref([])
 const cargando = ref(false)
 const cargandoProceso = ref(false)
@@ -391,6 +447,15 @@ const cargandoHistorial = ref(false)
 const arbitroHistorial = ref(null)
 const historialSanciones = ref([])
 
+// ---- Variables Descargos (Chat) ----
+const mostrarModalDescargo = ref(false)
+const sancionActiva = ref(null)
+const historialDescargos = ref([])
+const cargandoDescargos = ref(false)
+const nuevoMensaje = ref('')
+const enviandoDescargo = ref(false)
+const fileInput = ref(null)
+
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 const revertirFechaParaInput = (fecha) => {
   if (!fecha) return '';
@@ -410,10 +475,10 @@ const obtenerTextoEstado = (estado_dinamico) => {
 
 const obtenerClaseEstado = (estado_dinamico, es_sm = false) => {
   const prefijo = es_sm ? 'badge-status-sm' : 'badge-status';
-  if (estado_dinamico == 1) return `${prefijo} rechazada`; 
-  if (estado_dinamico == 2) return `${prefijo} aprobada`;  
-  if (estado_dinamico == 3) return `${prefijo} pendiente text-dark`; 
-  if (estado_dinamico == 4) return `${prefijo} anulada`; 
+  if (estado_dinamico == 1) return `${prefijo} rechazada`;
+  if (estado_dinamico == 2) return `${prefijo} aprobada`;
+  if (estado_dinamico == 3) return `${prefijo} pendiente text-dark`;
+  if (estado_dinamico == 4) return `${prefijo} anulada`;
   return `${prefijo}`;
 }
 
@@ -479,7 +544,7 @@ const editarSancion = (s) => {
     motivo: s.motivo,
     articulo: s.articulo,
     desde: revertirFechaParaInput(s.desde),
-    es_indefinido: 0 
+    es_indefinido: s.es_indefinido
   }
 
   tipoSancion.value = ''
@@ -513,7 +578,7 @@ const confirmarEdicion = async () => {
   let es_anulada = 0
 
   if (tipoSancion.value === 'anulada') {
-    es_anulada = 1 
+    es_anulada = 1
   } else if (tipoSancion.value === 'amonestacion') {
     amonestacion = 1
   } else if (tipoSancion.value === 'dias') {
@@ -531,7 +596,7 @@ const confirmarEdicion = async () => {
     sancion_dias: diasCalculados,
     desde: formModal.value.desde || null,
     es_amonestacion: amonestacion,
-    es_anulada: es_anulada, 
+    es_anulada: es_anulada,
     es_indefinido: formModal.value.es_indefinido ? 1 : 0
   }
 
@@ -587,6 +652,78 @@ const verHistorialArbitro = async (sancion) => {
   }
 }
 
+// ----- MÉTODOS DE DESCARGO (CHAT) -----
+
+const gestionarDescargo = async (sancion) => {
+  sancionActiva.value = sancion;
+  mostrarModalDescargo.value = true;
+  await cargarDescargos(sancion.id);
+
+  // Limpiamos globo rojo al abrir
+  if (sancion.tiene_nuevos) {
+      sancion.tiene_nuevos = false;
+  }
+};
+
+const cargarDescargos = async (id_sancion) => {
+  cargandoDescargos.value = true;
+  try {
+    const res = await api.get({ entity: 'sanciones', action: 'obtenerDescargos', payload: { id_sancion } });
+    historialDescargos.value = res.payload || res || [];
+  } catch (error) {
+    console.error(error);
+  } finally {
+    cargandoDescargos.value = false;
+  }
+};
+
+const convertirABase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve({ nombre: file.name, base64: reader.result });
+    reader.onerror = error => reject(error);
+  });
+};
+
+const enviarDescargoAdmin = async () => {
+  enviandoDescargo.value = true;
+
+  let archivosConvertidos = [];
+  if (fileInput.value && fileInput.value.files.length > 0) {
+    for (let i = 0; i < fileInput.value.files.length; i++) {
+      const base64Data = await convertirABase64(fileInput.value.files[i]);
+      archivosConvertidos.push(base64Data);
+    }
+  }
+
+  const payload = {
+    id_sancion: sancionActiva.value.id,
+    emisor_tipo: 'admin',
+    emisor_id: adminLogueado.value.id,
+    mensaje: nuevoMensaje.value,
+    archivos: archivosConvertidos
+  };
+
+  try {
+    const res = await api.post({ entity: 'sanciones', action: 'enviarDescargo', payload });
+    if (res?.success !== false) {
+      nuevoMensaje.value = '';
+      if (fileInput.value) fileInput.value.value = '';
+      await cargarDescargos(sancionActiva.value.id);
+    }
+  } catch {
+    notificar({ titulo: 'Error', mensaje: 'No se pudo enviar la respuesta', tipo: 'danger' });
+  } finally {
+    enviandoDescargo.value = false;
+  }
+};
+
+const cerrarSancionDesdeDescargo = () => {
+  mostrarModalDescargo.value = false;
+  editarSancion(sancionActiva.value); // Ejecuta el flujo normal de edición para cerrarla
+};
+
 const exportarExcel = () => {
   const data = sancionesFiltradas.value.map(s => ({
     ID: s.id,
@@ -624,20 +761,20 @@ onMounted(fetchSanciones)
   .admin-panel { padding: 0 !important; border-radius: 0; }
 }
 
-.admin-panel { 
-  width: 100%; max-width: 100%; padding: 0; 
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; 
-  color: #000; background-color: #0f172a; min-height: 100vh; 
+.admin-panel {
+  width: 100%; max-width: 100%; padding: 0;
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  color: #000; background-color: #0f172a; min-height: 100vh;
   box-sizing: border-box;
 }
 
 .main-card { border-radius: 12px; overflow: hidden; }
 
 /* Cabecera Móvil */
-.header-section { 
-  background: white; padding: 15px; display: flex; 
-  flex-direction: column; align-items: flex-start; 
-  gap: 15px; border-left: 5px solid #dc2626; 
+.header-section {
+  background: white; padding: 15px; display: flex;
+  flex-direction: column; align-items: flex-start;
+  gap: 15px; border-left: 5px solid #dc2626;
 }
 
 .title { font-size: 1.25rem; font-weight: bold; margin: 0; }
@@ -645,10 +782,10 @@ onMounted(fetchSanciones)
 
 /* Botones Móvil (42x42 centrados) */
 .header-actions { width: 100%; display: flex; justify-content: center; gap: 8px; }
-.btn-action { 
-  border: none; border-radius: 4px; font-weight: bold; cursor: pointer; 
-  display: flex; align-items: center; justify-content: center; 
-  width: 42px; height: 42px; padding: 0; transition: opacity 0.2s; 
+.btn-action {
+  border: none; border-radius: 4px; font-weight: bold; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px; padding: 0; transition: opacity 0.2s;
 }
 .btn-text { display: none; }
 
@@ -694,29 +831,29 @@ onMounted(fetchSanciones)
    ==================================================== */
 @media (min-width: 768px) {
   .admin-panel { padding: 20px; }
-  
+
   .header-section { flex-direction: row; align-items: center; justify-content: space-between; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
   .title { font-size: 1.1rem; }
-  
+
   .header-actions { width: auto; justify-content: flex-end; gap: 8px; }
   .btn-action { width: auto; height: auto; padding: 8px 12px; gap: 5px; font-size: 0.75rem; }
   .btn-text { display: inline; }
 
   /* Tabla Desktop */
-  .table-container { 
-    width: 100%; overflow: auto; max-height: 85vh; 
-    background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+  .table-container {
+    width: 100%; overflow: auto; max-height: 85vh;
+    background: white; border-radius: 8px; border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   }
   table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-  
-  thead tr.main-header th { 
-    position: sticky; top: 0; z-index: 50; background: #f8fafc !important; 
+
+  thead tr.main-header th {
+    position: sticky; top: 0; z-index: 50; background: #f8fafc !important;
     padding: 12px 8px; border-bottom: 1px solid #cbd5e1; font-weight: 800; text-transform: uppercase; font-size: 0.75rem;
   }
-  thead tr.filter-row td { 
-    position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important; 
-    padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; 
+  thead tr.filter-row td {
+    position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important;
+    padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0;
   }
 
   /* Sticky Columns */
