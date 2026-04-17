@@ -56,13 +56,15 @@
             </div>
 
             <div class="mobile-select-group">
-              <label>Licencia:</label>
+              <label>Licencia / Sanción:</label>
               <select v-model="filtros.licencia">
-                <option value="">Todos los Árbitros</option>
+                <option value="">Todos</option>
                 <option value="sin_licencia">Sin Licencia</option>
                 <option value="aprobada">Licencias Aprobadas</option>
                 <option value="rechazada">Licencias Rechazadas</option>
                 <option value="pendiente">Licencias Pendientes</option>
+                <option value="sancion_vigente">Sanción Vigente</option>
+                <option value="sancion_proceso">Sanción en Proceso</option>
               </select>
             </div>
 
@@ -114,7 +116,7 @@
                   <th class="sticky-col" style="left: 140px; z-index: 40; width: 140px;">Nombre</th>
                   <th class="sticky-col col-shrink sticky-col-final" style="left: 280px; z-index: 40;">SÁB</th>
                   <th class="sticky-col col-shrink" style="left: 330px; z-index: 40;">DOM</th>
-                  <th class="sticky-col text-center" style="left: 380px; z-index: 40; min-width: 160px;">Licencia</th>
+                  <th class="sticky-col text-center" style="left: 380px; z-index: 40; min-width: 160px;">Licencia / Sanción</th>
                   <th class="col-shrink">WS</th>
                   <th style="width: 80px;">Activo</th>
                   <th class="text-center" style="width: 90px;">Apto</th>
@@ -159,6 +161,8 @@
                       <option value="aprobada">Aprobada</option>
                       <option value="rechazada">Rechazada</option>
                       <option value="pendiente">Pendiente</option>
+                      <option value="sancion_vigente">Sanción Vigente</option>
+                      <option value="sancion_proceso">Sanción en Proceso</option>
                     </select>
                   </td>
                   <td></td>
@@ -318,8 +322,6 @@
             class="d-flex justify-content-center align-items-center gap-3 mt-4"
             v-if="totalPaginas > 1"
           >
-
-            <!-- ANTERIOR -->
             <button
               class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
               @click="cambiarPagina(-1)"
@@ -328,12 +330,10 @@
               <i class="bi bi-chevron-left"></i> Ant
             </button>
 
-            <!-- TEXTO -->
             <span class="fw-bold text-dark small">
               Página {{ paginaActual }} de {{ totalPaginas }}
             </span>
 
-            <!-- SIGUIENTE -->
             <button
               class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
               @click="cambiarPagina(1)"
@@ -341,7 +341,6 @@
             >
               Sig <i class="bi bi-chevron-right"></i>
             </button>
-
           </div>
 
         </div>
@@ -403,18 +402,52 @@ const cargarDatos = async () => {
     const {payload} = await api.get({
       entity: "arbitros",
       action:"getArbitros"
-    })
+    });
+
+    // NUEVO: Obtenemos las sanciones de manera paralela y controlada
+    let sancionesPayload = [];
+    try {
+      const resSanciones = await api.get({ entity: "sanciones", action: "obtenerSanciones" });
+      sancionesPayload = resSanciones.payload || [];
+    } catch(e) {
+      console.error("Error al cargar sanciones:", e);
+    }
+
+    // Mapeo rápido para asignar a los árbitros
+    const sancionesMap = {};
+    sancionesPayload.forEach(s => {
+      // Tomamos solo las Vigentes (1) o En Proceso (3)
+      if (s.estado_dinamico === 1 || s.estado_dinamico === 3) {
+        if (!sancionesMap[s.id_arbitro]) {
+          sancionesMap[s.id_arbitro] = s;
+        } else {
+          // Si ya existe otra, priorizamos la vigente (1) por sobre el proceso (3)
+          if (s.estado_dinamico === 1 && sancionesMap[s.id_arbitro].estado_dinamico === 3) {
+            sancionesMap[s.id_arbitro] = s;
+          }
+        }
+      }
+    });
+
     arbitros.value = payload
-      ? payload.map(a => ({
-          ...a,
-          apto_medico: a.apto_medico == 1,
-        }))
+      ? payload.map(a => {
+          const sancion = sancionesMap[a.id];
+          return {
+            ...a,
+            apto_medico: a.apto_medico == 1,
+            // Agregamos las propiedades derivadas de sanciones al árbitro
+            sancion_vigente: sancion && sancion.estado_dinamico === 1,
+            sancion_proceso: sancion && sancion.estado_dinamico === 3,
+            sancion_hasta: sancion ? sancion.hasta_formateada : null,
+            sancion_indefinida: sancion ? sancion.es_indefinido == 1 : false
+          };
+        })
       : [];
 
     const resChecks = await api.get({
       entity: 'designaciones',
       action: 'obtener_tildes',
-    })
+    });
     const listaTildes = resChecks.payload;
 
     if (listaTildes && Array.isArray(listaTildes)) {
@@ -446,22 +479,20 @@ const toggleDesignacion = async (id, dia) => {
     });
   } catch (err) {
     console.error("Error al guardar tilde:", err);
-    if (nuevoValor) set.delete(id); else set.add(id); // Revertimos visualmente si falla
+    if (nuevoValor) set.delete(id); else set.add(id);
     notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la designación.', tipo: 'danger' });
   }
 };
 
-// FIX: Usamos `notificar` con el callback `alConfirmar`, como en todos tus otros códigos.
 const solicitarLimpiarChecks = () => {
   notificar({
     titulo: 'Limpiar Designaciones',
     mensaje: '¿Estás seguro que deseas limpiar todos los tildes de designación? Esta acción no se puede deshacer.',
     tipo: 'warning',
-    alConfirmar: () => limpiarChecks() // Pasamos la función real a ejecutar si el usuario acepta
+    alConfirmar: () => limpiarChecks()
   });
 };
 
-// FUNCIÓN REAL QUE HACE LA PETICIÓN
 const limpiarChecks = async () => {
   try {
     const res = await api.post({
@@ -486,17 +517,19 @@ const limpiarChecks = async () => {
 const obtenerClaseFila = (a) => {
   const tieneAprobada = Number(a.tiene_aprobada) > 0;
   const tieneRechazada = Number(a.tiene_rechazada) > 0;
-  const tienePendiente = Number(a.tiene_pendiente) > 0; // NUEVO: Capturamos pendiente
+  const tienePendiente = Number(a.tiene_pendiente) > 0;
   const esInactivo = a.es_activo == 0;
 
   const tildadoSabado = designadosSabado.value.has(a.id);
   const tildadoDomingo = designadosDomingo.value.has(a.id);
 
-  if ((tildadoSabado && tildadoDomingo) || esInactivo || tieneAprobada) {
+  // NUEVO: La sanción vigente toma prioridad junto a Inactivos, Aprobada o Designados ambos días (Rojo)
+  if ((tildadoSabado && tildadoDomingo) || esInactivo || tieneAprobada || a.sancion_vigente) {
     return 'fila-roja';
   }
-  // MODIFICADO: Pinta de amarillo si tiene rechazada O pendiente
-  if (tieneRechazada || tienePendiente) return 'fila-amarilla';
+
+  // NUEVO: La sanción en proceso se pinta de amarillo al igual que Rechazadas o Pendientes
+  if (tieneRechazada || tienePendiente || a.sancion_proceso) return 'fila-amarilla';
 
   if (tildadoSabado || tildadoDomingo) return 'fila-des';
   return '';
@@ -523,10 +556,18 @@ const obtenerTextoLicencia = (a) => {
     return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
   };
 
+  // NUEVO: Evaluar Sanciones para sumarlo al texto
+  if (a.sancion_vigente) {
+    const textoHasta = a.sancion_indefinida ? 'Indefinida' : a.sancion_hasta;
+    textos.push(`SANCIONADO (Hasta: ${textoHasta || '-'})`);
+  } else if (a.sancion_proceso) {
+    textos.push(`SANC. EN PROCESO`);
+  }
+
+  // LICENCIAS EXISTENTES
   if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
     textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
   }
-  // NUEVO: Agregamos la lectura de las pendientes
   if (Number(a.tiene_pendiente) > 0 && a.fecha_licencia_pendiente) {
     textos.push(`PEN: ${formatearVariasFechas(a.fecha_licencia_pendiente)}`);
   }
@@ -553,6 +594,9 @@ const arbitrosFiltrados = computed(() => {
     if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0;
     else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada || 0) > 0;
     else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente || 0) > 0;
+    // NUEVO: Agregamos la validación del filtro para los estados de la sanción
+    else if (filtros.licencia === 'sancion_vigente') cumpleLicencia = a.sancion_vigente === true;
+    else if (filtros.licencia === 'sancion_proceso') cumpleLicencia = a.sancion_proceso === true;
     else if (filtros.licencia === 'sin_licencia') {
       cumpleLicencia = Number(a.tiene_aprobada || 0) === 0 &&
                        Number(a.tiene_rechazada || 0) === 0 &&
@@ -608,7 +652,7 @@ const exportarExcel = () => {
     CELULAR: a.celular,
     SAB_DESIGNADO: designadosSabado.value.has(a.id) ? 'SI' : 'NO',
     DOM_DESIGNADO: designadosDomingo.value.has(a.id) ? 'SI' : 'NO',
-    LICENCIA: obtenerTextoLicencia(a),
+    LICENCIA_O_SANCION: obtenerTextoLicencia(a),
     ACTIVO: a.es_activo == 1 ? 'SI' : 'NO',
     ZONA: a.zona, MOVILIDAD: a.movilidad,
     SAB_DISP: a.disponibilidad_sabado, SAB_HORA: `${a.disponibilidad_sabado_desde} a ${a.disponibilidad_sabado_hasta}`,
