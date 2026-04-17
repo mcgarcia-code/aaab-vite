@@ -1,6 +1,6 @@
 <template>
-  <div class="container-fluid py-4 animate__animated animate__fadeIn">
-      
+  <div class="container-fluid py-0 animate__animated animate__fadeIn">
+
     <div class="dashboard-header mb-5 text-start">
       <div class="d-flex align-items-center justify-content-start gap-3">
         <div class="main-icon-container">
@@ -14,7 +14,7 @@
     </div>
 
     <div class="row g-3 g-md-4">
-      
+
       <div class="col-12 col-md-6">
         <RouterLink to="/panel-admin/tesoreria/indumentaria/stock" class="text-decoration-none h-100 d-block">
           <div class="modern-menu-card shadow-sm">
@@ -35,14 +35,14 @@
       <div class="col-12 col-md-6">
         <RouterLink to="/panel-admin/tesoreria/indumentaria/pedidos" class="text-decoration-none h-100 d-block">
           <div class="modern-menu-card shadow-sm">
-            
+
             <div class="icon-box position-relative">
               <i class="bi bi-list-check"></i>
               <span v-if="pedidosNuevos > 0" class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle animate__animated animate__pulse animate__infinite">
                 <span class="visually-hidden">Nuevos pedidos</span>
               </span>
             </div>
-            
+
             <div class="card-text">
               <h5 class="fw-bold mb-1 d-flex align-items-center gap-2 flex-wrap">
                 Pedidos Realizados
@@ -52,11 +52,11 @@
               </h5>
               <p class="extra-small m-0 text-muted">Listado de solicitudes, estados de entrega y pendientes.</p>
             </div>
-            
+
             <div class="card-arrow">
               <i class="bi bi-chevron-right"></i>
             </div>
-            
+
           </div>
         </RouterLink>
       </div>
@@ -175,7 +175,7 @@ onMounted(() => {
 
 /* --- EFECTOS HOVER --- */
 .modern-menu-card:hover {
-  border-color: #f87171; 
+  border-color: #f87171;
   transform: translateY(-5px);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
 }
@@ -195,9 +195,9 @@ onMounted(() => {
    📱 RESPONSIVE DESIGN
    ==================================================== */
 @media (max-width: 768px) {
-  .modern-menu-card { 
-    padding: 18px; 
-    min-height: 120px; 
+  .modern-menu-card {
+    padding: 18px;
+    min-height: 120px;
   }
   .dashboard-header { margin-bottom: 30px !important; }
   .icon-box { width: 48px; height: 48px; min-width: 48px; font-size: 1.3rem; }

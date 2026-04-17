@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-4 animate__animated animate__fadeIn">
-    
+
     <div class="dashboard-header mb-5">
       <h3 class="text-white">¡Bienvenido al Panel de Gestión!</h3>
       <p class="text-white">Seleccioná un módulo para gestionar la AAAB</p>
@@ -10,11 +10,11 @@
       <div class="col-12 col-sm-6 col-lg-4" v-for="item in filteredMenu" :key="item.title">
         <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
           <div class="modern-card">
-            
+
             <div class="icon-box">
               <i :class="item.icon"></i>
             </div>
-            
+
             <div class="card-body-text">
               <h5 class="card-title">{{ item.title }}</h5>
               <p class="card-desc">{{ item.desc }}</p>
@@ -45,47 +45,47 @@ useHead({
 });
 
 const menuItems = [
-  { 
-    to: '/panel-admin/secretaria', 
-    title: 'Secretaría', 
-    icon: 'bi bi-pc-display-horizontal', 
+  {
+    to: '/panel-admin/secretaria',
+    title: 'Secretaría',
+    icon: 'bi bi-pc-display-horizontal',
     desc: 'Datos personales y licencias.',
-    rolesPermitidos: ['admin', 'secretario', 'designador'] 
+    rolesPermitidos: ['admin', 'secretario', 'designador']
   },
-  { 
-    to: '/panel-admin/tribunal', 
-    title: 'Tribunal de Ética', 
-    icon: 'bi bi-shield-exclamation', 
+  {
+    to: '/panel-admin/tribunal',
+    title: 'Tribunal de Ética',
+    icon: 'bi bi-shield-exclamation',
     desc: 'Sanciones y resoluciones.',
-    rolesPermitidos: ['admin', 'etica', 'secretario', 'designador'] 
+    rolesPermitidos: ['admin', 'etica', 'secretario', 'designador']
   },
-  { 
-    to: '/panel-admin/tesoreria', 
-    title: 'Tesorería', 
-    icon: 'bi bi-cash-stack', 
+  {
+    to: '/panel-admin/tesoreria',
+    title: 'Tesorería',
+    icon: 'bi bi-cash-stack',
     desc: 'Contabilidad y stock de ropa.',
-    rolesPermitidos: ['admin', 'tesorero'] 
+    rolesPermitidos: ['admin', 'tesorero']
   },
-  { 
-    to: '/panel-admin/designaciones', 
-    title: 'Designaciones', 
-    icon: 'bi bi-calendar4-week', 
+  {
+    to: '/panel-admin/designaciones',
+    title: 'Designaciones',
+    icon: 'bi bi-calendar4-week',
     desc: 'Disponibilidad, licencias y partidos',
-    rolesPermitidos: ['admin', 'designador', 'secretario'] 
+    rolesPermitidos: ['admin', 'designador', 'secretario']
   },
-  { 
-    to: '/panel-admin/desarrollo-arbitral', 
-    title: 'Desarrollo Arbitral', 
-    icon: 'bi bi-person-workspace', 
+  {
+    to: '/panel-admin/desarrollo-arbitral',
+    title: 'Desarrollo Arbitral',
+    icon: 'bi bi-person-workspace',
     desc: 'Capacitaciones y evaluaciones.',
-    rolesPermitidos: ['admin', 'coordinador general', 'secretario'] 
+    rolesPermitidos: ['admin', 'coordinador general', 'secretario']
   },
-    { 
-    to: '/panel-admin/facturacion', 
-    title: 'Facturación', 
-    icon: 'bi bi-receipt', 
+    {
+    to: '/panel-admin/facturacion',
+    title: 'Facturación',
+    icon: 'bi bi-receipt',
     desc: 'Administrar datos fiscales y entidades vinculadas',
-    rolesPermitidos: ['admin', 'secretario', 'facturacion', 'tesorero'] 
+    rolesPermitidos: ['admin', 'secretario', 'facturacion', 'tesorero']
   },
 ];
 
@@ -145,13 +145,13 @@ const filteredMenu = computed(() => {
   margin: 0 0 2px 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #0f172a; 
+  color: #0f172a;
 }
 
 .card-desc {
   margin: 0;
   font-size: 0.85rem;
-  color: #64748b; 
+  color: #64748b;
   line-height: 1.4;
 }
 
@@ -164,7 +164,7 @@ const filteredMenu = computed(() => {
 
 /* --- EFECTOS INTERACTIVOS (HOVER) --- */
 .modern-card:hover {
-  border-color: #f87171; 
+  border-color: #f87171;
   transform: translateY(-5px);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
 }

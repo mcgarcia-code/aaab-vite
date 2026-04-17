@@ -1,12 +1,9 @@
 <template>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
       <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
-        
+
         <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
           <div class="header-info">
             <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2 flex-wrap" style="font-size: 1.25rem;">
@@ -19,7 +16,7 @@
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-filter-mobile mobile-only">
               <span class="material-icons">filter_alt</span>
             </button>
-            
+
             <button @click="limpiarFiltros" class="btn-action btn-clear">
               <span class="material-icons">filter_alt_off</span>
               <span class="btn-text">Limpiar</span>
@@ -48,7 +45,7 @@
           <div class="filter-grid-mobile">
             <input v-model="filtros.apellido" placeholder="Apellido..">
             <input v-model="filtros.nombre" placeholder="Nombre..">
-            
+
             <div class="mobile-select-group">
               <label>Estado Activo:</label>
               <select v-model="filtros.es_activo">
@@ -100,10 +97,10 @@
               <input v-model="filtros.grupo" placeholder="Grupo">
               <input v-model="filtros.subgrupo" placeholder="Sub-grupo">
             </div>
-            
+
             <input v-model="filtros.zona" placeholder="Zona..">
           </div>
-          
+
           <button @click="mostrarFiltrosMobile = false" class="btn-close-filters w-100 mt-2">Aplicar Filtros</button>
         </div>
 
@@ -139,7 +136,7 @@
                 <tr class="filter-row">
                   <td class="sticky-col" style="left:0; z-index: 35;"><input v-model="filtros.apellido" class="filter-input shadow-none"></td>
                   <td class="sticky-col" style="left:140px; z-index: 35;"><input v-model="filtros.nombre" class="filter-input shadow-none"></td>
-                  
+
                   <td class="sticky-col col-shrink" style="left:280px; z-index: 35;">
                     <select v-model="filtros.designado_sabado" class="filter-input shadow-none">
                       <option value="">Todos</option>
@@ -154,7 +151,7 @@
                       <option value="0">NO</option>
                     </select>
                   </td>
-                  
+
                   <td class="sticky-col" style="left:380px; z-index: 35;">
                     <select v-model="filtros.licencia" class="filter-input shadow-none">
                       <option value="">Todas</option>
@@ -197,7 +194,7 @@
                 <tr v-for="a in arbitrosPaginados" :key="a.id" :class="obtenerClaseFila(a)">
                   <td class="sticky-col font-bold" style="left: 0;">{{ a.apellido }}</td>
                   <td class="sticky-col font-bold" style="left: 140px;">{{ a.nombre }}</td>
-                  
+
                   <td class="sticky-col text-center col-shrink" style="left: 280px;">
                     <input type="checkbox"
                       :checked="designadosSabado.has(a.id)"
@@ -256,19 +253,19 @@
 
           <div class="mobile-only mt-3">
             <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card-arbitro shadow-sm border border-light-subtle mb-3" :class="obtenerClaseFila(a)">
-              
+
               <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
                 <div class="card-name text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
                   {{ a.apellido }}, {{ a.nombre }}
                 </div>
                 <div class="text-xs fw-bold" style="color: #000;">{{ obtenerTextoLicencia(a) }}</div>
               </div>
-              
+
               <div class="card-body pt-0 px-3 pb-3">
                 <div class="card-row text-dark mb-2">
                   <span style="font-size: 0.9rem;"><strong>Gr:</strong> {{ a.grupo }}-<strong>Zona:</strong> {{ a.zona }}</span>
                 </div>
-                
+
                 <div class="mb-2">
                   <p class="text-dark m-0" style="font-size: 0.9rem;">
                     <strong>Apto Físico: </strong>
@@ -280,12 +277,12 @@
                 <div class="mb-3">
                   <p class="text-dark mt-1 mb-0" style="font-size: 0.9rem;"><strong>Juega:</strong> {{ a.juega_handball }} <span v-if="a.juega_handball === 'SI'">en {{ a.donde_juega }}</span></p>
                 </div>
-                
+
                 <div class="mb-3">
                   <p class="text-dark mb-1" style="font-size: 0.9rem;"><strong>Sáb:</strong> {{ a.disponibilidad_sabado }} <span v-if="a.disponibilidad_sabado === 'SI' || a.disponibilidad_sabado === 'OTROS'">({{ a.disponibilidad_sabado_desde }}-{{ a.disponibilidad_sabado_hasta }})</span><span v-else>(-)</span></p>
                   <p class="text-dark m-0" style="font-size: 0.9rem;"><strong>Dom:</strong> {{ a.disponibilidad_domingo }} <span v-if="a.disponibilidad_domingo === 'SI' || a.disponibilidad_domingo === 'OTROS'">({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</span><span v-else>(-)</span></p>
                 </div>
-                
+
                 <div class="d-flex gap-2 mt-3 pt-2 border-top border-secondary-subtle">
                   <div class="flex-grow-1 text-center">
                     <label class="d-block small fw-bold text-dark mb-1">Designar SÁB</label>
@@ -317,7 +314,7 @@
             </div>
           </div>
 
-          <div 
+          <div
             class="d-flex justify-content-center align-items-center gap-3 mt-4"
             v-if="totalPaginas > 1"
           >
@@ -347,14 +344,14 @@
 
           </div>
 
-        </div> 
-      </div> 
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, watch, inject } from 'vue'; 
+import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head'
@@ -376,9 +373,9 @@ const arbitros = ref([]);
 const mostrarFiltrosMobile = ref(false);
 
 const filtros = reactive({
-  apellido: '', nombre: '', licencia: '', es_activo: '', 
-  apto_medico: '', 
-  grupo: '', subgrupo: '', zona: '', movilidad: '', 
+  apellido: '', nombre: '', licencia: '', es_activo: '',
+  apto_medico: '',
+  grupo: '', subgrupo: '', zona: '', movilidad: '',
   disponibilidad_sabado: '', disponibilidad_domingo: '',
   juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: '',
   designado_sabado: '',
@@ -429,8 +426,8 @@ const cargarDatos = async () => {
         if (item.dia === 'D') designadosDomingo.value.add(item.idarbitro);
       });
     }
-  } catch (err) { 
-    console.error("Error al cargar datos:", err); 
+  } catch (err) {
+    console.error("Error al cargar datos:", err);
     notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
   }
 };
@@ -438,14 +435,14 @@ const cargarDatos = async () => {
 const toggleDesignacion = async (id, dia) => {
   const set = dia === 'S' ? designadosSabado.value : designadosDomingo.value;
   const nuevoValor = !set.has(id);
-  
+
   if (nuevoValor) set.add(id); else set.delete(id);
-  
+
   try {
     await api.post({
       entity: 'designaciones',
       action: 'actualizar_tilde',
-      payload: { id_arbitro: id, dia: dia, checked: nuevoValor } 
+      payload: { id_arbitro: id, dia: dia, checked: nuevoValor }
     });
   } catch (err) {
     console.error("Error al guardar tilde:", err);
@@ -491,16 +488,16 @@ const obtenerClaseFila = (a) => {
   const tieneRechazada = Number(a.tiene_rechazada) > 0;
   const tienePendiente = Number(a.tiene_pendiente) > 0; // NUEVO: Capturamos pendiente
   const esInactivo = a.es_activo == 0;
-  
+
   const tildadoSabado = designadosSabado.value.has(a.id);
   const tildadoDomingo = designadosDomingo.value.has(a.id);
-  
+
   if ((tildadoSabado && tildadoDomingo) || esInactivo || tieneAprobada) {
     return 'fila-roja';
   }
   // MODIFICADO: Pinta de amarillo si tiene rechazada O pendiente
-  if (tieneRechazada || tienePendiente) return 'fila-amarilla'; 
-  
+  if (tieneRechazada || tienePendiente) return 'fila-amarilla';
+
   if (tildadoSabado || tildadoDomingo) return 'fila-des';
   return '';
 };
@@ -525,7 +522,7 @@ const obtenerTextoLicencia = (a) => {
     if (!cadenaFechas) return '';
     return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
   };
-  
+
   if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
     textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
   }
@@ -536,7 +533,7 @@ const obtenerTextoLicencia = (a) => {
   if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
     textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
   }
-  
+
   return textos.length > 0 ? textos.join(' | ') : '-';
 };
 
@@ -555,10 +552,10 @@ const arbitrosFiltrados = computed(() => {
     let cumpleLicencia = true;
     if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0;
     else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada || 0) > 0;
-    else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente || 0) > 0; 
+    else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente || 0) > 0;
     else if (filtros.licencia === 'sin_licencia') {
-      cumpleLicencia = Number(a.tiene_aprobada || 0) === 0 && 
-                       Number(a.tiene_rechazada || 0) === 0 && 
+      cumpleLicencia = Number(a.tiene_aprobada || 0) === 0 &&
+                       Number(a.tiene_rechazada || 0) === 0 &&
                        Number(a.tiene_pendiente || 0) === 0;
     }
 
@@ -600,7 +597,7 @@ const arbitrosPaginados = computed(() => {
 watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
 
 // Si al borrar se reducen las páginas y quedamos fuera de rango, ajustamos.
-watch(totalPaginas, (nuevoTotal) => { 
+watch(totalPaginas, (nuevoTotal) => {
   if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
 });
 
@@ -633,15 +630,15 @@ onMounted(cargarDatos);
    ==================================================== */
 
 /* Contenedor principal */
-.full-screen-wrapper { 
-  position: relative; 
-  width: 99vw; 
-  min-height: 100vh; 
-  height: auto !important; 
-  margin-left: 50%; 
-  transform: translateX(-50%); 
-  padding: 20px; 
-  padding-bottom: 120px; 
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto !important;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  padding: 20px;
+  padding-bottom: 120px;
   box-sizing: border-box;
 }
 
@@ -651,28 +648,28 @@ onMounted(cargarDatos);
 }
 
 /* Estructura base (Celulares) */
-.admin-panel { 
+.admin-panel {
   width: 100%;
-  max-width: 100%; 
-  padding: 0; 
+  max-width: 100%;
+  padding: 0;
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;  
-  background-color: #0f172a; 
+  color: #000;
+  background-color: #0f172a;
   min-height: 100vh;
-  border-radius: 0; 
+  border-radius: 0;
 }
 
 /* Cabecera Móvil */
-.header-section { 
-  background: white; 
-  padding: 15px; 
-  display: flex; 
-  flex-direction: column; 
-  align-items: flex-start; 
-  text-align: left; 
-  gap: 15px; 
-  border-left: 5px solid #ef4444; 
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+.header-section {
+  background: white;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 15px;
+  border-left: 5px solid #ef4444;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
@@ -680,28 +677,28 @@ onMounted(cargarDatos);
 .counter { font-size: 0.85rem; color: #64748b; }
 
 /* Botones Móvil: En una sola línea sin desbordar */
-.header-actions { 
-  width: 100%; 
-  display: flex; 
-  flex-direction: row; 
-  flex-wrap: nowrap; 
-  justify-content: center; 
-  gap: 8px; 
-  overflow-x: auto; 
+.header-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 8px;
+  overflow-x: auto;
 }
 
-.btn-action { 
-  border: none; border-radius: 6px; font-weight: bold; cursor: pointer; 
-  display: flex; align-items: center; justify-content: center; 
-  transition: opacity 0.2s, transform 0.1s; 
-  flex: none; width: 42px; height: 42px; padding: 0; 
+.btn-action {
+  border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.2s, transform 0.1s;
+  flex: none; width: 42px; height: 42px; padding: 0;
 }
 .btn-action:hover { opacity: 0.85; }
 .btn-action:active { transform: scale(0.95); }
 .btn-text { display: none; } /* Oculto en móvil */
 
 .btn-clear { background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; }
-.btn-clear-checks { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; } 
+.btn-clear-checks { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
 .btn-export { background: #10b981; color: white; }
 .btn-filter-mobile { background: #3b82f6; color: white; }
 
@@ -714,7 +711,7 @@ onMounted(cargarDatos);
 .mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
 .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; }
 .filter-grid-mobile input, .filter-grid-mobile select {
-  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; 
+  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
   font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #334155;
 }
 .filter-grid-mobile input:focus, .filter-grid-mobile select:focus { border-color: #3b82f6; background: white; }
@@ -765,9 +762,9 @@ onMounted(cargarDatos);
    2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
    ==================================================== */
 @media (min-width: 768px) {
-  
+
   .admin-panel { padding: 20px; border-radius: 12px; }
-  
+
   /* Cambio de visibilidad */
   .desktop-only { display: block !important; }
   .mobile-only { display: none !important; }
@@ -777,56 +774,56 @@ onMounted(cargarDatos);
   .header-section { flex-direction: row; align-items: center; justify-content: space-between; border-radius: 8px; padding: 15px 25px; }
   .header-info { width: auto; align-items: flex-start; }
   .title { font-size: 1.1rem; }
-  
+
   /* Reestructuración Botones */
   .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; overflow-x: visible; }
   .btn-action { width: auto; height: auto; padding: 8px 12px; gap: 5px; font-size: 0.85rem; justify-content: flex-start; }
   .btn-text { display: inline !important; }
-  
+
   /* TABLA DESKTOP */
-  .table-container { 
-    width: 100%; overflow: auto; max-height: 75vh; 
-    background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+  .table-container {
+    width: 100%; overflow: auto; max-height: 75vh;
+    background: white; border-radius: 8px; border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   }
   table { width: 100%; min-width: max-content; border-collapse: collapse !important; border-spacing: 0; font-size: 0.85rem; }
-  
-  th { 
-    position: sticky; top: 0; z-index: 50; background: #f8fafc !important; 
-    padding: 10px; border-bottom: 2px solid #e2e8f0; 
+
+  th {
+    position: sticky; top: 0; z-index: 50; background: #f8fafc !important;
+    padding: 10px; border-bottom: 2px solid #e2e8f0;
     font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
     font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800;
   }
-  .filter-row td { 
-    position: sticky; top: 37px; z-index: 40; background: #f1F5F9 !important; 
-    padding: 4px; border-bottom: 2px solid #cbd5e1; 
+  .filter-row td {
+    position: sticky; top: 37px; z-index: 40; background: #f1F5F9 !important;
+    padding: 4px; border-bottom: 2px solid #cbd5e1;
   }
   td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
   td.text-center { display: table-cell; text-align: center; vertical-align: middle; }
-  
+
   /* Columnas Fijas (Sticky) */
   .sticky-col { position: sticky !important; z-index: 10; background: white !important; box-shadow: inset -1px 0 0 #e2e8f0; background-clip: padding-box; }
   th.sticky-col { z-index: 100 !important; background-color: #f1F5F9 !important; }
   .filter-row .sticky-col { z-index: 90 !important; background-color: #f8fafc !important; }
   .sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
-  
+
   .col-shrink { width: 50px !important; min-width: 50px !important; max-width: 50px !important; white-space: nowrap !important; padding: 8px 0 !important; text-align: center; }
-  
+
   /* Inputs de Filtro Desktop */
   .filter-input { width: 100%; padding: 2px; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 4px; outline: none; }
   .filter-input-min { width: 35px; text-align: center; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 4px; outline: none; }
-  
+
   /* Botón WhatsApp Desktop */
   .btn-wa { background: #25d366; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto; transition: 0.2s; }
   .btn-wa:hover { transform: scale(1.1); }
-  
+
   /* Celdas Observaciones (Hover Expand) */
   .col-obs-container { width: 150px; position: relative; }
   .obs-wrapper { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; padding: 4px; border-radius: 4px; }
   .obs-wrapper:focus { position: absolute; width: 300px; white-space: normal; background: #fff; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #3b82f6; padding: 10px; left: -150px; top: 0; outline: none;}
 
   .font-bold { font-weight: bold; }
-  
+
   /* Filas Coloreadas Desktop */
   .fila-roja td, .fila-roja .sticky-col { background-color: #fca5a5 !important; color: #000 !important; }
   .fila-amarilla td, .fila-amarilla .sticky-col { background-color: #fef08a !important; color: #000 !important; }

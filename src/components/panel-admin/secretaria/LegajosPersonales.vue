@@ -1,12 +1,9 @@
 <template>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
       <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
-        
+
         <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
           <div class="header-info">
             <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2 flex-wrap" style="font-size: 1.25rem;">
@@ -27,8 +24,8 @@
               </span>
             </button>
 
-            <button 
-                @click="toggleEdicionGlobal" 
+            <button
+                @click="toggleEdicionGlobal"
                 class="btn-action d-flex align-items-center gap-1 text-white shadow-sm"
                 :class="edicionAbierta ? 'bg-danger' : 'bg-success'"
                 :title="edicionAbierta ? 'Bloquear Edición para todos' : 'Permitir Edición para todos'"
@@ -255,20 +252,20 @@
                 </div>
                 <div class="text-xs fw-bold" style="color: #64748b;">#{{ a.id }}</div>
               </div>
-              
+
               <div class="card-body pt-0 px-3 pb-3">
                 <div class="card-row text-dark mb-2">
                   <span class="small"><strong>Rol:</strong> {{ obtenerNombreRol(a.rol) }}</span>
                   <span class="small"><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
                 </div>
-                
+
                 <div class="card-info bg-light p-2 rounded border mt-2">
                   <p class="text-dark m-0"><strong>Apto Médico:</strong> <span :class="a.apto_medico ? 'text-success fw-bold' : 'text-danger fw-bold'">{{ a.apto_medico ? 'SÍ' : 'NO' }}</span></p>
                   <p v-if="a.celular" class="text-dark mt-1 mb-0"><strong>Celular:</strong> {{ a.celular }}</p>
                   <p v-if="a.email" class="text-dark mt-1 mb-0 text-truncate"><strong>Email:</strong> {{ a.email }}</p>
                   <p v-if="a.zona" class="text-dark mt-1 mb-0"><strong>Zona:</strong> {{ a.zona }}</p>
                 </div>
-                
+
                 <div class="d-flex gap-2 mt-3 border-top border-secondary-subtle pt-3">
                   <button @click="editarArbitro(a)" class="btn-editar-mobile flex-grow-1 border shadow-sm">
                     <span class="material-icons" style="font-size: 18px;">edit</span> Editar
@@ -279,14 +276,14 @@
                 </div>
               </div>
             </div>
-            
+
             <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-light rounded shadow-sm border mt-3">
               <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
               <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron registros.</p>
             </div>
           </div>
 
-          <div 
+          <div
   class="d-flex justify-content-center align-items-center gap-3 mt-4"
   v-if="totalPaginas > 1"
 >
@@ -320,8 +317,8 @@
       </div>
     </div>
 
- <ModalBase 
-      :show="mostrarModalExcel" 
+ <ModalBase
+      :show="mostrarModalExcel"
       @close="mostrarModalExcel = false"
       icono="description"
       colorIcono="bg-success-subtle text-success"
@@ -354,8 +351,8 @@
     </ModalBase>
 
 
-    <ModalBase 
-      :show="mostrarModal" 
+    <ModalBase
+      :show="mostrarModal"
       @close="cerrarModal"
       :icono="modoModal === 'editar' ? 'edit' : 'person_add'"
       :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
@@ -507,8 +504,8 @@
     </ModalBase>
 
 
-    <ModalBase 
-      :show="mostrarModalSolicitudes" 
+    <ModalBase
+      :show="mostrarModalSolicitudes"
       @close="mostrarModalSolicitudes = false"
       icono="history"
       colorIcono="bg-primary-subtle text-primary"
@@ -521,21 +518,21 @@
       </template>
 
       <div class="d-flex justify-content-between gap-2 w-100 bg-light p-1 rounded-pill border border-light-subtle mb-4">
-        <button class="btn fw-bold rounded-pill px-1 flex-fill d-flex align-items-center justify-content-center gap-1" 
-                :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm text-white' : 'btn-transparent text-muted'" 
+        <button class="btn fw-bold rounded-pill px-1 flex-fill d-flex align-items-center justify-content-center gap-1"
+                :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm text-white' : 'btn-transparent text-muted'"
                 style="font-size: 0.75rem;"
                 @click="tabActivo = 'enviado'">
-          PENDIENTES 
+          PENDIENTES
           <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-primary rounded-pill p-1 ms-1 d-flex align-items-center justify-content-center" style="font-size: 0.65rem; min-width: 20px;">{{ solicitudesPendientes.length }}</span>
         </button>
-        <button class="btn fw-bold rounded-pill px-1 flex-fill" 
-                :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm text-white' : 'btn-transparent text-muted'" 
+        <button class="btn fw-bold rounded-pill px-1 flex-fill"
+                :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm text-white' : 'btn-transparent text-muted'"
                 style="font-size: 0.75rem;"
                 @click="tabActivo = 'aprobado'">
           APROBADAS
         </button>
-        <button class="btn fw-bold rounded-pill px-1 flex-fill" 
-                :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'" 
+        <button class="btn fw-bold rounded-pill px-1 flex-fill"
+                :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'"
                 style="font-size: 0.75rem;"
                 @click="tabActivo = 'rechazado'">
           RECHAZADAS
@@ -546,7 +543,7 @@
         <span class="spinner-border text-primary"></span>
         <p class="text-muted mt-2 small fw-bold">Cargando solicitudes...</p>
       </div>
-      
+
       <div v-else-if="solicitudesMostradas.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
         <span class="material-icons mb-2 d-block mx-auto" style="font-size: 48px; color: #cbd5e1;">
           {{ tabActivo === 'enviado' ? 'inbox' : (tabActivo === 'aprobado' ? 'check_circle_outline' : 'highlight_off') }}
@@ -561,17 +558,17 @@
             <strong class="d-block text-dark mb-1 fs-6 text-uppercase">{{ sol.arbitro_nombre }}</strong>
             <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle" style="white-space: pre-line; line-height: 1.4; text-align: justify;">{{ sol.mensaje }}</p>
           </div>
-          
+
           <div class="d-flex flex-column align-items-end gap-2" style="min-width: 200px;">
             <span class="badge" :class="sol.estado === 'aprobado' ? 'bg-success' : (sol.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
               {{ sol.estado ? sol.estado.toUpperCase() : 'ENVIADO' }}
             </span>
-            
+
             <div class="d-flex gap-2 w-100 justify-content-end mt-2" v-if="sol.estado === 'enviado'">
               <button @click="abrirEdicionDesdeSolicitud(sol)" class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1 fw-bold flex-fill" title="Abrir legajo para editar">
                 <span class="material-icons" style="font-size: 16px;">edit</span> LEGAJO
               </button>
-              
+
               <button @click="rechazarSolicitud(sol)" class="btn btn-sm btn-danger fw-bold flex-fill">
                 RECHAZAR
               </button>
@@ -586,8 +583,8 @@
     </ModalBase>
 
 
-    <ModalBase 
-      :show="mostrarModalHistorialArbitro" 
+    <ModalBase
+      :show="mostrarModalHistorialArbitro"
       @close="mostrarModalHistorialArbitro = false"
       icono="manage_search"
       colorIcono="bg-warning-subtle text-warning-emphasis"
@@ -600,12 +597,12 @@
         </div>
       </template>
 
-      
+
       <div v-if="cargandoHistorialArbitro" class="text-center py-5">
         <span class="spinner-border text-warning"></span>
         <p class="text-muted mt-2 small fw-bold">Cargando historial...</p>
       </div>
-      
+
       <div v-else-if="historialArbitro.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
         <span class="material-icons d-block fs-1 mb-2 mx-auto" style="font-size: 48px; color: #cbd5e1;">history_toggle_off</span>
         <p class="mb-0 fw-bold">Este árbitro nunca solicitó cambios.</p>
@@ -677,12 +674,12 @@ const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 
 const arbitros = ref([])
 
-const filtros = reactive({ 
+const filtros = reactive({
   rol: '',
   es_activo: '',
   grupo: '',
   apto_medico: '',
-  subgrupo: '', 
+  subgrupo: '',
 })
 
 const cargando = ref(false)
@@ -703,7 +700,7 @@ const solicitudes = ref([])
 const mostrarModalSolicitudes = ref(false)
 const cargandoSolicitudes = ref(false)
 
-const tabActivo = ref('enviado') 
+const tabActivo = ref('enviado')
 
 const mostrarModalHistorialArbitro = ref(false)
 const historialArbitro = ref([])
@@ -728,7 +725,7 @@ const formModalVacio = () => ({
 
 const formModal = ref(formModalVacio())
 
-const solicitudesPendientes = computed(() => 
+const solicitudesPendientes = computed(() =>
   solicitudes.value.filter(s => s.estado === 'enviado')
 )
 
@@ -763,18 +760,18 @@ const cargarSolicitudes = async () => {
 
 const abrirModalSolicitudes = () => {
   cargarSolicitudes()
-  tabActivo.value = 'enviado' 
+  tabActivo.value = 'enviado'
   mostrarModalSolicitudes.value = true
 }
 
 const aprobarSolicitud = async (solicitud) => {
   try {
-    const res = await api.post({ 
-      entity: 'datos_personales', 
-      action: 'cambiarEstadoSolicitud', 
-      payload: { id_historial: solicitud.id, nuevo_estado: 'aprobado' } 
+    const res = await api.post({
+      entity: 'datos_personales',
+      action: 'cambiarEstadoSolicitud',
+      payload: { id_historial: solicitud.id, nuevo_estado: 'aprobado' }
     })
-    
+
     if (res.ok || res.success) {
       notificar({ titulo: 'Aprobado', mensaje: 'Se aprobó la solicitud de cambios.', tipo: 'success' })
       solicitud.estado = 'aprobado'
@@ -794,12 +791,12 @@ const rechazarSolicitud = async (solicitud) => {
     tieneAccion: true,
     alConfirmar: async () => {
       try {
-        const res = await api.post({ 
-          entity: 'datos_personales', 
-          action: 'cambiarEstadoSolicitud', 
-          payload: { id_historial: solicitud.id, nuevo_estado: 'rechazado' } 
+        const res = await api.post({
+          entity: 'datos_personales',
+          action: 'cambiarEstadoSolicitud',
+          payload: { id_historial: solicitud.id, nuevo_estado: 'rechazado' }
         })
-        
+
         if (res.ok || res.success) {
           notificar({ titulo: 'Rechazado', mensaje: 'Se rechazó la solicitud correctamente.', tipo: 'success' })
           solicitud.estado = 'rechazado'
@@ -815,10 +812,10 @@ const rechazarSolicitud = async (solicitud) => {
 
 const abrirEdicionDesdeSolicitud = (sol) => {
   const arbitroEncontrado = arbitros.value.find(a => a.id == sol.id_arbitro)
-  
+
   if (arbitroEncontrado) {
     mostrarModalSolicitudes.value = false
-    mensajeSolicitudActiva.value = sol.mensaje 
+    mensajeSolicitudActiva.value = sol.mensaje
     editarArbitro(arbitroEncontrado)
   } else {
     notificar({ titulo: 'No encontrado', mensaje: 'No se encontraron los datos de este árbitro en la lista actual.', tipo: 'danger' })
@@ -830,12 +827,12 @@ const verHistorialArbitro = async (arbitro) => {
   mostrarModalHistorialArbitro.value = true
   cargandoHistorialArbitro.value = true
   historialArbitro.value = []
-  
+
   try {
-    const res = await api.get({ 
-      entity: 'datos_personales', 
-      action: 'obtenerHistorialAdmin', 
-      payload: { id_arbitro: arbitro.id } 
+    const res = await api.get({
+      entity: 'datos_personales',
+      action: 'obtenerHistorialAdmin',
+      payload: { id_arbitro: arbitro.id }
     })
     if (res.payload) {
       historialArbitro.value = res.payload
@@ -850,7 +847,7 @@ const verHistorialArbitro = async (arbitro) => {
 const crearNuevo = () => {
   formModal.value = formModalVacio()
   movilidadArray.value = []
-  mensajeSolicitudActiva.value = '' 
+  mensajeSolicitudActiva.value = ''
   modoModal.value = 'nuevo'
   mostrarModal.value = true
 }
@@ -868,7 +865,7 @@ const editarArbitro = (arbitro) => {
 
 const cerrarModal = () => {
   mostrarModal.value = false
-  mensajeSolicitudActiva.value = '' 
+  mensajeSolicitudActiva.value = ''
 }
 
 const confirmarAlta = async () => {
@@ -1077,10 +1074,10 @@ const toggleEdicionGlobal = async () => {
 
         if (res?.ok) {
           edicionAbierta.value = nuevoEstado === 1;
-          notificar({ 
-            titulo: '¡Actualizado!', 
-            mensaje: `La edición ha sido ${nuevoEstado === 1 ? 'habilitada' : 'cerrada'} correctamente.`, 
-            tipo: 'success' 
+          notificar({
+            titulo: '¡Actualizado!',
+            mensaje: `La edición ha sido ${nuevoEstado === 1 ? 'habilitada' : 'cerrada'} correctamente.`,
+            tipo: 'success'
           });
         }
       } catch{
@@ -1090,11 +1087,11 @@ const toggleEdicionGlobal = async () => {
   });
 };
 
-onMounted(() => { 
+onMounted(() => {
   cargarDatos()
   obtenerProvinciasLocalidades()
   cargarSolicitudes()
-  cargarEstadoEdicion() 
+  cargarEstadoEdicion()
 })
 </script>
 
@@ -1104,15 +1101,15 @@ onMounted(() => {
    ==================================================== */
 
 /* Contenedor principal exacto como lo solicitaste */
-.full-screen-wrapper { 
-  position: relative; 
-  width: 99vw; 
-  min-height: 100vh; 
-  height: auto !important; 
-  margin-left: 50%; 
-  transform: translateX(-50%); 
-  padding: 20px; 
-  padding-bottom: 120px; 
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto !important;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  padding: 20px;
+  padding-bottom: 120px;
   box-sizing: border-box;
 }
 
@@ -1122,55 +1119,55 @@ onMounted(() => {
 }
 
 /* Estructura base (Celulares) */
-.admin-panel { 
+.admin-panel {
   width: 100%;
-  max-width: 100%; 
-  padding: 0; 
+  max-width: 100%;
+  padding: 0;
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;  
-  background-color: #0f172a; 
+  color: #000;
+  background-color: #0f172a;
   min-height: 100vh;
-  border-radius: 0; 
+  border-radius: 0;
 }
 
 /* Cabecera Móvil */
-.header-section { 
-  background: white; 
-  padding: 15px; 
-  display: flex; 
-  flex-direction: column; 
-  align-items: flex-start; 
-  text-align: left; 
-  gap: 15px; 
-  border-left: 5px solid #ef4444; 
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+.header-section {
+  background: white;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 15px;
+  border-left: 5px solid #ef4444;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
 .title { font-size: 1.25rem; font-weight: bold; margin: 0; color: #000; }
 .counter { font-size: 0.85rem; color: #64748b; }
 
 /* Botones Móvil: En una sola línea sin desbordar */
-.header-actions { 
-  width: 100%; 
-  display: flex; 
-  flex-direction: row; 
+.header-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
   flex-wrap: nowrap; /* CLAVE: Fuerza a que estén en la misma línea */
-  justify-content: center; 
-  gap: 8px; 
+  justify-content: center;
+  gap: 8px;
   overflow-x: auto; /* Por si la pantalla es extremadamente chica, permite deslizar en vez de romperse */
 }
-.btn-action { 
-  border: none; border-radius: 6px; font-weight: bold; cursor: pointer; 
-  display: flex; align-items: center; justify-content: center; 
-  transition: opacity 0.2s, transform 0.1s; 
-  flex: none; width: 42px; height: 42px; padding: 0; 
+.btn-action {
+  border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.2s, transform 0.1s;
+  flex: none; width: 42px; height: 42px; padding: 0;
 }
 .btn-action:hover { opacity: 0.85; }
 .btn-action:active { transform: scale(0.95); }
 .btn-text { display: none; } /* Oculto en móvil */
 
 .btn-clear { background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; }
-.btn-clear-checks { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; } 
+.btn-clear-checks { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
 .btn-export { background: #10b981; color: white; }
 .btn-blue { background: #3b82f6; color: white; }
 
@@ -1183,7 +1180,7 @@ onMounted(() => {
 .mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
 .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; }
 .filter-input-mobile {
-  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; 
+  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
   font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #334155;
 }
 .filter-input-mobile:focus { border-color: #3b82f6; background: white; }
@@ -1227,9 +1224,9 @@ onMounted(() => {
 .custom-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); outline: none; }
 
 /* Utilitarios compartidos */
-.btn-editar, .btn-historial, .btn-eliminar { 
-  display: inline-flex; align-items: center; justify-content: center; 
-  border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; 
+.btn-editar, .btn-historial, .btn-eliminar {
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
 }
 .btn-editar { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
 .btn-editar:hover { background: #dbeafe; }
@@ -1245,9 +1242,9 @@ onMounted(() => {
    2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
    ==================================================== */
 @media (min-width: 768px) {
-  
+
   .admin-panel { padding: 20px; border-radius: 12px; }
-  
+
   /* Cambio de visibilidad */
   .desktop-only { display: block; }
   .mobile-only { display: none; }
@@ -1257,7 +1254,7 @@ onMounted(() => {
   .header-section { flex-direction: row; align-items: center; justify-content: space-between; border-radius: 8px; padding: 15px 25px; }
   .header-info { width: auto; align-items: flex-start; }
   .title { font-size: 1.1rem; }
-  
+
   /* Reestructuración Botones */
   .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; overflow-x: visible; }
   .btn-action { width: auto; height: auto; padding: 8px 12px; gap: 5px; font-size: 0.85rem; justify-content: flex-start; }
@@ -1267,42 +1264,42 @@ onMounted(() => {
   .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 0; }
   .filter-input-mobile { font-size: 0.85rem; }
   .filter-grid-mobile select.full-width { grid-column: span 2; }
-  
+
   /* TABLA DESKTOP */
-  .table-container { 
-    width: 100%; overflow: auto; max-height: 85vh; 
-    background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+  .table-container {
+    width: 100%; overflow: auto; max-height: 85vh;
+    background: white; border-radius: 8px; border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   }
   table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-  
-  thead tr.main-header th { 
-    position: sticky; top: 0; z-index: 50; background: #f8fafc !important; 
-    padding: 12px 8px; border-bottom: 1px solid #cbd5e1; 
+
+  thead tr.main-header th {
+    position: sticky; top: 0; z-index: 50; background: #f8fafc !important;
+    padding: 12px 8px; border-bottom: 1px solid #cbd5e1;
     font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
   }
-  thead tr.filter-row td { 
-    position: sticky; top: 41px; z-index: 40; background: #f1F5F9 !important; 
+  thead tr.filter-row td {
+    position: sticky; top: 41px; z-index: 40; background: #f1F5F9 !important;
     padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; margin: 0;
   }
-  
+
   /* Columnas Fijas (Sticky) */
   .sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
   thead th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
   thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
-  
+
   .col-id { left: 0; width: 50px; text-align: center; }
   .col-acciones { left: 50px; width: 80px; }
   .col-apellido { left: 130px; width: 140px; }
   .col-nombre { left: 270px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-  
+
   .col-ultra-compact { width: 65px !important; min-width: 65px !important; text-align: center !important; }
   .col-dni-compact { width: 90px; text-align: center; }
   .obs-cell { white-space: normal; min-width: 200px; }
-  
+
   .cell-ro { padding: 10px 8px; font-size: 0.85rem; color: inherit; white-space: nowrap; border-bottom: 1px solid #f1f5f9; }
   .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
-  
+
   /* Filas Inactivas y Hover */
   .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #fca5a5 !important; font-weight: bold; color: #000000 !important; }
   .row-hover:hover td { background-color: #f8fafc; }

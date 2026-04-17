@@ -1,6 +1,6 @@
 <template>
-  <div class="container-fluid py-4 animate__animated animate__fadeIn">
-      
+  <div class="container-fluid py-0 animate__animated animate__fadeIn">
+
     <div class="dashboard-header mb-5 text-start">
       <div class="d-flex align-items-center justify-content-start gap-3">
         <div class="main-icon-container">
@@ -17,11 +17,11 @@
       <div v-for="item in opcionesSecretaria" :key="item.title" class="col-12 col-md-4">
         <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
           <div class="modern-menu-card shadow-sm">
-            
+
             <div class="icon-box">
               <i :class="item.icon"></i>
             </div>
-            
+
             <div class="card-text">
               <h5 class="fw-bold mb-1">{{ item.title }}</h5>
               <p class="extra-small m-0 text-muted">{{ item.desc }}</p>
@@ -54,23 +54,23 @@ useHead({
 });
 
 const opcionesSecretaria = [
-  { 
-    to: '/panel-admin/secretaria/modificacion-datos', 
-    title: 'Legajos', 
-    icon: 'bi bi-people', 
-    desc: 'Actualizar información personal y disponibilidad de los árbitros.' 
+  {
+    to: '/panel-admin/secretaria/modificacion-datos',
+    title: 'Legajos',
+    icon: 'bi bi-people',
+    desc: 'Actualizar información personal y disponibilidad de los árbitros.'
   },
-  { 
-    to: '/panel-admin/secretaria/licencias', 
-    title: 'Licencias', 
-    icon: 'bi bi-calendar-date-fill', 
-    desc: 'Gestionar las licencias y permisos de inasistencia.' 
+  {
+    to: '/panel-admin/secretaria/licencias',
+    title: 'Licencias',
+    icon: 'bi bi-calendar-date-fill',
+    desc: 'Gestionar las licencias y permisos de inasistencia.'
   },
-  { 
-    to: '/panel-admin/secretaria/eventos-notificaciones', 
-    title: 'Eventos', 
-    icon: 'bi bi-bell', 
-    desc: 'Gestionar avisos, reuniones y noticias para los árbitros.' 
+  {
+    to: '/panel-admin/secretaria/eventos-notificaciones',
+    title: 'Eventos',
+    icon: 'bi bi-bell',
+    desc: 'Gestionar avisos, reuniones y noticias para los árbitros.'
   },
 ];
 </script>
@@ -167,13 +167,13 @@ const opcionesSecretaria = [
    📱 RESPONSIVE DESIGN
    ==================================================== */
 @media (max-width: 768px) {
-  .modern-menu-card { 
-    padding: 18px; 
-    min-height: 120px; 
+  .modern-menu-card {
+    padding: 18px;
+    min-height: 120px;
   }
   .dashboard-header { margin-bottom: 30px !important; }
   .icon-box { width: 48px; height: 48px; min-width: 48px; font-size: 1.3rem; }
-  
+
   .dashboard-header h4 { font-size: 1.25rem !important; }
   .dashboard-header p { font-size: 0.85rem !important; }
 }

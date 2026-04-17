@@ -1,6 +1,6 @@
 <template>
-  <div class="animate__animated animate__fadeIn">
-    
+  <div class="container-fluid py-0 animate__animated animate__fadeIn">
+
     <div class="row g-4">
       <div class="col-12 col-lg-4">
         <div class="card shadow p-3 p-md-4 border-0 h-100" style="border-radius: 15px;">
@@ -26,10 +26,10 @@
 
           <div class="mb-4">
             <label class="form-label fw-bold small text-dark">Fecha de la Licencia</label>
-            <input 
-              type="date" 
-              :min="fechaMinimaDinamica" 
-              v-model="fechaSeleccionada" 
+            <input
+              type="date"
+              :min="fechaMinimaDinamica"
+              v-model="fechaSeleccionada"
               class="form-control form-control-lg custom-input-date shadow-none"
               onkeydown="return false"
               :disabled="cargando"
@@ -37,9 +37,9 @@
           </div>
 
           <div class="mt-auto">
-            <button 
-              @click="solicitarLicencia" 
-              :disabled="!fechaSeleccionada || cargando" 
+            <button
+              @click="solicitarLicencia"
+              :disabled="!fechaSeleccionada || cargando"
               class="btn btn-primary w-100 fw-bold py-3 py-md-2 shadow-sm"
             >
               <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
@@ -54,7 +54,7 @@
           <div class="card-header bg-white py-3 border-bottom flex-shrink-0">
             <h6 class="m-0 fw-bold text-dark small text-uppercase" style="letter-spacing: 1px;">Mi Historial de Licencias</h6>
           </div>
-          
+
           <div class="card-body p-0 bg-white flex-grow-1">
             <div class="table-responsive h-100">
               <table class="table table-hover align-middle mb-0">
@@ -100,7 +100,7 @@
               </table>
             </div>
           </div>
-          
+
           <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-4" v-if="totalPaginas > 1">
             <button
               class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
@@ -125,7 +125,7 @@
 
         </div>
       </div>
-      
+
     </div>
   </div>
 </template>
@@ -219,7 +219,7 @@ const solicitarLicencia = async () => {
     const fechaPedido = new Date(fechaSeleccionada.value);
     fechaPedido.setHours(0, 0, 0, 0);
     const diffDias = Math.ceil((fechaPedido - hoy) / (1000 * 60 * 60 * 24));
-    return diffDias >= 7; 
+    return diffDias >= 7;
   })();
 
   let estadoFinal = '';
@@ -238,7 +238,7 @@ const solicitarLicencia = async () => {
       payload: {
         fecha_licencia: fechaSeleccionada.value,
         estado: estadoFinal,
-        motivo: motivoSeleccionado.value 
+        motivo: motivoSeleccionado.value
       }
     });
 
@@ -248,7 +248,7 @@ const solicitarLicencia = async () => {
         mensaje: res.payload.message || 'Procesado correctamente.',
         tipo: motivoSeleccionado.value === 'lesion_enfermedad' ? 'warning' : (enTermino ? 'success' : 'danger')
       });
-      
+
       // Reseteo del formulario
       fechaSeleccionada.value = '';
       motivoSeleccionado.value = 'particular';
@@ -282,23 +282,23 @@ onMounted(() => {
    ==================================================== */
 .card { border-radius: 15px; background: #ffffff; }
 
-.btn-primary { 
-  background-color: #dc2626 !important; 
-  border: none; 
+.btn-primary {
+  background-color: #dc2626 !important;
+  border: none;
 }
-.btn-primary:hover:not(:disabled) { 
-  background-color: #b91c1c !important; 
+.btn-primary:hover:not(:disabled) {
+  background-color: #b91c1c !important;
 }
 
 /* AJUSTES DE TAMAÑO PARA SELECTS */
-select.form-select, 
+select.form-select,
 select.form-select-lg {
-  font-size: 0.9rem !important; 
-  padding: 0.45rem 2rem 0.45rem 0.75rem !important; 
-  height: auto !important; 
-  min-height: 40px !important; 
-  border-radius: 6px !important; 
-  line-height: 1.5; 
+  font-size: 0.9rem !important;
+  padding: 0.45rem 2rem 0.45rem 0.75rem !important;
+  height: auto !important;
+  min-height: 40px !important;
+  border-radius: 6px !important;
+  line-height: 1.5;
 }
 
 /* ESTILOS PARA EL INPUT DE FECHA */
@@ -363,7 +363,7 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: block !important; }
-  
+
   .x-small-mobile { font-size: 0.8rem; }
   .status-badge { min-width: 70px; padding: 5px 8px; }
   h4 { font-size: 1.25rem; }

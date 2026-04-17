@@ -1,6 +1,6 @@
 <template>
-  <div class="animate__animated animate__fadeIn">
-    
+  <div class="container-fluid py-0 animate__animated animate__fadeIn">
+
    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <div>
@@ -176,17 +176,17 @@
             <p class="x-small text-white-50 mb-3">
                 Si necesitás corregir datos personales (DNI, Fecha de Nac., etc.), detallalo a continuación.
             </p>
-            
-            <textarea 
-                v-model="solicitudCambio" 
-                class="form-control mb-3 custom-textarea" 
-                rows="3" 
+
+            <textarea
+                v-model="solicitudCambio"
+                class="form-control mb-3 custom-textarea"
+                rows="3"
                 placeholder="Ej: Hola, necesito corregir mi DNI, el correcto es..."
             ></textarea>
-            
-            <button 
-                @click="enviarSolicitudRectificacion" 
-                class="btn btn-danger w-100 fw-bold py-2 shadow" 
+
+            <button
+                @click="enviarSolicitudRectificacion"
+                class="btn btn-danger w-100 fw-bold py-2 shadow"
                 :disabled="cargando || !solicitudCambio"
             >
                 ENVIAR SOLICITUD DE CAMBIO
@@ -198,7 +198,7 @@
 
 <script setup>
 import { ref, onMounted, watch, inject } from 'vue';
-import { api } from '@/api/api'; 
+import { api } from '@/api/api';
 import { auth } from '@/api/auth';
 import { useHead } from '@vueuse/head';
 
@@ -251,7 +251,7 @@ onMounted(async () => {
                 entity: 'localidades',
                 action: 'obtenerProvinciasLocalidades'
             });
-            
+
             opciones.value = payload;
 
             if (arbitro.value.provincia) {
@@ -265,7 +265,7 @@ onMounted(async () => {
 
 const filtrarLocalidades = (provId) => {
     if (!opciones.value.localidades || !edicionAbierta.value) return;
-    
+
     localidadesFiltradas.value = opciones.value.localidades.filter(
         l => l.provincia_id == provId
     );
@@ -321,7 +321,7 @@ const cambiarPassword = async () => {
         });
         return;
     }
-    
+
     cargando.value = true;
     try {
         const res = await api.post({
@@ -440,13 +440,13 @@ const enviarSolicitudRectificacion = async () => {
    3. 📱 RESPONSIVE DESIGN
    ==================================================== */
 @media (max-width: 768px) {
-    .w-fit-mobile { 
-        width: fit-content !important; 
-        margin-top: 5px; 
+    .w-fit-mobile {
+        width: fit-content !important;
+        margin-top: 5px;
     }
-    
-    .w-100-mobile { 
-        width: 100% !important; 
+
+    .w-100-mobile {
+        width: 100% !important;
         display: block;
     }
 

@@ -1,92 +1,71 @@
 <template>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-  <div class="full-screen-wrapper">
-    <div class="admin-panel animate__animated animate__fadeIn">
-      
-      <div class="dashboard-header mb-5 text-center text-md-start">
-        <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
-          <div class="main-icon-container">
-            <i class="bi bi-eye text-danger"></i>
-          </div>
-          <div>
-            <h4 class="fw-bold text-white m-0">Observaciones</h4>
-            <p class="small text-white opacity-75 m-0">Gestioná la carga y visualización de evaluaciones arbitrales</p>
-          </div>
+    <div class="dashboard-header mb-5 text-center text-md-start">
+      <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
+        <div class="main-icon-container">
+          <i class="bi bi-eye text-danger"></i>
+        </div>
+        <div>
+          <h4 class="fw-bold text-white m-0">Observaciones</h4>
+          <p class="small text-white opacity-75 m-0">Gestioná la carga y visualización de evaluaciones arbitrales</p>
         </div>
       </div>
-
-      <div class="row g-3 g-md-4 justify-content-center w-100 mx-0">
-        <div v-for="item in opcionesObservaciones" :key="item.title" class="col-12 col-md-6">
-          <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
-            <div class="modern-menu-card shadow-sm">
-              <div class="icon-box">
-                <i :class="item.icon"></i>
-              </div>
-              <div class="card-text">
-                <h5 class="fw-bold mb-1">{{ item.title }}</h5>
-                <p class="extra-small m-0 text-muted">{{ item.desc }}</p>
-              </div>
-              <div class="card-arrow">
-                <i class="bi bi-chevron-right"></i>
-              </div>
-            </div>
-          </RouterLink>
-        </div>
-      </div>
-
     </div>
+
+    <div class="row g-3 g-md-4 justify-content-center">
+      <div v-for="item in opcionesObservaciones" :key="item.title" class="col-12 col-md-6">
+        <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
+          <div class="modern-menu-card shadow-sm">
+            <div class="icon-box">
+              <i :class="item.icon"></i>
+            </div>
+            <div class="card-text">
+              <h5 class="fw-bold mb-1">{{ item.title }}</h5>
+              <p class="extra-small m-0 text-muted">{{ item.desc }}</p>
+            </div>
+            <div class="card-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+          </div>
+        </RouterLink>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
 import { RouterLink } from 'vue-router';
-import { useHead } from '@vueuse/head'
+import { useHead } from '@vueuse/head';
 
 useHead({
   title: 'Observaciones | AAAB',
   meta: [
     { name: 'description', content: 'Módulo para cargar y visualizar observaciones.' }
   ],
-})
+});
 
 const opcionesObservaciones = [
-  { 
-    to: '/panel-arbitro/observaciones/carga', 
-    title: 'Cargar Observaciones', 
-    icon: 'bi bi-cloud-upload', 
-    desc: 'Registrar nuevas evaluaciones con detalles y categorías.' 
+  {
+    to: '/panel-arbitro/observaciones/carga',
+    title: 'Cargar Observaciones',
+    icon: 'bi bi-cloud-upload',
+    desc: 'Registrar nuevas evaluaciones con detalles y categorías.'
   },
-  { 
-    to: '/panel-arbitro/observaciones/mis-observaciones', 
-    title: 'Mis Observaciones', 
-    icon: 'bi bi-envelope-check', 
-    desc: 'Visualizar el historial de observaciones realizadas por vos.' 
+  {
+    to: '/panel-arbitro/observaciones/mis-observaciones',
+    title: 'Mis Observaciones',
+    icon: 'bi bi-envelope-check',
+    desc: 'Visualizar el historial de observaciones realizadas por vos.'
   }
 ];
 </script>
 
 <style scoped>
-.full-screen-wrapper { 
-  position: relative; 
-  width: 99vw; 
-  min-height: 100vh; 
-  height: auto !important; 
-  margin-left: 50%; 
-  transform: translateX(-50%); 
-  padding: 20px; 
-  padding-bottom: 120px; 
-}
-
-.admin-panel { 
-  width: 100%; 
-  max-width: 100%; 
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; 
-  background-color: #0f172a; 
-  min-height: 100vh; 
-  padding: 20px;
-}
-
+/* ====================================================
+   1. ESTILOS BASE Y COMPONENTES
+   ==================================================== */
 .main-icon-container {
   width: 60px; height: 60px;
   background: rgba(255, 255, 255, 0.1);
@@ -106,14 +85,15 @@ const opcionesObservaciones = [
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   height: 100%;
-  cursor: pointer; /* <--- ESTA ES LA LÍNEA QUE TENÉS QUE AGREGAR */
+  cursor: pointer;
 }
+
 .icon-box {
   width: 56px;
   height: 56px;
   min-width: 56px;
   background: #fef2f2;
-  color: #dc2626;      /* Rojo AAAB */
+  color: #dc2626;
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -121,6 +101,7 @@ const opcionesObservaciones = [
   font-size: 1.5rem;
   transition: all 0.3s ease;
 }
+
 .card-text {
   flex: 1;
   min-width: 0;
@@ -130,20 +111,20 @@ const opcionesObservaciones = [
 .card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; align-self: center; }
 
 .modern-menu-card:hover {
-  border-color: #f87171; /* Rojo suave */
+  border-color: #f87171;
   transform: translateY(-5px);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
 }
 
 .modern-menu-card:hover .icon-box { background: #dc2626; color: white; }
 
+/* ====================================================
+   2. 📱 RESPONSIVE DESIGN
+   ==================================================== */
 @media (max-width: 768px) {
-  .modern-menu-card { padding: 8px 24px; }
-  .dashboard-header { margin-bottom: 30px; }
+  .modern-menu-card { padding: 12px 20px; }
+  .dashboard-header { margin-bottom: 30px !important; }
 }
 
-@media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
-}
+.animate__animated { animation-duration: 0.5s; }
 </style>

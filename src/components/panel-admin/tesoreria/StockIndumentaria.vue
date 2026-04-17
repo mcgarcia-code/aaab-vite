@@ -1,7 +1,4 @@
 <template>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
@@ -46,12 +43,12 @@
         </div>
 
         <div class="card-body p-3 p-md-4">
-          
+
           <div class="mb-4 desktop-only">
-            <input 
-              v-model="filtros.modelo" 
-              type="text" 
-              class="form-control rounded-pill shadow-sm px-4 border input-filtro-custom" 
+            <input
+              v-model="filtros.modelo"
+              type="text"
+              class="form-control rounded-pill shadow-sm px-4 border input-filtro-custom"
               placeholder="Buscar modelo..."
             >
           </div>
@@ -59,7 +56,7 @@
           <div class="row g-3">
             <div v-for="modelo in stockPaginado" :key="modelo.id_item" class="col-12 col-md-4 col-lg-3">
               <div class="card h-100 border-0 shadow-sm tarjeta-stock-admin overflow-hidden">
-                
+
                 <div class="bg-white contenedor-foto-admin d-flex align-items-center justify-content-center position-relative border-bottom">
                   <img :src="obtenerImagen(modelo.archivo_imagen)" class="img-fluid foto-gestion" alt="Modelo">
                   <div class="acciones-flotantes-modelo">
@@ -78,9 +75,9 @@
                       {{ modelo.descripcion }}
                     </h6>
                   </div>
-                  
+
                   <div class="d-flex flex-wrap justify-content-center gap-1 mb-3">
-                    <span v-for="(item, k) in modelo.items" :key="k" 
+                    <span v-for="(item, k) in modelo.items" :key="k"
                       :class="['badge-talle', item.cantidad < 5 ? 'bajo-stock' : '']">
                       {{ item.talle }}: <b>{{ item.cantidad }}</b>
                     </span>
@@ -101,7 +98,7 @@
             <p class="text-muted mt-2 mb-0 fw-bold">No se encontró indumentaria.</p>
           </div>
 
-          <div 
+          <div
             class="d-flex justify-content-center align-items-center gap-3 mt-4"
             v-if="totalPaginas > 1"
           >
@@ -126,12 +123,12 @@
             </button>
           </div>
 
-        </div> 
-      </div> 
+        </div>
+      </div>
     </div>
 
-    <ModalBase 
-      :show="mostrarModal" 
+    <ModalBase
+      :show="mostrarModal"
       @close="cerrarModal"
       :titulo="modoModal === 'editar' ? 'Gestionar Modelo' : 'Nuevo Modelo'"
       :icono="modoModal === 'editar' ? 'inventory' : 'add_circle'"
@@ -139,7 +136,7 @@
       maxWidth="650px"
     >
       <div class="row g-3 text-start">
-        
+
         <div class="col-12">
           <label class="small fw-bold">Nombre del Modelo *</label>
           <input v-model="formModal.descripcion" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: REMERA NEGRA - HUMMEL">
@@ -160,9 +157,9 @@
         <div class="col-12">
           <label class="small fw-bold">Imágenes del Modelo (.webp, .png, .jpg)</label>
           <div class="border rounded p-3 text-center bg-light" style="border-style: dashed !important; border-color: #cbd5e1 !important;">
-            
+
             <input type="file" @change="manejarArchivos" accept="image/*" multiple class="form-control form-control-sm mb-2 shadow-none border-secondary-subtle">
-            
+
             <div v-if="archivosSeleccionados.length > 0" class="text-start mt-2">
               <span class="extra-small fw-bold text-success d-block mb-2">Archivos seleccionados ({{ archivosSeleccionados.length }}):</span>
               <ul class="list-group mb-0 gap-1">
@@ -175,16 +172,16 @@
               </ul>
             </div>
             <span class="extra-small text-muted" v-else>Seleccioná una o más imágenes.</span>
-            
+
           </div>
         </div>
 
         <div v-if="modoModal === 'editar'" class="col-12 mt-4">
           <label class="small fw-bold mb-2 d-block border-bottom pb-1">Stock y Precio por Talle</label>
-          
+
           <div v-for="(t, index) in formModal.items" :key="index" class="row g-2 align-items-center mb-2 p-2 bg-light rounded border border-secondary-subtle">
             <div class="col-2 fw-bold text-center text-danger">{{ t.talle }}</div>
-            
+
             <div class="col-5">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-white text-muted border-secondary-subtle" style="font-size: 0.75rem;">Cant:</span>
@@ -278,9 +275,9 @@ const cambiarPagina = (delta) => {
 };
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
-watch(totalPaginas, (nuevo) => { 
+watch(totalPaginas, (nuevo) => {
   if (nuevo === 0) paginaActual.value = 1;
-  else if (paginaActual.value > nuevo) paginaActual.value = nuevo; 
+  else if (paginaActual.value > nuevo) paginaActual.value = nuevo;
 });
 
 const obtenerStock = async () => {
@@ -301,10 +298,10 @@ const obtenerStock = async () => {
 const abrirModalNuevo = () => {
   modoModal.value = 'nuevo';
   archivosSeleccionados.value = [];
-  formModal.value = { 
-    id_item: null, 
-    descripcion: '', 
-    precioUnitario: 0, 
+  formModal.value = {
+    id_item: null,
+    descripcion: '',
+    precioUnitario: 0,
     admite_encargo: false, // 👈 Inicializar en false
     items: []
   };
@@ -314,7 +311,7 @@ const abrirModalNuevo = () => {
 const abrirModalEdicion = (modelo) => {
   modoModal.value = 'editar';
   archivosSeleccionados.value = [];
-  
+
   let itemsCombinados = JSON.parse(JSON.stringify(modelo.items));
   itemsCombinados.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
   itemsCombinados = itemsCombinados.filter(i => tallesEstandar.includes(i.talle));
@@ -339,7 +336,7 @@ const abrirModalEdicion = (modelo) => {
     admite_encargo: estadoEncargo,
     items: itemsCombinados
   };
-  
+
   mostrarModal.value = true;
 };
 
@@ -404,7 +401,7 @@ const guardarCambios = async () => {
   let res;
 
   // 👈 Convertimos el boolean a 1 o 0
-  const flagAdmiteEncargo = formModal.value.admite_encargo ? 1 : 0; 
+  const flagAdmiteEncargo = formModal.value.admite_encargo ? 1 : 0;
 
   if (modoModal.value === 'editar') {
     const payload = {
@@ -420,7 +417,7 @@ const guardarCambios = async () => {
     formData.append('descripcion', formModal.value.descripcion.toUpperCase());
     formData.append('admite_encargo', flagAdmiteEncargo); // 👈 Se manda en el form data físico
     formData.append('items', JSON.stringify([]));
-    
+
     if (archivosSeleccionados.value.length > 0) {
       archivosSeleccionados.value.forEach(file => {
         formData.append('fotos[]', file);
@@ -437,11 +434,11 @@ const guardarCambios = async () => {
   } else {
     notificar({ titulo: 'Error', mensaje: 'Hubo un problema al guardar el inventario.', tipo: 'danger' });
   }
-  
+
   cargando.value = false;
 };
 
-const cerrarModal = () => { 
+const cerrarModal = () => {
   mostrarModal.value = false;
   cargando.value = false;
 };
@@ -462,7 +459,7 @@ const exportarExcel = () => {
     });
     return row;
   });
-  
+
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Inventario");
@@ -539,7 +536,7 @@ onUnmounted(() => {
   .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
   .card-name { font-size: 1.05rem; color: #0f172a; }
   .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-  
+
   .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
   .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; width: 45px; }
 }
@@ -553,27 +550,27 @@ onUnmounted(() => {
     height: auto;
     margin-left: 50%;
     transform: translateX(-50%);
-    padding: 0 15px 20px 15px !important; 
+    padding: 0 15px 20px 15px !important;
     box-sizing: border-box !important;
   }
-      
-  .admin-panel { 
-    padding: 0 !important; 
-    border-radius: 0; 
+
+  .admin-panel {
+    padding: 0 !important;
+    border-radius: 0;
     box-sizing: border-box !important;
   }
-    
+
   .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }
   .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%;}
   .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
   .header-info span.counter { font-size: 0.75rem !important; }
-  
+
   .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
   .btn-action span.material-icons { margin: 0; }
   .btn-text { display: none !important; }
   .mobile-only-flex { display: flex !important; }
-  
+
   .filter-grid-mobile { grid-template-columns: 1fr; }
   .filter-grid-mobile select.full-width { grid-column: span 1; }
 }

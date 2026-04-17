@@ -1,12 +1,9 @@
 <template>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
       <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
-        
+
         <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
           <div class="header-info">
             <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
@@ -166,7 +163,7 @@ const cargarArbitros = async () => {
   try {
     const data = await api.get({ entity: 'arbitros', action: 'getArbitros' });
     let lista = Array.isArray(data) ? data : (data.payload ?? []);
-    
+
     lista.sort((a, b) => {
       const nombreA = `${a.apellido} ${a.nombre}`.toUpperCase();
       const nombreB = `${b.apellido} ${b.nombre}`.toUpperCase();
@@ -184,11 +181,11 @@ const cargarUltimasSanciones = async () => {
   try {
     const data = await api.get({ entity: 'sanciones', action: 'obtenerSanciones' });
     let lista = Array.isArray(data) ? data : (data.payload ?? []);
-    
+
     // ORDENAR DE MÁS RECIENTE A MÁS ANTIGUA (MAYOR ID PRIMERO)
     lista.sort((a, b) => b.id - a.id);
 
-    ultimasSanciones.value = lista.slice(0, 5); 
+    ultimasSanciones.value = lista.slice(0, 5);
   } catch (err) {
     console.error('Error cargando historial:', err);
   } finally {
@@ -207,10 +204,10 @@ const guardarSancion = async () => {
   try {
     const res = await api.post({
       entity:  'sanciones',
-      action:  'crearSancion', 
+      action:  'crearSancion',
       payload: nuevaSancion.value,
     });
-    
+
     if (res?.ok !== false) {
       notificar({ titulo: '¡Proceso Iniciado!', mensaje: 'La sanción se registró y se notificó al árbitro.', tipo: 'success' });
       nuevaSancion.value = sancionVacia();
@@ -238,16 +235,16 @@ onMounted(() => {
 .admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
 
 /* CABECERA ORIGINAL */
-.header-section { 
-  background: white; 
-  padding: 15px 25px; 
-  border-radius: 8px; 
-  display: flex; 
-  justify-content: space-between; 
-  margin-bottom: 15px; 
-  border-left: 5px solid #ef4444; 
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-  align-items: center; 
+.header-section {
+  background: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  border-left: 5px solid #ef4444;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  align-items: center;
 }
 
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
@@ -276,7 +273,7 @@ onMounted(() => {
 .badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; display: inline-block; text-align: center; letter-spacing: 0.5px;}
 .badge-status.aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 .badge-status.rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-.badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; } 
+.badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
 .badge-status.anulada { background: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
 
 /* RESPONSIVE CORRECTO (BOTÓN EN LA MISMA LÍNEA) */
@@ -293,21 +290,21 @@ onMounted(() => {
   margin-left: 50%;
   transform: translateX(-50%);
       /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important; 
+  padding: 0 15px 20px 15px !important;
   box-sizing: border-box !important;
 }
-    
-.admin-panel { 
-      padding: 0 !important; 
-      border-radius: 0; 
+
+.admin-panel {
+      padding: 0 !important;
+      border-radius: 0;
       box-sizing: border-box !important;
 }
-  
+
   /* ESTA ES LA CLAVE: flex-direction row obliga a mantenerse en la misma línea */
   .header-section { padding: 15px; flex-direction: row; align-items: center; justify-content: space-between; }
   .header-info h4 { font-size: 1.25rem !important; }
   .header-info span { font-size: 0.85rem !important; }
-  
+
   /* El botón se achica y esconde el texto */
   .header-actions { width: auto; display: flex; flex-direction: row; gap: 8px; }
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }

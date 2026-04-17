@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid p-0 animate__animated animate__fadeIn">
+  <div class="container-fluid py-4 animate__animated animate__fadeIn">
     <div class="row g-3 g-md-4">
 
       <div class="col-12 col-lg-8 col-xl-9 order-2 order-lg-1">
@@ -217,7 +217,7 @@ onMounted(cargarAvisos);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   height: 100%;
-  cursor: pointer; 
+  cursor: pointer;
 }
 
 .icon-box {
@@ -243,7 +243,7 @@ onMounted(cargarAvisos);
 .card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; align-self: center; }
 
 .modern-menu-card:hover {
-  border-color: #f87171; 
+  border-color: #f87171;
   transform: translateY(-5px);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
 }
@@ -252,20 +252,20 @@ onMounted(cargarAvisos);
 
 /* --- SIDEBAR PROFESIONAL --- */
 .sidebar-professional {
-  background: #ffffff; 
-  border-radius: 20px; 
-  border: 1px solid #e2e8f0; 
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
   overflow: hidden;
-  display: flex; 
+  display: flex;
   flex-direction: column;
 }
 
 .sidebar-header {
-  background: #f8fafc; 
-  padding: 15px 20px; 
-  border-bottom: 1px solid #e2e8f0; 
-  display: flex; 
-  justify-content: space-between; 
+  background: #f8fafc;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 .fw-black { font-weight: 800; font-size: 0.85rem; color: #1e293b; }
@@ -278,11 +278,11 @@ onMounted(cargarAvisos);
   font-weight: 800;
   color: #000000;
   display: flex;
-  justify-content: space-between; 
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
   letter-spacing: 0.5px;
-  cursor: pointer; 
+  cursor: pointer;
   padding: 5px 0;
   user-select: none;
 }
@@ -303,7 +303,7 @@ onMounted(cargarAvisos);
 
 .collapse-content {
   margin-top: 8px;
-  animation-duration: 0.3s; 
+  animation-duration: 0.3s;
 }
 
 /* BLOQUE CALENDARIO */

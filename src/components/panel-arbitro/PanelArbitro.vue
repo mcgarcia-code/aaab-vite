@@ -6,15 +6,15 @@
         <button @click="cerrarSesion" class="btn btn-outline-danger btn-sm px-3 fw-bold rounded-pill">Cerrar Sesión</button>
       </div>
     </nav>
-    
+
     <div class="container-fluid px-4 py-2">
-      <div class="mx-auto"> 
-        
+      <div class="mx-auto">
+
         <div class="user-header d-flex align-items-center justify-content-between mb-4 p-3 rounded-4 shadow">
           <div class="d-flex align-items-center">
-            <img :src="urlFoto" @error="(e) => e.target.src = 'https://via.placeholder.com/150'" 
+            <img :src="urlFoto" @error="(e) => e.target.src = 'https://via.placeholder.com/150'"
                  class="perfil-img me-3 shadow-sm">
-            
+
             <div>
               <h2 class="text-white fw-bold m-0 saludo-texto">
                 Hola, {{ nombreFormateado }} 👋
@@ -31,13 +31,13 @@
                 <span class="visually-hidden">Notificaciones nuevas</span>
               </span>
             </button>
-            
+
             <ul class="dropdown-menu dropdown-menu-end shadow-lg py-0 overflow-hidden dropdown-notificaciones">
               <li class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
                 <h6 class="m-0 fw-bold text-dark">Nuevas Notificaciones</h6>
                 <span v-if="notificacionesNoLeidas > 0" class="badge bg-danger rounded-pill">{{ notificacionesNoLeidas }}</span>
               </li>
-              
+
               <div class="notification-list">
                 <li v-for="notif in notificacionesPendientes" :key="notif.id" class="border-bottom bg-light bg-opacity-50">
                   <a class="dropdown-item py-3 px-3 cursor-pointer text-wrap" @click.stop="marcarLeidas()">
@@ -77,7 +77,7 @@
 
         <div v-if="route.name !== 'PanelInicio'" class="mb-4">
           <button @click="handleVolver" class="btn-volver shadow-sm">
-            <i class="bi bi-arrow-left me-2"></i> 
+            <i class="bi bi-arrow-left me-2"></i>
             {{ esRutaProfunda ? 'Volver atrás' : 'Volver al Menú' }}
           </button>
         </div>
@@ -91,7 +91,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { auth } from '@/api/auth'; 
+import { auth } from '@/api/auth';
 import { useHead } from '@vueuse/head';
 import { api } from '@/api/api';
 
@@ -188,26 +188,26 @@ useHead({
 </script>
 
 <style scoped>
-.panel-layout { 
-  min-height: 100vh; 
-  background-color: #0f172a; 
+.panel-layout {
+  min-height: 100vh;
+  background-color: #0f172a;
   padding-bottom: 40px;
 }
 
 .user-header {
-  background: rgba(255, 255, 255, 0.05); 
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  position: relative; 
-  z-index: 90; 
+  position: relative;
+  z-index: 90;
 }
 
-.perfil-img { 
-  width: 70px; 
-  height: 70px; 
-  border-radius: 50%; 
-  object-fit: cover; 
-  border: 2px solid #dc2626; 
+.perfil-img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #dc2626;
 }
 
 .navbar {
@@ -223,9 +223,9 @@ useHead({
   padding: 8px 20px;
   border-radius: 50px;
   transition: 0.3s;
-  border: 1px solid rgba(255, 255, 255, 0.05); 
+  border: 1px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  font-size: 1rem; 
+  font-size: 1rem;
 }
 
 .btn-volver:hover {
@@ -250,9 +250,9 @@ useHead({
 }
 
 .dropdown-notificaciones {
-  width: 350px; 
-  border-radius: 12px; 
-  margin-top: 15px; 
+  width: 350px;
+  border-radius: 12px;
+  margin-top: 15px;
 }
 
 .cursor-pointer {
@@ -261,7 +261,7 @@ useHead({
 
 .dropdown-item {
   transition: background-color 0.2s;
-  white-space: normal; 
+  white-space: normal;
 }
 
 .dropdown-item:active {
@@ -284,7 +284,7 @@ useHead({
 }
 
 .notification-list {
-  max-height: 350px; 
+  max-height: 350px;
   overflow-y: auto;
 }
 
@@ -292,14 +292,14 @@ useHead({
   width: 6px;
 }
 .notification-list::-webkit-scrollbar-track {
-  background: #f1f1f1; 
+  background: #f1f1f1;
 }
 .notification-list::-webkit-scrollbar-thumb {
-  background: #cbd5e1; 
+  background: #cbd5e1;
   border-radius: 10px;
 }
 .notification-list::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; 
+  background: #94a3b8;
 }
 
 /* ====================================================
@@ -315,25 +315,25 @@ useHead({
 /* --- SMARTPHONES (Hasta 600px) --- */
 @media (max-width: 600px) {
   .perfil-img { width: 55px; height: 55px; }
-  .saludo-texto { 
-    font-size: 1.1rem; 
-    margin-bottom: 2px !important; 
-    text-align: left; 
+  .saludo-texto {
+    font-size: 1.1rem;
+    margin-bottom: 2px !important;
+    text-align: left;
   }
-  
-  .notification-btn { 
-    width: 42px; 
-    height: 42px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
+
+  .notification-btn {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .notification-btn i { font-size: 1.25rem !important; }
 
   /* Dropdown centrado y adaptado para móviles */
   .dropdown-notificaciones {
-    position: fixed !important; 
-    top: 70px !important; 
+    position: fixed !important;
+    top: 70px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: calc(100vw - 30px) !important;
@@ -342,9 +342,9 @@ useHead({
     border-radius: 12px !important;
     box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
   }
-  
+
   .notification-list {
-    max-height: 50vh; 
+    max-height: 50vh;
     overflow-y: auto;
   }
 }

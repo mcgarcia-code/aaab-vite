@@ -1,17 +1,19 @@
 <template>
   <Teleport to="body">
 
-    <div 
-      v-if="visible" 
-      class="modal-overlay-exito animate__animated animate__fadeIn"
-      @click.self="cerrar"
-    >
-      <div 
+<div
+  v-if="visible"
+  class="modal-overlay-exito animate__animated animate__fadeIn animate__faster"
+  style="z-index: 1040;"
+  @click.self="cerrar"
+>
+      <div
         ref="modalRef"
-        class="modal-content-exito animate__animated animate__zoomIn"
+        class="modal-content-exito animate__animated animate__zoomIn animate__faster p-4 mx-auto"
+        :style="modalStyle"
         tabindex="-1"
       >
-        
+
         <div :class="['icon-circle-exito', tipo === 'danger' ? 'bg-danger-light' : 'bg-success-light']">
           <span class="material-icons">
             {{ tipo === 'danger' ? (tieneAccion ? 'delete_forever' : 'report_problem') : 'check' }}
@@ -22,16 +24,16 @@
         <p class="text-muted small mb-4">{{ mensaje }}</p>
 
         <div class="d-flex gap-2 justify-content-center">
-          <button 
-            v-if="tieneAccion" 
-            @click="cerrar" 
+          <button
+            v-if="tieneAccion"
+            @click="cerrar"
             class="btn btn-light rounded-pill px-4 fw-bold"
           >
             CANCELAR
           </button>
-          
-          <button 
-            @click="handleAccion" 
+
+          <button
+            @click="handleAccion"
             :class="['btn rounded-pill px-4 fw-bold shadow-sm', tipo === 'danger' ? 'btn-danger' : 'btn-dark']"
           >
             {{ tieneAccion ? (tipo === 'danger' ? 'ELIMINAR' : 'CONFIRMAR') : 'ACEPTAR' }}
@@ -80,8 +82,8 @@ const handleKeydown = (e) => {
 watch(() => props.visible, async (val) => {
   if (val) {
     // Bloquea el scroll del fondo
-    document.body.style.overflow = 'hidden'; 
-    
+    document.body.style.overflow = 'hidden';
+
     // Enfoca el modal para accesibilidad y eventos de teclado
     await nextTick();
     modalRef.value?.focus();

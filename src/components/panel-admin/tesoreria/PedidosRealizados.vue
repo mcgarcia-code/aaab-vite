@@ -1,7 +1,4 @@
 <template>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
@@ -46,7 +43,7 @@
             <input v-model="filtros.arbitro" class="filter-input-mobile" placeholder="Buscar árbitro...">
             <input v-model="filtros.prenda" class="filter-input-mobile" placeholder="Buscar prenda...">
             <input v-model="filtros.fecha" class="filter-input-mobile" placeholder="Fecha (DD/MM/YY)...">
-            
+
             <select v-model="filtros.estado" class="filter-input-mobile full-width">
               <option value="">Estado (Todos)</option>
               <option value="creado">Creado</option>
@@ -61,7 +58,7 @@
         </div>
 
         <div class="card-body p-3 p-md-4">
-          
+
           <div class="table-container shadow-sm desktop-only border" style="border-radius: 8px;">
             <table>
               <thead>
@@ -173,7 +170,7 @@
             </div>
           </div>
 
-          <div 
+          <div
             class="d-flex justify-content-center align-items-center gap-3 mt-4"
             v-if="totalPaginas > 1"
           >
@@ -198,12 +195,12 @@
             </button>
           </div>
 
-        </div> 
-      </div> 
+        </div>
+      </div>
     </div>
 
-    <ModalBase 
-      :show="mostrarModal" 
+    <ModalBase
+      :show="mostrarModal"
       @close="cerrarModal"
       titulo="Gestionar Pedido"
       icono="local_shipping"
@@ -217,8 +214,8 @@
       <div class="text-start bg-light p-3 rounded border mb-4 border-secondary-subtle">
         <p class="m-0 fw-bold small text-dark">{{ pedidoActual.descripcion }} ({{ pedidoActual.talle }})</p>
         <p class="m-0 small text-muted mt-1">
-          Fecha: <strong class="text-dark">{{ pedidoActual.fecha_creacion || 'S/F' }}</strong> | 
-          Cant: <strong class="text-dark">{{ pedidoActual.cantidad }}</strong> | 
+          Fecha: <strong class="text-dark">{{ pedidoActual.fecha_creacion || 'S/F' }}</strong> |
+          Cant: <strong class="text-dark">{{ pedidoActual.cantidad }}</strong> |
           Total: <strong class="text-success">${{ pedidoActual.cantidad * pedidoActual.precioUnitario }}</strong>
         </p>
       </div>
@@ -249,8 +246,8 @@
       </template>
     </ModalBase>
 
-    <ModalBase 
-      :show="mostrarModalHistorial" 
+    <ModalBase
+      :show="mostrarModalHistorial"
       @close="mostrarModalHistorial = false"
       icono="history"
       colorIcono="bg-warning text-dark"
@@ -344,7 +341,7 @@ const pedidosFiltrados = computed(() => {
     const matchPrenda = normalizar(p.descripcion).includes(normalizar(filtros.prenda));
     const matchEst = filtros.estado === '' || (p.estado && p.estado.toLowerCase() === filtros.estado.toLowerCase());
     const matchFecha = p.fecha_creacion && p.fecha_creacion.includes(filtros.fecha);
-    
+
     return matchArb && matchPrenda && matchEst && matchFecha;
   });
 });
@@ -400,7 +397,7 @@ const guardarEstado = async () => {
       action: 'actualizarPedido',
       payload: { id: pedidoActual.value.id, estado: nuevoEstado.value }
     });
-    
+
     if (res.ok) {
       notificar({ titulo: 'Actualizado', mensaje: 'Estado del pedido modificado con éxito.', tipo: 'success' });
       await obtenerPedidos();
@@ -420,7 +417,7 @@ const verHistorial = (pedido) => {
   historialArbitro.value = pedidos.value
     .filter(p => p.apellido === pedido.apellido && p.nombre === pedido.nombre)
     .sort((a, b) => b.id - a.id);
-    
+
   mostrarModalHistorial.value = true;
 };
 
@@ -453,27 +450,27 @@ const exportarExcel = () => {
 
   const pedidosActivos = pedidosFiltrados.value.filter(p => p.estado.toLowerCase() !== 'rechazado');
   const mapaAgrupado = {};
-  
+
   pedidosActivos.forEach(p => {
     const key = `${p.descripcion}_${p.talle}`;
     if (!mapaAgrupado[key]) {
-      mapaAgrupado[key] = { 
-        'Prenda / Modelo': p.descripcion, 
-        'Talle': p.talle, 
-        'Cantidad Total a Pedir': 0 
+      mapaAgrupado[key] = {
+        'Prenda / Modelo': p.descripcion,
+        'Talle': p.talle,
+        'Cantidad Total a Pedir': 0
       };
     }
     mapaAgrupado[key]['Cantidad Total a Pedir'] += Number(p.cantidad);
   });
-  
+
   const datosHoja1 = Object.values(mapaAgrupado).sort((a, b) => a['Prenda / Modelo'].localeCompare(b['Prenda / Modelo']));
   const wsAgrupado = XLSX.utils.json_to_sheet(datosHoja1);
 
   const mapaArbitros = {};
-  
+
   pedidosFiltrados.value.forEach(p => {
     const nombreArbitro = `${p.apellido}, ${p.nombre}`;
-    
+
     if (!mapaArbitros[nombreArbitro]) {
       mapaArbitros[nombreArbitro] = {
         'Árbitro': nombreArbitro,
@@ -485,7 +482,7 @@ const exportarExcel = () => {
         'Fecha (Último)': p.fecha_creacion || 'S/F'
       };
     }
-    
+
     mapaArbitros[nombreArbitro]['IDs Pedidos'].push(`#${p.id}`);
     mapaArbitros[nombreArbitro]['Detalle de Prendas'].push(`${p.cantidad}x ${p.descripcion} (Talle: ${p.talle})`);
     mapaArbitros[nombreArbitro]['Total Prendas'] += Number(p.cantidad);
@@ -502,14 +499,14 @@ const exportarExcel = () => {
     'Nro(s) de Pedido': a['IDs Pedidos'].join(', '),
     'Fecha de Registro': a['Fecha (Último)']
   }));
-  
+
   datosHoja2.sort((a, b) => a['Árbitro'].localeCompare(b['Árbitro']));
   const wsDetallado = XLSX.utils.json_to_sheet(datosHoja2);
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, wsAgrupado, "Resumen Proveedor (Compra)");
   XLSX.utils.book_append_sheet(wb, wsDetallado, "Detalle Individual");
-  
+
   XLSX.writeFile(wb, "Reporte_Pedidos_AAAB.xlsx");
 };
 
@@ -600,7 +597,7 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
   .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
   .card-name { font-size: 1.05rem; color: #0f172a; }
   .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-  
+
   .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
   .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; width: 45px; }
 }
@@ -613,27 +610,27 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
     height: auto;
     margin-left: 50%;
     transform: translateX(-50%);
-    padding: 0 15px 20px 15px !important; 
+    padding: 0 15px 20px 15px !important;
     box-sizing: border-box !important;
   }
-      
-  .admin-panel { 
-    padding: 0 !important; 
-    border-radius: 0; 
+
+  .admin-panel {
+    padding: 0 !important;
+    border-radius: 0;
     box-sizing: border-box !important;
   }
-  
+
   .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }
   .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%;}
   .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
   .header-info span.counter { font-size: 0.75rem !important; }
-  
+
   .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
   .btn-action span.material-icons { margin: 0; }
   .btn-text { display: none !important; }
   .mobile-only-flex { display: flex !important; }
-  
+
   .filter-grid-mobile { grid-template-columns: 1fr; }
   .filter-grid-mobile select.full-width { grid-column: span 1; }
 }

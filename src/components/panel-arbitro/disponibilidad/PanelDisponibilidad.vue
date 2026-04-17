@@ -1,6 +1,6 @@
 <template>
-  <div class="animate__animated animate__fadeIn">
-    
+  <div class="container-fluid py-0 animate__animated animate__fadeIn">
+
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <div>
@@ -9,7 +9,7 @@
           </h4>
           <p class="text-muted small m-0 mt-1">Gestioná tus horarios y actividad deportiva.</p>
         </div>
-        
+
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
           <span v-if="edicionAbierta" class="badge bg-success px-3 py-2 shadow-sm w-fit-mobile">
             <i class="bi bi-pencil-square me-1"></i> Edición Abierta
@@ -19,7 +19,7 @@
           </span>
         </div>
       </div>
-      
+
       <div class="card-body p-3 p-md-4">
         <h6 class="text-danger fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">Movilidad</h6>
         <div class="row mb-4 border-bottom pb-3">
@@ -128,7 +128,7 @@
             <i class="bi bi-shield-lock-fill me-1"></i>
             Todas las modificaciones quedan registradas en el sistema.
         </div>
-        
+
         <div class="card border-0 shadow-sm overflow-hidden mb-4" style="border-radius: 12px;">
             <div class="card-header bg-white border-bottom py-2 ps-3">
                 <h6 class="m-0 fw-bold text-dark small">Historial de Solicitudes</h6>
@@ -186,7 +186,7 @@
 <script setup>
 import { ref, onMounted, watch, inject } from 'vue';
 import { auth } from '@/api/auth';
-import { api } from '@/api/api'; 
+import { api } from '@/api/api';
 import { useHead } from '@vueuse/head'
 
 useHead({
@@ -212,8 +212,8 @@ const obtenerHistorialRectificaciones = async () => {
             action: 'obtenerHistorial',
             payload: { tipo: "disponibilidad" }
         });
-        
-        historialRectificaciones.value = res.payload || []; 
+
+        historialRectificaciones.value = res.payload || [];
     } catch (error) {
         console.error("Error al cargar el historial de rectificaciones", error);
     }
@@ -332,27 +332,27 @@ const enviarSolicitudRectificacion = async () => {
     padding: 20px; padding-bottom: 80px;
 }
 
-.admin-panel { 
-    width: 100%; max-width: 100%; padding: 20px; 
+.admin-panel {
+    width: 100%; max-width: 100%; padding: 20px;
     font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-    color: #000; background-color: #0f172a; 
+    color: #000; background-color: #0f172a;
     min-height: 100vh; height: 100%; border-radius: 12px;
 }
 
 /* Cabecera Estándar (Por si el componente la usa) */
-.header-section { 
-    background: white; padding: 15px 25px; border-radius: 8px; 
-    display: flex; justify-content: space-between; margin-bottom: 15px; 
-    border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-    align-items: center; 
+.header-section {
+    background: white; padding: 15px 25px; border-radius: 8px;
+    display: flex; justify-content: space-between; margin-bottom: 15px;
+    border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    align-items: center;
 }
 .header-info { display: flex; flex-direction: column; }
 .header-actions { display: flex; gap: 8px; }
-.btn-action { 
-    border: none; padding: 8px 12px; border-radius: 4px; 
-    font-weight: bold; cursor: pointer; display: flex; 
-    align-items: center; justify-content: center; gap: 5px; 
-    font-size: 0.75rem; transition: opacity 0.2s; 
+.btn-action {
+    border: none; padding: 8px 12px; border-radius: 4px;
+    font-weight: bold; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; gap: 5px;
+    font-size: 0.75rem; transition: opacity 0.2s;
 }
 .btn-text { display: inline; }
 
@@ -360,7 +360,7 @@ const enviarSolicitudRectificacion = async () => {
    2. COMPONENTES ESPECÍFICOS DE ESTA VISTA
    ==================================================== */
 
-   
+
 .form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }
 .x-small { font-size: 0.65rem; font-weight: 800; }
 .manual-section { background-color: #0c1624; border-radius: 1rem; }
@@ -399,34 +399,34 @@ const enviarSolicitudRectificacion = async () => {
 /* --- Smartphones (Hasta 600px) --- */
 @media (max-width: 600px) {
     /* AIRE LATERAL DE 10px */
-    .full-screen-wrapper { 
-        padding: 0 10px !important; 
-        width: 100% !important; 
-        margin: 0 !important; 
-        transform: none !important; 
+    .full-screen-wrapper {
+        padding: 0 10px !important;
+        width: 100% !important;
+        margin: 0 !important;
+        transform: none !important;
         left: 0 !important;
     }
-    
+
     .admin-panel { padding: 15px 0 !important; border-radius: 0; }
 
     /* CABECERA ESTÁNDAR MÓVIL: Título Izquierda, Botones Centro */
-    .header-section { 
-        padding: 15px !important; flex-direction: column; 
-        align-items: flex-start; text-align: left; gap: 15px; 
+    .header-section {
+        padding: 15px !important; flex-direction: column;
+        align-items: flex-start; text-align: left; gap: 15px;
     }
     .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
     .header-info h4, h4 { font-size: 1.2rem !important; margin: 0; text-align: left; }
-    
-    .header-actions { 
-        width: 100%; display: flex; flex-direction: row; 
-        flex-wrap: wrap; justify-content: center; gap: 8px; 
+
+    .header-actions {
+        width: 100%; display: flex; flex-direction: row;
+        flex-wrap: wrap; justify-content: center; gap: 8px;
     }
     .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
     .btn-text { display: none !important; }
 
     /* AJUSTES ESPECÍFICOS DEL COMPONENTE */
     .manual-section { margin: 0 !important; width: 100% !important; }
-    
+
     input[type="time"] { padding-left: 5px; padding-right: 5px; font-size: 0.85rem; }
     .card-body { padding: 1rem !important; }
     .form-check { margin-right: 5px; }

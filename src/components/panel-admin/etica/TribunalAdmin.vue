@@ -1,6 +1,6 @@
 <template>
-  <div class="container-fluid py-4 animate__animated animate__fadeIn">
-      
+  <div class="container-fluid py-0 animate__animated animate__fadeIn">
+
     <div class="dashboard-header mb-5 text-start">
       <div class="d-flex align-items-center justify-content-start gap-3">
         <div class="main-icon-container">
@@ -17,11 +17,11 @@
       <div v-for="item in opcionesTribunal" :key="item.title" class="col-12 col-md-6">
         <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
           <div class="modern-menu-card shadow-sm">
-            
+
             <div class="icon-box">
               <i :class="item.icon"></i>
             </div>
-            
+
             <div class="card-text">
               <h5 class="fw-bold mb-1">{{ item.title }}</h5>
               <p class="extra-small m-0 text-muted">{{ item.desc }}</p>
@@ -54,17 +54,17 @@ useHead({
 });
 
 const opcionesTribunal = [
-  { 
-    to: '/panel-admin/tribunal/sanciones', 
-    title: 'Listado de Sanciones', 
-    icon: 'bi bi-journal-text', 
-    desc: 'Consultar, editar o dar de baja sanciones vigentes e históricas.' 
+  {
+    to: '/panel-admin/tribunal/sanciones',
+    title: 'Listado de Sanciones',
+    icon: 'bi bi-journal-text',
+    desc: 'Consultar, editar o dar de baja sanciones vigentes e históricas.'
   },
-  { 
-    to: '/panel-admin/tribunal/cargar-sancion', 
-    title: 'Cargar Sanción', 
-    icon: 'bi bi-shield-plus', 
-    desc: 'Registrar una nueva resolución disciplinaria en el legajo del árbitro.' 
+  {
+    to: '/panel-admin/tribunal/cargar-sancion',
+    title: 'Cargar Sanción',
+    icon: 'bi bi-shield-plus',
+    desc: 'Registrar una nueva resolución disciplinaria en el legajo del árbitro.'
   }
 ];
 </script>
@@ -141,7 +141,7 @@ const opcionesTribunal = [
 
 /* --- EFECTOS HOVER --- */
 .modern-menu-card:hover {
-  border-color: #f87171; 
+  border-color: #f87171;
   transform: translateY(-5px);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
 }
@@ -161,13 +161,13 @@ const opcionesTribunal = [
    📱 RESPONSIVE DESIGN
    ==================================================== */
 @media (max-width: 768px) {
-  .modern-menu-card { 
-    padding: 18px; 
+  .modern-menu-card {
+    padding: 18px;
     min-height: 120px;
   }
   .dashboard-header { margin-bottom: 30px !important; }
   .icon-box { width: 48px; height: 48px; min-width: 48px; font-size: 1.3rem; }
-  
+
   .dashboard-header h4 { font-size: 1.25rem !important; }
   .dashboard-header p { font-size: 0.85rem !important; }
 }
