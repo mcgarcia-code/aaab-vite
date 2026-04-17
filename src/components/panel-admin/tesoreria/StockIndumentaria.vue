@@ -101,116 +101,116 @@
             <p class="text-muted mt-2 mb-0 fw-bold">No se encontró indumentaria.</p>
           </div>
 
-<div 
-  class="d-flex justify-content-center align-items-center gap-3 mt-4"
-  v-if="totalPaginas > 1"
->
+          <div 
+            class="d-flex justify-content-center align-items-center gap-3 mt-4"
+            v-if="totalPaginas > 1"
+          >
+            <button
+              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+              @click="cambiarPagina(-1)"
+              :disabled="paginaActual <= 1"
+            >
+              <i class="bi bi-chevron-left"></i> Ant
+            </button>
 
-  <!-- ANTERIOR -->
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(-1)"
-    :disabled="paginaActual <= 1"
-  >
-    <i class="bi bi-chevron-left"></i> Ant
-  </button>
+            <span class="fw-bold text-dark small">
+              Página {{ paginaActual }} de {{ totalPaginas }}
+            </span>
 
-  <!-- TEXTO -->
-  <span class="fw-bold text-dark small">
-    Página {{ paginaActual }} de {{ totalPaginas }}
-  </span>
-
-  <!-- SIGUIENTE -->
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(1)"
-    :disabled="paginaActual >= totalPaginas"
-  >
-    Sig <i class="bi bi-chevron-right"></i>
-  </button>
-
-</div>
-
-        </div> </div> </div>
-
-    <Teleport to="body">
-    <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
-      <div class="modal-content-exito animate__animated animate__zoomIn p-0 overflow-hidden shadow-lg" style="max-width: 650px; width: 95%;">
-        
-        <div class="p-4 border-bottom text-center" :class="modoModal === 'editar' ? 'bg-light' : 'bg-danger-subtle'">
-          <div class="icon-circle-exito bg-white shadow-sm mb-2" style="width: 60px; height: 60px;">
-            <span class="material-icons" :class="modoModal === 'editar' ? 'text-primary' : 'text-danger'">{{ modoModal === 'editar' ? 'inventory' : 'add_circle' }}</span>
+            <button
+              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+              @click="cambiarPagina(1)"
+              :disabled="paginaActual >= totalPaginas"
+            >
+              Sig <i class="bi bi-chevron-right"></i>
+            </button>
           </div>
-          <h4 class="fw-bold m-0 text-dark">{{ modoModal === 'editar' ? 'Gestionar Modelo' : 'Nuevo Modelo' }}</h4>
-          <p v-if="modoModal === 'editar'" class="text-muted small m-0 mt-1">ID #{{ formModal.id_item }}</p>
-        </div>
 
-        <div class="p-4" style="max-height: 60vh; overflow-y: auto;">
-          <div class="row g-3 text-start">
-            
-            <div class="col-12">
-              <label class="small fw-bold">Nombre del Modelo *</label>
-              <input v-model="formModal.descripcion" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: REMERA NEGRA - HUMMEL">
-            </div>
-
-            <div class="col-12">
-              <label class="small fw-bold">Imágenes del Modelo (.webp, .png, .jpg)</label>
-              <div class="border rounded p-3 text-center bg-light" style="border-style: dashed !important; border-color: #cbd5e1 !important;">
-                
-                <input type="file" @change="manejarArchivos" accept="image/*" multiple class="form-control form-control-sm mb-2 shadow-none border-secondary-subtle">
-                
-                <div v-if="archivosSeleccionados.length > 0" class="text-start mt-2">
-                  <span class="extra-small fw-bold text-success d-block mb-2">Archivos seleccionados ({{ archivosSeleccionados.length }}):</span>
-                  <ul class="list-group mb-0 gap-1">
-                    <li v-for="(file, i) in archivosSeleccionados" :key="i" class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 border border-secondary-subtle rounded shadow-sm bg-white">
-                      <span class="extra-small text-muted text-truncate" style="max-width: 85%;">{{ file.name }}</span>
-                      <button @click="eliminarArchivo(i)" class="btn btn-sm btn-light text-danger rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 22px; height: 22px;" title="Quitar imagen">
-                        <span class="material-icons" style="font-size: 14px;">close</span>
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-                <span class="extra-small text-muted" v-else>Seleccioná una o más imágenes.</span>
-                
-              </div>
-            </div>
-
-            <div v-if="modoModal === 'editar'" class="col-12 mt-4">
-              <label class="small fw-bold mb-2 d-block border-bottom pb-1">Stock y Precio por Talle</label>
-              
-              <div v-for="(t, index) in formModal.items" :key="index" class="row g-2 align-items-center mb-2 p-2 bg-light rounded border border-secondary-subtle">
-                <div class="col-2 fw-bold text-center text-danger">{{ t.talle }}</div>
-                
-                <div class="col-5">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white text-muted border-secondary-subtle" style="font-size: 0.75rem;">Cant:</span>
-                    <input v-model.number="t.cantidad" type="number" min="0" class="form-control text-center shadow-none fw-bold border-secondary-subtle">
-                  </div>
-                </div>
-
-                <div class="col-5">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white text-muted border-secondary-subtle" style="font-size: 0.75rem;">$</span>
-                    <input v-model.number="t.precio_unitario" type="number" min="0" class="form-control text-end shadow-none fw-bold border-secondary-subtle" placeholder="Precio">
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div class="p-3 border-top d-flex gap-2 justify-content-end bg-light">
-          <button @click="cerrarModal" class="btn btn-light border px-4 fw-bold rounded-pill">CANCELAR</button>
-          <button @click="guardarCambios" class="btn btn-danger px-4 fw-bold shadow-sm rounded-pill" :disabled="cargando">
-            <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
-            GUARDAR
-          </button>
-        </div>
-
-      </div>
+        </div> 
+      </div> 
     </div>
-    </Teleport>
+
+    <ModalBase 
+      :show="mostrarModal" 
+      @close="cerrarModal"
+      :titulo="modoModal === 'editar' ? 'Gestionar Modelo' : 'Nuevo Modelo'"
+      :icono="modoModal === 'editar' ? 'inventory' : 'add_circle'"
+      :colorIcono="modoModal === 'editar' ? 'bg-primary text-white' : 'bg-danger text-white'"
+      maxWidth="650px"
+    >
+      <div class="row g-3 text-start">
+        
+        <div class="col-12">
+          <label class="small fw-bold">Nombre del Modelo *</label>
+          <input v-model="formModal.descripcion" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: REMERA NEGRA - HUMMEL">
+        </div>
+
+        <div class="col-12 mt-3 mb-1">
+          <div class="form-check form-switch p-3 bg-light border border-secondary-subtle rounded d-flex align-items-center justify-content-between">
+            <div>
+              <label class="form-check-label fw-bold d-block mb-1" for="switchEncargo" style="cursor: pointer;">
+                Permitir encargos sin stock
+              </label>
+              <span class="text-muted small" style="font-size: 0.75rem;">Si se activa, el usuario podrá solicitar este modelo aunque el stock sea cero.</span>
+            </div>
+            <input class="form-check-input shadow-none fs-4 m-0" type="checkbox" role="switch" id="switchEncargo" v-model="formModal.admite_encargo" style="cursor: pointer;">
+          </div>
+        </div>
+
+        <div class="col-12">
+          <label class="small fw-bold">Imágenes del Modelo (.webp, .png, .jpg)</label>
+          <div class="border rounded p-3 text-center bg-light" style="border-style: dashed !important; border-color: #cbd5e1 !important;">
+            
+            <input type="file" @change="manejarArchivos" accept="image/*" multiple class="form-control form-control-sm mb-2 shadow-none border-secondary-subtle">
+            
+            <div v-if="archivosSeleccionados.length > 0" class="text-start mt-2">
+              <span class="extra-small fw-bold text-success d-block mb-2">Archivos seleccionados ({{ archivosSeleccionados.length }}):</span>
+              <ul class="list-group mb-0 gap-1">
+                <li v-for="(file, i) in archivosSeleccionados" :key="i" class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 border border-secondary-subtle rounded shadow-sm bg-white">
+                  <span class="extra-small text-muted text-truncate" style="max-width: 85%;">{{ file.name }}</span>
+                  <button @click="eliminarArchivo(i)" class="btn btn-sm btn-light text-danger rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 22px; height: 22px;" title="Quitar imagen">
+                    <span class="material-icons" style="font-size: 14px;">close</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <span class="extra-small text-muted" v-else>Seleccioná una o más imágenes.</span>
+            
+          </div>
+        </div>
+
+        <div v-if="modoModal === 'editar'" class="col-12 mt-4">
+          <label class="small fw-bold mb-2 d-block border-bottom pb-1">Stock y Precio por Talle</label>
+          
+          <div v-for="(t, index) in formModal.items" :key="index" class="row g-2 align-items-center mb-2 p-2 bg-light rounded border border-secondary-subtle">
+            <div class="col-2 fw-bold text-center text-danger">{{ t.talle }}</div>
+            
+            <div class="col-5">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white text-muted border-secondary-subtle" style="font-size: 0.75rem;">Cant:</span>
+                <input v-model.number="t.cantidad" type="number" min="0" class="form-control text-center shadow-none fw-bold border-secondary-subtle">
+              </div>
+            </div>
+
+            <div class="col-5">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white text-muted border-secondary-subtle" style="font-size: 0.75rem;">$</span>
+                <input v-model.number="t.precio_unitario" type="number" min="0" class="form-control text-end shadow-none fw-bold border-secondary-subtle" placeholder="Precio">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <template #footer>
+        <button @click="cerrarModal" class="btn btn-light border px-4 fw-bold rounded-pill">CANCELAR</button>
+        <button @click="guardarCambios" class="btn btn-danger px-4 fw-bold shadow-sm rounded-pill" :disabled="cargando">
+          <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
+          GUARDAR
+        </button>
+      </template>
+    </ModalBase>
 
   </div>
 </template>
@@ -221,7 +221,7 @@ import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head';
 import { WEB_URL } from '@/config/env'
-
+import ModalBase from '@/components/ModalBase.vue'; // 👈 Asegúrate de que la ruta coincida con la ubicación de tu componente
 
 useHead({
   title: 'Inventario | AAAB',
@@ -245,7 +245,6 @@ const anchoPantalla = ref(window.innerWidth);
 const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
 
 const paginaActual = ref(1);
-// 6 registros en móvil, 12 en escritorio
 const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 6 : 15);
 
 // Modal Variables
@@ -253,7 +252,8 @@ const mostrarModal = ref(false);
 const modoModal = ref('nuevo');
 const archivosSeleccionados = ref([]);
 
-const formModal = ref({ id_item: null, descripcion: '', precioUnitario: 0, items: [] });
+// 👈 NUEVO: Añadimos la propiedad admite_encargo al objeto formModal
+const formModal = ref({ id_item: null, descripcion: '', precioUnitario: 0, admite_encargo: false, items: [] });
 
 // Filtros y Paginación
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
@@ -268,7 +268,6 @@ const stockPaginado = computed(() => {
   return stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value);
 });
 
-// FUNCIÓN: Cambiar página y scrollear arriba SOLO EN MOBILE
 const cambiarPagina = (delta) => {
   paginaActual.value += delta;
   setTimeout(() => {
@@ -284,12 +283,10 @@ watch(totalPaginas, (nuevo) => {
   else if (paginaActual.value > nuevo) paginaActual.value = nuevo; 
 });
 
-// API Calls
 const obtenerStock = async () => {
   cargando.value = true;
   const res = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
   if (res.ok) {
-    // 1. Convertimos XXXL a 3XL y filtramos 5XL apenas llegan de la BD
     res.payload.forEach(modelo => {
       modelo.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
       modelo.items = modelo.items.filter(i => tallesEstandar.includes(i.talle));
@@ -308,6 +305,7 @@ const abrirModalNuevo = () => {
     id_item: null, 
     descripcion: '', 
     precioUnitario: 0, 
+    admite_encargo: false, // 👈 Inicializar en false
     items: []
   };
   mostrarModal.value = true;
@@ -317,7 +315,6 @@ const abrirModalEdicion = (modelo) => {
   modoModal.value = 'editar';
   archivosSeleccionados.value = [];
   
-  // Convertimos XXXL a 3XL para la edición y filtramos 5XL
   let itemsCombinados = JSON.parse(JSON.stringify(modelo.items));
   itemsCombinados.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
   itemsCombinados = itemsCombinados.filter(i => tallesEstandar.includes(i.talle));
@@ -330,13 +327,16 @@ const abrirModalEdicion = (modelo) => {
     }
   });
 
-  // Orden correcto de los talles
   itemsCombinados.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
+
+  // 👈 Asignar el valor leyendo si existe algún talle que admita encargo
+  const estadoEncargo = modelo.items.length > 0 ? modelo.items[0].admite_encargo : false;
 
   formModal.value = {
     id_item: modelo.id_item,
     descripcion: modelo.descripcion,
     precioUnitario: modelo.precio_unitario,
+    admite_encargo: estadoEncargo,
     items: itemsCombinados
   };
   
@@ -352,21 +352,10 @@ const confirmarEliminacionItem = async (item) => {
 
   if (r.ok) {
     const indice = listaStock.value.findIndex(modelo => modelo.id_item === item.id_item);
-    if (indice !== -1) {
-      listaStock.value.splice(indice, 1);
-    }
-
-    notificar({
-      titulo: 'Item eliminado',
-      mensaje: 'El item fue eliminado correctamente.',
-      tipo: 'success'
-    });
+    if (indice !== -1) listaStock.value.splice(indice, 1);
+    notificar({ titulo: 'Item eliminado', mensaje: 'El item fue eliminado correctamente.', tipo: 'success' });
   } else {
-    notificar({
-      titulo: 'Error',
-      mensaje: 'No se pudo eliminar el item.',
-      tipo: 'danger'
-    });
+    notificar({ titulo: 'Error', mensaje: 'No se pudo eliminar el item.', tipo: 'danger' });
   }
 };
 
@@ -393,7 +382,6 @@ const guardarCambios = async () => {
     return;
   }
 
-  // 1. Buscamos el precio principal (el primero mayor a 0)
   const precioRef = modoModal.value === 'editar'
     ? formModal.value.items.find(t => t.precio_unitario > 0)?.precio_unitario || 0
     : 0;
@@ -403,30 +391,34 @@ const guardarCambios = async () => {
     return;
   }
 
-  // 2. FORZAMOS A GUARDAR TODOS LOS TALLES. 
   const itemsTodos = modoModal.value === 'editar'
     ? formModal.value.items.map(t => ({
-    id: t.id,
-    talle: t.talle,
-    cantidad: t.cantidad || 0,
-    precioUnitario: t.precio_unitario > 0 ? t.precio_unitario : precioRef
+      id: t.id,
+      talle: t.talle,
+      cantidad: t.cantidad || 0,
+      precioUnitario: t.precio_unitario > 0 ? t.precio_unitario : precioRef
     }))
     : [];
 
   cargando.value = true;
   let res;
 
+  // 👈 Convertimos el boolean a 1 o 0
+  const flagAdmiteEncargo = formModal.value.admite_encargo ? 1 : 0; 
+
   if (modoModal.value === 'editar') {
     const payload = {
       id_item: formModal.value.id_item,
       descripcion: formModal.value.descripcion.toUpperCase(),
       precioUnitario: precioRef,
+      admite_encargo: flagAdmiteEncargo, // 👈 Se manda en el payload JSON
       items: itemsTodos
     };
     res = await api.post({ entity: 'indumentaria', action: 'actualizarStock', payload });
   } else {
     const formData = new FormData();
     formData.append('descripcion', formModal.value.descripcion.toUpperCase());
+    formData.append('admite_encargo', flagAdmiteEncargo); // 👈 Se manda en el form data físico
     formData.append('items', JSON.stringify([]));
     
     if (archivosSeleccionados.value.length > 0) {
@@ -458,7 +450,7 @@ const limpiarFiltros = () => { filtros.modelo = ''; };
 
 const obtenerImagen = (nombre) => {
   const primeraFoto = nombre ? nombre.split(',')[0] : null;
-  return primeraFoto ? `${WEB_URL}/fotos/${encodeURIComponent(primeraFoto)}` : "  https://placehold.co/400x400?text=Indumentaria";
+  return primeraFoto ? `${WEB_URL}/fotos/${encodeURIComponent(primeraFoto)}` : "https://placehold.co/400x400?text=Indumentaria";
 };
 
 const exportarExcel = () => {
@@ -477,7 +469,6 @@ const exportarExcel = () => {
   XLSX.writeFile(wb, "Inventario_Indumentaria.xlsx");
 };
 
-// Lifecycle hooks
 onMounted(() => {
   window.addEventListener('resize', actualizarAncho);
   obtenerStock();
@@ -505,8 +496,7 @@ onUnmounted(() => {
 .btn-clear-checks { background: #fee2e2; color: #ef4444; }
 .btn-export { background: #10b981; color: white; }
 
-
-/* CARDS DE STOCK - Con mayor sombra y borde para resaltar sobre el fondo blanco */
+/* CARDS DE STOCK */
 .tarjeta-stock-admin { border-radius: 20px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important; border: 1px solid #e2e8f0 !important; }
 .tarjeta-stock-admin:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.15) !important; }
 .contenedor-foto-admin { height: 200px; padding: 15px; }
@@ -528,14 +518,9 @@ onUnmounted(() => {
 .btn-eliminar-flotante { width: 32px; height: 32px; border-radius: 50%; background: #b91c1c; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: background 0.2s; }
 .btn-eliminar-flotante:hover { background: #7f1d1d; }
 
-.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.modal-content-exito { background: white; border-radius: 16px; border: none; }
-.icon-circle-exito { border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
-
 .desktop-only { display: block; }
 .mobile-only-flex { display: none; }
 .btn-text { display: inline; }
-
 
 @media (min-width: 769px) {
   .filter-input-mobile { font-size: 0.85rem; }
@@ -561,25 +546,23 @@ onUnmounted(() => {
 
 /* LA CLAVE DE LA ESTRUCTURA MÓVIL EXACTA */
 @media (max-width: 600px) {
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto;
-  margin-left: 50%;
-  transform: translateX(-50%);
-      /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important; 
-  box-sizing: border-box !important;
-}
+  .full-screen-wrapper {
+    position: relative;
+    width: 99vw;
+    min-height: 100vh;
+    height: auto;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    padding: 0 15px 20px 15px !important; 
+    box-sizing: border-box !important;
+  }
+      
+  .admin-panel { 
+    padding: 0 !important; 
+    border-radius: 0; 
+    box-sizing: border-box !important;
+  }
     
-.admin-panel { 
-      padding: 0 !important; 
-      border-radius: 0; 
-      box-sizing: border-box !important;
-}
-  
-  /* Titulo a la izquierda (respetando borde rojo), botones centrados abajo */
   .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }
   .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%;}
   .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
@@ -594,8 +577,6 @@ onUnmounted(() => {
   .filter-grid-mobile { grid-template-columns: 1fr; }
   .filter-grid-mobile select.full-width { grid-column: span 1; }
 }
-
-
 
 .animate__animated { animation-duration: 0.5s; }
 </style>
