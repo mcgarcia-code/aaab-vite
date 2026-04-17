@@ -105,9 +105,9 @@
                   <td class="sticky-col col-acciones cell-ro text-center">
                     <div class="d-flex justify-content-center gap-1">
 
-                      <button v-if="s.estado_dinamico == 3" @click="gestionarDescargo(s)" class="btn-editar position-relative" title="Ver Descargos" :style="s.tiene_nuevos ? 'background-color: #dc3545; color: white; border-color: #dc3545;' : 'background-color: #3b82f6; color: white; border-color: #3b82f6;'">
-                        <span class="material-icons">chat</span>
-                        <span v-if="s.tiene_nuevos" class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle"></span>
+                      <button @click="gestionarDescargo(s)" class="btn-editar position-relative" :title="s.estado_dinamico == 3 ? 'Ver Descargos' : 'Historial Chat'" :style="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'background-color: #dc3545; color: white; border-color: #dc3545;' : 'background-color: #3b82f6; color: white; border-color: #3b82f6;') : 'background-color: #6c757d; color: white; border-color: #6c757d;'">
+                        <span class="material-icons">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
+                        <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle"></span>
                       </button>
 
                       <button @click="editarSancion(s)" class="btn-editar" title="Editar"><span class="material-icons">edit</span></button>
@@ -170,9 +170,10 @@
                 </div>
 
                 <div class="d-flex gap-2 mt-3 flex-wrap">
-                  <button v-if="s.estado_dinamico == 3" @click="gestionarDescargo(s)" class="btn-editar-mobile flex-grow-1 position-relative" :style="s.tiene_nuevos ? 'background-color: #fee2e2; color: #dc2626; border-color: #fca5a5;' : 'background-color: #eff6ff; color: #3b82f6; border-color: #bfdbfe;'">
-                    <span class="material-icons">chat</span> {{ s.tiene_nuevos ? 'Nuevos' : 'Descargos' }}
-                    <span v-if="s.tiene_nuevos" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="margin-left: -15px;"></span>
+                  <button @click="gestionarDescargo(s)" class="btn-editar-mobile flex-grow-1 position-relative" :style="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'background-color: #fee2e2; color: #dc2626; border-color: #fca5a5;' : 'background-color: #eff6ff; color: #3b82f6; border-color: #bfdbfe;') : 'background-color: #f8f9fa; color: #6c757d; border-color: #dee2e6;'">
+                    <span class="material-icons">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
+                    {{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'Nuevos' : 'Descargos') : 'Historial' }}
+                    <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="margin-left: -15px;"></span>
                   </button>
 
                   <button @click="editarSancion(s)" class="btn-editar-mobile flex-grow-1"><span class="material-icons">edit</span> Editar</button>
@@ -209,18 +210,15 @@
           <div class="text-muted small" style="font-size: 0.85rem;">ID #{{ formModal.id }} — {{ formModal.arbitro }}</div>
         </div>
       </template>
-
       <div class="row g-3 text-start">
         <div class="col-12">
           <label class="small fw-bold text-dark mb-1">Artículo *</label>
           <input v-model="formModal.articulo" type="text" class="form-control shadow-none border-secondary-subtle">
         </div>
-
         <div class="col-12">
           <label class="small fw-bold text-dark mb-1">Motivo *</label>
           <textarea v-model="formModal.motivo" rows="2" class="form-control shadow-none border-secondary-subtle"></textarea>
         </div>
-
         <div class="col-12">
           <label class="small fw-bold text-dark mb-1">Tipo de Sanción</label>
           <select v-model="tipoSancion" class="form-select shadow-none border-secondary-subtle">
@@ -232,17 +230,14 @@
             <option value="anios">Por Años</option>
           </select>
         </div>
-
         <div class="col-md-6" v-if="['dias','meses','anios'].includes(tipoSancion)">
           <label class="small fw-bold text-dark mb-1">Cantidad *</label>
           <input type="number" min="1" v-model="cantidadSancion" class="form-control shadow-none border-secondary-subtle">
         </div>
-
         <div class="col-md-6" v-if="['amonestacion', 'dias', 'meses', 'anios'].includes(tipoSancion)">
           <label class="small fw-bold text-dark mb-1">Fecha de Inicio *</label>
           <input type="date" v-model="formModal.desde" class="form-control shadow-none border-secondary-subtle">
         </div>
-
         <div class="col-12" v-if="['dias','meses','anios'].includes(tipoSancion)">
           <div class="form-check mt-1">
             <input class="form-check-input" type="checkbox" v-model="formModal.es_indefinido" :true-value="1" :false-value="0" id="checkIndefinido">
@@ -252,7 +247,6 @@
           </div>
         </div>
       </div>
-
       <template #footer>
         <div class="w-100 d-flex justify-content-center gap-3">
           <button @click="mostrarModalEditar = false" class="btn btn-light rounded-pill px-4 fw-bold border">CANCELAR</button>
@@ -273,17 +267,13 @@
           </div>
         </div>
       </template>
-
       <div v-if="cargandoHistorial" class="text-center py-5">
         <span class="spinner-border text-warning"></span>
       </div>
-
       <div v-else-if="historialSanciones.length === 0" class="text-center py-5 text-muted bg-light rounded-4 shadow-sm border border-light-subtle">
         <span class="material-icons d-block mb-3" style="font-size: 50px; color: #cbd5e1;">history_toggle_off</span>
         <p class="mb-0 fw-bold fs-5 text-dark">Sin registros</p>
-        <p class="small">No hay sanciones previas en el historial.</p>
       </div>
-
       <div v-else>
         <div class="table-responsive d-none d-md-block">
           <table class="table table-sm table-borderless align-middle m-0" style="font-size: 0.85rem;">
@@ -358,7 +348,9 @@
 
       <div class="chat-container bg-light border rounded p-3 mb-3" style="height: 300px; overflow-y: auto;">
         <div v-if="cargandoDescargos" class="text-center mt-4"><span class="spinner-border text-primary"></span></div>
-        <div v-else-if="historialDescargos.length === 0" class="text-center text-muted mt-4">Esperando descargo del árbitro.</div>
+        <div v-else-if="historialDescargos.length === 0" class="text-center text-muted mt-4">
+          {{ sancionActiva?.estado_dinamico == 3 ? 'Esperando descargo del árbitro.' : 'No se registraron descargos.' }}
+        </div>
 
         <div v-for="d in historialDescargos" :key="d.id" class="mb-3 d-flex flex-column" :class="d.emisor_tipo === 'admin' ? 'align-items-end' : 'align-items-start'">
           <div :class="d.emisor_tipo === 'admin' ? 'bg-dark text-white' : 'bg-white border text-dark'" class="p-2 rounded shadow-sm" style="max-width: 85%;">
@@ -384,17 +376,24 @@
         </div>
       </div>
 
-      <div class="row g-2">
-        <div class="col-12">
-          <textarea v-model="nuevoMensaje" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Escribir respuesta al árbitro..."></textarea>
+      <template v-if="sancionActiva?.estado_dinamico == 3">
+        <div class="row g-2">
+          <div class="col-12">
+            <textarea v-model="nuevoMensaje" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Escribir respuesta al árbitro..."></textarea>
+          </div>
+          <div class="col-12">
+            <input type="file" ref="fileInput" multiple class="form-control form-control-sm shadow-none border-secondary-subtle" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+          </div>
         </div>
-        <div class="col-12">
-          <input type="file" ref="fileInput" multiple class="form-control form-control-sm shadow-none border-secondary-subtle" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+      </template>
+      <template v-else>
+        <div class="alert alert-secondary text-center small mb-0 border-0 shadow-sm rounded">
+          <i class="bi bi-info-circle-fill me-1"></i> El proceso disciplinario se encuentra finalizado. El chat es de solo lectura.
         </div>
-      </div>
+      </template>
 
       <template #footer>
-        <div class="w-100 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div v-if="sancionActiva?.estado_dinamico == 3" class="w-100 d-flex justify-content-between align-items-center flex-wrap gap-2">
           <button @click="cerrarSancionDesdeDescargo" class="btn btn-outline-danger fw-bold shadow-sm rounded-pill px-3">
              RESOLVER SANCIÓN
           </button>
@@ -402,6 +401,9 @@
             <span v-if="enviandoDescargo" class="spinner-border spinner-border-sm me-1"></span>
             RESPONDER
           </button>
+        </div>
+        <div v-else class="w-100 d-flex justify-content-center">
+           <button @click="mostrarModalDescargo = false; fetchSanciones()" class="btn btn-light border rounded-pill px-4 fw-bold shadow-sm">CERRAR</button>
         </div>
       </template>
     </ModalBase>
@@ -659,7 +661,6 @@ const gestionarDescargo = async (sancion) => {
   mostrarModalDescargo.value = true;
   await cargarDescargos(sancion.id);
 
-  // Limpiamos globo rojo al abrir
   if (sancion.tiene_nuevos) {
       sancion.tiene_nuevos = false;
   }
@@ -721,7 +722,7 @@ const enviarDescargoAdmin = async () => {
 
 const cerrarSancionDesdeDescargo = () => {
   mostrarModalDescargo.value = false;
-  editarSancion(sancionActiva.value); // Ejecuta el flujo normal de edición para cerrarla
+  editarSancion(sancionActiva.value);
 };
 
 const exportarExcel = () => {

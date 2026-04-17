@@ -65,7 +65,7 @@
               <thead>
                 <tr class="main-header">
                   <th class="sticky-col col-id text-center" style="width: 130px;">Estado</th>
-                  <th class="text-center" style="width: 140px;">Acción</th>
+                  <th class="text-center" style="width: 160px;">Acción</th>
                   <th style="width: 160px;">Sanción</th>
                   <th>Motivo / Art.</th>
                   <th class="text-center" style="width: 140px;">Desde</th>
@@ -96,16 +96,19 @@
                     </span>
                   </td>
                   <td class="text-center cell-ro">
-                    <button v-if="s.estado_dinamico == 3" @click="abrirDescargo(s)" class="btn btn-sm fw-bold position-relative" :class="s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary'">
-                      <i class="bi bi-chat-text"></i> Descargo
-                      <span v-if="s.tiene_nuevos" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-                        <span class="visually-hidden">Mensajes nuevos</span>
-                      </span>
-                    </button>
-                    <span v-else-if="s.estado_dinamico == 1" class="small text-muted">
-                      Apelar vía <a href="mailto:secretaria@arbitroshandball.com.ar" class="text-primary text-decoration-none">email</a>
-                    </span>
-                    <span v-else class="text-muted">-</span>
+                    <div class="d-flex flex-column gap-2 align-items-center">
+                      <button @click="abrirDescargo(s)" class="btn btn-sm fw-bold position-relative w-100" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary') : 'btn-outline-secondary'">
+                        <i class="bi" :class="s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history'"></i>
+                        {{ s.estado_dinamico == 3 ? 'Descargo' : 'Historial' }}
+                        <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                          <span class="visually-hidden">Mensajes nuevos</span>
+                        </span>
+                      </button>
+
+                      <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-sm btn-danger fw-bold w-100 text-white">
+                        APELAR A CD
+                      </button>
+                    </div>
                   </td>
                   <td class="cell-ro">
                     <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
@@ -155,10 +158,17 @@
                   </span>
                 </div>
 
-                <button v-if="s.estado_dinamico == 3" @click="abrirDescargo(s)" class="btn w-100 fw-bold position-relative" :class="s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary'">
-                  <i class="bi bi-chat-text"></i> {{ s.tiene_nuevos ? 'Nuevo Mensaje del Tribunal' : 'Realizar Descargo' }}
-                  <span v-if="s.tiene_nuevos" class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle" style="margin-left:-15px;"></span>
-                </button>
+                <div class="d-flex flex-column gap-2">
+                  <button @click="abrirDescargo(s)" class="btn w-100 fw-bold position-relative" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary') : 'btn-outline-secondary'">
+                    <i class="bi" :class="s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history'"></i>
+                    {{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'Nuevo Mensaje' : 'Realizar Descargo') : 'Historial de Descargos' }}
+                    <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle" style="margin-left:-15px;"></span>
+                  </button>
+
+                  <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-danger text-white w-100 fw-bold">
+                    <i class="bi bi-envelope"></i> APELAR A COMISIÓN DIRECTIVA
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -191,7 +201,9 @@
 
       <div class="chat-container bg-light border rounded p-3 mb-3" style="height: 300px; overflow-y: auto;">
         <div v-if="cargandoDescargos" class="text-center mt-4"><span class="spinner-border text-primary"></span></div>
-        <div v-else-if="historialDescargos.length === 0" class="text-center text-muted mt-4">No hay mensajes aún. Enviá tu descargo inicial.</div>
+        <div v-else-if="historialDescargos.length === 0" class="text-center text-muted mt-4">
+          {{ sancionActiva?.estado_dinamico == 3 ? 'No hay mensajes aún. Enviá tu descargo inicial.' : 'No se registraron descargos durante el proceso.' }}
+        </div>
 
         <div v-for="d in historialDescargos" :key="d.id" class="mb-3 d-flex flex-column" :class="d.emisor_tipo === 'arbitro' ? 'align-items-end' : 'align-items-start'">
           <div :class="d.emisor_tipo === 'arbitro' ? 'bg-primary text-white' : 'bg-white border text-dark'" class="p-2 rounded shadow-sm" style="max-width: 85%;">
@@ -217,21 +229,69 @@
         </div>
       </div>
 
-      <div class="row g-2">
-        <div class="col-12">
-          <textarea v-model="nuevoMensaje" class="form-control" rows="3" placeholder="Escribí tu descargo o respuesta aquí..."></textarea>
+      <template v-if="sancionActiva?.estado_dinamico == 3">
+        <div class="row g-2">
+          <div class="col-12">
+            <textarea v-model="nuevoMensaje" class="form-control" rows="3" placeholder="Escribí tu descargo o respuesta aquí..."></textarea>
+          </div>
+          <div class="col-12">
+            <input type="file" ref="fileInput" multiple class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+            <small class="text-muted">Podés adjuntar múltiples archivos.</small>
+          </div>
         </div>
-        <div class="col-12">
-          <input type="file" ref="fileInput" multiple class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-          <small class="text-muted">Podés adjuntar múltiples archivos.</small>
+      </template>
+      <template v-else>
+        <div class="alert alert-secondary text-center small mb-0 border-0 shadow-sm rounded">
+          <i class="bi bi-info-circle-fill me-1"></i> El proceso disciplinario se encuentra finalizado. El chat es de solo lectura.
         </div>
-      </div>
+      </template>
 
       <template #footer>
-        <div class="w-100 d-flex justify-content-end gap-2">
+        <div v-if="sancionActiva?.estado_dinamico == 3" class="w-100 d-flex justify-content-end gap-2">
           <button @click="enviarDescargo" class="btn btn-primary fw-bold" :disabled="enviandoDescargo || (!nuevoMensaje && !fileInput?.files?.length)">
             <span v-if="enviandoDescargo" class="spinner-border spinner-border-sm me-1"></span>
             ENVIAR DESCARGO
+          </button>
+        </div>
+        <div v-else class="w-100 d-flex justify-content-center">
+           <button @click="mostrarModalDescargo = false; obtenerSancionesLocales()" class="btn btn-light border rounded-pill px-4 fw-bold shadow-sm">CERRAR</button>
+        </div>
+      </template>
+    </ModalBase>
+
+    <ModalBase
+      :show="mostrarModalApelar"
+      @close="mostrarModalApelar = false"
+      icono="gavel"
+      maxWidth="550px"
+      colorIcono="bg-danger text-white"
+    >
+      <template #header>
+        <div class="text-center">
+          <div>Apelar a Comisión Directiva</div>
+        </div>
+      </template>
+
+      <div class="text-center p-3">
+        <div class="mb-4">
+          <span class="material-icons text-danger" style="font-size: 50px;">forward_to_inbox</span>
+        </div>
+        <p class="fs-6 text-dark">
+          Para apelar esta sanción ante la Comisión Directiva, debés enviar un e-mail formal detallando los motivos de tu apelación.
+        </p>
+        <div class="bg-light p-3 rounded border shadow-sm my-3">
+          <span class="d-block small text-muted text-uppercase fw-bold mb-1">Enviar correo electrónico a:</span>
+          <a href="mailto:secretaria@arbitroshandball.com.ar" class="fs-5 fw-bold text-primary text-decoration-none">
+            secretaria@arbitroshandball.com.ar
+          </a>
+        </div>
+        <p class="small text-muted m-0">No olvides incluir tu nombre completo y el número de sanción (ID #{{ sancionActiva?.id }}).</p>
+      </div>
+
+      <template #footer>
+        <div class="w-100 d-flex justify-content-center">
+          <button @click="mostrarModalApelar = false" class="btn btn-dark rounded-pill px-5 fw-bold shadow-sm">
+            ENTENDIDO
           </button>
         </div>
       </template>
@@ -263,6 +323,9 @@ const cargandoDescargos = ref(false);
 const nuevoMensaje = ref('');
 const enviandoDescargo = ref(false);
 const fileInput = ref(null);
+
+// Modal Apelar
+const mostrarModalApelar = ref(false);
 
 const limpiarFiltros = () => { filtros.motivo_articulo = ''; filtros.sancion = ''; filtros.desde = ''; filtros.hasta = ''; filtros.estado = ''; };
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
@@ -334,12 +397,19 @@ const obtenerSancionesLocales = async () => {
   }
 };
 
+// --- Funciones Apelar ---
+const abrirApelar = (sancion) => {
+  sancionActiva.value = sancion;
+  mostrarModalApelar.value = true;
+}
+
 // --- Funciones de Descargo ---
 const abrirDescargo = async (sancion) => {
   sancionActiva.value = sancion;
   mostrarModalDescargo.value = true;
   await cargarDescargos(sancion.id);
 
+  // Limpiamos globo rojo al abrir
   if (sancion.tiene_nuevos) {
       sancion.tiene_nuevos = false;
   }
@@ -393,7 +463,6 @@ const enviarDescargo = async () => {
 
   try {
     const res = await api.post({ entity: 'sanciones', action: 'enviarDescargo', payload });
-    // Validamos que 'res' esté bien utilizando la variable
     if (res?.success !== false) {
       nuevoMensaje.value = '';
       if (fileInput.value) fileInput.value.value = '';
