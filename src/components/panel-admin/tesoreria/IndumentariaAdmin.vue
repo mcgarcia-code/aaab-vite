@@ -1,72 +1,68 @@
 <template>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
-  <div class="full-screen-wrapper">
-    <div class="admin-panel animate__animated animate__fadeIn">
-
-      <div class="dashboard-header mb-5 text-center text-md-start">
-        <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
-          <div class="main-icon-container">
-            <i class="bi bi-bag-check text-danger"></i>
-          </div>
-          <div>
-            <h4 class="fw-bold text-white m-0">Gestión de Indumentaria</h4>
-            <p class="small text-white opacity-75 m-0">Administración de stock y pedidos de árbitros</p>
-          </div>
+  <div class="container-fluid py-4 animate__animated animate__fadeIn">
+      
+    <div class="dashboard-header mb-5 text-start">
+      <div class="d-flex align-items-center justify-content-start gap-3">
+        <div class="main-icon-container">
+          <i class="bi bi-bag-check text-danger"></i>
+        </div>
+        <div>
+          <h4 class="fw-bold text-white m-0">Gestión de Indumentaria</h4>
+          <p class="small text-white opacity-75 m-0">Administración de stock y pedidos de árbitros</p>
         </div>
       </div>
+    </div>
 
-      <div class="row g-3 g-md-4 justify-content-center w-100 mx-0">
-        
-        <div class="col-12 col-md-6">
-          <RouterLink to="/panel-admin/tesoreria/indumentaria/stock" class="text-decoration-none h-100 d-block">
-            <div class="modern-menu-card shadow-sm">
-              <div class="icon-box">
-                <i class="bi bi-box-seam"></i>
-              </div>
-              <div class="card-text">
-                <h5 class="fw-bold mb-1">Stock</h5>
-                <p class="extra-small m-0 text-muted">Control de talles, ingresos y cantidades disponibles.</p>
-              </div>
-              <div class="card-arrow">
-                <i class="bi bi-chevron-right"></i>
-              </div>
+    <div class="row g-3 g-md-4">
+      
+      <div class="col-12 col-md-6">
+        <RouterLink to="/panel-admin/tesoreria/indumentaria/stock" class="text-decoration-none h-100 d-block">
+          <div class="modern-menu-card shadow-sm">
+            <div class="icon-box">
+              <i class="bi bi-box-seam"></i>
             </div>
-          </RouterLink>
-        </div>
+            <div class="card-text">
+              <h5 class="fw-bold mb-1">Stock</h5>
+              <p class="extra-small m-0 text-muted">Control de talles, ingresos y cantidades disponibles.</p>
+            </div>
+            <div class="card-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+          </div>
+        </RouterLink>
+      </div>
 
-        <div class="col-12 col-md-6">
-          <RouterLink to="/panel-admin/tesoreria/indumentaria/pedidos" class="text-decoration-none h-100 d-block">
-            <div class="modern-menu-card shadow-sm">
-              
-              <div class="icon-box">
-                <i class="bi bi-list-check"></i>
-                <span v-if="pedidosNuevos > 0" class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle animate__animated animate__pulse animate__infinite">
-                  <span class="visually-hidden">Nuevos pedidos</span>
+      <div class="col-12 col-md-6">
+        <RouterLink to="/panel-admin/tesoreria/indumentaria/pedidos" class="text-decoration-none h-100 d-block">
+          <div class="modern-menu-card shadow-sm">
+            
+            <div class="icon-box position-relative">
+              <i class="bi bi-list-check"></i>
+              <span v-if="pedidosNuevos > 0" class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle animate__animated animate__pulse animate__infinite">
+                <span class="visually-hidden">Nuevos pedidos</span>
+              </span>
+            </div>
+            
+            <div class="card-text">
+              <h5 class="fw-bold mb-1 d-flex align-items-center gap-2 flex-wrap">
+                Pedidos Realizados
+                <span v-if="pedidosNuevos > 0" class="badge bg-danger rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.65rem;">
+                  {{ pedidosNuevos }} NUEVO{{ pedidosNuevos > 1 ? 'S' : '' }}
                 </span>
-              </div>
-              
-              <div class="card-text">
-                <h5 class="fw-bold mb-1 d-flex align-items-center gap-2 flex-wrap">
-                  Pedidos Realizados
-                  <span v-if="pedidosNuevos > 0" class="badge bg-danger rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.65rem;">
-                    {{ pedidosNuevos }} NUEVO{{ pedidosNuevos > 1 ? 'S' : '' }}
-                  </span>
-                </h5>
-                <p class="extra-small m-0 text-muted">Listado de solicitudes, estados de entrega y pendientes.</p>
-              </div>
-              
-              <div class="card-arrow">
-                <i class="bi bi-chevron-right"></i>
-              </div>
-              
+              </h5>
+              <p class="extra-small m-0 text-muted">Listado de solicitudes, estados de entrega y pendientes.</p>
             </div>
-          </RouterLink>
-        </div>
-
+            
+            <div class="card-arrow">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+            
+          </div>
+        </RouterLink>
       </div>
 
     </div>
+
   </div>
 </template>
 
@@ -108,29 +104,8 @@ onMounted(() => {
 
 <style scoped>
 /* ====================================================
-   WRAPPERS GENERALES
+   ESTILOS DE LA CABECERA
    ==================================================== */
-.full-screen-wrapper { 
-  position: relative; 
-  width: 99vw; 
-  min-height: 100vh; 
-  height: auto !important; 
-  margin-left: 50%; 
-  transform: translateX(-50%); 
-  padding: 20px; 
-  padding-bottom: 120px; 
-}
-
-.admin-panel { 
-  width: 100%; 
-  max-width: 100%; 
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; 
-  background-color: #0f172a; 
-  min-height: 100vh; 
-  padding: 20px;
-}
-
-/* Icono Principal del Header */
 .main-icon-container {
   width: 60px;
   height: 60px;
@@ -144,7 +119,9 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Tarjeta Moderna Horizontal (Neo-Bento) */
+/* ====================================================
+   TARJETAS DE NAVEGACIÓN
+   ==================================================== */
 .modern-menu-card {
   background: #ffffff;
   border: 1px solid #f1f5f9;
@@ -159,6 +136,7 @@ onMounted(() => {
   position: relative;
   cursor: pointer;
 }
+
 .icon-box {
   width: 52px;
   height: 52px;
@@ -188,6 +166,7 @@ onMounted(() => {
   font-size: 0.85rem;
   line-height: 1.3;
 }
+
 .card-arrow {
   color: #cbd5e1;
   font-size: 1.2rem;
@@ -196,10 +175,11 @@ onMounted(() => {
 
 /* --- EFECTOS HOVER --- */
 .modern-menu-card:hover {
-  border-color: #f87171; /* Rojo suave */
+  border-color: #f87171; 
   transform: translateY(-5px);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
 }
+
 .modern-menu-card:hover .icon-box {
   background: #dc2626;
   color: white;
@@ -211,16 +191,18 @@ onMounted(() => {
   transform: translateX(4px);
 }
 
-/* Ajustes Responsive */
+/* ====================================================
+   📱 RESPONSIVE DESIGN
+   ==================================================== */
 @media (max-width: 768px) {
-  .dashboard-header { margin-bottom: 30px; }
-  .modern-menu-card { padding: 18px; }
+  .modern-menu-card { 
+    padding: 18px; 
+    min-height: 120px; 
+  }
+  .dashboard-header { margin-bottom: 30px !important; }
   .icon-box { width: 48px; height: 48px; min-width: 48px; font-size: 1.3rem; }
   .card-text h5 { font-size: 1rem; }
 }
 
-@media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0 10px; width: 100vw; }
-}
+.animate__animated { animation-duration: 0.5s; }
 </style>

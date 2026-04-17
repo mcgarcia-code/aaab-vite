@@ -36,12 +36,12 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { RouterView, useRoute, useRouter } from 'vue-router'; // Importamos useRouter
+import { RouterView, useRoute, useRouter } from 'vue-router';
 import { auth } from '@/api/auth';
 import { useHead } from '@vueuse/head';
 
 const route = useRoute();
-const router = useRouter(); // Instanciamos el router
+const router = useRouter(); 
 
 // 1. Detectar si estamos en un "hijo del hijo"
 // Si la URL tiene más de 2 segmentos (ej: /panel-admin/usuarios/editar), es profunda.
@@ -71,7 +71,7 @@ onMounted(() => {
   }
 });
 
-// Configuración de Head (se mantiene igual)
+// Configuración de Head
 useHead({
   title: 'Panel de Gestión  | AAAB',
   meta: [
@@ -90,7 +90,6 @@ useHead({
   background-color: #0f172a; 
   padding-bottom: 40px;
 }
-
 
 .user-header {
   background: rgba(255, 255, 255, 0.05);
@@ -122,21 +121,19 @@ useHead({
   padding: 8px 20px;
   border-radius: 50px;
   transition: 0.3s;
-  /* Agregamos esto para que el <button> se vea como el <a> */
   border: none; 
   cursor: pointer;
-  font-size: 1rem; /* Ajusta según necesites */
+  font-size: 1rem; 
 }
 
 .btn-volver:hover {
   background: #dc2626;
   color: white;
-  /* Opcional: un pequeño levantamiento para que se sienta más interactivo */
   transform: translateY(-1px);
 }
 
 /* ====================================================
-   📱 RESPONSIVE DESIGN (Módulos Administrativos)
+   📱 RESPONSIVE DESIGN (Layout Principal)
    ==================================================== */
 
 /* --- 1. TABLETS Y DISPOSITIVOS MEDIANOS (Hasta 768px) --- */
@@ -147,61 +144,20 @@ useHead({
 
 /* --- 2. SMARTPHONES (Hasta 600px) --- */
 @media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0; width: 100vw; }
-
-  /* Ajuste de Icono: quitamos '0 auto' para que no se centre */
+  /* Ajuste de Icono: alineado a la izquierda */
   .icon-admin-circle { 
     width: 60px; 
     height: 60px; 
     font-size: 1.5rem; 
-    margin: 0; /* Alineado a la izquierda */
+    margin: 0; 
   }
 
-  /* ESTRUCTURA CABECERA */
-  .header-section { 
-    padding: 15px; 
-    flex-direction: column; 
-    align-items: flex-start; /* Todo el contenido al inicio (izquierda) */
-    text-align: left; 
-    gap: 15px; 
-  }
-
-  .header-info { 
-    width: 100%; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: flex-start; 
-  }
-  
-  /* Forzamos que el texto esté alineado a la izquierda/justificado */
-  h2, .header-info h4, .header-info p { 
+  /* Ajuste del título para que ocupe todo el ancho */
+  h2 { 
     font-size: 1.25rem !important; 
     margin: 0; 
-    text-align: left; /* O 'justify' si prefieres que bloquee los bordes */
+    text-align: left; 
     width: 100%;
   }
-
-  /* Centrado de botones: Esto se mantiene centrado debajo como pediste */
-  .header-actions { 
-    width: 100%; 
-    display: flex; 
-    flex-direction: row; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 8px; 
-  }
-
-  .btn-action { 
-    flex: none; 
-    width: 42px; 
-    height: 42px; 
-    padding: 0; 
-    justify-content: center; 
-  }
-  
-  .btn-text { display: none !important; }
 }
-
-.animate__animated { animation-duration: 0.5s; }
 </style>

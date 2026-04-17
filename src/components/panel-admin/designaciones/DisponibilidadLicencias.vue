@@ -674,6 +674,7 @@ onMounted(cargarDatos);
   border-left: 5px solid #ef4444; 
   box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
 }
+
 .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
 .title { font-size: 1.25rem; font-weight: bold; margin: 0; color: #000; }
 .counter { font-size: 0.85rem; color: #64748b; }
@@ -688,6 +689,7 @@ onMounted(cargarDatos);
   gap: 8px; 
   overflow-x: auto; 
 }
+
 .btn-action { 
   border: none; border-radius: 6px; font-weight: bold; cursor: pointer; 
   display: flex; align-items: center; justify-content: center; 

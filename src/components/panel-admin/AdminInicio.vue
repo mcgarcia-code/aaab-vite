@@ -1,30 +1,25 @@
 <template>
   <div class="container-fluid py-4 animate__animated animate__fadeIn">
     
-    <!-- HEADER DE BIENVENIDA -->
     <div class="dashboard-header mb-5">
       <h3 class="text-white">¡Bienvenido al Panel de Gestión!</h3>
       <p class="text-white">Seleccioná un módulo para gestionar la AAAB</p>
     </div>
 
-    <!-- GRILLA DE MENÚ -->
     <div class="row g-4">
       <div class="col-12 col-sm-6 col-lg-4" v-for="item in filteredMenu" :key="item.title">
         <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
           <div class="modern-card">
             
-            <!-- ICONO CON FONDO SUAVE -->
             <div class="icon-box">
               <i :class="item.icon"></i>
             </div>
             
-            <!-- TEXTO DE LA TARJETA -->
             <div class="card-body-text">
               <h5 class="card-title">{{ item.title }}</h5>
               <p class="card-desc">{{ item.desc }}</p>
             </div>
 
-            <!-- INDICADOR DE ACCIÓN -->
             <div class="card-arrow">
               <i class="bi bi-chevron-right"></i>
             </div>
@@ -150,13 +145,13 @@ const filteredMenu = computed(() => {
   margin: 0 0 2px 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #0f172a; /* Azul muy oscuro casi negro */
+  color: #0f172a; 
 }
 
 .card-desc {
   margin: 0;
   font-size: 0.85rem;
-  color: #64748b; /* Gris intermedio */
+  color: #64748b; 
   line-height: 1.4;
 }
 
@@ -168,9 +163,8 @@ const filteredMenu = computed(() => {
 }
 
 /* --- EFECTOS INTERACTIVOS (HOVER) --- */
-
 .modern-card:hover {
-  border-color: #f87171; /* Rojo suave */
+  border-color: #f87171; 
   transform: translateY(-5px);
   box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
 }
@@ -189,7 +183,7 @@ const filteredMenu = computed(() => {
    📱 RESPONSIVE DESIGN (Cards Modernas)
    ==================================================== */
 
-/* --- 1. TABLETS Y MÓVILES (Hasta 768px) --- */
+/* --- TABLETS Y MÓVILES (Hasta 768px) --- */
 @media (max-width: 768px) {
   .modern-card {
     padding: 20px;
@@ -200,55 +194,6 @@ const filteredMenu = computed(() => {
     min-width: 48px;
     font-size: 1.2rem;
   }
-  
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-}
-
-/* --- 2. SMARTPHONES (Hasta 600px) --- */
-@media (max-width: 600px) {
-  .admin-panel { padding: 10px; border-radius: 0; }
-  .full-screen-wrapper { padding: 0; width: 100vw; }
-
-  /* ESTRUCTURA CABECERA: Título Izquierda, Botones Centro */
-  .header-section { 
-    padding: 15px; 
-    flex-direction: column; 
-    align-items: flex-start; 
-    text-align: left; 
-    gap: 15px; 
-  }
-
-  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
-  
-  /* Tamaños de fuente estándar para el sistema */
-  .header-info h4, h2 { 
-    font-size: 1.25rem !important; 
-    justify-content: flex-start; 
-    margin: 0;
-  }
-  .header-info span.counter { font-size: 0.85rem !important; }
-
-  /* Centrado de botones de acción 42x42 */
-  .header-actions { 
-    width: 100%; 
-    display: flex; 
-    flex-direction: row; 
-    flex-wrap: wrap; 
-    justify-content: center; 
-    gap: 8px; 
-  }
-
-  .btn-action { 
-    flex: none; 
-    width: 42px; 
-    height: 42px; 
-    padding: 0; 
-    justify-content: center; 
-  }
-  
-  .btn-text { display: none !important; }
-  .mobile-only-flex { display: flex !important; }
 }
 
 .animate__animated { animation-duration: 0.5s; }

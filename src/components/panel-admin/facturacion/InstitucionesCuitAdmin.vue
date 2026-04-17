@@ -459,7 +459,14 @@ onMounted(() => {
 .counter { font-size: 0.85rem; color: #6c757d; }
 
 /* Botones Móvil (42x42 centrados) */
-.header-actions { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.header-actions { 
+  width: 100%; 
+  display: flex; 
+  flex-wrap: wrap; 
+  justify-content: center; 
+  gap: 10px; 
+}
+
 .btn-action { 
   border: none; border-radius: 6px; font-weight: bold; cursor: pointer; 
   display: flex; align-items: center; justify-content: center; 
