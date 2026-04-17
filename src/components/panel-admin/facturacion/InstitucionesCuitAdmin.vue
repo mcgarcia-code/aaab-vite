@@ -176,7 +176,7 @@
       maxWidth="600px"
     >
       <template #header>
-        <div class="text-center w-100">
+        <div class="text-center">
           <span class="fw-bold fs-5">{{ modoModal === 'editar' ? 'Editar Institución' : 'Registrar Nueva Institución' }}</span>
           <div v-if="modoModal === 'editar'" class="text-muted small mt-1" style="font-size: 0.85rem;">
             {{ formModal.club }} (ID #{{ formModal.id }})

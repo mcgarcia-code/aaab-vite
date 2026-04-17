@@ -79,7 +79,7 @@ const modalRef = ref(null);
 const cerrar = () => emit('close');
 
 
-// 🔥 ESC
+// ESC
 const handleKeydown = (e) => {
   if (e.key === 'Escape' && props.show) cerrar();
 };
@@ -107,16 +107,20 @@ const handleTab = (e) => {
 };
 
 
-// 🔒 BLOQUEAR SCROLL + AUTOFOCUS
 watch(() => props.show, async (val) => {
-  document.body.style.overflow = val ? 'hidden' : '';
+  if (val) {
+    document.body.style.overflow = 'hidden';
+    document.body.style.pointerEvents = 'none';
+  } else {
+    document.body.style.overflow = '';
+    document.body.style.pointerEvents = '';
+  }
 
   if (val) {
     await nextTick();
     modalRef.value?.focus();
   }
 });
-
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
@@ -150,8 +154,9 @@ const modalStyle = computed(() => ({
   backdrop-filter: blur(6px);
   display: flex;
   justify-content: center;
-  align-items: center; /* 🔥 siempre centrado */
+  align-items: center; /*  siempre centrado */
   padding: 10px;
+  pointer-events: auto;
 }
 
 .modal-content-exito {
