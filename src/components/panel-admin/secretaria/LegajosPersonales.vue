@@ -87,11 +87,11 @@
                   <th class="sticky-col col-acciones text-center">Acciones</th>
                   <th class="sticky-col col-apellido">Apellido</th>
                   <th class="sticky-col col-nombre">Nombre</th>
-                  <th class="col-xs-compact">Activo</th>
-                  <th class="col-xs-compact">Rol</th>
-                  <th class="col-xs-compact">Apto Med.</th>
-                  <th class="col-xs-compact">Grupo</th>
-                  <th class="col-xs-compact">Subg.</th>
+                  <th class="col-xs-compact text-center">Activo</th>
+                  <th class="col-xs-compact text-center">Rol</th>
+                  <th class="col-xs-compact text-center">Apto Med.</th>
+                  <th class="col-xs-compact text-center">Grupo</th>
+                  <th class="col-xs-compact text-center">Subg.</th>
                   <th class="col-dni-compact">DNI</th>
                   <th>Email</th>
                   <th>Dirección</th>
@@ -119,7 +119,13 @@
                   <td class="sticky-col col-acciones"></td>
                   <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input shadow-none" placeholder="Filtrar.."></td>
                   <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input shadow-none" placeholder="Filtrar.."></td>
-                  <td class="col-xs-compact"><input v-model="filtros.es_activo" class="filter-input shadow-none text-center" placeholder="SI/NO"></td>
+                  <td class="col-xs-compact">
+                    <select v-model="filtros.es_activo" class="filter-input shadow-none">
+                      <option value="">Todos</option>
+                      <option value="NO">No</option>
+                      <option value="SI">Sí</option>
+                    </select>
+                  </td>
                   <td class="col-xs-compact">
                     <select v-model="filtros.rol" class="filter-input shadow-none">
                       <option value="">Todos</option>
@@ -129,9 +135,32 @@
                       <option :value="4">Coordinador</option>
                     </select>
                   </td>
-                  <td class="col-xs-compact"><input v-model="filtros.apto_medico" class="filter-input shadow-none text-center" placeholder="SI/NO"></td>
-                  <td class="col-xs-compact"><input v-model="filtros.grupo" class="filter-input shadow-none text-center"></td>
-                  <td class="col-xs-compact"><input v-model="filtros.subgrupo" class="filter-input shadow-none text-center"></td>
+                  <td class="col-xs-compact">
+                    <select v-model="filtros.apto_medico" class="filter-input shadow-none">
+                      <option value="">Todos</option>
+                      <option value="SI">Sí</option>
+                      <option value="NO">No</option>
+                    </select>
+                  </td>
+                  <td class="col-xs-compact">
+                    <select v-model="filtros.grupo" class="filter-input shadow-none">
+                      <option value="">Todos</option>
+                      <option value="LH">LH</option>
+                      <option value="Pre Liga">Pre Liga</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                    </select>
+                  </td>
+                  <td class="col-xs-compact">
+                    <select v-model="filtros.subgrupo" class="filter-input shadow-none">
+                      <option value="">Todos</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                    </select>
+                  </td>
                   <td class="col-dni-compact"><input v-model="filtros.dni" class="filter-input shadow-none text-center"></td>
                   <td><input v-model="filtros.email" class="filter-input shadow-none"></td>
                   <td><input v-model="filtros.direccion" class="filter-input shadow-none"></td>
@@ -176,8 +205,13 @@
                       <span style="font-size:0.78rem;" class="text-dark">{{ a.es_activo == 1 ? 'SI' : 'NO' }}</span>
                     </div>
                   </td>
-                  <td class="col-xs-compact cell-ro fw-bold text-dark">{{ obtenerNombreRol(a.rol) }}</td>
-                  <td class="text-center cell-ro text-dark" :class="{ 'inactivo': !a.apto_medico }">{{ a.apto_medico ? 'SI' : 'NO' }}</td>
+                  <td class="col-xs-compact cell-ro fw-bold text-dark text-center">{{ obtenerNombreRol(a.rol) }}</td>
+                  <td class="text-center cell-ro">
+                    <div class="status-wrapper">
+                      <span :class="['status-dot', a.apto_medico == 1 ? 'dot-active' : 'dot-inactive']"></span>
+                      <span style="font-size: 0.78rem;" class="text-dark">{{ a.apto_medico ==1 ? 'SI' : 'NO' }}</span>
+                    </div>
+                  </td>
                   <td class="col-xs-compact cell-ro text-center text-dark">{{ a.grupo }}</td>
                   <td class="col-xs-compact cell-ro text-center text-dark">{{ a.subgrupo }}</td>
                   <td class="col-dni-compact cell-ro text-center text-dark">{{ a.dni }}</td>
@@ -642,7 +676,15 @@ useHead({
 const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 
 const arbitros = ref([])
-const filtros = reactive({ rol: '' })
+
+const filtros = reactive({ 
+  rol: '',
+  es_activo: '',
+  grupo: '',
+  apto_medico: '',
+  subgrupo: '', 
+})
+
 const cargando = ref(false)
 const provincias = ref([])
 const localidades = ref([])
@@ -1173,6 +1215,7 @@ onMounted(() => {
 .dot-active { background: #10b981; }
 .dot-inactive { background: #ff0000; border: 1px solid #ff0000; }
 .read-only-text { padding: 10px 5px; font-size: 0.85rem; color: #1e293b; }
+
 
 .text-xs { font-size: 0.75rem; }
 

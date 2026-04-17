@@ -141,15 +141,15 @@
                   <td class="sticky-col" style="left:140px; z-index: 35;"><input v-model="filtros.nombre" class="filter-input shadow-none"></td>
                   
                   <td class="sticky-col col-shrink" style="left:280px; z-index: 35;">
-                    <select v-model="filtros.designado_sabado" class="filter-input shadow-none text-center p-0">
-                      <option value=""></option>
+                    <select v-model="filtros.designado_sabado" class="filter-input shadow-none">
+                      <option value="">Todos</option>
                       <option value="1">SI</option>
                       <option value="0">NO</option>
                     </select>
                   </td>
                   <td class="sticky-col col-shrink sticky-col-final" style="left:330px; z-index: 35;">
-                    <select v-model="filtros.designado_domingo" class="filter-input shadow-none text-center p-0">
-                      <option value=""></option>
+                    <select v-model="filtros.designado_domingo" class="filter-input shadow-none">
+                      <option value="">Todos</option>
                       <option value="1">SI</option>
                       <option value="0">NO</option>
                     </select>
@@ -166,15 +166,15 @@
                   </td>
                   <td></td>
                   <td class="bg-filter">
-                    <select v-model="filtros.es_activo" class="filter-input shadow-none text-center">
-                      <option value="">Todo</option>
+                    <select v-model="filtros.es_activo" class="filter-input shadow-none">
+                      <option value="">Todos</option>
                       <option value="1">SÍ</option>
                       <option value="0">NO</option>
                     </select>
                   </td>
                   <td class="bg-filter text-center">
                     <select v-model="filtros.apto_medico" class="filter-input shadow-none text-center">
-                      <option value="">Todo</option>
+                      <option value="">Todos</option>
                       <option value="1">SÍ</option>
                       <option value="0">NO</option>
                     </select>
@@ -220,7 +220,10 @@
                     </button>
                     <span v-else class="text-muted">-</span>
                   </td>
-                  <td class="text-center col-shrink"><span :class="['dot', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span></td>
+                  <td class="text-center col-shrink">
+                    <span v-if="a.es_activo" class="material-icons dot-active" title="Activo">check_circle</span>
+                    <span v-else class="material-icons dot-inactive" title="Inactivo">cancel</span>
+                  </td>
                   <td class="text-center">
                     <span v-if="a.apto_medico" class="material-icons icon-apto" title="Apto Físico">check_circle</span>
                     <span v-else class="material-icons icon-no-apto" title="No Apto Físico">cancel</span>
@@ -379,7 +382,7 @@ const filtros = reactive({
   disponibilidad_sabado: '', disponibilidad_domingo: '',
   juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: '',
   designado_sabado: '',
-  designado_domingo: ''
+  designado_domingo: '',
 });
 
 const cambiarPagina = (delta) => {
@@ -734,8 +737,8 @@ onMounted(cargarDatos);
 
 /* Componentes Visuales (Móvil) */
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
-.dot-active { background: #10b981; }
-.dot-inactive { background: #ff0000; border: 1px solid #ff0000; }
+.dot-active { color: #22c55e; vertical-align: middle; font-size: 1.5rem; }
+.dot-inactive { color: #ef4444; vertical-align: middle; font-size: 1.5rem; }
 .icon-apto { color: #22c55e; vertical-align: middle; font-size: 1.5rem; }
 .icon-no-apto { color: #ef4444; vertical-align: middle; font-size: 1.5rem; }
 .check { transform: scale(1.3); cursor: pointer; margin: 0 auto; display: block;}

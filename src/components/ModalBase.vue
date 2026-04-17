@@ -17,13 +17,13 @@
         
         <div class="flex-shrink-0 p-3 border-bottom bg-white position-relative">
 
-          <button 
-            @click="cerrar" 
-            class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2"
-            style="width: 35px; height: 35px; border: 1px solid #e2e8f0;"
-          >
-            <span class="material-icons">close</span>
-          </button>
+<button 
+  @click="cerrar" 
+  class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center p-0"
+  style="width: 35px; height: 35px; border: 1px solid #e2e8f0;"
+>
+  <span class="material-icons" style="font-size: 20px;">close</span>
+</button>
 
           <div class="text-center px-3">
 
@@ -33,7 +33,7 @@
               :class="colorIcono"
               style="width: 40px; height: 40px;"
             >
-              <span class="material-icons">{{ icono }}</span>
+              <span class="material-icons ">{{ icono }}</span>
             </div>
 
             <div class="fw-bold" style="font-size: 1.1rem;">
@@ -133,7 +133,7 @@ onUnmounted(() => {
 });
 
 
-// 📱 MOBILE FIRST
+//  MOBILE FIRST
 const modalStyle = computed(() => ({
   width: '100%',
   maxWidth: props.maxWidth,
@@ -154,9 +154,9 @@ const modalStyle = computed(() => ({
   backdrop-filter: blur(6px);
   display: flex;
   justify-content: center;
-  align-items: center; /* siempre centrado */
+  align-items: center; 
   padding: 10px;
-  /* Eliminé el pointer-events: auto ya que por defecto los div lo tienen, y ya no afecta el body */
+
 }
 
 .modal-content-exito {
@@ -166,5 +166,7 @@ const modalStyle = computed(() => ({
 .icon-circle-mini {
   background: #e0f2fe;
   color: #0284c7;
+  border-radius: 50%;
 }
+
 </style>

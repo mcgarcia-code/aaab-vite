@@ -106,7 +106,6 @@ onUnmounted(() => {
 .modal-overlay-exito {
   position: fixed;
   inset: 0;
-  /* El overlay intercepta los clics automáticamente */
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(8px);
   display: flex;
