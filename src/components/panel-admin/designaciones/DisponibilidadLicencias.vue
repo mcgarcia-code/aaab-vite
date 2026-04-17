@@ -367,7 +367,6 @@ useHead({
   ],
 })
 
-// INYECTAMOS SOLO NOTIFICAR (EL MODAL GLOBAL CONFIRMAR SE LLAMA A TRAVÉS DE ESTE)
 const notificar = inject('notificar');
 
 const arbitros = ref([]);
@@ -383,12 +382,13 @@ const filtros = reactive({
   designado_domingo: ''
 });
 
-const cambiarPagina = (direccion) => {
-  const nuevaPagina = paginaActual.value + direccion;
-
-  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value) {
-    paginaActual.value = nuevaPagina;
-  }
+const cambiarPagina = (delta) => {
+  paginaActual.value += delta;
+  setTimeout(() => {
+    if (window.innerWidth <= 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, 50);
 };
 
 const designadosSabado = ref(new Set());

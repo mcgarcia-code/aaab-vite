@@ -22,7 +22,7 @@
 
             <button @click="abrirModalSolicitudes" class="btn-action btn-blue position-relative" title="Solicitudes pendientes">
               <span class="material-icons">notifications</span> <span class="btn-text">Solicitudes</span>
-              <span v-if="solicitudesPendientes.length > 0" class="badge-notif">
+            <span v-if="solicitudesPendientes.length > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem;">
                 {{ solicitudesPendientes.length }}
               </span>
             </button>
@@ -286,350 +286,341 @@
       </div>
     </div>
 
-    <Teleport to="body">
-    <div v-if="mostrarModalExcel" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
-      <div class="modal-content-exito animate__animated animate__zoomIn shadow-lg" style="max-width: 750px; width: 95%; border-radius: 20px; padding: 25px;">
-        <div class="icon-circle-exito bg-success-subtle text-success mx-auto mb-3" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-          <span class="material-icons" style="font-size: 32px;">description</span>
-        </div>
-        <h4 class="fw-bold mt-3 text-dark text-center m-0">Exportar Listado</h4>
-        <p class="text-muted small mb-3 text-center">Marcá las columnas que querés incluir en el Excel</p>
-        <div class="row g-2 text-start my-3 mx-auto shadow-sm" style="max-height: 250px; overflow-y: auto; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
-          <div v-for="col in columnasExcel" :key="col.id" class="col-12 col-sm-6">
-            <div class="d-flex align-items-center gap-2 p-1 bg-white rounded border border-light-subtle">
-              <input type="checkbox" v-model="col.visible" :id="'col-'+col.id" style="width:18px; height:18px; cursor:pointer;" class="shadow-none">
-              <label :for="'col-'+col.id" class="mb-0 small cursor-pointer fw-bold" style="color: #1e293b;">{{ col.label }}</label>
-            </div>
+ <ModalBase 
+      :show="mostrarModalExcel" 
+      @close="mostrarModalExcel = false"
+      icono="description"
+      colorIcono="bg-success-subtle text-success"
+      maxWidth="750px"
+    >
+      <template #header>
+        <div class="text-center">
+          <span class="fw-bold fs-5">Exportar Listado</span>
+          <div class="text-muted small mt-1" style="font-size: 0.85rem;">
+            Marcá las columnas que querés incluir en el Excel
           </div>
         </div>
-        <div class="d-flex gap-3 justify-content-center mt-4">
-          <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold" style="background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; width: 100%;">CANCELAR</button>
-          <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" style="background: #1e293b; width: 100%;">DESCARGAR</button>
+      </template>
+
+      <div class="row g-2 text-start my-2 mx-auto shadow-sm p-3 rounded-3 bg-light border border-light-subtle" style="max-height: 250px; overflow-y: auto;">
+        <div v-for="col in columnasExcel" :key="col.id" class="col-12 col-sm-6">
+          <div class="d-flex align-items-center gap-2 p-2 bg-white rounded border border-light-subtle">
+            <input type="checkbox" v-model="col.visible" :id="'col-'+col.id" style="width:18px; height:18px; cursor:pointer;" class="shadow-none m-0">
+            <label :for="'col-'+col.id" class="mb-0 small cursor-pointer fw-bold text-dark">{{ col.label }}</label>
+          </div>
         </div>
       </div>
-    </div>
-    </Teleport>
 
-    <Teleport to="body">
-    <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
-      <div class="modal-content-exito d-flex flex-column animate__animated animate__zoomIn shadow-lg mx-auto" style="max-width: 900px; width: 95%; max-height: 95vh; padding: 25px; border-radius: 20px; background: #ffffff;">
+      <template #footer>
+        <div class="w-100 d-flex justify-content-center gap-3">
+          <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold border w-50">CANCELAR</button>
+          <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-50">DESCARGAR</button>
+        </div>
+      </template>
+    </ModalBase>
 
-<div class="flex-shrink-0 border-bottom pb-3 mb-3">
-          <div class="d-flex flex-column align-items-center justify-content-center text-center mb-3 gap-2">
-            <div class="icon-circle-exito flex-shrink-0 mx-auto" :class="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-              <span class="material-icons" style="font-size: 28px;">{{ modoModal === 'editar' ? 'edit' : 'person_add' }}</span>
-            </div>
-            <div>
-              <h4 class="fw-bold m-0 text-dark">
-                {{ modoModal === 'editar' ? `Editar árbitro — ${formModal.apellido} ${formModal.nombre}` : 'Registrar Nuevo Árbitro' }}
-              </h4>
-              <p v-if="modoModal === 'editar'" class="text-muted small mt-1 m-0">ID #{{ formModal.id }}</p>
-            </div>
-          </div>
 
-          <div v-if="mensajeSolicitudActiva" class="alert alert-warning border-warning-subtle text-start shadow-sm d-flex align-items-start gap-3 p-3 mt-2 w-100" style="border-radius: 12px; background-color: #fffbeb;">
-            <span class="material-icons text-warning mt-1">assignment_late</span>
-            <div class="w-100">
-              <strong class="d-block text-dark mb-1" style="font-size: 0.85rem; text-transform: uppercase;">Solicitud del árbitro:</strong>
-              <div class="text-dark" style="font-size: 0.85rem; white-space: pre-line; line-height: 1.5; text-align: justify;">{{ mensajeSolicitudActiva }}</div>
-            </div>
+    <ModalBase 
+      :show="mostrarModal" 
+      @close="cerrarModal"
+      :icono="modoModal === 'editar' ? 'edit' : 'person_add'"
+      :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      maxWidth="900px"
+    >
+      <template #header>
+        <div class="text-center">
+          <span class="fw-bold fs-5">{{ modoModal === 'editar' ? `Editar árbitro` : 'Registrar Nuevo Árbitro' }}</span>
+          <div v-if="modoModal === 'editar'" class="text-muted small" style="font-size: 0.85rem;">
+            ID #{{ formModal.id }} — {{ formModal.apellido }}, {{ formModal.nombre }}
           </div>
         </div>
+      </template>
 
-        <div class="flex-grow-1" style="overflow-y: auto; padding-right: 10px;">
-          <div class="row g-3 text-start m-0 pb-3">
-
-            <div class="col-12 seccion-titulo mt-0 border-secondary-subtle">Datos básicos</div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">Apellido *</label><input v-model="formModal.apellido" class="form-control custom-input shadow-none"></div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">Nombre *</label><input v-model="formModal.nombre" class="form-control custom-input shadow-none"></div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">DNI</label><input v-model="formModal.dni" class="form-control custom-input shadow-none"></div>
-            <div class="col-md-6"><label class="small fw-bold text-dark">Email (Usuario) *</label><input v-model="formModal.email" class="form-control custom-input shadow-none"></div>
-            <div class="col-md-6">
-              <label class="small fw-bold text-dark">
-                {{ modoModal === 'nuevo' ? 'Password *' : 'Password (dejar vacío para no cambiar)' }}
-              </label>
-              <input v-model="formModal.password" type="text" class="form-control custom-input shadow-none" :placeholder="modoModal === 'editar' ? '••••••••' : ''">
-            </div>
-
-            <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Clasificación</div>
-            <div class="col-md-3">
-              <label class="small fw-bold text-dark">Rol</label>
-              <select v-model="formModal.rol" class="form-select custom-input shadow-none">
-                <option :value="1">Árbitro</option>
-                <option :value="2">Observador</option>
-                <option :value="4">Coordinador</option>
-                <option :value="0">Ninguno</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label class="small fw-bold text-dark">Estado</label>
-              <select v-model="formModal.es_activo" class="form-select custom-input shadow-none">
-                <option :value="1">Activo</option>
-                <option :value="0">Inactivo</option>
-              </select>
-            </div>
-            <div class="col-md-2">
-              <label class="small fw-bold text-dark">Grupo</label>
-              <select v-model="formModal.grupo" class="form-select custom-input shadow-none">
-                <option value="LH">LH</option>
-                <option value="Pre Liga">Pre Liga</option>
-                <option value="SR">SR</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-              </select>
-            </div>
-            <div class="col-md-2" v-if="formModal.grupo == '3'">
-              <label class="small fw-bold text-dark">Subgrupo</label>
-              <select v-model="formModal.subgrupo" class="form-select custom-input shadow-none">
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-              </select>
-            </div>
-            <div class="col-md-2" v-else></div>
-            <div class="col-md-2">
-              <label class="small fw-bold text-dark">Apto Médico</label>
-              <select v-model="formModal.apto_medico" class="form-select custom-input shadow-none">
-                <option :value="true">SI</option>
-                <option :value="false">NO</option>
-              </select>
-            </div>
-
-            <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Ubicación</div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">Provincia</label><selProvincia v-model="formModal.provincia" :provincias="provincias" class="form-select custom-input shadow-none" /></div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">Localidad</label><selLocalidad v-model="formModal.localidad" :localidades="localidades.filter(l => l.provincia_id == formModal.provincia)" class="form-select custom-input shadow-none" /></div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">Zona</label><input v-model="formModal.zona" class="form-control custom-input shadow-none"></div>
-            <div class="col-12"><label class="small fw-bold text-dark">Dirección</label><input v-model="formModal.direccion" class="form-control custom-input shadow-none"></div>
-
-            <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Contacto y Movilidad</div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">Celular</label><input v-model="formModal.celular" class="form-control custom-input shadow-none"></div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">Tel. Contacto</label><input v-model="formModal.telefonocontacto" class="form-control custom-input shadow-none"></div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">Parentesco</label><input v-model="formModal.parentescocontacto" class="form-control custom-input shadow-none"></div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">F. Nacimiento</label><input type="date" v-model="formModal.fecha_nacimiento" class="form-control custom-input shadow-none"></div>
-            <div class="col-md-8">
-              <label class="small fw-bold text-dark">Movilidad</label>
-              <div class="checkbox-group bg-light p-2 rounded border border-light-subtle d-flex align-items-center gap-3">
-                <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="moto" v-model="movilidadArray" class="me-1"> Moto</label>
-                <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="transporte publico" v-model="movilidadArray" class="me-1"> Transporte</label>
-                <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="auto" v-model="movilidadArray" class="me-1"> Auto</label>
-                <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="bici" v-model="movilidadArray" class="me-1"> Bici</label>
-              </div>
-            </div>
-
-            <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Disponibilidad</div>
-            <div class="col-md-2">
-              <label class="small fw-bold text-dark">Sáb. Disp.</label>
-              <select v-model="formModal.disponibilidad_sabado" class="form-select custom-input shadow-none">
-                <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
-              </select>
-            </div>
-            <div class="col-md-2"><label class="small fw-bold text-dark">Sáb. Desde</label><input type="time" v-model="formModal.disponibilidad_sabado_desde" class="form-control custom-input shadow-none"></div>
-            <div class="col-md-2"><label class="small fw-bold text-dark">Sáb. Hasta</label><input type="time" v-model="formModal.disponibilidad_sabado_hasta" class="form-control custom-input shadow-none"></div>
-            <div class="col-md-2">
-              <label class="small fw-bold text-dark">Dom. Disp.</label>
-              <select v-model="formModal.disponibilidad_domingo" class="form-select custom-input shadow-none">
-                <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
-              </select>
-            </div>
-            <div class="col-md-2"><label class="small fw-bold text-dark">Dom. Desde</label><input type="time" v-model="formModal.disponibilidad_domingo_desde" class="form-control custom-input shadow-none"></div>
-            <div class="col-md-2"><label class="small fw-bold text-dark">Dom. Hasta</label><input type="time" v-model="formModal.disponibilidad_domingo_hasta" class="form-control custom-input shadow-none"></div>
-
-            <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Handball</div>
-            <div class="col-md-4">
-              <label class="small fw-bold text-dark">Juega handball</label>
-              <select v-model="formModal.juega_handball" class="form-select custom-input shadow-none">
-                <option value="SI">SI</option>
-                <option value="NO">NO</option>
-              </select>
-            </div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">Club</label><input v-model="formModal.donde_juega" class="form-control custom-input shadow-none" :disabled="formModal.juega_handball !== 'SI'"></div>
-            <div class="col-md-4"><label class="small fw-bold text-dark">Categoría</label><input v-model="formModal.categoria_handball" class="form-control custom-input shadow-none" :disabled="formModal.juega_handball !== 'SI'"></div>
-
-            <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Observaciones</div>
-            <div class="col-12">
-              <textarea v-model="formModal.observaciones" class="form-control custom-input shadow-none" rows="3" style="height:auto; resize:vertical;"></textarea>
-            </div>
-
-          </div>
+      <div v-if="mensajeSolicitudActiva" class="alert alert-warning border-warning-subtle text-start shadow-sm d-flex align-items-start gap-3 p-3 mb-4 rounded-3" style="background-color: #fffbeb;">
+        <span class="material-icons text-warning mt-1">assignment_late</span>
+        <div class="w-100">
+          <strong class="d-block text-dark mb-1 text-uppercase" style="font-size: 0.85rem;">Solicitud del árbitro:</strong>
+          <div class="text-dark text-break" style="font-size: 0.85rem; white-space: pre-line; line-height: 1.5; text-align: justify;">{{ mensajeSolicitudActiva }}</div>
         </div>
+      </div>
 
-        <div class="flex-shrink-0 d-flex gap-3 justify-content-center mt-4 pt-3 border-top">
-          <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold" style="background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; width: 100%;">CANCELAR</button>
-          <button @click="modoModal === 'editar' ? confirmarEdicion() : confirmarAlta()" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargando" style="background: #1e293b; width: 100%;">
+      <form id="formArbitro" @submit.prevent="modoModal === 'editar' ? confirmarEdicion() : confirmarAlta()" class="text-start">
+        <div class="row g-3 m-0 pb-3">
+
+          <div class="col-12 seccion-titulo mt-0 border-secondary-subtle">Datos básicos</div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">Apellido *</label><input v-model="formModal.apellido" class="form-control custom-input shadow-none" required></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">Nombre *</label><input v-model="formModal.nombre" class="form-control custom-input shadow-none" required></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">DNI</label><input v-model="formModal.dni" class="form-control custom-input shadow-none"></div>
+          <div class="col-md-6"><label class="small fw-bold text-dark">Email (Usuario) *</label><input v-model="formModal.email" class="form-control custom-input shadow-none" type="email" required></div>
+          <div class="col-md-6">
+            <label class="small fw-bold text-dark">{{ modoModal === 'nuevo' ? 'Password *' : 'Password (dejar vacío para no cambiar)' }}</label>
+            <input v-model="formModal.password" type="text" class="form-control custom-input shadow-none" :placeholder="modoModal === 'editar' ? '••••••••' : ''" :required="modoModal === 'nuevo'">
+          </div>
+
+          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Clasificación</div>
+          <div class="col-md-3">
+            <label class="small fw-bold text-dark">Rol</label>
+            <select v-model="formModal.rol" class="form-select custom-input shadow-none">
+              <option :value="1">Árbitro</option>
+              <option :value="2">Observador</option>
+              <option :value="4">Coordinador general</option>
+              <option :value="0">Ninguno</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="small fw-bold text-dark">Estado</label>
+            <select v-model="formModal.es_activo" class="form-select custom-input shadow-none">
+              <option :value="1">Activo</option>
+              <option :value="0">Inactivo</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="small fw-bold text-dark">Grupo</label>
+            <select v-model="formModal.grupo" class="form-select custom-input shadow-none">
+              <option value="LH">LH</option>
+              <option value="Pre Liga">Pre Liga</option>
+              <option value="SR">SR</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+          <div class="col-md-2" v-if="formModal.grupo == '3'">
+            <label class="small fw-bold text-dark">Subgrupo</label>
+            <select v-model="formModal.subgrupo" class="form-select custom-input shadow-none">
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+            </select>
+          </div>
+          <div class="col-md-2" v-else></div>
+          <div class="col-md-2">
+            <label class="small fw-bold text-dark">Apto Médico</label>
+            <select v-model="formModal.apto_medico" class="form-select custom-input shadow-none">
+              <option :value="true">SI</option>
+              <option :value="false">NO</option>
+            </select>
+          </div>
+
+          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Ubicación</div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">Provincia</label><selProvincia v-model="formModal.provincia" :provincias="provincias" class="form-select custom-input shadow-none" /></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">Localidad</label><selLocalidad v-model="formModal.localidad" :localidades="localidades.filter(l => l.provincia_id == formModal.provincia)" class="form-select custom-input shadow-none" /></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">Zona</label><input v-model="formModal.zona" class="form-control custom-input shadow-none"></div>
+          <div class="col-12"><label class="small fw-bold text-dark">Dirección</label><input v-model="formModal.direccion" class="form-control custom-input shadow-none"></div>
+
+          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Contacto y Movilidad</div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">Celular</label><input v-model="formModal.celular" class="form-control custom-input shadow-none"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">Tel. Contacto</label><input v-model="formModal.telefonocontacto" class="form-control custom-input shadow-none"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">Parentesco</label><input v-model="formModal.parentescocontacto" class="form-control custom-input shadow-none"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">F. Nacimiento</label><input type="date" v-model="formModal.fecha_nacimiento" class="form-control custom-input shadow-none"></div>
+          <div class="col-md-8">
+            <label class="small fw-bold text-dark">Movilidad</label>
+            <div class="checkbox-group bg-light p-2 rounded border border-light-subtle d-flex align-items-center gap-3">
+              <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="moto" v-model="movilidadArray" class="me-1"> Moto</label>
+              <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="transporte publico" v-model="movilidadArray" class="me-1"> Transporte</label>
+              <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="auto" v-model="movilidadArray" class="me-1"> Auto</label>
+              <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="bici" v-model="movilidadArray" class="me-1"> Bici</label>
+            </div>
+          </div>
+
+          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Disponibilidad</div>
+          <div class="col-md-2">
+            <label class="small fw-bold text-dark">Sáb. Disp.</label>
+            <select v-model="formModal.disponibilidad_sabado" class="form-select custom-input shadow-none">
+              <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
+            </select>
+          </div>
+          <div class="col-md-2"><label class="small fw-bold text-dark">Sáb. Desde</label><input type="time" v-model="formModal.disponibilidad_sabado_desde" class="form-control custom-input shadow-none"></div>
+          <div class="col-md-2"><label class="small fw-bold text-dark">Sáb. Hasta</label><input type="time" v-model="formModal.disponibilidad_sabado_hasta" class="form-control custom-input shadow-none"></div>
+          <div class="col-md-2">
+            <label class="small fw-bold text-dark">Dom. Disp.</label>
+            <select v-model="formModal.disponibilidad_domingo" class="form-select custom-input shadow-none">
+              <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
+            </select>
+          </div>
+          <div class="col-md-2"><label class="small fw-bold text-dark">Dom. Desde</label><input type="time" v-model="formModal.disponibilidad_domingo_desde" class="form-control custom-input shadow-none"></div>
+          <div class="col-md-2"><label class="small fw-bold text-dark">Dom. Hasta</label><input type="time" v-model="formModal.disponibilidad_domingo_hasta" class="form-control custom-input shadow-none"></div>
+
+          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Handball</div>
+          <div class="col-md-4">
+            <label class="small fw-bold text-dark">Juega handball</label>
+            <select v-model="formModal.juega_handball" class="form-select custom-input shadow-none">
+              <option value="SI">SI</option>
+              <option value="NO">NO</option>
+            </select>
+          </div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">Club</label><input v-model="formModal.donde_juega" class="form-control custom-input shadow-none" :disabled="formModal.juega_handball !== 'SI'"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark">Categoría</label><input v-model="formModal.categoria_handball" class="form-control custom-input shadow-none" :disabled="formModal.juega_handball !== 'SI'"></div>
+
+          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Observaciones</div>
+          <div class="col-12">
+            <textarea v-model="formModal.observaciones" class="form-control custom-input shadow-none" rows="3" style="height:auto; resize:vertical;"></textarea>
+          </div>
+
+        </div>
+      </form>
+
+      <template #footer>
+        <div class="w-100 d-flex justify-content-center gap-3">
+          <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border w-50">CANCELAR</button>
+          <button type="submit" form="formArbitro" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-50" :disabled="cargando">
             <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
             {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR ÁRBITRO' }}
           </button>
         </div>
+      </template>
+    </ModalBase>
 
-      </div>
-    </div>
-    </Teleport>
 
-    <Teleport to="body">
-    <div v-if="mostrarModalSolicitudes" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
-      <div class="modal-content-exito animate__animated animate__zoomIn shadow-lg mx-auto d-flex flex-column" style="max-width: 800px; width: 95%; max-height: 90vh; padding: 0; border-radius: 20px; overflow: hidden; background: #ffffff;">
-        
-        <div class="p-3 p-md-4 border-bottom bg-white flex-shrink-0">
-          <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
-            <h4 class="fw-bold m-0 d-flex align-items-center gap-2 text-dark" style="font-size: 1.15rem;">
-              <span class="material-icons text-primary" style="font-size: 24px;">history</span> 
-              Solicitudes de Cambios
-            </h4>
-            <button @click="mostrarModalSolicitudes = false" class="btn btn-light rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; padding: 0; background: #f8fafc; border: 1px solid #f1f5f9;">
-              <span class="material-icons" style="font-size: 18px; color: #000;">close</span>
-            </button>
-          </div>
-
-          <div class="d-flex justify-content-between gap-2 w-100 bg-light p-1 rounded-pill border border-light-subtle">
-            <button class="btn fw-bold rounded-pill px-1 flex-fill tab-mobile d-flex align-items-center justify-content-center gap-1" 
-                  :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm' : 'btn-transparent text-muted'" 
-                  style="font-size: 0.75rem;"
-                  @click="tabActivo = 'enviado'">
-              PENDIENTES 
-              <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-primary rounded-pill p-1 d-flex align-items-center justify-content-center" style="font-size: 0.65rem; min-width: 20px;">{{ solicitudesPendientes.length }}</span>
-            </button>
-            <button class="btn fw-bold rounded-pill px-1 flex-fill tab-mobile" 
-                  :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm text-white' : 'btn-transparent text-muted'" 
-                  style="font-size: 0.75rem;"
-                  @click="tabActivo = 'aprobado'">
-              APROBADAS
-            </button>
-            <button class="btn fw-bold rounded-pill px-1 flex-fill tab-mobile" 
-                  :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'" 
-                  style="font-size: 0.75rem;"
-                  @click="tabActivo = 'rechazado'">
-              RECHAZADAS
-            </button>
-          </div>
+    <ModalBase 
+      :show="mostrarModalSolicitudes" 
+      @close="mostrarModalSolicitudes = false"
+      icono="history"
+      colorIcono="bg-primary-subtle text-primary"
+      maxWidth="800px"
+    >
+      <template #header>
+        <div class="text-center">
+          <span class="fw-bold fs-5">Solicitudes de Cambios</span>
         </div>
+      </template>
 
-        <div class="flex-grow-1 p-3 p-md-4 bg-light" style="overflow-y: auto;">
-          <div v-if="cargandoSolicitudes" class="text-center py-5">
-            <span class="spinner-border text-primary"></span>
-            <p class="text-muted mt-2 small fw-bold">Cargando solicitudes...</p>
+      <div class="d-flex justify-content-between gap-2 w-100 bg-light p-1 rounded-pill border border-light-subtle mb-4">
+        <button class="btn fw-bold rounded-pill px-1 flex-fill d-flex align-items-center justify-content-center gap-1" 
+                :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm text-white' : 'btn-transparent text-muted'" 
+                style="font-size: 0.75rem;"
+                @click="tabActivo = 'enviado'">
+          PENDIENTES 
+          <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-primary rounded-pill p-1 ms-1 d-flex align-items-center justify-content-center" style="font-size: 0.65rem; min-width: 20px;">{{ solicitudesPendientes.length }}</span>
+        </button>
+        <button class="btn fw-bold rounded-pill px-1 flex-fill" 
+                :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm text-white' : 'btn-transparent text-muted'" 
+                style="font-size: 0.75rem;"
+                @click="tabActivo = 'aprobado'">
+          APROBADAS
+        </button>
+        <button class="btn fw-bold rounded-pill px-1 flex-fill" 
+                :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'" 
+                style="font-size: 0.75rem;"
+                @click="tabActivo = 'rechazado'">
+          RECHAZADAS
+        </button>
+      </div>
+
+      <div v-if="cargandoSolicitudes" class="text-center py-5">
+        <span class="spinner-border text-primary"></span>
+        <p class="text-muted mt-2 small fw-bold">Cargando solicitudes...</p>
+      </div>
+      
+      <div v-else-if="solicitudesMostradas.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
+        <span class="material-icons mb-2 d-block mx-auto" style="font-size: 48px; color: #cbd5e1;">
+          {{ tabActivo === 'enviado' ? 'inbox' : (tabActivo === 'aprobado' ? 'check_circle_outline' : 'highlight_off') }}
+        </span>
+        <p class="mb-0 fw-bold">No hay solicitudes {{ tabActivo === 'enviado' ? 'pendientes' : tabActivo + 's' }}.</p>
+      </div>
+
+      <div v-else v-for="sol in solicitudesMostradas" :key="sol.id" class="shadow-sm mb-3 bg-white p-3 rounded-3 border" :class="{'border-success-subtle': sol.estado === 'aprobado', 'border-danger-subtle': sol.estado === 'rechazado'}">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+          <div style="flex: 1; min-width: 250px;">
+            <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
+            <strong class="d-block text-dark mb-1 fs-6 text-uppercase">{{ sol.arbitro_nombre }}</strong>
+            <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle" style="white-space: pre-line; line-height: 1.4; text-align: justify;">{{ sol.mensaje }}</p>
           </div>
           
-          <div v-else-if="solicitudesMostradas.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
-            <span class="material-icons mb-2 d-block mx-auto" style="font-size: 48px; color: #cbd5e1;">
-              {{ tabActivo === 'enviado' ? 'inbox' : (tabActivo === 'aprobado' ? 'check_circle_outline' : 'highlight_off') }}
+          <div class="d-flex flex-column align-items-end gap-2" style="min-width: 200px;">
+            <span class="badge" :class="sol.estado === 'aprobado' ? 'bg-success' : (sol.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
+              {{ sol.estado ? sol.estado.toUpperCase() : 'ENVIADO' }}
             </span>
-            <p class="mb-0 fw-bold">No hay solicitudes {{ tabActivo === 'enviado' ? 'pendientes' : tabActivo + 's' }}.</p>
-          </div>
-
-          <div v-else v-for="sol in solicitudesMostradas" :key="sol.id" class="solicitud-card shadow-sm mb-3 bg-white" :class="{'border-success-subtle': sol.estado === 'aprobado', 'border-danger-subtle': sol.estado === 'rechazado'}">
-            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-              <div style="flex: 1; min-width: 250px;">
-                <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
-                <strong class="d-block text-dark mb-1 fs-6 text-uppercase">{{ sol.arbitro_nombre }}</strong>
-                <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle" style="white-space: pre-line; line-height: 1.4; text-align: justify;">{{ sol.mensaje }}</p>
-              </div>
+            
+            <div class="d-flex gap-2 w-100 justify-content-end mt-2" v-if="sol.estado === 'enviado'">
+              <button @click="abrirEdicionDesdeSolicitud(sol)" class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1 fw-bold flex-fill" title="Abrir legajo para editar">
+                <span class="material-icons" style="font-size: 16px;">edit</span> LEGAJO
+              </button>
               
-              <div class="d-flex flex-column align-items-end gap-2 w-mobile-100">
-                <span class="badge" :class="sol.estado === 'aprobado' ? 'bg-success' : (sol.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
-                  {{ sol.estado ? sol.estado.toUpperCase() : 'ENVIADO' }}
-                </span>
-                
-                <div class="d-flex gap-2 w-100 justify-content-end mt-2" v-if="sol.estado === 'enviado'">
-                  <button @click="abrirEdicionDesdeSolicitud(sol)" 
-                          class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1 fw-bold flex-mobile-fill" 
-                          title="Abrir legajo para editar">
-                    <span class="material-icons" style="font-size: 16px;">edit</span> LEGAJO
-                  </button>
-                  
-                  <button @click="rechazarSolicitud(sol)" class="btn btn-sm btn-danger fw-bold flex-mobile-fill">
-                    RECHAZAR
-                  </button>
+              <button @click="rechazarSolicitud(sol)" class="btn btn-sm btn-danger fw-bold flex-fill">
+                RECHAZAR
+              </button>
 
-                  <button @click="aprobarSolicitud(sol)" class="btn btn-sm btn-dark fw-bold flex-mobile-fill">
-                    APROBAR
-                  </button>
-                </div>
-              </div>
+              <button @click="aprobarSolicitud(sol)" class="btn btn-sm btn-dark fw-bold flex-fill">
+                APROBAR
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    </Teleport>
+    </ModalBase>
 
-    <Teleport to="body">
-    <div v-if="mostrarModalHistorialArbitro" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 1050;">
-      <div class="modal-content-exito d-flex flex-column animate__animated animate__zoomIn p-0 mx-auto shadow-lg" style="max-width: 850px; width: 95%; max-height: 90vh; text-align: left; border-radius: 20px; background: #ffffff; overflow: hidden;">
-        
-        <div class="flex-shrink-0 p-3 p-md-4 border-bottom bg-white" style="position: relative; z-index: 10;">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold m-0 d-flex align-items-center gap-2 text-dark" style="font-size: 1.15rem;">
-              <span class="material-icons text-warning" style="font-size: 24px;">manage_search</span> 
-              Historial de {{ arbitroSeleccionado.apellido }}, {{ arbitroSeleccionado.nombre }}
-              <span v-if="!cargandoHistorialArbitro" class="badge bg-dark rounded-pill fs-6 ms-2 d-flex align-items-center justify-content-center" style="min-width: 28px; min-height: 28px;" title="Total de solicitudes pedidas">{{ historialArbitro.length }}</span>
-            </h5>
-            <button @click="mostrarModalHistorialArbitro = false" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background: #f8fafc; border: 1px solid #f1f5f9; padding: 0;">
-              <span class="material-icons" style="font-size: 18px; color: #000; line-height: 1;">close</span>
-            </button>
-          </div>
+
+    <ModalBase 
+      :show="mostrarModalHistorialArbitro" 
+      @close="mostrarModalHistorialArbitro = false"
+      icono="manage_search"
+      colorIcono="bg-warning-subtle text-warning-emphasis"
+      maxWidth="850px"
+    >
+      <template #header>
+        <div class="text-center">
+          <div class="fw-bold fs-5">Historial de {{ arbitroSeleccionado.apellido }}, {{ arbitroSeleccionado.nombre }}</div>
+          <span v-if="!cargandoHistorialArbitro" class="badge bg-dark rounded-pill fs-6 mt-1" title="Total de solicitudes">{{ historialArbitro.length }}</span>
         </div>
+      </template>
 
-        <div class="flex-grow-1 p-3 p-md-4 bg-light" style="overflow-y: auto;">
-          <div v-if="cargandoHistorialArbitro" class="text-center py-5">
-            <span class="spinner-border text-warning"></span>
-            <p class="text-muted mt-2 small fw-bold">Cargando historial...</p>
-          </div>
-          
-          <div v-else-if="historialArbitro.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
-            <span class="material-icons d-block fs-1 mb-2 mx-auto" style="font-size: 48px; color: #cbd5e1;">history_toggle_off</span>
-            <p class="mb-0 fw-bold">Este árbitro nunca solicitó cambios.</p>
-          </div>
+      
+      <div v-if="cargandoHistorialArbitro" class="text-center py-5">
+        <span class="spinner-border text-warning"></span>
+        <p class="text-muted mt-2 small fw-bold">Cargando historial...</p>
+      </div>
+      
+      <div v-else-if="historialArbitro.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
+        <span class="material-icons d-block fs-1 mb-2 mx-auto" style="font-size: 48px; color: #cbd5e1;">history_toggle_off</span>
+        <p class="mb-0 fw-bold">Este árbitro nunca solicitó cambios.</p>
+      </div>
 
-          <div v-else>
-            <div class="table-responsive desktop-only bg-white rounded shadow-sm border border-light-subtle">
-              <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem; table-layout: fixed; width: 100%;">
-                <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
-                  <tr>
-                    <th class="py-2 ps-3 fw-bold text-uppercase" style="width: 120px; font-size: 0.75rem;">Fecha</th>
-                    <th class="py-2 fw-bold text-uppercase" style="width: 100px; font-size: 0.75rem;">Tipo</th>
-                    <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Mensaje</th>
-                    <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="width: 100px; font-size: 0.75rem;">Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="h in historialArbitro" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
-                    <td class="text-muted fw-bold ps-3 py-3">{{ h.fecha }}</td>
-                    <td class="text-uppercase text-dark py-3" style="font-size: 0.75rem;">{{ h.tipo_solicitud || 'general' }}</td>
-                    <td class="text-dark py-3" style="white-space: pre-wrap; word-wrap: break-word;">{{ h.mensaje }}</td>
-                    <td class="text-center pe-3 py-3">
-                      <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
-                        {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="mobile-only">
-              <div v-for="h in historialArbitro" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded p-3 mb-3 shadow-sm bg-white">
-                <div class="d-flex justify-content-between align-items-start mb-2 border-bottom border-secondary-subtle pb-2">
-                  <div>
-                    <span class="d-block fw-bold text-dark" style="font-size: 0.85rem;">{{ h.fecha }}</span>
-                    <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">TIPO: {{ h.tipo_solicitud || 'GENERAL' }}</span>
-                  </div>
+      <div v-else>
+        <div class="table-responsive d-none d-md-block bg-white rounded shadow-sm border border-light-subtle">
+          <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem; table-layout: fixed; width: 100%;">
+            <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
+              <tr>
+                <th class="py-2 ps-3 fw-bold text-uppercase" style="width: 120px; font-size: 0.75rem;">Fecha</th>
+                <th class="py-2 fw-bold text-uppercase" style="width: 100px; font-size: 0.75rem;">Tipo</th>
+                <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Mensaje</th>
+                <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="width: 100px; font-size: 0.75rem;">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="h in historialArbitro" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
+                <td class="text-muted fw-bold ps-3 py-3">{{ h.fecha }}</td>
+                <td class="text-uppercase text-dark py-3" style="font-size: 0.75rem;">{{ h.tipo_solicitud || 'general' }}</td>
+                <td class="text-dark py-3" style="white-space: pre-wrap; word-wrap: break-word;">{{ h.mensaje }}</td>
+                <td class="text-center pe-3 py-3">
                   <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
                     {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
                   </span>
-                </div>
-                <div class="text-dark mt-2 bg-light p-2 rounded border border-light-subtle" style="font-size: 0.85rem; white-space: pre-wrap; word-wrap: break-word;">
-                  {{ h.mensaje }}
-                </div>
-              </div>
-            </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
+        <div class="d-block d-md-none">
+          <div v-for="h in historialArbitro" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded p-3 mb-3 shadow-sm bg-white">
+            <div class="d-flex justify-content-between align-items-start mb-2 border-bottom border-secondary-subtle pb-2">
+              <div>
+                <span class="d-block fw-bold text-dark" style="font-size: 0.85rem;">{{ h.fecha }}</span>
+                <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">TIPO: {{ h.tipo_solicitud || 'GENERAL' }}</span>
+              </div>
+              <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
+                {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
+              </span>
+            </div>
+            <div class="text-dark mt-2 bg-light p-2 rounded border border-light-subtle" style="font-size: 0.85rem; white-space: pre-wrap; word-wrap: break-word;">
+              {{ h.mensaje }}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    </Teleport>
+    </ModalBase>
 
   </div>
 </template>
@@ -641,6 +632,7 @@ import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
 import selLocalidad from '@/components/select/selLocalidad.vue'
 import selProvincia from '@/components/select/selProvincia.vue'
+import ModalBase from '@/components/ModalBase.vue'
 
 useHead({
   title: 'Legajos | AAAB',
@@ -1066,392 +1058,218 @@ onMounted(() => {
 
 <style scoped>
 /* ====================================================
-   AJUSTES GENERALES DEL CONTENEDOR Y FOOTER
+   1. BASE (MOBILE FIRST - CELULARES POR DEFECTO)
    ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
+
+/* Contenedor principal exacto como lo solicitaste */
+.full-screen-wrapper { 
+  position: relative; 
+  width: 99vw; 
   min-height: 100vh; 
   height: auto !important; 
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding: 20px;
+  margin-left: 50%; 
+  transform: translateX(-50%); 
+  padding: 20px; 
   padding-bottom: 120px; 
   box-sizing: border-box;
 }
 
+/* Ajuste de padding exclusivo para celulares */
+@media (max-width: 767px) {
+  .full-screen-wrapper { padding: 0 15px 20px 15px !important; }
+}
+
+/* Estructura base (Celulares) */
 .admin-panel { 
   width: 100%;
   max-width: 100%; 
-  padding: 20px; 
+  padding: 0; 
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
   color: #000;  
   background-color: #0f172a; 
   min-height: 100vh;
-  border-radius: 12px;
+  border-radius: 0; 
 }
 
-/* ====================================================
-   CABECERA UNIFICADA
-   ==================================================== */
-
+/* Cabecera Móvil */
 .header-section { 
   background: white; 
-  padding: 15px 25px; 
-  border-radius: 8px; 
+  padding: 15px; 
   display: flex; 
-  justify-content: space-between; 
-  margin-bottom: 15px; 
+  flex-direction: column; 
+  align-items: flex-start; 
+  text-align: left; 
+  gap: 15px; 
   border-left: 5px solid #ef4444; 
   box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
-  align-items: center; 
 }
-
-.header-info { display: flex; flex-direction: column; }
-.title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
+.header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+.title { font-size: 1.25rem; font-weight: bold; margin: 0; color: #000; }
 .counter { font-size: 0.85rem; color: #64748b; }
 
-/* ====================================================
-   BOTONES DE ACCIÓN (CABECERA)
-   ==================================================== */
-.header-actions { display: flex; gap: 8px; }
-
-.btn-action { 
-  border: none; 
-  padding: 8px 12px; 
-  border-radius: 6px; 
-  font-weight: bold; 
-  cursor: pointer; 
+/* Botones Móvil: En una sola línea sin desbordar */
+.header-actions { 
+  width: 100%; 
   display: flex; 
-  align-items: center; 
-  justify-content: center;
-  gap: 5px; 
-  font-size: 0.85rem; 
+  flex-direction: row; 
+  flex-wrap: nowrap; /* CLAVE: Fuerza a que estén en la misma línea */
+  justify-content: center; 
+  gap: 8px; 
+  overflow-x: auto; /* Por si la pantalla es extremadamente chica, permite deslizar en vez de romperse */
+}
+.btn-action { 
+  border: none; border-radius: 6px; font-weight: bold; cursor: pointer; 
+  display: flex; align-items: center; justify-content: center; 
   transition: opacity 0.2s, transform 0.1s; 
+  flex: none; width: 42px; height: 42px; padding: 0; 
 }
 .btn-action:hover { opacity: 0.85; }
 .btn-action:active { transform: scale(0.95); }
+.btn-text { display: none; } /* Oculto en móvil */
 
 .btn-clear { background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; }
 .btn-clear-checks { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; } 
 .btn-export { background: #10b981; color: white; }
 .btn-blue { background: #3b82f6; color: white; }
-.btn-light { background-color: #f8fafc; border: 1px solid #e2e8f0; }
 
-.btn-text { display: inline; }
+/* Visibilidad de Capas Base */
+.desktop-only { display: none; }
+.mobile-only { display: block; }
+.mobile-only-flex { display: flex; }
 
-/* ====================================================
-   PAGINACIÓN
-   ==================================================== */
-.paginacion { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 15px; }
-.btn-paginacion { border: none; background: #f8fafc; color: #0f172a; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-.btn-paginacion:disabled { opacity: 0.5; cursor: not-allowed; }
-.paginacion-texto { color: #0f172a; font-size: 0.85rem; font-weight: 600; }
-
-/* ====================================================
-   TABLA DESKTOP
-   ==================================================== */
-.table-container { 
-  width: 100%;
-  overflow: auto; 
-  max-height: 85vh; 
-  background: white; 
-  border-radius: 8px; 
-  border: 1px solid #e2e8f0; 
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+/* Filtros Móvil */
+.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+.filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; }
+.filter-input-mobile {
+  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; 
+  font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #334155;
 }
+.filter-input-mobile:focus { border-color: #3b82f6; background: white; }
+.filter-input-mobile::placeholder { color: #94a3b8; }
 
-table { 
-  width: 100%;
-  min-width: max-content; 
-  border-collapse: separate !important; 
-  border-spacing: 0; 
-  font-size: 0.85rem; 
-}
+/* Tarjetas Móviles (Listado) */
+.card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
+.card-name { display: flex; align-items: center; gap: 8px; font-size: 1.05rem; color: #0f172a; }
+.card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
+.card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
 
-thead tr.main-header th { 
-  position: sticky; 
-  top: 0; 
-  z-index: 50; 
-  background: #f8fafc !important; 
-  padding: 12px 8px; 
-  border-bottom: 1px solid #cbd5e1; 
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem; 
-  color: #000; 
-  text-transform: uppercase; 
-  font-weight: 800; 
-  margin: 0;
-}
+.btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
+.btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+.btn-eliminar-mobile { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold;}
 
-thead tr.filter-row td { 
-  position: sticky;
-  top: 35px; 
-  z-index: 40; 
-  background: #f1F5F9 !important; 
-  padding: 6px 8px 12px 8px; 
-  border-bottom: 4px solid #e2e8f0; 
-  margin: 0;
-}
+/* Estado Inactivo (Móvil) */
+.card-arbitro.fila-inactiva { background-color: #ef4444 !important; border-color: #dc2626; }
+.card-arbitro.fila-inactiva .card-name,
+.card-arbitro.fila-inactiva .card-row,
+.card-arbitro.fila-inactiva .card-info p,
+.card-arbitro.fila-inactiva .card-header .text-xs { color: #000000 !important; }
+.card-arbitro.fila-inactiva .btn-editar-mobile { background: #fff; border-color: #fff; color: #ef4444; }
+.card-arbitro.fila-inactiva .btn-historial-mobile { background: #fff; border-color: #fff; color: #d97706; }
 
-/* COLUMNAS CONGELADAS */
-.col-id { left: 0; width: 50px; text-align: center; }
-.col-acciones { left: 50px; width: 80px; }
-.col-apellido { left: 130px; width: 140px; }
-.col-nombre { left: 270px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-
-.sticky-col { 
-  position: sticky !important; 
-  z-index: 60 !important; 
-  background: white !important; 
-  border-right: 1px solid #e2e8f0;
-}
-thead th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
-thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
-
-/* CELDAS Y ESTADOS DE FILA */
-.cell-ro {
-  padding: 10px 8px;
-  font-size: 0.85rem;
-  color: inherit; 
-  white-space: nowrap;
-  border-bottom: 1px solid #f1f5f9;
-}
-.obs-cell { white-space: normal; min-width: 200px; }
-
-.fila-inactiva td, .fila-inactiva .sticky-col { 
-  background-color: #ef4444 !important; 
-  font-weight: bold; 
-  color: #fff !important; 
-}
-
-.row-hover:hover td { background-color: #f8fafc; }
-.fila-inactiva.row-hover:hover td, .fila-inactiva.row-hover:hover .sticky-col { background-color: #dc2626 !important; }
-
-.filter-input { font-size: 16px; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
-@media (min-width: 769px) { .filter-input { font-size: 0.75rem; height: 28px; } }
-
-.btn-editar { display: inline-flex; align-items: center; justify-content: center; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; }
-.btn-editar:hover { background: #dbeafe; }
-
-.btn-historial { display: inline-flex; align-items: center; justify-content: center; background: #fef3c7; border: 1px solid #fde047; color: #d97706; border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; }
-.btn-historial:hover { background: #fde047; }
-
+/* Estados Generales y Badges */
 .status-wrapper { display: flex; align-items: center; gap: 5px; justify-content: center; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-active { background: #10b981; }
-.dot-inactive { background: #fff; border: 1px solid #fff; }
-.col-xs-compact { width: 70px; text-align: center; }
-.inactivo { background-color: #fee2e2 !important; color: #000 !important; }
-.col-dni-compact { width: 90px; text-align: center; }
+.dot-inactive { background: #fff; border: 1px solid #ccc; }
+.read-only-text { padding: 10px 5px; font-size: 0.85rem; color: #1e293b; }
 
-/* ====================================================
-   MODALES (ESTILOS GENERALES Y SOLICITUDES MOBILE)
-   ==================================================== */
-.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.modal-content-exito { background: white; border-radius: 20px; padding: 25px; width: 90%; max-width: 750px; text-align: center; color: #000; }
+.text-xs { font-size: 0.75rem; }
 
-/* ESTOS AJUSTES ARREGLAN EL MODAL DE SOLICITUDES EN MOBILE */
-@media (max-width: 768px) {
-  .modal-content-exito {
-    padding: 15px !important; 
-    max-height: 90vh !important; 
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .modal-content-exito > div[style*="overflow-y: auto"] {
-    max-height: unset !important; 
-    flex-grow: 1; 
-    overflow-y: auto;
-  }
-  
-  .solicitud-card { padding: 10px !important; }
-  
-  .solicitud-card .d-flex.flex-wrap.gap-3 > div:first-child {
-    min-width: 100% !important; 
-    margin-bottom: 10px;
-  }
-  
-  .solicitud-card .d-flex.flex-column.align-items-end {
-    align-items: flex-start !important; 
-    width: 100%;
-  }
-
-  .w-mobile-100 { width: 100% !important; }
-  .flex-mobile-fill { flex: 1; justify-content: center; }
-}
-
-.icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
-.bg-success-light { background: #dcfce7; color: #166534; }
-.bg-info-light { background: #e0f2fe; color: #0369a1; }
-
+/* Componentes internos de Modal/Formularios */
 .seccion-titulo { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; margin-top: 15px; width: 100%; }
 .checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 5px; }
 .checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; cursor: pointer; color: #000; }
-
-.badge-notif { position: absolute; top: -6px; right: -6px; background-color: #ef4444; color: white; font-size: 0.65rem; font-weight: bold; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
-.solicitud-card { background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 12px 15px; transition: all 0.2s; }
-.text-xs { font-size: 0.75rem; }
-
 .custom-input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; background-color: #ffffff; transition: all 0.3s ease; }
 .custom-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); outline: none; }
 
-
-/* =======================================
-   VISTA MOBILE Y RESPONSIVIDAD
-   ======================================= */
-.desktop-only { display: block; }
-.mobile-only { display: none; }
-.mobile-only-flex { display: none; }
-
-/* PANEL DE FILTROS MÓVIL */
-.mobile-filter-panel {
-  background: white;
-  padding: 15px 20px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 15px;
+/* Utilitarios compartidos */
+.btn-editar, .btn-historial, .btn-eliminar { 
+  display: inline-flex; align-items: center; justify-content: center; 
+  border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; 
 }
+.btn-editar { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+.btn-editar:hover { background: #dbeafe; }
+.btn-historial { background: #fef3c7; border-color: #fde047; color: #d97706; }
+.btn-historial:hover { background: #fde047; }
+.btn-eliminar { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+.btn-eliminar:hover { background: #fee2e2; }
 
-.filter-grid-mobile {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.filter-grid-mobile input,
-.filter-grid-mobile select,
-.filter-input-mobile {
-  padding: 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 16px; /* Evita zoom iOS */
-  width: 100%;
-  outline: none;
-  background: #f8fafc; 
-  color: #334155;
-}
-
-.filter-grid-mobile input:focus,
-.filter-grid-mobile select:focus,
-.filter-input-mobile:focus {
-  border-color: #3b82f6;
-  background: white;
-}
-
-.filter-grid-mobile input::placeholder,
-.filter-input-mobile::placeholder {
-  color: #94a3b8;
-}
-
-.filter-grid-mobile select.full-width {
-  grid-column: span 2;
-}
-/* ====================================================
-   📱 RESPONSIVE DESIGN (Adaptación Multi-Dispositivo)
-   ==================================================== */
-
-/* --- 1. DESKTOP & PANTALLAS GRANDES (Desde 768px en adelante) --- */
-@media (min-width: 768px) {
-  .header-actions .btn-text { display: inline; }
-}
-
-/* --- 2. LAPTOPS Y TABLETS GRANDES (Hasta 1024px) --- */
-@media (max-width: 1024px) {
-  /* Ajuste de la cabecera para que no colapse si hay muchos botones */
-  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
-  .btn-action { flex: 1; justify-content: center; min-width: 0; white-space: nowrap; }
-}
-
-/* --- 3. TABLETS Y MÓVILES EN HORIZONTAL (Hasta 768px) --- */
-@media (max-width: 768px) {
-  /* Ocultar tabla de escritorio y mostrar cards móviles */
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-  
-  /* ESTILOS DE LAS CARDS DE ÁRBITROS */
-  .card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-  .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
-  .card-name { display: flex; align-items: center; gap: 8px; font-size: 1.05rem; color: #0f172a; }
-  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-  .card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
-  
-  /* BOTONES DENTRO DE LAS CARDS */
-  .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-  .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-
-  /* ESTADO INACTIVO (FILA ROJA EN MOBILE) */
-  .card-arbitro.fila-inactiva { background-color: #ef4444 !important; border-color: #dc2626; }
-  .card-arbitro.fila-inactiva .card-name,
-  .card-arbitro.fila-inactiva .card-row,
-  .card-arbitro.fila-inactiva .card-info p,
-  .card-arbitro.fila-inactiva .card-header .text-xs { color: #fff !important; }
-  .card-arbitro.fila-inactiva .btn-editar-mobile { background: #fff; border-color: #fff; color: #ef4444; }
-  .card-arbitro.fila-inactiva .btn-historial-mobile { background: #fff; border-color: #fff; color: #d97706; }
-}
-
-/* --- 4. SMARTPHONES (Hasta 600px) --- */
-@media (max-width: 600px) {
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto;
-  margin-left: 50%;
-  transform: translateX(-50%);
-      /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important; 
-  box-sizing: border-box !important;
-}
-    
-.admin-panel { 
-      padding: 0 !important; 
-      border-radius: 0; 
-      box-sizing: border-box !important;
-}
-  
-  /* CABECERA MÓVIL: Título a la izquierda, botones centrados abajo */
-  .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }
-  
-  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
-  .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
-  .header-info span.counter { font-size: 0.85rem !important; }
-  
-  .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
-  .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
-  .btn-text { display: none !important; }
-  .mobile-only-flex { display: flex !important; }
-
-  /* PANEL DE FILTROS MÓVIL */
-  .mobile-filter-panel { padding: 15px 20px; }
-  .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
-  
-  /* Inputs: font-size 16px crucial para evitar zoom automático en iPhones (iOS) */
-  .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; background-color: #f8fafc; color: #334155; outline: none; }
-  .filter-grid-mobile input:focus, .filter-grid-mobile select:focus { border-color: #3b82f6; background: white;}
-  
-  .mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
-  .mobile-select-group label { font-size: 0.75rem; color: #64748b; font-weight: bold; margin-bottom: 2px; }
-  
-  .filter-row-mobile { display: flex; gap: 10px; }
-  .filter-row-mobile input { flex: 1; }
-  .filter-grid-mobile select.full-width { grid-column: span 1; }
-  
-  .btn-close-filters { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
-
-  /* Ajustes en modales/pestañas para pantallas muy chicas */
-  .tab-mobile { font-size: 0.65rem !important; padding-left: 2px !important; padding-right: 2px !important; letter-spacing: -0.3px; }
-  /* AJUSTE DE PADDING EN MODALES MÓVILES (Agregar/Editar Eventos) */
-  .modal-content-exito {
-    padding: 30px 20px !important; /* Libera los costados pero mantiene aire arriba y abajo */
-    max-height: 90vh; /* Evita que el modal sea más alto que la pantalla */
-    overflow-y: auto; /* Scroll interno si el formulario de evento es largo */
-  }
-}
-
-/* Animaciones Globales */
 .animate__animated { animation-duration: 0.5s; }
 
+
+/* ====================================================
+   2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
+   ==================================================== */
+@media (min-width: 768px) {
+  
+  .admin-panel { padding: 20px; border-radius: 12px; }
+  
+  /* Cambio de visibilidad */
+  .desktop-only { display: block; }
+  .mobile-only { display: none; }
+  .mobile-only-flex { display: none; }
+
+  /* Reestructuración Cabecera */
+  .header-section { flex-direction: row; align-items: center; justify-content: space-between; border-radius: 8px; padding: 15px 25px; }
+  .header-info { width: auto; align-items: flex-start; }
+  .title { font-size: 1.1rem; }
+  
+  /* Reestructuración Botones */
+  .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; overflow-x: visible; }
+  .btn-action { width: auto; height: auto; padding: 8px 12px; gap: 5px; font-size: 0.85rem; justify-content: flex-start; }
+  .btn-text { display: inline; }
+
+  /* Filtros a 2 columnas */
+  .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 0; }
+  .filter-input-mobile { font-size: 0.85rem; }
+  .filter-grid-mobile select.full-width { grid-column: span 2; }
+  
+  /* TABLA DESKTOP */
+  .table-container { 
+    width: 100%; overflow: auto; max-height: 85vh; 
+    background: white; border-radius: 8px; border: 1px solid #e2e8f0; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+  }
+  table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
+  
+  thead tr.main-header th { 
+    position: sticky; top: 0; z-index: 50; background: #f8fafc !important; 
+    padding: 12px 8px; border-bottom: 1px solid #cbd5e1; 
+    font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
+  }
+  thead tr.filter-row td { 
+    position: sticky; top: 41px; z-index: 40; background: #f1F5F9 !important; 
+    padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; margin: 0;
+  }
+  
+  /* Columnas Fijas (Sticky) */
+  .sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
+  thead th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+  thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
+  
+  .col-id { left: 0; width: 50px; text-align: center; }
+  .col-acciones { left: 50px; width: 80px; }
+  .col-apellido { left: 130px; width: 140px; }
+  .col-nombre { left: 270px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
+  
+  .col-ultra-compact { width: 65px !important; min-width: 65px !important; text-align: center !important; }
+  .col-dni-compact { width: 90px; text-align: center; }
+  .obs-cell { white-space: normal; min-width: 200px; }
+  
+  .cell-ro { padding: 10px 8px; font-size: 0.85rem; color: inherit; white-space: nowrap; border-bottom: 1px solid #f1f5f9; }
+  .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
+  
+  /* Filas Inactivas y Hover */
+  .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #ef4444 !important; font-weight: bold; color: #fff !important; }
+  .row-hover:hover td { background-color: #f8fafc; }
+  .fila-inactiva.row-hover:hover td, .fila-inactiva.row-hover:hover .sticky-col { background-color: #dc2626 !important; }
+}
+
+/* ====================================================
+   3. PANTALLAS GRANDES (Desde 1024px hacia arriba)
+   ==================================================== */
+@media (min-width: 1024px) {
+  /* Si en el futuro querés darle más aire o restringir anchos en monitores muy grandes, va acá */
+}
 </style>

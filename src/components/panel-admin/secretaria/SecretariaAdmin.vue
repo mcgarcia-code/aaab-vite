@@ -61,7 +61,7 @@ useHead({
 const opcionesSecretaria = [
   { 
     to: '/panel-admin/secretaria/modificacion-datos', 
-    title: 'Legajos Personales', 
+    title: 'Legajos', 
     icon: 'bi bi-people', 
     desc: 'Actualizar información personal y disponibilidad de los árbitros.' 
   },
@@ -73,7 +73,7 @@ const opcionesSecretaria = [
   },
   { 
     to: '/panel-admin/secretaria/eventos-notificaciones', 
-    title: 'Eventos y Notificaciones', 
+    title: 'Eventos', 
     icon: 'bi bi-bell', 
     desc: 'Gestionar avisos, reuniones y noticias para los árbitros.' 
   },

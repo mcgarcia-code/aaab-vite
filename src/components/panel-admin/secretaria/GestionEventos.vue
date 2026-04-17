@@ -190,81 +190,87 @@
       </div>
     </div>
 
-    <Teleport to="body">
-      <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn">
-        <div class="modal-content-exito animate__animated animate__zoomIn">
-          <div class="icon-circle-exito mb-3" :class="modoEdicion ? 'bg-info-light' : 'bg-success-light'">
-            <span class="material-icons">{{ modoEdicion ? 'edit' : 'notification_add' }}</span>
+    <ModalBase 
+      :show="mostrarModal" 
+      @close="mostrarModal = false"
+      :icono="modoEdicion ? 'edit' : 'notification_add'"
+      :colorIcono="modoEdicion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      maxWidth="600px"
+    >
+      <template #header>
+        <span class="fw-bold fs-5">{{ modoEdicion ? 'Editar Evento' : 'Nuevo Evento' }}</span>
+      </template>
+
+      <p class="text-muted small mb-4">Completá los datos para enviar el aviso a los árbitros.</p>
+
+      <form id="formEvento" @submit.prevent="confirmarGuardado" class="text-start">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="small fw-bold text-dark">Tema del Evento *</label>
+            <input v-model="form.titulo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Reunión general..." required>
           </div>
-          <h4 class="fw-bold">{{ modoEdicion ? 'Editar Evento' : 'Nuevo Evento' }}</h4>
-          <p class="text-muted small mb-4">Completá los datos para enviar el aviso a los árbitros.</p>
 
-          <form @submit.prevent="confirmarGuardado" class="text-start">
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="small fw-bold text-dark">Tema del Evento *</label>
-                <input v-model="form.titulo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Reunión general..." required>
-              </div>
+          <div class="col-12">
+            <label class="small fw-bold text-dark">Lugar o Descripción *</label>
+            <textarea v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Ej: Link de Zoom..." required></textarea>
+          </div>
 
-              <div class="col-12">
-                <label class="small fw-bold text-dark">Lugar o Descripción *</label>
-                <textarea v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Ej: Link de Zoom..." required></textarea>
-              </div>
+          <div class="col-md-6">
+            <label class="small fw-bold text-dark">Fecha del Evento *</label>
+            <input v-model="form.fecha_evento" type="date" class="form-control shadow-none border-secondary-subtle" required>
+          </div>
 
-              <div class="col-md-6">
-                <label class="small fw-bold text-dark">Fecha del Evento *</label>
-                <input v-model="form.fecha_evento" type="date" class="form-control shadow-none border-secondary-subtle" required>
-              </div>
+          <div class="col-md-6">
+            <label class="small fw-bold text-dark">Categoría *</label>
+            <select v-model="form.categoria" class="form-select shadow-none border-secondary-subtle">
+              <option value="reunion">Reunión</option>
+              <option value="recordatorio">Recordatorio</option>
+              <option value="urgente">Urgente</option>
+            </select>
+          </div>
 
-              <div class="col-md-6">
-                <label class="small fw-bold text-dark">Categoría *</label>
-                <select v-model="form.categoria" class="form-select shadow-none border-secondary-subtle">
-                  <option value="reunion">Reunión</option>
-                  <option value="recordatorio">Recordatorio</option>
-                  <option value="urgente">Urgente</option>
-                </select>
-              </div>
+          <div class="col-12">
+            <hr class="my-2 border-secondary-subtle opacity-25">
+          </div>
 
-              <div class="col-12">
-                <hr class="my-2 border-secondary-subtle opacity-25">
-              </div>
+          <div class="col-12">
+            <label class="small fw-bold text-danger">Alcance de Visibilidad</label>
+            <select v-model="form.alcance" class="form-select shadow-none border-danger-subtle" @change="limpiarAlcance">
+              <option value="general">Para Todos los Árbitros</option>
+              <option value="grupo">Solo a un Grupo / Subgrupo específico</option>
+            </select>
+          </div>
 
-              <div class="col-12">
-                <label class="small fw-bold text-danger">Alcance de Visibilidad</label>
-                <select v-model="form.alcance" class="form-select shadow-none border-danger-subtle" @change="limpiarAlcance">
-                  <option value="general">Para Todos los Árbitros</option>
-                  <option value="grupo">Solo a un Grupo / Subgrupo específico</option>
-                </select>
-              </div>
+          <div v-if="form.alcance === 'grupo'" class="col-md-6 animate__animated animate__fadeIn">
+            <label class="small fw-bold text-dark">Grupo *</label>
+            <select v-model="form.grupo" class="form-select shadow-none border-secondary-subtle" required @change="form.subgrupo = ''">
+              <option value="" disabled>Elegir grupo...</option>
+              <option v-for="g in gruposOficiales" :key="g" :value="g">{{ g }}</option>
+            </select>
+          </div>
 
-              <div v-if="form.alcance === 'grupo'" class="col-md-6 animate__animated animate__fadeIn">
-                <label class="small fw-bold text-dark">Grupo *</label>
-                <select v-model="form.grupo" class="form-select shadow-none border-secondary-subtle" required @change="form.subgrupo = ''">
-                  <option value="" disabled>Elegir grupo...</option>
-                  <option v-for="g in gruposOficiales" :key="g" :value="g">{{ g }}</option>
-                </select>
-              </div>
-
-              <div v-if="form.alcance === 'grupo' && form.grupo === '3'" class="col-md-6 animate__animated animate__fadeIn">
-                <label class="small fw-bold text-dark">Subgrupo (Opcional)</label>
-                <select v-model="form.subgrupo" class="form-select shadow-none border-secondary-subtle">
-                  <option value="">Todo el Grupo 3</option>
-                  <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="d-flex gap-2 justify-content-center mt-4 pt-3 border-top">
-              <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</button>
-              <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="procesando">
-                <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
-                {{ procesando ? 'GUARDANDO...' : (modoEdicion ? 'GUARDAR CAMBIOS' : 'PUBLICAR EVENTO') }}
-              </button>
-            </div>
-          </form>
+          <div v-if="form.alcance === 'grupo' && form.grupo === '3'" class="col-md-6 animate__animated animate__fadeIn">
+            <label class="small fw-bold text-dark">Subgrupo (Opcional)</label>
+            <select v-model="form.subgrupo" class="form-select shadow-none border-secondary-subtle">
+              <option value="">Todo el Grupo 3</option>
+              <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+            </select>
+          </div>
         </div>
-      </div>
-    </Teleport>
+      </form>
+
+      <template #footer>
+        <div class="w-100 d-flex justify-content-center gap-3">
+          <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border">CANCELAR</button>
+          
+          <button type="submit" form="formEvento" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="procesando">
+            <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
+            {{ procesando ? 'GUARDANDO...' : (modoEdicion ? 'GUARDAR CAMBIOS' : 'PUBLICAR EVENTO') }}
+          </button>
+        </div>
+      </template>
+
+    </ModalBase>
   </div>
 </template>
 
@@ -272,6 +278,7 @@
 import { ref, reactive, onMounted, inject, computed, watch } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
+import ModalBase from '@/components/ModalBase.vue'
 
 useHead({
   title: 'Gestión de Eventos | AAAB',
@@ -391,13 +398,10 @@ watch(totalPaginas, (nuevoTotal) => {
 // NUEVA FUNCIÓN: Cambiar página y scrollear arriba SOLO EN MOBILE
 const cambiarPagina = (delta) => {
   paginaActual.value += delta;
-  
   setTimeout(() => {
-    // Verificamos si estamos en una pantalla de celular (menos de 768px de ancho)
     if (window.innerWidth <= 768) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    // Si estamos en PC, no hace nada más que cambiar la página
   }, 50);
 };
 
@@ -494,6 +498,11 @@ onMounted(obtenerEventos);
   padding-bottom: 120px; 
 }
 
+/* Ajuste de padding exclusivo para celulares */
+@media (max-width: 767px) {
+  .full-screen-wrapper { padding: 0 15px 20px 15px !important; box-sizing: border-box !important; }
+}
+
 /* Estilos de estructura base (Celulares) */
 .admin-panel { 
   width: 100%;
@@ -570,10 +579,7 @@ onMounted(obtenerEventos);
 .cat-urgente { background: #fee2e2; color: #b91c1c; }
 .badge-status-sm { padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; }
 
-/* Modal Móvil */
-.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px; box-sizing: border-box; }
-.modal-content-exito { background: white; border-radius: 20px; padding: 30px 20px !important; width: 100%; max-width: 90%; max-height: 90vh; overflow-y: auto; text-align: center; color: #000; }
-.icon-circle-exito { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+/* Modal Móvil (Colores de icono delegados desde el template) */
 .bg-success-light { background: #dcfce7; color: #166534; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
 
@@ -614,9 +620,6 @@ onMounted(obtenerEventos);
   .filter-grid-mobile { grid-template-columns: 1fr 1fr; }
   .form-group-mobile.full-width { grid-column: span 2; }
   
-  /* Modal respira mejor, se asegura el scroll interno si excede la pantalla */
-  .modal-content-exito { padding: 40px !important; max-width: 750px; overflow-y: auto; }
-
   /* TABLA DESKTOP (Aparece en vez de las tarjetas) */
   .table-container { 
     width: 100%; overflow: auto; max-height: calc(100vh - 220px); 

@@ -1,22 +1,19 @@
 <template>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
       <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
         
-        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
+        <div class="header-section border-bottom p-4 mb-0 rounded-0 shadow-none">
           <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
               <i class="bi bi-calendar-event me-1"></i> Gestión de Licencias
             </h4>
             <span class="counter mt-1 d-block">Total: {{ licenciasFiltradas.length }} licencias</span>
           </div>
 
           <div class="header-actions">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue d-md-none" title="Mostrar Filtros">
               <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
             </button>
 
@@ -36,33 +33,33 @@
 
         <div class="card-body p-3 p-md-4">
           
-          <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm">
+          <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-md-none animate__animated animate__fadeInDown animate__faster shadow-sm border-bottom bg-light p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <span class="small fw-bold text-muted text-uppercase">Filtrar Licencias</span>
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-white border-0 shadow-sm p-1">
                 <span class="material-icons" style="font-size: 20px;">close</span>
               </button>
             </div>
 
             <div class="filter-grid-mobile">
-              <input v-model="filtros.apellido" placeholder="Apellido...">
-              <input v-model="filtros.nombre" placeholder="Nombre...">
+              <input v-model="filtros.apellido" placeholder="Apellido..." class="filter-input-mobile">
+              <input v-model="filtros.nombre" placeholder="Nombre..." class="filter-input-mobile">
 
-              <select v-model="filtros.estado" class="full-width">
+              <select v-model="filtros.estado" class="filter-input-mobile full-width">
                 <option value="">Estado (Todos)</option>
                 <option value="pendiente">Pendiente</option>
                 <option value="aprobada">Aprobada</option>
                 <option value="rechazada">Rechazada</option>
               </select>
 
-              <input type="text" v-model="filtros.fecha_solicitud" placeholder="F. Solicitud (DD/MM/AAAA)">
-              <input type="text" v-model="filtros.fecha" placeholder="F. Ausencia (DD/MM/AAAA)">
+              <input type="text" v-model="filtros.fecha_solicitud" placeholder="F. Solicitud (DD/MM/AAAA)" class="filter-input-mobile">
+              <input type="text" v-model="filtros.fecha" placeholder="F. Ausencia (DD/MM/AAAA)" class="filter-input-mobile">
             </div>
 
-            <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0">Aplicar Filtros</button>
+            <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm">Aplicar Filtros</button>
           </div>
 
-          <div class="table-container shadow desktop-only">
+          <div class="table-container shadow d-none d-md-block">
             <table>
               <thead>
                 <tr class="main-header">
@@ -76,8 +73,10 @@
                   <th class="text-center">F. Licencia</th>
                 </tr>
                 <tr class="filter-row">
-                  <td class="sticky-col col-id">
-                    <button @click="obtenerLicencias" class="btn-refresh w-100" title="Recargar"><span class="material-icons" style="font-size: 16px;">refresh</span></button>
+                  <td class="sticky-col col-id text-center align-middle">
+                    <button @click="obtenerLicencias" class="btn-refresh mx-auto d-flex align-items-center justify-content-center" title="Recargar">
+                      <span class="material-icons" style="font-size: 16px;">refresh</span>
+                    </button>
                   </td>
                   <td class="sticky-col col-acciones"></td>
                   <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar.."></td>
@@ -122,101 +121,95 @@
                   <td class="text-center cell-ro">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
                   <td class="text-center cell-ro fw-bold text-primary">{{ formatearFechaVista(lic.fecha_licencia) }}</td>
                 </tr>
+                <tr v-if="licenciasPaginadas.length === 0">
+                  <td colspan="8" class="text-center py-5 text-muted bg-light italic">No se encontraron licencias.</td>
+                </tr>
               </tbody>
             </table>
           </div>
 
-          <div class="mobile-only">
-            <div v-for="lic in licenciasPaginadas" :key="'mob-'+lic.id" class="card-licencia">
-              <div class="card-header">
-                <div class="card-name">
-                  <strong>{{ lic.apellido }}, {{ lic.nombre }}</strong>
+          <div class="d-md-none mt-3">
+            <div v-for="lic in licenciasPaginadas" :key="'mob-'+lic.id" class="card-licencia border shadow-sm bg-white rounded mb-3">
+              <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start bg-transparent">
+                <div class="fw-bold text-dark fs-6 card-name">
+                  {{ lic.apellido }}, {{ lic.nombre }}
                 </div>
-                <div class="text-xs" style="color: #64748b;">ID: {{ lic.id }}</div>
+                <span class="text-muted small fw-bold">#{{ lic.id }}</span>
               </div>
 
-              <div class="card-body">
-                <div class="card-row">
-                  <span><strong>Estado:</strong> <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span></span>
+              <div class="px-3 pt-1 pb-2 border-bottom">
+                <div class="d-flex justify-content-start align-items-center gap-2">
+                  <span class="fw-bold text-dark fs-5">{{ formatearFechaVista(lic.fecha_licencia) }}</span>
+                  <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
+                </div>
+              </div>
+
+              <div class="card-body p-3">
+                <div class="card-info mb-3">
+                  <p class="text-muted small mb-1">
+                    <strong class="text-dark">Motivo:</strong> {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión / Enfermedad' : 'Particular' }}
+                  </p>
+                  <p class="text-muted small mb-0">
+                    <strong class="text-dark">F. Solicitud:</strong> {{ formatearFechaVista(lic.fecha_solicitud) }}
+                  </p>
                 </div>
 
-                <div class="card-info">
-                  <p><strong>Motivo:</strong> {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión / Enfermedad' : 'Particular' }}</p>
-                  <p><strong>F. Solicitud:</strong> {{ formatearFechaVista(lic.fecha_solicitud) }}</p>
-                  <p><strong>F. Licencia:</strong> <span class="text-primary fw-bold">{{ formatearFechaVista(lic.fecha_licencia) }}</span></p>
-                </div>
-
-                <div class="d-flex gap-2 mt-3">
+                <div class="d-flex gap-2">
                   <button @click="editarLicencia(lic)" class="btn-editar-mobile flex-grow-1">
                     <span class="material-icons" style="font-size: 18px;">edit</span> Editar
                   </button>
-                  <button @click="verHistorialLicencia(lic)" class="btn-historial-mobile">
+                  <button @click="verHistorialLicencia(lic)" class="btn-historial-mobile flex-grow-0">
                     <span class="material-icons" style="font-size: 18px;">manage_search</span>
                   </button>
-                  <button @click="eliminarLicencia(lic.id)" class="btn-eliminar-mobile">
+                  <button @click="eliminarLicencia(lic.id)" class="btn-eliminar-mobile flex-grow-0">
                     <span class="material-icons" style="font-size: 18px;">delete</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <div v-if="licenciasPaginadas.length === 0" class="text-center p-4 bg-light rounded shadow-sm border mt-2">
+            <div v-if="licenciasPaginadas.length === 0" class="text-center p-4 bg-white rounded shadow-sm border mt-2">
               <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-              <p class="text-muted mt-2 mb-0">No se encontraron licencias.</p>
+              <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron licencias.</p>
             </div>
           </div>
 
-<div 
-  class="d-flex justify-content-center align-items-center gap-3 mt-4"
-  v-if="totalPaginas > 1"
->
-
-  <!-- ANTERIOR -->
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(-1)"
-    :disabled="paginaActual <= 1"
-  >
-    <i class="bi bi-chevron-left"></i> Ant
-  </button>
-
-  <!-- TEXTO -->
-  <span class="fw-bold text-dark small">
-    Página {{ paginaActual }} de {{ totalPaginas }}
-  </span>
-
-  <!-- SIGUIENTE -->
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(1)"
-    :disabled="paginaActual >= totalPaginas"
-  >
-    Sig <i class="bi bi-chevron-right"></i>
-  </button>
-
-</div>
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+              <i class="bi bi-chevron-left"></i> Ant
+            </button>
+            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+              Sig <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
 
         </div>
       </div>
     </div>
 
-    <Teleport to="body">
-    <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
-      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 600px; width: 95%;">
-
-        <div class="icon-circle-exito" :class="modoModal === 'editar' ? 'bg-info-light' : 'bg-success-light'">
-          <span class="material-icons">{{ modoModal === 'editar' ? 'edit' : 'calendar_today' }}</span>
+    <ModalBase 
+      :show="mostrarModal" 
+      @close="cerrarModal"
+      :icono="modoModal === 'editar' ? 'edit' : 'calendar_today'"
+      :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      maxWidth="600px"
+    >
+      <template #header>
+        <div class="text-center">
+          <span class="fw-bold fs-5">{{ modoModal === 'editar' ? 'Editar Licencia' : 'Registrar Licencia' }}</span>
+          <div v-if="modoModal === 'editar'" class="text-muted small" style="font-size: 0.85rem;">
+            ID #{{ formModal.id }} — {{ formModal.apellido }}, {{ formModal.nombre }}
+          </div>
         </div>
-        <h4 class="fw-bold mt-3">
-          {{ modoModal === 'editar' ? 'Editar Licencia' : 'Registrar Licencia' }}
-        </h4>
-        <p v-if="modoModal === 'editar'" class="text-muted small mb-3">ID #{{ formModal.id }} — {{ formModal.apellido }}, {{ formModal.nombre }}</p>
+      </template>
 
-        <div class="row g-3 text-start mt-2">
-
+      <form id="formLicencia" @submit.prevent="modoModal === 'editar' ? confirmarEdicion() : confirmarAlta()" class="text-start mt-2">
+        <div class="row g-3">
+          
           <div class="col-12" v-if="modoModal === 'nuevo'">
-            <label class="small fw-bold">Seleccionar Árbitro *</label>
-            <select v-model="formModal.id_arbitro" class="form-select border-primary-subtle shadow-none">
+            <label class="small fw-bold text-dark mb-1">Seleccionar Árbitro *</label>
+            <select v-model="formModal.id_arbitro" class="form-select border-primary-subtle shadow-none" required>
               <option value="" disabled>Elegir árbitro...</option>
               <option v-for="arb in arbitrosLista" :key="arb.id" :value="arb.id">
                 {{ arb.apellido }}, {{ arb.nombre }}
@@ -225,96 +218,110 @@
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="small fw-bold">Motivo</label>
-            <select v-model="formModal.motivo" class="form-select shadow-none">
+            <label class="small fw-bold text-dark mb-1">Motivo</label>
+            <select v-model="formModal.motivo" class="form-select shadow-none border-secondary-subtle">
               <option value="particular">Particular</option>
               <option value="lesion_enfermedad">Lesión / Enfermedad</option>
             </select>
           </div>
           
           <div class="col-12 col-md-6">
-            <label class="small fw-bold">Estado</label>
-            <select v-model="formModal.estado" class="form-select shadow-none">
+            <label class="small fw-bold text-dark mb-1">Estado</label>
+            <select v-model="formModal.estado" class="form-select shadow-none border-secondary-subtle">
               <option value="pendiente">Pendiente</option>
               <option value="aprobada">Aprobada</option>
               <option value="rechazada">Rechazada</option>
             </select>
           </div>
 
-          <div class="col-6">
-            <label class="small fw-bold">Fecha Solicitud *</label>
-            <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none">
+          <div class="col-12 col-md-6">
+            <label class="small fw-bold text-dark mb-1">Fecha Solicitud *</label>
+            <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none border-secondary-subtle" required>
           </div>
 
-          <div class="col-6">
-            <label class="small fw-bold">Fecha Ausencia *</label>
-            <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-danger-subtle">
+          <div class="col-12 col-md-6">
+            <label class="small fw-bold text-dark mb-1">Fecha Ausencia *</label>
+            <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-primary-subtle" required>
           </div>
 
         </div>
+      </form>
 
-        <div class="d-flex gap-2 justify-content-center mt-4">
-          <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold">CANCELAR</button>
-          <button @click="modoModal === 'editar' ? confirmarEdicion() : confirmarAlta()" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargando || !formModal.fecha_licencia">
+      <template #footer>
+        <div class="w-100 d-flex justify-content-center gap-3">
+          <button type="button" @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border">CANCELAR</button>
+          
+          <button type="submit" form="formLicencia" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargando">
             <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
             {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR LICENCIA' }}
           </button>
         </div>
+      </template>
+    </ModalBase>
 
+
+    <ModalBase 
+      :show="mostrarModalHistorial" 
+      @close="mostrarModalHistorial = false"
+      icono="manage_search"
+      colorIcono="bg-warning-subtle text-warning-emphasis"
+      maxWidth="700px"
+    >
+      <template #header>
+        <div class="text-center">
+          <div class="fw-bold fs-5">Historial de {{ licenciaSeleccionada?.apellido }}, {{ licenciaSeleccionada?.nombre }}</div>
+          <span v-if="!cargandoHistorial" class="badge bg-dark rounded-pill fs-6" title="Total de licencias pedidas">{{ historialLicencia.length }}</span>
+        </div>
+      </template>
+
+      <div v-if="cargandoHistorial" class="text-center py-5">
+        <span class="spinner-border text-warning"></span>
       </div>
-    </div>
-    </Teleport>
 
-    <Teleport to="body">
-    <div v-if="mostrarModalHistorial" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10002;">
-      <div class="modal-content-exito animate__animated animate__zoomIn" style="max-width: 600px; width: 95%; text-align: left;">
-        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-          <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
-            <span class="material-icons text-warning">manage_search</span>
-            Historial de {{ licenciaSeleccionada?.apellido }}, {{ licenciaSeleccionada?.nombre }}
-            <span v-if="!cargandoHistorial" class="badge bg-dark rounded-pill fs-6 ms-2" title="Total de licencias pedidas">{{ historialLicencia.length }}</span>
-          </h5>
-          <button @click="mostrarModalHistorial = false" class="btn btn-light rounded-circle" style="width: 35px; height: 35px; padding: 0;">
-            <span class="material-icons" style="font-size: 18px; line-height: 1;">close</span>
-          </button>
+      <div v-else-if="historialLicencia.length === 0" class="text-center py-5 text-muted bg-light rounded-4 shadow-sm border border-light-subtle">
+        <span class="material-icons d-block mb-3" style="font-size: 50px; color: #cbd5e1;">history_toggle_off</span>
+        <p class="mb-0 fw-bold fs-5 text-dark">Sin registros</p>
+        <p class="small">No hay licencias previas en el historial.</p>
+      </div>
+
+      <div v-else>
+        <div class="table-responsive d-none d-md-block">
+          <table class="table table-sm table-borderless align-middle m-0" style="font-size: 0.85rem;">
+            <thead style="border-bottom: 2px solid #e2e8f0;">
+              <tr class="text-dark">
+                <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">F. Solicitud</th>
+                <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">F. Ausencia</th>
+                <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Motivo</th>
+                <th class="text-center pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="h in historialLicencia" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
+                <td class="text-nowrap text-muted fw-bold py-3">{{ formatearFechaVista(h.fecha_solicitud) }}</td>
+                <td class="text-nowrap text-primary fw-bold py-3">{{ formatearFechaVista(h.fecha_licencia) }}</td>
+                <td class="text-muted py-3">{{ h.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</td>
+                <td class="text-center py-3">
+                  <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
-          <div v-if="cargandoHistorial" class="text-center py-4">
-            <span class="spinner-border text-warning"></span>
-          </div>
-
-          <div v-else-if="historialLicencia.length === 0" class="text-center py-4 text-muted">
-            <span class="material-icons d-block fs-1 mb-2">history_toggle_off</span>
-            No hay registros en el historial para esta licencia.
-          </div>
-
-          <div v-else class="table-responsive">
-            <table class="table table-sm table-hover align-middle" style="font-size: 0.85rem;">
-              <thead class="table-light">
-                <tr>
-                  <th>F. Solicitud</th>
-                  <th>F. Ausencia</th>
-                  <th>Motivo</th>
-                  <th class="text-center">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="h in historialLicencia" :key="h.id">
-                  <td class="text-nowrap text-muted fw-bold">{{ formatearFechaVista(h.fecha_solicitud) }}</td>
-                  <td class="text-nowrap text-primary fw-bold">{{ formatearFechaVista(h.fecha_licencia) }}</td>
-                  <td class="text-muted">{{ h.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</td>
-                  <td class="text-center">
-                    <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="d-block d-md-none">
+          <div v-for="h in historialLicencia" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-4 p-3 mb-3 shadow-sm bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+              <span class="fw-bold text-primary fs-5">{{ formatearFechaVista(h.fecha_licencia) }}</span>
+              <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center text-muted small mt-2">
+              <span><strong>Solicitada:</strong> {{ formatearFechaVista(h.fecha_solicitud) }}</span>
+              <span>{{ h.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    </Teleport>
+    </ModalBase>
 
   </div>
 </template>
@@ -324,6 +331,7 @@ import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
+import ModalBase from '@/components/ModalBase.vue'
 
 useHead({
   title: 'Gestión de Licencias | AAAB',
@@ -689,19 +697,6 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 /* ====================================================
    4. MODALES
    ==================================================== */
-.modal-overlay-exito { 
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-  background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); 
-  display: flex; align-items: center; justify-content: center; z-index: 10000; 
-}
-.modal-content-exito { 
-  background: white; border-radius: 30px; padding: 40px; 
-  width: 90%; max-width: 750px; text-align: center; color: #000; 
-}
-.icon-circle-exito { 
-  width: 80px; height: 80px; border-radius: 50%; 
-  display: flex; align-items: center; justify-content: center; margin: 0 auto; 
-}
 .bg-success-light { background: #dcfce7; color: #166534; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
 

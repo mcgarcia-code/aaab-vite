@@ -197,12 +197,14 @@
       icono="edit"
       maxWidth="500px"
     >
-      <template #header>
-        <div class="d-flex flex-column text-start">
-          <span>Editar Sanción</span>
-          <span class="text-muted small fw-normal" style="font-size: 0.85rem;">ID #{{ formModal.id }} — {{ formModal.arbitro }}</span>
-        </div>
-      </template>
+<template #header>
+  <div class="text-center">
+    <div>Editar Sanción</div>
+    <div class="text-muted small" style="font-size: 0.85rem;">
+      ID #{{ formModal.id }} — {{ formModal.arbitro }}
+    </div>
+  </div>
+</template>
 
       <div class="row g-3 text-start">
         <div class="col-12">
@@ -266,10 +268,18 @@
       colorIcono="bg-warning text-dark"
       maxWidth="700px"
     >
-      <template #header>
-        Historial de {{ arbitroHistorial?.arbitro || 'Árbitro' }}
-        <span v-if="!cargandoHistorial" class="badge bg-dark rounded-pill fs-6 ms-2">{{ historialSanciones.length }}</span>
-      </template>
+    <template #header>
+      <div class="text-center">
+        <div>
+          Historial de {{ arbitroHistorial?.arbitro || 'Árbitro' }}
+        </div>
+        <div v-if="!cargandoHistorial" class="mt-1">
+          <span class="badge bg-dark rounded-pill">
+            {{ historialSanciones.length }}
+          </span>
+        </div>
+      </div>
+    </template>
 
       <div v-if="cargandoHistorial" class="text-center py-5">
         <span class="spinner-border text-warning"></span>
