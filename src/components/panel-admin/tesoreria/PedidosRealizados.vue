@@ -173,129 +173,123 @@
             </div>
           </div>
 
-<div 
-  class="d-flex justify-content-center align-items-center gap-3 mt-4"
-  v-if="totalPaginas > 1"
->
+          <div 
+            class="d-flex justify-content-center align-items-center gap-3 mt-4"
+            v-if="totalPaginas > 1"
+          >
+            <button
+              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+              @click="cambiarPagina(-1)"
+              :disabled="paginaActual <= 1"
+            >
+              <i class="bi bi-chevron-left"></i> Ant
+            </button>
 
-  <!-- ANTERIOR -->
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(-1)"
-    :disabled="paginaActual <= 1"
-  >
-    <i class="bi bi-chevron-left"></i> Ant
-  </button>
+            <span class="fw-bold text-dark small">
+              Página {{ paginaActual }} de {{ totalPaginas }}
+            </span>
 
-  <!-- TEXTO -->
-  <span class="fw-bold text-dark small">
-    Página {{ paginaActual }} de {{ totalPaginas }}
-  </span>
-
-  <!-- SIGUIENTE -->
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(1)"
-    :disabled="paginaActual >= totalPaginas"
-  >
-    Sig <i class="bi bi-chevron-right"></i>
-  </button>
-
-</div>
-
-        </div> </div> </div>
-
-    <Teleport to="body">
-    <div v-if="mostrarModal" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
-      <div class="modal-content-exito animate__animated animate__zoomIn p-4 shadow-lg" style="max-width: 450px; width: 95%; border-radius: 20px;">
-
-        <div class="icon-circle-exito bg-info-subtle text-info mb-3 mx-auto" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-          <span class="material-icons" style="font-size: 32px;">local_shipping</span>
-        </div>
-        <h4 class="fw-bold m-0 text-dark text-center">Gestionar Pedido</h4>
-        <p class="text-muted small mt-1 mb-4 text-center">Pedido #{{ pedidoActual.id }} — {{ pedidoActual.apellido }}, {{ pedidoActual.nombre }}</p>
-
-        <div class="text-start bg-light p-3 rounded border mb-4 border-secondary-subtle">
-          <p class="m-0 fw-bold small text-dark">{{ pedidoActual.descripcion }} ({{ pedidoActual.talle }})</p>
-          <p class="m-0 small text-muted mt-1">Fecha: <strong class="text-dark">{{ pedidoActual.fecha_creacion || 'S/F' }}</strong> | Cant: <strong class="text-dark">{{ pedidoActual.cantidad }}</strong> | Total: <strong class="text-success">${{ pedidoActual.cantidad * pedidoActual.precioUnitario }}</strong></p>
-        </div>
-
-        <div class="text-start">
-          <label class="small fw-bold mb-1 text-dark">Actualizar Estado</label>
-          <select v-model="nuevoEstado" class="form-select shadow-none border-primary-subtle fw-bold custom-input">
-            <option value="creado">Creado (A Pagar)</option>
-            <option value="en proceso">En Proceso</option>
-            <option value="aceptado">Aceptado (Preparando)</option>
-            <option value="entregado">Entregado</option>
-            <option value="rechazado">Rechazado / Cancelado</option>
-          </select>
-          <p class="extra-small text-muted mt-2 mb-0" style="font-size: 0.75rem;">
-            * <b>En Proceso:</b> Verificas si hay stock.<br>
-            * <b>Aceptado:</b> Hay stock disponible y recibís el pago<br>
-            * <b>Entregado:</b> Una vez entregado se descuenta el stock definitivamente.<br>
-            * <b>Rechazado:</b> No hay stock. Se devuelve el stock a la base.
-          </p>
-        </div>
-
-        <div class="d-flex gap-3 justify-content-center mt-5">
-          <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold" style="background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; width: 100%;">CANCELAR</button>
-          <button @click="guardarEstado" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargando" style="background: #1e293b; width: 100%;">
-            <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
-            GUARDAR
-          </button>
-        </div>
-
-      </div>
-    </div>
-    </Teleport>
-
-    <Teleport to="body">
-    <div v-if="mostrarModalHistorial" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10002;">
-      <div class="modal-content-exito d-flex flex-column animate__animated animate__zoomIn p-0 mx-auto shadow-lg" style="max-width: 650px; width: 95%; max-height: 90vh; text-align: left; border-radius: 20px; background: #ffffff; overflow: hidden;">
-        
-        <div class="flex-shrink-0 p-3 p-md-4 border-bottom bg-white" style="position: relative; z-index: 10;">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold m-0 d-flex align-items-center gap-2" style="color: #0f172a; font-size: 1.15rem;">
-              <span class="material-icons text-warning" style="font-size: 24px;">history</span>
-              Historial de {{ arbitroHistorialNombre }}
-              <span class="badge bg-dark rounded-pill fs-6 ms-2 d-flex align-items-center justify-content-center" style="min-width: 28px; min-height: 28px;">{{ historialArbitro.length }}</span>
-            </h5>
-            <button @click="mostrarModalHistorial = false" class="btn btn-light rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 35px; height: 35px; background: #f8fafc; border: 1px solid #f1f5f9; padding: 0;">
-              <span class="material-icons" style="font-size: 18px; color: #000;">close</span>
+            <button
+              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+              @click="cambiarPagina(1)"
+              :disabled="paginaActual >= totalPaginas"
+            >
+              Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
-        </div>
 
-        <div class="flex-grow-1 p-3 p-md-4 bg-white" style="max-height: 60vh; overflow-y: auto;">
-          <div class="table-responsive border rounded shadow-sm">
-            <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem;">
-              <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
-                <tr>
-                  <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Fecha</th>
-                  <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Prenda</th>
-                  <th class="text-center py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Cant</th>
-                  <th class="text-end py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Total</th>
-                  <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="h in historialArbitro" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
-                  <td class="text-nowrap text-muted fw-bold ps-3 py-3">{{ h.fecha_creacion || 'S/F' }}</td>
-                  <td class="py-3 text-dark">{{ h.descripcion }} <span class="text-danger fw-bold">({{ h.talle }})</span></td>
-                  <td class="text-center fw-bold py-3 text-dark">{{ h.cantidad }}</td>
-                  <td class="text-end fw-bold text-success py-3">${{ h.cantidad * h.precioUnitario }}</td>
-                  <td class="text-center pe-3 py-3">
-                    <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">{{ (h.estado || 'N/A').toUpperCase() }}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
+        </div> 
+      </div> 
     </div>
-    </Teleport>
+
+    <ModalBase 
+      :show="mostrarModal" 
+      @close="cerrarModal"
+      titulo="Gestionar Pedido"
+      icono="local_shipping"
+      colorIcono="bg-info text-white"
+      maxWidth="450px"
+    >
+      <div class="text-center mb-4">
+        <p class="text-muted small mt-1 mb-0">Pedido #{{ pedidoActual.id }} — {{ pedidoActual.apellido }}, {{ pedidoActual.nombre }}</p>
+      </div>
+
+      <div class="text-start bg-light p-3 rounded border mb-4 border-secondary-subtle">
+        <p class="m-0 fw-bold small text-dark">{{ pedidoActual.descripcion }} ({{ pedidoActual.talle }})</p>
+        <p class="m-0 small text-muted mt-1">
+          Fecha: <strong class="text-dark">{{ pedidoActual.fecha_creacion || 'S/F' }}</strong> | 
+          Cant: <strong class="text-dark">{{ pedidoActual.cantidad }}</strong> | 
+          Total: <strong class="text-success">${{ pedidoActual.cantidad * pedidoActual.precioUnitario }}</strong>
+        </p>
+      </div>
+
+      <div class="text-start">
+        <label class="small fw-bold mb-1 text-dark">Actualizar Estado</label>
+        <select v-model="nuevoEstado" class="form-select shadow-none border-primary-subtle fw-bold custom-input">
+          <option value="creado">Creado (A Pagar)</option>
+          <option value="en proceso">En Proceso</option>
+          <option value="aceptado">Aceptado (Preparando)</option>
+          <option value="entregado">Entregado</option>
+          <option value="rechazado">Rechazado / Cancelado</option>
+        </select>
+        <p class="extra-small text-muted mt-2 mb-0" style="font-size: 0.75rem;">
+          * <b>En Proceso:</b> Verificas si hay stock.<br>
+          * <b>Aceptado:</b> Hay stock disponible y recibís el pago<br>
+          * <b>Entregado:</b> Una vez entregado se descuenta el stock definitivamente.<br>
+          * <b>Rechazado:</b> No hay stock. Se devuelve el stock a la base.
+        </p>
+      </div>
+
+      <template #footer>
+        <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1" style="background: #f8fafc; border: 1px solid #e2e8f0;">CANCELAR</button>
+        <button @click="guardarEstado" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="cargando">
+          <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
+          GUARDAR
+        </button>
+      </template>
+    </ModalBase>
+
+    <ModalBase 
+      :show="mostrarModalHistorial" 
+      @close="mostrarModalHistorial = false"
+      icono="history"
+      colorIcono="bg-warning text-dark"
+      maxWidth="650px"
+    >
+      <template #header>
+        <div class="d-flex align-items-center justify-content-center gap-2">
+          Historial de {{ arbitroHistorialNombre }}
+          <span class="badge bg-dark rounded-pill fs-6 d-flex align-items-center justify-content-center" style="min-width: 28px; min-height: 28px;">
+            {{ historialArbitro.length }}
+          </span>
+        </div>
+      </template>
+
+      <div class="table-responsive border rounded shadow-sm m-0">
+        <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem;">
+          <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
+            <tr>
+              <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Fecha</th>
+              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Prenda</th>
+              <th class="text-center py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Cant</th>
+              <th class="text-end py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Total</th>
+              <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="h in historialArbitro" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
+              <td class="text-nowrap text-muted fw-bold ps-3 py-3">{{ h.fecha_creacion || 'S/F' }}</td>
+              <td class="py-3 text-dark">{{ h.descripcion }} <span class="text-danger fw-bold">({{ h.talle }})</span></td>
+              <td class="text-center fw-bold py-3 text-dark">{{ h.cantidad }}</td>
+              <td class="text-end fw-bold text-success py-3">${{ h.cantidad * h.precioUnitario }}</td>
+              <td class="text-center pe-3 py-3">
+                <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">{{ (h.estado || 'N/A').toUpperCase() }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ModalBase>
 
   </div>
 </template>
@@ -305,6 +299,7 @@ import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head';
+import ModalBase from '@/components/ModalBase.vue'; // 👈 Asegurate que esta sea la ruta de tu componente
 
 useHead({
   title: 'Pedidos Realizados | AAAB',
@@ -449,14 +444,13 @@ const obtenerClaseEstado = (estado) => {
   }
 };
 
-// EXPORTACIÓN A EXCEL (DOBLE HOJA)
+// EXPORTACIÓN A EXCEL
 const exportarExcel = () => {
   if (pedidosFiltrados.value.length === 0) {
     notificar({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' });
     return;
   }
 
-  // HOJA 1: RESUMEN PARA COMPRA
   const pedidosActivos = pedidosFiltrados.value.filter(p => p.estado.toLowerCase() !== 'rechazado');
   const mapaAgrupado = {};
   
@@ -475,7 +469,6 @@ const exportarExcel = () => {
   const datosHoja1 = Object.values(mapaAgrupado).sort((a, b) => a['Prenda / Modelo'].localeCompare(b['Prenda / Modelo']));
   const wsAgrupado = XLSX.utils.json_to_sheet(datosHoja1);
 
-  // HOJA 2: DETALLE POR ÁRBITRO
   const mapaArbitros = {};
   
   pedidosFiltrados.value.forEach(p => {
@@ -540,7 +533,6 @@ onMounted(obtenerPedidos);
 .btn-blue { background: #3b82f6; color: white; }
 .btn-export { background: #10b981; color: white; }
 
-
 /* ====================================================
    TABLA DESKTOP ESTRUCTURA
    ==================================================== */
@@ -576,11 +568,7 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 .estado-entregado { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 .estado-rechazado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 
-/* MODAL */
-.modal-overlay-exito { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.modal-content-exito { background: white; border-radius: 20px; border: none; text-align: center; }
-.icon-circle-exito { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
-.bg-info-light { background: #e0f2fe; color: #0369a1; }
+/* INPUTS DEL MODAL */
 .custom-input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; background-color: #ffffff; transition: all 0.3s ease; }
 .custom-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); outline: none; }
 
@@ -617,27 +605,24 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
   .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; width: 45px; }
 }
 
-/* LA CLAVE DE LA ESTRUCTURA MÓVIL EXACTA */
 @media (max-width: 600px) {
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto;
-  margin-left: 50%;
-  transform: translateX(-50%);
-      /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important; 
-  box-sizing: border-box !important;
-}
-    
-.admin-panel { 
-      padding: 0 !important; 
-      border-radius: 0; 
-      box-sizing: border-box !important;
-}
+  .full-screen-wrapper {
+    position: relative;
+    width: 99vw;
+    min-height: 100vh;
+    height: auto;
+    margin-left: 50%;
+    transform: translateX(-50%);
+    padding: 0 15px 20px 15px !important; 
+    box-sizing: border-box !important;
+  }
+      
+  .admin-panel { 
+    padding: 0 !important; 
+    border-radius: 0; 
+    box-sizing: border-box !important;
+  }
   
-  /* Titulo a la izquierda (respetando borde rojo), botones centrados abajo */
   .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }
   .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%;}
   .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
