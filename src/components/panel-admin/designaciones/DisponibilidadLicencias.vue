@@ -22,6 +22,11 @@
               <span class="btn-text">Limpiar</span>
             </button>
 
+            <button @click="mostrarModalSubida = true" class="btn-action btn-upload text-success" style="padding-left: 8px; padding-right: 10px;">
+              <span class="material-icons" style="font-size: 16px; line-height: 1;">cloud_upload</span>
+              <span class="btn-text" style="line-height: 1;">Publicar</span>
+            </button>
+
             <button @click="solicitarLimpiarChecks" class="btn-action btn-clear-checks desktop-only" style="padding-left: 8px; padding-right: 10px;">
               <span class="material-icons" style="font-size: 16px; line-height: 1;">check_box_outline_blank</span>
               <span class="btn-text" style="line-height: 1;">Tildes</span>
@@ -34,7 +39,7 @@
           </div>
         </div>
 
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
+        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
             <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
@@ -347,6 +352,36 @@
       </div>
     </div>
   </div>
+
+<div v-if="mostrarModalSubida" style="background-color: rgba(0,0,0,0.7); position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1050; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+  <div class="card shadow-lg p-4 bg-white" style="width: 100%; max-width: 400px; border-radius: 12px; opacity: 1;">
+    <h5 class="fw-bold text-danger mb-3">Publicar Designaciones</h5>
+
+    <div class="mb-3">
+      <label class="form-label small fw-bold">Torneo</label>
+      <input v-model="formPublicar.torneo" type="text" class="form-control" placeholder="Ej: TORNEO APERTURA">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label small fw-bold">Fecha</label>
+      <input v-model="formPublicar.fecha" type="text" class="form-control" placeholder="Ej: 18 y 19 de Abril">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label small fw-bold">Archivo Excel</label>
+      <input @change="manejarArchivo" type="file" class="form-control" accept=".xlsx, .xls">
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <button @click="mostrarModalSubida = false" class="btn btn-light border" :disabled="subiendoArchivo">Cancelar</button>
+      <button @click="enviarDesignaciones" class="btn btn-danger fw-bold" :disabled="subiendoArchivo || !formPublicar.archivo">
+        <span v-if="subiendoArchivo" class="spinner-border spinner-border-sm me-2"></span>
+        {{ subiendoArchivo ? 'Publicando...' : 'Publicar Ahora' }}
+      </button>
+    </div>
+  </div>
+</div>
+
 </template>
 
 <script setup>
@@ -381,6 +416,25 @@ const filtros = reactive({
   designado_domingo: '',
 });
 
+const mostrarModalSubida = ref(false);
+const subiendoArchivo = ref(false);
+
+const formPublicar = reactive({
+  torneo: '',
+  fecha: '',
+  archivo: null
+});
+
+
+// --- AGREGAR ESTA FUNCIÓN ---
+const manejarArchivo = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    formPublicar.archivo = file;
+  }
+};
+
+
 const cambiarPagina = (delta) => {
   paginaActual.value += delta;
   setTimeout(() => {
@@ -389,6 +443,8 @@ const cambiarPagina = (delta) => {
     }
   }, 50);
 };
+
+
 
 const designadosSabado = ref(new Set());
 const designadosDomingo = ref(new Set());
@@ -645,6 +701,50 @@ watch(totalPaginas, (nuevoTotal) => {
   if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
 });
 
+// Función para enviar los datos al servidor usando TU estándar
+const enviarDesignaciones = async () => {
+  // 1. Validamos que estén todos los datos
+  if (!formPublicar.torneo || !formPublicar.fecha || !formPublicar.archivo) {
+    notificar({ titulo: 'Atención', mensaje: 'Completá todos los campos y seleccioná un archivo.', tipo: 'warning' });
+    return;
+  }
+
+  subiendoArchivo.value = true;
+
+  // 2. Creamos un FormData (Necesario porque estamos enviando un archivo, no solo texto)
+  const formData = new FormData();
+  formData.append('torneo', formPublicar.torneo);
+  formData.append('fecha', formPublicar.fecha);
+  formData.append('archivo', formPublicar.archivo); // Este es el File object del input
+
+  try {
+    // 3. Usamos tu estándar de consumo de API
+    const res = await api.post({
+      entity: 'designaciones',       // El archivo PHP (sin .php)
+      action: 'subirDesignaciones',  // La función que creamos arriba en camelCase
+      payload: formData              // Pasamos el FormData completo
+    });
+
+    // 4. Evaluamos la respuesta según cómo esté configurado tu wrapper api (res.ok o res.success)
+    if (res.success || res.ok) {
+      notificar({ titulo: 'Éxito', mensaje: 'Las designaciones ya están visibles para el público.', tipo: 'success' });
+
+      // Cerramos modal y limpiamos formulario
+      mostrarModalSubida.value = false;
+      formPublicar.torneo = '';
+      formPublicar.fecha = '';
+      formPublicar.archivo = null;
+    } else {
+      throw new Error(res.mensaje || 'Error del servidor al subir designaciones.');
+    }
+  } catch (error) {
+    console.error("Error al publicar:", error);
+    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al subir las designaciones.', tipo: 'danger' });
+  } finally {
+    subiendoArchivo.value = false;
+  }
+};
+
 
 const exportarExcel = () => {
   const datos = arbitrosFiltrados.value.map(a => ({
@@ -741,7 +841,7 @@ onMounted(cargarDatos);
 .btn-action:active { transform: scale(0.95); }
 .btn-text { display: none; } /* Oculto en móvil */
 
-.btn-clear { background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; }
+.btn-clear { background: #e2e8f0; color: #0f172a; border: 1px solid #e2e8f0; }
 .btn-clear-checks { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
 .btn-export { background: #10b981; color: white; }
 .btn-filter-mobile { background: #3b82f6; color: white; }
@@ -756,7 +856,7 @@ onMounted(cargarDatos);
 .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; }
 .filter-grid-mobile input, .filter-grid-mobile select {
   padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
-  font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #334155;
+  font-size: 16px; width: 100%; outline: none; background: #e2e8f0; color: #334155;
 }
 .filter-grid-mobile input:focus, .filter-grid-mobile select:focus { border-color: #3b82f6; background: white; }
 .filter-grid-mobile input::placeholder { color: #94a3b8; }
@@ -833,7 +933,7 @@ onMounted(cargarDatos);
   table { width: 100%; min-width: max-content; border-collapse: collapse !important; border-spacing: 0; font-size: 0.85rem; }
 
   th {
-    position: sticky; top: 0; z-index: 50; background: #f8fafc !important;
+    position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
     padding: 10px; border-bottom: 2px solid #e2e8f0;
     font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
     font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800;
@@ -848,7 +948,7 @@ onMounted(cargarDatos);
   /* Columnas Fijas (Sticky) */
   .sticky-col { position: sticky !important; z-index: 10; background: white !important; box-shadow: inset -1px 0 0 #e2e8f0; background-clip: padding-box; }
   th.sticky-col { z-index: 100 !important; background-color: #f1F5F9 !important; }
-  .filter-row .sticky-col { z-index: 90 !important; background-color: #f8fafc !important; }
+  .filter-row .sticky-col { z-index: 90 !important; background-color: #e2e8f0 !important; }
   .sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
 
   .col-shrink { width: 50px !important; min-width: 50px !important; max-width: 50px !important; white-space: nowrap !important; padding: 8px 0 !important; text-align: center; }

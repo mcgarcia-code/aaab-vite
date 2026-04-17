@@ -1,6 +1,6 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  
+
   <div class="admin-panel">
     <div class="header-section">
       <div class="header-title-box">
@@ -12,7 +12,7 @@
           <span class="material-icons">filter_alt</span>
         </button>
         <button @click="limpiarFiltros" class="btn-action btn-clear">
-          <span class="material-icons">filter_alt_off</span> 
+          <span class="material-icons">filter_alt_off</span>
           <span class="btn-text">Limpiar Filtros</span>
         </button>
       </div>
@@ -88,7 +88,7 @@
     </div>
 
     <!-- CONTROLES DE PAGINACIÓN -->
-<div 
+<div
   class="d-flex justify-content-center align-items-center gap-3 mt-4"
   v-if="totalPaginas > 1"
 >
@@ -160,8 +160,8 @@ const cargarDatos = async () => {
       action:"getArbitros"
     })
     arbitros.value = payload || [];
-  } catch (err) { 
-    console.error("Error al cargar datos:", err); 
+  } catch (err) {
+    console.error("Error al cargar datos:", err);
     notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
   }
 };
@@ -229,7 +229,7 @@ const arbitrosPaginados = computed(() => {
 watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
 
 // Ajuste seguro de páginas
-watch(totalPaginas, (nuevoTotal) => { 
+watch(totalPaginas, (nuevoTotal) => {
   if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
   if (paginaActual.value < 1) paginaActual.value = 1;
 });
@@ -238,7 +238,7 @@ onMounted(cargarDatos);
 </script>
 
 <style scoped>
-.admin-panel { padding: 15px; background: #f8fafc; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; min-height: 100vh;}
+.admin-panel { padding: 15px; background: #e2e8f0; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; min-height: 100vh;}
 .header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #25d366; align-items: center; }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #1e293b; }
 .counter { font-size: 0.85rem; color: #64748b; }
@@ -251,9 +251,9 @@ onMounted(cargarDatos);
 /* TABLA DESKTOP */
 .table-container { background: white; border-radius: 8px; overflow: auto; border: 1px solid #e2e8f0; max-height: 75vh; }
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #000000; position: sticky; top: 0; z-index: 10; }
+th { background: #e2e8f0; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #000000; position: sticky; top: 0; z-index: 10; }
 td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-.filter-row td { background: #f8fafc; padding: 8px; position: sticky; top: 45px; z-index: 10; border-bottom: 2px solid #cbd5e1;}
+.filter-row td { background: #e2e8f0; padding: 8px; position: sticky; top: 45px; z-index: 10; border-bottom: 2px solid #cbd5e1;}
 .filter-input { width: 90%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
 .filter-input-min { width: 60px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; }
 
@@ -288,9 +288,9 @@ td { padding: 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 .shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
 
 /* ESTADO INACTIVO MODIFICADO */
-.fila-ina, .fila-ina td, .card-contacto.fila-ina { 
+.fila-ina, .fila-ina td, .card-contacto.fila-ina {
   background-color: #fca5a5 !important; /* Rojo claro derivado de tu paleta */
-  opacity: 1 !important; 
+  opacity: 1 !important;
 }
 .card-contacto.fila-ina .card-subtext {
   color: #000000 !important;

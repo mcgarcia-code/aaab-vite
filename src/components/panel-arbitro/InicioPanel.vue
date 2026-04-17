@@ -261,7 +261,7 @@ onMounted(cargarAvisos);
 }
 
 .sidebar-header {
-  background: #f8fafc;
+  background: #e2e8f0;
   padding: 15px 20px;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
@@ -318,7 +318,7 @@ onMounted(cargarAvisos);
 
 /* EVENT CARDS */
 .event-card-modern {
-  display: flex; gap: 12px; margin-bottom: 6px; background: #fdfdfd; padding: 8px; border-radius: 12px; border: 1px solid #f8fafc;
+  display: flex; gap: 12px; margin-bottom: 6px; background: #fdfdfd; padding: 8px; border-radius: 12px; border: 1px solid #e2e8f0;
 }
 .event-info { flex: 1; min-width: 0; }
 .event-info strong {

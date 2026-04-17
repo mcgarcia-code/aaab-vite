@@ -1,9 +1,9 @@
 <template>
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
-      
+
       <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
-        
+
         <div class="header-section border-bottom">
           <div class="header-info">
             <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
@@ -23,7 +23,7 @@
             <button @click="exportarExcel" class="btn-action btn-export" title="Exportar a Excel">
               <span class="material-icons">download</span> <span class="btn-text">Excel</span>
             </button>
-          </div> 
+          </div>
         </div>
 
         <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-block d-md-none animate__animated animate__fadeInDown animate__faster">
@@ -39,7 +39,7 @@
             <input v-model="filtros.nombre" class="filter-input-mobile" placeholder="Nombre...">
             <input v-model="filtros.dni" class="filter-input-mobile" placeholder="DNI...">
             <input v-model="filtros.celular" class="filter-input-mobile" placeholder="Celular...">
-            
+
             <select v-model="filtros.es_activo" class="filter-input-mobile">
               <option value="">Estado (Todos)</option>
               <option value="si">Activo</option>
@@ -118,13 +118,13 @@
                 </div>
                 <div class="text-xs" style="color: #000000;">ID: {{ a.id }}</div>
               </div>
-              
+
               <div class="card-body">
                 <div class="card-row">
                   <span><strong>DNI:</strong> {{ a.dni || '-' }}</span>
                   <span><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
                 </div>
-                
+
                 <div class="card-info">
                   <p v-if="a.fecha_nacimiento"><strong>F. Nacimiento:</strong> {{ mostrarFechaArg(a.fecha_nacimiento) }}</p>
                   <p v-if="a.celular"><strong>Celular:</strong> {{ a.celular }}</p>
@@ -132,7 +132,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div v-if="datosPaginados.length === 0" class="text-center p-4 bg-white rounded shadow-sm">
               <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
               <p class="text-muted mt-2 mb-0">No se encontraron registros.</p>
@@ -153,15 +153,15 @@
             </button>
           </div>
 
-        </div> 
-      </div> 
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed, reactive, watch } from 'vue'
-import { api } from '@/api/api' 
+import { api } from '@/api/api'
 import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
 
@@ -176,7 +176,7 @@ useHead({
 });
 
 const listaCompleta = ref([]);
-const mostrarFiltrosMobile = ref(false); 
+const mostrarFiltrosMobile = ref(false);
 const filtros = reactive({
   apellido: '', nombre: '', es_activo: '', grupo: '', subgrupo: '', fecha_nacimiento: '', celular: '', dni: '', email: ''
 });
@@ -193,8 +193,8 @@ const cargarDatos = async () => {
         return nombreA.localeCompare(nombreB, 'es');
       });
     }
-  } catch (err) { 
-    console.error("Error cargando datos:", err); 
+  } catch (err) {
+    console.error("Error cargando datos:", err);
   }
 };
 
@@ -264,34 +264,34 @@ onMounted(cargarDatos);
    ESTILOS BASE (DISEÑO PARA CELULARES - MOBILE FIRST)
    ==================================================== */
 
-.full-screen-wrapper { 
-  position: relative; 
-  width: 99vw; min-height: 100vh; 
-  height: auto !important; 
-  margin-left: 50%; 
-  transform: translateX(-50%); 
-  padding: 20px; 
-  padding-bottom: 120px; 
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw; min-height: 100vh;
+  height: auto !important;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  padding: 20px;
+  padding-bottom: 120px;
 }
 
-.admin-panel { 
+.admin-panel {
   width: 100%;
-  padding: 0; 
-  background-color: #0f172a; 
-  min-height: calc(100vh - 40px); 
+  padding: 0;
+  background-color: #0f172a;
+  min-height: calc(100vh - 40px);
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
   box-sizing: border-box;
 }
 
 /* Cabecera Móvil */
-.header-section { 
-  background: white; 
-  padding: 15px; 
-  display: flex; 
-  flex-direction: column; 
-  align-items: flex-start; 
+.header-section {
+  background: white;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 15px;
-  border-left: 5px solid #ef4444; 
+  border-left: 5px solid #ef4444;
 }
 
 .title { font-size: 1.25rem; font-weight: bold; margin: 0; color: #000; text-align: left; }
@@ -299,25 +299,25 @@ onMounted(cargarDatos);
 .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
 
 /* Botones Móvil */
-.header-actions { 
-  width: 100%; 
-  display: flex; 
-  justify-content: center; 
-  flex-wrap: wrap; 
-  gap: 10px; 
+.header-actions {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.btn-action { 
-  border: none; 
-  width: 42px; 
-  height: 42px; 
-  border-radius: 4px; 
-  font-weight: bold; 
-  cursor: pointer; 
-  display: flex; 
-  align-items: center; 
+.btn-action {
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  transition: opacity 0.2s; 
+  transition: opacity 0.2s;
   padding: 0;
 }
 
@@ -327,45 +327,45 @@ onMounted(cargarDatos);
 .btn-text { display: none; } /* Oculto en móvil */
 
 /* Panel de Filtros Móvil */
-.mobile-filter-panel { 
-  background: #f8fafc; 
-  padding: 15px 20px; 
-  border-bottom: 1px solid #e2e8f0; 
+.mobile-filter-panel {
+  background: #e2e8f0;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.filter-grid-mobile { 
-  display: grid; 
+.filter-grid-mobile {
+  display: grid;
   grid-template-columns: 1fr; /* 1 columna en celulares muy chicos */
-  gap: 12px; 
+  gap: 12px;
 }
 
 .filter-input-mobile {
-  padding: 10px; 
-  border: 1px solid #cbd5e1; 
-  border-radius: 6px; 
-  font-size: 16px; 
-  width: 100%; 
-  outline: none; 
-  background: #f8fafc; 
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 16px;
+  width: 100%;
+  outline: none;
+  background: #e2e8f0;
   color: #334155;
 }
 
 /* Cards Árbitros (Móvil) */
-.card-arbitro { 
-  background: white; 
-  border-radius: 8px; 
-  padding: 15px; 
-  margin-bottom: 12px; 
-  border: 1px solid #e2e8f0; 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+.card-arbitro {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-.card-header { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: flex-start; 
-  border-bottom: 1px solid #f1f5f9; 
-  padding-bottom: 10px; 
-  margin-bottom: 10px; 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
 }
 .card-name { font-size: 1.05rem; color: #0f172a; }
 .card-row { display: flex; justify-content: space-between; font-size: 0.9rem; color: #000000; margin-bottom: 8px; }
@@ -385,36 +385,36 @@ onMounted(cargarDatos);
    TABLETS Y PANTALLAS MEDIANAS (Desde 768px)
    ==================================================== */
 @media (min-width: 768px) {
-  
+
   .full-screen-wrapper { padding: 20px; }
   .admin-panel { padding: 20px; border-radius: 8px; }
-  
+
   /* Ajustes Cabecera Desktop */
-  .header-section { 
-    flex-direction: row; 
-    align-items: center; 
-    justify-content: space-between; 
-    border-radius: 8px; 
-    margin-bottom: 15px; 
-  }
-  
-  .title { font-size: 1.1rem; }
-  .header-info { width: auto; }
-  
-  .header-actions { 
-    width: auto; 
-    justify-content: flex-end; 
-    flex-wrap: nowrap; 
-    gap: 8px; 
+  .header-section {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 8px;
+    margin-bottom: 15px;
   }
 
-  .btn-action { 
-    width: auto; 
-    height: auto; 
-    padding: 8px 12px; 
-    justify-content: flex-start; 
-    gap: 5px; 
-    font-size: 0.75rem; 
+  .title { font-size: 1.1rem; }
+  .header-info { width: auto; }
+
+  .header-actions {
+    width: auto;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .btn-action {
+    width: auto;
+    height: auto;
+    padding: 8px 12px;
+    justify-content: flex-start;
+    gap: 5px;
+    font-size: 0.75rem;
   }
   .btn-text { display: inline; }
 
@@ -422,40 +422,40 @@ onMounted(cargarDatos);
   .filter-grid-mobile { grid-template-columns: 1fr 1fr; }
 
   /* Estilos de Tabla Desktop */
-  .table-container { 
-    width: 100%; overflow: auto; max-height: 75vh; 
-    background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+  .table-container {
+    width: 100%; overflow: auto; max-height: 75vh;
+    background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   }
 
   table { width: 100%; min-width: max-content; border-collapse: collapse; }
 
-  thead tr.main-header th { 
-    position: sticky; top: 0; z-index: 100; 
-    background: #f8fafc; border-bottom: 2px solid #e2e8f0; 
+  thead tr.main-header th {
+    position: sticky; top: 0; z-index: 100;
+    background: #e2e8f0; border-bottom: 2px solid #e2e8f0;
     font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800;
     padding: 12px 10px;
   }
 
-  thead tr.filter-row td { 
-    position: sticky; top: 41px; z-index: 90; 
-    background: #f1f5f9 !important; border-bottom: 2px solid #cbd5e1; 
+  thead tr.filter-row td {
+    position: sticky; top: 41px; z-index: 90;
+    background: #f1f5f9 !important; border-bottom: 2px solid #cbd5e1;
   }
 
   thead tr.filter-row td.sticky-col { z-index: 95 !important; background: #f1f5f9 !important; }
 
-  .sticky-col { 
-    position: sticky !important; z-index: 60 !important; 
-    background: white !important; 
-    box-shadow: inset -1px 0 0 #e2e8f0; 
+  .sticky-col {
+    position: sticky !important; z-index: 60 !important;
+    background: white !important;
+    box-shadow: inset -1px 0 0 #e2e8f0;
   }
 
   .col-id { left: 0; width: 50px; text-align: center; }
   .col-apellido { left: 50px; width: 140px; }
   .col-nombre { left: 190px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 
-  .col-ultra-compact { 
-    width: 65px !important; 
-    min-width: 65px !important; 
+  .col-ultra-compact {
+    width: 65px !important;
+    min-width: 65px !important;
     text-align: center !important;
   }
 
@@ -463,8 +463,8 @@ onMounted(cargarDatos);
 
   .read-only-text { padding: 10px 5px; font-size: 0.85rem; color: #1e293b; }
 
-  .filter-input { 
-    font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; 
+  .filter-input {
+    font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1;
     border-radius: 4px; padding: 2px 8px; width: 100%; box-sizing: border-box;
   }
 

@@ -796,16 +796,16 @@ onMounted(fetchSanciones)
 .btn-export { background: #10b981; color: white; }
 
 /* Filtros Móvil */
-.mobile-filter-panel { background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
+.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
 .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filter-input-mobile { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; width: 100%; outline: none; background: #f8fafc; }
+.filter-input-mobile { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; width: 100%; outline: none; background: #e2e8f0; }
 .full-width { grid-column: span 2; }
 
 /* Cards Móviles */
 .card-licencia { background: white; padding: 15px; border: 1px solid #e2e8f0; }
 .card-name { font-size: 1.05rem; }
 .badge-mobile-status { padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; }
-.bg-light-custom { background-color: #f8fafc !important; }
+.bg-light-custom { background-color: #e2e8f0 !important; }
 
 .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; gap: 8px; }
 .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; }
@@ -849,7 +849,7 @@ onMounted(fetchSanciones)
   table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
 
   thead tr.main-header th {
-    position: sticky; top: 0; z-index: 50; background: #f8fafc !important;
+    position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
     padding: 12px 8px; border-bottom: 1px solid #cbd5e1; font-weight: 800; text-transform: uppercase; font-size: 0.75rem;
   }
   thead tr.filter-row td {
@@ -859,7 +859,7 @@ onMounted(fetchSanciones)
 
   /* Sticky Columns */
   .sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-  thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+  thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
   thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
 
   .col-id { left: 0; width: 50px; text-align: center; }

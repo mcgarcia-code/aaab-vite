@@ -14,9 +14,9 @@
           <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action d-flex d-md-none shadow-sm rounded border-0 p-2 align-items-center justify-content-center text-white" style="background-color: #3b82f6;">
             <span class="material-icons" style="font-size: 20px;">filter_alt</span>
           </button>
-          <button @click="limpiarFiltros" class="btn-clear d-none d-md-flex bg-light rounded shadow-sm border p-2 align-items-center justify-content-center gap-2" title="Limpiar Filtros" style="background-color: #f8fafc !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
-            <span class="material-icons" style="font-size: 22px; color: #64748b;">filter_alt_off</span>
-            <span class="fw-bold text-secondary" style="font-size: 0.8rem;">Limpiar Filtros</span>
+          <button @click="limpiarFiltros" class="btn-clear d-none d-md-flex bg-light rounded shadow-sm border p-2 align-items-center justify-content-center gap-2" title="Limpiar Filtros" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
+            <span class="material-icons" style="font-size: 22px; color: #000;">filter_alt_off</span>
+            <span class="fw-bold text-dark" style="font-size: 0.8rem;">Limpiar Filtros</span>
           </button>
           <button @click="obtenerSancionesLocales" class="btn-refresh bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center" title="Actualizar" style="background-color: #f1f5f9 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
             <span class="material-icons" style="font-size: 22px; color: #0f172a;">refresh</span>
@@ -24,7 +24,7 @@
         </div>
       </div>
 
-      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-md-none animate__animated animate__fadeInDown animate__faster shadow-sm border-bottom p-3" style="background-color: #f8fafc; margin-bottom: 0; border-radius: 0;">
+      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-md-none animate__animated animate__fadeInDown animate__faster shadow-sm border-bottom p-3" style="background-color: #e2e8f0; margin-bottom: 0; border-radius: 0;">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <span class="small fw-bold text-muted text-uppercase">Filtrar Sanciones</span>
           <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1 shadow-sm" style="line-height: 1; background: white;">
@@ -149,7 +149,7 @@
                   <span class="text-muted">{{ s.motivo }}</span>
                 </p>
 
-                <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center mb-3" style="background-color: #f8fafc !important;">
+                <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center mb-3" style="background-color: #e2e8f0 !important;">
                   <span class="text-dark" style="font-size: 0.85rem;">Desde: <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong></span>
                   <span class="text-dark" style="font-size: 0.85rem;">Hasta:
                     <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
@@ -511,7 +511,7 @@ onMounted(obtenerSancionesLocales);
 .table-container { width: 100%; overflow: auto; max-height: 85vh; background: white; }
 table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
 
-thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #f8fafc !important; padding: 12px 10px; border-bottom: 1px solid #cbd5e1; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0; }
+thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important; padding: 12px 10px; border-bottom: 1px solid #cbd5e1; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0; }
 
 thead tr.filter-row td { position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important; padding: 6px 10px 12px 10px; border-bottom: 4px solid #e2e8f0; margin: 0; }
 .filter-input { font-size: 0.75rem; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 8px; box-sizing: border-box; }
@@ -519,7 +519,7 @@ thead tr.filter-row td { position: sticky; top: 35px; z-index: 40; background: #
 
 .col-id { left: 0; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 .sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
 thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
 
 .cell-ro { padding: 14px 10px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
@@ -535,7 +535,7 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 
     .filter-grid-mobile input, .filter-grid-mobile select {
         padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;
-        font-size: 16px; width: 100%; outline: none; background: #f8fafc;
+        font-size: 16px; width: 100%; outline: none; background: #e2e8f0;
     }
     .filter-grid-mobile select.full-width { grid-column: span 2; }
 }

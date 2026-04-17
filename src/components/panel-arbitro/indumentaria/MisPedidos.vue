@@ -12,9 +12,9 @@
         </div>
 
         <div class="header-actions d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
-          <button @click="obtenerPedidos" class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Actualizar" style="background-color: #f8fafc !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
-            <span class="material-icons" style="font-size: 22px; color: #64748b;">refresh</span>
-            <span class="btn-text desktop-only fw-bold text-secondary" style="font-size: 0.8rem;">Actualizar</span>
+          <button @click="obtenerPedidos" class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Actualizar" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
+            <span class="material-icons" style="font-size: 22px; color: #000;">refresh</span>
+            <span class="btn-text desktop-only fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
           </button>
 
           <RouterLink to="/panel-arbitro/indumentaria/nuevo" class="text-decoration-none">
@@ -246,7 +246,7 @@ onMounted(obtenerPedidos);
 table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
 
 thead tr.main-header th {
-  position: sticky; top: 0; z-index: 50; background: #f8fafc !important;
+  position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
   padding: 12px 10px; border-bottom: 2px solid #e2e8f0;
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem;
   color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
@@ -254,7 +254,7 @@ thead tr.main-header th {
 
 .col-id { left: 0; width: 80px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 .sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
 
 .cell-ro { padding: 14px 10px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; vertical-align: middle;}
 .row-hover:hover { background-color: #f1f5f9; transition: background 0.2s ease; }

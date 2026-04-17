@@ -50,7 +50,7 @@
           </div>
         </div>
 
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
+        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
             <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
@@ -1166,7 +1166,7 @@ onMounted(() => {
 .btn-action:active { transform: scale(0.95); }
 .btn-text { display: none; } /* Oculto en móvil */
 
-.btn-clear { background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; }
+.btn-clear { background: #e2e8f0; color: #0f172a; border: 1px solid #e2e8f0; }
 .btn-clear-checks { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
 .btn-export { background: #10b981; color: white; }
 .btn-blue { background: #3b82f6; color: white; }
@@ -1181,7 +1181,7 @@ onMounted(() => {
 .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; }
 .filter-input-mobile {
   padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
-  font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #334155;
+  font-size: 16px; width: 100%; outline: none; background: #e2e8f0; color: #334155;
 }
 .filter-input-mobile:focus { border-color: #3b82f6; background: white; }
 .filter-input-mobile::placeholder { color: #94a3b8; }
@@ -1274,7 +1274,7 @@ onMounted(() => {
   table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
 
   thead tr.main-header th {
-    position: sticky; top: 0; z-index: 50; background: #f8fafc !important;
+    position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
     padding: 12px 8px; border-bottom: 1px solid #cbd5e1;
     font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
   }
@@ -1285,7 +1285,7 @@ onMounted(() => {
 
   /* Columnas Fijas (Sticky) */
   .sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-  thead th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+  thead th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
   thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
 
   .col-id { left: 0; width: 50px; text-align: center; }
@@ -1302,7 +1302,7 @@ onMounted(() => {
 
   /* Filas Inactivas y Hover */
   .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #fca5a5 !important; font-weight: bold; color: #000000 !important; }
-  .row-hover:hover td { background-color: #f8fafc; }
+  .row-hover:hover td { background-color: #e2e8f0; }
   .fila-inactiva.row-hover:hover td, .fila-inactiva.row-hover:hover .sticky-col { background-color: #dc2626 !important; }
 }
 

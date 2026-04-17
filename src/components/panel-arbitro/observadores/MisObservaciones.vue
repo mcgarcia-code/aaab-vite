@@ -12,9 +12,9 @@
         </div>
 
         <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
-          <button @click="obtenerObservaciones" class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Actualizar" style="background-color: #f8fafc !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
-            <span class="material-icons" style="font-size: 22px; color: #64748b;">refresh</span>
-            <span class="desktop-only fw-bold text-secondary" style="font-size: 0.8rem;">Actualizar</span>
+          <button @click="obtenerObservaciones" class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Actualizar" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
+            <span class="material-icons" style="font-size: 22px; color: #000;">refresh</span>
+            <span class="desktop-only fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
           </button>
 
           <RouterLink to="/panel-arbitro/observaciones/carga" class="text-decoration-none">
@@ -210,7 +210,7 @@ thead tr.main-header th {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: #f8fafc !important;
+  background: #e2e8f0 !important;
   padding: 12px 10px;
   border-bottom: 2px solid #e2e8f0;
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;

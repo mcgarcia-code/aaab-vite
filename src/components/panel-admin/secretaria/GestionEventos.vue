@@ -561,7 +561,7 @@ onMounted(obtenerEventos);
 .form-group-mobile label { font-size: 0.75rem; font-weight: 700; color: #64748b; }
 .form-group-mobile input, .form-group-mobile select {
   padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;
-  font-size: 16px; width: 100%; outline: none; background: #f8fafc; color: #0f172a;
+  font-size: 16px; width: 100%; outline: none; background: #e2e8f0; color: #0f172a;
 }
 .form-group-mobile input:focus, .form-group-mobile select:focus { border-color: #3b82f6; background: white; }
 
@@ -629,7 +629,7 @@ onMounted(obtenerEventos);
   table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
 
   thead tr.main-header th {
-    position: sticky; top: 0; z-index: 50; background: #f8fafc !important;
+    position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
     padding: 12px 8px; border-bottom: 1px solid #cbd5e1;
     font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
   }
@@ -644,7 +644,7 @@ onMounted(obtenerEventos);
   .col-desc { min-width: 180px; max-width: 300px; white-space: normal !important; word-wrap: break-word; }
 
   .sticky-col { position: sticky !important; background: white !important; border-right: 1px solid #e2e8f0; }
-  thead tr.main-header th.sticky-col { z-index: 60 !important; background-color: #f8fafc !important; }
+  thead tr.main-header th.sticky-col { z-index: 60 !important; background-color: #e2e8f0 !important; }
   thead tr.filter-row td.sticky-col { z-index: 55 !important; background-color: #f1f5f9 !important; }
   tbody td.sticky-col { z-index: 30 !important; }
 

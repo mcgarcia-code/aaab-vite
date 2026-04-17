@@ -31,7 +31,7 @@
           </div>
         </div>
 
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0;">
+        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0;">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-muted text-uppercase">Filtrar Pedidos</span>
             <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
@@ -238,7 +238,7 @@
       </div>
 
       <template #footer>
-        <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1" style="background: #f8fafc; border: 1px solid #e2e8f0;">CANCELAR</button>
+        <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1" style="background: #e2e8f0; border: 1px solid #e2e8f0;">CANCELAR</button>
         <button @click="guardarEstado" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR
@@ -535,7 +535,7 @@ onMounted(obtenerPedidos);
    ==================================================== */
 .table-container { width: 100%; overflow: auto; max-height: 85vh; background: white; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #f8fafc !important; padding: 12px 8px; border-bottom: 1px solid #cbd5e1; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0; }
+thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important; padding: 12px 8px; border-bottom: 1px solid #cbd5e1; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0; }
 thead tr.filter-row td { position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important; padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; margin: 0; }
 
 /* COLUMNAS CONGELADAS */
@@ -543,7 +543,7 @@ thead tr.filter-row td { position: sticky; top: 35px; z-index: 40; background: #
 .col-acciones { left: 60px; width: 90px; }
 .col-arbitro { left: 150px; width: 220px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 .sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
 thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
 
 .cell-ro { padding: 10px 8px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; }
@@ -577,7 +577,7 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 
 .mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
 .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filter-input-mobile { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; width: 100%; outline: none; background: #f8fafc; }
+.filter-input-mobile { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; width: 100%; outline: none; background: #e2e8f0; }
 .filter-grid-mobile select.full-width { grid-column: span 2; }
 
 @media (min-width: 769px) {

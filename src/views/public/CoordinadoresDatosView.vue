@@ -2,25 +2,25 @@
 <template>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <div class="admin-panel">
-    
+
     <div class="header-section">
       <div class="header-title-box">
         <h2 class="title">Coordinadores: Base de datos</h2>
         <span class="counter">Total: {{ arbitrosFiltrados.length }} árbitros</span>
       </div>
-      
+
       <div class="header-actions">
         <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-filter-mobile mobile-only">
           <span class="material-icons">filter_alt</span>
         </button>
 
         <button @click="limpiarFiltros" class="btn-action btn-clear">
-          <span class="material-icons">filter_alt_off</span> 
+          <span class="material-icons">filter_alt_off</span>
           <span class="btn-text">Filtros</span>
         </button>
 
         <button @click="exportarExcel" class="btn-action btn-export">
-          <span class="material-icons">download</span> 
+          <span class="material-icons">download</span>
           <span class="btn-text">Excel</span>
         </button>
       </div>
@@ -30,7 +30,7 @@
       <div class="filter-grid-mobile">
         <input v-model="filtros.apellido" placeholder="Apellido..">
         <input v-model="filtros.nombre" placeholder="Nombre..">
-        
+
         <div class="mobile-select-group">
           <label>Estado Activo:</label>
           <select v-model="filtros.es_activo">
@@ -108,7 +108,7 @@
                 <option value="pendiente">Licencia Pendientes</option>
               </select>
             </td>
-            <td></td> 
+            <td></td>
             <td>
               <select v-model="filtros.es_activo" class="filter-input">
                 <option value="">Todos</option>
@@ -173,7 +173,7 @@
       <div v-for="a in arbitrosFiltrados" :key="'mob-'+a.id" class="card-arbitro" :class="obtenerClaseFila(a)">
         <div class="card-header">
           <div class="card-name">
-            <span :class="['dot-sm', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span> 
+            <span :class="['dot-sm', a.es_activo == 1 ? 'dot-green' : 'dot-red']"></span>
             <strong>{{ a.apellido }}, {{ a.nombre }} ({{ a.edad }} años)</strong>
           </div>
           <div class="card-lic text-xs">{{ obtenerTextoLicencia(a) }}</div>
@@ -241,9 +241,9 @@ const arbitros = ref([]);
 const mostrarFiltrosMobile = ref(false);
 
 const filtros = reactive({
-  apellido: '', nombre: '', licencia: '', es_activo: '', 
+  apellido: '', nombre: '', licencia: '', es_activo: '',
   apto_medico: '', // Agregado filtro apto_medico
-  grupo: '', subgrupo: '', zona: '', movilidad: '', 
+  grupo: '', subgrupo: '', zona: '', movilidad: '',
   juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: ''
 });
 
@@ -262,8 +262,8 @@ const cargarDatos = async () => {
           apto_medico: a.apto_medico == 1,
         }))
       : [];
-  } catch (err) { 
-    console.error("Error al cargar datos:", err); 
+  } catch (err) {
+    console.error("Error al cargar datos:", err);
     notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
   }
 };
@@ -301,7 +301,7 @@ const obtenerTextoLicencia = (a) => {
     if (!cadenaFechas) return '';
     return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
   };
-  
+
   if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
     textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
   }
@@ -312,7 +312,7 @@ const obtenerTextoLicencia = (a) => {
   if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
     textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
   }
-  
+
   return textos.length > 0 ? textos.join(' | ') : '-';
 };
 
@@ -325,22 +325,22 @@ const arbitrosFiltrados = computed(() => {
   const resultadoFiltrado = arbitros.value.filter(a => {
     const cumpleTexto = Object.keys(filtros).every(key => {
       if (!filtros[key] || key === 'licencia') return true;
-      
+
       if (key === 'es_activo' || key === 'apto_medico') {
          return String(a[key]) === filtros[key];
       }
-      
+
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
-    
+
     let cumpleLicencia = true;
     if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada) > 0;
     else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente) > 0; // NUEVO
     else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada) > 0;
     else if (filtros.licencia === 'sin_licencia') {
       // MODIFICADO: Agregamos que tampoco tenga pendientes para ser considerado "sin licencia"
-      cumpleLicencia = Number(a.tiene_aprobada) === 0 && 
-                       Number(a.tiene_rechazada) === 0 && 
+      cumpleLicencia = Number(a.tiene_aprobada) === 0 &&
+                       Number(a.tiene_rechazada) === 0 &&
                        Number(a.tiene_pendiente) === 0;
     }
 
@@ -351,12 +351,12 @@ const arbitrosFiltrados = computed(() => {
   return resultadoFiltrado.sort((a, b) => {
     // Comparamos apellidos usando localeCompare para manejar acentos y eñes correctamente
     const compApellido = (a.apellido || '').localeCompare(b.apellido || '');
-    
+
     // Si los apellidos son iguales, ordenamos por nombre
     if (compApellido === 0) {
       return (a.nombre || '').localeCompare(b.nombre || '');
     }
-    
+
     return compApellido;
   });
 });
@@ -383,7 +383,7 @@ onMounted(cargarDatos);
 
 
 <style scoped>
-.admin-panel { padding: 15px; background: #f8fafc; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; min-height: 100vh; }
+.admin-panel { padding: 15px; background: #e2e8f0; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; min-height: 100vh; }
 .header-section { background: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .title { font-size: 1.1rem; font-weight: bold; margin: 0; }
 .counter { font-size: 0.85rem; color: #000000; }
@@ -398,52 +398,52 @@ onMounted(cargarDatos);
 .btn-text { line-height: 1; }
 
 .table-container { overflow: auto; max-height: 80vh; background: white; border: 1px solid #e2e8f0; border-radius: 4px; width: 100%; }
-table { 
-  width: max-content; 
+table {
+  width: max-content;
   border-collapse: collapse !important; /* Cambiado para eliminar espacios */
-  border-spacing: 0; 
-  font-size: 0.8rem; 
+  border-spacing: 0;
+  font-size: 0.8rem;
 }
-th { 
-  background: #f1f5f9 !important; 
-  padding: 10px; 
-  position: sticky; 
-  top: 0; 
+th {
+  background: #f1f5f9 !important;
+  padding: 10px;
+  position: sticky;
+  top: 0;
   z-index: 50; /* Bajamos el nivel para que el scroll horizontal pase por debajo de las columnas fijas */
-  border-bottom: 2px solid #cbd5e1; 
-  text-transform: uppercase; 
+  border-bottom: 2px solid #cbd5e1;
+  text-transform: uppercase;
 }
 
-.filter-row td { 
-  position: sticky; 
+.filter-row td {
+  position: sticky;
   top: 36px; /* Ajustado para que pegue justo al TH */
   z-index: 40; /* Menor que el z-index de las columnas fijas (60) */
-  background: #f1f5f9 !important; 
-  padding: 4px; 
+  background: #f1f5f9 !important;
+  padding: 4px;
   /* Agregamos la sombra que pediste */
   box-shadow: 0 4px 6px -2px rgba(0,0,0,0.1), inset 0 -1px 0 #cbd5e1;
 }
 
-.sticky-col { 
-  position: sticky; 
+.sticky-col {
+  position: sticky;
   z-index: 60 !important; /* Prioridad sobre el scroll horizontal */
-  background-color: white !important; 
-  box-shadow: inset -1px 0 0 #e2e8f0; 
-  padding-left: 12px; 
+  background-color: white !important;
+  box-shadow: inset -1px 0 0 #e2e8f0;
+  padding-left: 12px;
   background-clip: padding-box; /* Evita que se vea el contenido de atrás en el borde */
 }
-th.sticky-col { 
+th.sticky-col {
   z-index: 100 !important; /* El nivel más alto */
-  background-color: #f1f5f9 !important; 
+  background-color: #f1f5f9 !important;
 }
-.filter-row .sticky-col { 
+.filter-row .sticky-col {
   z-index: 90 !important; /* Nivel alto para los filtros de las columnas fijas */
-  background-color: #f1f5f9 !important; 
+  background-color: #f1f5f9 !important;
   box-shadow: 0 4px 6px -2px rgba(0,0,0,0.1), inset -1px -1px 0 #cbd5e1;
 }
-.sticky-col-final { 
+.sticky-col-final {
   /* Usamos sombra para el borde grueso final y que no ocupe espacio físico */
-  box-shadow: inset -3px 0 0 #cbd5e1, 0 4px 6px -2px rgba(0,0,0,0.1); 
+  box-shadow: inset -3px 0 0 #cbd5e1, 0 4px 6px -2px rgba(0,0,0,0.1);
   border-right: none !important;
 }
 
@@ -452,12 +452,12 @@ tbody tr:first-child td {
 }
 
 .font-bold { font-weight: bold; }
-.col-shrink { 
-  width: 50px !important; 
+.col-shrink {
+  width: 50px !important;
   min-width: 50px !important;
-  white-space: nowrap !important; 
-  padding: 8px 0 !important; 
-  text-align: center; 
+  white-space: nowrap !important;
+  padding: 8px 0 !important;
+  text-align: center;
 }
 
 
@@ -503,11 +503,11 @@ tbody tr:first-child td {
 
   .mobile-filter-panel { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
   .filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
-  .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background-color: #f8fafc; }
-  
+  .filter-grid-mobile input, .filter-grid-mobile select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background-color: #e2e8f0; }
+
   .mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
   .mobile-select-group label { font-size: 0.75rem; color: #000000; font-weight: bold; }
-  
+
   .filter-row-mobile { display: flex; gap: 10px; }
   .filter-row-mobile input { flex: 1; }
 

@@ -330,7 +330,7 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
 
 /* TABLA RESPONSIVE */
 .table thead th {
-  background-color: #f8fafc;
+  background-color: #e2e8f0;
   color: #64748b;
   font-size: 0.65rem;
   padding: 15px 10px;

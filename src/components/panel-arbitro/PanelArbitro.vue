@@ -270,7 +270,7 @@ useHead({
 }
 
 .dropdown-item:hover {
-  background-color: #f8fafc;
+  background-color: #e2e8f0;
 }
 
 .icon-circle {

@@ -17,9 +17,9 @@
 
           <div class="header-actions d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
             <RouterLink to="/panel-arbitro/indumentaria/mis-pedidos" class="text-decoration-none">
-              <button class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Ver Mis Pedidos" style="background-color: #f8fafc !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
-                <span class="material-icons" style="font-size: 22px; color: #64748b;">history</span>
-                <span class="btn-text desktop-only fw-bold text-secondary" style="font-size: 0.8rem;">Mis Pedidos</span>
+              <button class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Ver Mis Pedidos" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
+                <span class="material-icons" style="font-size: 22px; color: #000;">history</span>
+                <span class="btn-text desktop-only fw-bold text-dark" style="font-size: 0.8rem;">Mis Pedidos</span>
               </button>
             </RouterLink>
 
@@ -139,7 +139,7 @@
             <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron prendas.</p>
           </div>
 
-<div 
+<div
   class="d-flex justify-content-center align-items-center gap-3 mt-4"
   v-if="totalPaginas > 1"
 >
@@ -549,7 +549,7 @@ h5 {
 .tarjeta-prenda-invertida {
   border-radius: 16px;
   transition: all 0.3s ease;
-  background-color: #f8fafc;
+  background-color: #e2e8f0;
   border: 1px solid #e2e8f0 !important;
   display: flex;
   flex-direction: column;
@@ -580,7 +580,7 @@ h5 {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  background-color: #f8fafc;
+  background-color: #e2e8f0;
   border-radius: 0 0 16px 16px;
 }
 

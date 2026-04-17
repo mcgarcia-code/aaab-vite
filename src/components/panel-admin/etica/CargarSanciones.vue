@@ -14,15 +14,15 @@
 
           <div class="header-actions">
             <router-link to="/panel-admin/tribunal/sanciones" class="text-decoration-none">
-              <button class="btn-action btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Volver al Listado" style="background-color: #ffffff !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
-                <span class="material-icons" style="font-size: 22px; color: #64748b;">list</span>
-                <span class="btn-text desktop-only fw-bold text-secondary" style="font-size: 0.8rem;">Ver Listado</span>
+              <button class="btn-action btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Volver al Listado" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
+                <span class="material-icons" style="font-size: 22px; color: #000;">list</span>
+                <span class="btn-text desktop-only fw-bold text-dark" style="font-size: 0.8rem;">Ver Listado</span>
               </button>
             </router-link>
           </div>
         </div>
 
-        <div class="card-body p-3 p-md-4" style="background-color: #f8fafc;">
+        <div class="card-body p-3 p-md-4" style="background-color: #e2e8f0;">
           <div class="row g-4">
 
             <div class="col-12 col-lg-8">
@@ -252,13 +252,13 @@ onMounted(() => {
 
 .header-actions { display: flex; gap: 8px; }
 .btn-action { border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.85rem; transition: opacity 0.2s; }
-.btn-clear { background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; }
+.btn-clear { background: #e2e8f0; color: #0f172a; border: 1px solid #e2e8f0; }
 
-/* GRILLA DIVIDIDA - Sombras intensificadas para resaltar sobre fondo #f8fafc */
+/* GRILLA DIVIDIDA - Sombras intensificadas para resaltar sobre fondo #e2e8f0 */
 .menu-card-static { background: #ffffff; border-radius: 12px; padding: 30px; border-top: 4px solid #dc2626; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); }
 .side-card { background: #ffffff; border-radius: 12px; padding: 25px; border-top: 4px solid #64748b; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); }
 
-.custom-input { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 0.95rem; background-color: #f8fafc; transition: all 0.3s ease; resize: vertical; }
+.custom-input { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 0.95rem; background-color: #e2e8f0; transition: all 0.3s ease; resize: vertical; }
 .custom-input:focus { background-color: #fff; border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.15); outline: none; }
 .custom-input:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
 

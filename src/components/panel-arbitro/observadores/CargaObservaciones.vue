@@ -393,7 +393,7 @@ const reiniciarFormulario = () => {
   border-radius: 12px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  background-color: #f8fafc;
+  background-color: #e2e8f0;
   color: #1e293b;
 }
 

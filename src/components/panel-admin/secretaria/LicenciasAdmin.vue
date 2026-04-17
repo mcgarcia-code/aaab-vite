@@ -3,7 +3,7 @@
     <div class="admin-panel animate__animated animate__fadeIn">
 
       <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
-        
+
         <div class="header-section border-bottom p-4 mb-0 rounded-0 shadow-none">
           <div class="header-info">
             <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
@@ -32,7 +32,7 @@
         </div>
 
         <div class="card-body p-3 p-md-4">
-          
+
           <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-md-none animate__animated animate__fadeInDown animate__faster shadow-sm border-bottom bg-light p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <span class="small fw-bold text-muted text-uppercase">Filtrar Licencias</span>
@@ -188,8 +188,8 @@
       </div>
     </div>
 
-    <ModalBase 
-      :show="mostrarModal" 
+    <ModalBase
+      :show="mostrarModal"
       @close="cerrarModal"
       :icono="modoModal === 'editar' ? 'edit' : 'calendar_today'"
       :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
@@ -206,7 +206,7 @@
 
       <form id="formLicencia" @submit.prevent="modoModal === 'editar' ? confirmarEdicion() : confirmarAlta()" class="text-start mt-2">
         <div class="row g-3">
-          
+
           <div class="col-12" v-if="modoModal === 'nuevo'">
             <label class="small fw-bold text-dark mb-1">Seleccionar Árbitro *</label>
             <select v-model="formModal.id_arbitro" class="form-select border-primary-subtle shadow-none" required>
@@ -224,7 +224,7 @@
               <option value="lesion_enfermedad">Lesión / Enfermedad</option>
             </select>
           </div>
-          
+
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Estado</label>
             <select v-model="formModal.estado" class="form-select shadow-none border-secondary-subtle">
@@ -250,7 +250,7 @@
       <template #footer>
         <div class="w-100 d-flex justify-content-center gap-3">
           <button type="button" @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border">CANCELAR</button>
-          
+
           <button type="submit" form="formLicencia" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargando">
             <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
             {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR LICENCIA' }}
@@ -260,8 +260,8 @@
     </ModalBase>
 
 
-    <ModalBase 
-      :show="mostrarModalHistorial" 
+    <ModalBase
+      :show="mostrarModalHistorial"
       @close="mostrarModalHistorial = false"
       icono="manage_search"
       colorIcono="bg-warning-subtle text-warning-emphasis"
@@ -388,7 +388,7 @@ watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.val
 
 const cambiarPagina = (delta) => {
   paginaActual.value += delta;
-  
+
   setTimeout(() => {
     if (window.innerWidth <= 768) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -458,7 +458,7 @@ const confirmarEdicion = async () => {
   const res = await api.post({
     entity: 'licencias',
     action: 'actualizarLicencia',
-    // Ojo: Según el backend PHP actual, actualizarLicencia no guarda cambios de "motivo", 
+    // Ojo: Según el backend PHP actual, actualizarLicencia no guarda cambios de "motivo",
     // pero lo enviamos por si a futuro ajustás la query SQL del UPDATE.
     payload: {
       id: formModal.value.id,
@@ -559,7 +559,7 @@ onMounted(() => {
   margin-left: 50%;
   transform: translateX(-50%);
   padding: 20px;
-  padding-bottom: 120px; 
+  padding-bottom: 120px;
 }
 
 .admin-panel {
@@ -592,10 +592,10 @@ onMounted(() => {
    ==================================================== */
 .header-actions { display: flex; gap: 8px; }
 
-.btn-action { 
-  border: none; padding: 8px 12px; border-radius: 4px; 
-  font-weight: bold; cursor: pointer; display: flex; 
-  align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; 
+.btn-action {
+  border: none; padding: 8px 12px; border-radius: 4px;
+  font-weight: bold; cursor: pointer; display: flex;
+  align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s;
 }
 
 .btn-clear { background: #e2e8f0; color: #000; }
@@ -649,8 +649,8 @@ table {
 }
 
 thead tr.main-header th {
-  position: sticky; top: 0; z-index: 50; background: #f8fafc !important;
-  padding: 12px 8px; border-bottom: 1px solid #cbd5e1; 
+  position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
+  padding: 12px 8px; border-bottom: 1px solid #cbd5e1;
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
   font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
 }
@@ -664,7 +664,7 @@ thead tr.filter-row td {
   position: sticky !important; z-index: 60 !important;
   background: white !important; border-right: 1px solid #e2e8f0;
 }
-thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #f8fafc !important; }
+thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
 thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
 
 .col-id { left: 0; width: 50px; text-align: center; }
@@ -677,8 +677,8 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
   white-space: nowrap; border-bottom: 1px solid #f1f5f9;
 }
 
-.filter-input { 
-  font-size: 16px; height: 32px; border: 1px solid #cbd5e1; 
+.filter-input {
+  font-size: 16px; height: 32px; border: 1px solid #cbd5e1;
   border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;
 }
 
@@ -713,8 +713,8 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 
   /* Estilos de las tarjetas móviles */
   .card-licencia {
-    background: white; border-radius: 8px; padding: 15px; 
-    margin-bottom: 12px; border: 1px solid #e2e8f0; 
+    background: white; border-radius: 8px; padding: 15px;
+    margin-bottom: 12px; border: 1px solid #e2e8f0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
   .card-header {
@@ -732,8 +732,8 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
   }
   .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .filter-grid-mobile input, .filter-grid-mobile select {
-    padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; 
-    width: 100%; outline: none; background: #f8fafc;
+    padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px;
+    width: 100%; outline: none; background: #e2e8f0;
   }
   .filter-grid-mobile select.full-width { grid-column: span 2; }
 
@@ -754,23 +754,23 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
   margin-left: 50%;
   transform: translateX(-50%);
       /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important; 
+  padding: 0 15px 20px 15px !important;
   box-sizing: border-box !important;
 }
-    
-.admin-panel { 
-      padding: 0 !important; 
-      border-radius: 0; 
+
+.admin-panel {
+      padding: 0 !important;
+      border-radius: 0;
       box-sizing: border-box !important;
 }
 
   /* CABECERA: Título Izquierda, Botones Centro */
-  .header-section { 
-    padding: 15px !important; 
-    flex-direction: column; 
+  .header-section {
+    padding: 15px !important;
+    flex-direction: column;
     align-items: flex-start; /* Respetamos el borde rojo a la izquierda */
-    text-align: left; 
-    gap: 15px; 
+    text-align: left;
+    gap: 15px;
   }
 
   .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
@@ -779,11 +779,11 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 
   /* Botones de acción centrados horizontalmente debajo */
   .header-actions {
-    width: 100%; 
-    display: flex; 
-    flex-direction: row; 
-    flex-wrap: wrap; 
-    justify-content: center; 
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 8px;
   }
   .btn-action {
