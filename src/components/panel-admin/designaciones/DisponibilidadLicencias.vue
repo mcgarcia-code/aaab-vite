@@ -22,7 +22,7 @@
               <span class="btn-text">Limpiar</span>
             </button>
 
-            <button @click="mostrarModalSubida = true" class="btn-action btn-upload text-success" style="padding-left: 8px; padding-right: 10px;">
+            <button @click="mostrarModalSubida = true" class="btn-action btn-upload text-success" style="padding-left: 8px; padding-right: 10px; background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
               <span class="material-icons" style="font-size: 16px; line-height: 1;">cloud_upload</span>
               <span class="btn-text" style="line-height: 1;">Publicar</span>
             </button>
