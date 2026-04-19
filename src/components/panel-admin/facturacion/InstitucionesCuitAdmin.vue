@@ -31,7 +31,7 @@
 
         <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-block d-md-none animate__animated animate__fadeInDown animate__faster bg-light p-3 border-bottom shadow-sm">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">FILTRAR INSTITUCIONES</span>
+            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR INSTITUCIONES</span>
             <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-white border-0 shadow-sm p-1 bg-transparent">
               <span class="material-icons" style="font-size: 20px;">close</span>
             </button>
@@ -488,14 +488,14 @@ onMounted(() => {
 .mobile-only-flex { display: flex; }
 
 /* Filtros Móvil */
-.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-.filter-grid-mobile { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
+.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .filter-input-mobile {
-  padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;
-  font-size: 16px; width: 100%; outline: none; background: #e2e8f0; color: #334155;
+  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
+  font-size: 12px; width: 100%; outline: none; background: #ffffff; color: #334155;
 }
 .filter-input-mobile:focus { border-color: #3b82f6; background: white; }
-.filter-input-mobile::placeholder { color: #94a3b8; }
+.filter-input-mobile::placeholder { color: #000000; }
 .filter-input-mobile.full-width { grid-column: span 1; }
 
 /* Tarjetas Móviles (Listado) */

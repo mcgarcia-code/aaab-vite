@@ -52,7 +52,7 @@
 
         <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
+            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
             <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
               <span class="material-icons" style="font-size: 20px;">close</span>
             </button>
@@ -1177,14 +1177,14 @@ onMounted(() => {
 .mobile-only-flex { display: flex; }
 
 /* Filtros Móvil */
-.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-.filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; }
+.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
+.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .filter-input-mobile {
   padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
-  font-size: 16px; width: 100%; outline: none; background: #e2e8f0; color: #334155;
+  font-size: 12px; width: 100%; outline: none; background: #ffffff; color: #334155;
 }
 .filter-input-mobile:focus { border-color: #3b82f6; background: white; }
-.filter-input-mobile::placeholder { color: #94a3b8; }
+.filter-input-mobile::placeholder { color: #000000; }
 
 /* Tarjetas Móviles (Listado) */
 .card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }

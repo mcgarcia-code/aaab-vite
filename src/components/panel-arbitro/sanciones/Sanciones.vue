@@ -26,7 +26,7 @@
 
       <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-md-none animate__animated animate__fadeInDown animate__faster shadow-sm border-bottom p-3" style="background-color: #e2e8f0; margin-bottom: 0; border-radius: 0;">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <span class="small fw-bold text-muted text-uppercase">Filtrar Sanciones</span>
+          <span class="small fw-bold text-dark text-uppercase">Filtrar Sanciones</span>
           <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1 shadow-sm" style="line-height: 1; background: white;">
             <span class="material-icons" style="font-size: 20px;">close</span>
           </button>

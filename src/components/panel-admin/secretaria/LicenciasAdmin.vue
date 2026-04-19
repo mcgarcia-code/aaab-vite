@@ -35,7 +35,7 @@
 
           <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-md-none animate__animated animate__fadeInDown animate__faster shadow-sm border-bottom bg-light p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="small fw-bold text-muted text-uppercase">Filtrar Licencias</span>
+              <span class="small fw-bold text-dark text-uppercase">Filtrar Licencias</span>
               <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-white border-0 shadow-sm p-1">
                 <span class="material-icons" style="font-size: 20px;">close</span>
               </button>
@@ -725,17 +725,17 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
   .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
   .card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
 
-  /* Filtros Móviles */
-  .mobile-filter-panel {
-    background: white; padding: 15px 20px; border-radius: 8px;
-    border: 1px solid #e2e8f0; margin-bottom: 15px;
-  }
-  .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .filter-grid-mobile input, .filter-grid-mobile select {
-    padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px;
-    width: 100%; outline: none; background: #e2e8f0;
-  }
-  .filter-grid-mobile select.full-width { grid-column: span 2; }
+/* Filtros Móvil */
+.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
+.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.filter-grid-mobile input, .filter-grid-mobile select {
+  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
+  font-size: 12px; width: 100%; outline: none; background: #ffffff; color: #334155;
+}
+
+.filter-grid-mobile select.full-width { grid-column: span 2; }
+.filter-input-mobile::placeholder { color: #000000; }
 
   /* Botones en Cards */
   .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }

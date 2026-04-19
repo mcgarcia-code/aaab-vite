@@ -33,7 +33,7 @@
 
         <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0;">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-muted text-uppercase">Filtrar Pedidos</span>
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Pedidos</span>
             <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
               <span class="material-icons" style="font-size: 20px;">close</span>
             </button>
@@ -575,9 +575,13 @@ thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f
 .mobile-only-flex { display: none; }
 .btn-text { display: inline; }
 
-.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
 .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filter-input-mobile { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; width: 100%; outline: none; background: #e2e8f0; }
+.filter-input-mobile {
+  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
+  font-size: 12px; width: 100%; outline: none; background: #ffffff; color: #334155;
+}
+
 .filter-grid-mobile select.full-width { grid-column: span 2; }
 
 @media (min-width: 769px) {

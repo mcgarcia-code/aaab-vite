@@ -79,19 +79,19 @@
                     <span v-else class="badge bg-secondary">Cumplida</span>
                   </div>
                 </div>
-                
+
                 <div class="card-sancion-body">
                   <p class="mb-2 text-muted small"><strong>Motivo:</strong> {{ s.motivo }}</p>
                   <p class="mb-2">
-                    <strong>Sanción: </strong> 
+                    <strong>Sanción: </strong>
                     <span :class="s.estado_dinamico == 3 ? 'text-muted fw-bold' : 'text-danger fw-bold'">{{ s.sancion || 'Sin sanción' }}</span>
                   </p>
                   <div class="d-flex justify-content-between mt-3 pt-2 border-top">
                     <div class="small">
-                      <span class="text-muted">Desde:</span> <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong>
+                      <span class="text-muted">Desde: </span> <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong>
                     </div>
                     <div class="small">
-                      <span class="text-muted">Hasta:</span> 
+                      <span class="text-muted">Hasta: </span>
                       <strong v-if="s.es_indefinido == 1" class="text-dark">Indefinida</strong>
                       <strong v-else class="text-dark">{{ s.hasta_formateada || '-' }}</strong>
                     </div>
@@ -100,7 +100,7 @@
               </div>
             </div>
 
-                        <div 
+                        <div
                 class="d-flex justify-content-center align-items-center gap-3 mt-4"
                 v-if="totalPaginas > 1"
               >
@@ -174,26 +174,26 @@ const fetchSanciones = async () => {
 const chequearResolucion = () => {
   const esMobile = window.innerWidth <= 768;
   const nuevaCantidad = esMobile ? 10 : 20;
-  
+
   // Solo reseteamos la página si la cantidad realmente cambió para evitar parpadeos
   if (registrosPorPagina.value !== nuevaCantidad) {
     registrosPorPagina.value = nuevaCantidad;
-    paginaActual.value = 1; 
+    paginaActual.value = 1;
   }
 }
 
 const sancionesFiltradas = computed(() => {
     let res = sanciones.value;
-    
+
     // 1. Filtrado por texto
     if (filtro.value) {
         const textoBusqueda = filtro.value.toLowerCase();
-        res = res.filter(s => 
+        res = res.filter(s =>
           (s.arbitro || '').toLowerCase().includes(textoBusqueda) ||
           (s.motivo || '').toLowerCase().includes(textoBusqueda)
         );
     }
-    
+
     // 2. Ordenamiento: Vigentes (1) y En Proceso (3) arriba. Cumplidas (2) abajo.
     return res.sort((a, b) => {
         const pesoA = (a.estado_dinamico == 1 || a.estado_dinamico == 3) ? 0 : 1;
@@ -270,8 +270,8 @@ onUnmounted(() => {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.table tbody td { 
-  font-size: 0.85rem; 
+.table tbody td {
+  font-size: 0.85rem;
   vertical-align: middle;
 }
 .text-danger { color: #ef4444 !important; }
@@ -291,7 +291,7 @@ onUnmounted(() => {
     padding: 15px;
     overflow: hidden;
   }
-  
+
   .card-sancion-header {
     display: flex;
     justify-content: space-between;

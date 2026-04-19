@@ -36,7 +36,7 @@
 
         <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-md-none animate__animated animate__fadeInDown animate__faster">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-muted text-uppercase">Filtrar Sanciones</span>
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Sanciones</span>
             <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1 bg-transparent">
               <span class="material-icons">close</span>
             </button>
@@ -798,7 +798,10 @@ onMounted(fetchSanciones)
 /* Filtros Móvil */
 .mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
 .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filter-input-mobile { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; width: 100%; outline: none; background: #e2e8f0; }
+.filter-input-mobile {
+  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
+  font-size: 12px; width: 100%; outline: none; background: #ffffff; color: #334155;
+}
 .full-width { grid-column: span 2; }
 
 /* Cards Móviles */

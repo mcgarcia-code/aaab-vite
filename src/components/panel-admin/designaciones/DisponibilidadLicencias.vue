@@ -41,7 +41,7 @@
 
         <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
+            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
             <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
               <span class="material-icons" style="font-size: 20px;">close</span>
             </button>
@@ -853,19 +853,97 @@ onMounted(cargarDatos);
 .mobile-only-flex { display: flex !important; }
 
 /* Filtros Móvil */
-.mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-.filter-grid-mobile { display: flex; flex-direction: column; gap: 12px; }
-.filter-grid-mobile input, .filter-grid-mobile select {
-  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
-  font-size: 16px; width: 100%; outline: none; background: #e2e8f0; color: #334155;
+.mobile-filter-panel {
+  background: #e2e8f0;
+  padding: 15px 20px;
+  border-bottom: 1px solid #cbd5e1;
 }
-.filter-grid-mobile input:focus, .filter-grid-mobile select:focus { border-color: #3b82f6; background: white; }
+
+.filter-grid-mobile {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  /* Esto alinea los elementos por la parte de abajo,
+     evitando el escalonado si un label es más largo que otro */
+  align-items: end;
+}
+
+.filter-grid-mobile input,
+.filter-grid-mobile select {
+  padding: 0 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px; /* Un pelín más grande para evitar zoom en iOS */
+  width: 100%;
+  height: 42px; /* Altura fija para que inputs y selects sean hermanos gemelos */
+  outline: none;
+  background: #ffffff;
+  color: #334155;
+  box-sizing: border-box;
+}
+
+.filter-grid-mobile input:focus,
+.filter-grid-mobile select:focus {
+  border-color: #3b82f6;
+  background: white;
+}
+
 .filter-grid-mobile input::placeholder { color: #94a3b8; }
-.mobile-select-group { display: flex; flex-direction: column; gap: 4px; }
-.mobile-select-group label { font-size: 0.75rem; color: #000; font-weight: bold; margin-bottom: 2px; }
-.filter-row-mobile { display: flex; gap: 10px; }
-.filter-row-mobile input { flex: 1; }
-.btn-close-filters { background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; }
+
+.mobile-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.mobile-select-group label {
+  font-size: 0.75rem;
+  color: #000;
+  font-weight: bold;
+  margin-bottom: 2px;
+  /* Mantiene el espacio aunque no haya texto en el label */
+  min-height: 1rem;
+}
+
+/* El contenedor para Grupo y Sub-grupo */
+.filter-row-mobile {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.filter-row-mobile input {
+  flex: 1;
+  /* Evita que los inputs se deformen dentro del flex */
+  min-width: 0;
+}
+
+/* El botón celeste/azul de aplicar filtros */
+.btn-close-filters {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  width: 100%;
+  margin-top: 15px; /* Separación del grid */
+  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.btn-close-filters:active {
+  background: #2563eb;
+  transform: scale(0.98);
+}
+
+/* Clase extra por si quieres que "Zona" ocupe todo el ancho */
+.col-span-2 {
+  grid-column: span 2;
+}
 
 /* Tarjetas Móviles (Listado) */
 .card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -933,30 +1011,54 @@ onMounted(cargarDatos);
   }
   table { width: 100%; min-width: max-content; border-collapse: collapse !important; border-spacing: 0; font-size: 0.85rem; }
 
+  /* CABECERA PRINCIPAL */
   th {
-    position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
-    padding: 10px; border-bottom: 2px solid #e2e8f0;
+    position: sticky; top: 0; z-index: 50;
+    background-color: #e2e8f0 !important; /* COLOR SOLICITADO */
+    padding: 14px 10px; /* AUMENTO DE ESPACIO */
+    border-bottom: 2px solid #cbd5e1;
     font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-    font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800;
+    font-size: 0.75rem; color: #000000; text-transform: uppercase; font-weight: 800;
   }
+
+  /* FILA DE FILTROS */
   .filter-row td {
-    position: sticky; top: 37px; z-index: 40; background: #f1F5F9 !important;
-    padding: 4px; border-bottom: 2px solid #cbd5e1;
+    position: sticky; top: 46px; z-index: 40; /* AJUSTADO POR LA NUEVA ALTURA DEL TH */
+    background-color: #f1f5f9 !important; /* COLOR SOLICITADO */
+    padding: 10px 8px; /* AUMENTO DE ESPACIO */
+    border-bottom: 2px solid #cbd5e1;
   }
+
   td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
   td.text-center { display: table-cell; text-align: center; vertical-align: middle; }
 
   /* Columnas Fijas (Sticky) */
   .sticky-col { position: sticky !important; z-index: 10; background: white !important; box-shadow: inset -1px 0 0 #e2e8f0; background-clip: padding-box; }
-  th.sticky-col { z-index: 100 !important; background-color: #f1F5F9 !important; }
-  .filter-row .sticky-col { z-index: 90 !important; background-color: #e2e8f0 !important; }
+
+  /* Asegurando colores en las columnas fijas */
+  th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
+  .filter-row .sticky-col { z-index: 90 !important; background-color: #f1f5f9 !important; }
+
   .sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
 
   .col-shrink { width: 50px !important; min-width: 50px !important; max-width: 50px !important; white-space: nowrap !important; padding: 8px 0 !important; text-align: center; }
 
-  /* Inputs de Filtro Desktop */
-  .filter-input { width: 100%; padding: 2px; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 4px; outline: none; }
-  .filter-input-min { width: 35px; text-align: center; border: 1px solid #cbd5e1; font-size: 0.7rem; border-radius: 4px; outline: none; }
+  /* Inputs de Filtro Desktop (Mejorados) */
+  .filter-input {
+    width: 100%;
+    height: 30px; /* ALTURA AUMENTADA */
+    padding: 4px 8px; /* PADDING INTERNO AUMENTADO */
+    border: 1px solid #cbd5e1;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    outline: none;
+    background-color: #ffffff; /* FONDO BLANCO */
+    box-sizing: border-box;
+  }
+  .filter-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
+
+  .filter-input-min { width: 35px; text-align: center; height: 30px; border: 1px solid #cbd5e1; font-size: 0.75rem; border-radius: 4px; outline: none; background-color: #ffffff;}
+  .filter-input-min:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
 
   /* Botón WhatsApp Desktop */
   .btn-wa { background: #25d366; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto; transition: 0.2s; }

@@ -17,13 +17,13 @@
 
         <div class="flex-shrink-0 p-3 border-bottom bg-white position-relative">
 
-<button
-  @click="cerrar"
-  class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center p-0"
-  style="width: 35px; height: 35px; border: 1px solid #e2e8f0;"
->
-  <span class="material-icons" style="font-size: 20px;">close</span>
-</button>
+          <button
+            @click="cerrar"
+            class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center p-0"
+            style="width: 35px; height: 35px; border: 1px solid #e2e8f0;"
+          >
+            <span class="material-icons" style="font-size: 20px;">close</span>
+          </button>
 
           <div class="text-center px-3">
 
@@ -104,7 +104,7 @@ const handleTab = (e) => {
 };
 
 
-// Observador unificado y corregido
+// Observador unificado
 watch(() => props.show, async (val) => {
   if (val) {
     // Solo bloqueamos el scroll
@@ -133,14 +133,13 @@ onUnmounted(() => {
 });
 
 
-//  MOBILE FIRST
+// Estilos computados sin la dependencia no reactiva del innerWidth
 const modalStyle = computed(() => ({
   width: '100%',
   maxWidth: props.maxWidth,
   maxHeight: '90vh',
   display: 'flex',
   flexDirection: 'column',
-  borderRadius: window.innerWidth < 576 ? '16px' : '20px',
   background: '#ffffff',
   overflow: 'hidden'
 }));
@@ -156,11 +155,19 @@ const modalStyle = computed(() => ({
   justify-content: center;
   align-items: center;
   padding: 10px;
-
 }
 
+/* Base (Celulares) */
 .modal-content-exito {
   outline: none;
+  border-radius: 16px;
+}
+
+/* Mejora para Tablets y Escritorio */
+@media (min-width: 576px) {
+  .modal-content-exito {
+    border-radius: 20px;
+  }
 }
 
 .icon-circle-mini {
@@ -168,5 +175,4 @@ const modalStyle = computed(() => ({
   color: #0284c7;
   border-radius: 50%;
 }
-
 </style>

@@ -28,7 +28,7 @@
 
         <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-block d-md-none animate__animated animate__fadeInDown animate__faster">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">FILTRAR REGISTROS</span>
+            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR REGISTROS</span>
             <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
               <span class="material-icons" style="font-size: 20px;">close</span>
             </button>
@@ -259,7 +259,7 @@ watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
 onMounted(cargarDatos);
 </script>
 
-<<style scoped>
+<style scoped>
 /* ====================================================
    ESTILOS BASE (DISEÑO PARA CELULARES - MOBILE FIRST)
    ==================================================== */
@@ -327,27 +327,13 @@ onMounted(cargarDatos);
 .btn-text { display: none; } /* Oculto en móvil */
 
 /* Panel de Filtros Móvil */
-.mobile-filter-panel {
-  background: #e2e8f0;
-  padding: 15px 20px;
-  border-bottom: 1px solid #e2e8f0;
-}
+.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
 
-.filter-grid-mobile {
-  display: grid;
-  grid-template-columns: 1fr; /* 1 columna en celulares muy chicos */
-  gap: 12px;
-}
+.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .filter-input-mobile {
-  padding: 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 16px;
-  width: 100%;
-  outline: none;
-  background: #e2e8f0;
-  color: #334155;
+  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
+  font-size: 12px; width: 100%; outline: none; background: #ffffff; color: #334155;
 }
 
 /* Cards Árbitros (Móvil) */
@@ -371,7 +357,6 @@ onMounted(cargarDatos);
 .card-row { display: flex; justify-content: space-between; font-size: 0.9rem; color: #000000; margin-bottom: 8px; }
 .card-info p { font-size: 0.9rem; color: #000000; margin: 4px 0; }
 .card-arbitro.fila-inactiva { background-color: #ef4444 !important; border-color: #dc2626; }
-.card-arbitro.fila-inactiva .card-name { color: #000 !important; }
 
 /* Estados Generales */
 .status-wrapper { display: flex; align-items: center; gap: 5px; justify-content: center; height: 100%; }
@@ -389,7 +374,6 @@ onMounted(cargarDatos);
   .full-screen-wrapper { padding: 20px; }
   .admin-panel { padding: 20px; border-radius: 8px; }
 
-  /* Ajustes Cabecera Desktop */
   .header-section {
     flex-direction: row;
     align-items: center;
@@ -400,13 +384,7 @@ onMounted(cargarDatos);
 
   .title { font-size: 1.1rem; }
   .header-info { width: auto; }
-
-  .header-actions {
-    width: auto;
-    justify-content: flex-end;
-    flex-wrap: nowrap;
-    gap: 8px;
-  }
+  .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; }
 
   .btn-action {
     width: auto;
@@ -418,9 +396,6 @@ onMounted(cargarDatos);
   }
   .btn-text { display: inline; }
 
-  /* Ajuste de filtros para Tablets */
-  .filter-grid-mobile { grid-template-columns: 1fr 1fr; }
-
   /* Estilos de Tabla Desktop */
   .table-container {
     width: 100%; overflow: auto; max-height: 75vh;
@@ -429,22 +404,29 @@ onMounted(cargarDatos);
 
   table { width: 100%; min-width: max-content; border-collapse: collapse; }
 
+  /* PRIMER FILA: CABECERA */
   thead tr.main-header th {
     position: sticky; top: 0; z-index: 100;
-    background: #e2e8f0; border-bottom: 2px solid #e2e8f0;
-    font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800;
-    padding: 12px 10px;
+    background-color: #e2e8f0 !important; /* COLOR SOLICITADO */
+    border-bottom: 2px solid #cbd5e1;
+    font-size: 0.75rem; color: #1e293b; text-transform: uppercase; font-weight: 800;
+    padding: 14px 10px;
   }
 
+  /* SEGUNDA FILA: FILTROS */
   thead tr.filter-row td {
-    position: sticky; top: 41px; z-index: 90;
-    background: #f1f5f9 !important; border-bottom: 2px solid #cbd5e1;
+    position: sticky; top: 46px; z-index: 90;
+    background-color: #f1f5f9 !important; /* COLOR SOLICITADO */
+    border-bottom: 2px solid #cbd5e1;
+    padding: 10px 8px; /* MÁS ESPACIO */
   }
 
-  thead tr.filter-row td.sticky-col { z-index: 95 !important; background: #f1f5f9 !important; }
+  /* Sticky columns con colores de cabecera */
+  thead tr.main-header th.sticky-col { background-color: #e2e8f0 !important; z-index: 110 !important; }
+  thead tr.filter-row td.sticky-col { background-color: #f1f5f9 !important; z-index: 95 !important; }
 
   .sticky-col {
-    position: sticky !important; z-index: 60 !important;
+    position: sticky !important;
     background: white !important;
     box-shadow: inset -1px 0 0 #e2e8f0;
   }
@@ -453,27 +435,20 @@ onMounted(cargarDatos);
   .col-apellido { left: 50px; width: 140px; }
   .col-nombre { left: 190px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
 
-  .col-ultra-compact {
-    width: 65px !important;
-    min-width: 65px !important;
-    text-align: center !important;
-  }
-
+  .col-ultra-compact { width: 65px !important; min-width: 65px !important; text-align: center !important; }
   .col-dni-compact { width: 90px; text-align: center; }
 
   .read-only-text { padding: 10px 5px; font-size: 0.85rem; color: #1e293b; }
 
   .filter-input {
-    font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1;
+    font-size: 0.75rem; height: 30px; border: 1px solid #cbd5e1;
     border-radius: 4px; padding: 2px 8px; width: 100%; box-sizing: border-box;
+    background-color: #ffffff;
   }
 
   .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #f37d7d !important; color: #000; }
 }
 
-/* ====================================================
-   PANTALLAS GRANDES (Desde 1200px)
-   ==================================================== */
 @media (min-width: 1200px) {
   .full-screen-wrapper {
     width: 99vw;

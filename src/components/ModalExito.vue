@@ -1,16 +1,15 @@
 <template>
   <Teleport to="body">
 
-<div
-  v-if="visible"
-  class="modal-overlay-exito animate__animated animate__fadeIn animate__faster"
-  style="z-index: 1040;"
-  @click.self="cerrar"
->
+    <div
+      v-if="visible"
+      class="modal-overlay-exito animate__animated animate__fadeIn animate__faster"
+      style="z-index: 1040;"
+      @click.self="cerrar"
+    >
       <div
         ref="modalRef"
         class="modal-content-exito animate__animated animate__zoomIn animate__faster p-4 mx-auto"
-        :style="modalStyle"
         tabindex="-1"
       >
 
@@ -114,24 +113,36 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  padding: 10px;
+  padding: 15px; /* Aumentamos apenas el padding para que no toque los bordes del celular */
 }
 
+/* ====================================================
+   BASE (Celulares - Mobile First)
+   ==================================================== */
 .modal-content-exito {
   background: white;
-  border-radius: 20px;
+  border-radius: 16px; /* Borde levemente más suave para móviles */
   padding: 30px;
   width: 100%;
   max-width: 380px;
   text-align: center;
   outline: none;
+  box-sizing: border-box; /* Asegura que el padding no expanda el 100% del ancho */
 }
 
+/* ====================================================
+   TABLETS Y ESCRITORIO
+   ==================================================== */
+@media (min-width: 576px) {
+  .modal-content-exito {
+    border-radius: 20px; /* Borde más redondeado para pantallas grandes */
+  }
+}
+
+/* --- Elementos Internos --- */
 .icon-circle-exito {
   width: 70px;
   height: 70px;
-  background: #dcfce7;
-  color: #166534;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -150,10 +161,9 @@ h4 {
 .bg-success-light { background: #dcfce7; color: #166534; }
 .bg-danger-light { background: #fee2e2; color: #991b1b; }
 
-.btn-danger { background-color: #dc3545; border: none; }
+.btn-danger { background-color: #dc3545; border: none; transition: transform 0.2s; }
 .btn-danger:hover { background-color: #bb2d3b; transform: translateY(-2px); }
 
-.btn-dark:hover {
-  transform: translateY(-2px);
-}
+.btn-dark { transition: transform 0.2s; }
+.btn-dark:hover { transform: translateY(-2px); }
 </style>
