@@ -374,10 +374,10 @@
 
     <div class="d-flex justify-content-end gap-2 mt-4">
       <button @click="mostrarModalSubida = false" class="btn btn-light border" :disabled="subiendoArchivo">Cancelar</button>
-      <button @click="enviarDesignaciones" class="btn btn-danger fw-bold" :disabled="subiendoArchivo || !formPublicar.archivo">
-        <span v-if="subiendoArchivo" class="spinner-border spinner-border-sm me-2"></span>
-        {{ subiendoArchivo ? 'Publicando...' : 'Publicar Ahora' }}
-      </button>
+<button @click="enviarDesignaciones" class="btn btn-danger fw-bold" :disabled="subiendoArchivo || !formPublicar.archivoBase64">
+  <span v-if="subiendoArchivo" class="spinner-border spinner-border-sm me-2"></span>
+  {{ subiendoArchivo ? 'Publicando...' : 'Publicar Ahora' }}
+</button>
     </div>
   </div>
 </div>
@@ -426,19 +426,18 @@ const formPublicar = reactive({
   nombreArchivo: ''
 });
 
-// 2. Convertimos el Excel a texto
+// Convertimos el Excel a texto Base64
 const manejarArchivo = (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.readAsDataURL(file); // Lo pasa a texto Base64
+  reader.readAsDataURL(file);
   reader.onload = () => {
     formPublicar.archivoBase64 = reader.result;
     formPublicar.nombreArchivo = file.name;
   };
 };
-
 
 const cambiarPagina = (delta) => {
   paginaActual.value += delta;
@@ -448,8 +447,6 @@ const cambiarPagina = (delta) => {
     }
   }, 50);
 };
-
-
 
 const designadosSabado = ref(new Set());
 const designadosDomingo = ref(new Set());
@@ -465,7 +462,6 @@ const cargarDatos = async () => {
       action:"getArbitros"
     });
 
-    // NUEVO: Obtenemos las sanciones de manera paralela y controlada
     let sancionesPayload = [];
     try {
       const resSanciones = await api.get({ entity: "sanciones", action: "obtenerSanciones" });
@@ -474,15 +470,12 @@ const cargarDatos = async () => {
       console.error("Error al cargar sanciones:", e);
     }
 
-    // Mapeo rápido para asignar a los árbitros
     const sancionesMap = {};
     sancionesPayload.forEach(s => {
-      // Tomamos solo las Vigentes (1) o En Proceso (3)
       if (s.estado_dinamico === 1 || s.estado_dinamico === 3) {
         if (!sancionesMap[s.id_arbitro]) {
           sancionesMap[s.id_arbitro] = s;
         } else {
-          // Si ya existe otra, priorizamos la vigente (1) por sobre el proceso (3)
           if (s.estado_dinamico === 1 && sancionesMap[s.id_arbitro].estado_dinamico === 3) {
             sancionesMap[s.id_arbitro] = s;
           }
@@ -496,7 +489,6 @@ const cargarDatos = async () => {
           return {
             ...a,
             apto_medico: a.apto_medico == 1,
-            // Agregamos las propiedades derivadas de sanciones al árbitro
             sancion_vigente: sancion && sancion.estado_dinamico === 1,
             sancion_proceso: sancion && sancion.estado_dinamico === 3,
             sancion_hasta: sancion ? sancion.hasta_formateada : null,
@@ -584,12 +576,10 @@ const obtenerClaseFila = (a) => {
   const tildadoSabado = designadosSabado.value.has(a.id);
   const tildadoDomingo = designadosDomingo.value.has(a.id);
 
-  // NUEVO: La sanción vigente toma prioridad junto a Inactivos, Aprobada o Designados ambos días (Rojo)
   if ((tildadoSabado && tildadoDomingo) || esInactivo || tieneAprobada || a.sancion_vigente) {
     return 'fila-roja';
   }
 
-  // NUEVO: La sanción en proceso se pinta de amarillo al igual que Rechazadas o Pendientes
   if (tieneRechazada || tienePendiente || a.sancion_proceso) return 'fila-amarilla';
 
   if (tildadoSabado || tildadoDomingo) return 'fila-des';
@@ -617,7 +607,6 @@ const obtenerTextoLicencia = (a) => {
     return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
   };
 
-  // NUEVO: Evaluar Sanciones para sumarlo al texto
   if (a.sancion_vigente) {
     const textoHasta = a.sancion_indefinida ? 'Indefinida' : a.sancion_hasta;
     textos.push(`SANCIONADO (Hasta: ${textoHasta || '-'})`);
@@ -625,7 +614,6 @@ const obtenerTextoLicencia = (a) => {
     textos.push(`SANC. EN PROCESO`);
   }
 
-  // LICENCIAS EXISTENTES
   if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
     textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
   }
@@ -655,7 +643,6 @@ const arbitrosFiltrados = computed(() => {
     if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0;
     else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada || 0) > 0;
     else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente || 0) > 0;
-    // NUEVO: Agregamos la validación del filtro para los estados de la sanción
     else if (filtros.licencia === 'sancion_vigente') cumpleLicencia = a.sancion_vigente === true;
     else if (filtros.licencia === 'sancion_proceso') cumpleLicencia = a.sancion_proceso === true;
     else if (filtros.licencia === 'sin_licencia') {
@@ -698,14 +685,13 @@ const arbitrosPaginados = computed(() => {
   return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
 });
 
-// Reseteamos a la página 1 si el usuario escribe en un filtro
 watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
 
-// Si al borrar se reducen las páginas y quedamos fuera de rango, ajustamos.
 watch(totalPaginas, (nuevoTotal) => {
   if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
 });
 
+// --- CORRECCIÓN EN ENVIARDESIGNACIONES ---
 const enviarDesignaciones = async () => {
   if (!formPublicar.torneo || !formPublicar.fecha || !formPublicar.archivoBase64) {
     notificar({ titulo: 'Atención', mensaje: 'Completá todos los campos y seleccioná un archivo.', tipo: 'warning' });
@@ -715,7 +701,6 @@ const enviarDesignaciones = async () => {
   subiendoArchivo.value = true;
 
   try {
-    // Mandamos el payload como un objeto común y corriente
     const res = await api.post({
       entity: 'designaciones',
       action: 'subirDesignaciones',
@@ -727,8 +712,9 @@ const enviarDesignaciones = async () => {
       }
     });
 
-    if (res.success || res.ok) {
-      notificar({ titulo: 'Éxito', mensaje: 'Las designaciones ya están visibles para el público.', tipo: 'success' });
+    // CLAVE: Validamos res.payload.success para saber si PHP lo guardó de verdad
+    if (res.ok && res.payload && res.payload.success) {
+      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Las designaciones ya están visibles para el público.', tipo: 'success' });
 
       mostrarModalSubida.value = false;
       formPublicar.torneo = '';
@@ -736,16 +722,17 @@ const enviarDesignaciones = async () => {
       formPublicar.archivoBase64 = '';
       formPublicar.nombreArchivo = '';
     } else {
-      throw new Error(res.mensaje || 'Error del servidor al subir designaciones.');
+      // Si success es false, leemos el mensaje que mandó tu backend
+      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor al subir designaciones.');
     }
   } catch (error) {
     console.error("Error al publicar:", error);
-    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al subir las designaciones.', tipo: 'danger' });
+    // Ahora sí te va a mostrar en rojito exacto por qué falló
+    notificar({ titulo: 'Error', mensaje: error.message || 'Hubo un problema al subir las designaciones.', tipo: 'danger' });
   } finally {
     subiendoArchivo.value = false;
   }
 };
-
 
 const exportarExcel = () => {
   const datos = arbitrosFiltrados.value.map(a => ({
