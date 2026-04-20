@@ -31,15 +31,13 @@
           </div>
         </div>
 
-        <div class="card-body p-3 p-md-4">
-
-          <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-md-none animate__animated animate__fadeInDown animate__faster shadow-sm border-bottom bg-light p-3">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <span class="small fw-bold text-dark text-uppercase">Filtrar Licencias</span>
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-white border-0 shadow-sm p-1">
-                <span class="material-icons" style="font-size: 20px;">close</span>
-              </button>
-            </div>
+        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR LICENCIAS</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
+              <span class="material-icons" style="font-size: 20px;">close</span>
+            </button>
+          </div>
 
             <div class="filter-grid-mobile">
               <input v-model="filtros.apellido" placeholder="Apellido..." class="filter-input-mobile">
@@ -57,7 +55,7 @@
             </div>
 
             <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm">Aplicar Filtros</button>
-          </div>
+        </div>
 
           <div class="table-container shadow d-none d-md-block">
             <table>
@@ -184,7 +182,6 @@
             </button>
           </div>
 
-        </div>
       </div>
     </div>
 
@@ -549,8 +546,10 @@ onMounted(() => {
 
 <style scoped>
 /* ====================================================
-   1. BASE Y ESTRUCTURA GENERAL
+   1. BASE (MOBILE FIRST - CELULARES POR DEFECTO)
    ==================================================== */
+
+/* Contenedor principal para celulares */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
@@ -558,249 +557,246 @@ onMounted(() => {
   height: auto !important;
   margin-left: 50%;
   transform: translateX(-50%);
-  padding: 20px;
-  padding-bottom: 120px;
+  padding: 0 15px 20px 15px; /* Margen ajustado para celular */
+  box-sizing: border-box;
 }
 
 .admin-panel {
   width: 100%;
   max-width: 100%;
-  padding: 20px;
+  padding: 0; /* Sin padding extra en móvil para aprovechar espacio */
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
   color: #000;
   background-color: #0f172a;
   min-height: 100vh;
+  border-radius: 0;
+  box-sizing: border-box;
 }
 
+/* Cabecera Móvil: Columna y alineada a la izquierda */
 .header-section {
   background: white;
   padding: 15px;
-  border-radius: 8px;
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 15px;
   border-left: 5px solid #ef4444;
+  border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  align-items: center;
+  margin-bottom: 15px;
 }
 
-.title { font-size: 1.1rem; font-weight: bold; margin: 0; }
+.header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.title { font-size: 1.25rem; font-weight: bold; margin: 0; text-align: left; }
 .counter { font-size: 0.85rem; color: #000000; }
 
-/* ====================================================
-   2. COMPONENTES (BOTONES Y BADGES)
-   ==================================================== */
-.header-actions { display: flex; gap: 8px; }
+/* Botones Móvil: Centrados, cuadrados y sin texto */
+.header-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 8px;
+  overflow-x: auto;
+}
 
 .btn-action {
-  border: none; padding: 8px 12px; border-radius: 4px;
-  font-weight: bold; cursor: pointer; display: flex;
-  align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s;
+  border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.2s, transform 0.1s;
+  flex: none; width: 42px; height: 42px; padding: 0;
 }
+.btn-action:hover { opacity: 0.85; }
+.btn-action:active { transform: scale(0.95); }
+.btn-text { display: none; } /* Oculto en móvil */
 
 .btn-clear { background: #e2e8f0; color: #000; }
 .btn-blue { background: #3b82f6; color: white; }
 .btn-clear-checks { background: #fee2e2; color: #ef4444; }
 .btn-export { background: #10b981; color: white; }
-.btn-refresh { background: none; border: none; color: #64748b; cursor: pointer; }
+.btn-refresh { background: none; border: none; color: #64748b; cursor: pointer; width: auto; }
 
-.btn-editar, .btn-historial, .btn-eliminar {
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 6px; padding: 4px; cursor: pointer; transition: 0.2s; border: none;
-}
-.btn-editar { background: #eff6ff; color: #1d4ed8; }
-.btn-editar:hover { background: #dbeafe; }
-.btn-historial { background: #fef3c7; color: #d97706; }
-.btn-historial:hover { background: #fde047; }
-.btn-eliminar { background: #fee2e2; color: #dc2626; }
-.btn-eliminar:hover { background: #fecaca; }
+/* Visibilidad de Capas Base */
+.desktop-only { display: none !important; }
+.mobile-only { display: block !important; }
+.mobile-only-flex { display: flex !important; }
 
-/* Estados y Badges */
-.badge-status {
-  padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+/* -----------------------------------------
+   FILTROS MÓVIL (Unificados)
+   ----------------------------------------- */
+.mobile-filter-panel {
+  background: #e2e8f0;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e2e8f0;
 }
+.filter-grid-mobile {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Todos los inputs y selects se ven iguales */
+.filter-grid-mobile input,
+.filter-grid-mobile select {
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 12px;
+  width: 100%;
+  outline: none;
+  background: #ffffff;
+  color: #334155;
+  box-sizing: border-box;
+}
+
+/* Estado Focus */
+.filter-grid-mobile input:focus,
+.filter-grid-mobile select:focus {
+  border-color: #3b82f6;
+  background: white;
+}
+
+.filter-grid-mobile input::placeholder { color: #000000; }
+.filter-grid-mobile select.full-width { grid-column: span 2; }
+
+/* -----------------------------------------
+   TARJETAS MÓVILES (Listado Licencias)
+   ----------------------------------------- */
+.card-licencia {
+  background: white; border-radius: 8px; padding: 15px;
+  margin-bottom: 12px; border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px;
+}
+.card-name { font-size: 1.05rem; color: #0f172a; font-weight: bold; }
+.card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
+.card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
+
+/* Botones dentro de las tarjetas móviles */
+.btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
+.btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+.btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold;}
+
+/* -----------------------------------------
+   BADGES Y ESTADOS
+   ----------------------------------------- */
+.badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
 .badge-status.aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-
-/* MODIFICADO: Color de Pendiente cambiado a un amarillo fuerte (estilo warning) */
 .badge-status.pendiente { background: #ffc107; color: #212529; border: 1px solid #e0a800; }
 .badge-status.rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 
-.badge-status-sm {
-  padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700;
-}
+.badge-status-sm { padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; }
 .badge-status-sm.aprobada { background: #dcfce7; color: #15803d; }
-
-/* MODIFICADO: Color de Pendiente para versión small móvil */
 .badge-status-sm.pendiente { background: #ffc107; color: #212529; }
 .badge-status-sm.rechazada { background: #fee2e2; color: #b91c1c; }
 
-/* ====================================================
-   3. TABLA (STICKY Y CELDAS)
-   ==================================================== */
-.table-container {
-  width: 100%; overflow: auto; max-height: 85vh;
-  background: white; border-radius: 8px; border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-table {
-  width: 100%; min-width: max-content;
-  border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem;
-}
-
-thead tr.main-header th {
-  position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
-  padding: 12px 8px; border-bottom: 1px solid #cbd5e1;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
-}
-
-thead tr.filter-row td {
-  position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important;
-  padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; margin: 0;
-}
-
-.sticky-col {
-  position: sticky !important; z-index: 60 !important;
-  background: white !important; border-right: 1px solid #e2e8f0;
-}
-thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
-thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
-
-.col-id { left: 0; width: 50px; text-align: center; }
-.col-acciones { left: 50px; width: 110px; }
-.col-apellido { left: 160px; width: 140px; }
-.col-nombre { left: 300px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-
-.cell-ro {
-  padding: 10px 8px; font-size: 0.85rem; color: #000;
-  white-space: nowrap; border-bottom: 1px solid #f1f5f9;
-}
-
-.filter-input {
-  font-size: 16px; height: 32px; border: 1px solid #cbd5e1;
-  border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;
-}
-
-@media (min-width: 769px) { .filter-input { font-size: 0.75rem; height: 28px; } }
-
-/* ====================================================
-   4. MODALES
-   ==================================================== */
+/* Modales Utilitarios */
 .bg-success-light { background: #dcfce7; color: #166534; }
 .bg-info-light { background: #e0f2fe; color: #0369a1; }
+.modal-content-exito { padding: 30px 20px; max-height: 90vh; overflow-y: auto; }
+
+/* Para evitar que la tabla se rompa si se renderiza oculta en celular */
+.sticky-col { position: static !important; box-shadow: none !important; }
+.col-nombre { box-shadow: none !important; }
+
 
 /* ====================================================
-   5. 📱 RESPONSIVE DESIGN (TIERED LAYOUT)
+   2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
    ==================================================== */
-.desktop-only { display: block; }
-.mobile-only { display: none; }
-.mobile-only-flex { display: none; }
-.btn-text { display: inline; }
+@media (min-width: 768px) {
 
-/* Tablet y Laptops (Hasta 1024px) */
-@media (max-width: 1024px) {
-  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
-}
+  .full-screen-wrapper { padding: 20px; padding-bottom: 120px; }
+  .admin-panel { padding: 20px; border-radius: 12px; }
 
-/* Tablets y Móviles (Hasta 768px) */
-@media (max-width: 768px) {
-  .full-screen-wrapper { padding: 10px; }
-  .admin-panel { padding: 10px; }
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
+  /* Cambio de visibilidad */
+  .desktop-only { display: block !important; }
+  .mobile-only { display: none !important; }
+  .mobile-only-flex { display: none !important; }
 
-  /* Estilos de las tarjetas móviles */
-  .card-licencia {
-    background: white; border-radius: 8px; padding: 15px;
-    margin-bottom: 12px; border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  }
-  .card-header {
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px;
-  }
-  .card-name { font-size: 1.05rem; color: #0f172a; }
-  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-  .card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
+  /* Reestructuración Cabecera */
+  .header-section { flex-direction: row; align-items: center; justify-content: space-between; padding: 15px 25px; }
+  .header-info { width: auto; align-items: flex-start; }
+  .title { font-size: 1.1rem; }
 
-/* Filtros Móvil */
-.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
-.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* Reestructuración Botones Principales */
+  .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; overflow-x: visible; }
+  .btn-action { width: auto; height: auto; padding: 8px 12px; font-size: 0.75rem; justify-content: flex-start; gap: 5px; }
+  .btn-text { display: inline !important; }
 
-.filter-grid-mobile input, .filter-grid-mobile select {
-  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
-  font-size: 12px; width: 100%; outline: none; background: #ffffff; color: #334155;
-}
+  /* Ajuste de Filtros Superiores en Desktop */
+  .filter-grid-mobile { margin-bottom: 0; }
+  .filter-grid-mobile input, .filter-grid-mobile select { font-size: 0.85rem; padding: 8px 12px; }
 
-.filter-grid-mobile select.full-width { grid-column: span 2; }
-.filter-input-mobile::placeholder { color: #000000; }
-
-  /* Botones en Cards */
-  .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-  .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-  .btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-}
-
-/* Smartphones (Hasta 600px) */
-@media (max-width: 600px) {
-  /* AIRE A LOS COSTADOS: Importante para que no se pegue al margen */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto;
-  margin-left: 50%;
-  transform: translateX(-50%);
-      /* Top en 0, pero conservando los 15px laterales originales para celulares */
-  padding: 0 15px 20px 15px !important;
-  box-sizing: border-box !important;
-}
-
-.admin-panel {
-      padding: 0 !important;
-      border-radius: 0;
-      box-sizing: border-box !important;
-}
-
-  /* CABECERA: Título Izquierda, Botones Centro */
-  .header-section {
-    padding: 15px !important;
-    flex-direction: column;
-    align-items: flex-start; /* Respetamos el borde rojo a la izquierda */
-    text-align: left;
-    gap: 15px;
+  /* -----------------------------------------
+     TABLA DESKTOP
+     ----------------------------------------- */
+  .table-container {
+    width: 100%; overflow: auto; max-height: 85vh;
+    background: white; border-radius: 8px; border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   }
 
-  .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
-  .title { font-size: 1.25rem !important; margin: 0; text-align: left; }
-  .counter { font-size: 0.85rem !important; }
-
-  /* Botones de acción centrados horizontalmente debajo */
-  .header-actions {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
-  .btn-action {
-    flex: none; width: 42px; height: 42px; padding: 0; justify-content: center;
-  }
-  .btn-text { display: none !important; }
-  .mobile-only-flex { display: flex !important; }
-
-    /* AJUSTE DE PADDING EN MODALES MÓVILES (Agregar/Editar Eventos) */
-  .modal-content-exito {
-    padding: 30px 20px !important; /* Libera los costados pero mantiene aire arriba y abajo */
-    max-height: 90vh; /* Evita que el modal sea más alto que la pantalla */
-    overflow-y: auto; /* Scroll interno si el formulario de evento es largo */
+  table {
+    width: 100%; min-width: max-content;
+    border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem;
   }
 
-  /* Liberar columnas fijas para evitar rotura de tabla */
-  .sticky-col { position: static !important; box-shadow: none !important; }
-  .col-nombre { box-shadow: none !important; }
+  thead tr.main-header th {
+    position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
+    padding: 12px 8px; border-bottom: 1px solid #cbd5e1;
+    font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+    font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
+  }
+
+  thead tr.filter-row td {
+    position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important;
+    padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; margin: 0;
+  }
+
+  /* Columnas Fijas (Sticky) - Restauradas para Desktop */
+  .sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
+  thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
+  thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
+
+  /* Anchos específicos (Del segundo código original) */
+  .col-id { left: 0; width: 50px; text-align: center; }
+  .col-acciones { left: 50px; width: 110px; }
+  .col-apellido { left: 160px; width: 140px; }
+  .col-nombre { left: 300px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1) !important; }
+
+  .cell-ro {
+    padding: 10px 8px; font-size: 0.85rem; color: #000;
+    white-space: nowrap; border-bottom: 1px solid #f1f5f9;
+  }
+
+  /* Filtros dentro de la tabla */
+  .filter-input {
+    font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1;
+    border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;
+  }
+
+  /* Botones pequeños de acción de tabla */
+  .btn-editar, .btn-historial, .btn-eliminar {
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 6px; padding: 4px; cursor: pointer; transition: 0.2s; border: none;
+  }
+  .btn-editar { background: #eff6ff; color: #1d4ed8; }
+  .btn-editar:hover { background: #dbeafe; }
+  .btn-historial { background: #fef3c7; color: #d97706; }
+  .btn-historial:hover { background: #fde047; }
+  .btn-eliminar { background: #fee2e2; color: #dc2626; }
+  .btn-eliminar:hover { background: #fecaca; }
 }
 </style>
