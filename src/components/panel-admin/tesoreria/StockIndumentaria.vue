@@ -31,7 +31,7 @@
           </div>
         </div>
 
-     <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
+      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR INVENTARIO</span>
             <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
@@ -41,7 +41,6 @@
           <input v-model="filtros.modelo" placeholder="Buscar modelo..." class="form-control bg-white shadow-sm border-secondary-subtle" style="font-size: 16px;">
           <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm">Aplicar Filtro</button>
       </div>
-
 
         <div class="card-body p-3 p-md-4">
 
@@ -75,6 +74,9 @@
                     <h6 class="fw-bold text-dark m-0 text-uppercase text-truncate-2">
                       {{ modelo.descripcion }}
                     </h6>
+                    <span v-if="modelo.admite_encargo" class="badge bg-warning text-dark mt-1" style="font-size: 0.65rem;">
+                      <i class="bi bi-box-seam-fill me-1"></i> Admite Encargo
+                    </span>
                   </div>
 
                   <div class="d-flex flex-wrap justify-content-center gap-1 mb-3">
@@ -219,7 +221,7 @@ import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head';
 import { WEB_URL } from '@/config/env'
-import ModalBase from '@/components/ModalBase.vue'; // 👈 Asegúrate de que la ruta coincida con la ubicación de tu componente
+import ModalBase from '@/components/ModalBase.vue';
 
 useHead({
   title: 'Inventario | AAAB',
@@ -234,26 +236,21 @@ const cargando = ref(false);
 const filtros = reactive({ modelo: '' });
 const mostrarFiltrosMobile = ref(false);
 
-// ESCALA OFICIAL Y ORDEN
 const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
 const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9 };
 
-// --- LÓGICA DE PAGINACIÓN RESPONSIVE ---
 const anchoPantalla = ref(window.innerWidth);
 const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
 
 const paginaActual = ref(1);
 const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 6 : 15);
 
-// Modal Variables
 const mostrarModal = ref(false);
 const modoModal = ref('nuevo');
 const archivosSeleccionados = ref([]);
 
-// 👈 NUEVO: Añadimos la propiedad admite_encargo al objeto formModal
 const formModal = ref({ id_item: null, descripcion: '', precioUnitario: 0, admite_encargo: false, items: [] });
 
-// Filtros y Paginación
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
 const stockFiltrado = computed(() => {
@@ -295,7 +292,6 @@ const obtenerStock = async () => {
   cargando.value = false;
 };
 
-// Acciones Modal
 const abrirModalNuevo = () => {
   modoModal.value = 'nuevo';
   archivosSeleccionados.value = [];
@@ -303,7 +299,7 @@ const abrirModalNuevo = () => {
     id_item: null,
     descripcion: '',
     precioUnitario: 0,
-    admite_encargo: false, // 👈 Inicializar en false
+    admite_encargo: false,
     items: []
   };
   mostrarModal.value = true;
@@ -327,14 +323,11 @@ const abrirModalEdicion = (modelo) => {
 
   itemsCombinados.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
 
-  // 👈 Asignar el valor leyendo si existe algún talle que admita encargo
-  const estadoEncargo = modelo.items.length > 0 ? modelo.items[0].admite_encargo : false;
-
   formModal.value = {
     id_item: modelo.id_item,
     descripcion: modelo.descripcion,
     precioUnitario: modelo.precio_unitario,
-    admite_encargo: estadoEncargo,
+    admite_encargo: modelo.admite_encargo,
     items: itemsCombinados
   };
 
@@ -401,30 +394,25 @@ const guardarCambios = async () => {
   cargando.value = true;
   let res;
 
-  // 👈 Convertimos el boolean a 1 o 0
   const flagAdmiteEncargo = formModal.value.admite_encargo ? 1 : 0;
 
+  // Ahora siempre usamos FormData para permitir fotos (tanto crear como editar)
+  const formData = new FormData();
+  formData.append('descripcion', formModal.value.descripcion.toUpperCase());
+  formData.append('admite_encargo', flagAdmiteEncargo);
+
+  if (archivosSeleccionados.value.length > 0) {
+    archivosSeleccionados.value.forEach(file => {
+      formData.append('fotos[]', file);
+    });
+  }
+
   if (modoModal.value === 'editar') {
-    const payload = {
-      id_item: formModal.value.id_item,
-      descripcion: formModal.value.descripcion.toUpperCase(),
-      precioUnitario: precioRef,
-      admite_encargo: flagAdmiteEncargo, // 👈 Se manda en el payload JSON
-      items: itemsTodos
-    };
-    res = await api.post({ entity: 'indumentaria', action: 'actualizarStock', payload });
+    formData.append('id_item', formModal.value.id_item);
+    formData.append('items', JSON.stringify(itemsTodos));
+    res = await api.postFile({ entity: 'indumentaria', action: 'actualizarStock', payload: formData });
   } else {
-    const formData = new FormData();
-    formData.append('descripcion', formModal.value.descripcion.toUpperCase());
-    formData.append('admite_encargo', flagAdmiteEncargo); // 👈 Se manda en el form data físico
     formData.append('items', JSON.stringify([]));
-
-    if (archivosSeleccionados.value.length > 0) {
-      archivosSeleccionados.value.forEach(file => {
-        formData.append('fotos[]', file);
-      });
-    }
-
     res = await api.postFile({ entity: 'indumentaria', action: 'agregarItem', payload: formData });
   }
 
@@ -446,9 +434,10 @@ const cerrarModal = () => {
 
 const limpiarFiltros = () => { filtros.modelo = ''; };
 
+// NUEVA RUTA PARA LAS IMÁGENES
 const obtenerImagen = (nombre) => {
   const primeraFoto = nombre ? nombre.split(',')[0] : null;
-  return primeraFoto ? `${WEB_URL}/fotos/${encodeURIComponent(primeraFoto)}` : "https://placehold.co/400x400?text=Indumentaria";
+  return primeraFoto ? `${WEB_URL}/api/uploads/indumentaria/${encodeURIComponent(primeraFoto)}` : "https://placehold.co/400x400?text=Indumentaria";
 };
 
 const exportarExcel = () => {

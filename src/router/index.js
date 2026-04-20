@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/public/HomeView.vue';
-import { auth } from '@/api/auth'; 
+import { auth } from '@/api/auth';
 
 // --- PUBLIC ---
 const routes = [
@@ -13,7 +13,8 @@ const routes = [
   { path: '/tribunal-de-etica', name: 'tribunalEtica', component: () => import('../views/public/TribunalEticaView.vue') },
   { path: '/sanciones', name: 'sanciones', component: () => import('../views/public/SancionesView.vue') },
   { path: '/contactos-celulares', name: 'ContactosCelulares', component: () => import('../views/public/ContactosCelularesView.vue') },
-  { path: '/coordinadores-base', name: 'CoordinadoresBase', component: () => import('../views/public/CoordinadoresDatosView.vue') },  
+  { path: '/coordinadores-base', name: 'CoordinadoresBase', component: () => import('../views/public/CoordinadoresDatosView.vue') },
+  { path: '/grupoflor', name: 'GrupoFlor', component: () => import('../views/public/grupoflorReporte.vue') },
 
   // --- LOGIN ---
   {
@@ -30,12 +31,12 @@ const routes = [
       }
     }
   },
-  
+
   // --- PANEL ARBITRO ---
   {
     path: '/panel-arbitro',
     component: () => import('../components/panel-arbitro/PanelArbitro.vue'),
-    meta: { requiresAuth: true }, 
+    meta: { requiresAuth: true },
     children: [
       { path: '', name: 'PanelInicio', component: () => import('../components/panel-arbitro/InicioPanel.vue') },
       { path: 'licencia', name: 'PanelLicencia', component: () => import('../components/panel-arbitro/licencias/SolicitarLicencia.vue') },
@@ -58,19 +59,19 @@ const routes = [
   },
 
   // --- PANEL ADMIN ---
-  {    
+  {
     path: '/panel-admin',
     component: () => import('../components/panel-admin/AdminPanel.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion'] }, 
+    meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion'] },
     children: [
       { path: '', name: 'AdminInicio', component: () => import('../components/panel-admin/AdminInicio.vue') },
 
       // --- SECRETARÍA ---
       { path: 'secretaria', name: 'SecretariaAdmin', component: () => import('../components/panel-admin/secretaria/SecretariaAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
       { path: 'secretaria/modificacion-datos', name: 'LegajosPersonales', component: () => import('../components/panel-admin/secretaria/LegajosPersonales.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
-      { path: 'secretaria/licencias', name: 'LicenciasAdmin', component: () => import('../components/panel-admin/secretaria/LicenciasAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },      
+      { path: 'secretaria/licencias', name: 'LicenciasAdmin', component: () => import('../components/panel-admin/secretaria/LicenciasAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
       { path: 'secretaria/eventos-notificaciones', name: 'GestionEventos', component: () => import('../components/panel-admin/secretaria/GestionEventos.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
-      
+
       // --- DESIGNACIONES ---
       { path: 'designaciones', name: 'DesignacionesAdmin', component: () => import('../components/panel-admin/designaciones/DesignacionesAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
       { path: 'designaciones/disponibilidad-licencias', name: 'DisponibilidadLicencias', component: () => import('../components/panel-admin/designaciones/DisponibilidadLicencias.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
@@ -87,7 +88,7 @@ const routes = [
       { path: 'tesoreria/indumentaria', name: 'TesoreriaIndumentaria', component: () => import('../components/panel-admin/tesoreria/IndumentariaAdmin.vue'), meta: { roles: ['admin', 'tesorero'] } },
       { path: 'tesoreria/indumentaria/stock', name: 'IndumentariaStock', component: () => import('../components/panel-admin/tesoreria/StockIndumentaria.vue'), meta: { roles: ['admin', 'tesorero'] } },
       { path: 'tesoreria/indumentaria/pedidos', name: 'IndumentariaPedidos', component: () => import('../components/panel-admin/tesoreria/PedidosRealizados.vue'), meta: { roles: ['admin', 'tesorero'] } },
-      
+
       // --- FACTURACION ---
       { path: 'facturacion', name: 'InstitucionesCuitAdmin', component: () => import('../components/panel-admin/facturacion/InstitucionesCuitAdmin.vue'), meta: { roles: ['admin', 'secretario', 'tesorero', 'facturacion'] } }
     ]

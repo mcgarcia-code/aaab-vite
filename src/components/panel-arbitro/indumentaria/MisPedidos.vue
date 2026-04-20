@@ -192,7 +192,7 @@ const cancelarPedido = async (id) => {
     const res = await api.post({
       entity: 'indumentaria',
       action: 'actualizarPedido',
-      payload: { id_pedido: id, estado: 'cancelado' }
+      payload: { id: id, estado: 'cancelado' } // <-- CORRECCIÓN AQUÍ: id en vez de id_pedido
     });
 
     if (res.ok) {

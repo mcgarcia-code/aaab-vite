@@ -139,35 +139,28 @@
             <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron prendas.</p>
           </div>
 
-<div
-  class="d-flex justify-content-center align-items-center gap-3 mt-4"
-  v-if="totalPaginas > 1"
->
-
-  <!-- ANTERIOR -->
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(-1)"
-    :disabled="paginaActual <= 1"
-  >
-    <i class="bi bi-chevron-left"></i> Ant
-  </button>
-
-  <!-- TEXTO -->
-  <span class="fw-bold text-dark small">
-    Página {{ paginaActual }} de {{ totalPaginas }}
-  </span>
-
-  <!-- SIGUIENTE -->
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(1)"
-    :disabled="paginaActual >= totalPaginas"
-  >
-    Sig <i class="bi bi-chevron-right"></i>
-  </button>
-
-</div>
+          <div
+            class="d-flex justify-content-center align-items-center gap-3 mt-4"
+            v-if="totalPaginas > 1"
+          >
+            <button
+              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+              @click="cambiarPagina(-1)"
+              :disabled="paginaActual <= 1"
+            >
+              <i class="bi bi-chevron-left"></i> Ant
+            </button>
+            <span class="fw-bold text-dark small">
+              Página {{ paginaActual }} de {{ totalPaginas }}
+            </span>
+            <button
+              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
+              @click="cambiarPagina(1)"
+              :disabled="paginaActual >= totalPaginas"
+            >
+              Sig <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
 
         </div>
       </div>
@@ -291,31 +284,28 @@ const mostrarPago = ref(false);
 const cargando = ref(false);
 const imagenZoom = ref(null);
 
-// ESCALA OFICIAL Y ORDEN
 const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
 const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9 };
 
-// --- LÓGICA DE PAGINACIÓN RESPONSIVE ---
 const anchoPantalla = ref(window.innerWidth);
 const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
 
 const paginaActual = ref(1);
 const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 5 : 12);
 
+// <-- CORRECCIÓN: Leemos directamente el booleano que viene de la BD
 const permitePedidoSinStock = (prenda) => {
-  return prenda.admite_encargo
-  if (!prenda || !prenda.descripcion) return false;
-  const descripcion = prenda.descripcion.toUpperCase();
-  return descripcion.includes('HUMMEL') || descripcion.includes('CH1');
+  if (!prenda) return false;
+  return prenda.admite_encargo === true || prenda.admite_encargo === 1;
 };
 
+// <-- CORRECCIÓN: Ruta de imágenes apuntando a la nueva carpeta
 const obtenerImagenActual = (prenda) => {
   const fotos = prenda.archivo_imagen ? prenda.archivo_imagen.split(",") : [];
   const index = prenda.fotoActualIndex || 0;
-  // Detalle corregido: Se agregó .trim() para evitar URLs rotas por espacios
   const archivo = fotos[index]?.trim() || fotos[0]?.trim();
   if (archivo) {
-    return `${WEB_URL}/fotos/${archivo}`
+    return `${WEB_URL}/api/uploads/indumentaria/${archivo}`
   }
   return "https://placehold.co/400x400?text=Indumentaria";
 };
@@ -358,11 +348,8 @@ const cargarStock = async () => {
 
   if (respuesta.ok) {
     listaAgrupada.value = respuesta.payload.map(prenda => {
-      // 1. Convertimos XXXL a 3XL y filtramos 5XL
       prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
       prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
-
-      // 2. Ordenamos talles
       prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
 
       return {
@@ -390,10 +377,7 @@ const stockPaginado = computed(() => {
 });
 
 watch(paginaActual, () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 watch(busqueda, () => { paginaActual.value = 1 });
@@ -406,7 +390,6 @@ const totalCarrito = computed(() => {
   return carrito.value.reduce((total, p) => total + (p.precio * p.cantidad), 0);
 });
 
-// Computed nuevo para que el contador del badge sume la cantidad real de prendas y no la cantidad de filas
 const totalArticulosCarrito = computed(() => {
   return carrito.value.reduce((total, p) => total + p.cantidad, 0);
 });
@@ -420,7 +403,6 @@ const agregarAlCarrito = (prenda) => {
     return;
   }
 
-  // Detalle corregido: Agrupar items idénticos en el carrito en lugar de crear nuevas filas
   const itemExistente = carrito.value.find(p => p.id_item === prenda.id_item && p.id_talle === itemTalle.id);
 
   if (itemExistente) {
@@ -481,6 +463,8 @@ onUnmounted(() => {
   window.removeEventListener('resize', actualizarAncho);
 });
 </script>
+
+
 <style scoped>
 /* ====================================================
    1. LAYOUT BASE Y UTILIDADES
