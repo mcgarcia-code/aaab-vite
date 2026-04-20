@@ -176,12 +176,14 @@
 
     </div>
 
-    <div v-if="imagenZoom" class="modal-zoom-overlay animate__animated animate__fadeIn" @click="imagenZoom = null">
-      <button class="btn-cerrar-zoom shadow" @click.stop="imagenZoom = null">
-        <span class="material-icons">close</span>
-      </button>
-      <img :src="imagenZoom" class="img-zoom-full animate__animated animate__zoomIn" @click.stop>
-    </div>
+    <Teleport to="body">
+      <div v-if="imagenZoom" class="modal-zoom-overlay animate__animated animate__fadeIn" @click="imagenZoom = null" style="z-index: 20000;">
+        <button class="btn-cerrar-zoom shadow" @click.stop="imagenZoom = null">
+          <span class="material-icons">close</span>
+        </button>
+        <img :src="imagenZoom" class="img-zoom-full animate__animated animate__zoomIn" @click.stop>
+      </div>
+    </Teleport>
 
     <Teleport to="body">
     <div v-if="mostrarCarrito" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10000;">
@@ -293,13 +295,13 @@ const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
 const paginaActual = ref(1);
 const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 5 : 12);
 
-// <-- CORRECCIÓN: Leemos directamente el booleano que viene de la BD
+// CORRECCIÓN: Leemos directamente el booleano que viene de la BD
 const permitePedidoSinStock = (prenda) => {
   if (!prenda) return false;
   return prenda.admite_encargo === true || prenda.admite_encargo === 1;
 };
 
-// <-- CORRECCIÓN: Ruta de imágenes apuntando a la nueva carpeta
+// CORRECCIÓN: Ruta de imágenes apuntando a la nueva carpeta
 const obtenerImagenActual = (prenda) => {
   const fotos = prenda.archivo_imagen ? prenda.archivo_imagen.split(",") : [];
   const index = prenda.fotoActualIndex || 0;
@@ -350,6 +352,17 @@ const cargarStock = async () => {
     listaAgrupada.value = respuesta.payload.map(prenda => {
       prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
       prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
+
+      // CORRECCIÓN: Lógica para eliminar talles duplicados del selector
+      const uniqueSizesMap = new Map();
+      prenda.items.forEach(item => {
+        if (!uniqueSizesMap.has(item.talle)) {
+          uniqueSizesMap.set(item.talle, item);
+        }
+      });
+      prenda.items = Array.from(uniqueSizesMap.values()); // Nos quedamos solo con las entradas únicas
+
+      // Ordenamos los talles únicos
       prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
 
       return {
