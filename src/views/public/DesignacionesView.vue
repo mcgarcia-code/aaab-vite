@@ -104,8 +104,8 @@ onMounted(fetchDesignaciones);
 .public-wrapper {
   width: 100%;
   min-height: 100vh;
-  background-color: #000000; /* MODIFICADO: Fondo base negro puro */
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; /* MODIFICADO: Fuente solicitada */
+  background-color: #000000;
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
 }
 
 .hero-section {
@@ -181,7 +181,7 @@ onMounted(fetchDesignaciones);
 }
 
 .main-title {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: 900;
   color: #ffffff;
   margin-bottom: 15px;

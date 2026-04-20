@@ -12,17 +12,19 @@
             <span class="counter mt-1 d-block text-muted">Total: {{ totalFiltrados }} árbitros</span>
           </div>
 
-          <div class="header-actions">
+          <div class="header-actions mt-3 pt-1">
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
-              <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+                <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
             </button>
 
             <button @click="abrirModalSolicitudes" class="btn-action btn-blue position-relative" title="Solicitudes pendientes">
               <span class="material-icons">notifications</span> <span class="btn-text">Solicitudes</span>
-            <span v-if="solicitudesPendientes.length > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem;">
+              <span v-if="solicitudesPendientes.length > 0" class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem;">
                 {{ solicitudesPendientes.length }}
               </span>
             </button>
+
+
 
             <button
                 @click="toggleEdicionGlobal"
@@ -505,82 +507,99 @@
 
 
     <ModalBase
-      :show="mostrarModalSolicitudes"
-      @close="mostrarModalSolicitudes = false"
-      icono="history"
-      colorIcono="bg-primary-subtle text-primary"
-      maxWidth="800px"
-    >
-      <template #header>
-        <div class="text-center">
-          <span class="fw-bold fs-5">Solicitudes de Cambios</span>
-        </div>
-      </template>
+  :show="mostrarModalSolicitudes"
+  @close="mostrarModalSolicitudes = false"
+  icono="history"
+  colorIcono="bg-primary-subtle text-primary"
+  maxWidth="800px"
+>
+  <template #header>
+    <div class="text-center">
+      <span class="fw-bold fs-5">Solicitudes de Cambios</span>
+    </div>
+  </template>
 
-      <div class="d-flex justify-content-between gap-2 w-100 bg-light p-1 rounded-pill border border-light-subtle mb-4">
-        <button class="btn fw-bold rounded-pill px-1 flex-fill d-flex align-items-center justify-content-center gap-1"
-                :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm text-white' : 'btn-transparent text-muted'"
-                style="font-size: 0.75rem;"
-                @click="tabActivo = 'enviado'">
-          PENDIENTES
-          <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-primary rounded-pill p-1 ms-1 d-flex align-items-center justify-content-center" style="font-size: 0.65rem; min-width: 20px;">{{ solicitudesPendientes.length }}</span>
-        </button>
-        <button class="btn fw-bold rounded-pill px-1 flex-fill"
-                :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm text-white' : 'btn-transparent text-muted'"
-                style="font-size: 0.75rem;"
-                @click="tabActivo = 'aprobado'">
-          APROBADAS
-        </button>
-        <button class="btn fw-bold rounded-pill px-1 flex-fill"
-                :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'"
-                style="font-size: 0.75rem;"
-                @click="tabActivo = 'rechazado'">
-          RECHAZADAS
-        </button>
+  <div class="d-flex flex-wrap flex-sm-nowrap justify-content-between gap-2 w-100 bg-light p-2 rounded-3 border border-light-subtle mb-4">
+    <button class="btn fw-bold rounded px-2 py-1 flex-fill d-flex align-items-center justify-content-center gap-1"
+            :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm text-white' : 'btn-transparent text-muted'"
+            style="font-size: 0.8rem;"
+            @click="tabActivo = 'enviado'">
+      PENDIENTES
+      <span v-if="solicitudesPendientes.length > 0"
+            class="badge bg-white text-primary rounded-pill p-1 d-flex align-items-center justify-content-center"
+            style="font-size: 0.7rem; min-width: 20px;">
+        {{ solicitudesPendientes.length }}
+      </span>
+    </button>
+    <button class="btn fw-bold rounded px-2 py-1 flex-fill"
+            :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm text-white' : 'btn-transparent text-muted'"
+            style="font-size: 0.8rem;"
+            @click="tabActivo = 'aprobado'">
+      APROBADAS
+    </button>
+    <button class="btn fw-bold rounded px-2 py-1 flex-fill"
+            :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'"
+            style="font-size: 0.8rem;"
+            @click="tabActivo = 'rechazado'">
+      RECHAZADAS
+    </button>
+  </div>
+
+  <div v-if="cargandoSolicitudes" class="text-center py-5">
+    <span class="spinner-border text-primary"></span>
+    <p class="text-muted mt-2 small fw-bold">Cargando solicitudes...</p>
+  </div>
+
+  <div v-else-if="solicitudesMostradas.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
+    <span class="material-icons mb-2 d-block mx-auto" style="font-size: 48px; color: #cbd5e1;">
+      {{ tabActivo === 'enviado' ? 'inbox' : (tabActivo === 'aprobado' ? 'check_circle_outline' : 'highlight_off') }}
+    </span>
+    <p class="mb-0 fw-bold">No hay solicitudes {{ tabActivo === 'enviado' ? 'pendientes' : tabActivo + 's' }}.</p>
+  </div>
+
+  <div v-else v-for="sol in solicitudesMostradas" :key="sol.id"
+       class="shadow-sm mb-3 bg-white p-3 rounded-3 border"
+       :class="{'border-success-subtle': sol.estado === 'aprobado', 'border-danger-subtle': sol.estado === 'rechazado'}">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+
+      <div class="w-100" style="flex: 1;">
+        <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
+        <strong class="d-block text-dark mb-1 fs-6 text-uppercase">{{ sol.arbitro_nombre }}</strong>
+        <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle"
+           style="white-space: pre-line; line-height: 1.4; text-align: justify;">
+          {{ sol.mensaje }}
+        </p>
       </div>
 
-      <div v-if="cargandoSolicitudes" class="text-center py-5">
-        <span class="spinner-border text-primary"></span>
-        <p class="text-muted mt-2 small fw-bold">Cargando solicitudes...</p>
-      </div>
+      <div class="d-flex flex-column align-items-start align-items-md-end gap-2 w-100" style="flex: 0 0 auto; max-width: 100%; width: auto;">
 
-      <div v-else-if="solicitudesMostradas.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
-        <span class="material-icons mb-2 d-block mx-auto" style="font-size: 48px; color: #cbd5e1;">
-          {{ tabActivo === 'enviado' ? 'inbox' : (tabActivo === 'aprobado' ? 'check_circle_outline' : 'highlight_off') }}
+        <span class="badge align-self-start align-self-md-end"
+              :class="sol.estado === 'aprobado' ? 'bg-success' : (sol.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
+          {{ sol.estado ? sol.estado.toUpperCase() : 'ENVIADO' }}
         </span>
-        <p class="mb-0 fw-bold">No hay solicitudes {{ tabActivo === 'enviado' ? 'pendientes' : tabActivo + 's' }}.</p>
-      </div>
 
-      <div v-else v-for="sol in solicitudesMostradas" :key="sol.id" class="shadow-sm mb-3 bg-white p-3 rounded-3 border" :class="{'border-success-subtle': sol.estado === 'aprobado', 'border-danger-subtle': sol.estado === 'rechazado'}">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-          <div style="flex: 1; min-width: 250px;">
-            <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
-            <strong class="d-block text-dark mb-1 fs-6 text-uppercase">{{ sol.arbitro_nombre }}</strong>
-            <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle" style="white-space: pre-line; line-height: 1.4; text-align: justify;">{{ sol.mensaje }}</p>
-          </div>
+        <div class="d-flex flex-wrap gap-2 w-100 justify-content-start justify-content-md-end mt-2" v-if="sol.estado === 'enviado'">
 
-          <div class="d-flex flex-column align-items-end gap-2" style="min-width: 200px;">
-            <span class="badge" :class="sol.estado === 'aprobado' ? 'bg-success' : (sol.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
-              {{ sol.estado ? sol.estado.toUpperCase() : 'ENVIADO' }}
-            </span>
+          <button @click="abrirEdicionDesdeSolicitud(sol)"
+                  class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1 fw-bold flex-fill"
+                  title="Abrir legajo para editar">
+            <span class="material-icons" style="font-size: 16px;">edit</span> LEGAJO
+          </button>
 
-            <div class="d-flex gap-2 w-100 justify-content-end mt-2" v-if="sol.estado === 'enviado'">
-              <button @click="abrirEdicionDesdeSolicitud(sol)" class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1 fw-bold flex-fill" title="Abrir legajo para editar">
-                <span class="material-icons" style="font-size: 16px;">edit</span> LEGAJO
-              </button>
+          <button @click="rechazarSolicitud(sol)" class="btn btn-sm btn-danger fw-bold flex-fill">
+            RECHAZAR
+          </button>
 
-              <button @click="rechazarSolicitud(sol)" class="btn btn-sm btn-danger fw-bold flex-fill">
-                RECHAZAR
-              </button>
+          <button @click="aprobarSolicitud(sol)" class="btn btn-sm btn-dark fw-bold flex-fill">
+            APROBAR
+          </button>
 
-              <button @click="aprobarSolicitud(sol)" class="btn btn-sm btn-dark fw-bold flex-fill">
-                APROBAR
-              </button>
-            </div>
-          </div>
         </div>
       </div>
-    </ModalBase>
+    </div>
+  </div>
+</ModalBase>
 
 
     <ModalBase
