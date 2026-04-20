@@ -4,7 +4,7 @@
     <div
       v-if="show"
       class="modal-overlay-exito animate__animated animate__fadeIn animate__faster"
-      style="z-index: 1040;"
+      :style="{ zIndex: zIndex }"
       @click.self="cerrar"
     >
 
@@ -66,7 +66,8 @@ const props = defineProps({
   titulo: String,
   icono: String,
   colorIcono: { type: String, default: 'bg-info text-white' },
-  maxWidth: { type: String, default: '500px' }
+  maxWidth: { type: String, default: '500px' },
+  zIndex: { type: [Number, String], default: 1040 }
 });
 
 const emit = defineEmits(['close']);
@@ -104,18 +105,29 @@ const handleTab = (e) => {
 };
 
 
-// Observador unificado
+// Observador unificado con contador de modales abiertos
 watch(() => props.show, async (val) => {
   if (val) {
-    // Solo bloqueamos el scroll
+    // Sumamos 1 al contador de modales
+    let modalCount = parseInt(document.body.dataset.modalCount || '0') + 1;
+    document.body.dataset.modalCount = modalCount;
+
+    // Bloqueamos el scroll
     document.body.style.overflow = 'hidden';
 
     // Enfocamos el modal
     await nextTick();
     modalRef.value?.focus();
   } else {
-    // Restauramos el scroll
-    document.body.style.overflow = '';
+    // Restamos 1 al contador
+    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1;
+    if (modalCount < 0) modalCount = 0;
+    document.body.dataset.modalCount = modalCount;
+
+    // SOLO restauramos el scroll si ya no queda NINGÚN modal abierto
+    if (modalCount === 0) {
+      document.body.style.overflow = '';
+    }
   }
 });
 
@@ -128,12 +140,20 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
   window.removeEventListener('keydown', handleTab);
 
-  // Por seguridad, restauramos el scroll si el componente se destruye
-  document.body.style.overflow = '';
+  // Por seguridad, si el componente se destruye mientras estaba abierto, limpiamos su cuenta
+  if (props.show) {
+    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1;
+    if (modalCount < 0) modalCount = 0;
+    document.body.dataset.modalCount = modalCount;
+
+    if (modalCount === 0) {
+      document.body.style.overflow = '';
+    }
+  }
 });
 
 
-// Estilos computados sin la dependencia no reactiva del innerWidth
+// Estilos computados
 const modalStyle = computed(() => ({
   width: '100%',
   maxWidth: props.maxWidth,

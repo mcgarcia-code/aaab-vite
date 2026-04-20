@@ -586,7 +586,7 @@
             RECHAZAR
           </button>
 
-          <button @click="aprobarSolicitud(sol)" class="btn btn-sm btn-dark fw-bold flex-fill">
+          <button @click="aprobarSolicitud(sol)" class="btn btn-sm btn-success fw-bold flex-fill">
             APROBAR
           </button>
 

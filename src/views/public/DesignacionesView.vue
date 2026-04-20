@@ -3,18 +3,18 @@
     <section class="hero-section">
       <div class="overlay"></div>
 
-      <div class="hero-content container">
-        <div class="hero-grid">
+      <div class="main-content container relative-z">
 
+        <div class="hero-grid mb-5">
           <div class="text-column animate__animated animate__fadeInLeft">
             <div class="badge-update">
               <span class="material-icons pulse-icon">campaign</span>
               ÚLTIMA ACTUALIZACIÓN
             </div>
 
-            <h1 class="main-title">{{ torneo }}</h1>
+            <h1 class="main-title fw-bold text-white">{{ designacionPrincipal.torneo }}</h1>
 
-            <p class="subtitle">
+            <p class="subtitle text-white-50">
               ¡Grandes noticias! Ya se encuentran disponibles las designaciones para los partidos del fin de semana. Revisá tu horario y sede.
             </p>
 
@@ -24,15 +24,15 @@
               </div>
               <div class="info-text">
                 <span class="info-label">Jornada / Fecha</span>
-                <span class="info-value">{{ fechaDesignacion }}</span>
+                <span class="info-value">{{ designacionPrincipal.fecha }}</span>
               </div>
             </div>
 
             <a
-              :href="linkDescarga"
+              :href="designacionPrincipal.link"
               target="_blank"
               class="btn-download shadow-lg"
-              :class="{ 'disabled-link': linkDescarga === '#' }"
+              :class="{ 'disabled-link': designacionPrincipal.link === '#' }"
             >
               <span class="material-icons">cloud_download</span>
               <span>Descargar Designaciones</span>
@@ -46,8 +46,36 @@
               class="hero-img shadow-lg"
             />
           </div>
-
         </div>
+
+        <div v-if="historialDesignaciones.length > 0" class="history-section animate__animated animate__fadeInUp animate__delay-1s mt-5 pt-4 border-top border-secondary">
+          <div class="text-center text-md-start mb-4">
+            <h3 class="fw-bold text-white mb-1">Historial de Designaciones</h3>
+            <p class="text-white-50 small">Consultá los archivos de las jornadas anteriores.</p>
+          </div>
+
+          <div class="row g-3">
+            <div v-for="(item, index) in historialDesignaciones" :key="index" class="col-12 col-md-6 col-lg-3">
+              <div class="history-card h-100 p-3 rounded-3 d-flex flex-column">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="material-icons text-danger me-2" style="font-size: 20px;">history</span>
+                  <span class="text-white fw-bold" style="font-size: 0.9rem;">{{ item.fecha }}</span>
+                </div>
+                <h6 class="text-white-50 fw-bold mb-3 flex-grow-1" style="font-size: 0.85rem; line-height: 1.4;">
+                  {{ item.torneo }}
+                </h6>
+                <a
+                  :href="item.link"
+                  target="_blank"
+                  class="btn btn-outline-light btn-sm w-100 fw-bold rounded-pill d-flex align-items-center justify-content-center gap-2"
+                >
+                  <span class="material-icons" style="font-size: 16px;">download</span> Descargar
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
   </div>
@@ -59,9 +87,15 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import designacionesImg from '@/assets/fotos/designaciones-mobile.png'
 
-const torneo = ref('Cargando información...')
-const fechaDesignacion = ref('...')
-const linkDescarga = ref('#')
+// Estado principal para la última designación
+const designacionPrincipal = ref({
+  torneo: 'Cargando información...',
+  fecha: '...',
+  link: '#'
+})
+
+// Estado para el historial (las anteriores a la principal)
+const historialDesignaciones = ref([])
 
 useHead({
   title: 'Designaciones | AAAB',
@@ -78,18 +112,29 @@ const fetchDesignaciones = async () => {
   try {
     const res = await api.get({
       entity: 'designaciones',
-      action: 'obtenerUltimaDesignacion'
+      // Tu endpoint de backend debería devolver un array con las últimas 5 (ordenadas por fecha DESC)
+      action: 'obtenerHistorialDesignaciones'
     });
 
-    if (res.payload) {
-      torneo.value = res.payload.torneo;
-      fechaDesignacion.value = res.payload.fecha;
-      linkDescarga.value = res.payload.link;
+    if (res.payload && Array.isArray(res.payload) && res.payload.length > 0) {
+      // La primera [0] es la más reciente y va al Hero principal
+      designacionPrincipal.value = res.payload[0];
+
+      // Del índice [1] en adelante (hasta 4 más) van al historial
+      historialDesignaciones.value = res.payload.slice(1, 5);
+    } else if (res.payload && !Array.isArray(res.payload)) {
+      // Fallback: Por si tu backend todavía devuelve un solo objeto y no lo actualizaste a array
+      designacionPrincipal.value = {
+        torneo: res.payload.torneo,
+        fecha: res.payload.fecha,
+        link: res.payload.link
+      };
+      historialDesignaciones.value = [];
     }
   } catch (error) {
     console.error("Error cargando designaciones", error);
-    torneo.value = "Información no disponible";
-    fechaDesignacion.value = "Próximamente";
+    designacionPrincipal.value.torneo = "Información no disponible";
+    designacionPrincipal.value.fecha = "Próximamente";
   }
 }
 
@@ -116,21 +161,21 @@ onMounted(fetchDesignaciones);
   background-size: cover;
   background-attachment: fixed;
   display: flex;
-  align-items: center;
+  align-items: center; /* Centrado vertical para todo el bloque */
   justify-content: center;
-  padding: 40px 15px;
+  padding: 80px 15px 60px 15px; /* Más padding arriba para navbar si existe */
 }
 
 /* Capa oscura sobre la imagen de fondo */
 .overlay {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  /* MODIFICADO: Degradado tirando fuertemente a negro oscuro */
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(15, 15, 15, 0.85) 100%);
   z-index: 1;
 }
 
-.hero-content {
+/* Asegura que el contenido quede por encima del overlay oscuro */
+.relative-z {
   position: relative;
   z-index: 2;
   width: 100%;
@@ -182,8 +227,6 @@ onMounted(fetchDesignaciones);
 
 .main-title {
   font-size: 1.5rem;
-  font-weight: 900;
-  color: #ffffff;
   margin-bottom: 15px;
   line-height: 1.1;
   text-shadow: 0 4px 10px rgba(0,0,0,0.5);
@@ -191,7 +234,6 @@ onMounted(fetchDesignaciones);
 
 .subtitle {
   font-size: 1.1rem;
-  color: #cbd5e1;
   margin-bottom: 30px;
   line-height: 1.5;
   max-width: 90%;
@@ -278,7 +320,6 @@ onMounted(fetchDesignaciones);
   width: 100%;
   max-width: 280px;
   border-radius: 16px;
-  /* MODIFICADO: Borde blanco eliminado según lo solicitado */
   transform: perspective(800px) rotateY(-5deg) rotateX(5deg);
   transition: transform 0.5s ease;
 }
@@ -287,12 +328,30 @@ onMounted(fetchDesignaciones);
   transform: perspective(800px) rotateY(0deg) rotateX(0deg);
 }
 
+/* --- Tarjetas del Historial --- */
+.history-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.history-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(239, 68, 68, 0.4);
+  transform: translateY(-3px);
+}
+
+.border-secondary {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
 /* ====================================================
    2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
    ==================================================== */
 @media (min-width: 768px) {
-  .hero-section { padding: 0 40px; }
-  .hero-grid { flex-direction: row; justify-content: space-between; }
+  .hero-section { padding: 80px 40px; }
+  .hero-grid { flex-direction: row; justify-content: space-between; margin-bottom: 80px !important; }
   .text-column { align-items: flex-start; text-align: left; width: 55%; }
   .main-title { font-size: 3.5rem; }
   .subtitle { max-width: 100%; font-size: 1.2rem; }

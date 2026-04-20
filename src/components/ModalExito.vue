@@ -4,7 +4,7 @@
     <div
       v-if="visible"
       class="modal-overlay-exito animate__animated animate__fadeIn animate__faster"
-      style="z-index: 1040;"
+      :style="{ zIndex: zIndex }"
       @click.self="cerrar"
     >
       <div
@@ -53,7 +53,9 @@ const props = defineProps({
   titulo: String,
   mensaje: String,
   tipo: String,
-  tieneAccion: Boolean
+  tieneAccion: Boolean,
+  // Le damos un z-index más alto por defecto para que siempre quede arriba
+  zIndex: { type: [Number, String], default: 1060 }
 });
 
 const emit = defineEmits(['cerrar', 'confirmar']);
@@ -77,9 +79,13 @@ const handleKeydown = (e) => {
   }
 };
 
-// Observar cuando se abre o cierra el modal para bloquear/desbloquear el scroll
+// Observar cuando se abre o cierra el modal usando el contador global de modales
 watch(() => props.visible, async (val) => {
   if (val) {
+    // Sumamos 1 al contador
+    let modalCount = parseInt(document.body.dataset.modalCount || '0') + 1;
+    document.body.dataset.modalCount = modalCount;
+
     // Bloquea el scroll del fondo
     document.body.style.overflow = 'hidden';
 
@@ -87,8 +93,15 @@ watch(() => props.visible, async (val) => {
     await nextTick();
     modalRef.value?.focus();
   } else {
-    // Restaura el scroll del fondo al cerrar
-    document.body.style.overflow = '';
+    // Restamos 1 al contador
+    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1;
+    if (modalCount < 0) modalCount = 0;
+    document.body.dataset.modalCount = modalCount;
+
+    // Solo restaura el scroll del fondo si no quedan más modales abiertos
+    if (modalCount === 0) {
+      document.body.style.overflow = '';
+    }
   }
 });
 
@@ -98,8 +111,17 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
+
   // Por seguridad, aseguramos que el scroll regrese a la normalidad si el componente se destruye
-  document.body.style.overflow = '';
+  if (props.visible) {
+    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1;
+    if (modalCount < 0) modalCount = 0;
+    document.body.dataset.modalCount = modalCount;
+
+    if (modalCount === 0) {
+      document.body.style.overflow = '';
+    }
+  }
 });
 </script>
 
@@ -112,8 +134,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
-  padding: 15px; /* Aumentamos apenas el padding para que no toque los bordes del celular */
+  /* Eliminé el z-index de acá porque ahora lo controlamos dinámicamente desde el HTML */
+  padding: 15px;
 }
 
 /* ====================================================
@@ -121,13 +143,13 @@ onUnmounted(() => {
    ==================================================== */
 .modal-content-exito {
   background: white;
-  border-radius: 16px; /* Borde levemente más suave para móviles */
+  border-radius: 16px;
   padding: 30px;
   width: 100%;
   max-width: 380px;
   text-align: center;
   outline: none;
-  box-sizing: border-box; /* Asegura que el padding no expanda el 100% del ancho */
+  box-sizing: border-box;
 }
 
 /* ====================================================
@@ -135,7 +157,7 @@ onUnmounted(() => {
    ==================================================== */
 @media (min-width: 576px) {
   .modal-content-exito {
-    border-radius: 20px; /* Borde más redondeado para pantallas grandes */
+    border-radius: 20px;
   }
 }
 
