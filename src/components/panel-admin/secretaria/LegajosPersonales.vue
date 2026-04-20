@@ -24,8 +24,6 @@
               </span>
             </button>
 
-
-
             <button
                 @click="toggleEdicionGlobal"
                 class="btn-action d-flex align-items-center gap-1 text-white shadow-sm"
@@ -290,7 +288,6 @@
   v-if="totalPaginas > 1"
 >
 
-  <!-- ANTERIOR -->
   <button
     class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
     @click="cambiarPagina(-1)"
@@ -299,12 +296,10 @@
     <i class="bi bi-chevron-left"></i> Ant
   </button>
 
-  <!-- TEXTO -->
   <span class="fw-bold text-dark small">
     Página {{ paginaActual }} de {{ totalPaginas }}
   </span>
 
-  <!-- SIGUIENTE -->
   <button
     class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
     @click="cambiarPagina(1)"
@@ -561,25 +556,25 @@
        class="shadow-sm mb-3 bg-white p-3 rounded-3 border"
        :class="{'border-success-subtle': sol.estado === 'aprobado', 'border-danger-subtle': sol.estado === 'rechazado'}">
 
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
 
-      <div class="w-100" style="flex: 1;">
+      <div style="flex: 1 1 0%; min-width: 0;">
         <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
         <strong class="d-block text-dark mb-1 fs-6 text-uppercase">{{ sol.arbitro_nombre }}</strong>
         <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle"
-           style="white-space: pre-line; line-height: 1.4; text-align: justify;">
+           style="white-space: pre-line; line-height: 1.4; text-align: justify; word-break: break-word;">
           {{ sol.mensaje }}
         </p>
       </div>
 
-      <div class="d-flex flex-column align-items-start align-items-md-end gap-2 w-100" style="flex: 0 0 auto; max-width: 100%; width: auto;">
+      <div class="d-flex flex-column align-items-start align-items-md-end gap-2" style="flex: 0 0 auto;">
 
         <span class="badge align-self-start align-self-md-end"
               :class="sol.estado === 'aprobado' ? 'bg-success' : (sol.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
           {{ sol.estado ? sol.estado.toUpperCase() : 'ENVIADO' }}
         </span>
 
-        <div class="d-flex flex-wrap gap-2 w-100 justify-content-start justify-content-md-end mt-2" v-if="sol.estado === 'enviado'">
+        <div class="d-flex flex-wrap flex-md-nowrap gap-2 mt-2 w-100 justify-content-start justify-content-md-end" v-if="sol.estado === 'enviado'">
 
           <button @click="abrirEdicionDesdeSolicitud(sol)"
                   class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1 fw-bold flex-fill"
