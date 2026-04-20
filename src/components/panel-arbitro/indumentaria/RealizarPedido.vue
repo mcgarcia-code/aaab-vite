@@ -177,11 +177,11 @@
     </div>
 
     <Teleport to="body">
-      <div v-if="imagenZoom" class="modal-zoom-overlay animate__animated animate__fadeIn" @click="imagenZoom = null" style="z-index: 20000;">
+      <div v-if="imagenZoom" class="modal-zoom-overlay animate__animated animate__fadeIn" @click="imagenZoom = null" style="z-index: 20000; cursor: pointer;">
         <button class="btn-cerrar-zoom shadow" @click.stop="imagenZoom = null">
           <span class="material-icons">close</span>
         </button>
-        <img :src="imagenZoom" class="img-zoom-full animate__animated animate__zoomIn" @click.stop>
+        <img :src="imagenZoom" class="img-zoom-full animate__animated animate__zoomIn" @click.stop style="cursor: default;">
       </div>
     </Teleport>
 
@@ -295,13 +295,24 @@ const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
 const paginaActual = ref(1);
 const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 5 : 12);
 
-// CORRECCIÓN: Leemos directamente el booleano que viene de la BD
+const cambiarPagina = (delta) => {
+  if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
+    paginaActual.value += delta;
+  }
+};
+
+// CORRECCIÓN: Detección de tecla Escape
+const manejarEsc = (e) => {
+  if (e.key === 'Escape' && imagenZoom.value) {
+    imagenZoom.value = null;
+  }
+};
+
 const permitePedidoSinStock = (prenda) => {
   if (!prenda) return false;
   return prenda.admite_encargo === true || prenda.admite_encargo === 1;
 };
 
-// CORRECCIÓN: Ruta de imágenes apuntando a la nueva carpeta
 const obtenerImagenActual = (prenda) => {
   const fotos = prenda.archivo_imagen ? prenda.archivo_imagen.split(",") : [];
   const index = prenda.fotoActualIndex || 0;
@@ -353,16 +364,13 @@ const cargarStock = async () => {
       prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
       prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
 
-      // CORRECCIÓN: Lógica para eliminar talles duplicados del selector
       const uniqueSizesMap = new Map();
       prenda.items.forEach(item => {
         if (!uniqueSizesMap.has(item.talle)) {
           uniqueSizesMap.set(item.talle, item);
         }
       });
-      prenda.items = Array.from(uniqueSizesMap.values()); // Nos quedamos solo con las entradas únicas
-
-      // Ordenamos los talles únicos
+      prenda.items = Array.from(uniqueSizesMap.values());
       prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
 
       return {
@@ -469,11 +477,13 @@ const realizarPedidoFinal = async () => {
 
 onMounted(() => {
   window.addEventListener('resize', actualizarAncho);
+  window.addEventListener('keydown', manejarEsc); // Escuchar tecla ESC
   cargarStock();
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', actualizarAncho);
+  window.removeEventListener('keydown', manejarEsc); // Limpiar evento
 });
 </script>
 
