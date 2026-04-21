@@ -14,9 +14,8 @@ const routes = [
   { path: '/sanciones', name: 'sanciones', component: () => import('../views/public/SancionesView.vue') },
   { path: '/contactos-celulares', name: 'ContactosCelulares', component: () => import('../views/public/ContactosCelularesView.vue') },
   { path: '/coordinadores-base', name: 'CoordinadoresBase', component: () => import('../views/public/CoordinadoresDatosView.vue') },
-  { path: '/grupoflor', name: 'GrupoFlor', component: () => import('../views/public/grupoflorReporte.vue') },
 
-  // --- LOGIN ---
+  // --- LOGIN & RECUPERACIÓN DE CLAVE ---
   {
     path: '/login-arbitro',
     name: 'LoginArbitro',
@@ -30,6 +29,16 @@ const routes = [
         next();
       }
     }
+  },
+  {
+    path: '/olvide-password',
+    name: 'OlvidePassword',
+    component: () => import('../views/public/OlvidePassword.vue')
+  },
+  {
+    path: '/recuperar-password',
+    name: 'RestablecerPassword',
+    component: () => import('../views/public/RestablecerPassword.vue')
   },
 
   // --- PANEL ARBITRO ---
