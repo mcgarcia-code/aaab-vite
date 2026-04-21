@@ -100,7 +100,15 @@ const router = useRouter();
 
 // Datos del Árbitro
 const arbitro = ref(auth.getUser() || {});
-const urlFoto = `https://arbitroshandball.com.ar/resources/carnet-arbitros/${arbitro.value.dni}.webp`;
+
+const urlFoto = computed(() => {
+  if (!arbitro.value || !arbitro.value.dni) {
+    return 'https://via.placeholder.com/150';
+  }
+  // El .trim() elimina espacios en blanco accidentales de la base de datos
+  const dniLimpio = String(arbitro.value.dni).trim();
+  return `https://arbitroshandball.com.ar/resources/carnet-arbitros/${dniLimpio}.webp`;
+});
 
 const nombreFormateado = computed(() => {
   const nombre = arbitro.value.nombre || '';
