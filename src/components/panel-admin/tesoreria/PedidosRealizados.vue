@@ -250,46 +250,88 @@
     </ModalBase>
 
     <ModalBase
-      :show="mostrarModalHistorial"
-      @close="mostrarModalHistorial = false"
-      icono="history"
-      colorIcono="bg-warning text-dark"
-      maxWidth="650px"
+  :show="mostrarModalHistorial"
+  @close="mostrarModalHistorial = false"
+  icono="history"
+  colorIcono="bg-warning text-dark"
+  maxWidth="650px"
+>
+  <template #header>
+    <div class="d-flex align-items-center justify-content-center gap-2">
+      Historial de {{ arbitroHistorialNombre }}
+      <span class="badge bg-dark rounded-pill fs-6 d-flex align-items-center justify-content-center" style="min-width: 28px; min-height: 28px;">
+        {{ historialArbitro.length }}
+      </span>
+    </div>
+  </template>
+
+  <div class="desktop-only table-responsive border rounded shadow-sm m-0">
+    <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem;">
+      <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
+        <tr>
+          <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Fecha</th>
+          <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Prenda</th>
+          <th class="text-center py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Cant</th>
+          <th class="text-end py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Total</th>
+          <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="h in historialArbitro" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
+          <td class="text-nowrap text-muted fw-bold ps-3 py-3">{{ h.fecha_creacion || 'S/F' }}</td>
+          <td class="py-3 text-dark">{{ h.descripcion }} <span class="text-danger fw-bold">({{ h.talle }})</span></td>
+          <td class="text-center fw-bold py-3 text-dark">{{ h.cantidad }}</td>
+          <td class="text-end fw-bold text-success py-3">${{ h.cantidad * h.precioUnitario }}</td>
+          <td class="text-center pe-3 py-3">
+            <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">{{ (h.estado || 'N/A').toUpperCase() }}</span>
+          </td>
+        </tr>
+        <tr v-if="historialArbitro.length === 0">
+          <td colspan="5" class="text-center py-4 text-muted">No hay registros en el historial.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mobile-only">
+    <div v-if="historialArbitro.length === 0" class="text-center py-4 text-muted">
+      No hay registros en el historial.
+    </div>
+
+    <div
+      v-for="h in historialArbitro"
+      :key="h.id"
+      class="card-licencia"
     >
-      <template #header>
-        <div class="d-flex align-items-center justify-content-center gap-2">
-          Historial de {{ arbitroHistorialNombre }}
-          <span class="badge bg-dark rounded-pill fs-6 d-flex align-items-center justify-content-center" style="min-width: 28px; min-height: 28px;">
-            {{ historialArbitro.length }}
+      <div class="card-header border-0 pb-2 mb-2 d-flex justify-content-between align-items-start">
+        <div class="card-name fw-bold lh-sm text-dark pe-2">
+          {{ h.descripcion }}
+          <span class="text-danger">({{ h.talle }})</span>
+        </div>
+        <div>
+          <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">
+            {{ (h.estado || 'N/A').toUpperCase() }}
           </span>
         </div>
-      </template>
-
-      <div class="table-responsive border rounded shadow-sm m-0">
-        <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem;">
-          <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
-            <tr>
-              <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Fecha</th>
-              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Prenda</th>
-              <th class="text-center py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Cant</th>
-              <th class="text-end py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Total</th>
-              <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="h in historialArbitro" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
-              <td class="text-nowrap text-muted fw-bold ps-3 py-3">{{ h.fecha_creacion || 'S/F' }}</td>
-              <td class="py-3 text-dark">{{ h.descripcion }} <span class="text-danger fw-bold">({{ h.talle }})</span></td>
-              <td class="text-center fw-bold py-3 text-dark">{{ h.cantidad }}</td>
-              <td class="text-end fw-bold text-success py-3">${{ h.cantidad * h.precioUnitario }}</td>
-              <td class="text-center pe-3 py-3">
-                <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">{{ (h.estado || 'N/A').toUpperCase() }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </div>
-    </ModalBase>
+
+      <div class="px-1">
+        <div class="card-row border-bottom pb-2 mb-2">
+          <span class="fw-bold text-dark">Fecha:</span>
+          <span>{{ h.fecha_creacion || 'S/F' }}</span>
+        </div>
+        <div class="card-row border-bottom pb-2 mb-2">
+          <span class="fw-bold text-dark">Cantidad:</span>
+          <span class="fw-bold">{{ h.cantidad }}</span>
+        </div>
+        <div class="card-row mb-0">
+          <span class="fw-bold text-dark">Total:</span>
+          <span class="text-success fw-bold fs-6">${{ h.cantidad * h.precioUnitario }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</ModalBase>
 
   </div>
 </template>
