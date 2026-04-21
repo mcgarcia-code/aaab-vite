@@ -65,7 +65,7 @@
                 </td>
                 <td class="text-center cell-ro">
                   <button
-                    v-if="p.estado && p.estado.toLowerCase() === 'creado'"
+                    v-if="p.estado && ['creado', 'en proceso'].includes(p.estado.toLowerCase())"
                     @click="abrirModalCancelar(p.id)"
                     class="btn btn-sm btn-outline-danger shadow-sm rounded-pill d-inline-flex align-items-center gap-1"
                     title="Cancelar Pedido"
@@ -104,7 +104,7 @@
                 <span class="text-success fw-bold fs-6">Total: ${{ p.cantidad * p.precio_unitario }}</span>
               </div>
 
-              <div v-if="p.estado && p.estado.toLowerCase() === 'creado'" class="mt-2 text-end">
+              <div v-if="p.estado && ['creado', 'en proceso'].includes(p.estado.toLowerCase())" class="mt-2 text-end">
                 <button @click="abrirModalCancelar(p.id)" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill w-100 d-flex justify-content-center align-items-center gap-1" style="font-size: 0.8rem;">
                   <span class="material-icons" style="font-size: 16px;">cancel</span> Cancelar Pedido
                 </button>

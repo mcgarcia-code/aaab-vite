@@ -51,6 +51,7 @@
               <option value="aceptado">Aceptado</option>
               <option value="entregado">Entregado</option>
               <option value="rechazado">Rechazado</option>
+              <option value="cancelado">Cancelado</option>
             </select>
           </div>
 
@@ -92,6 +93,7 @@
                       <option value="aceptado">ACEPTADO</option>
                       <option value="entregado">ENTREGADO</option>
                       <option value="rechazado">RECHAZADO</option>
+                      <option value="cancelado">CANCELADO</option>
                     </select>
                   </td>
                 </tr>
@@ -227,13 +229,14 @@
           <option value="en proceso">En Proceso</option>
           <option value="aceptado">Aceptado (Preparando)</option>
           <option value="entregado">Entregado</option>
-          <option value="rechazado">Rechazado / Cancelado</option>
+          <option value="rechazado">Rechazado (Admin)</option>
+          <option value="cancelado">Cancelado (Árbitro)</option>
         </select>
         <p class="extra-small text-muted mt-2 mb-0" style="font-size: 0.75rem;">
           * <b>En Proceso:</b> Verificas si hay stock.<br>
           * <b>Aceptado:</b> Hay stock disponible y recibís el pago<br>
           * <b>Entregado:</b> Una vez entregado se descuenta el stock definitivamente.<br>
-          * <b>Rechazado:</b> No hay stock. Se devuelve el stock a la base.
+          * <b>Rechazado/Cancelado:</b> No hay stock o se anula. Se devuelve el stock a la base.
         </p>
       </div>
 
@@ -420,6 +423,7 @@ const limpiarFiltros = () => {
   filtros.fecha = '';
 };
 
+// ACÁ SE AGREGA EL RECONOCIMIENTO DE CANCELADO
 const obtenerClaseEstado = (estado) => {
   if (!estado) return 'estado-creado';
   switch (estado.toLowerCase()) {
@@ -428,6 +432,7 @@ const obtenerClaseEstado = (estado) => {
     case 'aceptado': return 'estado-aceptado';
     case 'entregado': return 'estado-entregado';
     case 'rechazado': return 'estado-rechazado';
+    case 'cancelado': return 'estado-cancelado'; // <-- LÍNEA NUEVA
     default: return 'estado-creado';
   }
 };
@@ -438,7 +443,7 @@ const exportarExcel = () => {
     return;
   }
 
-  const pedidosActivos = pedidosFiltrados.value.filter(p => p.estado.toLowerCase() !== 'rechazado');
+  const pedidosActivos = pedidosFiltrados.value.filter(p => p.estado.toLowerCase() !== 'rechazado' && p.estado.toLowerCase() !== 'cancelado');
   const mapaAgrupado = {};
 
   pedidosActivos.forEach(p => {

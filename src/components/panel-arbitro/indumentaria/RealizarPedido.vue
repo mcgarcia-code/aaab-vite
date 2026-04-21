@@ -351,6 +351,7 @@ const cargarStock = async () => {
 
   if (respuesta.ok) {
     listaAgrupada.value = respuesta.payload.map(prenda => {
+      // Función limpia: Ya no agrupamos acá, el backend nos manda los talles únicos
       prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
       prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
       prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
@@ -382,9 +383,6 @@ const stockPaginado = computed(() => {
 const cambiarPagina = (delta) => {
   if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
     paginaActual.value += delta;
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
   }
 };
 
@@ -411,7 +409,7 @@ const agregarAlCarrito = (prenda) => {
   const permiteSinStock = permitePedidoSinStock(prenda);
 
   if (itemTalle.cantidad <= 0 && !permiteSinStock) {
-    notificar({ titulo: 'Agotado', mensaje: 'Lo sentimos, este modelo de ' + prenda.descripcion + ' no admite encargos a fábrica.', tipo: 'danger' });
+    notificar({ titulo: 'Agotado', mensaje: 'Lo sentimos, este modelo no admite encargos.', tipo: 'danger' });
     return;
   }
 
@@ -460,7 +458,7 @@ const realizarPedidoFinal = async () => {
       notificar({ titulo: 'Error', mensaje: 'No pudimos procesar tu pedido.', tipo: 'danger' });
     }
   } catch{
-    notificar({ titulo: 'Error de Red', mensaje: 'Error al conectar con el servidor.', tipo: 'danger' });
+    notificar({ titulo: 'Error de Red', mensaje: 'Error al conectar.', tipo: 'danger' });
   } finally {
     cargando.value = false;
   }

@@ -140,9 +140,14 @@
     >
       <div class="row g-3 text-start">
 
-        <div class="col-12">
+        <div class="col-md-8 col-12">
           <label class="small fw-bold">Nombre del Modelo *</label>
           <input v-model="formModal.descripcion" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: REMERA NEGRA - HUMMEL">
+        </div>
+
+        <div class="col-md-4 col-12">
+          <label class="small fw-bold">Precio General ($) *</label>
+          <input v-model.number="formModal.precioUnitario" type="number" min="0" class="form-control shadow-none border-secondary-subtle fw-bold text-success" placeholder="0.00">
         </div>
 
         <div class="col-12 mt-3 mb-1">
@@ -180,22 +185,16 @@
         </div>
 
         <div v-if="modoModal === 'editar'" class="col-12 mt-4">
-          <label class="small fw-bold mb-2 d-block border-bottom pb-1">Stock y Precio por Talle</label>
+          <label class="small fw-bold mb-2 d-block border-bottom pb-1">Cantidades por Talle</label>
 
-          <div v-for="(t, index) in formModal.items" :key="index" class="row g-2 align-items-center mb-2 p-2 bg-light rounded border border-secondary-subtle">
-            <div class="col-2 fw-bold text-center text-danger">{{ t.talle }}</div>
-
-            <div class="col-5">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text bg-white text-muted border-secondary-subtle" style="font-size: 0.75rem;">Cant:</span>
-                <input v-model.number="t.cantidad" type="number" min="0" class="form-control text-center shadow-none fw-bold border-secondary-subtle">
-              </div>
-            </div>
-
-            <div class="col-5">
-              <div class="input-group input-group-sm">
-                <span class="input-group-text bg-white text-muted border-secondary-subtle" style="font-size: 0.75rem;">$</span>
-                <input v-model.number="t.precio_unitario" type="number" min="0" class="form-control text-end shadow-none fw-bold border-secondary-subtle" placeholder="Precio">
+          <div class="row g-2">
+            <div v-for="(t, index) in formModal.items" :key="index" class="col-6 col-md-4">
+              <div class="d-flex align-items-center p-2 bg-light rounded border border-secondary-subtle">
+                <span class="fw-bold text-danger me-2 text-center" style="width: 40px; font-size: 0.9rem;">{{ t.talle }}</span>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white text-muted border-secondary-subtle" style="font-size: 0.75rem;">Cant:</span>
+                  <input v-model.number="t.cantidad" type="number" min="0" class="form-control text-center shadow-none fw-bold border-secondary-subtle">
+                </div>
               </div>
             </div>
           </div>
@@ -260,7 +259,6 @@ const mostrarModal = ref(false);
 const modoModal = ref('nuevo');
 const archivosSeleccionados = ref([]);
 
-// Variables Modal Eliminar
 const mostrarModalEliminar = ref(false);
 const itemAEliminar = ref(null);
 
@@ -320,7 +318,7 @@ const abrirModalNuevo = () => {
   formModal.value = {
     id_item: null,
     descripcion: '',
-    precioUnitario: 0,
+    precioUnitario: 0, // Reinicia el precio general
     admite_encargo: false,
     items: []
   };
@@ -348,7 +346,7 @@ const abrirModalEdicion = (modelo) => {
   formModal.value = {
     id_item: modelo.id_item,
     descripcion: modelo.descripcion,
-    precioUnitario: modelo.precio_unitario,
+    precioUnitario: modelo.precio_unitario, // Asigna el precio general al abrir
     admite_encargo: modelo.admite_encargo,
     items: itemsCombinados
   };
@@ -397,21 +395,19 @@ const guardarCambios = async () => {
     return;
   }
 
-  const precioRef = modoModal.value === 'editar'
-    ? formModal.value.items.find(t => t.precio_unitario > 0)?.precio_unitario || 0
-    : 0;
-
-  if (modoModal.value === 'editar' && precioRef <= 0) {
-    notificar({ titulo: 'Atención', mensaje: 'Debes ingresar un precio válido en al menos un talle.', tipo: 'warning' });
+  // Validación del precio general único
+  if (formModal.value.precioUnitario <= 0) {
+    notificar({ titulo: 'Atención', mensaje: 'Debes ingresar un precio mayor a 0.', tipo: 'warning' });
     return;
   }
 
+  // Le aplicamos el precio general a todos los talles
   const itemsTodos = modoModal.value === 'editar'
     ? formModal.value.items.map(t => ({
       id: t.id,
       talle: t.talle,
       cantidad: t.cantidad || 0,
-      precioUnitario: t.precio_unitario > 0 ? t.precio_unitario : precioRef
+      precioUnitario: formModal.value.precioUnitario
     }))
     : [];
 
