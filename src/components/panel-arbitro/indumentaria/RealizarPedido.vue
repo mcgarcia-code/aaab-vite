@@ -185,76 +185,72 @@
       </div>
     </Teleport>
 
-    <Teleport to="body">
-    <div v-if="mostrarCarrito" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10000;">
-      <div class="modal-content-exito p-4 shadow-lg animate__animated animate__zoomIn" style="max-width: 450px; width: 95%;">
+    <ModalBase
+      :show="mostrarCarrito"
+      @close="mostrarCarrito = false"
+      titulo="Tu Pedido"
+      icono="shopping_cart_checkout"
+      colorIcono="bg-danger text-white"
+      maxWidth="450px"
+    >
+      <div v-if="carrito.length === 0" class="text-center py-5 text-muted bg-light rounded border">
+        <span class="material-icons fs-1 mb-2">remove_shopping_cart</span>
+        <p class="m-0">El carrito está vacío</p>
+      </div>
 
-        <h4 class="fw-bold mb-4 text-dark d-flex align-items-center justify-content-center gap-2">
-          <span class="material-icons text-danger fs-3">shopping_cart_checkout</span> Tu Pedido
-        </h4>
-
-        <div v-if="carrito.length === 0" class="text-center py-5 text-muted bg-light rounded border">
-          <span class="material-icons fs-1 mb-2">remove_shopping_cart</span>
-          <p class="m-0">El carrito está vacío</p>
-        </div>
-
-        <div v-else class="contenedor-items-carrito mb-4 px-1 text-start">
-          <div v-for="(p, i) in carrito" :key="i" class="d-flex justify-content-between align-items-center border-bottom py-2">
-            <div>
-              <div class="fw-bold small text-dark">{{ p.descripcion }}</div>
-              <div class="text-muted extra-small">Talle: <strong>{{ p.talle }}</strong> | Cant: <strong>{{ p.cantidad }}</strong> | ${{ p.precio * p.cantidad }}</div>
-            </div>
-            <button @click="carrito.splice(i, 1)" class="btn btn-sm text-danger border-0 p-1">
-              <span class="material-icons" style="font-size: 18px;">delete</span>
-            </button>
+      <div v-else class="contenedor-items-carrito px-1 text-start">
+        <div v-for="(p, i) in carrito" :key="i" class="d-flex justify-content-between align-items-center border-bottom py-2">
+          <div>
+            <div class="fw-bold small text-dark">{{ p.descripcion }}</div>
+            <div class="text-muted extra-small">Talle: <strong>{{ p.talle }}</strong> | Cant: <strong>{{ p.cantidad }}</strong> | ${{ p.precio * p.cantidad }}</div>
           </div>
-          <div class="d-flex justify-content-between mt-3 fw-bold fs-5 text-danger bg-danger-subtle p-2 rounded">
-            <span>TOTAL:</span><span>$ {{ totalCarrito }}</span>
-          </div>
+          <button @click="carrito.splice(i, 1)" class="btn btn-sm text-danger border-0 p-1">
+            <span class="material-icons" style="font-size: 18px;">delete</span>
+          </button>
         </div>
-
-        <div class="d-flex gap-2">
-          <button @click="mostrarCarrito = false" class="btn btn-light w-100 rounded-pill fw-bold border" style="font-size: 0.8rem;">SEGUIR MIRANDO</button>
-          <button v-if="carrito.length > 0" @click="confirmarPedido" class="btn btn-dark w-100 rounded-pill fw-bold shadow" style="font-size: 0.8rem;">FINALIZAR</button>
+        <div class="d-flex justify-content-between mt-3 fw-bold fs-5 text-danger bg-danger-subtle p-2 rounded">
+          <span>TOTAL:</span><span>$ {{ totalCarrito }}</span>
         </div>
       </div>
-    </div>
-    </Teleport>
 
-    <Teleport to="body">
-    <div v-if="mostrarPago" class="modal-overlay-exito animate__animated animate__fadeIn" style="z-index: 10001;">
-      <div class="modal-content-exito p-4 text-center animate__animated animate__zoomIn" style="max-width: 450px; width: 95%;">
+      <template #footer>
+        <button @click="mostrarCarrito = false" class="btn btn-light w-100 rounded-pill fw-bold border" style="font-size: 0.8rem;">SEGUIR MIRANDO</button>
+        <button v-if="carrito.length > 0" @click="confirmarPedido" class="btn btn-dark w-100 rounded-pill fw-bold shadow" style="font-size: 0.8rem;">FINALIZAR</button>
+      </template>
+    </ModalBase>
 
-        <div class="icon-circle-exito bg-danger-subtle mb-3 text-danger" style="width: 70px; height: 70px; font-size: 35px;">
-          <span class="material-icons" style="font-size: inherit;">account_balance_wallet</span>
+    <ModalBase
+      :show="mostrarPago"
+      @close="mostrarPago = false"
+      titulo="Abonar Pedido"
+      icono="account_balance_wallet"
+      colorIcono="bg-danger text-white"
+      maxWidth="450px"
+    >
+      <div class="small text-muted mb-4 text-start bg-light p-3 rounded border">
+        <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+          <span>Total a transferir:</span>
+          <strong class="text-danger fs-6">$ {{ totalCarrito }}</strong>
         </div>
+        <strong>CBU:</strong> 0170182740000032568543<br>
+        <strong>Alias:</strong> Adrianmanzanos.bbva<br>
+        <strong>Titular:</strong> Adrian Manzanos<br>
+        <strong>Banco:</strong> BBVA
+      </div>
 
-        <h4 class="fw-bold">Abonar Pedido</h4>
+      <div class="alert alert-info extra-small py-2 border-0 mb-0 fw-bold">
+        <span class="material-icons align-middle me-1" style="font-size: 14px;">info</span>
+        Para que tu pedido sea ACEPTADO, debes enviar el comprobante a tesoreria@arbitroshandball.com.ar
+      </div>
 
-        <div class="small text-muted mb-4 text-start bg-light p-3 rounded border">
-          <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
-            <span>Total a transferir:</span>
-            <strong class="text-danger fs-6">$ {{ totalCarrito }}</strong>
-          </div>
-          <strong>CBU:</strong> 0170182740000032568543<br>
-          <strong>Alias:</strong> Adrianmanzanos.bbva<br>
-          <strong>Titular:</strong> Adrian Manzanos<br>
-          <strong>Banco:</strong> BBVA
-        </div>
-
-        <div class="alert alert-info extra-small py-2 border-0 mb-4 fw-bold">
-          <span class="material-icons align-middle me-1" style="font-size: 14px;">info</span>
-          Para que tu pedido sea ACEPTADO, debes enviar el comprobante a tesoreria@arbitroshandball.com.ar
-        </div>
-
-        <button @click="realizarPedidoFinal" class="btn btn-danger w-100 rounded-pill fw-bold shadow-lg py-3" :disabled="cargando">
-          <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
-          {{ cargando ? 'PROCESANDO...' : 'CONFIRMAR PEDIDO' }}
+      <template #footer>
+        <button @click="mostrarPago = false" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1" style="background: #e2e8f0; border: 1px solid #e2e8f0;">CANCELAR</button>
+        <button @click="realizarPedidoFinal" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="cargando">
+          <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
+          {{ cargando ? 'PROCESANDO' : 'CONFIRMAR' }}
         </button>
-        <button @click="mostrarPago = false" class="btn btn-link text-muted small text-decoration-none mt-2 w-100">Cancelar</button>
-      </div>
-    </div>
-    </Teleport>
+      </template>
+    </ModalBase>
 
   </div>
 </template>
@@ -264,7 +260,8 @@ import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue';
 import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
-import { WEB_URL } from '@/config/env'
+import { WEB_URL } from '@/config/env';
+import ModalBase from '@/components/ModalBase.vue';
 
 useHead({
   title: 'Realizar Pedido | AAAB',
@@ -295,13 +292,6 @@ const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
 const paginaActual = ref(1);
 const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 5 : 12);
 
-const cambiarPagina = (delta) => {
-  if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta;
-  }
-};
-
-// CORRECCIÓN: Detección de tecla Escape
 const manejarEsc = (e) => {
   if (e.key === 'Escape' && imagenZoom.value) {
     imagenZoom.value = null;
@@ -363,14 +353,6 @@ const cargarStock = async () => {
     listaAgrupada.value = respuesta.payload.map(prenda => {
       prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
       prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
-
-      const uniqueSizesMap = new Map();
-      prenda.items.forEach(item => {
-        if (!uniqueSizesMap.has(item.talle)) {
-          uniqueSizesMap.set(item.talle, item);
-        }
-      });
-      prenda.items = Array.from(uniqueSizesMap.values());
       prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
 
       return {
@@ -396,6 +378,15 @@ const stockPaginado = computed(() => {
   const inicio = (paginaActual.value - 1) * registrosPorPagina.value;
   return stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value);
 });
+
+const cambiarPagina = (delta) => {
+  if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
+    paginaActual.value += delta;
+    if (window.innerWidth <= 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+};
 
 watch(paginaActual, () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -477,13 +468,13 @@ const realizarPedidoFinal = async () => {
 
 onMounted(() => {
   window.addEventListener('resize', actualizarAncho);
-  window.addEventListener('keydown', manejarEsc); // Escuchar tecla ESC
+  window.addEventListener('keydown', manejarEsc);
   cargarStock();
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', actualizarAncho);
-  window.removeEventListener('keydown', manejarEsc); // Limpiar evento
+  window.removeEventListener('keydown', manejarEsc);
 });
 </script>
 

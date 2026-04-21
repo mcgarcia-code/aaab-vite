@@ -296,7 +296,7 @@ import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head';
-import ModalBase from '@/components/ModalBase.vue'; // 👈 Asegurate que esta sea la ruta de tu componente
+import ModalBase from '@/components/ModalBase.vue';
 
 useHead({
   title: 'Pedidos Realizados | AAAB',
@@ -311,29 +311,23 @@ const cargando = ref(false);
 const filtros = reactive({ arbitro: '', prenda: '', estado: '', fecha: '' });
 const mostrarFiltrosMobile = ref(false);
 
-// Paginación
 const paginaActual = ref(1);
 const registrosPorPagina = 10;
 
-// Modal Variables Estado
 const mostrarModal = ref(false);
 const pedidoActual = ref({});
 const nuevoEstado = ref('');
 
-// Modal Variables Historial
 const mostrarModalHistorial = ref(false);
 const historialArbitro = ref([]);
 const arbitroHistorialNombre = ref('');
 
-// COMPUTED PARA CONTAR PEDIDOS EN ESTADO "CREADO"
 const pedidosNuevos = computed(() => {
   return pedidos.value.filter(p => p.estado && p.estado.toLowerCase() === 'creado').length;
 });
 
-// Normalizar texto para búsqueda
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
-// Filtros y Paginación
 const pedidosFiltrados = computed(() => {
   return pedidos.value.filter(p => {
     const nombreCompleto = `${p.apellido} ${p.nombre}`;
@@ -352,20 +346,20 @@ const pedidosPaginados = computed(() => {
   return pedidosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
 });
 
-// FUNCIÓN: Cambiar página y scrollear arriba SOLO EN MOBILE
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, 50);
+  if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
+    paginaActual.value += delta;
+    setTimeout(() => {
+      if (window.innerWidth <= 768) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 50);
+  }
 };
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
 watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo });
 
-// API Calls
 const obtenerPedidos = async () => {
   cargando.value = true;
   try {
@@ -377,7 +371,6 @@ const obtenerPedidos = async () => {
   cargando.value = false;
 };
 
-// Acciones Tabla (Estado)
 const abrirModalEstado = (pedido) => {
   pedidoActual.value = { ...pedido };
   nuevoEstado.value = pedido.estado.toLowerCase();
@@ -411,7 +404,6 @@ const guardarEstado = async () => {
   cargando.value = false;
 };
 
-// Acciones Tabla (Historial en Modal)
 const verHistorial = (pedido) => {
   arbitroHistorialNombre.value = `${pedido.apellido}, ${pedido.nombre}`;
   historialArbitro.value = pedidos.value
@@ -428,7 +420,6 @@ const limpiarFiltros = () => {
   filtros.fecha = '';
 };
 
-// Estilos visuales
 const obtenerClaseEstado = (estado) => {
   if (!estado) return 'estado-creado';
   switch (estado.toLowerCase()) {
@@ -441,7 +432,6 @@ const obtenerClaseEstado = (estado) => {
   }
 };
 
-// EXPORTACIÓN A EXCEL
 const exportarExcel = () => {
   if (pedidosFiltrados.value.length === 0) {
     notificar({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' });

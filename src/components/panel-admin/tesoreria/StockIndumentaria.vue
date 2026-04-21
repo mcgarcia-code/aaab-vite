@@ -212,6 +212,16 @@
       </template>
     </ModalBase>
 
+    <ModalExito
+      :visible="mostrarModalEliminar"
+      titulo="Eliminar Modelo"
+      mensaje="¿Estás seguro que querés eliminar este modelo del inventario? Dejará de estar disponible."
+      tipo="danger"
+      :tieneAccion="true"
+      @cerrar="mostrarModalEliminar = false"
+      @confirmar="confirmarEliminacionItem"
+    />
+
   </div>
 </template>
 
@@ -220,8 +230,9 @@ import { ref, onMounted, onUnmounted, computed, reactive, inject, watch } from '
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head';
-import { WEB_URL } from '@/config/env'
+import { WEB_URL } from '@/config/env';
 import ModalBase from '@/components/ModalBase.vue';
+import ModalExito from '@/components/ModalExito.vue';
 
 useHead({
   title: 'Inventario | AAAB',
@@ -249,6 +260,10 @@ const mostrarModal = ref(false);
 const modoModal = ref('nuevo');
 const archivosSeleccionados = ref([]);
 
+// Variables Modal Eliminar
+const mostrarModalEliminar = ref(false);
+const itemAEliminar = ref(null);
+
 const formModal = ref({ id_item: null, descripcion: '', precioUnitario: 0, admite_encargo: false, items: [] });
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
@@ -264,12 +279,14 @@ const stockPaginado = computed(() => {
 });
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, 50);
+  if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
+    paginaActual.value += delta;
+    setTimeout(() => {
+      if (window.innerWidth <= 768) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 50);
+  }
 };
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
@@ -279,17 +296,22 @@ watch(totalPaginas, (nuevo) => {
 });
 
 const obtenerStock = async () => {
-  cargando.value = true;
-  const res = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
-  if (res.ok) {
-    res.payload.forEach(modelo => {
-      modelo.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
-      modelo.items = modelo.items.filter(i => tallesEstandar.includes(i.talle));
-      modelo.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
+  const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
+
+  if (respuesta.ok) {
+    listaStock.value = respuesta.payload.map(prenda => {
+      prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
+      prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
+      prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
+
+      return {
+        ...prenda,
+        itemSeleccionado: 0,
+        cantidadSeleccionada: 1,
+        fotoActualIndex: 0
+      };
     });
-    listaStock.value = res.payload;
   }
-  cargando.value = false;
 };
 
 const abrirModalNuevo = () => {
@@ -334,30 +356,32 @@ const abrirModalEdicion = (modelo) => {
   mostrarModal.value = true;
 };
 
-const confirmarEliminacionItem = async (item) => {
+const eliminarItem = (item) => {
+  itemAEliminar.value = item;
+  mostrarModalEliminar.value = true;
+};
+
+const confirmarEliminacionItem = async () => {
+  if (!itemAEliminar.value) return;
+
   const r = await api.post({
     entity: 'indumentaria',
     action: 'eliminarItem',
-    payload: { id_item: item.id_item }
+    payload: { id_item: itemAEliminar.value.id_item }
   });
 
   if (r.ok) {
-    const indice = listaStock.value.findIndex(modelo => modelo.id_item === item.id_item);
+    const indice = listaStock.value.findIndex(modelo => modelo.id_item === itemAEliminar.value.id_item);
     if (indice !== -1) listaStock.value.splice(indice, 1);
     notificar({ titulo: 'Item eliminado', mensaje: 'El item fue eliminado correctamente.', tipo: 'success' });
   } else {
     notificar({ titulo: 'Error', mensaje: 'No se pudo eliminar el item.', tipo: 'danger' });
   }
+
+  mostrarModalEliminar.value = false;
+  itemAEliminar.value = null;
 };
 
-const eliminarItem = (item) => {
-  notificar({
-    titulo: '¿Eliminar Item?',
-    mensaje: `Se eliminará "${item.descripcion}" del inventario.`,
-    tipo: 'danger',
-    alConfirmar: () => confirmarEliminacionItem(item)
-  });
-};
 
 const manejarArchivos = (event) => {
   archivosSeleccionados.value = Array.from(event.target.files);
@@ -396,7 +420,6 @@ const guardarCambios = async () => {
 
   const flagAdmiteEncargo = formModal.value.admite_encargo ? 1 : 0;
 
-  // Ahora siempre usamos FormData para permitir fotos (tanto crear como editar)
   const formData = new FormData();
   formData.append('descripcion', formModal.value.descripcion.toUpperCase());
   formData.append('admite_encargo', flagAdmiteEncargo);
@@ -434,7 +457,6 @@ const cerrarModal = () => {
 
 const limpiarFiltros = () => { filtros.modelo = ''; };
 
-// NUEVA RUTA PARA LAS IMÁGENES
 const obtenerImagen = (nombre) => {
   const primeraFoto = nombre ? nombre.split(',')[0] : null;
   return primeraFoto ? `${WEB_URL}/api/uploads/indumentaria/${encodeURIComponent(primeraFoto)}` : "https://placehold.co/400x400?text=Indumentaria";

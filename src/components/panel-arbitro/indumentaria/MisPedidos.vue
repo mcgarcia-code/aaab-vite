@@ -66,7 +66,7 @@
                 <td class="text-center cell-ro">
                   <button
                     v-if="p.estado && p.estado.toLowerCase() === 'creado'"
-                    @click="cancelarPedido(p.id)"
+                    @click="abrirModalCancelar(p.id)"
                     class="btn btn-sm btn-outline-danger shadow-sm rounded-pill d-inline-flex align-items-center gap-1"
                     title="Cancelar Pedido"
                     style="font-size: 0.75rem; padding: 2px 10px;"
@@ -105,7 +105,7 @@
               </div>
 
               <div v-if="p.estado && p.estado.toLowerCase() === 'creado'" class="mt-2 text-end">
-                <button @click="cancelarPedido(p.id)" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill w-100 d-flex justify-content-center align-items-center gap-1" style="font-size: 0.8rem;">
+                <button @click="abrirModalCancelar(p.id)" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill w-100 d-flex justify-content-center align-items-center gap-1" style="font-size: 0.8rem;">
                   <span class="material-icons" style="font-size: 16px;">cancel</span> Cancelar Pedido
                 </button>
               </div>
@@ -130,6 +130,17 @@
 
       </div>
     </div>
+
+    <ModalExito
+      :visible="mostrarModalCancelacion"
+      titulo="Cancelar Pedido"
+      mensaje="¿Estás seguro que querés cancelar este pedido? Esta acción no se puede deshacer."
+      tipo="danger"
+      :tieneAccion="true"
+      @cerrar="mostrarModalCancelacion = false"
+      @confirmar="confirmarCancelacion"
+    />
+
   </div>
 </template>
 
@@ -138,6 +149,7 @@ import { ref, computed, onMounted, watch, inject } from 'vue';
 import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
+import ModalExito from '@/components/ModalExito.vue';
 
 useHead({
   title: 'Mis Pedidos | AAAB',
@@ -157,6 +169,10 @@ const cargando = ref(false);
 
 const paginaActual = ref(1);
 const registrosPorPagina = 10;
+
+// Variables para el Modal
+const mostrarModalCancelacion = ref(false);
+const pedidoACancelar = ref(null);
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
@@ -184,15 +200,21 @@ const obtenerPedidos = async () => {
   cargando.value = false;
 };
 
-const cancelarPedido = async (id) => {
-  if (!confirm('¿Estás seguro que querés cancelar este pedido?')) return;
+// Acciones del modal
+const abrirModalCancelar = (id) => {
+  pedidoACancelar.value = id;
+  mostrarModalCancelacion.value = true;
+};
 
+const confirmarCancelacion = async () => {
+  mostrarModalCancelacion.value = false;
   cargando.value = true;
+
   try {
     const res = await api.post({
       entity: 'indumentaria',
       action: 'actualizarPedido',
-      payload: { id: id, estado: 'cancelado' } // <-- CORRECCIÓN AQUÍ: id en vez de id_pedido
+      payload: { id: pedidoACancelar.value, estado: 'cancelado' }
     });
 
     if (res.ok) {
@@ -205,6 +227,7 @@ const cancelarPedido = async (id) => {
     notificar({ titulo: 'Error de Red', mensaje: 'Ocurrió un problema al conectar con el servidor.', tipo: 'danger' });
   } finally {
     cargando.value = false;
+    pedidoACancelar.value = null;
   }
 };
 
@@ -222,9 +245,11 @@ const obtenerClaseEstado = (estado) => {
 };
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
-  if (window.innerWidth <= 768) {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
+    paginaActual.value += delta;
+    if (window.innerWidth <= 768) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 };
 
