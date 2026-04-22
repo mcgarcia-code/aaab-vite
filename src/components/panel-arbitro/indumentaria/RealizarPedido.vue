@@ -309,7 +309,7 @@ const obtenerImagenActual = (prenda) => {
   const archivo = fotos[index]?.trim() || fotos[0]?.trim();
 
   if (archivo) {
-    return `${WEB_URL}/uploads/indumentaria/${encodeURIComponent(archivo)}`;
+    return prenda.folder_imagenes + encodeURIComponent(archivo);
   }
   return "https://placehold.co/400x400?text=Indumentaria";
 };

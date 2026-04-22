@@ -58,7 +58,7 @@
               <div class="card h-100 border-0 shadow-sm tarjeta-stock-admin overflow-hidden">
 
                 <div class="bg-white contenedor-foto-admin d-flex align-items-center justify-content-center position-relative border-bottom">
-                  <img :src="obtenerImagen(modelo.archivo_imagen)" class="img-fluid foto-gestion" alt="Modelo">
+                  <img :src="obtenerImagen(modelo)" class="img-fluid foto-gestion" alt="Modelo">
                   <div class="acciones-flotantes-modelo">
                     <button @click="abrirModalEdicion(modelo)" class="btn-editar-flotante shadow" title="Editar item">
                       <i class="bi bi-pencil-fill"></i>
@@ -453,9 +453,9 @@ const cerrarModal = () => {
 
 const limpiarFiltros = () => { filtros.modelo = ''; };
 
-const obtenerImagen = (nombre) => {
-  const primeraFoto = nombre ? nombre.split(',')[0] : null;
-  return primeraFoto ? `${WEB_URL}/uploads/indumentaria/${encodeURIComponent(primeraFoto)}` : "https://placehold.co/400x400?text=Indumentaria";
+const obtenerImagen = (item) => {
+  const primeraFoto = item.archivo_imagen ? item.archivo_imagen.split(',')[0] : null;
+  return primeraFoto ? item.folder_imagenes + encodeURIComponent(primeraFoto) : "https://placehold.co/400x400?text=Indumentaria";
 };
 
 const exportarExcel = () => {
