@@ -402,6 +402,7 @@ const guardarCambios = async () => {
   }
 
   // Le aplicamos el precio general a todos los talles
+  /*
   const itemsTodos = modoModal.value === 'editar'
     ? formModal.value.items.map(t => ({
       id: t.id,
@@ -410,7 +411,7 @@ const guardarCambios = async () => {
       precioUnitario: formModal.value.precioUnitario
     }))
     : [];
-
+*/
   cargando.value = true;
   let res;
 
@@ -425,10 +426,10 @@ const guardarCambios = async () => {
       formData.append('fotos[]', file);
     });
   }
-
+  console.log('formData', formData)
   if (modoModal.value === 'editar') {
     formData.append('id_item', formModal.value.id_item);
-    formData.append('items', JSON.stringify(itemsTodos));
+    //formData.append('items', JSON.stringify(itemsTodos));
     res = await api.postFile({ entity: 'indumentaria', action: 'actualizarStock', payload: formData });
   } else {
     formData.append('items', JSON.stringify([]));
