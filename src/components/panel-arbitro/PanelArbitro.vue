@@ -106,7 +106,7 @@ const urlFoto = computed(() => {
     return 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff';
   }
   const dniLimpio = String(arbitro.value.dni).trim();
-  return `https://arbitroshandball.com.ar/api/uploads/carnet-arbitros/${dniLimpio}.webp`;
+  return `https://arbitroshandball.com.ar/uploads/carnet-arbitros/${dniLimpio}.webp`;
 });
 
 const nombreFormateado = computed(() => {

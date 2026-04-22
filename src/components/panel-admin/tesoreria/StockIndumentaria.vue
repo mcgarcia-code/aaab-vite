@@ -455,7 +455,7 @@ const limpiarFiltros = () => { filtros.modelo = ''; };
 
 const obtenerImagen = (nombre) => {
   const primeraFoto = nombre ? nombre.split(',')[0] : null;
-  return primeraFoto ? `${WEB_URL}/api/uploads/indumentaria/${encodeURIComponent(primeraFoto)}` : "https://placehold.co/400x400?text=Indumentaria";
+  return primeraFoto ? `${WEB_URL}/uploads/indumentaria/${encodeURIComponent(primeraFoto)}` : "https://placehold.co/400x400?text=Indumentaria";
 };
 
 const exportarExcel = () => {

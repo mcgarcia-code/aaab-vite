@@ -409,7 +409,9 @@ const obtenerPedidos = async () => {
   cargando.value = true;
   try {
     const res = await api.get({ entity: 'indumentaria', action: 'obtenerPedidos' });
-    if (res.ok) pedidos.value = res.payload;
+    if (res.ok) {
+      pedidos.value = res.payload.sort((a, b) => b.id - a.id);
+    }
   } catch {
     notificar({ titulo: 'Error', mensaje: 'Problema al cargar los pedidos.', tipo: 'danger' });
   }

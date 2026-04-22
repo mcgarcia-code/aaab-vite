@@ -240,7 +240,7 @@
 
       <div class="alert alert-info extra-small py-2 border-0 mb-0 fw-bold">
         <span class="material-icons align-middle me-1" style="font-size: 14px;">info</span>
-        Para que tu pedido sea ACEPTADO, debes enviar el comprobante a tesoreria@arbitroshandball.com.ar
+        Para que tu pedido sea ACEPTADO, debes enviar el comprobante de pago a tesoreria@arbitroshandball.com.ar
       </div>
 
       <template #footer>
@@ -307,8 +307,9 @@ const obtenerImagenActual = (prenda) => {
   const fotos = prenda.archivo_imagen ? prenda.archivo_imagen.split(",") : [];
   const index = prenda.fotoActualIndex || 0;
   const archivo = fotos[index]?.trim() || fotos[0]?.trim();
+
   if (archivo) {
-    return `${WEB_URL}/api/uploads/indumentaria/${archivo}`
+    return `${WEB_URL}/uploads/indumentaria/${encodeURIComponent(archivo)}`;
   }
   return "https://placehold.co/400x400?text=Indumentaria";
 };
@@ -416,8 +417,32 @@ const agregarAlCarrito = (prenda) => {
   const itemExistente = carrito.value.find(p => p.id_item === prenda.id_item && p.id_talle === itemTalle.id);
 
   if (itemExistente) {
-    itemExistente.cantidad += prenda.cantidadSeleccionada;
+    // NUEVA VALIDACIÓN: Calculamos cuánto habría en total si lo agregamos
+    const nuevaCantidadTotal = itemExistente.cantidad + prenda.cantidadSeleccionada;
+
+    // Comparamos contra el stock real de la base
+    if (!permiteSinStock && nuevaCantidadTotal > itemTalle.cantidad) {
+      notificar({
+        titulo: 'Stock Insuficiente',
+        mensaje: `Solo hay ${itemTalle.cantidad} en stock. Ya tenés ${itemExistente.cantidad} en el carrito.`,
+        tipo: 'warning'
+      });
+      return; // Cortamos acá, no dejamos que se agregue
+    }
+
+    // Si pasó la validación, actualizamos la cantidad
+    itemExistente.cantidad = nuevaCantidadTotal;
   } else {
+    // Validación de seguridad por si es la primera vez que lo agrega
+    if (!permiteSinStock && prenda.cantidadSeleccionada > itemTalle.cantidad) {
+       notificar({
+         titulo: 'Stock Insuficiente',
+         mensaje: `Solo quedan ${itemTalle.cantidad} unidades en stock.`,
+         tipo: 'warning'
+       });
+       return;
+    }
+
     carrito.value.push({
       id_item: prenda.id_item,
       id_talle: itemTalle.id,

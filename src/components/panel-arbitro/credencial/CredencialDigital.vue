@@ -15,7 +15,7 @@
           <div class="foto-wrap">
             <img
               class="foto-arbitro"
-              :src="`https://arbitroshandball.com.ar/api/uploads/carnet-arbitros/${String(arbitro.dni).trim()}.webp?t=${new Date().getTime()}`"
+              :src="`https://arbitroshandball.com.ar/uploads/carnet-arbitros/${String(arbitro.dni).trim()}.webp?t=${new Date().getTime()}`"
               @error="e => e.target.src = 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'"
             >
           </div>
