@@ -103,11 +103,10 @@ const arbitro = ref(auth.getUser() || {});
 
 const urlFoto = computed(() => {
   if (!arbitro.value || !arbitro.value.dni) {
-    return 'https://via.placeholder.com/150';
+    return 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff';
   }
-  // El .trim() elimina espacios en blanco accidentales de la base de datos
   const dniLimpio = String(arbitro.value.dni).trim();
-  return `https://arbitroshandball.com.ar/resources/carnet-arbitros/${dniLimpio}.webp`;
+  return `https://arbitroshandball.com.ar/api/uploads/carnet-arbitros/${dniLimpio}.webp`;
 });
 
 const nombreFormateado = computed(() => {

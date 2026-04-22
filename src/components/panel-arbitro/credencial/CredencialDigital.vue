@@ -1,22 +1,22 @@
 <template>
   <div class="container-fluid py-4 d-flex justify-content-center animate__animated animate__fadeIn">
-    
+
     <div v-if="cargando" class="loader-full text-center mt-5">
       <div class="spinner-border text-light"></div>
       <p class="text-light mt-2 fw-bold">Generando credencial oficial...</p>
     </div>
 
     <div v-else class="content w-100 d-flex flex-column gap-4" style="max-width: 720px;">
-      
+
       <div ref="credencialRef" class="credencial-card">
         <div class="watermark-center">{{ añoActual }}</div>
 
         <div class="side-black">
           <div class="foto-wrap">
-            <img 
+            <img
               class="foto-arbitro"
-              :src="`https://arbitroshandball.com.ar/resources/carnet-arbitros/${arbitro.dni}.webp?t=${new Date().getTime()}`" 
-              @error="e => e.target.src = 'https://arbitroshandball.com.ar/resources/carnet-arbitros/default.webp'"
+              :src="`https://arbitroshandball.com.ar/api/uploads/carnet-arbitros/${String(arbitro.dni).trim()}.webp?t=${new Date().getTime()}`"
+              @error="e => e.target.src = 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'"
             >
           </div>
           <div :class="['status-badge', arbitro.es_activo == 1 ? 'bg-active' : 'bg-inactive']">
@@ -62,7 +62,7 @@
       <div class="actions-section">
         <button class="btn-download shadow" @click="descargar" :disabled="procesando">
           <span v-if="procesando" class="spinner-border spinner-border-sm me-2"></span>
-          <i v-else class="bi bi-download me-2"></i> 
+          <i v-else class="bi bi-download me-2"></i>
           {{ procesando ? 'PROCESANDO...' : 'DESCARGAR IMAGEN' }}
         </button>
       </div>
@@ -73,7 +73,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { api } from '@/api/api'; 
+import { api } from '@/api/api';
 import html2canvas from 'html2canvas';
 import QrcodeVue from 'qrcode.vue';
 import { useHead } from '@vueuse/head';
@@ -94,12 +94,12 @@ const credencialRef = ref(null);
 const procesando = ref(false);
 const cargando = ref(true);
 
-const arbitro = ref({ 
-  nombre: '', 
-  apellido: '', 
-  dni: '', 
-  grupo: '', 
-  es_activo: 0 
+const arbitro = ref({
+  nombre: '',
+  apellido: '',
+  dni: '',
+  grupo: '',
+  es_activo: 0
 });
 
 const añoActual = new Date().getFullYear();
@@ -113,7 +113,7 @@ const cargarDatos = async () => {
 
     if (res.ok && res.payload) {
       arbitro.value = res.payload;
-    } 
+    }
   } catch (error) {
     console.error("Error al conectar con la API:", error);
   } finally {
@@ -273,15 +273,15 @@ const descargar = async () => {
     min-height: 420px;
     max-width: none;
   }
-  
+
   .watermark-center { font-size: 11rem; left: 70%; top: 50%; }
   .side-black { width: 35%; padding: 20px; }
   .side-white { width: 65%; padding: 30px 35px; text-align: left; }
   .header-top { justify-content: flex-start; }
-  
+
   .info-row-parallel { flex-direction: row; align-items: center; gap: 0; }
   .border-separator { border-left: 1px solid #dee2e6; padding-left: 1.5rem !important; }
-  
+
   .footer-card { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 0; }
   .aaab-info { text-align: left; }
   .expire { text-align: right; }
