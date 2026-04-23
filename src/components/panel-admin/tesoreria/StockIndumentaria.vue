@@ -88,7 +88,7 @@
 
                   <div class="mt-auto pt-2 border-top text-center">
                     <span class="small text-muted">Precio Sugerido:</span>
-                    <div class="fw-bold text-success fs-5">${{ modelo.precio_unitario }}</div>
+                    <div class="fw-bold text-success fs-5">${{ modelo.precio_general }}</div>
                   </div>
                 </div>
 
@@ -147,7 +147,7 @@
 
         <div class="col-md-4 col-12">
           <label class="small fw-bold">Precio General ($) *</label>
-          <input v-model.number="formModal.precioUnitario" type="number" min="0" class="form-control shadow-none border-secondary-subtle fw-bold text-success" placeholder="0.00">
+          <input v-model.number="formModal.precioGeneral" type="number" min="0" class="form-control shadow-none border-secondary-subtle fw-bold text-success" placeholder="0.00">
         </div>
 
         <div class="col-12 mt-3 mb-1">
@@ -229,7 +229,6 @@ import { ref, onMounted, onUnmounted, computed, reactive, inject, watch } from '
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head';
-import { WEB_URL } from '@/config/env';
 import ModalBase from '@/components/ModalBase.vue';
 import ModalExito from '@/components/ModalExito.vue';
 
@@ -262,7 +261,7 @@ const archivosSeleccionados = ref([]);
 const mostrarModalEliminar = ref(false);
 const itemAEliminar = ref(null);
 
-const formModal = ref({ id_item: null, descripcion: '', precioUnitario: 0, admite_encargo: false, items: [] });
+const formModal = ref({ id_item: null, descripcion: '', precioGeneral: 0, admite_encargo: false, items: [] });
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
@@ -318,7 +317,7 @@ const abrirModalNuevo = () => {
   formModal.value = {
     id_item: null,
     descripcion: '',
-    precioUnitario: 0, // Reinicia el precio general
+    precioGeneral: 0, // Reinicia el precio general
     admite_encargo: false,
     items: []
   };
@@ -337,7 +336,7 @@ const abrirModalEdicion = (modelo) => {
 
   tallesEstandar.forEach(talle => {
     if (!tallesExistentes.includes(talle)) {
-      itemsCombinados.push({ id: null, talle: talle, cantidad: 0, precio_unitario: modelo.precio_unitario });
+      itemsCombinados.push({ id: null, talle: talle, cantidad: 0, precio_general: modelo.precio_general });
     }
   });
 
@@ -346,7 +345,7 @@ const abrirModalEdicion = (modelo) => {
   formModal.value = {
     id_item: modelo.id_item,
     descripcion: modelo.descripcion,
-    precioUnitario: modelo.precio_unitario, // Asigna el precio general al abrir
+    precioGeneral: modelo.precio_general, // Asigna el precio general al abrir
     admite_encargo: modelo.admite_encargo,
     items: itemsCombinados
   };
@@ -396,22 +395,17 @@ const guardarCambios = async () => {
   }
 
   // Validación del precio general único
-  if (formModal.value.precioUnitario <= 0) {
+  if (formModal.value.precioGeneral <= 0) {
     notificar({ titulo: 'Atención', mensaje: 'Debes ingresar un precio mayor a 0.', tipo: 'warning' });
     return;
   }
-
-  // Le aplicamos el precio general a todos los talles
-  /*
   const itemsTodos = modoModal.value === 'editar'
     ? formModal.value.items.map(t => ({
       id: t.id,
       talle: t.talle,
       cantidad: t.cantidad || 0,
-      precioUnitario: formModal.value.precioUnitario
     }))
     : [];
-*/
   cargando.value = true;
   let res;
 
@@ -419,7 +413,8 @@ const guardarCambios = async () => {
 
   const formData = new FormData();
   formData.append('descripcion', formModal.value.descripcion.toUpperCase());
-  formData.append('admite_encargo', flagAdmiteEncargo);
+  formData.append('admiteEncargo', flagAdmiteEncargo);
+  formData.append('precioGeneral', formModal.value.precioGeneral)
 
   if (archivosSeleccionados.value.length > 0) {
     archivosSeleccionados.value.forEach(file => {
@@ -429,11 +424,19 @@ const guardarCambios = async () => {
   console.log('formData', formData)
   if (modoModal.value === 'editar') {
     formData.append('id_item', formModal.value.id_item);
-    //formData.append('items', JSON.stringify(itemsTodos));
-    res = await api.postFile({ entity: 'indumentaria', action: 'actualizarStock', payload: formData });
+    formData.append('items', JSON.stringify(itemsTodos));
+    res = await api.postFile({ 
+      entity: 'indumentaria', 
+      action: 'actualizarStock', 
+      payload: formData 
+    })
   } else {
     formData.append('items', JSON.stringify([]));
-    res = await api.postFile({ entity: 'indumentaria', action: 'agregarItem', payload: formData });
+    res = await api.postFile({ 
+      entity: 'indumentaria', 
+      action: 'agregarItem', 
+      payload: formData 
+    });
   }
 
   if (res.ok) {
@@ -461,7 +464,7 @@ const obtenerImagen = (item) => {
 
 const exportarExcel = () => {
   const data = stockFiltrado.value.map(item => {
-    let row = { 'ID Item': item.id_item, 'Modelo': item.descripcion, 'Precio Referencia': `$${item.precio_unitario}` };
+    let row = { 'ID Item': item.id_item, 'Modelo': item.descripcion, 'Precio Referencia': `$${item.precio_general}` };
     tallesEstandar.forEach(talle => {
       const stock = item.items.find(i => i.talle === talle);
       row[`Stock ${talle}`] = stock ? stock.cantidad : 0;
