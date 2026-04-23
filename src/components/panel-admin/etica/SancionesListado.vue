@@ -58,6 +58,13 @@
             <input type="text" v-model="filtros.hasta" placeholder="Hasta (DD/MM/AAAA)" class="filter-input-mobile">
           </div>
 
+          <div class="form-check mt-3 mb-1">
+            <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="filtros.conNuevos" id="conNuevosMob">
+            <label class="form-check-label small fw-bold text-danger" for="conNuevosMob">
+              Solo pendientes de respuesta
+            </label>
+          </div>
+
           <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0">Aplicar Filtros</button>
         </div>
 
@@ -82,7 +89,11 @@
                       <span class="material-icons">refresh</span>
                     </button>
                   </td>
-                  <td class="sticky-col col-acciones"></td>
+                  <td class="sticky-col col-acciones text-center align-middle">
+                    <div class="form-check form-switch d-flex justify-content-center m-0" title="Ver solo pendientes de respuesta">
+                      <input class="form-check-input" type="checkbox" v-model="filtros.conNuevos" style="cursor: pointer;">
+                    </div>
+                  </td>
                   <td class="sticky-col col-arbitro"><input v-model="filtros.arbitro" class="filter-input" placeholder="Filtrar.."></td>
                   <td><input v-model="filtros.motivo" class="filter-input" placeholder="Filtrar.."></td>
                   <td><input v-model="filtros.sancion" class="filter-input text-center" placeholder="Filtrar.."></td>
@@ -337,7 +348,7 @@
       :show="mostrarModalDescargo"
       @close="mostrarModalDescargo = false; fetchSanciones()"
       icono="forum"
-      maxWidth="600px"
+      maxWidth="900px"
     >
       <template #header>
         <div class="text-center">
@@ -346,7 +357,7 @@
         </div>
       </template>
 
-      <div class="chat-container bg-light border rounded p-3 mb-3" style="height: 300px; overflow-y: auto;">
+      <div class="chat-container bg-light border rounded p-3 mb-3" style="height: 50vh; overflow-y: auto;">
         <div v-if="cargandoDescargos" class="text-center mt-4"><span class="spinner-border text-primary"></span></div>
         <div v-else-if="historialDescargos.length === 0" class="text-center text-muted mt-4">
           {{ sancionActiva?.estado_dinamico == 3 ? 'Esperando descargo del árbitro.' : 'No se registraron descargos.' }}
@@ -429,7 +440,7 @@ const cargando = ref(false)
 const cargandoProceso = ref(false)
 
 const filtros = reactive({
-  arbitro: '', motivo: '', sancion: '', desde: '', hasta: '', estado: ''
+  arbitro: '', motivo: '', sancion: '', desde: '', hasta: '', estado: '', conNuevos: false
 })
 
 const mostrarFiltrosMobile = ref(false)
@@ -505,7 +516,10 @@ const sancionesFiltradas = computed(() => {
     if (filtros.estado === 'en_proceso') matchEst = (s.estado_dinamico == 3);
     if (filtros.estado === 'anulada') matchEst = (s.estado_dinamico == 4);
 
-    return matchArb && matchMot && matchSan && matchDes && matchHas && matchEst
+    let matchNuevos = true
+    if (filtros.conNuevos) matchNuevos = (s.tiene_nuevos && s.estado_dinamico == 3);
+
+    return matchArb && matchMot && matchSan && matchDes && matchHas && matchEst && matchNuevos
   }).sort((a, b) => b.id - a.id);
 })
 
@@ -743,7 +757,7 @@ const exportarExcel = () => {
 }
 
 const limpiarFiltros = () => {
-  filtros.arbitro = ''; filtros.motivo = ''; filtros.sancion = ''; filtros.desde = ''; filtros.hasta = ''; filtros.estado = '';
+  filtros.arbitro = ''; filtros.motivo = ''; filtros.sancion = ''; filtros.desde = ''; filtros.hasta = ''; filtros.estado = ''; filtros.conNuevos = false;
 }
 
 onMounted(fetchSanciones)
