@@ -113,8 +113,8 @@
                   </td>
                   <td class="sticky-col col-arbitro cell-ro fw-bold text-uppercase text-dark">{{ p.apellido }}, {{ p.nombre }}</td>
                   <td class="cell-ro text-dark">{{ p.descripcion }} <span class="fw-bold text-danger ms-1">({{ p.talle }})</span></td>
-                  <td class="text-center cell-ro fw-bold">{{ p.cantidad }}</td>
-                  <td class="text-center cell-ro fw-bold text-success">$ {{ p.cantidad * p.precioUnitario }}</td>
+                  <td class="text-center cell-ro fw-bold">{{ p.cantidad }}/{{ p.cantidad_encargada }}</td>
+                  <td class="text-center cell-ro fw-bold text-success">$ {{ (p.cantidad+p.cantidad_encargada) * p.precioUnitario }}</td>
                   <td class="text-center cell-ro text-muted fw-bold">{{ p.fecha_creacion || 'S/F' }}</td>
                   <td class="text-center cell-ro">
                     <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
@@ -217,8 +217,8 @@
         <p class="m-0 fw-bold small text-dark">{{ pedidoActual.descripcion }} ({{ pedidoActual.talle }})</p>
         <p class="m-0 small text-muted mt-1">
           Fecha: <strong class="text-dark">{{ pedidoActual.fecha_creacion || 'S/F' }}</strong> |
-          Cant: <strong class="text-dark">{{ pedidoActual.cantidad }}</strong> |
-          Total: <strong class="text-success">${{ pedidoActual.cantidad * pedidoActual.precioUnitario }}</strong>
+          Cant: <strong class="text-dark">{{ pedidoActual.cantidad + pedidoActual.cantidad_encargada}}</strong> |
+          Total: <strong class="text-success">${{ (pedidoActual.cantidad+pedidoActual.cantidad_encargada) * pedidoActual.precioUnitario }}</strong>
         </p>
       </div>
 
@@ -280,8 +280,8 @@
         <tr v-for="h in historialArbitro" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
           <td class="text-nowrap text-muted fw-bold ps-3 py-3">{{ h.fecha_creacion || 'S/F' }}</td>
           <td class="py-3 text-dark">{{ h.descripcion }} <span class="text-danger fw-bold">({{ h.talle }})</span></td>
-          <td class="text-center fw-bold py-3 text-dark">{{ h.cantidad }}</td>
-          <td class="text-end fw-bold text-success py-3">${{ h.cantidad * h.precioUnitario }}</td>
+          <td class="text-center fw-bold py-3 text-dark">{{ h.cantidad }}/{{ h.cantidad_encargada }}</td>
+          <td class="text-end fw-bold text-success py-3">${{ (h.cantidad + h.cantidad_encargada )* h.precioUnitario }}</td>
           <td class="text-center pe-3 py-3">
             <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">{{ (h.estado || 'N/A').toUpperCase() }}</span>
           </td>
@@ -322,11 +322,11 @@
         </div>
         <div class="card-row border-bottom pb-2 mb-2">
           <span class="fw-bold text-dark">Cantidad:</span>
-          <span class="fw-bold">{{ h.cantidad }}</span>
+          <span class="fw-bold">{{ h.cantidad }}/{{ h.cantidad_encargada }}</span>
         </div>
         <div class="card-row mb-0">
           <span class="fw-bold text-dark">Total:</span>
-          <span class="text-success fw-bold fs-6">${{ h.cantidad * h.precioUnitario }}</span>
+          <span class="text-success fw-bold fs-6">${{ (h.cantidad+h.cantidad_encargada) * h.precioUnitario }}</span>
         </div>
       </div>
     </div>

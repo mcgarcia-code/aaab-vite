@@ -81,7 +81,7 @@
 
                 <div class="card-body p-3 d-flex flex-column cuerpo-gris-inferior">
                   <h6 class="fw-bold text-dark mb-1 text-uppercase extra-small-mobile">{{ prenda.descripcion }}</h6>
-                  <h5 class="fw-bold text-danger mb-2 mb-md-3">$ {{ prenda.precio_unitario }}</h5>
+                  <h5 class="fw-bold text-danger mb-2 mb-md-3">$ {{ prenda.precio_general }}</h5>
 
                   <div class="mt-auto">
                     <div class="row g-2 mb-2 text-start">
@@ -202,7 +202,7 @@
         <div v-for="(p, i) in carrito" :key="i" class="d-flex justify-content-between align-items-center border-bottom py-2">
           <div>
             <div class="fw-bold small text-dark">{{ p.descripcion }}</div>
-            <div class="text-muted extra-small">Talle: <strong>{{ p.talle }}</strong> | Cant: <strong>{{ p.cantidad }}</strong> | ${{ p.precio * p.cantidad }}</div>
+            <div class="text-muted extra-small">Talle: <strong>{{ p.talle }}</strong> | Cant: <strong>{{ p.cantidadSolicitada }}</strong> | ${{ p.precio * p.cantidadSolicitada }}</div>
           </div>
           <button @click="carrito.splice(i, 1)" class="btn btn-sm text-danger border-0 p-1">
             <span class="material-icons" style="font-size: 18px;">delete</span>
@@ -348,15 +348,13 @@ const validarCantidad = (prenda) => {
 const abrirZoom = (url) => { imagenZoom.value = url; };
 
 const cargarStock = async () => {
-  const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
-
+  const respuesta = await api.get({ 
+    entity: 'indumentaria', 
+    action: 'obtenerStock' 
+  });
   if (respuesta.ok) {
     listaAgrupada.value = respuesta.payload.map(prenda => {
-      // Función limpia: Ya no agrupamos acá, el backend nos manda los talles únicos
-      prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
-      prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
       prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
-
       return {
         ...prenda,
         itemSeleccionado: 0,
@@ -378,7 +376,9 @@ const stockFiltrado = computed(() => {
 const totalPaginas = computed(() => Math.ceil(stockFiltrado.value.length / registrosPorPagina.value) || 1);
 const stockPaginado = computed(() => {
   const inicio = (paginaActual.value - 1) * registrosPorPagina.value;
-  return stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value);
+  const stock = stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value);
+  console.log(stock)
+  return stock
 });
 
 const cambiarPagina = (delta) => {
@@ -398,7 +398,7 @@ watch(totalPaginas, (nuevo) => {
 });
 
 const totalCarrito = computed(() => {
-  return carrito.value.reduce((total, p) => total + (p.precio * p.cantidad), 0);
+  return carrito.value.reduce((total, p) => total + (p.precio * p.cantidadSolicitada), 0);
 });
 
 const totalArticulosCarrito = computed(() => {
@@ -406,9 +406,9 @@ const totalArticulosCarrito = computed(() => {
 });
 
 const agregarAlCarrito = (prenda) => {
-  const itemTalle = prenda.items[prenda.itemSeleccionado];
-  const permiteSinStock = permitePedidoSinStock(prenda);
-
+  const itemTalle = prenda.items[prenda.itemSeleccionado]
+  const permiteSinStock = permitePedidoSinStock(prenda)
+  const precio_general = prenda.precio_general
   if (itemTalle.cantidad <= 0 && !permiteSinStock) {
     notificar({ titulo: 'Agotado', mensaje: 'Lo sentimos, este modelo no admite encargos.', tipo: 'danger' });
     return;
@@ -447,10 +447,13 @@ const agregarAlCarrito = (prenda) => {
       id_item: prenda.id_item,
       id_talle: itemTalle.id,
       descripcion: prenda.descripcion,
-      precio: itemTalle.precio_unitario,
+      precio: precio_general,
+      permiteSinStock: permiteSinStock,
       talle: itemTalle.talle,
-      cantidad: prenda.cantidadSeleccionada
+      cantidadActual: itemTalle.cantidad,
+      cantidadSolicitada: prenda.cantidadSeleccionada
     });
+    console.log(carrito.value)
   }
 
   mostrarCarrito.value = true;

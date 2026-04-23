@@ -47,7 +47,7 @@
                 <th class="sticky-col col-id text-center">Pedido</th>
                 <th>Prenda Solicitada</th>
                 <th class="text-center">Cant.</th>
-                <th class="text-center">Total Abonado</th>
+                <th class="text-center">Total Abonado/Por abonar</th>
                 <th class="text-center">Fecha</th>
                 <th class="text-center">Estado</th>
                 <th class="text-center">Acciones</th>
@@ -58,7 +58,7 @@
                 <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">#{{ p.id }}</td>
                 <td class="cell-ro fw-bold text-dark">{{ p.descripcion }} <span class="text-danger">({{ p.talle }})</span></td>
                 <td class="text-center cell-ro">{{ p.cantidad }}</td>
-                <td class="text-center cell-ro fw-bold text-success">$ {{ p.cantidad * p.precio_unitario }}</td>
+                <td class="text-center cell-ro fw-bold text-success">$ {{ p.cantidad * p.precioUnitario }}</td>
                 <td class="text-center cell-ro text-muted fw-bold">{{ p.fecha_creacion || 'S/F' }}</td>
                 <td class="text-center cell-ro">
                   <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
