@@ -602,9 +602,15 @@ const abrirWhatsApp = (numero) => {
 
 const obtenerTextoLicencia = (a) => {
   let textos = [];
+
   const formatearVariasFechas = (cadenaFechas) => {
     if (!cadenaFechas) return '';
-    return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
+    return cadenaFechas
+      .split(',')
+      .map(f => f.trim())
+      .sort((fechaA, fechaB) => new Date(fechaA) - new Date(fechaB))
+      .map(f => mostrarFechaArg(f))
+      .join(', ');
   };
 
   if (a.sancion_vigente) {

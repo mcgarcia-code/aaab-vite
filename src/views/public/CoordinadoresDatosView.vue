@@ -387,12 +387,17 @@ const abrirWhatsApp = (numero) => {
 
 const obtenerTextoLicencia = (a) => {
   let textos = [];
+
   const formatearVariasFechas = (cadenaFechas) => {
     if (!cadenaFechas) return '';
-    return cadenaFechas.split(',').map(f => mostrarFechaArg(f.trim())).join(', ');
+    return cadenaFechas
+      .split(',')
+      .map(f => f.trim())
+      .sort((fechaA, fechaB) => new Date(fechaA) - new Date(fechaB))
+      .map(f => mostrarFechaArg(f))
+      .join(', ');
   };
 
-  // Mostrar Sanciones si existen
   if (a.sancion_vigente) {
     const textoHasta = a.sancion_indefinida ? 'Indefinida' : a.sancion_hasta;
     textos.push(`SANCIONADO (Hasta: ${textoHasta || '-'})`);
@@ -400,7 +405,6 @@ const obtenerTextoLicencia = (a) => {
     textos.push(`SANC. EN PROCESO`);
   }
 
-  // Licencias Existentes
   if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
     textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
   }
