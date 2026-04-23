@@ -260,7 +260,6 @@ import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue';
 import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
-import { WEB_URL } from '@/config/env';
 import ModalBase from '@/components/ModalBase.vue';
 
 useHead({
@@ -283,7 +282,6 @@ const mostrarPago = ref(false);
 const cargando = ref(false);
 const imagenZoom = ref(null);
 
-const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
 const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9 };
 
 const anchoPantalla = ref(window.innerWidth);
@@ -348,9 +346,9 @@ const validarCantidad = (prenda) => {
 const abrirZoom = (url) => { imagenZoom.value = url; };
 
 const cargarStock = async () => {
-  const respuesta = await api.get({ 
-    entity: 'indumentaria', 
-    action: 'obtenerStock' 
+  const respuesta = await api.get({
+    entity: 'indumentaria',
+    action: 'obtenerStock'
   });
   if (respuesta.ok) {
     listaAgrupada.value = respuesta.payload.map(prenda => {
@@ -402,7 +400,7 @@ const totalCarrito = computed(() => {
 });
 
 const totalArticulosCarrito = computed(() => {
-  return carrito.value.reduce((total, p) => total + p.cantidad, 0);
+  return carrito.value.reduce((total, p) => total + p.cantidadSolicitada, 0);
 });
 
 const agregarAlCarrito = (prenda) => {
