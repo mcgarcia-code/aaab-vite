@@ -57,8 +57,8 @@
               <tr v-for="p in pedidosPaginados" :key="p.id" class="row-hover">
                 <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">#{{ p.id }}</td>
                 <td class="cell-ro fw-bold text-dark">{{ p.descripcion }} <span class="text-danger">({{ p.talle }})</span></td>
-                <td class="text-center cell-ro">{{ p.cantidad }}</td>
-                <td class="text-center cell-ro fw-bold text-success">$ {{ p.cantidad * p.precioUnitario }}</td>
+                <td class="text-center cell-ro">{{ p.cantidad + p.cantidad_encargada }}</td>
+                <td class="text-center cell-ro fw-bold text-success">$ {{ (p.cantidad+p.cantidad_encargada) * p.precioUnitario }}</td>
                 <td class="text-center cell-ro text-muted fw-bold">{{ p.fecha_creacion || 'S/F' }}</td>
                 <td class="text-center cell-ro">
                   <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
