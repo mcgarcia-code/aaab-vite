@@ -75,8 +75,9 @@
                 </tr>
                 <tr class="filter-row">
                   <td class="sticky-col col-id text-center">
-                    <button @click="obtenerPedidos" class="btn-refresh mx-auto d-flex align-items-center justify-content-center" title="Recargar">
-                      <span class="material-icons" style="font-size: 16px;">refresh</span>
+                    <button @click="obtenerPedidos" :disabled="cargando" class="btn-refresh mx-auto d-flex align-items-center justify-content-center" title="Recargar">
+                      <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary" style="width: 16px; height: 16px; border-width: 2px;"></span>
+                      <span v-else class="material-icons" style="font-size: 16px;">refresh</span>
                     </button>
                   </td>
                   <td class="sticky-col col-acciones"></td>
@@ -447,6 +448,8 @@ const guardarEstado = async () => {
     }
   } catch (error) {
     console.error(error);
+    // ACÁ ESTÁ EL CAMBIO DE LA NOTIFICACIÓN DE ERROR
+    notificar({ titulo: 'Error de conexión', mensaje: 'Ocurrió un problema al intentar guardar los cambios.', tipo: 'danger' });
   }
   cargando.value = false;
 };
@@ -467,7 +470,6 @@ const limpiarFiltros = () => {
   filtros.fecha = '';
 };
 
-// ACÁ SE AGREGA EL RECONOCIMIENTO DE CANCELADO
 const obtenerClaseEstado = (estado) => {
   if (!estado) return 'estado-creado';
   switch (estado.toLowerCase()) {
@@ -476,7 +478,7 @@ const obtenerClaseEstado = (estado) => {
     case 'aceptado': return 'estado-aceptado';
     case 'entregado': return 'estado-entregado';
     case 'rechazado': return 'estado-rechazado';
-    case 'cancelado': return 'estado-cancelado'; // <-- LÍNEA NUEVA
+    case 'cancelado': return 'estado-cancelado';
     default: return 'estado-creado';
   }
 };
@@ -487,27 +489,36 @@ const exportarExcel = () => {
     return;
   }
 
-  const pedidosActivos = pedidosFiltrados.value.filter(p => p.estado.toLowerCase() !== 'rechazado' && p.estado.toLowerCase() !== 'cancelado');
+  // Filtramos los rechazados/cancelados y además los que no tienen cantidad encargada
+  const pedidosAProducir = pedidosFiltrados.value.filter(p =>
+    p.estado.toLowerCase() !== 'rechazado' &&
+    p.estado.toLowerCase() !== 'cancelado' &&
+    Number(p.cantidad_encargada) > 0
+  );
+
   const mapaAgrupado = {};
 
-  pedidosActivos.forEach(p => {
+  // ACÁ ESTÁ EL CAMBIO PARA SUMAR SOLO LO QUE SE ENCARGA (Hoja Proveedor)
+  pedidosAProducir.forEach(p => {
     const key = `${p.descripcion}_${p.talle}`;
     if (!mapaAgrupado[key]) {
       mapaAgrupado[key] = {
         'Prenda / Modelo': p.descripcion,
         'Talle': p.talle,
-        'Cantidad Total a Pedir': 0
+        'Cantidad a Fabricar': 0
       };
     }
-    mapaAgrupado[key]['Cantidad Total a Pedir'] += Number(p.cantidad);
+    mapaAgrupado[key]['Cantidad a Fabricar'] += Number(p.cantidad_encargada);
   });
 
   const datosHoja1 = Object.values(mapaAgrupado).sort((a, b) => a['Prenda / Modelo'].localeCompare(b['Prenda / Modelo']));
   const wsAgrupado = XLSX.utils.json_to_sheet(datosHoja1);
 
+  // La hoja 2 (Detalle) la dejamos con los totales porque entiendo que eso es lo que el árbitro termina pagando (stock + encargo)
   const mapaArbitros = {};
+  const pedidosActivosDetalle = pedidosFiltrados.value.filter(p => p.estado.toLowerCase() !== 'rechazado' && p.estado.toLowerCase() !== 'cancelado');
 
-  pedidosFiltrados.value.forEach(p => {
+  pedidosActivosDetalle.forEach(p => {
     const nombreArbitro = `${p.apellido}, ${p.nombre}`;
 
     if (!mapaArbitros[nombreArbitro]) {
@@ -515,24 +526,26 @@ const exportarExcel = () => {
         'Árbitro': nombreArbitro,
         'IDs Pedidos': [],
         'Detalle de Prendas': [],
-        'Total Prendas': 0,
+        'Total Prendas (Stock + Encargo)': 0,
         'Monto Total': 0,
         'Estados': new Set(),
         'Fecha (Último)': p.fecha_creacion || 'S/F'
       };
     }
 
+    const cantidadTotal = Number(p.cantidad) + Number(p.cantidad_encargada);
+
     mapaArbitros[nombreArbitro]['IDs Pedidos'].push(`#${p.id}`);
-    mapaArbitros[nombreArbitro]['Detalle de Prendas'].push(`${p.cantidad}x ${p.descripcion} (Talle: ${p.talle})`);
-    mapaArbitros[nombreArbitro]['Total Prendas'] += Number(p.cantidad);
-    mapaArbitros[nombreArbitro]['Monto Total'] += (p.cantidad * p.precioUnitario);
+    mapaArbitros[nombreArbitro]['Detalle de Prendas'].push(`${cantidadTotal}x ${p.descripcion} (Talle: ${p.talle})`);
+    mapaArbitros[nombreArbitro]['Total Prendas (Stock + Encargo)'] += cantidadTotal;
+    mapaArbitros[nombreArbitro]['Monto Total'] += (cantidadTotal * p.precioUnitario);
     mapaArbitros[nombreArbitro]['Estados'].add(p.estado.toUpperCase());
   });
 
   const datosHoja2 = Object.values(mapaArbitros).map(a => ({
     'Árbitro': a['Árbitro'],
     'Detalle del Pedido': a['Detalle de Prendas'].join('  |  '),
-    'Prendas Totales': a['Total Prendas'],
+    'Prendas Totales': a['Total Prendas (Stock + Encargo)'],
     'Monto Total a Cobrar': `$${a['Monto Total']}`,
     'Estado(s)': Array.from(a['Estados']).join(', '),
     'Nro(s) de Pedido': a['IDs Pedidos'].join(', '),
@@ -543,8 +556,8 @@ const exportarExcel = () => {
   const wsDetallado = XLSX.utils.json_to_sheet(datosHoja2);
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, wsAgrupado, "Resumen Proveedor (Compra)");
-  XLSX.utils.book_append_sheet(wb, wsDetallado, "Detalle Individual");
+  XLSX.utils.book_append_sheet(wb, wsAgrupado, "Resumen Proveedor (Fabricar)");
+  XLSX.utils.book_append_sheet(wb, wsDetallado, "Detalle Individual a Cobrar");
 
   XLSX.writeFile(wb, "Reporte_Pedidos_AAAB.xlsx");
 };
