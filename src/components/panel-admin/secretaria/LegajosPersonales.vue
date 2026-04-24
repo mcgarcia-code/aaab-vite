@@ -787,12 +787,14 @@ const aprobarSolicitud = async (solicitud) => {
     })
 
     if (res.ok || res.success) {
+      mostrarModalSolicitudes.value = false;
+
       notificar({ titulo: 'Aprobado', mensaje: 'Se aprobó la solicitud de cambios.', tipo: 'success' })
       solicitud.estado = 'aprobado'
     } else {
       notificar({ titulo: 'Error', mensaje: 'No se pudo aprobar.', tipo: 'danger' })
     }
-  } catch{
+  } catch {
     notificar({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
   }
 }
@@ -812,12 +814,13 @@ const rechazarSolicitud = async (solicitud) => {
         })
 
         if (res.ok || res.success) {
+          mostrarModalSolicitudes.value = false;
           notificar({ titulo: 'Rechazado', mensaje: 'Se rechazó la solicitud correctamente.', tipo: 'success' })
           solicitud.estado = 'rechazado'
         } else {
           notificar({ titulo: 'Error', mensaje: 'No se pudo rechazar.', tipo: 'danger' })
         }
-      } catch{
+      } catch {
         notificar({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
       }
     }

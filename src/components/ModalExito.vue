@@ -54,7 +54,6 @@ const props = defineProps({
   mensaje: String,
   tipo: String,
   tieneAccion: Boolean,
-  // Le damos un z-index más alto por defecto para que siempre quede arriba
   zIndex: { type: [Number, String], default: 1060 }
 });
 
@@ -72,33 +71,30 @@ const handleAccion = () => {
   }
 };
 
-// ESC para cerrar
 const handleKeydown = (e) => {
   if (e.key === 'Escape' && props.visible) {
     cerrar();
   }
 };
 
-// Observar cuando se abre o cierra el modal usando el contador global de modales
+
 watch(() => props.visible, async (val) => {
   if (val) {
-    // Sumamos 1 al contador
+
     let modalCount = parseInt(document.body.dataset.modalCount || '0') + 1;
     document.body.dataset.modalCount = modalCount;
 
-    // Bloquea el scroll del fondo
     document.body.style.overflow = 'hidden';
 
-    // Enfoca el modal para accesibilidad y eventos de teclado
+
     await nextTick();
     modalRef.value?.focus();
   } else {
-    // Restamos 1 al contador
+
     let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1;
     if (modalCount < 0) modalCount = 0;
     document.body.dataset.modalCount = modalCount;
 
-    // Solo restaura el scroll del fondo si no quedan más modales abiertos
     if (modalCount === 0) {
       document.body.style.overflow = '';
     }
@@ -112,7 +108,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
 
-  // Por seguridad, aseguramos que el scroll regrese a la normalidad si el componente se destruye
   if (props.visible) {
     let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1;
     if (modalCount < 0) modalCount = 0;
@@ -134,7 +129,6 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Eliminé el z-index de acá porque ahora lo controlamos dinámicamente desde el HTML */
   padding: 15px;
 }
 

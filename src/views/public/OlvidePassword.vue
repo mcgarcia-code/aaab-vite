@@ -4,20 +4,13 @@
       <div class="text-center mb-4">
         <img src="@/assets/fotos/logo.png" alt="Logo AAAB" class="logo-img mb-2">
         <h4 class="fw-bold text-primary">Recuperar Clave</h4>
-        <p class="text-muted small">Ingresá tu email y te enviaremos un enlace</p>
+        <p class="text-muted small">Ingresá tu DNI y te enviaremos un enlace a tu correo registrado</p>
       </div>
 
-      <div v-if="errorMsg" class="alert alert-danger small p-2 text-center border-0">
-        {{ errorMsg }}
-      </div>
-      <div v-if="successMsg" class="alert alert-success small p-2 text-center border-0">
-        {{ successMsg }}
-      </div>
-
-      <form v-if="!successMsg" @submit.prevent="solicitarRecuperacion">
+      <form @submit.prevent="solicitarRecuperacion">
         <div class="mb-3">
-          <label class="form-label small fw-bold">Email registrado</label>
-          <input v-model="email" type="email" class="form-control" placeholder="ejemplo@mail.com" required>
+          <label class="form-label small fw-bold">DNI registrado</label>
+          <input v-model="dni" type="text" class="form-control" placeholder="Sin puntos, ej: 30123456" required>
         </div>
 
         <button :disabled="cargando" type="submit" class="btn btn-primary w-100 fw-bold py-2 mt-2">
@@ -40,49 +33,62 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, inject } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 
 useHead({
-  title: 'Recuperar Contraseña | AAAB',
-  meta: [
-    { name: 'description', content: 'Recupera el acceso a tu cuenta de árbitro de la AAAB.' },
-    { property: 'og:title', content: 'Recuperar Contraseña | AAAB' }
-  ]
+  title: 'Recuperar Contraseña | AAAB'
 });
 
-const email = ref('');
-const errorMsg = ref('');
-const successMsg = ref('');
+const dni = ref('');
 const cargando = ref(false);
 
+const notificar = inject('notificar');
+
 const solicitarRecuperacion = async () => {
-  if (!email.value) {
-    errorMsg.value = "Por favor, ingresá tu email";
+  if (!dni.value) {
+    // CAMBIO: Pasamos un objeto y usamos tipo 'danger'
+    notificar({
+      titulo: 'Atención',
+      mensaje: 'Por favor, ingresá tu DNI.',
+      tipo: 'danger'
+    });
     return;
   }
 
   cargando.value = true;
-  errorMsg.value = '';
-  successMsg.value = '';
 
   try {
     const res = await api.post({
       entity: 'login_arbitro',
       action: 'solicitarRecuperacion',
-      payload: { email: email.value.trim() }
+      payload: { dni: dni.value.trim() }
     });
 
     if (res.ok && res.payload.success) {
-      successMsg.value = "Si el email está registrado, recibirás un correo en breve con las instrucciones.";
-      email.value = '';
+      // CAMBIO: Pasamos un objeto y usamos tipo 'success'
+      notificar({
+        titulo: '¡Correo enviado!',
+        mensaje: 'Si el DNI está registrado, recibirás un correo con las instrucciones.',
+        tipo: 'success'
+      });
+      dni.value = '';
     } else {
-      errorMsg.value = res.payload?.message || "Ocurrió un error al procesar la solicitud.";
+      // CAMBIO: Pasamos un objeto y usamos tipo 'danger'
+      notificar({
+        titulo: 'Error',
+        mensaje: res.payload?.message || "Ocurrió un error al procesar la solicitud.",
+        tipo: 'danger'
+      });
     }
   } catch (err) {
     console.error("Error al solicitar recuperación:", err);
-    errorMsg.value = "Error de conexión con el servidor.";
+    notificar({
+      titulo: 'Error de conexión',
+      mensaje: "No se pudo conectar con el servidor.",
+      tipo: 'danger'
+    });
   } finally {
     cargando.value = false;
   }
@@ -90,7 +96,6 @@ const solicitarRecuperacion = async () => {
 </script>
 
 <style scoped>
-/* Exactamente los mismos estilos para mantener la coherencia */
 .login-container { min-height: 100vh; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 20px; }
 .login-card { width: 100%; max-width: 400px; border-radius: 15px; border: none; }
 .text-primary { color: #dc3545 !important; }
