@@ -7,7 +7,7 @@
         <p class="text-muted small">Creá una nueva clave para tu cuenta</p>
       </div>
 
-      <form v-if="!operacionExitosa" @submit.prevent="guardarNuevaPassword">
+      <form @submit.prevent="guardarNuevaPassword">
         <div class="mb-3">
           <label class="form-label small fw-bold">Nueva Contraseña</label>
           <input v-model="password" type="password" class="form-control" placeholder="••••••••" required minlength="6">
@@ -24,12 +24,6 @@
         </button>
       </form>
 
-      <div v-if="operacionExitosa" class="mt-3">
-        <button @click="router.push('/login-arbitro')" class="btn btn-primary w-100 fw-bold py-2">
-          IR A INICIAR SESIÓN
-        </button>
-      </div>
-
       <div class="text-center mt-4 border-top pt-3">
         <p class="support-text mt-2 mb-0">
           Si tenés algún problema técnico comunicate con
@@ -41,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue'; // Agregamos inject
+import { ref, onMounted, inject } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
@@ -57,8 +51,6 @@ const token = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 const cargando = ref(false);
-
-const operacionExitosa = ref(false);
 
 const notificar = inject('notificar');
 
@@ -140,7 +132,6 @@ const guardarNuevaPassword = async () => {
     cargando.value = false;
   }
 };
-
 </script>
 
 <style scoped>
