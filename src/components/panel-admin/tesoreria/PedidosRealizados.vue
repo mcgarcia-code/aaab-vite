@@ -15,7 +15,7 @@
             </h4>
             <span class="counter mt-1 d-block text-muted">Total: {{ pedidosFiltrados.length }} pedidos</span>
           </div>
-
+stock
           <div class="header-actions">
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
               <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
@@ -498,7 +498,7 @@ const exportarExcel = () => {
 
   const mapaAgrupado = {};
 
-  // ACÁ ESTÁ EL CAMBIO PARA SUMAR SOLO LO QUE SE ENCARGA (Hoja Proveedor)
+
   pedidosAProducir.forEach(p => {
     const key = `${p.descripcion}_${p.talle}`;
     if (!mapaAgrupado[key]) {
@@ -514,7 +514,6 @@ const exportarExcel = () => {
   const datosHoja1 = Object.values(mapaAgrupado).sort((a, b) => a['Prenda / Modelo'].localeCompare(b['Prenda / Modelo']));
   const wsAgrupado = XLSX.utils.json_to_sheet(datosHoja1);
 
-  // La hoja 2 (Detalle) la dejamos con los totales porque entiendo que eso es lo que el árbitro termina pagando (stock + encargo)
   const mapaArbitros = {};
   const pedidosActivosDetalle = pedidosFiltrados.value.filter(p => p.estado.toLowerCase() !== 'rechazado' && p.estado.toLowerCase() !== 'cancelado');
 
