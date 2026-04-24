@@ -15,7 +15,6 @@
             </h4>
             <span class="counter mt-1 d-block text-muted">Total: {{ pedidosFiltrados.length }} pedidos</span>
           </div>
-stock
           <div class="header-actions">
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
               <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
