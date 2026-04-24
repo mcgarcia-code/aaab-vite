@@ -48,7 +48,6 @@ const notificar = inject('notificar');
 
 const solicitarRecuperacion = async () => {
   if (!dni.value) {
-    // CAMBIO: Pasamos un objeto y usamos tipo 'danger'
     notificar({
       titulo: 'Atención',
       mensaje: 'Por favor, ingresá tu DNI.',
@@ -67,7 +66,6 @@ const solicitarRecuperacion = async () => {
     });
 
     if (res.ok && res.payload.success) {
-      // CAMBIO: Pasamos un objeto y usamos tipo 'success'
       notificar({
         titulo: '¡Correo enviado!',
         mensaje: 'Si el DNI está registrado, recibirás un correo con las instrucciones.',
@@ -75,7 +73,6 @@ const solicitarRecuperacion = async () => {
       });
       dni.value = '';
     } else {
-      // CAMBIO: Pasamos un objeto y usamos tipo 'danger'
       notificar({
         titulo: 'Error',
         mensaje: res.payload?.message || "Ocurrió un error al procesar la solicitud.",

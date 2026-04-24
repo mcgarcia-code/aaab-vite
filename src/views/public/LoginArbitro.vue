@@ -18,7 +18,16 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label small fw-bold">Contraseña</label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label small fw-bold mb-0">Contraseña</label>
+
+          <!--
+          <router-link to="/olvide-password" class="small text-decoration-none" style="color: #64748b; font-weight: 600;">
+            ¿Olvidaste tu clave?
+          </router-link>
+          -->
+
+          </div>
           <input v-model="password" type="password" class="form-control" placeholder="••••••••" required>
         </div>
 
@@ -31,7 +40,7 @@
       <div class="text-center mt-4 border-top pt-3">
         <p class="text-muted x-small mb-0">Asociación Argentina de Árbitros de Balonmano</p>
         <p class="support-text mt-2">
-          Si tenés algún problema técnico comunicate con 
+          Si tenés algún problema técnico comunicate con
           <a href="mailto:soporte@arbitroshandball.com.ar">soporte@arbitroshandball.com.ar</a>
         </p>
       </div>
@@ -42,39 +51,20 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-// 1. Importamos auth y api desde tu carpeta api
-import { auth } from '@/api/auth'; 
-import { api } from '@/api/api'; 
-import { useHead } from '@vueuse/head'
+import { auth } from '@/api/auth';
+import { api } from '@/api/api';
+import { useHead } from '@vueuse/head';
 
-// Título y descripción específicos para la página de Login
 useHead({
   title: 'Iniciar Sesión | AAAB',
   meta: [
-    {
-      name: 'description',
-      content: 'Inicia sesión en tu cuenta de árbitro para acceder a tu panel de control.',
-    },
-        // --- ESTO ES LO QUE LEE WHATSAPP ---
-    {
-      property: 'og:title',
-      content: 'Iniciar Sesión | AAAB',
-    },
-    {
-      property: 'og:description',
-      content: 'Inicia sesión en tu cuenta de árbitro para acceder a tu panel de control.',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png', // Asegúrate que esta URL sea real
-    },
-    {
-      property: 'og:type',
-      content: 'website',
-    }
+    { name: 'description', content: 'Inicia sesión en tu cuenta de árbitro para acceder a tu panel de control.' },
+    { property: 'og:title', content: 'Iniciar Sesión | AAAB' },
+    { property: 'og:description', content: 'Inicia sesión en tu cuenta de árbitro para acceder a tu panel de control.' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
+    { property: 'og:type', content: 'website' }
   ],
-})
-
+});
 
 const router = useRouter();
 const email = ref('');
@@ -106,18 +96,15 @@ const iniciarSesion = async () => {
         arbitro: res.payload.arbitro,
         token: res.payload.token
       }
-      console.log(userData)
-      auth.setUser(userData) 
-      
-      // Redirección basada en rol
+      auth.setUser(userData);
+
       if (res.payload.admin) {
         router.push('/panel-admin');
       } else {
         router.push('/panel-arbitro');
       }
-      
+
     } else {
-      // Mensaje de error desde el backend
       errorMsg.value = res.payload?.message || res.message || "Credenciales incorrectas";
     }
   } catch (err) {
@@ -162,13 +149,13 @@ const iniciarSesion = async () => {
 }
 
 .btn-primary {
-  background-color: #dc3545 !important; 
+  background-color: #dc3545 !important;
   border: none;
   font-weight: bold;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #a71d2a !important; 
+  background-color: #a71d2a !important;
 }
 
 .form-control:focus {
