@@ -58,7 +58,7 @@
                 <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">#{{ p.id }}</td>
                 <td class="cell-ro fw-bold text-dark">{{ p.descripcion }} <span class="text-danger">({{ p.talle }})</span></td>
                 <td class="text-center cell-ro">{{ p.cantidad + p.cantidad_encargada }}</td>
-                <td class="text-center cell-ro fw-bold text-success">$ {{ (p.cantidad+p.cantidad_encargada) * p.precioUnitario }}</td>
+                <td class="text-center cell-ro fw-bold text-success">${{ (p.cantidad+p.cantidad_encargada) * p.precioUnitario }}</td>
                 <td class="text-center cell-ro text-muted fw-bold">{{ p.fecha_creacion || 'S/F' }}</td>
                 <td class="text-center cell-ro">
                   <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
@@ -100,8 +100,8 @@
               </div>
 
               <div class="card-info bg-light p-2 rounded border mt-2 d-flex justify-content-between align-items-center">
-                <span class="text-dark small">Cant: <strong>{{ p.cantidad }}</strong></span>
-                <span class="text-success fw-bold fs-6">Total: ${{ p.cantidad * p.precio_unitario }}</span>
+                <span class="text-dark small">Cant: <strong>{{ p.cantidad + p.cantidad_encargada }}</strong></span>
+                <span class="text-success fw-bold fs-6">Total:${{ (p.cantidad+p.cantidad_encargada) * p.precioUnitario }}</span>
               </div>
 
               <div v-if="p.estado && ['creado', 'en proceso'].includes(p.estado.toLowerCase())" class="mt-2 text-end">
