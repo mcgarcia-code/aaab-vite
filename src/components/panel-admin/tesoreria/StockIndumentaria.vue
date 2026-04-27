@@ -245,8 +245,8 @@ const cargando = ref(false);
 const filtros = reactive({ modelo: '' });
 const mostrarFiltrosMobile = ref(false);
 
-const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
-const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9 };
+const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', 'Único'];
+const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9, 'Único': 10 };
 
 const anchoPantalla = ref(window.innerWidth);
 const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
@@ -425,17 +425,17 @@ const guardarCambios = async () => {
   if (modoModal.value === 'editar') {
     formData.append('id_item', formModal.value.id_item);
     formData.append('items', JSON.stringify(itemsTodos));
-    res = await api.postFile({ 
-      entity: 'indumentaria', 
-      action: 'actualizarStock', 
-      payload: formData 
+    res = await api.postFile({
+      entity: 'indumentaria',
+      action: 'actualizarStock',
+      payload: formData
     })
   } else {
     formData.append('items', JSON.stringify([]));
-    res = await api.postFile({ 
-      entity: 'indumentaria', 
-      action: 'agregarItem', 
-      payload: formData 
+    res = await api.postFile({
+      entity: 'indumentaria',
+      action: 'agregarItem',
+      payload: formData
     });
   }
 
