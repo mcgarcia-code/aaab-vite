@@ -252,7 +252,7 @@ const anchoPantalla = ref(window.innerWidth);
 const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
 
 const paginaActual = ref(1);
-const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 6 : 15);
+const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 6 : 16);
 
 const mostrarModal = ref(false);
 const modoModal = ref('nuevo');
