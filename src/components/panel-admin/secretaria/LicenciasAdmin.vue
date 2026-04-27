@@ -281,29 +281,35 @@
         <p class="small">No hay licencias previas en el historial.</p>
       </div>
 
-      <div v-else>
-        <div class="table-responsive d-none d-md-block">
-          <table class="table table-sm table-borderless align-middle m-0" style="font-size: 0.85rem;">
-            <thead style="border-bottom: 2px solid #e2e8f0;">
-              <tr class="text-dark">
-                <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">F. Solicitud</th>
-                <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">F. Ausencia</th>
-                <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Motivo</th>
-                <th class="text-center pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Estado</th>
+<div v-else>
+        <div class="table-responsive d-none d-md-block bg-white rounded shadow-sm border border-light-subtle">
+
+          <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem; table-layout: fixed; width: 100%;">
+
+            <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
+              <tr>
+                <th class="py-2 ps-3 fw-bold text-uppercase" style="width: 130px; font-size: 0.75rem;">F. Solicitud</th>
+                <th class="py-2 fw-bold text-uppercase" style="width: 130px; font-size: 0.75rem;">F. Ausencia</th>
+                <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Motivo</th>
+                <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="width: 120px; font-size: 0.75rem;">Estado</th>
               </tr>
             </thead>
+
             <tbody>
               <tr v-for="h in historialLicencia" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
-                <td class="text-nowrap text-muted fw-bold py-3">{{ formatearFechaVista(h.fecha_solicitud) }}</td>
+                <td class="text-nowrap text-muted fw-bold py-3 ps-3">{{ formatearFechaVista(h.fecha_solicitud) }}</td>
                 <td class="text-nowrap text-primary fw-bold py-3">{{ formatearFechaVista(h.fecha_licencia) }}</td>
-                <td class="text-muted py-3">{{ h.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</td>
-                <td class="text-center py-3">
+                <td class="text-muted py-3" style="white-space: normal; word-wrap: break-word;">
+                  {{ h.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}
+                </td>
+                <td class="text-center py-3 pe-3">
                   <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+
 
         <div class="d-block d-md-none">
           <div v-for="h in historialLicencia" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-4 p-3 mb-3 shadow-sm bg-light">

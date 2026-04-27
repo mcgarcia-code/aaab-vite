@@ -93,16 +93,40 @@
                           </option>
                         </select>
                       </div>
-                      <div class="col-5">
+<div class="col-5">
                         <label class="extra-small-label fw-bold text-muted">Cant:</label>
-                        <input
-                          type="number"
-                          v-model.number="prenda.cantidadSeleccionada"
-                          min="1"
-                          :max="permitePedidoSinStock(prenda) ? 99 : obtenerStockMaximo(prenda)"
-                          @input="validarCantidad(prenda)"
-                          class="form-control form-control-sm rounded-pill shadow-sm border-secondary-subtle text-center"
-                        >
+
+                        <div class="d-flex align-items-center rounded-pill shadow-sm border border-secondary-subtle bg-white overflow-hidden p-0" style="height: 31px;">
+
+                          <button
+                            type="button"
+                            class="btn btn-light border-0 text-muted p-0 d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width: 28px; height: 100%; background: transparent;"
+                            @click="prenda.cantidadSeleccionada > 1 ? (prenda.cantidadSeleccionada--, validarCantidad(prenda)) : null"
+                          >
+                            <span class="material-icons" style="font-size: 16px;">remove</span>
+                          </button>
+
+                          <input
+                            type="number"
+                            v-model.number="prenda.cantidadSeleccionada"
+                            min="1"
+                            :max="permitePedidoSinStock(prenda) ? 99 : obtenerStockMaximo(prenda)"
+                            @input="validarCantidad(prenda)"
+                            class="form-control border-0 text-center p-0 shadow-none bg-transparent hide-arrows fw-bold text-dark"
+                            style="min-width: 0; font-size: 0.85rem;"
+                          >
+
+                          <button
+                            type="button"
+                            class="btn btn-light border-0 text-muted p-0 d-flex align-items-center justify-content-center flex-shrink-0"
+                            style="width: 28px; height: 100%; background: transparent;"
+                            @click="prenda.cantidadSeleccionada < (permitePedidoSinStock(prenda) ? 99 : obtenerStockMaximo(prenda)) ? (prenda.cantidadSeleccionada++, validarCantidad(prenda)) : null"
+                          >
+                            <span class="material-icons" style="font-size: 16px;">add</span>
+                          </button>
+
+                        </div>
                       </div>
 
                       <div class="col-12 mt-0 text-center">
@@ -837,5 +861,19 @@ h5 {
   .btn-text {
     display: none !important;
   }
+}
+/* ====================================================
+   8. INPUTS NUMÉRICOS PERSONALIZADOS
+   ==================================================== */
+/* Ocultar flechas del input type="number" en Chrome/Safari/Edge */
+.hide-arrows::-webkit-outer-spin-button,
+.hide-arrows::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Ocultar flechas en Firefox y navegadores estándar */
+.hide-arrows {
+  -moz-appearance: textfield;
+  appearance: textfield; /* Agregá esta línea para el linter */
 }
 </style>
