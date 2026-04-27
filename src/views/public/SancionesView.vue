@@ -145,7 +145,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import api from '@/api/api'
+import { api } from '@/api/api'
 
 
 const sanciones = ref([])
