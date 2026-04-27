@@ -145,9 +145,9 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import axios from 'axios'
+import api from '@/api/api'
 
-const API_URL = 'https://arbitroshandball.com.ar/api/api.php'
+
 const sanciones = ref([])
 const cargando = ref(false)
 const filtro = ref('')
@@ -159,10 +159,11 @@ const registrosPorPagina = ref(20) // Por defecto para escritorio
 const fetchSanciones = async () => {
   cargando.value = true
   try {
-    const res = await axios.get(API_URL, {
-      params: { entity: 'sanciones', action: 'obtenerSanciones' }
+    const res = await api.get({
+      entity: 'sanciones',
+      action: 'obtenerSanciones'
     })
-    sanciones.value = res.data?.payload ?? []
+    sanciones.value = res.payload ?? []
   } catch (err) {
     console.error(err)
   } finally {
