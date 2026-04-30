@@ -628,7 +628,7 @@
             <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
               <tr>
                 <th class="py-2 ps-3 fw-bold text-uppercase" style="width: 120px; font-size: 0.75rem;">Fecha</th>
-                <th class="py-2 fw-bold text-uppercase" style="width: 100px; font-size: 0.75rem;">Tipo</th>
+                <th class="py-2 fw-bold text-uppercase" style="width: 140px; font-size: 0.75rem;">Tipo</th>
                 <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Mensaje</th>
                 <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="width: 100px; font-size: 0.75rem;">Estado</th>
               </tr>
@@ -1313,6 +1313,7 @@ onMounted(() => {
   .col-ultra-compact { width: 65px !important; min-width: 65px !important; text-align: center !important; }
   .col-dni-compact { width: 90px; text-align: center; }
   .obs-cell { white-space: normal; min-width: 200px; }
+
 
   .cell-ro { padding: 10px 8px; font-size: 0.85rem; color: inherit; white-space: nowrap; border-bottom: 1px solid #f1f5f9; }
   .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}

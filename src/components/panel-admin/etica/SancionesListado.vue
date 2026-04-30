@@ -285,34 +285,41 @@
         <span class="material-icons d-block mb-3" style="font-size: 50px; color: #cbd5e1;">history_toggle_off</span>
         <p class="mb-0 fw-bold fs-5 text-dark">Sin registros</p>
       </div>
-      <div v-else>
-        <div class="table-responsive d-none d-md-block">
-          <table class="table table-sm table-borderless align-middle m-0" style="font-size: 0.85rem;">
-            <thead style="border-bottom: 2px solid #e2e8f0;">
-              <tr class="text-dark">
-                <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Art. / Motivo</th>
-                <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Sanción</th>
-                <th class="pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Fechas</th>
-                <th class="text-center pb-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Estado</th>
+<div v-else>
+        <div class="table-responsive d-none d-md-block bg-white rounded shadow-sm border border-light-subtle">
+
+          <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem; table-layout: fixed; width: 100%;">
+
+            <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
+              <tr>
+                <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Art. / Motivo</th>
+                <th class="py-2 fw-bold text-uppercase" style="width: 120px; font-size: 0.75rem;">Sanción</th>
+                <th class="py-2 fw-bold text-uppercase" style="width: 140px; font-size: 0.75rem;">Fechas</th>
+                <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="width: 100px; font-size: 0.75rem;">Estado</th>
               </tr>
             </thead>
+
             <tbody>
               <tr v-for="h in historialSanciones" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
-                <td class="py-3 pe-2">
+
+                <td class="py-3 ps-3 pe-2" style="white-space: normal; word-wrap: break-word; line-height: 1.2;">
                   <span class="fw-bold" style="color: #0f172a; font-size: 0.9rem;">Art. {{ h.articulo }}</span><br>
                   <span class="text-muted" style="font-size: 0.8rem;">{{ h.motivo }}</span>
                 </td>
-                <td class="py-3 pe-2">
+
+                <td class="py-3 pe-2" style="white-space: normal; word-wrap: break-word;">
                   <span :class="obtenerClaseTextoSancion(h.estado_dinamico)" style="font-size: 0.9rem;">{{ h.sancion }}</span>
                 </td>
-                <td class="text-nowrap py-3 pe-2" style="color: #475569; font-size: 0.8rem;">
-                  <strong class="text-dark">D:</strong> {{ h.desde_formateada || h.desde || '-' }}<br>
-                  <strong class="text-dark">H:</strong>
+
+                <td class="py-3 pe-2" style="color: #475569; font-size: 0.8rem;">
+                  <strong class="text-dark">D: </strong> {{ h.desde_formateada || h.desde || '-' }}<br>
+                  <strong class="text-dark">H: </strong>
                   <span :class="h.es_indefinido == 1 ? 'text-primary fw-bold' : ''">
                     {{ h.es_indefinido == 1 ? 'Indefinido' : (h.hasta_formateada || h.hasta || '-') }}
                   </span>
                 </td>
-                <td class="text-center py-3">
+
+                <td class="text-center py-3 pe-3">
                   <span :class="obtenerClaseEstado(h.estado_dinamico, true)" style="padding: 4px 8px; font-size: 0.7rem;">
                     {{ obtenerTextoEstado(h.estado_dinamico) }}
                   </span>
@@ -321,9 +328,10 @@
             </tbody>
           </table>
         </div>
+
         <div class="d-block d-md-none">
-          <div v-for="h in historialSanciones" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-4 p-3 mb-3 shadow-sm bg-light">
-            <div class="d-flex justify-content-between align-items-start mb-2 border-bottom pb-2">
+          <div v-for="h in historialSanciones" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded p-3 mb-3 shadow-sm bg-white">
+            <div class="d-flex justify-content-between align-items-start mb-2 border-bottom border-secondary-subtle pb-2">
               <div>
                 <span class="d-block fw-bold text-dark" style="font-size: 0.95rem;">Art. {{ h.articulo }}</span>
                 <span class="text-muted" style="font-size: 0.8rem;">{{ h.motivo }}</span>
@@ -335,7 +343,7 @@
             <div class="mt-2 mb-3">
               <span :class="obtenerClaseTextoSancion(h.estado_dinamico)" style="font-size: 0.95rem;">{{ h.sancion }}</span>
             </div>
-            <div class="d-flex justify-content-between align-items-center text-muted small bg-white p-2 rounded border border-light-subtle">
+            <div class="d-flex justify-content-between align-items-center text-muted small bg-light p-2 rounded border border-light-subtle">
               <span><strong>Desde:</strong> {{ h.desde_formateada || h.desde || '-' }}</span>
               <span><strong>Hasta:</strong> <span :class="h.es_indefinido == 1 ? 'text-primary fw-bold' : ''">{{ h.es_indefinido == 1 ? 'Indefinido' : (h.hasta_formateada || h.hasta || '-') }}</span></span>
             </div>
@@ -487,10 +495,12 @@ const obtenerTextoEstado = (estado_dinamico) => {
 }
 
 const obtenerClaseEstado = (estado_dinamico, es_sm = false) => {
+
   const prefijo = es_sm ? 'badge-status-sm' : 'badge-status';
-  if (estado_dinamico == 1) return `${prefijo} rechazada`;
-  if (estado_dinamico == 2) return `${prefijo} aprobada`;
-  if (estado_dinamico == 3) return `${prefijo} pendiente text-dark`;
+
+  if (estado_dinamico == 1) return `${prefijo} vigente`;
+  if (estado_dinamico == 2) return `${prefijo} cumplida`;
+  if (estado_dinamico == 3) return `${prefijo} en-proceso`;
   if (estado_dinamico == 4) return `${prefijo} anulada`;
   return `${prefijo}`;
 }
@@ -828,14 +838,46 @@ onMounted(fetchSanciones)
 .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; }
 .btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; font-weight: bold; }
 
-/* Estados (Comunes) */
+/* ====================================================
+   ESTADOS DE SANCIONES (Badges y Textos)
+   ==================================================== */
 .text-en-proceso { color: #d97706 !important; }
 .text-anulada { color: #0f172a !important; }
-.badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-block; text-align: center; border: 1px solid; }
-.badge-status.aprobada { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
-.badge-status.rechazada { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
-.badge-status.pendiente { background: #fef9c3; color: #a16207; border-color: #fef08a; }
-.badge-status.anulada { background: #0f172a; color: #ffffff; border-color: #0f172a; }
+
+/* Base para los badges de estado */
+.badge-status, .badge-status-sm {
+  border-radius: 20px;
+  font-weight: 700;
+  display: inline-block;
+  text-align: center;
+  border: 1px solid;
+}
+
+/* Tamaños */
+.badge-status { padding: 4px 10px; font-size: 0.7rem; }
+.badge-status-sm { padding: 3px 8px; font-size: 0.65rem; } /* Ideal para la tabla en mobile y modales */
+
+/* Colores según el estado */
+.badge-status.vigente,
+.badge-status-sm.vigente {
+  background: #fee2e2; color: #b91c1c; border-color: #fecaca; /* Rojo */
+}
+
+.badge-status.cumplida,
+.badge-status-sm.cumplida {
+  background: #dcfce7; color: #15803d; border-color: #bbf7d0; /* Verde */
+}
+
+.badge-status.en-proceso,
+.badge-status-sm.en-proceso {
+  background: #fef9c3; color: #a16207; border-color: #fef08a; /* Amarillo */
+}
+
+.badge-status.anulada,
+.badge-status-sm.anulada {
+  background: #0f172a; color: #ffffff; border-color: #0f172a; /* Negro/Gris muy oscuro */
+}
+
 
 /* Utilidades */
 .btn-refresh { background: transparent; border: none; cursor: pointer; padding: 0; color: #64748b; }

@@ -488,7 +488,7 @@ const exportarExcel = () => {
     return;
   }
 
-  // Filtramos los rechazados/cancelados y además los que no tienen cantidad encargada
+  // --- HOJA 1: RESUMEN PROVEEDOR (FABRICAR) - SE MANTIENE AGRUPADO ---
   const pedidosAProducir = pedidosFiltrados.value.filter(p =>
     p.estado.toLowerCase() !== 'rechazado' &&
     p.estado.toLowerCase() !== 'cancelado' &&
@@ -496,7 +496,6 @@ const exportarExcel = () => {
   );
 
   const mapaAgrupado = {};
-
 
   pedidosAProducir.forEach(p => {
     const key = `${p.descripcion}_${p.talle}`;
@@ -513,46 +512,35 @@ const exportarExcel = () => {
   const datosHoja1 = Object.values(mapaAgrupado).sort((a, b) => a['Prenda / Modelo'].localeCompare(b['Prenda / Modelo']));
   const wsAgrupado = XLSX.utils.json_to_sheet(datosHoja1);
 
-  const mapaArbitros = {};
-  const pedidosActivosDetalle = pedidosFiltrados.value.filter(p => p.estado.toLowerCase() !== 'rechazado' && p.estado.toLowerCase() !== 'cancelado');
 
-  pedidosActivosDetalle.forEach(p => {
+
+  const pedidosActivosDetalle = pedidosFiltrados.value.filter(p =>
+    p.estado.toLowerCase() !== 'rechazado' &&
+    p.estado.toLowerCase() !== 'cancelado'
+  );
+
+
+  const datosHoja2 = pedidosActivosDetalle.map(p => {
     const nombreArbitro = `${p.apellido}, ${p.nombre}`;
-
-    if (!mapaArbitros[nombreArbitro]) {
-      mapaArbitros[nombreArbitro] = {
-        'Árbitro': nombreArbitro,
-        'IDs Pedidos': [],
-        'Detalle de Prendas': [],
-        'Total Prendas (Stock + Encargo)': 0,
-        'Monto Total': 0,
-        'Estados': new Set(),
-        'Fecha (Último)': p.fecha_creacion || 'S/F'
-      };
-    }
-
     const cantidadTotal = Number(p.cantidad) + Number(p.cantidad_encargada);
+    const montoCalculado = cantidadTotal * p.precioUnitario;
 
-    mapaArbitros[nombreArbitro]['IDs Pedidos'].push(`#${p.id}`);
-    mapaArbitros[nombreArbitro]['Detalle de Prendas'].push(`${cantidadTotal}x ${p.descripcion} (Talle: ${p.talle})`);
-    mapaArbitros[nombreArbitro]['Total Prendas (Stock + Encargo)'] += cantidadTotal;
-    mapaArbitros[nombreArbitro]['Monto Total'] += (cantidadTotal * p.precioUnitario);
-    mapaArbitros[nombreArbitro]['Estados'].add(p.estado.toUpperCase());
+    return {
+      'Árbitro': nombreArbitro,
+      'Detalle del Pedido': `${cantidadTotal}x ${p.descripcion} (Talle: ${p.talle})`,
+      'Prendas Totales': cantidadTotal,
+      'Monto Total a Cobrar': `$${montoCalculado}`, // Aquí agregamos el signo pesos solicitado
+      'Estado(s)': p.estado.toUpperCase(),
+      'Nro(s) de Pedido': `#${p.id}`,
+      'Fecha de Registro': p.fecha_creacion || 'S/F'
+    };
   });
 
-  const datosHoja2 = Object.values(mapaArbitros).map(a => ({
-    'Árbitro': a['Árbitro'],
-    'Detalle del Pedido': a['Detalle de Prendas'].join('  |  '),
-    'Prendas Totales': a['Total Prendas (Stock + Encargo)'],
-    'Monto Total a Cobrar': `$${a['Monto Total']}`,
-    'Estado(s)': Array.from(a['Estados']).join(', '),
-    'Nro(s) de Pedido': a['IDs Pedidos'].join(', '),
-    'Fecha de Registro': a['Fecha (Último)']
-  }));
-
+  // Ordenamos para que los pedidos del mismo árbitro aparezcan uno debajo del otro
   datosHoja2.sort((a, b) => a['Árbitro'].localeCompare(b['Árbitro']));
   const wsDetallado = XLSX.utils.json_to_sheet(datosHoja2);
 
+  // --- GENERACIÓN DEL ARCHIVO ---
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, wsAgrupado, "Resumen Proveedor (Fabricar)");
   XLSX.utils.book_append_sheet(wb, wsDetallado, "Detalle Individual a Cobrar");
