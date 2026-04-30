@@ -26,7 +26,6 @@
 
           <div class="mb-4">
             <label class="form-label fw-bold small text-dark">Fecha de la Licencia</label>
-            <!-- SE ELIMINÓ EL ATRIBUTO :min PARA PERMITIR SELECCIONAR CUALQUIER FECHA -->
             <input
               type="date"
               v-model="fechaSeleccionada"
@@ -198,32 +197,6 @@ const obtenerLicencias = async () => {
 
 const solicitarLicencia = async () => {
   if (!fechaSeleccionada.value) return;
-/*
-  const enTermino = (() => {
-    // 1. Obtenemos la fecha actual forzando la zona horaria de Argentina
-    const hoyStr = new Date().toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" });
-    const hoyArg = new Date(hoyStr);
-    hoyArg.setHours(0, 0, 0, 0);
-
-    // 2. Procesamos la fecha seleccionada por el usuario (formato YYYY-MM-DD)
-    // Lo separamos manualmente para evitar que JS reste horas por UTC
-    const [year, month, day] = fechaSeleccionada.value.split('-');
-    const fechaPedido = new Date(year, month - 1, day);
-    fechaPedido.setHours(0, 0, 0, 0);
-
-    // 3. Calculamos la diferencia en días
-    const diffDias = Math.ceil((fechaPedido - hoyArg) / (1000 * 60 * 60 * 24));
-    return diffDias >= 7;
-  })();
-*/
-/*
-  let estadoFinal = '';
-  if (motivoSeleccionado.value === 'lesion_enfermedad') {
-    estadoFinal = 'pendiente';
-  } else {
-    estadoFinal = enTermino ? 'aprobada' : 'rechazada';
-  }
-*/
   cargando.value = true;
   try {
     const res = await api.post({
