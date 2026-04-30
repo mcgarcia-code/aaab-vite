@@ -50,7 +50,7 @@ const menuItems = [
     title: 'Secretaría',
     icon: 'bi bi-pc-display-horizontal',
     desc: 'Datos personales y licencias.',
-    rolesPermitidos: ['admin', 'secretario', 'designador']
+    rolesPermitidos: ['admin', 'secretario', 'designador', 'etica']
   },
   {
     to: '/panel-admin/tribunal',
