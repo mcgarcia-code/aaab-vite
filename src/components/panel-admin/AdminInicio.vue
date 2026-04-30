@@ -64,7 +64,7 @@ const menuItems = [
     title: 'Tesorería',
     icon: 'bi bi-cash-stack',
     desc: 'Contabilidad y stock de ropa.',
-    rolesPermitidos: ['admin', 'tesorero']
+    rolesPermitidos: ['admin', 'tesorero','secretario', 'designador',]
   },
   {
     to: '/panel-admin/designaciones',

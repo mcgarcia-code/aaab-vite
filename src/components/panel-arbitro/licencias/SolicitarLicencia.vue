@@ -26,9 +26,9 @@
 
           <div class="mb-4">
             <label class="form-label fw-bold small text-dark">Fecha de la Licencia</label>
+            <!-- SE ELIMINÓ EL ATRIBUTO :min PARA PERMITIR SELECCIONAR CUALQUIER FECHA -->
             <input
               type="date"
-              :min="fechaMinimaDinamica"
               v-model="fechaSeleccionada"
               class="form-control form-control-lg custom-input-date shadow-none"
               onkeydown="return false"
@@ -142,7 +142,6 @@ useHead({
   ],
 });
 
-// Inyección del notificador global
 const notificar = inject('notificar');
 const fechaSeleccionada = ref('');
 const motivoSeleccionado = ref('particular');
@@ -156,14 +155,12 @@ const registrosPorPagina = 4;
 const cambiarPagina = (delta) => {
   paginaActual.value += delta;
   setTimeout(() => {
-    // Detectamos si es pantalla móvil
     if (window.innerWidth <= 768) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, 50);
 };
 
-// Cálculos para Paginación
 const totalPaginas = computed(() => Math.ceil(licencias.value.length / registrosPorPagina) || 1);
 
 const licenciasPaginadas = computed(() => {
@@ -171,18 +168,7 @@ const licenciasPaginadas = computed(() => {
   return licencias.value.slice(inicio, inicio + registrosPorPagina);
 });
 
-// Lógica de fechas dinámicas
-const fechaHoyStr = new Date().toISOString().split("T")[0];
-const fechaMinima7Dias = computed(() => {
-  const hoy = new Date();
-  hoy.setDate(hoy.getDate() + 7);
-  return hoy.toISOString().split("T")[0];
-});
-
-const fechaMinimaDinamica = computed(() => {
-  return motivoSeleccionado.value === 'particular' ? fechaMinima7Dias.value : fechaHoyStr;
-});
-
+// Formateadores de fecha
 const formatearFecha = (fechaStr) => {
   if (!fechaStr) return '';
   const soloFecha = fechaStr.split(' ')[0];
@@ -214,11 +200,19 @@ const solicitarLicencia = async () => {
   if (!fechaSeleccionada.value) return;
 
   const enTermino = (() => {
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    const fechaPedido = new Date(fechaSeleccionada.value);
+    // 1. Obtenemos la fecha actual forzando la zona horaria de Argentina
+    const hoyStr = new Date().toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" });
+    const hoyArg = new Date(hoyStr);
+    hoyArg.setHours(0, 0, 0, 0);
+
+    // 2. Procesamos la fecha seleccionada por el usuario (formato YYYY-MM-DD)
+    // Lo separamos manualmente para evitar que JS reste horas por UTC
+    const [year, month, day] = fechaSeleccionada.value.split('-');
+    const fechaPedido = new Date(year, month - 1, day);
     fechaPedido.setHours(0, 0, 0, 0);
-    const diffDias = Math.ceil((fechaPedido - hoy) / (1000 * 60 * 60 * 24));
+
+    // 3. Calculamos la diferencia en días
+    const diffDias = Math.ceil((fechaPedido - hoyArg) / (1000 * 60 * 60 * 24));
     return diffDias >= 7;
   })();
 
@@ -249,7 +243,6 @@ const solicitarLicencia = async () => {
         tipo: motivoSeleccionado.value === 'lesion_enfermedad' ? 'warning' : (enTermino ? 'success' : 'danger')
       });
 
-      // Reseteo del formulario
       fechaSeleccionada.value = '';
       motivoSeleccionado.value = 'particular';
       await obtenerLicencias();

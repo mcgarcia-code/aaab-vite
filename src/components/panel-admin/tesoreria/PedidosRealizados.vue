@@ -513,13 +513,13 @@ const exportarExcel = () => {
   const wsAgrupado = XLSX.utils.json_to_sheet(datosHoja1);
 
 
-  // --- HOJA 2: DETALLE INDIVIDUAL (POR FILA, CON SIGNO PESOS) ---
+
   const pedidosActivosDetalle = pedidosFiltrados.value.filter(p =>
     p.estado.toLowerCase() !== 'rechazado' &&
     p.estado.toLowerCase() !== 'cancelado'
   );
 
-  // Mapeamos cada pedido a una fila independiente
+
   const datosHoja2 = pedidosActivosDetalle.map(p => {
     const nombreArbitro = `${p.apellido}, ${p.nombre}`;
     const cantidadTotal = Number(p.cantidad) + Number(p.cantidad_encargada);
