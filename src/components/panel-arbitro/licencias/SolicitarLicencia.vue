@@ -28,7 +28,6 @@
             <label class="form-label fw-bold small text-dark">Fecha de la Licencia</label>
             <input
               type="date"
-              :min="fechaMinimaDinamica"
               v-model="fechaSeleccionada"
               class="form-control form-control-lg custom-input-date shadow-none"
               onkeydown="return false"
@@ -241,9 +240,10 @@ const solicitarLicencia = async () => {
       }
     });
 
-    if (res.ok && res.payload.success) {
+    if (res.ok) {
       let titulo = ''
       let mensaje = ''
+      let tipo = ''
       switch (res.payload.estado){
         case 'aprobada':
           titulo = '¡Licencia Aceptada!'
@@ -252,7 +252,7 @@ const solicitarLicencia = async () => {
           break;
         case 'pendiente':
           titulo = 'Licencia Pendiente'
-          mensaje = 'Tu licencia está pendiente de verificación. Tenés 72 horas para enviar el certificado médico a licencias@arbitroshandball.com.ar, de lo contrario será rechazada y enviada al Tribunal de Ética. Recordá avisarle al coordinador de tu grupo.'';
+          mensaje = 'Tu licencia está pendiente de verificación. Tenés 72 horas para enviar el certificado médico a licencias@arbitroshandball.com.ar, de lo contrario será rechazada y enviada al Tribunal de Ética. Recordá avisarle al coordinador de tu grupo.'
           tipo = 'warning'
           break;
         case 'rechazada':
