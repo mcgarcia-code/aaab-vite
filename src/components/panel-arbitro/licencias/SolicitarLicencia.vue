@@ -212,7 +212,7 @@ const obtenerLicencias = async () => {
 
 const solicitarLicencia = async () => {
   if (!fechaSeleccionada.value) return;
-
+/*
   const enTermino = (() => {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
@@ -221,32 +221,50 @@ const solicitarLicencia = async () => {
     const diffDias = Math.ceil((fechaPedido - hoy) / (1000 * 60 * 60 * 24));
     return diffDias >= 7;
   })();
-
+*/
+/*
   let estadoFinal = '';
   if (motivoSeleccionado.value === 'lesion_enfermedad') {
     estadoFinal = 'pendiente';
   } else {
     estadoFinal = enTermino ? 'aprobada' : 'rechazada';
   }
-
+*/
   cargando.value = true;
-
   try {
     const res = await api.post({
       entity: 'licencias',
       action: 'crearLicencia',
       payload: {
         fecha_licencia: fechaSeleccionada.value,
-        estado: estadoFinal,
         motivo: motivoSeleccionado.value
       }
     });
 
     if (res.ok && res.payload.success) {
+      let titulo = ''
+      let mensaje = ''
+      switch (res.payload.estado){
+        case 'aprobada':
+          titulo = '¡Licencia Aceptada!'
+          mensaje = 'Licencia solicitada correctamente'
+          tipo = 'success'
+          break;
+        case 'pendiente':
+          titulo = 'Licencia Pendiente'
+          mensaje = 'Tu licencia está pendiente de verificación. Tenés 72 horas para enviar el certificado médico a licencias@arbitroshandball.com.ar, de lo contrario será rechazada y enviada al Tribunal de Ética. Recordá avisarle al coordinador de tu grupo.'';
+          tipo = 'warning'
+          break;
+        case 'rechazada':
+          titulo = 'Solicitud Rechazada'
+          mensaje = 'La solicitud fue rechazada por no estar solicitada dentro del periodo establecido'
+          tipo = 'danger'
+          break;
+      }
       notificar({
-        titulo: motivoSeleccionado.value === 'lesion_enfermedad' ? 'Licencia Pendiente' : (enTermino ? '¡Licencia Aceptada!' : 'Solicitud Rechazada'),
-        mensaje: res.payload.message || 'Procesado correctamente.',
-        tipo: motivoSeleccionado.value === 'lesion_enfermedad' ? 'warning' : (enTermino ? 'success' : 'danger')
+        titulo: titulo, //motivoSeleccionado.value === 'lesion_enfermedad' ? 'Licencia Pendiente' : (enTermino ? '¡Licencia Aceptada!' : 'Solicitud Rechazada'),
+        mensaje: mensaje,
+        tipo: tipo //motivoSeleccionado.value === 'lesion_enfermedad' ? 'warning' : (enTermino ? 'success' : 'danger')
       });
 
       // Reseteo del formulario
