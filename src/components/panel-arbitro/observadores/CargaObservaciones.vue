@@ -53,7 +53,7 @@
                 <label class="form-label-custom">Nivel *</label>
                 <select v-model="formulario.inf_nivel" class="sacf-input" required>
                   <option value="" disabled>Nivel</option>
-                  <option v-for="opt in ['A', 'B', 'C', 'D', 'E', 'F']" :key="opt" :value="opt">{{ opt }}</option>
+                  <option v-for="opt in listas.divisiones" :key="opt" :value="opt">{{ opt }}</option>
                 </select>
               </div>
               <div class="col-md-8 mb-3">
@@ -90,7 +90,7 @@
                   <label class="fw-bold mb-2 text-dark small">ÁRBITRO 1</label>
                   <select v-model="formulario.ref1_nombre" class="sacf-input mb-2" required>
                     <option value="" disabled>Seleccione Árbitro</option>
-                    <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.nombre">{{ arb.nombre }}</option>
+                    <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.nombre">{{arb.apellido}}, {{ arb.nombre }}</option>
                   </select>
                   <select v-model="formulario.ref1_group" class="sacf-input" required>
                     <option value="" disabled>Grupo</option>
@@ -104,7 +104,7 @@
                   <label class="fw-bold mb-2 text-dark small">ÁRBITRO 2</label>
                   <select v-model="formulario.ref2_nombre" class="sacf-input mb-2" required>
                     <option value="" disabled>Seleccione Árbitro</option>
-                    <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.nombre">{{ arb.nombre }}</option>
+                    <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.nombre">{{arb.apellido}}, {{ arb.nombre }}</option>
                   </select>
                   <select v-model="formulario.ref2_group" class="sacf-input" required>
                     <option value="" disabled>Grupo</option>
@@ -188,6 +188,7 @@ const cargandoCategorias = ref(false);
 
 const listas = reactive({
   categorias_especificas: [],
+  divisiones: [],
   dificultades: [],
   arbitros: [],
   grupos: []
@@ -221,27 +222,27 @@ const perfScoreOptions = [
 ];
 
 const pedirCategoriasEspecíficas = async () => {
-  if (formulario.partido_categoria === 'Inferiores') {
-    if (!formulario.partido_genero || !formulario.inf_nivel) return;
-  }
+  if (!formulario.partido_genero) return
+  if (!formulario.partido_categoria) return
 
-  cargandoCategorias.value = true;
-  listas.categorias_especificas = [];
-  formulario.id_categoria_especifica = '';
+  cargandoCategorias.value = true
+  listas.divisiones = []
+  listas.categorias_especificas = []
+  formulario.id_categoria_especifica = ''
 
   try {
     const res = await api.get({
-      entity: 'categoria_equipos',
+      entity: 'observaciones',
       action: 'obtenerCategorias',
       payload: {
         genero: formulario.partido_genero,
         tipo: formulario.partido_categoria,
-        nivel: formulario.inf_nivel
       }
     });
 
     if (res.ok) {
-      listas.categorias_especificas = res.payload;
+      listas.divisiones = res.payload.divisiones
+      listas.categorias_especificas = res.payload.categorias;
     }
   } catch (error) {
     console.error("Error pidiendo listado:", error);
@@ -258,7 +259,7 @@ const cargarCatalogosBase = async () => {
   try {
     const [resD, resA, resG] = await Promise.all([
       api.get({ entity: 'observaciones', action: 'obtenerDificultades' }),
-      api.get({ entity: 'arbitros', action: 'obtenerArbitros' }),
+      api.get({ entity: 'arbitros', action: 'getArbitros' }),
       api.get({ entity: 'arbitros', action: 'obtenerGrupos' })
     ]);
     if (resD.ok) listas.dificultades = resD.payload;

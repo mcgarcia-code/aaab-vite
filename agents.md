@@ -25,6 +25,7 @@ Toda comunicación con el servidor DEBE realizarse a través del objeto global a
   3. <style scoped>
 - *Estilado:* Priorizar clases utilitarias o CSS modular dentro de <style scoped>.
 - *Rutas y Alias:* Usar @/ para importaciones desde la carpeta src.
+- No utilizar ';' en el código js para cerrar las sentencias.
 
 ## 4. Lógica de Negocio en el Front
 - *Validaciones:* Realizar validaciones de formularios en el cliente antes de llamar a api.post.
