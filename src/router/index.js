@@ -63,7 +63,8 @@ const routes = [
       { path: 'indumentaria/nuevo', name: 'RealizarPedido', component: () => import('../components/panel-arbitro/indumentaria/RealizarPedido.vue') },
       { path: 'indumentaria/mis-pedidos', name: 'MisPedidos', component: () => import('../components/panel-arbitro/indumentaria/MisPedidos.vue') },
       { path: 'facturacion', name: 'InstitucionesCuit', component: () => import('../components/panel-arbitro/facturacion/InstitucionesCuit.vue') },
-      { path: 'historial-notificaciones', name: 'HistorialNotificaciones', component: () => import('../components/panel-arbitro/notificaciones/HistorialNotificaciones.vue') }
+      { path: 'historial-notificaciones', name: 'HistorialNotificaciones', component: () => import('../components/panel-arbitro/notificaciones/HistorialNotificaciones.vue') },
+      { path: 'delegado-tecnico', name: 'DelegadoTecnico', component: () => import('../components/panel-arbitro/delegado-tecnico/DelegadosTecnicos.vue') }
     ]
   },
 
