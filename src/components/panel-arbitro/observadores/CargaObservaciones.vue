@@ -42,25 +42,25 @@
 
             <div v-if="formulario.partido_categoria === 'Mayores'" class="field-group anim-fade">
               <label class="form-label-custom">Competencia Mayores *</label>
-              <select v-model="formulario.id_categoria_especifica" class="sacf-input" required>
+              <select @change='obtenerEquipos()' v-model="formulario.inf_nivel" class="sacf-input" required>
                 <option value="" disabled>Seleccione competencia</option>
-                <option v-for="cat in listas.categorias_especificas" :key="cat.id" :value="cat.id">{{ cat.nombre }}</option>
+                <option v-for="(div, k) in listas.divisiones_categorias[0].divisiones" :key="k" :value="div">{{ div }}</option>
               </select>
             </div>
 
             <div v-if="formulario.partido_categoria === 'Inferiores'" class="row anim-fade">
-              <div class="col-md-4 mb-3">
-                <label class="form-label-custom">Nivel *</label>
-                <select v-model="formulario.inf_nivel" class="sacf-input" required>
-                  <option value="" disabled>Nivel</option>
-                  <option v-for="opt in listas.divisiones" :key="opt" :value="opt">{{ opt }}</option>
-                </select>
-              </div>
               <div class="col-md-8 mb-3">
                 <label class="form-label-custom">Categoría Específica *</label>
-                <select v-model="formulario.id_categoria_especifica" class="sacf-input" required :disabled="cargandoCategorias">
+                <select @change='setDivisiones()' v-model="formulario.id_categoria_especifica" class="sacf-input" required :disabled="cargandoCategorias">
                   <option value="" disabled>{{ cargandoCategorias ? 'Cargando...' : 'Seleccione Categoría' }}</option>
-                  <option v-for="cat in listas.categorias_especificas" :key="cat.id" :value="cat.id">{{ cat.nombre }}</option>
+                  <option v-for="(cat, k) in listas.divisiones_categorias" :key="k" :value="k">{{ cat.categoria }}</option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label-custom">Nivel *</label>
+                <select @change='obtenerEquipos()' v-model="formulario.inf_nivel" class="sacf-input" required>
+                  <option value="" disabled>Nivel</option>
+                  <option v-for="opt in listas.divisiones" :key="opt" :value="opt">{{ opt }}</option>
                 </select>
               </div>
             </div>
@@ -68,8 +68,18 @@
             <div class="field-group">
               <label class="form-label-custom">Equipos *</label>
               <div class="grid-2">
+                <select v-model="formulario.equipo_1" class="sacf-input" required>
+                  <option value="" disabled>Local</option>
+                  <option v-for="(eq, k) in listas.equipos" :key="k" :value="eq.eq_id">{{ eq.club }}</option>
+                </select>
+                <select v-model="formulario.equipo_2" class="sacf-input" required>
+                  <option value="" disabled>Visitante</option>
+                  <option v-for="(eq, k) in listas.equipos" :key="k" :value="eq.eq_id">{{ eq.club }}</option>
+                </select>
+                <!--
                 <input type="text" v-model="formulario.equipo_1" placeholder="Local" class="sacf-input" required>
                 <input type="text" v-model="formulario.equipo_2" placeholder="Visitante" class="sacf-input" required>
+                -->
               </div>
             </div>
           </section>
@@ -191,8 +201,9 @@ const listas = reactive({
   divisiones: [],
   dificultades: [],
   arbitros: [],
-  grupos: []
-});
+  grupos: [],
+  equipos: []
+})
 
 const formulario = reactive({
   partido_genero: '',
@@ -209,7 +220,7 @@ const formulario = reactive({
   comentarios: '',
   perf_score: null,
   diff_mult: ''
-});
+})
 
 const perfScoreOptions = [
   { value: '7', label: 'Muy bien', tone: 'green' },
@@ -219,7 +230,7 @@ const perfScoreOptions = [
   { value: '3', label: 'Debajo de adecuado', tone: 'yellow' },
   { value: '2', label: 'Insuficiente', tone: 'red' },
   { value: '1', label: 'Mal', tone: 'red' }
-];
+]
 
 const pedirCategoriasEspecíficas = async () => {
   if (!formulario.partido_genero) return
@@ -238,21 +249,48 @@ const pedirCategoriasEspecíficas = async () => {
         genero: formulario.partido_genero,
         tipo: formulario.partido_categoria,
       }
-    });
+    })
 
     if (res.ok) {
+
+      listas.divisiones_categorias = res.payload
+      /*
       listas.divisiones = res.payload.divisiones
-      listas.categorias_especificas = res.payload.categorias;
+      listas.categorias_especificas = res.payload.categorias
+      */
     }
   } catch (error) {
-    console.error("Error pidiendo listado:", error);
+    console.error("Error pidiendo listado:", error)
   } finally {
-    cargandoCategorias.value = false;
+    cargandoCategorias.value = false
   }
 };
 
-watch(() => [formulario.partido_genero, formulario.partido_categoria, formulario.inf_nivel], () => {
-  pedirCategoriasEspecíficas();
+const setDivisiones = () => {
+  console.log(formulario.id_categoria_especifica)
+  listas.divisiones = listas.divisiones_categorias[formulario.id_categoria_especifica].divisiones
+}
+
+const obtenerEquipos = async () => {
+  let categoria = ''
+  if (formulario.id_categoria_especifica != '') {
+    categoria = listas.divisiones_categorias[formulario.id_categoria_especifica].categoria
+  }
+  const r = await api.get({
+    entity: 'observaciones',
+    action: 'obtenerEquipos',
+    payload: {
+      genero: formulario.partido_genero,
+      tipo: formulario.partido_categoria,
+      categoria: categoria,
+      division: formulario.inf_nivel
+    }
+  })
+  listas.equipos = r.payload
+}
+
+watch(() => [formulario.partido_genero, formulario.partido_categoria], () => {
+  pedirCategoriasEspecíficas()
 });
 
 const cargarCatalogosBase = async () => {
@@ -262,9 +300,9 @@ const cargarCatalogosBase = async () => {
       api.get({ entity: 'arbitros', action: 'getArbitros' }),
       api.get({ entity: 'arbitros', action: 'obtenerGrupos' })
     ]);
-    if (resD.ok) listas.dificultades = resD.payload;
-    if (resA.ok) listas.arbitros = resA.payload;
-    if (resG.ok) listas.grupos = resG.payload;
+    if (resD.ok) listas.dificultades = resD.payload
+    if (resA.ok) listas.arbitros = resA.payload
+    if (resG.ok) listas.grupos = resG.payload
   } catch (e) { console.error(e); }
 };
 
