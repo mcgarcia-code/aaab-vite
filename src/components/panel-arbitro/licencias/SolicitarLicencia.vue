@@ -230,7 +230,7 @@ const solicitarLicencia = async () => {
     if (res && res.ok && res.payload && res.payload.estado) {
       const estadoServidor = res.payload.estado;
 
-      // Variables para personalizar la notificación según el estado
+
       let tituloNotificacion = '';
       let mensajeNotificacion = '';
       let tipoNotificacion = '';
@@ -241,7 +241,7 @@ const solicitarLicencia = async () => {
         tipoNotificacion = 'success';
       } else if (estadoServidor === 'rechazada') {
         tituloNotificacion = 'Licencia rechazada';
-        mensajeNotificacion = 'No fue requerida con la antelación necesaria.';
+        mensajeNotificacion = 'Tu solicitud ha sido rechazada.';
         tipoNotificacion = 'danger';
       } else if (estadoServidor === 'pendiente') {
         tituloNotificacion = 'Licencia Pendiente';
@@ -413,17 +413,55 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
   border-bottom: 1px solid #f1f5f9;
 }
 
-.status-badge {
-  padding: 6px 10px;
+.status-badge,
+.btn-anular {
+  width: 100px !important;
+  height: 26px !important;
   font-size: 0.6rem;
   font-weight: 800;
   border-radius: 6px;
-  display: inline-block;
-  min-width: 80px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  box-sizing: border-box;
+  border: none !important;
+  line-height: 1 !important;
+  margin: 0;
+  padding: 0;
 }
 
-.bg-success { background-color: #10b981 !important; }
-.bg-danger { background-color: #ef4444 !important; }
+/* 2. Colores específicos del badge */
+.bg-success { background-color: #10b981 !important; color: white; }
+.bg-danger { background-color: #ef4444 !important; color: white; }
+.bg-warning { background-color: #f59e0b !important; color: #000; }
+
+/* 3. Colores y efectos específicos del botón Anular */
+.btn-anular {
+  background-color: #dc2626;
+  color: #ffffff;
+  gap: 0.3rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Efectos de hover para escritorio */
+@media (min-width: 768px) {
+  .btn-anular:hover:not(:disabled) {
+    background-color: #b91c1c;
+    color: #ffffff;
+    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
+    transform: translateY(-2px);
+  }
+}
+
+.btn-anular:disabled {
+  background-color: #fca5a5;
+  color: #fef2f2;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
 
 /* ====================================================
    📱 RESPONSIVE DESIGN
@@ -436,50 +474,28 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
   .mobile-only { display: block !important; }
 
   .x-small-mobile { font-size: 0.8rem; }
-  .status-badge { min-width: 70px; padding: 5px 8px; }
   h4 { font-size: 1.25rem; }
+
+  /* Reducción proporcional de ambos elementos a la par */
+  .status-badge,
+  .btn-anular {
+    width: 85px !important;
+    height: 24px !important;
+  }
 }
 
 @media (max-width: 600px) {
   .table td, .table th {
     padding: 10px 5px !important;
   }
-  .status-badge {
+
+  /* Ajuste milimétrico para pantallas muy chicas */
+  .status-badge,
+  .btn-anular {
     font-size: 0.55rem;
+    width: 78px !important;
+    height: 22px !important;
+    gap: 0.15rem; /* Achicamos la separación del ícono en el botón */
   }
-}
-
-/* ====================================================
-   BOTÓN ANULAR (Tamaño reducido)
-   ==================================================== */
-.btn-anular {
-  background-color: #dc2626; /* Rojo base */
-  color: #ffffff;
-  border: none;
-  padding: 0.25rem 0.5rem; /* Padding más chico */
-  font-size: 0.75rem; /* Letra más chica */
-  border-radius: 4px; /* Bordes un poco menos redondeados */
-  transition: all 0.2s ease-in-out;
-  display: inline-flex; /* No ocupa el 100% del ancho */
-  align-items: center;
-  justify-content: center;
-  gap: 0.2rem; /* Menos espacio entre el ícono y el texto */
-  width: auto;
-}
-
-/* Efectos de hover para escritorio */
-@media (min-width: 768px) {
-  .btn-anular:hover:not(:disabled) {
-    background-color: #b91c1c; /* Rojo más oscuro */
-    color: #ffffff;
-    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4); /* Sombra difuminada */
-    transform: translateY(-2px); /* Se levanta un poquito */
-  }
-}
-
-.btn-anular:disabled {
-  background-color: #fca5a5;
-  color: #fef2f2;
-  cursor: not-allowed;
 }
 </style>
