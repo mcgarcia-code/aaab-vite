@@ -145,6 +145,7 @@
   </div>
 
 </template>
+
 <script setup>
 import { ref, onMounted, inject, computed } from 'vue';
 import { api } from '@/api/api';
@@ -214,27 +215,6 @@ const obtenerLicencias = async () => {
 const solicitarLicencia = async () => {
   if (!fechaSeleccionada.value) return;
 
-  const enTermino = (() => {
-
-    const hoyStr = new Date().toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" });
-    const hoyArg = new Date(hoyStr);
-    hoyArg.setHours(0, 0, 0, 0);
-
-    const [year, month, day] = fechaSeleccionada.value.split('-');
-    const fechaPedido = new Date(year, month - 1, day);
-    fechaPedido.setHours(0, 0, 0, 0);
-
-    const diffDias = Math.ceil((fechaPedido - hoyArg) / (1000 * 60 * 60 * 24));
-    return diffDias >= 7;
-  })();
-
-  let estadoFinal = '';
-  if (motivoSeleccionado.value === 'lesion_enfermedad') {
-    estadoFinal = 'pendiente';
-  } else {
-    estadoFinal = enTermino ? 'aprobada' : 'rechazada';
-  }
-
   cargando.value = true;
 
   try {
@@ -243,32 +223,56 @@ const solicitarLicencia = async () => {
       action: 'crearLicencia',
       payload: {
         fecha_licencia: fechaSeleccionada.value,
-        estado: estadoFinal,
         motivo: motivoSeleccionado.value
       }
     });
 
-    if (res.ok && res.payload.success) {
+    if (res && res.ok && res.payload && res.payload.estado) {
+      const estadoServidor = res.payload.estado;
+
+      // Variables para personalizar la notificación según el estado
+      let tituloNotificacion = '';
+      let mensajeNotificacion = '';
+      let tipoNotificacion = '';
+
+      if (estadoServidor === 'aprobada') {
+        tituloNotificacion = '¡Licencia Aprobada!';
+        mensajeNotificacion = 'Tu solicitud ha sido procesada y aprobada correctamente.';
+        tipoNotificacion = 'success';
+      } else if (estadoServidor === 'rechazada') {
+        tituloNotificacion = 'Licencia rechazada';
+        mensajeNotificacion = 'No fue requerida con la antelación necesaria.';
+        tipoNotificacion = 'danger';
+      } else if (estadoServidor === 'pendiente') {
+        tituloNotificacion = 'Licencia Pendiente';
+        mensajeNotificacion = 'Recordá enviar el certificado médico dentro de las 72 hs.';
+        tipoNotificacion = 'warning';
+      }
+
+      // Disparamos la notificación con los textos exactos
       notificar({
-        titulo: motivoSeleccionado.value === 'lesion_enfermedad' ? 'Licencia Pendiente' : (enTermino ? '¡Licencia Aceptada!' : 'Solicitud Rechazada'),
-        mensaje: res.payload.message || 'Procesado correctamente.',
-        tipo: motivoSeleccionado.value === 'lesion_enfermedad' ? 'warning' : (enTermino ? 'success' : 'danger')
+        titulo: tituloNotificacion,
+        mensaje: mensajeNotificacion,
+        tipo: tipoNotificacion
       });
 
+      // Limpiamos el formulario y recargamos la tabla
       fechaSeleccionada.value = '';
       motivoSeleccionado.value = 'particular';
       await obtenerLicencias();
+
     } else {
       notificar({
         titulo: 'Error',
-        mensaje: res.payload?.message || "No se pudo procesar la solicitud.",
+        mensaje: res?.payload?.message || "No se pudo procesar la solicitud.",
         tipo: 'danger'
       });
     }
-  } catch {
+  } catch (error) {
+    console.error("Detalle del error JS:", error);
     notificar({
       titulo: 'Error de Red',
-      mensaje: 'No se pudo conectar con el servidor.',
+      mensaje: 'No se pudo conectar con el servidor o hubo un error de procesamiento.',
       tipo: 'danger'
     });
   } finally {
@@ -294,10 +298,9 @@ const anularLicencia = (lic) => {
     return;
   }
 
-
   notificar({
     titulo: '¿Anular Licencia?',
-    mensaje: 'Esta acción es irreversible. El registro será borrado permanentemente.', // Mismo texto que en tu foto
+    mensaje: 'Esta acción es irreversible. El registro será borrado permanentemente.',
     tipo: 'danger',
     alConfirmar: async () => {
       cargando.value = true;
@@ -317,7 +320,7 @@ const anularLicencia = (lic) => {
             mensaje: 'La licencia fue anulada correctamente.',
             tipo: 'success'
           });
-          await obtenerLicencias(); // Recargamos la tabla
+          await obtenerLicencias();
         } else {
           notificar({
             titulo: 'Error',
@@ -325,7 +328,8 @@ const anularLicencia = (lic) => {
             tipo: 'danger'
           });
         }
-      } catch{
+      } catch(err){
+        console.error("Detalle del error anular:", err);
         notificar({
           titulo: 'Error de Red',
           mensaje: 'No se pudo conectar con el servidor.',
