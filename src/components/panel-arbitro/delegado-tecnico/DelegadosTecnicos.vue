@@ -8,7 +8,14 @@
     <div class="timer-section shadow-sm">
       <div class="period-indicator">{{ currentPeriodText }}</div>
 
-      <div class="time-display" :class="{ 'time-paused': !isRunning }">
+      <!-- Reloj clickeable para abrir el modal de ajuste manual -->
+      <div
+        class="time-display"
+        :class="{ 'time-paused': !isRunning }"
+        @click="abrirModalTiempo"
+        style="cursor: pointer;"
+        title="Ajustar cronómetro"
+      >
         {{ formattedTime }}
       </div>
 
@@ -127,9 +134,9 @@
     <div class="event-log-section shadow-sm">
       <div class="log-header">
         <h3>Bitácora</h3>
-        <button class="btn-sync fw-bold" @click="syncWithBackend" :disabled="!state.unsyncedEvents.length">
-          ☁️ Sincronizar ({{ state.unsyncedEvents.length }})
-        </button>
+        <span class="badge" :class="state.unsyncedEvents.length > 0 ? 'bg-warning text-dark' : 'bg-success'">
+          {{ state.unsyncedEvents.length > 0 ? '☁️ Sincronizando...' : '✅ Sincronizado' }}
+        </span>
       </div>
       <div class="filter-controls">
         <select v-model="logFilter" class="form-select">
@@ -144,12 +151,13 @@
           <li v-for="event in filteredLog" :key="event.id">
             <div class="log-content">
               <span class="log-time">[{{ event.match_time }}]</span>
-              <strong>{{ event.team === 'local' ? 'L' : 'V' }}</strong>
-              <span v-if="event.player_number && event.type !== 'goal_removed'"> (#{{ event.player_number }})</span>:
+              <strong>{{ event.team === 'local' ? 'L' : (event.team === 'visitor' ? 'V' : 'SISTEMA') }}</strong>
+              <span v-if="event.player_number && event.type !== 'goal_removed' && event.type !== 'tiempo_ajustado'"> (#{{ event.player_number }})</span>:
               {{ formatEventType(event.type) }}
+              <span v-if="event.type === 'tiempo_ajustado'" class="text-muted small ms-1">- {{ event.player_number }}</span>
               <span v-if="!event.synced" class="pending-badge">Pendiente</span>
             </div>
-            <button class="btn-delete-log" @click="pedirEliminarEvento(event)" title="Eliminar">🗑️</button>
+            <button v-if="event.team !== 'sistema'" class="btn-delete-log" @click="pedirEliminarEvento(event)" title="Eliminar">🗑️</button>
           </li>
           <li v-if="filteredLog.length === 0" class="empty-log">Sin registros.</li>
         </ul>
@@ -187,6 +195,51 @@
       </template>
     </ModalBase>
 
+    <!-- Modal para Ajustar Cronómetro Manualmente -->
+    <ModalBase
+      :show="modalTiempo.visible"
+      titulo="Ajustar Tiempo"
+      icono="timer"
+      colorIcono="bg-primary text-white"
+      @close="modalTiempo.visible = false"
+    >
+      <div class="text-center p-3">
+        <p class="small text-muted mb-4">Modifique los minutos y segundos del partido:</p>
+
+        <div class="d-flex justify-content-center align-items-center gap-3">
+          <div class="time-input-group text-center">
+            <label class="small fw-bold text-muted d-block mb-1">MINUTOS</label>
+            <input
+              type="number"
+              v-model="modalTiempo.mm"
+              class="form-control form-control-lg text-center fw-bold"
+              style="font-size: 2rem; width: 90px;"
+              min="0"
+            >
+          </div>
+
+          <div class="display-6 fw-bold mt-3">:</div>
+
+          <div class="time-input-group text-center">
+            <label class="small fw-bold text-muted d-block mb-1">SEGUNDOS</label>
+            <input
+              type="number"
+              v-model="modalTiempo.ss"
+              class="form-control form-control-lg text-center fw-bold"
+              style="font-size: 2rem; width: 90px;"
+              min="0"
+              max="59"
+            >
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <button class="btn btn-light fw-bold px-4" @click="modalTiempo.visible = false">CANCELAR</button>
+        <button class="btn btn-primary fw-bold px-4 shadow-sm" @click="confirmarAjusteTiempo">GUARDAR TIEMPO</button>
+      </template>
+    </ModalBase>
+
     <ModalExito
       :visible="modalNotificacion.visible"
       :titulo="modalNotificacion.titulo"
@@ -196,15 +249,14 @@
       @cerrar="modalNotificacion.visible = false"
       @confirmar="ejecutarAccionPendiente"
     />
-
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 import { api } from '@/api/api';
-import ModalBase from '@/components/ModalBase.vue'; // Ajustá la ruta si difiere
-import ModalExito from '@/components/ModalExito.vue'; // Ajustá la ruta si difiere
+import ModalBase from '@/components/ModalBase.vue';
+import ModalExito from '@/components/ModalExito.vue';
 
 const STORAGE_KEY = 'aaab_delegado_match_state';
 const HALF_DURATION_SEC = 30 * 60;
@@ -227,12 +279,14 @@ const state = reactive({
 });
 
 const isRunning = ref(false);
+const isSyncing = ref(false);
 const logFilter = ref('all');
 let timerInterval = null;
 let ttoInterval = null;
 
 // --- ESTADO DE MODALES ---
 const modalJugador = reactive({ visible: false, team: '', type: '', dorsal: '' });
+const modalTiempo = reactive({ visible: false, mm: 0, ss: 0 });
 const modalNotificacion = reactive({ visible: false, titulo: '', mensaje: '', tipo: 'success', tieneAccion: false, accionKey: null, tempPayload: null });
 
 const mostrarNotificacion = (titulo, mensaje, tipo = 'success', tieneAccion = false, accionKey = null, payload = null) => {
@@ -268,7 +322,7 @@ const filteredLog = computed(() => {
   return reversed;
 });
 
-// --- PERSISTENCIA ---
+// --- PERSISTENCIA Y SINCRONIZACIÓN AUTOMÁTICA ---
 const loadState = () => {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) Object.assign(state, JSON.parse(saved));
@@ -277,27 +331,50 @@ const loadState = () => {
 
 watch(state, (newState) => { localStorage.setItem(STORAGE_KEY, JSON.stringify(newState)); }, { deep: true });
 
+watch(() => state.unsyncedEvents.length, (newVal) => {
+  if (newVal > 0 && !isSyncing.value) syncWithBackend();
+});
+
 const resetMatch = () => {
   mostrarNotificacion('Reiniciar', '¿Estás seguro que deseas reiniciar el partido? Se perderán los datos locales no sincronizados.', 'danger', true, 'reset');
 };
 
+// --- AJUSTE MANUAL DE TIEMPO ---
+const abrirModalTiempo = () => {
+  if (isRunning.value) {
+    mostrarNotificacion('Reloj en marcha', 'Debe pausar el cronómetro para ajustar el tiempo manualmente.', 'danger');
+    return;
+  }
+  modalTiempo.mm = Math.floor(state.timeInSeconds / 60);
+  modalTiempo.ss = state.timeInSeconds % 60;
+  modalTiempo.visible = true;
+};
+
+const confirmarAjusteTiempo = () => {
+  const m = parseInt(modalTiempo.mm);
+  const s = parseInt(modalTiempo.ss);
+
+  if (isNaN(m) || isNaN(s) || s < 0 || s > 59 || m < 0) {
+    mostrarNotificacion('Error', 'Ingrese un formato de tiempo válido.', 'danger');
+    return;
+  }
+
+  state.timeInSeconds = (m * 60) + s;
+  guardarEventoEnLog('sistema', 'tiempo_ajustado', `Reloj a ${m}:${s.toString().padStart(2, '0')}`);
+  modalTiempo.visible = false;
+};
+
 // --- VALIDACIÓN DE DORSAL ---
 const validarDorsal = (dorsal) => {
-  // Convertir a mayúsculas y limpiar espacios
   const dorsalLimpio = dorsal.toString().trim().toUpperCase();
-
-  // Verificar si es una letra válida (A-E para oficiales)
   const letrasValidas = ['A', 'B', 'C', 'D', 'E'];
   if (letrasValidas.includes(dorsalLimpio)) {
     return { valido: true, valor: dorsalLimpio, tipo: 'oficial' };
   }
-
-  // Verificar si es un número válido (para jugadores)
   const numero = parseInt(dorsalLimpio);
   if (!isNaN(numero) && numero > 0) {
     return { valido: true, valor: numero.toString(), tipo: 'jugador' };
   }
-
   return { valido: false };
 };
 
@@ -316,7 +393,6 @@ const obtenerSancionesJugador = (team, playerNumber) => {
 
 // --- CONTROL DE EVENTOS Y MODALES ---
 const registrarGol = (team) => {
-  // El gol no necesita dorsal
   state.score[team]++;
   guardarEventoEnLog(team, 'goal', null);
 };
@@ -329,15 +405,12 @@ const restarGol = (team) => {
 };
 
 const pedirDorsal = (team, type) => {
-  // REGLA: Las exclusiones (2 min, roja, azul) frenan el tiempo automáticamente
-  // La amarilla NO detiene el tiempo según reglamento IHF
   if (['2_min', 'red_card', 'blue_card'].includes(type)) {
     if (isRunning.value) {
       clearInterval(timerInterval);
       isRunning.value = false;
     }
   }
-
   modalJugador.team = team;
   modalJugador.type = type;
   modalJugador.dorsal = '';
@@ -356,7 +429,6 @@ const confirmarSancion = () => {
     return;
   }
 
-  // Validar dorsal
   const validacion = validarDorsal(dorsal);
   if (!validacion.valido) {
     mostrarNotificacion('Error', 'Debe ingresar un número válido o una letra entre A y E para oficiales.', 'danger');
@@ -365,34 +437,34 @@ const confirmarSancion = () => {
 
   const dorsalFinal = validacion.valor;
 
-  // Solo aplicar reglas IHF a jugadores (números), no a oficiales (letras)
   if (validacion.tipo === 'jugador') {
     const stats = obtenerSancionesJugador(team, dorsalFinal);
 
-    // REGLA: No amarilla si ya tiene 2 minutos
-    if (type === 'yellow_card' && stats.two_min > 0) {
-      mostrarNotificacion('Reglamento IHF', `El jugador #${dorsalFinal} ya posee una exclusión. No puede recibir tarjeta amarilla.`, 'danger');
-      return;
+    if (type === 'yellow_card') {
+      if (stats.yellow >= 1) {
+        mostrarNotificacion('Reglamento IHF', `El jugador #${dorsalFinal} ya tiene una amarilla. Máximo una por jugador.`, 'danger');
+        return;
+      }
+      if (stats.two_min > 0) {
+        mostrarNotificacion('Reglamento IHF', `El jugador #${dorsalFinal} ya posee una exclusión. No puede recibir tarjeta amarilla.`, 'danger');
+        return;
+      }
     }
 
-    // REGLA: Tercer 2 Minutos = Descalificación
     let esTerceraExclusion = false;
     if (type === '2_min' && stats.two_min >= 2) {
       esTerceraExclusion = true;
       mostrarNotificacion('Roja Automática', `El jugador #${dorsalFinal} alcanzó su 3ra exclusión de 2 minutos. Corresponde Descalificación.`, 'danger');
     }
 
-    // Procesamos la sanción solicitada
     aplicarPenalidadReloj(team, type, dorsalFinal);
     guardarEventoEnLog(team, type, dorsalFinal);
 
-    // Si era la 3ra, le clavamos la roja automáticamente
     if (esTerceraExclusion) {
       aplicarPenalidadReloj(team, 'red_card', dorsalFinal);
       guardarEventoEnLog(team, 'red_card', dorsalFinal);
     }
   } else {
-    // Es un oficial (letra A-E), aplicar sanción sin reglas de jugador
     aplicarPenalidadReloj(team, type, dorsalFinal);
     guardarEventoEnLog(team, type, dorsalFinal);
   }
@@ -405,10 +477,11 @@ const aplicarPenalidadReloj = (team, type, playerNumber) => {
     const existing = [...state.activePenalties].reverse().find(p => p.team === team && p.playerNumber === playerNumber);
 
     if (existing && existing.timeGiven === state.timeInSeconds) {
-      if ((existing.type === 'red_card' && type === 'blue_card') || (existing.type === 'blue_card' && type === 'red_card')) {
-        existing.type = type; // Es la misma, solo evoluciona
-      } else {
-        existing.timeRemaining += 120; // Se suman 2 minutos si el reloj no corrió
+      if (existing.timeRemaining < 240) {
+        existing.timeRemaining = Math.min(existing.timeRemaining + 120, 240);
+      }
+      if (type === 'red_card' || type === 'blue_card') {
+        existing.type = type;
       }
     } else {
       state.activePenalties.push({ id: Date.now(), team, type, playerNumber, timeRemaining: 120, timeGiven: state.timeInSeconds });
@@ -423,7 +496,8 @@ const guardarEventoEnLog = (team, type, playerNumber) => {
     match_time: `${currentPeriodText.value} - ${formattedTime.value}`,
     timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19), synced: false
   };
-  state.eventLog.push(newEvent); state.unsyncedEvents.push(newEvent);
+  state.eventLog.push(newEvent);
+  state.unsyncedEvents.push(newEvent);
 };
 
 // --- ELIMINAR EVENTO ---
@@ -431,7 +505,6 @@ const pedirEliminarEvento = (eventToDel) => {
   mostrarNotificacion('Eliminar Evento', `¿Seguro que deseas eliminar este evento (${formatEventType(eventToDel.type)}) de la bitácora?`, 'danger', true, 'delete', eventToDel);
 };
 
-// Este handler se dispara cuando el componente ModalExito emite '@confirmar'
 const ejecutarAccionPendiente = async () => {
   const key = modalNotificacion.accionKey;
 
@@ -450,7 +523,6 @@ const ejecutarAccionPendiente = async () => {
   if (key === 'delete') {
     const eventToDel = modalNotificacion.tempPayload;
 
-    // 1. Revertir lógica en el marcador/reloj
     if (eventToDel.type === 'goal') {
       if (state.score[eventToDel.team] > 0) state.score[eventToDel.team]--;
     } else if (eventToDel.type === 'goal_removed') {
@@ -465,11 +537,9 @@ const ejecutarAccionPendiente = async () => {
       t.total--;
     }
 
-    // 2. Limpiar Bitácora
     state.eventLog = state.eventLog.filter(e => e.id !== eventToDel.id);
     state.unsyncedEvents = state.unsyncedEvents.filter(e => e.id !== eventToDel.id);
 
-    // 3. Avisar al Backend
     if (eventToDel.synced) {
       try {
         await api.post({ entity: 'delegados', action: 'eliminarEvento', payload: { event_local_id: eventToDel.id } });
@@ -564,17 +634,19 @@ const formatEventType = (type) => {
     '2_min': '✌️ 2 Min',
     red_card: '🟥 Roja',
     blue_card: '🟦 Azul',
-    timeout: '🟩 TTO'
+    timeout: '🟩 TTO',
+    tiempo_ajustado: '⚙️ Tiempo Ajustado'
   };
   return t[type] || type;
 };
 
-// --- DESCARGA Y SINC ---
 const downloadLog = () => {
   if (filteredLog.value.length === 0) return mostrarNotificacion('Atención', 'No hay datos en la bitácora para descargar.', 'danger');
   let content = `BITÁCORA\nLocal: ${state.score.local} | Visita: ${state.score.visitor}\n\n`;
   filteredLog.value.forEach(e => {
-    content += `[${e.match_time}] ${e.team === 'local' ? 'L' : 'V'} ${e.player_number ? `(#${e.player_number})` : ''} -> ${formatEventType(e.type)}\n`;
+    content += `[${e.match_time}] ${e.team === 'local' ? 'L' : (e.team === 'visitor' ? 'V' : 'SISTEMA')} ${e.player_number && e.type !== 'tiempo_ajustado' ? `(#${e.player_number})` : ''} -> ${formatEventType(e.type)}`;
+    if (e.type === 'tiempo_ajustado') content += ` (${e.player_number})`;
+    content += '\n';
   });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(new Blob([content], { type: 'text/plain' }));
@@ -583,7 +655,8 @@ const downloadLog = () => {
 };
 
 const syncWithBackend = async () => {
-  if (state.unsyncedEvents.length === 0) return;
+  if (state.unsyncedEvents.length === 0 || isSyncing.value) return;
+  isSyncing.value = true;
 
   try {
     const result = await api.post({
@@ -595,13 +668,11 @@ const syncWithBackend = async () => {
     if (result.ok && result.payload && result.payload.status === 'success') {
       state.unsyncedEvents.forEach(u => { const l = state.eventLog.find(e => e.id === u.id); if (l) l.synced = true; });
       state.unsyncedEvents = [];
-      mostrarNotificacion('Sincronización Exitosa', 'Los eventos del partido se enviaron al servidor correctamente.', 'success');
-    } else {
-      mostrarNotificacion('Error', 'El servidor rechazó la sincronización.', 'danger');
     }
   } catch (err) {
-    console.error(err);
-    mostrarNotificacion('Sin Conexión', 'No se pudo conectar con el servidor. Los datos siguen guardados localmente.', 'danger');
+    console.error("Error al sincronizar automáticamente:", err);
+  } finally {
+    isSyncing.value = false;
   }
 };
 
