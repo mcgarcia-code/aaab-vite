@@ -329,8 +329,9 @@ const restarGol = (team) => {
 };
 
 const pedirDorsal = (team, type) => {
-  // REGLA: Cualquier sanción frena el tiempo automáticamente
-  if (['yellow_card', '2_min', 'red_card', 'blue_card'].includes(type)) {
+  // REGLA: Las exclusiones (2 min, roja, azul) frenan el tiempo automáticamente
+  // La amarilla NO detiene el tiempo según reglamento IHF
+  if (['2_min', 'red_card', 'blue_card'].includes(type)) {
     if (isRunning.value) {
       clearInterval(timerInterval);
       isRunning.value = false;
