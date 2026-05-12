@@ -162,7 +162,7 @@ const menuItems = [
   { to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Pedidos de indumentaria.' },
   { to: '/panel-arbitro/observaciones', title: 'Observaciones', icon: 'bi bi-eye', desc: 'Cargar y visualizar observaciones', rolesPermitidos: [2,4] },
   { to: '/panel-arbitro/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Consultá los datos fiscales de los Clubes'},
-  { to: '/panel-arbitro/delegado-tecnico', title: 'Delegado Técnico', icon: 'bi bi-receipt', desc: 'Planilla Digital para Delegados Técnicos', rolesPermitidos: [2,4] },
+  { to: '/panel-arbitro/delegado-tecnico', title: 'Delegado Técnico', icon: 'bi bi-receipt', desc: 'Planilla Digital para Delegados Técnicos'},
 
 ];
 
