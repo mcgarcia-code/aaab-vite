@@ -6,7 +6,7 @@
         <button @click="cerrarSesion" class="btn btn-outline-danger btn-sm px-3">Cerrar Sesión</button>
       </div>
     </nav>
-    
+
     <div class="container-fluid px-4 py-2">
       <div class="mx-auto">
         <div class="user-header d-flex align-items-center mb-4 p-3 rounded-4 shadow">
@@ -23,7 +23,7 @@
 
         <div v-if="route.name !== 'AdminInicio'" class="mb-4">
             <button @click="handleVolver" class="btn-volver">
-            <i class="bi bi-arrow-left me-2"></i> 
+            <i class="bi bi-arrow-left me-2"></i>
                 {{ esRutaProfunda ? 'Volver atrás' : 'Volver al Menú' }}
             </button>
         </div>
@@ -41,7 +41,7 @@ import { auth } from '@/api/auth';
 import { useHead } from '@vueuse/head';
 
 const route = useRoute();
-const router = useRouter(); 
+const router = useRouter();
 
 // 1. Detectar si estamos en un "hijo del hijo"
 // Si la URL tiene más de 2 segmentos (ej: /panel-admin/usuarios/editar), es profunda.
@@ -85,9 +85,9 @@ useHead({
 </script>
 
 <style scoped>
-.panel-layout { 
-  min-height: 100vh; 
-  background-color: #0f172a; 
+.panel-layout {
+  min-height: 100vh;
+  background-color: #0f172a;
   padding-bottom: 40px;
 }
 
@@ -121,9 +121,9 @@ useHead({
   padding: 8px 20px;
   border-radius: 50px;
   transition: 0.3s;
-  border: none; 
+  border: none;
   cursor: pointer;
-  font-size: 1rem; 
+  font-size: 1rem;
 }
 
 .btn-volver:hover {
@@ -145,19 +145,20 @@ useHead({
 /* --- 2. SMARTPHONES (Hasta 600px) --- */
 @media (max-width: 600px) {
   /* Ajuste de Icono: alineado a la izquierda */
-  .icon-admin-circle { 
-    width: 60px; 
-    height: 60px; 
-    font-size: 1.5rem; 
-    margin: 0; 
+  .icon-admin-circle {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    margin: 0;
   }
 
   /* Ajuste del título para que ocupe todo el ancho */
-  h2 { 
-    font-size: 1.25rem !important; 
-    margin: 0; 
-    text-align: left; 
+  h2 {
+    font-size: 1.25rem !important;
+    margin: 0;
+    text-align: left;
     width: 100%;
   }
 }
 </style>
+

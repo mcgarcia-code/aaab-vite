@@ -64,6 +64,8 @@
                     <th class="d-none d-md-table-cell py-3">Solicitada</th>
                     <th class="d-none d-md-table-cell py-3">Motivo</th>
                     <th class="text-center pe-3 py-3">Estado</th>
+                    <!-- NUEVA COLUMNA -->
+                    <th class="text-center pe-3 py-3">Acción</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -86,13 +88,25 @@
                         {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enfermedad' : 'Particular' }}
                     </td>
                     <td class="text-center align-middle pe-3">
-                      <span :class="{'badge': true, 'bg-success': lic.estado === 'aprobada', 'bg-danger': lic.estado === 'rechazada' || lic.estado === 'borrada', 'bg-warning text-dark': lic.estado === 'pendiente'}" class="status-badge">
+                      <span :class="{'badge': true, 'bg-success': lic.estado === 'aprobada', 'bg-danger': lic.estado === 'rechazada' || lic.estado === 'borrada' || lic.estado === 'anulada', 'bg-warning text-dark': lic.estado === 'pendiente'}" class="status-badge">
                         {{ lic.estado.toUpperCase() }}
                       </span>
                     </td>
+                    <!-- NUEVA CELDA DE ACCIÓN -->
+                    <td class="text-center align-middle pe-3">
+                      <button
+                        v-if="(lic.estado === 'pendiente' || lic.estado === 'aprobada') && esFechaFutura(lic.fecha_licencia)"
+                        @click="anularLicencia(lic)"
+                        class="btn btn-sm btn-anular fw-bold shadow-sm"
+                        :disabled="cargando"
+                      >
+                        <i class="bi bi-x-circle me-1"></i> Anular
+                      </button>
+                    </td>
                   </tr>
                   <tr v-if="licencias.length === 0">
-                    <td colspan="4" class="text-center text-muted py-5 small">
+                    <!-- CAMBIADO A COLSPAN 5 -->
+                    <td colspan="5" class="text-center text-muted py-5 small">
                       No tenés licencias registradas.
                     </td>
                   </tr>
@@ -127,9 +141,10 @@
       </div>
 
     </div>
-  </div>
-</template>
 
+  </div>
+
+</template>
 <script setup>
 import { ref, onMounted, inject, computed } from 'vue';
 import { api } from '@/api/api';
@@ -200,18 +215,15 @@ const solicitarLicencia = async () => {
   if (!fechaSeleccionada.value) return;
 
   const enTermino = (() => {
-    // 1. Obtenemos la fecha actual forzando la zona horaria de Argentina
+
     const hoyStr = new Date().toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" });
     const hoyArg = new Date(hoyStr);
     hoyArg.setHours(0, 0, 0, 0);
 
-    // 2. Procesamos la fecha seleccionada por el usuario (formato YYYY-MM-DD)
-    // Lo separamos manualmente para evitar que JS reste horas por UTC
     const [year, month, day] = fechaSeleccionada.value.split('-');
     const fechaPedido = new Date(year, month - 1, day);
     fechaPedido.setHours(0, 0, 0, 0);
 
-    // 3. Calculamos la diferencia en días
     const diffDias = Math.ceil((fechaPedido - hoyArg) / (1000 * 60 * 60 * 24));
     return diffDias >= 7;
   })();
@@ -262,6 +274,68 @@ const solicitarLicencia = async () => {
   } finally {
     cargando.value = false;
   }
+};
+
+const esFechaFutura = (fechaStr) => {
+  if (!fechaStr) return false;
+  const fechaLicencia = parseFecha(fechaStr);
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  return fechaLicencia >= hoy;
+};
+
+const anularLicencia = (lic) => {
+  if (!lic.puede_anular) {
+    notificar({
+      titulo: 'No se puede anular',
+      mensaje: 'Faltan menos de 6 días para la fecha. Por favor, enviá un e-mail a licencias@arbitroshandball.com.ar',
+      tipo: 'danger'
+    });
+    return;
+  }
+
+
+  notificar({
+    titulo: '¿Anular Licencia?',
+    mensaje: 'Esta acción es irreversible. El registro será borrado permanentemente.', // Mismo texto que en tu foto
+    tipo: 'danger',
+    alConfirmar: async () => {
+      cargando.value = true;
+      try {
+        const res = await api.post({
+          entity: 'licencias',
+          action: 'actualizarLicencia',
+          payload: {
+            id: lic.id,
+            estado: 'anulada'
+          }
+        });
+
+        if (res.ok && res.payload.success) {
+          notificar({
+            titulo: 'Licencia Anulada',
+            mensaje: 'La licencia fue anulada correctamente.',
+            tipo: 'success'
+          });
+          await obtenerLicencias(); // Recargamos la tabla
+        } else {
+          notificar({
+            titulo: 'Error',
+            mensaje: res.payload?.message || "No se pudo anular la licencia.",
+            tipo: 'danger'
+          });
+        }
+      } catch{
+        notificar({
+          titulo: 'Error de Red',
+          mensaje: 'No se pudo conectar con el servidor.',
+          tipo: 'danger'
+        });
+      } finally {
+        cargando.value = false;
+      }
+    }
+  });
 };
 
 onMounted(() => {
@@ -369,5 +443,39 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
   .status-badge {
     font-size: 0.55rem;
   }
+}
+
+/* ====================================================
+   BOTÓN ANULAR (Tamaño reducido)
+   ==================================================== */
+.btn-anular {
+  background-color: #dc2626; /* Rojo base */
+  color: #ffffff;
+  border: none;
+  padding: 0.25rem 0.5rem; /* Padding más chico */
+  font-size: 0.75rem; /* Letra más chica */
+  border-radius: 4px; /* Bordes un poco menos redondeados */
+  transition: all 0.2s ease-in-out;
+  display: inline-flex; /* No ocupa el 100% del ancho */
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem; /* Menos espacio entre el ícono y el texto */
+  width: auto;
+}
+
+/* Efectos de hover para escritorio */
+@media (min-width: 768px) {
+  .btn-anular:hover:not(:disabled) {
+    background-color: #b91c1c; /* Rojo más oscuro */
+    color: #ffffff;
+    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4); /* Sombra difuminada */
+    transform: translateY(-2px); /* Se levanta un poquito */
+  }
+}
+
+.btn-anular:disabled {
+  background-color: #fca5a5;
+  color: #fef2f2;
+  cursor: not-allowed;
 }
 </style>
