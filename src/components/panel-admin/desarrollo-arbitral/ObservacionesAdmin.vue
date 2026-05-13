@@ -4,10 +4,10 @@
 
       <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
 
-        <!-- Cabecera y Botones Generales -->
+<!-- Cabecera y Botones Generales -->
         <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
           <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2 flex-wrap" style="font-size: 1.25rem;">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
               <i class="bi bi-clipboard-data-fill me-1"></i> Gestión de Observaciones
             </h4>
             <span class="counter mt-1 d-block text-muted">Total: {{ observacionesFiltradas.length }} registros</span>
@@ -16,22 +16,25 @@
           <div class="header-actions">
             <!-- Filtros Mobile -->
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
-              <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+              <span class="material-icons" style="font-size: 16px; line-height: 1;">filter_alt</span>
             </button>
 
             <!-- Limpiar -->
-            <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
-              <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
+            <button @click="limpiarFiltros" class="btn-action btn-clear" style="padding-left: 8px; padding-right: 10px;" title="Limpiar Filtros">
+              <span class="material-icons" style="font-size: 16px; line-height: 1;">filter_alt_off</span>
+              <span class="btn-text" style="line-height: 1;">Limpiar</span>
             </button>
 
-            <!-- NUEVO: Botón Cargar Observación -->
-            <button @click="abrirModalCarga" class="btn-action btn-danger-custom" title="Cargar Nueva Observación">
-              <span class="material-icons">add_box</span> <span class="btn-text fw-bold">Nueva Obs.</span>
+            <!-- Botón Cargar Observación -->
+            <button @click="abrirModalCarga" class="btn-action btn-danger-custom" style="padding-left: 8px; padding-right: 10px;" title="Cargar Nueva Observación">
+              <span class="material-icons" style="font-size: 16px; line-height: 1;">add_box</span>
+              <span class="btn-text fw-bold" style="line-height: 1;">Nueva Obs.</span>
             </button>
 
             <!-- Excel -->
-            <button @click="exportarExcel" class="btn-action btn-export" title="Exportar Reporte">
-              <span class="material-icons">download</span> <span class="btn-text">Excel</span>
+            <button @click="exportarExcel" class="btn-action btn-export" style="padding-left: 8px; padding-right: 10px;" title="Exportar Reporte">
+              <span class="material-icons" style="font-size: 16px; line-height: 1;">download</span>
+              <span class="btn-text" style="line-height: 1;">Excel</span>
             </button>
           </div>
         </div>
@@ -759,28 +762,59 @@ onMounted(() => {
    ESTILOS GENERALES Y DE TABLA
    ==================================================== */
 .full-screen-wrapper {
-  position: relative; width: 99vw; min-height: 100vh; height: auto !important;
-  margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px;
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  height: auto !important;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  padding: 20px;
+  padding-bottom: 120px;
+  box-sizing: border-box;
 }
 
 .admin-panel {
-  width: 100%; padding: 0; background-color: #0f172a; min-height: calc(100vh - 40px);
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  color: #000;
+  background-color: #0f172a;
+  min-height: 100vh;
+  border-radius: 0;
 }
 
 .header-section {
-  background: white; padding: 15px; display: flex; flex-direction: column;
-  align-items: flex-start; gap: 15px; border-left: 5px solid #ef4444;
+  background: white;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 15px;
+  border-left: 5px solid #ef4444;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
-.header-actions { width: 100%; display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+.header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+.header-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 8px;
+  overflow-x: auto;
+}
 
 .btn-action {
-  border: none; width: 42px; height: 42px; border-radius: 4px; font-weight: bold;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: opacity 0.2s; padding: 0;
+  border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.2s, transform 0.1s;
+  flex: none; width: 42px; height: 42px; padding: 0;
 }
+.btn-action:hover { opacity: 0.85; }
+.btn-action:active { transform: scale(0.95); }
 
 .btn-clear { background: #e2e8f0; color: #000; }
 .btn-export { background: #10b981; color: white; }
@@ -876,7 +910,18 @@ onMounted(() => {
   .full-screen-wrapper { padding: 20px; }
   .admin-panel { padding: 20px; border-radius: 8px; }
 
-  .header-section { flex-direction: row; align-items: center; justify-content: space-between; border-radius: 8px; margin-bottom: 15px !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important; }
+  .header-section {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 8px;
+    padding: 15px 25px !important;
+    margin-bottom: 15px !important;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important;
+  }
+
+  .title { font-size: 1.1rem; }
+
   .header-info { width: auto; }
   .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; }
 

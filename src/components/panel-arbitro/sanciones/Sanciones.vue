@@ -1,11 +1,11 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 w-100 mx-auto" style="border-radius: 15px; overflow: hidden; margin-bottom: 1.5rem;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <div>
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-            <span class="material-icons" style="transform: rotate(-15deg);">gavel</span> Mis Sanciones
+            <i class="bi bi-hammer me-2"></i> Mis Sanciones
           </h4>
           <p class="text-muted small m-0 mt-1">Total: {{ sancionesFiltradas.length }} resoluciones en tu legajo</p>
         </div>

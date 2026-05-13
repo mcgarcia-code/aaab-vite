@@ -1,169 +1,194 @@
 <template>
-  <div class="panel-card delegados-sheet">
-    <div class="header-controls">
-      <h2>Planilla Digital</h2>
-      <button class="btn-danger small-btn fw-bold" @click="resetMatch">🔄 REINICIAR</button>
-    </div>
+  <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="timer-section shadow-sm">
-      <div class="period-indicator">{{ currentPeriodText }}</div>
+    <!-- Contenedor principal estilo Disponibilidad -->
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 panel-card delegados-sheet" style="border-radius: 15px;">
 
-      <!-- Reloj clickeable para abrir el modal de ajuste manual -->
-      <div
-        class="time-display"
-        :class="{ 'time-paused': !isRunning }"
-        @click="abrirModalTiempo"
-        style="cursor: pointer;"
-        title="Ajustar cronómetro"
-      >
-        {{ formattedTime }}
-      </div>
+      <!-- NUEVO HEADER -->
+      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
+        <div>
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
+            <i class="bi bi-stopwatch-fill me-2"></i> Planilla Digital
+          </h4>
+          <p class="text-muted small m-0 mt-1">Control de tiempo, anotaciones y eventos del partido.</p>
+        </div>
 
-      <div class="timer-controls">
-        <button class="btn-primary btn-main-timer shadow-sm" @click="toggleTimer" :disabled="state.activeTTO !== null">
-          {{ isRunning ? '⏸ PAUSAR' : '▶ INICIAR' }}
-        </button>
-        <div class="timer-sub-controls">
-          <button class="btn-secondary small-btn" @click="toggleDirection">
-            ⏱ {{ state.isCountdown ? 'Regresivo' : 'Progresivo' }}
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+          <button class="btn btn-danger px-3 py-2 fw-bold shadow-sm d-flex align-items-center w-fit-mobile" @click="resetMatch" style="font-size: 0.85rem;">
+            <i class="bi bi-arrow-counterclockwise me-2"></i> REINICIAR
           </button>
-          <div class="period-nav">
-            <button class="btn-secondary small-btn" @click="prevPeriod" :disabled="isRunning || state.period === 1">⏮ Volver</button>
-            <button class="btn-secondary small-btn" @click="nextPeriod" :disabled="isRunning">⏭ Sig.</button>
-          </div>
         </div>
       </div>
 
-      <div v-if="state.activeTTO" class="tto-countdown-box shadow-sm">
-        <div class="tto-info">
-          <span class="icon">🟩</span> TTO ({{ state.activeTTO.team === 'local' ? 'L' : 'V' }}): <strong>{{ state.activeTTO.timeRemaining }}s</strong>
-        </div>
-        <button class="btn-danger small-btn fw-bold" @click="cancelTTO">❌ Cortar</button>
-      </div>
+      <!-- Cuerpo del panel -->
+      <div class="card-body p-3 p-md-4">
 
-      <div class="penalties-container" v-if="state.activePenalties.length > 0">
-        <h4>Exclusiones Activas</h4>
-        <div class="penalty-timers">
-          <div v-for="penalty in state.activePenalties" :key="penalty.id" class="penalty-box" :class="penalty.team">
-            <span class="penalty-team">{{ penalty.team === 'local' ? 'L' : 'V' }}</span>
-            <span class="penalty-player">#{{ penalty.playerNumber }}</span>
-            <span class="penalty-time">{{ formatPenaltyTime(penalty.timeRemaining) }}</span>
+        <!-- ================= CRONÓMETRO ================= -->
+        <div class="timer-section shadow-sm">
+          <div class="period-indicator">{{ currentPeriodText }}</div>
+
+          <!-- Reloj clickeable para abrir el modal de ajuste manual -->
+          <div
+            class="time-display"
+            :class="{ 'time-paused': !isRunning }"
+            @click="abrirModalTiempo"
+            style="cursor: pointer;"
+            title="Ajustar cronómetro"
+          >
+            {{ formattedTime }}
           </div>
-        </div>
-      </div>
-    </div>
 
-    <div class="teams-container">
-      <div class="team-column local shadow-sm">
-        <h3 class="team-title">LOCAL</h3>
-        <div class="score-display">{{ state.score.local }}</div>
-
-        <div class="indicators">
-          <span v-if="localPlayersLess > 0" class="badge-danger">⚠️ -{{ localPlayersLess }} Jug.</span>
-          <div class="tto-dots">
-            <span v-for="n in 3" :key="n" class="dot" :class="{ 'used': state.timeouts.local.total >= n }"></span>
-          </div>
-        </div>
-
-        <div class="action-buttons">
-          <div class="goal-controls">
-            <button class="btn-action btn-goal-minus" @click="restarGol('local')" :disabled="state.score.local === 0">
-              <span class="icon">➖</span><span class="btn-text">Restar</span>
+          <div class="timer-controls">
+            <button class="btn-primary btn-main-timer shadow-sm" @click="toggleTimer" :disabled="state.activeTTO !== null">
+              {{ isRunning ? '⏸ PAUSAR' : '▶ INICIAR' }}
             </button>
-            <button class="btn-action btn-goal" @click="registrarGol('local')">
-              <span class="icon">⚽</span><span class="btn-text">Gol</span>
-            </button>
-          </div>
-          <button class="btn-action btn-yellow" @click="pedirDorsal('local', 'yellow_card')">
-            <span class="icon">🟨</span><span class="btn-text">Amarilla</span>
-          </button>
-          <button class="btn-action btn-2min" @click="pedirDorsal('local', '2_min')">
-            <span class="icon">✌️</span><span class="btn-text">2 Minutos</span>
-          </button>
-          <button class="btn-action btn-red" @click="pedirDorsal('local', 'red_card')">
-            <span class="icon">🟥</span><span class="btn-text">Roja</span>
-          </button>
-          <button class="btn-action btn-blue" @click="pedirDorsal('local', 'blue_card')">
-            <span class="icon">🟦</span><span class="btn-text">Azul</span>
-          </button>
-          <button class="btn-action btn-tto" @click="requestTTO('local')" :disabled="!canUseTimeout('local')">
-            <span class="icon">🟩</span><span class="btn-text">TTO</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="team-column visitor shadow-sm">
-        <h3 class="team-title">VISITA</h3>
-        <div class="score-display">{{ state.score.visitor }}</div>
-
-        <div class="indicators">
-          <span v-if="visitorPlayersLess > 0" class="badge-danger">⚠️ -{{ visitorPlayersLess }} Jug.</span>
-          <div class="tto-dots">
-            <span v-for="n in 3" :key="n" class="dot" :class="{ 'used': state.timeouts.visitor.total >= n }"></span>
-          </div>
-        </div>
-
-        <div class="action-buttons">
-          <div class="goal-controls">
-            <button class="btn-action btn-goal-minus" @click="restarGol('visitor')" :disabled="state.score.visitor === 0">
-              <span class="icon">➖</span><span class="btn-text">Restar</span>
-            </button>
-            <button class="btn-action btn-goal" @click="registrarGol('visitor')">
-              <span class="icon">⚽</span><span class="btn-text">Gol</span>
-            </button>
-          </div>
-          <button class="btn-action btn-yellow" @click="pedirDorsal('visitor', 'yellow_card')">
-            <span class="icon">🟨</span><span class="btn-text">Amarilla</span>
-          </button>
-          <button class="btn-action btn-2min" @click="pedirDorsal('visitor', '2_min')">
-            <span class="icon">✌️</span><span class="btn-text">2 Minutos</span>
-          </button>
-          <button class="btn-action btn-red" @click="pedirDorsal('visitor', 'red_card')">
-            <span class="icon">🟥</span><span class="btn-text">Roja</span>
-          </button>
-          <button class="btn-action btn-blue" @click="pedirDorsal('visitor', 'blue_card')">
-            <span class="icon">🟦</span><span class="btn-text">Azul</span>
-          </button>
-          <button class="btn-action btn-tto" @click="requestTTO('visitor')" :disabled="!canUseTimeout('visitor')">
-            <span class="icon">🟩</span><span class="btn-text">TTO</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="event-log-section shadow-sm">
-      <div class="log-header">
-        <h3>Bitácora</h3>
-        <span class="badge" :class="state.unsyncedEvents.length > 0 ? 'bg-warning text-dark' : 'bg-success'">
-          {{ state.unsyncedEvents.length > 0 ? '☁️ Sincronizando...' : '✅ Sincronizado' }}
-        </span>
-      </div>
-      <div class="filter-controls">
-        <select v-model="logFilter" class="form-select">
-          <option value="all">Todos los eventos</option>
-          <option value="goals">Goles</option>
-          <option value="sanctions">Sanciones</option>
-        </select>
-        <button class="btn-download" @click="downloadLog">📥 Txt</button>
-      </div>
-      <div class="log-list">
-        <ul>
-          <li v-for="event in filteredLog" :key="event.id">
-            <div class="log-content">
-              <span class="log-time">[{{ event.match_time }}]</span>
-              <strong>{{ event.team === 'local' ? 'L' : (event.team === 'visitor' ? 'V' : 'SISTEMA') }}</strong>
-              <span v-if="event.player_number && event.type !== 'goal_removed' && event.type !== 'tiempo_ajustado'"> (#{{ event.player_number }})</span>:
-              {{ formatEventType(event.type) }}
-              <span v-if="event.type === 'tiempo_ajustado'" class="text-muted small ms-1">- {{ event.player_number }}</span>
-              <span v-if="!event.synced" class="pending-badge">Pendiente</span>
+            <div class="timer-sub-controls">
+              <button class="btn-secondary small-btn" @click="toggleDirection">
+                ⏱ {{ state.isCountdown ? 'Regresivo' : 'Progresivo' }}
+              </button>
+              <div class="period-nav">
+                <button class="btn-secondary small-btn" @click="prevPeriod" :disabled="isRunning || state.period === 1">⏮ Volver</button>
+                <button class="btn-secondary small-btn" @click="nextPeriod" :disabled="isRunning">⏭ Sig.</button>
+              </div>
             </div>
-            <button v-if="event.team !== 'sistema'" class="btn-delete-log" @click="pedirEliminarEvento(event)" title="Eliminar">🗑️</button>
-          </li>
-          <li v-if="filteredLog.length === 0" class="empty-log">Sin registros.</li>
-        </ul>
-      </div>
-    </div>
+          </div>
 
+          <div v-if="state.activeTTO" class="tto-countdown-box shadow-sm">
+            <div class="tto-info">
+              <span class="icon">🟩</span> TTO ({{ state.activeTTO.team === 'local' ? 'L' : 'V' }}): <strong>{{ state.activeTTO.timeRemaining }}s</strong>
+            </div>
+            <button class="btn-danger small-btn fw-bold" @click="cancelTTO">❌ Cortar</button>
+          </div>
+
+          <div class="penalties-container" v-if="state.activePenalties.length > 0">
+            <h4>Exclusiones Activas</h4>
+            <div class="penalty-timers">
+              <div v-for="penalty in state.activePenalties" :key="penalty.id" class="penalty-box" :class="penalty.team">
+                <span class="penalty-team">{{ penalty.team === 'local' ? 'L' : 'V' }}</span>
+                <span class="penalty-player">#{{ penalty.playerNumber }}</span>
+                <span class="penalty-time">{{ formatPenaltyTime(penalty.timeRemaining) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= EQUIPOS ================= -->
+        <div class="teams-container">
+          <div class="team-column local shadow-sm">
+            <h3 class="team-title">LOCAL</h3>
+            <div class="score-display">{{ state.score.local }}</div>
+
+            <div class="indicators">
+              <span v-if="localPlayersLess > 0" class="badge-danger">⚠️ -{{ localPlayersLess }} Jug.</span>
+              <div class="tto-dots">
+                <span v-for="n in 3" :key="n" class="dot" :class="{ 'used': state.timeouts.local.total >= n }"></span>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <div class="goal-controls">
+                <button class="btn-action btn-goal-minus" @click="restarGol('local')" :disabled="state.score.local === 0">
+                  <span class="icon">➖</span><span class="btn-text">Restar</span>
+                </button>
+                <button class="btn-action btn-goal" @click="registrarGol('local')">
+                  <span class="icon">⚽</span><span class="btn-text">Gol</span>
+                </button>
+              </div>
+              <button class="btn-action btn-yellow" @click="pedirDorsal('local', 'yellow_card')">
+                <span class="icon">🟨</span><span class="btn-text">Amarilla</span>
+              </button>
+              <button class="btn-action btn-2min" @click="pedirDorsal('local', '2_min')">
+                <span class="icon">✌️</span><span class="btn-text">2 Minutos</span>
+              </button>
+              <button class="btn-action btn-red" @click="pedirDorsal('local', 'red_card')">
+                <span class="icon">🟥</span><span class="btn-text">Roja</span>
+              </button>
+              <button class="btn-action btn-blue" @click="pedirDorsal('local', 'blue_card')">
+                <span class="icon">🟦</span><span class="btn-text">Azul</span>
+              </button>
+              <button class="btn-action btn-tto" @click="requestTTO('local')" :disabled="!canUseTimeout('local')">
+                <span class="icon">🟩</span><span class="btn-text">TTO</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="team-column visitor shadow-sm">
+            <h3 class="team-title">VISITA</h3>
+            <div class="score-display">{{ state.score.visitor }}</div>
+
+            <div class="indicators">
+              <span v-if="visitorPlayersLess > 0" class="badge-danger">⚠️ -{{ visitorPlayersLess }} Jug.</span>
+              <div class="tto-dots">
+                <span v-for="n in 3" :key="n" class="dot" :class="{ 'used': state.timeouts.visitor.total >= n }"></span>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <div class="goal-controls">
+                <button class="btn-action btn-goal-minus" @click="restarGol('visitor')" :disabled="state.score.visitor === 0">
+                  <span class="icon">➖</span><span class="btn-text">Restar</span>
+                </button>
+                <button class="btn-action btn-goal" @click="registrarGol('visitor')">
+                  <span class="icon">⚽</span><span class="btn-text">Gol</span>
+                </button>
+              </div>
+              <button class="btn-action btn-yellow" @click="pedirDorsal('visitor', 'yellow_card')">
+                <span class="icon">🟨</span><span class="btn-text">Amarilla</span>
+              </button>
+              <button class="btn-action btn-2min" @click="pedirDorsal('visitor', '2_min')">
+                <span class="icon">✌️</span><span class="btn-text">2 Minutos</span>
+              </button>
+              <button class="btn-action btn-red" @click="pedirDorsal('visitor', 'red_card')">
+                <span class="icon">🟥</span><span class="btn-text">Roja</span>
+              </button>
+              <button class="btn-action btn-blue" @click="pedirDorsal('visitor', 'blue_card')">
+                <span class="icon">🟦</span><span class="btn-text">Azul</span>
+              </button>
+              <button class="btn-action btn-tto" @click="requestTTO('visitor')" :disabled="!canUseTimeout('visitor')">
+                <span class="icon">🟩</span><span class="btn-text">TTO</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= BITÁCORA ================= -->
+        <div class="event-log-section shadow-sm">
+          <div class="log-header">
+            <h3>Bitácora</h3>
+            <span class="badge" :class="state.unsyncedEvents.length > 0 ? 'bg-warning text-dark' : 'bg-success'">
+              {{ state.unsyncedEvents.length > 0 ? '☁️ Sincronizando...' : '✅ Sincronizado' }}
+            </span>
+          </div>
+          <div class="filter-controls">
+            <select v-model="logFilter" class="form-select">
+              <option value="all">Todos los eventos</option>
+              <option value="goals">Goles</option>
+              <option value="sanctions">Sanciones</option>
+            </select>
+            <button class="btn-download" @click="downloadLog">📥 Txt</button>
+          </div>
+          <div class="log-list">
+            <ul>
+              <li v-for="event in filteredLog" :key="event.id">
+                <div class="log-content">
+                  <span class="log-time">[{{ event.match_time }}]</span>
+                  <strong>{{ event.team === 'local' ? 'L' : (event.team === 'visitor' ? 'V' : 'SISTEMA') }}</strong>
+                  <span v-if="event.player_number && event.type !== 'goal_removed' && event.type !== 'tiempo_ajustado'"> (#{{ event.player_number }})</span>:
+                  {{ formatEventType(event.type) }}
+                  <span v-if="event.type === 'tiempo_ajustado'" class="text-muted small ms-1">- {{ event.player_number }}</span>
+                  <span v-if="!event.synced" class="pending-badge">Pendiente</span>
+                </div>
+                <button v-if="event.team !== 'sistema'" class="btn-delete-log" @click="pedirEliminarEvento(event)" title="Eliminar">🗑️</button>
+              </li>
+              <li v-if="filteredLog.length === 0" class="empty-log">Sin registros.</li>
+            </ul>
+          </div>
+        </div>
+
+      </div> <!-- Cierre card-body -->
+    </div> <!-- Cierre card principal -->
+
+    <!-- ================= MODALES ================= -->
     <ModalBase
       :show="modalJugador.visible"
       titulo="Ingresar Sanción"
@@ -182,7 +207,7 @@
             type="text"
             v-model="modalJugador.dorsal"
             class="dorsal-input"
-            placeholder="Nº o A-E"
+            placeholder="Nº"
             @keyup.enter="confirmarSancion"
             autofocus
           >
@@ -249,6 +274,7 @@
       @cerrar="modalNotificacion.visible = false"
       @confirmar="ejecutarAccionPendiente"
     />
+
   </div>
 </template>
 
@@ -684,9 +710,7 @@ onUnmounted(() => { if (timerInterval) clearInterval(timerInterval); if (ttoInte
 /* =========================================
    ESTILOS GENERALES
    ========================================= */
-.panel-card { background: #f8fafc; border-radius: 12px; padding: 15px; color: #1e293b; font-family: 'Inter', sans-serif; }
-.header-controls { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
-.header-controls h2 { font-size: 1.25rem; margin: 0; font-weight: 800; color: #0f172a; }
+.panel-card { background: #f8fafc; border-radius: 12px; padding: 15px; color: #1e293b; font-family: 'segoe ui', Tahoma, Verdana, sans-serif;}
 .small-btn { padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; }
 
 /* =========================================
@@ -776,7 +800,7 @@ onUnmounted(() => { if (timerInterval) clearInterval(timerInterval); if (ttoInte
    ========================================= */
 .shirt-wrapper { position: relative; width: 140px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
 .shirt-svg { width: 100%; height: auto; drop-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
-.dorsal-input { position: absolute; width: 50%; top: 35%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 2rem; font-weight: 900; background: transparent; border: none; border-bottom: 2px dashed rgba(255,255,255,0.5); color: white; outline: none; text-transform: uppercase; }
+.dorsal-input { position: absolute; width: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 1.5rem; font-weight: 900; background: transparent; border: none; border-bottom: 2px dashed rgba(255,255,255,0.5); color: white; outline: none; text-transform: uppercase; }
 .dorsal-input::placeholder { color: rgba(255,255,255,0.4); }
 
 /* =========================================
@@ -790,6 +814,7 @@ onUnmounted(() => { if (timerInterval) clearInterval(timerInterval); if (ttoInte
   .btn-action { padding: 10px 0; }
   .icon { font-size: 1.3rem; }
   .score-display { font-size: 3rem; }
+  .w-fit-mobile { width: fit-content; } /* Botón reiniciar del tamaño justo */
 }
 
 @media (min-width: 768px) {
