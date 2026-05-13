@@ -68,13 +68,13 @@
             <div class="field-group">
               <label class="form-label-custom">Equipos *</label>
               <div class="grid-2">
-                <select v-model="formulario.equipo_1" class="sacf-input" required>
+                <select v-model="formulario.eq1_id" class="sacf-input" required>
                   <option value="" disabled>Local</option>
-                  <option v-for="(eq, k) in listas.equipos" :key="k" :value="eq.eq_id">{{ eq.club }}</option>
+                  <option v-for="(eq, k) in listas.equipos" :key="k" :value="k">{{ eq.club }}</option>
                 </select>
-                <select v-model="formulario.equipo_2" class="sacf-input" required>
+                <select v-model="formulario.eq2_id" class="sacf-input" required>
                   <option value="" disabled>Visitante</option>
-                  <option v-for="(eq, k) in listas.equipos" :key="k" :value="eq.eq_id">{{ eq.club }}</option>
+                  <option v-for="(eq, k) in listas.equipos" :key="k" :value="k">{{ eq.club }}</option>
                 </select>
                 <!--
                 <input type="text" v-model="formulario.equipo_1" placeholder="Local" class="sacf-input" required>
@@ -98,13 +98,9 @@
               <div class="col-md-6">
                 <div class="referee-box shadow-sm">
                   <label class="fw-bold mb-2 text-dark small">ÁRBITRO 1</label>
-                  <select v-model="formulario.ref1_nombre" class="sacf-input mb-2" required>
+                  <select v-model="formulario.ref1_id" class="sacf-input mb-2" required>
                     <option value="" disabled>Seleccione Árbitro</option>
-                    <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.nombre">{{arb.apellido}}, {{ arb.nombre }}</option>
-                  </select>
-                  <select v-model="formulario.ref1_group" class="sacf-input" required>
-                    <option value="" disabled>Grupo</option>
-                    <option v-for="g in listas.grupos" :key="g" :value="g">{{ g }}</option>
+                    <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.id">{{arb.apellido}}, {{ arb.nombre }}</option>
                   </select>
                 </div>
               </div>
@@ -112,13 +108,9 @@
               <div class="col-md-6" v-if="formulario.ref_count === '2'">
                 <div class="referee-box shadow-sm anim-fade">
                   <label class="fw-bold mb-2 text-dark small">ÁRBITRO 2</label>
-                  <select v-model="formulario.ref2_nombre" class="sacf-input mb-2" required>
+                  <select v-model="formulario.ref2_id" class="sacf-input mb-2" required>
                     <option value="" disabled>Seleccione Árbitro</option>
-                    <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.nombre">{{arb.apellido}}, {{ arb.nombre }}</option>
-                  </select>
-                  <select v-model="formulario.ref2_group" class="sacf-input" required>
-                    <option value="" disabled>Grupo</option>
-                    <option v-for="g in listas.grupos" :key="g" :value="g">{{ g }}</option>
+                    <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.id">{{arb.apellido}}, {{ arb.nombre }}</option>
                   </select>
                 </div>
               </div>
@@ -149,7 +141,7 @@
               <select v-model="formulario.diff_mult" class="sacf-input" required>
                 <option value="" disabled>Seleccione dificultad</option>
                 <option v-for="d in listas.dificultades" :key="d.valor" :value="d.valor">
-                  x {{ d.valor }} - {{ d.nombre }}
+                  x {{ d.valor }} - {{ d.leyenda }}
                 </option>
               </select>
             </div>
@@ -210,13 +202,11 @@ const formulario = reactive({
   partido_categoria: '',
   inf_nivel: '',
   id_categoria_especifica: '',
-  equipo_1: '',
-  equipo_2: '',
+  eq1_id: '',
+  eq2_id: '',
   ref_count: '1',
-  ref1_nombre: '',
-  ref1_group: '',
-  ref2_nombre: '',
-  ref2_group: '',
+  ref1_id: '',
+  ref2_id: '',
   comentarios: '',
   perf_score: null,
   diff_mult: ''
@@ -321,6 +311,10 @@ const enviarFormulario = async () => {
   }
 
   procesando.value = true;
+  formulario.eq1_id = listas.equipos[formulario.eq1_id].id
+  formulario.eq2_id = listas.equipos[formulario.eq2_id].id
+  formulario.eq_nombre1 = listas.equipos[formulario.eq1_id].club
+  formulario.eq_nombre2 = listas.equipos[formulario.eq2_id].club
   try {
     const res = await api.post({
       entity: 'observaciones',

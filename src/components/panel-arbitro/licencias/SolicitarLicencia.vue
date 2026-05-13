@@ -264,7 +264,7 @@ const solicitarLicencia = async () => {
     } else {
       notificar({
         titulo: 'Error',
-        mensaje: res?.payload?.message || "No se pudo procesar la solicitud.",
+        mensaje: res?.message || "No se pudo procesar la solicitud.",
         tipo: 'danger'
       });
     }
@@ -324,7 +324,7 @@ const anularLicencia = (lic) => {
         } else {
           notificar({
             titulo: 'Error',
-            mensaje: res.payload?.message || "No se pudo anular la licencia.",
+            mensaje: res?.message || "No se pudo anular la licencia.",
             tipo: 'danger'
           });
         }
