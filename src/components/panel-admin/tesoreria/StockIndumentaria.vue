@@ -6,7 +6,7 @@
 
         <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
           <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2" style="font-size: 1.25rem;">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
               <i class="bi bi-box-seam-fill me-1"></i> Gestión de Inventario
             </h4>
             <span class="counter mt-1 d-block text-muted">Total: {{ stockFiltrado.length }} modelos</span>

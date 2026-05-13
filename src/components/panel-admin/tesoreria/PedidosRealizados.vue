@@ -6,7 +6,7 @@
 
         <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
           <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2 flex-wrap" style="font-size: 1.25rem;">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
               <i class="bi bi-cart-fill me-1"></i> Gestión de Pedidos
               <span v-if="pedidosNuevos > 0" class="badge bg-danger rounded-pill px-2 py-1 fs-6 d-flex align-items-center animate__animated animate__pulse">
                 <span class="material-icons me-1" style="font-size: 14px;">notifications_active</span>

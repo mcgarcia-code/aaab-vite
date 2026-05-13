@@ -6,7 +6,7 @@
 
         <div class="header-section border-bottom p-4 mb-0 shadow-none rounded-0">
           <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2 flex-wrap" style="font-size: 1.25rem;">
+            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
               <i class="bi bi-building me-1"></i> Gestión de Instituciones
             </h4>
             <span class="counter mt-1 d-block text-muted">Total: {{ totalFiltrados }} clubes</span>

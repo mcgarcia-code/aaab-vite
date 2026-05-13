@@ -1,13 +1,10 @@
 <template>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
   <div class="full-screen-wrapper">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
 
-        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
           <div>
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
               <i class="bi bi-shop me-1"></i> Solicitar Indumentaria
