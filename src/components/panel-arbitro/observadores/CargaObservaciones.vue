@@ -202,6 +202,8 @@ const formulario = reactive({
   partido_categoria: '',
   inf_nivel: '',
   id_categoria_especifica: '',
+  eq_nombre1:'',
+  eq_nombre2:'',
   eq1_id: '',
   eq2_id: '',
   ref_count: '1',
@@ -311,10 +313,10 @@ const enviarFormulario = async () => {
   }
 
   procesando.value = true;
-  formulario.eq1_id = listas.equipos[formulario.eq1_id].id
-  formulario.eq2_id = listas.equipos[formulario.eq2_id].id
   formulario.eq_nombre1 = listas.equipos[formulario.eq1_id].club
   formulario.eq_nombre2 = listas.equipos[formulario.eq2_id].club
+  formulario.eq1_id = listas.equipos[formulario.eq1_id].eq_id
+  formulario.eq2_id = listas.equipos[formulario.eq2_id].eq_id
   try {
     const res = await api.post({
       entity: 'observaciones',
