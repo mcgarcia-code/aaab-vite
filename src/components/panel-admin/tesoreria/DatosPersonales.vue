@@ -1,21 +1,18 @@
 <template>
-  <!-- Usamos px-3 px-md-4 para el padding responsivo que tenías en .full-screen-wrapper -->
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div>
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
+          <div class="border-start border-danger border-5 ps-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-people-fill me-1"></i> Datos Personales
             </h4>
             <span class="text-muted small d-block mt-1">Total: {{ totalFiltrados }} registros</span>
           </div>
 
-          <!-- Botones de Acción -->
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <!-- Botón de filtros (Solo visible en celular) -->
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
@@ -30,7 +27,6 @@
           </div>
         </div>
 
-        <!-- Panel de Filtros Único (Colapsable en celular, siempre visible en PC) -->
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Registros</span>
@@ -68,91 +64,76 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
 
-          <!-- ESTADO SIN RESULTADOS -->
-          <div v-if="datosPaginados.length === 0" class="text-center p-5 bg-light m-3 rounded border">
-            <span class="material-icons text-muted opacity-50" style="font-size: 40px;">search_off</span>
-            <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron registros.</p>
+          <div v-if="datosPaginados.length === 0" class="text-center p-4 p-md-5 bg-light m-3 rounded shadow-sm border border-light-subtle">
+            <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">search_off</span>
+            <p class="text-muted m-0 fw-bold">No se encontraron registros.</p>
           </div>
 
-          <!-- LISTA UNIFICADA -->
-          <div v-else class="border-top border-md-0 shadow-none shadow-md-sm rounded-0 rounded-md overflow-hidden">
-
-            <!-- Encabezado de Columnas (Solo Escritorio) -->
-            <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">
-              <div class="col-md-1 ps-2 ">ID</div>
+          <div v-else class="border shadow-sm rounded-3 overflow-hidden border-light-subtle bg-white">
+            <div class="row g-0 d-none d-md-flex bg-light border-bottom border-light-subtle p-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">
+              <div class="col-md-1 ps-2">ID</div>
               <div class="col-md-2">Apellido y Nombre</div>
               <div class="col-md-1 text-center">Activo</div>
               <div class="col-md-1 text-center">Grupo</div>
               <div class="col-md-2 text-center">F. Nac</div>
               <div class="col-md-2 text-center">Celular</div>
               <div class="col-md-1 text-center">DNI</div>
-              <div class="col-md-2">Email</div>
+              <div class="col-md-2 pe-2 text-end">Email</div>
             </div>
 
-            <!-- Filas de Datos -->
             <div class="d-flex flex-column">
-              <div v-for="a in datosPaginados" :key="a.id" class="row g-0 align-items-center p-3 p-md-2 border-bottom item-row" :class="{ 'bg-danger-subtle': a.es_activo == 0, 'bg-white': a.es_activo != 0 }">
+              <div v-for="a in datosPaginados" :key="a.id" class="row g-0 align-items-center p-3 p-md-2 border-bottom border-light-subtle item-row" :class="{ 'bg-danger-subtle': a.es_activo == 0, 'bg-white': a.es_activo != 0 }">
 
-                <!-- HEADER MOBILE: Nombre, ID y Estado (Se oculta en escritorio) -->
-                <div class="col-12 d-md-none d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" :class="{'border-danger': a.es_activo == 0}">
+                <div class="col-12 d-md-none d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" :class="a.es_activo == 0 ? 'border-danger' : 'border-secondary-subtle'">
                   <div class="d-flex align-items-center gap-2">
                     <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'" style="width: 10px; height: 10px; border-radius: 50%;"></span>
-                    <strong class="text-dark fs-6">{{ a.apellido }}, {{ a.nombre }}</strong>
+                    <strong class="text-dark fs-6 text-uppercase">{{ a.apellido }}, {{ a.nombre }}</strong>
                   </div>
-                  <span class="text-muted small">ID: {{ a.id }}</span>
+                  <span class="text-muted small fw-bold font-monospace">#{{ a.id }}</span>
                 </div>
 
-                <!-- INFO MOBILE: Resto de datos (Se oculta en escritorio) -->
-                <div class="col-12 d-md-none small text-dark d-flex flex-column gap-1">
-                  <div class="d-flex justify-content-between">
-                    <span><strong>DNI:</strong> {{ a.dni || '-' }}</span>
+                <div class="col-12 d-md-none small text-dark d-flex flex-column gap-2 bg-light p-2 rounded border border-light-subtle" :class="{'bg-transparent border-0': a.es_activo == 0}">
+                  <div class="d-flex justify-content-between border-bottom pb-1" :class="{'border-danger-subtle': a.es_activo == 0, 'border-secondary-subtle': a.es_activo != 0}">
+                    <span><strong>DNI:</strong> <span class="font-monospace">{{ a.dni || '-' }}</span></span>
                     <span><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
                   </div>
-                  <div v-if="a.fecha_nacimiento"><strong>F. Nacimiento:</strong> {{ mostrarFechaArg(a.fecha_nacimiento) }}</div>
+                  <div v-if="a.fecha_nacimiento"><strong>F. Nac:</strong> {{ mostrarFechaArg(a.fecha_nacimiento) }}</div>
                   <div v-if="a.celular"><strong>Celular:</strong> {{ a.celular }}</div>
-                  <div v-if="a.email"><strong>Email:</strong> {{ a.email }}</div>
+                  <div class="text-truncate" v-if="a.email"><strong>Email:</strong> {{ a.email }}</div>
                 </div>
 
-                <!-- COL 1: ID (Escritorio) -->
-                <div class="col-md-1 d-none d-md-block ps-2 small fw-bold" :class="a.es_activo == 0 ? 'text-danger' : 'text-muted'">
+                <div class="col-md-1 d-none d-md-block ps-2 small font-monospace fw-bold" :class="a.es_activo == 0 ? 'text-danger' : 'text-muted'">
                   {{ a.id }}
                 </div>
 
-                <!-- COL 2: NOMBRE (Escritorio) -->
-                <div class="col-md-2 d-none d-md-block text-dark small fw-bold text-truncate pe-2">
+                <div class="col-md-2 d-none d-md-block text-dark small fw-bold text-uppercase text-truncate pe-2" :title="a.apellido + ', ' + a.nombre">
                   {{ a.apellido }}, {{ a.nombre }}
                 </div>
 
-                <!-- COL 3: ESTADO (Escritorio) -->
                 <div class="col-md-1 d-none d-md-flex justify-content-center">
                   <div class="d-flex align-items-center gap-1">
                     <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'" style="width: 8px; height: 8px; border-radius: 50%;"></span>
-                    <span class="small" :class="a.es_activo == 0 ? 'text-danger fw-bold' : 'text-dark'">{{ a.es_activo == 1 ? 'SI' : 'NO' }}</span>
+                    <span class="small fw-bold" :class="a.es_activo == 0 ? 'text-danger' : 'text-dark'">{{ a.es_activo == 1 ? 'SI' : 'NO' }}</span>
                   </div>
                 </div>
 
-                <!-- COL 4: GRUPO (Escritorio) -->
-                <div class="col-md-1 d-none d-md-block text-center small text-dark">
-                  {{ a.grupo }}<span v-if="a.subgrupo" class="text-muted">/{{ a.subgrupo }}</span>
+                <div class="col-md-1 d-none d-md-block text-center small fw-bold text-dark">
+                  {{ a.grupo }}<span v-if="a.subgrupo" class="text-muted fw-normal">/{{ a.subgrupo }}</span>
                 </div>
 
-                <!-- COL 5: F NACIMIENTO (Escritorio) -->
                 <div class="col-md-2 d-none d-md-block text-center small text-dark">
-                  {{ mostrarFechaArg(a.fecha_nacimiento) }}
+                  {{ mostrarFechaArg(a.fecha_nacimiento) || '-' }}
                 </div>
 
-                <!-- COL 6: CELULAR (Escritorio) -->
                 <div class="col-md-2 d-none d-md-block text-center small text-dark">
                   {{ a.celular || '-' }}
                 </div>
 
-                <!-- COL 7: DNI (Escritorio) -->
-                <div class="col-md-1 d-none d-md-block text-center small fw-bold text-dark">
-                  {{ a.dni }}
+                <div class="col-md-1 d-none d-md-block text-center small fw-bold text-dark font-monospace">
+                  {{ a.dni || '-' }}
                 </div>
 
-                <!-- COL 8: EMAIL (Escritorio) -->
-                <div class="col-md-2 d-none d-md-block small text-dark text-truncate pe-2">
+                <div class="col-md-2 d-none d-md-block small text-dark text-truncate pe-2 text-end" :title="a.email">
                   {{ a.email || '-' }}
                 </div>
 
@@ -160,13 +141,12 @@
             </div>
           </div>
 
-          <!-- Paginación -->
           <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3 mb-md-0" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border border-light-subtle" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
             </button>
             <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border border-light-subtle" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
@@ -279,13 +259,12 @@ onMounted(cargarDatos);
 
 <style scoped>
 /* ====================================================
-   ESTILOS BASE (DISEÑO PARA CELULARES - MOBILE FIRST)
+   ESTILOS BASE
    ==================================================== */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
   min-height: 100vh;
-  height: auto !important;
   margin-left: 50%;
   transform: translateX(-50%);
   padding-bottom: 120px;
@@ -294,21 +273,29 @@ onMounted(cargarDatos);
 .admin-panel {
   width: 100%;
   background-color: #0f172a;
-  min-height: calc(100vh - 40px);
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
+  min-height: 100vh;
+  border-radius: 12px;
 }
 
-/* Efecto hover general de las filas */
+/* ====================================================
+   EFECTOS HOVER DE FILAS
+   ==================================================== */
 .item-row {
   transition: background-color 0.2s ease;
 }
 
-/* Si la fila es blanca, se pone gris claro. Si es roja claro (inactivo), se oscurece un poco. */
 .item-row.bg-white:hover {
-  background-color: #f8fafc !important;
+  background-color: #f8fafc !important; /* Gris muy clarito para activos */
 }
+
 .item-row.bg-danger-subtle:hover {
-  background-color: #fca5a5 !important;
+  background-color: #fca5a5 !important; /* Rojo un poco más oscuro para inactivos */
+}
+
+/* Utilidades generales */
+.status-dot {
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 .animate__animated { animation-duration: 0.5s; }
