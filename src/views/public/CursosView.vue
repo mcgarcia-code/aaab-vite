@@ -1,52 +1,74 @@
 <template>
-  <div class="dark-background-section py-5">
+  <div class="dark-background-section py-5 animate__animated animate__fadeIn">
     <div class="container my-5">
+
       <div class="text-center mb-5">
-        <h1 class="fw-bold text-white">Cursos de Árbitros</h1>
-        <p class="lead text-white-50">Explora nuestros próximos cursos y capacitaciones.</p>
+        <h1 class="fw-bold text-white display-5">Cursos de Árbitros</h1>
+        <p class="lead text-white-50 mb-0">Explora nuestros próximos cursos y capacitaciones.</p>
       </div>
 
       <div class="row justify-content-center g-4">
-        <div v-for="(curso, index) in cursos" :key="index" class="col-md-6 col-lg-5">
-          <div class="card h-100 course-card">
-            <img :src="curso.image" class="card-img-top" :alt="curso.title" />
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title fw-bold text-dark">{{ curso.title }}</h5>
-              <p class="card-text text-muted mb-3">{{ curso.description }}</p>
-              <ul class="list-group list-group-flush mb-4 flex-grow-1">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span><i class="bi bi-calendar me-2"></i>Fecha Inicio:</span>
-                  <span class="fw-bold text-dark">{{ curso.startDate }}</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span><i class="bi bi-clock me-2"></i>Duración:</span>
+        <div v-for="(curso, index) in cursos" :key="index" class="col-12 col-md-6 col-lg-5">
+          <div class="card h-100 border-0 rounded-4 overflow-hidden course-card shadow-lg">
+
+            <div class="position-relative">
+              <img :src="curso.image" class="card-img-top" :alt="curso.title" style="height: 220px; object-fit: cover;" />
+              <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(to bottom, transparent 70%, rgba(0,0,0,0.4));"></div>
+            </div>
+
+            <div class="card-body p-4 d-flex flex-column">
+              <h5 class="card-title fw-bold text-dark mb-2">{{ curso.title }}</h5>
+              <p class="card-text text-secondary small mb-4 flex-grow-1">{{ curso.description }}</p>
+
+              <div class="d-flex flex-column gap-3 mb-4 bg-light p-3 rounded-3 border border-light-subtle">
+                <div class="d-flex justify-content-between align-items-center small">
+                  <span class="text-muted fw-bold d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar text-danger"></i> Inicio
+                  </span>
+                  <span class="fw-bold text-dark text-end">{{ curso.startDate }}</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center small">
+                  <span class="text-muted fw-bold d-flex align-items-center gap-2">
+                    <i class="bi bi-clock text-danger"></i> Duración
+                  </span>
                   <span class="fw-bold text-dark">{{ curso.duration }}</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <span><i class="bi bi-geo-alt me-2"></i>Modalidad:</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center small">
+                  <span class="text-muted fw-bold d-flex align-items-center gap-2">
+                    <i class="bi bi-geo-alt text-danger"></i> Modalidad
+                  </span>
                   <span class="fw-bold text-dark">{{ curso.modality }}</span>
-                </li>
-              </ul>
-              <div class="mt-auto d-flex justify-content-between">
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 mt-auto pt-2">
                 <a
                   :href="curso.detailsLink"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="btn btn-outline-secondary me-2"
-                  >Más detalles</a
+                  class="btn btn-light fw-bold flex-grow-1 border shadow-sm"
+                  style="font-size: 0.9rem;"
                 >
+                  Más detalles
+                </a>
                 <a
                   :href="curso.enrollLink"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="btn btn-danger"
-                  >Inscribirme</a
+                  class="btn btn-danger fw-bold flex-grow-1 shadow-sm"
+                  style="font-size: 0.9rem;"
                 >
+                  Inscribirme
+                </a>
               </div>
             </div>
+
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -119,50 +141,32 @@ const cursos = ref([
 </script>
 
 <style scoped>
-/* Código CSS limpio y sin caracteres invisibles */
+/* ====================================================
+   FONDO Y SECCIÓN PRINCIPAL
+   ==================================================== */
 .dark-background-section {
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('../../assets/fotos/cursos-background.webp');
+  /* Usamos un color oscuro con opacidad para que el texto resalte sobre la foto */
+  background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url('../../assets/fotos/cursos-background.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   min-height: 100vh;
-  padding-top: 70px;
 }
 
+/* ====================================================
+   EFECTO DE TARJETAS
+   ==================================================== */
 .course-card {
-  border: none;
-  border-radius: 0.75rem;
-  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
-  transition:
-    transform 0.3s ease-in-out,
-    box-shadow 0.3s ease-in-out;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .course-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.4) !important;
 }
 
-.card-img-top {
-  border-top-left-radius: 0.75rem;
-  border-top-right-radius: 0.75rem;
-  height: 200px;
-  object-fit: cover;
+.animate__animated {
+  animation-duration: 0.8s;
 }
 
-.list-group-item {
-  border-color: rgba(0, 0, 0, 0.05);
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.list-group-item i {
-  color: var(--aaab-primary); /* Usamos el color primario global */
-}
-
-.btn-danger {
-  background-color: var(--bs-danger);
-  border-color: var(--bs-danger);
-}
 </style>
