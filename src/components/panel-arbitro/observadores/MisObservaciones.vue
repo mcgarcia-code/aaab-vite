@@ -53,10 +53,15 @@
             </thead>
             <tbody>
               <tr v-for="obs in observacionesPaginadas" :key="obs.id" class="row-hover">
-                <td class="ps-4 cell-ro text-muted fw-bold">{{ obs.fecha }}</td>
-                <td class="cell-ro fw-bold text-dark">{{ obs.arbitro_nombre }}</td>
-                <td class="cell-ro">{{ obs.categoria }}</td>
-                <td class="text-center cell-ro fw-bold text-danger">{{ obs.puntaje }}</td>
+                <td class="ps-4 cell-ro text-muted fw-bold">{{ obs.fecha_partido }}</td>
+                <td class="cell-ro fw-bold text-dark">
+                  <div>{{ obs.arb1_apellido }}, {{ obs.arb1_nombre }}</div>
+                  <div v-if="obs.arb2_apellido || obs.arb2_nombre">
+                    {{ obs.arb2_apellido }}, {{ obs.arb2_nombre }}
+                  </div>
+                </td>
+                <td class="cell-ro">{{ obs.categoria }} {{ obs.division }} - {{ obs.genero }}</td>
+                <td class="text-center cell-ro fw-bold text-danger">{{ obs.puntaje_final }}</td>
                 <td class="text-center cell-ro">
                   <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-3">Ver Detalle</button>
                 </td>
@@ -74,17 +79,20 @@
           <div v-for="obs in observacionesPaginadas" :key="'mob-'+obs.id" class="card-licencia shadow-sm border">
             <div class="card-header border-bottom-0 pb-0 bg-transparent px-0 pt-1">
               <div class="card-name text-uppercase">
-                <strong>{{ obs.arbitro_nombre }}</strong>
+                <div>{{ obs.arb1_apellido }}, {{ obs.arb1_nombre }}</div>
+                  <div v-if="obs.arb2_apellido || obs.arb2_nombre">
+                    {{ obs.arb2_apellido }}, {{ obs.arb2_nombre }}
+                  </div>
               </div>
             </div>
 
             <div class="card-body pt-2 px-0 pb-1">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <div class="text-xs text-muted fw-bold">
-                  {{ obs.fecha }} <span class="mx-1">•</span> {{ obs.categoria }}
+                  {{ obs.fecha_partido }} <span class="mx-1">•</span> {{ obs.categoria }} {{ obs.division }} - {{ obs.genero }}
                 </div>
                 <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1 fw-bold" style="font-size: 0.7rem;">
-                  Puntaje: {{ obs.puntaje }}
+                  Puntaje: {{ obs.puntaje_final }}
                 </span>
               </div>
               <button class="btn btn-dark btn-sm w-100 rounded-pill mt-2 fw-bold shadow-sm">VER DETALLE COMPLETO</button>
@@ -115,7 +123,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, inject } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 
@@ -159,8 +167,11 @@ const cambiarPagina = (delta) => {
 };
 
 const obtenerObservaciones = async () => {
-  // Aquí iría tu lógica de API para cargar las observaciones reales
-  // Por ahora se mantiene el array vacío o con la lógica de carga necesaria
+  const r = await api.get({
+    entity: 'observaciones',
+    action: 'obtenerObservacionesRealizadas',
+  })
+  observaciones.value = r.payload
 };
 
 onMounted(obtenerObservaciones);

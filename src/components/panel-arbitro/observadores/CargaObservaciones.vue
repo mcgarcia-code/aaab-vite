@@ -76,11 +76,15 @@
                   <option value="" disabled>Visitante</option>
                   <option v-for="(eq, k) in listas.equipos" :key="k" :value="k">{{ eq.club }}</option>
                 </select>
-                <!--
-                <input type="text" v-model="formulario.equipo_1" placeholder="Local" class="sacf-input" required>
-                <input type="text" v-model="formulario.equipo_2" placeholder="Visitante" class="sacf-input" required>
-                -->
               </div>
+            </div>
+            <div class="field-group mt-2">
+              <label class="form-label-custom">Fecha del partido</label>
+              <input
+                type="date"
+                v-model="formulario.fecha_partido"
+                class="form-control form-control-lg custom-input-date shadow-none"
+              >
             </div>
           </section>
 
@@ -202,6 +206,7 @@ const formulario = reactive({
   partido_categoria: '',
   inf_nivel: '',
   id_categoria_especifica: '',
+  categoria: '',
   eq_nombre1:'',
   eq_nombre2:'',
   eq1_id: '',
@@ -211,6 +216,7 @@ const formulario = reactive({
   ref2_id: '',
   comentarios: '',
   perf_score: null,
+  fecha_partido: null,
   diff_mult: ''
 })
 
@@ -313,6 +319,7 @@ const enviarFormulario = async () => {
   }
 
   procesando.value = true;
+  formulario.categoria = formulario.partido_categoria == 'Mayores' ? 'Mayores' : listas.divisiones_categorias[formulario.id_categoria_especifica].categoria
   formulario.eq_nombre1 = listas.equipos[formulario.eq1_id].club
   formulario.eq_nombre2 = listas.equipos[formulario.eq2_id].club
   formulario.eq1_id = listas.equipos[formulario.eq1_id].eq_id
