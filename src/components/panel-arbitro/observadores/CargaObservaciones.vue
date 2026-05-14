@@ -283,7 +283,7 @@ const setDivisiones = () => {
 
 const obtenerEquipos = async () => {
   let categoria = ''
-  if (formulario.id_categoria_especifica != '') {
+  if (formulario.id_categoria_especifica !== '') {
     categoria = listas.divisiones_categorias[formulario.id_categoria_especifica].categoria
   }
   const r = await api.get({
