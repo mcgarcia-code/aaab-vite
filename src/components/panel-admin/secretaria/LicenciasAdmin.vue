@@ -1,178 +1,179 @@
 <template>
-  <div class="full-screen-wrapper">
+  <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <div class="header-section border-bottom p-4 mb-0 rounded-0 shadow-none">
-          <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
+        <!-- HEADER RESPONSIVO -->
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div class="border-start border-danger border-5 ps-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-calendar-event me-1"></i> Gestión de Licencias
             </h4>
-            <span class="counter mt-1 d-block">Total: {{ licenciasFiltradas.length }} licencias</span>
+            <span class="text-muted small d-block mt-1">Total: {{ licenciasFiltradas.length }} licencias</span>
           </div>
 
-          <div class="header-actions">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue d-md-none" title="Mostrar Filtros">
-              <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <!-- Botón Recargar (Movido acá) -->
+            <button @click="obtenerLicencias" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
 
-            <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
-              <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
+            <!-- Botón Filtros (Solo Móvil) -->
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+              <span class="material-icons fs-6">filter_alt</span>
             </button>
 
-            <button @click="abrirModalNuevo" class="btn-action btn-clear-checks" title="Nueva Licencia">
-              <span class="material-icons">person_add</span> <span class="btn-text">Nuevo</span>
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
 
-            <button @click="exportarExcel" class="btn-action btn-export" title="Exportar a Excel">
-              <span class="material-icons">download</span> <span class="btn-text">Excel</span>
+            <button @click="abrirModalNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+              <span class="material-icons fs-6">person_add</span>
+              <span class="fw-bold d-none d-md-inline small">Nuevo</span>
+            </button>
+
+            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
+              <span class="material-icons fs-6">download</span>
+              <span class="fw-bold d-none d-md-inline small">Excel</span>
             </button>
           </div>
         </div>
 
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR LICENCIAS</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-              <span class="material-icons" style="font-size: 20px;">close</span>
-            </button>
+        <!-- PANEL DE FILTROS UNIFICADO -->
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
+          <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Licencias</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
-            <div class="filter-grid-mobile">
-              <input v-model="filtros.apellido" placeholder="Apellido..." class="filter-input-mobile">
-              <input v-model="filtros.nombre" placeholder="Nombre..." class="filter-input-mobile">
-
-              <select v-model="filtros.estado" class="filter-input-mobile full-width">
-                <option value="">Estado (Todos)</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="aprobada">Aprobada</option>
-                <option value="rechazada">Rechazada</option>
-              </select>
-
-              <input type="text" v-model="filtros.fecha_solicitud" placeholder="F. Solicitud (DD/MM/AAAA)" class="filter-input-mobile">
-              <input type="text" v-model="filtros.fecha" placeholder="F. Ausencia (DD/MM/AAAA)" class="filter-input-mobile">
+          <div class="row g-2">
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido...">
             </div>
-
-            <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm">Aplicar Filtros</button>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre...">
+            </div>
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none font-monospace">
+                <option value="">ESTADO (TODOS)</option>
+                <option value="pendiente">PENDIENTE</option>
+                <option value="aprobada">APROBADA</option>
+                <option value="rechazada">RECHAZADA</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-3">
+              <input type="text" v-model="filtros.fecha_solicitud" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. Solicitud (DD/MM/AAAA)">
+            </div>
+            <div class="col-6 col-md-3">
+              <input type="text" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. Ausencia (DD/MM/AAAA)">
+            </div>
+            <div class="col-12 d-md-none mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+            </div>
+          </div>
         </div>
 
-          <div class="table-container shadow d-none d-md-block">
-            <table>
-              <thead>
-                <tr class="main-header">
-                  <th class="sticky-col col-id">ID</th>
-                  <th class="sticky-col col-acciones text-center">Acciones</th>
-                  <th class="sticky-col col-apellido">Apellido</th>
-                  <th class="sticky-col col-nombre">Nombre</th>
-                  <th class="text-center" style="min-width: 120px;">Estado</th>
-                  <th class="text-center">Motivo</th>
-                  <th class="text-center">F. Solicitud</th>
-                  <th class="text-center">F. Licencia</th>
-                </tr>
-                <tr class="filter-row">
-                  <td class="sticky-col col-id text-center align-middle">
-                    <button @click="obtenerLicencias" class="btn-refresh mx-auto d-flex align-items-center justify-content-center" title="Recargar">
-                      <span class="material-icons" style="font-size: 16px;">refresh</span>
-                    </button>
-                  </td>
-                  <td class="sticky-col col-acciones"></td>
-                  <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar.."></td>
-                  <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar.."></td>
-                  <td>
-                    <select v-model="filtros.estado" class="filter-input text-center">
-                      <option value="">TODOS</option>
-                      <option value="pendiente">PENDIENTE</option>
-                      <option value="aprobada">APROBADA</option>
-                      <option value="rechazada">RECHAZADA</option>
-                    </select>
-                  </td>
-                  <td></td>
-                  <td><input v-model="filtros.fecha_solicitud" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
-                  <td><input v-model="filtros.fecha" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
+        <div class="card-body p-0 p-md-3 bg-white">
+
+          <!-- TABLA (Solo Escritorio) -->
+          <div class="d-none d-md-block table-responsive border rounded shadow-sm">
+            <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem;">
+              <thead class="table-light">
+                <tr>
+                  <th class="py-3 ps-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 1px;">ID</th>
+                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
+                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro</th>
+                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
+                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Motivo</th>
+                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">F. Solicitud</th>
+                  <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">F. Ausencia</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="lic in licenciasPaginadas" :key="lic.id">
-                  <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ lic.id }}</td>
-                  <td class="sticky-col col-acciones cell-ro text-center">
+                  <td class="ps-3 text-muted fw-bold font-monospace">{{ lic.id }}</td>
+                  <td class="text-center">
                     <div class="d-flex justify-content-center gap-1">
-                      <button @click="editarLicencia(lic)" class="btn-editar" title="Editar Licencia">
+                      <button @click="editarLicencia(lic)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar Licencia">
                         <span class="material-icons" style="font-size:16px;">edit</span>
                       </button>
-                      <button @click="verHistorialLicencia(lic)" class="btn-historial" title="Ver Historial">
+                      <button @click="verHistorialLicencia(lic)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver Historial">
                         <span class="material-icons" style="font-size:16px;">manage_search</span>
                       </button>
-                      <button @click="eliminarLicencia(lic.id)" class="btn-eliminar" title="Eliminar">
+                      <button @click="eliminarLicencia(lic.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
                         <span class="material-icons" style="font-size:16px;">delete</span>
                       </button>
                     </div>
                   </td>
-                  <td class="sticky-col col-apellido cell-ro fw-bold">{{ lic.apellido }}</td>
-                  <td class="sticky-col col-nombre cell-ro fw-bold">{{ lic.nombre }}</td>
-                  <td class="text-center cell-ro">
-                    <span :class="['badge-status', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
+                  <td class="fw-bold text-uppercase text-dark">{{ lic.apellido }}, {{ lic.nombre }}</td>
+                  <td class="text-center">
+                    <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
                   </td>
-                  <td class="text-center cell-ro text-muted small">
-                    {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}
-                  </td>
-                  <td class="text-center cell-ro">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
-                  <td class="text-center cell-ro fw-bold text-primary">{{ formatearFechaVista(lic.fecha_licencia) }}</td>
-                </tr>
-                <tr v-if="licenciasPaginadas.length === 0">
-                  <td colspan="8" class="text-center py-5 text-muted bg-light italic">No se encontraron licencias.</td>
+                  <td class="text-muted small">{{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</td>
+                  <td class="text-center text-muted fw-bold">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
+                  <td class="text-center pe-3 text-primary fw-bold">{{ formatearFechaVista(lic.fecha_licencia) }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <div class="d-md-none mt-3">
-            <div v-for="lic in licenciasPaginadas" :key="'mob-'+lic.id" class="card-licencia border shadow-sm bg-white rounded mb-3">
-              <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start bg-transparent">
-                <div class="fw-bold text-dark fs-6 card-name">
+          <!-- CARDS (Solo Celular) -->
+          <div class="d-md-none p-3 bg-light">
+            <div v-for="lic in licenciasPaginadas" :key="'mob-'+lic.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
+
+              <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
+                <div class="text-uppercase text-dark fw-bold" style="font-size: 1.05rem;">
                   {{ lic.apellido }}, {{ lic.nombre }}
                 </div>
-                <span class="text-muted small fw-bold">#{{ lic.id }}</span>
+                <div class="small text-muted fw-bold font-monospace">#{{ lic.id }}</div>
               </div>
 
-              <div class="px-3 pt-1 pb-2 border-bottom">
-                <div class="d-flex justify-content-start align-items-center gap-2">
-                  <span class="fw-bold text-dark fs-5">{{ formatearFechaVista(lic.fecha_licencia) }}</span>
-                  <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
-                </div>
-              </div>
-
-              <div class="card-body p-3">
-                <div class="card-info mb-3">
-                  <p class="text-muted small mb-1">
-                    <strong class="text-dark">Motivo:</strong> {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión / Enfermedad' : 'Particular' }}
-                  </p>
-                  <p class="text-muted small mb-0">
-                    <strong class="text-dark">F. Solicitud:</strong> {{ formatearFechaVista(lic.fecha_solicitud) }}
-                  </p>
+              <div class="card-body pt-0 px-3 pb-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="fw-bold text-primary fs-5">{{ formatearFechaVista(lic.fecha_licencia) }}</span>
+                  <span :class="['badge-status-sm', lic.estado]" style="font-size: 0.7rem; padding: 3px 10px;">{{ lic.estado.toUpperCase() }}</span>
                 </div>
 
+                <div class="bg-light p-2 rounded border small mb-3">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Motivo:</span>
+                    <span class="fw-bold text-dark">{{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">Solicitada:</span>
+                    <span class="fw-bold text-dark">{{ formatearFechaVista(lic.fecha_solicitud) }}</span>
+                  </div>
+                </div>
+
+                <!-- Botones Acciones -->
                 <div class="d-flex gap-2">
-                  <button @click="editarLicencia(lic)" class="btn-editar-mobile flex-grow-1">
-                    <span class="material-icons" style="font-size: 18px;">edit</span> Editar
+                  <button @click="editarLicencia(lic)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                    <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
                   </button>
-                  <button @click="verHistorialLicencia(lic)" class="btn-historial-mobile flex-grow-0">
+                  <button @click="verHistorialLicencia(lic)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
                     <span class="material-icons" style="font-size: 18px;">manage_search</span>
                   </button>
-                  <button @click="eliminarLicencia(lic.id)" class="btn-eliminar-mobile flex-grow-0">
+                  <button @click="eliminarLicencia(lic.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
                     <span class="material-icons" style="font-size: 18px;">delete</span>
                   </button>
                 </div>
               </div>
-            </div>
 
-            <div v-if="licenciasPaginadas.length === 0" class="text-center p-4 bg-white rounded shadow-sm border mt-2">
-              <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-              <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron licencias.</p>
             </div>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
+          <!-- EMPTY STATE -->
+          <div v-if="licenciasPaginadas.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-3">
+            <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">search_off</span>
+            <p class="text-muted m-0 fw-bold">No se encontraron licencias.</p>
+          </div>
+
+          <!-- PAGINACIÓN -->
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
             <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
             </button>
@@ -182,9 +183,15 @@
             </button>
           </div>
 
+        </div>
       </div>
     </div>
 
+    <!-- ==============================================
+         MODALES
+         ============================================== -->
+
+    <!-- Modal Formulario -->
     <ModalBase
       :show="mostrarModal"
       @close="cerrarModal"
@@ -203,10 +210,9 @@
 
       <form id="formLicencia" @submit.prevent="modoModal === 'editar' ? confirmarEdicion() : confirmarAlta()" class="text-start mt-2">
         <div class="row g-3">
-
           <div class="col-12" v-if="modoModal === 'nuevo'">
             <label class="small fw-bold text-dark mb-1">Seleccionar Árbitro *</label>
-            <select v-model="formModal.id_arbitro" class="form-select border-primary-subtle shadow-none" required>
+            <select v-model="formModal.id_arbitro" class="form-select border-secondary-subtle shadow-none" required>
               <option value="" disabled>Elegir árbitro...</option>
               <option v-for="arb in arbitrosLista" :key="arb.id" :value="arb.id">
                 {{ arb.apellido }}, {{ arb.nombre }}
@@ -238,25 +244,21 @@
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Fecha Ausencia *</label>
-            <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-primary-subtle" required>
+            <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-secondary-subtle" required>
           </div>
-
         </div>
       </form>
 
       <template #footer>
-        <div class="w-100 d-flex justify-content-center gap-3">
-          <button type="button" @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border">CANCELAR</button>
-
-          <button type="submit" form="formLicencia" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargando">
-            <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
-            {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR LICENCIA' }}
-          </button>
-        </div>
+        <button type="button" @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button type="submit" form="formLicencia" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
+          <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
+          {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR LICENCIA' }}
+        </button>
       </template>
     </ModalBase>
 
-
+    <!-- Modal Historial -->
     <ModalBase
       :show="mostrarModalHistorial"
       @close="mostrarModalHistorial = false"
@@ -275,28 +277,24 @@
         <span class="spinner-border text-warning"></span>
       </div>
 
-      <div v-else-if="historialLicencia.length === 0" class="text-center py-5 text-muted bg-light rounded-4 shadow-sm border border-light-subtle">
-        <span class="material-icons d-block mb-3" style="font-size: 50px; color: #cbd5e1;">history_toggle_off</span>
-        <p class="mb-0 fw-bold fs-5 text-dark">Sin registros</p>
-        <p class="small">No hay licencias previas en el historial.</p>
+      <div v-else-if="historialLicencia.length === 0" class="text-center py-4 text-muted bg-light border rounded">
+        No hay registros en el historial.
       </div>
 
-<div v-else>
+      <div v-else>
+        <!-- Tabla Historial (Escritorio) -->
         <div class="table-responsive d-none d-md-block bg-white rounded shadow-sm border border-light-subtle">
-
           <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem; table-layout: fixed; width: 100%;">
-
-            <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
+            <thead class="table-light">
               <tr>
-                <th class="py-2 ps-3 fw-bold text-uppercase" style="width: 130px; font-size: 0.75rem;">F. Solicitud</th>
-                <th class="py-2 fw-bold text-uppercase" style="width: 130px; font-size: 0.75rem;">F. Ausencia</th>
-                <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Motivo</th>
-                <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="width: 120px; font-size: 0.75rem;">Estado</th>
+                <th class="py-2 ps-3 fw-bold text-uppercase text-muted" style="width: 130px; font-size: 0.75rem;">F. Solicitud</th>
+                <th class="py-2 fw-bold text-uppercase text-muted" style="width: 130px; font-size: 0.75rem;">F. Ausencia</th>
+                <th class="py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Motivo</th>
+                <th class="text-center py-2 pe-3 fw-bold text-uppercase text-muted" style="width: 120px; font-size: 0.75rem;">Estado</th>
               </tr>
             </thead>
-
             <tbody>
-              <tr v-for="h in historialLicencia" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
+              <tr v-for="h in historialLicencia" :key="h.id">
                 <td class="text-nowrap text-muted fw-bold py-3 ps-3">{{ formatearFechaVista(h.fecha_solicitud) }}</td>
                 <td class="text-nowrap text-primary fw-bold py-3">{{ formatearFechaVista(h.fecha_licencia) }}</td>
                 <td class="text-muted py-3" style="white-space: normal; word-wrap: break-word;">
@@ -310,9 +308,9 @@
           </table>
         </div>
 
-
-        <div class="d-block d-md-none">
-          <div v-for="h in historialLicencia" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-4 p-3 mb-3 shadow-sm bg-light">
+        <!-- Tarjetas Historial (Móvil) -->
+        <div class="d-md-none d-flex flex-column gap-2">
+          <div v-for="h in historialLicencia" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-3 p-3 shadow-sm bg-light">
             <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
               <span class="fw-bold text-primary fs-5">{{ formatearFechaVista(h.fecha_licencia) }}</span>
               <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
@@ -461,8 +459,6 @@ const confirmarEdicion = async () => {
   const res = await api.post({
     entity: 'licencias',
     action: 'actualizarLicencia',
-    // Ojo: Según el backend PHP actual, actualizarLicencia no guarda cambios de "motivo",
-    // pero lo enviamos por si a futuro ajustás la query SQL del UPDATE.
     payload: {
       id: formModal.value.id,
       estado: formModal.value.estado,
@@ -552,257 +548,44 @@ onMounted(() => {
 
 <style scoped>
 /* ====================================================
-   1. BASE (MOBILE FIRST - CELULARES POR DEFECTO)
+   ESTILOS GENERALES
    ==================================================== */
-
-/* Contenedor principal para celulares */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
   min-height: 100vh;
-  height: auto !important;
   margin-left: 50%;
   transform: translateX(-50%);
-  padding: 0 15px 20px 15px; /* Margen ajustado para celular */
-  box-sizing: border-box;
+  padding-bottom: 120px;
 }
 
 .admin-panel {
   width: 100%;
-  max-width: 100%;
-  padding: 0; /* Sin padding extra en móvil para aprovechar espacio */
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;
   background-color: #0f172a;
   min-height: 100vh;
-  border-radius: 0;
-  box-sizing: border-box;
+  border-radius: 12px;
 }
-
-/* Cabecera Móvil: Columna y alineada a la izquierda */
-.header-section {
-  background: white;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 15px;
-  border-left: 5px solid #ef4444;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  margin-bottom: 15px;
-}
-
-.header-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 100%;
-}
-
-.title { font-size: 1.25rem; font-weight: bold; margin: 0; text-align: left; }
-.counter { font-size: 0.85rem; color: #000000; }
-
-/* Botones Móvil: Centrados, cuadrados y sin texto */
-.header-actions {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: center;
-  gap: 8px;
-  overflow-x: auto;
-}
-
-.btn-action {
-  border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: opacity 0.2s, transform 0.1s;
-  flex: none; width: 42px; height: 42px; padding: 0;
-}
-.btn-action:hover { opacity: 0.85; }
-.btn-action:active { transform: scale(0.95); }
-.btn-text { display: none; } /* Oculto en móvil */
-
-.btn-clear { background: #e2e8f0; color: #000; }
-.btn-blue { background: #3b82f6; color: white; }
-.btn-clear-checks { background: #fee2e2; color: #ef4444; }
-.btn-export { background: #10b981; color: white; }
-.btn-refresh { background: none; border: none; color: #64748b; cursor: pointer; width: auto; }
-
-/* Visibilidad de Capas Base */
-.desktop-only { display: none !important; }
-.mobile-only { display: block !important; }
-.mobile-only-flex { display: flex !important; }
-
-/* -----------------------------------------
-   FILTROS MÓVIL (Unificados)
-   ----------------------------------------- */
-.mobile-filter-panel {
-  background: #e2e8f0;
-  padding: 15px 20px;
-  border-bottom: 1px solid #e2e8f0;
-}
-.filter-grid-mobile {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-/* Todos los inputs y selects se ven iguales */
-.filter-grid-mobile input,
-.filter-grid-mobile select {
-  padding: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 12px;
-  width: 100%;
-  outline: none;
-  background: #ffffff;
-  color: #334155;
-  box-sizing: border-box;
-}
-
-/* Estado Focus */
-.filter-grid-mobile input:focus,
-.filter-grid-mobile select:focus {
-  border-color: #3b82f6;
-  background: white;
-}
-
-.filter-grid-mobile input::placeholder { color: #000000; }
-.filter-grid-mobile select.full-width { grid-column: span 2; }
-
-/* -----------------------------------------
-   TARJETAS MÓVILES (Listado Licencias)
-   ----------------------------------------- */
-.card-licencia {
-  background: white; border-radius: 8px; padding: 15px;
-  margin-bottom: 12px; border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-.card-header {
-  display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px;
-}
-.card-name { font-size: 1.05rem; color: #0f172a; font-weight: bold; }
-.card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-.card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
-
-/* Botones dentro de las tarjetas móviles */
-.btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-.btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-.btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold;}
-
-/* -----------------------------------------
-   BADGES Y ESTADOS
-   ----------------------------------------- */
-.badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
-.badge-status.aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.badge-status.pendiente { background: #ffc107; color: #212529; border: 1px solid #e0a800; }
-.badge-status.rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-
-.badge-status-sm { padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; }
-.badge-status-sm.aprobada { background: #dcfce7; color: #15803d; }
-.badge-status-sm.pendiente { background: #ffc107; color: #212529; }
-.badge-status-sm.rechazada { background: #fee2e2; color: #b91c1c; }
-
-/* Modales Utilitarios */
-.bg-success-light { background: #dcfce7; color: #166534; }
-.bg-info-light { background: #e0f2fe; color: #0369a1; }
-.modal-content-exito { padding: 30px 20px; max-height: 90vh; overflow-y: auto; }
-
-/* Para evitar que la tabla se rompa si se renderiza oculta en celular */
-.sticky-col { position: static !important; box-shadow: none !important; }
-.col-nombre { box-shadow: none !important; }
-
 
 /* ====================================================
-   2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
+   BADGES DE ESTADOS CUSTOMIZADOS
    ==================================================== */
-@media (min-width: 768px) {
-
-  .full-screen-wrapper { padding: 20px; padding-bottom: 120px; }
-  .admin-panel { padding: 20px; border-radius: 12px; }
-
-  /* Cambio de visibilidad */
-  .desktop-only { display: block !important; }
-  .mobile-only { display: none !important; }
-  .mobile-only-flex { display: none !important; }
-
-  /* Reestructuración Cabecera */
-  .header-section { flex-direction: row; align-items: center; justify-content: space-between; padding: 15px 25px; }
-  .header-info { width: auto; align-items: flex-start; }
-  .title { font-size: 1.1rem; }
-
-  /* Reestructuración Botones Principales */
-  .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; overflow-x: visible; }
-  .btn-action { width: auto; height: auto; padding: 8px 12px; font-size: 0.75rem; justify-content: flex-start; gap: 5px; }
-  .btn-text { display: inline !important; }
-
-  /* Ajuste de Filtros Superiores en Desktop */
-  .filter-grid-mobile { margin-bottom: 0; }
-  .filter-grid-mobile input, .filter-grid-mobile select { font-size: 0.85rem; padding: 8px 12px; }
-
-  /* -----------------------------------------
-     TABLA DESKTOP
-     ----------------------------------------- */
-  .table-container {
-    width: 100%; overflow: auto; max-height: 85vh;
-    background: white; border-radius: 8px; border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  }
-
-  table {
-    width: 100%; min-width: max-content;
-    border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem;
-  }
-
-  thead tr.main-header th {
-    position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
-    padding: 12px 8px; border-bottom: 1px solid #cbd5e1;
-    font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-    font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
-  }
-
-  thead tr.filter-row td {
-    position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important;
-    padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; margin: 0;
-  }
-
-  /* Columnas Fijas (Sticky) - Restauradas para Desktop */
-  .sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-  thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
-  thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
-
-  /* Anchos específicos (Del segundo código original) */
-  .col-id { left: 0; width: 50px; text-align: center; }
-  .col-acciones { left: 50px; width: 110px; }
-  .col-apellido { left: 160px; width: 140px; }
-  .col-nombre { left: 300px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1) !important; }
-
-  .cell-ro {
-    padding: 10px 8px; font-size: 0.85rem; color: #000;
-    white-space: nowrap; border-bottom: 1px solid #f1f5f9;
-  }
-
-  /* Filtros dentro de la tabla */
-  .filter-input {
-    font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1;
-    border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;
-  }
-
-  /* Botones pequeños de acción de tabla */
-  .btn-editar, .btn-historial, .btn-eliminar {
-    display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 6px; padding: 4px; cursor: pointer; transition: 0.2s; border: none;
-  }
-  .btn-editar { background: #eff6ff; color: #1d4ed8; }
-  .btn-editar:hover { background: #dbeafe; }
-  .btn-historial { background: #fef3c7; color: #d97706; }
-  .btn-historial:hover { background: #fde047; }
-  .btn-eliminar { background: #fee2e2; color: #dc2626; }
-  .btn-eliminar:hover { background: #fecaca; }
+.badge-status-sm {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
+.aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.pendiente { background: #fef3c7; color: #d97706; border: 1px solid #fde047; }
+.rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+/* ====================================================
+   UTILIDADES
+   ==================================================== */
+.animate__animated { animation-duration: 0.5s; }
+.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
+.btn-danger-subtle:hover { background: #fecaca; }
+
+/* Cero media queries necesarias para la estructura. Bootstrap hace todo el trabajo. */
 </style>

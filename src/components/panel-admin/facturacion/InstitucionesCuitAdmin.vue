@@ -1,158 +1,176 @@
 <template>
-  <div class="full-screen-wrapper">
+  <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white rounded-4 overflow-hidden">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <div class="header-section border-bottom p-4 mb-0 shadow-none rounded-0">
-          <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
+        <!-- HEADER RESPONSIVO -->
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div class="border-start border-danger border-5 ps-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-building me-1"></i> Gestión de Instituciones
             </h4>
-            <span class="counter mt-1 d-block text-muted">Total: {{ totalFiltrados }} clubes</span>
+            <span class="text-muted small d-block mt-1">Total: {{ totalFiltrados }} clubes</span>
           </div>
 
-          <div class="header-actions">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue d-flex d-md-none" title="Mostrar Filtros">
-              <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <!-- Botón Filtros (Solo Móvil) -->
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+              <span class="material-icons fs-6">filter_alt</span>
             </button>
 
-            <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
-              <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
-            <button @click="crearNuevo" class="btn-action btn-clear-checks" title="Nuevo Club">
-              <span class="material-icons">domain_add</span> <span class="btn-text">Nuevo Club</span>
+            <button @click="crearNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+              <span class="material-icons fs-6">domain_add</span>
+              <span class="fw-bold d-none d-md-inline small">Nuevo Club</span>
             </button>
-            <button @click="exportarExcel" class="btn-action btn-export" title="Exportar Excel">
-              <span class="material-icons">download</span> <span class="btn-text">Excel</span>
+            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
+              <span class="material-icons fs-6">download</span>
+              <span class="fw-bold d-none d-md-inline small">Excel</span>
             </button>
           </div>
         </div>
 
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR INSTITUCIONES</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-              <span class="material-icons" style="font-size: 20px;">close</span>
-            </button>
+        <!-- PANEL DE FILTROS UNIFICADO -->
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
+          <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Instituciones</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
-          <div class="filter-grid-mobile">
-            <input v-model="filtros.club" class="filter-input-mobile full-width" placeholder="Buscar club...">
-            <input v-model="filtros.cuit" class="filter-input-mobile" placeholder="CUIT...">
-            <select v-model="filtros.condicion" class="filter-input-mobile">
-              <option value="">Todos</option>
-              <option value="Consumidor Final">Consumidor Final</option>
-              <option value="Exento">Exento</option>
-              <option value="Responsable Inscripto">Resp. Inscripto</option>
-              <option value="Inscripto">Inscripto</option>
-              <option value="Monotributo">Monotributo</option>
-            </select>
-            <input v-model="filtros.email" class="filter-input-mobile" placeholder="Email...">
-            <input v-model="filtros.celular" class="filter-input-mobile" placeholder="Celular...">
+          <div class="row g-2">
+            <div class="col-12 col-md-3">
+              <input v-model="filtros.club" class="form-control form-control-sm shadow-none" placeholder="Buscar club...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.cuit" class="form-control form-control-sm shadow-none" placeholder="CUIT...">
+            </div>
+            <div class="col-6 col-md-3">
+              <select v-model="filtros.condicion" class="form-select form-select-sm shadow-none">
+                <option value="">Condición IVA (Todas)</option>
+                <option value="Consumidor Final">Consumidor Final</option>
+                <option value="Exento">Exento</option>
+                <option value="Responsable Inscripto">Resp. Inscripto</option>
+                <option value="Inscripto">Inscripto</option>
+                <option value="Monotributo">Monotributo</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.email" class="form-control form-control-sm shadow-none" placeholder="Email...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.celular" class="form-control form-control-sm shadow-none" placeholder="Celular...">
+            </div>
+            <div class="col-12 d-md-none mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">
+                Aplicar Filtros
+              </button>
+            </div>
           </div>
-
-          <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm">
-            Aplicar Filtros
-          </button>
         </div>
 
-        <div class="card-body p-3 p-md-4">
+        <div class="card-body p-0 p-md-3 bg-white">
 
-          <div class="table-container shadow-sm d-none d-md-block border rounded-3">
-            <table>
-              <thead>
-                <tr class="main-header">
-                  <th class="sticky-col col-id text-center">ID</th>
-                  <th class="sticky-col col-acciones text-center">Acciones</th>
-                  <th class="sticky-col col-club">Club / Institución</th>
-                  <th>CUIT</th>
-                  <th>Condición IVA</th>
-                  <th>Email</th>
-                  <th>Celular</th>
+          <!-- TABLA (Solo Escritorio) -->
+          <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
+            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem; table-layout: fixed;">
+              <thead class="table-light">
+                <tr>
+                  <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
+                  <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 90px;">Acciones</th>
+                  <th class="py-3 text-uppercase text-muted col-fija col-club" style="width: 220px;">Club / Institución</th>
+                  <th class="py-3 text-uppercase text-muted" style="width: 150px;">CUIT</th>
+                  <th class="py-3 text-uppercase text-muted" style="width: 200px;">Condición IVA</th>
+                  <th class="py-3 text-uppercase text-muted" style="width: 250px;">Email</th>
+                  <th class="py-3 text-uppercase text-muted" style="width: 150px;">Celular</th>
                 </tr>
-                <tr class="filter-row">
-                  <td class="sticky-col col-id"></td>
-                  <td class="sticky-col col-acciones"></td>
-                  <td class="sticky-col col-club"><input v-model="filtros.club" class="filter-input shadow-none" placeholder="Buscar club..."></td>
-                  <td><input v-model="filtros.cuit" class="filter-input shadow-none" placeholder="Filtrar CUIT..."></td>
-                  <td><input v-model="filtros.condicion" class="filter-input shadow-none" placeholder="Filtrar condición..."></td>
-                  <td><input v-model="filtros.email" class="filter-input shadow-none" placeholder="Filtrar email..."></td>
-                  <td><input v-model="filtros.celular" class="filter-input shadow-none" placeholder="Filtrar celular..."></td>
+                <tr class="bg-light">
+                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
+                    <button class="btn btn-sm btn-light border rounded text-secondary shadow-sm px-2 py-1"><i class="bi bi-arrow-clockwise"></i></button>
+                  </td>
+                  <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
+                  <td class="p-2 border-bottom border-2 col-fija col-club"><input v-model="filtros.club" class="form-control form-control-sm shadow-none" placeholder="Buscar club..."></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.cuit" class="form-control form-control-sm shadow-none" placeholder="Filtrar CUIT..."></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.condicion" class="form-control form-control-sm shadow-none" placeholder="Filtrar condición..."></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.email" class="form-control form-control-sm shadow-none" placeholder="Filtrar email..."></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.celular" class="form-control form-control-sm shadow-none" placeholder="Filtrar celular..."></td>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="inst in institucionesPaginadas" :key="inst.id">
-                  <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ inst.id }}</td>
-                  <td class="sticky-col col-acciones cell-ro text-center">
+                  <td class="ps-3 text-muted fw-bold font-monospace col-fija col-id">{{ inst.id }}</td>
+                  <td class="text-center col-fija col-acciones">
                     <div class="d-flex justify-content-center gap-1">
-                      <button @click="editarInstitucion(inst)" class="btn-editar" title="Editar institución">
+                      <button @click="editarInstitucion(inst)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar institución">
                         <span class="material-icons" style="font-size:16px;">edit</span>
                       </button>
-                      <button @click="confirmarEliminacion(inst.id)" class="btn-eliminar" title="Eliminar institución">
+                      <button @click="confirmarEliminacion(inst.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar institución">
                         <span class="material-icons" style="font-size:16px;">delete</span>
                       </button>
                     </div>
                   </td>
-                  <td class="sticky-col col-club cell-ro fw-bold text-dark">{{ inst.club }}</td>
-                  <td class="cell-ro text-dark">{{ inst.cuit }}</td>
-                  <td class="cell-ro">
+                  <td class="text-dark fw-bold col-fija col-club text-truncate" :title="inst.club">{{ inst.club }}</td>
+                  <td class="text-dark">{{ inst.cuit || '-' }}</td>
+                  <td>
                     <span class="badge bg-light text-dark border">{{ inst.condicion || 'No especificada' }}</span>
                   </td>
-                  <td class="cell-ro text-dark">{{ inst.email }}</td>
-                  <td class="cell-ro text-dark">{{ inst.celular }}</td>
+                  <td class="text-dark">{{ inst.email || '-' }}</td>
+                  <td class="text-dark">{{ inst.celular || '-' }}</td>
                 </tr>
                 <tr v-if="institucionesPaginadas.length === 0">
-                  <td colspan="7" class="py-5 text-center text-muted border-0 bg-light">
+                  <td colspan="7" class="py-5 text-center text-muted border-0 bg-white">
                     <span class="material-icons d-block fs-1 mb-2">domain_disabled</span>
-                    <p class="m-0 fw-bold">No se encontraron instituciones con esos filtros.</p>
+                    <p class="m-0 fw-bold">No se encontraron instituciones.</p>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <div class="d-block d-md-none mt-3">
-            <div v-for="inst in institucionesPaginadas" :key="'mob-'+inst.id" class="card-arbitro shadow-sm border border-light-subtle rounded-4 mb-3 bg-white">
-
-              <div class="card-header border-bottom pb-2 px-3 pt-3 d-flex justify-content-between align-items-start bg-transparent">
-                <div class="card-name d-flex align-items-center gap-2">
+          <!-- CARDS (Solo Celular) -->
+          <div class="d-md-none p-3 bg-light">
+            <div v-for="inst in institucionesPaginadas" :key="'mob-'+inst.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
+              <div class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
+                <div class="text-dark fw-bold d-flex align-items-center gap-2" style="font-size: 1.05rem;">
                   <span class="material-icons text-primary" style="font-size: 20px;">domain</span>
-                  <strong style="font-size: 1.05rem;" class="text-dark">{{ inst.club }}</strong>
+                  {{ inst.club }}
                 </div>
-                <span class="text-muted small fw-bold mt-1">#{{ inst.id }}</span>
+                <div class="small text-muted fw-bold font-monospace mt-1">#{{ inst.id }}</div>
               </div>
 
-              <div class="card-body px-3 py-3">
-                <div class="d-flex justify-content-between bg-light p-2 rounded border mb-3">
+              <div class="card-body pt-0 px-3 pb-3">
+                <div class="d-flex justify-content-between bg-light p-2 rounded border mb-3 border-light-subtle">
                   <span class="text-dark small"><strong>CUIT:</strong> {{ inst.cuit || '-' }}</span>
                   <span class="text-dark small"><strong>IVA:</strong> {{ inst.condicion || '-' }}</span>
                 </div>
 
-                <div class="mb-3">
-                  <p v-if="inst.email" class="mb-1 small"><strong class="text-dark">Email:</strong> {{ inst.email }}</p>
+                <div class="mb-3 border-bottom pb-2 border-secondary-subtle">
+                  <p v-if="inst.email" class="mb-1 small text-truncate"><strong class="text-dark">Email:</strong> {{ inst.email }}</p>
                   <p v-if="inst.celular" class="mb-0 small"><strong class="text-dark">Celular:</strong> {{ inst.celular }}</p>
                 </div>
 
-                <div class="d-flex gap-2 border-top pt-3">
-                  <button @click="editarInstitucion(inst)" class="btn-editar-mobile flex-grow-1">
-                    <span class="material-icons" style="font-size: 18px;">edit</span> Editar
+                <div class="d-flex gap-2">
+                  <button @click="editarInstitucion(inst)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                    <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
                   </button>
-                  <button @click="confirmarEliminacion(inst.id)" class="btn-eliminar-mobile flex-grow-0">
+                  <button @click="confirmarEliminacion(inst.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
                     <span class="material-icons" style="font-size: 18px;">delete</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <div v-if="institucionesPaginadas.length === 0" class="text-center p-4 bg-white rounded shadow-sm border border-light-subtle mt-2">
-              <span class="material-icons text-muted" style="font-size: 40px;">domain_disabled</span>
+            <div v-if="institucionesPaginadas.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border border-light-subtle mt-2">
+              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">domain_disabled</span>
               <p class="text-muted mt-2 mb-0 fw-bold">Sin resultados</p>
-              <p class="text-muted small">No se encontraron instituciones.</p>
             </div>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
+          <!-- PAGINACIÓN -->
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
             <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
             </button>
@@ -167,6 +185,10 @@
         </div>
       </div>
     </div>
+
+    <!-- ==============================================
+         MODALES
+         ============================================== -->
 
     <ModalBase
       :show="mostrarModal"
@@ -186,21 +208,21 @@
 
       <form id="formInstitucion" @submit.prevent="guardarDatos" class="text-start mt-2">
         <div class="row g-3">
-          <div class="col-12 seccion-titulo fw-bold text-secondary border-bottom pb-1 mb-2">Datos de la Institución</div>
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-0">Datos de la Institución</div>
 
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Nombre del Club / Institución *</label>
-            <input v-model="formModal.club" class="form-control custom-input shadow-none" placeholder="Ej: Club Atlético..." required>
+            <input v-model="formModal.club" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Club Atlético..." required>
           </div>
 
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">CUIT *</label>
-            <input v-model="formModal.cuit" class="form-control custom-input shadow-none" placeholder="Sin guiones" required>
+            <input v-model="formModal.cuit" class="form-control shadow-none border-secondary-subtle" placeholder="Sin guiones" required>
           </div>
 
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Condición frente al IVA</label>
-            <select v-model="formModal.condicion" class="form-select custom-input shadow-none">
+            <select v-model="formModal.condicion" class="form-select shadow-none border-secondary-subtle">
               <option value="">Seleccionar...</option>
               <option value="Consumidor Final">Consumidor Final</option>
               <option value="Exento">Exento</option>
@@ -210,16 +232,16 @@
             </select>
           </div>
 
-          <div class="col-12 seccion-titulo fw-bold text-secondary border-bottom pb-1 mb-2 mt-4">Contacto</div>
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Contacto</div>
 
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Email Institucional</label>
-            <input v-model="formModal.email" type="email" class="form-control custom-input shadow-none" placeholder="correo@club.com">
+            <input v-model="formModal.email" type="email" class="form-control shadow-none border-secondary-subtle" placeholder="correo@club.com">
           </div>
 
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Celular / Teléfono</label>
-            <input v-model="formModal.celular" class="form-control custom-input shadow-none" placeholder="Ej: 11 1234-5678">
+            <input v-model="formModal.celular" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: 11 1234-5678">
           </div>
         </div>
       </form>
@@ -234,7 +256,6 @@
           </button>
         </div>
       </template>
-
     </ModalBase>
   </div>
 </template>
@@ -409,183 +430,73 @@ onMounted(() => {
 
 <style scoped>
 /* ====================================================
-   1. BASE (MOBILE FIRST - CELULARES POR DEFECTO)
+   ESTILOS GENERALES
    ==================================================== */
-
-/* Contenedor principal exacto como lo solicitaste */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
   min-height: 100vh;
-  height: auto !important;
   margin-left: 50%;
   transform: translateX(-50%);
-  padding: 20px;
   padding-bottom: 120px;
 }
 
-/* Ajuste de padding exclusivo para celulares */
-@media (max-width: 767px) {
-  .full-screen-wrapper { padding: 0 15px 20px 15px !important; box-sizing: border-box !important; }
-}
-
-/* Estructura base (Celulares) */
 .admin-panel {
   width: 100%;
-  max-width: 100%;
-  padding: 0;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;
   background-color: #0f172a;
   min-height: 100vh;
-  border-radius: 0;
-  box-sizing: border-box;
+  border-radius: 12px;
 }
 
-/* Cabecera Móvil */
-.header-section {
-  background: white;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 15px;
-  border-left: 5px solid #ef4444;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-.header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
-.title { font-size: 1.25rem; font-weight: bold; margin: 0; color: #000; }
-.counter { font-size: 0.85rem; color: #6c757d; }
-
-/* Botones Móvil (42x42 centrados) */
-.header-actions {
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-}
-
-.btn-action {
-  border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: opacity 0.2s, transform 0.1s;
-  flex: none; width: 42px; height: 42px; padding: 0;
-}
-.btn-action:hover { opacity: 0.85; }
-.btn-action:active { transform: scale(0.95); }
-.btn-text { display: none; } /* Oculto en móvil */
-
-.btn-clear { background: #e2e8f0; color: #000; }
-.btn-clear-checks { background: #fee2e2; color: #ef4444; }
-.btn-export { background: #10b981; color: white; }
-.btn-blue { background: #3b82f6; color: white; }
-
-/* Visibilidad de Capas Base */
-.desktop-only { display: none; }
-.mobile-only { display: block; }
-.mobile-only-flex { display: flex; }
-
-/* Filtros Móvil */
-.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
-.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filter-input-mobile {
-  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
-  font-size: 12px; width: 100%; outline: none; background: #ffffff; color: #334155;
-}
-.filter-input-mobile:focus { border-color: #3b82f6; background: white; }
-.filter-input-mobile::placeholder { color: #000000; }
-.filter-input-mobile.full-width { grid-column: span 1; }
-
-/* Tarjetas Móviles (Listado) */
-.card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-.card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
-.card-name { font-size: 1.05rem; color: #0f172a; }
-.btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 8px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-.btn-eliminar-mobile { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 8px 12px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold; }
-
-/* Utilitarios compartidos */
-.btn-editar, .btn-eliminar {
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
-}
-.btn-editar { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
-.btn-editar:hover { background: #dbeafe; }
-.btn-eliminar { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
-.btn-eliminar:hover { background: #fee2e2; }
-.btn-refresh { background: none; border: none; color: #64748b; cursor: pointer; }
-
-/* Componentes internos de tabla/modal */
-.seccion-titulo { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; margin-top: 15px; width: 100%; }
-.custom-input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; background-color: #ffffff; transition: all 0.3s ease; }
-.custom-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); outline: none; }
+/* ====================================================
+   UTILIDADES
+   ==================================================== */
+.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
+.btn-danger-subtle:hover { background: #fecaca; }
 
 .animate__animated { animation-duration: 0.5s; }
 
-
 /* ====================================================
-   2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
+   TABLA CON COLUMNAS FIJAS Y SIN LÍNEAS
    ==================================================== */
-@media (min-width: 768px) {
-
-  /* Expansión del contenedor principal */
-  .admin-panel { padding: 20px; border-radius: 12px; }
-
-  /* Cambio de visibilidad */
-  .desktop-only { display: block; }
-  .mobile-only { display: none; }
-  .mobile-only-flex { display: none; }
-
-  /* Reestructuración Cabecera */
-  .header-section { flex-direction: row; align-items: center; justify-content: space-between; border-radius: 8px; padding: 15px 25px; }
-  .header-info { width: auto; align-items: flex-start; }
-  .title { font-size: 1.1rem; }
-
-  /* Reestructuración Botones */
-  .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; }
-  .btn-action { width: auto; height: auto; padding: 8px 12px; gap: 5px; font-size: 0.75rem; }
-  .btn-text { display: inline; }
-
-  /* Filtros a 2 columnas */
-  .filter-grid-mobile { grid-template-columns: 1fr 1fr; }
-  .filter-input-mobile.full-width { grid-column: span 2; }
-
-  /* TABLA DESKTOP (Aparece en vez de las tarjetas) */
-  .table-container {
-    width: 100%; overflow: auto; max-height: 85vh;
-    background: white; border-radius: 8px; border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  }
-  table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-
-  thead tr.main-header th {
-    position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
-    padding: 12px 8px; border-bottom: 1px solid #cbd5e1;
-    font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
-  }
-  thead tr.filter-row td {
-    position: sticky; top: 41px; z-index: 40; background: #f1F5F9 !important;
-    padding: 6px 8px 10px 8px; border-bottom: 2px solid #cbd5e1; margin: 0;
-  }
-
-  .col-id { left: 0; width: 60px; text-align: center; }
-  .col-acciones { left: 60px; width: 90px; }
-  .col-club { left: 150px; width: 220px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-
-  .sticky-col { position: sticky !important; background: white !important; border-right: 1px solid #e2e8f0; }
-  thead tr.main-header th.sticky-col { z-index: 60 !important; background-color: #e2e8f0 !important; }
-  thead tr.filter-row td.sticky-col { z-index: 55 !important; background-color: #f1f5f9 !important; }
-  tbody td.sticky-col { z-index: 30 !important; }
-
-  .cell-ro { padding: 10px 8px; font-size: 0.85rem; color: inherit; border-bottom: 1px solid #f1f5f9; }
-  .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
+.tabla-sin-lineas th,
+.tabla-sin-lineas td {
+  border-left: none !important;
+  border-right: none !important;
 }
 
-/* ====================================================
-   3. PANTALLAS GRANDES (Desde 1024px hacia arriba)
-   ==================================================== */
-@media (min-width: 1024px) {
-  /* Si en el futuro querés darle más aire o restringir anchos en monitores muy grandes, va acá */
+.tabla-fija {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+@media (min-width: 768px) {
+  /* Columnas fijas base */
+  .col-fija {
+    position: sticky !important;
+    background-color: inherit;
+    z-index: 10;
+  }
+
+  /* Fondo thead y Z-INDEX 12 (Tapa el scroll vertical) */
+  .tabla-fija thead .col-fija {
+    background-color: #f8f9fa !important;
+    z-index: 12;
+  }
+
+  /* Fondo tbody */
+  .tabla-fija tbody .col-fija {
+    background-color: #ffffff !important;
+  }
+
+  /* Posiciones exactas */
+  .col-id       { left: 0; min-width: 60px; max-width: 60px; }
+  .col-acciones { left: 60px; min-width: 100px; max-width: 100px; }
+  .col-club     {
+    left: 160px;
+    min-width: 220px;
+    max-width: 220px;
+    box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1);
+  }
 }
 </style>

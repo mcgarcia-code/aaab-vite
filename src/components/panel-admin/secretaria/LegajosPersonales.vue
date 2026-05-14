@@ -1,616 +1,535 @@
 <template>
-  <div class="full-screen-wrapper">
+  <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
-          <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2 flex-wrap" style="font-size: 1.25rem;">
+        <!-- HEADER RESPONSIVO -->
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div class="border-start border-danger border-5 ps-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-people-fill me-1"></i> Gestión de Árbitros
             </h4>
-            <span class="counter mt-1 d-block text-muted">Total: {{ totalFiltrados }} árbitros</span>
+            <span class="text-muted small d-block mt-1">Total: {{ totalFiltrados }} árbitros</span>
           </div>
 
-          <div class="header-actions mt-3 pt-1">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
-                <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <!-- Botón Filtros (Solo Móvil) -->
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+              <span class="material-icons fs-6">filter_alt</span>
             </button>
 
-            <button @click="abrirModalSolicitudes" class="btn-action btn-blue position-relative" title="Solicitudes pendientes">
-              <span class="material-icons">notifications</span> <span class="btn-text">Solicitudes</span>
-              <span v-if="solicitudesPendientes.length > 0" class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem;">
+            <!-- Botón Solicitudes -->
+            <button @click="abrirModalSolicitudes" class="btn btn-primary position-relative shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons fs-6">notifications</span>
+              <span class="fw-bold d-none d-md-inline small">Solicitudes</span>
+              <span v-if="solicitudesPendientes.length > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem;">
                 {{ solicitudesPendientes.length }}
               </span>
             </button>
 
-            <button
-                @click="toggleEdicionGlobal"
-                class="btn-action d-flex align-items-center gap-1 text-white shadow-sm"
-                :class="edicionAbierta ? 'bg-danger' : 'bg-success'"
-                :title="edicionAbierta ? 'Bloquear Edición para todos' : 'Permitir Edición para todos'"
-              >
-                <span class="material-icons" style="font-size: 18px;">
-                  {{ edicionAbierta ? 'lock_open' : 'lock' }}
-                </span>
-                <span class="btn-text fw-bold">
-                  {{ edicionAbierta ? 'Cerrar Edición' : 'Abrir Edición' }}
-                </span>
+            <!-- Botón Edición Global -->
+            <button @click="toggleEdicionGlobal" class="btn shadow-sm py-2 d-flex align-items-center gap-2 text-white" :class="edicionAbierta ? 'btn-danger' : 'btn-success'" :title="edicionAbierta ? 'Bloquear Edición' : 'Permitir Edición'">
+              <span class="material-icons fs-6">{{ edicionAbierta ? 'lock_open' : 'lock' }}</span>
+              <span class="fw-bold d-none d-md-inline small">{{ edicionAbierta ? 'Cerrar Edición' : 'Abrir Edición' }}</span>
             </button>
 
-            <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
-              <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
-            <button @click="crearNuevo" class="btn-action btn-clear-checks" title="Nuevo Árbitro">
-              <span class="material-icons">person_add</span> <span class="btn-text">Nuevo</span>
+
+            <button @click="crearNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+              <span class="material-icons fs-6">person_add</span>
+              <span class="fw-bold d-none d-md-inline small">Nuevo</span>
             </button>
-            <button @click="exportarExcel" class="btn-action btn-export" title="Exportar a Excel">
-              <span class="material-icons">download</span> <span class="btn-text">Excel</span>
+
+            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
+              <span class="material-icons fs-6">download</span>
+              <span class="fw-bold d-none d-md-inline small">Excel</span>
             </button>
           </div>
         </div>
 
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
+        <!-- PANEL DE FILTROS (Solo Móvil) -->
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none']">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-              <span class="material-icons" style="font-size: 20px;">close</span>
-            </button>
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Árbitros</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
-          <div class="filter-grid-mobile">
-            <input v-model="filtros.apellido" class="filter-input-mobile" placeholder="Apellido...">
-            <input v-model="filtros.nombre" class="filter-input-mobile" placeholder="Nombre...">
-            <input v-model="filtros.dni" class="filter-input-mobile" placeholder="DNI...">
-            <select v-model="filtros.rol" class="filter-input-mobile">
-              <option value="">Rol (Todos)</option>
-              <option :value="1">Árbitro</option>
-              <option :value="2">Observador</option>
-              <option :value="4">Coordinador</option>
-            </select>
+          <div class="row g-2">
+            <div class="col-6">
+              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido...">
+            </div>
+            <div class="col-6">
+              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre...">
+            </div>
+            <div class="col-6">
+              <input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI...">
+            </div>
+            <div class="col-6">
+              <select v-model="filtros.rol" class="form-select form-select-sm shadow-none">
+                <option value="">Rol (Todos)</option>
+                <option :value="1">Árbitro</option>
+                <option :value="2">Observador</option>
+                <option :value="4">Coordinador</option>
+              </select>
+            </div>
+            <div class="col-12 mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+            </div>
           </div>
-
-          <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm" style="font-size: 0.95rem;">
-            Aplicar Filtros
-          </button>
         </div>
 
-        <div class="card-body p-3 p-md-4">
-          <div class="table-container shadow-sm desktop-only border" style="border-radius: 8px;">
-            <table>
-              <thead>
-                <tr class="main-header">
-                  <th class="sticky-col col-id">ID</th>
-                  <th class="sticky-col col-acciones text-center">Acciones</th>
-                  <th class="sticky-col col-apellido">Apellido</th>
-                  <th class="sticky-col col-nombre">Nombre</th>
-                  <th class="col-xs-compact text-center">Activo</th>
-                  <th class="col-xs-compact text-center">Rol</th>
-                  <th class="col-xs-compact text-center">Apto Med.</th>
-                  <th class="col-xs-compact text-center">Grupo</th>
-                  <th class="col-xs-compact text-center">Subg.</th>
-                  <th class="col-dni-compact">DNI</th>
-                  <th>Email</th>
-                  <th>Dirección</th>
-                  <th>Provincia</th>
-                  <th>Localidad</th>
-                  <th>Zona</th>
-                  <th>Celular</th>
-                  <th>F. Nacimiento</th>
-                  <th>Tel. Contacto</th>
-                  <th>Parentesco</th>
-                  <th>Movilidad</th>
-                  <th class="col-dni-compact">Sáb. Disp</th>
-                  <th>Sáb. Desde</th>
-                  <th>Sáb. Hasta</th>
-                  <th class="col-dni-compact">Dom. Disp</th>
-                  <th>Dom. Desde</th>
-                  <th>Dom. Hasta</th>
-                  <th class="col-dni-compact">Juega</th>
-                  <th>Club</th>
-                  <th>Cat. Juega</th>
-                  <th>Observaciones</th>
+        <div class="card-body p-0 p-md-3 bg-white">
+
+          <!-- TABLA (Solo Escritorio) -->
+          <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
+            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
+              <thead class="table-light">
+                <!-- Títulos -->
+                <tr>
+                  <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id">ID</th>
+                  <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones">Acciones</th>
+                  <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
+                  <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Activo</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Rol</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Apto Med.</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Subg.</th>
+                  <th class="py-3 text-center text-uppercase text-muted">DNI</th>
+                  <th class="py-3 text-uppercase text-muted">Email</th>
+                  <th class="py-3 text-uppercase text-muted">Dirección</th>
+                  <th class="py-3 text-uppercase text-muted">Provincia</th>
+                  <th class="py-3 text-uppercase text-muted">Localidad</th>
+                  <th class="py-3 text-uppercase text-muted">Zona</th>
+                  <th class="py-3 text-uppercase text-muted">Celular</th>
+                  <th class="py-3 text-uppercase text-muted">F. Nacimiento</th>
+                  <th class="py-3 text-uppercase text-muted">Tel. Contacto</th>
+                  <th class="py-3 text-uppercase text-muted">Parentesco</th>
+                  <th class="py-3 text-uppercase text-muted">Movilidad</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Sáb. Disp</th>
+                  <th class="py-3 text-uppercase text-muted">Sáb. Desde</th>
+                  <th class="py-3 text-uppercase text-muted">Sáb. Hasta</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Dom. Disp</th>
+                  <th class="py-3 text-uppercase text-muted">Dom. Desde</th>
+                  <th class="py-3 text-uppercase text-muted">Dom. Hasta</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Juega</th>
+                  <th class="py-3 text-uppercase text-muted">Club</th>
+                  <th class="py-3 text-uppercase text-muted">Cat. Juega</th>
+                  <th class="py-3 text-uppercase text-muted">Observaciones</th>
                 </tr>
-                <tr class="filter-row">
-                  <td class="sticky-col col-id"></td>
-                  <td class="sticky-col col-acciones"></td>
-                  <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input shadow-none" placeholder="Filtrar.."></td>
-                  <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input shadow-none" placeholder="Filtrar.."></td>
-                  <td class="col-xs-compact">
-                    <select v-model="filtros.es_activo" class="filter-input shadow-none">
-                      <option value="">Todos</option>
-                      <option value="NO">No</option>
-                      <option value="SI">Sí</option>
+                <!-- Filtros Desktop -->
+                <tr class="bg-light">
+                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
+                    <button @click="obtenerArbitros" class="btn btn-sm btn-light border rounded text-secondary shadow-sm px-2 py-1"><i class="bi bi-arrow-clockwise"></i></button>
+                  </td>
+                  <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
+                  <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
+                  <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option><option value="NO">No</option><option value="SI">Sí</option>
                     </select>
                   </td>
-                  <td class="col-xs-compact">
-                    <select v-model="filtros.rol" class="filter-input shadow-none">
-                      <option value="">Todos</option>
-                      <option :value="0">Ninguno</option>
-                      <option :value="1">Árbitro</option>
-                      <option :value="2">Observador</option>
-                      <option :value="4">Coordinador</option>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.rol" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option><option :value="0">Ninguno</option><option :value="1">Árbitro</option><option :value="2">Observador</option><option :value="4">Coordinador</option>
                     </select>
                   </td>
-                  <td class="col-xs-compact">
-                    <select v-model="filtros.apto_medico" class="filter-input shadow-none">
-                      <option value="">Todos</option>
-                      <option value="SI">Sí</option>
-                      <option value="NO">No</option>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option><option value="SI">Sí</option><option value="NO">No</option>
                     </select>
                   </td>
-                  <td class="col-xs-compact">
-                    <select v-model="filtros.grupo" class="filter-input shadow-none">
-                      <option value="">Todos</option>
-                      <option value="LH">LH</option>
-                      <option value="Pre Liga">Pre Liga</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option><option value="LH">LH</option><option value="Pre Liga">Pre Liga</option><option value="SR">SR</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
                     </select>
                   </td>
-                  <td class="col-xs-compact">
-                    <select v-model="filtros.subgrupo" class="filter-input shadow-none">
-                      <option value="">Todos</option>
-                      <option value="A">A</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option><option value="A">A</option><option value="B">B</option><option value="C">C</option>
                     </select>
                   </td>
-                  <td class="col-dni-compact"><input v-model="filtros.dni" class="filter-input shadow-none text-center"></td>
-                  <td><input v-model="filtros.email" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.direccion" class="filter-input shadow-none"></td>
-                  <td><selProvincia v-model="filtros.provincia" :provincias="provincias" class="filter-input shadow-none" /></td>
-                  <td><selLocalidad v-model="filtros.localidad" :localidades="localidadesFiltradas" class="filter-input shadow-none" /></td>
-                  <td><input v-model="filtros.zona" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.celular" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.fecha_nacimiento" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.telefonocontacto" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.parentescocontacto" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.movilidad" class="filter-input shadow-none"></td>
-                  <td class="col-dni-compact"><input v-model="filtros.disponibilidad_sabado" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.disponibilidad_sabado_desde" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.disponibilidad_sabado_hasta" class="filter-input shadow-none"></td>
-                  <td class="col-dni-compact"><input v-model="filtros.disponibilidad_domingo" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.disponibilidad_domingo_desde" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.disponibilidad_domingo_hasta" class="filter-input shadow-none"></td>
-                  <td class="col-dni-compact"><input v-model="filtros.juega_handball" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.donde_juega" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.categoria_handball" class="filter-input shadow-none"></td>
-                  <td><input v-model="filtros.observaciones" class="filter-input shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none text-center"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.email" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.direccion" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><selProvincia v-model="filtros.provincia" :provincias="provincias" class="form-select form-select-sm shadow-none" /></td>
+                  <td class="p-2 border-bottom border-2"><selLocalidad v-model="filtros.localidad" :localidades="localidadesFiltradas" class="form-select form-select-sm shadow-none" /></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.zona" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.celular" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.fecha_nacimiento" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.telefonocontacto" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.parentescocontacto" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.movilidad" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado_desde" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado_hasta" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo_desde" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo_hasta" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.juega_handball" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.donde_juega" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.categoria_handball" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.observaciones" class="form-control form-control-sm shadow-none"></td>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="a in arbitrosPaginados" :key="a.id" :class="{ 'fila-inactiva': a.es_activo == 0 }">
-                  <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ a.id }}</td>
-                  <td class="sticky-col col-acciones cell-ro text-center">
+                <tr v-for="a in arbitrosPaginados" :key="a.id" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
+                  <td class="ps-3 text-muted fw-bold font-monospace col-fija col-id">{{ a.id }}</td>
+                  <td class="text-center col-fija col-acciones">
                     <div class="d-flex justify-content-center gap-1">
-                      <button @click="editarArbitro(a)" class="btn-editar border shadow-sm rounded p-1" title="Editar árbitro">
-                        <span class="material-icons text-primary" style="font-size:16px;">edit</span>
+                      <button @click="editarArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar árbitro">
+                        <span class="material-icons" style="font-size:16px;">edit</span>
                       </button>
-                      <button @click="verHistorialArbitro(a)" class="btn-historial border shadow-sm rounded p-1" title="Ver historial de cambios">
-                        <span class="material-icons text-warning" style="font-size:16px;">manage_search</span>
+                      <button @click="verHistorialArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver historial de cambios">
+                        <span class="material-icons" style="font-size:16px;">manage_search</span>
                       </button>
                     </div>
                   </td>
-                  <td class="sticky-col col-apellido cell-ro text-dark fw-bold text-uppercase">{{ a.apellido }}</td>
-                  <td class="sticky-col col-nombre cell-ro text-dark fw-bold text-uppercase">{{ a.nombre }}</td>
-                  <td class="col-xs-compact cell-ro">
-                    <div class="status-wrapper">
-                      <span :class="['status-dot', a.es_activo == 1 ? 'dot-active' : 'dot-inactive']"></span>
-                      <span style="font-size:0.78rem;" class="text-dark">{{ a.es_activo == 1 ? 'SI' : 'NO' }}</span>
+                  <td class="text-dark fw-bold text-uppercase col-fija col-apellido">{{ a.apellido }}</td>
+                  <td class="text-dark fw-bold text-uppercase col-fija col-nombre">{{ a.nombre }}</td>
+                  <td class="text-center">
+                    <div class="d-flex align-items-center justify-content-center gap-1">
+                      <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
+                      <span class="small text-dark fw-bold">{{ a.es_activo == 1 ? 'SI' : 'NO' }}</span>
                     </div>
                   </td>
-                  <td class="col-xs-compact cell-ro fw-bold text-dark text-center">{{ obtenerNombreRol(a.rol) }}</td>
-                  <td class="text-center cell-ro">
-                    <div class="status-wrapper">
-                      <span :class="['status-dot', a.apto_medico == 1 ? 'dot-active' : 'dot-inactive']"></span>
-                      <span style="font-size: 0.78rem;" class="text-dark">{{ a.apto_medico ==1 ? 'SI' : 'NO' }}</span>
+                  <td class="text-center text-dark fw-bold">{{ obtenerNombreRol(a.rol) }}</td>
+                  <td class="text-center">
+                    <div class="d-flex align-items-center justify-content-center gap-1">
+                      <span class="status-dot" :class="a.apto_medico == 1 ? 'bg-success' : 'bg-danger'"></span>
+                      <span class="small text-dark fw-bold">{{ a.apto_medico == 1 ? 'SI' : 'NO' }}</span>
                     </div>
                   </td>
-                  <td class="col-xs-compact cell-ro text-center text-dark">{{ a.grupo }}</td>
-                  <td class="col-xs-compact cell-ro text-center text-dark">{{ a.subgrupo }}</td>
-                  <td class="col-dni-compact cell-ro text-center text-dark">{{ a.dni }}</td>
-                  <td class="cell-ro text-dark">{{ a.email }}</td>
-                  <td class="cell-ro text-dark">{{ a.direccion }}</td>
-                  <td class="cell-ro text-dark">{{ a.nombre_provincia }}</td>
-                  <td class="cell-ro text-dark">{{ a.nombre_localidad }}</td>
-                  <td class="cell-ro text-dark">{{ a.zona }}</td>
-                  <td class="cell-ro text-dark">{{ a.celular }}</td>
-                  <td class="cell-ro text-dark">{{ a.fecha_nacimiento ? mostrarFechaArg(a.fecha_nacimiento) : '' }}</td>
-                  <td class="cell-ro text-dark">{{ a.telefonocontacto }}</td>
-                  <td class="cell-ro text-dark">{{ a.parentescocontacto }}</td>
-                  <td class="cell-ro text-dark">{{ a.movilidad }}</td>
-                  <td class="col-dni-compact cell-ro text-center text-dark">{{ a.disponibilidad_sabado }}</td>
-                  <td class="cell-ro text-dark">{{ a.disponibilidad_sabado_desde }}</td>
-                  <td class="cell-ro text-dark">{{ a.disponibilidad_sabado_hasta }}</td>
-                  <td class="col-dni-compact cell-ro text-center text-dark">{{ a.disponibilidad_domingo }}</td>
-                  <td class="cell-ro text-dark">{{ a.disponibilidad_domingo_desde }}</td>
-                  <td class="cell-ro text-dark">{{ a.disponibilidad_domingo_hasta }}</td>
-                  <td class="col-dni-compact cell-ro text-center text-dark">{{ a.juega_handball }}</td>
-                  <td class="cell-ro text-dark">{{ a.donde_juega }}</td>
-                  <td class="cell-ro text-dark">{{ a.categoria_handball }}</td>
-                  <td class="cell-ro text-dark">{{ a.observaciones }}</td>
-                </tr>
-                <tr v-if="arbitrosPaginados.length === 0">
-                  <td colspan="30" class="text-center py-5 text-muted bg-light italic border-0">
-                    <span class="material-icons d-block mb-2" style="font-size: 40px;">search_off</span>
-                    <p class="m-0 fw-bold">No se encontraron registros.</p>
-                  </td>
+                  <td class="text-center text-dark">{{ a.grupo }}</td>
+                  <td class="text-center text-dark">{{ a.subgrupo }}</td>
+                  <td class="text-center text-dark font-monospace">{{ a.dni }}</td>
+                  <td class="text-dark">{{ a.email }}</td>
+                  <td class="text-dark">{{ a.direccion }}</td>
+                  <td class="text-dark">{{ a.nombre_provincia }}</td>
+                  <td class="text-dark">{{ a.nombre_localidad }}</td>
+                  <td class="text-dark">{{ a.zona }}</td>
+                  <td class="text-dark">{{ a.celular }}</td>
+                  <td class="text-dark">{{ a.fecha_nacimiento ? mostrarFechaArg(a.fecha_nacimiento) : '' }}</td>
+                  <td class="text-dark">{{ a.telefonocontacto }}</td>
+                  <td class="text-dark">{{ a.parentescocontacto }}</td>
+                  <td class="text-dark">{{ a.movilidad }}</td>
+                  <td class="text-center text-dark">{{ a.disponibilidad_sabado }}</td>
+                  <td class="text-dark">{{ a.disponibilidad_sabado_desde }}</td>
+                  <td class="text-dark">{{ a.disponibilidad_sabado_hasta }}</td>
+                  <td class="text-center text-dark">{{ a.disponibilidad_domingo }}</td>
+                  <td class="text-dark">{{ a.disponibilidad_domingo_desde }}</td>
+                  <td class="text-dark">{{ a.disponibilidad_domingo_hasta }}</td>
+                  <td class="text-center text-dark">{{ a.juega_handball }}</td>
+                  <td class="text-dark">{{ a.donde_juega }}</td>
+                  <td class="text-dark">{{ a.categoria_handball }}</td>
+                  <td class="text-dark">
+                      <span
+                        class="d-inline-block text-truncate"
+                        style="max-width: 180px; cursor: help;"
+                        :title="a.observaciones"
+                      >
+                        {{ a.observaciones }}
+                      </span>
+                    </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <div class="mobile-only mt-3">
-            <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card-arbitro shadow-sm border-light-subtle bg-white" :class="{ 'fila-inactiva': a.es_activo == 0 }">
-              <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
-                <div class="card-name text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
-                  <span :class="['status-dot d-inline-block me-1', a.es_activo == 1 ? 'dot-active' : 'dot-inactive']" style="vertical-align: middle;"></span>
+          <!-- CARDS (Solo Celular) -->
+          <div class="d-md-none p-3 bg-light">
+            <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
+
+              <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
+                <div class="text-dark fw-bold text-uppercase d-flex align-items-center gap-2" style="font-size: 1.05rem;">
+                  <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
                   {{ a.apellido }}, {{ a.nombre }}
                 </div>
-                <div class="text-xs fw-bold" style="color: #64748b;">#{{ a.id }}</div>
+                <div class="small text-muted fw-bold font-monospace">#{{ a.id }}</div>
               </div>
 
               <div class="card-body pt-0 px-3 pb-3">
-                <div class="card-row text-dark mb-2">
+                <div class="d-flex justify-content-between text-dark mb-2 border-bottom border-secondary-subtle pb-2">
                   <span class="small"><strong>Rol:</strong> {{ obtenerNombreRol(a.rol) }}</span>
                   <span class="small"><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
                 </div>
 
-                <div class="card-info bg-light p-2 rounded border mt-2">
-                  <p class="text-dark m-0"><strong>Apto Médico:</strong> <span :class="a.apto_medico ? 'text-success fw-bold' : 'text-danger fw-bold'">{{ a.apto_medico ? 'SÍ' : 'NO' }}</span></p>
-                  <p v-if="a.celular" class="text-dark mt-1 mb-0"><strong>Celular:</strong> {{ a.celular }}</p>
-                  <p v-if="a.email" class="text-dark mt-1 mb-0 text-truncate"><strong>Email:</strong> {{ a.email }}</p>
-                  <p v-if="a.zona" class="text-dark mt-1 mb-0"><strong>Zona:</strong> {{ a.zona }}</p>
+                <div class="bg-light p-2 rounded border small mb-3 border-light-subtle">
+                  <p class="m-0 text-dark"><strong>Apto Médico:</strong> <span :class="a.apto_medico ? 'text-success fw-bold' : 'text-danger fw-bold'">{{ a.apto_medico ? 'SÍ' : 'NO' }}</span></p>
+                  <p v-if="a.celular" class="m-0 text-dark mt-1"><strong>Celular:</strong> {{ a.celular }}</p>
+                  <p v-if="a.email" class="m-0 text-dark mt-1 text-truncate"><strong>Email:</strong> {{ a.email }}</p>
+                  <p v-if="a.zona" class="m-0 text-dark mt-1"><strong>Zona:</strong> {{ a.zona }}</p>
                 </div>
 
-                <div class="d-flex gap-2 mt-3 border-top border-secondary-subtle pt-3">
-                  <button @click="editarArbitro(a)" class="btn-editar-mobile flex-grow-1 border shadow-sm">
-                    <span class="material-icons" style="font-size: 18px;">edit</span> Editar
+                <div class="d-flex gap-2">
+                  <button @click="editarArbitro(a)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                    <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
                   </button>
-                  <button @click="verHistorialArbitro(a)" class="btn-historial-mobile border shadow-sm px-3">
+                  <button @click="verHistorialArbitro(a)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
                     <span class="material-icons" style="font-size: 18px;">manage_search</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-light rounded shadow-sm border mt-3">
-              <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-              <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron registros.</p>
+            <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
+              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
+              <p class="text-muted m-0 fw-bold">No se encontraron registros.</p>
             </div>
           </div>
 
-          <div
-  class="d-flex justify-content-center align-items-center gap-3 mt-4"
-  v-if="totalPaginas > 1"
->
-
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(-1)"
-    :disabled="paginaActual <= 1"
-  >
-    <i class="bi bi-chevron-left"></i> Ant
-  </button>
-
-  <span class="fw-bold text-dark small">
-    Página {{ paginaActual }} de {{ totalPaginas }}
-  </span>
-
-  <button
-    class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-    @click="cambiarPagina(1)"
-    :disabled="paginaActual >= totalPaginas"
-  >
-    Sig <i class="bi bi-chevron-right"></i>
-  </button>
-
-</div>
+          <!-- PAGINACIÓN -->
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+              <i class="bi bi-chevron-left"></i> Ant
+            </button>
+            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+              Sig <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
 
         </div>
       </div>
     </div>
 
- <ModalBase
-      :show="mostrarModalExcel"
-      @close="mostrarModalExcel = false"
-      icono="description"
-      colorIcono="bg-success-subtle text-success"
-      maxWidth="750px"
-    >
+    <!-- ==============================================
+         MODALES
+         ============================================== -->
+
+    <!-- 1. Modal Excel -->
+    <ModalBase :show="mostrarModalExcel" @close="mostrarModalExcel = false" icono="description" colorIcono="bg-success-subtle text-success" maxWidth="750px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Exportar Listado</span>
-          <div class="text-muted small mt-1" style="font-size: 0.85rem;">
-            Marcá las columnas que querés incluir en el Excel
-          </div>
+          <div class="text-muted small mt-1">Marcá las columnas que querés incluir en el Excel</div>
         </div>
       </template>
-
       <div class="row g-2 text-start my-2 mx-auto shadow-sm p-3 rounded-3 bg-light border border-light-subtle" style="max-height: 250px; overflow-y: auto;">
         <div v-for="col in columnasExcel" :key="col.id" class="col-12 col-sm-6">
-          <div class="d-flex align-items-center gap-2 p-2 bg-white rounded border border-light-subtle">
-            <input type="checkbox" v-model="col.visible" :id="'col-'+col.id" style="width:18px; height:18px; cursor:pointer;" class="shadow-none m-0">
-            <label :for="'col-'+col.id" class="mb-0 small cursor-pointer fw-bold text-dark">{{ col.label }}</label>
+          <div class="form-check form-switch bg-white border p-2 rounded shadow-sm m-0">
+            <input class="form-check-input ms-1 shadow-none" type="checkbox" role="switch" v-model="col.visible" :id="'col-'+col.id" style="cursor:pointer;">
+            <label class="form-check-label ms-2 small fw-bold text-dark cursor-pointer" :for="'col-'+col.id">{{ col.label }}</label>
           </div>
         </div>
       </div>
-
       <template #footer>
-        <div class="w-100 d-flex justify-content-center gap-3">
-          <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold border w-50">CANCELAR</button>
-          <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-50">DESCARGAR</button>
-        </div>
+        <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100">DESCARGAR EXCEL</button>
       </template>
     </ModalBase>
 
-
-    <ModalBase
-      :show="mostrarModal"
-      @close="cerrarModal"
-      :icono="modoModal === 'editar' ? 'edit' : 'person_add'"
-      :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
-      maxWidth="900px"
-    >
+    <!-- 2. Modal Alta / Edición -->
+    <ModalBase :show="mostrarModal" @close="cerrarModal" :icono="modoModal === 'editar' ? 'edit' : 'person_add'" :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" maxWidth="900px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">{{ modoModal === 'editar' ? `Editar árbitro` : 'Registrar Nuevo Árbitro' }}</span>
-          <div v-if="modoModal === 'editar'" class="text-muted small" style="font-size: 0.85rem;">
-            ID #{{ formModal.id }} — {{ formModal.apellido }}, {{ formModal.nombre }}
-          </div>
+          <div v-if="modoModal === 'editar'" class="text-muted small">ID #{{ formModal.id }} — {{ formModal.apellido }}, {{ formModal.nombre }}</div>
         </div>
       </template>
 
       <div v-if="mensajeSolicitudActiva" class="alert alert-warning border-warning-subtle text-start shadow-sm d-flex align-items-start gap-3 p-3 mb-4 rounded-3" style="background-color: #fffbeb;">
         <span class="material-icons text-warning mt-1">assignment_late</span>
         <div class="w-100">
-          <strong class="d-block text-dark mb-1 text-uppercase" style="font-size: 0.85rem;">Solicitud del árbitro:</strong>
-          <div class="text-dark text-break" style="font-size: 0.85rem; white-space: pre-line; line-height: 1.5; text-align: justify;">{{ mensajeSolicitudActiva }}</div>
+          <strong class="d-block text-dark mb-1 text-uppercase small">Solicitud del árbitro:</strong>
+          <div class="text-dark text-break small" style="white-space: pre-line; line-height: 1.5; text-align: justify;">{{ mensajeSolicitudActiva }}</div>
         </div>
       </div>
 
       <form id="formArbitro" @submit.prevent="modoModal === 'editar' ? confirmarEdicion() : confirmarAlta()" class="text-start">
-        <div class="row g-3 m-0 pb-3">
+        <div class="row g-3 pb-3">
 
-          <div class="col-12 seccion-titulo mt-0 border-secondary-subtle">Datos básicos</div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">Apellido *</label><input v-model="formModal.apellido" class="form-control custom-input shadow-none" required></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">Nombre *</label><input v-model="formModal.nombre" class="form-control custom-input shadow-none" required></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">DNI</label><input v-model="formModal.dni" class="form-control custom-input shadow-none"></div>
-          <div class="col-md-6"><label class="small fw-bold text-dark">Email (Usuario) *</label><input v-model="formModal.email" class="form-control custom-input shadow-none" type="email" required></div>
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-0">Datos básicos</div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Apellido *</label><input v-model="formModal.apellido" class="form-control shadow-none border-secondary-subtle" required></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Nombre *</label><input v-model="formModal.nombre" class="form-control shadow-none border-secondary-subtle" required></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">DNI</label><input v-model="formModal.dni" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-6"><label class="small fw-bold text-dark mb-1">Email (Usuario) *</label><input v-model="formModal.email" type="email" class="form-control shadow-none border-secondary-subtle" required></div>
           <div class="col-md-6">
-            <label class="small fw-bold text-dark">{{ modoModal === 'nuevo' ? 'Password *' : 'Password (dejar vacío para no cambiar)' }}</label>
-            <input v-model="formModal.password" type="text" class="form-control custom-input shadow-none" :placeholder="modoModal === 'editar' ? '••••••••' : ''" :required="modoModal === 'nuevo'">
+            <label class="small fw-bold text-dark mb-1">{{ modoModal === 'nuevo' ? 'Password *' : 'Password (vacío no cambia)' }}</label>
+            <input v-model="formModal.password" type="text" class="form-control shadow-none border-secondary-subtle" :placeholder="modoModal === 'editar' ? '••••••••' : ''" :required="modoModal === 'nuevo'">
           </div>
 
-          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Clasificación</div>
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Clasificación</div>
           <div class="col-md-3">
-            <label class="small fw-bold text-dark">Rol</label>
-            <select v-model="formModal.rol" class="form-select custom-input shadow-none">
-              <option :value="1">Árbitro</option>
-              <option :value="2">Observador</option>
-              <option :value="4">Coordinador general</option>
-              <option :value="0">Ninguno</option>
+            <label class="small fw-bold text-dark mb-1">Rol</label>
+            <select v-model="formModal.rol" class="form-select shadow-none border-secondary-subtle">
+              <option :value="1">Árbitro</option><option :value="2">Observador</option><option :value="4">Coordinador</option><option :value="0">Ninguno</option>
             </select>
           </div>
           <div class="col-md-3">
-            <label class="small fw-bold text-dark">Estado</label>
-            <select v-model="formModal.es_activo" class="form-select custom-input shadow-none">
-              <option :value="1">Activo</option>
-              <option :value="0">Inactivo</option>
+            <label class="small fw-bold text-dark mb-1">Estado</label>
+            <select v-model="formModal.es_activo" class="form-select shadow-none border-secondary-subtle">
+              <option :value="1">Activo</option><option :value="0">Inactivo</option>
             </select>
           </div>
           <div class="col-md-2">
-            <label class="small fw-bold text-dark">Grupo</label>
-            <select v-model="formModal.grupo" class="form-select custom-input shadow-none">
-              <option value="LH">LH</option>
-              <option value="Pre Liga">Pre Liga</option>
-              <option value="SR">SR</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
+            <label class="small fw-bold text-dark mb-1">Grupo</label>
+            <select v-model="formModal.grupo" class="form-select shadow-none border-secondary-subtle">
+              <option value="LH">LH</option><option value="Pre Liga">Pre Liga</option><option value="SR">SR</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
             </select>
           </div>
           <div class="col-md-2" v-if="formModal.grupo == '3'">
-            <label class="small fw-bold text-dark">Subgrupo</label>
-            <select v-model="formModal.subgrupo" class="form-select custom-input shadow-none">
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
+            <label class="small fw-bold text-dark mb-1">Subgrupo</label>
+            <select v-model="formModal.subgrupo" class="form-select shadow-none border-secondary-subtle">
+              <option value="A">A</option><option value="B">B</option><option value="C">C</option>
             </select>
           </div>
           <div class="col-md-2" v-else></div>
           <div class="col-md-2">
-            <label class="small fw-bold text-dark">Apto Médico</label>
-            <select v-model="formModal.apto_medico" class="form-select custom-input shadow-none">
-              <option :value="true">SI</option>
-              <option :value="false">NO</option>
+            <label class="small fw-bold text-dark mb-1">Apto Médico</label>
+            <select v-model="formModal.apto_medico" class="form-select shadow-none border-secondary-subtle">
+              <option :value="true">SI</option><option :value="false">NO</option>
             </select>
           </div>
 
-          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Ubicación</div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">Provincia</label><selProvincia v-model="formModal.provincia" :provincias="provincias" class="form-select custom-input shadow-none" /></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">Localidad</label><selLocalidad v-model="formModal.localidad" :localidades="localidades.filter(l => l.provincia_id == formModal.provincia)" class="form-select custom-input shadow-none" /></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">Zona</label><input v-model="formModal.zona" class="form-control custom-input shadow-none"></div>
-          <div class="col-12"><label class="small fw-bold text-dark">Dirección</label><input v-model="formModal.direccion" class="form-control custom-input shadow-none"></div>
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Ubicación</div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Provincia</label><selProvincia v-model="formModal.provincia" :provincias="provincias" class="form-select shadow-none border-secondary-subtle" /></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Localidad</label><selLocalidad v-model="formModal.localidad" :localidades="localidades.filter(l => l.provincia_id == formModal.provincia)" class="form-select shadow-none border-secondary-subtle" /></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Zona</label><input v-model="formModal.zona" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-12"><label class="small fw-bold text-dark mb-1">Dirección</label><input v-model="formModal.direccion" class="form-control shadow-none border-secondary-subtle"></div>
 
-          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Contacto y Movilidad</div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">Celular</label><input v-model="formModal.celular" class="form-control custom-input shadow-none"></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">Tel. Contacto</label><input v-model="formModal.telefonocontacto" class="form-control custom-input shadow-none"></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">Parentesco</label><input v-model="formModal.parentescocontacto" class="form-control custom-input shadow-none"></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">F. Nacimiento</label><input type="date" v-model="formModal.fecha_nacimiento" class="form-control custom-input shadow-none"></div>
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Contacto y Movilidad</div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Celular</label><input v-model="formModal.celular" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Tel. Contacto</label><input v-model="formModal.telefonocontacto" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Parentesco</label><input v-model="formModal.parentescocontacto" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">F. Nacimiento</label><input type="date" v-model="formModal.fecha_nacimiento" class="form-control shadow-none border-secondary-subtle"></div>
           <div class="col-md-8">
-            <label class="small fw-bold text-dark">Movilidad</label>
-            <div class="checkbox-group bg-light p-2 rounded border border-light-subtle d-flex align-items-center gap-3">
-              <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="moto" v-model="movilidadArray" class="me-1"> Moto</label>
-              <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="transporte publico" v-model="movilidadArray" class="me-1"> Transporte</label>
-              <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="auto" v-model="movilidadArray" class="me-1"> Auto</label>
-              <label class="checkbox-item mb-0 text-dark fw-bold"><input type="checkbox" value="bici" v-model="movilidadArray" class="me-1"> Bici</label>
+            <label class="small fw-bold text-dark mb-1">Movilidad</label>
+            <div class="bg-light p-2 rounded border shadow-sm d-flex flex-wrap align-items-center gap-3 border-light-subtle">
+              <div class="form-check m-0"><input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" value="moto" v-model="movilidadArray" id="movMoto"><label class="form-check-label small fw-bold mt-1" for="movMoto">Moto</label></div>
+              <div class="form-check m-0"><input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" value="transporte publico" v-model="movilidadArray" id="movTrans"><label class="form-check-label small fw-bold mt-1" for="movTrans">Transporte</label></div>
+              <div class="form-check m-0"><input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" value="auto" v-model="movilidadArray" id="movAuto"><label class="form-check-label small fw-bold mt-1" for="movAuto">Auto</label></div>
+              <div class="form-check m-0"><input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" value="bici" v-model="movilidadArray" id="movBici"><label class="form-check-label small fw-bold mt-1" for="movBici">Bici</label></div>
             </div>
           </div>
 
-          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Disponibilidad</div>
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Disponibilidad</div>
           <div class="col-md-2">
-            <label class="small fw-bold text-dark">Sáb. Disp.</label>
-            <select v-model="formModal.disponibilidad_sabado" class="form-select custom-input shadow-none">
+            <label class="small fw-bold text-dark mb-1">Sáb. Disp.</label>
+            <select v-model="formModal.disponibilidad_sabado" class="form-select shadow-none border-secondary-subtle">
               <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
             </select>
           </div>
-          <div class="col-md-2"><label class="small fw-bold text-dark">Sáb. Desde</label><input type="time" v-model="formModal.disponibilidad_sabado_desde" class="form-control custom-input shadow-none"></div>
-          <div class="col-md-2"><label class="small fw-bold text-dark">Sáb. Hasta</label><input type="time" v-model="formModal.disponibilidad_sabado_hasta" class="form-control custom-input shadow-none"></div>
+          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Sáb. Desde</label><input type="time" v-model="formModal.disponibilidad_sabado_desde" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Sáb. Hasta</label><input type="time" v-model="formModal.disponibilidad_sabado_hasta" class="form-control shadow-none border-secondary-subtle"></div>
           <div class="col-md-2">
-            <label class="small fw-bold text-dark">Dom. Disp.</label>
-            <select v-model="formModal.disponibilidad_domingo" class="form-select custom-input shadow-none">
+            <label class="small fw-bold text-dark mb-1">Dom. Disp.</label>
+            <select v-model="formModal.disponibilidad_domingo" class="form-select shadow-none border-secondary-subtle">
               <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
             </select>
           </div>
-          <div class="col-md-2"><label class="small fw-bold text-dark">Dom. Desde</label><input type="time" v-model="formModal.disponibilidad_domingo_desde" class="form-control custom-input shadow-none"></div>
-          <div class="col-md-2"><label class="small fw-bold text-dark">Dom. Hasta</label><input type="time" v-model="formModal.disponibilidad_domingo_hasta" class="form-control custom-input shadow-none"></div>
+          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Dom. Desde</label><input type="time" v-model="formModal.disponibilidad_domingo_desde" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Dom. Hasta</label><input type="time" v-model="formModal.disponibilidad_domingo_hasta" class="form-control shadow-none border-secondary-subtle"></div>
 
-          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Handball</div>
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Handball</div>
           <div class="col-md-4">
-            <label class="small fw-bold text-dark">Juega handball</label>
-            <select v-model="formModal.juega_handball" class="form-select custom-input shadow-none">
-              <option value="SI">SI</option>
-              <option value="NO">NO</option>
+            <label class="small fw-bold text-dark mb-1">Juega handball</label>
+            <select v-model="formModal.juega_handball" class="form-select shadow-none border-secondary-subtle">
+              <option value="SI">SI</option><option value="NO">NO</option>
             </select>
           </div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">Club</label><input v-model="formModal.donde_juega" class="form-control custom-input shadow-none" :disabled="formModal.juega_handball !== 'SI'"></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark">Categoría</label><input v-model="formModal.categoria_handball" class="form-control custom-input shadow-none" :disabled="formModal.juega_handball !== 'SI'"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Club</label><input v-model="formModal.donde_juega" class="form-control shadow-none border-secondary-subtle" :disabled="formModal.juega_handball !== 'SI'"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Categoría</label><input v-model="formModal.categoria_handball" class="form-control shadow-none border-secondary-subtle" :disabled="formModal.juega_handball !== 'SI'"></div>
 
-          <div class="col-12 seccion-titulo border-secondary-subtle mt-4">Observaciones</div>
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Observaciones</div>
           <div class="col-12">
-            <textarea v-model="formModal.observaciones" class="form-control custom-input shadow-none" rows="3" style="height:auto; resize:vertical;"></textarea>
+            <textarea v-model="formModal.observaciones" class="form-control shadow-none border-secondary-subtle" rows="3"></textarea>
           </div>
 
         </div>
       </form>
 
       <template #footer>
-        <div class="w-100 d-flex justify-content-center gap-3">
-          <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border w-50">CANCELAR</button>
-          <button type="submit" form="formArbitro" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-50" :disabled="cargando">
-            <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
-            {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR ÁRBITRO' }}
-          </button>
-        </div>
+        <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">CANCELAR</button>
+        <button type="submit" form="formArbitro" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
+          <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
+          {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR ÁRBITRO' }}
+        </button>
       </template>
     </ModalBase>
 
+    <!-- 3. Modal Solicitudes de Cambios -->
+    <ModalBase :show="mostrarModalSolicitudes" @close="mostrarModalSolicitudes = false" icono="history" colorIcono="bg-primary-subtle text-primary" maxWidth="800px">
+      <template #header>
+        <div class="text-center">
+          <span class="fw-bold fs-5">Solicitudes de Cambios</span>
+        </div>
+      </template>
 
-    <ModalBase
-  :show="mostrarModalSolicitudes"
-  @close="mostrarModalSolicitudes = false"
-  icono="history"
-  colorIcono="bg-primary-subtle text-primary"
-  maxWidth="800px"
->
-  <template #header>
-    <div class="text-center">
-      <span class="fw-bold fs-5">Solicitudes de Cambios</span>
-    </div>
-  </template>
-
-  <div class="d-flex flex-wrap flex-sm-nowrap justify-content-between gap-2 w-100 bg-light p-2 rounded-3 border border-light-subtle mb-4">
-    <button class="btn fw-bold rounded px-2 py-1 flex-fill d-flex align-items-center justify-content-center gap-1"
-            :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm text-white' : 'btn-transparent text-muted'"
-            style="font-size: 0.8rem;"
-            @click="tabActivo = 'enviado'">
-      PENDIENTES
-      <span v-if="solicitudesPendientes.length > 0"
-            class="badge bg-white text-primary rounded-pill p-1 d-flex align-items-center justify-content-center"
-            style="font-size: 0.7rem; min-width: 20px;">
-        {{ solicitudesPendientes.length }}
-      </span>
-    </button>
-    <button class="btn fw-bold rounded px-2 py-1 flex-fill"
-            :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm text-white' : 'btn-transparent text-muted'"
-            style="font-size: 0.8rem;"
-            @click="tabActivo = 'aprobado'">
-      APROBADAS
-    </button>
-    <button class="btn fw-bold rounded px-2 py-1 flex-fill"
-            :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'"
-            style="font-size: 0.8rem;"
-            @click="tabActivo = 'rechazado'">
-      RECHAZADAS
-    </button>
-  </div>
-
-  <div v-if="cargandoSolicitudes" class="text-center py-5">
-    <span class="spinner-border text-primary"></span>
-    <p class="text-muted mt-2 small fw-bold">Cargando solicitudes...</p>
-  </div>
-
-  <div v-else-if="solicitudesMostradas.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
-    <span class="material-icons mb-2 d-block mx-auto" style="font-size: 48px; color: #cbd5e1;">
-      {{ tabActivo === 'enviado' ? 'inbox' : (tabActivo === 'aprobado' ? 'check_circle_outline' : 'highlight_off') }}
-    </span>
-    <p class="mb-0 fw-bold">No hay solicitudes {{ tabActivo === 'enviado' ? 'pendientes' : tabActivo + 's' }}.</p>
-  </div>
-
-  <div v-else v-for="sol in solicitudesMostradas" :key="sol.id"
-       class="shadow-sm mb-3 bg-white p-3 rounded-3 border"
-       :class="{'border-success-subtle': sol.estado === 'aprobado', 'border-danger-subtle': sol.estado === 'rechazado'}">
-
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-
-      <div style="flex: 1 1 0%; min-width: 0;">
-        <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
-        <strong class="d-block text-dark mb-1 fs-6 text-uppercase">{{ sol.arbitro_nombre }}</strong>
-        <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle"
-           style="white-space: pre-line; line-height: 1.4; text-align: justify; word-break: break-word;">
-          {{ sol.mensaje }}
-        </p>
+      <div class="d-flex flex-wrap flex-sm-nowrap justify-content-between gap-2 w-100 bg-light p-2 rounded-3 border border-light-subtle mb-4">
+        <button class="btn fw-bold rounded px-2 py-1 flex-fill d-flex align-items-center justify-content-center gap-1"
+                :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm text-white' : 'btn-transparent text-muted'" style="font-size: 0.8rem;" @click="tabActivo = 'enviado'">
+          PENDIENTES
+          <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-primary rounded-pill p-1 d-flex align-items-center justify-content-center" style="font-size: 0.7rem; min-width: 20px;">
+            {{ solicitudesPendientes.length }}
+          </span>
+        </button>
+        <button class="btn fw-bold rounded px-2 py-1 flex-fill"
+                :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm text-white' : 'btn-transparent text-muted'" style="font-size: 0.8rem;" @click="tabActivo = 'aprobado'">
+          APROBADAS
+        </button>
+        <button class="btn fw-bold rounded px-2 py-1 flex-fill"
+                :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'" style="font-size: 0.8rem;" @click="tabActivo = 'rechazado'">
+          RECHAZADAS
+        </button>
       </div>
 
-      <div class="d-flex flex-column align-items-start align-items-md-end gap-2" style="flex: 0 0 auto;">
+      <div v-if="cargandoSolicitudes" class="text-center py-5">
+        <span class="spinner-border text-primary"></span>
+        <p class="text-muted mt-2 small fw-bold">Cargando solicitudes...</p>
+      </div>
 
-        <span class="badge align-self-start align-self-md-end"
-              :class="sol.estado === 'aprobado' ? 'bg-success' : (sol.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
-          {{ sol.estado ? sol.estado.toUpperCase() : 'ENVIADO' }}
+      <div v-else-if="solicitudesMostradas.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
+        <span class="material-icons mb-2 d-block mx-auto" style="font-size: 48px; color: #cbd5e1;">
+          {{ tabActivo === 'enviado' ? 'inbox' : (tabActivo === 'aprobado' ? 'check_circle_outline' : 'highlight_off') }}
         </span>
+        <p class="mb-0 fw-bold">No hay solicitudes {{ tabActivo === 'enviado' ? 'pendientes' : tabActivo + 's' }}.</p>
+      </div>
 
-        <div class="d-flex flex-wrap flex-md-nowrap gap-2 mt-2 w-100 justify-content-start justify-content-md-end" v-if="sol.estado === 'enviado'">
+      <div v-else v-for="sol in solicitudesMostradas" :key="sol.id"
+           class="shadow-sm mb-3 bg-white p-3 rounded-3 border"
+           :class="{'border-success-subtle': sol.estado === 'aprobado', 'border-danger-subtle': sol.estado === 'rechazado'}">
 
-          <button @click="abrirEdicionDesdeSolicitud(sol)"
-                  class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1 fw-bold flex-fill"
-                  title="Abrir legajo para editar">
-            <span class="material-icons" style="font-size: 16px;">edit</span> LEGAJO
-          </button>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+          <div style="flex: 1 1 0%; min-width: 0;">
+            <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
+            <strong class="d-block text-dark mb-1 fs-6 text-uppercase">{{ sol.arbitro_nombre }}</strong>
+            <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle" style="white-space: pre-line; line-height: 1.4; text-align: justify; word-break: break-word;">
+              {{ sol.mensaje }}
+            </p>
+          </div>
 
-          <button @click="rechazarSolicitud(sol)" class="btn btn-sm btn-danger fw-bold flex-fill">
-            RECHAZAR
-          </button>
+          <div class="d-flex flex-column align-items-start align-items-md-end gap-2" style="flex: 0 0 auto;">
+            <span class="badge align-self-start align-self-md-end"
+                  :class="sol.estado === 'aprobado' ? 'bg-success' : (sol.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
+              {{ sol.estado ? sol.estado.toUpperCase() : 'ENVIADO' }}
+            </span>
 
-          <button @click="aprobarSolicitud(sol)" class="btn btn-sm btn-success fw-bold flex-fill">
-            APROBAR
-          </button>
-
+            <div class="d-flex flex-wrap flex-md-nowrap gap-2 mt-2 w-100 justify-content-start justify-content-md-end" v-if="sol.estado === 'enviado'">
+              <button @click="abrirEdicionDesdeSolicitud(sol)" class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1 fw-bold flex-fill" title="Abrir legajo para editar">
+                <span class="material-icons" style="font-size: 16px;">edit</span> LEGAJO
+              </button>
+              <button @click="rechazarSolicitud(sol)" class="btn btn-sm btn-danger fw-bold flex-fill">RECHAZAR</button>
+              <button @click="aprobarSolicitud(sol)" class="btn btn-sm btn-success fw-bold flex-fill">APROBAR</button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</ModalBase>
+    </ModalBase>
 
-
-    <ModalBase
-      :show="mostrarModalHistorialArbitro"
-      @close="mostrarModalHistorialArbitro = false"
-      icono="manage_search"
-      colorIcono="bg-warning-subtle text-warning-emphasis"
-      maxWidth="850px"
-    >
+    <!-- 4. Modal Historial Árbitro -->
+    <ModalBase :show="mostrarModalHistorialArbitro" @close="mostrarModalHistorialArbitro = false" icono="manage_search" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="850px">
       <template #header>
         <div class="text-center">
           <div class="fw-bold fs-5">Historial de {{ arbitroSeleccionado.apellido }}, {{ arbitroSeleccionado.nombre }}</div>
           <span v-if="!cargandoHistorialArbitro" class="badge bg-dark rounded-pill fs-6 mt-1" title="Total de solicitudes">{{ historialArbitro.length }}</span>
         </div>
       </template>
-
 
       <div v-if="cargandoHistorialArbitro" class="text-center py-5">
         <span class="spinner-border text-warning"></span>
@@ -623,18 +542,19 @@
       </div>
 
       <div v-else>
+        <!-- Tabla (Escritorio) -->
         <div class="table-responsive d-none d-md-block bg-white rounded shadow-sm border border-light-subtle">
-          <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem; table-layout: fixed; width: 100%;">
-            <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
+          <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.75rem; table-layout: fixed; width: 100%;">
+            <thead class="table-light">
               <tr>
-                <th class="py-2 ps-3 fw-bold text-uppercase" style="width: 120px; font-size: 0.75rem;">Fecha</th>
-                <th class="py-2 fw-bold text-uppercase" style="width: 140px; font-size: 0.75rem;">Tipo</th>
-                <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Mensaje</th>
-                <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="width: 100px; font-size: 0.75rem;">Estado</th>
+                <th class="py-2 ps-3 fw-bold text-uppercase text-muted" style="width: 120px; font-size: 0.75rem;">Fecha</th>
+                <th class="py-2 fw-bold text-uppercase text-muted" style="width: 140px; font-size: 0.75rem;">Tipo</th>
+                <th class="py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Mensaje</th>
+                <th class="text-center py-2 pe-3 fw-bold text-uppercase text-muted" style="width: 100px; font-size: 0.75rem;">Estado</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="h in historialArbitro" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
+              <tr v-for="h in historialArbitro" :key="h.id">
                 <td class="text-muted fw-bold ps-3 py-3">{{ h.fecha }}</td>
                 <td class="text-uppercase text-dark py-3" style="font-size: 0.75rem;">{{ h.tipo_solicitud || 'general' }}</td>
                 <td class="text-dark py-3" style="white-space: pre-wrap; word-wrap: break-word;">{{ h.mensaje }}</td>
@@ -648,12 +568,13 @@
           </table>
         </div>
 
-        <div class="d-block d-md-none">
-          <div v-for="h in historialArbitro" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded p-3 mb-3 shadow-sm bg-white">
+        <!-- Tarjetas (Móvil) -->
+        <div class="d-md-none d-flex flex-column gap-2">
+          <div v-for="h in historialArbitro" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded p-3 shadow-sm bg-white">
             <div class="d-flex justify-content-between align-items-start mb-2 border-bottom border-secondary-subtle pb-2">
               <div>
-                <span class="d-block fw-bold text-dark" style="font-size: 0.85rem;">{{ h.fecha }}</span>
-                <span class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">TIPO: {{ h.tipo_solicitud || 'GENERAL' }}</span>
+                <span class="d-block fw-bold text-dark" style="font-size: 0.75rem;">{{ h.fecha }}</span>
+                <span class="text-uppercase text-muted fw-bold" style="font-size: 0.75rem;">TIPO: {{ h.tipo_solicitud || 'GENERAL' }}</span>
               </div>
               <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
                 {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
@@ -669,6 +590,7 @@
 
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
@@ -1114,220 +1036,122 @@ onMounted(() => {
 
 <style scoped>
 /* ====================================================
-   1. BASE (MOBILE FIRST - CELULARES POR DEFECTO)
+   ESTILOS GENERALES
    ==================================================== */
-
-/* Contenedor principal exacto como lo solicitaste */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
   min-height: 100vh;
-  height: auto !important;
   margin-left: 50%;
   transform: translateX(-50%);
-  padding: 20px;
   padding-bottom: 120px;
-  box-sizing: border-box;
 }
 
-/* Ajuste de padding exclusivo para celulares */
-@media (max-width: 767px) {
-  .full-screen-wrapper { padding: 0 15px 20px 15px !important; }
-}
-
-/* Estructura base (Celulares) */
 .admin-panel {
   width: 100%;
-  max-width: 100%;
-  padding: 0;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;
   background-color: #0f172a;
   min-height: 100vh;
-  border-radius: 0;
-}
-
-/* Cabecera Móvil */
-.header-section {
-  background: white;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 15px;
-  border-left: 5px solid #ef4444;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-.header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
-.title { font-size: 1.25rem; font-weight: bold; margin: 0; color: #000; }
-.counter { font-size: 0.85rem; color: #64748b; }
-
-/* Botones Móvil: En una sola línea sin desbordar */
-.header-actions {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap; /* CLAVE: Fuerza a que estén en la misma línea */
-  justify-content: center;
-  gap: 8px;
-  overflow-x: auto; /* Por si la pantalla es extremadamente chica, permite deslizar en vez de romperse */
-}
-.btn-action {
-  border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: opacity 0.2s, transform 0.1s;
-  flex: none; width: 42px; height: 42px; padding: 0;
-}
-.btn-action:hover { opacity: 0.85; }
-.btn-action:active { transform: scale(0.95); }
-.btn-text { display: none; } /* Oculto en móvil */
-
-.btn-clear { background: #e2e8f0; color: #0f172a; border: 1px solid #e2e8f0; }
-.btn-clear-checks { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
-.btn-export { background: #10b981; color: white; }
-.btn-blue { background: #3b82f6; color: white; }
-
-/* Visibilidad de Capas Base */
-.desktop-only { display: none; }
-.mobile-only { display: block; }
-.mobile-only-flex { display: flex; }
-
-/* Filtros Móvil */
-.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
-.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filter-input-mobile {
-  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
-  font-size: 12px; width: 100%; outline: none; background: #ffffff; color: #334155;
-}
-.filter-input-mobile:focus { border-color: #3b82f6; background: white; }
-.filter-input-mobile::placeholder { color: #000000; }
-
-/* Tarjetas Móviles (Listado) */
-.card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-.card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
-.card-name { display: flex; align-items: center; gap: 8px; font-size: 1.05rem; color: #0f172a; }
-.card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-.card-info p { font-size: 0.85rem; color: #475569; margin: 4px 0; }
-
-.btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-.btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-.btn-eliminar-mobile { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold;}
-
-/* Estado Inactivo (Móvil) */
-.card-arbitro.fila-inactiva { background-color: #fca5a5 !important; border-color: #dc2626; }
-.card-arbitro.fila-inactiva .card-name,
-.card-arbitro.fila-inactiva .card-row,
-.card-arbitro.fila-inactiva .card-info p,
-.card-arbitro.fila-inactiva .card-header .text-xs { color: #000000 !important; }
-.card-arbitro.fila-inactiva .btn-editar-mobile { background: #fff; border-color: #fff; color: #000000 ; }
-.card-arbitro.fila-inactiva .btn-historial-mobile { background: #fff; border-color: #fff; color: #000000; }
-
-/* Estados Generales y Badges */
-.status-wrapper { display: flex; align-items: center; gap: 5px; justify-content: center; }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-active { background: #10b981; }
-.dot-inactive { background: #ff0000; border: 1px solid #ff0000; }
-.read-only-text { padding: 10px 5px; font-size: 0.85rem; color: #1e293b; }
-
-
-.text-xs { font-size: 0.75rem; }
-
-/* Componentes internos de Modal/Formularios */
-.seccion-titulo { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; margin-top: 15px; width: 100%; }
-.checkbox-group { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 5px; }
-.checkbox-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; cursor: pointer; color: #000; }
-.custom-input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; background-color: #ffffff; transition: all 0.3s ease; }
-.custom-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); outline: none; }
-
-/* Utilitarios compartidos */
-.btn-editar, .btn-historial, .btn-eliminar {
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
-}
-.btn-editar { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
-.btn-editar:hover { background: #dbeafe; }
-.btn-historial { background: #fef3c7; border-color: #fde047; color: #d97706; }
-.btn-historial:hover { background: #fde047; }
-.btn-eliminar { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
-.btn-eliminar:hover { background: #fee2e2; }
-
-.animate__animated { animation-duration: 0.5s; }
-
-
-/* ====================================================
-   2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
-   ==================================================== */
-@media (min-width: 768px) {
-
-  .admin-panel { padding: 20px; border-radius: 12px; }
-
-  /* Cambio de visibilidad */
-  .desktop-only { display: block; }
-  .mobile-only { display: none; }
-  .mobile-only-flex { display: none; }
-
-  /* Reestructuración Cabecera */
-  .header-section { flex-direction: row; align-items: center; justify-content: space-between; border-radius: 8px; padding: 15px 25px; }
-  .header-info { width: auto; align-items: flex-start; }
-  .title { font-size: 1.1rem; }
-
-  /* Reestructuración Botones */
-  .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; overflow-x: visible; }
-  .btn-action { width: auto; height: auto; padding: 8px 12px; gap: 5px; font-size: 0.85rem; justify-content: flex-start; }
-  .btn-text { display: inline; }
-
-  /* Filtros a 2 columnas */
-  .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 0; }
-  .filter-input-mobile { font-size: 0.85rem; }
-  .filter-grid-mobile select.full-width { grid-column: span 2; }
-
-  /* TABLA DESKTOP */
-  .table-container {
-    width: 100%; overflow: auto; max-height: 85vh;
-    background: white; border-radius: 8px; border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  }
-  table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-
-  thead tr.main-header th {
-    position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
-    padding: 12px 8px; border-bottom: 1px solid #cbd5e1;
-    font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
-  }
-  thead tr.filter-row td {
-    position: sticky; top: 41px; z-index: 40; background: #f1F5F9 !important;
-    padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0; margin: 0;
-  }
-
-  /* Columnas Fijas (Sticky) */
-  .sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-  thead th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
-  thead td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
-
-  .col-id { left: 0; width: 50px; text-align: center; }
-  .col-acciones { left: 50px; width: 80px; }
-  .col-apellido { left: 130px; width: 140px; }
-  .col-nombre { left: 270px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-
-  .col-ultra-compact { width: 65px !important; min-width: 65px !important; text-align: center !important; }
-  .col-dni-compact { width: 90px; text-align: center; }
-  .obs-cell { white-space: normal; min-width: 200px; }
-
-
-  .cell-ro { padding: 10px 8px; font-size: 0.85rem; color: inherit; white-space: nowrap; border-bottom: 1px solid #f1f5f9; }
-  .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; outline: none;}
-
-  /* Filas Inactivas y Hover */
-  .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #fca5a5 !important; font-weight: bold; color: #000000 !important; }
-  .row-hover:hover td { background-color: #e2e8f0; }
-  .fila-inactiva.row-hover:hover td, .fila-inactiva.row-hover:hover .sticky-col { background-color: #dc2626 !important; }
+  border-radius: 12px;
 }
 
 /* ====================================================
-   3. PANTALLAS GRANDES (Desde 1024px hacia arriba)
+   PUNTOS DE ESTADO (Activo/Inactivo)
    ==================================================== */
-@media (min-width: 1024px) {
-  /* Si en el futuro querés darle más aire o restringir anchos en monitores muy grandes, va acá */
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ====================================================
+   UTILIDADES
+   ==================================================== */
+.btn-danger-subtle {
+  background: #fee2e2;
+  color: #dc3545;
+  border: 1px solid transparent;
+}
+.btn-danger-subtle:hover {
+  background: #fecaca;
+}
+
+.animate__animated {
+  animation-duration: 0.5s;
+}
+
+/* ====================================================
+   TABLA CON COLUMNAS FIJAS
+   ==================================================== */
+.tabla-container {
+  overflow-x: auto;
+}
+
+.tabla-fija {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Eliminar bordes verticales de las celdas */
+.tabla-fija th,
+.tabla-fija td {
+  border-left: none !important;
+  border-right: none !important;
+}
+
+/* Columnas fijas con position: sticky base (para los datos) */
+.col-fija {
+  position: sticky;
+  background-color: inherit;
+  z-index: 10;
+}
+
+/* Fondo para thead y Z-INDEX ALTO para que tape los datos al scrollear hacia abajo */
+.tabla-fija thead .col-fija {
+  background-color: #f8f9fa;
+  z-index: 12;
+}
+
+/* Fondo para tbody */
+.tabla-fija tbody .col-fija {
+  background-color: #ffffff;
+}
+
+/* Fondo especial para filas con bg-danger-subtle */
+.tabla-fija tbody tr.bg-danger-subtle .col-fija {
+  background-color: #f8d7da;
+}
+
+/* Posiciones de las columnas fijas */
+.col-id {
+  left: 0;
+  min-width: 60px;
+}
+
+.col-acciones {
+  left: 60px;
+  min-width: 100px;
+}
+
+.col-apellido {
+  left: 160px;
+  min-width: 150px;
+}
+
+.col-nombre {
+  left: 310px;
+  min-width: 150px;
+}
+
+/* Sombra sutil en el borde derecho de la última columna fija */
+.col-nombre::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent);
 }
 </style>

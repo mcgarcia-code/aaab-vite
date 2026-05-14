@@ -1,258 +1,209 @@
 <template>
-  <div class="full-screen-wrapper">
+  <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
-          <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
+        <!-- HEADER RESPONSIVO -->
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div class="border-start border-danger border-5 ps-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-calendar-check-fill me-1"></i> Control de Designaciones
             </h4>
-            <span class="counter mt-1 d-block text-muted">Total: {{ arbitrosFiltrados.length }} árbitros</span>
+            <span class="text-muted small d-block mt-1">Total: {{ arbitrosFiltrados.length }} árbitros</span>
           </div>
 
-          <div class="header-actions">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-filter-mobile mobile-only">
-              <span class="material-icons">filter_alt</span>
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+              <span class="material-icons fs-6">filter_alt</span>
             </button>
 
-            <button @click="limpiarFiltros" class="btn-action btn-clear">
-              <span class="material-icons">filter_alt_off</span>
-              <span class="btn-text">Limpiar</span>
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
 
-            <button @click="mostrarModalSubida = true" class="btn-action btn-upload text-success" style="padding-left: 8px; padding-right: 10px; background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
-              <span class="material-icons" style="font-size: 16px; line-height: 1;">cloud_upload</span>
-              <span class="btn-text" style="line-height: 1;">Publicar</span>
+            <button @click="mostrarModalSubida = true" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white">
+              <span class="material-icons fs-6">cloud_upload</span>
+              <span class="fw-bold d-none d-md-inline small">Publicar</span>
             </button>
 
-            <button @click="solicitarLimpiarChecks" class="btn-action btn-clear-checks desktop-only" style="padding-left: 8px; padding-right: 10px;">
-              <span class="material-icons" style="font-size: 16px; line-height: 1;">check_box_outline_blank</span>
-              <span class="btn-text" style="line-height: 1;">Tildes</span>
+            <button @click="solicitarLimpiarChecks" class="btn btn-danger shadow-sm py-2 d-flex align-items-center gap-2 text-white d-none d-md-flex">
+              <span class="material-icons fs-6">check_box_outline_blank</span>
+              <span class="fw-bold small">Tildes</span>
             </button>
 
-            <button @click="exportarExcel" class="btn-action btn-export">
-              <span class="material-icons">download</span>
-              <span class="btn-text">Excel</span>
+            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
+              <span class="material-icons fs-6">download</span>
+              <span class="fw-bold d-none d-md-inline small">Excel</span>
             </button>
           </div>
         </div>
 
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
+        <!-- PANEL DE FILTROS (Solo Móvil) -->
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none']">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR ÁRBITROS</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-              <span class="material-icons" style="font-size: 20px;">close</span>
-            </button>
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Árbitros</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
-          <div class="filter-grid-mobile">
-            <input v-model="filtros.apellido" placeholder="Apellido..">
-            <input v-model="filtros.nombre" placeholder="Nombre..">
-
-            <div class="mobile-select-group">
-              <label>Estado Activo:</label>
-              <select v-model="filtros.es_activo">
-                <option value="">Todos los estados</option>
-                <option value="1">Sólo Activos</option>
-                <option value="0">Sólo Inactivos</option>
+          <div class="row g-2">
+            <div class="col-6"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido..."></div>
+            <div class="col-6"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre..."></div>
+            <div class="col-6">
+              <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none">
+                <option value="">Activo (Todos)</option><option value="1">Sólo Activos</option><option value="0">Sólo Inactivos</option>
               </select>
             </div>
-
-            <div class="mobile-select-group">
-              <label>Licencia / Sanción:</label>
-              <select v-model="filtros.licencia">
-                <option value="">Todos</option>
-                <option value="sin_licencia">Sin Licencia</option>
-                <option value="aprobada">Licencias Aprobadas</option>
-                <option value="rechazada">Licencias Rechazadas</option>
-                <option value="pendiente">Licencias Pendientes</option>
-                <option value="sancion_vigente">Sanción Vigente</option>
-                <option value="sancion_proceso">Sanción en Proceso</option>
+            <div class="col-6">
+              <select v-model="filtros.licencia" class="form-select form-select-sm shadow-none">
+                <option value="">Licencia (Todas)</option><option value="sin_licencia">Sin Licencia</option><option value="aprobada">Aprobada</option><option value="rechazada">Rechazada</option><option value="pendiente">Pendiente</option><option value="sancion_vigente">Sanción Vigente</option><option value="sancion_proceso">Sanción en Proceso</option>
               </select>
             </div>
-
-            <div class="mobile-select-group">
-              <label>Apto Médico:</label>
-              <select v-model="filtros.apto_medico">
-                <option value="">Todos</option>
-                <option value="1">Sólo Aptos</option>
-                <option value="0">No Aptos</option>
+            <div class="col-6">
+              <select v-model="filtros.designado_sabado" class="form-select form-select-sm shadow-none">
+                <option value="">Designado Sáb (Todos)</option><option value="1">Designados</option><option value="0">No Designados</option>
               </select>
             </div>
-
-            <div class="mobile-select-group">
-              <label>Designado Sáb:</label>
-              <select v-model="filtros.designado_sabado">
-                <option value="">Todos</option>
-                <option value="1">Designados</option>
-                <option value="0">No Designados</option>
+            <div class="col-6">
+              <select v-model="filtros.designado_domingo" class="form-select form-select-sm shadow-none">
+                <option value="">Designado Dom (Todos)</option><option value="1">Designados</option><option value="0">No Designados</option>
               </select>
             </div>
-
-            <div class="mobile-select-group">
-              <label>Designado Dom:</label>
-              <select v-model="filtros.designado_domingo">
-                <option value="">Todos</option>
-                <option value="1">Designados</option>
-                <option value="0">No Designados</option>
-              </select>
+            <div class="col-12 mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
-
-            <div class="filter-row-mobile">
-              <input v-model="filtros.grupo" placeholder="Grupo">
-              <input v-model="filtros.subgrupo" placeholder="Sub-grupo">
-            </div>
-
-            <input v-model="filtros.zona" placeholder="Zona..">
           </div>
-
-          <button @click="mostrarFiltrosMobile = false" class="btn-close-filters w-100 mt-2">Aplicar Filtros</button>
         </div>
 
-        <div class="card-body p-3 p-md-4">
+        <div class="card-body p-0 p-md-3 bg-white">
 
-          <div class="table-container shadow-sm desktop-only border" style="border-radius: 8px;">
-            <table>
-              <thead>
+          <!-- TABLA (Solo Escritorio) -->
+          <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
+            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
+              <thead class="table-light">
+                <!-- Títulos -->
                 <tr>
-                  <th class="sticky-col" style="left: 0; z-index: 40; width: 140px;">Apellido</th>
-                  <th class="sticky-col" style="left: 140px; z-index: 40; width: 140px;">Nombre</th>
-                  <th class="sticky-col col-shrink sticky-col-final" style="left: 280px; z-index: 40;">SÁB</th>
-                  <th class="sticky-col col-shrink" style="left: 330px; z-index: 40;">DOM</th>
-                  <th class="sticky-col text-center" style="left: 380px; z-index: 40; min-width: 160px;">Licencia / Sanción</th>
-                  <th class="col-shrink">WS</th>
-                  <th style="width: 80px;">Activo</th>
-                  <th class="text-center" style="width: 90px;">Apto</th>
-                  <th class="col-shrink">Grupo</th>
-                  <th class="col-shrink">Sub</th>
-                  <th class="text-center">Zona</th>
-                  <th class="text-center">Movilidad</th>
-                  <th class="col-shrink">Sab</th>
-                  <th>Desde</th>
-                  <th>Hasta</th>
-                  <th class="col-shrink">Dom</th>
-                  <th>Desde</th>
-                  <th>Hasta</th>
-                  <th class="col-shrink">Juega</th>
-                  <th class="text-center">Club</th>
-                  <th class="text-center">Cat</th>
-                  <th class="text-center">Observaciones</th>
+                  <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
+                  <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
+                  <th class="py-3 text-center text-uppercase text-muted col-fija col-sab">SÁB</th>
+                  <th class="py-3 text-center text-uppercase text-muted col-fija col-dom">DOM</th>
+                  <th class="py-3 text-center text-uppercase text-muted col-fija col-licencia">Licencia / Sanción</th>
+                  <th class="py-3 text-center text-uppercase text-muted">WS</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Activo</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Apto</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Sub</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Zona</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Movilidad</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Sab</th>
+                  <th class="py-3 text-uppercase text-muted">Desde</th>
+                  <th class="py-3 text-uppercase text-muted">Hasta</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Dom</th>
+                  <th class="py-3 text-uppercase text-muted">Desde</th>
+                  <th class="py-3 text-uppercase text-muted">Hasta</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Juega</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Club</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Cat</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Observaciones</th>
                 </tr>
-                <tr class="filter-row">
-                  <td class="sticky-col" style="left:0; z-index: 35;"><input v-model="filtros.apellido" class="filter-input shadow-none"></td>
-                  <td class="sticky-col" style="left:140px; z-index: 35;"><input v-model="filtros.nombre" class="filter-input shadow-none"></td>
-
-                  <td class="sticky-col col-shrink" style="left:280px; z-index: 35;">
-                    <select v-model="filtros.designado_sabado" class="filter-input shadow-none">
-                      <option value="">Todos</option>
-                      <option value="1">SI</option>
-                      <option value="0">NO</option>
+                <!-- Filtros Desktop -->
+                <tr class="bg-light">
+                  <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
+                  <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
+                  <td class="p-2 border-bottom border-2 text-center col-fija col-sab">
+                    <select v-model="filtros.designado_sabado" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option><option value="1">SI</option><option value="0">NO</option>
                     </select>
                   </td>
-                  <td class="sticky-col col-shrink sticky-col-final" style="left:330px; z-index: 35;">
-                    <select v-model="filtros.designado_domingo" class="filter-input shadow-none">
-                      <option value="">Todos</option>
-                      <option value="1">SI</option>
-                      <option value="0">NO</option>
+                  <td class="p-2 border-bottom border-2 text-center col-fija col-dom">
+                    <select v-model="filtros.designado_domingo" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option><option value="1">SI</option><option value="0">NO</option>
                     </select>
                   </td>
-
-                  <td class="sticky-col" style="left:380px; z-index: 35;">
-                    <select v-model="filtros.licencia" class="filter-input shadow-none">
-                      <option value="">Todas</option>
-                      <option value="sin_licencia">Sin Licencia</option>
-                      <option value="aprobada">Aprobada</option>
-                      <option value="rechazada">Rechazada</option>
-                      <option value="pendiente">Pendiente</option>
-                      <option value="sancion_vigente">Sanción Vigente</option>
-                      <option value="sancion_proceso">Sanción en Proceso</option>
+                  <td class="p-2 border-bottom border-2 col-fija col-licencia">
+                    <select v-model="filtros.licencia" class="form-select form-select-sm shadow-none">
+                      <option value="">Todas</option><option value="sin_licencia">Sin Lic.</option><option value="aprobada">Aprobada</option><option value="rechazada">Rechazada</option><option value="pendiente">Pendiente</option><option value="sancion_vigente">Sanción Vig.</option><option value="sancion_proceso">Sanc. Proc.</option>
                     </select>
                   </td>
-                  <td></td>
-                  <td class="bg-filter">
-                    <select v-model="filtros.es_activo" class="filter-input shadow-none">
-                      <option value="">Todos</option>
-                      <option value="1">SÍ</option>
-                      <option value="0">NO</option>
+                  <td class="p-2 border-bottom border-2"></td>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option><option value="1">SÍ</option><option value="0">NO</option>
                     </select>
                   </td>
-                  <td class="bg-filter text-center">
-                    <select v-model="filtros.apto_medico" class="filter-input shadow-none text-center">
-                      <option value="">Todos</option>
-                      <option value="1">SÍ</option>
-                      <option value="0">NO</option>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option><option value="1">SÍ</option><option value="0">NO</option>
                     </select>
                   </td>
-                  <td class="bg-filter col-shrink"><input v-model="filtros.grupo" class="filter-input-min shadow-none"></td>
-                  <td class="bg-filter col-shrink"><input v-model="filtros.subgrupo" class="filter-input-min shadow-none"></td>
-                  <td class="bg-filter"><input v-model="filtros.zona" class="filter-input shadow-none"></td>
-                  <td class="bg-filter"><input v-model="filtros.movilidad" class="filter-input shadow-none"></td>
-                  <td class="bg-filter col-shrink"><input v-model="filtros.disponibilidad_sabado" class="filter-input-min shadow-none"></td>
-                  <td class="bg-filter"></td><td class="bg-filter"></td>
-                  <td class="bg-filter col-shrink"><input v-model="filtros.disponibilidad_domingo" class="filter-input-min shadow-none"></td>
-                  <td class="bg-filter"></td><td class="bg-filter"></td>
-                  <td class="bg-filter col-shrink"><input v-model="filtros.juega_handball" class="filter-input-min shadow-none"></td>
-                  <td class="bg-filter"><input v-model="filtros.donde_juega" class="filter-input shadow-none"></td>
-                  <td class="bg-filter"><input v-model="filtros.categoria_handball" class="filter-input shadow-none"></td>
-                  <td class="bg-filter"><input v-model="filtros.observaciones" class="filter-input shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.grupo" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.subgrupo" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.zona" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.movilidad" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"></td>
+                  <td class="p-2 border-bottom border-2"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"></td>
+                  <td class="p-2 border-bottom border-2"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.juega_handball" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.donde_juega" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.categoria_handball" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.observaciones" class="form-control form-control-sm shadow-none"></td>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="a in arbitrosPaginados" :key="a.id" :class="obtenerClaseFila(a)">
-                  <td class="sticky-col font-bold" style="left: 0;">{{ a.apellido }}</td>
-                  <td class="sticky-col font-bold" style="left: 140px;">{{ a.nombre }}</td>
-
-                  <td class="sticky-col text-center col-shrink" style="left: 280px;">
-                    <input type="checkbox"
-                      :checked="designadosSabado.has(a.id)"
-                      :disabled="a.disponibilidad_sabado === 'NO'"
-                      @change="toggleDesignacion(a.id, 'S')"
-                      class="check">
+                  <td class="text-dark fw-bold text-uppercase col-fija col-apellido">{{ a.apellido }}</td>
+                  <td class="text-dark fw-bold text-uppercase col-fija col-nombre">{{ a.nombre }}</td>
+                  <td class="text-center col-fija col-sab">
+                    <input type="checkbox" :checked="designadosSabado.has(a.id)" :disabled="a.disponibilidad_sabado === 'NO'" @change="toggleDesignacion(a.id, 'S')" class="form-check-input" style="transform: scale(1.3); cursor:pointer;">
                   </td>
-                  <td class="sticky-col text-center col-shrink sticky-col-final" style="left: 330px;">
-                    <input type="checkbox"
-                      :checked="designadosDomingo.has(a.id)"
-                      :disabled="a.disponibilidad_domingo === 'NO'"
-                      @change="toggleDesignacion(a.id, 'D')"
-                      class="check">
+                  <td class="text-center col-fija col-dom">
+                    <input type="checkbox" :checked="designadosDomingo.has(a.id)" :disabled="a.disponibilidad_domingo === 'NO'" @change="toggleDesignacion(a.id, 'D')" class="form-check-input" style="transform: scale(1.3); cursor:pointer;">
                   </td>
-
-                  <td class="sticky-col text-center text-xs" style="left: 380px; white-space: nowrap;">{{ obtenerTextoLicencia(a) }}</td>
-                  <td class="text-center col-shrink">
-                    <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa shadow-sm" title="Enviar WhatsApp">
-                      <span class="material-icons" style="font-size: 16px;">chat</span>
+                  <td class="text-center text-dark col-fija col-licencia" style="white-space: nowrap; font-size: 0.7rem;">{{ obtenerTextoLicencia(a) }}</td>
+                  <td class="text-center">
+                    <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn btn-success btn-sm p-1" title="Enviar WhatsApp">
+                      <span class="material-icons" style="font-size: 14px;">chat</span>
                     </button>
                     <span v-else class="text-muted">-</span>
                   </td>
-                  <td class="text-center col-shrink">
-                    <span v-if="a.es_activo" class="material-icons dot-active" title="Activo">check_circle</span>
-                    <span v-else class="material-icons dot-inactive" title="Inactivo">cancel</span>
+                  <td class="text-center">
+                    <span v-if="a.es_activo" class="material-icons text-success" title="Activo" style="font-size: 18px;">check_circle</span>
+                    <span v-else class="material-icons text-danger" title="Inactivo" style="font-size: 18px;">cancel</span>
                   </td>
                   <td class="text-center">
-                    <span v-if="a.apto_medico" class="material-icons icon-apto" title="Apto Físico">check_circle</span>
-                    <span v-else class="material-icons icon-no-apto" title="No Apto Físico">cancel</span>
+                    <span v-if="a.apto_medico" class="material-icons text-success" title="Apto Físico" style="font-size: 18px;">check_circle</span>
+                    <span v-else class="material-icons text-danger" title="No Apto Físico" style="font-size: 18px;">cancel</span>
                   </td>
-                  <td class="text-center col-shrink">{{ a.grupo }}</td>
-                  <td class="text-center col-shrink">{{ a.subgrupo }}</td>
-                  <td>{{ a.zona }}</td>
-                  <td>{{ a.movilidad }}</td>
-                  <td class="text-center col-shrink">{{ a.disponibilidad_sabado }}</td>
-                  <td>{{ a.disponibilidad_sabado_desde }}</td>
-                  <td>{{ a.disponibilidad_sabado_hasta }}</td>
-                  <td class="text-center col-shrink">{{ a.disponibilidad_domingo }}</td>
-                  <td>{{ a.disponibilidad_domingo_desde }}</td>
-                  <td>{{ a.disponibilidad_domingo_hasta }}</td>
-                  <td class="text-center col-shrink">{{ a.juega_handball }}</td>
-                  <td>{{ a.donde_juega }}</td>
-                  <td>{{ a.categoria_handball }}</td>
-                  <td class="col-obs-container"><div class="obs-wrapper" tabindex="0">{{ a.observaciones || '-' }}</div></td>
+                  <td class="text-center text-dark">{{ a.grupo }}</td>
+                  <td class="text-center text-dark">{{ a.subgrupo }}</td>
+                  <td class="text-dark">{{ a.zona }}</td>
+                  <td class="text-dark">{{ a.movilidad }}</td>
+                  <td class="text-center text-dark">{{ a.disponibilidad_sabado }}</td>
+                  <td class="text-dark">{{ a.disponibilidad_sabado_desde }}</td>
+                  <td class="text-dark">{{ a.disponibilidad_sabado_hasta }}</td>
+                  <td class="text-center text-dark">{{ a.disponibilidad_domingo }}</td>
+                  <td class="text-dark">{{ a.disponibilidad_domingo_desde }}</td>
+                  <td class="text-dark">{{ a.disponibilidad_domingo_hasta }}</td>
+                  <td class="text-center text-dark">{{ a.juega_handball }}</td>
+                  <td class="text-dark">{{ a.donde_juega }}</td>
+                  <td class="text-dark">{{ a.categoria_handball }}</td>
+
+                  <!-- IMPLEMENTACIÓN DEL TOOLTIP DEL USUARIO -->
+                  <td class="text-dark position-relative">
+                    <span class="d-inline-block text-truncate observacion-texto" style="max-width: 300px;">
+                      {{ a.observaciones || '-' }}
+                    </span>
+                    <div v-if="a.observaciones" class="observacion-tooltip">{{ a.observaciones }}</div>
+                  </td>
                 </tr>
 
                 <tr v-if="arbitrosPaginados.length === 0">
-                  <td colspan="22" class="text-center py-5 text-muted bg-light italic border-0">
-                    <span class="material-icons d-block mb-2" style="font-size: 40px;">search_off</span>
+                  <td colspan="22" class="text-center py-5 text-muted bg-white border-0">
+                    <span class="material-icons d-block mb-2 fs-1 opacity-50">search_off</span>
                     <p class="m-0 fw-bold">No se encontraron registros.</p>
                   </td>
                 </tr>
@@ -260,90 +211,66 @@
             </table>
           </div>
 
-          <div class="mobile-only mt-3">
-            <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card-arbitro shadow-sm border border-light-subtle mb-3" :class="obtenerClaseFila(a)">
+          <!-- CARDS (Solo Celular) -->
+          <div class="d-md-none p-3 bg-light">
+            <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 rounded-3 border-light-subtle" :class="obtenerClaseFila(a)">
 
-              <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
-                <div class="card-name text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
+              <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
+                <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
                   {{ a.apellido }}, {{ a.nombre }}
                 </div>
-                <div class="text-xs fw-bold" style="color: #000;">{{ obtenerTextoLicencia(a) }}</div>
+                <div class="text-xs fw-bold text-muted font-monospace">#{{ a.id }}</div>
               </div>
 
               <div class="card-body pt-0 px-3 pb-3">
-                <div class="card-row text-dark mb-2">
-                  <span style="font-size: 0.9rem;"><strong>Gr:</strong> {{ a.grupo }}-<strong>Zona:</strong> {{ a.zona }}</span>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="badge bg-dark text-white">{{ obtenerTextoLicencia(a) }}</span>
+                  <span class="small text-dark"><strong>Gr:</strong> {{ a.grupo }}-<strong>Zona:</strong> {{ a.zona }}</span>
                 </div>
 
-                <div class="mb-2">
-                  <p class="text-dark m-0" style="font-size: 0.9rem;">
-                    <strong>Apto Físico: </strong>
-                    <span v-if="a.apto_medico" class="material-icons icon-apto align-middle" style="font-size: 18px;" title="Apto Físico">check_circle</span>
-                    <span v-else class="material-icons icon-no-apto align-middle" style="font-size: 18px;" title="No Apto Físico">cancel</span>
-                  </p>
+                <div class="bg-white p-2 rounded border small mb-3 border-light-subtle d-flex justify-content-between">
+                  <span class="text-dark"><strong>Apto: </strong>
+                    <span v-if="a.apto_medico" class="material-icons text-success align-middle" style="font-size: 16px;">check_circle</span>
+                    <span v-else class="material-icons text-danger align-middle" style="font-size: 16px;">cancel</span>
+                  </span>
+                  <span class="text-dark"><strong>Juega:</strong> {{ a.juega_handball }}</span>
                 </div>
 
-                <div class="mb-3">
-                  <p class="text-dark mt-1 mb-0" style="font-size: 0.9rem;"><strong>Juega:</strong> {{ a.juega_handball }} <span v-if="a.juega_handball === 'SI'">en {{ a.donde_juega }}</span></p>
+                <div class="mb-3 text-dark small bg-white p-2 rounded border border-light-subtle">
+                  <p class="mb-1"><strong>Sáb:</strong> {{ a.disponibilidad_sabado }} <span v-if="a.disponibilidad_sabado === 'SI' || a.disponibilidad_sabado === 'OTROS'">({{ a.disponibilidad_sabado_desde }}-{{ a.disponibilidad_sabado_hasta }})</span></p>
+                  <p class="m-0"><strong>Dom:</strong> {{ a.disponibilidad_domingo }} <span v-if="a.disponibilidad_domingo === 'SI' || a.disponibilidad_domingo === 'OTROS'">({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</span></p>
                 </div>
 
-                <div class="mb-3">
-                  <p class="text-dark mb-1" style="font-size: 0.9rem;"><strong>Sáb:</strong> {{ a.disponibilidad_sabado }} <span v-if="a.disponibilidad_sabado === 'SI' || a.disponibilidad_sabado === 'OTROS'">({{ a.disponibilidad_sabado_desde }}-{{ a.disponibilidad_sabado_hasta }})</span><span v-else>(-)</span></p>
-                  <p class="text-dark m-0" style="font-size: 0.9rem;"><strong>Dom:</strong> {{ a.disponibilidad_domingo }} <span v-if="a.disponibilidad_domingo === 'SI' || a.disponibilidad_domingo === 'OTROS'">({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</span><span v-else>(-)</span></p>
-                </div>
-
-                <div class="d-flex gap-2 mt-3 pt-2 border-top border-secondary-subtle">
-                  <div class="flex-grow-1 text-center">
-                    <label class="d-block small fw-bold text-dark mb-1">Designar SÁB</label>
-                    <input type="checkbox"
-                      :checked="designadosSabado.has(a.id)"
-                      :disabled="a.disponibilidad_sabado === 'NO'"
-                      @change="toggleDesignacion(a.id, 'S')"
-                      class="check" style="transform: scale(1.3);">
+                <div class="d-flex gap-2 mt-3 pt-3 border-top border-secondary-subtle">
+                  <div class="flex-grow-1 text-center bg-white p-2 rounded border shadow-sm">
+                    <label class="d-block small fw-bold text-dark mb-2">Designar SÁB</label>
+                    <input type="checkbox" :checked="designadosSabado.has(a.id)" :disabled="a.disponibilidad_sabado === 'NO'" @change="toggleDesignacion(a.id, 'S')" class="form-check-input" style="transform: scale(1.4); cursor:pointer;">
                   </div>
-                  <div class="flex-grow-1 text-center border-start border-secondary-subtle">
-                    <label class="d-block small fw-bold text-dark mb-1">Designar DOM</label>
-                    <input type="checkbox"
-                      :checked="designadosDomingo.has(a.id)"
-                      :disabled="a.disponibilidad_domingo === 'NO'"
-                      @change="toggleDesignacion(a.id, 'D')"
-                      class="check" style="transform: scale(1.3);">
+                  <div class="flex-grow-1 text-center bg-white p-2 rounded border shadow-sm">
+                    <label class="d-block small fw-bold text-dark mb-2">Designar DOM</label>
+                    <input type="checkbox" :checked="designadosDomingo.has(a.id)" :disabled="a.disponibilidad_domingo === 'NO'" @change="toggleDesignacion(a.id, 'D')" class="form-check-input" style="transform: scale(1.4); cursor:pointer;">
                   </div>
                 </div>
 
-                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn-wa-mobile shadow-sm mt-3" style="background: #25d366;">
+                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn w-100 fw-bold shadow-sm mt-3 text-white d-flex align-items-center justify-content-center gap-2" style="background: #25d366;">
                   <span class="material-icons">chat</span> Contactar por WhatsApp
                 </button>
               </div>
             </div>
 
-            <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-light rounded shadow-sm border mt-3">
-              <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-              <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron registros.</p>
+            <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-white rounded shadow-sm border mt-3">
+              <span class="material-icons text-muted opacity-50 d-block mb-2 fs-1">search_off</span>
+              <p class="text-muted m-0 fw-bold">No se encontraron registros.</p>
             </div>
           </div>
 
-          <div
-            class="d-flex justify-content-center align-items-center gap-3 mt-4"
-            v-if="totalPaginas > 1"
-          >
-            <button
-              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-              @click="cambiarPagina(-1)"
-              :disabled="paginaActual <= 1"
-            >
+          <!-- PAGINACIÓN -->
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
             </button>
-
-            <span class="fw-bold text-dark small">
-              Página {{ paginaActual }} de {{ totalPaginas }}
-            </span>
-
-            <button
-              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-              @click="cambiarPagina(1)"
-              :disabled="paginaActual >= totalPaginas"
-            >
+            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
@@ -351,38 +278,43 @@
         </div>
       </div>
     </div>
+
+    <!-- MODAL PUBLICAR DESIGNACIONES -->
+    <div v-if="mostrarModalSubida" class="modal d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title fw-bold text-danger">Publicar Designaciones</h5>
+            <button type="button" class="btn-close" @click="mostrarModalSubida = false" :disabled="subiendoArchivo"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Torneo</label>
+              <input v-model="formPublicar.torneo" type="text" class="form-control" placeholder="Ej: TORNEO APERTURA">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Fecha</label>
+              <input v-model="formPublicar.fecha" type="text" class="form-control" placeholder="Ej: 18 y 19 de Abril">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Archivo Excel</label>
+              <input @change="manejarArchivo" type="file" class="form-control" accept=".xlsx, .xls">
+            </div>
+          </div>
+          <div class="modal-footer border-0">
+            <button @click="mostrarModalSubida = false" class="btn btn-light" :disabled="subiendoArchivo">Cancelar</button>
+            <button @click="enviarDesignaciones" class="btn btn-danger fw-bold" :disabled="subiendoArchivo || !formPublicar.archivoBase64">
+              <span v-if="subiendoArchivo" class="spinner-border spinner-border-sm me-2"></span>
+              {{ subiendoArchivo ? 'Publicando...' : 'Publicar Ahora' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
-
-<div v-if="mostrarModalSubida" style="background-color: rgba(0,0,0,0.7); position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1050; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
-  <div class="card shadow-lg p-4 bg-white" style="width: 100%; max-width: 400px; border-radius: 12px; opacity: 1;">
-    <h5 class="fw-bold text-danger mb-3">Publicar Designaciones</h5>
-
-    <div class="mb-3">
-      <label class="form-label small fw-bold">Torneo</label>
-      <input v-model="formPublicar.torneo" type="text" class="form-control" placeholder="Ej: TORNEO APERTURA">
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label small fw-bold">Fecha</label>
-      <input v-model="formPublicar.fecha" type="text" class="form-control" placeholder="Ej: 18 y 19 de Abril">
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label small fw-bold">Archivo Excel</label>
-      <input @change="manejarArchivo" type="file" class="form-control" accept=".xlsx, .xls">
-    </div>
-
-    <div class="d-flex justify-content-end gap-2 mt-4">
-      <button @click="mostrarModalSubida = false" class="btn btn-light border" :disabled="subiendoArchivo">Cancelar</button>
-<button @click="enviarDesignaciones" class="btn btn-danger fw-bold" :disabled="subiendoArchivo || !formPublicar.archivoBase64">
-  <span v-if="subiendoArchivo" class="spinner-border spinner-border-sm me-2"></span>
-  {{ subiendoArchivo ? 'Publicando...' : 'Publicar Ahora' }}
-</button>
-    </div>
-  </div>
-</div>
-
 </template>
+
 
 <script setup>
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
@@ -426,7 +358,6 @@ const formPublicar = reactive({
   nombreArchivo: ''
 });
 
-// Convertimos el Excel a texto Base64
 const manejarArchivo = (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -451,7 +382,6 @@ const cambiarPagina = (delta) => {
 const designadosSabado = ref(new Set());
 const designadosDomingo = ref(new Set());
 
-// --- VARIABLES DE PAGINACIÓN ---
 const paginaActual = ref(1);
 const registrosPorPagina = 8;
 
@@ -585,6 +515,7 @@ const obtenerClaseFila = (a) => {
   if (tildadoSabado || tildadoDomingo) return 'fila-des';
   return '';
 };
+
 const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
 
 const mostrarFechaArg = (fecha) => {
@@ -681,9 +612,8 @@ const arbitrosFiltrados = computed(() => {
     if (compApellido === 0) return (a.nombre || '').localeCompare(b.nombre || '');
     return compApellido;
   });
-  });
+});
 
-// --- CÁLCULOS DE PAGINACIÓN ---
 const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1);
 
 const arbitrosPaginados = computed(() => {
@@ -697,7 +627,6 @@ watch(totalPaginas, (nuevoTotal) => {
   if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
 });
 
-// --- CORRECCIÓN EN ENVIARDESIGNACIONES ---
 const enviarDesignaciones = async () => {
   if (!formPublicar.torneo || !formPublicar.fecha || !formPublicar.archivoBase64) {
     notificar({ titulo: 'Atención', mensaje: 'Completá todos los campos y seleccioná un archivo.', tipo: 'warning' });
@@ -718,7 +647,6 @@ const enviarDesignaciones = async () => {
       }
     });
 
-    // CLAVE: Validamos res.payload.success para saber si PHP lo guardó de verdad
     if (res.ok && res.payload && res.payload.success) {
       notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Las designaciones ya están visibles para el público.', tipo: 'success' });
 
@@ -728,12 +656,10 @@ const enviarDesignaciones = async () => {
       formPublicar.archivoBase64 = '';
       formPublicar.nombreArchivo = '';
     } else {
-      // Si success es false, leemos el mensaje que mandó tu backend
       throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor al subir designaciones.');
     }
   } catch (error) {
     console.error("Error al publicar:", error);
-    // Ahora sí te va a mostrar en rojito exacto por qué falló
     notificar({ titulo: 'Error', mensaje: error.message || 'Hubo un problema al subir las designaciones.', tipo: 'danger' });
   } finally {
     subiendoArchivo.value = false;
@@ -762,318 +688,170 @@ const exportarExcel = () => {
 onMounted(cargarDatos);
 </script>
 
+
 <style scoped>
 /* ====================================================
-   1. BASE (MOBILE FIRST - CELULARES POR DEFECTO)
+   ESTILOS GENERALES
    ==================================================== */
-
-/* Contenedor principal */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
   min-height: 100vh;
-  height: auto !important;
   margin-left: 50%;
   transform: translateX(-50%);
-  padding: 20px;
   padding-bottom: 120px;
-  box-sizing: border-box;
 }
 
-/* Ajuste de padding exclusivo para celulares */
-@media (max-width: 767px) {
-  .full-screen-wrapper { padding: 0 15px 20px 15px !important; }
-}
-
-/* Estructura base (Celulares) */
 .admin-panel {
   width: 100%;
-  max-width: 100%;
-  padding: 0;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;
   background-color: #0f172a;
   min-height: 100vh;
-  border-radius: 0;
+  border-radius: 12px;
 }
 
-/* Cabecera Móvil */
-.header-section {
-  background: white;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 15px;
-  border-left: 5px solid #ef4444;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+.animate__animated {
+  animation-duration: 0.5s;
 }
 
-.header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
-.title { font-size: 1.25rem; font-weight: bold; margin: 0; color: #000; }
-.counter { font-size: 0.85rem; color: #64748b; }
-
-/* Botones Móvil: En una sola línea sin desbordar */
-.header-actions {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: center;
-  gap: 8px;
+/* ====================================================
+   TABLA CON COLUMNAS FIJAS
+   ==================================================== */
+.tabla-container {
   overflow-x: auto;
+  max-height: 75vh;
 }
 
-.btn-action {
-  border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: opacity 0.2s, transform 0.1s;
-  flex: none; width: 42px; height: 42px; padding: 0;
-}
-.btn-action:hover { opacity: 0.85; }
-.btn-action:active { transform: scale(0.95); }
-.btn-text { display: none; } /* Oculto en móvil */
-
-.btn-clear { background: #e2e8f0; color: #0f172a; border: 1px solid #e2e8f0; }
-.btn-clear-checks { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
-.btn-export { background: #10b981; color: white; }
-.btn-filter-mobile { background: #3b82f6; color: white; }
-
-/* Visibilidad de Capas Base */
-.desktop-only { display: none !important; }
-.mobile-only { display: block !important; }
-.mobile-only-flex { display: flex !important; }
-
-/* Filtros Móvil */
-.mobile-filter-panel {
-  background: #e2e8f0;
-  padding: 15px 20px;
-  border-bottom: 1px solid #cbd5e1;
+.tabla-fija {
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-.filter-grid-mobile {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  /* Esto alinea los elementos por la parte de abajo,
-     evitando el escalonado si un label es más largo que otro */
-  align-items: end;
+/* Eliminar bordes verticales de las celdas */
+.tabla-fija th,
+.tabla-fija td {
+  border-left: none !important;
+  border-right: none !important;
 }
 
-.filter-grid-mobile input,
-.filter-grid-mobile select {
-  padding: 0 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 14px; /* Un pelín más grande para evitar zoom en iOS */
-  width: 100%;
-  height: 42px; /* Altura fija para que inputs y selects sean hermanos gemelos */
-  outline: none;
-  background: #ffffff;
-  color: #334155;
-  box-sizing: border-box;
+/* Base de columnas fijas */
+.col-fija {
+  position: sticky;
+  background-color: inherit;
 }
 
-.filter-grid-mobile input:focus,
-.filter-grid-mobile select:focus {
-  border-color: #3b82f6;
-  background: white;
+/* THEAD: Cabecera por encima de todo (z-index: 12) para tapar datos al scrollear hacia abajo */
+.tabla-fija thead .col-fija {
+  background-color: #f8f9fa !important;
+  z-index: 12 !important;
 }
 
-.filter-grid-mobile input::placeholder { color: #94a3b8; }
-
-.mobile-select-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
+/* TBODY: Datos por debajo de la cabecera (z-index: 10) */
+.tabla-fija tbody .col-fija {
+  background-color: #ffffff;
+  z-index: 10 !important;
 }
 
-.mobile-select-group label {
-  font-size: 0.75rem;
-  color: #000;
-  font-weight: bold;
-  margin-bottom: 2px;
-  /* Mantiene el espacio aunque no haya texto en el label */
-  min-height: 1rem;
+/* Respetamos el color si la fila está coloreada dinámicamente */
+.tabla-fija tbody tr.fila-roja .col-fija { background-color: #fca5a5 !important; }
+.tabla-fija tbody tr.fila-amarilla .col-fija { background-color: #fef08a !important; }
+.tabla-fija tbody tr.fila-des .col-fija { background-color: #93e2ab !important; }
+
+/* Posiciones EXACTAS de las columnas (Sin z-index extra) */
+.col-apellido {
+  left: 0;
+  min-width: 140px;
 }
 
-/* El contenedor para Grupo y Sub-grupo */
-.filter-row-mobile {
-  display: flex;
-  gap: 10px;
-  width: 100%;
+.col-nombre {
+  left: 140px;
+  min-width: 140px;
 }
 
-.filter-row-mobile input {
-  flex: 1;
-  /* Evita que los inputs se deformen dentro del flex */
-  min-width: 0;
+.col-sab {
+  left: 280px;
+  min-width: 50px;
+  width: 50px;
 }
 
-/* El botón celeste/azul de aplicar filtros */
-.btn-close-filters {
-  background: #3b82f6;
+.col-dom {
+  left: 330px;
+  min-width: 50px;
+  width: 50px;
+}
+
+.col-licencia {
+  left: 380px;
+  min-width: 160px;
+}
+
+/* Sombra visual en el borde derecho de la última columna fija */
+.col-licencia::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
+}
+
+/* ====================================================
+   TOOLTIP OBSERVACIONES (Hover sin romper fila)
+   ==================================================== */
+.observacion-texto {
+  cursor: help;
+}
+
+td:hover .observacion-tooltip {
+  display: block;
+}
+
+.observacion-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1f2937;
   color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 1rem;
-  width: 100%;
-  margin-top: 15px; /* Separación del grid */
-  transition: background 0.2s, transform 0.1s;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  padding: 8px 12px;
+  border-radius: 6px;
+  white-space: normal;
+  max-width: 300px;
+  z-index: 1000;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  margin-bottom: 5px;
 }
 
-.btn-close-filters:active {
-  background: #2563eb;
-  transform: scale(0.98);
-}
-
-/* Clase extra por si quieres que "Zona" ocupe todo el ancho */
-.col-span-2 {
-  grid-column: span 2;
-}
-
-/* Tarjetas Móviles (Listado) */
-.card-arbitro { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-.card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
-.card-name { font-size: 1.05rem; color: #0f172a; }
-.card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-.text-xs { font-size: 0.75rem; }
-
-/* Botones Móviles (Cards) */
-.btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; width: 100%;}
-.btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-.btn-wa-mobile { width: 100%; margin-top: 10px; background: #25d366; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; }
-
-/* Componentes Visuales (Móvil) */
-.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
-.dot-active { color: #22c55e; vertical-align: middle; font-size: 1.5rem; }
-.dot-inactive { color: #ef4444; vertical-align: middle; font-size: 1.5rem; }
-.icon-apto { color: #22c55e; vertical-align: middle; font-size: 1.5rem; }
-.icon-no-apto { color: #ef4444; vertical-align: middle; font-size: 1.5rem; }
-.check { transform: scale(1.3); cursor: pointer; margin: 0 auto; display: block;}
-.check:disabled { cursor: not-allowed; opacity: 0.5; }
-
-/* Colores de Filas/Cards */
-.fila-roja { background-color: #fca5a5 !important; border-color: #ef4444 !important; }
-.fila-amarilla { background-color: #fef08a !important; border-color: #eab308 !important; }
-.fila-des { background-color: #93e2ab !important; border-color: #22c55e !important; }
-.fila-roja .card-name, .fila-roja .text-dark, .fila-roja .small, .fila-roja .text-xs,
-.fila-amarilla .card-name, .fila-amarilla .text-dark, .fila-amarilla .small, .fila-amarilla .text-xs,
-.fila-des .card-name, .fila-des .text-dark, .fila-des .small, .fila-des .text-xs { color: #000 !important; }
-
-/* Botones en Filas Especiales (Móvil) */
-.fila-roja .btn-editar-mobile { background: #fff; border-color: #fff; color: #ef4444; }
-.fila-roja .btn-historial-mobile { background: #fff; border-color: #fff; color: #d97706; }
-
-.animate__animated { animation-duration: 0.5s; }
-
-
-/* ====================================================
-   2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
-   ==================================================== */
-@media (min-width: 768px) {
-
-  .admin-panel { padding: 20px; border-radius: 12px; }
-
-  /* Cambio de visibilidad */
-  .desktop-only { display: block !important; }
-  .mobile-only { display: none !important; }
-  .mobile-only-flex { display: none !important; }
-
-  /* Reestructuración Cabecera */
-  .header-section { flex-direction: row; align-items: center; justify-content: space-between; border-radius: 8px; padding: 15px 25px; }
-  .header-info { width: auto; align-items: flex-start; }
-  .title { font-size: 1.1rem; }
-
-  /* Reestructuración Botones */
-  .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; overflow-x: visible; }
-  .btn-action { width: auto; height: auto; padding: 8px 12px; gap: 5px; font-size: 0.85rem; justify-content: flex-start; }
-  .btn-text { display: inline !important; }
-
-  /* TABLA DESKTOP */
-  .table-container {
-    width: 100%; overflow: auto; max-height: 75vh;
-    background: white; border-radius: 8px; border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  }
-  table { width: 100%; min-width: max-content; border-collapse: collapse !important; border-spacing: 0; font-size: 0.85rem; }
-
-  /* CABECERA PRINCIPAL */
-  th {
-    position: sticky; top: 0; z-index: 50;
-    background-color: #e2e8f0 !important; /* COLOR SOLICITADO */
-    padding: 14px 10px; /* AUMENTO DE ESPACIO */
-    border-bottom: 2px solid #cbd5e1;
-    font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-    font-size: 0.75rem; color: #000000; text-transform: uppercase; font-weight: 800;
-  }
-
-  /* FILA DE FILTROS */
-  .filter-row td {
-    position: sticky; top: 46px; z-index: 40; /* AJUSTADO POR LA NUEVA ALTURA DEL TH */
-    background-color: #f1f5f9 !important; /* COLOR SOLICITADO */
-    padding: 10px 8px; /* AUMENTO DE ESPACIO */
-    border-bottom: 2px solid #cbd5e1;
-  }
-
-  td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
-  td.text-center { display: table-cell; text-align: center; vertical-align: middle; }
-
-  /* Columnas Fijas (Sticky) */
-  .sticky-col { position: sticky !important; z-index: 10; background: white !important; box-shadow: inset -1px 0 0 #e2e8f0; background-clip: padding-box; }
-
-  /* Asegurando colores en las columnas fijas */
-  th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
-  .filter-row .sticky-col { z-index: 90 !important; background-color: #f1f5f9 !important; }
-
-  .sticky-col-final { border-right: 3px solid #cbd5e1 !important; }
-
-  .col-shrink { width: 50px !important; min-width: 50px !important; max-width: 50px !important; white-space: nowrap !important; padding: 8px 0 !important; text-align: center; }
-
-  /* Inputs de Filtro Desktop (Mejorados) */
-  .filter-input {
-    width: 100%;
-    height: 30px; /* ALTURA AUMENTADA */
-    padding: 4px 8px; /* PADDING INTERNO AUMENTADO */
-    border: 1px solid #cbd5e1;
-    font-size: 0.75rem;
-    border-radius: 4px;
-    outline: none;
-    background-color: #ffffff; /* FONDO BLANCO */
-    box-sizing: border-box;
-  }
-  .filter-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
-
-  .filter-input-min { width: 35px; text-align: center; height: 30px; border: 1px solid #cbd5e1; font-size: 0.75rem; border-radius: 4px; outline: none; background-color: #ffffff;}
-  .filter-input-min:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
-
-  /* Botón WhatsApp Desktop */
-  .btn-wa { background: #25d366; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto; transition: 0.2s; }
-  .btn-wa:hover { transform: scale(1.1); }
-
-  /* Celdas Observaciones (Hover Expand) */
-  .col-obs-container { width: 150px; position: relative; }
-  .obs-wrapper { width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; padding: 4px; border-radius: 4px; }
-  .obs-wrapper:focus { position: absolute; width: 300px; white-space: normal; background: #fff; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #3b82f6; padding: 10px; left: -150px; top: 0; outline: none;}
-
-  .font-bold { font-weight: bold; }
-
-  /* Filas Coloreadas Desktop */
-  .fila-roja td, .fila-roja .sticky-col { background-color: #fca5a5 !important; color: #000 !important; }
-  .fila-amarilla td, .fila-amarilla .sticky-col { background-color: #fef08a !important; color: #000 !important; }
-  .fila-des td, .fila-des .sticky-col { background-color: #93e2ab !important; color: #000 !important;}
+.observacion-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1f2937;
 }
 
 /* ====================================================
-   3. PANTALLAS GRANDES (Desde 1024px hacia arriba)
+   COLORES DE FILAS DINAMICAS
    ==================================================== */
-@media (min-width: 1024px) {
-  /* Si en el futuro querés darle más aire o restringir anchos en monitores muy grandes, va acá */
+.fila-roja td,
+.fila-roja .col-fija {
+  background-color: #fca5a5 !important;
+  color: #000 !important;
+}
+
+.fila-amarilla td,
+.fila-amarilla .col-fija {
+  background-color: #fef08a !important;
+  color: #000 !important;
+}
+
+.fila-des td,
+.fila-des .col-fija {
+  background-color: #93e2ab !important;
+  color: #000 !important;
 }
 </style>

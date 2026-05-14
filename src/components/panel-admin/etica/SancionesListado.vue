@@ -1,106 +1,119 @@
 <template>
-  <div class="full-screen-wrapper">
+  <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white main-card">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <div class="header-section border-bottom p-4">
-          <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
+        <!-- HEADER RESPONSIVO -->
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div class="border-start border-danger border-5 ps-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-shield-exclamation me-1"></i> Historial de Sanciones
             </h4>
-            <span class="counter mt-1 d-block">Total: {{ sancionesFiltradas.length }} sanciones</span>
+            <span class="text-muted small d-block mt-1">Total: {{ sancionesFiltradas.length }} sanciones</span>
           </div>
 
-          <div class="header-actions">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue d-md-none">
-              <span class="material-icons">filter_alt</span>
-              <span class="btn-text">Filtros</span>
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <!-- Botón Filtros (Solo Móvil) -->
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+              <span class="material-icons fs-6">filter_alt</span>
             </button>
-            <button @click="limpiarFiltros" class="btn-action btn-clear">
-              <span class="material-icons">filter_alt_off</span>
-              <span class="btn-text">Limpiar</span>
+
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
+
             <RouterLink to="/panel-admin/tribunal/cargar-sancion" class="text-decoration-none">
-              <button class="btn-action btn-clear-checks">
-                <span class="material-icons">add_circle</span>
-                <span class="btn-text">Nuevo</span>
+              <button class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger h-100">
+                <span class="material-icons fs-6">add_circle</span>
+                <span class="fw-bold d-none d-md-inline small">Nuevo</span>
               </button>
             </RouterLink>
-            <button @click="exportarExcel" class="btn-action btn-export">
-              <span class="material-icons">download</span>
-              <span class="btn-text">Excel</span>
+
+            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
+              <span class="material-icons fs-6">download</span>
+              <span class="fw-bold d-none d-md-inline small">Excel</span>
             </button>
           </div>
         </div>
 
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR SANCIONES</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-              <span class="material-icons" style="font-size: 20px;">close</span>
-            </button>
+        <!-- PANEL DE FILTROS UNIFICADO -->
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
+          <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Sanciones</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
-          <div class="filter-grid-mobile">
-            <input v-model="filtros.arbitro" placeholder="Árbitro..." class="filter-input-mobile">
-            <input v-model="filtros.motivo" placeholder="Motivo / Art..." class="filter-input-mobile">
+          <div class="row g-2 align-items-center">
+            <div class="col-6 col-md-3">
+              <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="Buscar árbitro...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.motivo" class="form-control form-control-sm shadow-none" placeholder="Motivo / Art...">
+            </div>
+            <div class="col-12 col-md-2">
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
+                <option value="">ESTADO (TODOS)</option>
+                <option value="vigente">VIGENTE</option>
+                <option value="cumplida">CUMPLIDA</option>
+                <option value="en_proceso">EN PROCESO</option>
+                <option value="anulada">ANULADA</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <input type="text" v-model="filtros.desde" class="form-control form-control-sm shadow-none text-center" placeholder="Desde (DD/MM/AA)">
+            </div>
+            <div class="col-6 col-md-2">
+              <input type="text" v-model="filtros.hasta" class="form-control form-control-sm shadow-none text-center" placeholder="Hasta (DD/MM/AA)">
+            </div>
 
-            <select v-model="filtros.estado" class="filter-input-mobile full-width">
-              <option value="">Estado (Todos)</option>
-              <option value="vigente">Vigente</option>
-              <option value="cumplida">Cumplida</option>
-              <option value="en_proceso">En Proceso</option>
-              <option value="anulada">Anulada</option>
-            </select>
+            <!-- Checkbox de Respuestas Pendientes -->
+            <div class="col-12 mt-2 mt-md-0 d-md-none">
+              <div class="form-check form-switch bg-white border p-2 rounded shadow-sm">
+                <input class="form-check-input ms-1 shadow-none" type="checkbox" role="switch" v-model="filtros.conNuevos" id="conNuevosMob" style="cursor:pointer;">
+                <label class="form-check-label ms-2 small fw-bold text-danger cursor-pointer" for="conNuevosMob">Solo pendientes de respuesta</label>
+              </div>
+            </div>
 
-            <input type="text" v-model="filtros.desde" placeholder="Desde (DD/MM/AAAA)" class="filter-input-mobile">
-            <input type="text" v-model="filtros.hasta" placeholder="Hasta (DD/MM/AAAA)" class="filter-input-mobile">
+            <div class="col-12 d-md-none mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+            </div>
           </div>
-
-          <div class="form-check mt-3 mb-1">
-            <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="filtros.conNuevos" id="conNuevosMob">
-            <label class="form-check-label small fw-bold text-danger" for="conNuevosMob">
-              Solo pendientes de respuesta
-            </label>
-          </div>
-
-          <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0">Aplicar Filtros</button>
         </div>
 
-        <div class="card-body p-3 p-md-4">
+        <div class="card-body p-0 p-md-3 bg-white">
 
-          <div class="table-container shadow d-none d-md-block">
-            <table>
-              <thead>
-                <tr class="main-header">
-                  <th class="sticky-col col-id text-center">ID</th>
-                  <th class="sticky-col col-acciones text-center">Acciones</th>
-                  <th class="sticky-col col-arbitro">Árbitro</th>
-                  <th>Motivo / Art.</th>
-                  <th class="text-center">Sanción</th>
-                  <th class="text-center">Desde</th>
-                  <th class="text-center">Hasta</th>
-                  <th class="text-center">Estado</th>
+          <!-- TABLA (Solo Escritorio) -->
+          <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
+            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem; table-layout: fixed;">
+              <thead class="table-light">
+                <tr>
+                  <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
+                  <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 140px;">Acciones</th>
+                  <th class="py-3 text-uppercase text-muted col-fija col-arbitro" style="width: 200px;">Árbitro</th>
+                  <th class="py-3 text-uppercase text-muted" style="width: 300px;">Motivo / Art.</th>
+                  <th class="py-3 text-center text-uppercase text-muted" style="width: 150px;">Sanción</th>
+                  <th class="py-3 text-center text-uppercase text-muted" style="width: 100px;">Desde</th>
+                  <th class="py-3 text-center text-uppercase text-muted" style="width: 100px;">Hasta</th>
+                  <th class="py-3 text-center pe-3 text-uppercase text-muted" style="width: 120px;">Estado</th>
                 </tr>
-                <tr class="filter-row">
-                  <td class="sticky-col col-id text-center align-middle">
-                    <button @click="fetchSanciones" class="btn-refresh mx-auto d-flex align-items-center justify-content-center" title="Recargar">
-                      <span class="material-icons">refresh</span>
-                    </button>
+                <tr class="bg-light">
+                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
+                    <button @click="fetchSanciones" class="btn btn-sm btn-light border rounded text-secondary shadow-sm px-2 py-1"><i class="bi bi-arrow-clockwise"></i></button>
                   </td>
-                  <td class="sticky-col col-acciones text-center align-middle">
+                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-acciones">
                     <div class="form-check form-switch d-flex justify-content-center m-0" title="Ver solo pendientes de respuesta">
-                      <input class="form-check-input" type="checkbox" v-model="filtros.conNuevos" style="cursor: pointer;">
+                      <input class="form-check-input shadow-none" type="checkbox" v-model="filtros.conNuevos" style="cursor: pointer;">
                     </div>
                   </td>
-                  <td class="sticky-col col-arbitro"><input v-model="filtros.arbitro" class="filter-input" placeholder="Filtrar.."></td>
-                  <td><input v-model="filtros.motivo" class="filter-input" placeholder="Filtrar.."></td>
-                  <td><input v-model="filtros.sancion" class="filter-input text-center" placeholder="Filtrar.."></td>
-                  <td><input v-model="filtros.desde" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
-                  <td><input v-model="filtros.hasta" class="filter-input text-center" placeholder="DD/MM/AAAA"></td>
-                  <td>
-                    <select v-model="filtros.estado" class="filter-input text-center">
+                  <td class="p-2 border-bottom border-2 col-fija col-arbitro"><input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="Buscar árbitro..."></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.motivo" class="form-control form-control-sm shadow-none" placeholder="Filtrar motivo..."></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.sancion" class="form-control form-control-sm shadow-none text-center" placeholder="Filtrar..."></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.desde" class="form-control form-control-sm shadow-none text-center" placeholder="DD/MM/AA"></td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.hasta" class="form-control form-control-sm shadow-none text-center" placeholder="DD/MM/AA"></td>
+                  <td class="p-2 border-bottom border-2 pe-3">
+                    <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-center font-monospace">
                       <option value="">TODOS</option>
                       <option value="vigente">VIGENTE</option>
                       <option value="cumplida">CUMPLIDA</option>
@@ -112,100 +125,115 @@
               </thead>
               <tbody>
                 <tr v-for="s in sancionesPaginadas" :key="s.id">
-                  <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ s.id }}</td>
-                  <td class="sticky-col col-acciones cell-ro text-center">
+                  <td class="text-center text-muted fw-bold font-monospace col-fija col-id">{{ s.id }}</td>
+                  <td class="text-center col-fija col-acciones">
                     <div class="d-flex justify-content-center gap-1">
 
-                      <button @click="gestionarDescargo(s)" class="btn-editar position-relative" :title="s.estado_dinamico == 3 ? 'Ver Descargos' : 'Historial Chat'" :style="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'background-color: #dc3545; color: white; border-color: #dc3545;' : 'background-color: #3b82f6; color: white; border-color: #3b82f6;') : 'background-color: #6c757d; color: white; border-color: #6c757d;'">
-                        <span class="material-icons">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
+                      <!-- Botón de Chat Dinámico (Refactorizado a clases de Bootstrap) -->
+                      <button @click="gestionarDescargo(s)" class="btn btn-sm shadow-sm rounded p-1 position-relative d-flex align-items-center justify-content-center"
+                              :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-danger text-white border-danger' : 'btn-primary text-white border-primary') : 'btn-secondary text-white border-secondary'"
+                              :title="s.estado_dinamico == 3 ? 'Ver Descargos' : 'Historial Chat'">
+                        <span class="material-icons" style="font-size:16px;">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
                         <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle"></span>
                       </button>
 
-                      <button @click="editarSancion(s)" class="btn-editar" title="Editar"><span class="material-icons">edit</span></button>
-                      <button @click="verHistorialArbitro(s)" class="btn-historial" title="Historial"><span class="material-icons">manage_search</span></button>
-                      <button @click="eliminarSancionRegistro(s.id)" class="btn-eliminar" title="Eliminar"><span class="material-icons">delete</span></button>
+                      <button @click="editarSancion(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar"><span class="material-icons" style="font-size:16px;">edit</span></button>
+                      <button @click="verHistorialArbitro(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial"><span class="material-icons" style="font-size:16px;">manage_search</span></button>
+                      <button @click="eliminarSancionRegistro(s.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar"><span class="material-icons" style="font-size:16px;">delete</span></button>
                     </div>
                   </td>
-                  <td class="sticky-col col-arbitro cell-ro fw-bold">{{ s.arbitro }}</td>
-                  <td class="cell-ro">{{ s.motivo }} <br> <small class="text-muted">Art. {{ s.articulo }}</small></td>
-                  <td class="cell-ro text-center">
+                  <td class="text-dark fw-bold text-uppercase col-fija col-arbitro text-truncate" :title="s.arbitro">{{ s.arbitro }}</td>
+                  <td class="text-muted">
+                    <div class="text-truncate" style="max-width: 280px;" :title="s.motivo">
+                      <strong class="text-dark">Art. {{ s.articulo }}</strong> - {{ s.motivo }}
+                    </div>
+                  </td>
+                  <td class="text-center fw-bold">
                     <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
                   </td>
-                  <td class="cell-ro text-center">{{ s.desde_formateada || '-' }}</td>
-                  <td class="cell-ro text-center">
-                    <span v-if="s.es_indefinido == 1" class="text-muted">Indefinido</span>
+                  <td class="text-center fw-bold">{{ s.desde_formateada || '-' }}</td>
+                  <td class="text-center fw-bold">
+                    <span v-if="s.es_indefinido == 1" class="text-danger">Indefinido</span>
                     <span v-else>{{ s.hasta_formateada || '-' }}</span>
                   </td>
-                  <td class="cell-ro text-center">
-                    <span :class="obtenerClaseEstado(s.estado_dinamico)">
+                  <td class="text-center pe-3">
+                    <span :class="['badge-status-sm', obtenerClaseEstado(s.estado_dinamico)]">
                       {{ obtenerTextoEstado(s.estado_dinamico) }}
                     </span>
+                  </td>
+                </tr>
+                <tr v-if="sancionesPaginadas.length === 0">
+                  <td colspan="8" class="py-5 text-center text-muted border-0 bg-white">
+                    <span class="material-icons d-block fs-1 mb-2">search_off</span>
+                    <p class="m-0 fw-bold">No se encontraron sanciones.</p>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <div class="d-md-none mt-3">
-            <div v-for="s in sancionesPaginadas" :key="'mob-'+s.id" class="card-licencia shadow-sm mb-3 bg-white rounded border">
-              <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start bg-transparent">
-                <div class="fw-bold text-dark card-name">{{ s.arbitro }}</div>
-                <span class="text-muted small fw-bold">#{{ s.id }}</span>
+          <!-- CARDS (Solo Celular) -->
+          <div class="d-md-none p-3 bg-light">
+            <div v-for="s in sancionesPaginadas" :key="'mob-'+s.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
+
+              <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
+                <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
+                  {{ s.arbitro }}
+                </div>
+                <div class="small text-muted fw-bold font-monospace">#{{ s.id }}</div>
               </div>
 
               <div class="px-3 pt-1 pb-2">
-                <div class="d-flex justify-content-start align-items-center gap-2">
-                  <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" class="fs-5">
-                    {{ s.sancion }}
-                  </span>
-                  <span :class="obtenerClaseEstado(s.estado_dinamico, true)" class="badge-mobile-status">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                  <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" class="fs-6 fw-bold">{{ s.sancion }}</span>
+                  <span :class="['badge-status-sm', obtenerClaseEstado(s.estado_dinamico, true)]">
                     {{ obtenerTextoEstado(s.estado_dinamico) }}
                   </span>
                 </div>
               </div>
 
               <div class="card-body pt-0 px-3 pb-3">
-                <p class="text-dark mb-3 mt-1 lh-sm small">
-                  <span v-if="s.articulo" class="fw-bold">Art. {{ s.articulo }}</span>
-                  <span v-if="s.articulo && s.motivo"> - </span>
-                  <span class="text-muted">{{ s.motivo }}</span>
+                <p class="text-muted small mb-3 mt-1 lh-sm">
+                  <strong class="text-dark" v-if="s.articulo">Art. {{ s.articulo }} -</strong> {{ s.motivo }}
                 </p>
 
-                <div class="bg-light-custom p-2 rounded border d-flex justify-content-between align-items-center">
-                  <span class="small">Desde: <strong>{{ s.desde_formateada || '-' }}</strong></span>
-                  <span class="small">Hasta:
+                <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center mb-3 border-light-subtle">
+                  <span class="small text-muted">Desde: <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong></span>
+                  <span class="small text-muted">Hasta:
                     <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
-                    <strong class="text-danger" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
-                    <strong class="text-muted" v-else>-</strong>
+                    <strong class="text-dark" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
+                    <strong class="text-dark" v-else>-</strong>
                   </span>
                 </div>
 
-                <div class="d-flex gap-2 mt-3 flex-wrap">
-                  <button @click="gestionarDescargo(s)" class="btn-editar-mobile flex-grow-1 position-relative" :style="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'background-color: #fee2e2; color: #dc2626; border-color: #fca5a5;' : 'background-color: #eff6ff; color: #3b82f6; border-color: #bfdbfe;') : 'background-color: #f8f9fa; color: #6c757d; border-color: #dee2e6;'">
-                    <span class="material-icons">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
-                    {{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'Nuevos' : 'Descargos') : 'Historial' }}
+                <div class="d-flex gap-2 flex-wrap">
+                  <!-- Botón Chat Móvil -->
+                  <button @click="gestionarDescargo(s)" class="btn btn-sm flex-grow-1 shadow-sm position-relative d-flex justify-content-center align-items-center gap-1 fw-bold"
+                          :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-outline-danger' : 'btn-outline-primary') : 'btn-outline-secondary'">
+                    <span class="material-icons" style="font-size: 16px;">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
+                    {{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'NUEVOS' : 'DESCARGOS') : 'HISTORIAL' }}
                     <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="margin-left: -15px;"></span>
                   </button>
-
-                  <button @click="editarSancion(s)" class="btn-editar-mobile flex-grow-1"><span class="material-icons">edit</span> Editar</button>
-                  <button @click="verHistorialArbitro(s)" class="btn-historial-mobile"><span class="material-icons">manage_search</span></button>
-                  <button @click="eliminarSancionRegistro(s.id)" class="btn-eliminar-mobile"><span class="material-icons">delete</span></button>
+                  <button @click="editarSancion(s)" class="btn btn-sm btn-outline-primary shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">edit</span></button>
+                  <button @click="verHistorialArbitro(s)" class="btn btn-sm btn-outline-warning shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">manage_search</span></button>
+                  <button @click="eliminarSancionRegistro(s.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">delete</span></button>
                 </div>
               </div>
             </div>
 
-            <div v-if="sancionesPaginadas.length === 0" class="text-center p-4 bg-white rounded shadow-sm">
-              <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-              <p class="text-muted mt-2 mb-0">No se encontraron sanciones.</p>
+            <div v-if="sancionesPaginadas.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
+              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
+              <p class="text-muted m-0 fw-bold">No se encontraron sanciones.</p>
             </div>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+          <!-- PAGINACIÓN -->
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
             </button>
             <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
@@ -214,14 +242,19 @@
       </div>
     </div>
 
-    <ModalBase :show="mostrarModalEditar" @close="mostrarModalEditar = false" icono="edit" maxWidth="500px">
+    <!-- ==============================================
+         MODALES
+         ============================================== -->
+
+    <!-- Modal Editar -->
+    <ModalBase :show="mostrarModalEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-info-subtle text-primary" maxWidth="500px">
       <template #header>
         <div class="text-center">
-          <div>Editar Sanción</div>
-          <div class="text-muted small" style="font-size: 0.85rem;">ID #{{ formModal.id }} — {{ formModal.arbitro }}</div>
+          <span class="fw-bold fs-5">Editar Sanción</span>
+          <div class="text-muted small">ID #{{ formModal.id }} — {{ formModal.arbitro }}</div>
         </div>
       </template>
-      <div class="row g-3 text-start">
+      <div class="row g-3 text-start mt-1">
         <div class="col-12">
           <label class="small fw-bold text-dark mb-1">Artículo *</label>
           <input v-model="formModal.articulo" type="text" class="form-control shadow-none border-secondary-subtle">
@@ -250,77 +283,73 @@
           <input type="date" v-model="formModal.desde" class="form-control shadow-none border-secondary-subtle">
         </div>
         <div class="col-12" v-if="['dias','meses','anios'].includes(tipoSancion)">
-          <div class="form-check mt-1">
-            <input class="form-check-input" type="checkbox" v-model="formModal.es_indefinido" :true-value="1" :false-value="0" id="checkIndefinido">
-            <label class="form-check-label small text-muted" for="checkIndefinido">
+          <div class="form-check bg-light p-2 rounded border border-light-subtle d-flex align-items-center gap-2">
+            <input class="form-check-input m-0 shadow-none" type="checkbox" v-model="formModal.es_indefinido" :true-value="1" :false-value="0" id="checkIndefinido">
+            <label class="form-check-label small fw-bold text-dark m-0 mt-1" for="checkIndefinido" style="cursor: pointer;">
               Sanción Indefinida (Hasta nuevo aviso)
             </label>
           </div>
         </div>
       </div>
       <template #footer>
-        <div class="w-100 d-flex justify-content-center gap-3">
-          <button @click="mostrarModalEditar = false" class="btn btn-light rounded-pill px-4 fw-bold border">CANCELAR</button>
-          <button @click="confirmarEdicion" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm" :disabled="cargandoProceso">
-            <span v-if="cargandoProceso" class="spinner-border spinner-border-sm me-1"></span>
-            {{ cargandoProceso ? 'GUARDANDO...' : 'GUARDAR CAMBIOS' }}
-          </button>
-        </div>
+        <button @click="mostrarModalEditar = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">CANCELAR</button>
+        <button @click="confirmarEdicion" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargandoProceso">
+          <span v-if="cargandoProceso" class="spinner-border spinner-border-sm me-1"></span>
+          {{ cargandoProceso ? 'GUARDANDO...' : 'GUARDAR CAMBIOS' }}
+        </button>
       </template>
     </ModalBase>
 
-    <ModalBase :show="mostrarModalHistorial" @close="mostrarModalHistorial = false" icono="manage_search" colorIcono="bg-warning text-dark" maxWidth="700px">
+    <!-- Modal Historial del Árbitro -->
+    <ModalBase :show="mostrarModalHistorial" @close="mostrarModalHistorial = false" icono="manage_search" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="750px">
       <template #header>
         <div class="text-center">
-          <div>Historial de {{ arbitroHistorial?.arbitro || 'Árbitro' }}</div>
+          <span class="fw-bold fs-5">Historial de {{ arbitroHistorial?.arbitro || 'Árbitro' }}</span>
           <div v-if="!cargandoHistorial" class="mt-1">
-            <span class="badge bg-dark rounded-pill">{{ historialSanciones.length }}</span>
+            <span class="badge bg-dark rounded-pill fs-6">{{ historialSanciones.length }} Sanciones</span>
           </div>
         </div>
       </template>
+
       <div v-if="cargandoHistorial" class="text-center py-5">
         <span class="spinner-border text-warning"></span>
       </div>
+
       <div v-else-if="historialSanciones.length === 0" class="text-center py-5 text-muted bg-light rounded-4 shadow-sm border border-light-subtle">
-        <span class="material-icons d-block mb-3" style="font-size: 50px; color: #cbd5e1;">history_toggle_off</span>
-        <p class="mb-0 fw-bold fs-5 text-dark">Sin registros</p>
+        <span class="material-icons d-block mb-2 fs-1 text-muted opacity-50">history_toggle_off</span>
+        <p class="mb-0 fw-bold">Sin registros previos.</p>
       </div>
-<div v-else>
+
+      <div v-else>
+        <!-- Historial PC -->
         <div class="table-responsive d-none d-md-block bg-white rounded shadow-sm border border-light-subtle">
-
-          <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem; table-layout: fixed; width: 100%;">
-
-            <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
+          <table class="table table-hover align-middle m-0" style="font-size: 0.85rem;">
+            <thead class="table-light">
               <tr>
-                <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Art. / Motivo</th>
-                <th class="py-2 fw-bold text-uppercase" style="width: 120px; font-size: 0.75rem;">Sanción</th>
-                <th class="py-2 fw-bold text-uppercase" style="width: 140px; font-size: 0.75rem;">Fechas</th>
-                <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="width: 100px; font-size: 0.75rem;">Estado</th>
+                <th class="py-3 ps-3 fw-bold text-uppercase text-muted" style="width: 250px;">Art. / Motivo</th>
+                <th class="py-3 fw-bold text-uppercase text-muted" style="width: 120px;">Sanción</th>
+                <th class="py-3 fw-bold text-uppercase text-muted" style="width: 150px;">Fechas</th>
+                <th class="text-center py-3 pe-3 fw-bold text-uppercase text-muted" style="width: 120px;">Estado</th>
               </tr>
             </thead>
-
             <tbody>
-              <tr v-for="h in historialSanciones" :key="h.id" style="border-bottom: 1px solid #f1f5f9;">
-
-                <td class="py-3 ps-3 pe-2" style="white-space: normal; word-wrap: break-word; line-height: 1.2;">
-                  <span class="fw-bold" style="color: #0f172a; font-size: 0.9rem;">Art. {{ h.articulo }}</span><br>
-                  <span class="text-muted" style="font-size: 0.8rem;">{{ h.motivo }}</span>
+              <tr v-for="h in historialSanciones" :key="h.id">
+                <td class="py-3 ps-3 pe-2 text-wrap">
+                  <span class="fw-bold text-dark">Art. {{ h.articulo }}</span><br>
+                  <span class="text-muted small">{{ h.motivo }}</span>
                 </td>
-
-                <td class="py-3 pe-2" style="white-space: normal; word-wrap: break-word;">
-                  <span :class="obtenerClaseTextoSancion(h.estado_dinamico)" style="font-size: 0.9rem;">{{ h.sancion }}</span>
+                <td class="py-3 pe-2">
+                  <span :class="obtenerClaseTextoSancion(h.estado_dinamico)" class="fw-bold">{{ h.sancion }}</span>
                 </td>
-
-                <td class="py-3 pe-2" style="color: #475569; font-size: 0.8rem;">
+                <td class="py-3 pe-2 small text-muted">
                   <strong class="text-dark">D: </strong> {{ h.desde_formateada || h.desde || '-' }}<br>
                   <strong class="text-dark">H: </strong>
-                  <span :class="h.es_indefinido == 1 ? 'text-primary fw-bold' : ''">
+                  <span :class="h.es_indefinido == 1 ? 'text-danger fw-bold' : 'text-dark'">
                     {{ h.es_indefinido == 1 ? 'Indefinido' : (h.hasta_formateada || h.hasta || '-') }}
                   </span>
                 </td>
-
                 <td class="text-center py-3 pe-3">
-                  <span :class="obtenerClaseEstado(h.estado_dinamico, true)" style="padding: 4px 8px; font-size: 0.7rem;">
+                  <span :class="['badge-status-sm', obtenerClaseEstado(h.estado_dinamico, true)]">
                     {{ obtenerTextoEstado(h.estado_dinamico) }}
                   </span>
                 </td>
@@ -329,100 +358,112 @@
           </table>
         </div>
 
-        <div class="d-block d-md-none">
-          <div v-for="h in historialSanciones" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded p-3 mb-3 shadow-sm bg-white">
+        <!-- Historial Móvil -->
+        <div class="d-md-none d-flex flex-column gap-2">
+          <div v-for="h in historialSanciones" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-3 p-3 shadow-sm bg-white">
             <div class="d-flex justify-content-between align-items-start mb-2 border-bottom border-secondary-subtle pb-2">
               <div>
-                <span class="d-block fw-bold text-dark" style="font-size: 0.95rem;">Art. {{ h.articulo }}</span>
-                <span class="text-muted" style="font-size: 0.8rem;">{{ h.motivo }}</span>
+                <span class="d-block fw-bold text-dark">Art. {{ h.articulo }}</span>
+                <span class="text-muted small lh-sm">{{ h.motivo }}</span>
               </div>
-              <span :class="obtenerClaseEstado(h.estado_dinamico, true)" style="padding: 4px 8px; font-size: 0.65rem; text-align: center;">
+              <span :class="['badge-status-sm', obtenerClaseEstado(h.estado_dinamico, true)]" class="text-center">
                 {{ obtenerTextoEstado(h.estado_dinamico) }}
               </span>
             </div>
             <div class="mt-2 mb-3">
-              <span :class="obtenerClaseTextoSancion(h.estado_dinamico)" style="font-size: 0.95rem;">{{ h.sancion }}</span>
+              <span :class="obtenerClaseTextoSancion(h.estado_dinamico)" class="fw-bold">{{ h.sancion }}</span>
             </div>
             <div class="d-flex justify-content-between align-items-center text-muted small bg-light p-2 rounded border border-light-subtle">
               <span><strong>Desde:</strong> {{ h.desde_formateada || h.desde || '-' }}</span>
-              <span><strong>Hasta:</strong> <span :class="h.es_indefinido == 1 ? 'text-primary fw-bold' : ''">{{ h.es_indefinido == 1 ? 'Indefinido' : (h.hasta_formateada || h.hasta || '-') }}</span></span>
+              <span><strong>Hasta:</strong>
+                <span :class="h.es_indefinido == 1 ? 'text-danger fw-bold' : 'text-dark'">
+                  {{ h.es_indefinido == 1 ? 'Indefinido' : (h.hasta_formateada || h.hasta || '-') }}
+                </span>
+              </span>
             </div>
           </div>
         </div>
       </div>
     </ModalBase>
 
-    <ModalBase
-      :show="mostrarModalDescargo"
-      @close="mostrarModalDescargo = false; fetchSanciones()"
-      icono="forum"
-      maxWidth="900px"
-    >
+    <!-- Modal Descargo (CHAT) -->
+    <ModalBase :show="mostrarModalDescargo" @close="mostrarModalDescargo = false; fetchSanciones()" icono="forum" colorIcono="bg-primary-subtle text-primary" maxWidth="900px">
       <template #header>
         <div class="text-center">
-          <div>Descargos: {{ sancionActiva?.arbitro }}</div>
-          <div class="text-muted small">Sanción Art. {{ sancionActiva?.articulo }}</div>
+          <span class="fw-bold fs-5">Descargos: {{ sancionActiva?.arbitro }}</span>
+          <div class="text-muted small mt-1">Sanción Art. {{ sancionActiva?.articulo }}</div>
         </div>
       </template>
 
-      <div class="chat-container bg-light border rounded p-3 mb-3" style="height: 50vh; overflow-y: auto;">
+      <!-- Caja de Chat -->
+      <div class="chat-container bg-light border border-light-subtle rounded-3 p-3 p-md-4 mb-3" style="height: 50vh; overflow-y: auto;">
         <div v-if="cargandoDescargos" class="text-center mt-4"><span class="spinner-border text-primary"></span></div>
-        <div v-else-if="historialDescargos.length === 0" class="text-center text-muted mt-4">
-          {{ sancionActiva?.estado_dinamico == 3 ? 'Esperando descargo del árbitro.' : 'No se registraron descargos.' }}
+
+        <div v-else-if="historialDescargos.length === 0" class="text-center text-muted mt-5">
+          <span class="material-icons fs-1 opacity-50 mb-2">forum</span><br>
+          {{ sancionActiva?.estado_dinamico == 3 ? 'Esperando descargo del árbitro.' : 'No se registraron descargos para esta sanción.' }}
         </div>
 
-        <div v-for="d in historialDescargos" :key="d.id" class="mb-3 d-flex flex-column" :class="d.emisor_tipo === 'admin' ? 'align-items-end' : 'align-items-start'">
-          <div :class="d.emisor_tipo === 'admin' ? 'bg-dark text-white' : 'bg-white border text-dark'" class="p-2 rounded shadow-sm" style="max-width: 85%;">
-            <div class="small fw-bold mb-1">{{ d.emisor_tipo === 'admin' ? 'Tribunal de Ética' : sancionActiva?.arbitro }}</div>
-            <div>{{ d.mensaje }}</div>
+        <div v-else v-for="d in historialDescargos" :key="d.id" class="mb-3 d-flex flex-column" :class="d.emisor_tipo === 'admin' ? 'align-items-end' : 'align-items-start'">
+          <!-- Burbuja de mensaje -->
+          <div :class="d.emisor_tipo === 'admin' ? 'bg-dark text-white' : 'bg-white border text-dark'" class="p-3 rounded-4 shadow-sm" style="max-width: 85%;">
+            <div class="small fw-bold mb-1" :class="d.emisor_tipo === 'admin' ? 'text-light' : 'text-primary'">
+              {{ d.emisor_tipo === 'admin' ? 'Tribunal de Ética' : sancionActiva?.arbitro }}
+            </div>
+            <div style="white-space: pre-line;">{{ d.mensaje }}</div>
 
-            <div v-if="d.archivos && d.archivos.length > 0" class="mt-2 border-top pt-2" :class="d.emisor_tipo === 'admin' ? 'border-secondary' : ''">
+            <!-- Archivos Adjuntos -->
+            <div v-if="d.archivos && d.archivos.length > 0" class="mt-2 border-top pt-2" :class="d.emisor_tipo === 'admin' ? 'border-secondary' : 'border-light-subtle'">
               <div v-for="arc in d.archivos" :key="arc.url_completa" class="small mb-1">
+                <!-- Imagen -->
                 <div v-if="arc.archivo_nombre.match(/\.(jpeg|jpg|gif|png)$/i)" class="mt-1">
                   <a :href="arc.url_completa" target="_blank" title="Ver imagen completa">
-                    <img :src="arc.url_completa" class="img-thumbnail" style="max-height: 80px; max-width: 100%; object-fit: cover; cursor: pointer;" :alt="arc.archivo_nombre">
+                    <img :src="arc.url_completa" class="img-thumbnail border-0 shadow-sm rounded" style="max-height: 100px; max-width: 100%; object-fit: cover; cursor: pointer;" :alt="arc.archivo_nombre">
                   </a>
                 </div>
+                <!-- Documento -->
                 <div v-else>
-                  <a :href="arc.url_completa" target="_blank" :class="d.emisor_tipo === 'admin' ? 'text-white text-decoration-underline' : 'text-primary'">
+                  <a :href="arc.url_completa" target="_blank" class="fw-bold" :class="d.emisor_tipo === 'admin' ? 'text-white text-decoration-underline' : 'text-primary text-decoration-none'">
                     <i class="bi bi-paperclip"></i> {{ arc.archivo_nombre }}
                   </a>
                 </div>
               </div>
             </div>
-            <div class="text-end" style="font-size: 0.7rem; opacity: 0.8; margin-top: 4px;">{{ d.fecha_formateada }}</div>
+            <div class="text-end mt-2 font-monospace" style="font-size: 0.65rem; opacity: 0.7;">{{ d.fecha_formateada }}</div>
           </div>
         </div>
       </div>
 
+      <!-- Formulario de Respuesta (Solo si está en proceso) -->
       <template v-if="sancionActiva?.estado_dinamico == 3">
         <div class="row g-2">
           <div class="col-12">
-            <textarea v-model="nuevoMensaje" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Escribir respuesta al árbitro..."></textarea>
+            <textarea v-model="nuevoMensaje" class="form-control shadow-sm border-secondary-subtle" rows="3" placeholder="Escribir respuesta al árbitro..."></textarea>
           </div>
           <div class="col-12">
-            <input type="file" ref="fileInput" multiple class="form-control form-control-sm shadow-none border-secondary-subtle" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+            <input type="file" ref="fileInput" multiple class="form-control form-control-sm shadow-sm border-secondary-subtle bg-light" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
           </div>
         </div>
       </template>
+      <!-- Aviso de Chat Cerrado -->
       <template v-else>
-        <div class="alert alert-secondary text-center small mb-0 border-0 shadow-sm rounded">
+        <div class="alert alert-secondary text-center small mb-0 border-0 shadow-sm rounded-3">
           <i class="bi bi-info-circle-fill me-1"></i> El proceso disciplinario se encuentra finalizado. El chat es de solo lectura.
         </div>
       </template>
 
       <template #footer>
-        <div v-if="sancionActiva?.estado_dinamico == 3" class="w-100 d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <button @click="cerrarSancionDesdeDescargo" class="btn btn-outline-danger fw-bold shadow-sm rounded-pill px-3">
+        <div v-if="sancionActiva?.estado_dinamico == 3" class="w-100 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+          <button @click="cerrarSancionDesdeDescargo" class="btn btn-outline-danger fw-bold shadow-sm rounded-pill px-3 w-100 w-md-auto mb-2 mb-md-0">
              RESOLVER SANCIÓN
           </button>
-          <button @click="enviarDescargoAdmin" class="btn btn-dark fw-bold rounded-pill px-4 shadow-sm" :disabled="enviandoDescargo || (!nuevoMensaje && !fileInput?.files?.length)">
+          <button @click="enviarDescargoAdmin" class="btn btn-dark fw-bold rounded-pill px-5 shadow-sm w-100 w-md-auto" :disabled="enviandoDescargo || (!nuevoMensaje && !fileInput?.files?.length)">
             <span v-if="enviandoDescargo" class="spinner-border spinner-border-sm me-1"></span>
-            RESPONDER
+            RESPONDER AL ÁRBITRO
           </button>
         </div>
         <div v-else class="w-100 d-flex justify-content-center">
-           <button @click="mostrarModalDescargo = false; fetchSanciones()" class="btn btn-light border rounded-pill px-4 fw-bold shadow-sm">CERRAR</button>
+           <button @click="mostrarModalDescargo = false; fetchSanciones()" class="btn btn-light border rounded-pill px-5 fw-bold shadow-sm">CERRAR CHAT</button>
         </div>
       </template>
     </ModalBase>
@@ -775,68 +816,23 @@ onMounted(fetchSanciones)
 
 <style scoped>
 /* ====================================================
-   1. BASE (MOBILE FIRST - CELULARES POR DEFECTO)
+   ESTILOS GENERALES
    ==================================================== */
-
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; }
-
-/* Ajuste específico para celulares */
-@media (max-width: 767px) {
-  .full-screen-wrapper { padding: 0 15px 20px 15px !important; }
-  .admin-panel { padding: 0 !important; border-radius: 0; }
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  padding-bottom: 120px;
 }
 
 .admin-panel {
-  width: 100%; max-width: 100%; padding: 0;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000; background-color: #0f172a; min-height: 100vh;
-  box-sizing: border-box;
+  width: 100%;
+  background-color: #0f172a;
+  min-height: 100vh;
+  border-radius: 12px;
 }
-
-.main-card { border-radius: 12px; overflow: hidden; }
-
-/* Cabecera Móvil */
-.header-section {
-  background: white; padding: 15px; display: flex;
-  flex-direction: column; align-items: flex-start;
-  gap: 15px; border-left: 5px solid #dc2626;
-}
-
-.title { font-size: 1.25rem; font-weight: bold; margin: 0; }
-.counter { font-size: 0.85rem; color: #000000; }
-
-/* Botones Móvil (42x42 centrados) */
-.header-actions { width: 100%; display: flex; justify-content: center; gap: 8px; }
-.btn-action {
-  border: none; border-radius: 4px; font-weight: bold; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  width: 42px; height: 42px; padding: 0; transition: opacity 0.2s;
-}
-.btn-text { display: none; }
-
-.btn-clear { background: #e2e8f0; color: #000; }
-.btn-blue { background: #3b82f6; color: white; }
-.btn-clear-checks { background: #fee2e2; color: #ef4444; }
-.btn-export { background: #10b981; color: white; }
-
-/* Filtros Móvil */
-.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
-.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filter-input-mobile {
-  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
-  font-size: 12px; width: 100%; outline: none; background: #ffffff; color: #334155;
-}
-.full-width { grid-column: span 2; }
-
-/* Cards Móviles */
-.card-licencia { background: white; padding: 15px; border: 1px solid #e2e8f0; }
-.card-name { font-size: 1.05rem; }
-.badge-mobile-status { padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; }
-.bg-light-custom { background-color: #e2e8f0 !important; }
-
-.btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; gap: 8px; }
-.btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; }
-.btn-eliminar-mobile { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; font-weight: bold; }
 
 /* ====================================================
    ESTADOS DE SANCIONES (Badges y Textos)
@@ -845,92 +841,73 @@ onMounted(fetchSanciones)
 .text-anulada { color: #0f172a !important; }
 
 /* Base para los badges de estado */
-.badge-status, .badge-status-sm {
+.badge-status-sm {
   border-radius: 20px;
   font-weight: 700;
   display: inline-block;
   text-align: center;
   border: 1px solid;
+  padding: 4px 10px;
+  font-size: 0.65rem;
+  white-space: nowrap;
 }
 
-/* Tamaños */
-.badge-status { padding: 4px 10px; font-size: 0.7rem; }
-.badge-status-sm { padding: 3px 8px; font-size: 0.65rem; } /* Ideal para la tabla en mobile y modales */
-
-/* Colores según el estado */
-.badge-status.vigente,
-.badge-status-sm.vigente {
-  background: #fee2e2; color: #b91c1c; border-color: #fecaca; /* Rojo */
-}
-
-.badge-status.cumplida,
-.badge-status-sm.cumplida {
-  background: #dcfce7; color: #15803d; border-color: #bbf7d0; /* Verde */
-}
-
-.badge-status.en-proceso,
-.badge-status-sm.en-proceso {
-  background: #fef9c3; color: #a16207; border-color: #fef08a; /* Amarillo */
-}
-
-.badge-status.anulada,
-.badge-status-sm.anulada {
-  background: #0f172a; color: #ffffff; border-color: #0f172a; /* Negro/Gris muy oscuro */
-}
-
-
-/* Utilidades */
-.btn-refresh { background: transparent; border: none; cursor: pointer; padding: 0; color: #64748b; }
-.material-icons { font-size: 18px; }
-.animate__animated { animation-duration: 0.5s; }
-.custom-input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; background-color: #ffffff; transition: all 0.3s ease; }
-.custom-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); outline: none; }
+.vigente { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+.cumplida { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+.en-proceso { background: #fef9c3; color: #a16207; border-color: #fef08a; }
+.anulada { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
 
 /* ====================================================
-   2. TABLETS Y ESCRITORIO (Desde 768px)
+   UTILIDADES
    ==================================================== */
+.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
+.btn-danger-subtle:hover { background: #fecaca; }
+
+.animate__animated { animation-duration: 0.5s; }
+
+/* ====================================================
+   TABLA CON COLUMNAS FIJAS Y SIN LÍNEAS
+   ==================================================== */
+.tabla-sin-lineas th,
+.tabla-sin-lineas td {
+  border-left: none !important;
+  border-right: none !important;
+}
+
+.tabla-fija {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
 @media (min-width: 768px) {
-  .admin-panel { padding: 20px; }
-
-  .header-section { flex-direction: row; align-items: center; justify-content: space-between; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-  .title { font-size: 1.1rem; }
-
-  .header-actions { width: auto; justify-content: flex-end; gap: 8px; }
-  .btn-action { width: auto; height: auto; padding: 8px 12px; gap: 5px; font-size: 0.75rem; }
-  .btn-text { display: inline; }
-
-  /* Tabla Desktop */
-  .table-container {
-    width: 100%; overflow: auto; max-height: 85vh;
-    background: white; border-radius: 8px; border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  }
-  table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-
-  thead tr.main-header th {
-    position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
-    padding: 12px 8px; border-bottom: 1px solid #cbd5e1; font-weight: 800; text-transform: uppercase; font-size: 0.75rem;
-  }
-  thead tr.filter-row td {
-    position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important;
-    padding: 6px 8px 12px 8px; border-bottom: 4px solid #e2e8f0;
+  /* Columnas fijas base */
+  .col-fija {
+    position: sticky !important;
+    background-color: inherit;
+    z-index: 10;
   }
 
-  /* Sticky Columns */
-  .sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-  thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
-  thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
+  /* Fondo thead y Z-INDEX 12 (Tapa el scroll vertical) */
+  .tabla-fija thead .col-fija {
+    background-color: #f8f9fa !important;
+    z-index: 12;
+  }
 
-  .col-id { left: 0; width: 50px; text-align: center; }
-  .col-acciones { left: 50px; width: 110px; }
-  .col-arbitro { left: 160px; width: 180px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
+  /* Fondo tbody */
+  .tabla-fija tbody .col-fija {
+    background-color: #ffffff !important;
+  }
 
-  .cell-ro { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
-  .filter-input { font-size: 0.75rem; height: 28px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; }
-
-  .btn-editar, .btn-historial, .btn-eliminar { display: inline-flex; align-items: center; padding: 4px; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; }
-  .btn-editar { background: #eff6ff; color: #1d4ed8; }
-  .btn-historial { background: #fef3c7; color: #d97706; }
-  .btn-eliminar { background: #fee2e2; color: #dc2626; }
+  /* Posiciones y anchos calculados */
+  .col-id       { left: 0; min-width: 50px !important; max-width: 50px !important; }
+  .col-acciones { left: 50px; min-width: 140px !important; max-width: 140px !important; }
+  .col-arbitro  {
+    left: 190px;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1);
+  }
 }
 </style>
+
+

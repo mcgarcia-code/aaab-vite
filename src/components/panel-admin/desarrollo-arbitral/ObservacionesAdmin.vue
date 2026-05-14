@@ -420,7 +420,7 @@
       </template>
 
       <div class="desktop-only table-responsive border rounded shadow-sm m-0">
-        <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem;">
+        <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.75rem;">
           <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
             <tr>
               <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Fecha</th>

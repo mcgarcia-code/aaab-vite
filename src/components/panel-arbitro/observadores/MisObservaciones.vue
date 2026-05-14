@@ -239,5 +239,4 @@ onMounted(obtenerObservaciones)
 
 .animate__animated { animation-duration: 0.5s; }
 
-/* Eliminamos todas las media queries, los display:none manuales y los estilos de la etiqueta <table> */
 </style>

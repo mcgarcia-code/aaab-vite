@@ -78,8 +78,8 @@
           <div v-else class="border-top border-md-0 shadow-none shadow-md-sm rounded-0 rounded-md overflow-hidden">
 
             <!-- Encabezado de Columnas (Solo Escritorio) -->
-            <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.70rem;">
-              <div class="col-md-1 ps-2">ID</div>
+            <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">
+              <div class="col-md-1 ps-2 ">ID</div>
               <div class="col-md-2">Apellido y Nombre</div>
               <div class="col-md-1 text-center">Activo</div>
               <div class="col-md-1 text-center">Grupo</div>
