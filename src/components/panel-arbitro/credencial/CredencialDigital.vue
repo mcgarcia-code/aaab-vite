@@ -2,65 +2,90 @@
   <div class="container-fluid py-4 d-flex justify-content-center animate__animated animate__fadeIn">
 
     <div v-if="cargando" class="loader-full text-center mt-5">
-      <div class="spinner-border text-light"></div>
-      <p class="text-light mt-2 fw-bold">Generando credencial oficial...</p>
+      <div class="spinner-border text-primary"></div>
+      <p class="text-white mt-2 fw-bold">Generando credencial oficial...</p>
     </div>
 
-    <div v-else class="content w-100 d-flex flex-column gap-4" style="max-width: 720px;">
+    <div v-else class="w-100 d-flex flex-column gap-4" style="max-width: 750px;">
 
-      <div ref="credencialRef" class="credencial-card">
+      <!-- Contenedor Principal del Carnet -->
+      <div ref="credencialRef" class="card border-0 shadow-lg position-relative overflow-hidden mx-auto w-100" style="border-radius: 20px;">
+
+        <!-- Marca de agua de fondo -->
         <div class="watermark-center">{{ añoActual }}</div>
 
-        <div class="side-black">
-          <div class="foto-wrap">
-            <img
-              class="foto-arbitro"
-              :src="`https://arbitroshandball.com.ar/uploads/carnet-arbitros/${String(arbitro.dni).trim()}.webp?t=${new Date().getTime()}`"
-              @error="e => e.target.src = 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'"
-            >
-          </div>
-          <div :class="['status-badge', arbitro.es_activo == 1 ? 'bg-active' : 'bg-inactive']">
-            <i :class="arbitro.es_activo == 1 ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'"></i>
-            {{ arbitro.es_activo == 1 ? 'ACTIVO' : 'INACTIVO' }}
-          </div>
-        </div>
+        <div class="row g-0 h-100 position-relative z-1">
 
-        <div class="side-white">
-          <div class="header-top">
-            <img :src="logo" alt="Logo AAAB" class="logo-credencial">
-            <span>CREDENCIAL DIGITAL</span>
-          </div>
-
-          <div class="info-vertical">
-            <div class="info-group">
-              <span class="label">APELLIDO Y NOMBRE</span>
-              <h1 class="name">{{ (arbitro.apellido || '').toUpperCase() }}, {{ arbitro.nombre }}</h1>
+          <!-- LADO NEGRO (Foto y Estado) -->
+          <div class="col-12 col-md-4 d-flex flex-column align-items-center justify-content-center p-4 p-md-5" style="background-color: #1a1a1a;">
+            <div class="foto-wrap shadow-lg">
+              <img
+                class="w-100 h-100 object-fit-cover"
+                style="border-radius: 10px;"
+                :src="`https://arbitroshandball.com.ar/uploads/carnet-arbitros/${String(arbitro.dni).trim()}.webp?t=${new Date().getTime()}`"
+                @error="e => e.target.src = 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'"
+              >
             </div>
 
-            <div class="info-row-parallel">
-              <div class="info-group">
-                <span class="label">DOCUMENTO</span>
-                <span class="val">{{ arbitro.dni }}</span>
+            <div class="badge rounded-pill px-3 py-2 mt-4 d-inline-flex align-items-center gap-2 shadow-sm"
+                 :class="arbitro.es_activo == 1 ? 'bg-success' : 'bg-danger'"
+                 style="font-size: 0.75rem; letter-spacing: 0.5px;">
+              <i :class="arbitro.es_activo == 1 ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'"></i>
+              {{ arbitro.es_activo == 1 ? 'ACTIVO' : 'INACTIVO' }}
+            </div>
+          </div>
+
+          <!-- LADO BLANCO (Información) -->
+          <div class="col-12 col-md-8 bg-white d-flex flex-column p-4 p-md-5 text-center text-md-start">
+
+            <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 mb-4 text-secondary fw-bold small">
+              <img :src="logo" alt="Logo AAAB" style="height: 80px; width: auto; object-fit: contain;">
+              <span>CREDENCIAL DIGITAL</span>
+            </div>
+
+            <div class="d-flex flex-column gap-3 flex-grow-1">
+              <div>
+                <span class="text-secondary fw-bold d-block mb-1" style="font-size: 0.75rem;">APELLIDO Y NOMBRE</span>
+                <h1 class="fw-black text-dark m-0" style="font-size: clamp(1.5rem, 5vw, 2rem); line-height: 1.1;">
+                  {{ (arbitro.apellido || '').toUpperCase() }}, {{ arbitro.nombre }}
+                </h1>
               </div>
-              <div class="info-group border-separator ms-md-auto">
-                <span class="label">GRUPO</span>
-                <span class="val text-danger fw-bold">{{ arbitro.grupo }}</span>
+
+              <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start mt-2">
+                <div class="text-center text-md-start">
+                  <span class="text-secondary fw-bold d-block mb-1" style="font-size: 0.75rem;">DOCUMENTO</span>
+                  <span class="fw-bolder text-dark" style="font-size: 1.4rem;">{{ arbitro.dni }}</span>
+                </div>
+
+                <!-- Línea divisoria nativa de Bootstrap (Solo en escritorio) -->
+                <div class="vr d-none d-md-block mx-4 text-secondary opacity-25"></div>
+
+                <div class="text-center text-md-start mt-3 mt-md-0">
+                  <span class="text-secondary fw-bold d-block mb-1" style="font-size: 0.75rem;">GRUPO</span>
+                  <span class="fw-bolder text-danger" style="font-size: 1.4rem;">{{ arbitro.grupo }}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="footer-card">
-            <div class="qr-container shadow-sm">
-              <qrcode-vue :value="`https://arbitroshandball.com.ar/perfil/${arbitro.dni}`" :size="70" level="H" />
+            <div class="d-flex flex-column flex-md-row align-items-center justify-content-md-between gap-3 mt-4 mt-md-auto pt-4">
+              <div class="bg-white p-1 border rounded shadow-sm">
+                <qrcode-vue :value="`https://arbitroshandball.com.ar/perfil/${arbitro.dni}`" :size="70" level="H" />
+              </div>
+              <div class="text-center text-md-start fw-bold" style="font-size: 0.65rem; color: #444; line-height: 1.2;">
+                ASOCIACIÓN ARGENTINA<br>DE ÁRBITROS DE HANDBALL
+              </div>
+              <div class="text-center text-md-end fw-bold text-muted" style="font-size: 0.75rem;">
+                VENCE: 31/12/{{ añoActual }}
+              </div>
             </div>
-            <div class="aaab-info">ASOCIACIÓN ARGENTINA<br>DE ÁRBITROS DE HANDBALL</div>
-            <div class="expire">VENCE: 31/12/{{ añoActual }}</div>
+
           </div>
         </div>
       </div>
 
-      <div class="actions-section">
-        <button class="btn-download shadow" @click="descargar" :disabled="procesando">
+      <!-- Botón Descargar -->
+      <div class="d-flex justify-content-center w-100 mt-2">
+        <button class="btn btn-danger rounded-pill fw-bold shadow py-3 w-100 d-flex justify-content-center align-items-center btn-download" @click="descargar" :disabled="procesando">
           <span v-if="procesando" class="spinner-border spinner-border-sm me-2"></span>
           <i v-else class="bi bi-download me-2"></i>
           {{ procesando ? 'PROCESANDO...' : 'DESCARGAR IMAGEN' }}
@@ -146,144 +171,44 @@ const descargar = async () => {
 
 <style scoped>
 /* ====================================================
-   1. BASE MOBILE-FIRST (Celulares por defecto)
+   ESTILOS ULTRA ESPECÍFICOS Y MARCA DE AGUA
    ==================================================== */
-.credencial-card {
-  display: flex;
-  flex-direction: column;
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  max-width: 340px;
-  margin: 0 auto;
-  border: none;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-  position: relative;
-}
-
 .watermark-center {
   position: absolute;
-  top: 75%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 6rem;
+  font-size: clamp(6rem, 15vw, 12rem);
   font-weight: 900;
-  color: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.03);
   z-index: 0;
   pointer-events: none;
 }
 
-.side-black {
-  background: #1a1a1a;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 30px 20px;
-  z-index: 1;
-}
-
 .foto-wrap {
-  width: 160px;
-  height: 160px;
+  width: clamp(140px, 30vw, 160px);
+  height: clamp(140px, 30vw, 160px);
   background: white;
-  border-radius: 15px;
   padding: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  border-radius: 15px;
 }
 
-.foto-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 10px;
+.fw-black {
+  font-weight: 900;
 }
 
-.status-badge {
-  color: white;
-  padding: 6px 14px;
-  border-radius: 50px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.bg-active { background: #198754; }
-.bg-inactive { background: #dc3545; }
-
-.side-white {
-  width: 100%;
-  padding: 30px 25px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  z-index: 1;
-  text-align: center;
-}
-
-.header-top {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  font-weight: bold;
-  font-size: 0.85rem;
-  margin-bottom: 20px;
-  color: #666;
-}
-
-.logo-credencial {
-  height: 90px;
-  width: auto;
-  object-fit: contain;
-}
-
-.info-vertical { display: flex; flex-direction: column; gap: 20px; flex-grow: 1; }
-.info-row-parallel { display: flex; flex-direction: column; align-items: center; gap: 15px; }
-
-.label { color: #adb5bd; font-size: 0.7rem; font-weight: bold; display: block; margin-bottom: 3px; }
-.name { font-weight: 900; font-size: 1.8rem; line-height: 1.1; color: #1a1a1a; margin: 0; }
-.val { font-size: 1.4rem; font-weight: 800; color: #1a1a1a; }
-.border-separator { border-left: none; }
-
-.footer-card { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 15px; }
-.qr-container { background: white; padding: 4px; border: 1px solid #eee; border-radius: 8px; }
-.aaab-info { font-size: 0.6rem; font-weight: bold; line-height: 1.2; color: #444; max-width: 120px; text-align: center; }
-.expire { font-size: 0.7rem; font-weight: bold; color: #adb5bd; text-align: center; }
-
-/* --- ACCIONES --- */
-.actions-section { display: flex; justify-content: center; width: 100%; margin-top: 10px; }
-
+/* Efecto hover del botón nativo */
 .btn-download {
-  background: #dc3545; color: white; border: none; padding: 16px 40px; border-radius: 50px;
-  font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; width: 100%; max-width: 400px;
+  max-width: 400px;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
 }
-.btn-download:hover:not(:disabled) { background: #a71d2a; transform: translateY(-2px); }
-.btn-download:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* ====================================================
-   2. DESKTOP (A partir de 651px)
-   ==================================================== */
-@media (min-width: 651px) {
-  .credencial-card {
-    flex-direction: row;
-    min-height: 420px;
-    max-width: none;
-  }
-
-  .watermark-center { font-size: 11rem; left: 70%; top: 50%; }
-  .side-black { width: 35%; padding: 20px; }
-  .side-white { width: 65%; padding: 30px 35px; text-align: left; }
-  .header-top { justify-content: flex-start; }
-
-  .info-row-parallel { flex-direction: row; align-items: center; gap: 0; }
-  .border-separator { border-left: 1px solid #dee2e6; padding-left: 1.5rem !important; }
-
-  .footer-card { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 0; }
-  .aaab-info { text-align: left; }
-  .expire { text-align: right; }
+.btn-download:hover:not(:disabled) {
+  background: #a71d2a;
+  transform: translateY(-2px);
 }
+
+.animate__animated { animation-duration: 0.5s; }
+
 </style>

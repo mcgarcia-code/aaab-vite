@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 w-100 mx-auto" style="border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;">
+    <div class="card shadow border-0 w-100 mx-auto mb-4" style="border-radius: 12px; overflow: hidden;">
 
       <div class="card-header bg-white py-3 border-bottom">
         <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
@@ -13,11 +13,12 @@
       <div class="card-body p-0 bg-white">
         <form @submit.prevent="enviarFormulario">
 
-          <section class="sacf-section">
+          <!-- Reemplazamos .sacf-section por paddings nativos -->
+          <section class="p-3 p-md-4 p-lg-5 border-bottom">
             <h2 class="section-title">Datos del Partido</h2>
 
-            <div class="row">
-              <div class="col-md-6 mb-3">
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-md-6">
                 <label class="form-label-custom">Género *</label>
                 <div class="custom-radio-group">
                   <button type="button" v-for="opt in ['Caballeros', 'Damas']"
@@ -28,7 +29,7 @@
                 </div>
               </div>
 
-              <div class="col-md-6 mb-3">
+              <div class="col-12 col-md-6">
                 <label class="form-label-custom">Categoría *</label>
                 <div class="custom-radio-group">
                   <button type="button" v-for="opt in ['Mayores', 'Inferiores']"
@@ -40,7 +41,7 @@
               </div>
             </div>
 
-            <div v-if="formulario.partido_categoria === 'Mayores'" class="field-group anim-fade">
+            <div v-if="formulario.partido_categoria === 'Mayores'" class="mb-3 anim-fade">
               <label class="form-label-custom">Competencia Mayores *</label>
               <select @change='obtenerEquipos()' v-model="formulario.inf_nivel" class="sacf-input" required>
                 <option value="" disabled>Seleccione competencia</option>
@@ -48,15 +49,15 @@
               </select>
             </div>
 
-            <div v-if="formulario.partido_categoria === 'Inferiores'" class="row anim-fade">
-              <div class="col-md-8 mb-3">
+            <div v-if="formulario.partido_categoria === 'Inferiores'" class="row g-3 mb-3 anim-fade">
+              <div class="col-12 col-md-8">
                 <label class="form-label-custom">Categoría Específica *</label>
                 <select @change='setDivisiones()' v-model="formulario.id_categoria_especifica" class="sacf-input" required :disabled="cargandoCategorias">
                   <option value="" disabled>{{ cargandoCategorias ? 'Cargando...' : 'Seleccione Categoría' }}</option>
                   <option v-for="(cat, k) in listas.divisiones_categorias" :key="k" :value="k">{{ cat.categoria }}</option>
                 </select>
               </div>
-              <div class="col-md-4 mb-3">
+              <div class="col-12 col-md-4">
                 <label class="form-label-custom">Nivel *</label>
                 <select @change='obtenerEquipos()' v-model="formulario.inf_nivel" class="sacf-input" required>
                   <option value="" disabled>Nivel</option>
@@ -65,20 +66,26 @@
               </div>
             </div>
 
-            <div class="field-group">
+            <div class="mb-3">
               <label class="form-label-custom">Equipos *</label>
-              <div class="grid-2">
-                <select v-model="formulario.eq1_id" class="sacf-input" required>
-                  <option value="" disabled>Local</option>
-                  <option v-for="(eq, k) in listas.equipos" :key="k" :value="k">{{ eq.club }}</option>
-                </select>
-                <select v-model="formulario.eq2_id" class="sacf-input" required>
-                  <option value="" disabled>Visitante</option>
-                  <option v-for="(eq, k) in listas.equipos" :key="k" :value="k">{{ eq.club }}</option>
-                </select>
+              <!-- Reemplazamos .grid-2 por row y col -->
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <select v-model="formulario.eq1_id" class="sacf-input" required>
+                    <option value="" disabled>Local</option>
+                    <option v-for="(eq, k) in listas.equipos" :key="k" :value="k">{{ eq.club }}</option>
+                  </select>
+                </div>
+                <div class="col-12 col-md-6">
+                  <select v-model="formulario.eq2_id" class="sacf-input" required>
+                    <option value="" disabled>Visitante</option>
+                    <option v-for="(eq, k) in listas.equipos" :key="k" :value="k">{{ eq.club }}</option>
+                  </select>
+                </div>
               </div>
             </div>
-            <div class="field-group mt-2">
+
+            <div class="mt-2">
               <label class="form-label-custom">Fecha del partido</label>
               <input
                 type="date"
@@ -88,9 +95,10 @@
             </div>
           </section>
 
-          <section class="sacf-section bg-light-soft">
+          <!-- bg-light reemplaza a bg-light-soft -->
+          <section class="p-3 p-md-4 p-lg-5 border-bottom bg-light">
             <h2 class="section-title">Arbitraje</h2>
-            <div class="field-group mb-4">
+            <div class="mb-4">
               <label class="form-label-custom">Cantidad de Árbitros *</label>
               <div class="custom-radio-group mini" style="max-width: 200px;">
                 <button type="button" :class="{ active: formulario.ref_count === '1' }" @click="formulario.ref_count = '1'">1</button>
@@ -98,21 +106,22 @@
               </div>
             </div>
 
-            <div class="row g-3">
-              <div class="col-md-6">
-                <div class="referee-box shadow-sm">
+            <div class="row g-3 g-md-4">
+              <div class="col-12 col-md-6">
+                <!-- Reemplazamos .referee-box por utilidades -->
+                <div class="bg-white p-3 p-md-4 rounded-4 border shadow-sm h-100">
                   <label class="fw-bold mb-2 text-dark small">ÁRBITRO 1</label>
-                  <select v-model="formulario.ref1_id" class="sacf-input mb-2" required>
+                  <select v-model="formulario.ref1_id" class="sacf-input mb-0" required>
                     <option value="" disabled>Seleccione Árbitro</option>
                     <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.id">{{arb.apellido}}, {{ arb.nombre }}</option>
                   </select>
                 </div>
               </div>
 
-              <div class="col-md-6" v-if="formulario.ref_count === '2'">
-                <div class="referee-box shadow-sm anim-fade">
+              <div class="col-12 col-md-6" v-if="formulario.ref_count === '2'">
+                <div class="bg-white p-3 p-md-4 rounded-4 border shadow-sm anim-fade h-100">
                   <label class="fw-bold mb-2 text-dark small">ÁRBITRO 2</label>
-                  <select v-model="formulario.ref2_id" class="sacf-input mb-2" required>
+                  <select v-model="formulario.ref2_id" class="sacf-input mb-0" required>
                     <option value="" disabled>Seleccione Árbitro</option>
                     <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.id">{{arb.apellido}}, {{ arb.nombre }}</option>
                   </select>
@@ -121,26 +130,29 @@
             </div>
           </section>
 
-          <section class="sacf-section">
+          <section class="p-3 p-md-4 p-lg-5">
             <h2 class="section-title">Evaluación Final</h2>
-            <div class="field-group">
+            <div class="mb-4">
               <label class="form-label-custom">Comentarios / Observaciones *</label>
               <textarea v-model="formulario.comentarios" rows="4" class="sacf-input" placeholder="Detalle la actuación..." required></textarea>
             </div>
 
-            <div class="field-group">
+            <div class="mb-4">
               <label class="form-label-custom mt-4">Puntaje Performance (Base) *</label>
-              <div class="perf-scale-container">
+              <!-- Usamos d-flex responsivo en lugar de .perf-scale-container -->
+              <div class="d-flex flex-column flex-md-row gap-3 gap-md-2 w-100">
+                <!-- Agregamos flex-row y flex-md-column al item para cambiar la orientación de sus hijos -->
                 <div v-for="opcion in perfScoreOptions" :key="opcion.value"
-                  class="perf-opt-item" :class="[{ 'is-active': formulario.perf_score == opcion.value }, 'tone-' + opcion.tone]"
+                  class="perf-opt-item d-flex flex-row flex-md-column align-items-center justify-content-md-center w-100 p-3 p-md-4"
+                  :class="[{ 'is-active': formulario.perf_score == opcion.value }, 'tone-' + opcion.tone]"
                   @click="formulario.perf_score = opcion.value">
                   <div class="perf-num">{{ opcion.value }}</div>
-                  <div class="perf-desc">{{ opcion.label }}</div>
+                  <div class="perf-desc ms-3 ms-md-0 mt-md-2 text-start text-md-center">{{ opcion.label }}</div>
                 </div>
               </div>
             </div>
 
-            <div class="field-group">
+            <div class="mb-4">
               <label class="form-label-custom mt-4">Dificultad del Encuentro *</label>
               <select v-model="formulario.diff_mult" class="sacf-input" required>
                 <option value="" disabled>Seleccione dificultad</option>
@@ -366,15 +378,6 @@ const reiniciarFormulario = () => {
 /* ====================================================
    1. SECCIONES Y CONTENEDORES
    ==================================================== */
-.sacf-section {
-  padding: 35px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.bg-light-soft {
-  background-color: #fafbfc;
-}
-
 .section-title {
   font-size: 0.85rem;
   color: #dc2626;
@@ -384,19 +387,6 @@ const reiniciarFormulario = () => {
   margin-bottom: 30px;
   font-weight: 800;
   letter-spacing: 1.2px;
-}
-
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-}
-
-.referee-box {
-  background: #ffffff;
-  padding: 25px;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
 }
 
 .total-score-card {
@@ -484,16 +474,23 @@ const reiniciarFormulario = () => {
 /* ====================================================
    3. ESCALA DE RENDIMIENTO (PERFORMANCE SCALE)
    ==================================================== */
-.perf-scale-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.perf-num {
+  font-size: 1.7rem;
+  font-weight: 900;
+  min-width: 55px;
+  color: #0f172a;
+  text-align: center;
 }
 
+.perf-desc {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #475569;
+  line-height: 1.3;
+}
+
+/* Base (Celulares) */
 .perf-opt-item {
-  display: flex;
-  align-items: center;
-  padding: 18px;
   border: 2px solid #f1f5f9;
   border-radius: 14px;
   cursor: pointer;
@@ -514,25 +511,29 @@ const reiniciarFormulario = () => {
   box-shadow: 0 10px 25px rgba(220, 38, 38, 0.15);
 }
 
-.perf-num {
-  font-size: 1.7rem;
-  font-weight: 900;
-  min-width: 55px;
-  color: #0f172a;
-}
-
-.perf-desc {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #475569;
-  margin-left: 15px;
-  line-height: 1.3;
-}
-
 .tone-green { border-left-color: #10b981; }
 .tone-lgreen { border-left-color: #84cc16; }
 .tone-yellow { border-left-color: #f59e0b; }
 .tone-red { border-left-color: #ef4444; }
+
+/* Escritorio: Adaptación del borde y la animación hover */
+@media (min-width: 768px) {
+  .perf-opt-item {
+    border-left: 2px solid #f1f5f9;
+    border-bottom: 6px solid #cbd5e1;
+  }
+  .perf-opt-item:hover {
+    transform: translateY(-8px);
+  }
+  .perf-opt-item.is-active {
+    border-bottom-color: #dc2626;
+    transform: translateY(-10px);
+  }
+  .tone-green { border-bottom-color: #10b981; }
+  .tone-lgreen { border-bottom-color: #84cc16; }
+  .tone-yellow { border-bottom-color: #f59e0b; }
+  .tone-red { border-bottom-color: #ef4444; }
+}
 
 /* ====================================================
    4. ANIMACIONES
@@ -544,48 +545,5 @@ const reiniciarFormulario = () => {
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* ====================================================
-   5. MEDIA QUERIES (RESPONSIVE)
-   ==================================================== */
-
-/* --- Laptops y Tablets (De 768px para arriba) --- */
-@media (min-width: 768px) {
-  .perf-scale-container {
-    flex-direction: row;
-    gap: 8px;
-  }
-  .perf-opt-item {
-    flex: 1;
-    flex-direction: column;
-    padding: 25px 10px;
-    text-align: center;
-    border-left: 2px solid #f1f5f9;
-    border-bottom: 6px solid #cbd5e1;
-  }
-  .perf-opt-item:hover {
-    transform: translateY(-8px);
-  }
-  .perf-desc {
-    margin-left: 0;
-    margin-top: 12px;
-    font-size: 0.7rem;
-  }
-  .tone-green { border-bottom-color: #10b981; }
-  .tone-lgreen { border-bottom-color: #84cc16; }
-  .tone-yellow { border-bottom-color: #f59e0b; }
-  .tone-red { border-bottom-color: #ef4444; }
-  .perf-opt-item.is-active {
-    border-bottom-color: #dc2626;
-    transform: translateY(-10px);
-  }
-}
-
-/* --- Smartphones (Hasta 600px) --- */
-@media (max-width: 600px) {
-  .sacf-section {
-    padding: 20px;
-  }
 }
 </style>

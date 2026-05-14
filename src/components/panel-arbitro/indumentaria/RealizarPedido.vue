@@ -1,10 +1,11 @@
 <template>
-  <div class="full-screen-wrapper">
+  <!-- Usamos px-3 y px-md-4 para el padding lateral responsivo -->
+  <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
       <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
 
-        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div>
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
               <i class="bi bi-shop me-1"></i> Solicitar Indumentaria
@@ -12,17 +13,19 @@
             <p class="text-muted small m-0 mt-1">Armá tu pedido de temporada</p>
           </div>
 
-          <div class="header-actions d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <RouterLink to="/panel-arbitro/indumentaria/mis-pedidos" class="text-decoration-none">
               <button class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Ver Mis Pedidos" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
                 <span class="material-icons" style="font-size: 22px; color: #000;">history</span>
-                <span class="btn-text desktop-only fw-bold text-dark" style="font-size: 0.8rem;">Mis Pedidos</span>
+                <!-- Texto oculto en móvil, visible en tablet/desktop -->
+                <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Mis Pedidos</span>
               </button>
             </RouterLink>
 
             <button @click="mostrarCarrito = true" class="btn-blue position-relative rounded shadow-sm border-0 p-2 d-flex align-items-center justify-content-center gap-2 text-white" title="Ver Carrito" style="background-color: #3b82f6;">
               <span class="material-icons" style="font-size: 20px;">shopping_cart</span>
-              <span class="btn-text desktop-only fw-bold text-white" style="font-size: 0.8rem;">Ver Carrito</span>
+              <!-- Texto oculto en móvil, visible en tablet/desktop -->
+              <span class="d-none d-md-inline fw-bold text-white" style="font-size: 0.8rem;">Ver Carrito</span>
               <span v-if="carrito.length > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.6rem; transform: translate(-30%, -30%) !important;">
                 {{ totalArticulosCarrito }}
               </span>
@@ -46,9 +49,10 @@
 
           <div class="row g-3">
             <div v-for="(prenda, key) in stockPaginado" :key="key" class="col-12 col-md-4 col-lg-3 text-center">
-              <div class="card h-100 border-0 shadow-sm tarjeta-prenda-invertida overflow-hidden" style="border-radius: 12px;">
+              <div class="card h-100 shadow-sm bg-light hover-card overflow-hidden" style="border-radius: 12px; border: 1px solid #e2e8f0;">
 
-                <div class="bg-white position-relative contenedor-imagen-superior">
+                <!-- Usamos clamp() para que la altura vaya de 150px a 180px fluidamente -->
+                <div class="bg-white position-relative contenedor-imagen-superior" style="height: clamp(150px, 30vw, 180px);">
                   <div
                     class="d-flex align-items-center justify-content-center h-100 cursor-zoom"
                     @click="abrirZoom(obtenerImagenActual(prenda))"
@@ -76,25 +80,24 @@
                   </template>
                 </div>
 
-                <div class="card-body p-3 d-flex flex-column cuerpo-gris-inferior">
-                  <h6 class="fw-bold text-dark mb-1 text-uppercase extra-small-mobile">{{ prenda.descripcion }}</h6>
+                <div class="card-body p-3 d-flex flex-column flex-grow-1">
+                  <h6 class="fw-bold text-dark mb-1 text-uppercase" style="font-size: 0.85rem; line-height: 1.2;">{{ prenda.descripcion }}</h6>
                   <h5 class="fw-bold text-danger mb-2 mb-md-3">$ {{ prenda.precio_general }}</h5>
 
                   <div class="mt-auto">
                     <div class="row g-2 mb-2 text-start">
                       <div class="col-7">
-                        <label class="extra-small-label fw-bold text-muted">Talle:</label>
+                        <label class="fw-bold text-muted d-block mb-1" style="font-size: 0.7rem;">Talle:</label>
                         <select v-model="prenda.itemSeleccionado" @change="validarCantidad(prenda)" class="form-select form-select-sm rounded-pill shadow-sm border-secondary-subtle bg-white">
                           <option v-for="(t, k) in prenda.items" :key="k" :value="k">
                             {{ t.talle }}
                           </option>
                         </select>
                       </div>
-<div class="col-5">
-                        <label class="extra-small-label fw-bold text-muted">Cant:</label>
+                      <div class="col-5">
+                        <label class="fw-bold text-muted d-block mb-1" style="font-size: 0.7rem;">Cant:</label>
 
                         <div class="d-flex align-items-center rounded-pill shadow-sm border border-secondary-subtle bg-white overflow-hidden p-0" style="height: 31px;">
-
                           <button
                             type="button"
                             class="btn btn-light border-0 text-muted p-0 d-flex align-items-center justify-content-center flex-shrink-0"
@@ -122,11 +125,10 @@
                           >
                             <span class="material-icons" style="font-size: 16px;">add</span>
                           </button>
-
                         </div>
                       </div>
 
-                      <div class="col-12 mt-0 text-center">
+                      <div class="col-12 mt-1 text-center">
                         <span v-if="obtenerStockMaximo(prenda) > 0" class="badge rounded-pill bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">
                           Disp: {{ obtenerStockMaximo(prenda) }}
                         </span>
@@ -160,25 +162,12 @@
             <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron prendas.</p>
           </div>
 
-          <div
-            class="d-flex justify-content-center align-items-center gap-3 mt-4"
-            v-if="totalPaginas > 1"
-          >
-            <button
-              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-              @click="cambiarPagina(-1)"
-              :disabled="paginaActual <= 1"
-            >
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
             </button>
-            <span class="fw-bold text-dark small">
-              Página {{ paginaActual }} de {{ totalPaginas }}
-            </span>
-            <button
-              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-              @click="cambiarPagina(1)"
-              :disabled="paginaActual >= totalPaginas"
-            >
+            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
@@ -186,6 +175,7 @@
         </div>
       </div>
 
+      <!-- Alerta Info -->
       <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
         <div class="d-flex align-items-center">
           <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
@@ -197,6 +187,9 @@
 
     </div>
 
+<!-- ========================================== -->
+    <!-- ZOOM DE IMAGEN -->
+    <!-- ========================================== -->
     <Teleport to="body">
       <div v-if="imagenZoom" class="modal-zoom-overlay animate__animated animate__fadeIn" @click="imagenZoom = null" style="z-index: 20000; cursor: pointer;">
         <button class="btn-cerrar-zoom shadow" @click.stop="imagenZoom = null">
@@ -206,6 +199,9 @@
       </div>
     </Teleport>
 
+    <!-- ========================================== -->
+    <!-- MODAL CARRITO -->
+    <!-- ========================================== -->
     <ModalBase
       :show="mostrarCarrito"
       @close="mostrarCarrito = false"
@@ -240,6 +236,9 @@
       </template>
     </ModalBase>
 
+    <!-- ========================================== -->
+    <!-- MODAL PAGO -->
+    <!-- ========================================== -->
     <ModalBase
       :show="mostrarPago"
       @close="mostrarPago = false"
@@ -523,7 +522,6 @@ onUnmounted(() => {
 });
 </script>
 
-
 <style scoped>
 /* ====================================================
    1. LAYOUT BASE Y UTILIDADES
@@ -535,16 +533,12 @@ onUnmounted(() => {
   height: auto !important;
   margin-left: 50%;
   transform: translateX(-50%);
-  /* Top en 0, pero volvemos a respetar los 20px laterales para que quede igual que el header */
-  padding: 0 20px 20px 20px;
   padding-bottom: 120px;
 }
 
 .admin-panel {
   width: 100%;
   max-width: 100%;
-  /* Mantenemos los 20px laterales */
-  padding: 0 20px 20px 20px;
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
   color: #000;
   background-color: #0f172a;
@@ -552,24 +546,16 @@ onUnmounted(() => {
   border-radius: 12px;
 }
 
-h5 {
-  font-size: 1.2rem;
-}
-
-.desktop-only {
-  display: block;
-}
-
 /* ====================================================
    2. BOTONES E INPUTS
    ==================================================== */
-.btn-action, .btn-clear {
+.btn-clear {
   border: none;
   cursor: pointer;
 }
 
 .btn-clear:hover {
-  background-color: #e2e8f0 !important;
+  background-color: #cbd5e1 !important;
 }
 
 .input-filtro-custom {
@@ -587,22 +573,22 @@ h5 {
 }
 
 /* ====================================================
-   4. CARDS TIENDA (PRODUCTOS)
+   3. CARDS TIENDA (PRODUCTOS)
    ==================================================== */
-.tarjeta-prenda-invertida {
-  border-radius: 16px;
+.hover-card {
   transition: all 0.3s ease;
-  background-color: #e2e8f0;
-  border: 1px solid #e2e8f0 !important;
-  display: flex;
-  flex-direction: column;
+}
+
+/* Efecto hover global (Los celulares lo ignoran automáticamente) */
+.hover-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+  border-color: #cbd5e1 !important;
 }
 
 .contenedor-imagen-superior {
-  background-color: #ffffff;
-  height: 180px;
   overflow: hidden;
-  border-radius: 16px 16px 0 0;
+  border-radius: 12px 12px 0 0;
   z-index: 1;
 }
 
@@ -618,28 +604,8 @@ h5 {
   pointer-events: none;
 }
 
-.cuerpo-gris-inferior {
-  padding: 15px !important;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: #e2e8f0;
-  border-radius: 0 0 16px 16px;
-}
-
-.extra-small-mobile {
-  font-size: 0.85rem;
-  line-height: 1.2;
-}
-
-.extra-small-label {
-  font-size: 0.7rem;
-  display: block;
-  margin-bottom: 2px;
-}
-
 /* ====================================================
-   5. CONTROLES DE FOTO Y ZOOM
+   4. CONTROLES DE FOTO Y ZOOM
    ==================================================== */
 .cursor-zoom {
   cursor: zoom-in;
@@ -695,39 +661,25 @@ h5 {
 }
 
 /* ====================================================
-   6. MODALES (CARRITO Y ZOOM)
+   5. INPUTS NUMÉRICOS PERSONALIZADOS
    ==================================================== */
-.modal-overlay-exito {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
+.hide-arrows::-webkit-outer-spin-button,
+.hide-arrows::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.modal-content-exito {
-  background: white;
-  border-radius: 20px;
-  border: none;
+.hide-arrows {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
+/* ====================================================
+   MODAL ZOOM Y CARRITO
+   ==================================================== */
 .contenedor-items-carrito {
   max-height: 250px;
   overflow-y: auto;
-}
-
-.icon-circle-exito {
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
 }
 
 .modal-zoom-overlay {
@@ -767,110 +719,7 @@ h5 {
   z-index: 11001;
 }
 
-/* ====================================================
-   7. RESPONSIVE (MEDIA QUERIES)
-   ==================================================== */
-@media (min-width: 992px) {
-  .tarjeta-prenda-invertida:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
-    border-color: #cbd5e1 !important;
-  }
-}
+.animate__animated { animation-duration: 0.5s; }
 
-@media (min-width: 768px) {
-  .btn-text {
-    display: inline;
-  }
-}
 
-@media (max-width: 768px) {
-  .desktop-only {
-    display: none !important;
-  }
-  .contenedor-imagen-superior {
-    height: 150px;
-  }
-  .btn-text {
-    display: inline;
-  }
-}
-
-@media (max-width: 600px) {
-  .full-screen-wrapper {
-    position: relative;
-    width: 99vw;
-    min-height: 100vh;
-    height: auto;
-    margin-left: 50%;
-    transform: translateX(-50%);
-    /* Top en 0, pero conservando los 15px laterales originales para celulares */
-    padding: 0 15px 20px 15px !important;
-    box-sizing: border-box !important;
-  }
-
-  .admin-panel {
-    padding: 0 !important;
-    border-radius: 0;
-    box-sizing: border-box !important;
-  }
-
-  .header-section {
-    padding: 15px !important;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-    gap: 15px;
-  }
-
-  .header-info {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .header-info h4, h4 {
-    font-size: 1.2rem !important;
-    margin: 0;
-    text-align: left;
-  }
-
-  .header-actions {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .btn-action {
-    flex: none;
-    width: 42px;
-    height: 42px;
-    padding: 0;
-    justify-content: center;
-    align-items: center;
-    border-radius: 6px;
-  }
-
-  .btn-text {
-    display: none !important;
-  }
-}
-/* ====================================================
-   8. INPUTS NUMÉRICOS PERSONALIZADOS
-   ==================================================== */
-/* Ocultar flechas del input type="number" en Chrome/Safari/Edge */
-.hide-arrows::-webkit-outer-spin-button,
-.hide-arrows::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-/* Ocultar flechas en Firefox y navegadores estándar */
-.hide-arrows {
-  -moz-appearance: textfield;
-  appearance: textfield; /* Agregá esta línea para el linter */
-}
 </style>

@@ -26,56 +26,73 @@
           <p class="text-muted small m-0">No tenés ninguna notificación registrada.</p>
         </div>
 
-        <div v-else class="border rounded shadow-sm overflow-hidden mobile-transparent-bg">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 custom-table">
-              <thead class="table-light text-muted small border-bottom">
-                <tr>
-                  <th scope="col" class="ps-4 py-3" style="width: 15%;">Fecha</th>
-                  <th scope="col" class="py-3" style="width: 20%;">Tipo</th>
-                  <th scope="col" class="py-3" style="width: 50%;">Mensaje</th>
-                  <th scope="col" class="text-center pe-4 py-3" style="width: 15%;">Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="notif in notificacionesPaginadas" :key="notif.id" :class="{'fila-no-leida': Number(notif.leida) === 0}">
+        <!-- LISTA UNIFICADA (Reemplaza a la tabla hackeada por CSS) -->
+        <div v-else class="border rounded shadow-sm overflow-hidden">
 
-                  <td class="ps-md-4 text-muted small fw-bold text-nowrap" data-label="Fecha">
-                    {{ notif.fecha }}
-                  </td>
+          <!-- Encabezado de Columnas (Solo visible en Escritorio) -->
+          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">
+            <div class="col-md-2 ps-3">Fecha</div>
+            <div class="col-md-3">Tipo</div>
+            <div class="col-md-5">Mensaje</div>
+            <div class="col-md-2 text-center pe-3">Estado</div>
+          </div>
 
-                  <td data-label="Asunto">
-                    <span class="badge rounded-pill fw-bold d-inline-flex align-items-center gap-1" :class="getEstiloBadge(notif.tipo)">
-                      <span class="material-icons" style="font-size: 14px;">{{ getIcono(notif.tipo) }}</span>
-                      {{ notif.titulo }}
-                    </span>
-                  </td>
+          <!-- Filas de Datos -->
+          <div class="d-flex flex-column">
+            <div v-for="notif in notificacionesPaginadas" :key="notif.id"
+                 class="row g-0 align-items-center p-3 p-md-2 border-bottom notif-item"
+                 :class="Number(notif.leida) === 0 ? 'bg-unread' : 'bg-white'">
 
-                  <td class="text-dark small td-mensaje" data-label="Mensaje">
-                    {{ notif.mensaje }}
-                  </td>
+              <!-- HEADER MOBILE: Fecha y Estado (Se oculta en PC) -->
+              <div class="col-12 d-md-none d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                <span class="text-muted small fw-bold">{{ notif.fecha }}</span>
+                <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
+                  <span class="material-icons text-primary" style="font-size: 14px;">done_all</span> Leída
+                </span>
+                <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
+                  Nueva
+                </span>
+              </div>
 
-                  <td class="text-center pe-md-4 text-mobile-left" data-label="Estado">
-                    <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
-                      <span class="material-icons text-primary" style="font-size: 14px;">done_all</span> Leída
-                    </span>
-                    <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
-                      Nueva
-                    </span>
-                  </td>
+              <!-- COL 1: FECHA (Escritorio) -->
+              <div class="col-md-2 d-none d-md-block text-muted small fw-bold ps-3">
+                {{ notif.fecha }}
+              </div>
 
-                </tr>
-              </tbody>
-            </table>
+              <!-- COL 2: TIPO DE AVISO (Ambos) -->
+              <div class="col-12 col-md-3 mb-2 mb-md-0 px-0 px-md-2">
+                <span class="badge rounded-pill fw-bold d-inline-flex align-items-center gap-1 py-1 px-2" :class="getEstiloBadge(notif.tipo)">
+                  <span class="material-icons" style="font-size: 14px;">{{ getIcono(notif.tipo) }}</span>
+                  {{ notif.titulo }}
+                </span>
+              </div>
+
+              <!-- COL 3: MENSAJE (Ambos) -->
+              <div class="col-12 col-md-5 mb-0 mb-md-0 px-0 px-md-2 text-dark small lh-sm">
+                {{ notif.mensaje }}
+              </div>
+
+              <!-- COL 4: ESTADO (Escritorio) -->
+              <div class="col-md-2 d-none d-md-flex justify-content-center pe-3">
+                <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
+                  <span class="material-icons text-primary" style="font-size: 14px;">done_all</span> Leída
+                </span>
+                <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
+                  Nueva
+                </span>
+              </div>
+
+            </div>
           </div>
         </div>
 
+        <!-- Paginación -->
         <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
-          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
             <i class="bi bi-chevron-left"></i> Ant
           </button>
           <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
             Sig <i class="bi bi-chevron-right"></i>
           </button>
         </div>
@@ -83,6 +100,7 @@
       </div>
     </div>
 
+    <!-- Alerta de contacto -->
     <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
       <div class="d-flex align-items-center">
         <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
@@ -168,91 +186,20 @@ onMounted(() => {
 
 <style scoped>
 /* ====================================================
-   1. TABLA PERSONALIZADA
+   1. ESTILOS DE LA LISTA Y ESTADOS
    ==================================================== */
-.custom-table th {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 0.75rem;
+.notif-item {
+  transition: background-color 0.2s ease;
 }
 
-.custom-table td {
-  vertical-align: middle;
+.notif-item:hover {
+  background-color: #f8fafc !important;
 }
 
-.fila-no-leida {
+.bg-unread {
   background-color: rgba(220, 38, 38, 0.03) !important;
 }
 
-/* ====================================================
-   2. RESPONSIVE DESIGN (MÓVILES)
-   ==================================================== */
-@media (max-width: 768px) {
-  .mobile-transparent-bg {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  .table-responsive {
-    border: none;
-    overflow-x: visible;
-  }
-
-  .custom-table thead {
-    display: none;
-  }
-
-  .custom-table,
-  .custom-table tbody,
-  .custom-table tr,
-  .custom-table td {
-    display: block;
-    width: 100%;
-  }
-
-  .custom-table tr {
-    background-color: #ffffff !important;
-    border-radius: 12px;
-    margin-bottom: 16px;
-    padding: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e2e8f0;
-  }
-
-  .custom-table td {
-    text-align: left;
-    padding: 6px 0 !important;
-    border: none;
-    font-size: 0.9rem;
-  }
-
-  .text-mobile-left {
-    text-align: left !important;
-  }
-
-  .td-mensaje {
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
-    border-top: 1px dashed #e2e8f0 !important;
-    margin-top: 8px;
-    font-size: 0.85rem;
-    color: #475569 !important;
-  }
-
-  .custom-table td::before {
-    content: attr(data-label) ": ";
-    font-weight: 700;
-    color: #1e293b;
-    margin-right: 5px;
-    font-size: 0.85rem;
-  }
-
-  .custom-table td .badge {
-    vertical-align: middle;
-  }
-}
-
 .animate__animated { animation-duration: 0.5s; }
+
 </style>

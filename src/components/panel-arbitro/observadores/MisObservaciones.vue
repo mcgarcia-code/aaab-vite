@@ -14,13 +14,15 @@
         <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
           <button @click="obtenerObservaciones" class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Actualizar" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
             <span class="material-icons" style="font-size: 22px; color: #000;">refresh</span>
-            <span class="desktop-only fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
+            <!-- Usamos d-none d-md-inline en lugar de clases custom -->
+            <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
           </button>
 
           <RouterLink to="/panel-arbitro/observaciones/carga" class="text-decoration-none">
             <button class="rounded shadow-sm border-0 p-2 d-flex align-items-center justify-content-center gap-2 text-white" title="Nueva Evaluación" style="background-color: #3b82f6;">
               <span class="material-icons" style="font-size: 20px;">add</span>
-              <span class="desktop-only fw-bold text-white" style="font-size: 0.8rem;">Nueva Evaluación</span>
+              <!-- Usamos d-none d-md-inline en lugar de clases custom -->
+              <span class="d-none d-md-inline fw-bold text-white" style="font-size: 0.8rem;">Nueva Evaluación</span>
             </button>
           </RouterLink>
         </div>
@@ -40,79 +42,89 @@
           </div>
         </div>
 
-        <div class="table-container shadow-sm desktop-only border" style="border-radius: 8px;">
-          <table>
-            <thead>
-              <tr class="main-header">
-                <th class="ps-4">Fecha</th>
-                <th>Árbitro Evaluado</th>
-                <th>Categoría / Partido</th>
-                <th class="text-center">Puntaje</th>
-                <th class="text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="obs in observacionesPaginadas" :key="obs.id" class="row-hover">
-                <td class="ps-4 cell-ro text-muted fw-bold">{{ obs.fecha_partido }}</td>
-                <td class="cell-ro fw-bold text-dark">
-                  <div>{{ obs.arb1_apellido }}, {{ obs.arb1_nombre }}</div>
-                  <div v-if="obs.arb2_apellido || obs.arb2_nombre">
-                    {{ obs.arb2_apellido }}, {{ obs.arb2_nombre }}
-                  </div>
-                </td>
-                <td class="cell-ro">{{ obs.categoria }} {{ obs.division }} - {{ obs.genero }}</td>
-                <td class="text-center cell-ro fw-bold text-danger">{{ obs.puntaje_final }}</td>
-                <td class="text-center cell-ro">
-                  <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-3">Ver Detalle</button>
-                </td>
-              </tr>
-              <tr v-if="observacionesPaginadas.length === 0">
-                <td colspan="5" class="text-center py-5 text-muted bg-light fst-italic">
-                  No has cargado observaciones recientemente.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <!-- LISTA UNIFICADA (Reemplaza a la tabla y a las tarjetas mobile) -->
+        <div class="border shadow-sm rounded overflow-hidden">
 
-        <div class="mobile-only">
-          <div v-for="obs in observacionesPaginadas" :key="'mob-'+obs.id" class="card-licencia shadow-sm border">
-            <div class="card-header border-bottom-0 pb-0 bg-transparent px-0 pt-1">
-              <div class="card-name text-uppercase">
-                <div>{{ obs.arb1_apellido }}, {{ obs.arb1_nombre }}</div>
-                  <div v-if="obs.arb2_apellido || obs.arb2_nombre">
-                    {{ obs.arb2_apellido }}, {{ obs.arb2_nombre }}
-                  </div>
-              </div>
-            </div>
+          <!-- Encabezado de Columnas (Solo visible en Escritorio) -->
+          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase" style="font-size: 0.75rem; color: #0f172a;">
+            <div class="col-md-2 ps-3">Fecha</div>
+            <div class="col-md-3">Árbitro Evaluado</div>
+            <div class="col-md-3">Categoría / Partido</div>
+            <div class="col-md-2 text-center">Puntaje</div>
+            <div class="col-md-2 text-center">Acciones</div>
+          </div>
 
-            <div class="card-body pt-2 px-0 pb-1">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="text-xs text-muted fw-bold">
+          <div v-if="observacionesPaginadas.length === 0" class="text-center p-5 bg-light">
+            <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
+            <p class="text-muted mt-2 mb-0 fw-bold">No has cargado observaciones recientemente.</p>
+          </div>
+
+          <!-- Filas de Datos Responsivas -->
+          <div class="d-flex flex-column">
+            <div v-for="obs in observacionesPaginadas" :key="obs.id" class="row g-0 align-items-center p-3 p-md-2 border-bottom bg-white item-observacion">
+
+              <!-- INFO MOBILE: Header y Subtítulo (Se oculta en escritorio) -->
+              <div class="col-12 d-md-none mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <div class="fw-bold text-uppercase text-dark" style="font-size: 1.05rem;">
+                    <div>{{ obs.arb1_apellido }}, {{ obs.arb1_nombre }}</div>
+                    <div v-if="obs.arb2_apellido || obs.arb2_nombre">
+                      {{ obs.arb2_apellido }}, {{ obs.arb2_nombre }}
+                    </div>
+                  </div>
+                  <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1 fw-bold" style="font-size: 0.7rem;">
+                    Pt: {{ obs.puntaje_final }}
+                  </span>
+                </div>
+                <div class="text-muted fw-bold" style="font-size: 0.8rem;">
                   {{ obs.fecha_partido }} <span class="mx-1">•</span> {{ obs.categoria }} {{ obs.division }} - {{ obs.genero }}
                 </div>
-                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1 fw-bold" style="font-size: 0.7rem;">
-                  Puntaje: {{ obs.puntaje_final }}
-                </span>
               </div>
-              <button class="btn btn-dark btn-sm w-100 rounded-pill mt-2 fw-bold shadow-sm">VER DETALLE COMPLETO</button>
-            </div>
-          </div>
 
-          <div v-if="observacionesPaginadas.length === 0" class="text-center p-4 bg-light rounded border mt-2">
-            <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-            <p class="text-muted mt-2 mb-0 fw-bold">Sin observaciones cargadas.</p>
+              <!-- COL 1: FECHA (Escritorio) -->
+              <div class="col-md-2 d-none d-md-block fw-bold text-muted ps-3" style="font-size: 0.85rem;">
+                {{ obs.fecha_partido }}
+              </div>
+
+              <!-- COL 2: ÁRBITRO (Escritorio) -->
+              <div class="col-md-3 d-none d-md-block fw-bold text-dark text-uppercase" style="font-size: 0.85rem;">
+                <div>{{ obs.arb1_apellido }}, {{ obs.arb1_nombre }}</div>
+                <div v-if="obs.arb2_apellido || obs.arb2_nombre">
+                  {{ obs.arb2_apellido }}, {{ obs.arb2_nombre }}
+                </div>
+              </div>
+
+              <!-- COL 3: CATEGORÍA (Escritorio) -->
+              <div class="col-md-3 d-none d-md-block" style="font-size: 0.85rem;">
+                {{ obs.categoria }} {{ obs.division }} - {{ obs.genero }}
+              </div>
+
+              <!-- COL 4: PUNTAJE (Escritorio) -->
+              <div class="col-md-2 d-none d-md-block text-center fw-bold text-danger">
+                {{ obs.puntaje_final }}
+              </div>
+
+              <!-- COL 5: ACCIONES (Ambos) -->
+              <div class="col-12 col-md-2 text-center mt-2 mt-md-0">
+                <!-- Botón ancho para celular -->
+                <button class="btn btn-dark btn-sm w-100 rounded-pill fw-bold shadow-sm d-md-none">VER DETALLE COMPLETO</button>
+                <!-- Botón chico para escritorio -->
+                <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-3 d-none d-md-inline-block">Ver Detalle</button>
+              </div>
+
+            </div>
           </div>
         </div>
 
+        <!-- Paginación -->
         <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
-          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
             <i class="bi bi-chevron-left"></i> Ant
           </button>
           <span class="fw-bold text-dark small">
             Página {{ paginaActual }} de {{ totalPaginas }}
           </span>
-          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
             Sig <i class="bi bi-chevron-right"></i>
           </button>
         </div>
@@ -176,7 +188,6 @@ const obtenerObservaciones = async () => {
 
 onMounted(obtenerObservaciones);
 </script>
-
 <style scoped>
 /* ====================================================
    1. BOTONES E INPUTS
@@ -187,7 +198,7 @@ onMounted(obtenerObservaciones);
 }
 
 .btn-clear:hover {
-  background-color: #e2e8f0 !important;
+  background-color: #cbd5e1 !important;
 }
 
 .input-filtro-custom {
@@ -200,81 +211,17 @@ onMounted(obtenerObservaciones);
 }
 
 /* ====================================================
-   2. TABLA Y CELDAS DESKTOP
+   2. ESTILOS DE LA LISTA
    ==================================================== */
-.table-container {
-  width: 100%;
-  overflow: auto;
-  max-height: 85vh;
-  background: white;
+.item-observacion {
+  transition: background-color 0.2s ease;
 }
 
-table {
-  width: 100%;
-  min-width: max-content;
-  border-collapse: separate !important;
-  border-spacing: 0;
-  font-size: 0.85rem;
-}
-
-thead tr.main-header th {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: #e2e8f0 !important;
-  padding: 12px 10px;
-  border-bottom: 2px solid #e2e8f0;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem;
-  color: #000;
-  text-transform: uppercase;
-  font-weight: 800;
-  margin: 0;
-  text-align: left;
-}
-
-.cell-ro {
-  padding: 14px 10px;
-  font-size: 0.85rem;
-  color: #000;
-  border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
-}
-
-.row-hover:hover {
-  background-color: #f1f5f9;
-  transition: background 0.2s ease;
-}
-
-/* ====================================================
-   3. VISIBILIDAD RESPONSIVE
-   ==================================================== */
-.desktop-only {
-  display: block;
-}
-
-.mobile-only {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-
-  .card-licencia {
-    background: white;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 12px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  }
-
-  .card-name {
-    font-size: 1.05rem;
-    color: #0f172a;
-  }
+.item-observacion:hover {
+  background-color: #f8fafc !important;
 }
 
 .animate__animated { animation-duration: 0.5s; }
+
+
 </style>

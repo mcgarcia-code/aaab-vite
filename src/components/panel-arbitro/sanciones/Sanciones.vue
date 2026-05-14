@@ -2,7 +2,8 @@
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
-      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
+      <!-- Header de la Tarjeta -->
+      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
         <div>
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
             <i class="bi bi-hammer me-2"></i> Mis Sanciones
@@ -10,175 +11,151 @@
           <p class="text-muted small m-0 mt-1">Total: {{ sancionesFiltradas.length }} resoluciones en tu legajo</p>
         </div>
 
-        <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
-          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action d-flex d-md-none shadow-sm rounded border-0 p-2 align-items-center justify-content-center text-white" style="background-color: #3b82f6;">
-            <span class="material-icons" style="font-size: 20px;">filter_alt</span>
+        <div class="d-flex gap-2 align-items-center">
+          <!-- Botón de filtros (Solo visible en celular) -->
+          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+            <span class="material-icons fs-6">filter_alt</span>
           </button>
-          <button @click="limpiarFiltros" class="btn-clear d-none d-md-flex bg-light rounded shadow-sm border p-2 align-items-center justify-content-center gap-2" title="Limpiar Filtros" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
-            <span class="material-icons" style="font-size: 22px; color: #000;">filter_alt_off</span>
-            <span class="fw-bold text-dark" style="font-size: 0.8rem;">Limpiar Filtros</span>
+          <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+            <span class="material-icons text-dark fs-6">filter_alt_off</span>
+            <span class="fw-bold text-dark d-none d-md-inline small">Limpiar Filtros</span>
           </button>
-          <button @click="obtenerSancionesLocales" class="btn-refresh bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center" title="Actualizar" style="background-color: #f1f5f9 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
-            <span class="material-icons" style="font-size: 22px; color: #0f172a;">refresh</span>
+          <button @click="obtenerSancionesLocales" class="btn btn-light border shadow-sm py-2 d-flex align-items-center">
+            <span class="material-icons text-dark fs-6">refresh</span>
           </button>
         </div>
       </div>
 
-      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel d-md-none animate__animated animate__fadeInDown animate__faster shadow-sm border-bottom p-3" style="background-color: #e2e8f0; margin-bottom: 0; border-radius: 0;">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+      <!-- Panel de Filtros Único (Colapsable en celular, siempre visible en PC) -->
+      <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
+        <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
           <span class="small fw-bold text-dark text-uppercase">Filtrar Sanciones</span>
-          <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1 shadow-sm" style="line-height: 1; background: white;">
-            <span class="material-icons" style="font-size: 20px;">close</span>
-          </button>
+          <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
         </div>
-        <div class="filter-grid-mobile">
-          <select v-model="filtros.estado" class="full-width">
-            <option value="">Estado (Todos)</option>
-            <option value="vigente">Vigente</option>
-            <option value="cumplida">Cumplida</option>
-            <option value="en_proceso">En Proceso</option>
-            <option value="anulada">Anulada</option>
-          </select>
-          <input v-model="filtros.sancion" placeholder="Buscar Sanción...">
-          <input v-model="filtros.motivo_articulo" placeholder="Motivo / Art...">
-          <input type="text" v-model="filtros.desde" placeholder="Desde (DD/MM/AAAA)">
-          <input type="text" v-model="filtros.hasta" placeholder="Hasta (DD/MM/AAAA)">
-        </div>
-        <div class="mt-3">
-          <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 fw-bold border-0 py-2 shadow-sm" style="background-color: #3b82f6;">Aplicar Filtros</button>
+
+        <div class="row g-2">
+          <div class="col-12 col-md-2">
+            <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
+              <option value="">Estado (Todos)</option>
+              <option value="vigente">Vigente</option>
+              <option value="cumplida">Cumplida</option>
+              <option value="en_proceso">En Proceso</option>
+              <option value="anulada">Anulada</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-3">
+            <input v-model="filtros.sancion" class="form-control form-control-sm shadow-none" placeholder="Buscar Sanción...">
+          </div>
+          <div class="col-12 col-md-3">
+            <input v-model="filtros.motivo_articulo" class="form-control form-control-sm shadow-none" placeholder="Motivo / Art...">
+          </div>
+          <div class="col-6 col-md-2">
+            <input type="text" v-model="filtros.desde" class="form-control form-control-sm shadow-none" placeholder="Desde (DD/MM/AAAA)">
+          </div>
+          <div class="col-6 col-md-2">
+            <input type="text" v-model="filtros.hasta" class="form-control form-control-sm shadow-none" placeholder="Hasta (DD/MM/AAAA)">
+          </div>
+          <div class="col-12 d-md-none mt-2">
+            <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold">Aplicar Filtros</button>
+          </div>
         </div>
       </div>
 
-      <div class="card-body bg-white p-3 p-md-4">
-        <div v-if="cargando" class="text-center text-white my-5">
+      <div class="card-body bg-white p-0">
+        <div v-if="cargando" class="text-center my-5">
           <div class="spinner-border text-danger" role="status"></div>
           <p class="mt-2 text-muted">Buscando en legajo...</p>
         </div>
-        <div v-else-if="sancionesFiltradas.length === 0" class="text-center p-5 rounded border bg-light shadow-sm">
+        <div v-else-if="sancionesFiltradas.length === 0" class="text-center p-5 bg-light">
           <span class="material-icons text-success" style="font-size: 60px;">verified</span>
           <h5 class="fw-bold text-dark mt-3">Sin resultados</h5>
           <p class="text-muted small m-0">No se encontraron medidas disciplinarias con los filtros aplicados.</p>
         </div>
-        <div v-else>
-          <div class="table-container shadow-sm d-none d-md-block border" style="border-radius: 8px;">
-            <table>
-              <thead>
-                <tr class="main-header">
-                  <th class="sticky-col col-id text-center" style="width: 130px;">Estado</th>
-                  <th class="text-center" style="width: 160px;">Acción</th>
-                  <th style="width: 160px;">Sanción</th>
-                  <th>Motivo / Art.</th>
-                  <th class="text-center" style="width: 140px;">Desde</th>
-                  <th class="text-center" style="width: 140px;">Hasta</th>
-                </tr>
-                <tr class="filter-row">
-                  <td class="sticky-col col-id text-center">
-                    <select v-model="filtros.estado" class="filter-input text-center shadow-none w-100">
-                      <option value="">TODOS</option>
-                      <option value="vigente">VIGENTE</option>
-                      <option value="cumplida">CUMPLIDA</option>
-                      <option value="en_proceso">EN PROCESO</option>
-                      <option value="anulada">ANULADA</option>
-                    </select>
-                  </td>
-                  <td></td>
-                  <td><input v-model="filtros.sancion" class="filter-input shadow-none w-100" placeholder="Filtrar.."></td>
-                  <td><input v-model="filtros.motivo_articulo" class="filter-input shadow-none w-100" placeholder="Filtrar.."></td>
-                  <td><input v-model="filtros.desde" class="filter-input text-center shadow-none w-100" placeholder="DD/MM/AAAA"></td>
-                  <td><input v-model="filtros.hasta" class="filter-input text-center shadow-none w-100" placeholder="DD/MM/AAAA"></td>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="s in sancionesPaginadas" :key="s.id">
-                  <td class="sticky-col col-id text-center cell-ro">
-                    <span :class="obtenerClaseEstado(s.estado_dinamico)">
-                      {{ obtenerTextoEstado(s.estado_dinamico) }}
-                    </span>
-                  </td>
-                  <td class="text-center cell-ro">
-                    <div class="d-flex flex-column gap-2 align-items-center">
-                      <button @click="abrirDescargo(s)" class="btn btn-sm fw-bold position-relative w-100" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary') : 'btn-outline-secondary'">
-                        <i class="bi" :class="s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history'"></i>
-                        {{ s.estado_dinamico == 3 ? 'Descargo' : 'Historial' }}
-                        <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-                          <span class="visually-hidden">Mensajes nuevos</span>
-                        </span>
-                      </button>
 
-                      <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-sm btn-danger fw-bold w-100 text-white">
-                        APELAR A CD
-                      </button>
-                    </div>
-                  </td>
-                  <td class="cell-ro">
-                    <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
-                  </td>
-                  <td class="cell-ro text-wrap" style="min-width: 250px;">
-                    <span class="fw-bold text-dark" v-if="s.articulo">Art. {{ s.articulo }} - </span>
-                    <span class="text-muted">{{ s.motivo }}</span>
-                  </td>
-                  <td class="text-center cell-ro fw-bold text-dark">{{ s.desde_formateada || '-' }}</td>
-                  <td class="text-center cell-ro fw-bold" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">
-                    <span v-if="s.es_indefinido == 1">Indefinido</span>
-                    <span v-else>{{ s.hasta_formateada || '-' }}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        <div v-else>
+          <!-- Encabezado de la lista (Solo visible en Escritorio) -->
+          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-center align-items-center text-uppercase" style="font-size: 0.75rem; color: #0f172a;">
+            <div class="col-md-2">Estado</div>
+            <div class="col-md-2">Acción</div>
+            <div class="col-md-2 text-start px-2">Sanción</div>
+            <div class="col-md-3 text-start px-2">Motivo / Art.</div>
+            <div class="col-md-1">Desde</div>
+            <div class="col-md-2">Hasta</div>
           </div>
 
-          <div class="d-md-none mt-3">
-            <div v-for="s in sancionesPaginadas" :key="'mob-'+s.id" class="card-licencia shadow-sm border mb-3">
-              <div class="card-header border-bottom-0 pb-2 px-3 pt-3 bg-white">
-                <div class="d-flex justify-content-between align-items-center gap-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" style="font-size: 1.1rem;">
-                      {{ s.sancion }}
-                    </span>
-                    <span :class="obtenerClaseEstado(s.estado_dinamico, true)" style="font-size: 0.7rem; padding: 3px 10px;">
-                      {{ obtenerTextoEstado(s.estado_dinamico) }}
-                    </span>
-                  </div>
+          <!-- LISTA ÚNICA RESPONSIVA (Reemplaza a la tabla y a las tarjetas mobile) -->
+          <div class="d-flex flex-column">
+            <div v-for="s in sancionesPaginadas" :key="s.id" class="row g-0 align-items-center p-3 p-md-2 border-bottom item-sancion bg-white">
+
+              <!-- HEADER MOBILE: Sanción + Estado (Se oculta en escritorio) -->
+              <div class="col-12 d-md-none d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" class="fs-6 fw-bold">{{ s.sancion }}</span>
+                <span :class="obtenerClaseEstado(s.estado_dinamico, true)" style="font-size: 0.7rem; padding: 3px 10px;">{{ obtenerTextoEstado(s.estado_dinamico) }}</span>
+              </div>
+
+              <!-- COLUMNA 1: ESTADO (Escritorio) -->
+              <div class="col-md-2 d-none d-md-flex justify-content-center order-1">
+                <span :class="obtenerClaseEstado(s.estado_dinamico)">{{ obtenerTextoEstado(s.estado_dinamico) }}</span>
+              </div>
+
+              <!-- COLUMNA 2: ACCIÓN (Ambos) -->
+              <div class="col-12 col-md-2 order-5 order-md-2 mt-3 mt-md-0 px-0 px-md-2">
+                <div class="d-flex flex-column gap-2 align-items-center">
+                  <button @click="abrirDescargo(s)" class="btn btn-sm fw-bold position-relative w-100" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary') : 'btn-outline-secondary'">
+                    <i class="bi" :class="s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history'"></i>
+                    <span class="d-md-none ms-1">{{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'Nuevo Mensaje' : 'Realizar Descargo') : 'Historial de Descargos' }}</span>
+                    <span class="d-none d-md-inline ms-1">{{ s.estado_dinamico == 3 ? 'Descargo' : 'Historial' }}</span>
+                    <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                  </button>
+
+                  <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-sm btn-danger fw-bold w-100 text-white">
+                    <i class="bi bi-envelope d-md-none"></i> APELAR <span class="d-md-none">A CD</span>
+                  </button>
                 </div>
               </div>
 
-              <div class="card-body bg-white pt-0 px-3 pb-3">
-                <p class="text-dark mb-3 mt-2 lh-sm" style="font-size: 0.9rem;">
-                  <span v-if="s.articulo" class="fw-bold text-dark">Art. {{ s.articulo }}</span>
-                  <span v-if="s.articulo && s.motivo"> - </span>
+              <!-- COLUMNA 3: SANCIÓN (Escritorio) -->
+              <div class="col-md-2 d-none d-md-block order-3 px-2 text-truncate">
+                <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
+              </div>
+
+              <!-- COLUMNA 4: MOTIVO (Ambos) -->
+              <div class="col-12 col-md-3 order-3 order-md-4 mb-3 mb-md-0 px-0 px-md-2">
+                <p class="mb-0 text-dark" style="font-size: 0.85rem; line-height: 1.3;">
+                  <span v-if="s.articulo" class="fw-bold">Art. {{ s.articulo }} - </span>
                   <span class="text-muted">{{ s.motivo }}</span>
                 </p>
-
-                <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center mb-3" style="background-color: #e2e8f0 !important;">
-                  <span class="text-dark" style="font-size: 0.85rem;">Desde: <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong></span>
-                  <span class="text-dark" style="font-size: 0.85rem;">Hasta:
-                    <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
-                    <strong class="text-danger" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
-                    <strong class="text-muted" v-else>-</strong>
-                  </span>
-                </div>
-
-                <div class="d-flex flex-column gap-2">
-                  <button @click="abrirDescargo(s)" class="btn w-100 fw-bold position-relative" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary') : 'btn-outline-secondary'">
-                    <i class="bi" :class="s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history'"></i>
-                    {{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'Nuevo Mensaje' : 'Realizar Descargo') : 'Historial de Descargos' }}
-                    <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle" style="margin-left:-15px;"></span>
-                  </button>
-
-                  <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-danger text-white w-100 fw-bold">
-                    <i class="bi bi-envelope"></i> APELAR A COMISIÓN DIRECTIVA
-                  </button>
-                </div>
               </div>
+
+              <!-- COLUMNA 5: FECHAS MOBILE (Se oculta en escritorio) -->
+              <div class="col-12 order-4 d-md-none bg-light p-2 rounded border d-flex justify-content-between align-items-center">
+                <span class="text-dark" style="font-size: 0.85rem;">Desde: <strong>{{ s.desde_formateada || '-' }}</strong></span>
+                <span class="text-dark" style="font-size: 0.85rem;">Hasta:
+                  <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
+                  <strong class="text-danger" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
+                  <strong class="text-muted" v-else>-</strong>
+                </span>
+              </div>
+
+              <!-- COLUMNA 6: FECHAS ESCRITORIO -->
+              <div class="col-md-1 d-none d-md-block order-5 text-center fw-bold text-dark" style="font-size: 0.85rem;">
+                {{ s.desde_formateada || '-' }}
+              </div>
+              <div class="col-md-2 d-none d-md-block order-6 text-center fw-bold" style="font-size: 0.85rem;" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">
+                <span v-if="s.es_indefinido == 1">Indefinido</span>
+                <span v-else>{{ s.hasta_formateada || '-' }}</span>
+              </div>
+
             </div>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+          <!-- Paginación -->
+          <div class="d-flex justify-content-center align-items-center gap-3 py-4" v-if="totalPaginas > 1">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
             </button>
             <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
@@ -479,17 +456,11 @@ onMounted(obtenerSancionesLocales);
 </script>
 
 <style scoped>
-/* ====================================================
-   1. BOTONES Y ESTADOS (Mantenemos tu diseño)
-   ==================================================== */
-.btn-action {
-    border: none; padding: 8px 12px; border-radius: 4px;
-    font-weight: bold; cursor: pointer; display: flex;
-    align-items: center; justify-content: center; gap: 5px;
-    font-size: 0.75rem; transition: opacity 0.2s;
-}
-.btn-refresh:hover { transform: rotate(45deg); }
+/* Transición sutil al pasar el mouse por una fila en escritorio */
+.item-sancion { transition: background-color 0.2s; }
+.item-sancion:hover { background-color: #f8fafc !important; }
 
+/* Mantenemos tus colores y medallas de estado */
 .text-en-proceso { color: #d97706 !important; }
 .text-anulada { color: #0f172a !important; }
 
@@ -505,45 +476,7 @@ onMounted(obtenerSancionesLocales);
 .badge-status-sm.pendiente { background: #fef9c3; color: #a16207; }
 .badge-status-sm.anulada { background: #0f172a; color: #ffffff; }
 
-/* ====================================================
-   2. TABLA DESKTOP Y FILTROS
-   ==================================================== */
-.table-container { width: 100%; overflow: auto; max-height: 85vh; background: white; }
-table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-
-thead tr.main-header th { position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important; padding: 12px 10px; border-bottom: 1px solid #cbd5e1; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem; color: #000; text-transform: uppercase; font-weight: 800; margin: 0; }
-
-thead tr.filter-row td { position: sticky; top: 35px; z-index: 40; background: #f1f5f9 !important; padding: 6px 10px 12px 10px; border-bottom: 4px solid #e2e8f0; margin: 0; }
-.filter-input { font-size: 0.75rem; height: 32px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 8px; box-sizing: border-box; }
-.filter-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
-
-.col-id { left: 0; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-.sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
-thead tr.filter-row td.sticky-col { z-index: 95 !important; background-color: #f1f5f9 !important; }
-
-.cell-ro { padding: 14px 10px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-
-/* ====================================================
-   3. 📱 RESPONSIVE DESIGN (Solo lo necesario)
-   ==================================================== */
-.card-licencia { border-radius: 8px; margin-bottom: 15px; }
-
-@media (max-width: 768px) {
-    .mobile-filter-panel { padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-    .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-    .filter-grid-mobile input, .filter-grid-mobile select {
-        padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;
-        font-size: 16px; width: 100%; outline: none; background: #e2e8f0;
-    }
-    .filter-grid-mobile select.full-width { grid-column: span 2; }
-}
-
-@media (max-width: 600px) {
-    .filter-grid-mobile { grid-template-columns: 1fr; }
-    .filter-grid-mobile select.full-width { grid-column: span 1; }
-}
-
 .animate__animated { animation-duration: 0.5s; }
+
+
 </style>

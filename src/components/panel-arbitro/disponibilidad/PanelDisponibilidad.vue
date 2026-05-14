@@ -2,7 +2,7 @@
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
-      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
+      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
         <div>
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
             <i class="bi bi-clock me-2"></i> Disponibilidad Horaria
@@ -11,10 +11,10 @@
         </div>
 
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-          <span v-if="edicionAbierta" class="badge bg-success px-3 py-2 shadow-sm w-fit-mobile">
+          <span v-if="edicionAbierta" class="badge bg-success px-3 py-2 shadow-sm d-inline-block text-center w-auto">
             <i class="bi bi-pencil-square me-1"></i> Edición Abierta
           </span>
-          <span v-else class="badge bg-secondary px-3 py-2 shadow-sm w-fit-mobile">
+          <span v-else class="badge bg-secondary px-3 py-2 shadow-sm d-inline-block text-center w-auto">
             <i class="bi bi-lock-fill me-1"></i> Edición Cerrada
           </span>
         </div>
@@ -116,13 +116,14 @@
           </div>
         </div>
 
-        <button v-if="edicionAbierta" @click="guardarCambios" class="btn btn-success w-100 fw-bold shadow-sm py-2" :disabled="cargando">
+        <button v-if="edicionAbierta" @click="guardarCambios" class="btn btn-success w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
           ACTUALIZAR DISPONIBILIDAD
         </button>
       </div>
     </div>
 
+    <!-- Sección de Historial y Cambios Manuales -->
     <div class="manual-section p-0 mx-auto mt-4 mb-5 w-100" style="background: transparent; box-shadow: none;">
         <div class="text-center text-white-50 mb-3 small">
             <i class="bi bi-shield-lock-fill me-1"></i>
@@ -130,50 +131,70 @@
         </div>
 
         <div class="card border-0 shadow-sm overflow-hidden mb-4" style="border-radius: 12px;">
-            <div class="card-header bg-white border-bottom py-2 ps-3">
-                <h6 class="m-0 fw-bold text-dark small">Historial de Solicitudes</h6>
+            <div class="card-header bg-white border-bottom py-3 ps-3">
+                <h6 class="m-0 fw-bold text-dark small text-uppercase">Historial de Solicitudes</h6>
             </div>
+
             <div class="card-body p-0 bg-white">
-                <div v-if="historialRectificaciones.length > 0" class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr class="x-small text-uppercase text-muted">
-                                <th class="ps-3" style="width: 110px;">Fecha</th>
-                                <th>Mensaje</th>
-                                <th class="text-center">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(h, i) in historialRectificaciones" :key="i">
-                                <td class="ps-3 small fw-bold text-dark">{{ h.fecha }}</td>
-                                <td class="small text-dark">{{ h.mensaje }}</td>
-                                <td class="text-center">
-                                    <span :class="['badge x-small', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]">
-                                      {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- LISTA UNIFICADA (Reemplaza la tabla rígida) -->
+                <div v-if="historialRectificaciones.length > 0" class="d-flex flex-column">
+                    <!-- Encabezado de Columnas (Solo Escritorio) -->
+                    <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.70rem;">
+                        <div class="col-md-2 ps-3">Fecha</div>
+                        <div class="col-md-7">Mensaje</div>
+                        <div class="col-md-3 text-center pe-3">Estado</div>
+                    </div>
+
+                    <!-- Filas de Datos -->
+                    <div v-for="(h, i) in historialRectificaciones" :key="i" class="row g-0 align-items-center p-3 p-md-2 border-bottom bg-white item-historial">
+
+                        <!-- HEADER MOBILE: Fecha y Estado -->
+                        <div class="col-12 d-md-none mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                            <span class="small fw-bold text-dark">{{ h.fecha }}</span>
+                            <span :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem;">
+                                {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
+                            </span>
+                        </div>
+
+                        <!-- COL 1: FECHA (Escritorio) -->
+                        <div class="col-md-2 d-none d-md-block ps-3 small fw-bold text-dark">
+                            {{ h.fecha }}
+                        </div>
+
+                        <!-- COL 2: MENSAJE (Ambos) -->
+                        <div class="col-12 col-md-7 small text-dark lh-sm">
+                            {{ h.mensaje }}
+                        </div>
+
+                        <!-- COL 3: ESTADO (Escritorio) -->
+                        <div class="col-md-3 d-none d-md-flex justify-content-center pe-3">
+                            <span :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                                {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
+                            </span>
+                        </div>
+
+                    </div>
                 </div>
-                <div v-else class="text-center py-4 text-muted small">
+
+                <div v-else class="text-center py-5 text-muted small bg-light">
+                    <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">history_toggle_off</span>
                     Sin solicitudes previas de disponibilidad.
                 </div>
             </div>
         </div>
 
         <div v-if="!edicionAbierta" class="mt-4">
-            <div class="alert alert-info border-0 shadow-sm mb-3 d-flex align-items-center info-mobile" style="background-color: #e0f7fa; color: #006064; border-radius: 10px;">
+            <div class="alert alert-info border-0 shadow-sm mb-3 d-flex align-items-center p-3" style="background-color: #e0f7fa; color: #006064; border-radius: 10px;">
                 <i class="bi bi-info-circle-fill me-3 fs-5 d-none d-md-block"></i>
-                <div class="x-small-mobile">
+                <div class="small">
                     Informar cambios urgentes a <strong>secretaría y designaciones</strong>.
                 </div>
             </div>
 
             <div class="p-3 p-md-4 rounded-4 shadow-lg" style="background: #0c1624; border: 1px dashed rgba(255,255,255,0.2);">
                 <h6 class="text-white fw-bold small mb-2 text-uppercase">Informar cambio urgente</h6>
-                <textarea v-model="solicitudCambio" class="form-control mb-3 custom-textarea" rows="3" placeholder="Detallá aquí tu cambio de horarios..."></textarea>
-                <button @click="enviarSolicitudRectificacion" class="btn btn-danger w-100 fw-bold py-2 shadow" :disabled="cargando || !solicitudCambio">
+                <textarea v-model="solicitudCambio" class="form-control mb-3 custom-textarea p-3" rows="3" placeholder="Detallá aquí tu cambio de horarios..."></textarea>
+                <button @click="enviarSolicitudRectificacion" class="btn btn-danger w-100 fw-bold py-3 py-md-2 shadow" :disabled="cargando || !solicitudCambio">
                     ENVIAR SOLICITUD FORMAL
                 </button>
             </div>
@@ -324,111 +345,44 @@ const enviarSolicitudRectificacion = async () => {
 
 <style scoped>
 /* ====================================================
-   1. ESTRUCTURA BASE MAESTRA
+   COMPONENTES Y UTILIDADES
    ==================================================== */
-.full-screen-wrapper {
-    position: relative; width: 99vw; min-height: 100vh; height: auto;
-    margin-left: 50%; transform: translateX(-50%);
-    padding: 20px; padding-bottom: 80px;
+.form-control-sm, .form-select-sm {
+  border-radius: 8px;
+  padding: 0.5rem;
 }
 
-.admin-panel {
-    width: 100%; max-width: 100%; padding: 20px;
-    font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-    color: #000; background-color: #0f172a;
-    min-height: 100vh; height: 100%; border-radius: 12px;
+.btn-danger {
+  background-color: #dc2626 !important;
+  border: none;
 }
 
-/* Cabecera Estándar (Por si el componente la usa) */
-.header-section {
-    background: white; padding: 15px 25px; border-radius: 8px;
-    display: flex; justify-content: space-between; margin-bottom: 15px;
-    border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    align-items: center;
+.text-white-50 {
+  color: rgba(255, 255, 255, 0.5) !important;
 }
-.header-info { display: flex; flex-direction: column; }
-.header-actions { display: flex; gap: 8px; }
-.btn-action {
-    border: none; padding: 8px 12px; border-radius: 4px;
-    font-weight: bold; cursor: pointer; display: flex;
-    align-items: center; justify-content: center; gap: 5px;
-    font-size: 0.75rem; transition: opacity 0.2s;
-}
-.btn-text { display: inline; }
 
-/* ====================================================
-   2. COMPONENTES ESPECÍFICOS DE ESTA VISTA
-   ==================================================== */
-
-
-.form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem; }
-.x-small { font-size: 0.65rem; font-weight: 800; }
-.manual-section { background-color: #0c1624; border-radius: 1rem; }
-.btn-danger { background-color: #dc2626 !important; border: none; }
-.text-white-50 { color: rgba(255, 255, 255, 0.5) !important; }
 .custom-textarea {
-    background-color: #ffffff !important; color: #000000 !important;
-    border: none; border-radius: 8px;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: none;
+  border-radius: 8px;
 }
-.custom-textarea::placeholder { color: #6c757d; }
 
-
+.custom-textarea::placeholder {
+  color: #6c757d;
+}
 
 /* ====================================================
-   3. 📱 RESPONSIVE DESIGN (Tiered Layout)
+   EFECTO HOVER PARA LA LISTA DE HISTORIAL
    ==================================================== */
-.desktop-only { display: block; }
-.mobile-only { display: none; }
-
-/* --- Laptops y Tablets Grandes (Hasta 1024px) --- */
-@media (max-width: 1024px) {
-    .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-    .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+.item-historial {
+  transition: background-color 0.2s ease;
 }
 
-/* --- Tablets y Móviles (Hasta 768px) --- */
-@media (max-width: 768px) {
-    .desktop-only { display: none !important; }
-    .mobile-only { display: block !important; }
-
-    .w-fit-mobile { width: fit-content; }
-    .x-small-mobile { font-size: 0.75rem; }
-    .info-mobile { padding: 0.75rem; }
+.item-historial:hover {
+  background-color: #f8fafc !important;
 }
 
-/* --- Smartphones (Hasta 600px) --- */
-@media (max-width: 600px) {
-    /* AIRE LATERAL DE 10px */
-    .full-screen-wrapper {
-        padding: 0 10px !important;
-        width: 100% !important;
-        margin: 0 !important;
-        transform: none !important;
-        left: 0 !important;
-    }
+.animate__animated { animation-duration: 0.5s; }
 
-    .admin-panel { padding: 15px 0 !important; border-radius: 0; }
-
-    /* CABECERA ESTÁNDAR MÓVIL: Título Izquierda, Botones Centro */
-    .header-section {
-        padding: 15px !important; flex-direction: column;
-        align-items: flex-start; text-align: left; gap: 15px;
-    }
-    .header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
-    .header-info h4, h4 { font-size: 1.2rem !important; margin: 0; text-align: left; }
-
-    .header-actions {
-        width: 100%; display: flex; flex-direction: row;
-        flex-wrap: wrap; justify-content: center; gap: 8px;
-    }
-    .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
-    .btn-text { display: none !important; }
-
-    /* AJUSTES ESPECÍFICOS DEL COMPONENTE */
-    .manual-section { margin: 0 !important; width: 100% !important; }
-
-    input[type="time"] { padding-left: 5px; padding-right: 5px; font-size: 0.85rem; }
-    .card-body { padding: 1rem !important; }
-    .form-check { margin-right: 5px; }
-}
 </style>

@@ -6,7 +6,7 @@
       </RouterLink>
 
       <button
-        class="navbar-toggler"
+        class="navbar-toggler border-0 shadow-none"
         type="button"
         data-bs-toggle="collapse"
         data-bs-target="#navbarNav"
@@ -18,22 +18,23 @@
       </button>
 
       <div ref="navbarNav" class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto" @click="hideNavBar">
-          <li class="nav-item"><RouterLink class="nav-link" to="/">Inicio</RouterLink></li>
-          <li class="nav-item"><RouterLink class="nav-link" to="/descargas">Descargas</RouterLink></li>
-          <li class="nav-item"><RouterLink class="nav-link" to="/escuela-arbitros">Escuela de Árbitros</RouterLink></li>
-          <li class="nav-item"><RouterLink class="nav-link" to="/designaciones">Designaciones</RouterLink></li>
-          <li class="nav-item"><RouterLink class="nav-link" to="/tribunal-de-etica">Tribunal de Ética</RouterLink></li>
+        <ul class="navbar-nav ms-auto align-items-end align-items-xl-center py-3 py-xl-0" @click="hideNavBar">
+          <li class="nav-item"><RouterLink class="nav-link fw-semibold px-xl-3 text-nowrap" to="/">Inicio</RouterLink></li>
+          <li class="nav-item"><RouterLink class="nav-link fw-semibold px-xl-3 text-nowrap" to="/descargas">Descargas</RouterLink></li>
+          <li class="nav-item"><RouterLink class="nav-link fw-semibold px-xl-3 text-nowrap" to="/escuela-arbitros">Escuela de Árbitros</RouterLink></li>
+          <li class="nav-item"><RouterLink class="nav-link fw-semibold px-xl-3 text-nowrap" to="/designaciones">Designaciones</RouterLink></li>
+          <li class="nav-item"><RouterLink class="nav-link fw-semibold px-xl-3 text-nowrap" to="/tribunal-de-etica">Tribunal de Ética</RouterLink></li>
           <li class="nav-item">
-            <a class="nav-link" href="https://arbitroshandball.com.ar/catalogo/" target="_blank" rel="noopener noreferrer">Catálogo Online</a>
+            <a class="nav-link fw-semibold px-xl-3 text-nowrap" href="https://arbitroshandball.com.ar/catalogo/" target="_blank" rel="noopener noreferrer">Catálogo Online</a>
           </li>
-          <li class="nav-item"><RouterLink class="nav-link" to="/preguntas-frecuentes">Preguntas Frecuentes</RouterLink></li>
-          
-          <li class="nav-item">
-            <RouterLink v-if="!logueado" to="/login-arbitro" class="btn btn-login-nav ms-lg-3">
+          <li class="nav-item"><RouterLink class="nav-link fw-semibold px-xl-3 pe-xl-4 text-nowrap" to="/preguntas-frecuentes">Preguntas Frecuentes</RouterLink></li>
+
+          <!-- Usamos mt-3 mt-xl-0 para darle aire arriba en celular, pero dejamos que tenga su ancho natural -->
+          <li class="nav-item mt-3 mt-xl-0">
+            <RouterLink v-if="!logueado" to="/login-arbitro" class="btn btn-login-nav">
               INICIAR SESIÓN
             </RouterLink>
-            <RouterLink v-else :to="rutaPanel" class="btn btn-login-nav ms-lg-3">
+            <RouterLink v-else :to="rutaPanel" class="btn btn-login-nav">
               MI PANEL
             </RouterLink>
           </li>
@@ -77,9 +78,11 @@ const hideNavBar = () => {
 }
 </script>
 
-
-
 <style scoped>
+.nav-link {
+  transition: color 0.2s ease-in-out;
+}
+
 .nav-link:hover, .nav-link.router-link-exact-active {
   color: #dc2626 !important;
 }
@@ -88,26 +91,19 @@ const hideNavBar = () => {
   background-color: #dc2626 !important;
   color: #ffffff !important;
   font-weight: bold;
-  padding: 8px 20px;
+  padding: 8px 24px;
   border-radius: 6px;
   text-decoration: none;
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   transition: background-color 0.3s ease;
+  white-space: nowrap;
 }
 
 .btn-login-nav:hover {
   background-color: #b91c1c !important;
+  color: #ffffff !important;
 }
 
-@media (max-width: 1199.98px) {
-  .navbar-collapse .navbar-nav {
-    align-items: flex-end;
-    padding: 1rem 0;
-  }
-  .btn-login-nav {
-    width: 100%;
-    text-align: center;
-    margin-top: 10px;
-  }
-}
 </style>

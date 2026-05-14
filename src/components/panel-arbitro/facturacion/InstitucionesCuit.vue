@@ -11,129 +11,133 @@
           <p class="text-muted small m-0 mt-1">Total: {{ filtrados.length }} instituciones encontradas</p>
         </div>
 
-        <div class="header-actions d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
-          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex shadow-sm rounded border-0 p-2 align-items-center justify-content-center text-white" style="background-color: #3b82f6;">
+        <div class="header-actions d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex shadow-sm rounded border-0 p-2 align-items-center justify-content-center gap-1 text-white">
             <span class="material-icons" style="font-size: 20px;">filter_alt</span>
           </button>
 
           <button @click="limpiarFiltros" class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Limpiar Filtros" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
             <span class="material-icons" style="font-size: 22px; color: #000;">filter_alt_off</span>
-            <span class="btn-text desktop-only fw-bold text-dark" style="font-size: 0.8rem;">Limpiar Filtros</span>
+            <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Limpiar Filtros</span>
           </button>
         </div>
       </div>
 
-      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm border-bottom p-3" style="background-color: #e2e8f0; margin-bottom: 0; border-radius: 0;">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <span class="small fw-bold text-muted text-uppercase">Filtrar por Club</span>
-          <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1 shadow-sm" style="line-height: 1; background: white;">
-            <span class="material-icons" style="font-size: 20px;">close</span>
-          </button>
+      <!-- Panel Único de Filtros -->
+      <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
+        <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
+          <span class="small fw-bold text-dark text-uppercase">Filtrar Instituciones</span>
+          <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
         </div>
-        <div class="filter-container-mobile mb-3">
-          <input v-model="filtros.club" placeholder="Nombre de la institución..." class="mobile-input w-100 p-2 border rounded shadow-sm">
-        </div>
-        <div>
-          <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 fw-bold border-0 py-2 shadow-sm" style="background-color: #3b82f6;">Aplicar Filtros</button>
+
+        <div class="row g-2">
+          <div class="col-12 col-md-4">
+            <input v-model="filtros.club" class="form-control form-control-sm shadow-none input-filtro-custom py-2" placeholder="Filtrar por club o institución...">
+          </div>
+          <div class="col-12 col-md-4">
+            <input v-model="filtros.cuit" class="form-control form-control-sm shadow-none input-filtro-custom py-2" placeholder="Filtrar por CUIT...">
+          </div>
+          <div class="col-12 col-md-4">
+            <input v-model="filtros.condicion" class="form-control form-control-sm shadow-none input-filtro-custom py-2" placeholder="Filtrar por Condición IVA...">
+          </div>
+          <div class="col-12 d-md-none mt-2">
+            <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 fw-bold shadow-sm py-2">Aplicar Filtros</button>
+          </div>
         </div>
       </div>
 
       <div class="card-body bg-white p-3 p-md-4">
 
-        <div class="table-container shadow-sm desktop-only border" style="border-radius: 8px;">
-          <table>
-            <thead>
-              <tr>
-                <th class="col-institucion">INSTITUCIÓN / CLUB</th>
-                <th>CUIT</th>
-                <th>CONDICIÓN IVA</th>
-                <th class="text-center">ACCIONES</th>
-              </tr>
-              <tr class="filter-row">
-                <td><input v-model="filtros.club" class="filter-input shadow-none" placeholder="Filtrar club..."></td>
-                <td><input v-model="filtros.cuit" class="filter-input shadow-none" placeholder="Filtrar CUIT..."></td>
-                <td><input v-model="filtros.condicion" class="filter-input shadow-none" placeholder="Filtrar condición..."></td>
-                <td></td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="i in institucionesPaginadas" :key="i.id" class="row-hover">
-                <td class="font-bold col-institucion fw-bold text-dark">{{ i.club }}</td>
-                <td>{{ i.cuit || '-' }}</td>
-                <td><small>{{ i.condicion || '-' }}</small></td>
-                <td class="text-center">
-                  <div class="actions-wrapper">
-                    <template v-if="i.email && i.email !== 'NULL' && i.email.trim() !== ''">
-                      <button @click="enviarFactura(i.email)" class="btn-email shadow-sm" title="Enviar E-mail">
-                        <span class="material-icons" style="font-size: 18px;">send</span>
-                      </button>
-                      <button @click="copiarAlPortapapeles(i.email, 'Email')" class="btn-copy shadow-sm" title="Copiar Email">
-                        <span class="material-icons" style="font-size: 18px;">content_copy</span>
-                      </button>
-                    </template>
+        <!-- LISTA UNIFICADA -->
+        <div class="border shadow-sm rounded overflow-hidden">
 
-                    <template v-if="i.celular && i.celular !== 'NULL' && i.celular.trim() !== ''">
-                      <button @click="enviarWhatsapp(i.celular)" class="btn-whatsapp shadow-sm" title="Enviar WhatsApp">
-                        <span class="material-icons" style="font-size: 18px;">chat</span>
-                      </button>
-                      <button @click="copiarAlPortapapeles(i.celular, 'Celular')" class="btn-copy shadow-sm" title="Copiar Celular">
-                        <span class="material-icons" style="font-size: 18px;">phonelink_ring</span>
-                      </button>
-                    </template>
+          <!-- Encabezado de Columnas (Solo Escritorio) -->
+          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase" style="font-size: 0.75rem; color: #0f172a;">
+            <div class="col-md-4 ps-3">Institución / Club</div>
+            <div class="col-md-2">CUIT</div>
+            <div class="col-md-3">Condición IVA</div>
+            <div class="col-md-3 text-center pe-3">Acciones</div>
+          </div>
 
-                    <span v-if="(!i.email || i.email === 'NULL') && (!i.celular || i.celular === 'NULL')" class="no-data">
-                      Sin contacto
-                    </span>
-                  </div>
-                </td>
-              </tr>
-              <tr v-if="institucionesPaginadas.length === 0">
-                <td colspan="4" class="text-center py-5 text-muted">No se encontraron instituciones con esos filtros.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          <div v-if="institucionesPaginadas.length === 0" class="text-center p-5 bg-light">
+             <span class="material-icons text-muted opacity-50 d-block mb-3" style="font-size: 48px;">business</span>
+             <h5 class="fw-bold text-dark mt-3">Sin resultados</h5>
+             <p class="text-muted small m-0">No se encontraron instituciones con esos filtros.</p>
+          </div>
 
-        <div class="mobile-only mt-3">
-          <div v-for="i in institucionesPaginadas" :key="'mob-'+i.id" class="card-contacto">
-            <div class="card-main">
-              <div class="card-info">
-                <div class="card-name">{{ i.club }}</div>
-                <div class="card-subtext">
-                  <b>CUIT:</b> {{ i.cuit || 'N/A' }}<br>
-                  <small>{{ i.condicion || 'Sin condición' }}</small>
-                </div>
-                <div class="card-actions-mobile">
-                    <button v-if="i.cuit && i.cuit !== 'NULL'" @click="copiarAlPortapapeles(i.cuit, 'CUIT')" class="btn-copy-mobile">
-                      <span class="material-icons" style="font-size: 18px;">content_copy</span> Copiar CUIT
+          <div class="d-flex flex-column">
+            <div v-for="i in institucionesPaginadas" :key="i.id" class="row g-0 align-items-center p-3 p-md-2 border-bottom bg-white item-institucion">
+
+              <!-- HEADER MOBILE: Club + CUIT (Oculto en desktop) -->
+              <div class="col-12 d-md-none mb-3 border-bottom pb-2">
+                <div class="fw-bold text-dark fs-5 mb-1">{{ i.club }}</div>
+                <div class="text-muted small"><b>CUIT:</b> {{ i.cuit || 'N/A' }}</div>
+                <div class="text-muted small">{{ i.condicion || 'Sin condición' }}</div>
+              </div>
+
+              <!-- COL 1: CLUB (Escritorio) -->
+              <div class="col-md-4 d-none d-md-block fw-bold text-dark ps-3 text-truncate" style="font-size: 0.85rem;">
+                {{ i.club }}
+              </div>
+
+              <!-- COL 2: CUIT (Escritorio) -->
+              <div class="col-md-2 d-none d-md-block text-muted" style="font-size: 0.85rem;">
+                {{ i.cuit || '-' }}
+              </div>
+
+              <!-- COL 3: CONDICIÓN IVA (Escritorio) -->
+              <div class="col-md-3 d-none d-md-block text-muted small text-truncate pe-2">
+                {{ i.condicion || '-' }}
+              </div>
+
+              <!-- COL 4: ACCIONES (Ambos) -->
+              <div class="col-12 col-md-3">
+                <div class="row g-2 justify-content-md-center">
+
+                  <div class="col-12 d-md-none" v-if="i.cuit && i.cuit !== 'NULL'">
+                    <button @click="copiarAlPortapapeles(i.cuit, 'CUIT')" class="btn btn-sm btn-light border w-100 d-flex align-items-center justify-content-center gap-1 fw-bold text-dark py-2">
+                      <span class="material-icons" style="font-size: 16px;">content_copy</span> Copiar CUIT
                     </button>
+                  </div>
 
-                    <template v-if="i.email && i.email !== 'NULL' && i.email.trim() !== ''">
-                      <button @click="copiarAlPortapapeles(i.email, 'Email')" class="btn-copy-mobile">
-                        <span class="material-icons" style="font-size: 18px;">content_copy</span> Copiar Email
+                  <template v-if="i.email && i.email !== 'NULL' && i.email.trim() !== ''">
+                    <div class="col-6 col-md-auto">
+                      <button @click="enviarFactura(i.email)" class="btn btn-sm btn-primary shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2 py-md-1 px-md-2">
+                        <span class="material-icons" style="font-size: 16px;">send</span> <span class="d-md-none">Email</span>
                       </button>
-                      <button @click="enviarFactura(i.email)" class="btn-copy-mobile btn-send-mobile">
-                        <span class="material-icons" style="font-size: 18px;">send</span> Enviar Email
+                    </div>
+                    <div class="col-6 col-md-auto">
+                      <button @click="copiarAlPortapapeles(i.email, 'Email')" class="btn btn-sm btn-light border shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2 py-md-1 px-md-2">
+                        <span class="material-icons" style="font-size: 16px;">content_copy</span> <span class="d-md-none">Email</span>
                       </button>
-                    </template>
+                    </div>
+                  </template>
 
-                    <template v-if="i.celular && i.celular !== 'NULL' && i.celular.trim() !== ''">
-                      <button @click="copiarAlPortapapeles(i.celular, 'Celular')" class="btn-copy-mobile">
-                        <span class="material-icons" style="font-size: 18px;">content_copy</span> Copiar Celular
+                  <template v-if="i.celular && i.celular !== 'NULL' && i.celular.trim() !== ''">
+                    <div class="col-6 col-md-auto">
+                      <button @click="enviarWhatsapp(i.celular)" class="btn btn-sm shadow-sm text-white w-100 d-flex align-items-center justify-content-center gap-1 py-2 py-md-1 px-md-2" style="background-color: #25D366; border-color: #25D366;">
+                        <span class="material-icons" style="font-size: 16px;">chat</span> <span class="d-md-none">WhatsApp</span>
                       </button>
-                      <button @click="enviarWhatsapp(i.celular)" class="btn-copy-mobile btn-whatsapp-mobile">
-                        <span class="material-icons" style="font-size: 18px;">chat</span> WhatsApp
+                    </div>
+                    <div class="col-6 col-md-auto">
+                      <button @click="copiarAlPortapapeles(i.celular, 'Celular')" class="btn btn-sm btn-light border shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2 py-md-1 px-md-2">
+                        <span class="material-icons" style="font-size: 16px;">phonelink_ring</span> <span class="d-md-none">Celular</span>
                       </button>
-                    </template>
+                    </div>
+                  </template>
+
+                  <div class="col-12 text-center" v-if="(!i.email || i.email === 'NULL') && (!i.celular || i.celular === 'NULL')">
+                    <span class="text-muted small">Sin contacto</span>
+                  </div>
+
                 </div>
               </div>
+
             </div>
-          </div>
-          <div v-if="institucionesPaginadas.length === 0" class="text-center py-4 text-muted small border rounded bg-light">
-            No se encontraron instituciones.
           </div>
         </div>
 
+        <!-- Paginación -->
         <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
           <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
             <i class="bi bi-chevron-left"></i> Ant
@@ -149,6 +153,7 @@
       </div>
     </div>
 
+    <!-- Alerta de contacto -->
     <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
       <div class="d-flex align-items-center">
         <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
@@ -283,110 +288,37 @@ onMounted(cargarDatos);
 
 <style scoped>
 /* ====================================================
-   1. BOTONES (Mantenemos tu diseño intacto)
+   BOTONES E INPUTS
    ==================================================== */
-.btn-action, .btn-clear { border: none; cursor: pointer; }
-.btn-clear:hover { background-color: #e2e8f0 !important; }
-.btn-action {
-    border: none; padding: 8px 12px; border-radius: 4px;
-    font-weight: bold; cursor: pointer; display: flex;
-    align-items: center; justify-content: center; gap: 5px;
-    font-size: 0.75rem; transition: opacity 0.2s;
+.btn-clear {
+  border: none;
+  cursor: pointer;
 }
-.btn-text { display: inline; }
-.no-data { font-size: 0.75rem; color: #94a3b8; font-style: italic; }
+.btn-clear:hover {
+  background-color: #cbd5e1 !important;
+}
+
+.input-filtro-custom {
+  font-size: 1rem !important;
+  height: auto !important;
+}
+.input-filtro-custom:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+}
 
 /* ====================================================
-   2. TABLA DESKTOP Y FILTROS
+   EFECTO HOVER DE LA LISTA
    ==================================================== */
-.table-container {
-  width: 100%; overflow: auto; max-height: 75vh; background: white;
+.item-institucion {
+  transition: background-color 0.2s ease;
 }
-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; min-width: 800px; }
-
-th {
-  background: #e2e8f0 !important; padding: 12px 10px; position: sticky;
-  top: 0; z-index: 50; border-bottom: 2px solid #e2e8f0;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem; color: #000000; text-transform: uppercase;
-  font-weight: 800; text-align: left;
-}
-td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; color: #000;}
-
-.col-institucion { width: 35%; }
-.row-hover:hover { background-color: #f1f5f9; transition: background 0.2s ease; }
-
-.filter-row td {
-  position: sticky; top: 40px; z-index: 40; background: #f1F5F9 !important;
-  padding: 6px 10px 12px 10px; border-bottom: 4px solid #e2e8f0;
-}
-
-.filter-input {
-  width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1;
-  font-size: 0.8rem; border-radius: 4px; box-sizing: border-box;
-}
-.filter-input:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
-
-/* Botones Tabla Desktop */
-.actions-wrapper { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-.btn-email, .btn-whatsapp, .btn-copy {
-  border: none; width: 32px; height: 32px; border-radius: 6px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s;
-}
-.btn-email { background: #3b82f6; color: white; }
-.btn-whatsapp { background: #25D366; color: white; }
-.btn-copy { background: #e2e8f0; color: #000000; }
-.btn-email:hover, .btn-whatsapp:hover, .btn-copy:hover { opacity: 0.85; }
-
-/* ====================================================
-   3. CARDS MÓVILES (Estilos base)
-   ==================================================== */
-.card-contacto {
-  background: #ffffff; padding: 16px; border-radius: 12px; margin-bottom: 15px;
-  border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-.card-name { font-weight: 800; font-size: 1.1rem; color: #1e293b; }
-.card-subtext { font-size: 0.85rem; color: #64748b; margin: 8px 0 15px 0; line-height: 1.4; }
-
-.card-actions-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.btn-copy-mobile {
-  background: #e2e8f0; border: 1px solid #cbd5e1; padding: 10px 5px; border-radius: 8px;
-  font-size: 0.75rem; display: flex; align-items: center; justify-content: center;
-  gap: 6px; color: #0f172a; font-weight: 700; width: 100%;
-}
-.btn-send-mobile { background: #3b82f6; color: white; border: none; }
-.btn-whatsapp-mobile { background: #25D366; color: white; border: none; }
-
-/* ====================================================
-   4. 📱 RESPONSIVE DESIGN
-   ==================================================== */
-.desktop-only { display: block; }
-.mobile-only { display: none; }
-.mobile-only-flex { display: none !important; }
-
-@media (min-width: 769px) {
-  .btn-text { display: inline; }
-}
-
-@media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-  .mobile-only-flex { display: flex !important; }
-
-  .mobile-filter-panel { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-  .filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  .filter-grid-mobile input, .filter-grid-mobile select {
-      padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;
-      font-size: 16px; width: 100%; outline: none; background: #e2e8f0;
-  }
-  .filter-grid-mobile select.full-width { grid-column: span 2; }
-}
-
-@media (max-width: 600px) {
-  .filter-grid-mobile { grid-template-columns: 1fr; }
-  .filter-grid-mobile select.full-width { grid-column: span 1; }
+.item-institucion:hover {
+  background-color: #f8fafc !important;
 }
 
 .animate__animated { animation-duration: 0.5s; }
+
+
 </style>

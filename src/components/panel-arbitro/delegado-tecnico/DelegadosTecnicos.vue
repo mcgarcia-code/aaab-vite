@@ -1,11 +1,11 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <!-- Contenedor principal estilo Disponibilidad -->
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 panel-card delegados-sheet" style="border-radius: 15px;">
+    <!-- Contenedor principal -->
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 panel-card" style="border-radius: 15px; background: #f8fafc;">
 
       <!-- NUEVO HEADER -->
-      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
+      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
         <div>
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
             <i class="bi bi-stopwatch-fill me-2"></i> Planilla Digital
@@ -14,23 +14,23 @@
         </div>
 
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-          <button class="btn btn-danger px-3 py-2 fw-bold shadow-sm d-flex align-items-center w-fit-mobile" @click="resetMatch" style="font-size: 0.85rem;">
+          <button class="btn btn-danger px-3 py-2 fw-bold shadow-sm d-flex align-items-center" @click="resetMatch" style="font-size: 0.85rem;">
             <i class="bi bi-arrow-counterclockwise me-2"></i> REINICIAR
           </button>
         </div>
       </div>
 
       <!-- Cuerpo del panel -->
-      <div class="card-body p-3 p-md-4">
+      <div class="card-body p-2 p-md-4">
 
         <!-- ================= CRONÓMETRO ================= -->
-        <div class="timer-section shadow-sm">
-          <div class="period-indicator">{{ currentPeriodText }}</div>
+        <div class="bg-dark text-white p-3 p-md-4 rounded-4 shadow-sm text-center mb-3 mb-md-4 border border-secondary">
+          <div class="text-uppercase fw-bold text-muted small mb-2" style="letter-spacing: 1px;">{{ currentPeriodText }}</div>
 
-          <!-- Reloj clickeable para abrir el modal de ajuste manual -->
+          <!-- Reloj clickeable -->
           <div
             class="time-display"
-            :class="{ 'time-paused': !isRunning }"
+            :class="{ 'text-danger': !isRunning }"
             @click="abrirModalTiempo"
             style="cursor: pointer;"
             title="Ajustar cronómetro"
@@ -38,31 +38,33 @@
             {{ formattedTime }}
           </div>
 
-          <div class="timer-controls">
-            <button class="btn-primary btn-main-timer shadow-sm" @click="toggleTimer" :disabled="state.activeTTO !== null">
+          <div class="d-flex flex-column gap-2 mt-2">
+            <button class="btn btn-primary w-100 py-2 py-md-3 fw-bold fs-5 shadow-sm" @click="toggleTimer" :disabled="state.activeTTO !== null">
               {{ isRunning ? '⏸ PAUSAR' : '▶ INICIAR' }}
             </button>
-            <div class="timer-sub-controls">
-              <button class="btn-secondary small-btn" @click="toggleDirection">
-                ⏱ {{ state.isCountdown ? 'Regresivo' : 'Progresivo' }}
-              </button>
-              <div class="period-nav">
-                <button class="btn-secondary small-btn" @click="prevPeriod" :disabled="isRunning || state.period === 1">⏮ Volver</button>
-                <button class="btn-secondary small-btn" @click="nextPeriod" :disabled="isRunning">⏭ Sig.</button>
+            <div class="row g-2">
+              <div class="col-6 col-md-4">
+                <button class="btn btn-secondary w-100 fw-bold small py-2" @click="toggleDirection">
+                  ⏱ {{ state.isCountdown ? 'Regresivo' : 'Progresivo' }}
+                </button>
+              </div>
+              <div class="col-6 col-md-8 d-flex gap-2">
+                <button class="btn btn-secondary w-100 fw-bold small py-2" @click="prevPeriod" :disabled="isRunning || state.period === 1">⏮ Volver</button>
+                <button class="btn btn-secondary w-100 fw-bold small py-2" @click="nextPeriod" :disabled="isRunning">⏭ Sig.</button>
               </div>
             </div>
           </div>
 
-          <div v-if="state.activeTTO" class="tto-countdown-box shadow-sm">
-            <div class="tto-info">
-              <span class="icon">🟩</span> TTO ({{ state.activeTTO.team === 'local' ? 'L' : 'V' }}): <strong>{{ state.activeTTO.timeRemaining }}s</strong>
+          <div v-if="state.activeTTO" class="bg-success text-white mt-3 p-2 rounded-3 fw-bold border border-success d-flex justify-content-between align-items-center">
+            <div>
+              <span class="me-1">🟩</span> TTO ({{ state.activeTTO.team === 'local' ? 'L' : 'V' }}): <strong>{{ state.activeTTO.timeRemaining }}s</strong>
             </div>
-            <button class="btn-danger small-btn fw-bold" @click="cancelTTO">❌ Cortar</button>
+            <button class="btn btn-danger btn-sm fw-bold px-3 py-1 rounded-pill" @click="cancelTTO">❌ Cortar</button>
           </div>
 
-          <div class="penalties-container" v-if="state.activePenalties.length > 0">
-            <h4>Exclusiones Activas</h4>
-            <div class="penalty-timers">
+          <div class="mt-3 pt-3 border-top border-secondary" v-if="state.activePenalties.length > 0">
+            <h4 class="text-uppercase text-muted small fw-bold mb-2" style="letter-spacing: 1px;">Exclusiones Activas</h4>
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
               <div v-for="penalty in state.activePenalties" :key="penalty.id" class="penalty-box" :class="penalty.team">
                 <span class="penalty-team">{{ penalty.team === 'local' ? 'L' : 'V' }}</span>
                 <span class="penalty-player">#{{ penalty.playerNumber }}</span>
@@ -73,114 +75,133 @@
         </div>
 
         <!-- ================= EQUIPOS ================= -->
-        <div class="teams-container">
-          <div class="team-column local shadow-sm">
-            <h3 class="team-title">LOCAL</h3>
-            <div class="score-display">{{ state.score.local }}</div>
+        <div class="row g-2 g-md-4 mb-3 mb-md-4">
 
-            <div class="indicators">
-              <span v-if="localPlayersLess > 0" class="badge-danger">⚠️ -{{ localPlayersLess }} Jug.</span>
-              <div class="tto-dots">
-                <span v-for="n in 3" :key="n" class="dot" :class="{ 'used': state.timeouts.local.total >= n }"></span>
-              </div>
-            </div>
+          <!-- LOCAL -->
+          <div class="col-6">
+            <div class="bg-white p-2 p-md-4 rounded-4 border shadow-sm h-100 d-flex flex-column text-center">
+              <h3 class="fw-bold text-dark fs-6 fs-md-5 mb-1 mb-md-2">LOCAL</h3>
+              <div class="score-display text-dark">{{ state.score.local }}</div>
 
-            <div class="action-buttons">
-              <div class="goal-controls">
-                <button class="btn-action btn-goal-minus" @click="restarGol('local')" :disabled="state.score.local === 0">
-                  <span class="icon">➖</span><span class="btn-text">Restar</span>
+              <div class="d-flex justify-content-center align-items-center gap-2 mb-3 min-h-24">
+                <span v-if="localPlayersLess > 0" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">⚠️ -{{ localPlayersLess }}</span>
+                <div class="d-flex gap-1">
+                  <span v-for="n in 3" :key="n" class="dot" :class="{ 'used': state.timeouts.local.total >= n }"></span>
+                </div>
+              </div>
+
+              <div class="d-flex flex-column gap-2 flex-grow-1 justify-content-end">
+                <div class="d-flex gap-1 w-100">
+                  <button class="btn btn-action bg-orange text-white w-50" @click="restarGol('local')" :disabled="state.score.local === 0">
+                    <span class="fs-5 lh-1">➖</span><span class="d-none d-md-inline fw-bold text-uppercase ms-1 small">Restar</span>
+                  </button>
+                  <button class="btn btn-action bg-success text-white w-50" @click="registrarGol('local')">
+                    <span class="fs-5 lh-1">⚽</span><span class="d-none d-md-inline fw-bold text-uppercase ms-1 small">Gol</span>
+                  </button>
+                </div>
+                <button class="btn btn-action bg-yellow text-dark w-100" @click="pedirDorsal('local', 'yellow_card')">
+                  <span class="fs-5 lh-1">🟨</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">Amarilla</span>
                 </button>
-                <button class="btn-action btn-goal" @click="registrarGol('local')">
-                  <span class="icon">⚽</span><span class="btn-text">Gol</span>
+                <button class="btn btn-action bg-orange text-white w-100" @click="pedirDorsal('local', '2_min')">
+                  <span class="fs-5 lh-1">✌️</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">2 Minutos</span>
+                </button>
+                <button class="btn btn-action bg-danger text-white w-100" @click="pedirDorsal('local', 'red_card')">
+                  <span class="fs-5 lh-1">🟥</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">Roja</span>
+                </button>
+                <button class="btn btn-action bg-primary text-white w-100" @click="pedirDorsal('local', 'blue_card')">
+                  <span class="fs-5 lh-1">🟦</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">Azul</span>
+                </button>
+                <button class="btn btn-action btn-tto text-white w-100" @click="requestTTO('local')" :disabled="!canUseTimeout('local')">
+                  <span class="fs-5 lh-1">🟩</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">TTO</span>
                 </button>
               </div>
-              <button class="btn-action btn-yellow" @click="pedirDorsal('local', 'yellow_card')">
-                <span class="icon">🟨</span><span class="btn-text">Amarilla</span>
-              </button>
-              <button class="btn-action btn-2min" @click="pedirDorsal('local', '2_min')">
-                <span class="icon">✌️</span><span class="btn-text">2 Minutos</span>
-              </button>
-              <button class="btn-action btn-red" @click="pedirDorsal('local', 'red_card')">
-                <span class="icon">🟥</span><span class="btn-text">Roja</span>
-              </button>
-              <button class="btn-action btn-blue" @click="pedirDorsal('local', 'blue_card')">
-                <span class="icon">🟦</span><span class="btn-text">Azul</span>
-              </button>
-              <button class="btn-action btn-tto" @click="requestTTO('local')" :disabled="!canUseTimeout('local')">
-                <span class="icon">🟩</span><span class="btn-text">TTO</span>
-              </button>
             </div>
           </div>
 
-          <div class="team-column visitor shadow-sm">
-            <h3 class="team-title">VISITA</h3>
-            <div class="score-display">{{ state.score.visitor }}</div>
+          <!-- VISITA -->
+          <div class="col-6">
+            <div class="bg-white p-2 p-md-4 rounded-4 border shadow-sm h-100 d-flex flex-column text-center">
+              <h3 class="fw-bold text-dark fs-6 fs-md-5 mb-1 mb-md-2">VISITA</h3>
+              <div class="score-display text-dark">{{ state.score.visitor }}</div>
 
-            <div class="indicators">
-              <span v-if="visitorPlayersLess > 0" class="badge-danger">⚠️ -{{ visitorPlayersLess }} Jug.</span>
-              <div class="tto-dots">
-                <span v-for="n in 3" :key="n" class="dot" :class="{ 'used': state.timeouts.visitor.total >= n }"></span>
+              <div class="d-flex justify-content-center align-items-center gap-2 mb-3 min-h-24">
+                <span v-if="visitorPlayersLess > 0" class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">⚠️ -{{ visitorPlayersLess }}</span>
+                <div class="d-flex gap-1">
+                  <span v-for="n in 3" :key="n" class="dot" :class="{ 'used': state.timeouts.visitor.total >= n }"></span>
+                </div>
               </div>
-            </div>
 
-            <div class="action-buttons">
-              <div class="goal-controls">
-                <button class="btn-action btn-goal-minus" @click="restarGol('visitor')" :disabled="state.score.visitor === 0">
-                  <span class="icon">➖</span><span class="btn-text">Restar</span>
+              <div class="d-flex flex-column gap-2 flex-grow-1 justify-content-end">
+                <div class="d-flex gap-1 w-100">
+                  <button class="btn btn-action bg-orange text-white w-50" @click="restarGol('visitor')" :disabled="state.score.visitor === 0">
+                    <span class="fs-5 lh-1">➖</span><span class="d-none d-md-inline fw-bold text-uppercase ms-1 small">Restar</span>
+                  </button>
+                  <button class="btn btn-action bg-success text-white w-50" @click="registrarGol('visitor')">
+                    <span class="fs-5 lh-1">⚽</span><span class="d-none d-md-inline fw-bold text-uppercase ms-1 small">Gol</span>
+                  </button>
+                </div>
+                <button class="btn btn-action bg-yellow text-dark w-100" @click="pedirDorsal('visitor', 'yellow_card')">
+                  <span class="fs-5 lh-1">🟨</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">Amarilla</span>
                 </button>
-                <button class="btn-action btn-goal" @click="registrarGol('visitor')">
-                  <span class="icon">⚽</span><span class="btn-text">Gol</span>
+                <button class="btn btn-action bg-orange text-white w-100" @click="pedirDorsal('visitor', '2_min')">
+                  <span class="fs-5 lh-1">✌️</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">2 Minutos</span>
+                </button>
+                <button class="btn btn-action bg-danger text-white w-100" @click="pedirDorsal('visitor', 'red_card')">
+                  <span class="fs-5 lh-1">🟥</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">Roja</span>
+                </button>
+                <button class="btn btn-action bg-primary text-white w-100" @click="pedirDorsal('visitor', 'blue_card')">
+                  <span class="fs-5 lh-1">🟦</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">Azul</span>
+                </button>
+                <button class="btn btn-action btn-tto text-white w-100" @click="requestTTO('visitor')" :disabled="!canUseTimeout('visitor')">
+                  <span class="fs-5 lh-1">🟩</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">TTO</span>
                 </button>
               </div>
-              <button class="btn-action btn-yellow" @click="pedirDorsal('visitor', 'yellow_card')">
-                <span class="icon">🟨</span><span class="btn-text">Amarilla</span>
-              </button>
-              <button class="btn-action btn-2min" @click="pedirDorsal('visitor', '2_min')">
-                <span class="icon">✌️</span><span class="btn-text">2 Minutos</span>
-              </button>
-              <button class="btn-action btn-red" @click="pedirDorsal('visitor', 'red_card')">
-                <span class="icon">🟥</span><span class="btn-text">Roja</span>
-              </button>
-              <button class="btn-action btn-blue" @click="pedirDorsal('visitor', 'blue_card')">
-                <span class="icon">🟦</span><span class="btn-text">Azul</span>
-              </button>
-              <button class="btn-action btn-tto" @click="requestTTO('visitor')" :disabled="!canUseTimeout('visitor')">
-                <span class="icon">🟩</span><span class="btn-text">TTO</span>
-              </button>
             </div>
           </div>
         </div>
 
         <!-- ================= BITÁCORA ================= -->
-        <div class="event-log-section shadow-sm">
-          <div class="log-header">
-            <h3>Bitácora</h3>
-            <span class="badge" :class="state.unsyncedEvents.length > 0 ? 'bg-warning text-dark' : 'bg-success'">
+        <div class="bg-white border rounded-4 shadow-sm p-3 p-md-4">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+            <h3 class="m-0 fs-5 fw-bold text-dark">Bitácora</h3>
+            <span class="badge px-3 py-2" :class="state.unsyncedEvents.length > 0 ? 'bg-warning-subtle text-dark border border-warning' : 'bg-success-subtle text-success border border-success'">
               {{ state.unsyncedEvents.length > 0 ? '☁️ Sincronizando...' : '✅ Sincronizado' }}
             </span>
           </div>
-          <div class="filter-controls">
-            <select v-model="logFilter" class="form-select">
-              <option value="all">Todos los eventos</option>
-              <option value="goals">Goles</option>
-              <option value="sanctions">Sanciones</option>
-            </select>
-            <button class="btn-download" @click="downloadLog">📥 Txt</button>
+
+          <div class="row g-2 mb-3">
+            <div class="col-12 col-md-9">
+              <select v-model="logFilter" class="form-select bg-light shadow-none">
+                <option value="all">Todos los eventos</option>
+                <option value="goals">Goles</option>
+                <option value="sanctions">Sanciones</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-3">
+              <button class="btn btn-secondary w-100 fw-bold d-flex align-items-center justify-content-center gap-2" @click="downloadLog">
+                <i class="bi bi-download"></i> Txt
+              </button>
+            </div>
           </div>
-          <div class="log-list">
-            <ul>
-              <li v-for="event in filteredLog" :key="event.id">
-                <div class="log-content">
-                  <span class="log-time">[{{ event.match_time }}]</span>
-                  <strong>{{ event.team === 'local' ? 'L' : (event.team === 'visitor' ? 'V' : 'SISTEMA') }}</strong>
-                  <span v-if="event.player_number && event.type !== 'goal_removed' && event.type !== 'tiempo_ajustado'"> (#{{ event.player_number }})</span>:
-                  {{ formatEventType(event.type) }}
+
+          <div class="border rounded bg-light overflow-hidden" style="max-height: 250px; overflow-y: auto;">
+            <ul class="list-group list-group-flush mb-0">
+              <li v-for="event in filteredLog" :key="event.id" class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 px-3">
+                <div class="small">
+                  <span class="text-muted fw-bold font-monospace me-2">[{{ event.match_time }}]</span>
+                  <strong class="text-dark">{{ event.team === 'local' ? 'L' : (event.team === 'visitor' ? 'V' : 'SISTEMA') }}</strong>
+                  <span class="text-dark" v-if="event.player_number && event.type !== 'goal_removed' && event.type !== 'tiempo_ajustado'"> (#{{ event.player_number }})</span><span class="text-dark">:</span>
+                  <span class="text-secondary ms-1">{{ formatEventType(event.type) }}</span>
                   <span v-if="event.type === 'tiempo_ajustado'" class="text-muted small ms-1">- {{ event.player_number }}</span>
-                  <span v-if="!event.synced" class="pending-badge">Pendiente</span>
+                  <span v-if="!event.synced" class="badge bg-warning text-dark ms-2" style="font-size: 0.6rem;">Pendiente</span>
                 </div>
-                <button v-if="event.team !== 'sistema'" class="btn-delete-log" @click="pedirEliminarEvento(event)" title="Eliminar">🗑️</button>
+                <button v-if="event.team !== 'sistema'" class="btn btn-sm btn-light border text-danger p-1 lh-1" @click="pedirEliminarEvento(event)" title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
               </li>
-              <li v-if="filteredLog.length === 0" class="empty-log">Sin registros.</li>
+              <li v-if="filteredLog.length === 0" class="list-group-item bg-transparent text-center text-muted py-4 small">
+                Sin registros en la bitácora.
+              </li>
             </ul>
           </div>
         </div>
@@ -197,7 +218,7 @@
       @close="cerrarModalDorsal"
     >
       <div class="text-center">
-        <p class="mb-3">Ingrese el número del jugador (o letra A-E para oficiales).</p>
+        <p class="mb-3 text-muted small">Ingrese el número del jugador (o letra A-E para oficiales).</p>
 
         <div class="shirt-wrapper">
           <svg viewBox="0 0 24 24" class="shirt-svg" :style="{ fill: modalJugador.team === 'local' ? '#dc2626' : '#2563eb' }">
@@ -215,7 +236,7 @@
       </div>
 
       <template #footer>
-        <button class="btn btn-light fw-bold px-4" @click="cerrarModalDorsal">CANCELAR</button>
+        <button class="btn btn-light fw-bold px-4 border" @click="cerrarModalDorsal">CANCELAR</button>
         <button class="btn btn-dark fw-bold px-4 shadow-sm" @click="confirmarSancion">CONFIRMAR</button>
       </template>
     </ModalBase>
@@ -232,25 +253,25 @@
         <p class="small text-muted mb-4">Modifique los minutos y segundos del partido:</p>
 
         <div class="d-flex justify-content-center align-items-center gap-3">
-          <div class="time-input-group text-center">
+          <div class="text-center">
             <label class="small fw-bold text-muted d-block mb-1">MINUTOS</label>
             <input
               type="number"
               v-model="modalTiempo.mm"
-              class="form-control form-control-lg text-center fw-bold"
+              class="form-control form-control-lg text-center fw-bold shadow-none border-secondary"
               style="font-size: 2rem; width: 90px;"
               min="0"
             >
           </div>
 
-          <div class="display-6 fw-bold mt-3">:</div>
+          <div class="display-6 fw-bold mt-3 text-muted">:</div>
 
-          <div class="time-input-group text-center">
+          <div class="text-center">
             <label class="small fw-bold text-muted d-block mb-1">SEGUNDOS</label>
             <input
               type="number"
               v-model="modalTiempo.ss"
-              class="form-control form-control-lg text-center fw-bold"
+              class="form-control form-control-lg text-center fw-bold shadow-none border-secondary"
               style="font-size: 2rem; width: 90px;"
               min="0"
               max="59"
@@ -260,7 +281,7 @@
       </div>
 
       <template #footer>
-        <button class="btn btn-light fw-bold px-4" @click="modalTiempo.visible = false">CANCELAR</button>
+        <button class="btn btn-light fw-bold px-4 border" @click="modalTiempo.visible = false">CANCELAR</button>
         <button class="btn btn-primary fw-bold px-4 shadow-sm" @click="confirmarAjusteTiempo">GUARDAR TIEMPO</button>
       </template>
     </ModalBase>
@@ -283,6 +304,14 @@ import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
 import { api } from '@/api/api';
 import ModalBase from '@/components/ModalBase.vue';
 import ModalExito from '@/components/ModalExito.vue';
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Delegados Técnicos | AAAB',
+  meta: [
+    { name: 'description', content: 'Planilla de Delegados Técnicos' }
+  ],
+})
 
 const STORAGE_KEY = 'aaab_delegado_match_state';
 const HALF_DURATION_SEC = 30 * 60;
@@ -708,92 +737,57 @@ onUnmounted(() => { if (timerInterval) clearInterval(timerInterval); if (ttoInte
 
 <style scoped>
 /* =========================================
-   ESTILOS GENERALES
+   FUENTES Y CLAMPING (RESPONSIVO AUTOMÁTICO)
    ========================================= */
-.panel-card { background: #f8fafc; border-radius: 12px; padding: 15px; color: #1e293b; font-family: 'segoe ui', Tahoma, Verdana, sans-serif;}
-.small-btn { padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; }
+.time-display {
+  font-size: clamp(3.5rem, 12vw, 5rem);
+  font-weight: 900;
+  font-family: 'Courier New', monospace;
+  line-height: 1;
+  margin: 0 0 10px 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.score-display {
+  font-size: clamp(3rem, 10vw, 4rem);
+  font-weight: 900;
+  margin-bottom: 5px;
+  line-height: 1;
+}
 
 /* =========================================
-   CRONÓMETRO
+   BADGES Y PUNTOS DE TTO
    ========================================= */
-.timer-section { background: #0f172a; color: #f8fafc; padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 15px; border: 1px solid #1e293b; }
-.period-indicator { font-size: 0.9rem; color: #94a3b8; margin-bottom: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-.time-display { font-size: 3.5rem; font-weight: 900; font-family: 'Courier New', monospace; line-height: 1; margin: 0 0 10px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-.time-paused { color: #ef4444; } /* Rojo más suave cuando pausa */
-.timer-controls { display: flex; flex-direction: column; gap: 8px; }
-.btn-main-timer { width: 100%; padding: 12px; font-size: 1.1rem; font-weight: 800; border-radius: 6px; border: none; cursor: pointer; background: #2563eb; color: white; transition: background 0.2s; }
-.btn-main-timer:hover { background: #1d4ed8; }
-.timer-sub-controls { display: flex; gap: 8px; }
-.timer-sub-controls > button, .period-nav { flex: 1; }
-.period-nav { display: flex; gap: 5px; }
-.period-nav button { flex: 1; }
-
-.tto-countdown-box { background: #16a34a; color: #fff; margin-top: 10px; padding: 8px 12px; border-radius: 6px; font-size: 1rem; border: 1px solid #15803d; display: flex; justify-content: space-between; align-items: center; }
-.penalties-container { margin-top: 15px; padding-top: 10px; border-top: 1px solid #334155; }
-.penalties-container h4 { margin: 0 0 8px 0; font-size: 0.8rem; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px; }
-.penalty-timers { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
 .penalty-box { background: #1e293b; padding: 4px 10px; border-radius: 8px; font-family: monospace; font-size: 0.95rem; display: flex; gap: 8px; border: 1px solid #475569; font-weight: bold; }
 .penalty-box.local { border-color: #ef4444; color: #fca5a5; }
 .penalty-box.visitor { border-color: #3b82f6; color: #bfdbfe; }
 
-/* =========================================
-   EQUIPOS Y CONTROLES (Escritorio Fix)
-   ========================================= */
-.teams-container { display: flex; gap: 15px; }
-.team-column { flex: 1; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; text-align: center; background: #ffffff; display: flex; flex-direction: column; }
-.team-title { margin: 0 0 5px 0; font-size: 1.1rem; font-weight: 800; color: #334155; }
-.score-display { font-size: 4rem; font-weight: 900; margin-bottom: 5px; line-height: 1; color: #0f172a; }
-
-.indicators { display: flex; justify-content: center; align-items: center; gap: 8px; min-height: 24px; margin-bottom: 12px; }
-.badge-danger { color: #991b1b; background: #fee2e2; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; border: 1px solid #fecaca; }
-.tto-dots { display: flex; gap: 4px; }
+.min-h-24 { min-height: 24px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #94a3b8; background: transparent; }
 .dot.used { background: #16a34a; border-color: #15803d; }
 
-.action-buttons { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; justify-content: flex-end;}
-
-.goal-controls { display: flex; gap: 5px; width: 100%; }
-.goal-controls .btn-action { flex: 1; }
-
-.btn-action { padding: 12px 10px; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: transform 0.1s, filter 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+/* =========================================
+   BOTONES DE ACCIÓN (EQUIPOS)
+   ========================================= */
+.btn-action {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 0;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.1s, filter 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
 .btn-action:active { transform: scale(0.98); }
 .btn-action:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* Colores Alto Contraste para Desktop */
-.btn-goal { background: #22c55e; color: white; }
-.btn-goal-minus { background: #f97316; color: white; }
-.btn-yellow { background: #facc15; color: #422006; } /* Texto oscuro para la amarilla */
-.btn-2min { background: #f97316; color: white; }
-.btn-red { background: #ef4444; color: white; }
-.btn-blue { background: #3b82f6; color: white; }
-.btn-tto { background: #16a34a; color: white; border: 2px dashed #14532d; }
-.btn-tto:disabled { background: #e2e8f0; color: #94a3b8; border-color: #cbd5e1; cursor: not-allowed; }
+/* Colores Específicos para tarjetas y acciones */
+.bg-orange { background-color: #f97316 !important; }
+.bg-yellow { background-color: #facc15 !important; }
 
-.icon { font-size: 1.2rem; }
-.btn-text { font-size: 0.95rem; font-weight: 800; letter-spacing: 0.5px; margin-left: 8px; text-transform: uppercase; }
-
-/* Botones genéricos extra */
-.btn-danger { background: #dc3545; color: white; }
-.btn-secondary { background: #475569; color: white; }
-
-/* =========================================
-   BITÁCORA
-   ========================================= */
-.event-log-section { margin-top: 15px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; }
-.log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.log-header h3 { margin: 0; font-size: 1.1rem; font-weight: 800; color: #0f172a; }
-.btn-sync { background: #0ea5e9; color: white; padding: 8px 15px; border: none; border-radius: 6px; font-size: 0.85rem; transition: background 0.2s; }
-.btn-sync:disabled { background: #cbd5e1; color: #64748b; }
-.filter-controls { display: flex; gap: 8px; margin-bottom: 10px; }
-.filter-controls select { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85rem; background: #f8fafc;}
-.btn-download { background: #64748b; color: white; padding: 8px 15px; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: bold; }
-.log-list ul { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px; margin: 0; background: #f8fafc; }
-.log-list li { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; color: #334155;}
-.log-content { flex: 1; }
-.btn-delete-log { background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px; border-radius: 4px; transition: background 0.2s; }
-.btn-delete-log:hover { background: #fee2e2; }
-.log-time { font-family: monospace; color: #64748b; font-weight: bold; }
-.pending-badge { background: #f59e0b; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; margin-left: 6px; font-weight: bold; }
+.btn-tto { background: #16a34a; border: 2px dashed #14532d; }
+.btn-tto:disabled { background: #e2e8f0; color: #94a3b8 !important; border-color: #cbd5e1; cursor: not-allowed; }
 
 /* =========================================
    DIBUJO DE CAMISETA EN MODAL DORSAL
@@ -803,22 +797,7 @@ onUnmounted(() => { if (timerInterval) clearInterval(timerInterval); if (ttoInte
 .dorsal-input { position: absolute; width: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 1.5rem; font-weight: 900; background: transparent; border: none; border-bottom: 2px dashed rgba(255,255,255,0.5); color: white; outline: none; text-transform: uppercase; }
 .dorsal-input::placeholder { color: rgba(255,255,255,0.4); }
 
-/* =========================================
-   RESPONSIVE MOBILE FIRST
-   ========================================= */
-@media (max-width: 767px) {
-  .btn-text { display: none; } /* En celular ocultamos el texto para ahorrar espacio */
-  .teams-container { gap: 8px; }
-  .team-column { padding: 8px; }
-  .action-buttons { gap: 5px; }
-  .btn-action { padding: 10px 0; }
-  .icon { font-size: 1.3rem; }
-  .score-display { font-size: 3rem; }
-  .w-fit-mobile { width: fit-content; } /* Botón reiniciar del tamaño justo */
-}
+.animate__animated { animation-duration: 0.5s; }
 
-@media (min-width: 768px) {
-  .panel-card { padding: 25px; }
-  .time-display { font-size: 4.5rem; }
-}
+
 </style>

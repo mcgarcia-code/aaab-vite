@@ -1,7 +1,8 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="dashboard-header mb-5 text-center text-md-start">
+    <!-- Cambiamos mb-5 por mb-4 mb-md-5 para que achique automáticamente en celular -->
+    <div class="dashboard-header mb-4 mb-md-5 text-center text-md-start">
       <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
         <div class="main-icon-container">
           <i class="bi bi-bag-fill text-danger"></i>
@@ -17,7 +18,8 @@
 
       <div class="col-12 col-md-6">
         <RouterLink to="/panel-arbitro/indumentaria/nuevo" class="text-decoration-none h-100 d-block">
-          <div class="modern-menu-card shadow-sm">
+          <!-- Agregamos px-4 py-3 p-md-3 para el padding responsivo nativo -->
+          <div class="modern-menu-card shadow-sm px-4 py-3 p-md-3">
             <div class="icon-box">
               <i class="bi bi-cart-plus"></i>
             </div>
@@ -34,7 +36,8 @@
 
       <div class="col-12 col-md-6">
         <RouterLink to="/panel-arbitro/indumentaria/mis-pedidos" class="text-decoration-none h-100 d-block">
-          <div class="modern-menu-card shadow-sm">
+          <!-- Agregamos px-4 py-3 p-md-3 para el padding responsivo nativo -->
+          <div class="modern-menu-card shadow-sm px-4 py-3 p-md-3">
             <div class="icon-box">
               <i class="bi bi-list-check"></i>
             </div>
@@ -79,7 +82,7 @@ useHead({
 .modern-menu-card {
   background: white;
   border-radius: 16px;
-  padding: 15px;
+  /* El padding se maneja ahora desde el template con Bootstrap */
   display: flex;
   align-items: center;
   gap: 12px;
@@ -120,13 +123,6 @@ useHead({
 
 .modern-menu-card:hover .icon-box { background: #dc2626; color: white; }
 
-/* ====================================================
-   2. 📱 RESPONSIVE DESIGN
-   ==================================================== */
-@media (max-width: 768px) {
-  .modern-menu-card { padding: 12px 20px; }
-  .dashboard-header { margin-bottom: 30px !important; }
-}
-
 .animate__animated { animation-duration: 0.5s; }
+
 </style>

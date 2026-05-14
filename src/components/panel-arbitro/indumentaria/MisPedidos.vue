@@ -11,16 +11,16 @@
           <p class="text-muted small m-0 mt-1">Total: {{ pedidosFiltradas.length }} solicitudes</p>
         </div>
 
-        <div class="header-actions d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
+        <div class="header-actions d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
           <button @click="obtenerPedidos" class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Actualizar" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
             <span class="material-icons" style="font-size: 22px; color: #000;">refresh</span>
-            <span class="btn-text desktop-only fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
+            <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
           </button>
 
           <RouterLink to="/panel-arbitro/indumentaria/nuevo" class="text-decoration-none">
-            <button class="btn-blue rounded shadow-sm border-0 p-2 d-flex align-items-center justify-content-center gap-2 text-white" title="Nuevo Pedido" style="background-color: #3b82f6;">
+            <button class="rounded shadow-sm border-0 p-2 d-flex align-items-center justify-content-center gap-2 text-white" title="Nuevo Pedido" style="background-color: #3b82f6;">
               <span class="material-icons" style="font-size: 20px;">add_shopping_cart</span>
-              <span class="btn-text desktop-only fw-bold text-white" style="font-size: 0.8rem;">Pedir Ropa</span>
+              <span class="d-none d-md-inline fw-bold text-white" style="font-size: 0.8rem;">Pedir Ropa</span>
             </button>
           </RouterLink>
         </div>
@@ -40,90 +40,106 @@
           </div>
         </div>
 
-        <div class="table-container shadow-sm desktop-only border" style="border-radius: 8px;">
-          <table>
-            <thead>
-              <tr class="main-header">
-                <th class="sticky-col col-id text-center">Pedido</th>
-                <th>Prenda Solicitada</th>
-                <th class="text-center">Cant.</th>
-                <th class="text-center">Total Abonado/Por abonar</th>
-                <th class="text-center">Fecha</th>
-                <th class="text-center">Estado</th>
-                <th class="text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="p in pedidosPaginados" :key="p.id" class="row-hover">
-                <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">#{{ p.id }}</td>
-                <td class="cell-ro fw-bold text-dark">{{ p.descripcion }} <span class="text-danger">({{ p.talle }})</span></td>
-                <td class="text-center cell-ro">{{ p.cantidad + p.cantidad_encargada }}</td>
-                <td class="text-center cell-ro fw-bold text-success">${{ (p.cantidad+p.cantidad_encargada) * p.precioUnitario }}</td>
-                <td class="text-center cell-ro text-muted fw-bold">{{ p.fecha_creacion || 'S/F' }}</td>
-                <td class="text-center cell-ro">
-                  <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
-                </td>
-                <td class="text-center cell-ro">
-                  <button
-                    v-if="p.estado && ['creado', 'en proceso'].includes(p.estado.toLowerCase())"
-                    @click="abrirModalCancelar(p.id)"
-                    class="btn btn-sm btn-outline-danger shadow-sm rounded-pill d-inline-flex align-items-center gap-1"
-                    title="Cancelar Pedido"
-                    style="font-size: 0.75rem; padding: 2px 10px;"
-                  >
-                    <span class="material-icons" style="font-size: 14px;">cancel</span> Cancelar
-                  </button>
-                  <span v-else class="text-muted small">-</span>
-                </td>
-              </tr>
-              <tr v-if="pedidosPaginados.length === 0">
-                <td colspan="7" class="text-center py-5 text-muted bg-light">No se encontraron pedidos.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <!-- LISTA UNIFICADA (Reemplaza a la tabla y tarjetas mobile) -->
+        <div class="border shadow-sm rounded overflow-hidden">
 
-        <div class="mobile-only">
-          <div v-for="p in pedidosPaginados" :key="'mob-'+p.id" class="card-licencia">
-            <div class="card-header border-bottom-0 pb-0 bg-transparent px-0 pt-1">
-              <div class="card-name text-uppercase text-truncate">
-                <strong>{{ p.descripcion }} <span class="text-danger">({{ p.talle }})</span></strong>
-              </div>
-            </div>
+          <!-- Encabezado de Columnas (Solo visible en Escritorio) -->
+          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase" style="font-size: 0.75rem; color: #0f172a;">
+            <div class="col-md-1 text-center">Pedido</div>
+            <div class="col-md-3 ps-2">Prenda Solicitada</div>
+            <div class="col-md-1 text-center">Cant.</div>
+            <div class="col-md-2 text-center">Total Abonado</div>
+            <div class="col-md-2 text-center">Fecha</div>
+            <div class="col-md-1 text-center">Estado</div>
+            <div class="col-md-2 text-center pe-2">Acciones</div>
+          </div>
 
-            <div class="card-body pt-2 px-0 pb-1">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="text-xs text-muted fw-bold">
-                  Pedido #{{ p.id }} <span class="mx-1">•</span> {{ p.fecha_creacion || 'S/F' }}
+          <div v-if="pedidosPaginados.length === 0" class="text-center p-5 bg-light">
+            <span class="material-icons text-muted opacity-50 d-block mb-3" style="font-size: 48px;">search_off</span>
+            <h5 class="fw-bold text-dark mt-3">Sin resultados</h5>
+            <p class="text-muted small m-0">No se encontraron pedidos.</p>
+          </div>
+
+          <!-- Filas de Datos -->
+          <div class="d-flex flex-column">
+            <div v-for="p in pedidosPaginados" :key="p.id" class="row g-0 align-items-center p-3 p-md-2 border-bottom bg-white item-pedido">
+
+              <!-- HEADER MOBILE: Título, Fecha y Estado (Se oculta en escritorio) -->
+              <div class="col-12 d-md-none mb-2 pb-2 border-bottom">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <div class="fw-bold text-dark text-uppercase text-truncate pe-2" style="font-size: 1.05rem;">
+                    {{ p.descripcion }} <span class="text-danger">({{ p.talle }})</span>
+                  </div>
                 </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <div class="text-muted fw-bold" style="font-size: 0.8rem;">
+                    Pedido #{{ p.id }} <span class="mx-1">•</span> {{ p.fecha_creacion || 'S/F' }}
+                  </div>
+                  <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
+                </div>
+              </div>
+
+              <!-- INFO EXTRA MOBILE: Cantidad y Total (Se oculta en escritorio) -->
+              <div class="col-12 d-md-none bg-light p-2 rounded border mb-2 d-flex justify-content-between align-items-center">
+                <span class="text-dark small">Cant: <strong>{{ p.cantidad + p.cantidad_encargada }}</strong></span>
+                <span class="text-success fw-bold fs-6">Total: ${{ (p.cantidad + p.cantidad_encargada) * p.precioUnitario }}</span>
+              </div>
+
+              <!-- COL 1: ID (Escritorio) -->
+              <div class="col-md-1 d-none d-md-block text-center text-muted fw-bold" style="font-size: 0.85rem;">
+                #{{ p.id }}
+              </div>
+
+              <!-- COL 2: Prenda (Escritorio) -->
+              <div class="col-md-3 d-none d-md-block fw-bold text-dark ps-2 text-truncate" style="font-size: 0.85rem;">
+                {{ p.descripcion }} <span class="text-danger">({{ p.talle }})</span>
+              </div>
+
+              <!-- COL 3: Cantidad (Escritorio) -->
+              <div class="col-md-1 d-none d-md-block text-center" style="font-size: 0.85rem;">
+                {{ p.cantidad + p.cantidad_encargada }}
+              </div>
+
+              <!-- COL 4: Total (Escritorio) -->
+              <div class="col-md-2 d-none d-md-block text-center fw-bold text-success" style="font-size: 0.85rem;">
+                ${{ (p.cantidad + p.cantidad_encargada) * p.precioUnitario }}
+              </div>
+
+              <!-- COL 5: Fecha (Escritorio) -->
+              <div class="col-md-2 d-none d-md-block text-center text-muted fw-bold" style="font-size: 0.85rem;">
+                {{ p.fecha_creacion || 'S/F' }}
+              </div>
+
+              <!-- COL 6: Estado (Escritorio) -->
+              <div class="col-md-1 d-none d-md-flex justify-content-center">
                 <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
               </div>
 
-              <div class="card-info bg-light p-2 rounded border mt-2 d-flex justify-content-between align-items-center">
-                <span class="text-dark small">Cant: <strong>{{ p.cantidad + p.cantidad_encargada }}</strong></span>
-                <span class="text-success fw-bold fs-6">Total:${{ (p.cantidad+p.cantidad_encargada) * p.precioUnitario }}</span>
-              </div>
-
-              <div v-if="p.estado && ['creado', 'en proceso'].includes(p.estado.toLowerCase())" class="mt-2 text-end">
-                <button @click="abrirModalCancelar(p.id)" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill w-100 d-flex justify-content-center align-items-center gap-1" style="font-size: 0.8rem;">
-                  <span class="material-icons" style="font-size: 16px;">cancel</span> Cancelar Pedido
+              <!-- COL 7: Acciones (Ambos) -->
+              <div class="col-12 col-md-2 text-center mt-2 mt-md-0 pe-md-2">
+                <button
+                  v-if="p.estado && ['creado', 'en proceso'].includes(p.estado.toLowerCase())"
+                  @click="abrirModalCancelar(p.id)"
+                  class="btn btn-sm btn-outline-danger shadow-sm rounded-pill d-inline-flex align-items-center justify-content-center gap-1 w-100"
+                  title="Cancelar Pedido"
+                  style="font-size: 0.75rem; padding: 4px 10px;"
+                >
+                  <span class="material-icons" style="font-size: 14px;">cancel</span> Cancelar <span class="d-md-none ms-1">Pedido</span>
                 </button>
+                <span v-else class="text-muted small d-none d-md-inline">-</span>
               </div>
-            </div>
-          </div>
 
-          <div v-if="pedidosPaginados.length === 0" class="text-center p-4 bg-light rounded border mt-2">
-            <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-            <p class="text-muted mt-2 mb-0 fw-bold">No tenés pedidos registrados.</p>
+            </div>
           </div>
         </div>
 
+        <!-- Paginación -->
         <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
-          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
             <i class="bi bi-chevron-left"></i> Ant
           </button>
           <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
             Sig <i class="bi bi-chevron-right"></i>
           </button>
         </div>
@@ -131,6 +147,7 @@
       </div>
     </div>
 
+    <!-- Modal Cancelación -->
     <ModalExito
       :visible="mostrarModalCancelacion"
       titulo="Cancelar Pedido"
@@ -260,34 +277,42 @@ onMounted(obtenerPedidos);
 /* ====================================================
    1. BOTONES E INPUTS
    ==================================================== */
-.btn-clear:hover { background-color: #e2e8f0 !important; }
-.input-filtro-custom { font-size: 1rem !important; height: auto !important; }
-.input-filtro-custom:focus { outline: none; }
-
-/* ====================================================
-   2. TABLA DESKTOP
-   ==================================================== */
-.table-container { width: 100%; overflow: auto; max-height: 85vh; background: white; }
-table { width: 100%; min-width: max-content; border-collapse: separate !important; border-spacing: 0; font-size: 0.85rem; }
-
-thead tr.main-header th {
-  position: sticky; top: 0; z-index: 50; background: #e2e8f0 !important;
-  padding: 12px 10px; border-bottom: 2px solid #e2e8f0;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif; font-size: 0.75rem;
-  color: #000; text-transform: uppercase; font-weight: 800; margin: 0;
+.btn-clear {
+  border: none;
+  cursor: pointer;
+}
+.btn-clear:hover {
+  background-color: #cbd5e1 !important;
 }
 
-.col-id { left: 0; width: 80px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-.sticky-col { position: sticky !important; z-index: 60 !important; background: white !important; border-right: 1px solid #e2e8f0; }
-thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: #e2e8f0 !important; }
+.input-filtro-custom {
+  font-size: 1rem !important;
+  height: auto !important;
+}
+.input-filtro-custom:focus {
+  outline: none;
+}
 
-.cell-ro { padding: 14px 10px; font-size: 0.85rem; color: #000; border-bottom: 1px solid #f1f5f9; vertical-align: middle;}
-.row-hover:hover { background-color: #f1f5f9; transition: background 0.2s ease; }
+/* ====================================================
+   2. ESTILOS DE LA LISTA
+   ==================================================== */
+.item-pedido {
+  transition: background-color 0.2s ease;
+}
+.item-pedido:hover {
+  background-color: #f8fafc !important;
+}
 
 /* ====================================================
    3. BADGES (ESTADOS DE PEDIDO)
    ==================================================== */
-.badge-status-sm { padding: 4px 10px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; white-space: nowrap; }
+.badge-status-sm {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
 
 .estado-creado { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 .estado-proceso { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
@@ -296,29 +321,7 @@ thead tr.main-header th.sticky-col { z-index: 100 !important; background-color: 
 .estado-rechazado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 .estado-cancelado { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
 
-/* ====================================================
-   4. 📱 RESPONSIVE DESIGN
-   ==================================================== */
-.desktop-only { display: block; }
-.mobile-only { display: none; }
-
-@media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-
-  .card-licencia {
-    background: white; border-radius: 8px; padding: 15px;
-    margin-bottom: 12px; border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  }
-
-  .card-name { font-size: 1.05rem; color: #0f172a; }
-}
-
-@media (min-width: 768px) {
-  .btn-text { display: inline; }
-}
-
 .animate__animated { animation-duration: 0.5s; }
-</style>
 
+
+</style>

@@ -1,39 +1,49 @@
 <template>
   <Teleport to="body">
 
+    <!-- OVERLAY: Manejado con clases nativas de posicionamiento y flexbox -->
     <div
       v-if="visible"
-      class="modal-overlay-exito animate__animated animate__fadeIn animate__faster"
+      class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3 modal-overlay-custom animate__animated animate__fadeIn animate__faster"
       :style="{ zIndex: zIndex }"
       @click.self="cerrar"
     >
+      <!-- CONTENEDOR MODAL: rounded-4 (16px) y max-width en línea para no ensuciar el CSS -->
       <div
         ref="modalRef"
-        class="modal-content-exito animate__animated animate__zoomIn animate__faster p-4 mx-auto"
+        class="bg-white rounded-4 shadow-lg p-4 p-md-5 text-center animate__animated animate__zoomIn animate__faster w-100"
+        style="max-width: 380px; outline: none;"
         tabindex="-1"
       >
 
-        <div :class="['icon-circle-exito', tipo === 'danger' ? 'bg-danger-light' : 'bg-success-light']">
-          <span class="material-icons">
+        <!-- ÍCONO CIRCULAR: Usamos clases sutiles de Bootstrap según el tipo -->
+        <div
+          class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+          :class="tipo === 'danger' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'"
+          style="width: 70px; height: 70px;"
+        >
+          <span class="material-icons" style="font-size: 40px;">
             {{ tipo === 'danger' ? (tieneAccion ? 'delete_forever' : 'report_problem') : 'check' }}
           </span>
         </div>
 
-        <h4 class="fw-bold mt-3">{{ titulo }}</h4>
+        <h4 class="fw-bold text-dark mt-2 mb-2">{{ titulo }}</h4>
         <p class="text-muted small mb-4">{{ mensaje }}</p>
 
-        <div class="d-flex gap-2 justify-content-center">
+        <!-- BOTONES: Apilados en móviles (flex-column), en línea en tablets (flex-sm-row) -->
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
           <button
             v-if="tieneAccion"
             @click="cerrar"
-            class="btn btn-light rounded-pill px-4 fw-bold"
+            class="btn btn-light border rounded-pill px-4 fw-bold w-100 w-sm-auto"
           >
             CANCELAR
           </button>
 
           <button
             @click="handleAccion"
-            :class="['btn rounded-pill px-4 fw-bold shadow-sm', tipo === 'danger' ? 'btn-danger' : 'btn-dark']"
+            class="btn rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto hover-elevate"
+            :class="tipo === 'danger' ? 'btn-danger' : 'btn-dark'"
           >
             {{ tieneAccion ? (tipo === 'danger' ? 'ELIMINAR' : 'CONFIRMAR') : 'ACEPTAR' }}
           </button>
@@ -121,65 +131,26 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.modal-overlay-exito {
-  position: fixed;
-  inset: 0;
+/*
+  Mantenemos solo el fondo oscuro y el desenfoque porque
+  Bootstrap no tiene un filtro "blur" nativo para fondos.
+*/
+.modal-overlay-custom {
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 15px;
 }
 
-/* ====================================================
-   BASE (Celulares - Mobile First)
-   ==================================================== */
-.modal-content-exito {
-  background: white;
-  border-radius: 16px;
-  padding: 30px;
-  width: 100%;
-  max-width: 380px;
-  text-align: center;
-  outline: none;
-  box-sizing: border-box;
+/* Efecto hover general para los botones principales */
+.hover-elevate {
+  transition: transform 0.2s ease;
 }
 
-/* ====================================================
-   TABLETS Y ESCRITORIO
-   ==================================================== */
-@media (min-width: 576px) {
-  .modal-content-exito {
-    border-radius: 20px;
-  }
+.hover-elevate:hover {
+  transform: translateY(-2px);
 }
 
-/* --- Elementos Internos --- */
-.icon-circle-exito {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
+.animate__animated {
+  animation-duration: 0.3s;
 }
 
-.icon-circle-exito .material-icons {
-  font-size: 40px;
-}
-
-h4 {
-  color: #1e293b;
-}
-
-.bg-success-light { background: #dcfce7; color: #166534; }
-.bg-danger-light { background: #fee2e2; color: #991b1b; }
-
-.btn-danger { background-color: #dc3545; border: none; transition: transform 0.2s; }
-.btn-danger:hover { background-color: #bb2d3b; transform: translateY(-2px); }
-
-.btn-dark { transition: transform 0.2s; }
-.btn-dark:hover { transform: translateY(-2px); }
 </style>

@@ -2,18 +2,19 @@
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
     <div class="row g-4">
+      <!-- COLUMNA IZQUIERDA: FORMULARIO -->
       <div class="col-12 col-lg-4">
         <div class="card shadow p-3 p-md-4 border-0 h-100" style="border-radius: 15px;">
           <h4 class="text-danger fw-bold mb-3 d-flex align-items-center">
             <i class="bi bi-calendar me-2"></i> Solicitar Licencia
           </h4>
-          <p class="text-muted x-small-mobile mb-4">
+          <p class="text-muted small mb-4">
             Las licencias particulares deben solicitarse con un mínimo de <strong>10 días</strong> de antelación. Las mismas son por día completo, no hay licencias parciales.
           </p>
 
           <div class="mb-3">
             <label class="form-label fw-bold small text-dark">Motivo de la Licencia</label>
-            <select v-model="motivoSeleccionado" class="form-select form-select-lg shadow-none" :disabled="cargando">
+            <select v-model="motivoSeleccionado" class="form-select form-select-lg shadow-none fs-6" :disabled="cargando">
               <option value="particular">Particular</option>
               <option value="lesion_enfermedad">Lesión / Enfermedad</option>
             </select>
@@ -26,7 +27,6 @@
 
           <div class="mb-4">
             <label class="form-label fw-bold small text-dark">Fecha de la Licencia</label>
-            <!-- SE ELIMINÓ EL ATRIBUTO :min PARA PERMITIR SELECCIONAR CUALQUIER FECHA -->
             <input
               type="date"
               v-model="fechaSeleccionada"
@@ -49,6 +49,7 @@
         </div>
       </div>
 
+      <!-- COLUMNA DERECHA: HISTORIAL -->
       <div class="col-12 col-lg-8">
         <div class="card shadow border-0 overflow-hidden h-100 d-flex flex-column" style="border-radius: 15px;">
           <div class="card-header bg-white py-3 border-bottom flex-shrink-0">
@@ -56,83 +57,81 @@
           </div>
 
           <div class="card-body p-0 bg-white flex-grow-1">
-            <div class="table-responsive h-100">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                  <tr class="text-uppercase text-muted" style="font-size: 0.75rem;">
-                    <th class="ps-3 py-3">Fecha</th>
-                    <th class="d-none d-md-table-cell py-3">Solicitada</th>
-                    <th class="d-none d-md-table-cell py-3">Motivo</th>
-                    <th class="text-center pe-3 py-3">Estado</th>
-                    <!-- NUEVA COLUMNA -->
-                    <th class="text-center pe-3 py-3">Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(lic, index) in licenciasPaginadas" :key="index">
-                    <td class="ps-3 align-middle fw-bold text-dark">
-                      <div class="d-flex flex-column">
-                        <span>{{ formatearFecha(lic.fecha_licencia) }}</span>
-                        <span class="d-md-none text-muted" style="font-size: 0.65rem;">
-                          Solic: {{ formatearFecha(lic.fecha_solicitud) }}
-                        </span>
-                        <span class="d-md-none text-muted fw-normal" style="font-size: 0.65rem;">
-                          Motivo: {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}
-                        </span>
-                      </div>
-                    </td>
-                    <td class="align-middle text-muted small d-none d-md-table-cell">
-                        {{ formatearFecha(lic.fecha_solicitud) }}
-                    </td>
-                    <td class="align-middle text-muted small d-none d-md-table-cell">
-                        {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enfermedad' : 'Particular' }}
-                    </td>
-                    <td class="text-center align-middle pe-3">
-                      <span :class="{'badge': true, 'bg-success': lic.estado === 'aprobada', 'bg-danger': lic.estado === 'rechazada' || lic.estado === 'borrada' || lic.estado === 'anulada', 'bg-warning text-dark': lic.estado === 'pendiente'}" class="status-badge">
-                        {{ lic.estado.toUpperCase() }}
-                      </span>
-                    </td>
-                    <!-- NUEVA CELDA DE ACCIÓN -->
-                    <td class="text-center align-middle pe-3">
-                      <button
-                        v-if="(lic.estado === 'pendiente' || lic.estado === 'aprobada') && esFechaFutura(lic.fecha_licencia)"
-                        @click="anularLicencia(lic)"
-                        class="btn btn-sm btn-anular fw-bold shadow-sm"
-                        :disabled="cargando"
-                      >
-                        <i class="bi bi-x-circle me-1"></i> Anular
-                      </button>
-                    </td>
-                  </tr>
-                  <tr v-if="licencias.length === 0">
-                    <!-- CAMBIADO A COLSPAN 5 -->
-                    <td colspan="5" class="text-center text-muted py-5 small">
-                      No tenés licencias registradas.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+
+            <div v-if="licencias.length === 0" class="text-center text-muted p-5">
+              <span class="material-icons opacity-50 mb-2" style="font-size: 40px;">calendar_today</span>
+              <p class="m-0 small fw-bold">No tenés licencias registradas.</p>
+            </div>
+
+            <!-- LISTA RESPONSIVA (Reemplaza a la etiqueta table) -->
+            <div v-else class="h-100 d-flex flex-column">
+
+              <!-- Encabezado Escritorio -->
+              <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 text-uppercase text-muted fw-bold" style="font-size: 0.70rem;">
+                <div class="col-md-3 ps-3">Fecha</div>
+                <div class="col-md-2">Solicitada</div>
+                <div class="col-md-3">Motivo</div>
+                <div class="col-md-2 text-center">Estado</div>
+                <div class="col-md-2 text-center pe-3">Acción</div>
+              </div>
+
+              <!-- Filas de Datos -->
+              <div class="overflow-auto" style="max-height: 60vh;">
+                <div v-for="(lic, index) in licenciasPaginadas" :key="index" class="row g-0 align-items-center p-3 p-md-2 border-bottom bg-white item-licencia">
+
+                  <!-- HEADER MOBILE: Datos (Se oculta en PC) -->
+                  <div class="col-12 d-md-none mb-3 border-bottom pb-2">
+                    <div class="fw-bold text-dark fs-6">{{ formatearFecha(lic.fecha_licencia) }}</div>
+                    <div class="text-muted mt-1" style="font-size: 0.8rem;">
+                      <i class="bi bi-clock me-1"></i> Solicitada: {{ formatearFecha(lic.fecha_solicitud) }}
+                    </div>
+                    <div class="text-muted" style="font-size: 0.8rem;">
+                      <i class="bi bi-tag me-1"></i> Motivo: {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}
+                    </div>
+                  </div>
+
+                  <!-- COLUMNAS ESCRITORIO -->
+                  <div class="col-md-3 d-none d-md-block fw-bold text-dark ps-3" style="font-size: 0.85rem;">
+                    {{ formatearFecha(lic.fecha_licencia) }}
+                  </div>
+                  <div class="col-md-2 d-none d-md-block text-muted small">
+                    {{ formatearFecha(lic.fecha_solicitud) }}
+                  </div>
+                  <div class="col-md-3 d-none d-md-block text-muted small text-truncate pe-2">
+                    {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enfermedad' : 'Particular' }}
+                  </div>
+
+                  <!-- ESTADO Y ACCIÓN (Ambos, en celular se parten mitad y mitad) -->
+                  <div class="col-6 col-md-2 text-start text-md-center pe-2 pe-md-0">
+                    <span class="badge w-90 py-2 py-md-1 shadow-sm" style="font-size: 0.7rem; letter-spacing: 0.5px;"
+                          :class="{'bg-success': lic.estado === 'aprobada', 'bg-danger': lic.estado === 'rechazada' || lic.estado === 'borrada' || lic.estado === 'anulada', 'bg-warning text-dark': lic.estado === 'pendiente'}">
+                      {{ lic.estado.toUpperCase() }}
+                    </span>
+                  </div>
+                  <div class="col-6 col-md-2 text-start text-md-center pe-2 pe-md-0">
+                    <button
+                      v-if="(lic.estado === 'pendiente' || lic.estado === 'aprobada') && esFechaFutura(lic.fecha_licencia)"
+                      @click="anularLicencia(lic)"
+                      class="btn btn-sm btn-anular w-90 py-2 py-md-1 shadow-sm" style="font-size: 0.7rem; letter-spacing: 0.5px;"
+                      :disabled="cargando"
+                    >
+                      <i class="bi bi-x-circle"></i> Anular
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+
             </div>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-4" v-if="totalPaginas > 1">
-            <button
-              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-              @click="cambiarPagina(-1)"
-              :disabled="paginaActual <= 1"
-            >
+          <!-- Paginación -->
+          <div class="d-flex justify-content-center align-items-center gap-3 py-4 bg-white border-top" v-if="totalPaginas > 1">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
             </button>
-
-            <span class="fw-bold text-dark small">
-              Página {{ paginaActual }} de {{ totalPaginas }}
-            </span>
-
-            <button
-              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-              @click="cambiarPagina(1)"
-              :disabled="paginaActual >= totalPaginas"
-            >
+            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
@@ -141,9 +140,7 @@
       </div>
 
     </div>
-
   </div>
-
 </template>
 
 <script setup>
@@ -351,8 +348,6 @@ onMounted(() => {
 /* ====================================================
    COMPONENTES Y BOTONES
    ==================================================== */
-.card { border-radius: 15px; background: #ffffff; }
-
 .btn-primary {
   background-color: #dc2626 !important;
   border: none;
@@ -361,18 +356,35 @@ onMounted(() => {
   background-color: #b91c1c !important;
 }
 
-/* AJUSTES DE TAMAÑO PARA SELECTS */
-select.form-select,
-select.form-select-lg {
-  font-size: 0.9rem !important;
-  padding: 0.45rem 2rem 0.45rem 0.75rem !important;
-  height: auto !important;
-  min-height: 40px !important;
-  border-radius: 6px !important;
-  line-height: 1.5;
+/* Efectos de la lista */
+.item-licencia {
+  transition: background-color 0.2s ease;
+}
+.item-licencia:hover {
+  background-color: #f8fafc !important;
 }
 
-/* ESTILOS PARA EL INPUT DE FECHA */
+/* Botón Anular con color personalizado y animación */
+.btn-anular {
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  transition: all 0.2s ease-in-out;
+}
+.btn-anular:hover:not(:disabled) {
+  background-color: #b91c1c;
+  color: #ffffff;
+}
+.btn-anular:disabled {
+  background-color: #fca5a5;
+  color: #fef2f2;
+  cursor: not-allowed;
+}
+
+/* ====================================================
+   HACKS VISUALES PARA INPUT DATE (Nativo)
+   ==================================================== */
 .custom-input-date {
   color: #000000 !important;
   background-color: #ffffff !important;
@@ -380,7 +392,6 @@ select.form-select-lg {
   font-size: 1rem;
 }
 
-/* Ocultar placeholder nativo cuando está vacío */
 input[type="date"]:in-range::-webkit-datetime-edit-year-field,
 input[type="date"]:in-range::-webkit-datetime-edit-month-field,
 input[type="date"]:in-range::-webkit-datetime-edit-day-field,
@@ -399,103 +410,5 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
   color: #000 !important;
 }
 
-/* TABLA RESPONSIVE */
-.table thead th {
-  background-color: #e2e8f0;
-  color: #64748b;
-  font-size: 0.65rem;
-  padding: 15px 10px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.table td {
-  padding: 15px 10px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.status-badge,
-.btn-anular {
-  width: 100px !important;
-  height: 26px !important;
-  font-size: 0.6rem;
-  font-weight: 800;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
-  box-sizing: border-box;
-  border: none !important;
-  line-height: 1 !important;
-  margin: 0;
-  padding: 0;
-}
-
-/* 2. Colores específicos del badge */
-.bg-success { background-color: #10b981 !important; color: white; }
-.bg-danger { background-color: #ef4444 !important; color: white; }
-.bg-warning { background-color: #f59e0b !important; color: #000; }
-
-/* 3. Colores y efectos específicos del botón Anular */
-.btn-anular {
-  background-color: #dc2626;
-  color: #ffffff;
-  gap: 0.3rem;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-/* Efectos de hover para escritorio */
-@media (min-width: 768px) {
-  .btn-anular:hover:not(:disabled) {
-    background-color: #b91c1c;
-    color: #ffffff;
-    box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
-    transform: translateY(-2px);
-  }
-}
-
-.btn-anular:disabled {
-  background-color: #fca5a5;
-  color: #fef2f2;
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
-
-/* ====================================================
-   📱 RESPONSIVE DESIGN
-   ==================================================== */
-.desktop-only { display: block; }
-.mobile-only { display: none; }
-
-@media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-
-  .x-small-mobile { font-size: 0.8rem; }
-  h4 { font-size: 1.25rem; }
-
-  /* Reducción proporcional de ambos elementos a la par */
-  .status-badge,
-  .btn-anular {
-    width: 85px !important;
-    height: 24px !important;
-  }
-}
-
-@media (max-width: 600px) {
-  .table td, .table th {
-    padding: 10px 5px !important;
-  }
-
-  /* Ajuste milimétrico para pantallas muy chicas */
-  .status-badge,
-  .btn-anular {
-    font-size: 0.55rem;
-    width: 78px !important;
-    height: 22px !important;
-    gap: 0.15rem; /* Achicamos la separación del ícono en el botón */
-  }
-}
+.animate__animated { animation-duration: 0.5s; }
 </style>

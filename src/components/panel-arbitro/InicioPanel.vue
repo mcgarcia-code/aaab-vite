@@ -13,7 +13,7 @@
               rel="noopener noreferrer"
               class="text-decoration-none d-flex w-100 h-100"
             >
-              <div class="modern-menu-card shadow-sm">
+              <div class="modern-menu-card shadow-sm w-100 h-100">
                 <div class="icon-box">
                   <i :class="item.icon"></i>
                 </div>
@@ -31,7 +31,8 @@
       </div>
 
       <div class="col-12 col-lg-4 col-xl-3 order-1 order-lg-2">
-        <aside class="sidebar-professional shadow-sm">
+        <!-- Agregamos mb-3 mb-lg-0 para celulares y sticky-lg-top para escritorio -->
+        <aside class="sidebar-professional shadow-sm mb-3 mb-lg-0 sticky-lg-top" style="top: 20px; z-index: 10;">
           <div class="sidebar-header">
             <div class="d-flex align-items-center">
               <i class="bi bi-calendar3 me-2 text-danger fs-5"></i>
@@ -40,9 +41,11 @@
             <div v-if="cargando" class="spinner-border spinner-border-sm text-danger"></div>
           </div>
 
-          <div class="sidebar-scroll-container p-3">
+          <!-- Agregamos padding dinámico y limitamos la altura directamente -->
+          <div class="sidebar-scroll-container p-2 p-lg-3 overflow-auto" style="max-height: calc(100vh - 100px);">
 
-            <div class="notif-section">
+            <!-- Clases mb y pb dinámicas para no usar media queries -->
+            <div class="notif-section mb-2 mb-lg-3 pb-2 pb-lg-3">
               <label class="section-label" @click="toggleSeccion('reuniones')">
                 <div class="d-flex align-items-center gap-2">
                   <span>PRÓXIMAS REUNIONES</span>
@@ -70,7 +73,7 @@
               </div>
             </div>
 
-            <div class="notif-section">
+            <div class="notif-section mb-2 mb-lg-3 pb-2 pb-lg-3">
               <label class="section-label" @click="toggleSeccion('cumpleanos')">
                 <div class="d-flex align-items-center gap-2">
                   <span>CUMPLEAÑOS 🎂</span>
@@ -212,14 +215,13 @@ onMounted(cargarAvisos);
 .modern-menu-card {
   background: white;
   border-radius: 16px;
-  padding: 15px;
+  /* El padding se adapta solo entre 15px (mobile) y 18px usando clamp */
+  padding: clamp(15px, 3vw, 18px);
   display: flex;
   align-items: center;
   gap: 12px;
   border: 1px solid #f1f5f9;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 100%;
-  height: 100%;
   cursor: pointer;
 }
 
@@ -273,8 +275,16 @@ onMounted(cargarAvisos);
 }
 .fw-black { font-weight: 800; font-size: 0.85rem; color: #1e293b; }
 
+/* SCROLL CUSTOM (Aplica nativamente sin media queries) */
+.sidebar-scroll-container {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.sidebar-scroll-container::-webkit-scrollbar { width: 5px; }
+.sidebar-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
 /* SECCIONES COLAPSABLES */
-.notif-section { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed #e2e8f0; }
+.notif-section { border-bottom: 1px dashed #e2e8f0; }
 
 .section-label {
   font-size: 0.65rem;
@@ -342,38 +352,6 @@ onMounted(cargarAvisos);
 
 .reminder-pill { background: #fffbeb; color: #92400e; padding: 8px 12px; border-radius: 10px; font-size: 0.72rem; border-left: 3px solid #f59e0b; margin-bottom: 5px; }
 .empty-msg { font-size: 0.7rem; color: #94a3b8; font-style: italic; }
-
-/* ====================================================
-   📱 RESPONSIVE DESIGN & SIDEBAR SCROLL
-   ==================================================== */
-
-/* --- PANTALLAS GRANDES Y LAPTOPS (Desde 992px) --- */
-@media (min-width: 992px) {
-  .sidebar-professional {
-    position: sticky;
-    top: 20px;
-    max-height: calc(100vh - 100px);
-  }
-  .sidebar-scroll-container {
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
-  }
-  .sidebar-scroll-container::-webkit-scrollbar { width: 5px; }
-  .sidebar-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-}
-
-/* --- DISPOSITIVOS MEDIANOS (Hasta 991px) --- */
-@media (max-width: 991px) {
-  .sidebar-professional { margin-bottom: 10px; }
-  .sidebar-scroll-container { overflow-y: visible; padding: 12px !important; }
-  .notif-section { margin-bottom: 8px; padding-bottom: 8px; }
-}
-
-/* --- MÓVILES --- */
-@media (max-width: 768px) {
-  .modern-menu-card { padding: 18px; }
-}
 
 .animate__animated { animation-duration: 0.5s; }
 </style>

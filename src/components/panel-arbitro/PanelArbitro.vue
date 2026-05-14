@@ -2,37 +2,38 @@
   <div class="panel-layout">
     <nav class="navbar navbar-dark bg-dark px-3 shadow-sm mb-4">
       <div class="container-fluid d-flex justify-content-between align-items-center">
-        <span class="navbar-brand fw-bold">Panel Árbitro AAAB</span>
+        <span class="navbar-brand fw-bold text-truncate fs-6 fs-md-5">Panel Árbitro AAAB</span>
         <button @click="cerrarSesion" class="btn btn-outline-danger btn-sm px-3 fw-bold rounded-pill">Cerrar Sesión</button>
       </div>
     </nav>
 
-    <div class="container-fluid px-4 py-2">
+    <div class="container-fluid px-3 px-md-4 py-2">
       <div class="mx-auto">
 
-        <div class="user-header d-flex align-items-center justify-content-between mb-4 p-3 rounded-4 shadow">
+        <div class="user-header d-flex align-items-center justify-content-between mb-4 p-2 p-md-3 rounded-4 shadow">
           <div class="d-flex align-items-center">
             <img :src="urlFoto" @error="(e) => e.target.src = 'https://via.placeholder.com/150'"
-                 class="perfil-img me-3 shadow-sm">
+                 class="perfil-img me-2 me-md-3 shadow-sm">
 
             <div>
-              <h2 class="text-white fw-bold m-0 saludo-texto">
+              <h2 class="text-white fw-bold m-0 fs-5 fs-md-3" style="line-height: 1.2;">
                 Hola, {{ nombreFormateado }} 👋
               </h2>
               <span class="badge bg-danger mt-1 px-2 py-1 shadow-sm">ID Árbitro: {{ arbitro.id }}</span>
             </div>
           </div>
 
-          <div class="dropdown me-2">
-            <button class="btn position-relative border-0 bg-transparent p-2 d-flex align-items-center notification-btn" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
-              <i class="bi bi-bell-fill fs-3 text-white"></i>
+          <div class="dropdown me-1 me-md-2">
+            <button class="btn position-relative border-0 bg-transparent p-1 p-md-2 d-flex align-items-center notification-btn" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+              <i class="bi bi-bell-fill fs-4 fs-md-3 text-white"></i>
               <span v-if="notificacionesNoLeidas > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="transform: translate(-30%, 30%) !important; font-size: 0.65rem; padding: 0.35em 0.5em;">
                 {{ notificacionesNoLeidas }}
                 <span class="visually-hidden">Notificaciones nuevas</span>
               </span>
             </button>
 
-            <ul class="dropdown-menu dropdown-menu-end shadow-lg py-0 overflow-hidden dropdown-notificaciones">
+            <!-- Agregamos w-100 y max-width para que sea responsivo nativamente sin romper la pantalla en móviles -->
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg py-0 overflow-hidden dropdown-notificaciones" style="max-width: 95vw;">
               <li class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
                 <h6 class="m-0 fw-bold text-dark">Nuevas Notificaciones</h6>
                 <span v-if="notificacionesNoLeidas > 0" class="badge bg-danger rounded-pill">{{ notificacionesNoLeidas }}</span>
@@ -209,9 +210,10 @@ useHead({
   z-index: 90;
 }
 
+/* Usamos clamp para que escale sola sin media queries: min 50px, ideal 10vw, max 70px */
 .perfil-img {
-  width: 70px;
-  height: 70px;
+  width: clamp(50px, 10vw, 70px);
+  height: clamp(50px, 10vw, 70px);
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #dc2626;
@@ -238,10 +240,6 @@ useHead({
 .btn-volver:hover {
   background: #dc2626;
   border-color: #dc2626;
-}
-
-.saludo-texto {
-  line-height: 1.2;
 }
 
 .notification-btn {
@@ -291,7 +289,7 @@ useHead({
 }
 
 .notification-list {
-  max-height: 350px;
+  max-height: 50vh; /* Cambiado a vh para mejor soporte en pantallas chicas */
   overflow-y: auto;
 }
 
@@ -307,53 +305,6 @@ useHead({
 }
 .notification-list::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-
-/* ====================================================
-   📱 RESPONSIVE DESIGN (Perfil y Notificaciones)
-   ==================================================== */
-
-/* --- TABLETS Y MÓVILES EN HORIZONTAL (Hasta 768px) --- */
-@media (max-width: 768px) {
-  .perfil-img { width: 60px; height: 60px; }
-  .saludo-texto { font-size: 1.2rem; }
-}
-
-/* --- SMARTPHONES (Hasta 600px) --- */
-@media (max-width: 600px) {
-  .perfil-img { width: 55px; height: 55px; }
-  .saludo-texto {
-    font-size: 1.1rem;
-    margin-bottom: 2px !important;
-    text-align: left;
-  }
-
-  .notification-btn {
-    width: 42px;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .notification-btn i { font-size: 1.25rem !important; }
-
-  /* Dropdown centrado y adaptado para móviles */
-  .dropdown-notificaciones {
-    position: fixed !important;
-    top: 70px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: calc(100vw - 30px) !important;
-    max-width: 400px !important;
-    z-index: 1060 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
-  }
-
-  .notification-list {
-    max-height: 50vh;
-    overflow-y: auto;
-  }
 }
 
 .animate__animated { animation-duration: 0.5s; }

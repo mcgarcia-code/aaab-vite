@@ -2,7 +2,7 @@
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
-      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
+      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
         <div>
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
             <i class="bi bi-person me-2"></i> Legajo Personal
@@ -11,17 +11,17 @@
         </div>
 
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-            <span v-if="arbitro.apto_medico == 1" class="badge bg-success px-3 py-2 shadow-sm d-flex align-items-center gap-2">
+            <span v-if="arbitro.apto_medico == 1" class="badge bg-success px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
                 <i class="bi bi-heart-pulse-fill"></i> APTO MÉDICO: SÍ
             </span>
-            <span v-else class="badge bg-danger px-3 py-2 shadow-sm d-flex align-items-center gap-2 animate__animated animate__pulse animate__infinite">
+            <span v-else class="badge bg-danger px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2 animate__animated animate__pulse animate__infinite">
                 <i class="bi bi-exclamation-triangle-fill"></i> APTO MÉDICO: NO
             </span>
 
-            <span v-if="edicionAbierta" class="badge bg-primary px-3 py-2 shadow-sm w-fit-mobile">
+            <span v-if="edicionAbierta" class="badge bg-primary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
                 <i class="bi bi-pencil-square me-1"></i> Edición Abierta
             </span>
-            <span v-else class="badge bg-secondary px-3 py-2 shadow-sm w-fit-mobile">
+            <span v-else class="badge bg-secondary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
                 <i class="bi bi-lock-fill me-1"></i> Edición Cerrada
             </span>
         </div>
@@ -40,13 +40,14 @@
             <div class="col-12 col-md-6 text-md-end">
                 <label class="d-block small text-muted mb-1 text-uppercase fw-bold text-md-end">Grupo Arbitral y Estado</label>
                 <div class="d-flex flex-wrap justify-content-md-end gap-2 align-items-center mt-1">
-                    <span class="badge bg-dark fs-6">
+                    <span class="badge bg-dark fs-6 rounded-pill px-3 py-2 shadow-sm">
                         {{ arbitro.grupo }} {{ arbitro.subgrupo ? '- ' + arbitro.subgrupo : '' }}
                     </span>
-                    <span v-if="arbitro.es_activo == 1" class="status-pill status-active">
+                    <!-- Reemplazamos status-pill custom por utilidades de Bootstrap -->
+                    <span v-if="arbitro.es_activo == 1" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-1" style="font-size: 0.85rem;">
                         <i class="bi bi-check-circle-fill"></i> En actividad
                     </span>
-                    <span v-else class="status-pill status-inactive">
+                    <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-1" style="font-size: 0.85rem;">
                         <i class="bi bi-x-circle-fill"></i> Inactivo
                     </span>
                 </div>
@@ -113,7 +114,7 @@
         <div class="row g-3 align-items-end">
             <div class="col-12 col-md-8">
                 <label class="small text-muted mb-1 d-block">Nueva Contraseña</label>
-                <input v-model="nuevaPassword" type="password" class="form-control form-control-sm" placeholder="Escribí tu nueva clave aquí">
+                <input v-model="nuevaPassword" type="password" class="form-control form-control-sm py-2" placeholder="Escribí tu nueva clave aquí">
             </div>
             <div class="col-12 col-md-4">
                 <button @click="cambiarPassword" class="btn btn-dark btn-sm w-100 fw-bold py-2 shadow-sm" :disabled="cargando || !nuevaPassword">
@@ -124,7 +125,7 @@
         </div>
 
         <div v-if="edicionAbierta" class="mt-4 pt-4 border-top">
-            <button @click="guardarCambios" class="btn btn-success w-100 fw-bold shadow-sm py-2" :disabled="cargando">
+            <button @click="guardarCambios" class="btn btn-success w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
                 <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
                 GUARDAR CAMBIOS EN LEGAJO
             </button>
@@ -133,33 +134,53 @@
     </div>
 
     <div class="card border-0 shadow mx-auto mb-4 overflow-hidden w-100" style="border-radius: 15px;">
-        <div class="card-header bg-white py-2 ps-3 border-bottom">
-            <h6 class="m-0 fw-bold text-dark small">Historial de Rectificaciones</h6>
+        <div class="card-header bg-white py-3 ps-3 border-bottom">
+            <h6 class="m-0 fw-bold text-dark small text-uppercase">Historial de Rectificaciones</h6>
         </div>
         <div class="card-body p-0 bg-white">
-            <div v-if="historialRectificaciones.length > 0" class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
-                        <tr class="x-small text-uppercase text-muted" style="font-size: 0.7rem;">
-                            <th class="ps-3" style="width: 130px;">Fecha</th>
-                            <th>Mensaje de Solicitud</th>
-                            <th class="text-center">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(h, i) in historialRectificaciones" :key="i">
-                            <td class="ps-3 small fw-bold text-dark">{{ h.fecha }}</td>
-                            <td class="small text-dark">{{ h.mensaje }}</td>
-                            <td class="text-center">
-                                <span :class="['badge x-small', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem;">
-                                    {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- LISTA UNIFICADA (Reemplaza la tabla rígida) -->
+            <div v-if="historialRectificaciones.length > 0" class="d-flex flex-column">
+
+                <!-- Encabezado de Columnas (Solo Escritorio) -->
+                <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.70rem;">
+                    <div class="col-md-2 ps-3">Fecha</div>
+                    <div class="col-md-7">Mensaje de Solicitud</div>
+                    <div class="col-md-3 text-center pe-3">Estado</div>
+                </div>
+
+                <!-- Filas de Datos -->
+                <div v-for="(h, i) in historialRectificaciones" :key="i" class="row g-0 align-items-center p-3 p-md-2 border-bottom bg-white item-historial">
+
+                    <!-- HEADER MOBILE: Fecha y Estado -->
+                    <div class="col-12 d-md-none mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="small fw-bold text-dark">{{ h.fecha }}</span>
+                        <span :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem;">
+                            {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
+                        </span>
+                    </div>
+
+                    <!-- COL 1: FECHA (Escritorio) -->
+                    <div class="col-md-2 d-none d-md-block ps-3 small fw-bold text-dark">
+                        {{ h.fecha }}
+                    </div>
+
+                    <!-- COL 2: MENSAJE (Ambos) -->
+                    <div class="col-12 col-md-7 small text-dark lh-sm">
+                        {{ h.mensaje }}
+                    </div>
+
+                    <!-- COL 3: ESTADO (Escritorio) -->
+                    <div class="col-md-3 d-none d-md-flex justify-content-center pe-3">
+                        <span :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                            {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
+                        </span>
+                    </div>
+
+                </div>
             </div>
-            <div v-else class="text-center py-4 text-muted small">
+
+            <div v-else class="text-center py-5 text-muted small bg-light">
+                <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">history_toggle_off</span>
                 Sin solicitudes de rectificación previas.
             </div>
         </div>
@@ -173,20 +194,20 @@
 
         <div class="p-3 p-md-4 rounded-4 shadow-lg" style="background: #0c1624; border: 1px dashed rgba(255,255,255,0.2);">
             <h6 class="text-white fw-bold small mb-2 text-uppercase">Solicitar Rectificación</h6>
-            <p class="x-small text-white-50 mb-3">
+            <p class="small text-white-50 mb-3" style="font-size: 0.8rem;">
                 Si necesitás corregir datos personales (DNI, Fecha de Nac., etc.), detallalo a continuación.
             </p>
 
             <textarea
                 v-model="solicitudCambio"
-                class="form-control mb-3 custom-textarea"
+                class="form-control mb-3 custom-textarea p-3"
                 rows="3"
                 placeholder="Ej: Hola, necesito corregir mi DNI, el correcto es..."
             ></textarea>
 
             <button
                 @click="enviarSolicitudRectificacion"
-                class="btn btn-danger w-100 fw-bold py-2 shadow"
+                class="btn btn-danger w-100 fw-bold py-3 py-md-2 shadow"
                 :disabled="cargando || !solicitudCambio"
             >
                 ENVIAR SOLICITUD DE CAMBIO
@@ -394,63 +415,53 @@ const enviarSolicitudRectificacion = async () => {
 
 <style scoped>
 /* ====================================================
-   1. ESTILOS BASE Y COMPONENTES
+   ESTILOS BASE Y COMPONENTES
    ==================================================== */
-.form-control-sm, .form-select-sm { border-radius: 8px; padding: 0.5rem;}
-.x-small { font-size: 0.65rem; }
-.manual-section { background-color: #0c1624; border-radius: 1rem; }
-.btn-danger { background-color: #dc2626 !important; border: none; }
-.text-white-50 { color: rgba(255, 255, 255, 0.5) !important; }
+.form-control-sm, .form-select-sm {
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.manual-section {
+  background-color: #0c1624;
+  border-radius: 1rem;
+}
+
+.btn-danger {
+  background-color: #dc2626 !important;
+  border: none;
+}
+
+.text-white-50 {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
 .custom-textarea {
-    background-color: #ffffff !important; color: #000000 !important;
-    border: none; border-radius: 8px;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: none;
+  border-radius: 8px;
 }
-.custom-textarea::placeholder { color: #6c757d; }
-.badge { letter-spacing: 1px; }
+
+.custom-textarea::placeholder {
+  color: #6c757d;
+}
+
+.badge {
+  letter-spacing: 1px;
+}
 
 /* ====================================================
-   2. ESTADOS (PILLS)
+   EFECTO HOVER DE LA LISTA HISTORIAL
    ==================================================== */
-.status-pill {
-    font-size: 0.85rem;
-    font-weight: bold;
-    padding: 6px 12px;
-    border-radius: 50px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+.item-historial {
+  transition: background-color 0.2s ease;
 }
 
-.status-active {
-    background-color: #dcfce7;
-    color: #166534;
-    border: 1px solid #bbf7d0;
+.item-historial:hover {
+  background-color: #f8fafc !important;
 }
-.status-active i { color: #22c55e; }
 
-.status-inactive {
-    background-color: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fecaca;
-}
-.status-inactive i { color: #ef4444; }
+.animate__animated { animation-duration: 0.5s; }
 
-/* ====================================================
-   3. 📱 RESPONSIVE DESIGN
-   ==================================================== */
-@media (max-width: 768px) {
-    .w-fit-mobile {
-        width: fit-content !important;
-        margin-top: 5px;
-    }
-
-    .w-100-mobile {
-        width: 100% !important;
-        display: block;
-    }
-
-    .fs-5 { font-size: 1.1rem !important; }
-    label { margin-top: 5px; }
-}
 </style>
