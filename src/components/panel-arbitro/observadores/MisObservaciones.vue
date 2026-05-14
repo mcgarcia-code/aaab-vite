@@ -1,6 +1,8 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
+
     <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
         <div>
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
@@ -10,23 +12,14 @@
         </div>
 
         <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
-          <button
-            @click="obtenerObservaciones"
-            class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2"
-            title="Actualizar"
-            style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;"
-          >
+          <button @click="obtenerObservaciones" class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Actualizar" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
             <span class="material-icons" style="font-size: 22px; color: #000;">refresh</span>
             <!-- Usamos d-none d-md-inline en lugar de clases custom -->
             <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
           </button>
 
           <RouterLink to="/panel-arbitro/observaciones/carga" class="text-decoration-none">
-            <button
-              class="rounded shadow-sm border-0 p-2 d-flex align-items-center justify-content-center gap-2 text-white"
-              title="Nueva Evaluación"
-              style="background-color: #3b82f6;"
-            >
+            <button class="rounded shadow-sm border-0 p-2 d-flex align-items-center justify-content-center gap-2 text-white" title="Nueva Evaluación" style="background-color: #3b82f6;">
               <span class="material-icons" style="font-size: 20px;">add</span>
               <!-- Usamos d-none d-md-inline en lugar de clases custom -->
               <span class="d-none d-md-inline fw-bold text-white" style="font-size: 0.8rem;">Nueva Evaluación</span>
@@ -36,6 +29,7 @@
       </div>
 
       <div class="card-body bg-white p-3 p-md-4">
+
         <div class="mb-4">
           <div class="input-group shadow-sm rounded-pill overflow-hidden border border-secondary-subtle">
             <span class="input-group-text bg-light border-0 text-muted ps-4"><i class="bi bi-search"></i></span>
@@ -48,25 +42,18 @@
           </div>
         </div>
 
-<<<<<<< HEAD
         <!-- LISTA UNIFICADA (Reemplaza a la tabla y a las tarjetas mobile) -->
         <div class="border shadow-sm rounded overflow-hidden">
 
           <!-- Encabezado de Columnas (Solo visible en Escritorio) -->
           <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase" style="font-size: 0.75rem; color: #0f172a;">
             <div class="col-md-2 ps-3">Fecha</div>
-=======
-        <div class="observaciones-lista shadow-sm border" style="border-radius: 8px;">
-          <div class="main-header d-none d-md-flex align-items-center">
-            <div class="col-md-2 ps-4">Fecha</div>
->>>>>>> 88ba62880dcdd2bc778345e955d28bbe7434e3a4
             <div class="col-md-3">Árbitro Evaluado</div>
             <div class="col-md-3">Categoría / Partido</div>
             <div class="col-md-2 text-center">Puntaje</div>
             <div class="col-md-2 text-center">Acciones</div>
           </div>
 
-<<<<<<< HEAD
           <div v-if="observacionesPaginadas.length === 0" class="text-center p-5 bg-light">
             <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
             <p class="text-muted mt-2 mb-0 fw-bold">No has cargado observaciones recientemente.</p>
@@ -126,60 +113,6 @@
               </div>
 
             </div>
-=======
-          <div
-            v-for="obs in observacionesPaginadas"
-            :key="obs.id"
-            class="observacion-item row-hover border-bottom"
-          >
-            <div class="card-licencia px-3 px-md-0 py-3 py-md-0 border-0 shadow-none mb-0">
-              <div class="d-flex d-md-none justify-content-between align-items-start gap-3 mb-2">
-                <div class="card-name text-uppercase">
-                  <div>{{ obs.arb1_apellido }}, {{ obs.arb1_nombre }}</div>
-                  <div v-if="obs.arb2_apellido || obs.arb2_nombre">
-                    {{ obs.arb2_apellido }}, {{ obs.arb2_nombre }}
-                  </div>
-                </div>
-
-                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1 fw-bold puntaje-badge">
-                  Puntaje: {{ obs.puntaje_final }}
-                </span>
-              </div>
-
-              <div class="row g-0 align-items-center">
-                <div class="col-12 col-md-2 ps-md-4 cell-ro text-muted fw-bold mb-2 mb-md-0">
-                  <span class="d-inline d-md-none">Fecha: </span>{{ obs.fecha_partido }}
-                </div>
-
-                <div class="col-12 col-md-3 cell-ro fw-bold text-dark mb-2 mb-md-0 d-none d-md-block">
-                  <div>{{ obs.arb1_apellido }}, {{ obs.arb1_nombre }}</div>
-                  <div v-if="obs.arb2_apellido || obs.arb2_nombre">
-                    {{ obs.arb2_apellido }}, {{ obs.arb2_nombre }}
-                  </div>
-                </div>
-
-                <div class="col-12 col-md-3 cell-ro mb-2 mb-md-0">
-                  <span class="d-inline d-md-none fw-bold">Categoría: </span>{{ obs.categoria }} {{ obs.division }} - {{ obs.genero }}
-                </div>
-
-                <div class="col-12 col-md-2 text-md-center cell-ro fw-bold text-danger mb-2 mb-md-0 d-none d-md-block">
-                  {{ obs.puntaje_final }}
-                </div>
-
-                <div class="col-12 col-md-2 text-md-center cell-ro">
-                  <button class="btn btn-dark btn-sm w-100 rounded-pill mt-2 mt-md-0 fw-bold shadow-sm">
-                    <span class="d-md-none">VER DETALLE COMPLETO</span>
-                    <span class="d-none d-md-inline">Ver Detalle</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="observacionesPaginadas.length === 0" class="text-center p-4 p-md-5 bg-light rounded mt-2 mt-md-0">
-            <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-            <p class="text-muted mt-2 mb-0 fw-bold">Sin observaciones cargadas.</p>
->>>>>>> 88ba62880dcdd2bc778345e955d28bbe7434e3a4
           </div>
         </div>
 
@@ -195,6 +128,7 @@
             Sig <i class="bi bi-chevron-right"></i>
           </button>
         </div>
+
       </div>
     </div>
   </div>
@@ -269,7 +203,11 @@ const obtenerObservaciones = async () => {
 
 onMounted(obtenerObservaciones)
 </script>
+
 <style scoped>
+/* ====================================================
+   1. BOTONES E INPUTS
+   ==================================================== */
 .btn-clear {
   border: none;
   cursor: pointer;
@@ -288,7 +226,6 @@ onMounted(obtenerObservaciones)
   outline: none;
 }
 
-<<<<<<< HEAD
 /* ====================================================
    2. ESTILOS DE LA LISTA
    ==================================================== */
@@ -302,88 +239,5 @@ onMounted(obtenerObservaciones)
 
 .animate__animated { animation-duration: 0.5s; }
 
-
-=======
-.observaciones-lista {
-  width: 100%;
-  overflow: auto;
-  max-height: 85vh;
-  background: white;
-}
-
-.main-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: #e2e8f0 !important;
-  border-bottom: 2px solid #e2e8f0;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  font-size: 0.75rem;
-  color: #000;
-  text-transform: uppercase;
-  font-weight: 800;
-  margin: 0;
-  text-align: left;
-}
-
-.main-header > div {
-  padding: 12px 10px;
-}
-
-.cell-ro {
-  padding: 14px 10px;
-  font-size: 0.85rem;
-  color: #000;
-  vertical-align: middle;
-}
-
-.observacion-item:last-of-type {
-  border-bottom: none !important;
-}
-
-.row-hover:hover {
-  background-color: #f1f5f9;
-  transition: background 0.2s ease;
-}
-
-.desktop-only {
-  display: block;
-}
-
-.puntaje-badge {
-  font-size: 0.7rem;
-}
-
-@media (max-width: 768px) {
-  .desktop-only {
-    display: none !important;
-  }
-
-  .card-licencia {
-    background: white;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 12px;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
-  }
-
-  .card-name {
-    font-size: 1.05rem;
-    color: #0f172a;
-  }
-
-  .cell-ro {
-    padding: 0;
-  }
-
-  .observacion-item {
-    border-bottom: none !important;
-  }
-}
-
-.animate__animated {
-  animation-duration: 0.5s;
-}
->>>>>>> 88ba62880dcdd2bc778345e955d28bbe7434e3a4
+/* Eliminamos todas las media queries, los display:none manuales y los estilos de la etiqueta <table> */
 </style>
