@@ -2,27 +2,31 @@
   <div class="panel-layout">
     <nav class="navbar navbar-dark bg-dark px-3 shadow-sm mb-4">
       <div class="container-fluid d-flex justify-content-between align-items-center">
-        <span class="navbar-brand fw-bold">Panel Gestión AAAB</span>
-        <button @click="cerrarSesion" class="btn btn-outline-danger btn-sm px-3">Cerrar Sesión</button>
+        <!-- Clases de texto responsivo fs-6 en celular, fs-5 en PC -->
+        <span class="navbar-brand fw-bold fs-6 fs-md-5">Panel Gestión AAAB</span>
+        <button @click="cerrarSesion" class="btn btn-outline-danger btn-sm px-3 rounded-pill fw-bold">Cerrar Sesión</button>
       </div>
     </nav>
 
-    <div class="container-fluid px-4 py-2">
+    <!-- Padding lateral dinámico -->
+    <div class="container-fluid px-3 px-md-4 py-2">
       <div class="mx-auto">
-        <div class="user-header d-flex align-items-center mb-4 p-3 rounded-4 shadow">
-          <div class="icon-admin-circle me-3">
+        <div class="user-header d-flex align-items-center mb-4 p-3 p-md-4 rounded-4 shadow">
+          <!-- flex-shrink-0 evita que el círculo se deforme si el nombre es muy largo -->
+          <div class="icon-admin-circle me-3 shadow-sm flex-shrink-0">
              <i class="bi bi-person-workspace text-white"></i>
           </div>
           <div class="overflow-hidden">
-            <h2 class="text-white fw-bold m-0 text-capitalize text-truncate">
-              Hola, {{ admin.nombre || 'Administrador' }}👋
+            <!-- Tipografía responsiva fs-5 a fs-md-3 -->
+            <h2 class="text-white fw-bold m-0 text-capitalize text-truncate fs-5 fs-md-3" style="line-height: 1.2;">
+              Hola, {{ admin.nombre || 'Administrador' }} 👋
             </h2>
-            <span class="badge bg-danger mt-1">Nivel: {{ admin.rol }}</span>
+            <span class="badge bg-danger mt-1 px-2 py-1 shadow-sm">Nivel: {{ admin.rol }}</span>
           </div>
         </div>
 
         <div v-if="route.name !== 'AdminInicio'" class="mb-4">
-            <button @click="handleVolver" class="btn-volver">
+            <button @click="handleVolver" class="btn-volver shadow-sm">
             <i class="bi bi-arrow-left me-2"></i>
                 {{ esRutaProfunda ? 'Volver atrás' : 'Volver al Menú' }}
             </button>
@@ -97,15 +101,16 @@ useHead({
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Responsive nativo con clamp: min 50px, escala a 10vw, max 70px */
 .icon-admin-circle {
-  width: 70px;
-  height: 70px;
+  width: clamp(50px, 10vw, 70px);
+  height: clamp(50px, 10vw, 70px);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #dc2626;
-  font-size: 2rem;
+  font-size: clamp(1.4rem, 4vw, 2rem);
 }
 
 .navbar {
@@ -121,44 +126,14 @@ useHead({
   padding: 8px 20px;
   border-radius: 50px;
   transition: 0.3s;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   cursor: pointer;
   font-size: 1rem;
 }
 
 .btn-volver:hover {
   background: #dc2626;
-  color: white;
-  transform: translateY(-1px);
+  border-color: #dc2626;
 }
 
-/* ====================================================
-   📱 RESPONSIVE DESIGN (Layout Principal)
-   ==================================================== */
-
-/* --- 1. TABLETS Y DISPOSITIVOS MEDIANOS (Hasta 768px) --- */
-@media (max-width: 768px) {
-  .icon-admin-circle { width: 70px; height: 70px; font-size: 1.75rem; }
-  h2 { font-size: 1.4rem; }
-}
-
-/* --- 2. SMARTPHONES (Hasta 600px) --- */
-@media (max-width: 600px) {
-  /* Ajuste de Icono: alineado a la izquierda */
-  .icon-admin-circle {
-    width: 60px;
-    height: 60px;
-    font-size: 1.5rem;
-    margin: 0;
-  }
-
-  /* Ajuste del título para que ocupe todo el ancho */
-  h2 {
-    font-size: 1.25rem !important;
-    margin: 0;
-    text-align: left;
-    width: 100%;
-  }
-}
 </style>
-

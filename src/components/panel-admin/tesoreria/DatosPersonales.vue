@@ -1,155 +1,172 @@
 <template>
-  <div class="full-screen-wrapper">
+  <!-- Usamos px-3 px-md-4 para el padding responsivo que tenías en .full-screen-wrapper -->
+  <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <div class="header-section border-bottom">
-          <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
-              <i class="bi bi-people-fill me-1"></i>Datos Personales
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div>
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
+              <i class="bi bi-people-fill me-1"></i> Datos Personales
             </h4>
-            <span class="counter mt-1 d-block">Total: {{ totalFiltrados }} registros</span>
+            <span class="text-muted small d-block mt-1">Total: {{ totalFiltrados }} registros</span>
           </div>
 
-          <div class="header-actions">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue d-flex d-md-none" title="Mostrar Filtros">
-              <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+          <!-- Botones de Acción -->
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <!-- Botón de filtros (Solo visible en celular) -->
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+              <span class="material-icons fs-6">filter_alt</span>
             </button>
-
-            <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
-              <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
-            <button @click="exportarExcel" class="btn-action btn-export" title="Exportar a Excel">
-              <span class="material-icons">download</span> <span class="btn-text">Excel</span>
+            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
+              <span class="material-icons fs-6">download</span>
+              <span class="fw-bold d-none d-md-inline small">Excel</span>
             </button>
           </div>
         </div>
 
-
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR REGISTROS</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-              <span class="material-icons" style="font-size: 20px;">close</span>
-            </button>
+        <!-- Panel de Filtros Único (Colapsable en celular, siempre visible en PC) -->
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
+          <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Registros</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
-          <div class="filter-grid-mobile">
-            <input v-model="filtros.apellido" class="filter-input-mobile" placeholder="Apellido...">
-            <input v-model="filtros.nombre" class="filter-input-mobile" placeholder="Nombre...">
-            <input v-model="filtros.dni" class="filter-input-mobile" placeholder="DNI...">
-            <input v-model="filtros.celular" class="filter-input-mobile" placeholder="Celular...">
-
-            <select v-model="filtros.es_activo" class="filter-input-mobile">
-              <option value="">Estado (Todos)</option>
-              <option value="si">Activo</option>
-              <option value="no">Inactivo</option>
-            </select>
-            <input v-model="filtros.grupo" class="filter-input-mobile" placeholder="Grupo...">
+          <div class="row g-2">
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI...">
+            </div>
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none">
+                <option value="">Estado (Todos)</option>
+                <option value="si">Activo</option>
+                <option value="no">Inactivo</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.grupo" class="form-control form-control-sm shadow-none" placeholder="Grupo...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.celular" class="form-control form-control-sm shadow-none" placeholder="Celular...">
+            </div>
+            <div class="col-12 d-md-none mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+            </div>
           </div>
-
-          <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm" style="font-size: 0.95rem;">
-            Aplicar Filtros
-          </button>
         </div>
 
-        <div class="card-body p-3 p-md-4">
-          <div class="table-container shadow d-none d-md-block">
-            <table>
-              <thead>
-                <tr class="main-header">
-                  <th class="sticky-col col-id">ID</th>
-                  <th class="sticky-col col-apellido">Apellido</th>
-                  <th class="sticky-col col-nombre">Nombre</th>
-                  <th class="col-ultra-compact">Activo</th>
-                  <th class="col-ultra-compact">Grupo</th>
-                  <th class="col-ultra-compact">Subg.</th>
-                  <th>F. Nacimiento</th>
-                  <th>Celular</th>
-                  <th class="col-dni-compact">DNI</th>
-                  <th>Email</th>
-                </tr>
-                <tr class="filter-row">
-                  <td class="sticky-col col-id"></td>
-                  <td class="sticky-col col-apellido"><input v-model="filtros.apellido" class="filter-input" placeholder="Filtrar.."></td>
-                  <td class="sticky-col col-nombre"><input v-model="filtros.nombre" class="filter-input" placeholder="Filtrar.."></td>
-                  <td class="col-ultra-compact"><input v-model="filtros.es_activo" class="filter-input text-center" placeholder="SI/NO"></td>
-                  <td class="col-ultra-compact"><input v-model="filtros.grupo" class="filter-input text-center"></td>
-                  <td class="col-ultra-compact"><input v-model="filtros.subgrupo" class="filter-input text-center"></td>
-                  <td><input v-model="filtros.fecha_nacimiento" class="filter-input"></td>
-                  <td><input v-model="filtros.celular" class="filter-input"></td>
-                  <td class="col-dni-compact"><input v-model="filtros.dni" class="filter-input text-center"></td>
-                  <td><input v-model="filtros.email" class="filter-input"></td>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="a in datosPaginados" :key="a.id" :class="{ 'fila-inactiva': a.es_activo == 0 }">
-                  <td class="sticky-col col-id">{{ a.id }}</td>
-                  <td class="sticky-col col-apellido">{{ a.apellido }}</td>
-                  <td class="sticky-col col-nombre">{{ a.nombre }}</td>
-                  <td class="col-ultra-compact">
-                    <div class="status-wrapper">
-                      <span :class="['status-dot', a.es_activo == 1 ? 'dot-active' : 'dot-inactive']"></span>
-                      <span class="read-only-text">{{ a.es_activo == 1 ? 'SI' : 'NO' }}</span>
-                    </div>
-                  </td>
-                  <td class="col-ultra-compact read-only-text text-center">{{ a.grupo }}</td>
-                  <td class="col-ultra-compact read-only-text text-center">{{ a.subgrupo }}</td>
-                  <td class="read-only-text">{{ mostrarFechaArg(a.fecha_nacimiento) }}</td>
-                  <td class="read-only-text">{{ a.celular }}</td>
-                  <td class="col-dni-compact read-only-text text-center">{{ a.dni }}</td>
-                  <td class="read-only-text">{{ a.email }}</td>
-                </tr>
-                <tr v-if="datosPaginados.length === 0">
-                  <td colspan="10" class="text-center py-5 text-muted bg-light italic">
-                    No se encontraron registros.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="card-body p-0 p-md-3 bg-white">
+
+          <!-- ESTADO SIN RESULTADOS -->
+          <div v-if="datosPaginados.length === 0" class="text-center p-5 bg-light m-3 rounded border">
+            <span class="material-icons text-muted opacity-50" style="font-size: 40px;">search_off</span>
+            <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron registros.</p>
           </div>
 
-          <div class="d-block d-md-none mt-3">
-            <div v-for="a in datosPaginados" :key="'mob-'+a.id" class="card-arbitro" :class="{ 'fila-inactiva': a.es_activo == 0 }">
-              <div class="card-header">
-                <div class="card-name">
-                  <span :class="['status-dot', a.es_activo == 1 ? 'dot-active' : 'dot-inactive']" style="margin-right: 5px;"></span>
-                  <strong>{{ a.apellido }}, {{ a.nombre }}</strong>
-                </div>
-                <div class="text-xs" style="color: #000000;">ID: {{ a.id }}</div>
-              </div>
+          <!-- LISTA UNIFICADA -->
+          <div v-else class="border-top border-md-0 shadow-none shadow-md-sm rounded-0 rounded-md overflow-hidden">
 
-              <div class="card-body">
-                <div class="card-row">
-                  <span><strong>DNI:</strong> {{ a.dni || '-' }}</span>
-                  <span><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
-                </div>
-
-                <div class="card-info">
-                  <p v-if="a.fecha_nacimiento"><strong>F. Nacimiento:</strong> {{ mostrarFechaArg(a.fecha_nacimiento) }}</p>
-                  <p v-if="a.celular"><strong>Celular:</strong> {{ a.celular }}</p>
-                  <p v-if="a.email"><strong>Email:</strong> {{ a.email }}</p>
-                </div>
-              </div>
+            <!-- Encabezado de Columnas (Solo Escritorio) -->
+            <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.70rem;">
+              <div class="col-md-1 ps-2">ID</div>
+              <div class="col-md-2">Apellido y Nombre</div>
+              <div class="col-md-1 text-center">Activo</div>
+              <div class="col-md-1 text-center">Grupo</div>
+              <div class="col-md-2 text-center">F. Nac</div>
+              <div class="col-md-2 text-center">Celular</div>
+              <div class="col-md-1 text-center">DNI</div>
+              <div class="col-md-2">Email</div>
             </div>
 
-            <div v-if="datosPaginados.length === 0" class="text-center p-4 bg-white rounded shadow-sm">
-              <span class="material-icons text-muted" style="font-size: 40px;">search_off</span>
-              <p class="text-muted mt-2 mb-0">No se encontraron registros.</p>
+            <!-- Filas de Datos -->
+            <div class="d-flex flex-column">
+              <div v-for="a in datosPaginados" :key="a.id" class="row g-0 align-items-center p-3 p-md-2 border-bottom item-row" :class="{ 'bg-danger-subtle': a.es_activo == 0, 'bg-white': a.es_activo != 0 }">
+
+                <!-- HEADER MOBILE: Nombre, ID y Estado (Se oculta en escritorio) -->
+                <div class="col-12 d-md-none d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" :class="{'border-danger': a.es_activo == 0}">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'" style="width: 10px; height: 10px; border-radius: 50%;"></span>
+                    <strong class="text-dark fs-6">{{ a.apellido }}, {{ a.nombre }}</strong>
+                  </div>
+                  <span class="text-muted small">ID: {{ a.id }}</span>
+                </div>
+
+                <!-- INFO MOBILE: Resto de datos (Se oculta en escritorio) -->
+                <div class="col-12 d-md-none small text-dark d-flex flex-column gap-1">
+                  <div class="d-flex justify-content-between">
+                    <span><strong>DNI:</strong> {{ a.dni || '-' }}</span>
+                    <span><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
+                  </div>
+                  <div v-if="a.fecha_nacimiento"><strong>F. Nacimiento:</strong> {{ mostrarFechaArg(a.fecha_nacimiento) }}</div>
+                  <div v-if="a.celular"><strong>Celular:</strong> {{ a.celular }}</div>
+                  <div v-if="a.email"><strong>Email:</strong> {{ a.email }}</div>
+                </div>
+
+                <!-- COL 1: ID (Escritorio) -->
+                <div class="col-md-1 d-none d-md-block ps-2 small fw-bold" :class="a.es_activo == 0 ? 'text-danger' : 'text-muted'">
+                  {{ a.id }}
+                </div>
+
+                <!-- COL 2: NOMBRE (Escritorio) -->
+                <div class="col-md-2 d-none d-md-block text-dark small fw-bold text-truncate pe-2">
+                  {{ a.apellido }}, {{ a.nombre }}
+                </div>
+
+                <!-- COL 3: ESTADO (Escritorio) -->
+                <div class="col-md-1 d-none d-md-flex justify-content-center">
+                  <div class="d-flex align-items-center gap-1">
+                    <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'" style="width: 8px; height: 8px; border-radius: 50%;"></span>
+                    <span class="small" :class="a.es_activo == 0 ? 'text-danger fw-bold' : 'text-dark'">{{ a.es_activo == 1 ? 'SI' : 'NO' }}</span>
+                  </div>
+                </div>
+
+                <!-- COL 4: GRUPO (Escritorio) -->
+                <div class="col-md-1 d-none d-md-block text-center small text-dark">
+                  {{ a.grupo }}<span v-if="a.subgrupo" class="text-muted">/{{ a.subgrupo }}</span>
+                </div>
+
+                <!-- COL 5: F NACIMIENTO (Escritorio) -->
+                <div class="col-md-2 d-none d-md-block text-center small text-dark">
+                  {{ mostrarFechaArg(a.fecha_nacimiento) }}
+                </div>
+
+                <!-- COL 6: CELULAR (Escritorio) -->
+                <div class="col-md-2 d-none d-md-block text-center small text-dark">
+                  {{ a.celular || '-' }}
+                </div>
+
+                <!-- COL 7: DNI (Escritorio) -->
+                <div class="col-md-1 d-none d-md-block text-center small fw-bold text-dark">
+                  {{ a.dni }}
+                </div>
+
+                <!-- COL 8: EMAIL (Escritorio) -->
+                <div class="col-md-2 d-none d-md-block small text-dark text-truncate pe-2">
+                  {{ a.email || '-' }}
+                </div>
+
+              </div>
             </div>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+          <!-- Paginación -->
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3 mb-md-0" v-if="totalPaginas > 1">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
             </button>
-
-            <span class="fw-bold text-dark small">
-              Página {{ paginaActual }} de {{ totalPaginas }}
-            </span>
-
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
@@ -264,197 +281,36 @@ onMounted(cargarDatos);
 /* ====================================================
    ESTILOS BASE (DISEÑO PARA CELULARES - MOBILE FIRST)
    ==================================================== */
-
 .full-screen-wrapper {
   position: relative;
-  width: 99vw; min-height: 100vh;
+  width: 99vw;
+  min-height: 100vh;
   height: auto !important;
   margin-left: 50%;
   transform: translateX(-50%);
-  padding: 20px;
   padding-bottom: 120px;
 }
 
 .admin-panel {
   width: 100%;
-  padding: 0;
   background-color: #0f172a;
   min-height: calc(100vh - 40px);
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  box-sizing: border-box;
 }
 
-/* Cabecera Móvil */
-.header-section {
-  background: white;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 15px;
-  border-left: 5px solid #ef4444;
+/* Efecto hover general de las filas */
+.item-row {
+  transition: background-color 0.2s ease;
 }
 
-.title { font-size: 1.25rem; font-weight: bold; margin: 0; color: #000; text-align: left; }
-.counter { font-size: 0.85rem; color: #64748b; display: block; }
-.header-info { width: 100%; display: flex; flex-direction: column; align-items: flex-start; }
-
-/* Botones Móvil */
-.header-actions {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
+/* Si la fila es blanca, se pone gris claro. Si es roja claro (inactivo), se oscurece un poco. */
+.item-row.bg-white:hover {
+  background-color: #f8fafc !important;
+}
+.item-row.bg-danger-subtle:hover {
+  background-color: #fca5a5 !important;
 }
 
-.btn-action {
-  border: none;
-  width: 42px;
-  height: 42px;
-  border-radius: 4px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s;
-  padding: 0;
-}
-
-.btn-clear { background: #e2e8f0; color: #000; }
-.btn-export { background: #10b981; color: white; }
-.btn-blue { background: #3b82f6; color: white; }
-.btn-text { display: none; } /* Oculto en móvil */
-
-/* Panel de Filtros Móvil */
-.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
-
-.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-.filter-input-mobile {
-  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;
-  font-size: 12px; width: 100%; outline: none; background: #ffffff; color: #334155;
-}
-
-/* Cards Árbitros (Móvil) */
-.card-arbitro {
-  background: white;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-}
-.card-name { font-size: 1.05rem; color: #0f172a; }
-.card-row { display: flex; justify-content: space-between; font-size: 0.9rem; color: #000000; margin-bottom: 8px; }
-.card-info p { font-size: 0.9rem; color: #000000; margin: 4px 0; }
-.card-arbitro.fila-inactiva { background-color: #ef4444 !important; border-color: #dc2626; }
-
-/* Estados Generales */
-.status-wrapper { display: flex; align-items: center; gap: 5px; justify-content: center; height: 100%; }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; }
-.dot-active { background: #10b981; }
-.dot-inactive { background: #ef4444; }
 .animate__animated { animation-duration: 0.5s; }
 
-
-/* ====================================================
-   TABLETS Y PANTALLAS MEDIANAS (Desde 768px)
-   ==================================================== */
-@media (min-width: 768px) {
-
-  .full-screen-wrapper { padding: 20px; }
-  .admin-panel { padding: 20px; border-radius: 8px; }
-
-  .header-section {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    border-radius: 8px;
-    margin-bottom: 15px;
-  }
-
-  .title { font-size: 1.1rem; }
-  .header-info { width: auto; }
-  .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; }
-
-  .btn-action {
-    width: auto;
-    height: auto;
-    padding: 8px 12px;
-    justify-content: flex-start;
-    gap: 5px;
-    font-size: 0.75rem;
-  }
-  .btn-text { display: inline; }
-
-  /* Estilos de Tabla Desktop */
-  .table-container {
-    width: 100%; overflow: auto; max-height: 75vh;
-    background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  }
-
-  table { width: 100%; min-width: max-content; border-collapse: collapse; }
-
-  /* PRIMER FILA: CABECERA */
-  thead tr.main-header th {
-    position: sticky; top: 0; z-index: 100;
-    background-color: #e2e8f0 !important; /* COLOR SOLICITADO */
-    border-bottom: 2px solid #cbd5e1;
-    font-size: 0.75rem; color: #1e293b; text-transform: uppercase; font-weight: 800;
-    padding: 14px 10px;
-  }
-
-  /* SEGUNDA FILA: FILTROS */
-  thead tr.filter-row td {
-    position: sticky; top: 46px; z-index: 90;
-    background-color: #f1f5f9 !important; /* COLOR SOLICITADO */
-    border-bottom: 2px solid #cbd5e1;
-    padding: 10px 8px; /* MÁS ESPACIO */
-  }
-
-  /* Sticky columns con colores de cabecera */
-  thead tr.main-header th.sticky-col { background-color: #e2e8f0 !important; z-index: 110 !important; }
-  thead tr.filter-row td.sticky-col { background-color: #f1f5f9 !important; z-index: 95 !important; }
-
-  .sticky-col {
-    position: sticky !important;
-    background: white !important;
-    box-shadow: inset -1px 0 0 #e2e8f0;
-  }
-
-  .col-id { left: 0; width: 50px; text-align: center; }
-  .col-apellido { left: 50px; width: 140px; }
-  .col-nombre { left: 190px; width: 140px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-
-  .col-ultra-compact { width: 65px !important; min-width: 65px !important; text-align: center !important; }
-  .col-dni-compact { width: 90px; text-align: center; }
-
-  .read-only-text { padding: 10px 5px; font-size: 0.85rem; color: #1e293b; }
-
-  .filter-input {
-    font-size: 0.75rem; height: 30px; border: 1px solid #cbd5e1;
-    border-radius: 4px; padding: 2px 8px; width: 100%; box-sizing: border-box;
-    background-color: #ffffff;
-  }
-
-  .fila-inactiva td, .fila-inactiva .sticky-col { background-color: #f37d7d !important; color: #000; }
-}
-
-@media (min-width: 1200px) {
-  .full-screen-wrapper {
-    width: 99vw;
-    margin-left: 50%;
-    transform: translateX(-50%);
-  }
-}
 </style>

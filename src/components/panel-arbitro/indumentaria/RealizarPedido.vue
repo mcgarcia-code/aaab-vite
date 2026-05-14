@@ -597,8 +597,8 @@ onUnmounted(() => {
 }
 
 .foto-prenda {
-  max-width: 175%;
-  max-height: 175%;
+  max-width: 150%;
+  max-height: 130%;
   object-fit: contain;
   mix-blend-mode: multiply;
   pointer-events: none;

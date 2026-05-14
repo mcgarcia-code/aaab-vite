@@ -1,14 +1,20 @@
 <template>
-  <AppHeader />
-  <main>
-    <RouterView />
-  </main>
-  <AppFooter />
+  <!-- Wrapper global para garantizar que el footer siempre quede abajo (Sticky Footer nativo) -->
+  <div class="d-flex flex-column min-vh-100">
+    <AppHeader />
 
-  <ModalExito 
-    :visible="modalConfig.visible" 
-    :titulo="modalConfig.titulo" 
-    :mensaje="modalConfig.mensaje" 
+    <!-- flex-grow-1 hace que el main ocupe todo el espacio sobrante empujando el footer -->
+    <main class="flex-grow-1">
+      <RouterView />
+    </main>
+
+    <AppFooter />
+  </div>
+
+  <ModalExito
+    :visible="modalConfig.visible"
+    :titulo="modalConfig.titulo"
+    :mensaje="modalConfig.mensaje"
     :tipo="modalConfig.tipo"
     :tieneAccion="modalConfig.tieneAccion"
     @cerrar="cerrarModal"
@@ -28,7 +34,7 @@ const modalConfig = reactive({
   mensaje: '',
   tipo: 'success',
   tieneAccion: false, // Indica si debe mostrar botones de Confirmar/Cancelar
-  accionConfirmar: null 
+  accionConfirmar: null
 })
 
 const abrirModal = ({ titulo, mensaje, tipo = 'success', alConfirmar = null }) => {
@@ -37,7 +43,7 @@ const abrirModal = ({ titulo, mensaje, tipo = 'success', alConfirmar = null }) =
   modalConfig.tipo = tipo
   modalConfig.accionConfirmar = alConfirmar
   // Convertimos a booleano: si hay función, tieneAccion es true
-  modalConfig.tieneAccion = !!alConfirmar 
+  modalConfig.tieneAccion = !!alConfirmar
   modalConfig.visible = true
 }
 
@@ -56,15 +62,15 @@ const ejecutarAccion = () => {
 
 provide('notificar', abrirModal)
 </script>
-
 <style>
-/* Estilos Globales */
+/* Estilos Globales para toda la aplicación */
 body {
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  background-color: #f8f9fa;
+  background-color: #f8f9fa; /* Equivale al bg-light de Bootstrap */
   overflow-x: hidden;
 }
 
+/* Animaciones globales de scroll reveal */
 .fade-in-section {
   opacity: 0;
   transform: translateY(20px);
@@ -76,4 +82,3 @@ body {
   transform: translateY(0);
 }
 </style>
-

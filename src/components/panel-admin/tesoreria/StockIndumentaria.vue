@@ -1,62 +1,63 @@
 <template>
-  <div class="full-screen-wrapper">
+  <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
-          <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
+        <!-- HEADER RESPONSIVO -->
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div class="border-start border-danger border-5 ps-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-box-seam-fill me-1"></i> Gestión de Inventario
             </h4>
-            <span class="counter mt-1 d-block text-muted">Total: {{ stockFiltrado.length }} modelos</span>
+            <span class="text-muted small d-block mt-1">Total: {{ stockFiltrado.length }} modelos</span>
           </div>
 
-          <div class="header-actions">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
-              <span class="material-icons">filter_alt</span> <span class="btn-text">Filtros</span>
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+              <span class="material-icons fs-6">filter_alt</span>
             </button>
-
-            <button @click="limpiarFiltros" class="btn-action btn-clear" title="Limpiar Filtros">
-              <span class="material-icons">filter_alt_off</span> <span class="btn-text">Limpiar</span>
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
-
-            <button @click="abrirModalNuevo" class="btn-action btn-clear-checks" title="Nuevo Modelo">
-              <span class="material-icons">add_box</span> <span class="btn-text">Nuevo Item</span>
+            <button @click="abrirModalNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+              <span class="material-icons fs-6">add_box</span>
+              <span class="fw-bold d-none d-md-inline small">Nuevo Item</span>
             </button>
-
-            <button @click="exportarExcel" class="btn-action btn-export" title="Exportar a Excel">
-              <span class="material-icons">download</span> <span class="btn-text">Excel</span>
+            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
+              <span class="material-icons fs-6">download</span>
+              <span class="fw-bold d-none d-md-inline small">Excel</span>
             </button>
           </div>
         </div>
 
-      <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR INVENTARIO</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-              <span class="material-icons" style="font-size: 20px;">close</span>
-            </button>
+        <!-- PANEL DE FILTROS (Acordeón en móvil) -->
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
+          <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Inventario</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
-          <input v-model="filtros.modelo" placeholder="Buscar modelo..." class="form-control bg-white shadow-sm border-secondary-subtle" style="font-size: 16px;">
-          <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm">Aplicar Filtro</button>
-      </div>
+          <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-6">
+              <div class="input-group input-group-sm shadow-sm">
+                <span class="input-group-text bg-white border-end-0 text-muted ps-3"><i class="bi bi-search"></i></span>
+                <input v-model="filtros.modelo" type="text" class="form-control border-start-0 py-2" placeholder="Buscar por nombre de modelo...">
+              </div>
+            </div>
+            <div class="col-12 col-md-auto d-md-none mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">APLICAR FILTRO</button>
+            </div>
+          </div>
+        </div>
 
         <div class="card-body p-3 p-md-4">
+          <!-- GRILLA DE CARDS -->
+          <div class="row g-3 g-md-4">
+            <div v-for="modelo in stockPaginado" :key="modelo.id_item" class="col-12 col-sm-6 col-md-4 col-lg-3">
+              <div class="card h-100 border shadow-sm tarjeta-stock-admin overflow-hidden">
 
-          <div class="mb-4 desktop-only">
-            <input
-              v-model="filtros.modelo"
-              type="text"
-              class="form-control rounded-pill shadow-sm px-4 border input-filtro-custom"
-              placeholder="Buscar modelo..."
-            >
-          </div>
-
-          <div class="row g-3">
-            <div v-for="modelo in stockPaginado" :key="modelo.id_item" class="col-12 col-md-4 col-lg-3">
-              <div class="card h-100 border-0 shadow-sm tarjeta-stock-admin overflow-hidden">
-
+                <!-- FOTO CON ACCIONES -->
                 <div class="bg-white contenedor-foto-admin d-flex align-items-center justify-content-center position-relative border-bottom">
                   <img :src="obtenerImagen(modelo)" class="img-fluid foto-gestion" alt="Modelo">
                   <div class="acciones-flotantes-modelo">
@@ -69,16 +70,22 @@
                   </div>
                 </div>
 
-                <div class="card-body p-3 cuerpo-gris-admin text-center d-flex flex-column">
-                  <div class="contenedor-titulo-stock mb-2">
-                    <h6 class="fw-bold text-dark m-0 text-uppercase text-truncate-2">
+                <!-- CONTENIDO CUERPO -->
+                <div class="card-body p-3 bg-light d-flex flex-column text-center">
+                  <div class="mb-2" style="min-height: 48px;">
+                    <h6 class="fw-bold text-dark m-0 text-uppercase text-truncate-2 small">
                       {{ modelo.descripcion }}
                     </h6>
-                    <span v-if="modelo.admite_encargo" class="badge bg-warning text-dark mt-1" style="font-size: 0.65rem;">
-                      <i class="bi bi-box-seam-fill me-1"></i> Admite Encargo
-                    </span>
+                      <span
+                        v-if="modelo.admite_encargo"
+                        class="badge bg-warning-subtle text-dark border border-warning mt-1"
+                        style="font-size: 0.65rem;"
+                      >
+                        <i class="bi bi-box-seam-fill me-1"></i> ADMITE ENCARGO
+                      </span>
                   </div>
 
+                  <!-- TALLES Y STOCK -->
                   <div class="d-flex flex-wrap justify-content-center gap-1 mb-3">
                     <span v-for="(item, k) in modelo.items" :key="k"
                       :class="['badge-talle', item.cantidad < 5 ? 'bajo-stock' : '']">
@@ -86,8 +93,9 @@
                     </span>
                   </div>
 
-                  <div class="mt-auto pt-2 border-top text-center">
-                    <span class="small text-muted">Precio Sugerido:</span>
+                  <!-- PRECIO -->
+                  <div class="mt-auto pt-2 border-top">
+                    <span class="x-small text-muted text-uppercase fw-bold">Precio Sugerido</span>
                     <div class="fw-bold text-success fs-5">${{ modelo.precio_general }}</div>
                   </div>
                 </div>
@@ -96,32 +104,19 @@
             </div>
           </div>
 
-          <div v-if="stockPaginado.length === 0" class="text-center p-5 bg-light rounded shadow-sm border mt-3">
-            <span class="material-icons text-muted" style="font-size: 48px;">inventory_2</span>
+          <!-- EMPTY STATE -->
+          <div v-if="stockPaginado.length === 0" class="text-center p-5 bg-light rounded border mt-3">
+            <span class="material-icons text-muted opacity-50" style="font-size: 48px;">inventory_2</span>
             <p class="text-muted mt-2 mb-0 fw-bold">No se encontró indumentaria.</p>
           </div>
 
-          <div
-            class="d-flex justify-content-center align-items-center gap-3 mt-4"
-            v-if="totalPaginas > 1"
-          >
-            <button
-              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-              @click="cambiarPagina(-1)"
-              :disabled="paginaActual <= 1"
-            >
+          <!-- PAGINACIÓN -->
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-5" v-if="totalPaginas > 1">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
             </button>
-
-            <span class="fw-bold text-dark small">
-              Página {{ paginaActual }} de {{ totalPaginas }}
-            </span>
-
-            <button
-              class="btn btn-light rounded-pill px-3 fw-bold shadow-sm"
-              @click="cambiarPagina(1)"
-              :disabled="paginaActual >= totalPaginas"
-            >
+            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
@@ -130,6 +125,7 @@
       </div>
     </div>
 
+    <!-- MODAL DE GESTIÓN (REUTILIZA TU LÓGICA) -->
     <ModalBase
       :show="mostrarModal"
       @close="cerrarModal"
@@ -138,75 +134,68 @@
       :colorIcono="modoModal === 'editar' ? 'bg-primary text-white' : 'bg-danger text-white'"
       maxWidth="650px"
     >
-      <div class="row g-3 text-start">
-
+      <div class="row g-3 text-start p-1">
         <div class="col-md-8 col-12">
-          <label class="small fw-bold">Nombre del Modelo *</label>
-          <input v-model="formModal.descripcion" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: REMERA NEGRA - HUMMEL">
+          <label class="small fw-bold text-muted text-uppercase mb-1">Nombre del Modelo *</label>
+          <input v-model="formModal.descripcion" type="text" class="form-control shadow-none py-2" placeholder="Ej: REMERA NEGRA - HUMMEL">
         </div>
 
         <div class="col-md-4 col-12">
-          <label class="small fw-bold">Precio General ($) *</label>
-          <input v-model.number="formModal.precioGeneral" type="number" min="0" class="form-control shadow-none border-secondary-subtle fw-bold text-success" placeholder="0.00">
+          <label class="small fw-bold text-muted text-uppercase mb-1">Precio ($) *</label>
+          <input v-model.number="formModal.precioGeneral" type="number" min="0" class="form-control shadow-none fw-bold text-success py-2" placeholder="0.00">
         </div>
 
-        <div class="col-12 mt-3 mb-1">
-          <div class="form-check form-switch p-3 bg-light border border-secondary-subtle rounded d-flex align-items-center justify-content-between">
-            <div>
-              <label class="form-check-label fw-bold d-block mb-1" for="switchEncargo" style="cursor: pointer;">
+        <div class="col-12">
+          <div class="form-check form-switch p-3 bg-light border rounded d-flex align-items-center justify-content-between">
+            <div class="pe-3">
+              <label class="form-check-label fw-bold d-block mb-0 h6" for="switchEncargo" style="cursor: pointer;">
                 Permitir encargos sin stock
               </label>
-              <span class="text-muted small" style="font-size: 0.75rem;">Si se activa, el usuario podrá solicitar este modelo aunque el stock sea cero.</span>
+              <span class="text-muted small">El usuario podrá pedirlo aunque el stock sea cero.</span>
             </div>
-            <input class="form-check-input shadow-none fs-4 m-0" type="checkbox" role="switch" id="switchEncargo" v-model="formModal.admite_encargo" style="cursor: pointer;">
+            <input class="form-check-input shadow-none fs-3 m-0" type="checkbox" role="switch" id="switchEncargo" v-model="formModal.admite_encargo" style="cursor: pointer;">
           </div>
         </div>
 
         <div class="col-12">
-          <label class="small fw-bold">Imágenes del Modelo (.webp, .png, .jpg)</label>
-          <div class="border rounded p-3 text-center bg-light" style="border-style: dashed !important; border-color: #cbd5e1 !important;">
-
-            <input type="file" @change="manejarArchivos" accept="image/*" multiple class="form-control form-control-sm mb-2 shadow-none border-secondary-subtle">
-
-            <div v-if="archivosSeleccionados.length > 0" class="text-start mt-2">
-              <span class="extra-small fw-bold text-success d-block mb-2">Archivos seleccionados ({{ archivosSeleccionados.length }}):</span>
-              <ul class="list-group mb-0 gap-1">
-                <li v-for="(file, i) in archivosSeleccionados" :key="i" class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 border border-secondary-subtle rounded shadow-sm bg-white">
-                  <span class="extra-small text-muted text-truncate" style="max-width: 85%;">{{ file.name }}</span>
-                  <button @click="eliminarArchivo(i)" class="btn btn-sm btn-light text-danger rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 22px; height: 22px;" title="Quitar imagen">
-                    <span class="material-icons" style="font-size: 14px;">close</span>
+          <label class="small fw-bold text-muted text-uppercase mb-1">Imágenes del Modelo</label>
+          <div class="border rounded-3 p-4 text-center bg-light border-dashed">
+            <input type="file" @change="manejarArchivos" accept="image/*" multiple class="form-control form-control-sm mb-2 shadow-none">
+            <div v-if="archivosSeleccionados.length > 0" class="text-start mt-3">
+              <span class="x-small fw-bold text-success d-block mb-2">Archivos ({{ archivosSeleccionados.length }}):</span>
+              <ul class="list-group list-group-flush border rounded overflow-hidden shadow-sm">
+                <li v-for="(file, i) in archivosSeleccionados" :key="i" class="list-group-item d-flex justify-content-between align-items-center bg-white py-1">
+                  <span class="x-small text-muted text-truncate w-75">{{ file.name }}</span>
+                  <button @click="eliminarArchivo(i)" class="btn btn-sm btn-light text-danger rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                    <i class="bi bi-x fs-5"></i>
                   </button>
                 </li>
               </ul>
             </div>
-            <span class="extra-small text-muted" v-else>Seleccioná una o más imágenes.</span>
-
+            <span class="x-small text-muted" v-else>Formatos: .webp, .png, .jpg</span>
           </div>
         </div>
 
-        <div v-if="modoModal === 'editar'" class="col-12 mt-4">
-          <label class="small fw-bold mb-2 d-block border-bottom pb-1">Cantidades por Talle</label>
-
+        <div v-if="modoModal === 'editar'" class="col-12 mt-3">
+          <label class="small fw-bold text-muted text-uppercase mb-2 d-block border-bottom pb-1">Cantidades por Talle</label>
           <div class="row g-2">
             <div v-for="(t, index) in formModal.items" :key="index" class="col-6 col-md-4">
-              <div class="d-flex align-items-center p-2 bg-light rounded border border-secondary-subtle">
-                <span class="fw-bold text-danger me-2 text-center" style="width: 40px; font-size: 0.9rem;">{{ t.talle }}</span>
+              <div class="d-flex align-items-center p-2 bg-light rounded border border-secondary-subtle shadow-sm">
+                <span class="fw-bold text-danger me-2 text-center" style="width: 35px;">{{ t.talle }}</span>
                 <div class="input-group input-group-sm">
-                  <span class="input-group-text bg-white text-muted border-secondary-subtle" style="font-size: 0.75rem;">Cant:</span>
                   <input v-model.number="t.cantidad" type="number" min="0" class="form-control text-center shadow-none fw-bold border-secondary-subtle">
                 </div>
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
       <template #footer>
-        <button @click="cerrarModal" class="btn btn-light border px-4 fw-bold rounded-pill">CANCELAR</button>
+        <button @click="cerrarModal" class="btn btn-light border-0 px-4 fw-bold rounded-pill">CANCELAR</button>
         <button @click="guardarCambios" class="btn btn-danger px-4 fw-bold shadow-sm rounded-pill" :disabled="cargando">
-          <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
-          GUARDAR
+          <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
+          GUARDAR CAMBIOS
         </button>
       </template>
     </ModalBase>
@@ -214,7 +203,7 @@
     <ModalExito
       :visible="mostrarModalEliminar"
       titulo="Eliminar Modelo"
-      mensaje="¿Estás seguro que querés eliminar este modelo del inventario? Dejará de estar disponible."
+      mensaje="¿Estás seguro que querés eliminar este modelo del inventario?"
       tipo="danger"
       :tieneAccion="true"
       @cerrar="mostrarModalEliminar = false"
@@ -489,103 +478,101 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ESTILOS WRAPPER ESTÁNDAR */
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; height: auto !important; margin-left: 50%; transform: translateX(-50%); padding: 20px; padding-bottom: 120px; box-sizing: border-box; }
-.admin-panel { width: 100%; max-width: 100%; padding: 20px; font-family: 'segoe ui', Tahoma, Verdana, sans-serif; color: #000; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  padding-bottom: 120px;
+}
 
-/* CABECERA ORIGINAL */
-.header-section { background: white; padding: 15px 25px; border-radius: 8px; display: flex; justify-content: space-between; margin-bottom: 15px; border-left: 5px solid #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1); align-items: center; }
-.title { font-size: 1.1rem; font-weight: bold; margin: 0; color: #000; }
-.counter { font-size: 0.85rem; color: #64748b; }
+.admin-panel {
+  width: 100%;
+  background-color: #0f172a;
+  min-height: 100vh;
+  border-radius: 12px;
+}
 
-.header-actions { display: flex; gap: 8px; }
-.btn-action { border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; transition: opacity 0.2s; }
-.btn-clear { background: #e2e8f0; color: #000; }
-.btn-blue { background: #3b82f6; color: white; }
-.btn-clear-checks { background: #fee2e2; color: #ef4444; }
-.btn-export { background: #10b981; color: white; }
+.tarjeta-stock-admin {
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
 
-/* CARDS DE STOCK */
-.tarjeta-stock-admin { border-radius: 20px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important; border: 1px solid #e2e8f0 !important; }
-.tarjeta-stock-admin:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.15) !important; }
-.contenedor-foto-admin { height: 200px; padding: 15px; }
-.foto-gestion { max-height: 175%; max-width: 175%; object-fit: contain; mix-blend-mode: multiply; }
-.cuerpo-gris-admin { background-color: #f1f5f9; border-radius: 0 0 20px 20px; flex-grow: 1; padding: 12px !important; }
+.tarjeta-stock-admin:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.15) !important;
+}
 
-.contenedor-titulo-stock { min-height: 40px; display: flex; align-items: center; justify-content: center; }
-.text-truncate-2 { font-size: 0.85rem; line-height: 1.2; }
+.contenedor-foto-admin {
+  height: clamp(250px, 25vh, 250px);
+  padding: 5px;
+}
 
-.badge-talle { font-size: 0.65rem; background: white; padding: 3px 8px; border-radius: 8px; border: 1px solid #e2e8f0; color: #475569; white-space: nowrap; }
-.bajo-stock { border-color: #fecaca; background: #fef2f2; color: #dc2626; }
+.foto-gestion {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
 
-.input-filtro-custom { font-size: 1rem !important; padding: 0.5rem 1rem; height: auto !important; border-color: #cbd5e1 !important; }
-.input-filtro-custom:focus { box-shadow: 0 0 0 3px rgba(59,130,246,0.15) !important; outline: none; border-color: #3b82f6 !important;}
+.acciones-flotantes-modelo {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+}
 
-.acciones-flotantes-modelo { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 5; }
-.btn-editar-flotante { width: 32px; height: 32px; border-radius: 50%; background: #212529; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: background 0.2s; }
-.btn-editar-flotante:hover { background: #ef4444; }
-.btn-eliminar-flotante { width: 32px; height: 32px; border-radius: 50%; background: #b91c1c; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: background 0.2s; }
+.btn-editar-flotante, .btn-eliminar-flotante {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.btn-editar-flotante { background: #212529; }
+.btn-editar-flotante:hover { background: #0d6efd; }
+.btn-eliminar-flotante { background: #dc3545; }
 .btn-eliminar-flotante:hover { background: #7f1d1d; }
 
-.desktop-only { display: block; }
-.mobile-only-flex { display: none; }
-.btn-text { display: inline; }
-
-@media (min-width: 769px) {
-  .filter-input-mobile { font-size: 0.85rem; }
+.badge-talle {
+  font-size: 0.65rem;
+  background: white;
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  color: #475569;
 }
 
-@media (max-width: 1024px) {
-  .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
-  .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+.bajo-stock {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
 }
 
-@media (max-width: 768px) {
-  .desktop-only { display: none !important; }
-  .mobile-only { display: block !important; }
-
-  .card-licencia { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-  .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 10px; }
-  .card-name { font-size: 1.05rem; color: #0f172a; }
-  .card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-
-  .btn-editar-mobile { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 10px; border-radius: 6px; font-weight: bold; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-  .btn-historial-mobile { background: #fef3c7; border: 1px solid #fde047; color: #d97706; padding: 10px 14px; border-radius: 6px; display: flex; justify-content: center; align-items: center; cursor: pointer; width: 45px; }
+.border-dashed {
+  border-style: dashed !important;
+  border-width: 2px !important;
 }
 
-/* LA CLAVE DE LA ESTRUCTURA MÓVIL EXACTA */
-@media (max-width: 600px) {
-  .full-screen-wrapper {
-    position: relative;
-    width: 99vw;
-    min-height: 100vh;
-    height: auto;
-    margin-left: 50%;
-    transform: translateX(-50%);
-    padding: 0 15px 20px 15px !important;
-    box-sizing: border-box !important;
-  }
-
-  .admin-panel {
-    padding: 0 !important;
-    border-radius: 0;
-    box-sizing: border-box !important;
-  }
-
-  .header-section { padding: 15px; flex-direction: column; align-items: flex-start; text-align: left; gap: 15px; }
-  .header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%;}
-  .header-info h4 { font-size: 1.25rem !important; justify-content: flex-start; }
-  .header-info span.counter { font-size: 0.75rem !important; }
-
-  .header-actions { width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; }
-  .btn-action { flex: none; width: 42px; height: 42px; padding: 0; justify-content: center; }
-  .btn-action span.material-icons { margin: 0; }
-  .btn-text { display: none !important; }
-  .mobile-only-flex { display: flex !important; }
-
-  .filter-grid-mobile { grid-template-columns: 1fr; }
-  .filter-grid-mobile select.full-width { grid-column: span 1; }
+.x-small { font-size: 0.7rem; }
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .animate__animated { animation-duration: 0.5s; }
+.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
+.btn-danger-subtle:hover { background: #fecaca; }
+
 </style>
