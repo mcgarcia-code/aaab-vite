@@ -96,7 +96,7 @@
                   <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
                   <th class="py-3 text-center text-uppercase text-muted">Activo</th>
                   <th class="py-3 text-center text-uppercase text-muted">Rol</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Apto Med.</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Apto</th>
                   <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
                   <th class="py-3 text-center text-uppercase text-muted">Subg.</th>
                   <th class="py-3 text-center text-uppercase text-muted">DNI</th>
@@ -260,7 +260,7 @@
                 </div>
 
                 <div class="bg-light p-2 rounded border small mb-3 border-light-subtle">
-                  <p class="m-0 text-dark"><strong>Apto Médico:</strong> <span :class="a.apto_medico ? 'text-success fw-bold' : 'text-danger fw-bold'">{{ a.apto_medico ? 'SÍ' : 'NO' }}</span></p>
+                  <p class="m-0 text-dark"><strong>Apto:</strong> <span :class="a.apto_medico ? 'text-success fw-bold' : 'text-danger fw-bold'">{{ a.apto_medico ? 'SÍ' : 'NO' }}</span></p>
                   <p v-if="a.celular" class="m-0 text-dark mt-1"><strong>Celular:</strong> {{ a.celular }}</p>
                   <p v-if="a.email" class="m-0 text-dark mt-1 text-truncate"><strong>Email:</strong> {{ a.email }}</p>
                   <p v-if="a.zona" class="m-0 text-dark mt-1"><strong>Zona:</strong> {{ a.zona }}</p>
