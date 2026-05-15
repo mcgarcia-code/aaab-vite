@@ -66,8 +66,8 @@ const opcionesTesoreria = [
     desc: 'Consultar y gestionar información de los miembros.'
   },
   {
-    to: '/panel-admin/tesoreria/aportes',
-    title: 'Aportes',
+    to: '/panel-admin/tesoreria/aportes-pagos',
+    title: 'Aportes y Pagos',
     icon: 'bi bi-cash-coin',
     desc: 'Registrar cobros de cuotas y aportes mensuales.'
   },

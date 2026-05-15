@@ -14,8 +14,8 @@
       </div>
     </div>
 
-    <div class="row g-3 g-md-4 justify-content-center">
-      <div v-for="item in opcionesObservaciones" :key="item.title" class="col-12 col-md-6">
+    <div class="row g-3 g-md-4">
+      <div v-for="item in opcionesObservaciones" :key="item.title" class="col-12 col-md-4">
         <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
           <!-- Agregamos px-4 py-3 p-md-3 para el padding responsivo nativo -->
           <div class="modern-menu-card shadow-sm px-4 py-3 p-md-3">
@@ -51,9 +51,15 @@ useHead({
 const opcionesObservaciones = [
   {
     to: '/panel-arbitro/observaciones/carga',
-    title: 'Cargar Observaciones',
+    title: 'Cargar Observaciones (Partidos Fe.Me.Bal)',
     icon: 'bi bi-cloud-upload',
     desc: 'Registrar nuevas evaluaciones con detalles y categorías.'
+  },
+    {
+    to: '/panel-arbitro/observaciones/observaciones-mini',
+    title: 'Cargar Observaciones (Encuentros de Mini)',
+    icon: 'bi bi-envelope-check',
+    desc: 'Registrar observaciones del curso de árbitros'
   },
   {
     to: '/panel-arbitro/observaciones/mis-observaciones',
@@ -61,6 +67,7 @@ const opcionesObservaciones = [
     icon: 'bi bi-envelope-check',
     desc: 'Visualizar el historial de observaciones realizadas por vos.'
   }
+
 ];
 </script>
 <style scoped>

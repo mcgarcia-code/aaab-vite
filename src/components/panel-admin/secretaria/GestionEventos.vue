@@ -282,7 +282,7 @@ useHead({
 
 const notificar = inject('notificar');
 const procesando = ref(false);
-const gruposOficiales = ['Pre Liga', 'LH', '1', '2', '3', '4', 'SR'];
+const gruposOficiales = ['Pre Liga', 'LH', '1', '2', '3', '4', 'SR', 'CURSO DE ÁRBITROS'];
 
 const formBase = { id: null, titulo: '', descripcion: '', fecha_evento: '', alcance: 'general', grupo: '', subgrupo: '', categoria: 'reunion' };
 const form = reactive({ ...formBase });

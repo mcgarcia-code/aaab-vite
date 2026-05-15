@@ -5,18 +5,18 @@
     <div class="dashboard-header mb-4 mb-md-5 mt-4 text-start">
       <div class="d-flex align-items-center justify-content-start gap-3">
         <div class="main-icon-container flex-shrink-0">
-          <i class="bi bi-pc-display-horizontal text-danger"></i>
+          <i class="bi bi-file-person-fill text-danger"></i>
         </div>
         <div>
           <!-- Tipografía adaptativa para el título -->
-          <h4 class="fw-bold text-white m-0 fs-5 fs-md-4">Secretaría</h4>
-          <p class="text-white opacity-75 m-0" style="font-size: 0.85rem;">Gestión de datos personales y licencias de los árbitros</p>
+          <h4 class="fw-bold text-white m-0 fs-5 fs-md-4">Curso de Árbitros</h4>
+          <p class="text-white opacity-75 m-0" style="font-size: 0.85rem;">Gestionar el curso de árbitros, inscripciones y seguimiento del progreso.</p>
         </div>
       </div>
     </div>
 
     <div class="row g-3 g-md-4">
-      <div v-for="item in opcionesSecretaria" :key="item.title" class="col-12 col-md-4">
+      <div v-for="item in opcionesCursoArbitros" :key="item.title" class="col-12 col-md-4">
         <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
 
           <!-- Todo el layout de la tarjeta pasado a clases nativas de Bootstrap -->
@@ -49,39 +49,33 @@ import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head';
 
 useHead({
-  title: 'Secretaría | AAAB',
+  title: 'Curso de Árbitros | AAAB',
   meta: [
-    { name: 'description', content: 'Administra y controla los aspectos internos de la asociación desde un panel centralizado.' },
-    { property: 'og:title', content: 'Secretaría | AAAB' },
+    { name: 'description', content: 'Gestionar el curso de árbitros, inscripciones y seguimiento del progreso.' },
+    { property: 'og:title', content: 'Curso de Árbitros | AAAB' },
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
     { property: 'og:type', content: 'website' }
   ],
 });
 
-const opcionesSecretaria = [
+const opcionesCursoArbitros = [
   {
-    to: '/panel-admin/secretaria/modificacion-datos',
+    to: '/panel-admin/secretaria/legajos-curso',
     title: 'Legajos',
-    icon: 'bi bi-people',
-    desc: 'Actualizar información personal y disponibilidad de los árbitros.'
+    icon: 'bi bi-person-lines-fill',
+    desc: 'Consultar y gestionar información de los miembros.'
   },
   {
-    to: '/panel-admin/secretaria/licencias',
-    title: 'Licencias',
-    icon: 'bi bi-calendar-date-fill',
-    desc: 'Gestionar las licencias y permisos de inasistencia.'
+    to: '/panel-admin/secretaria/observaciones-curso',
+    title: 'Observaciones Realizadas',
+    icon: 'bi bi-clipboard-data-fill',
+    desc: 'Registro y seguimiento de las observaciones arbitrales.'
   },
   {
-    to: '/panel-admin/secretaria/eventos-notificaciones',
-    title: 'Eventos',
-    icon: 'bi bi-bell',
-    desc: 'Gestionar avisos, reuniones y noticias para los árbitros.'
-  },
-    {
-    to: '/panel-admin/secretaria/curso-arbitros',
-    title: 'Curso de Árbitros',
-    icon: 'bi bi-file-person-fill',
-    desc: 'Gestionar el curso de árbitros, inscripciones y seguimiento del progreso.'
+    to: '/panel-admin/secretaria/examenes-curso',
+    title: 'Exámenes',
+    icon: 'bi bi-journal-check',
+    desc: 'Gestionar exámenes y resultados del curso.'
   },
 ];
 </script>
@@ -112,7 +106,7 @@ const opcionesSecretaria = [
   cursor: pointer;
 }
 
-
+/* El tamaño del ícono escala automáticamente en celulares gracias a clamp() */
 .icon-box {
   width: clamp(48px, 10vw, 52px);
   height: clamp(48px, 10vw, 52px);
@@ -146,6 +140,5 @@ const opcionesSecretaria = [
 }
 
 .animate__animated { animation-duration: 0.5s; }
-
 
 </style>

@@ -59,6 +59,7 @@ const routes = [
       { path: 'observaciones', name: 'Observaciones', component: () => import('../components/panel-arbitro/observadores/ObservacionesPanel.vue') },
       { path: 'observaciones/carga', name: 'ObservacionesCarga', component: () => import('../components/panel-arbitro/observadores/CargaObservaciones.vue') },
       { path: 'observaciones/mis-observaciones', name: 'ObservacionesMias', component: () => import('../components/panel-arbitro/observadores/MisObservaciones.vue') },
+      { path: 'observaciones/observaciones-mini', name: 'ObservacionesMini', component: () => import('../components/panel-arbitro/observadores/ObservacionesMini.vue') },
       { path: 'coordinadores', name: 'PanelCoordinadores', component: () => import('../components/panel-arbitro/coordinadores/CoordinadoresAdmin.vue') },
       { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/IndumentariaArbitro.vue') },
       { path: 'indumentaria/nuevo', name: 'RealizarPedido', component: () => import('../components/panel-arbitro/indumentaria/RealizarPedido.vue') },
@@ -66,6 +67,22 @@ const routes = [
       { path: 'facturacion', name: 'InstitucionesCuit', component: () => import('../components/panel-arbitro/facturacion/InstitucionesCuit.vue') },
       { path: 'historial-notificaciones', name: 'HistorialNotificaciones', component: () => import('../components/panel-arbitro/notificaciones/HistorialNotificaciones.vue') },
       { path: 'delegado-tecnico', name: 'DelegadoTecnico', component: () => import('../components/panel-arbitro/delegado-tecnico/DelegadosTecnicos.vue') }
+    ]
+  },
+
+    // --- PANEL CURSO ---
+  {
+    path: '/panel-curso',
+    component: () => import('../components/panel-curso/PanelCurso.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      { path: '', name: 'PanelInicioCurso', component: () => import('../components/panel-curso/InicioPanelCurso.vue') },
+      { path: 'datos-curso', name: 'PanelDatosCurso', component: () => import('../components/panel-curso/datos-personales-curso/MisDatosCurso.vue') },
+      { path: 'credencial-curso', name: 'PanelCredencialCurso', component: () => import('../components/panel-curso/credencial-curso/CredencialDigitalCurso.vue') },
+      { path: 'rendimiento-curso', name: 'PanelRendimientoCurso', component: () => import('../components/panel-curso/rendimiento-curso/MiRendimientoCurso.vue') },
+      { path: 'cuota-curso', name: 'CuotaCurso', component: () => import('../components/panel-curso/tesoreria/CuotaCurso.vue') },
+      { path: 'historial-notificaciones', name: 'HistorialNotificaciones', component: () => import('../components/panel-curso/notificaciones-curso/HistorialNotificacionesCurso.vue') },
+
     ]
   },
 
@@ -82,6 +99,7 @@ const routes = [
       { path: 'secretaria/modificacion-datos', name: 'LegajosPersonales', component: () => import('../components/panel-admin/secretaria/LegajosPersonales.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
       { path: 'secretaria/licencias', name: 'LicenciasAdmin', component: () => import('../components/panel-admin/secretaria/LicenciasAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
       { path: 'secretaria/eventos-notificaciones', name: 'GestionEventos', component: () => import('../components/panel-admin/secretaria/GestionEventos.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
+      { path: 'secretaria/curso-arbitros', name: 'CursoArbitrosAdmin', component: () => import('../components/panel-admin/secretaria/CursoArbitrosAdmin.vue'), meta: { roles: ['admin', 'secretario'] } },
 
       // --- DESIGNACIONES ---
       { path: 'designaciones', name: 'DesignacionesAdmin', component: () => import('../components/panel-admin/designaciones/DesignacionesAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
@@ -95,10 +113,11 @@ const routes = [
       // --- TESORERÍA ---
       { path: 'tesoreria', name: 'TesoreriaAdmin', component: () => import('../components/panel-admin/tesoreria/TesoreriaAdmin.vue'), meta: { roles: ['admin', 'tesorero'] } },
       { path: 'tesoreria/datos-personales', name: 'DatosPersonales', component: () => import('../components/panel-admin/tesoreria/DatosPersonales.vue'), meta: { roles: ['admin', 'tesorero'] } },
-      { path: 'tesoreria/aportes', name: 'TesoreriaAportes', component: () => import('../components/panel-admin/tesoreria/Aportes.vue'), meta: { roles: ['admin', 'tesorero'] } },
+      { path: 'tesoreria/aportes-pagos', name: 'TesoreriaAportes', component: () => import('../components/panel-admin/tesoreria/AportesPagos.vue'), meta: { roles: ['admin', 'tesorero'] } },
       { path: 'tesoreria/indumentaria', name: 'TesoreriaIndumentaria', component: () => import('../components/panel-admin/tesoreria/IndumentariaAdmin.vue'), meta: { roles: ['admin', 'tesorero'] } },
       { path: 'tesoreria/indumentaria/stock', name: 'IndumentariaStock', component: () => import('../components/panel-admin/tesoreria/StockIndumentaria.vue'), meta: { roles: ['admin', 'tesorero'] } },
       { path: 'tesoreria/indumentaria/pedidos', name: 'IndumentariaPedidos', component: () => import('../components/panel-admin/tesoreria/PedidosRealizados.vue'), meta: { roles: ['admin', 'tesorero'] } },
+      { path: 'tesoreria/pagos-curso', name: 'PagosCurso', component: () => import('../components/panel-admin/tesoreria/PagosCurso.vue'), meta: { roles: ['admin', 'tesorero'] } },
 
       // --- FACTURACION ---
       { path: 'facturacion', name: 'InstitucionesCuitAdmin', component: () => import('../components/panel-admin/facturacion/InstitucionesCuitAdmin.vue'), meta: { roles: ['admin', 'secretario', 'tesorero', 'facturacion'] } },
