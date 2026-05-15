@@ -33,7 +33,7 @@ const modalConfig = reactive({
   titulo: '',
   mensaje: '',
   tipo: 'success',
-  tieneAccion: false, // Indica si debe mostrar botones de Confirmar/Cancelar
+  tieneAccion: false,
   accionConfirmar: null
 })
 
@@ -62,6 +62,7 @@ const ejecutarAccion = () => {
 
 provide('notificar', abrirModal)
 </script>
+
 <style>
 /* Estilos Globales para toda la aplicación */
 body {

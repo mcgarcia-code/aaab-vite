@@ -1,89 +1,112 @@
 <template>
-  <div>
-    <section class="hero-section" :style="{ backgroundImage: `url(${heroBg})` }">
-      <div class="hero-overlay"></div>
-      <div class="hero-content text-center text-white">
-        <h1 class="display-4 fw-bold mb-4">
-          ASOCIACIÓN ARGENTINA <br />
+  <div class="animate__animated animate__fadeIn">
+
+    <section class="hero-section position-relative d-flex align-items-center justify-content-center overflow-hidden" :style="{ backgroundImage: `url(${heroBg})` }">
+      <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(0,0,0,0.6) 100%); z-index: 1;"></div>
+
+      <div class="container position-relative text-center text-white z-2">
+        <h1 class="display-4 display-md-2 fw-bold mb-4 text-shadow" style="letter-spacing: -1px;">
+          ASOCIACIÓN ARGENTINA <br class="d-none d-md-block" />
           ÁRBITROS DE BALONMANO
         </h1>
-        <p class="lead mb-5">Formación, excelencia y pasión por el arbitraje.</p>
-        <RouterLink to="/escuela-arbitros" class="btn btn-danger btn-lg">Escuela de Árbitros</RouterLink>
+        <p class="lead mb-5 text-white-50 mx-auto" style="max-width: 600px;">
+          Formación, excelencia y pasión por el arbitraje.
+        </p>
+        <RouterLink to="/escuela-arbitros" class="btn btn-danger btn-lg px-5 py-3 fw-bold rounded-pill shadow-lg hero-btn">
+          Escuela de Árbitros
+        </RouterLink>
       </div>
     </section>
 
     <section class="container my-5 py-5">
-      <div class="row text-center">
-        <div class="col-md-4 mb-4">
-          <div class="feature-card">
-            <i class="bi bi-award-fill feature-icon"></i>
-            <h3 class="fw-bold mt-3">Formación</h3>
-            <p class="text-muted">
+      <div class="row g-4 text-center justify-content-center">
+
+        <div class="col-12 col-md-4">
+          <div class="card border-0 shadow-sm rounded-4 h-100 p-4 feature-card bg-white">
+            <div class="mb-3">
+              <i class="bi bi-award-fill text-danger" style="font-size: 3.5rem;"></i>
+            </div>
+            <h4 class="fw-bold text-dark mb-3">Formación</h4>
+            <p class="text-muted small mb-0">
               Capacitate con nuestra Escuela de Formación Arbitral para todos los niveles.
             </p>
           </div>
         </div>
-        <div class="col-md-4 mb-4">
-          <div class="feature-card">
-            <i class="bi bi-cloud-arrow-down-fill feature-icon"></i>
-            <h3 class="fw-bold mt-3">Centro de Descargas</h3>
-            <p class="text-muted">
+
+        <div class="col-12 col-md-4">
+          <div class="card border-0 shadow-sm rounded-4 h-100 p-4 feature-card bg-white">
+            <div class="mb-3">
+              <i class="bi bi-cloud-arrow-down-fill text-danger" style="font-size: 3.5rem;"></i>
+            </div>
+            <h4 class="fw-bold text-dark mb-3">Centro de Descargas</h4>
+            <p class="text-muted small mb-0">
               Accedé a reglamentos, planillas y todo el material oficial actualizado.
             </p>
           </div>
         </div>
-        <div class="col-md-4 mb-4">
-          <div class="feature-card">
-            <i class="bi bi-shield-check feature-icon"></i>
-            <h3 class="fw-bold mt-3">Tribunal de Ética</h3>
-            <p class="text-muted">
-              Consultá estatutos, sanciones y todos los documentos disciplinarios.
+
+        <div class="col-12 col-md-4">
+          <div class="card border-0 shadow-sm rounded-4 h-100 p-4 feature-card bg-white">
+            <div class="mb-3">
+              <i class="bi bi-shield-check text-danger" style="font-size: 3.5rem;"></i>
+            </div>
+            <h4 class="fw-bold text-dark mb-3">Tribunal de Ética</h4>
+            <p class="text-muted small mb-0">
+              Consultá estatutos, resoluciones y todos los documentos disciplinarios.
             </p>
           </div>
         </div>
+
       </div>
     </section>
 
-    <section
-      class="cta-parallax text-center text-white d-flex align-items-center justify-content-center"
-      :style="{
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${ctaBg})`,
-      }"
-    >
-      <div class="container">
-        <h2 class="display-4 fw-bold">CATÁLOGO ONLINE</h2>
-        <p class="lead my-4">
-          ¿Querés dominar el catálogo y las reglas del Handball? Este es el lugar perfecto para
-          practicar. Accedé al catálogo 100% virtual, tanto en inglés como en español y perfeccioná
-          tus conocimientos.
+    <section class="cta-parallax position-relative d-flex align-items-center justify-content-center py-5" :style="{ backgroundImage: `url(${ctaBg})` }">
+      <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 z-1"></div>
+
+      <div class="container position-relative z-2 text-center text-white py-5">
+        <h2 class="display-5 fw-bold mb-3 text-shadow">CATÁLOGO ONLINE</h2>
+        <p class="lead mb-5 text-white mx-auto" style="max-width: 700px;">
+          ¿Querés dominar el catálogo y las reglas del Handball? Este es el lugar perfecto para practicar. Accedé al catálogo 100% virtual, tanto en inglés como en español y perfeccioná tus conocimientos.
         </p>
-        <a
-          href="https://arbitroshandball.com.ar/catalogo/"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-outline-light btn-lg"
-        >
-          Ingresá
+        <a href="https://arbitroshandball.com.ar/catalogo/" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light btn-lg px-5 py-3 fw-bold rounded-pill shadow-sm hero-btn">
+          Ingresá al Catálogo
         </a>
       </div>
     </section>
 
     <section class="container my-5 py-5">
       <div class="text-center mb-5">
-        <h2 class="fw-bold">Últimas Designaciones</h2>
-        <p class="lead text-muted">Consultá las designaciones para los próximos encuentros.</p>
+        <h2 class="fw-bold text-dark">Últimas Designaciones</h2>
+        <p class="text-muted">Consultá las designaciones para los próximos encuentros.</p>
       </div>
+
       <div class="row justify-content-center">
         <div class="col-lg-8">
-          <div class="alert alert-info text-center" role="alert">
-            <p class="mb-0">
-              Las designaciones del <strong>{{ fechaDesignacion }}</strong> ya están disponibles.
-            </p>
-            <RouterLink to="/designaciones" class="alert-link">Ver ahora</RouterLink>
+          <div class="card border-0 shadow-sm rounded-4 overflow-hidden feature-card">
+            <div class="card-body p-4 d-flex flex-column flex-md-row align-items-center justify-content-between gap-4 bg-light border-start border-danger border-5">
+
+              <div class="d-flex flex-column flex-md-row align-items-center gap-3 text-center text-md-start">
+                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="width: 55px; height: 55px;">
+                  <i class="bi bi-calendar-check fs-4"></i>
+                </div>
+                <div>
+                  <h5 class="fw-bold text-dark mb-1">¡Designaciones Disponibles!</h5>
+                  <p class="text-muted small mb-0">
+                    Las designaciones ya están publicadas.
+                  </p>
+                </div>
+              </div>
+
+              <RouterLink to="/designaciones" class="btn btn-danger fw-bold rounded-pill px-4 py-2 flex-shrink-0 shadow-sm hero-btn">
+                Ver ahora
+              </RouterLink>
+
+            </div>
           </div>
         </div>
       </div>
     </section>
+
   </div>
 </template>
 
@@ -147,51 +170,52 @@ onMounted(fetchFecha);
 </script>
 
 
-
 <style scoped>
-/* SECCIÓN 1: HERO */
+/* ====================================================
+   HERO & PARALLAX SECTIONS
+   ==================================================== */
 .hero-section {
-  position: relative;
   height: 90vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background-position: center center;
+  min-height: 500px;
+  background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
+  /* Efecto Parallax opcional también en el Hero */
+  background-attachment: fixed;
 }
-.hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  z-index: 2;
-}
-.hero-content {
-  position: relative;
-  z-index: 3;
-}
-/* SECCIÓN 2: CARACTERÍSTICAS */
-.feature-card {
-  padding: 2rem;
-  transition: transform 0.3s;
-}
-.feature-card:hover {
-  transform: translateY(-10px);
-}
-.feature-icon {
-  font-size: 4rem;
-  color: var(--bs-danger);
-}
-/* SECCIÓN 3: CALL TO ACTION PARALLAX */
+
 .cta-parallax {
-  min-height: 400px;
+  min-height: 450px;
   background-attachment: fixed;
   background-position: center;
-  background-repeat: no-repeat;
   background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* ====================================================
+   UTILIDADES Y EFECTOS
+   ==================================================== */
+.text-shadow {
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+.feature-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  border: 1px solid #f1f5f9 !important; /* Borde ultra suave por defecto */
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.1) !important;
+  border-color: #fca5a5 !important; /* Se tiñe el borde de rojo sutil */
+}
+
+.hero-btn {
+  transition: all 0.3s ease;
+}
+
+.hero-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(220, 53, 69, 0.4) !important;
 }
 </style>

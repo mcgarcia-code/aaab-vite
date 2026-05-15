@@ -1,8 +1,9 @@
 <template>
-  <div class="dark-background-section py-5">
+  <div class="dark-background-section py-5 animate__animated animate__fadeIn">
     <div class="container my-5">
+
       <div class="text-center mb-5">
-        <h1 class="fw-bold text-white">Preguntas Frecuentes</h1>
+        <h1 class="fw-bold text-white display-5">Preguntas Frecuentes</h1>
         <p class="lead text-white-50">
           Seleccioná una categoría para resolver tus dudas sobre protocolos, administración y reglamentos.
         </p>
@@ -10,53 +11,64 @@
 
       <div class="row justify-content-center">
         <div class="col-lg-10">
-          <div class="accordion accordion-flush" id="faqAccordion">
+          <div class="accordion" id="faqAccordion">
+
             <div
               v-for="(categoria, catIndex) in categorias"
               :key="categoria.titulo"
-              class="accordion-item"
+              class="accordion-item border-0 rounded-4 shadow-sm mb-3 overflow-hidden"
             >
               <h2 class="accordion-header" :id="'heading' + catIndex">
                 <button
-                  class="accordion-button collapsed"
+                  class="accordion-button collapsed bg-white p-4 shadow-none border-0"
                   type="button"
                   data-bs-toggle="collapse"
                   :data-bs-target="'#collapse' + catIndex"
                   aria-expanded="false"
                   :aria-controls="'collapse' + catIndex"
                 >
-                  <i :class="[categoria.icon, 'category-icon me-3']"></i>
-                  <div>
-                    <span class="category-title">{{ categoria.titulo }}</span>
-                    <small class="category-subtitle d-block">{{ categoria.subtitulo }}</small>
+                  <div class="d-flex align-items-center">
+                    <i :class="[categoria.icon, 'text-danger fs-2 me-3']"></i>
+                    <div>
+                      <h5 class="fw-bold mb-1 text-dark">{{ categoria.titulo }}</h5>
+                      <span class="small text-muted d-block lh-sm">{{ categoria.subtitulo }}</span>
+                    </div>
                   </div>
                 </button>
               </h2>
+
               <div
                 :id="'collapse' + catIndex"
                 class="accordion-collapse collapse"
                 :aria-labelledby="'heading' + catIndex"
                 data-bs-parent="#faqAccordion"
               >
-                <div class="accordion-body">
-                  <div class="list-group list-group-flush">
+                <div class="accordion-body bg-white pt-0 pb-4 px-3 px-md-5">
+                  <div class="list-group list-group-flush border-top pt-3 border-light-subtle">
+
                     <div
                       v-for="(item, pIndex) in categoria.preguntas"
                       :key="pIndex"
-                      class="py-3 border-bottom"
+                      class="py-3 border-bottom border-light-subtle faq-item"
                     >
-                      <h5 class="category-title text-danger fw-bold mb-2">
-                         <i class="bi bi-patch-question me-2"></i>{{ item.question }}
-                      </h5>
-                      <p class="mb-0 text-muted" v-html="item.answer"></p>
+                      <div class="d-flex align-items-start mb-2">
+                        <i class="bi bi-patch-question-fill text-danger fs-5 me-2 mt-1"></i>
+                        <h6 class="fw-bold text-dark mb-0 lh-base" style="font-size: 1.05rem;">
+                          {{ item.question }}
+                        </h6>
+                      </div>
+                      <p class="mb-0 text-secondary ms-4 ps-1" v-html="item.answer" style="line-height: 1.6;"></p>
                     </div>
+
                   </div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -349,71 +361,41 @@ const categorias = ref([
 </script>
 
 <style scoped>
+/* ====================================================
+   FONDO GENERAL Y SECCIÓN
+   ==================================================== */
 .dark-background-section {
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    url('../../assets/fotos/descargas-background.webp');
+  /* Fondo oscuro azulado unificado */
+  background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url('../../assets/fotos/descargas-background.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   min-height: 100vh;
-  padding-top: 70px;
 }
 
-.accordion-item {
-  background-color: #ffffff;
-  border: none;
-  border-radius: 0.5rem !important;
-  margin-bottom: 1rem;
-  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.accordion-button {
-  font-weight: 600;
-  color: #343a40;
-  background-color: #ffffff;
-}
-
+/* ====================================================
+   AJUSTES DEL ACORDEÓN DE BOOTSTRAP
+   ==================================================== */
+/* Evitamos el fondo azul nativo de Bootstrap al abrir un acordeón */
 .accordion-button:not(.collapsed) {
-  background-color: #f8f9fa;
-  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  color: #dc3545;
+  background-color: #ffffff !important;
+  color: inherit;
+  box-shadow: none;
 }
 
-.accordion-button:focus {
-  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+/* Opacamos la flecha nativa para que sea más sutil */
+.accordion-button::after {
+  filter: opacity(0.5);
 }
 
-.category-icon {
-  font-size: 1.8rem;
-  color: #dc3545;
-}
-
-.category-title {
-  font-size: 1.1rem;
-}
-
-.category-subtitle {
-  font-size: 0.85rem;
-  font-weight: 400;
-  color: #6c757d;
-}
-
-.accordion-body {
-  padding: 0 1.5rem 1.5rem 1.5rem;
-}
-
-p {
-  line-height: 1.6;
-  font-size: 0.95rem;
-}
-
-.text-danger {
-  color: #dc3545 !important;
-}
-
-.border-bottom:last-child {
+/* Eliminamos el borde inferior del último elemento de las preguntas */
+.faq-item:last-child {
   border-bottom: none !important;
+  padding-bottom: 0 !important;
+}
+
+/* Animación de entrada general */
+.animate__animated {
+  animation-duration: 0.8s;
 }
 </style>

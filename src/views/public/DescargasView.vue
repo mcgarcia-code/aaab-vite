@@ -1,8 +1,9 @@
 <template>
-  <div class="dark-background-section py-5">
+  <div class="dark-background-section py-5 animate__animated animate__fadeIn">
     <div class="container my-5">
+
       <div class="text-center mb-5">
-        <h1 class="fw-bold text-white">Centro de Descargas</h1>
+        <h1 class="fw-bold text-white display-5">Centro de Descargas</h1>
         <p class="lead text-white-50">
           Selecciona una categoría para ver los documentos disponibles.
         </p>
@@ -10,58 +11,67 @@
 
       <div class="row justify-content-center">
         <div class="col-lg-10">
-          <div class="accordion accordion-flush" id="downloadsAccordion">
+          <div class="accordion" id="downloadsAccordion">
+
             <div
               v-for="(categoria, index) in categorias"
               :key="categoria.titulo"
-              class="accordion-item"
+              class="accordion-item border-0 rounded-4 shadow-sm mb-3 overflow-hidden"
             >
               <h2 class="accordion-header" :id="'heading' + index">
                 <button
-                  class="accordion-button collapsed"
+                  class="accordion-button collapsed bg-white p-4 shadow-none border-0"
                   type="button"
                   data-bs-toggle="collapse"
                   :data-bs-target="'#collapse' + index"
                   aria-expanded="false"
                   :aria-controls="'collapse' + index"
                 >
-                  <i :class="[categoria.icon, 'category-icon me-3']"></i>
-                  <div>
-                    <span class="category-title">{{ categoria.titulo }}</span>
-                    <small class="category-subtitle d-block">{{ categoria.subtitulo }}</small>
+                  <div class="d-flex align-items-center">
+                    <i :class="[categoria.icon, 'text-danger fs-2 me-3']"></i>
+                    <div>
+                      <h5 class="fw-bold mb-1 text-dark">{{ categoria.titulo }}</h5>
+                      <span class="small text-muted d-block lh-sm">{{ categoria.subtitulo }}</span>
+                    </div>
                   </div>
                 </button>
               </h2>
+
               <div
                 :id="'collapse' + index"
                 class="accordion-collapse collapse"
                 :aria-labelledby="'heading' + index"
                 data-bs-parent="#downloadsAccordion"
               >
-                <div class="accordion-body">
-                  <ul class="list-group list-group-flush">
-                    <li
+                <div class="accordion-body bg-white pt-0 pb-4 px-3 px-md-5">
+                  <div class="list-group list-group-flush border-top pt-2 mt-1 border-light-subtle">
+
+                    <a
                       v-for="doc in categoria.documentos"
                       :key="doc.nombre"
-                      class="list-group-item"
+                      :href="doc.url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="list-group-item list-group-item-action d-flex align-items-center py-3 border-0 rounded-3 mb-1 document-link"
                     >
-                      <a
-                        :href="doc.url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="document-link"
-                      >
-                        <i class="bi bi-download me-2"></i>
-                        {{ doc.nombre }}
-                      </a>
-                    </li>
-                  </ul>
+                      <div class="bg-danger-subtle text-danger me-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; border-radius: 50%;">
+                        <i class="bi bi-download fs-5"></i>
+                      </div>
+
+                      <span class="fw-bold text-dark flex-grow-1">{{ doc.nombre }}</span>
+
+                      <i class="bi bi-chevron-right text-muted small opacity-50 d-none d-sm-block"></i>
+                    </a>
+
+                  </div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
+
     </div>
   </div>
 </template>
@@ -249,75 +259,47 @@ const categorias = ref([
 </script>
 
 <style scoped>
-/* Código CSS limpio y sin caracteres invisibles */
+/* ====================================================
+   FONDO GENERAL Y SECCIÓN
+   ==================================================== */
 .dark-background-section {
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)),
-    url('../../assets/fotos/descargas-background.webp');
+  /* Usamos un color oscuro azulado para mantener consistencia con el panel */
+  background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url('../../assets/fotos/descargas-background.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   min-height: 100vh;
-  padding-top: 70px;
 }
 
-.accordion-item {
-  background-color: #ffffff;
-  border: none;
-  border-radius: 0.5rem !important;
-  margin-bottom: 1rem;
-  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.accordion-button {
-  font-weight: 600;
-  color: #343a40;
-  background-color: #ffffff;
-}
-
+/* ====================================================
+   AJUSTES DEL ACORDEÓN DE BOOTSTRAP
+   ==================================================== */
+/* Evitar el color de fondo azul de Bootstrap al abrir el acordeón */
 .accordion-button:not(.collapsed) {
-  background-color: #f8f9fa;
-  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  color: var(--bs-danger);
+  background-color: #ffffff !important;
+  color: inherit;
+  box-shadow: none;
 }
 
-.accordion-button:focus {
-  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+/* Flecha del acordeón sutil */
+.accordion-button::after {
+  filter: opacity(0.5);
 }
 
-.category-icon {
-  font-size: 1.8rem;
-  color: var(--bs-danger);
-}
-
-.category-title {
-  font-size: 1.1rem;
-}
-
-.category-subtitle {
-  font-size: 0.85rem;
-  font-weight: 400;
-  color: #6c757d;
-}
-
-.accordion-body {
-  padding: 0 1.5rem 1.5rem 1.5rem;
-}
-
+/* ====================================================
+   EFECTOS HOVER DOCUMENTOS
+   ==================================================== */
 .document-link {
-  display: block;
-  padding: 0.75rem 0;
-  color: #212529;
-  text-decoration: none;
-  transition: color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .document-link:hover {
-  color: var(--bs-danger);
+  background-color: #f8fafc !important; /* Gris ultra claro */
+  transform: translateX(8px); /* Desplazamiento moderno hacia la derecha */
 }
 
-.document-link i {
-  color: var(--aaab-primary);
+/* Animación de entrada general */
+.animate__animated {
+  animation-duration: 0.8s;
 }
 </style>

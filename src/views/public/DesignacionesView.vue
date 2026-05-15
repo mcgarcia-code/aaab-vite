@@ -3,52 +3,62 @@
     <section class="hero-section">
       <div class="overlay"></div>
 
-      <div class="main-content container relative-z">
+      <div class="container position-relative z-2">
 
-        <div class="hero-grid mb-5">
-          <div class="text-column animate__animated animate__fadeInLeft">
-            <div class="badge-update">
-              <span class="material-icons pulse-icon">campaign</span>
+        <div class="row align-items-center g-5 mb-5 pt-4">
+
+          <div class="col-12 col-md-7 text-center text-md-start animate__animated animate__fadeInLeft">
+
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 fw-bold small mb-4">
+              <span class="material-icons pulse-icon" style="font-size: 16px;">campaign</span>
               ÚLTIMA ACTUALIZACIÓN
             </div>
 
-            <h1 class="main-title fw-bold text-white">{{ designacionPrincipal.torneo }}</h1>
+            <h1 class="display-5 display-md-3 fw-bold text-white mb-3 text-shadow">
+              {{ designacionPrincipal.torneo }}
+            </h1>
 
-            <p class="subtitle text-white-50">
+            <p class="lead text-white-50 mb-4 mx-auto mx-md-0" style="max-width: 90%;">
               ¡Grandes noticias! Ya se encuentran disponibles las designaciones para los partidos del fin de semana. Revisá tu horario y sede.
             </p>
 
-            <div class="info-card shadow-sm">
-              <div class="info-icon">
-                <span class="material-icons">event</span>
+            <div class="bg-white border rounded-4 p-3 d-inline-flex align-items-center text-start gap-3 mb-4 shadow-sm w-100" style="max-width: 350px;">
+              <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px;">
+                <span class="material-icons fs-4">event</span>
               </div>
-              <div class="info-text">
-                <span class="info-label">Fecha</span>
-                <span class="info-value">{{ designacionPrincipal.fecha }}</span>
+              <div>
+                <span class="d-block small fw-bold text-muted text-uppercase mb-1">Fecha</span>
+                <span class="d-block fs-5 text-dark fw-bold lh-1">{{ designacionPrincipal.fecha }}</span>
               </div>
             </div>
 
-            <a
-              :href="designacionPrincipal.link"
-              target="_blank"
-              class="btn-download shadow-lg"
-              :class="{ 'disabled-link': designacionPrincipal.link === '#' }"
-            >
-              <span class="material-icons">cloud_download</span>
-              <span>Descargar Designaciones</span>
-            </a>
+            <div>
+              <a
+                :href="designacionPrincipal.link"
+                target="_blank"
+                class="btn btn-danger btn-lg fw-bold px-4 py-3 d-inline-flex align-items-center justify-content-center gap-2 shadow-lg w-100 btn-download"
+                style="max-width: 350px;"
+                :class="{ 'disabled-link': designacionPrincipal.link === '#' }"
+              >
+                <span class="material-icons">cloud_download</span>
+                <span>Descargar Designaciones</span>
+              </a>
+            </div>
+
           </div>
 
-          <div class="image-column animate__animated animate__fadeInRight">
+          <div class="col-12 col-md-5 text-center text-md-end animate__animated animate__fadeInRight">
             <img
               :src="designacionesImg"
               alt="Designaciones en tu celular"
-              class="hero-img shadow-lg"
+              class="img-fluid hero-img shadow-lg"
+              style="max-width: 320px;"
             />
           </div>
         </div>
 
-        <div v-if="historialDesignaciones.length > 0" class="history-section animate__animated animate__fadeInUp animate__delay-1s mt-5 pt-4 border-top border-secondary">
+        <div v-if="historialDesignaciones.length > 0" class="animate__animated animate__fadeInUp animate__delay-1s mt-5 pt-5 border-top border-secondary border-opacity-50">
+
           <div class="text-center text-md-start mb-4">
             <h3 class="fw-bold text-white mb-1">Historial de Designaciones</h3>
             <p class="text-white-50 small">Consultá los archivos de las jornadas anteriores.</p>
@@ -56,24 +66,25 @@
 
           <div class="row g-3">
             <div v-for="(item, index) in historialDesignaciones" :key="index" class="col-12 col-md-6 col-lg-3">
-              <div class="history-card h-100 p-3 rounded-3 d-flex flex-column bg-white">
+              <div class="card h-100 border-0 rounded-4 p-3 shadow-sm history-card">
                 <div class="d-flex align-items-center mb-2">
-                  <span class="material-icons text-danger me-2" style="font-size: 20px;">history</span>
-                  <span class="text-dark fw-bold" style="font-size: 0.9rem;">{{ item.fecha }}</span>
+                  <span class="material-icons text-danger me-2 fs-5">history</span>
+                  <span class="text-dark fw-bold small">{{ item.fecha }}</span>
                 </div>
-                <h6 class="text-danger fw-bold mb-3 flex-grow-1" style="font-size: 0.85rem; line-height: 1.4;">
+                <h6 class="text-danger fw-bold mb-3 flex-grow-1 small lh-sm">
                   {{ item.torneo }}
                 </h6>
                 <a
                   :href="item.link"
                   target="_blank"
-                  class="btn btn-outline-dark btn-sm w-100 fw-bold rounded-pill d-flex align-items-center justify-content-center gap-2"
+                  class="btn btn-outline-dark btn-sm w-100 fw-bold rounded-pill d-flex align-items-center justify-content-center gap-2 mt-auto"
                 >
                   <span class="material-icons" style="font-size: 16px;">download</span> Descargar
                 </a>
               </div>
             </div>
           </div>
+
         </div>
 
       </div>
@@ -138,13 +149,13 @@ onMounted(fetchDesignaciones);
 
 <style scoped>
 /* ====================================================
-   1. BASE (MOBILE FIRST - CELULARES POR DEFECTO)
+   FONDO GENERAL Y SECCIÓN
    ==================================================== */
-
 .public-wrapper {
   width: 100%;
   min-height: 100vh;
-  background-color: #000000;
+  /* Fondo institucional azulado */
+  background-color: #0f172a;
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
 }
 
@@ -158,56 +169,26 @@ onMounted(fetchDesignaciones);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 15px 60px 15px;
+  padding: 100px 0 60px 0;
 }
 
+/* Capa de degradado oscuro azulado sobre la imagen de fondo */
 .overlay {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(15, 15, 15, 0.85) 100%);
+  /* Mismo tono azul oscuro (15, 23, 42) con un sutil degradado de opacidad */
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.85) 100%);
   z-index: 1;
 }
 
-.relative-z {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 1200px;
+.text-shadow {
+  text-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
-.hero-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  align-items: center;
-}
-
-.text-column {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  width: 100%;
-}
-
-.badge-update {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  padding: 6px 14px;
-  border-radius: 50px;
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 20px;
-}
-
+/* ====================================================
+   ANIMACIONES Y EFECTOS
+   ==================================================== */
 .pulse-icon {
-  font-size: 16px;
-  color: #ef4444;
   animation: pulse 2s infinite;
 }
 
@@ -217,108 +198,7 @@ onMounted(fetchDesignaciones);
   100% { transform: scale(1); opacity: 1; }
 }
 
-.main-title {
-  font-size: 2rem; /* <-- MODIFICADO: Antes era 1.5rem, ahora es más grande en celulares */
-  margin-bottom: 15px;
-  line-height: 1.1;
-  text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-}
-
-.subtitle {
-  font-size: 1.1rem;
-  margin-bottom: 30px;
-  line-height: 1.5;
-  max-width: 90%;
-}
-
-/* --- Tarjeta de Información (Fecha) --- */
-.info-card {
-  background: #ffffff; /* <-- MODIFICADO: Fondo blanco puro */
-  border: 1px solid #e2e8f0; /* Borde gris clarito para delimitar */
-  border-radius: 12px;
-  padding: 15px 20px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 35px;
-  width: 100%;
-  max-width: 350px;
-}
-
-.info-icon {
-  background: #ef4444; /* Ícono sigue siendo rojo */
-  color: white;
-  width: 45px;
-  height: 45px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.info-icon .material-icons { font-size: 24px; }
-
-.info-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-}
-
-.info-label {
-  font-size: 0.8rem;
-  color: #64748b; /* <-- MODIFICADO: Gris oscuro para la etiqueta */
-  font-weight: 600;
-  text-transform: uppercase;
-}
-.info-value {
-  font-size: 1.1rem;
-  color: #0f172a; /* <-- MODIFICADO: Negro oscuro para el valor */
-  font-weight: bold;
-}
-
-/* --- Botón de Descarga --- */
-.btn-download {
-  background: #ef4444;
-  color: #ffffff;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 16px 24px;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  width: 100%;
-  max-width: 350px;
-  transition: all 0.3s ease;
-  border: 1px solid transparent;
-}
-
-.btn-download:hover {
-  background: #dc2626;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4) !important;
-  color: white;
-}
-
-.disabled-link {
-  background: #475569 !important;
-  color: #94a3b8 !important;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-/* --- Columna de Imagen --- */
-.image-column {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
 .hero-img {
-  width: 100%;
-  max-width: 280px;
   border-radius: 16px;
   transform: perspective(800px) rotateY(-5deg) rotateX(5deg);
   transition: transform 0.5s ease;
@@ -328,41 +208,31 @@ onMounted(fetchDesignaciones);
   transform: perspective(800px) rotateY(0deg) rotateX(0deg);
 }
 
-/* --- Tarjetas del Historial --- */
-.history-card {
-  /* MODIFICADO: Quitado el fondo transparente, ahora es blanco desde las clases de Bootstrap, pero aseguramos bordes y sombras */
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Leve sombra para destacar del fondo negro */
+.btn-download {
   transition: all 0.3s ease;
 }
 
-.history-card:hover {
-  border-color: #ef4444; /* Borde rojo al pasar el mouse */
+.btn-download:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4) !important;
 }
 
-.border-secondary {
-  border-color: rgba(255, 255, 255, 0.1) !important;
+.disabled-link {
+  background: #475569 !important;
+  color: #94a3b8 !important;
+  border-color: #475569 !important;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
-/* ====================================================
-   2. TABLETS Y ESCRITORIO (Desde 768px hacia arriba)
-   ==================================================== */
-@media (min-width: 768px) {
-  .hero-section { padding: 80px 40px; }
-  .hero-grid { flex-direction: row; justify-content: space-between; margin-bottom: 80px !important; }
-  .text-column { align-items: flex-start; text-align: left; width: 55%; }
-  .main-title { font-size: 3.5rem; }
-  .subtitle { max-width: 100%; font-size: 1.2rem; }
-  .info-card { margin-left: 0; }
-  .btn-download { width: auto; min-width: 280px; }
-  .image-column { width: 45%; justify-content: flex-end; }
-  .hero-img { max-width: 350px; }
+.history-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0 !important;
 }
 
-@media (min-width: 1024px) {
-  .main-title { font-size: 4rem; }
-  .hero-img { max-width: 400px; }
+.history-card:hover {
+  border-color: #ef4444 !important;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
 }
 </style>
