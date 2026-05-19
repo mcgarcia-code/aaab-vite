@@ -91,6 +91,14 @@ const menuItems = [
     desc: 'Administrar datos fiscales y entidades vinculadas',
     rolesPermitidos: ['admin', 'secretario', 'facturacion', 'tesorero']
   },
+    {
+    to: '/panel-admin/curso-arbitros',
+    title: 'Curso de Árbitros',
+    icon: 'bi bi-file-person-fill',
+    desc: 'Gestionar el curso de árbitros, inscripciones y seguimiento del progreso.',
+    rolesPermitidos: ['admin', 'secretario', 'curso']
+  },
+
 ];
 
 const filteredMenu = computed(() => {

@@ -60,19 +60,19 @@ useHead({
 
 const opcionesCursoArbitros = [
   {
-    to: '/panel-admin/secretaria/legajos-curso',
+    to: '/panel-admin/curso-arbitros/legajos-curso',
     title: 'Legajos',
     icon: 'bi bi-person-lines-fill',
     desc: 'Consultar y gestionar información de los miembros.'
   },
   {
-    to: '/panel-admin/secretaria/observaciones-curso',
+    to: '/panel-admin/curso-arbitros/observaciones-curso',
     title: 'Observaciones Realizadas',
     icon: 'bi bi-clipboard-data-fill',
     desc: 'Registro y seguimiento de las observaciones arbitrales.'
   },
   {
-    to: '/panel-admin/secretaria/examenes-curso',
+    to: '/panel-admin/curso-arbitros/examenes-curso',
     title: 'Exámenes',
     icon: 'bi bi-journal-check',
     desc: 'Gestionar exámenes y resultados del curso.'

@@ -23,7 +23,7 @@ const routes = [
     beforeEnter: (to, from, next) => {
       if (auth.isLoggedIn()) {
         const user = auth.getUser();
-        const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion'];
+        const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso'];
         rolesStaff.includes(user?.rol) ? next('/panel-admin') : next('/panel-arbitro');
       } else {
         next();
@@ -90,7 +90,7 @@ const routes = [
   {
     path: '/panel-admin',
     component: () => import('../components/panel-admin/AdminPanel.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion'] },
+    meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso'] },
     children: [
       { path: '', name: 'AdminInicio', component: () => import('../components/panel-admin/AdminInicio.vue') },
 
@@ -99,7 +99,7 @@ const routes = [
       { path: 'secretaria/modificacion-datos', name: 'LegajosPersonales', component: () => import('../components/panel-admin/secretaria/LegajosPersonales.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
       { path: 'secretaria/licencias', name: 'LicenciasAdmin', component: () => import('../components/panel-admin/secretaria/LicenciasAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
       { path: 'secretaria/eventos-notificaciones', name: 'GestionEventos', component: () => import('../components/panel-admin/secretaria/GestionEventos.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
-      { path: 'secretaria/curso-arbitros', name: 'CursoArbitrosAdmin', component: () => import('../components/panel-admin/secretaria/CursoArbitrosAdmin.vue'), meta: { roles: ['admin', 'secretario'] } },
+
 
       // --- DESIGNACIONES ---
       { path: 'designaciones', name: 'DesignacionesAdmin', component: () => import('../components/panel-admin/designaciones/DesignacionesAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
@@ -125,7 +125,14 @@ const routes = [
       // --- DESARROLLO ARBITRAL ---
       { path: 'desarrollo-arbitral', name: 'DesarrolloArbitralAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/DesarrolloArbitralAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
       { path: 'desarrollo-arbitral/observaciones', name: 'ObservacionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ObservacionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
-      { path: 'desarrollo-arbitral/examenes', name: 'ExamenesGeneralesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ExamenesGeneralesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } }
+      { path: 'desarrollo-arbitral/examenes', name: 'ExamenesGeneralesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ExamenesGeneralesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
+
+      // --- CURSOS ---
+      { path: 'curso-arbitros', name: 'CursoArbitrosAdmin', component: () => import('../components/panel-admin/curso-arbitros/CursoArbitrosAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] } },
+      { path: 'curso-arbitros/legajos-curso', name: 'LegajosCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/LegajosCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
+      { path: 'curso-arbitros/observaciones-curso', name: 'ObservacionesCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/ObservacionesCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
+      { path: 'curso-arbitros/examenes-curso', name: 'ExamenesCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/ExamenesCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
+
 
     ]
   }
@@ -144,7 +151,7 @@ router.beforeEach((to, from, next) => {
   const user = auth.getUser();
   const userRole = user?.rol;
 
-  const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion'];
+  const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso'];
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!estaLogueado) {

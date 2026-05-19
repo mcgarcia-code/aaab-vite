@@ -77,12 +77,7 @@ const opcionesSecretaria = [
     icon: 'bi bi-bell',
     desc: 'Gestionar avisos, reuniones y noticias para los árbitros.'
   },
-    {
-    to: '/panel-admin/secretaria/curso-arbitros',
-    title: 'Curso de Árbitros',
-    icon: 'bi bi-file-person-fill',
-    desc: 'Gestionar el curso de árbitros, inscripciones y seguimiento del progreso.'
-  },
+
 ];
 </script>
 

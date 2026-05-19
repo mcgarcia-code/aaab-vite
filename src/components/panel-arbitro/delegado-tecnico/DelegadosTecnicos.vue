@@ -25,7 +25,7 @@
 
         <!-- ================= CRONÓMETRO ================= -->
         <div class="bg-dark text-white p-3 p-md-4 rounded-4 shadow-sm text-center mb-3 mb-md-4 border border-secondary">
-          <div class="text-uppercase fw-bold text-muted small mb-2" style="letter-spacing: 1px;">{{ currentPeriodText }}</div>
+          <div class="text-uppercase fw-bold text-white small mb-2" style="letter-spacing: 1px;">{{ currentPeriodText }}</div>
 
           <!-- Reloj clickeable -->
           <div
@@ -80,7 +80,16 @@
           <!-- LOCAL -->
           <div class="col-6">
             <div class="bg-white p-2 p-md-4 rounded-4 border shadow-sm h-100 d-flex flex-column text-center">
-              <h3 class="fw-bold text-dark fs-6 fs-md-5 mb-1 mb-md-2">LOCAL</h3>
+              <!-- SELECT DE CLUB LOCAL -->
+              <div class="mb-2">
+                <select v-model="state.localClubId" class="form-select form-select-sm fw-bold text-center border-0 bg-light shadow-sm text-uppercase" style="font-size: 1rem; color: #212529;">
+                  <option value="" disabled>SELECCIONAR LOCAL</option>
+                  <option v-for="club in state.clubes" :key="club.club_id" :value="club.club_id">
+                    {{ club.club_nombre }}
+                  </option>
+                </select>
+              </div>
+
               <div class="score-display text-dark">{{ state.score.local }}</div>
 
               <div class="d-flex justify-content-center align-items-center gap-2 mb-3 min-h-24">
@@ -121,7 +130,16 @@
           <!-- VISITA -->
           <div class="col-6">
             <div class="bg-white p-2 p-md-4 rounded-4 border shadow-sm h-100 d-flex flex-column text-center">
-              <h3 class="fw-bold text-dark fs-6 fs-md-5 mb-1 mb-md-2">VISITA</h3>
+              <!-- SELECT DE CLUB VISITA -->
+              <div class="mb-2">
+                <select v-model="state.visitorClubId" class="form-select form-select-sm fw-bold text-center border-0 bg-light shadow-sm text-uppercase" style="font-size: 1rem; color: #212529;">
+                  <option value="" disabled>SELECCIONAR VISITA</option>
+                  <option v-for="club in state.clubes" :key="club.club_id" :value="club.club_id">
+                    {{ club.club_nombre }}
+                  </option>
+                </select>
+              </div>
+
               <div class="score-display text-dark">{{ state.score.visitor }}</div>
 
               <div class="d-flex justify-content-center align-items-center gap-2 mb-3 min-h-24">
@@ -319,6 +337,9 @@ const TTO_LIMIT_SEC = 25 * 60;
 
 const state = reactive({
   matchId: 1,
+  localClubId: '',
+  visitorClubId: '',
+  clubes: [],
   score: { local: 0, visitor: 0 },
   timeInSeconds: 0,
   period: 1,
@@ -394,6 +415,24 @@ const resetMatch = () => {
   mostrarNotificacion('Reiniciar', '¿Estás seguro que deseas reiniciar el partido? Se perderán los datos locales no sincronizados.', 'danger', true, 'reset');
 };
 
+// --- CARGAR CLUBES ---
+const cargarClubes = async () => {
+  try {
+    const result = await api.post({
+      entity: 'clubes',
+      action: 'obtenerClubes'
+    });
+
+    if (result.ok && result.payload) {
+      state.clubes = result.payload;
+    } else if (Array.isArray(result)) {
+      state.clubes = result; // Por si el endpoint devuelve el array directamente
+    }
+  } catch (error) {
+    console.error("Error al cargar la lista de clubes:", error);
+  }
+};
+
 // --- AJUSTE MANUAL DE TIEMPO ---
 const abrirModalTiempo = () => {
   if (isRunning.value) {
@@ -415,8 +454,14 @@ const confirmarAjusteTiempo = () => {
   }
 
   state.timeInSeconds = (m * 60) + s;
-  guardarEventoEnLog('sistema', 'tiempo_ajustado', `Reloj a ${m}:${s.toString().padStart(2, '0')}`);
+  guardarEventoEnLog('sistema', 'tiempo_ajustado', null, `Ajuste manual a ${m}:${s.toString().padStart(2, '0')}`);
   modalTiempo.visible = false;
+};
+
+const getLocalTimestamp = () => {
+  const d = new Date();
+  const pad = (n) => n.toString().padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
 
 // --- VALIDACIÓN DE DORSAL ---
@@ -544,12 +589,17 @@ const aplicarPenalidadReloj = (team, type, playerNumber) => {
   }
 };
 
-const guardarEventoEnLog = (team, type, playerNumber) => {
+const guardarEventoEnLog = (team, type, playerNumber, customTimeStr = null) => {
+  const matchTimeStr = customTimeStr ? customTimeStr : `${currentPeriodText.value} - ${formattedTime.value}`;
+
   const newEvent = {
     id: Date.now() + Math.floor(Math.random() * 1000),
-    team, player_number: playerNumber, type,
-    match_time: `${currentPeriodText.value} - ${formattedTime.value}`,
-    timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19), synced: false
+    team,
+    player_number: playerNumber,
+    type,
+    match_time: matchTimeStr,
+    timestamp: getLocalTimestamp(),
+    synced: false
   };
   state.eventLog.push(newEvent);
   state.unsyncedEvents.push(newEvent);
@@ -571,6 +621,7 @@ const ejecutarAccionPendiente = async () => {
       eventLog: [], unsyncedEvents: [], activePenalties: [], activeTTO: null,
       timeouts: { local: { h1: 0, h2: 0, total: 0, lostThird: false }, visitor: { h1: 0, h2: 0, total: 0, lostThird: false } }
     });
+    // Limpia localstorage pero conserva los clubes cargados
     localStorage.removeItem(STORAGE_KEY);
     modalNotificacion.visible = false;
   }
@@ -731,7 +782,11 @@ const syncWithBackend = async () => {
   }
 };
 
-onMounted(loadState);
+onMounted(() => {
+  loadState();
+  cargarClubes();
+});
+
 onUnmounted(() => { if (timerInterval) clearInterval(timerInterval); if (ttoInterval) clearInterval(ttoInterval); });
 </script>
 
