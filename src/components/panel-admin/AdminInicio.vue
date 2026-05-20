@@ -54,7 +54,7 @@ const menuItems = [
     title: 'Secretaría',
     icon: 'bi bi-pc-display-horizontal',
     desc: 'Datos personales y licencias.',
-    rolesPermitidos: ['admin', 'secretario', 'designador', 'etica']
+    rolesPermitidos: ['admin', 'etica', 'secretario', 'designador']
   },
   {
     to: '/panel-admin/tribunal',
@@ -68,7 +68,7 @@ const menuItems = [
     title: 'Tesorería',
     icon: 'bi bi-cash-stack',
     desc: 'Contabilidad y stock de ropa.',
-    rolesPermitidos: ['admin', 'tesorero','secretario', 'designador',]
+    rolesPermitidos: ['admin', 'tesorero','secretario', 'designador']
   },
   {
     to: '/panel-admin/designaciones',

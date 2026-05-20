@@ -401,14 +401,26 @@ const filteredLog = computed(() => {
 // --- PERSISTENCIA Y SINCRONIZACIÓN AUTOMÁTICA ---
 const loadState = () => {
   const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) Object.assign(state, JSON.parse(saved));
+  if (saved) {
+    const parsedState = JSON.parse(saved);
+    // IMPORTANTE: Eliminamos 'clubes' del caché guardado para no pisar la API
+    delete parsedState.clubes;
+    Object.assign(state, parsedState);
+  }
   if (state.activeTTO && state.activeTTO.timeRemaining > 0) resumeTTOTimer();
 };
 
-watch(state, (newState) => { localStorage.setItem(STORAGE_KEY, JSON.stringify(newState)); }, { deep: true });
+watch(state, (newState) => {
+  // Hacemos una copia superficial del estado para no guardar el catálogo de clubes
+  const stateToSave = { ...newState };
+  delete stateToSave.clubes;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+}, { deep: true });
 
 watch(() => state.unsyncedEvents.length, (newVal) => {
-  if (newVal > 0 && !isSyncing.value) syncWithBackend();
+  if (newVal > 0 && !isSyncing.value) {
+    syncWithBackend();
+  }
 });
 
 const resetMatch = () => {
@@ -423,13 +435,46 @@ const cargarClubes = async () => {
       action: 'obtenerClubes'
     });
 
-    if (result.ok && result.payload) {
-      state.clubes = result.payload;
-    } else if (Array.isArray(result)) {
-      state.clubes = result; // Por si el endpoint devuelve el array directamente
+    // Validamos que result exista y que result.payload sea el array
+    if (result && Array.isArray(result.payload)) {
+      state.clubes = result.payload.map(club => ({
+        club_id: club.club_id,
+        club_nombre: club.club_nombre
+      }));
+    } else {
+      console.warn("La API no devolvió el formato esperado:", result);
     }
   } catch (error) {
     console.error("Error al cargar la lista de clubes:", error);
+  }
+};
+
+const syncWithBackend = async () => {
+  if (state.unsyncedEvents.length === 0 || isSyncing.value) return;
+  isSyncing.value = true;
+
+  try {
+    const eventsToSend = [...state.unsyncedEvents];
+
+    const result = await api.post({
+      entity: 'delegados',
+      action: 'sincronizarEventos',
+      payload: { match_id: state.matchId, events: eventsToSend }
+    });
+
+    if (result === true || (result && result.payload === true) || (result && result.status === 'success')) {
+      eventsToSend.forEach(u => {
+        const logItem = state.eventLog.find(e => e.id === u.id);
+        if (logItem) logItem.synced = true;
+      });
+      state.unsyncedEvents = state.unsyncedEvents.filter(e => !eventsToSend.some(sent => sent.id === e.id));
+    } else {
+      console.warn("El backend no confirmó la sincronización:", result);
+    }
+  } catch (err) {
+    console.error("Error al sincronizar automáticamente:", err);
+  } finally {
+    isSyncing.value = false;
   }
 };
 
@@ -656,7 +701,6 @@ const ejecutarAccionPendiente = async () => {
   }
 };
 
-
 // --- TIEMPOS MUERTOS DE EQUIPO (TTO) ---
 const canUseTimeout = (team) => {
   const t = state.timeouts[team];
@@ -760,28 +804,6 @@ const downloadLog = () => {
   link.click();
 };
 
-const syncWithBackend = async () => {
-  if (state.unsyncedEvents.length === 0 || isSyncing.value) return;
-  isSyncing.value = true;
-
-  try {
-    const result = await api.post({
-      entity: 'delegados',
-      action: 'sincronizarEventos',
-      payload: { match_id: state.matchId, events: state.unsyncedEvents }
-    });
-
-    if (result.ok && result.payload && result.payload.status === 'success') {
-      state.unsyncedEvents.forEach(u => { const l = state.eventLog.find(e => e.id === u.id); if (l) l.synced = true; });
-      state.unsyncedEvents = [];
-    }
-  } catch (err) {
-    console.error("Error al sincronizar automáticamente:", err);
-  } finally {
-    isSyncing.value = false;
-  }
-};
-
 onMounted(() => {
   loadState();
   cargarClubes();
@@ -848,7 +870,7 @@ onUnmounted(() => { if (timerInterval) clearInterval(timerInterval); if (ttoInte
    DIBUJO DE CAMISETA EN MODAL DORSAL
    ========================================= */
 .shirt-wrapper { position: relative; width: 140px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
-.shirt-svg { width: 100%; height: auto; drop-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
+.shirt-svg { width: 100%; height: auto; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1)); }
 .dorsal-input { position: absolute; width: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 1.5rem; font-weight: 900; background: transparent; border: none; border-bottom: 2px dashed rgba(255,255,255,0.5); color: white; outline: none; text-transform: uppercase; }
 .dorsal-input::placeholder { color: rgba(255,255,255,0.4); }
 
