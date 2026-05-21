@@ -23,7 +23,7 @@ Toda comunicación con el servidor DEBE realizarse a través del objeto global a
 - *Orden del Archivo:* 1. <template>
   2. <script setup>
   3. <style scoped>
-- *Estilado:* Priorizar clases utilitarias o CSS modular dentro de <style scoped>.
+- *Estilado:* Priorizar clases utilitarias o CSS modular dentro de <style scoped> Usa Boostrap.
 - *Rutas y Alias:* Usar @/ para importaciones desde la carpeta src.
 - No utilizar ';' en el código js para cerrar las sentencias.
 
