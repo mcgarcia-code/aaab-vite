@@ -147,26 +147,15 @@
       </div>
     </div>
 
-    <!-- Modal Cancelación -->
-    <ModalExito
-      :visible="mostrarModalCancelacion"
-      titulo="Cancelar Pedido"
-      mensaje="¿Estás seguro que querés cancelar este pedido? Esta acción no se puede deshacer."
-      tipo="danger"
-      :tieneAccion="true"
-      @cerrar="mostrarModalCancelacion = false"
-      @confirmar="confirmarCancelacion"
-    />
-
   </div>
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted, watch, inject } from 'vue';
 import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
-import ModalExito from '@/components/ModalExito.vue';
 
 useHead({
   title: 'Mis Pedidos | AAAB',
@@ -186,10 +175,6 @@ const cargando = ref(false);
 
 const paginaActual = ref(1);
 const registrosPorPagina = 10;
-
-// Variables para el Modal
-const mostrarModalCancelacion = ref(false);
-const pedidoACancelar = ref(null);
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
@@ -217,35 +202,34 @@ const obtenerPedidos = async () => {
   cargando.value = false;
 };
 
-// Acciones del modal
+// Acciones del modal usando la alerta global
 const abrirModalCancelar = (id) => {
-  pedidoACancelar.value = id;
-  mostrarModalCancelacion.value = true;
-};
+  notificar({
+    titulo: 'Cancelar Pedido',
+    mensaje: '¿Estás seguro que querés cancelar este pedido? Esta acción no se puede deshacer.',
+    tipo: 'danger',
+    alConfirmar: async () => {
+      cargando.value = true;
+      try {
+        const res = await api.post({
+          entity: 'indumentaria',
+          action: 'actualizarPedido',
+          payload: { id: id, estado: 'cancelado' }
+        });
 
-const confirmarCancelacion = async () => {
-  mostrarModalCancelacion.value = false;
-  cargando.value = true;
-
-  try {
-    const res = await api.post({
-      entity: 'indumentaria',
-      action: 'actualizarPedido',
-      payload: { id: pedidoACancelar.value, estado: 'cancelado' }
-    });
-
-    if (res.ok) {
-      notificar({ titulo: 'Pedido cancelado', mensaje: 'El pedido ha sido cancelado con éxito.', tipo: 'success' });
-      await obtenerPedidos();
-    } else {
-      notificar({ titulo: 'Error', mensaje: 'No se pudo cancelar el pedido.', tipo: 'danger' });
+        if (res.ok) {
+          notificar({ titulo: 'Pedido cancelado', mensaje: 'El pedido ha sido cancelado con éxito.', tipo: 'success' });
+          await obtenerPedidos();
+        } else {
+          notificar({ titulo: 'Error', mensaje: 'No se pudo cancelar el pedido.', tipo: 'danger' });
+        }
+      } catch {
+        notificar({ titulo: 'Error de Red', mensaje: 'Ocurrió un problema al conectar con el servidor.', tipo: 'danger' });
+      } finally {
+        cargando.value = false;
+      }
     }
-  } catch {
-    notificar({ titulo: 'Error de Red', mensaje: 'Ocurrió un problema al conectar con el servidor.', tipo: 'danger' });
-  } finally {
-    cargando.value = false;
-    pedidoACancelar.value = null;
-  }
+  });
 };
 
 const obtenerClaseEstado = (estado) => {

@@ -45,7 +45,7 @@
             class="btn rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto hover-elevate"
             :class="tipo === 'danger' ? 'btn-danger' : 'btn-dark'"
           >
-            {{ tieneAccion ? (tipo === 'danger' ? 'ELIMINAR' : 'CONFIRMAR') : 'ACEPTAR' }}
+            {{ tieneAccion ? (tipo === 'danger' ? 'CONTINUAR' : 'CONFIRMAR') : 'ACEPTAR' }}
           </button>
         </div>
 

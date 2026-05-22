@@ -304,24 +304,14 @@
       </template>
     </ModalBase>
 
-    <ModalExito
-      :visible="modalNotificacion.visible"
-      :titulo="modalNotificacion.titulo"
-      :mensaje="modalNotificacion.mensaje"
-      :tipo="modalNotificacion.tipo"
-      :tieneAccion="modalNotificacion.tieneAccion"
-      @cerrar="modalNotificacion.visible = false"
-      @confirmar="ejecutarAccionPendiente"
-    />
-
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, computed, watch, onMounted, onUnmounted, inject } from 'vue';
 import { api } from '@/api/api';
 import ModalBase from '@/components/ModalBase.vue';
-import ModalExito from '@/components/ModalExito.vue';
+// Eliminamos la importación local de ModalExito
 import { useHead } from '@vueuse/head'
 
 useHead({
@@ -330,6 +320,9 @@ useHead({
     { name: 'description', content: 'Planilla de Delegados Técnicos' }
   ],
 })
+
+// Inyectamos la función global del App.vue
+const notificar = inject('notificar');
 
 const STORAGE_KEY = 'aaab_delegado_match_state';
 const HALF_DURATION_SEC = 30 * 60;
@@ -363,16 +356,10 @@ let ttoInterval = null;
 // --- ESTADO DE MODALES ---
 const modalJugador = reactive({ visible: false, team: '', type: '', dorsal: '' });
 const modalTiempo = reactive({ visible: false, mm: 0, ss: 0 });
-const modalNotificacion = reactive({ visible: false, titulo: '', mensaje: '', tipo: 'success', tieneAccion: false, accionKey: null, tempPayload: null });
 
-const mostrarNotificacion = (titulo, mensaje, tipo = 'success', tieneAccion = false, accionKey = null, payload = null) => {
-  modalNotificacion.titulo = titulo;
-  modalNotificacion.mensaje = mensaje;
-  modalNotificacion.tipo = tipo;
-  modalNotificacion.tieneAccion = tieneAccion;
-  modalNotificacion.accionKey = accionKey;
-  modalNotificacion.tempPayload = payload;
-  modalNotificacion.visible = true;
+// Adaptador para no tener que cambiar todos los llamados simples de notificaciones
+const mostrarNotificacion = (titulo, mensaje, tipo = 'success') => {
+  notificar({ titulo, mensaje, tipo });
 };
 
 // --- COMPUTADOS ---
@@ -403,7 +390,6 @@ const loadState = () => {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     const parsedState = JSON.parse(saved);
-    // IMPORTANTE: Eliminamos 'clubes' del caché guardado para no pisar la API
     delete parsedState.clubes;
     Object.assign(state, parsedState);
   }
@@ -411,7 +397,6 @@ const loadState = () => {
 };
 
 watch(state, (newState) => {
-  // Hacemos una copia superficial del estado para no guardar el catálogo de clubes
   const stateToSave = { ...newState };
   delete stateToSave.clubes;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
@@ -423,8 +408,23 @@ watch(() => state.unsyncedEvents.length, (newVal) => {
   }
 });
 
+// Función refactorizada para usar el callback de confirmación
 const resetMatch = () => {
-  mostrarNotificacion('Reiniciar', '¿Estás seguro que deseas reiniciar el partido? Se perderán los datos locales no sincronizados.', 'danger', true, 'reset');
+  notificar({
+    titulo: 'Reiniciar',
+    mensaje: '¿Estás seguro que deseas reiniciar el partido? Se perderán los datos locales no sincronizados.',
+    tipo: 'danger',
+    alConfirmar: () => {
+      if (isRunning.value) toggleTimer();
+      if (ttoInterval) clearInterval(ttoInterval);
+      Object.assign(state, {
+        score: { local: 0, visitor: 0 }, timeInSeconds: 0, period: 1, isCountdown: false,
+        eventLog: [], unsyncedEvents: [], activePenalties: [], activeTTO: null,
+        timeouts: { local: { h1: 0, h2: 0, total: 0, lostThird: false }, visitor: { h1: 0, h2: 0, total: 0, lostThird: false } }
+      });
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  });
 };
 
 // --- CARGAR CLUBES ---
@@ -435,7 +435,6 @@ const cargarClubes = async () => {
       action: 'obtenerClubes'
     });
 
-    // Validamos que result exista y que result.payload sea el array
     if (result && Array.isArray(result.payload)) {
       state.clubes = result.payload.map(club => ({
         club_id: club.club_id,
@@ -650,55 +649,37 @@ const guardarEventoEnLog = (team, type, playerNumber, customTimeStr = null) => {
   state.unsyncedEvents.push(newEvent);
 };
 
-// --- ELIMINAR EVENTO ---
+// Función refactorizada para usar el callback de confirmación
 const pedirEliminarEvento = (eventToDel) => {
-  mostrarNotificacion('Eliminar Evento', `¿Seguro que deseas eliminar este evento (${formatEventType(eventToDel.type)}) de la bitácora?`, 'danger', true, 'delete', eventToDel);
-};
+  notificar({
+    titulo: 'Eliminar Evento',
+    mensaje: `¿Seguro que deseas eliminar este evento (${formatEventType(eventToDel.type)}) de la bitácora?`,
+    tipo: 'danger',
+    alConfirmar: async () => {
+      if (eventToDel.type === 'goal') {
+        if (state.score[eventToDel.team] > 0) state.score[eventToDel.team]--;
+      } else if (eventToDel.type === 'goal_removed') {
+        state.score[eventToDel.team]++;
+      } else if (['2_min', 'red_card', 'blue_card'].includes(eventToDel.type)) {
+        const activeIdx = state.activePenalties.findIndex(p => p.team === eventToDel.team && p.playerNumber === eventToDel.player_number);
+        if (activeIdx !== -1) state.activePenalties.splice(activeIdx, 1);
+      } else if (eventToDel.type === 'timeout') {
+        const t = state.timeouts[eventToDel.team];
+        if (state.period === 1) t.h1--;
+        if (state.period === 2) t.h2--;
+        t.total--;
+      }
 
-const ejecutarAccionPendiente = async () => {
-  const key = modalNotificacion.accionKey;
+      state.eventLog = state.eventLog.filter(e => e.id !== eventToDel.id);
+      state.unsyncedEvents = state.unsyncedEvents.filter(e => e.id !== eventToDel.id);
 
-  if (key === 'reset') {
-    if (isRunning.value) toggleTimer();
-    if (ttoInterval) clearInterval(ttoInterval);
-    Object.assign(state, {
-      score: { local: 0, visitor: 0 }, timeInSeconds: 0, period: 1, isCountdown: false,
-      eventLog: [], unsyncedEvents: [], activePenalties: [], activeTTO: null,
-      timeouts: { local: { h1: 0, h2: 0, total: 0, lostThird: false }, visitor: { h1: 0, h2: 0, total: 0, lostThird: false } }
-    });
-    // Limpia localstorage pero conserva los clubes cargados
-    localStorage.removeItem(STORAGE_KEY);
-    modalNotificacion.visible = false;
-  }
-
-  if (key === 'delete') {
-    const eventToDel = modalNotificacion.tempPayload;
-
-    if (eventToDel.type === 'goal') {
-      if (state.score[eventToDel.team] > 0) state.score[eventToDel.team]--;
-    } else if (eventToDel.type === 'goal_removed') {
-      state.score[eventToDel.team]++;
-    } else if (['2_min', 'red_card', 'blue_card'].includes(eventToDel.type)) {
-      const activeIdx = state.activePenalties.findIndex(p => p.team === eventToDel.team && p.playerNumber === eventToDel.player_number);
-      if (activeIdx !== -1) state.activePenalties.splice(activeIdx, 1);
-    } else if (eventToDel.type === 'timeout') {
-      const t = state.timeouts[eventToDel.team];
-      if (state.period === 1) t.h1--;
-      if (state.period === 2) t.h2--;
-      t.total--;
+      if (eventToDel.synced) {
+        try {
+          await api.post({ entity: 'delegados', action: 'eliminarEvento', payload: { event_local_id: eventToDel.id } });
+        } catch (e) { console.error("Error backend delete", e); }
+      }
     }
-
-    state.eventLog = state.eventLog.filter(e => e.id !== eventToDel.id);
-    state.unsyncedEvents = state.unsyncedEvents.filter(e => e.id !== eventToDel.id);
-
-    if (eventToDel.synced) {
-      try {
-        await api.post({ entity: 'delegados', action: 'eliminarEvento', payload: { event_local_id: eventToDel.id } });
-      } catch (e) { console.error("Error backend delete", e); }
-    }
-
-    modalNotificacion.visible = false;
-  }
+  });
 };
 
 // --- TIEMPOS MUERTOS DE EQUIPO (TTO) ---

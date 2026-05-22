@@ -209,8 +209,8 @@ import { auth } from '@/api/auth'
 import { useHead } from '@vueuse/head'
 
 useHead({
-  title: 'Mis Exámenes | AAAB',
-  meta: [{ name: 'description', content: 'Consultá tu historial de exámenes en la AAAB.' }],
+  title: 'Mi Rendimiento | AAAB',
+  meta: [{ name: 'description', content: 'Consultá tu historial de exámenes y observaciones en la AAAB.' }],
 })
 
 // ============== USUARIO ==============

@@ -200,16 +200,6 @@
       </template>
     </ModalBase>
 
-    <ModalExito
-      :visible="mostrarModalEliminar"
-      titulo="Eliminar Modelo"
-      mensaje="¿Estás seguro que querés eliminar este modelo del inventario?"
-      tipo="danger"
-      :tieneAccion="true"
-      @cerrar="mostrarModalEliminar = false"
-      @confirmar="confirmarEliminacionItem"
-    />
-
   </div>
 </template>
 
@@ -219,7 +209,6 @@ import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
-import ModalExito from '@/components/ModalExito.vue';
 
 useHead({
   title: 'Inventario | AAAB',
@@ -247,7 +236,6 @@ const mostrarModal = ref(false);
 const modoModal = ref('nuevo');
 const archivosSeleccionados = ref([]);
 
-const mostrarModalEliminar = ref(false);
 const itemAEliminar = ref(null);
 
 const formModal = ref({ id_item: null, descripcion: '', precioGeneral: 0, admite_encargo: false, items: [] });
@@ -344,7 +332,13 @@ const abrirModalEdicion = (modelo) => {
 
 const eliminarItem = (item) => {
   itemAEliminar.value = item;
-  mostrarModalEliminar.value = true;
+
+  notificar({
+    titulo: 'Eliminar Modelo',
+    mensaje: '¿Estás seguro que querés eliminar este modelo del inventario?',
+    tipo: 'danger',
+    alConfirmar: confirmarEliminacionItem
+  });
 };
 
 const confirmarEliminacionItem = async () => {
@@ -364,7 +358,6 @@ const confirmarEliminacionItem = async () => {
     notificar({ titulo: 'Error', mensaje: 'No se pudo eliminar el item.', tipo: 'danger' });
   }
 
-  mostrarModalEliminar.value = false;
   itemAEliminar.value = null;
 };
 
