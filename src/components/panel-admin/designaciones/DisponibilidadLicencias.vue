@@ -280,67 +280,67 @@
     </div>
 
     <!-- MODAL PUBLICAR DESIGNACIONES -->
-<ModalBase
-  :show="mostrarModalSubida"
-  titulo="Publicar Designaciones"
-  icono="publish"
-  colorIcono="bg-danger text-white"
-  maxWidth="600px"
-  @close="mostrarModalSubida = false"
->
-  <div class="mb-3">
-    <label class="form-label small fw-bold">Torneo</label>
-    <input
-      v-model="formPublicar.torneo"
-      type="text"
-      class="form-control"
-      placeholder="Ej: TORNEO APERTURA"
+    <ModalBase
+      :show="mostrarModalSubida"
+      titulo="Publicar Designaciones"
+      icono="publish"
+      colorIcono="bg-danger text-white"
+      maxWidth="600px"
+      @close="mostrarModalSubida = false"
     >
-  </div>
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Torneo</label>
+        <input
+          v-model="formPublicar.torneo"
+          type="text"
+          class="form-control"
+          placeholder="Ej: TORNEO APERTURA"
+        >
+      </div>
 
-  <div class="mb-3">
-    <label class="form-label small fw-bold">Fecha</label>
-    <input
-      v-model="formPublicar.fecha"
-      type="text"
-      class="form-control"
-      placeholder="Ej: 18 y 19 de Abril"
-    >
-  </div>
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Fecha</label>
+        <input
+          v-model="formPublicar.fecha"
+          type="text"
+          class="form-control"
+          placeholder="Ej: 18 y 19 de Abril"
+        >
+      </div>
 
-  <div class="mb-3">
-    <label class="form-label small fw-bold">Archivo Excel</label>
-    <input
-      @change="manejarArchivo"
-      type="file"
-      class="form-control"
-      accept=".xlsx,.xls"
-    >
-  </div>
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Archivo Excel</label>
+        <input
+          @change="manejarArchivo"
+          type="file"
+          class="form-control"
+          accept=".xlsx,.xls"
+        >
+      </div>
 
-  <template #footer>
-    <button
-      @click="mostrarModalSubida = false"
-      class="btn btn-light"
-      :disabled="subiendoArchivo"
-    >
-      Cancelar
-    </button>
+      <template #footer>
+        <button
+          @click="mostrarModalSubida = false"
+          class="btn btn-light"
+          :disabled="subiendoArchivo"
+        >
+          Cancelar
+        </button>
 
-    <button
-      @click="enviarDesignaciones"
-      class="btn btn-danger fw-bold"
-      :disabled="subiendoArchivo || !formPublicar.archivoBase64"
-    >
-      <span
-        v-if="subiendoArchivo"
-        class="spinner-border spinner-border-sm me-2"
-      ></span>
+        <button
+          @click="enviarDesignaciones"
+          class="btn btn-danger fw-bold"
+          :disabled="subiendoArchivo || !formPublicar.archivoBase64"
+        >
+          <span
+            v-if="subiendoArchivo"
+            class="spinner-border spinner-border-sm me-2"
+          ></span>
 
-      {{ subiendoArchivo ? 'Publicando...' : 'Publicar Ahora' }}
-    </button>
-  </template>
-</ModalBase>
+          {{ subiendoArchivo ? 'Publicando...' : 'Publicar Ahora' }}
+        </button>
+      </template>
+    </ModalBase>
 
   </div>
 </template>

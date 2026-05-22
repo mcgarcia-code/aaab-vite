@@ -414,8 +414,8 @@ const ESTADO_MAP = {
 }
 
 const TIPO_BADGE_MAP = {
-  asamblea:     'bg-primary text-white',
-  reunion:      'bg-info text-white',
+  asamblea:     'bg-dark text-white',
+  reunion:      'bg-dark text-white',
   curso:        'bg-success text-white',
   recuperatorio:'bg-warning text-dark',
   otro:         'bg-secondary text-white',
