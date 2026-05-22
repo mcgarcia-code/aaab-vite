@@ -280,37 +280,67 @@
     </div>
 
     <!-- MODAL PUBLICAR DESIGNACIONES -->
-    <div v-if="mostrarModalSubida" class="modal d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header border-0">
-            <h5 class="modal-title fw-bold text-danger">Publicar Designaciones</h5>
-            <button type="button" class="btn-close" @click="mostrarModalSubida = false" :disabled="subiendoArchivo"></button>
-          </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label small fw-bold">Torneo</label>
-              <input v-model="formPublicar.torneo" type="text" class="form-control" placeholder="Ej: TORNEO APERTURA">
-            </div>
-            <div class="mb-3">
-              <label class="form-label small fw-bold">Fecha</label>
-              <input v-model="formPublicar.fecha" type="text" class="form-control" placeholder="Ej: 18 y 19 de Abril">
-            </div>
-            <div class="mb-3">
-              <label class="form-label small fw-bold">Archivo Excel</label>
-              <input @change="manejarArchivo" type="file" class="form-control" accept=".xlsx, .xls">
-            </div>
-          </div>
-          <div class="modal-footer border-0">
-            <button @click="mostrarModalSubida = false" class="btn btn-light" :disabled="subiendoArchivo">Cancelar</button>
-            <button @click="enviarDesignaciones" class="btn btn-danger fw-bold" :disabled="subiendoArchivo || !formPublicar.archivoBase64">
-              <span v-if="subiendoArchivo" class="spinner-border spinner-border-sm me-2"></span>
-              {{ subiendoArchivo ? 'Publicando...' : 'Publicar Ahora' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+<ModalBase
+  :show="mostrarModalSubida"
+  titulo="Publicar Designaciones"
+  icono="publish"
+  colorIcono="bg-danger text-white"
+  maxWidth="600px"
+  @close="mostrarModalSubida = false"
+>
+  <div class="mb-3">
+    <label class="form-label small fw-bold">Torneo</label>
+    <input
+      v-model="formPublicar.torneo"
+      type="text"
+      class="form-control"
+      placeholder="Ej: TORNEO APERTURA"
+    >
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label small fw-bold">Fecha</label>
+    <input
+      v-model="formPublicar.fecha"
+      type="text"
+      class="form-control"
+      placeholder="Ej: 18 y 19 de Abril"
+    >
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label small fw-bold">Archivo Excel</label>
+    <input
+      @change="manejarArchivo"
+      type="file"
+      class="form-control"
+      accept=".xlsx,.xls"
+    >
+  </div>
+
+  <template #footer>
+    <button
+      @click="mostrarModalSubida = false"
+      class="btn btn-light"
+      :disabled="subiendoArchivo"
+    >
+      Cancelar
+    </button>
+
+    <button
+      @click="enviarDesignaciones"
+      class="btn btn-danger fw-bold"
+      :disabled="subiendoArchivo || !formPublicar.archivoBase64"
+    >
+      <span
+        v-if="subiendoArchivo"
+        class="spinner-border spinner-border-sm me-2"
+      ></span>
+
+      {{ subiendoArchivo ? 'Publicando...' : 'Publicar Ahora' }}
+    </button>
+  </template>
+</ModalBase>
 
   </div>
 </template>
@@ -321,6 +351,7 @@ import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head'
+import ModalBase from '@/components/ModalBase.vue'
 
 useHead({
   title: 'Designaciones de Árbitros| AAAB',
