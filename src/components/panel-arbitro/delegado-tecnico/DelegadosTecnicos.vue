@@ -311,7 +311,6 @@
 import { ref, reactive, computed, watch, onMounted, onUnmounted, inject } from 'vue';
 import { api } from '@/api/api';
 import ModalBase from '@/components/ModalBase.vue';
-// Eliminamos la importación local de ModalExito
 import { useHead } from '@vueuse/head'
 
 useHead({

@@ -68,7 +68,7 @@
               <i class="bi bi-info-circle-fill fs-5 text-warning-emphasis flex-shrink-0 mt-1"></i>
               <div class="small text-dark">
                 <strong>¿Detectaste algún dato erróneo?</strong>
-                Si alguno de tus exámenes no figura correctamente, por favor comunicate con tu
+                Si alguno de tus exámenes o reuniones no figura correctamente, por favor comunicate con tu
                 <strong>coordinador de grupo</strong> para que pueda revisarlo y corregirlo.
               </div>
             </div>
