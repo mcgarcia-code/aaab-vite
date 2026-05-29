@@ -386,6 +386,48 @@
               <option :value="true">SI</option><option :value="false">NO</option>
             </select>
           </div>
+          <!-- Coordinador de grupo -->
+          <div class="col-12" v-if="formModal.rol == 4">
+            <label class="small fw-bold text-dark mb-1">¿Qué grupo coordina?</label>
+            <div class="bg-light p-2 rounded border shadow-sm d-flex flex-wrap align-items-center gap-3 border-light-subtle">
+              <div class="form-check m-0">
+                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.lh" id="grpLH">
+                <label class="form-check-label small fw-bold mt-1" for="grpLH">LH</label>
+              </div>
+              <div class="form-check m-0">
+                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.sr" id="grpSR">
+                <label class="form-check-label small fw-bold mt-1" for="grpSR">SR</label>
+              </div>
+              <div class="form-check m-0">
+                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.preLiga" id="grpPreLiga">
+                <label class="form-check-label small fw-bold mt-1" for="grpPreLiga">Pre Liga</label>
+              </div>
+              <div class="form-check m-0">
+                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.uno" id="grpUno">
+                <label class="form-check-label small fw-bold mt-1" for="grpUno">1</label>
+              </div>
+              <div class="form-check m-0">
+                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.dos" id="grpDos">
+                <label class="form-check-label small fw-bold mt-1" for="grpDos">2</label>
+              </div>
+              <div class="form-check m-0">
+                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.tresA" id="grpTresA">
+                <label class="form-check-label small fw-bold mt-1" for="grpTresA">3A</label>
+              </div>
+              <div class="form-check m-0">
+                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.tresB" id="grpTresB">
+                <label class="form-check-label small fw-bold mt-1" for="grpTresB">3B</label>
+              </div>
+              <div class="form-check m-0">
+                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.tresC" id="grpTresC">
+                <label class="form-check-label small fw-bold mt-1" for="grpTresC">3C</label>
+              </div>
+              <div class="form-check m-0">
+                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.cuatro" id="grpCuatro">
+                <label class="form-check-label small fw-bold mt-1" for="grpCuatro">4</label>
+              </div>
+            </div>
+          </div>
 
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Ubicación</div>
           <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Provincia</label><selProvincia v-model="formModal.provincia" :provincias="provincias" class="form-select shadow-none border-secondary-subtle" /></div>
@@ -657,6 +699,10 @@ const formModalVacio = () => ({
   disponibilidad_domingo: 'FT', disponibilidad_domingo_desde: '', disponibilidad_domingo_hasta: '',
   juega_handball: 'NO', donde_juega: '', categoria_handball: '',
   observaciones: '',
+  lh: false, sr: false, preLiga: false,
+  uno: false, dos: false,
+  tresA: false, tresB: false, tresC: false,
+  cuatro: false,
 })
 
 const formModal = ref(formModalVacio())
