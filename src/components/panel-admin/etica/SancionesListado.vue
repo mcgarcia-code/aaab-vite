@@ -113,7 +113,7 @@
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.desde" class="form-control form-control-sm shadow-none text-center" placeholder="DD/MM/AA"></td>
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.hasta" class="form-control form-control-sm shadow-none text-center" placeholder="DD/MM/AA"></td>
                   <td class="p-2 border-bottom border-2 pe-3">
-                    <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-center font-monospace">
+                    <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
                       <option value="">TODOS</option>
                       <option value="vigente">VIGENTE</option>
                       <option value="cumplida">CUMPLIDA</option>

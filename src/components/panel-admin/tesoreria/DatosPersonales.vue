@@ -94,7 +94,7 @@
 
                 <div class="col-12 d-md-none small text-dark d-flex flex-column gap-2 bg-light p-2 rounded border border-light-subtle" :class="{'bg-transparent border-0': a.es_activo == 0}">
                   <div class="d-flex justify-content-between border-bottom pb-1" :class="{'border-danger-subtle': a.es_activo == 0, 'border-secondary-subtle': a.es_activo != 0}">
-                    <span><strong>DNI:</strong> <span class="font-monospace">{{ a.dni || '-' }}</span></span>
+                    <span><strong>DNI:</strong> {{ a.dni || '-' }}</span>
                     <span><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
                   </div>
                   <div v-if="a.fecha_nacimiento"><strong>F. Nac:</strong> {{ mostrarFechaArg(a.fecha_nacimiento) }}</div>
@@ -129,7 +129,7 @@
                   {{ a.celular || '-' }}
                 </div>
 
-                <div class="col-md-1 d-none d-md-block text-center small fw-bold text-dark font-monospace">
+                <div class="col-md-1 d-none d-md-block text-center small fw-bold text-dark">
                   {{ a.dni || '-' }}
                 </div>
 

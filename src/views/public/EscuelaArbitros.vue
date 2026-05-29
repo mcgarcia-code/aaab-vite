@@ -280,7 +280,14 @@ const cuerpoDocente = ref([
     role: 'Encuentros de Mini Handball',
     bio: 'Árbitro Local / Técnico Químico',
     image: new URL('../../assets/fotos/nicolas-cimiotto.webp', import.meta.url).href
+  },
+  {
+    name: 'Facundo Medina',
+    role: 'Encuentros de Mini Handball',
+    bio: 'Árbitro Local',
+    image: new URL('../../assets/fotos/facundo-medina.webp', import.meta.url).href
   }
+
 ])
 
 const staffInvitado = ref({

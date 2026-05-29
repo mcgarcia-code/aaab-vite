@@ -207,7 +207,7 @@
                   </td>
                   <td class="text-center text-dark">{{ a.grupo }}</td>
                   <td class="text-center text-dark">{{ a.subgrupo }}</td>
-                  <td class="text-center text-dark font-monospace">{{ a.dni }}</td>
+                  <td class="text-center text-dark">{{ a.dni }}</td>
                   <td class="text-dark">{{ a.email }}</td>
                   <td class="text-dark">{{ a.direccion }}</td>
                   <td class="text-dark">{{ a.nombre_provincia }}</td>

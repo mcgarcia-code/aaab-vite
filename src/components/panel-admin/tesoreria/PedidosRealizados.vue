@@ -59,7 +59,7 @@
               <input v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="Fecha (DD/MM/YY)">
             </div>
             <div class="col-6 col-md-3">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none font-monospace">
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
                 <option value="">ESTADO (TODOS)</option>
                 <option value="creado">CREADO</option>
                 <option value="en proceso">EN PROCESO</option>

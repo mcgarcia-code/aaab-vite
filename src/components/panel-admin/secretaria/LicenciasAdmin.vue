@@ -58,7 +58,7 @@
               <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre...">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none font-monospace">
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
                 <option value="">ESTADO (TODOS)</option>
                 <option value="pendiente">PENDIENTE</option>
                 <option value="aprobada">APROBADA</option>
