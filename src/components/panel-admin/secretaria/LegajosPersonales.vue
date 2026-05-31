@@ -390,41 +390,17 @@
           <div class="col-12" v-if="formModal.rol == 4">
             <label class="small fw-bold text-dark mb-1">¿Qué grupo coordina?</label>
             <div class="bg-light p-2 rounded border shadow-sm d-flex flex-wrap align-items-center gap-3 border-light-subtle">
-              <div class="form-check m-0">
-                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.lh" id="grpLH">
-                <label class="form-check-label small fw-bold mt-1" for="grpLH">LH</label>
-              </div>
-              <div class="form-check m-0">
-                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.sr" id="grpSR">
-                <label class="form-check-label small fw-bold mt-1" for="grpSR">SR</label>
-              </div>
-              <div class="form-check m-0">
-                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.preLiga" id="grpPreLiga">
-                <label class="form-check-label small fw-bold mt-1" for="grpPreLiga">Pre Liga</label>
-              </div>
-              <div class="form-check m-0">
-                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.uno" id="grpUno">
-                <label class="form-check-label small fw-bold mt-1" for="grpUno">1</label>
-              </div>
-              <div class="form-check m-0">
-                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.dos" id="grpDos">
-                <label class="form-check-label small fw-bold mt-1" for="grpDos">2</label>
-              </div>
-              <div class="form-check m-0">
-                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.tresA" id="grpTresA">
-                <label class="form-check-label small fw-bold mt-1" for="grpTresA">3A</label>
-              </div>
-              <div class="form-check m-0">
-                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.tresB" id="grpTresB">
-                <label class="form-check-label small fw-bold mt-1" for="grpTresB">3B</label>
-              </div>
-              <div class="form-check m-0">
-                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.tresC" id="grpTresC">
-                <label class="form-check-label small fw-bold mt-1" for="grpTresC">3C</label>
-              </div>
-              <div class="form-check m-0">
-                <input class="form-check-input shadow-none border-secondary-subtle" type="checkbox" v-model="formModal.cuatro" id="grpCuatro">
-                <label class="form-check-label small fw-bold mt-1" for="grpCuatro">4</label>
+              <div v-for="grupoItem in grupos" :key="grupoItem.id" class="form-check m-0">
+                <input
+                  :id="`grp-${grupoItem.id}`"
+                  class="form-check-input shadow-none border-secondary-subtle"
+                  type="checkbox"
+                  :checked="tieneGrupoSeleccionado(grupoItem.id)"
+                  @change="toggleGrupoSeleccionado(grupoItem.id, $event.target.checked)"
+                >
+                <label class="form-check-label small fw-bold mt-1" :for="`grp-${grupoItem.id}`">
+                  {{ grupoItem.nombre }}{{ grupoItem.subgrupo ? ` ${grupoItem.subgrupo}` : '' }}
+                </label>
               </div>
             </div>
           </div>
@@ -665,6 +641,7 @@ const provincias = ref([])
 const localidades = ref([])
 const paginaActual = ref(1)
 const registrosPorPagina = 8
+const grupos = ref([])
 
 const mostrarModal = ref(false)
 const modoModal = ref('nuevo')
@@ -693,16 +670,13 @@ const formModalVacio = () => ({
   rol: 1, es_activo: 1, apto_medico: false,
   provincia: '', localidad: '', zona: '', direccion: '',
   grupo: '', subgrupo: '', celular: '',
+  grupos: [],
   telefonocontacto: '', parentescocontacto: '',
   fecha_nacimiento: '', movilidad: '',
   disponibilidad_sabado: 'FT', disponibilidad_sabado_desde: '', disponibilidad_sabado_hasta: '',
   disponibilidad_domingo: 'FT', disponibilidad_domingo_desde: '', disponibilidad_domingo_hasta: '',
   juega_handball: 'NO', donde_juega: '', categoria_handball: '',
   observaciones: '',
-  lh: false, sr: false, preLiga: false,
-  uno: false, dos: false,
-  tresA: false, tresB: false, tresC: false,
-  cuatro: false,
 })
 
 const formModal = ref(formModalVacio())
@@ -837,8 +811,39 @@ const crearNuevo = () => {
   mostrarModal.value = true
 }
 
+const normalizarIdsGrupos = (gruposArbitro) => {
+  if (!Array.isArray(gruposArbitro)) return []
+
+  return gruposArbitro
+    .map(grupoItem => typeof grupoItem === 'object' ? grupoItem?.id : grupoItem)
+    .filter(grupoId => grupoId !== null && grupoId !== undefined && grupoId !== '')
+}
+
+const tieneGrupoSeleccionado = (grupoId) => {
+  return formModal.value.grupos.some(id => String(id) === String(grupoId))
+}
+
+const toggleGrupoSeleccionado = (grupoId, estaChequeado) => {
+  if (!Array.isArray(formModal.value.grupos)) {
+    formModal.value.grupos = []
+  }
+
+  if (estaChequeado) {
+    if (!tieneGrupoSeleccionado(grupoId)) {
+      formModal.value.grupos.push(grupoId)
+    }
+    return
+  }
+
+  formModal.value.grupos = formModal.value.grupos.filter(id => String(id) !== String(grupoId))
+}
+
 const editarArbitro = (arbitro) => {
-  formModal.value = { ...arbitro }
+  formModal.value = {
+    ...formModalVacio(),
+    ...arbitro,
+    grupos: normalizarIdsGrupos(arbitro.grupos)
+  }
   movilidadArray.value = []
   let movilidades = arbitro.movilidad ? arbitro.movilidad.split(',') : []
   movilidades.forEach(v => {
@@ -906,6 +911,7 @@ const confirmarEdicion = async () => {
 const prepararPayload = (a) => {
   const clon = { ...a }
   clon.movilidad = movilidadArray.value.join(', ')
+  clon.grupos = normalizarIdsGrupos(clon.grupos)
   if (clon.grupo != '3') clon.subgrupo = null
 
   ;['disponibilidad_sabado_desde', 'disponibilidad_sabado_hasta',
@@ -985,6 +991,18 @@ const obtenerProvinciasLocalidades = async () => {
   const { payload } = await api.get({ entity: 'localidades', action: 'obtenerProvinciasLocalidades' })
   provincias.value = payload.provincias
   localidades.value = payload.localidades
+}
+
+const obtenerGrupos = async () => {
+  try {
+    const { payload } = await api.get({ 
+      entity: 'grupos', 
+      action: 'obtenerGrupos' 
+    })
+    grupos.value = payload
+  } catch (error) {
+    console.error('Error al obtener grupos:', error)
+  }
 }
 
 const localidadesFiltradas = computed(() => {
@@ -1075,6 +1093,7 @@ const toggleEdicionGlobal = async () => {
 onMounted(() => {
   cargarDatos()
   obtenerProvinciasLocalidades()
+  obtenerGrupos()
   cargarSolicitudes()
   cargarEstadoEdicion()
 })
