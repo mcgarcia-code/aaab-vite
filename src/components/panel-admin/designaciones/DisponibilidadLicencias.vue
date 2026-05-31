@@ -885,4 +885,29 @@ td:hover .observacion-tooltip {
   background-color: #93e2ab !important;
   color: #000 !important;
 }
+
+/* Vista móvil: aplicar el mismo estado a la card completa */
+.card.fila-roja,
+.card.fila-roja .card-header,
+.card.fila-roja .card-body,
+.card.fila-roja .bg-white {
+  background-color: #fca5a5 !important;
+  color: #000 !important;
+}
+
+.card.fila-amarilla,
+.card.fila-amarilla .card-header,
+.card.fila-amarilla .card-body,
+.card.fila-amarilla .bg-white {
+  background-color: #fef08a !important;
+  color: #000 !important;
+}
+
+.card.fila-des,
+.card.fila-des .card-header,
+.card.fila-des .card-body,
+.card.fila-des .bg-white {
+  background-color: #93e2ab !important;
+  color: #000 !important;
+}
 </style>
