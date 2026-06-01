@@ -65,7 +65,7 @@ const routes = [
       { path: 'indumentaria/nuevo', name: 'RealizarPedido', component: () => import('../components/panel-arbitro/indumentaria/RealizarPedido.vue') },
       { path: 'indumentaria/mis-pedidos', name: 'MisPedidos', component: () => import('../components/panel-arbitro/indumentaria/MisPedidos.vue') },
       { path: 'facturacion', name: 'InstitucionesCuit', component: () => import('../components/panel-arbitro/facturacion/InstitucionesCuit.vue') },
-      { path: 'historial-notificaciones', name: 'HistorialNotificaciones', component: () => import('../components/panel-arbitro/notificaciones/HistorialNotificaciones.vue') },
+      { path: 'historial-notificaciones', name: 'HistorialNotificacionesArbitro', component: () => import('../components/panel-arbitro/notificaciones/HistorialNotificaciones.vue') },
       { path: 'delegado-tecnico', name: 'DelegadoTecnico', component: () => import('../components/panel-arbitro/delegado-tecnico/DelegadosTecnicos.vue') }
     ]
   },
@@ -81,7 +81,7 @@ const routes = [
       { path: 'credencial-curso', name: 'PanelCredencialCurso', component: () => import('../components/panel-curso/credencial-curso/CredencialDigitalCurso.vue') },
       { path: 'rendimiento-curso', name: 'PanelRendimientoCurso', component: () => import('../components/panel-curso/rendimiento-curso/MiRendimientoCurso.vue') },
       { path: 'cuota-curso', name: 'CuotaCurso', component: () => import('../components/panel-curso/tesoreria/CuotaCurso.vue') },
-      { path: 'historial-notificaciones', name: 'HistorialNotificaciones', component: () => import('../components/panel-curso/notificaciones-curso/HistorialNotificacionesCurso.vue') },
+      { path: 'historial-notificaciones', name: 'HistorialNotificacionesCurso', component: () => import('../components/panel-curso/notificaciones-curso/HistorialNotificacionesCurso.vue') },
 
     ]
   },

@@ -8,19 +8,17 @@
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-megaphone me-1"></i> Gestión de Eventos
+              <i class="bi bi-megaphone me-1"></i> Gestion de Eventos
             </h4>
             <span class="text-muted small d-block mt-1">Total: {{ eventosFiltrados.length }} eventos</span>
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <!-- Botón Recargar -->
             <button @click="obtenerEventos" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
               <span class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
 
-            <!-- Botón Filtros (Solo Móvil) -->
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
@@ -37,7 +35,6 @@
           </div>
         </div>
 
-        <!-- PANEL DE FILTROS UNIFICADO -->
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Eventos</span>
@@ -46,15 +43,15 @@
 
           <div class="row g-2">
             <div class="col-12 col-md-3">
-              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar tema o descripción...">
+              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar tema o descripcion...">
             </div>
             <div class="col-6 col-md-3">
               <input type="date" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center">
             </div>
             <div class="col-6 col-md-3">
               <select v-model="filtros.categoria" class="form-select form-select-sm shadow-none">
-                <option value="">TODAS LAS CATEGORÍAS</option>
-                <option value="reunion">REUNIÓN</option>
+                <option value="">TODAS LAS CATEGORIAS</option>
+                <option value="reunion">REUNION</option>
                 <option value="recordatorio">RECORDATORIO</option>
                 <option value="urgente">URGENTE</option>
               </select>
@@ -69,18 +66,15 @@
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">
-
-          <!-- TABLA (Solo Escritorio) -->
           <div class="d-none d-md-block table-responsive border rounded shadow-sm">
             <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem; table-layout: fixed;">
               <thead class="table-light">
                 <tr>
-                  <!-- Modificá el width de cada columna directamente acá -->
                   <th class="py-3 ps-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 110px;">Fecha</th>
                   <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 100px;">Acciones</th>
                   <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 25%;">Tema del Evento</th>
-                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 35%;">Lugar / Descripción</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 130px;">Categoría</th>
+                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 35%;">Lugar / Descripcion</th>
+                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 130px;">Categoria</th>
                   <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 150px;">Alcance</th>
                 </tr>
               </thead>
@@ -111,7 +105,7 @@
                   </td>
                   <td class="text-center pe-3">
                     <span class="badge-status-sm bg-dark text-white">
-                      {{ !evento.grupo ? 'TODOS' : (evento.subgrupo ? `${evento.grupo}-${evento.subgrupo}` : evento.grupo) }}
+                      {{ obtenerDescripcionAlcance(evento) }}
                     </span>
                   </td>
                 </tr>
@@ -119,10 +113,8 @@
             </table>
           </div>
 
-          <!-- CARDS (Solo Celular) -->
           <div class="d-md-none p-3 bg-light">
             <div v-for="evento in eventosPaginados" :key="'mob-'+evento.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
-
               <div class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 d-flex flex-column gap-1">
                 <div class="d-flex justify-content-between align-items-center">
                   <span class="small text-primary fw-bold font-monospace">{{ formatearFecha(evento.fecha_evento) }}</span>
@@ -135,7 +127,7 @@
 
               <div class="card-body pt-0 px-3 pb-3">
                 <div class="bg-light p-2 rounded border small mb-3">
-                  <p class="text-muted m-0" style="white-space: pre-line;">{{ evento.descripcion || 'Sin descripción' }}</p>
+                  <p class="text-muted m-0" style="white-space: pre-line;">{{ evento.descripcion || 'Sin descripcion' }}</p>
                   <div v-if="esLink(evento.descripcion)" class="mt-2">
                     <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none">
                       <span class="material-icons align-middle" style="font-size: 16px;">link</span> Abrir Enlace
@@ -146,11 +138,10 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <span class="text-muted small">Alcance:</span>
                   <span class="badge-status-sm bg-dark text-white">
-                    {{ !evento.grupo ? 'TODOS' : (evento.subgrupo ? `${evento.grupo}-${evento.subgrupo}` : evento.grupo) }}
+                    {{ obtenerDescripcionAlcance(evento) }}
                   </span>
                 </div>
 
-                <!-- Botones Acciones -->
                 <div class="d-flex gap-2">
                   <button @click="cargarDatosEdicion(evento)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
                     <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
@@ -160,34 +151,27 @@
                   </button>
                 </div>
               </div>
-
             </div>
           </div>
 
-          <!-- EMPTY STATE -->
           <div v-if="eventosPaginados.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-3">
             <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">event_busy</span>
             <p class="text-muted m-0 fw-bold">No se encontraron eventos.</p>
           </div>
 
-          <!-- PAGINACIÓN -->
           <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
             <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
             </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <span class="fw-bold text-dark small">Pagina {{ paginaActual }} de {{ totalPaginas }}</span>
             <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
-
         </div>
       </div>
     </div>
 
-    <!-- ==============================================
-         MODAL FORMULARIO
-         ============================================== -->
     <ModalBase
       :show="mostrarModal"
       @close="mostrarModal = false"
@@ -199,17 +183,17 @@
         <span class="fw-bold fs-5">{{ modoEdicion ? 'Editar Evento' : 'Nuevo Evento' }}</span>
       </template>
 
-      <p class="text-muted small mb-4">Completá los datos para enviar el aviso a los árbitros.</p>
+      <p class="text-muted small mb-4">Completa los datos para enviar el aviso a los arbitros.</p>
 
       <form id="formEvento" @submit.prevent="confirmarGuardado" class="text-start">
         <div class="row g-3">
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Tema del Evento *</label>
-            <input v-model="form.titulo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Reunión general..." required>
+            <input v-model="form.titulo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Reunion general..." required>
           </div>
 
           <div class="col-12">
-            <label class="small fw-bold text-dark mb-1">Lugar o Descripción *</label>
+            <label class="small fw-bold text-dark mb-1">Lugar o Descripcion *</label>
             <textarea v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Ej: Link de Zoom..." required></textarea>
           </div>
 
@@ -219,9 +203,9 @@
           </div>
 
           <div class="col-md-6">
-            <label class="small fw-bold text-dark mb-1">Categoría *</label>
+            <label class="small fw-bold text-dark mb-1">Categoria *</label>
             <select v-model="form.categoria" class="form-select shadow-none border-secondary-subtle">
-              <option value="reunion">Reunión</option>
+              <option value="reunion">Reunion</option>
               <option value="recordatorio">Recordatorio</option>
               <option value="urgente">Urgente</option>
             </select>
@@ -232,27 +216,36 @@
           </div>
 
           <div class="col-12">
-            <label class="small fw-bold text-danger mb-1">Alcance de Visibilidad</label>
-            <select v-model="form.alcance" class="form-select shadow-none border-danger-subtle text-danger fw-bold" @change="limpiarAlcance">
-              <option value="general">Para Todos los Árbitros</option>
-              <option value="grupo">Solo a un Grupo / Subgrupo específico</option>
-            </select>
-          </div>
-
-          <div v-if="form.alcance === 'grupo'" class="col-md-6 animate__animated animate__fadeIn">
-            <label class="small fw-bold text-dark mb-1">Grupo *</label>
-            <select v-model="form.grupo" class="form-select shadow-none border-secondary-subtle" required @change="form.subgrupo = ''">
-              <option value="" disabled>Elegir grupo...</option>
-              <option v-for="g in gruposOficiales" :key="g" :value="g">{{ g }}</option>
-            </select>
-          </div>
-
-          <div v-if="form.alcance === 'grupo' && form.grupo === '3'" class="col-md-6 animate__animated animate__fadeIn">
-            <label class="small fw-bold text-dark mb-1">Subgrupo (Opcional)</label>
-            <select v-model="form.subgrupo" class="form-select shadow-none border-secondary-subtle">
-              <option value="">Todo el Grupo 3</option>
-              <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-            </select>
+            <label class="small fw-bold text-danger mb-2">Grupos destinatarios *</label>
+            <div class="bg-light border border-danger-subtle rounded p-3">
+              <div v-if="grupos.length" class="d-flex flex-wrap gap-3">
+                <div class="form-check m-0 w-100 border-bottom pb-2 mb-1">
+                  <input
+                    id="evento-grupos-todos"
+                    class="form-check-input shadow-none border-secondary-subtle"
+                    type="checkbox"
+                    :checked="todosLosGruposSeleccionados"
+                    @change="toggleTodosLosGrupos($event.target.checked)"
+                  >
+                  <label class="form-check-label small fw-bold mt-1" for="evento-grupos-todos">
+                    Seleccionar todos
+                  </label>
+                </div>
+                <div v-for="grupoItem in grupos" :key="grupoItem.id" class="form-check m-0">
+                  <input
+                    :id="`evento-grupo-${grupoItem.id}`"
+                    class="form-check-input shadow-none border-secondary-subtle"
+                    type="checkbox"
+                    :checked="tieneGrupoSeleccionado(grupoItem.id)"
+                    @change="toggleGrupoSeleccionado(grupoItem.id, $event.target.checked)"
+                  >
+                  <label class="form-check-label small fw-bold mt-1" :for="`evento-grupo-${grupoItem.id}`">
+                    {{ obtenerNombreGrupo(grupoItem) }}
+                  </label>
+                </div>
+              </div>
+              <p v-else class="text-muted small mb-0">No hay grupos disponibles para seleccionar.</p>
+            </div>
           </div>
         </div>
       </form>
@@ -264,222 +257,317 @@
           {{ procesando ? 'GUARDANDO...' : (modoEdicion ? 'GUARDAR CAMBIOS' : 'PUBLICAR EVENTO') }}
         </button>
       </template>
-
     </ModalBase>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, inject, computed, watch } from 'vue';
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
+import { ref, reactive, onMounted, inject, computed, watch } from 'vue'
+import { api } from '@/api/api'
+import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
 useHead({
-  title: 'Gestión de Eventos | AAAB',
-  meta: [{ name: 'description', content: 'Administración de eventos y avisos.' }],
+  title: 'Gestion de Eventos | AAAB',
+  meta: [{ name: 'description', content: 'Administracion de eventos y avisos.' }],
 })
 
-const notificar = inject('notificar');
-const procesando = ref(false);
-const gruposOficiales = ['Pre Liga', 'LH', '1', '2', '3', '4', 'SR', 'CURSO DE ÁRBITROS'];
+const notificar = inject('notificar')
+const procesando = ref(false)
+const grupos = ref([])
+const listaEventos = ref([])
 
-const formBase = { id: null, titulo: '', descripcion: '', fecha_evento: '', alcance: 'general', grupo: '', subgrupo: '', categoria: 'reunion' };
-const form = reactive({ ...formBase });
-const listaEventos = ref([]);
+const formBase = {
+  id: null,
+  titulo: '',
+  descripcion: '',
+  fecha_evento: '',
+  grupos: [],
+  categoria: 'reunion'
+}
 
-// MODAL CONTROLS
-const mostrarModal = ref(false);
-const modoEdicion = ref(false);
-const mostrarFiltrosMobile = ref(false);
+const form = reactive({ ...formBase })
 
-// FILTROS TIPO COLUMNA
+const mostrarModal = ref(false)
+const modoEdicion = ref(false)
+const mostrarFiltrosMobile = ref(false)
+
 const filtros = reactive({
   busqueda: '',
   fecha: '',
   categoria: '',
   grupo: ''
-});
+})
 
-// VARIABLES PARA PAGINACIÓN
-const paginaActual = ref(1);
-const registrosPorPagina = 8; // Vuelto a dejar en 8 fijos
+const paginaActual = ref(1)
+const registrosPorPagina = 8
 
-// --- FUNCIÓN DE NORMALIZACIÓN ---
 const normalizarTexto = (texto) => {
   return String(texto || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase();
-};
+    .toLowerCase()
+}
+
+const obtenerNombreGrupo = (grupoItem) => {
+  return [grupoItem?.nombre, grupoItem?.subgrupo].filter(Boolean).join(' ')
+}
+
+const normalizarIdsGrupos = (gruposEvento) => {
+  if (!Array.isArray(gruposEvento)) return []
+
+  return gruposEvento
+    .map(grupoItem => typeof grupoItem === 'object' ? grupoItem?.id : grupoItem)
+    .filter(grupoId => grupoId !== null && grupoId !== undefined && grupoId !== '')
+}
+
+const tieneGrupoSeleccionado = (grupoId) => {
+  return form.grupos.some(id => String(id) === String(grupoId))
+}
+
+const todosLosGruposSeleccionados = computed(() => {
+  return grupos.value.length > 0 && grupos.value.every(grupoItem => tieneGrupoSeleccionado(grupoItem.id))
+})
+
+const toggleGrupoSeleccionado = (grupoId, estaChequeado) => {
+  if (!Array.isArray(form.grupos)) {
+    form.grupos = []
+  }
+
+  if (estaChequeado) {
+    if (!tieneGrupoSeleccionado(grupoId)) {
+      form.grupos.push(grupoId)
+    }
+    return
+  }
+
+  form.grupos = form.grupos.filter(id => String(id) !== String(grupoId))
+}
+
+const toggleTodosLosGrupos = (estaChequeado) => {
+  form.grupos = estaChequeado ? grupos.value.map(grupoItem => grupoItem.id) : []
+}
+
+const obtenerIdsGruposEvento = (evento) => {
+  if (Array.isArray(evento?.grupos)) {
+    return normalizarIdsGrupos(evento.grupos)
+  }
+
+  if (!evento?.grupo) return []
+
+  const grupoEncontrado = grupos.value.find(grupoItem => {
+    return String(grupoItem.nombre || '') === String(evento.grupo || '') &&
+      String(grupoItem.subgrupo || '') === String(evento.subgrupo || '')
+  })
+
+  return grupoEncontrado ? [grupoEncontrado.id] : []
+}
+
+const obtenerDescripcionAlcance = (evento) => {
+  if (Array.isArray(evento?.grupos) && evento.grupos.length) {
+    return evento.grupos
+      .map(grupoItem => typeof grupoItem === 'object' ? obtenerNombreGrupo(grupoItem) : grupoItem)
+      .filter(Boolean)
+      .join(', ')
+  }
+
+  if (!evento?.grupo) return 'TODOS'
+
+  return evento.subgrupo ? `${evento.grupo}-${evento.subgrupo}` : evento.grupo
+}
 
 const eventosFiltrados = computed(() => {
-  let resultado = listaEventos.value;
+  let resultado = listaEventos.value
 
   resultado = resultado.filter(e => {
-    // 1. Filtro general (Tema / Descripción)
-    let matchBusqueda = true;
+    let matchBusqueda = true
     if (filtros.busqueda) {
-      const search = normalizarTexto(filtros.busqueda);
-      matchBusqueda = normalizarTexto(e.titulo).includes(search) || normalizarTexto(e.descripcion).includes(search);
+      const search = normalizarTexto(filtros.busqueda)
+      matchBusqueda = normalizarTexto(e.titulo).includes(search) || normalizarTexto(e.descripcion).includes(search)
     }
 
-    // 2. Filtro Fecha
-    let matchFecha = true;
+    let matchFecha = true
     if (filtros.fecha) {
-      matchFecha = (e.fecha_evento || '').startsWith(filtros.fecha);
+      matchFecha = (e.fecha_evento || '').startsWith(filtros.fecha)
     }
 
-    // 3. Filtro Categoría
-    let matchCategoria = true;
+    let matchCategoria = true
     if (filtros.categoria) {
-      matchCategoria = e.categoria === filtros.categoria;
+      matchCategoria = e.categoria === filtros.categoria
     }
 
-    // 4. Filtro Grupo
-    let matchGrupo = true;
+    let matchGrupo = true
     if (filtros.grupo) {
-      const searchG = normalizarTexto(filtros.grupo);
-      const gr = normalizarTexto(e.grupo);
-      const sub = normalizarTexto(e.subgrupo);
-      matchGrupo = gr.includes(searchG) || sub.includes(searchG) || (gr+sub).includes(searchG) || (gr+"-"+sub).includes(searchG);
+      const searchG = normalizarTexto(filtros.grupo)
+      const alcance = normalizarTexto(obtenerDescripcionAlcance(e))
+      matchGrupo = alcance.includes(searchG)
     }
 
-    return matchBusqueda && matchFecha && matchCategoria && matchGrupo;
-  });
+    return matchBusqueda && matchFecha && matchCategoria && matchGrupo
+  })
 
-  // 2. Obtenemos la fecha de HOY exacta en formato YYYY-MM-DD
-  const fechaActual = new Date();
-  const año = fechaActual.getFullYear();
-  const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
-  const dia = String(fechaActual.getDate()).padStart(2, '0');
-  const hoyStr = `${año}-${mes}-${dia}`;
+  const fechaActual = new Date()
+  const anio = fechaActual.getFullYear()
+  const mes = String(fechaActual.getMonth() + 1).padStart(2, '0')
+  const dia = String(fechaActual.getDate()).padStart(2, '0')
+  const hoyStr = `${anio}-${mes}-${dia}`
 
-  // 3. Ordenamos el resultado
   return [...resultado].sort((a, b) => {
-    const fechaA = (a.fecha_evento || '').substring(0, 10);
-    const fechaB = (b.fecha_evento || '').substring(0, 10);
+    const fechaA = (a.fecha_evento || '').substring(0, 10)
+    const fechaB = (b.fecha_evento || '').substring(0, 10)
 
-    const esPasadoA = fechaA < hoyStr;
-    const esPasadoB = fechaB < hoyStr;
+    const esPasadoA = fechaA < hoyStr
+    const esPasadoB = fechaB < hoyStr
 
-    if (esPasadoA && !esPasadoB) return 1;
-    if (!esPasadoA && esPasadoB) return -1;
+    if (esPasadoA && !esPasadoB) return 1
+    if (!esPasadoA && esPasadoB) return -1
 
     if (!esPasadoA && !esPasadoB) {
-      return fechaA.localeCompare(fechaB);
+      return fechaA.localeCompare(fechaB)
     }
-    return fechaB.localeCompare(fechaA);
-  });
-});
 
-const totalPaginas = computed(() => Math.ceil(eventosFiltrados.value.length / registrosPorPagina) || 1);
+    return fechaB.localeCompare(fechaA)
+  })
+})
+
+const totalPaginas = computed(() => Math.ceil(eventosFiltrados.value.length / registrosPorPagina) || 1)
 
 const eventosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return eventosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return eventosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
+})
 
 watch(filtros, () => {
-  paginaActual.value = 1;
-}, { deep: true });
+  paginaActual.value = 1
+}, { deep: true })
 
 watch(totalPaginas, (nuevoTotal) => {
   if (paginaActual.value > nuevoTotal) {
-    paginaActual.value = nuevoTotal;
+    paginaActual.value = nuevoTotal
   }
-});
+})
 
-// NUEVA FUNCIÓN: Cambiar página y scrollear arriba SOLO EN MOBILE
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   setTimeout(() => {
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, 50);
-};
+  }, 50)
+}
 
 const esLink = (texto) => {
-  return texto && (texto.startsWith('http') || texto.includes('zoom.us') || texto.includes('meet.google'));
-};
+  return texto && (texto.startsWith('http') || texto.includes('zoom.us') || texto.includes('meet.google'))
+}
 
-const limpiarAlcance = () => { form.grupo = ''; form.subgrupo = ''; };
 const limpiarFiltrosTabla = () => {
-  filtros.busqueda = ''; filtros.fecha = ''; filtros.categoria = ''; filtros.grupo = '';
-};
+  filtros.busqueda = ''
+  filtros.fecha = ''
+  filtros.categoria = ''
+  filtros.grupo = ''
+}
 
 const obtenerEventos = async () => {
-  const res = await api.get({ entity: 'eventos', action: 'obtenerTodosLosEventos' });
-  if (res.ok) listaEventos.value = res.payload;
-};
+  const res = await api.get({ entity: 'eventos', action: 'obtenerTodosLosEventos' })
+  if (res.ok) {
+    listaEventos.value = Array.isArray(res.payload) ? res.payload : []
+  }
+}
 
-// --- LOGICA DE MODAL ---
+const obtenerGrupos = async () => {
+  const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos', payload: {} })
+  if (res.ok) {
+    grupos.value = Array.isArray(res.payload) ? res.payload : []
+  }
+}
+
 const abrirModalNuevo = () => {
-  Object.assign(form, { ...formBase });
-  modoEdicion.value = false;
-  mostrarModal.value = true;
-};
+  Object.assign(form, { ...formBase, grupos: [] })
+  modoEdicion.value = false
+  mostrarModal.value = true
+}
 
 const cargarDatosEdicion = (evento) => {
-    modoEdicion.value = true;
-    Object.assign(form, {
-        id: evento.id,
-        titulo: evento.titulo,
-        descripcion: evento.descripcion,
-        fecha_evento: (evento.fecha_evento || '').substring(0, 10),
-        alcance: evento.grupo ? 'grupo' : 'general',
-        grupo: evento.grupo || '',
-        subgrupo: evento.subgrupo || '',
-        categoria: evento.categoria || 'reunion'
-    });
-    mostrarModal.value = true;
-};
+  modoEdicion.value = true
+  Object.assign(form, {
+    id: evento.id,
+    titulo: evento.titulo,
+    descripcion: evento.descripcion,
+    fecha_evento: (evento.fecha_evento || '').substring(0, 10),
+    grupos: obtenerIdsGruposEvento(evento),
+    categoria: evento.categoria || 'reunion'
+  })
+  mostrarModal.value = true
+}
 
 const guardarEvento = async () => {
-  procesando.value = true;
+  if (!form.grupos.length) {
+    notificar({ titulo: 'Faltan grupos', mensaje: 'Selecciona al menos un grupo destinatario.', tipo: 'danger' })
+    return
+  }
+
+  procesando.value = true
   try {
-    const action = modoEdicion.value ? 'editarEvento' : 'guardarEvento';
-    const res = await api.post({ entity: 'eventos', action: action, payload: { ...form } });
+    const action = modoEdicion.value ? 'editarEvento' : 'guardarEvento'
+    const res = await api.post({
+      entity: 'eventos',
+      action,
+      payload: {
+        ...form,
+        grupos: [...form.grupos]
+      }
+    })
+
     if (res.ok) {
-        mostrarModal.value = false;
-        await obtenerEventos();
-        notificar({ titulo: '¡Éxito!', mensaje: `El evento se ${modoEdicion.value ? 'actualizó' : 'publicó'} correctamente.`, tipo: 'success' });
+      mostrarModal.value = false
+      await obtenerEventos()
+      notificar({
+        titulo: 'Exito',
+        mensaje: `El evento se ${modoEdicion.value ? 'actualizo' : 'publico'} correctamente.`,
+        tipo: 'success'
+      })
     } else {
-         notificar({ titulo: 'Error', mensaje: res.message || 'El servidor rechazó la solicitud.', tipo: 'danger' });
+      notificar({ titulo: 'Error', mensaje: res.message || 'El servidor rechazo la solicitud.', tipo: 'danger' })
     }
-  } catch{
-     notificar({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' });
-  } finally { procesando.value = false; }
-};
+  } catch {
+    notificar({ titulo: 'Error', mensaje: 'Fallo de conexion.', tipo: 'danger' })
+  } finally {
+    procesando.value = false
+  }
+}
 
 const confirmarGuardado = () => {
-  const tituloStr = modoEdicion.value ? '¿Actualizar?' : '¿Publicar?';
-  const mensajeStr = modoEdicion.value ? 'Se modificarán los datos del evento.' : 'Se enviará el aviso a los árbitros.';
-  notificar({ titulo: tituloStr, mensaje: mensajeStr, tipo: 'success', alConfirmar: guardarEvento });
-};
+  const tituloStr = modoEdicion.value ? 'Actualizar?' : 'Publicar?'
+  const mensajeStr = modoEdicion.value ? 'Se modificaran los datos del evento.' : 'Se enviara el aviso a los arbitros.'
+  notificar({ titulo: tituloStr, mensaje: mensajeStr, tipo: 'success', alConfirmar: guardarEvento })
+}
 
 const confirmarEliminacion = (id) => {
-  notificar({ titulo: '¿Eliminar Evento?', mensaje: 'Esta acción es irreversible y los árbitros dejarán de verlo.', tipo: 'danger', alConfirmar: () => eliminar(id) });
-};
+  notificar({
+    titulo: 'Eliminar Evento?',
+    mensaje: 'Esta accion es irreversible y los arbitros dejaran de verlo.',
+    tipo: 'danger',
+    alConfirmar: () => eliminar(id)
+  })
+}
 
 const eliminar = async (id) => {
-  const res = await api.post({ entity: 'eventos', action: 'eliminarEvento', payload: { id } });
+  const res = await api.post({ entity: 'eventos', action: 'eliminarEvento', payload: { id } })
   if (res.ok) {
-      obtenerEventos();
-      notificar({ titulo: 'Eliminado', mensaje: 'El evento fue borrado.', tipo: 'success' });
+    obtenerEventos()
+    notificar({ titulo: 'Eliminado', mensaje: 'El evento fue borrado.', tipo: 'success' })
   }
-};
+}
 
-const formatearFecha = (f) => f ? f.substring(0, 10).split('-').reverse().join('/') : '';
+const formatearFecha = (f) => f ? f.substring(0, 10).split('-').reverse().join('/') : ''
 
-onMounted(obtenerEventos);
+onMounted(() => {
+  obtenerEventos()
+  obtenerGrupos()
+})
 </script>
 
 <style scoped>
-/* ====================================================
-   ESTILOS GENERALES
-   ==================================================== */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
@@ -496,9 +584,6 @@ onMounted(obtenerEventos);
   border-radius: 12px;
 }
 
-/* ====================================================
-   BADGES Y ETIQUETAS
-   ==================================================== */
 .badge-category {
   font-size: 0.65rem;
   padding: 4px 8px;
@@ -507,6 +592,7 @@ onMounted(obtenerEventos);
   font-weight: 800;
   display: inline-block;
 }
+
 .cat-reunion { background: #e0f2fe; color: #0369a1; }
 .cat-recordatorio { background: #fef9c3; color: #a16207; }
 .cat-urgente { background: #fee2e2; color: #b91c1c; }
@@ -518,12 +604,8 @@ onMounted(obtenerEventos);
   font-weight: 700;
 }
 
-/* ====================================================
-   UTILIDADES
-   ==================================================== */
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
 
 .animate__animated { animation-duration: 0.5s; }
-
 </style>
