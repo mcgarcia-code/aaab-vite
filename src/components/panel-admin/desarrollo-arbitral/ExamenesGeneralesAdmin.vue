@@ -262,6 +262,7 @@
                   <span class="badge bg-dark text-white me-2 font-monospace">#{{ ex.id }}</span>
                   <span class="fw-bold text-dark">{{ formatFecha(ex.fecha_examen) }}</span>
                   <span class="badge ms-2 text-uppercase" :class="badgeTipo(ex.tipo)">{{ ex.tipo }}</span>
+                  <span v-if="ex.titulo" class="text-muted small ms-2 fst-italic">{{ ex.titulo }}</span>
                 </div>
                 <button @click="iniciarEditarExamen(ex)" class="btn btn-sm btn-light border shadow-sm text-primary py-0 px-2" aria-label="Editar examen">
                   <span class="material-icons" style="font-size: 16px; top: 2px; position:relative;">edit</span>
@@ -277,17 +278,48 @@
       <form v-else id="formExamen" @submit.prevent="modoFormulario === 'editar' ? confirmarEdicion() : confirmarAlta()" class="text-start">
         <div class="row g-3 pb-3">
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-0">Datos del examen</div>
-          <div class="col-md-4">
-            <label class="small fw-bold text-dark mb-1">Fecha *</label>
-            <input type="date" v-model="formExamen.fecha_examen" :max="fechaMaxima" class="form-control shadow-none border-secondary-subtle" required>
-          </div>
-          <div class="col-md-4">
-            <label class="small fw-bold text-dark mb-1">Tipo *</label>
-            <select v-model="formExamen.tipo" class="form-select shadow-none border-secondary-subtle" required>
-              <option value="">Seleccionar...</option>
-              <option v-for="t in TIPOS_EXAMEN" :key="t" :value="t">{{ t.toUpperCase() }}</option>
+
+          <!-- Selector de evento-->
+          <div class="col-md-8">
+            <label class="small fw-bold text-dark mb-1">Reunión / Evento *</label>
+            <select
+              v-model="formExamen.id_evento"
+              @change="onEventoSeleccionado"
+              class="form-select shadow-none border-secondary-subtle"
+            >
+              <option :value="null">Seleccionar evento...</option>
+              <option
+                v-for="ev in eventosParaArbitro"
+                :key="claveEvento(ev)"
+                :value="claveEvento(ev)"
+              >
+                {{ ev.fecha_examen || formatFechaDisplay(ev.fecha_evento) }}
+                — {{ ev.titulo }}
+                <template v-if="ev.categoria"> · {{ ev.categoria.toUpperCase() }}</template>
+              </option>
             </select>
+
+            <!-- Chip de info del evento seleccionado -->
+            <div v-if="eventoEnForm" class="mt-2 d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge border bg-light text-dark">
+                <i class="bi bi-calendar3 me-1"></i>
+                {{ eventoEnForm.fecha_examen || formatFechaDisplay(eventoEnForm.fecha_evento) }}
+              </span>
+              <span class="badge text-uppercase" :class="badgeTipo(eventoEnForm.categoria)">
+                {{ eventoEnForm.categoria }}
+              </span>
+              <span v-if="eventoEnForm.descripcion" class="text-muted small fst-italic text-truncate" style="max-width: 240px;">
+                {{ eventoEnForm.descripcion }}
+              </span>
+            </div>
+
+            <div v-if="!eventosParaArbitro.length" class="mt-2 alert alert-warning py-2 px-3 small mb-0 border-warning-subtle">
+              <i class="bi bi-exclamation-triangle me-1"></i>
+              No hay eventos disponibles para el grupo de este árbitro.
+            </div>
           </div>
+
+          <!-- Asistencia-->
           <div class="col-md-4">
             <label class="small fw-bold text-dark mb-1">Asistencia *</label>
             <select v-model="formExamen.asistencia" class="form-select shadow-none border-secondary-subtle" required>
@@ -530,11 +562,11 @@ const ESTADO_MAP = {
 }
 
 const TIPO_BADGE_MAP = {
-  asamblea:     'bg-dark text-white',
-  reunion:      'bg-dark text-white',
-  curso:        'bg-success text-white',
-  recuperatorio:'bg-warning text-dark',
-  otro:         'bg-secondary text-white',
+  asamblea:      'bg-dark text-white',
+  reunion:       'bg-dark text-white',
+  curso:         'bg-success text-white',
+  recuperatorio: 'bg-warning text-dark',
+  otro:          'bg-secondary text-white',
 }
 
 const OPCIONES_ESTADO_FILTRO = [
@@ -546,19 +578,19 @@ const OPCIONES_ESTADO_FILTRO = [
 ]
 
 const RESUMEN_KEYS = [
-  { key: 'aprobados',    estado: 1, badge: 'bg-success',   icon: 'bi-check-circle',  label: 'Aprobados',    labelShort: 'aprob.'   },
-  { key: 'presentes',    estado: 4, badge: 'bg-primary',   icon: 'bi-person-check',  label: 'Presentes',    labelShort: 'pres.'    },
-  { key: 'desaprobados', estado: 0, badge: 'bg-danger',    icon: 'bi-x-circle',      label: 'Desaprobados', labelShort: 'desap.'   },
-  { key: 'ausentes',     estado: 2, badge: 'bg-secondary', icon: 'bi-person-dash',   label: 'Ausentes',     labelShort: 'aus.'     },
-  { key: 'nohizo',       estado: 3, badge: 'bg-info',      icon: 'bi-dash-circle',   label: 'No lo hizo',   labelShort: 'no hizo'  },
+  { key: 'aprobados',    estado: 1, badge: 'bg-success',   icon: 'bi-check-circle',  label: 'Aprobados',    labelShort: 'aprob.'  },
+  { key: 'presentes',    estado: 4, badge: 'bg-primary',   icon: 'bi-person-check',  label: 'Presentes',    labelShort: 'pres.'   },
+  { key: 'desaprobados', estado: 0, badge: 'bg-danger',    icon: 'bi-x-circle',      label: 'Desaprobados', labelShort: 'desap.'  },
+  { key: 'ausentes',     estado: 2, badge: 'bg-secondary', icon: 'bi-person-dash',   label: 'Ausentes',     labelShort: 'aus.'    },
+  { key: 'nohizo',       estado: 3, badge: 'bg-info',      icon: 'bi-dash-circle',   label: 'No lo hizo',   labelShort: 'no hizo' },
 ]
 
 const STATS_CONFIG = [
-  { key: 'aprobados',    estado: 1, label: 'Aprob.',  bgClass: 'bg-success',   icon: 'bi-check-circle-fill' },
-  { key: 'presentes',    estado: 4, label: 'Pres.',   bgClass: 'bg-primary',   icon: 'bi-person-check-fill' },
-  { key: 'desaprobados', estado: 0, label: 'Desap.',  bgClass: 'bg-danger',    icon: 'bi-x-circle-fill' },
-  { key: 'ausentes',     estado: 2, label: 'Aus.',    bgClass: 'bg-secondary', icon: 'bi-person-dash-fill' },
-  { key: 'nohizo',       estado: 3, label: 'No hizo', bgClass: 'bg-info',      icon: 'bi-dash-circle-fill' },
+  { key: 'aprobados',    estado: 1, label: 'Aprob.',  bgClass: 'bg-success',   icon: 'bi-check-circle-fill'  },
+  { key: 'presentes',    estado: 4, label: 'Pres.',   bgClass: 'bg-primary',   icon: 'bi-person-check-fill'  },
+  { key: 'desaprobados', estado: 0, label: 'Desap.',  bgClass: 'bg-danger',    icon: 'bi-x-circle-fill'      },
+  { key: 'ausentes',     estado: 2, label: 'Aus.',    bgClass: 'bg-secondary', icon: 'bi-person-dash-fill'   },
+  { key: 'nohizo',       estado: 3, label: 'No hizo', bgClass: 'bg-info',      icon: 'bi-dash-circle-fill'   },
 ]
 
 // ============== HELPERS ==============
@@ -568,11 +600,21 @@ const claseDot         = (e) => ESTADO_MAP[e]?.dot   ?? 'bg-dark'
 const claseTextoEstado = (e) => ESTADO_MAP[e]?.txt   ?? 'text-dark'
 const badgeTipo        = (t) => TIPO_BADGE_MAP[t]    ?? 'bg-dark text-white'
 
+// Ahora los eventos siempre tienen id (gracias al PHP actualizado)
+const claveEvento = (ev) => String(ev.id)
+
+// YYYY-MM-DD o YYYY-MM-DD HH:mm:ss → DD/MM/YYYY
+const formatFechaDisplay = (f) => {
+  if (!f) return ''
+  const partes = f.split(' ')[0].split('-')
+  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : f
+}
+
 const normalizarTexto = (v) =>
   String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 
-const formatFecha = (f) => f?.split(' ')[0] ?? ''
-const añoDeFecha  = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
+const formatFecha    = (f) => f?.split(' ')[0] ?? ''
+const añoDeFecha     = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
 
 const parseFecha = (f) => {
   const [d, m, y] = (f?.split(' ')[0] ?? '').split('/')
@@ -586,12 +628,8 @@ const fechaParaInput = (f) => {
 
 const fechaParaMySQL = (f) => f ? `${f} 00:00:00` : null
 
-// Usa el timestamp cacheado en _ts (ver cargarDatos)
 const sortPorFecha = (lista) =>
   [...lista].sort((a, b) => (b._ts ?? 0) - (a._ts ?? 0))
-
-// Fecha máxima (hoy) para el input
-const fechaMaxima = computed(() => new Date().toISOString().slice(0, 10))
 
 // ============== COMPONENTES INTERNOS ==============
 
@@ -662,36 +700,43 @@ const ResumenBadges = defineComponent({
 // ============== STATE ==============
 
 const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
-const arbitros = ref([])
-const examenes = ref([])
-const cargando = ref(false)
-const cargandoInicial = ref(true)
-const paginaActual = ref(1)
+const arbitros  = ref([])
+const examenes  = ref([])
+const eventos   = ref([])
+const grupos    = ref([])
+
+const cargando           = ref(false)
+const cargandoInicial    = ref(true)
+const paginaActual       = ref(1)
 const registrosPorPagina = 10
 const mostrarFiltrosMobile = ref(false)
-const mostrarModal = ref(false)
-const mostrarModalDetalle = ref(false)
-const mostrarModalExcel = ref(false)
-const vistaModal = ref('lista')
-const modoFormulario = ref('nuevo')
-const arbitroEnModal = ref({})
-const arbitroSeleccionado = ref({ id: null, apellido: '', nombre: '' })
-const filtroAñoDetalle = ref('')
+const mostrarModal         = ref(false)
+const mostrarModalDetalle  = ref(false)
+const mostrarModalExcel    = ref(false)
+const vistaModal           = ref('lista')
+const modoFormulario       = ref('nuevo')
+const arbitroEnModal       = ref({})
+const arbitroSeleccionado  = ref({ id: null, apellido: '', nombre: '' })
+const filtroAñoDetalle     = ref('')
+const accionPendiente      = ref(null)
 
-const filtros = reactive({ apellido: '', nombre: '', grupo: '', año: '', tieneTipo: '', tieneEstado: '' })
+const filtros      = reactive({ apellido: '', nombre: '', grupo: '', año: '', tieneTipo: '', tieneEstado: '' })
 const ordenamiento = reactive({ campo: 'apellido', dir: 'asc' })
 
 const detallePlantilla = () => ({ subtipo: '', calificacion: '', estado: 1 })
+
 const formExamenVacio = () => ({
-  id: null,
-  id_arbitro: arbitroEnModal.value?.id ?? '',
+  id:           null,
+  id_arbitro:   arbitroEnModal.value?.id ?? '',
+  id_evento:    null,
   fecha_examen: '',
-  tipo: '',
-  asistencia: 'presente',
-  detalles: [detallePlantilla()],
+  tipo:         '',
+  asistencia:   'presente',
+  detalles:     [detallePlantilla()],
 })
-const formExamen = ref(formExamenVacio())
-const formExamenSnapshot = ref('') // para detectar cambios sin guardar
+
+const formExamen         = ref(formExamenVacio())
+const formExamenSnapshot = ref('')
 
 const columnasExcel = ref([
   { id: 'id',           label: 'ID Árbitro',       visible: true },
@@ -716,7 +761,6 @@ const examenesPorArbitro = computed(() =>
   }, {})
 )
 
-// Búsqueda directa del máximo (sin sort completo)
 const ultimoPorArbitro = computed(() => {
   const map = {}
   for (const [id, lista] of Object.entries(examenesPorArbitro.value)) {
@@ -751,7 +795,6 @@ const resumenPorArbitro = computed(() => {
 const ultimoExamen        = (id) => ultimoPorArbitro.value[id]  ?? null
 const resumenEvaluaciones = (id) => resumenPorArbitro.value[id] ?? { aprobados: 0, desaprobados: 0, ausentes: 0, nohizo: 0, presentes: 0, total: 0 }
 
-// Años disponibles a partir de todos los exámenes
 const añosDisponibles = computed(() => {
   const set = new Set()
   for (const ex of examenes.value) {
@@ -767,9 +810,70 @@ const examenesDelArbitro = computed(() =>
     : []
 )
 
+// ============== COMPUTEDS DE EVENTOS ==============
+
+// Combina eventos de la API con los históricos extraídos de los exámenes cargados.
+// Ahora que el PHP devuelve id en ambos casos, el merge y el match son por id numérico.
+const eventosParaArbitro = computed(() => {
+  if (!arbitroEnModal.value?.id) return []
+
+  // Buscar el id del grupo del árbitro en los grupos cargados
+  const grupoObj = grupos.value.find(g =>
+    g.nombre === arbitroEnModal.value.grupo &&
+    (!arbitroEnModal.value.subgrupo || g.subgrupo === arbitroEnModal.value.subgrupo)
+  )
+  const idGrupo = grupoObj ? String(grupoObj.id) : null
+
+  // Eventos que vienen de la API (con id garantizado por obtenerEventosParaExamen)
+  const idsDeApi = new Set(eventos.value.map(ev => String(ev.id)))
+  const deApi    = [...eventos.value]
+
+  // Eventos históricos reconstruidos desde los exámenes (por si alguno no está en la API)
+  // Usa id_evento como clave ahora que el PHP lo expone en obtenerExamenes
+  const deExamenes = [...new Map(
+    examenes.value
+      .filter(ex => ex.id_evento)
+      .map(ex => [String(ex.id_evento), {
+        id:           ex.id_evento,
+        titulo:       ex.titulo       ?? '',
+        descripcion:  ex.descripcion  ?? '',
+        fecha_evento: ex.fecha_evento ?? '',
+        fecha_examen: ex.fecha_examen ?? '',
+        id_grupos:    ex.id_grupos    ?? '',
+        todos_grupos: ex.todos_grupos ?? 0,
+        categoria:    ex.categoria    ?? ex.tipo,
+      }])
+  ).values()]
+
+  // Merge: agregar históricos que no están ya en la API (por id)
+  const todos = [...deApi]
+  for (const ev of deExamenes) {
+    if (!idsDeApi.has(String(ev.id))) todos.push(ev)
+  }
+
+  // Filtrar por grupo del árbitro
+  return todos
+    .filter(ev => {
+      if (ev.todos_grupos == 1) return true
+      if (!idGrupo) return true
+      return String(ev.id_grupos ?? '').split(',').map(s => s.trim()).includes(idGrupo)
+    })
+    .sort((a, b) => {
+      const tsA = parseFecha(a.fecha_examen) || new Date(a.fecha_evento?.split(' ')[0]).getTime() || 0
+      const tsB = parseFecha(b.fecha_examen) || new Date(b.fecha_evento?.split(' ')[0]).getTime() || 0
+      return tsB - tsA
+    })
+})
+
+// Evento seleccionado en el formulario — match por id numérico
+const eventoEnForm = computed(() =>
+  formExamen.value.id_evento
+    ? eventosParaArbitro.value.find(ev => String(ev.id) === String(formExamen.value.id_evento)) ?? null
+    : null
+)
+
 // ============== FILTROS, ORDENAMIENTO, PAGINACIÓN ==============
 
-// Filtrado puro
 const arbitrosFiltrados = computed(() => {
   const { apellido, nombre, grupo, año, tieneTipo, tieneEstado } = filtros
   return arbitros.value.filter(a => {
@@ -777,11 +881,11 @@ const arbitrosFiltrados = computed(() => {
     if (nombre   && !normalizarTexto(a.nombre).includes(normalizarTexto(nombre)))     return false
     if (grupo    && String(a.grupo) !== String(grupo))                                return false
 
-    const lista = examenesPorArbitro.value[a.id] || []
+    const lista      = examenesPorArbitro.value[a.id] || []
     const listaEnAño = año ? lista.filter(ex => añoDeFecha(ex.fecha_examen) === año) : lista
 
-    if (año && !listaEnAño.length)                                       return false
-    if (tieneTipo && !listaEnAño.some(ex => ex.tipo === tieneTipo))      return false
+    if (año && !listaEnAño.length)                                        return false
+    if (tieneTipo && !listaEnAño.some(ex => ex.tipo === tieneTipo))       return false
     if (tieneEstado !== '') {
       if (tieneEstado === 'sin') { if (lista.length > 0) return false }
       else if (!listaEnAño.some(ex => (ex.detalles || []).some(d => d.estado == tieneEstado))) return false
@@ -790,7 +894,6 @@ const arbitrosFiltrados = computed(() => {
   })
 })
 
-// Ordenamiento separado del filtrado
 const arbitrosOrdenados = computed(() => {
   const { campo, dir } = ordenamiento
   const mult = dir === 'asc' ? 1 : -1
@@ -816,8 +919,8 @@ const arbitrosOrdenados = computed(() => {
   })
 })
 
-const totalPaginas   = computed(() => Math.ceil(arbitrosOrdenados.value.length / registrosPorPagina) || 1)
-const totalFiltrados = computed(() => arbitrosOrdenados.value.length)
+const totalPaginas      = computed(() => Math.ceil(arbitrosOrdenados.value.length / registrosPorPagina) || 1)
+const totalFiltrados    = computed(() => arbitrosOrdenados.value.length)
 const arbitrosPaginados = computed(() => {
   const inicio = (paginaActual.value - 1) * registrosPorPagina
   return arbitrosOrdenados.value.slice(inicio, inicio + registrosPorPagina)
@@ -828,7 +931,7 @@ const ordenarPor = (campo) => {
     ordenamiento.dir = ordenamiento.dir === 'asc' ? 'desc' : 'asc'
   } else {
     ordenamiento.campo = campo
-    ordenamiento.dir = 'asc'
+    ordenamiento.dir   = 'asc'
   }
 }
 
@@ -897,7 +1000,7 @@ const evaluacionesPorSubtipoDetalle = computed(() => {
       ;(map[det.subtipo] ??= []).push({
         ...det,
         fecha_examen: ex.fecha_examen,
-        tipo: ex.tipo,
+        tipo:         ex.tipo,
       })
     }
   }
@@ -915,51 +1018,43 @@ const hayCambiosEnForm  = () => JSON.stringify(formExamen.value) !== formExamenS
 
 const abrirGestionExamenes = (a) => {
   arbitroEnModal.value = a
-  vistaModal.value = 'lista'
-  mostrarModal.value = true
+  vistaModal.value     = 'lista'
+  mostrarModal.value   = true
 }
-
-const accionPendiente = ref(null)
 
 const cerrarModal = () => {
   if (vistaModal.value === 'form' && hayCambiosEnForm()) {
     accionPendiente.value = ejecutarCerrarModal
-
     notificar({
       titulo: 'Cambios sin guardar',
       mensaje: 'Tenés cambios sin guardar. ¿Querés continuar igualmente?',
       tipo: 'danger',
-      alConfirmar: confirmarAccion
+      alConfirmar: confirmarAccion,
     })
-
     return
   }
-
   ejecutarCerrarModal()
 }
 
 const ejecutarCerrarModal = () => {
-  mostrarModal.value = false
-  vistaModal.value = 'lista'
-  formExamen.value = formExamenVacio()
-  arbitroEnModal.value = {}
+  mostrarModal.value       = false
+  vistaModal.value         = 'lista'
+  formExamen.value         = formExamenVacio()
+  arbitroEnModal.value     = {}
   formExamenSnapshot.value = ''
 }
 
 const volverAListado = () => {
   if (vistaModal.value === 'form' && hayCambiosEnForm()) {
     accionPendiente.value = ejecutarVolverAListado
-
     notificar({
       titulo: 'Cambios sin guardar',
       mensaje: 'Tenés cambios sin guardar. ¿Querés continuar igualmente?',
       tipo: 'danger',
-      alConfirmar: confirmarAccion
+      alConfirmar: confirmarAccion,
     })
-
     return
   }
-
   ejecutarVolverAListado()
 }
 
@@ -971,44 +1066,66 @@ const confirmarAccion = () => {
 }
 
 const ejecutarVolverAListado = () => {
-  vistaModal.value = 'lista'
-  formExamen.value = formExamenVacio()
+  vistaModal.value         = 'lista'
+  formExamen.value         = formExamenVacio()
   formExamenSnapshot.value = ''
 }
-
 
 const agregarDetalle = () => formExamen.value.detalles.push(detallePlantilla())
 const quitarDetalle  = (i) => formExamen.value.detalles.splice(i, 1)
 
 const iniciarNuevoExamen = () => {
-  formExamen.value = { ...formExamenVacio(), id_arbitro: arbitroEnModal.value.id }
+  formExamen.value     = { ...formExamenVacio(), id_arbitro: arbitroEnModal.value.id }
   modoFormulario.value = 'nuevo'
-  vistaModal.value = 'form'
+  vistaModal.value     = 'form'
   tomarSnapshotForm()
 }
 
 const iniciarEditarExamen = (ex) => {
-  const esAusente = ex.detalles?.length === 1 && ex.detalles[0].estado == 2
+  const esAusente         = ex.detalles?.length === 1 && ex.detalles[0].estado == 2
   const esPresenteReunion = ex.detalles?.length === 1 && ex.detalles[0].estado == 4
+
+  // Match directo por id_evento (ahora disponible en obtenerExamenes)
+  const match = eventosParaArbitro.value.find(ev =>
+    ev.id && String(ev.id) === String(ex.id_evento)
+  ) ?? null
+
   formExamen.value = {
-    id: ex.id,
-    id_arbitro: ex.id_arbitro,
+    id:           ex.id,
+    id_arbitro:   ex.id_arbitro,
+    id_evento:    match ? String(match.id) : null,
     fecha_examen: fechaParaInput(ex.fecha_examen),
-    tipo: ex.tipo,
-    asistencia: esAusente ? 'ausente' : 'presente',
+    tipo:         ex.tipo ?? '',
+    asistencia:   esAusente ? 'ausente' : 'presente',
     detalles: (esAusente || esPresenteReunion)
       ? [detallePlantilla()]
       : JSON.parse(JSON.stringify(ex.detalles)),
   }
   if (!formExamen.value.detalles.length) formExamen.value.detalles.push(detallePlantilla())
   modoFormulario.value = 'editar'
-  vistaModal.value = 'form'
+  vistaModal.value     = 'form'
   tomarSnapshotForm()
+}
+
+// Sincroniza tipo y fecha al elegir un evento en el select
+const onEventoSeleccionado = () => {
+  const ev = eventoEnForm.value
+  if (!ev) {
+    formExamen.value.tipo         = ''
+    formExamen.value.fecha_examen = ''
+    return
+  }
+  formExamen.value.tipo = ev.categoria ?? ''
+  if (ev.fecha_evento) {
+    formExamen.value.fecha_examen = ev.fecha_evento.split(' ')[0]
+  } else if (ev.fecha_examen) {
+    formExamen.value.fecha_examen = fechaParaInput(ev.fecha_examen)
+  }
 }
 
 const verDetalleArbitro = (a) => {
   arbitroSeleccionado.value = { id: a.id, apellido: a.apellido, nombre: a.nombre }
-  filtroAñoDetalle.value = ''
+  filtroAñoDetalle.value    = ''
   mostrarModalDetalle.value = true
 }
 
@@ -1016,28 +1133,22 @@ const verDetalleArbitro = (a) => {
 
 const validarFormulario = () => {
   const f = formExamen.value
-  if (!f.fecha_examen) return notificar({ titulo: 'Faltan datos', mensaje: 'La fecha del examen es requerida.', tipo: 'danger' }), false
-  if (!f.tipo)         return notificar({ titulo: 'Faltan datos', mensaje: 'El tipo de examen es requerido.',  tipo: 'danger' }), false
 
-  // Validación de fecha
-  const hoy = new Date(); hoy.setHours(23, 59, 59, 999)
-  const fechaInput = new Date(f.fecha_examen)
-  if (fechaInput > hoy)
-    return notificar({ titulo: 'Fecha inválida', mensaje: 'La fecha no puede ser futura.', tipo: 'danger' }), false
-  const año = fechaInput.getFullYear()
-  if (año < 2000 || año > 2100)
-    return notificar({ titulo: 'Fecha inválida', mensaje: 'El año debe estar entre 2000 y 2100.', tipo: 'danger' }), false
+  if (!eventoEnForm.value)
+    return notificar({ titulo: 'Faltan datos', mensaje: 'Seleccioná el evento al que pertenece el examen.', tipo: 'danger' }), false
 
   if (f.asistencia === 'presente' && f.tipo !== 'reunion') {
-    if (!f.detalles.length) return notificar({ titulo: 'Faltan datos', mensaje: 'Cargá al menos una evaluación.', tipo: 'danger' }), false
+    if (!f.detalles.length)
+      return notificar({ titulo: 'Faltan datos', mensaje: 'Cargá al menos una evaluación.', tipo: 'danger' }), false
+
     for (let i = 0; i < f.detalles.length; i++)
       if (!f.detalles[i].subtipo)
         return notificar({ titulo: 'Faltan datos', mensaje: `Seleccioná el subtipo en la fila ${i + 1}.`, tipo: 'danger' }), false
 
-    // Filter Boolean para evitar falso positivo de '' duplicado
     const subs = f.detalles.map(d => d.subtipo).filter(Boolean)
-    const dup = subs.find((s, i) => subs.indexOf(s) !== i)
-    if (dup) return notificar({ titulo: 'Subtipo duplicado', mensaje: `No podés cargar "${dup}" dos veces.`, tipo: 'danger' }), false
+    const dup  = subs.find((s, i) => subs.indexOf(s) !== i)
+    if (dup)
+      return notificar({ titulo: 'Subtipo duplicado', mensaje: `No podés cargar "${dup}" dos veces.`, tipo: 'danger' }), false
   }
   return true
 }
@@ -1045,8 +1156,8 @@ const validarFormulario = () => {
 const prepararPayload = () => {
   const f = formExamen.value
   const detalles =
-    f.asistencia === 'ausente'  ? [{ subtipo: 'ausente',    calificacion: '', estado: 2 }] :
-    f.tipo === 'reunion'        ? [{ subtipo: 'asistencia', calificacion: '', estado: 4 }] :
+    f.asistencia === 'ausente' ? [{ subtipo: 'ausente',    calificacion: '', estado: 2 }] :
+    f.tipo === 'reunion'       ? [{ subtipo: 'asistencia', calificacion: '', estado: 4 }] :
     f.detalles.map(d => ({
       subtipo:      String(d.subtipo).trim(),
       calificacion: d.estado == 3 ? '' : String(d.calificacion || '').trim(),
@@ -1055,9 +1166,10 @@ const prepararPayload = () => {
 
   return {
     id:           f.id,
-    id_arbitro:   f.id_arbitro || arbitroEnModal.value.id,
+    idEvento:     eventoEnForm.value?.id ?? null,  // id numérico real del evento
+    idArbitro:    f.id_arbitro || arbitroEnModal.value.id,
     fecha_examen: fechaParaMySQL(f.fecha_examen),
-    tipo:         String(f.tipo).trim(),
+    tipo:         f.tipo,
     detalles,
   }
 }
@@ -1070,9 +1182,8 @@ const llamarAPI = async (action, successMsg) => {
     if (res.ok || res.success) {
       notificar({ titulo: '¡Éxito!', mensaje: successMsg, tipo: 'success' })
       await cargarDatos()
-      // Volvemos al listado sin chequear cambios (ya guardamos)
-      vistaModal.value = 'lista'
-      formExamen.value = formExamenVacio()
+      vistaModal.value         = 'lista'
+      formExamen.value         = formExamenVacio()
       formExamenSnapshot.value = ''
     } else {
       notificar({ titulo: 'Error', mensaje: res.message || 'Ocurrió un error.', tipo: 'danger' })
@@ -1092,7 +1203,7 @@ const confirmarEdicion = () => llamarAPI('editarExamen',  'Examen actualizado co
 const exportarExcel = () => { mostrarModalExcel.value = true }
 
 const ejecutarDescargaExcel = () => {
-  const cols = columnasExcel.value.filter(c => c.visible)
+  const cols  = columnasExcel.value.filter(c => c.visible)
   const datos = arbitrosOrdenados.value.map(a => {
     const lista = examenesPorArbitro.value[a.id] || []
     const ult   = ultimoExamen(a.id)
@@ -1122,7 +1233,6 @@ const cargarDatos = async () => {
   try {
     const res = await api.get({ entity: 'examenes', action: 'obtenerExamenes', payload: {} })
     if ((res.ok || res.success) && res.payload) {
-      // Cacheamos _ts al cargar para evitar reparsear fechas constantemente
       examenes.value = res.payload.map(ex => ({ ...ex, _ts: parseFecha(ex.fecha_examen) }))
     } else {
       notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los exámenes.', tipo: 'danger' })
@@ -1147,9 +1257,28 @@ const cargarArbitros = async () => {
   }
 }
 
+// Usa el endpoint nuevo que incluye id y devuelve todos los eventos (no solo futuros)
+const cargarEventos = async () => {
+  try {
+    const res = await api.get({ entity: 'eventos', action: 'obtenerEventosParaExamen' })
+    if ((res.ok || res.success) && res.payload) eventos.value = res.payload
+  } catch (err) {
+    console.error('Error al cargar eventos:', err)
+  }
+}
+
+const cargarGrupos = async () => {
+  try {
+    const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos' })
+    if ((res.ok || res.success) && res.payload) grupos.value = res.payload
+  } catch (err) {
+    console.error('Error al cargar grupos:', err)
+  }
+}
+
 const cargarTodo = async () => {
   cargandoInicial.value = true
-  await Promise.all([cargarArbitros(), cargarDatos()])
+  await Promise.all([cargarArbitros(), cargarDatos(), cargarEventos(), cargarGrupos()])
   cargandoInicial.value = false
 }
 
