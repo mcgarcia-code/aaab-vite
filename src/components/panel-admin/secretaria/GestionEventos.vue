@@ -283,7 +283,7 @@ const formBase = {
   descripcion: '',
   fecha_evento: '',
   grupos: [],
-  todosLosGrupos: false,
+  todos_grupos: false,
   categoria: 'reunion'
 }
 
@@ -331,7 +331,7 @@ const todosLosGruposSeleccionados = computed(() => {
 })
 
 const sincronizarFlagTodosLosGrupos = () => {
-  form.todosLosGrupos = todosLosGruposSeleccionados.value
+  form.todos_grupos = todosLosGruposSeleccionados.value
 }
 
 const toggleGrupoSeleccionado = (grupoId, estaChequeado) => {
@@ -353,37 +353,28 @@ const toggleGrupoSeleccionado = (grupoId, estaChequeado) => {
 
 const toggleTodosLosGrupos = (estaChequeado) => {
   form.grupos = estaChequeado ? grupos.value.map(grupoItem => grupoItem.id) : []
-  form.todosLosGrupos = estaChequeado
+  form.todos_grupos = estaChequeado
 }
 
 const obtenerIdsGruposEvento = (evento) => {
   if (Array.isArray(evento?.grupos)) {
     return normalizarIdsGrupos(evento.grupos)
   }
-
-  if (!evento?.grupo) return []
-
-  const grupoEncontrado = grupos.value.find(grupoItem => {
-    return String(grupoItem.nombre || '') === String(evento.grupo || '') &&
-      String(grupoItem.subgrupo || '') === String(evento.subgrupo || '')
-  })
-
-  return grupoEncontrado ? [grupoEncontrado.id] : []
+  return []
 }
 
 const obtenerDescripcionAlcance = (evento) => {
   if (evento?.todosLosGrupos) return 'TODOS'
-
-  if (Array.isArray(evento?.grupos) && evento.grupos.length) {
-    return evento.grupos
-      .map(grupoItem => typeof grupoItem === 'object' ? obtenerNombreGrupo(grupoItem) : grupoItem)
-      .filter(Boolean)
-      .join(', ')
-  }
-
-  if (!evento?.grupo) return 'TODOS'
-
-  return evento.subgrupo ? `${evento.grupo}-${evento.subgrupo}` : evento.grupo
+  let gruposReunion = []
+  let grupoItem
+  let grupoNombre
+  evento?.arrGrupos.forEach((v)=>{
+    grupoItem = grupos.value.find(grupo => grupo.id == v)
+    grupoNombre = grupoItem?.nombre ?? ""
+    if (grupoItem?.subgrupo) grupoNombre += " "+grupoItem.subgrupo 
+    gruposReunion.push(grupoNombre)
+  })
+  return gruposReunion.join(" / ")
 }
 
 const eventosFiltrados = computed(() => {
@@ -492,13 +483,13 @@ const obtenerGrupos = async () => {
 }
 
 const abrirModalNuevo = () => {
-  Object.assign(form, { ...formBase, grupos: [], todosLosGrupos: false })
+  Object.assign(form, { ...formBase, grupos: [], todos_grupos: false })
   modoEdicion.value = false
   mostrarModal.value = true
 }
 
 const cargarDatosEdicion = (evento) => {
-  const todosLosGrupos = Boolean(evento.todosLosGrupos)
+  const todosLosGrupos = Number(evento?.todos_grupos) === 1 || evento?.todos_grupos === true
 
   modoEdicion.value = true
   Object.assign(form, {
@@ -507,14 +498,14 @@ const cargarDatosEdicion = (evento) => {
     descripcion: evento.descripcion,
     fecha_evento: (evento.fecha_evento || '').substring(0, 10),
     grupos: todosLosGrupos ? grupos.value.map(grupoItem => grupoItem.id) : obtenerIdsGruposEvento(evento),
-    todosLosGrupos,
+    todos_grupos: todosLosGrupos,
     categoria: evento.categoria || 'reunion'
   })
   mostrarModal.value = true
 }
 
 const guardarEvento = async () => {
-  if (!form.todosLosGrupos && !form.grupos.length) {
+  if (!form.todos_grupos && !form.grupos.length) {
     notificar({ titulo: 'Faltan grupos', mensaje: 'Selecciona al menos un grupo destinatario.', tipo: 'danger' })
     return
   }
@@ -528,7 +519,7 @@ const guardarEvento = async () => {
       payload: {
         ...form,
         grupos: [...form.grupos],
-        todosLosGrupos: form.todosLosGrupos
+        todos_grupos: form.todos_grupos
       }
     })
 
