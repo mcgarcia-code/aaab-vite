@@ -812,15 +812,11 @@ const crearNuevo = () => {
 }
 
 const normalizarIdsGrupos = (gruposArbitro) => {
-  if (!Array.isArray(gruposArbitro)) return []
-
-  return gruposArbitro
-    .map(grupoItem => typeof grupoItem === 'object' ? grupoItem?.id : grupoItem)
-    .filter(grupoId => grupoId !== null && grupoId !== undefined && grupoId !== '')
+  return Array.isArray(gruposArbitro) ? gruposArbitro.filter(grupoId => Number.isInteger(grupoId)) : []
 }
 
 const tieneGrupoSeleccionado = (grupoId) => {
-  return formModal.value.grupos.some(id => String(id) === String(grupoId))
+  return formModal.value.grupos.includes(grupoId)
 }
 
 const toggleGrupoSeleccionado = (grupoId, estaChequeado) => {
@@ -835,14 +831,27 @@ const toggleGrupoSeleccionado = (grupoId, estaChequeado) => {
     return
   }
 
-  formModal.value.grupos = formModal.value.grupos.filter(id => String(id) !== String(grupoId))
+  formModal.value.grupos = formModal.value.grupos.filter(id => id !== grupoId)
 }
 
-const editarArbitro = (arbitro) => {
+const obtenerGruposCoordinados = async (idArbitro) => {
+  const {payload} = await api.get({
+    entity: 'coordinadores',
+    action: 'obtenerGruposCoordinados',
+    payload: { idArbitro: idArbitro }
+  })
+  return payload
+    .map(grupoItem => grupoItem?.id)
+    .filter(grupoId => Number.isInteger(grupoId))
+}
+
+const editarArbitro = async (arbitro) => {
+  let gruposCoordinados = []
+  gruposCoordinados = await obtenerGruposCoordinados(arbitro.id)
   formModal.value = {
     ...formModalVacio(),
     ...arbitro,
-    grupos: normalizarIdsGrupos(arbitro.grupos)
+    grupos: gruposCoordinados
   }
   movilidadArray.value = []
   let movilidades = arbitro.movilidad ? arbitro.movilidad.split(',') : []
