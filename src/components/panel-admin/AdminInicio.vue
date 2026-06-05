@@ -81,7 +81,7 @@ const menuItems = [
     to: '/panel-admin/desarrollo-arbitral',
     title: 'Desarrollo Arbitral',
     icon: 'bi bi-person-workspace',
-    desc: 'Capacitaciones y evaluaciones.',
+    desc: 'Reuniones mensuales y evaluaciones.',
     rolesPermitidos: ['admin', 'coordinador general', 'secretario']
   },
     {

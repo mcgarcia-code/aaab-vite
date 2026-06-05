@@ -10,7 +10,7 @@
         <div>
           <!-- Tipografía adaptativa para el título -->
           <h4 class="fw-bold text-white m-0 fs-5 fs-md-4">Desarrollo Arbitral</h4>
-          <p class="text-white opacity-75 m-0" style="font-size: 0.85rem;">Seguimiento, evaluaciones y rendimiento</p>
+          <p class="text-white opacity-75 m-0" style="font-size: 0.85rem;">Reuniones mensuales y evaluaciones</p>
         </div>
       </div>
     </div>
@@ -66,9 +66,21 @@ const opcionesDesarrollo = [
   },
   {
     to: '/panel-admin/desarrollo-arbitral/examenes', // Puedes ajustar esta ruta
-    title: 'Exámenes generales',
+    title: 'Asamblea General de Árbitros',
     icon: 'bi bi-journal-check',
-    desc: 'Administración de resultados y exámenes teóricos/físicos.'
+    desc: 'Administración de exámenes teóricos/físicos.'
+  },
+    {
+    to: '/panel-admin/desarrollo-arbitral/reuniones', // Puedes ajustar esta ruta
+    title: 'Reuniones',
+    icon: 'bi bi-calendar-event',
+    desc: 'Registro de presentes de reuniones mensuales'
+  },
+      {
+    to: '/panel-admin/desarrollo-arbitral/resumen-arbitros', // Puedes ajustar esta ruta
+    title: 'Resumen de Árbitros',
+    icon: 'bi bi-graph-up-arrow',
+    desc: 'Visualización de estadísticas y rendimiento de árbitros'
   }
 ];
 </script>

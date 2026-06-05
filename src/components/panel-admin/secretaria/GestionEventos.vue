@@ -54,6 +54,8 @@
                 <option value="reunion">REUNION</option>
                 <option value="recordatorio">RECORDATORIO</option>
                 <option value="urgente">URGENTE</option>
+                <option value="asamblea">ASAMBLEA GENERAL</option>
+                <option value="recuperatorio">RECUPERATORIO</option>
               </select>
             </div>
             <div class="col-12 col-md-3">
@@ -208,6 +210,8 @@
               <option value="reunion">Reunion</option>
               <option value="recordatorio">Recordatorio</option>
               <option value="urgente">Urgente</option>
+              <option value="asamblea">Asamblea General</option>
+              <option value="recuperatorio">Recuperatorio</option>
             </select>
           </div>
 
@@ -371,7 +375,7 @@ const obtenerDescripcionAlcance = (evento) => {
   evento?.arrGrupos.forEach((v)=>{
     grupoItem = grupos.value.find(grupo => grupo.id == v)
     grupoNombre = grupoItem?.nombre ?? ""
-    if (grupoItem?.subgrupo) grupoNombre += " "+grupoItem.subgrupo 
+    if (grupoItem?.subgrupo) grupoNombre += " "+grupoItem.subgrupo
     gruposReunion.push(grupoNombre)
   })
   return gruposReunion.join(" / ")
@@ -598,9 +602,12 @@ onMounted(() => {
   display: inline-block;
 }
 
-.cat-reunion { background: #e0f2fe; color: #0369a1; }
-.cat-recordatorio { background: #fef9c3; color: #a16207; }
-.cat-urgente { background: #fee2e2; color: #b91c1c; }
+.cat-reunion { background: #0d6efd; color: #ffffff; }
+.cat-recordatorio { background: #fe9900; color: #000000; }
+.cat-urgente { background: #ff0000; color: #000000; }
+.cat-asamblea { background: #000000; color: #fefefe; }
+.cat-recuperatorio { background: #FFC107; color: #000000; }
+
 
 .badge-status-sm {
   padding: 4px 10px;
