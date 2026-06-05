@@ -4,7 +4,6 @@
 
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
@@ -40,7 +39,6 @@
           </div>
         </div>
 
-        <!-- PANEL DE FILTROS (Solo Móvil) -->
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none']">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Árbitros</span>
@@ -78,11 +76,9 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
 
-          <!-- TABLA (Solo Escritorio) -->
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
             <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
               <thead class="table-light">
-                <!-- Títulos -->
                 <tr>
                   <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
                   <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
@@ -107,7 +103,6 @@
                   <th class="py-3 text-center text-uppercase text-muted">Cat</th>
                   <th class="py-3 text-center text-uppercase text-muted">Observaciones</th>
                 </tr>
-                <!-- Filtros Desktop -->
                 <tr class="bg-light">
                   <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
                   <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
@@ -192,7 +187,6 @@
                   <td class="text-dark">{{ a.donde_juega }}</td>
                   <td class="text-dark">{{ a.categoria_handball }}</td>
 
-                  <!-- IMPLEMENTACIÓN DEL TOOLTIP DEL USUARIO -->
                   <td class="text-dark position-relative">
                     <span class="d-inline-block text-truncate observacion-texto" style="max-width: 300px;">
                       {{ a.observaciones || '-' }}
@@ -211,27 +205,34 @@
             </table>
           </div>
 
-          <!-- CARDS (Solo Celular) -->
           <div class="d-md-none p-3 bg-light">
             <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 rounded-3 border-light-subtle" :class="obtenerClaseFila(a)">
 
               <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
+                <div class="text-dark fw-bold text-uppercase d-flex align-items-center gap-2" style="font-size: 1.05rem;">
+                  <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
                   {{ a.apellido }}, {{ a.nombre }}
                 </div>
-                <div class="text-xs fw-bold text-muted font-monospace">#{{ a.id }}</div>
+                <div class="small text-muted fw-bold font-monospace">#{{ a.id }}</div>
               </div>
 
               <div class="card-body pt-0 px-3 pb-3">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <span class="badge bg-dark text-white">{{ obtenerTextoLicencia(a) }}</span>
-                  <span class="small text-dark"><strong>Gr:</strong> {{ a.grupo }}-<strong>Zona:</strong> {{ a.zona }}</span>
+                <div class="d-flex justify-content-between align-items-center mb-3 text-dark">
+                  <span class="small"><strong>Gr:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
+                  <span class="small"><strong>Zona:</strong> {{ a.zona || '-' }}</span>
                 </div>
 
-                <div class="bg-white p-2 rounded border small mb-3 border-light-subtle d-flex justify-content-between">
-                  <span class="text-dark"><strong>Apto: </strong>
-                    <span v-if="a.apto_medico" class="material-icons text-success align-middle" style="font-size: 16px;">check_circle</span>
-                    <span v-else class="material-icons text-danger align-middle" style="font-size: 16px;">cancel</span>
+                <div v-if="obtenerTextoLicencia(a) !== '-'" class="alert py-2 px-3 small fw-bold mb-3 d-flex align-items-center gap-2"
+                     :class="((Number(a.tiene_aprobada) > 0) || a.sancion_vigente) ? 'alert-danger border-danger-subtle text-danger' : 'alert-warning border-warning-subtle text-warning-emphasis'">
+                     <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                     <span class="text-break" style="white-space: normal; line-height: 1.3;">{{ obtenerTextoLicencia(a) }}</span>
+                </div>
+
+                <div class="bg-white p-2 rounded border small mb-3 border-light-subtle d-flex justify-content-between align-items-center">
+                  <span class="text-dark d-flex align-items-center gap-1">
+                    <strong>Apto: </strong>
+                    <span v-if="a.apto_medico" class="material-icons text-success" style="font-size: 16px;">check_circle</span>
+                    <span v-else class="material-icons text-danger" style="font-size: 16px;">cancel</span>
                   </span>
                   <span class="text-dark"><strong>Juega:</strong> {{ a.juega_handball }}</span>
                 </div>
@@ -242,18 +243,22 @@
                 </div>
 
                 <div class="d-flex gap-2 mt-3 pt-3 border-top border-secondary-subtle">
-                  <div class="flex-grow-1 text-center bg-white p-2 rounded border shadow-sm">
-                    <label class="d-block small fw-bold text-dark mb-2">Designar SÁB</label>
-                    <input type="checkbox" :checked="designadosSabado.has(a.id)" :disabled="a.disponibilidad_sabado === 'NO'" @change="toggleDesignacion(a.id, 'S')" class="form-check-input" style="transform: scale(1.4); cursor:pointer;">
+                  <div class="flex-grow-1 bg-white p-2 rounded border shadow-sm d-flex flex-column align-items-center justify-content-center">
+                    <label class="small fw-bold text-dark mb-2" :for="'sab-'+a.id">Designar SÁB</label>
+                    <div class="form-check form-switch m-0">
+                      <input class="form-check-input shadow-none" type="checkbox" role="switch" :id="'sab-'+a.id" :checked="designadosSabado.has(a.id)" :disabled="a.disponibilidad_sabado === 'NO'" @change="toggleDesignacion(a.id, 'S')" style="transform: scale(1.3); cursor:pointer;">
+                    </div>
                   </div>
-                  <div class="flex-grow-1 text-center bg-white p-2 rounded border shadow-sm">
-                    <label class="d-block small fw-bold text-dark mb-2">Designar DOM</label>
-                    <input type="checkbox" :checked="designadosDomingo.has(a.id)" :disabled="a.disponibilidad_domingo === 'NO'" @change="toggleDesignacion(a.id, 'D')" class="form-check-input" style="transform: scale(1.4); cursor:pointer;">
+                  <div class="flex-grow-1 bg-white p-2 rounded border shadow-sm d-flex flex-column align-items-center justify-content-center">
+                    <label class="small fw-bold text-dark mb-2" :for="'dom-'+a.id">Designar DOM</label>
+                    <div class="form-check form-switch m-0">
+                      <input class="form-check-input shadow-none" type="checkbox" role="switch" :id="'dom-'+a.id" :checked="designadosDomingo.has(a.id)" :disabled="a.disponibilidad_domingo === 'NO'" @change="toggleDesignacion(a.id, 'D')" style="transform: scale(1.3); cursor:pointer;">
+                    </div>
                   </div>
                 </div>
 
-                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn w-100 fw-bold shadow-sm mt-3 text-white d-flex align-items-center justify-content-center gap-2" style="background: #25d366;">
-                  <span class="material-icons">chat</span> Contactar por WhatsApp
+                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn btn-sm w-100 fw-bold shadow-sm mt-3 text-white d-flex align-items-center justify-content-center gap-2" style="background: #25d366;">
+                  <span class="material-icons fs-6">chat</span> WhatsApp
                 </button>
               </div>
             </div>
@@ -264,7 +269,6 @@
             </div>
           </div>
 
-          <!-- PAGINACIÓN -->
           <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
             <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
@@ -279,7 +283,6 @@
       </div>
     </div>
 
-    <!-- MODAL PUBLICAR DESIGNACIONES -->
     <ModalBase
       :show="mostrarModalSubida"
       titulo="Publicar Designaciones"
@@ -293,7 +296,7 @@
         <input
           v-model="formPublicar.torneo"
           type="text"
-          class="form-control"
+          class="form-control shadow-none border-secondary-subtle"
           placeholder="Ej: TORNEO APERTURA"
         >
       </div>
@@ -303,7 +306,7 @@
         <input
           v-model="formPublicar.fecha"
           type="text"
-          class="form-control"
+          class="form-control shadow-none border-secondary-subtle"
           placeholder="Ej: 18 y 19 de Abril"
         >
       </div>
@@ -313,7 +316,7 @@
         <input
           @change="manejarArchivo"
           type="file"
-          class="form-control"
+          class="form-control shadow-none border-secondary-subtle"
           accept=".xlsx,.xls"
         >
       </div>
@@ -321,7 +324,7 @@
       <template #footer>
         <button
           @click="mostrarModalSubida = false"
-          class="btn btn-light"
+          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
           :disabled="subiendoArchivo"
         >
           Cancelar
@@ -329,14 +332,13 @@
 
         <button
           @click="enviarDesignaciones"
-          class="btn btn-danger fw-bold"
+          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
           :disabled="subiendoArchivo || !formPublicar.archivoBase64"
         >
           <span
             v-if="subiendoArchivo"
             class="spinner-border spinner-border-sm me-2"
           ></span>
-
           {{ subiendoArchivo ? 'Publicando...' : 'Publicar Ahora' }}
         </button>
       </template>

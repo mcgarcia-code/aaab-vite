@@ -47,25 +47,58 @@ const routes = [
     component: () => import('../components/panel-arbitro/PanelArbitro.vue'),
     meta: { requiresAuth: true },
     children: [
+      // --- INICIO ---
       { path: '', name: 'PanelInicio', component: () => import('../components/panel-arbitro/InicioPanel.vue') },
+
+      // --- LICENCIAS ---
       { path: 'licencia', name: 'PanelLicencia', component: () => import('../components/panel-arbitro/licencias/SolicitarLicencia.vue') },
+
+      // --- DATOS PERSONALES ---
       { path: 'datos', name: 'PanelDatos', component: () => import('../components/panel-arbitro/datos-personales/MisDatos.vue') },
+
+      // --- DISPONIBILIDAD ---
       { path: 'disponibilidad', name: 'PanelDisponibilidad', component: () => import('../components/panel-arbitro/disponibilidad/PanelDisponibilidad.vue') },
+
+      // --- SANCIONES ---
       { path: 'sanciones', name: 'PanelSanciones', component: () => import('../components/panel-arbitro/sanciones/Sanciones.vue') },
+
+      // --- CREDENCIAL DIGITAL ---
       { path: 'credencial', name: 'PanelCredencial', component: () => import('../components/panel-arbitro/credencial/CredencialDigital.vue') },
+
+      // --- RENDIMIENTO ---
       { path: 'rendimiento', name: 'PanelRendimiento', component: () => import('../components/panel-arbitro/rendimiento/MiRendimiento.vue') },
+
+      // --- APORTES Y PAGOS ---
       { path: 'aportes', name: 'PanelAportes', component: () => import('../components/panel-arbitro/tesoreria/MisAportes.vue') },
+
+      // --- REF-FLIX ---
       { path: 'ref-flix', name: 'PanelRefFlix', beforeEnter() { window.location.href = 'https://refflix.com.ar' } },
+
+      // --- OBSERVACIONES ---
       { path: 'observaciones', name: 'Observaciones', component: () => import('../components/panel-arbitro/observadores/ObservacionesPanel.vue') },
       { path: 'observaciones/carga', name: 'ObservacionesCarga', component: () => import('../components/panel-arbitro/observadores/CargaObservaciones.vue') },
       { path: 'observaciones/mis-observaciones', name: 'ObservacionesMias', component: () => import('../components/panel-arbitro/observadores/MisObservaciones.vue') },
       { path: 'observaciones/observaciones-mini', name: 'ObservacionesMini', component: () => import('../components/panel-arbitro/observadores/ObservacionesMini.vue') },
-      { path: 'coordinadores', name: 'PanelCoordinadores', component: () => import('../components/panel-arbitro/coordinadores/CoordinadoresAdmin.vue') },
+
+      // --- COORDINADORES ---
+      { path: 'coordinadores', name: 'PanelCoordinadoresAdmin', component: () => import('../components/panel-arbitro/coordinadores/CoordinadoresAdmin.vue') },
+      { path: 'coordinadores/examenes-anuales', name: 'CoordinadoresExamenes', component: () => import('../components/panel-arbitro/coordinadores/ExamenesAnualesCoordinadores.vue') },
+      { path: 'coordinadores/resumen-arbitros', name: 'CoordinadoresResumen', component: () => import('../components/panel-arbitro/coordinadores/ResumenArbitrosCoordinadores.vue') },
+      { path: 'coordinadores/reuniones-mensuales', name: 'CoordinadoresReuniones', component: () => import('../components/panel-arbitro/coordinadores/ReunionesMensualesCoordinadores.vue') },
+      { path: 'coordinadores/disponibilidad-horaria', name: 'CoordinadoresDisponibilidad', component: () => import('../components/panel-arbitro/coordinadores/DisponibilidadHorariaCoordinadores.vue') },
+
+      // --- INDUMENTARIA ---
       { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/IndumentariaArbitro.vue') },
       { path: 'indumentaria/nuevo', name: 'RealizarPedido', component: () => import('../components/panel-arbitro/indumentaria/RealizarPedido.vue') },
       { path: 'indumentaria/mis-pedidos', name: 'MisPedidos', component: () => import('../components/panel-arbitro/indumentaria/MisPedidos.vue') },
+
+      // --- FACTURACION ---
       { path: 'facturacion', name: 'InstitucionesCuit', component: () => import('../components/panel-arbitro/facturacion/InstitucionesCuit.vue') },
+
+      // --- HISTORIAL DE NOTIFICACIONES ---
       { path: 'historial-notificaciones', name: 'HistorialNotificacionesArbitro', component: () => import('../components/panel-arbitro/notificaciones/HistorialNotificaciones.vue') },
+
+      // --- DELEGADO TÉCNICO ---
       { path: 'delegado-tecnico', name: 'DelegadoTecnico', component: () => import('../components/panel-arbitro/delegado-tecnico/DelegadosTecnicos.vue') }
     ]
   },
@@ -125,8 +158,8 @@ const routes = [
       // --- DESARROLLO ARBITRAL ---
       { path: 'desarrollo-arbitral', name: 'DesarrolloArbitralAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/DesarrolloArbitralAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
       { path: 'desarrollo-arbitral/observaciones', name: 'ObservacionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ObservacionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
-      { path: 'desarrollo-arbitral/examenes', name: 'ExamenesGeneralesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ExamenesGeneralesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
-      { path: 'desarrollo-arbitral/reuniones', name: 'ReunionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ReunionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
+      { path: 'desarrollo-arbitral/examenes-anuales', name: 'ExamenesGeneralesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ExamenesGeneralesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
+      { path: 'desarrollo-arbitral/reuniones-mensuales', name: 'ReunionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ReunionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
       { path: 'desarrollo-arbitral/resumen-arbitros', name: 'ResumenArbitrosAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ResumenArbitrosAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
 
       // --- CURSOS ---

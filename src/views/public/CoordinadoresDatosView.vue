@@ -4,7 +4,6 @@
 
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
@@ -14,7 +13,6 @@
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <!-- Botón Filtros (Solo Móvil) -->
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
@@ -31,7 +29,6 @@
           </div>
         </div>
 
-        <!-- PANEL DE FILTROS (Solo Móvil) -->
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none']">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Árbitros</span>
@@ -87,11 +84,9 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
 
-          <!-- TABLA (Solo Escritorio) -->
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
             <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
               <thead class="table-light">
-                <!-- Títulos -->
                 <tr>
                   <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
                   <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
@@ -115,7 +110,6 @@
                   <th class="py-3 text-center text-uppercase text-muted">Cat</th>
                   <th class="py-3 text-center text-uppercase text-muted">Observaciones</th>
                 </tr>
-                <!-- Filtros Desktop -->
                 <tr class="bg-light">
                   <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
                   <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
@@ -213,7 +207,6 @@
             </table>
           </div>
 
-          <!-- CARDS (Solo Celular) -->
           <div class="d-md-none p-3 bg-light">
             <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="obtenerClaseFila(a)">
 
@@ -222,30 +215,37 @@
                   <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
                   {{ a.apellido }}, {{ a.nombre }} ({{ a.edad }} años)
                 </div>
-                <div class="small text-dark fw-bold">{{ obtenerTextoLicencia(a) }}</div>
+                <div class="text-xs fw-bold text-muted font-monospace">#{{ a.id }}</div>
               </div>
 
               <div class="card-body pt-0 px-3 pb-3">
-                <div class="d-flex justify-content-between text-dark mb-2 border-bottom border-secondary-subtle pb-2">
-                  <span class="small"><strong>Gr:</strong> {{ a.grupo }} - <strong>Zona:</strong> {{ a.zona }}</span>
+                <div class="d-flex justify-content-between align-items-center mb-3 text-dark">
+                  <span class="small"><strong>Gr:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
+                  <span class="small"><strong>Zona:</strong> {{ a.zona || '-' }}</span>
                 </div>
 
-                <div class="bg-light p-2 rounded border small mb-3 border-light-subtle">
-                  <p class="m-0 text-dark">
-                    <strong>Apto Físico:</strong>
-                    <span v-if="a.apto_medico" class="material-icons text-success align-middle" style="font-size: 18px;">check_circle</span>
-                    <span v-else class="material-icons text-danger align-middle" style="font-size: 18px;">cancel</span>
-                  </p>
-                  <p class="text-dark mt-1 mb-0"><strong>Juega:</strong> {{ a.juega_handball }} <span v-if="a.juega_handball === 'SI'">en {{ a.donde_juega }}</span></p>
+                <div v-if="obtenerTextoLicencia(a) !== '-'" class="alert py-2 px-3 small fw-bold mb-3 d-flex align-items-center gap-2"
+                     :class="((Number(a.tiene_aprobada) > 0) || a.sancion_vigente) ? 'alert-danger border-danger-subtle text-danger' : 'alert-warning border-warning-subtle text-warning-emphasis'">
+                     <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                     <span class="text-break" style="white-space: normal; line-height: 1.3;">{{ obtenerTextoLicencia(a) }}</span>
                 </div>
 
-                <div class="mb-3">
-                  <p class="text-dark mb-1 small"><strong>Sáb:</strong> {{ a.disponibilidad_sabado }} <span v-if="a.disponibilidad_sabado !== 'NO'">({{ a.disponibilidad_sabado_desde }}-{{ a.disponibilidad_sabado_hasta }})</span></p>
-                  <p class="text-dark m-0 small"><strong>Dom:</strong> {{ a.disponibilidad_domingo }} <span v-if="a.disponibilidad_domingo !== 'NO'">({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</span></p>
+                <div class="bg-white p-2 rounded border small mb-3 border-light-subtle d-flex justify-content-between align-items-center">
+                  <span class="text-dark d-flex align-items-center gap-1">
+                    <strong>Apto Físico: </strong>
+                    <span v-if="a.apto_medico" class="material-icons text-success align-middle" style="font-size: 16px;">check_circle</span>
+                    <span v-else class="material-icons text-danger align-middle" style="font-size: 16px;">cancel</span>
+                  </span>
+                  <span class="text-dark"><strong>Juega:</strong> {{ a.juega_handball }} <span v-if="a.juega_handball === 'SI'">({{ a.donde_juega }})</span></span>
                 </div>
 
-                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn btn-success w-100 shadow-sm mt-3 d-flex align-items-center justify-content-center gap-2">
-                  <span class="material-icons">chat</span> Contactar por WhatsApp
+                <div class="mb-3 text-dark small bg-white p-2 rounded border border-light-subtle">
+                  <p class="mb-1"><strong>Sáb:</strong> {{ a.disponibilidad_sabado }} <span v-if="a.disponibilidad_sabado !== 'NO'">({{ a.disponibilidad_sabado_desde }}-{{ a.disponibilidad_sabado_hasta }})</span></p>
+                  <p class="m-0"><strong>Dom:</strong> {{ a.disponibilidad_domingo }} <span v-if="a.disponibilidad_domingo !== 'NO'">({{ a.disponibilidad_domingo_desde }}-{{ a.disponibilidad_domingo_hasta }})</span></p>
+                </div>
+
+                <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn btn-sm w-100 fw-bold shadow-sm mt-3 text-white d-flex align-items-center justify-content-center gap-2" style="background: #25d366;">
+                  <span class="material-icons fs-6">chat</span> WhatsApp
                 </button>
               </div>
             </div>
@@ -256,7 +256,6 @@
             </div>
           </div>
 
-          <!-- PAGINACIÓN -->
           <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
             <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
@@ -270,6 +269,40 @@
         </div>
       </div>
     </div>
+
+    <ModalBase :show="mostrarModalExcel" @close="mostrarModalExcel = false" icono="description" colorIcono="bg-success-subtle text-success" maxWidth="750px">
+      <template #header>
+        <div class="text-center">
+          <span class="fw-bold fs-5">Exportar Listado</span>
+          <div class="text-muted small mt-1">Marcá las columnas que querés incluir en el Excel</div>
+        </div>
+      </template>
+
+      <div class="d-flex justify-content-between align-items-center mb-2 px-2 mt-1">
+        <h6 class="fw-bold text-dark m-0 small text-uppercase">Columnas a incluir</h6>
+        <div class="form-check m-0">
+          <input class="form-check-input shadow-none" type="checkbox" id="checkAll" @change="toggleTodasColumnas($event.target.checked)" :checked="todasSeleccionadas">
+          <label class="form-check-label small fw-bold text-primary" for="checkAll">Seleccionar Todas</label>
+        </div>
+      </div>
+
+      <div class="row g-2 text-start mb-2 mx-auto shadow-sm p-3 rounded-3 bg-light border border-light-subtle" style="max-height: 250px; overflow-y: auto;">
+        <div v-for="col in columnasExcel" :key="col.id" class="col-12 col-sm-6">
+          <div class="form-check form-switch bg-white border p-2 rounded shadow-sm m-0">
+            <input class="form-check-input ms-1 shadow-none" type="checkbox" role="switch" v-model="col.visible" :id="'col-'+col.id" style="cursor:pointer;">
+            <label class="form-check-label ms-2 small fw-bold text-dark cursor-pointer" :for="'col-'+col.id">{{ col.label }}</label>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="!algunaSeleccionada">
+          <i class="bi bi-file-earmark-excel me-1"></i> DESCARGAR EXCEL
+        </button>
+      </template>
+    </ModalBase>
+
   </div>
 </template>
 
@@ -278,6 +311,7 @@ import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head'
+import ModalBase from '@/components/ModalBase.vue'
 
 useHead({
   title: 'Coordinadores - Base de Datos | AAAB',
@@ -305,6 +339,37 @@ const filtros = reactive({
 
 const paginaActual = ref(1);
 const registrosPorPagina = 8;
+
+const mostrarModalExcel = ref(false);
+
+const columnasExcel = ref([
+  { id: 'apellido', label: 'Apellido', visible: true },
+  { id: 'nombre', label: 'Nombre', visible: true },
+  { id: 'celular', label: 'Celular', visible: true },
+  { id: 'licencia', label: 'Licencia / Sanción', visible: true },
+  { id: 'edad', label: 'Edad', visible: false },
+  { id: 'es_activo', label: 'Activo', visible: false },
+  { id: 'apto_medico', label: 'Apto Médico', visible: false },
+  { id: 'grupo', label: 'Grupo', visible: false },
+  { id: 'subgrupo', label: 'Subgrupo', visible: false },
+  { id: 'zona', label: 'Zona', visible: false },
+  { id: 'movilidad', label: 'Movilidad', visible: false },
+  { id: 'disponibilidad_sabado', label: 'Sáb Disp', visible: false },
+  { id: 'sabado_rango', label: 'Sáb Rango', visible: false },
+  { id: 'disponibilidad_domingo', label: 'Dom Disp', visible: false },
+  { id: 'domingo_rango', label: 'Dom Rango', visible: false },
+  { id: 'juega_handball', label: 'Juega Handball', visible: false },
+  { id: 'donde_juega', label: 'Club', visible: false },
+  { id: 'categoria_handball', label: 'Categoría', visible: false },
+  { id: 'observaciones', label: 'Observaciones', visible: false },
+]);
+
+const todasSeleccionadas = computed(() => columnasExcel.value.every(c => c.visible));
+const algunaSeleccionada = computed(() => columnasExcel.value.some(c => c.visible));
+
+const toggleTodasColumnas = (val) => {
+  columnasExcel.value.forEach(c => c.visible = val);
+};
 
 const cambiarPagina = (delta) => {
   paginaActual.value += delta;
@@ -479,22 +544,34 @@ watch(totalPaginas, (nuevoTotal) => {
 });
 
 const exportarExcel = () => {
-  const datos = arbitrosFiltrados.value.map(a => ({
-    APELLIDO: a.apellido, NOMBRE: a.nombre, EDAD: a.edad,
-    CELULAR: a.celular,
-    LICENCIA_O_SANCION: obtenerTextoLicencia(a),
-    ACTIVO: a.es_activo == 1 ? 'SI' : 'NO',
-    APTO: a.apto_medico ? 'SI' : 'NO',
-    GRUPO: a.grupo, SUBGRUPO: a.subgrupo,
-    ZONA: a.zona, MOVILIDAD: a.movilidad,
-    SAB_DISP: a.disponibilidad_sabado, SAB_HORA: `${a.disponibilidad_sabado_desde} a ${a.disponibilidad_sabado_hasta}`,
-    DOM_DISP: a.disponibilidad_domingo, DOM_HORA: `${a.disponibilidad_domingo_desde} a ${a.disponibilidad_domingo_hasta}`,
-    JUEGA: a.juega_handball, CLUB: a.donde_juega, CAT: a.categoria_handball, OBS: a.observaciones
-  }));
+  mostrarModalExcel.value = true;
+};
+
+const ejecutarDescargaExcel = () => {
+  const cols = columnasExcel.value.filter(c => c.visible);
+
+  const datos = arbitrosFiltrados.value.map(a => {
+    const fila = {};
+    cols.forEach(col => {
+      let valor = '';
+      if (col.id === 'licencia') valor = obtenerTextoLicencia(a);
+      else if (col.id === 'es_activo') valor = a.es_activo == 1 ? 'SI' : 'NO';
+      else if (col.id === 'apto_medico') valor = a.apto_medico ? 'SI' : 'NO';
+      else if (col.id === 'sabado_rango') valor = `${a.disponibilidad_sabado_desde || ''} a ${a.disponibilidad_sabado_hasta || ''}`;
+      else if (col.id === 'domingo_rango') valor = `${a.disponibilidad_domingo_desde || ''} a ${a.disponibilidad_domingo_hasta || ''}`;
+      else valor = a[col.id];
+
+      fila[col.label] = valor || '';
+    });
+    return fila;
+  });
+
   const ws = XLSX.utils.json_to_sheet(datos);
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Coordinadores");
+  XLSX.utils.book_append_sheet(wb, ws, "Base_Datos");
   XLSX.writeFile(wb, "Base_Datos_Coordinadores_AAAB.xlsx");
+
+  mostrarModalExcel.value = false;
 };
 
 onMounted(cargarDatos);
@@ -649,6 +726,23 @@ td:hover .observacion-tooltip {
 
 .fila-amarilla td,
 .fila-amarilla .col-fija {
+  background-color: #fef08a !important;
+  color: #000 !important;
+}
+
+/* Vista móvil: aplicar el mismo estado a la card completa */
+.card.fila-roja,
+.card.fila-roja .card-header,
+.card.fila-roja .card-body,
+.card.fila-roja .bg-white {
+  background-color: #fca5a5 !important;
+  color: #000 !important;
+}
+
+.card.fila-amarilla,
+.card.fila-amarilla .card-header,
+.card.fila-amarilla .card-body,
+.card.fila-amarilla .bg-white {
   background-color: #fef08a !important;
   color: #000 !important;
 }

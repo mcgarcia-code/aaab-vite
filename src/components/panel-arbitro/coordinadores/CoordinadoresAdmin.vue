@@ -1,128 +1,150 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <!-- Cambiamos mb-5 por mb-4 mb-md-5 para que achique automáticamente en celular -->
-    <div class="dashboard-header mb-4 mb-md-5 text-center text-md-start">
-      <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
-        <div class="main-icon-container">
-          <i class="bi bi-check text-danger"></i>
+    <!-- Manejo de margen inferior responsivo con mb-4 y mb-md-5 -->
+    <div class="dashboard-header mb-4 mb-md-5 mt-4 text-start">
+      <div class="d-flex align-items-center justify-content-start gap-3">
+        <div class="main-icon-container flex-shrink-0">
+          <i class="bi bi-graph-up-arrow text-danger"></i>
         </div>
         <div>
-          <h4 class="fw-bold text-white m-0">Coordinadores</h4>
-          <p class="small text-white opacity-75 m-0">Cargá y visualizá los exámenes de tu grupo a cargo</p>
+          <!-- Tipografía adaptativa para el título -->
+          <h4 class="fw-bold text-white m-0 fs-5 fs-md-4">Coordinadores</h4>
+          <p class="text-white opacity-75 m-0" style="font-size: 0.85rem;">Gestión de coordinadores</p>
         </div>
       </div>
     </div>
 
-    <div class="row g-3 g-md-4 justify-content-center">
+    <div class="row g-3 g-md-4">
+      <div v-for="item in opcionesCoordinadores" :key="item.title" class="col-12 col-md-6">
+        <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
 
-      <div class="col-12 col-md-6">
-        <RouterLink to="/panel-arbitro/coordinadores" class="text-decoration-none h-100 d-block">
-          <!-- Agregamos px-4 py-3 p-md-3 para el padding responsivo nativo -->
-          <div class="modern-menu-card shadow-sm px-4 py-3 p-md-3">
-            <div class="icon-box">
-              <i class="bi bi-cart-plus"></i>
+          <!-- Todo el layout de la tarjeta pasado a clases nativas de Bootstrap -->
+          <div class="modern-menu-card d-flex align-items-center gap-3 p-4 p-md-3 bg-white w-100 h-100 shadow-sm">
+
+            <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
+              <i :class="item.icon"></i>
             </div>
-            <div class="card-text">
-              <h5 class="fw-bold mb-1">PRUEBA</h5>
-              <p class="extra-small m-0 text-muted">PRUEBA</p>
+
+            <div class="flex-grow-1">
+              <h5 class="fw-bold m-0 text-dark" style="font-size: 1.1rem;">{{ item.title }}</h5>
+              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.85rem;">{{ item.desc }}</p>
             </div>
-            <div class="card-arrow">
+
+            <div class="card-arrow text-secondary fs-5">
               <i class="bi bi-chevron-right"></i>
             </div>
+
           </div>
+
         </RouterLink>
       </div>
-
-      <div class="col-12 col-md-6">
-        <RouterLink to="/panel-arbitro/coordinadores/mis-examenes" class="text-decoration-none h-100 d-block">
-          <!-- Agregamos px-4 py-3 p-md-3 para el padding responsivo nativo -->
-          <div class="modern-menu-card shadow-sm px-4 py-3 p-md-3">
-            <div class="icon-box">
-              <i class="bi bi-list-check"></i>
-            </div>
-            <div class="card-text">
-              <h5 class="fw-bold mb-1">PRUEBA</h5>
-              <p class="extra-small m-0 text-muted">PRUEBA</p>
-            </div>
-            <div class="card-arrow">
-              <i class="bi bi-chevron-right"></i>
-            </div>
-          </div>
-        </RouterLink>
-      </div>
-
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { useHead } from '@vueuse/head'
+import { RouterLink } from 'vue-router';
+import { useHead } from '@vueuse/head';
 
+// Actualización de Meta Tags
 useHead({
   title: 'Coordinadores | AAAB',
   meta: [
     { name: 'description', content: 'Gestión de coordinadores para los árbitros de la AAAB.' }
   ],
 })
+
+
+const opcionesCoordinadores = [
+  {
+    to: '/panel-arbitro/coordinadores/reuniones-mensuales', // Puedes ajustar esta ruta
+    title: 'Reuniones Mensuales',
+    icon: 'bi bi-clipboard-data-fill',
+    desc: 'Registro de presentes y ausentes en reuniones mensuales.'
+  },
+  {
+    to: '/panel-arbitro/coordinadores/examenes-anuales', // Puedes ajustar esta ruta
+    title: 'Asamblea General de Árbitros',
+    icon: 'bi bi-journal-check',
+    desc: 'Administración de exámenes teóricos/físicos.'
+  },
+        {
+    to: '/panel-arbitro/coordinadores/disponibilidad-horaria', // Puedes ajustar esta ruta
+    title: 'Disponibilidad Horaria',
+    icon: 'bi bi-clock-history',
+    desc: 'Visualización de la disponibilidad horaria de los árbitros'
+  },
+        {
+    to: '/panel-arbitro/coordinadores/resumen-arbitros', // Puedes ajustar esta ruta
+    title: 'Resumen de Árbitros',
+    icon: 'bi bi-graph-up-arrow',
+    desc: 'Visualización de estadísticas y rendimiento de árbitros'
+  }
+];
 </script>
 
 <style scoped>
 /* ====================================================
-   1. ESTILOS BASE Y COMPONENTES
+   ESTILOS DE LA CABECERA
    ==================================================== */
 .main-icon-container {
-  width: 60px; height: 60px;
+  width: 60px;
+  height: 60px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 18px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem; border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.modern-menu-card {
-  background: white;
-  border-radius: 16px;
-  /* El padding se maneja ahora desde el template con Bootstrap */
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid #f1f5f9;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.icon-box {
-  width: 56px;
-  height: 56px;
-  min-width: 56px;
-  background: #fef2f2;
-  color: #dc2626;
-  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ====================================================
+   TARJETAS DE NAVEGACIÓN
+   ==================================================== */
+.modern-menu-card {
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+/* El tamaño del ícono escala automáticamente con clamp() */
+.icon-box {
+  width: clamp(48px, 10vw, 52px);
+  height: clamp(48px, 10vw, 52px);
+  background: #fef2f2;
+  color: #dc2626;
+  border-radius: 14px;
+  font-size: clamp(1.3rem, 3vw, 1.5rem);
   transition: all 0.3s ease;
 }
 
-.card-text {
-  flex: 1;
-  min-width: 0;
+.card-arrow {
+  transition: all 0.3s ease;
 }
-.card-text h5 { font-size: 0.95rem; color: #1e293b; }
-.extra-small { font-size: 0.75rem; }
-.card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; align-self: center; }
 
+/* --- EFECTOS HOVER --- */
 .modern-menu-card:hover {
   border-color: #f87171;
   transform: translateY(-5px);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06) !important;
 }
 
-.modern-menu-card:hover .icon-box { background: #dc2626; color: white; }
+.modern-menu-card:hover .icon-box {
+  background: #dc2626;
+  color: white;
+  transform: scale(1.05);
+}
+
+.modern-menu-card:hover .card-arrow {
+  color: #dc2626;
+  transform: translateX(4px);
+}
 
 .animate__animated { animation-duration: 0.5s; }
 
+/* Sin media queries. Diseño fluido con Bootstrap nativo y CSS moderno. */
 </style>
