@@ -106,8 +106,8 @@
                     <span :class="['badge-category', `cat-${evento.categoria}`]">{{ evento.categoria.toUpperCase() }}</span>
                   </td>
                   <td class="text-center pe-3">
-                    <span class="badge-status-sm bg-dark text-white">
-                      {{ obtenerDescripcionAlcance(evento) }}
+                    <span v-for="(i,k) in evento.grupos" :key="k" class="badge-status-sm bg-dark text-white">
+                      {{ i }}
                     </span>
                   </td>
                 </tr>
@@ -139,8 +139,8 @@
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <span class="text-muted small">Alcance:</span>
-                  <span class="badge-status-sm bg-dark text-white">
-                    {{ obtenerDescripcionAlcance(evento) }}
+                  <span v-for="(i,k) in evento.grupos" :key="k" class="badge-status-sm bg-dark text-white">
+                    {{ i }}
                   </span>
                 </div>
 
@@ -475,7 +475,7 @@ const limpiarFiltrosTabla = () => {
 const obtenerEventos = async () => {
   const res = await api.get({ entity: 'eventos', action: 'obtenerTodosLosEventos' })
   if (res.ok) {
-    listaEventos.value = Array.isArray(res.payload) ? res.payload : []
+    listaEventos.value = res.payload ?? []
   }
 }
 
@@ -492,17 +492,26 @@ const abrirModalNuevo = () => {
   mostrarModal.value = true
 }
 
-const cargarDatosEdicion = (evento) => {
-  const todosLosGrupos = Number(evento?.todos_grupos) === 1 || evento?.todos_grupos === true
-
+const cargarDatosEdicion = async (evento) => {
+  const { payload } = await api.get({
+    entity: 'eventos',
+    action: 'obtenerGruposEvento',
+    payload: {
+      idEvento: evento.id
+    }
+  })
+  let arrIdGrupos = []
+  payload.forEach(v=>{
+    arrIdGrupos.push(v.id)
+  })
   modoEdicion.value = true
   Object.assign(form, {
     id: evento.id,
     titulo: evento.titulo,
     descripcion: evento.descripcion,
     fecha_evento: (evento.fecha_evento || '').substring(0, 10),
-    grupos: todosLosGrupos ? grupos.value.map(grupoItem => grupoItem.id) : obtenerIdsGruposEvento(evento),
-    todos_grupos: todosLosGrupos,
+    grupos: evento.todosLosGrupos ? grupos.value.map(grupoItem => grupoItem.id) : arrIdGrupos,
+    todos_grupos: evento.todosLosGrupos,
     categoria: evento.categoria || 'reunion'
   })
   mostrarModal.value = true
