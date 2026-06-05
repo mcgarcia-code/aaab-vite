@@ -18,6 +18,10 @@
               <span class="material-icons text-dark fs-6">filter_alt_off</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
+            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
+              <span class="material-icons fs-6">download</span>
+              <span class="fw-bold d-none d-md-inline small">Excel</span>
+            </button>
           </div>
         </div>
 
@@ -183,6 +187,27 @@
       </div>
     </div>
 
+    <ModalBase :show="mostrarModalExcel" @close="mostrarModalExcel = false" icono="description" colorIcono="bg-success-subtle text-success" maxWidth="750px">
+      <template #header>
+        <div class="text-center">
+          <span class="fw-bold fs-5">Exportar Listado</span>
+          <div class="text-muted small mt-1">Marcá las columnas que querés incluir en el Excel</div>
+        </div>
+      </template>
+      <div class="row g-2 text-start my-2 mx-auto shadow-sm p-3 rounded-3 bg-light border border-light-subtle" style="max-height: 250px; overflow-y: auto;">
+        <div v-for="col in columnasExcel" :key="col.id" class="col-12 col-sm-6">
+          <div class="form-check form-switch bg-white border p-2 rounded shadow-sm m-0">
+            <input class="form-check-input ms-1 shadow-none" type="checkbox" role="switch" v-model="col.visible" :id="'col-'+col.id" style="cursor:pointer;">
+            <label class="form-check-label ms-2 small fw-bold text-dark cursor-pointer" :for="'col-'+col.id">{{ col.label }}</label>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100">DESCARGAR EXCEL</button>
+      </template>
+    </ModalBase>
+
     <ModalBase :show="mostrarModalDetalle" @close="mostrarModalDetalle = false" icono="history" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="800px">
       <template #header>
         <div class="text-center w-100">
@@ -225,8 +250,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, inject } from 'vue'
+import { ref, onMounted, computed, reactive} from 'vue'
 import { api } from '@/api/api'
+import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
@@ -249,7 +275,6 @@ const ESTADO_MAP = {
 }
 
 // ============== STATE ==============
-const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 const arbitros = ref([])
 const dataGlobal = ref([])
 
@@ -261,6 +286,21 @@ const mostrarModalDetalle = ref(false)
 const arbitroSeleccionado = ref({ id: null, apellido: '', nombre: '' })
 
 const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '' })
+
+const mostrarModalExcel = ref(false)
+const columnasExcel = ref([
+  { id: 'id', label: 'ID Árbitro', visible: true },
+  { id: 'apellido', label: 'Apellido', visible: true },
+  { id: 'nombre', label: 'Nombre', visible: true },
+  { id: 'grupo', label: 'Grupo', visible: true },
+  { id: 'subgrupo', label: 'Subgrupo', visible: true },
+  { id: 'reuniones', label: 'Reuniones (Pres.)', visible: true },
+  { id: 'asambleas', label: 'Asambleas', visible: true },
+  { id: 'recuperatorios', label: 'Recuperatorios', visible: true },
+  { id: 'total', label: 'Total Registros', visible: false },
+  { id: 'fecha_ultima_actividad', label: 'Fecha Últ. Act.', visible: false },
+  { id: 'tipo_ultima_actividad', label: 'Tipo Últ. Act.', visible: false },
+])
 
 // ============== HELPERS ==============
 const normalizarTexto = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
@@ -282,16 +322,30 @@ const claseDot         = (e) => ESTADO_MAP[e]?.dot   ?? 'bg-dark'
 const claseTextoEstado = (e) => ESTADO_MAP[e]?.txt   ?? 'text-dark'
 
 // ============== COMPUTEDS & METRICS ==============
-// Calculamos el total de eventos y cuál fue el último
 const metricasArbitros = computed(() => {
   const metricas = {}
   dataGlobal.value.forEach(ex => {
     if (!metricas[ex.id_arbitro]) {
-      metricas[ex.id_arbitro] = { total: 0, ultimo: null }
+      metricas[ex.id_arbitro] = {
+        total: 0,
+        ultimo: null,
+        reuniones: 0,
+        asambleas: 0,
+        recuperatorios: 0
+      }
     }
     const m = metricas[ex.id_arbitro]
 
     m.total++
+
+    if (ex.tipo === 'reunion') {
+      const presente = (ex.detalles || []).some(d => d.estado == 4)
+      if (presente) m.reuniones++
+    } else if (ex.tipo === 'asamblea') {
+      m.asambleas++
+    } else if (ex.tipo === 'recuperatorio') {
+      m.recuperatorios++
+    }
 
     if (!m.ultimo || (ex._ts > m.ultimo._ts)) {
       m.ultimo = ex
@@ -327,6 +381,38 @@ const eventosDelArbitroDetalle = computed(() => {
   const eventos = dataGlobal.value.filter(ex => ex.id_arbitro === arbitroSeleccionado.value.id)
   return eventos.sort((a, b) => (b._ts ?? 0) - (a._ts ?? 0))
 })
+
+// ============== EXPORTAR EXCEL ==============
+const exportarExcel = () => { mostrarModalExcel.value = true }
+
+const ejecutarDescargaExcel = () => {
+  const cols = columnasExcel.value.filter(c => c.visible)
+
+  const datos = arbitrosOrdenados.value.map(a => {
+    const fila = {}
+    const m = metricasArbitros.value[a.id]
+
+    cols.forEach(col => {
+      let valor = ''
+      if (col.id === 'reuniones') valor = m?.reuniones || 0
+      else if (col.id === 'asambleas') valor = m?.asambleas || 0
+      else if (col.id === 'recuperatorios') valor = m?.recuperatorios || 0
+      else if (col.id === 'total') valor = m?.total || 0
+      else if (col.id === 'fecha_ultima_actividad') valor = m?.ultimo ? formatFecha(m.ultimo.fecha_examen) : 'Sin actividad'
+      else if (col.id === 'tipo_ultima_actividad') valor = m?.ultimo ? m.ultimo.tipo.toUpperCase() : '-'
+      else valor = a[col.id]
+
+      fila[col.label] = valor || ''
+    })
+    return fila
+  })
+
+  const ws = XLSX.utils.json_to_sheet(datos)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Resumen')
+  XLSX.writeFile(wb, 'Resumen_Rendimiento_AAAB.xlsx')
+  mostrarModalExcel.value = false
+}
 
 // ============== CARGAS Y MÉTODOS ==============
 const verDetalle = (a) => {
