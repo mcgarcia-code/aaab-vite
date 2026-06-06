@@ -106,8 +106,8 @@
                     <span :class="['badge-category', `cat-${evento.categoria}`]">{{ evento.categoria.toUpperCase() }}</span>
                   </td>
                   <td class="text-center pe-3">
-                    <span v-for="(i,k) in evento.grupos" :key="k" class="badge-status-sm bg-dark text-white">
-                      {{ i }}
+                    <span v-for="(nombre,k) in evento.nombresGrupos" :key="k" class="badge-status-sm bg-dark text-white">
+                      {{ nombre }}
                     </span>
                   </td>
                 </tr>
@@ -139,8 +139,8 @@
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <span class="text-muted small">Alcance:</span>
-                  <span v-for="(i,k) in evento.grupos" :key="k" class="badge-status-sm bg-dark text-white">
-                    {{ i }}
+                  <span v-for="(nombre,k) in evento.nombresGrupos" :key="k" class="badge-status-sm bg-dark text-white">
+                    {{ nombre }}
                   </span>
                 </div>
 
@@ -228,8 +228,7 @@
                     id="evento-grupos-todos"
                     class="form-check-input shadow-none border-secondary-subtle"
                     type="checkbox"
-                    :checked="todosLosGruposSeleccionados"
-                    @change="toggleTodosLosGrupos($event.target.checked)"
+                    v-model="form.todosLosGrupos"
                   >
                   <label class="form-check-label small fw-bold mt-1" for="evento-grupos-todos">
                     Seleccionar todos
@@ -240,11 +239,12 @@
                     :id="`evento-grupo-${grupoItem.id}`"
                     class="form-check-input shadow-none border-secondary-subtle"
                     type="checkbox"
-                    :checked="tieneGrupoSeleccionado(grupoItem.id)"
-                    @change="toggleGrupoSeleccionado(grupoItem.id, $event.target.checked)"
+                    :checked="gruposSeleccionados.includes(grupoItem.id)"
+                    @change = 'toggleGrupoSeleccionado(grupoItem.id, $event.target.checked)'
+                    :disabled="form.todosLosGrupos"
                   >
                   <label class="form-check-label small fw-bold mt-1" :for="`evento-grupo-${grupoItem.id}`">
-                    {{ obtenerNombreGrupo(grupoItem) }}
+                    {{ grupoItem.nombre }} {{ grupoItem.subgrupo }}
                   </label>
                 </div>
               </div>
@@ -278,16 +278,17 @@ useHead({
 
 const notificar = inject('notificar')
 const procesando = ref(false)
-const grupos = ref([])
 const listaEventos = ref([])
-
+const grupos = ref([])
+const gruposSeleccionados = ref([])
 const formBase = {
   id: null,
   titulo: '',
   descripcion: '',
   fecha_evento: '',
-  grupos: [],
-  todos_grupos: false,
+  nombresGrupos: [],
+  idsGrupos: [],
+  todosLosGrupos: false,
   categoria: 'reunion'
 }
 
@@ -314,73 +315,6 @@ const normalizarTexto = (texto) => {
     .toLowerCase()
 }
 
-const obtenerNombreGrupo = (grupoItem) => {
-  return [grupoItem?.nombre, grupoItem?.subgrupo].filter(Boolean).join(' ')
-}
-
-const normalizarIdsGrupos = (gruposEvento) => {
-  if (!Array.isArray(gruposEvento)) return []
-
-  return gruposEvento
-    .map(grupoItem => typeof grupoItem === 'object' ? grupoItem?.id : grupoItem)
-    .filter(grupoId => grupoId !== null && grupoId !== undefined && grupoId !== '')
-}
-
-const tieneGrupoSeleccionado = (grupoId) => {
-  return form.grupos.some(id => String(id) === String(grupoId))
-}
-
-const todosLosGruposSeleccionados = computed(() => {
-  return grupos.value.length > 0 && grupos.value.every(grupoItem => tieneGrupoSeleccionado(grupoItem.id))
-})
-
-const sincronizarFlagTodosLosGrupos = () => {
-  form.todos_grupos = todosLosGruposSeleccionados.value
-}
-
-const toggleGrupoSeleccionado = (grupoId, estaChequeado) => {
-  if (!Array.isArray(form.grupos)) {
-    form.grupos = []
-  }
-
-  if (estaChequeado) {
-    if (!tieneGrupoSeleccionado(grupoId)) {
-      form.grupos.push(grupoId)
-    }
-    sincronizarFlagTodosLosGrupos()
-    return
-  }
-
-  form.grupos = form.grupos.filter(id => String(id) !== String(grupoId))
-  sincronizarFlagTodosLosGrupos()
-}
-
-const toggleTodosLosGrupos = (estaChequeado) => {
-  form.grupos = estaChequeado ? grupos.value.map(grupoItem => grupoItem.id) : []
-  form.todos_grupos = estaChequeado
-}
-
-const obtenerIdsGruposEvento = (evento) => {
-  if (Array.isArray(evento?.grupos)) {
-    return normalizarIdsGrupos(evento.grupos)
-  }
-  return []
-}
-
-const obtenerDescripcionAlcance = (evento) => {
-  if (evento?.todosLosGrupos) return 'TODOS'
-  let gruposReunion = []
-  let grupoItem
-  let grupoNombre
-  evento?.arrGrupos.forEach((v)=>{
-    grupoItem = grupos.value.find(grupo => grupo.id == v)
-    grupoNombre = grupoItem?.nombre ?? ""
-    if (grupoItem?.subgrupo) grupoNombre += " "+grupoItem.subgrupo
-    gruposReunion.push(grupoNombre)
-  })
-  return gruposReunion.join(" / ")
-}
-
 const eventosFiltrados = computed(() => {
   let resultado = listaEventos.value
 
@@ -404,7 +338,7 @@ const eventosFiltrados = computed(() => {
     let matchGrupo = true
     if (filtros.grupo) {
       const searchG = normalizarTexto(filtros.grupo)
-      const alcance = normalizarTexto(obtenerDescripcionAlcance(e))
+      const alcance = normalizarTexto(e.nombresGrupos.join("/"))
       matchGrupo = alcance.includes(searchG)
     }
 
@@ -487,38 +421,42 @@ const obtenerGrupos = async () => {
 }
 
 const abrirModalNuevo = () => {
-  Object.assign(form, { ...formBase, grupos: [], todos_grupos: false })
+  gruposSeleccionados.value = []
+  Object.assign(form, { ...formBase })
   modoEdicion.value = false
   mostrarModal.value = true
 }
 
 const cargarDatosEdicion = async (evento) => {
-  const { payload } = await api.get({
-    entity: 'eventos',
-    action: 'obtenerGruposEvento',
-    payload: {
-      idEvento: evento.id
-    }
-  })
-  let arrIdGrupos = []
-  payload.forEach(v=>{
-    arrIdGrupos.push(v.id)
-  })
   modoEdicion.value = true
   Object.assign(form, {
     id: evento.id,
     titulo: evento.titulo,
     descripcion: evento.descripcion,
     fecha_evento: (evento.fecha_evento || '').substring(0, 10),
-    grupos: evento.todosLosGrupos ? grupos.value.map(grupoItem => grupoItem.id) : arrIdGrupos,
-    todos_grupos: evento.todosLosGrupos,
+    idsGrupos: evento.idsGrupos,
+    todosLosGrupos: evento.todosLosGrupos,
     categoria: evento.categoria || 'reunion'
   })
+  gruposSeleccionados.value = evento.idsGrupos
   mostrarModal.value = true
 }
 
+const toggleGrupoSeleccionado = (id, estaChequeado) => {
+  if (!estaChequeado) {
+    const indice = gruposSeleccionados.value.indexOf(id);
+    if (indice !== -1) {
+      gruposSeleccionados.value.splice(indice, 1);
+    }
+  }
+  else {
+    if (!gruposSeleccionados.value.includes(id)) {
+      gruposSeleccionados.value.push(id)
+    }
+  }
+}
 const guardarEvento = async () => {
-  if (!form.todos_grupos && !form.grupos.length) {
+  if (!form.todosLosGrupos && gruposSeleccionados.value.length==0) {
     notificar({ titulo: 'Faltan grupos', mensaje: 'Selecciona al menos un grupo destinatario.', tipo: 'danger' })
     return
   }
@@ -531,12 +469,11 @@ const guardarEvento = async () => {
       action,
       payload: {
         ...form,
-        grupos: [...form.grupos],
-        todos_grupos: form.todos_grupos
+        idsGrupos: gruposSeleccionados.value,
       }
     })
-
     if (res.ok) {
+      gruposSeleccionados.value = []
       mostrarModal.value = false
       await obtenerEventos()
       notificar({
