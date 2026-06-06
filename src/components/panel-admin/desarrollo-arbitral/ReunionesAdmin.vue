@@ -11,6 +11,20 @@
             <span class="text-muted small d-block mt-1">Reuniones Mensuales — {{ totalFiltrados }} árbitros</span>
           </div>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <select 
+              v-model="reunionSeleccionada"
+              @change="obtenerListadoArbitros"
+            >
+              <option 
+                v-for="(i, k) in arrReuniones"
+                :value = i.id
+                :key="k"
+              >
+                {{ i.fecha_formateada }} - {{ i.descripcion }}
+              </option>
+            </select>
+          </div>
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2" aria-label="Mostrar filtros">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
@@ -477,6 +491,33 @@ const formReunionVacio = () => ({
 const formReunion         = ref(formReunionVacio())
 const formReunionSnapshot = ref('')
 
+// -------------------- Aplicación del BE ------------------
+
+const reunionSeleccionada = ref(null)
+const arrReuniones = ref([])
+const obtenerReuniones = async () => {
+  const { payload } = await api.get({
+    entity: 'reuniones',
+    action: 'obtenerReuniones'
+  })
+  arrReuniones.value = payload
+}
+const obtenerListadoArbitros = async () => {
+  cargandoInicial.value = true
+  const { payload } = await api.get({
+    entity: 'reuniones',
+    action: 'obtenerArbitrosReunion',
+    payload: {
+      idEvento: reunionSeleccionada.value
+    }
+  })
+  arbitros.value = payload
+  cargandoInicial.value = false
+
+}
+
+// ---------------------------------------------------------
+
 // ============== COMPUTEDS ==============
 
 // Solo filtramos las que son de categoría reunion
@@ -797,7 +838,7 @@ const cargarGrupos = async () => {
 
 const cargarTodo = async () => {
   cargandoInicial.value = true
-  await Promise.all([cargarArbitros(), cargarDatos(), cargarEventos(), cargarGrupos()])
+  //await Promise.all([cargarArbitros(), cargarDatos(), cargarEventos(), cargarGrupos()])
   cargandoInicial.value = false
 }
 
@@ -811,7 +852,11 @@ const cambiarPagina  = (delta) => {
 
 watch(filtros,      () => { paginaActual.value = 1 }, { deep: true })
 watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
-onMounted(cargarTodo)
+onMounted(() => {
+  obtenerReuniones()
+}
+  //cargarTodo
+)
 </script>
 
 <style scoped>
