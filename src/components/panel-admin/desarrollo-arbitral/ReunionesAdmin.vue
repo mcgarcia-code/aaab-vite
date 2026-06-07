@@ -3,7 +3,7 @@
     <div class="admin-panel animate__animated animate__fadeIn">
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <!-- ══════ HEADER (igual a ExamenesGenerales) ══════ -->
+        <!-- ══════ HEADER ══════ -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
 
           <div class="border-start border-danger border-5 ps-3">
@@ -21,7 +21,7 @@
             </span>
           </div>
 
-          <!-- Selector reunión (centro) -->
+          <!-- Selector reunión -->
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <select
               v-model="reunionSeleccionada"
@@ -37,7 +37,7 @@
             </select>
           </div>
 
-          <!-- Botones (derecha) -->
+          <!-- Botones -->
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2" aria-label="Mostrar filtros">
               <span class="material-icons fs-6">filter_alt</span>
@@ -317,13 +317,17 @@
         </div>
       </template>
 
-      <div v-if="!reunionesDelArbitroDetalle.length" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
+      <div v-if="cargandoHistorial" class="text-center py-5 bg-white rounded shadow-sm border border-light-subtle">
+        <div class="spinner-border text-warning" role="status"></div>
+        <div class="mt-2 text-muted fw-bold small">Cargando historial...</div>
+      </div>
+
+      <div v-else-if="!reunionesDelArbitroDetalle.length" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
         <span class="material-icons d-block mb-2" style="font-size: 48px; color: #cbd5e1;">history_toggle_off</span>
         <p class="mb-0 fw-bold">No hay reuniones registradas para este árbitro.</p>
       </div>
 
       <div v-else>
-        <!-- Filtro año -->
         <div class="d-flex justify-content-end mb-3" v-if="añosDetalleArbitro.length">
           <div class="d-flex align-items-center gap-2">
             <label class="small fw-bold text-dark text-uppercase m-0">Año:</label>
@@ -334,7 +338,6 @@
           </div>
         </div>
 
-        <!-- Resumen -->
         <div class="row g-2 mb-4">
           <div class="col-6">
             <div class="card border-0 shadow-sm h-100 bg-success">
@@ -356,7 +359,6 @@
           </div>
         </div>
 
-        <!-- Listado de reuniones -->
         <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-warning">
           <span class="material-icons text-warning-emphasis me-2">event_note</span>
           <h6 class="fw-bold m-0 text-dark text-uppercase">Reuniones</h6>
@@ -478,6 +480,9 @@ const filtroAñoDetalle     = ref('')
 
 const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '' })
 
+const cargandoHistorial = ref(false)
+const examenesArbitroSeleccionado = ref([])
+
 // ─── Computeds: modo ─────────────────────────────────────────────
 const modoReunion = computed(() => !!reunionSeleccionada.value)
 const reunionActual = computed(() =>
@@ -545,8 +550,25 @@ const resumenReunionActual = computed(() => {
 
 // ─── Computeds: modal historial ───────────────────────────────────
 const reunionesDelArbitroDetalle = computed(() => {
-  if (!arbitroSeleccionado.value?.id) return []
-  return sortPorFecha(reunionesPorArbitro.value[arbitroSeleccionado.value.id] || [])
+  if (!examenesArbitroSeleccionado.value.length) return []
+
+  const map = {}
+  examenesArbitroSeleccionado.value.forEach(row => {
+    if (row.tipo !== CATEGORIA) return // Solo filtramos las reuniones
+    const key = row.id_evento
+    if (!map[key]) {
+      map[key] = {
+        id: row.id, id_evento: row.id_evento, id_arbitro: row.id_arbitro,
+        tipo: row.tipo, fecha_examen: row.fecha_examen, titulo: row.titulo,
+        _ts: parseFecha(row.fecha_examen), detalles: [],
+      }
+    }
+    map[key].detalles.push({
+      id: row.id_detalle ?? row.id,
+      subtipo: row.subtipo, calificacion: row.calificacion, estado: row.estado,
+    })
+  })
+  return sortPorFecha(Object.values(map))
 })
 
 const añosDetalleArbitro = computed(() => {
@@ -620,22 +642,6 @@ const arbitrosPaginados = computed(() => {
   return arbitrosOrdenados.value.slice(inicio, inicio + registrosPorPagina)
 })
 
-// ─── Helpers de datos ────────────────────────────────────────────
-const buildRegistrosMap = (flatRows) => {
-  const map = {}
-  flatRows.forEach(row => {
-    if (String(row.id_evento) !== String(reunionSeleccionada.value)) return
-    if (!map[row.id_arbitro]) map[row.id_arbitro] = { id: row.id, estado: row.estado }
-    if      (row.estado == 4)                                     map[row.id_arbitro].estado = 4
-    else if (row.estado == 2 && map[row.id_arbitro].estado != 4) map[row.id_arbitro].estado = 2
-  })
-  return map
-}
-
-const sincronizarAsistencias = (map) => {
-  for (const [id, rec] of Object.entries(map))
-    asistencias[id] = rec.estado == 2 ? 'ausente' : 'presente'
-}
 
 // ─── Cargas ──────────────────────────────────────────────────────
 const obtenerReuniones = async () => {
@@ -652,19 +658,6 @@ const cargarArbitros = async () => {
   } catch (e) { console.error('cargarArbitros:', e) }
 }
 
-const cargarExamenes = async () => {
-  try {
-    const res = await api.get({ entity: 'examenes', action: 'obtenerExamenes', payload: {} })
-    if ((res.ok || res.success) && res.payload) {
-      examenesRaw.value = res.payload
-      if (reunionSeleccionada.value) {
-        const map = buildRegistrosMap(res.payload)
-        registrosExistentes.value = map
-        sincronizarAsistencias(map)
-      }
-    }
-  } catch (e) { console.error('cargarExamenes:', e) }
-}
 
 // ─── Cambio de reunión ────────────────────────────────────────────
 const limpiarEstadoReunion = () => {
@@ -685,21 +678,14 @@ const onReunionSeleccionada = async () => {
 
   cargandoArbitros.value = true
   try {
-    const reunion = reunionActual.value
-    const [resArb, resEx] = await Promise.all([
-      api.get({
-        entity: 'reuniones',
-        action: 'obtenerArbitrosReunion',
-        payload: { idEvento: Number(reunionSeleccionada.value), todosLosGrupos: reunion?.todos_grupos == 1 }
-      }),
-      api.get({ entity: 'examenes', action: 'obtenerExamenes', payload: {} }),
-    ])
-    if ((resArb.ok || resArb.success) && resArb.payload) arbitrosReunion.value = resArb.payload
-    if ((resEx.ok  || resEx.success)  && resEx.payload) {
-      examenesRaw.value = resEx.payload
-      const map = buildRegistrosMap(resEx.payload)
-      registrosExistentes.value = map
-      sincronizarAsistencias(map)
+    const resArb = await api.get({
+      entity: 'reuniones',
+      action: 'obtenerArbitrosReunion',
+      payload: { idEvento: Number(reunionSeleccionada.value) } // Simplificado
+    })
+
+    if ((resArb.ok || resArb.success) && resArb.payload) {
+      arbitrosReunion.value = resArb.payload
     }
   } catch (e) {
     console.error('onReunionSeleccionada:', e)
@@ -733,7 +719,6 @@ const guardarAsistencia = async (a) => {
       : await api.post({ entity: 'examenes', action: 'guardarExamen', payload })
 
     if (res.ok || res.success) {
-      await cargarExamenes()
       guardadoOk[a.id] = true
       setTimeout(() => { delete guardadoOk[a.id] }, 2500)
     } else {
@@ -750,10 +735,29 @@ const guardarAsistencia = async (a) => {
 }
 
 // ─── Acciones ────────────────────────────────────────────────────
-const verDetalleArbitro = (a) => {
+const verDetalleArbitro = async (a) => {
   arbitroSeleccionado.value = { id: a.id, apellido: a.apellido, nombre: a.nombre }
   filtroAñoDetalle.value = ''
   mostrarModalDetalle.value = true
+
+  // Limpiamos la data anterior y mostramos el loading
+  examenesArbitroSeleccionado.value = []
+  cargandoHistorial.value = true
+
+  try {
+    const res = await api.get({
+      entity: 'examenes',
+      action: 'obtenerExamenesArbitro',
+      payload: { idArbitro: a.id }
+    })
+    if ((res.ok || res.success) && res.payload) {
+      examenesArbitroSeleccionado.value = res.payload
+    }
+  } catch (e) {
+    console.error('Error al cargar historial del árbitro:', e)
+  } finally {
+    cargandoHistorial.value = false
+  }
 }
 
 const recargar = async () => {
@@ -761,7 +765,7 @@ const recargar = async () => {
     await onReunionSeleccionada()
   } else {
     cargandoInicial.value = true
-    await Promise.all([cargarArbitros(), cargarExamenes()])
+    await Promise.all([cargarArbitros()])
     cargandoInicial.value = false
   }
 }
@@ -780,7 +784,7 @@ watch(modoReunion,  () => { paginaActual.value = 1 })
 watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
 
 onMounted(async () => {
-  await Promise.all([obtenerReuniones(), cargarArbitros(), cargarExamenes()])
+  await Promise.all([obtenerReuniones(), cargarArbitros()])
   cargandoInicial.value = false
 })
 </script>
