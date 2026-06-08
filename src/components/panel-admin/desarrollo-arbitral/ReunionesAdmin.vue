@@ -99,8 +99,8 @@
             <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
               <thead class="table-light">
                 <tr>
-                  <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id">ID</th>
-                  <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones">Acciones</th>
+                  <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
+                  <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 90px;">Acciones</th>
                   <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
                   <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
                   <th class="py-3 text-center text-uppercase text-muted">Grupo</th>

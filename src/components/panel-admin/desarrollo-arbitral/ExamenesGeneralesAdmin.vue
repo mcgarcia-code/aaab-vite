@@ -77,8 +77,8 @@
             <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
               <thead class="table-light">
                 <tr>
-                  <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id">ID</th>
-                  <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones">Acciones</th>
+                  <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
+                  <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 90px;">Acciones</th>
                   <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
                   <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
                   <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
@@ -289,7 +289,7 @@
             <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-2 pb-1">
               <span class="small fw-bold text-muted text-uppercase">Evaluaciones</span>
               <button type="button" @click="agregarDetalle" class="btn btn-sm btn-danger py-0 d-flex align-items-center gap-1">
-                <span class="material-icons" style="font-size: 16px;">add</span> Agregar Subtipo
+                <span class="material-icons" style="font-size: 16px;">add</span> Agregar Tipo
               </button>
             </div>
             <div v-if="formExamen.tipo === 'asamblea'" class="alert alert-info py-2 px-3 small mb-3 border-info-subtle">
@@ -300,11 +300,11 @@
               class="row g-2 mb-2 align-items-end bg-light p-2 rounded border border-light-subtle">
 
               <div class="col-md-4">
-                <label class="small fw-bold text-dark mb-1">Subtipo *</label>
-                <select v-model="detalle.subtipo"
+                <label class="small fw-bold text-dark mb-1">Tipo *</label>
+                <select v-model="detalle.tipo"
                   class="form-select form-select-sm shadow-none border-secondary-subtle" required>
                   <option value="">Seleccionar...</option>
-                  <option v-for="s in SUBTIPOS_EXAMEN" :key="s" :value="s">
+                  <option v-for="s in TIPOS_EVALUACION" :key="s" :value="s">
                     {{ s.toUpperCase() }}
                   </option>
                 </select>
@@ -390,7 +390,7 @@
             <span class="material-icons text-warning-emphasis me-2">event_note</span>
             <h6 class="fw-bold m-0 text-dark text-uppercase">Eventos</h6>
           </div>
-          <div v-for="tipo in tiposDelArbitro" :key="tipo" class="mb-3">
+          <div v-for="tipo in tipoDelArbitro" :key="tipo" class="mb-3">
             <div class="d-flex align-items-center justify-content-between mb-2 bg-white p-2 ps-3 rounded shadow-sm border border-light-subtle">
               <div class="d-flex align-items-center gap-2">
                 <span class="badge text-uppercase px-2 py-1" :class="badgeTipo(tipo)">{{ tipo }}</span>
@@ -413,22 +413,22 @@
             </div>
           </div>
         </div>
-        <div v-if="subtiposDelArbitro.length">
+        <div v-if="tiposConEvaluacion.length">
           <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-warning">
             <span class="material-icons text-warning-emphasis me-2">trending_up</span>
             <h6 class="fw-bold m-0 text-dark text-uppercase">Rendimiento por Evaluación</h6>
           </div>
           <div class="row g-3">
-            <div v-for="sub in subtiposDelArbitro" :key="sub" class="col-12 col-md-6">
+            <div v-for="tipo in tiposConEvaluacion" :key="tipo" class="col-12 col-md-6">
               <div class="card border border-light-subtle shadow-sm h-100 bg-white">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center border-bottom border-light-subtle py-2">
                   <h6 class="fw-bold text-uppercase m-0 text-dark small d-flex align-items-center gap-2">
-                    <i class="bi bi-bar-chart-line text-warning-emphasis"></i> {{ sub }}
+                    <i class="bi bi-bar-chart-line text-warning-emphasis"></i> {{ tipo }}
                   </h6>
-                  <span class="badge bg-dark rounded-pill px-2">{{ evaluacionesPorSubtipoDetalle[sub].length }}</span>
+                  <span class="badge bg-dark rounded-pill px-2">{{ rendimientoPorTipo[tipo].length }}</span>
                 </div>
                 <div class="card-body p-2">
-                  <div v-for="(item, idx) in evaluacionesPorSubtipoDetalle[sub]" :key="idx"
+                  <div v-for="(item, idx) in rendimientoPorTipo[tipo]" :key="idx"
                     class="d-flex align-items-center py-1 border-bottom border-secondary-subtle" style="font-size: 0.75rem;">
                     <span class="status-dot me-2 flex-shrink-0" :class="claseDot(item.estado)"></span>
                     <span class="text-dark fw-bold me-2 font-monospace" style="min-width: 75px;">{{ formatFecha(item.fecha_examen) }}</span>
@@ -458,11 +458,11 @@ useHead({
 })
 
 // ============== CONSTANTES ==============
-const TIPOS_EXAMEN    = ['asamblea', 'recuperatorio']
-const SUBTIPOS_EXAMEN = ['fisico', 'teorico']
-const ESTADOS_DETALLE = ['aprobado', 'desaprobado', 'no lo hizo']
-const GRUPOS          = ['LH', 'Pre Liga', 'SR', '1', '2', '3', '4']
-const SUBGRUPOS       = ['A', 'B', 'C']
+const TIPOS_EXAMEN     = ['asamblea', 'recuperatorio']
+const TIPOS_EVALUACION = ['fisico', 'teorico']
+const ESTADOS_DETALLE  = ['aprobado', 'desaprobado', 'no lo hizo']
+const GRUPOS           = ['LH', 'Pre Liga', 'SR', '1', '2', '3', '4']
+const SUBGRUPOS        = ['A', 'B', 'C']
 const MOBILE_BREAKPOINT = 768
 
 const ESTADO_MAP = {
@@ -507,7 +507,7 @@ const fechaParaInput = (f) => {
   const [d, m, y] = (f?.split(' ')[0] ?? '').split('/')
   return d && m && y ? `${y}-${m}-${d}` : ''
 }
-const fechaParaMySQL = (f) => f ? `${f} 00:00:00` : null
+
 const sortPorFecha   = (lista) => [...lista].sort((a, b) => (b._ts ?? 0) - (a._ts ?? 0))
 
 // ============== COMPONENTES INTERNOS ==============
@@ -525,7 +525,7 @@ const DetallesExamen = defineComponent({
             ? 'badge border bg-white text-dark px-2 py-1 d-block mb-1 w-100 text-start'
             : 'badge border bg-light text-dark px-2 py-1 d-flex align-items-center gap-1',
         }, [
-          h('span', { class: 'fw-bold text-uppercase' }, det.subtipo),
+          h('span', { class: 'fw-bold text-uppercase' }, det.tipo),
           props.mobile ? null : h('span', { class: `status-dot ms-1 ${claseDot(det.estado)}` }),
           h('span', { class: `fw-bold ms-1 ${claseTextoEstado(det.estado)}` }, textoEstado(det.estado)),
           (det.calificacion && det.estado !== 'no lo hizo' && det.estado !== 'ausente')
@@ -561,7 +561,7 @@ const accionPendiente      = ref(null)
 
 const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '', año: '', tieneTipo: '' })
 
-const detallePlantilla = () => ({ subtipo: '', calificacion: '', estado: 'aprobado' })
+const detallePlantilla = () => ({ tipo: '', calificacion: '', estado: 'aprobado' })
 const formExamenVacio  = () => ({
   id:           null,
   id_arbitro:   arbitroEnModal.value?.id ?? '',
@@ -711,31 +711,35 @@ const examenesPorTipoDetalle = computed(() => {
   return map
 })
 
-const tiposDelArbitro = computed(() =>
+// Tipos de evento (asamblea/recuperatorio) presentes en el detalle — para la sección "Eventos"
+const tipoDelArbitro = computed(() =>
   Object.keys(examenesPorTipoDetalle.value).sort((a, b) =>
     (examenesPorTipoDetalle.value[b][0]._ts ?? 0) - (examenesPorTipoDetalle.value[a][0]._ts ?? 0)
   )
 )
 
-const evaluacionesPorSubtipoDetalle = computed(() => {
+// Evaluaciones agrupadas por tipo (fisico/teorico) — para la sección "Rendimiento"
+const rendimientoPorTipo = computed(() => {
   const map = {}
   for (const ex of examenesFiltradosDetalle.value)
     for (const det of (ex.detalles || [])) {
       if (det.estado === 'ausente') continue
-      if (!SUBTIPOS_EXAMEN.includes(det.subtipo)) continue
-      ;(map[det.subtipo] ??= []).push({ ...det, fecha_examen: ex.fecha_examen, tipo: ex.tipo })
+      if (!TIPOS_EVALUACION.includes(det.tipo)) continue
+      ;(map[det.tipo] ??= []).push({ ...det, fecha_examen: ex.fecha_examen, tipo: ex.tipo })
     }
   return map
 })
 
-const subtiposDelArbitro = computed(() => SUBTIPOS_EXAMEN.filter(s => evaluacionesPorSubtipoDetalle.value[s]?.length))
+// Tipos de evaluación que tienen al menos un registro — para la sección "Rendimiento"
+const tiposConEvaluacion = computed(() => TIPOS_EVALUACION.filter(s => rendimientoPorTipo.value[s]?.length))
 
 // ============== MODAL GESTIÓN ==============
 const tomarSnapshotForm = () => { formExamenSnapshot.value = JSON.stringify(formExamen.value) }
 const hayCambiosEnForm  = () => JSON.stringify(formExamen.value) !== formExamenSnapshot.value
 
-const abrirGestionExamenes = (a) => {
+const abrirGestionExamenes = async (a) => {
   arbitroEnModal.value = a; vistaModal.value = 'lista'; mostrarModal.value = true
+  await cargarExamenesArbitro(a.id)
 }
 
 const cerrarModal = () => {
@@ -776,14 +780,14 @@ const iniciarNuevoExamen = () => {
 }
 
 const iniciarEditarExamen = (ex) => {
-  const esAusente = ex.detalles?.length === 1 && ex.detalles[0].estado === 'ausente'
   const match = eventosParaArbitro.value.find(ev => ev.id && String(ev.id) === String(ex.id_evento)) ?? null
   formExamen.value = {
-    id: ex.id, id_arbitro: ex.id_arbitro,
-    id_evento: match ? String(match.id) : null,
+    id_arbitro:   ex.id_arbitro,
+    id_evento:    match ? String(match.id) : null,
     fecha_examen: fechaParaInput(ex.fecha_examen),
-    tipo: ex.tipo ?? '', asistencia: esAusente ? 'ausente' : 'presente',
-    detalles: esAusente ? [detallePlantilla()] : JSON.parse(JSON.stringify(ex.detalles)),
+    tipo:         ex.tipo ?? '',
+    asistencia:   'presente',
+    detalles:     JSON.parse(JSON.stringify(ex.detalles)),
   }
   if (!formExamen.value.detalles.length) formExamen.value.detalles.push(detallePlantilla())
   modoFormulario.value = 'editar'; vistaModal.value = 'form'; tomarSnapshotForm()
@@ -798,9 +802,10 @@ const onEventoSeleccionado = () => {
     : fechaParaInput(ev.fecha_examen)
 }
 
-const verDetalleArbitro = (a) => {
+const verDetalleArbitro = async (a) => {
   arbitroSeleccionado.value = { id: a.id, apellido: a.apellido, nombre: a.nombre }
   filtroAñoDetalle.value = ''; mostrarModalDetalle.value = true
+  await cargarExamenesArbitro(a.id)
 }
 
 // ============== VALIDACIÓN Y PAYLOAD ==============
@@ -812,46 +817,62 @@ const validarFormulario = () => {
     if (!f.detalles.length)
       return notificar({ titulo: 'Faltan datos', mensaje: 'Cargá al menos una evaluación.', tipo: 'danger' }), false
     for (let i = 0; i < f.detalles.length; i++)
-      if (!f.detalles[i].subtipo)
-        return notificar({ titulo: 'Faltan datos', mensaje: `Seleccioná el subtipo en la fila ${i + 1}.`, tipo: 'danger' }), false
-    const subs = f.detalles.map(d => d.subtipo).filter(Boolean)
-    const dup  = subs.find((s, i) => subs.indexOf(s) !== i)
-    if (dup) return notificar({ titulo: 'Subtipo duplicado', mensaje: `No podés cargar "${dup}" dos veces.`, tipo: 'danger' }), false
+      if (!f.detalles[i].tipo)
+        return notificar({ titulo: 'Faltan datos', mensaje: `Seleccioná el tipo en la fila ${i + 1}.`, tipo: 'danger' }), false
+    const tipos = f.detalles.map(d => d.tipo).filter(Boolean)
+    const dup   = tipos.find((s, i) => tipos.indexOf(s) !== i)
+    if (dup) return notificar({ titulo: 'Tipo duplicado', mensaje: `No podés cargar "${dup}" dos veces.`, tipo: 'danger' }), false
   }
   return true
 }
 
 const prepararPayload = () => {
   const f = formExamen.value
-  const detalles = f.asistencia === 'ausente'
-    ? [{ subtipo: 'ausente', calificacion: '', estado: 'ausente' }]
-    : f.detalles.map(d => ({
-        subtipo:      String(d.subtipo).trim(),
-        calificacion: d.estado === 'no lo hizo' ? '' : String(d.calificacion || '').trim(),
-        estado:       d.estado,
-      }))
   return {
-    id:           f.id,
-    idEvento:     eventoEnForm.value?.id ?? null,
-    idArbitro:    f.id_arbitro || arbitroEnModal.value.id,
-    fecha_examen: fechaParaMySQL(f.fecha_examen),
-    tipo:         f.tipo,
-    detalles,
+    idEvento:  eventoEnForm.value?.id ?? null,
+    idArbitro: f.id_arbitro || arbitroEnModal.value.id,
+    detalles:  f.detalles.map(d => ({
+      tipo:         String(d.tipo).trim(),
+      calificacion: d.estado === 'no lo hizo' ? '' : String(d.calificacion || '').trim(),
+      estado:       d.estado,
+    }))
   }
 }
 
+// ============== GUARDADO EN DOS PASOS ==============
 const llamarAPI = async (action, successMsg) => {
   if (!validarFormulario()) return
   cargando.value = true
   try {
-    const res = await api.post({ entity: 'examenes', action, payload: prepararPayload() })
-    if (res.ok || res.success) {
-      notificar({ titulo: '¡Éxito!', mensaje: successMsg, tipo: 'success' })
-      await cargarDatos()
-      vistaModal.value = 'lista'; formExamen.value = formExamenVacio(); formExamenSnapshot.value = ''
-    } else {
-      notificar({ titulo: 'Error', mensaje: res.message || 'Ocurrió un error.', tipo: 'danger' })
+    // Paso 1: asistencia — siempre, presente o ausente
+    const resAsistencia = await api.post({
+      entity: 'reuniones',
+      action: 'registrarAsistenciaArbitro',
+      payload: {
+        idArbitro:  formExamen.value.id_arbitro || arbitroEnModal.value.id,
+        idEvento:   eventoEnForm.value?.id ?? null,
+        asistencia: formExamen.value.asistencia,
+      },
+    })
+    if (!resAsistencia.ok && !resAsistencia.success) {
+      notificar({ titulo: 'Error', mensaje: resAsistencia.message || 'No se pudo registrar la asistencia.', tipo: 'danger' })
+      return
     }
+
+    // Paso 2: evaluaciones — solo si estuvo presente
+    if (formExamen.value.asistencia === 'presente') {
+      const res = await api.post({ entity: 'examenes', action, payload: prepararPayload() })
+      if (!res.ok && !res.success) {
+        notificar({ titulo: 'Error', mensaje: res.message || 'Ocurrió un error.', tipo: 'danger' })
+        return
+      }
+    }
+
+    notificar({ titulo: '¡Éxito!', mensaje: successMsg, tipo: 'success' })
+    await cargarExamenesArbitro(formExamen.value.id_arbitro || arbitroEnModal.value.id)
+    vistaModal.value = 'lista'
+    formExamen.value = formExamenVacio()
+    formExamenSnapshot.value = ''
   } catch {
     notificar({ titulo: 'Error Fatal', mensaje: 'Fallo de conexión con el servidor.', tipo: 'danger' })
   } finally {
@@ -860,40 +881,42 @@ const llamarAPI = async (action, successMsg) => {
 }
 
 const confirmarAlta    = () => llamarAPI('guardarExamen', 'Examen creado correctamente.')
-const confirmarEdicion = () => llamarAPI('editarExamen',  'Examen actualizado correctamente.')
+const confirmarEdicion = () => llamarAPI('guardarExamen', 'Examen actualizado correctamente.')
 
 // ============== CARGAS ==============
+const mapearFilasExamenes = (filas) => {
+  const map = {}
+  filas.forEach(row => {
+    const key = `${row.id_evento}_${row.id_arbitro}`
+    if (!map[key]) {
+      map[key] = {
+        id:           row.id,
+        id_evento:    row.id_evento,
+        id_arbitro:   row.id_arbitro,
+        tipo:         row.categoria,
+        fecha_examen: row.fecha_examen,
+        titulo:       row.titulo,
+        descripcion:  row.descripcion,
+        categoria:    row.categoria,
+        _ts:          parseFecha(row.fecha_examen),
+        detalles:     []
+      }
+    }
+    map[key].detalles.push({
+      id:           row.id,
+      tipo:         row.tipo,
+      calificacion: row.calificacion,
+      estado:       row.estado
+    })
+  })
+  return Object.values(map)
+}
+
 const cargarDatos = async () => {
   try {
     const res = await api.get({ entity: 'examenes', action: 'obtenerExamenes', payload: {} })
     if ((res.ok || res.success) && res.payload) {
-      const map = {}
-      res.payload.forEach(row => {
-        const key = row.id
-        if (!map[key]) {
-          map[key] = {
-            id: row.id,
-            id_evento: row.id_evento,
-            id_arbitro: row.id_arbitro,
-            tipo: row.tipo,
-            fecha_examen: row.fecha_examen,
-            titulo: row.titulo,
-            descripcion: row.descripcion,
-            categoria: row.categoria,
-            _ts: parseFecha(row.fecha_examen),
-            detalles: []
-          }
-        }
-        if (row.id_detalle) {
-          map[key].detalles.push({
-            id: row.id_detalle,
-            subtipo: row.subtipo,
-            calificacion: row.calificacion,
-            estado: row.estado
-          })
-        }
-      })
-      examenes.value = Object.values(map)
+      examenes.value = mapearFilasExamenes(res.payload)
     } else {
       notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los exámenes.', tipo: 'danger' })
     }
@@ -922,6 +945,22 @@ const cargarGrupos = async () => {
   try {
     const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos' })
     if ((res.ok || res.success) && res.payload) grupos.value = res.payload
+  } catch (err) { console.error(err) }
+}
+
+const cargarExamenesArbitro = async (idArbitro) => {
+  try {
+    const res = await api.get({
+      entity: 'examenes',
+      action: 'obtenerExamenesArbitro',
+      payload: { idArbitro }
+    })
+    if ((res.ok || res.success) && res.payload) {
+      examenes.value = [
+        ...examenes.value.filter(ex => String(ex.id_arbitro) !== String(idArbitro)),
+        ...mapearFilasExamenes(res.payload)
+      ]
+    }
   } catch (err) { console.error(err) }
 }
 
