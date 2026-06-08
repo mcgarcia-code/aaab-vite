@@ -11,6 +11,19 @@
             <span class="text-muted small d-block mt-1">Asambleas y Recuperatorios — {{ totalFiltrados }} árbitros</span>
           </div>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="toggleSoloActivos"
+                v-model="soloActivos"
+                role="switch"
+                :disabled="cargandoInicial"
+              >
+              <label class="form-check-label small fw-bold text-dark m-0" for="toggleSoloActivos">
+                Solo activos
+              </label>
+            </div>
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
@@ -281,33 +294,49 @@
             </div>
             <div v-if="formExamen.tipo === 'asamblea'" class="alert alert-info py-2 px-3 small mb-3 border-info-subtle">
               <i class="bi bi-lightbulb me-1"></i>
-              <strong>Tip:</strong> En asambleas se evalúa Físico (YoYo) y Teórico (75% o más para aprobar).
+              <strong>Tip:</strong> En asambleas se evalúa <strong>Físico</strong> y <strong>Teórico</strong> (75% o más para aprobar).
             </div>
-            <div v-for="(detalle, index) in formExamen.detalles" :key="index" class="row g-2 mb-2 align-items-end bg-light p-2 rounded border border-light-subtle">
+            <div v-for="(detalle, index) in formExamen.detalles" :key="index"
+              class="row g-2 mb-2 align-items-end bg-light p-2 rounded border border-light-subtle">
+
               <div class="col-md-4">
                 <label class="small fw-bold text-dark mb-1">Subtipo *</label>
-                <select v-model="detalle.subtipo" class="form-select form-select-sm shadow-none border-secondary-subtle" required>
+                <select v-model="detalle.subtipo"
+                  class="form-select form-select-sm shadow-none border-secondary-subtle" required>
                   <option value="">Seleccionar...</option>
-                  <option v-for="s in SUBTIPOS_EXAMEN" :key="s" :value="s">{{ s.toUpperCase() }}</option>
+                  <option v-for="s in SUBTIPOS_EXAMEN" :key="s" :value="s">
+                    {{ s.toUpperCase() }}
+                  </option>
                 </select>
               </div>
+
               <div class="col-md-3">
                 <label class="small fw-bold text-dark mb-1">Estado *</label>
-                <select v-model.number="detalle.estado" class="form-select form-select-sm shadow-none border-secondary-subtle" required>
-                  <option :value="1">Aprobado</option>
-                  <option :value="0">Desaprobado</option>
-                  <option :value="3">No lo hizo</option>
+                <select v-model="detalle.estado"
+                  class="form-select form-select-sm shadow-none border-secondary-subtle" required>
+                  <option v-for="est in ESTADOS_DETALLE" :key="est" :value="est">
+                    {{ est.charAt(0).toUpperCase() + est.slice(1) }}
+                  </option>
                 </select>
               </div>
+
               <div class="col-md-4">
                 <label class="small fw-bold text-dark mb-1">Calificación</label>
-                <input v-model="detalle.calificacion" maxlength="10" :disabled="detalle.estado == 3" class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Ej: 8 / 75%">
+                <input v-model="detalle.calificacion"
+                  maxlength="10"
+                  :disabled="detalle.estado === 'no lo hizo'"
+                  class="form-control form-control-sm shadow-none border-secondary-subtle"
+                  placeholder="Ej: 8 / 75%">
               </div>
+
               <div class="col-md-1 text-end">
-                <button v-if="formExamen.detalles.length > 1" type="button" @click="quitarDetalle(index)" class="btn btn-sm btn-danger shadow-sm px-2 w-100">
+                <button v-if="formExamen.detalles.length > 1" type="button"
+                  @click="quitarDetalle(index)"
+                  class="btn btn-sm btn-danger shadow-sm px-2 w-100">
                   <span class="material-icons" style="font-size: 16px;">delete</span>
                 </button>
               </div>
+
             </div>
           </div>
         </div>
@@ -405,7 +434,7 @@
                     <span class="text-dark fw-bold me-2 font-monospace" style="min-width: 75px;">{{ formatFecha(item.fecha_examen) }}</span>
                     <span class="badge bg-light text-dark border me-2 text-uppercase flex-shrink-0 d-none d-sm-inline" style="font-size: 0.6rem;">{{ item.tipo }}</span>
                     <span class="fw-bold flex-grow-1 text-end text-sm-start" :class="claseTextoEstado(item.estado)">{{ textoEstado(item.estado) }}</span>
-                    <span v-if="item.calificacion && item.estado != 3" class="text-muted ms-2 fw-bold">({{ item.calificacion }})</span>
+                    <span v-if="item.calificacion && item.estado !== 'no lo hizo' && item.estado !== 'ausente'" class="text-muted ms-2 fw-bold">({{ item.calificacion }})</span>
                   </div>
                 </div>
               </div>
@@ -429,17 +458,18 @@ useHead({
 })
 
 // ============== CONSTANTES ==============
-const TIPOS_EXAMEN   = ['asamblea', 'recuperatorio']
+const TIPOS_EXAMEN    = ['asamblea', 'recuperatorio']
 const SUBTIPOS_EXAMEN = ['fisico', 'teorico']
-const GRUPOS         = ['LH', 'Pre Liga', 'SR', '1', '2', '3', '4']
-const SUBGRUPOS      = ['A', 'B', 'C']
+const ESTADOS_DETALLE = ['aprobado', 'desaprobado', 'no lo hizo']
+const GRUPOS          = ['LH', 'Pre Liga', 'SR', '1', '2', '3', '4']
+const SUBGRUPOS       = ['A', 'B', 'C']
 const MOBILE_BREAKPOINT = 768
 
 const ESTADO_MAP = {
-  0: { texto: 'DESAPROBADO', dot: 'bg-danger',    txt: 'text-danger'    },
-  1: { texto: 'APROBADO',    dot: 'bg-success',   txt: 'text-success'   },
-  2: { texto: 'AUSENTE',     dot: 'bg-secondary', txt: 'text-secondary' },
-  3: { texto: 'NO LO HIZO',  dot: 'bg-info',      txt: 'text-info'      },
+  'aprobado':    { texto: 'APROBADO',    dot: 'bg-success',   txt: 'text-success'   },
+  'desaprobado': { texto: 'DESAPROBADO', dot: 'bg-danger',    txt: 'text-danger'    },
+  'no lo hizo':  { texto: 'NO LO HIZO',  dot: 'bg-info',      txt: 'text-info'      },
+  'ausente':     { texto: 'AUSENTE',     dot: 'bg-secondary', txt: 'text-secondary' },
 }
 
 const TIPO_BADGE_MAP = {
@@ -467,9 +497,9 @@ const formatFechaDisplay = (f) => {
   return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : f
 }
 const normalizarTexto = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-const formatFecha    = (f) => f?.split(' ')[0] ?? ''
-const añoDeFecha     = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
-const parseFecha     = (f) => {
+const formatFecha     = (f) => f?.split(' ')[0] ?? ''
+const añoDeFecha      = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
+const parseFecha      = (f) => {
   const [d, m, y] = (f?.split(' ')[0] ?? '').split('/')
   return new Date(`${y}-${m}-${d}`).getTime() || 0
 }
@@ -486,7 +516,7 @@ const DetallesExamen = defineComponent({
   setup(props) {
     return () => {
       const dets = props.detalles || []
-      if (dets.length === 1 && dets[0].estado == 2)
+      if (dets.length === 1 && dets[0].estado === 'ausente')
         return h('span', { class: 'badge bg-secondary text-white px-2 py-1' }, 'AUSENTE')
       return h('div', { class: 'd-flex flex-wrap gap-1' }, dets.map(det =>
         h('span', {
@@ -498,7 +528,7 @@ const DetallesExamen = defineComponent({
           h('span', { class: 'fw-bold text-uppercase' }, det.subtipo),
           props.mobile ? null : h('span', { class: `status-dot ms-1 ${claseDot(det.estado)}` }),
           h('span', { class: `fw-bold ms-1 ${claseTextoEstado(det.estado)}` }, textoEstado(det.estado)),
-          (det.calificacion && det.estado != 3 && det.estado != 2)
+          (det.calificacion && det.estado !== 'no lo hizo' && det.estado !== 'ausente')
             ? h('span', { class: 'text-muted ms-1' }, `(${det.calificacion})`)
             : null,
         ])
@@ -514,6 +544,7 @@ const examenes  = ref([])
 const eventos   = ref([])
 const grupos    = ref([])
 
+const soloActivos          = ref(false)
 const cargando             = ref(false)
 const cargandoInicial      = ref(true)
 const paginaActual         = ref(1)
@@ -528,9 +559,9 @@ const arbitroSeleccionado  = ref({ id: null, apellido: '', nombre: '' })
 const filtroAñoDetalle     = ref('')
 const accionPendiente      = ref(null)
 
-const filtros      = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '', año: '', tieneTipo: '' })
+const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '', año: '', tieneTipo: '' })
 
-const detallePlantilla = () => ({ subtipo: '', calificacion: '', estado: 1 })
+const detallePlantilla = () => ({ subtipo: '', calificacion: '', estado: 'aprobado' })
 const formExamenVacio  = () => ({
   id:           null,
   id_arbitro:   arbitroEnModal.value?.id ?? '',
@@ -611,27 +642,27 @@ const eventoEnForm = computed(() =>
     : null
 )
 
-// ============== FILTROS Y ORDENAMIENTO (SIMPLIFICADO) ==============
+// ============== FILTROS Y ORDENAMIENTO ==============
 const arbitrosFiltrados = computed(() => {
   const { apellido, nombre, grupo, subgrupo, año, tieneTipo } = filtros
   return arbitros.value.filter(a => {
     if (apellido && !normalizarTexto(a.apellido).includes(normalizarTexto(apellido))) return false
     if (nombre   && !normalizarTexto(a.nombre).includes(normalizarTexto(nombre)))     return false
-    if (grupo    && String(a.grupo) !== String(grupo))                                return false
-    if (subgrupo && String(a.subgrupo) !== String(subgrupo))                          return false
+    if (grupo    && String(a.grupo) !== String(grupo))                                 return false
+    if (subgrupo && String(a.subgrupo) !== String(subgrupo))                           return false
     const lista      = examenesPorArbitro.value[a.id] || []
     const listaEnAño = año ? lista.filter(ex => añoDeFecha(ex.fecha_examen) === año) : lista
-    if (año && !listaEnAño.length)                                              return false
-    if (tieneTipo && !listaEnAño.some(ex => ex.tipo === tieneTipo))             return false
+    if (año && !listaEnAño.length)                                                     return false
+    if (tieneTipo && !listaEnAño.some(ex => ex.tipo === tieneTipo))                    return false
     return true
   })
 })
 
-const arbitrosOrdenados = computed(() => {
-  return [...arbitrosFiltrados.value].sort((a, b) => {
-    return String(normalizarTexto(a.apellido)).localeCompare(String(normalizarTexto(b.apellido)), 'es')
-  })
-})
+const arbitrosOrdenados = computed(() =>
+  [...arbitrosFiltrados.value].sort((a, b) =>
+    normalizarTexto(a.apellido).localeCompare(normalizarTexto(b.apellido), 'es')
+  )
+)
 
 const totalPaginas      = computed(() => Math.ceil(arbitrosOrdenados.value.length / registrosPorPagina) || 1)
 const totalFiltrados    = computed(() => arbitrosOrdenados.value.length)
@@ -665,10 +696,10 @@ const resumenGeneralDetalle = computed(() => {
   const r = { aprobados: 0, desaprobados: 0, ausentes: 0, nohizo: 0 }
   for (const ex of examenesFiltradosDetalle.value)
     for (const det of (ex.detalles || []))
-      if      (det.estado == 1) r.aprobados++
-      else if (det.estado == 0) r.desaprobados++
-      else if (det.estado == 2) r.ausentes++
-      else if (det.estado == 3) r.nohizo++
+      if      (det.estado === 'aprobado')    r.aprobados++
+      else if (det.estado === 'desaprobado') r.desaprobados++
+      else if (det.estado === 'ausente')     r.ausentes++
+      else if (det.estado === 'no lo hizo')  r.nohizo++
   return r
 })
 
@@ -690,7 +721,7 @@ const evaluacionesPorSubtipoDetalle = computed(() => {
   const map = {}
   for (const ex of examenesFiltradosDetalle.value)
     for (const det of (ex.detalles || [])) {
-      if (det.estado == 2) continue
+      if (det.estado === 'ausente') continue
       if (!SUBTIPOS_EXAMEN.includes(det.subtipo)) continue
       ;(map[det.subtipo] ??= []).push({ ...det, fecha_examen: ex.fecha_examen, tipo: ex.tipo })
     }
@@ -745,7 +776,7 @@ const iniciarNuevoExamen = () => {
 }
 
 const iniciarEditarExamen = (ex) => {
-  const esAusente = ex.detalles?.length === 1 && ex.detalles[0].estado == 2
+  const esAusente = ex.detalles?.length === 1 && ex.detalles[0].estado === 'ausente'
   const match = eventosParaArbitro.value.find(ev => ev.id && String(ev.id) === String(ex.id_evento)) ?? null
   formExamen.value = {
     id: ex.id, id_arbitro: ex.id_arbitro,
@@ -793,16 +824,19 @@ const validarFormulario = () => {
 const prepararPayload = () => {
   const f = formExamen.value
   const detalles = f.asistencia === 'ausente'
-    ? [{ subtipo: 'ausente', calificacion: '', estado: 2 }]
+    ? [{ subtipo: 'ausente', calificacion: '', estado: 'ausente' }]
     : f.detalles.map(d => ({
-        subtipo: String(d.subtipo).trim(),
-        calificacion: d.estado == 3 ? '' : String(d.calificacion || '').trim(),
-        estado: Number(d.estado),
+        subtipo:      String(d.subtipo).trim(),
+        calificacion: d.estado === 'no lo hizo' ? '' : String(d.calificacion || '').trim(),
+        estado:       d.estado,
       }))
   return {
-    id: f.id, idEvento: eventoEnForm.value?.id ?? null,
-    idArbitro: f.id_arbitro || arbitroEnModal.value.id,
-    fecha_examen: fechaParaMySQL(f.fecha_examen), tipo: f.tipo, detalles,
+    id:           f.id,
+    idEvento:     eventoEnForm.value?.id ?? null,
+    idArbitro:    f.id_arbitro || arbitroEnModal.value.id,
+    fecha_examen: fechaParaMySQL(f.fecha_examen),
+    tipo:         f.tipo,
+    detalles,
   }
 }
 
@@ -851,12 +885,12 @@ const cargarDatos = async () => {
           }
         }
         if (row.id_detalle) {
-            map[key].detalles.push({
-              id: row.id_detalle,
-              subtipo: row.subtipo,
-              calificacion: row.calificacion,
-              estado: row.estado
-            })
+          map[key].detalles.push({
+            id: row.id_detalle,
+            subtipo: row.subtipo,
+            calificacion: row.calificacion,
+            estado: row.estado
+          })
         }
       })
       examenes.value = Object.values(map)
@@ -868,7 +902,11 @@ const cargarDatos = async () => {
 
 const cargarArbitros = async () => {
   try {
-    const res = await api.get({ entity: 'arbitros', action: 'getArbitros' })
+    const res = await api.get({
+      entity: 'arbitros',
+      action: 'getArbitrosBasico',
+      payload: { soloActivos: soloActivos.value }
+    })
     if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
   } catch (err) { console.error(err) }
 }
@@ -903,6 +941,13 @@ const cambiarPagina  = (delta) => {
 
 watch(filtros,      () => { paginaActual.value = 1 }, { deep: true })
 watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
+
+watch(soloActivos, async () => {
+  cargandoInicial.value = true
+  await cargarArbitros()
+  cargandoInicial.value = false
+})
+
 onMounted(cargarTodo)
 </script>
 

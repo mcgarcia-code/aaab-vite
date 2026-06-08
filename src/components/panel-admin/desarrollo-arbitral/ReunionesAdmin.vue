@@ -3,7 +3,6 @@
     <div class="admin-panel animate__animated animate__fadeIn">
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <!-- ══════ HEADER ══════ -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
 
           <div class="border-start border-danger border-5 ps-3">
@@ -21,7 +20,6 @@
             </span>
           </div>
 
-          <!-- Selector reunión -->
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <select
               v-model="reunionSeleccionada"
@@ -37,8 +35,20 @@
             </select>
           </div>
 
-          <!-- Botones -->
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="toggleSoloActivos"
+                v-model="soloActivos"
+                role="switch"
+                :disabled="cargandoInicial || cargandoArbitros"
+              >
+              <label class="form-check-label small fw-bold text-dark m-0" for="toggleSoloActivos">
+                Solo activos
+              </label>
+            </div>
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2" aria-label="Mostrar filtros">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
@@ -49,7 +59,6 @@
           </div>
         </div>
 
-        <!-- ══════ FILTROS MOBILE ══════ -->
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none']">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Árbitros</span>
@@ -70,16 +79,22 @@
                 <option v-for="sg in SUBGRUPOS" :key="sg" :value="sg">{{ sg }}</option>
               </select>
             </div>
+            <div class="col-12" v-if="modoReunion">
+              <select v-model="filtros.asistencia" class="form-select form-select-sm shadow-none">
+                <option value="">Todas las asistencias</option>
+                <option value="presente">Solo Presentes</option>
+                <option value="ausente">Solo Ausentes</option>
+                <option value="sin_registro">Sin Registro</option>
+              </select>
+            </div>
             <div class="col-12 mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
 
-        <!-- ══════ CARD BODY ══════ -->
         <div class="card-body p-0 p-md-3 bg-white">
 
-          <!-- ── TABLA DESKTOP ── -->
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
             <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
               <thead class="table-light">
@@ -90,16 +105,13 @@
                   <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
                   <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
                   <th class="py-3 text-center text-uppercase text-muted">Subgrupo</th>
-                  <!-- Modo general -->
                   <th v-if="!modoReunion" class="py-3 text-center text-uppercase text-muted">Reuniones</th>
-                  <!-- Modo reunión -->
                   <th v-else class="py-3 text-uppercase text-muted" style="min-width: 270px;">
                     Asistencia
                     <span class="fw-normal fst-italic text-muted ms-1" style="font-size: 0.7rem;">(guardado automático)</span>
                   </th>
                 </tr>
 
-                <!-- Fila de filtros -->
                 <tr class="bg-light">
                   <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
                     <button @click="recargar" class="btn btn-sm btn-light border rounded text-secondary shadow-sm px-2 py-1" aria-label="Recargar">
@@ -125,10 +137,16 @@
                       <option v-for="sg in SUBGRUPOS" :key="sg" :value="sg">{{ sg }}</option>
                     </select>
                   </td>
-                  <!-- Mensaje contextual en la última celda -->
-                  <td class="p-2 border-bottom border-2 text-muted small fst-italic ps-2">
-                    <template v-if="!modoReunion">← Seleccioná una reunión para registrar asistencia</template>
-                    <template v-else>Clic en el radio para guardar automáticamente</template>
+                  <td class="p-2 border-bottom border-2 text-center" v-if="!modoReunion">
+                    <span class="text-muted small fst-italic">← Seleccioná una reunión</span>
+                  </td>
+                  <td v-else class="p-2 border-bottom border-2">
+                    <select v-model="filtros.asistencia" class="form-select form-select-sm shadow-none">
+                      <option value="">Todas</option>
+                      <option value="presente">Solo Presentes</option>
+                      <option value="ausente">Solo Ausentes</option>
+                      <option value="sin_registro">Sin Registro</option>
+                    </select>
                   </td>
                 </tr>
               </thead>
@@ -168,15 +186,12 @@
                   <td class="text-center text-dark">{{ a.nombre_grupo || a.grupo || '-' }}</td>
                   <td class="text-center text-dark">{{ a.subgrupo || '-' }}</td>
 
-                  <!-- Modo general: historial -->
                   <td v-if="!modoReunion" class="text-center">
                     <div class="d-flex align-items-center justify-content-center gap-2">
-                      <span class="badge bg-dark rounded-pill px-2 py-1">{{ (reunionesPorArbitro[a.id] || []).length }}</span>
                       <ResumenAsistencia :resumen="resumenAsistencia(a.id)" />
                     </div>
                   </td>
 
-                  <!-- Modo reunión: radios -->
                   <td v-else>
                     <div class="d-flex align-items-center gap-3">
                       <div class="form-check form-check-inline mb-0">
@@ -216,7 +231,6 @@
             </table>
           </div>
 
-          <!-- ── CARDS MOBILE ── -->
           <div class="d-md-none p-3 bg-light">
             <div v-if="cargandoInicial || cargandoArbitros" class="text-center p-4 bg-white rounded-3 shadow-sm border">
               <div class="spinner-border text-danger spinner-border-sm" role="status"></div>
@@ -246,10 +260,9 @@
                       <strong>Grupo:</strong> {{ a.grupo }}
                       <template v-if="a.subgrupo"> / {{ a.subgrupo }}</template>
                     </span>
-                    <span class="small"><strong>Reuniones:</strong> {{ (reunionesPorArbitro[a.id] || []).length }}</span>
+                    <span class="small"><strong>Reuniones:</strong> {{ resumenAsistencia(a.id).total }}</span>
                   </div>
 
-                  <!-- General: historial + botón detalle -->
                   <div v-if="!modoReunion" class="d-flex gap-2">
                     <div class="flex-grow-1 bg-light p-2 rounded border border-light-subtle">
                       <ResumenAsistencia :resumen="resumenAsistencia(a.id)" :mobile="true" />
@@ -259,7 +272,6 @@
                     </button>
                   </div>
 
-                  <!-- Reunión: toggle buttons -->
                   <div v-else class="d-flex gap-2">
                     <label
                       :for="`presm-${a.id}`"
@@ -294,7 +306,6 @@
             </template>
           </div>
 
-          <!-- ── PAGINACIÓN ── -->
           <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
             <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1" aria-label="Anterior">
               <i class="bi bi-chevron-left"></i> Ant
@@ -308,7 +319,6 @@
       </div>
     </div>
 
-    <!-- ══════ MODAL HISTORIAL ══════ -->
     <ModalBase :show="mostrarModalDetalle" @close="mostrarModalDetalle = false" icono="person_search" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="800px">
       <template #header>
         <div class="text-center w-100">
@@ -408,7 +418,7 @@ useHead({
   meta: [{ name: 'description', content: 'Gestión de asistencia a reuniones de árbitros AAAB.' }],
 })
 
-// ─── Constantes (iguales a ExamenesGenerales) ─────────────────────
+// ─── Constantes ───────────────────────────────────────────────────
 const GRUPOS         = ['LH', 'Pre Liga', 'SR', '1', '2', '3', '4']
 const SUBGRUPOS      = ['A', 'B', 'C']
 const CATEGORIA      = 'reunion'
@@ -419,12 +429,6 @@ const normalizarTexto = (v) =>
   String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 const formatFecha = (f) => f?.split(' ')[0] ?? ''
 const añoDeFecha  = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
-const parseFecha  = (f) => {
-  if (!f) return 0
-  const s = f.split(' ')[0]
-  if (s.includes('/')) { const [d, m, y] = s.split('/'); return new Date(`${y}-${m}-${d}`).getTime() || 0 }
-  return new Date(s).getTime() || 0
-}
 const sortPorFecha = (lista) => [...lista].sort((a, b) => (b._ts ?? 0) - (a._ts ?? 0))
 
 // ─── Componentes internos ─────────────────────────────────────────
@@ -435,9 +439,18 @@ const ResumenAsistencia = defineComponent({
     return () => {
       const r = props.resumen ?? { presentes: 0, ausentes: 0 }
       const items = []
+
       if (r.presentes > 0) items.push({ label: 'Presentes', short: 'pres.', badge: 'bg-success',   icon: 'bi-person-check-fill', count: r.presentes })
       if (r.ausentes  > 0) items.push({ label: 'Ausentes',  short: 'aus.',  badge: 'bg-secondary', icon: 'bi-person-dash-fill',  count: r.ausentes  })
-      if (!items.length) return h('span', { class: 'text-muted small fst-italic' }, '—')
+
+      // Si no hay presentes ni ausentes, mostramos el 0 oscuro
+      if (!items.length) {
+        return h('div', { class: 'd-flex gap-1 flex-wrap' }, [
+          h('span', { class: 'badge bg-dark rounded-pill px-3 py-1', title: 'Sin registro' }, '0')
+        ])
+      }
+
+      // Si hay datos, mostramos los badges verde/gris correspondientes
       return h('div', { class: 'd-flex gap-1 flex-wrap' }, items.map(k =>
         h('span', { class: `badge ${k.badge} text-white px-2 py-1`, title: k.label },
           props.mobile ? `${k.count} ${k.short}` : [h('i', { class: `bi ${k.icon} me-1` }), String(k.count)]
@@ -473,12 +486,12 @@ const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 const arrReuniones        = ref([])
 const arbitros            = ref([])       // todos (vista general)
 const arbitrosReunion     = ref([])       // grupo de la reunión seleccionada
-const examenesRaw         = ref([])       // rows planas de obtenerExamenes
 
 const reunionSeleccionada = ref('')
+const soloActivos         = ref(false)
 
-const registrosExistentes = ref({})       // { [id_arbitro]: { id: panel.id, estado } }
-const asistencias         = reactive({})  // { [id_arbitro]: 'presente'|'ausente' }
+const registrosExistentes = ref({})
+const asistencias         = reactive({})
 const guardando           = reactive({})
 const guardadoOk          = reactive({})
 
@@ -491,63 +504,19 @@ const mostrarModalDetalle  = ref(false)
 const arbitroSeleccionado  = ref({ id: null, apellido: '', nombre: '' })
 const filtroAñoDetalle     = ref('')
 
-const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '' })
+const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '', asistencia: '' })
 
 const cargandoHistorial = ref(false)
 const reunionesArbitroSeleccionado = ref([])
+
+// Nuevo estado para reemplazar la data incorrecta de exámenes
+const asistenciasGlobales = ref({}) // { [id_arbitro]: { presentes: 0, ausentes: 0, total: 0 } }
 
 // ─── Computeds: modo ─────────────────────────────────────────────
 const modoReunion = computed(() => !!reunionSeleccionada.value)
 const reunionActual = computed(() =>
   arrReuniones.value.find(r => String(r.id) === String(reunionSeleccionada.value)) ?? null
 )
-
-// ─── Computeds: examenes agrupados ───────────────────────────────
-const examenes = computed(() => {
-  const map = {}
-  examenesRaw.value.forEach(row => {
-    const key = `${row.id_evento}_${row.id_arbitro}`
-    if (!map[key]) {
-      map[key] = {
-        id: row.id, id_evento: row.id_evento, id_arbitro: row.id_arbitro,
-        tipo: row.tipo, fecha_examen: row.fecha_examen, titulo: row.titulo,
-        _ts: parseFecha(row.fecha_examen), detalles: [],
-      }
-    }
-    map[key].detalles.push({
-      id: row.id_detalle ?? row.id,
-      subtipo: row.subtipo, calificacion: row.calificacion, estado: row.estado,
-    })
-  })
-  return Object.values(map)
-})
-
-const reunionesCategoria = computed(() =>
-  examenes.value.filter(ex => ex.tipo === CATEGORIA)
-)
-
-const reunionesPorArbitro = computed(() =>
-  reunionesCategoria.value.reduce((map, ex) => {
-    ;(map[ex.id_arbitro] ??= []).push(ex)
-    return map
-  }, {})
-)
-
-const resumenPorArbitro = computed(() => {
-  const map = {}
-  for (const [id, lista] of Object.entries(reunionesPorArbitro.value)) {
-    const r = { presentes: 0, ausentes: 0 }
-    for (const ex of lista)
-      for (const det of (ex.detalles || []))
-        if      (det.estado == 4) r.presentes++
-        else if (det.estado == 2) r.ausentes++
-    map[id] = { ...r, total: r.presentes + r.ausentes }
-  }
-  return map
-})
-
-const resumenAsistencia = (id) =>
-  resumenPorArbitro.value[id] ?? { presentes: 0, ausentes: 0, total: 0 }
 
 // ─── Computeds: resumen reunión activa (header) ───────────────────
 const resumenReunionActual = computed(() => {
@@ -561,6 +530,10 @@ const resumenReunionActual = computed(() => {
   return r
 })
 
+// Obtenemos los totales agrupados por arbitro para los badges
+const resumenAsistencia = (id) =>
+  asistenciasGlobales.value[id] ?? { presentes: 0, ausentes: 0, total: 0 }
+
 // ─── Computeds: modal historial ───────────────────────────────────
 const reunionesDelArbitroDetalle = computed(() => {
   if (!reunionesArbitroSeleccionado.value.length) return []
@@ -571,14 +544,14 @@ const reunionesDelArbitroDetalle = computed(() => {
     const key = row.id_evento
     if (!map[key]) {
       map[key] = {
-        id: row.id, 
-        id_evento: row.id_evento, 
+        id: row.id,
+        id_evento: row.id_evento,
         id_arbitro: row.id_arbitro,
-        tipo: row.tipo, 
+        tipo: row.tipo,
         asistencia: row.asistencia,
-        fecha_reunion: row.fecha_examen, 
+        fecha_reunion: row.fecha_examen,
         titulo: row.titulo,
-        _ts: row.ts, 
+        _ts: row.ts,
         detalles: [],
       }
     }
@@ -631,12 +604,21 @@ const arbitrosMostrados = computed(() =>
 )
 
 const arbitrosFiltrados = computed(() => {
-  const { apellido, nombre, grupo, subgrupo } = filtros
+  const { apellido, nombre, grupo, subgrupo, asistencia } = filtros
   return arbitrosMostrados.value.filter(a => {
     if (apellido && !normalizarTexto(a.apellido).includes(normalizarTexto(apellido))) return false
     if (nombre   && !normalizarTexto(a.nombre).includes(normalizarTexto(nombre)))     return false
-    if (grupo    && (a.nombre_grupo || a.grupo) !== grupo)                            return false
-    if (subgrupo && (a.subgrupo ?? '') !== subgrupo)                                  return false
+    if (grupo    && (a.nombre_grupo || a.grupo) !== grupo)                             return false
+    if (subgrupo && (a.subgrupo ?? '') !== subgrupo)                                   return false
+
+    // Filtro por asistencia en modo reunión
+    if (modoReunion.value && asistencia) {
+      const estadoActual = asistencias[a.id] || ''
+      if (asistencia === 'presente' && estadoActual !== 'presente') return false
+      if (asistencia === 'ausente' && estadoActual !== 'ausente') return false
+      if (asistencia === 'sin_registro' && (estadoActual === 'presente' || estadoActual === 'ausente')) return false
+    }
+
     return true
   })
 })
@@ -654,22 +636,66 @@ const arbitrosPaginados = computed(() => {
   return arbitrosOrdenados.value.slice(inicio, inicio + registrosPorPagina)
 })
 
-
 // ─── Cargas ──────────────────────────────────────────────────────
 const obtenerReuniones = async () => {
   try {
     const res = await api.get({ entity: 'reuniones', action: 'obtenerReuniones' })
-    if ((res.ok || res.success) && res.payload) arrReuniones.value = res.payload
+    if ((res.ok || res.success) && res.payload) {
+      // Filtrar solo categoría "reunion"
+      arrReuniones.value = res.payload.filter(r => r.categoria === 'reunion')
+    }
   } catch (e) { console.error('obtenerReuniones:', e) }
 }
 
 const cargarArbitros = async () => {
   try {
-    const res = await api.get({ entity: 'arbitros', action: 'getArbitrosBasico' })
+    const res = await api.get({
+      entity: 'arbitros',
+      action: 'getArbitrosBasico',
+      payload: { soloActivos: soloActivos.value }
+    })
     if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
   } catch (e) { console.error('cargarArbitros:', e) }
 }
 
+// NUEVA FUNCION: Agrupa las asistencias consultando cada reunión
+const cargarAsistenciasGlobales = async () => {
+  if (!arrReuniones.value.length || !arbitros.value.length) return
+
+  const mapa = {}
+  arbitros.value.forEach(a => {
+    mapa[a.id] = { presentes: 0, ausentes: 0, total: 0 }
+  })
+
+  try {
+    const promesas = arrReuniones.value.map(r =>
+      api.get({ entity: 'reuniones', action: 'obtenerArbitrosReunion', payload: { idEvento: r.id } })
+    )
+
+    const resultados = await Promise.all(promesas)
+
+    resultados.forEach(res => {
+      if ((res.ok || res.success) && res.payload) {
+        res.payload.forEach(a => {
+          if (!mapa[a.id]) {
+             mapa[a.id] = { presentes: 0, ausentes: 0, total: 0 }
+          }
+          const asis = normalizarAsistencia(a.asistencia)
+          if (asis === 'presente') mapa[a.id].presentes++
+          else if (asis === 'ausente') mapa[a.id].ausentes++
+
+          if (asis === 'presente' || asis === 'ausente') {
+             mapa[a.id].total++
+          }
+        })
+      }
+    })
+
+    asistenciasGlobales.value = mapa
+  } catch (e) {
+    console.error('Error cargando asistencias globales:', e)
+  }
+}
 
 // ─── Cambio de reunión ────────────────────────────────────────────
 const limpiarEstadoReunion = () => {
@@ -682,12 +708,9 @@ const limpiarEstadoReunion = () => {
 
 const normalizarAsistencia = (valor) => {
   if (valor === null || valor === undefined) return ''
-
   const texto = String(valor).trim().toLowerCase()
-
   if (texto === 'presente') return 'presente'
   if (texto === 'ausente') return 'ausente'
-
   return ''
 }
 
@@ -697,22 +720,26 @@ const onReunionSeleccionada = async () => {
   limpiarFiltros()
   mostrarFiltrosMobile.value = false
 
-  if (!reunionSeleccionada.value) return
+  if (!reunionSeleccionada.value) {
+    // Si vuelve al listado general, recargamos para actualizar badges
+    cargandoInicial.value = true
+    await cargarAsistenciasGlobales()
+    cargandoInicial.value = false
+    return
+  }
 
   cargandoArbitros.value = true
   try {
     const resArb = await api.get({
       entity: 'reuniones',
       action: 'obtenerArbitrosReunion',
-      payload: { idEvento: Number(reunionSeleccionada.value) } // Simplificado
+      payload: { idEvento: Number(reunionSeleccionada.value) }
     })
 
     if ((resArb.ok || resArb.success) && resArb.payload) {
       arbitrosReunion.value = resArb.payload
-
       resArb.payload.forEach(a => {
         const asistencia = normalizarAsistencia(a.asistencia)
-
         if (asistencia) asistencias[a.id] = asistencia
       })
     }
@@ -735,10 +762,10 @@ const guardarAsistencia = async (a) => {
     tipo: estado,
   }
   try {
-    const res = await api.post({ 
-      entity: 'reuniones', 
-      action: 'registrarAsistenciaArbitro',  
-      payload 
+    const res = await api.post({
+      entity: 'reuniones',
+      action: 'registrarAsistenciaArbitro',
+      payload
     })
     if (res.payload) {
       guardadoOk[a.id] = true
@@ -762,7 +789,6 @@ const verDetalleArbitro = async (a) => {
   filtroAñoDetalle.value = ''
   mostrarModalDetalle.value = true
 
-  // Limpiamos la data anterior y mostramos el loading
   reunionesArbitroSeleccionado.value = []
   cargandoHistorial.value = true
 
@@ -787,7 +813,8 @@ const recargar = async () => {
     await onReunionSeleccionada()
   } else {
     cargandoInicial.value = true
-    await Promise.all([cargarArbitros()])
+    await Promise.all([obtenerReuniones(), cargarArbitros()])
+    await cargarAsistenciasGlobales()
     cargandoInicial.value = false
   }
 }
@@ -805,8 +832,17 @@ watch(filtros,      () => { paginaActual.value = 1 }, { deep: true })
 watch(modoReunion,  () => { paginaActual.value = 1 })
 watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
 
+watch(soloActivos, async () => {
+  cargandoInicial.value = true
+  await cargarArbitros()
+  await cargarAsistenciasGlobales()
+  cargandoInicial.value = false
+})
+
 onMounted(async () => {
   await Promise.all([obtenerReuniones(), cargarArbitros()])
+  // Una vez que tenemos las reuniones y árbitros, calculamos el agrupado general
+  await cargarAsistenciasGlobales()
   cargandoInicial.value = false
 })
 </script>
@@ -816,12 +852,12 @@ onMounted(async () => {
 .admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
 .animate__animated { animation-duration: 0.4s; }
 
-/* ── Tabla (igual a ExamenesGenerales) ── */
+/* ── Tabla ── */
 .tabla-container { overflow-x: auto; }
 .tabla-fija { border-collapse: separate; border-spacing: 0; }
 .tabla-fija th, .tabla-fija td { border-left: none !important; border-right: none !important; }
 
-/* Sticky columns - mismas posiciones que ExamenesGenerales */
+/* Sticky columns */
 .col-fija              { position: sticky; background-color: inherit; z-index: 10; }
 .tabla-fija thead .col-fija { background-color: #f8f9fa; z-index: 12; }
 .tabla-fija tbody .col-fija { background-color: #ffffff; }
