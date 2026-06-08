@@ -237,13 +237,13 @@
                   <div class="d-flex align-items-center gap-2">
                     <div class="small text-muted fw-bold font-monospace">#{{ a.id }}</div>
                     <span v-if="modoReunion && guardando[a.id]"       class="spinner-border spinner-border-sm text-danger"></span>
-                    <i    v-else-if="modoReunion && guardadoOk[a.id]" class="bi bi-check-circle-fill text-success fs-6"></i>
+                    <i v-else-if="modoReunion && guardadoOk[a.id]" class="bi bi-check-circle-fill text-success fs-6"></i>
                   </div>
                 </div>
                 <div class="card-body pt-0 px-3 pb-3">
                   <div class="d-flex justify-content-between text-dark mb-2 border-bottom border-secondary-subtle pb-2">
                     <span class="small">
-                      <strong>Grupo:</strong> {{ a.nombre_grupo || a.grupo || '-' }}
+                      <strong>Grupo:</strong> {{ a.grupo }}
                       <template v-if="a.subgrupo"> / {{ a.subgrupo }}</template>
                     </span>
                     <span class="small"><strong>Reuniones:</strong> {{ (reunionesPorArbitro[a.id] || []).length }}</span>
@@ -339,7 +339,7 @@
         </div>
 
         <div class="row g-2 mb-4">
-          <div class="col-6">
+          <div class="col-4">
             <div class="card border-0 shadow-sm h-100 bg-success">
               <div class="card-body p-2 text-center text-white">
                 <i class="bi bi-person-check-fill" style="font-size: 1.2rem;"></i>
@@ -348,12 +348,21 @@
               </div>
             </div>
           </div>
-          <div class="col-6">
+          <div class="col-4">
             <div class="card border-0 shadow-sm h-100 bg-secondary">
               <div class="card-body p-2 text-center text-white">
                 <i class="bi bi-person-dash-fill" style="font-size: 1.2rem;"></i>
                 <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.ausentes }}</div>
                 <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Ausentes</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="card border-0 shadow-sm h-100 bg-light">
+              <div class="card-body p-2 text-center text-muted">
+                <i class="bi bi-question-circle-fill" style="font-size: 1.2rem;"></i>
+                <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.sinInformacion }}</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Sin info</div>
               </div>
             </div>
           </div>
@@ -370,13 +379,13 @@
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <div class="text-dark fw-bold small mb-1">
-                      <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(ex.fecha_examen) }}
+                      <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(ex.fecha_reunion) }}
                     </div>
                     <div v-if="ex.titulo" class="text-muted small fst-italic">{{ ex.titulo }}</div>
                   </div>
                   <div class="d-flex flex-column align-items-end gap-1">
                     <span class="badge bg-dark font-monospace" style="font-size: 0.65rem;">#{{ ex.id }}</span>
-                    <AsistenciaBadge :detalles="ex.detalles" />
+                    <AsistenciaBadge :asistencia="ex.asistencia" />
                   </div>
                 </div>
               </div>
@@ -440,15 +449,19 @@ const ResumenAsistencia = defineComponent({
 
 // Badge presente/ausente para el modal historial
 const AsistenciaBadge = defineComponent({
-  props: { detalles: Array },
+  props: { asistencia: String },
   setup(props) {
     return () => {
-      const esAusente = (props.detalles || []).some(d => d.estado == 2)
+      const estado = normalizarAsistencia(props.asistencia)
+
       return h('span', {
-        class: esAusente
-          ? 'badge bg-secondary text-white px-2 py-1'
-          : 'badge bg-success text-white px-2 py-1',
-      }, esAusente ? 'AUSENTE' : 'PRESENTE')
+        class:
+          estado === 'presente'
+            ? 'badge bg-success text-white px-2 py-1'
+            : estado === 'ausente'
+              ? 'badge bg-secondary text-white px-2 py-1'
+              : 'badge bg-light text-muted border px-2 py-1',
+      }, estado === 'presente' ? 'PRESENTE' : estado === 'ausente' ? 'AUSENTE' : 'SIN INFORMACION')
     }
   },
 })
@@ -481,7 +494,7 @@ const filtroAñoDetalle     = ref('')
 const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '' })
 
 const cargandoHistorial = ref(false)
-const examenesArbitroSeleccionado = ref([])
+const reunionesArbitroSeleccionado = ref([])
 
 // ─── Computeds: modo ─────────────────────────────────────────────
 const modoReunion = computed(() => !!reunionSeleccionada.value)
@@ -550,23 +563,25 @@ const resumenReunionActual = computed(() => {
 
 // ─── Computeds: modal historial ───────────────────────────────────
 const reunionesDelArbitroDetalle = computed(() => {
-  if (!examenesArbitroSeleccionado.value.length) return []
+  if (!reunionesArbitroSeleccionado.value.length) return []
 
   const map = {}
-  examenesArbitroSeleccionado.value.forEach(row => {
+  reunionesArbitroSeleccionado.value.forEach(row => {
     if (row.tipo !== CATEGORIA) return // Solo filtramos las reuniones
     const key = row.id_evento
     if (!map[key]) {
       map[key] = {
-        id: row.id, id_evento: row.id_evento, id_arbitro: row.id_arbitro,
-        tipo: row.tipo, fecha_examen: row.fecha_examen, titulo: row.titulo,
-        _ts: parseFecha(row.fecha_examen), detalles: [],
+        id: row.id, 
+        id_evento: row.id_evento, 
+        id_arbitro: row.id_arbitro,
+        tipo: row.tipo, 
+        asistencia: row.asistencia,
+        fecha_reunion: row.fecha_examen, 
+        titulo: row.titulo,
+        _ts: row.ts, 
+        detalles: [],
       }
     }
-    map[key].detalles.push({
-      id: row.id_detalle ?? row.id,
-      subtipo: row.subtipo, calificacion: row.calificacion, estado: row.estado,
-    })
   })
   return sortPorFecha(Object.values(map))
 })
@@ -574,7 +589,7 @@ const reunionesDelArbitroDetalle = computed(() => {
 const añosDetalleArbitro = computed(() => {
   const set = new Set()
   for (const ex of reunionesDelArbitroDetalle.value) {
-    const año = añoDeFecha(ex.fecha_examen)
+    const año = añoDeFecha(ex.fecha_reunion)
     if (año) set.add(año)
   }
   return [...set].sort((a, b) => Number(b) - Number(a))
@@ -583,31 +598,28 @@ const añosDetalleArbitro = computed(() => {
 const reunionesFiltradosDetalle = computed(() =>
   !filtroAñoDetalle.value
     ? reunionesDelArbitroDetalle.value
-    : reunionesDelArbitroDetalle.value.filter(ex => añoDeFecha(ex.fecha_examen) === filtroAñoDetalle.value)
+    : reunionesDelArbitroDetalle.value.filter(ex => añoDeFecha(ex.fecha_reunion) === filtroAñoDetalle.value)
 )
 
 const resumenDetalle = computed(() => {
-  const r = { presentes: 0, ausentes: 0 }
-  for (const ex of reunionesFiltradosDetalle.value)
-    for (const det of (ex.detalles || []))
-      if      (det.estado == 4) r.presentes++
-      else if (det.estado == 2) r.ausentes++
+  const r = { presentes: 0, ausentes: 0, sinInformacion: 0 }
+  for (const ex of reunionesFiltradosDetalle.value) {
+    const estado = normalizarAsistencia(ex.asistencia)
+
+    if (estado === 'presente') r.presentes++
+    else if (estado === 'ausente') r.ausentes++
+    else r.sinInformacion++
+  }
   return r
 })
 
 const opcionReunion = (r) => {
-  let texto = `${r.fecha_evento}  —  ${r.titulo}`
+  let texto = `${r.fecha_formateada}  —  ${r.titulo}`
 
-  if (r.todos_grupos == 1) {
+  if (r.todosLosGrupos) {
     texto += ' (Todos los grupos)'
   } else {
-    if (r.nombre_grupo) {
-      texto += ` · ${r.nombre_grupo}`
-    }
-
-    if (r.nombre_subgrupo) {
-      texto += ` (${r.nombre_subgrupo})`
-    }
+    texto += ` (${r.nombresGrupos.join(" / ")})`
   }
 
   return texto
@@ -653,7 +665,7 @@ const obtenerReuniones = async () => {
 
 const cargarArbitros = async () => {
   try {
-    const res = await api.get({ entity: 'arbitros', action: 'getArbitros' })
+    const res = await api.get({ entity: 'arbitros', action: 'getArbitrosBasico' })
     if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
   } catch (e) { console.error('cargarArbitros:', e) }
 }
@@ -666,6 +678,17 @@ const limpiarEstadoReunion = () => {
   Object.keys(guardadoOk).forEach(k => delete guardadoOk[k])
   registrosExistentes.value = {}
   arbitrosReunion.value = []
+}
+
+const normalizarAsistencia = (valor) => {
+  if (valor === null || valor === undefined) return ''
+
+  const texto = String(valor).trim().toLowerCase()
+
+  if (texto === 'presente') return 'presente'
+  if (texto === 'ausente') return 'ausente'
+
+  return ''
 }
 
 const onReunionSeleccionada = async () => {
@@ -686,6 +709,12 @@ const onReunionSeleccionada = async () => {
 
     if ((resArb.ok || resArb.success) && resArb.payload) {
       arbitrosReunion.value = resArb.payload
+
+      resArb.payload.forEach(a => {
+        const asistencia = normalizarAsistencia(a.asistencia)
+
+        if (asistencia) asistencias[a.id] = asistencia
+      })
     }
   } catch (e) {
     console.error('onReunionSeleccionada:', e)
@@ -695,36 +724,29 @@ const onReunionSeleccionada = async () => {
   }
 }
 
-// ─── Guardar asistencia (auto-save) ──────────────────────────────
 const guardarAsistencia = async (a) => {
-  const valor = asistencias[a.id]
-  if (!valor) return
-
+  const estado = asistencias[a.id]
+  if (!estado) return
   guardando[a.id]  = true
   delete guardadoOk[a.id]
-
-  const existente = registrosExistentes.value[a.id]
   const payload = {
     idEvento:  Number(reunionSeleccionada.value),
     idArbitro: a.id,
-    tipo:      CATEGORIA,
-    detalles:  valor === 'ausente'
-      ? [{ subtipo: 'ausente',    calificacion: '', estado: 2 }]
-      : [{ subtipo: 'asistencia', calificacion: '', estado: 4 }],
+    tipo: estado,
   }
-
   try {
-    const res = existente
-      ? await api.post({ entity: 'examenes', action: 'editarExamen',  payload: { ...payload, id: existente.id } })
-      : await api.post({ entity: 'examenes', action: 'guardarExamen', payload })
-
-    if (res.ok || res.success) {
+    const res = await api.post({ 
+      entity: 'reuniones', 
+      action: 'registrarAsistenciaArbitro',  
+      payload 
+    })
+    if (res.payload) {
       guardadoOk[a.id] = true
       setTimeout(() => { delete guardadoOk[a.id] }, 2500)
     } else {
       const prev = registrosExistentes.value[a.id]
       if (prev) asistencias[a.id] = prev.estado == 2 ? 'ausente' : 'presente'
-      else       delete asistencias[a.id]
+      else delete asistencias[a.id]
       notificar({ titulo: 'Error', mensaje: res.message || 'No se pudo guardar la asistencia.', tipo: 'danger' })
     }
   } catch {
@@ -741,17 +763,17 @@ const verDetalleArbitro = async (a) => {
   mostrarModalDetalle.value = true
 
   // Limpiamos la data anterior y mostramos el loading
-  examenesArbitroSeleccionado.value = []
+  reunionesArbitroSeleccionado.value = []
   cargandoHistorial.value = true
 
   try {
     const res = await api.get({
-      entity: 'examenes',
-      action: 'obtenerExamenesArbitro',
+      entity: 'reuniones',
+      action: 'obtenerAsistenciasArbitro',
       payload: { idArbitro: a.id }
     })
     if ((res.ok || res.success) && res.payload) {
-      examenesArbitroSeleccionado.value = res.payload
+      reunionesArbitroSeleccionado.value = res.payload
     }
   } catch (e) {
     console.error('Error al cargar historial del árbitro:', e)
