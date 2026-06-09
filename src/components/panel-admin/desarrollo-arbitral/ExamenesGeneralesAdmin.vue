@@ -851,7 +851,7 @@ const llamarAPI = async (action, successMsg) => {
       payload: {
         idArbitro:  formExamen.value.id_arbitro || arbitroEnModal.value.id,
         idEvento:   eventoEnForm.value?.id ?? null,
-        asistencia: formExamen.value.asistencia,
+        tipo: formExamen.value.asistencia,
       },
     })
     if (!resAsistencia.ok && !resAsistencia.success) {
