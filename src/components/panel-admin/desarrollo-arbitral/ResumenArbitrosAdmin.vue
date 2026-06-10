@@ -3,14 +3,19 @@
     <div class="admin-panel animate__animated animate__fadeIn">
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
+        <!-- ── HEADER ── -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-clipboard-data-fill me-1"></i> Resumen de Rendimiento
+              <i class="bi bi-clipboard2-check-fill me-1"></i> Resumen General
             </h4>
-            <span class="text-muted small d-block mt-1">Panel Administrativo — {{ totalFiltrados }} árbitros</span>
+            <span class="text-muted small d-block mt-1">Exámenes y Reuniones — {{ totalFiltrados }} árbitros</span>
           </div>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white">
+              <input class="form-check-input" type="checkbox" id="toggleSoloActivos" v-model="soloActivos" role="switch" :disabled="cargandoInicial">
+              <label class="form-check-label small fw-bold text-dark m-0" for="toggleSoloActivos">Solo activos</label>
+            </div>
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
@@ -18,13 +23,10 @@
               <span class="material-icons text-dark fs-6">filter_alt_off</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
-            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
-              <span class="material-icons fs-6">download</span>
-              <span class="fw-bold d-none d-md-inline small">Excel</span>
-            </button>
           </div>
         </div>
 
+        <!-- ── FILTROS MOBILE ── -->
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none']">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Árbitros</span>
@@ -32,7 +34,7 @@
           </div>
           <div class="row g-2">
             <div class="col-6"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido..."></div>
-            <div class="col-6"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre..."></div>
+            <div class="col-6"><input v-model="filtros.nombre"   class="form-control form-control-sm shadow-none" placeholder="Nombre..."></div>
             <div class="col-6">
               <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
                 <option value="">Todos los grupos</option>
@@ -51,7 +53,10 @@
           </div>
         </div>
 
+        <!-- ── BODY ── -->
         <div class="card-body p-0 p-md-3 bg-white">
+
+          <!-- Tabla desktop -->
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
             <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
               <thead class="table-light">
@@ -62,8 +67,7 @@
                   <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
                   <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
                   <th class="py-3 text-center text-uppercase text-muted">Subgrupo</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Total Registros</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Última Actividad</th>
+                  <th class="py-3 text-center text-uppercase text-muted" style="min-width: 210px;">Última Actividad</th>
                 </tr>
                 <tr class="bg-light">
                   <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
@@ -72,8 +76,12 @@
                     </button>
                   </td>
                   <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
-                  <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
-                  <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
+                  <td class="p-2 border-bottom border-2 col-fija col-apellido">
+                    <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar..">
+                  </td>
+                  <td class="p-2 border-bottom border-2 col-fija col-nombre">
+                    <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar..">
+                  </td>
                   <td class="p-2 border-bottom border-2">
                     <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
                       <option value="">Todos</option>
@@ -86,18 +94,18 @@
                       <option v-for="sg in SUBGRUPOS" :key="sg" :value="sg">{{ sg }}</option>
                     </select>
                   </td>
-                  <td class="p-2 border-bottom border-2" colspan="2"></td>
+                  <td class="p-2 border-bottom border-2 text-center text-muted fst-italic small">—</td>
                 </tr>
               </thead>
               <tbody>
-                <tr v-if="cargandoInicial">
-                  <td colspan="8" class="text-center py-5">
+               <tr v-if="cargandoInicial">
+                  <td colspan="7" class="text-center py-5">
                     <div class="spinner-border text-danger spinner-border-sm"></div>
                     <span class="ms-2 fw-bold text-muted">Cargando datos...</span>
                   </td>
                 </tr>
                 <tr v-else-if="!arbitrosPaginados.length">
-                  <td colspan="8" class="text-center py-4 text-muted">
+                  <td colspan="7" class="text-center py-4 text-muted">
                     <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">search_off</span>
                     <span class="fw-bold">No se encontraron árbitros.</span>
                   </td>
@@ -105,7 +113,7 @@
                 <tr v-else v-for="a in arbitrosPaginados" :key="a.id" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
                   <td class="ps-3 text-muted fw-bold font-monospace col-fija col-id">{{ a.id }}</td>
                   <td class="text-center col-fija col-acciones">
-                    <button @click="verDetalle(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning">
+                    <button @click="verDetalleArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver historial">
                       <span class="material-icons" style="font-size:16px;">manage_search</span>
                     </button>
                   </td>
@@ -113,23 +121,31 @@
                   <td class="text-dark fw-bold text-uppercase col-fija col-nombre">{{ a.nombre }}</td>
                   <td class="text-center text-dark">{{ a.grupo || '-' }}</td>
                   <td class="text-center text-dark">{{ a.subgrupo || '-' }}</td>
+
+                  <!-- Última actividad -->
                   <td class="text-center">
-                    <span class="badge bg-dark rounded-pill px-3 py-1">{{ metricasArbitros[a.id]?.total || 0 }}</span>
+                    <template v-if="ultimaActividad[a.id]">
+                      <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap">
+                        <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.65rem;">
+                          {{ añoDeFecha(ultimaActividad[a.id].fecha) }}
+                        </span>
+                        <span class="badge text-uppercase" :class="badgeTipo(ultimaActividad[a.id].tipo)" style="font-size: 0.65rem;">
+                          {{ ultimaActividad[a.id].tipo }}
+                        </span>
+                        <span class="text-muted fst-italic text-truncate d-none d-lg-inline" style="max-width: 85px; font-size: 0.7rem;">
+                          {{ ultimaActividad[a.id].titulo }}
+                        </span>
+                      </div>
+                    </template>
+                    <span v-else class="text-muted">—</span>
                   </td>
-                  <td class="text-center">
-                    <div v-if="metricasArbitros[a.id]?.ultimo">
-                      <span class="fw-bold text-dark">{{ formatFecha(metricasArbitros[a.id].ultimo.fecha_examen) }}</span>
-                      <span class="badge ms-2 text-uppercase" :class="colorBadgeTipo(metricasArbitros[a.id].ultimo.tipo)">
-                        {{ metricasArbitros[a.id].ultimo.tipo }}
-                      </span>
-                    </div>
-                    <span v-else class="text-muted fst-italic small">Sin actividad</span>
-                  </td>
+
                 </tr>
               </tbody>
             </table>
           </div>
 
+          <!-- Cards mobile -->
           <div class="d-md-none p-3 bg-light">
             <div v-if="cargandoInicial" class="text-center p-4 bg-white rounded-3 shadow-sm border">
               <div class="spinner-border text-danger spinner-border-sm"></div>
@@ -139,31 +155,23 @@
               <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
                   <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">{{ a.apellido }}, {{ a.nombre }}</div>
-                  <div class="small text-muted fw-bold font-monospace">#{{ a.id }}</div>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="small text-muted fw-bold font-monospace">#{{ a.id }}</div>
+                    <button @click="verDetalleArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning">
+                      <span class="material-icons" style="font-size:14px;">manage_search</span>
+                    </button>
+                  </div>
                 </div>
                 <div class="card-body pt-0 px-3 pb-3">
-                  <div class="d-flex justify-content-between text-dark mb-2 border-bottom border-secondary-subtle pb-2">
-                    <span class="small">
-                      <strong>Grupo:</strong> {{ a.grupo || '-' }}
-                      <template v-if="a.subgrupo"> (Sub: {{ a.subgrupo }})</template>
-                    </span>
-                    <span class="small"><strong>Registros:</strong> {{ metricasArbitros[a.id]?.total || 0 }}</span>
+                  <div class="text-muted small mb-2 border-bottom border-secondary-subtle pb-2">
+                    <strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo"> / {{ a.subgrupo }}</template>
                   </div>
-
-                  <div class="bg-light p-2 rounded border border-light-subtle mb-3">
-                    <span class="small text-muted fw-bold d-block mb-1 text-center">Última Actividad</span>
-                    <div v-if="metricasArbitros[a.id]?.ultimo" class="d-flex justify-content-center align-items-center">
-                      <span class="fw-bold text-dark small"><i class="bi bi-calendar3 me-1"></i>{{ formatFecha(metricasArbitros[a.id].ultimo.fecha_examen) }}</span>
-                      <span class="badge ms-2 text-uppercase" :class="colorBadgeTipo(metricasArbitros[a.id].ultimo.tipo)" style="font-size: 0.65rem;">
-                        {{ metricasArbitros[a.id].ultimo.tipo }}
-                      </span>
-                    </div>
-                    <div v-else class="text-center"><span class="text-muted fst-italic small">Sin actividad registrada</span></div>
+                  <div v-if="ultimaActividad[a.id]" class="mb-2 d-flex align-items-center gap-1 flex-wrap">
+                    <span class="small text-muted fw-bold">Última:</span>
+                    <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.65rem;">{{ añoDeFecha(ultimaActividad[a.id].fecha) }}</span>
+                    <span class="badge text-uppercase" :class="badgeTipo(ultimaActividad[a.id].tipo)" style="font-size: 0.65rem;">{{ ultimaActividad[a.id].tipo }}</span>
+                    <span class="text-muted small fst-italic text-truncate" style="max-width: 120px;">{{ ultimaActividad[a.id].titulo }}</span>
                   </div>
-
-                  <button @click="verDetalle(a)" class="btn btn-sm w-100 btn-outline-warning shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                    <span class="material-icons" style="font-size: 18px;">manage_search</span> VER HISTORIAL
-                  </button>
                 </div>
               </div>
               <div v-if="!arbitrosPaginados.length" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
@@ -173,6 +181,7 @@
             </template>
           </div>
 
+          <!-- Paginación -->
           <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
             <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
               <i class="bi bi-chevron-left"></i> Ant
@@ -182,292 +191,437 @@
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
-
         </div>
       </div>
     </div>
 
-    <ModalBase :show="mostrarModalExcel" @close="mostrarModalExcel = false" icono="description" colorIcono="bg-success-subtle text-success" maxWidth="750px">
-      <template #header>
-        <div class="text-center">
-          <span class="fw-bold fs-5">Exportar Listado</span>
-          <div class="text-muted small mt-1">Marcá las columnas que querés incluir en el Excel</div>
-        </div>
-      </template>
-      <div class="row g-2 text-start my-2 mx-auto shadow-sm p-3 rounded-3 bg-light border border-light-subtle" style="max-height: 250px; overflow-y: auto;">
-        <div v-for="col in columnasExcel" :key="col.id" class="col-12 col-sm-6">
-          <div class="form-check form-switch bg-white border p-2 rounded shadow-sm m-0">
-            <input class="form-check-input ms-1 shadow-none" type="checkbox" role="switch" v-model="col.visible" :id="'col-'+col.id" style="cursor:pointer;">
-            <label class="form-check-label ms-2 small fw-bold text-dark cursor-pointer" :for="'col-'+col.id">{{ col.label }}</label>
-          </div>
-        </div>
-      </div>
-      <template #footer>
-        <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100">DESCARGAR EXCEL</button>
-      </template>
-    </ModalBase>
-
-    <ModalBase :show="mostrarModalDetalle" @close="mostrarModalDetalle = false" icono="history" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="800px">
+    <!-- ── MODAL HISTORIAL ── -->
+    <ModalBase :show="mostrarModalDetalle" @close="mostrarModalDetalle = false" icono="person_search" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="900px">
       <template #header>
         <div class="text-center w-100">
-          <span class="fw-bold fs-5">Historial de {{ arbitroSeleccionado.apellido }}, {{ arbitroSeleccionado.nombre }}</span>
-          <div class="text-muted small mt-1">Reuniones, Asambleas y Recuperatorios</div>
+          <span class="fw-bold fs-5">{{ arbitroSeleccionado.apellido }}, {{ arbitroSeleccionado.nombre }}</span>
+          <div class="text-muted small mt-1">Historial completo — exámenes y reuniones</div>
         </div>
       </template>
 
-      <div v-if="!eventosDelArbitroDetalle.length" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
+      <div v-if="cargandoDetalle" class="text-center py-5">
+        <div class="spinner-border text-danger"></div>
+        <div class="mt-2 fw-bold text-muted small">Cargando historial...</div>
+      </div>
+
+      <div v-else-if="!eventosDelArbitroDetalle.length" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
         <span class="material-icons d-block mb-2" style="font-size: 48px; color: #cbd5e1;">history_toggle_off</span>
-        <p class="mb-0 fw-bold">No hay eventos registrados para este árbitro.</p>
+        <p class="mb-0 fw-bold">No hay actividad registrada para este árbitro.</p>
       </div>
 
       <div v-else>
-        <div class="d-flex flex-column gap-2">
-          <div v-for="ev in eventosDelArbitroDetalle" :key="ev.id" class="card border border-light-subtle shadow-sm bg-white">
-            <div class="card-body p-2 px-3">
-              <div class="d-flex justify-content-between align-items-start mb-1 border-bottom border-secondary-subtle pb-1">
-                <div>
-                  <span class="badge font-monospace me-2" style="background-color: #cbd5e1; color: #334155;">#{{ ev.id }}</span>
-                  <span class="text-dark fw-bold small"><i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(ev.fecha_examen) }}</span>
-                </div>
-                <span class="badge text-uppercase" :class="colorBadgeTipo(ev.tipo)">{{ ev.tipo }}</span>
+        <!-- Año + Excel -->
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2" v-if="añosDetalleArbitro.length">
+            <label class="small fw-bold text-dark text-uppercase m-0">Año:</label>
+            <select v-model="filtroAñoDetalle" class="form-select form-select-sm shadow-sm border-secondary-subtle" style="min-width: 140px;">
+              <option value="">Todos los años</option>
+              <option v-for="año in añosDetalleArbitro" :key="año" :value="año">{{ año }}</option>
+            </select>
+          </div>
+          <button @click="exportarExcelDetalle" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+            <i class="bi bi-file-earmark-excel me-1"></i> Excel
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-2 mb-4">
+          <div class="col-6 col-md-2">
+            <div class="card border-0 shadow-sm h-100 bg-success">
+              <div class="card-body p-2 text-center text-white">
+                <i class="bi bi-check-circle-fill" style="font-size: 1.1rem;"></i>
+                <div class="fw-bold fs-5 mt-1 lh-1">{{ statsDetalle.aprobados }}</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.6rem;">Aprob.</div>
               </div>
-              <div class="d-flex flex-wrap gap-1 mt-2">
-                <span v-for="(det, i) in ev.detalles" :key="i" class="badge border bg-light text-dark px-2 py-1 d-flex align-items-center gap-1">
-                  <span class="fw-bold text-uppercase">{{ det.subtipo }}</span>
-                  <span class="status-dot ms-1" :class="claseDot(det.estado)"></span>
-                  <span class="fw-bold ms-1" :class="claseTextoEstado(det.estado)">{{ textoEstado(det.estado) }}</span>
-                  <span v-if="det.calificacion && det.estado != 3 && det.estado != 2" class="text-muted ms-1">({{ det.calificacion }})</span>
-                </span>
+            </div>
+          </div>
+          <div class="col-6 col-md-2">
+            <div class="card border-0 shadow-sm h-100 bg-danger">
+              <div class="card-body p-2 text-center text-white">
+                <i class="bi bi-x-circle-fill" style="font-size: 1.1rem;"></i>
+                <div class="fw-bold fs-5 mt-1 lh-1">{{ statsDetalle.desaprobados }}</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.6rem;">Desap.</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-2">
+            <div class="card border-0 shadow-sm h-100 bg-secondary">
+              <div class="card-body p-2 text-center text-white">
+                <i class="bi bi-person-dash-fill" style="font-size: 1.1rem;"></i>
+                <div class="fw-bold fs-5 mt-1 lh-1">{{ statsDetalle.ausentesExamen }}</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.6rem;">Aus. Exam.</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-2">
+            <div class="card border-0 shadow-sm h-100 bg-info">
+              <div class="card-body p-2 text-center text-white">
+                <i class="bi bi-dash-circle-fill" style="font-size: 1.1rem;"></i>
+                <div class="fw-bold fs-5 mt-1 lh-1">{{ statsDetalle.noLoHizo }}</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.6rem;">No hizo</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-2">
+            <div class="card border-0 shadow-sm h-100" style="background-color: #0d6efd;">
+              <div class="card-body p-2 text-center text-white">
+                <i class="bi bi-person-check-fill" style="font-size: 1.1rem;"></i>
+                <div class="fw-bold fs-5 mt-1 lh-1">{{ statsDetalle.presentesReunion }}</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.6rem;">Pres. Reun.</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-2">
+            <div class="card border-0 shadow-sm h-100 bg-secondary">
+              <div class="card-body p-2 text-center text-white">
+                <i class="bi bi-person-x-fill" style="font-size: 1.1rem;"></i>
+                <div class="fw-bold fs-5 mt-1 lh-1">{{ statsDetalle.ausentesReunion }}</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.6rem;">Aus. Reun.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista cronológica -->
+        <div class="d-flex flex-column gap-2 pb-2">
+          <div v-for="ev in eventosFiltradosDetalle" :key="ev.key" class="card border border-light-subtle shadow-sm">
+            <div class="card-body p-3">
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <span class="text-dark fw-bold small">
+                    <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(ev.fecha) }}
+                  </span>
+                  <span class="badge text-uppercase" :class="badgeTipo(ev.tipo)" style="font-size: 0.7rem;">{{ ev.tipo }}</span>
+                  <span v-if="ev.titulo" class="text-muted small fst-italic">{{ ev.titulo }}</span>
+                </div>
+                <div>
+                  <span
+                    v-if="ev.fuente === 'reunion'"
+                    class="badge px-2 py-1"
+                    :class="ev.asistencia === 'presente' ? 'bg-success' : ev.asistencia === 'ausente' ? 'bg-secondary' : 'bg-light text-muted border'"
+                  >
+                    {{ ev.asistencia === 'presente' ? 'PRESENTE' : ev.asistencia === 'ausente' ? 'AUSENTE' : 'SIN INFO' }}
+                  </span>
+                  <DetallesExamen v-else :detalles="ev.detalles" />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </ModalBase>
-
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive} from 'vue'
+import { ref, onMounted, computed, reactive, watch, defineComponent, h } from 'vue'
 import { api } from '@/api/api'
-import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
-
+import * as XLSX from 'xlsx'
 useHead({
-  title: 'Resumen Árbitros | AAAB',
-  meta: [{ name: 'description', content: 'Resumen dinámico del rendimiento y asistencia de árbitros AAAB.' }],
+  title: 'Resumen General | AAAB',
+  meta: [{ name: 'description', content: 'Resumen de rendimiento en exámenes y reuniones — AAAB.' }],
 })
 
-// ============== CONSTANTES ==============
-const GRUPOS = ['LH', 'Pre Liga', 'SR', '1', '2', '3', '4']
-const SUBGRUPOS = ['A', 'B', 'C']
+// ══ CONSTANTES ══════════════════════════════════════════
+const GRUPOS         = ['LH', 'Pre Liga', 'SR', '1', '2', '3', '4']
+const SUBGRUPOS      = ['A', 'B', 'C']
 const MOBILE_BREAKPOINT = 768
 
-const ESTADO_MAP = {
-  0: { texto: 'DESAPROBADO', dot: 'bg-danger',    txt: 'text-danger'    },
-  1: { texto: 'APROBADO',    dot: 'bg-success',   txt: 'text-success'   },
-  2: { texto: 'AUSENTE',     dot: 'bg-secondary', txt: 'text-secondary' },
-  3: { texto: 'NO LO HIZO',  dot: 'bg-info',      txt: 'text-info'      },
-  4: { texto: 'PRESENTE',    dot: 'bg-primary',   txt: 'text-primary'   },
+const TIPO_BADGE_MAP = {
+  asamblea:      'bg-dark text-white',
+  recuperatorio: 'bg-warning text-dark',
+  reunion:       'bg-primary text-white',
 }
 
-// ============== STATE ==============
-const arbitros = ref([])
-const dataGlobal = ref([])
+const ESTADO_MAP = {
+  'aprobado':    { dot: 'bg-success',   txt: 'text-success'   },
+  'desaprobado': { dot: 'bg-danger',    txt: 'text-danger'    },
+  'no lo hizo':  { dot: 'bg-info',      txt: 'text-info'      },
+  'ausente':     { dot: 'bg-secondary', txt: 'text-secondary' },
+}
 
-const cargandoInicial = ref(true)
-const paginaActual = ref(1)
-const registrosPorPagina = 10
-const mostrarFiltrosMobile = ref(false)
-const mostrarModalDetalle = ref(false)
-const arbitroSeleccionado = ref({ id: null, apellido: '', nombre: '' })
+// ══ HELPERS ══════════════════════════════════════════════
+const badgeTipo        = (t) => TIPO_BADGE_MAP[t]  ?? 'bg-dark text-white'
+const claseDot         = (e) => ESTADO_MAP[e]?.dot ?? 'bg-dark'
+const claseTextoEstado = (e) => ESTADO_MAP[e]?.txt ?? 'text-dark'
+const textoEstado      = (e) => ({ aprobado: 'APROBADO', desaprobado: 'DESAPROBADO', 'no lo hizo': 'NO LO HIZO', ausente: 'AUSENTE' })[e] ?? 'OTRO'
 
-const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '' })
-
-const mostrarModalExcel = ref(false)
-const columnasExcel = ref([
-  { id: 'id', label: 'ID Árbitro', visible: true },
-  { id: 'apellido', label: 'Apellido', visible: true },
-  { id: 'nombre', label: 'Nombre', visible: true },
-  { id: 'grupo', label: 'Grupo', visible: true },
-  { id: 'subgrupo', label: 'Subgrupo', visible: true },
-  { id: 'reuniones', label: 'Reuniones (Pres.)', visible: true },
-  { id: 'asambleas', label: 'Asambleas', visible: true },
-  { id: 'recuperatorios', label: 'Recuperatorios', visible: true },
-  { id: 'total', label: 'Total Registros', visible: false },
-  { id: 'fecha_ultima_actividad', label: 'Fecha Últ. Act.', visible: false },
-  { id: 'tipo_ultima_actividad', label: 'Tipo Últ. Act.', visible: false },
-])
-
-// ============== HELPERS ==============
 const normalizarTexto = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-const formatFecha    = (f) => f?.split(' ')[0] ?? ''
-const parseFecha     = (f) => {
+const formatFecha     = (f) => f?.split(' ')[0] ?? ''
+const añoDeFecha      = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
+const parseFecha      = (f) => {
   const [d, m, y] = (f?.split(' ')[0] ?? '').split('/')
   return new Date(`${y}-${m}-${d}`).getTime() || 0
 }
-
-const colorBadgeTipo = (tipo) => {
-  if (tipo === 'reunion') return 'bg-primary'
-  if (tipo === 'asamblea') return 'bg-dark'
-  if (tipo === 'recuperatorio') return 'bg-warning text-dark'
-  return 'bg-secondary'
+const normalizarAsistencia = (v) => {
+  if (!v) return ''
+  const t = String(v).trim().toLowerCase()
+  return t === 'presente' ? 'presente' : t === 'ausente' ? 'ausente' : ''
 }
+const hoy = () => new Date().toISOString().slice(0, 10)
 
-const textoEstado      = (e) => ESTADO_MAP[e]?.texto ?? 'OTRO'
-const claseDot         = (e) => ESTADO_MAP[e]?.dot   ?? 'bg-dark'
-const claseTextoEstado = (e) => ESTADO_MAP[e]?.txt   ?? 'text-dark'
-
-// ============== COMPUTEDS & METRICS ==============
-const metricasArbitros = computed(() => {
-  const metricas = {}
-  dataGlobal.value.forEach(ex => {
-    if (!metricas[ex.id_arbitro]) {
-      metricas[ex.id_arbitro] = {
-        total: 0,
-        ultimo: null,
-        reuniones: 0,
-        asambleas: 0,
-        recuperatorios: 0
-      }
+// ══ COMPONENTE INTERNO ════════════════════════════════════
+const DetallesExamen = defineComponent({
+  props: { detalles: Array },
+  setup(props) {
+    return () => {
+      const dets = props.detalles || []
+      if (dets.length === 1 && (dets[0].estado === 'ausente' || dets[0].tipo === 'ausente'))
+        return h('span', { class: 'badge bg-secondary text-white px-2 py-1' }, 'AUSENTE')
+      return h('div', { class: 'd-flex flex-wrap gap-1' }, dets.map(det =>
+        h('span', { key: det.id, class: 'badge border bg-light text-dark px-2 py-1 d-flex align-items-center gap-1' }, [
+          h('span', { class: 'fw-bold text-uppercase' }, det.tipo),
+          h('span', { class: `status-dot ms-1 ${claseDot(det.estado)}` }),
+          h('span', { class: `fw-bold ms-1 ${claseTextoEstado(det.estado)}` }, textoEstado(det.estado)),
+          (det.calificacion && det.estado !== 'no lo hizo' && det.estado !== 'ausente')
+            ? h('span', { class: 'text-muted ms-1' }, `(${det.calificacion})`)
+            : null,
+        ])
+      ))
     }
-    const m = metricas[ex.id_arbitro]
-
-    m.total++
-
-    if (ex.tipo === 'reunion') {
-      const presente = (ex.detalles || []).some(d => d.estado == 4)
-      if (presente) m.reuniones++
-    } else if (ex.tipo === 'asamblea') {
-      m.asambleas++
-    } else if (ex.tipo === 'recuperatorio') {
-      m.recuperatorios++
-    }
-
-    if (!m.ultimo || (ex._ts > m.ultimo._ts)) {
-      m.ultimo = ex
-    }
-  })
-  return metricas
+  },
 })
 
+// ══ STATE ════════════════════════════════════════════════
+
+const arbitros             = ref([])
+const ultimaActividad      = ref({})
+
+const examenesDetalleRaw   = ref([])
+const reunionesDetalleRaw  = ref([])
+
+const soloActivos          = ref(false)
+const cargandoInicial      = ref(true)
+const cargandoDetalle      = ref(false)
+const paginaActual         = ref(1)
+const registrosPorPagina   = 10
+const mostrarFiltrosMobile = ref(false)
+const mostrarModalDetalle  = ref(false)
+const arbitroSeleccionado  = ref({ id: null, apellido: '', nombre: '' })
+const filtroAñoDetalle     = ref('')
+
+const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '' })
+
+// ══ COMPUTEDS: tabla ════════════════════════════════════
 const arbitrosFiltrados = computed(() => {
   const { apellido, nombre, grupo, subgrupo } = filtros
   return arbitros.value.filter(a => {
     if (apellido && !normalizarTexto(a.apellido).includes(normalizarTexto(apellido))) return false
-    if (nombre && !normalizarTexto(a.nombre).includes(normalizarTexto(nombre))) return false
-    if (grupo && String(a.grupo) !== String(grupo)) return false
-    if (subgrupo && String(a.subgrupo) !== String(subgrupo)) return false
+    if (nombre   && !normalizarTexto(a.nombre).includes(normalizarTexto(nombre)))     return false
+    if (grupo    && String(a.grupo) !== String(grupo))                                 return false
+    if (subgrupo && String(a.subgrupo) !== String(subgrupo))                           return false
     return true
   })
 })
 
-const arbitrosOrdenados = computed(() => {
-  return [...arbitrosFiltrados.value].sort((a, b) => String(normalizarTexto(a.apellido)).localeCompare(String(normalizarTexto(b.apellido)), 'es'))
-})
+const arbitrosOrdenados = computed(() =>
+  [...arbitrosFiltrados.value].sort((a, b) =>
+    normalizarTexto(a.apellido).localeCompare(normalizarTexto(b.apellido), 'es')
+  )
+)
 
-const totalPaginas = computed(() => Math.ceil(arbitrosOrdenados.value.length / registrosPorPagina) || 1)
-const totalFiltrados = computed(() => arbitrosOrdenados.value.length)
+const totalFiltrados    = computed(() => arbitrosOrdenados.value.length)
+const totalPaginas      = computed(() => Math.ceil(arbitrosOrdenados.value.length / registrosPorPagina) || 1)
 const arbitrosPaginados = computed(() => {
   const inicio = (paginaActual.value - 1) * registrosPorPagina
   return arbitrosOrdenados.value.slice(inicio, inicio + registrosPorPagina)
 })
 
+// ══ COMPUTEDS: modal ════════════════════════════════════
+const mapearFilasExamenes = (filas) => {
+  const map = {}
+  filas.forEach(row => {
+    const key = `${row.id_evento}_${row.id_arbitro}`
+    if (!map[key]) {
+      map[key] = {
+        id_evento:    row.id_evento,
+        id_arbitro:   row.id_arbitro,
+        tipo:         row.categoria,
+        fecha_examen: row.fecha_examen,
+        titulo:       row.titulo || '',
+        _ts:          parseFecha(row.fecha_examen),
+        detalles:     [],
+      }
+    }
+    map[key].detalles.push({ id: row.id, tipo: row.tipo, calificacion: row.calificacion, estado: row.estado })
+  })
+  return Object.values(map)
+}
+
 const eventosDelArbitroDetalle = computed(() => {
-  if (!arbitroSeleccionado.value.id) return []
-  const eventos = dataGlobal.value.filter(ex => ex.id_arbitro === arbitroSeleccionado.value.id)
-  return eventos.sort((a, b) => (b._ts ?? 0) - (a._ts ?? 0))
+  const todos = []
+
+  for (const ex of mapearFilasExamenes(examenesDetalleRaw.value)) {
+    todos.push({
+      key:      `exam_${ex.id_evento}_${ex.id_arbitro}`,
+      fecha:    ex.fecha_examen,
+      _ts:      ex._ts || 0,
+      tipo:     ex.tipo,
+      titulo:   ex.titulo,
+      fuente:   'examen',
+      detalles: ex.detalles,
+    })
+  }
+
+  const mapaReun = {}
+  for (const row of reunionesDetalleRaw.value) {
+    if (row.tipo !== 'reunion') continue
+    const key = String(row.id_evento)
+    if (!mapaReun[key]) {
+      mapaReun[key] = {
+        key:        `reunion_${row.id_evento}`,
+        fecha:      row.fecha_examen,
+        _ts:        parseFecha(row.fecha_examen),
+        tipo:       'reunion',
+        titulo:     row.titulo || '',
+        fuente:     'reunion',
+        asistencia: normalizarAsistencia(row.asistencia),
+      }
+    }
+  }
+  todos.push(...Object.values(mapaReun))
+
+  return todos.sort((a, b) => (b._ts || 0) - (a._ts || 0))
 })
 
-// ============== EXPORTAR EXCEL ==============
-const exportarExcel = () => { mostrarModalExcel.value = true }
+const añosDetalleArbitro = computed(() => {
+  const set = new Set()
+  for (const ev of eventosDelArbitroDetalle.value) {
+    const año = añoDeFecha(ev.fecha)
+    if (año) set.add(año)
+  }
+  return [...set].sort((a, b) => Number(b) - Number(a))
+})
 
-const ejecutarDescargaExcel = () => {
-  const cols = columnasExcel.value.filter(c => c.visible)
+const eventosFiltradosDetalle = computed(() =>
+  !filtroAñoDetalle.value
+    ? eventosDelArbitroDetalle.value
+    : eventosDelArbitroDetalle.value.filter(ev => añoDeFecha(ev.fecha) === filtroAñoDetalle.value)
+)
 
-  const datos = arbitrosOrdenados.value.map(a => {
-    const fila = {}
-    const m = metricasArbitros.value[a.id]
-
-    cols.forEach(col => {
-      let valor = ''
-      if (col.id === 'reuniones') valor = m?.reuniones || 0
-      else if (col.id === 'asambleas') valor = m?.asambleas || 0
-      else if (col.id === 'recuperatorios') valor = m?.recuperatorios || 0
-      else if (col.id === 'total') valor = m?.total || 0
-      else if (col.id === 'fecha_ultima_actividad') valor = m?.ultimo ? formatFecha(m.ultimo.fecha_examen) : 'Sin actividad'
-      else if (col.id === 'tipo_ultima_actividad') valor = m?.ultimo ? m.ultimo.tipo.toUpperCase() : '-'
-      else valor = a[col.id]
-
-      fila[col.label] = valor || ''
-    })
-    return fila
-  })
-
-  const ws = XLSX.utils.json_to_sheet(datos)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Resumen')
-  XLSX.writeFile(wb, 'Resumen_Rendimiento_AAAB.xlsx')
-  mostrarModalExcel.value = false
-}
-
-// ============== CARGAS Y MÉTODOS ==============
-const verDetalle = (a) => {
-  arbitroSeleccionado.value = { id: a.id, apellido: a.apellido, nombre: a.nombre }
-  mostrarModalDetalle.value = true
-}
-
-const cargarDatosBase = async () => {
-  try {
-    const res = await api.get({ entity: 'examenes', action: 'obtenerExamenes', payload: {} })
-    if ((res.ok || res.success) && res.payload) {
-      const map = {}
-      res.payload.forEach(row => {
-        const key = row.id
-        if (!map[key]) {
-          map[key] = {
-            id: row.id,
-            id_arbitro: row.id_arbitro,
-            tipo: row.tipo,
-            fecha_examen: row.fecha_examen,
-            _ts: parseFecha(row.fecha_examen),
-            detalles: []
-          }
-        }
-        if (row.id_detalle) {
-          map[key].detalles.push({
-            subtipo: row.subtipo,
-            estado: row.estado,
-            calificacion: row.calificacion
-          })
-        }
-      })
-      dataGlobal.value = Object.values(map)
+const statsDetalle = computed(() => {
+  const r = { aprobados: 0, desaprobados: 0, ausentesExamen: 0, noLoHizo: 0, presentesReunion: 0, ausentesReunion: 0 }
+  for (const ev of eventosFiltradosDetalle.value) {
+    if (ev.fuente === 'reunion') {
+      if      (ev.asistencia === 'presente') r.presentesReunion++
+      else if (ev.asistencia === 'ausente')  r.ausentesReunion++
+    } else {
+      for (const det of (ev.detalles || [])) {
+        if      (det.estado === 'aprobado')                            r.aprobados++
+        else if (det.estado === 'desaprobado')                         r.desaprobados++
+        else if (det.estado === 'ausente' || det.tipo === 'ausente')   r.ausentesExamen++
+        else if (det.estado === 'no lo hizo')                          r.noLoHizo++
+      }
     }
+  }
+  return r
+})
+
+// ══ CARGAS ═══════════════════════════════════════════════
+const cargarArbitros = async () => {
+  try {
+    const res = await api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: soloActivos.value } })
+    if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
   } catch (err) { console.error(err) }
 }
 
-const cargarArbitros = async () => {
+const cargarUltimaActividad = async () => {
   try {
-    const res = await api.get({ entity: 'arbitros', action: 'getArbitros' })
-    if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
+    const res = await api.get({ entity: 'arbitros', action: 'obtenerUltimaActividad' })
+    if ((res.ok || res.success) && res.payload) {
+      const mapa = {}
+      res.payload.forEach(row => {
+        mapa[row.id_arbitro] = { fecha: row.fecha, tipo: row.tipo, titulo: row.titulo || '' }
+      })
+      ultimaActividad.value = mapa
+    }
   } catch (err) { console.error(err) }
 }
 
 const cargarTodo = async () => {
   cargandoInicial.value = true
-  await Promise.all([cargarArbitros(), cargarDatosBase()])
+  await Promise.all([cargarArbitros(), cargarUltimaActividad()])  // ← solo estas dos
   cargandoInicial.value = false
 }
 
-const limpiarFiltros = () => { filtros.apellido = ''; filtros.nombre = ''; filtros.grupo = ''; filtros.subgrupo = '' }
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  if (window.innerWidth <= MOBILE_BREAKPOINT) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
+// ══ MODAL ════════════════════════════════════════════════
+const verDetalleArbitro = async (a) => {
+  arbitroSeleccionado.value = { id: a.id, apellido: a.apellido, nombre: a.nombre }
+  filtroAñoDetalle.value    = ''
+  mostrarModalDetalle.value = true
+  examenesDetalleRaw.value  = []
+  reunionesDetalleRaw.value = []
+  cargandoDetalle.value     = true
+  try {
+    const [resEx, resRe] = await Promise.all([
+      api.get({ entity: 'examenes',  action: 'obtenerExamenesArbitro',    payload: { idArbitro: a.id } }),
+      api.get({ entity: 'reuniones', action: 'obtenerAsistenciasArbitro', payload: { idArbitro: a.id } }),
+    ])
+    if ((resEx.ok || resEx.success) && resEx.payload) examenesDetalleRaw.value  = resEx.payload
+    if ((resRe.ok || resRe.success) && resRe.payload) reunionesDetalleRaw.value = resRe.payload
+  } catch (err) { console.error('Error cargando detalle:', err) }
+  finally { cargandoDetalle.value = false }
 }
+
+// ══ EXCEL ════════════════════════════════════════════════
+
+const exportarExcelDetalle = () => {
+  const { apellido, nombre } = arbitroSeleccionado.value
+
+  const filas = eventosFiltradosDetalle.value.map(ev => {
+    let resultado = ''
+    if (ev.fuente === 'reunion') {
+      resultado = ev.asistencia === 'presente' ? 'PRESENTE'
+                : ev.asistencia === 'ausente'  ? 'AUSENTE'
+                : 'SIN INFO'
+    } else {
+      resultado = (ev.detalles || []).map(d => {
+        const est = d.estado === 'ausente' || d.tipo === 'ausente'
+          ? 'AUSENTE'
+          : d.estado.toUpperCase()
+        const cal = d.calificacion && d.estado !== 'no lo hizo' && d.estado !== 'ausente'
+          ? ` (${d.calificacion})`
+          : ''
+        return `${d.tipo.toUpperCase()}: ${est}${cal}`
+      }).join(' | ')
+    }
+    return {
+      Fecha:     formatFecha(ev.fecha),
+      Año:       añoDeFecha(ev.fecha),
+      Tipo:      ev.tipo,
+      Título:    ev.titulo,
+      Resultado: resultado,
+    }
+  })
+
+  const ws = XLSX.utils.json_to_sheet(filas)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Historial')
+  XLSX.writeFile(wb, `historial_${apellido}_${nombre}_${hoy()}.xlsx`)
+}
+// ══ MISC ═════════════════════════════════════════════════
+const limpiarFiltros = () => Object.keys(filtros).forEach(k => (filtros[k] = ''))
+const cambiarPagina  = (delta) => {
+  paginaActual.value += delta
+  if (window.innerWidth <= MOBILE_BREAKPOINT)
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
+}
+
+watch(filtros,      () => { paginaActual.value = 1 }, { deep: true })
+watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
+
+watch(soloActivos, async () => {
+  cargandoInicial.value = true
+  await cargarArbitros()
+  cargandoInicial.value = false
+})
 
 onMounted(cargarTodo)
 </script>
@@ -475,8 +629,8 @@ onMounted(cargarTodo)
 <style scoped>
 .full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
 .admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
-.status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 .animate__animated { animation-duration: 0.4s; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 .tabla-container { overflow-x: auto; }
 .tabla-fija { border-collapse: separate; border-spacing: 0; }
 .tabla-fija th, .tabla-fija td { border-left: none !important; border-right: none !important; }
@@ -485,8 +639,8 @@ onMounted(cargarTodo)
 .tabla-fija tbody .col-fija { background-color: #ffffff; }
 .tabla-fija tbody tr.bg-danger-subtle .col-fija { background-color: #f8d7da; }
 .col-id       { left: 0;     min-width: 60px;  }
-.col-acciones { left: 60px;  min-width: 70px;  }
-.col-apellido { left: 130px; min-width: 150px; }
-.col-nombre   { left: 280px; min-width: 150px; }
+.col-acciones { left: 60px;  min-width: 60px;  }
+.col-apellido { left: 120px; min-width: 150px; }
+.col-nombre   { left: 270px; min-width: 150px; }
 .col-nombre::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 1px; background: linear-gradient(to right, rgba(0,0,0,0.1), transparent); }
 </style>
