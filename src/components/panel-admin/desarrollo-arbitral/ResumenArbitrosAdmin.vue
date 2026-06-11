@@ -512,14 +512,19 @@ const statsDetalle = computed(() => {
     if (ev.fuente === 'reunion') {
       if      (ev.asistencia === 'presente') r.presentesReunion++
       else if (ev.asistencia === 'ausente')  r.ausentesReunion++
-    } else {
-      for (const det of (ev.detalles || [])) {
-        if      (det.estado === 'aprobado')                            r.aprobados++
-        else if (det.estado === 'desaprobado')                         r.desaprobados++
-        else if (det.estado === 'ausente' || det.tipo === 'ausente')   r.ausentesExamen++
-        else if (det.estado === 'no lo hizo')                          r.noLoHizo++
-      }
+} else {
+  const esAusenteTotal = ev.detalles.length === 1 &&
+    (ev.detalles[0].estado === 'ausente' || ev.detalles[0].tipo === 'ausente')
+  if (esAusenteTotal) {
+    r.ausentesExamen++
+  } else {
+    for (const det of (ev.detalles || [])) {
+      if      (det.estado === 'aprobado')    r.aprobados++
+      else if (det.estado === 'desaprobado') r.desaprobados++
+      else if (det.estado === 'no lo hizo')  r.noLoHizo++
     }
+  }
+}
   }
   return r
 })
