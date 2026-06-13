@@ -306,9 +306,6 @@
           <div v-if="formExamen.asistencia === 'presente'" class="col-12 mt-3 animate__animated animate__fadeIn">
             <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-2 pb-1">
               <span class="small fw-bold text-muted text-uppercase">Evaluaciones</span>
-              <button type="button" @click="agregarDetalle" class="btn btn-sm btn-danger py-0 d-flex align-items-center gap-1">
-                <span class="material-icons" style="font-size: 16px;">add</span> Agregar Tipo
-              </button>
             </div>
             <div v-if="formExamen.tipo === 'asamblea'" class="alert alert-info py-2 px-3 small mb-3 border-info-subtle">
               <i class="bi bi-lightbulb me-1"></i>
@@ -347,6 +344,11 @@
                   placeholder="Ej: 8 / 75%">
               </div>
 
+            </div>
+            <div class="d-flex justify-content-end">
+              <button type="button" @click="agregarDetalle" class="btn btn-sm btn-danger py-0 d-flex align-items-center gap-1">
+                <span class="material-icons" style="font-size: 16px;">add</span> Agregar Tipo
+              </button>
             </div>
           </div>
         </div>
