@@ -178,11 +178,11 @@ const menuItemsFiltrados = computed(() => {
   return itemsDinamicos.filter((item) => !item.rolesPermitidos || item.rolesPermitidos.includes(sesion.rol));
 });
 
-const avisos = ref({ reunion: [], urgente: [], cumpleanos: [], recordatorio: [] });
+const avisos = ref({ reunion: [], urgente: [], cumpleanos: [], recordatorio: [], recuperatorio: [], asamblea: [] });
 const cargando = ref(true);
 
 const proximasFechas = computed(() => {
-  const combinados = [...(avisos.value.reunion || []), ...(avisos.value.urgente || [])];
+  const combinados = [...(avisos.value.reunion || []), ...(avisos.value.urgente || []), ...(avisos.value.recuperatorio || []), ...(avisos.value.asamblea || [])];
   return combinados.sort((a, b) => new Date(a.fecha_evento) - new Date(b.fecha_evento));
 });
 

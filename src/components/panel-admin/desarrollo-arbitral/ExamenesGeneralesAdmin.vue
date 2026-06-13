@@ -150,7 +150,15 @@
                   <td class="text-center text-dark">{{ a.grupo || '-' }}</td>
                   <td class="text-center text-dark">{{ a.subgrupo || '-' }}</td>
                   <td class="text-center">
-                    <span class="badge bg-dark rounded-pill px-2 py-1">{{ (examenesPorArbitro[a.id] || []).length }}</span>
+                    <div class="d-flex justify-content-center gap-1">
+                      <span v-if="conteoTiposPorArbitro[a.id]?.asamblea" class="badge bg-dark text-white rounded-pill px-2 py-1">
+                        {{ conteoTiposPorArbitro[a.id].asamblea }}
+                      </span>
+                      <span v-if="conteoTiposPorArbitro[a.id]?.recuperatorio" class="badge bg-warning text-dark rounded-pill px-2 py-1">
+                        {{ conteoTiposPorArbitro[a.id].recuperatorio }}
+                      </span>
+                      <span v-if="!conteoTiposPorArbitro[a.id]?.asamblea && !conteoTiposPorArbitro[a.id]?.recuperatorio" class="text-muted">—</span>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -174,7 +182,12 @@
                       <strong>Grupo:</strong> {{ a.grupo || '-' }}
                       <template v-if="a.subgrupo"> (Sub: {{ a.subgrupo }})</template>
                     </span>
-                    <span class="small"><strong>Exámenes cargados:</strong> {{ (examenesPorArbitro[a.id] || []).length }}</span>
+                    <span class="small d-flex align-items-center gap-1">
+                    <strong>Exámenes:</strong>
+                    <span v-if="conteoTiposPorArbitro[a.id]?.asamblea" class="badge bg-dark text-white rounded-pill px-2">{{ conteoTiposPorArbitro[a.id].asamblea }}</span>
+                    <span v-if="conteoTiposPorArbitro[a.id]?.recuperatorio" class="badge bg-warning text-dark rounded-pill px-2">{{ conteoTiposPorArbitro[a.id].recuperatorio }}</span>
+                    <span v-if="!conteoTiposPorArbitro[a.id]?.asamblea && !conteoTiposPorArbitro[a.id]?.recuperatorio">—</span>
+                  </span>
                   </div>
                   <div class="d-flex gap-2">
                     <button @click="abrirGestionExamenes(a)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
@@ -212,7 +225,7 @@
           <span class="fw-bold fs-5">Exámenes de {{ arbitroEnModal.apellido }}, {{ arbitroEnModal.nombre }}</span>
           <div class="text-muted small mt-1">
             <span v-if="vistaModal === 'lista'">Asambleas y recuperatorios — editá uno o agregá nuevo</span>
-            <span v-else>{{ modoFormulario === 'editar' ? 'Editando examen #' + formExamen.id : 'Nuevo examen' }}</span>
+            <span v-else>{{ modoFormulario === 'editar' ? 'Editando examen' : 'Nuevo examen' }}</span>
           </div>
         </div>
       </template>
@@ -238,9 +251,14 @@
                   <span class="badge ms-2 text-uppercase" :class="badgeTipo(ex.tipo)">{{ ex.tipo }}</span>
                   <span v-if="ex.titulo" class="text-muted small ms-2 fst-italic">{{ ex.titulo }}</span>
                 </div>
-                <button @click="iniciarEditarExamen(ex)" class="btn btn-sm btn-light border shadow-sm text-primary py-0 px-2">
-                  <span class="material-icons" style="font-size: 16px; top: 2px; position:relative;">edit</span>
-                </button>
+                <div class="d-flex gap-1">
+                  <button @click="iniciarEditarExamen(ex)" class="btn btn-sm btn-light border shadow-sm text-primary py-0 px-2">
+                    <span class="material-icons" style="font-size: 16px; top: 2px; position:relative;">edit</span>
+                  </button>
+                  <button @click="confirmarBorrarExamen(ex)" class="btn btn-sm btn-light border shadow-sm text-danger py-0 px-2">
+                    <span class="material-icons" style="font-size: 16px; top: 2px; position:relative;">delete</span>
+                  </button>
+                </div>
               </div>
               <DetallesExamen :detalles="ex.detalles" />
             </div>
@@ -329,28 +347,20 @@
                   placeholder="Ej: 8 / 75%">
               </div>
 
-              <div class="col-md-1 text-end">
-                <button v-if="formExamen.detalles.length > 1" type="button"
-                  @click="quitarDetalle(index)"
-                  class="btn btn-sm btn-danger shadow-sm px-2 w-100">
-                  <span class="material-icons" style="font-size: 16px;">delete</span>
-                </button>
-              </div>
-
             </div>
           </div>
         </div>
       </form>
 
-      <template #footer v-if="vistaModal !== 'lista'">
-        <button @click="volverAListado" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">
-          <i class="bi bi-chevron-left me-1"></i> Volver al listado
-        </button>
-        <button type="submit" form="formExamen" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
-          <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
-          {{ modoFormulario === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR EXAMEN' }}
-        </button>
-      </template>
+<template #footer v-if="vistaModal !== 'lista'">
+  <button @click="volverAListado" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">
+    <i class="bi bi-chevron-left me-1"></i> Volver al listado
+  </button>
+  <button type="submit" form="formExamen" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
+    <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
+    {{ modoFormulario === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR EXAMEN' }}
+  </button>
+</template>
     </ModalBase>
 
     <ModalBase :show="mostrarModalDetalle" @close="mostrarModalDetalle = false" icono="person_search" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="950px">
@@ -432,7 +442,7 @@
                     class="d-flex align-items-center py-1 border-bottom border-secondary-subtle" style="font-size: 0.75rem;">
                     <span class="status-dot me-2 flex-shrink-0" :class="claseDot(item.estado)"></span>
                     <span class="text-dark fw-bold me-2 font-monospace" style="min-width: 75px;">{{ formatFecha(item.fecha_examen) }}</span>
-                    <span class="badge bg-light text-dark border me-2 text-uppercase flex-shrink-0 d-none d-sm-inline" style="font-size: 0.6rem;">{{ item.tipo }}</span>
+                    <span class="badge me-2 text-uppercase flex-shrink-0 d-none d-sm-inline" :class="badgeTipo(item.tipo)" style="font-size: 0.6rem;">{{ item.tipo }}</span>
                     <span class="fw-bold flex-grow-1 text-end text-sm-start" :class="claseTextoEstado(item.estado)">{{ textoEstado(item.estado) }}</span>
                     <span v-if="item.calificacion && item.estado !== 'no lo hizo' && item.estado !== 'ausente'" class="text-muted ms-2 fw-bold">({{ item.calificacion }})</span>
                   </div>
@@ -516,7 +526,7 @@ const DetallesExamen = defineComponent({
   setup(props) {
     return () => {
       const dets = props.detalles || []
-      if (dets.length === 1 && dets[0].estado === 'ausente')
+      if (dets.length === 1 && (dets[0].estado === 'ausente' || dets[0].tipo === 'ausente'))
         return h('span', { class: 'badge bg-secondary text-white px-2 py-1' }, 'AUSENTE')
       return h('div', { class: 'd-flex flex-wrap gap-1' }, dets.map(det =>
         h('span', {
@@ -583,6 +593,17 @@ const examenesPorArbitro = computed(() =>
     return map
   }, {})
 )
+
+const conteoTiposPorArbitro = computed(() => {
+  const map = {}
+  for (const [id, lista] of Object.entries(examenesPorArbitro.value)) {
+    map[id] = {
+      asamblea:      lista.filter(e => e.tipo === 'asamblea').length,
+      recuperatorio: lista.filter(e => e.tipo === 'recuperatorio').length,
+    }
+  }
+  return map
+})
 
 const añosDisponibles = computed(() => {
   const set = new Set()
@@ -772,7 +793,6 @@ const ejecutarVolverAListado = () => {
 }
 
 const agregarDetalle = () => formExamen.value.detalles.push(detallePlantilla())
-const quitarDetalle  = (i) => formExamen.value.detalles.splice(i, 1)
 
 const iniciarNuevoExamen = () => {
   formExamen.value = { ...formExamenVacio(), id_arbitro: arbitroEnModal.value.id }
@@ -780,14 +800,15 @@ const iniciarNuevoExamen = () => {
 }
 
 const iniciarEditarExamen = (ex) => {
-  const match = eventosParaArbitro.value.find(ev => ev.id && String(ev.id) === String(ex.id_evento)) ?? null
+  const match    = eventosParaArbitro.value.find(ev => ev.id && String(ev.id) === String(ex.id_evento)) ?? null
+  const isAusente = ex.detalles.length === 1 && ex.detalles[0].estado === 'ausente'  // ← nuevo
   formExamen.value = {
     id_arbitro:   ex.id_arbitro,
     id_evento:    match ? String(match.id) : null,
     fecha_examen: fechaParaInput(ex.fecha_examen),
     tipo:         ex.tipo ?? '',
-    asistencia:   'presente',
-    detalles:     JSON.parse(JSON.stringify(ex.detalles)),
+    asistencia:   isAusente ? 'ausente' : 'presente',                                // ← nuevo
+    detalles:     isAusente ? [detallePlantilla()] : JSON.parse(JSON.stringify(ex.detalles)),
   }
   if (!formExamen.value.detalles.length) formExamen.value.detalles.push(detallePlantilla())
   modoFormulario.value = 'editar'; vistaModal.value = 'form'; tomarSnapshotForm()
@@ -844,14 +865,14 @@ const llamarAPI = async (action, successMsg) => {
   if (!validarFormulario()) return
   cargando.value = true
   try {
-    // Paso 1: asistencia — siempre, presente o ausente
+    // Paso 1: asistencia — siempre
     const resAsistencia = await api.post({
       entity: 'reuniones',
       action: 'registrarAsistenciaArbitro',
       payload: {
-        idArbitro:  formExamen.value.id_arbitro || arbitroEnModal.value.id,
-        idEvento:   eventoEnForm.value?.id ?? null,
-        tipo: formExamen.value.asistencia,
+        idArbitro: formExamen.value.id_arbitro || arbitroEnModal.value.id,
+        idEvento:  eventoEnForm.value?.id ?? null,
+        tipo:      formExamen.value.asistencia,
       },
     })
     if (!resAsistencia.ok && !resAsistencia.success) {
@@ -859,13 +880,19 @@ const llamarAPI = async (action, successMsg) => {
       return
     }
 
-    // Paso 2: evaluaciones — solo si estuvo presente
-    if (formExamen.value.asistencia === 'presente') {
-      const res = await api.post({ entity: 'examenes', action, payload: prepararPayload() })
-      if (!res.ok && !res.success) {
-        notificar({ titulo: 'Error', mensaje: res.message || 'Ocurrió un error.', tipo: 'danger' })
-        return
-      }
+    // Paso 2: evaluaciones — siempre; si ausente, detalle sintético
+    const payload = formExamen.value.asistencia === 'ausente'
+      ? {
+          idEvento:  eventoEnForm.value?.id ?? null,
+          idArbitro: formExamen.value.id_arbitro || arbitroEnModal.value.id,
+          detalles:  [{ tipo: 'ausente', calificacion: '', estado: 'ausente' }],
+        }
+      : prepararPayload()
+
+    const res = await api.post({ entity: 'examenes', action, payload })
+    if (!res.ok && !res.success) {
+      notificar({ titulo: 'Error', mensaje: res.message || 'Ocurrió un error.', tipo: 'danger' })
+      return
     }
 
     notificar({ titulo: '¡Éxito!', mensaje: successMsg, tipo: 'success' })
@@ -882,6 +909,42 @@ const llamarAPI = async (action, successMsg) => {
 
 const confirmarAlta    = () => llamarAPI('guardarExamen', 'Examen creado correctamente.')
 const confirmarEdicion = () => llamarAPI('guardarExamen', 'Examen actualizado correctamente.')
+
+const borrarExamen = async (idEvento, idArbitro) => {
+  cargando.value = true
+  try {
+    const res = await api.post({
+      entity: 'examenes',
+      action: 'borrarExamen',
+      payload: { idEvento, idArbitro },
+    })
+    if (!res.ok && !res.success) {
+      notificar({ titulo: 'Error', mensaje: res.message || 'No se pudo borrar el examen.', tipo: 'danger' })
+      return
+    }
+    notificar({ titulo: '¡Éxito!', mensaje: 'Examen borrado correctamente.', tipo: 'success' })
+    await Promise.all([cargarExamenesArbitro(idArbitro), cargarResumenExamenes()])  // ← ambos en paralelo
+    vistaModal.value  = 'lista'
+    formExamen.value  = formExamenVacio()
+    formExamenSnapshot.value = ''
+  } catch {
+    notificar({ titulo: 'Error Fatal', mensaje: 'Fallo de conexión con el servidor.', tipo: 'danger' })
+  } finally {
+    cargando.value = false
+  }
+}
+
+
+const confirmarBorrarExamen = (ex) => {
+  const idEvento  = ex ? ex.id_evento  : (eventoEnForm.value?.id ?? null)
+  const idArbitro = ex ? ex.id_arbitro : (formExamen.value.id_arbitro || arbitroEnModal.value.id)
+  notificar({
+    titulo:      'Confirmar borrado',
+    mensaje:     '¿Estás seguro de que querés borrar este examen?',
+    tipo:        'danger',
+    alConfirmar: () => borrarExamen(idEvento, idArbitro),
+  })
+}
 
 // ============== CARGAS ==============
 const mapearFilasExamenes = (filas) => {
@@ -910,17 +973,6 @@ const mapearFilasExamenes = (filas) => {
     })
   })
   return Object.values(map)
-}
-
-const cargarDatos = async () => {
-  try {
-    const res = await api.get({ entity: 'examenes', action: 'obtenerExamenes', payload: {} })
-    if ((res.ok || res.success) && res.payload) {
-      examenes.value = mapearFilasExamenes(res.payload)
-    } else {
-      notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los exámenes.', tipo: 'danger' })
-    }
-  } catch (err) { console.error(err) }
 }
 
 const cargarArbitros = async () => {
@@ -964,9 +1016,31 @@ const cargarExamenesArbitro = async (idArbitro) => {
   } catch (err) { console.error(err) }
 }
 
+const cargarResumenExamenes = async () => {
+  try {
+    const res = await api.get({ entity: 'examenes', action: 'obtenerResumenExamenes' })
+    if ((res.ok || res.success) && res.payload) {
+      // Solo poblar lo necesario para los conteos, sin pisar datos ya cargados de modales
+      const yaLoadedIds = new Set(examenes.value.map(ex => `${ex.id_evento}_${ex.id_arbitro}`))
+      const nuevos = res.payload
+        .filter(row => !yaLoadedIds.has(`${row.id_evento}_${row.id_arbitro}`))
+        .map(row => ({
+          id:        `${row.id_evento}_${row.id_arbitro}`,
+          id_evento:  row.id_evento,
+          id_arbitro: row.id_arbitro,
+          tipo:       row.categoria,
+          categoria:  row.categoria,
+          _ts:        0,
+          detalles:   [],
+        }))
+      examenes.value = [...examenes.value, ...nuevos]
+    }
+  } catch (err) { console.error(err) }
+}
+
 const cargarTodo = async () => {
   cargandoInicial.value = true
-  await Promise.all([cargarArbitros(), cargarDatos(), cargarEventos(), cargarGrupos()])
+  await Promise.all([cargarArbitros(), cargarEventos(), cargarGrupos(), cargarResumenExamenes()])
   cargandoInicial.value = false
 }
 
