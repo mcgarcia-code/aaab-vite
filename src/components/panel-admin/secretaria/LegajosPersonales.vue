@@ -369,10 +369,11 @@
           </div>
           <div class="col-md-2">
             <label class="small fw-bold text-dark mb-1">Grupo</label>
-            <select v-model="formModal.grupo" class="form-select shadow-none border-secondary-subtle">
-              <option value="LH">LH</option><option value="Pre Liga">Pre Liga</option><option value="SR">SR</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+            <select v-model="formModal.id_grupo" class="form-select shadow-none border-secondary-subtle">
+              <option v-for="(grupo,k) in grupos" :key='k' :value="grupo.id">{{ grupo.nombre }} {{ grupo.subgrupo }}</option>
             </select>
           </div>
+          <!--
           <div class="col-md-2" v-if="formModal.grupo == '3'">
             <label class="small fw-bold text-dark mb-1">Subgrupo</label>
             <select v-model="formModal.subgrupo" class="form-select shadow-none border-secondary-subtle">
@@ -380,6 +381,7 @@
             </select>
           </div>
           <div class="col-md-2" v-else></div>
+        -->
           <div class="col-md-2">
             <label class="small fw-bold text-dark mb-1">Apto Médico</label>
             <select v-model="formModal.apto_medico" class="form-select shadow-none border-secondary-subtle">
