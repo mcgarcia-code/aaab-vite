@@ -12,6 +12,7 @@ const routes = [
   { path: '/designaciones', name: 'designaciones', component: () => import('../views/public/DesignacionesView.vue') },
   { path: '/tribunal-de-etica', name: 'tribunalEtica', component: () => import('../views/public/TribunalEticaView.vue') },
   { path: '/sanciones', name: 'sanciones', component: () => import('../views/public/SancionesView.vue') },
+  { path: '/glosario', name: 'glosario', component: () => import('../views/public/GlosarioView.vue') },
   { path: '/contactos-celulares', name: 'ContactosCelulares', component: () => import('../views/public/ContactosCelularesView.vue') },
   { path: '/coordinadores-base', name: 'CoordinadoresBase', component: () => import('../views/public/CoordinadoresDatosView.vue') },
 
