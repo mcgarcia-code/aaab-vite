@@ -124,17 +124,20 @@
 
                   <!-- Última actividad -->
                   <td class="text-center">
-                    <template v-if="ultimaActividad[a.id]">
+                    <template v-if="a.ultimaActividad">
                       <div class="d-flex align-items-center justify-content-center gap-1 flex-wrap">
                         <span class="badge bg-light text-muted border font-monospace" style="font-size: 0.65rem;">
-                          {{ añoDeFecha(ultimaActividad[a.id].fecha) }}
+                          {{ a.ultimaActividad.fecha }}
                         </span>
-                        <span class="badge text-uppercase" :class="badgeTipo(ultimaActividad[a.id].tipo)" style="font-size: 0.65rem;">
-                          {{ ultimaActividad[a.id].tipo }}
+
+                        <span class="badge text-uppercase" :class="badgeTipo(a.ultimaActividad.categoria)" style="font-size: 0.65rem;">
+                          {{ a.ultimaActividad.categoria }}
                         </span>
+                        <!--
                         <span class="text-muted fst-italic text-truncate d-none d-lg-inline" style="max-width: 85px; font-size: 0.7rem;">
                           {{ ultimaActividad[a.id].titulo }}
                         </span>
+                        -->
                       </div>
                     </template>
                     <span v-else class="text-muted">—</span>
