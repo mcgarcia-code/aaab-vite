@@ -29,6 +29,12 @@
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
           {{ cargando ? 'INGRESANDO...' : 'ENTRAR AL PORTAL' }}
         </button>
+
+        <div class="text-center mt-3">
+          <router-link to="/olvide-password" class="text-danger small fw-bold text-decoration-none support-link">
+            ¿Olvidó su contraseña?
+          </router-link>
+        </div>
       </form>
 
       <div class="text-center mt-4 pt-4 border-top border-light-subtle">
