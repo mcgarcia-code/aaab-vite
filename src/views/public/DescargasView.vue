@@ -174,7 +174,7 @@ const categorias = ref([
     documentos: [
       {
         nombre: 'Catálogo IHF Español',
-        url: 'https://docs.google.com/document/d/13ZOhx1FsbbT09jp1QObL25IXxrEw_luH/edit?usp=sharing&ouid=110583671843914808563&rtpof=true&sd=true',
+        url: 'https://drive.google.com/file/d/1eh384p7w8QAQx0YmqR6I1e2IiXCid5TF/view?usp=sharing',
       },
       {
         nombre: 'Catálogo IHF Inglés',
