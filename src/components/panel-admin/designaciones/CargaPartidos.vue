@@ -42,9 +42,20 @@
             </button>
 
             <button
-              @click="mostrarModalPublicar = true"
+              @click="abrirModalPublicar('actualizar')"
+              class="btn btn-warning shadow-sm py-2 d-flex align-items-center gap-2 text-dark"
+              :disabled="designaciones.length === 0"
+              title="Reemplaza la última publicación sin duplicarla"
+            >
+              <span class="material-icons fs-6">sync</span>
+              <span class="fw-bold d-none d-md-inline small">Actualizar</span>
+            </button>
+
+            <button
+              @click="abrirModalPublicar('publicar')"
               class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white"
               :disabled="designaciones.length === 0"
+              title="Primera publicación de esta designación"
             >
               <span class="material-icons fs-6">cloud_upload</span>
               <span class="fw-bold d-none d-md-inline small">Publicar</span>
@@ -155,8 +166,8 @@
                         <button
                           @click="abrirSelectorArbitro(p, 1)"
                           class="celda-arbitro"
-                          :class="{ 'sin-match': p.arbitro_1 && !p.id_arb1, 'vacio': !p.arbitro_1 }"
-                          :title="p.arbitro_1 && !p.id_arb1 ? 'Sin match en el padrón: ' + p.arbitro_1 : (p.arbitro_1 || 'Asignar árbitro')"
+                          :class="{ 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.arbitro_1 }"
+                          :title="tituloCelda(p, 1)"
                         >
                           {{ p.arbitro_1 || '— Asignar —' }}
                         </button>
@@ -165,8 +176,8 @@
                         <button
                           @click="abrirSelectorArbitro(p, 2)"
                           class="celda-arbitro"
-                          :class="{ 'sin-match': p.arbitro_2 && !p.id_arb2, 'vacio': !p.arbitro_2 }"
-                          :title="p.arbitro_2 && !p.id_arb2 ? 'Sin match en el padrón: ' + p.arbitro_2 : (p.arbitro_2 || 'Asignar árbitro')"
+                          :class="{ 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.arbitro_2 }"
+                          :title="tituloCelda(p, 2)"
                         >
                           {{ p.arbitro_2 || '— Asignar —' }}
                         </button>
@@ -189,21 +200,25 @@
       </div>
     </div>
 
-    <div v-if="hayCambios" class="barra-cambios shadow-lg">
-      <div class="d-flex align-items-center gap-3 flex-wrap justify-content-center">
-        <span class="text-white small fw-bold">
-          <i class="bi bi-pencil-square me-1"></i>
-          {{ cantidadCambios }} {{ cantidadCambios === 1 ? 'cambio sin guardar' : 'cambios sin guardar' }}
-        </span>
-        <div class="d-flex gap-2">
-          <button @click="descartarCambios" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold" :disabled="guardando">
-            Descartar
-          </button>
-          <button @click="guardarCambios" class="btn btn-sm btn-success rounded-pill px-4 fw-bold shadow-sm" :disabled="guardando">
-            <span v-if="guardando" class="spinner-border spinner-border-sm me-2"></span>
-            {{ guardando ? 'Guardando...' : 'Guardar Cambios' }}
-          </button>
-        </div>
+    <div v-if="hayCambios || estadoGuardado" class="barra-cambios shadow-lg">
+      <div class="d-flex align-items-center gap-2">
+        <template v-if="estadoGuardado === 'guardando'">
+          <span class="spinner-border spinner-border-sm text-white"></span>
+          <span class="text-white small fw-bold">Guardando...</span>
+        </template>
+        <template v-else-if="estadoGuardado === 'guardado'">
+          <i class="bi bi-check-circle-fill text-success"></i>
+          <span class="text-white small fw-bold">Guardado</span>
+        </template>
+        <template v-else-if="estadoGuardado === 'error'">
+          <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+          <span class="text-white small fw-bold">No se pudo guardar</span>
+          <button @click="guardarAhora" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold ms-1">Reintentar</button>
+        </template>
+        <template v-else>
+          <i class="bi bi-pencil-square text-white-50"></i>
+          <span class="text-white small fw-bold">Cambios sin guardar</span>
+        </template>
       </div>
     </div>
 
@@ -226,6 +241,16 @@
         <button @click="asignarArbitro(null)" class="opcion-arbitro text-danger fw-bold">
           — Sin asignar —
         </button>
+
+        <button
+          v-if="busquedaArbitro.trim() && arbitrosFiltrados.length === 0"
+          @click="asignarArbitroLibre(busquedaArbitro)"
+          class="opcion-arbitro text-primary fw-bold d-flex align-items-center gap-2"
+        >
+          <span class="material-icons" style="font-size: 16px;">person_add</span>
+          Usar "{{ busquedaArbitro.trim().toUpperCase() }}" (árbitro externo)
+        </button>
+
         <button
           v-for="a in arbitrosFiltrados"
           :key="a.id"
@@ -234,10 +259,21 @@
         >
           {{ a.apellido }}, {{ a.nombre }}
         </button>
-        <p v-if="arbitrosFiltrados.length === 0" class="text-muted small text-center m-0 py-3">
-          No se encontraron árbitros con esa búsqueda.
-        </p>
+
+        <button
+          v-if="busquedaArbitro.trim() && arbitrosFiltrados.length > 0"
+          @click="asignarArbitroLibre(busquedaArbitro)"
+          class="opcion-arbitro text-primary d-flex align-items-center gap-2 border-top"
+        >
+          <span class="material-icons" style="font-size: 16px;">person_add</span>
+          Usar "{{ busquedaArbitro.trim().toUpperCase() }}" como árbitro externo
+        </button>
       </div>
+
+      <p class="text-muted small mt-2 mb-0">
+        <i class="bi bi-info-circle me-1"></i>
+        Si el árbitro no está en el padrón (ej: viene del interior), escribí su nombre y usá la opción azul. Queda designado pero no le aparece en su panel.
+      </p>
     </ModalBase>
 
     <ModalBase
@@ -297,20 +333,25 @@
 
     <ModalBase
       :show="mostrarModalPublicar"
-      titulo="Publicar Designaciones"
-      icono="publish"
+      :titulo="modoPublicacion === 'actualizar' ? 'Actualizar Designaciones' : 'Publicar Designaciones'"
+      :icono="modoPublicacion === 'actualizar' ? 'sync' : 'publish'"
       colorIcono="bg-danger text-white"
       maxWidth="600px"
       @close="mostrarModalPublicar = false"
     >
-      <div class="alert alert-info small py-2 px-3 d-flex align-items-center gap-2">
+      <div v-if="modoPublicacion === 'actualizar'" class="alert alert-warning small py-2 px-3 d-flex align-items-center gap-2">
+        <i class="bi bi-arrow-repeat"></i>
+        <span>Se <strong>reemplaza la última publicación</strong> con los {{ designaciones.length }} partidos actuales: mismo lugar en el historial público (sin duplicar) y se actualizan los partidos en el panel de los árbitros.</span>
+      </div>
+
+      <div v-else class="alert alert-info small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-info-circle-fill"></i>
-        <span>Se publicarán los <strong>{{ designaciones.length }}</strong> partidos: se genera el <strong>PDF</strong> para la web pública y cada árbitro verá sus partidos en su panel.</span>
+        <span>Se publicarán los <strong>{{ designaciones.length }}</strong> partidos como una <strong>publicación nueva</strong>: se genera el PDF para la web pública y cada árbitro verá sus partidos en su panel.</span>
       </div>
 
       <div v-if="hayCambios" class="alert alert-primary small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-pencil-square"></i>
-        <span>Tenés <strong>{{ cantidadCambios }}</strong> {{ cantidadCambios === 1 ? 'cambio pendiente' : 'cambios pendientes' }}: se van a guardar automáticamente antes de publicar.</span>
+        <span>Hay cambios recientes: se terminan de guardar automáticamente antes de {{ modoPublicacion === 'actualizar' ? 'actualizar' : 'publicar' }}.</span>
       </div>
 
       <div v-if="totalSinMatch > 0" class="alert alert-warning small py-2 px-3 d-flex align-items-center gap-2">
@@ -352,7 +393,8 @@
           :disabled="publicando"
         >
           <span v-if="publicando" class="spinner-border spinner-border-sm me-2"></span>
-          {{ publicando ? 'Publicando...' : 'Publicar Ahora' }}
+          <template v-if="publicando">{{ modoPublicacion === 'actualizar' ? 'Actualizando...' : 'Publicando...' }}</template>
+          <template v-else>{{ modoPublicacion === 'actualizar' ? 'Actualizar Ahora' : 'Publicar Ahora' }}</template>
         </button>
       </template>
     </ModalBase>
@@ -397,7 +439,9 @@ const partidosImportados = ref([])
 const sinMatch = ref(0)
 const fechaManual = ref('')
 
-const guardando = ref(false)
+const estadoGuardado = ref('') // '' | 'pendiente' | 'guardando' | 'guardado' | 'error'
+let timerAutoguardado = null
+let timerOcultar = null
 
 const mostrarSelectorArbitro = ref(false)
 const seleccionArbitro = ref(null)
@@ -405,6 +449,7 @@ const busquedaArbitro = ref('')
 
 const mostrarModalPublicar = ref(false)
 const publicando = ref(false)
+const modoPublicacion = ref('publicar')
 const formPublicar = reactive({
   torneo: '',
   fecha: ''
@@ -546,7 +591,10 @@ const totalSinMatch = computed(() => {
 /* ====================================================
    EDICION INLINE
    ==================================================== */
-const marcar = (p) => { p._dirty = true }
+const marcar = (p) => {
+  p._dirty = true
+  programarAutoguardado()
+}
 
 const hayCambios = computed(() => {
   return eliminados.value.length > 0 || designaciones.value.some(p => p._dirty || !p.id)
@@ -596,6 +644,7 @@ const quitarPartido = (p) => {
   if (p.id) eliminados.value.push(p.id)
   const idx = designaciones.value.indexOf(p)
   if (idx !== -1) designaciones.value.splice(idx, 1)
+  programarAutoguardado()
 }
 
 /* ====================================================
@@ -644,11 +693,54 @@ const asignarArbitro = (arbitro) => {
   cerrarSelectorArbitro()
 }
 
+// Asigna un árbitro que no está en el padrón (ej: viene del interior).
+// Queda como texto libre, sin id_arb, y por eso no le aparece en su panel.
+const asignarArbitroLibre = (texto) => {
+  const sel = seleccionArbitro.value
+  if (!sel) return
+  const nombre = String(texto || '').trim().toUpperCase()
+  if (!nombre) return
+  const p = sel.partido
+
+  if (sel.numero === 1) { p.arbitro_1 = nombre; p.id_arb1 = null; p._ext1 = true }
+  else { p.arbitro_2 = nombre; p.id_arb2 = null; p._ext2 = true }
+
+  marcar(p)
+  cerrarSelectorArbitro()
+}
+
+// Helpers de estado de la celda de árbitro
+const esExterno = (p, numero) => {
+  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
+  const id = numero === 1 ? p.id_arb1 : p.id_arb2
+  const ext = numero === 1 ? p._ext1 : p._ext2
+  return !!nombre && !id && !!ext
+}
+
+const esSinMatch = (p, numero) => {
+  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
+  const id = numero === 1 ? p.id_arb1 : p.id_arb2
+  const ext = numero === 1 ? p._ext1 : p._ext2
+  return !!nombre && !id && !ext
+}
+
+const tituloCelda = (p, numero) => {
+  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
+  if (!nombre) return 'Asignar árbitro'
+  if (esExterno(p, numero)) return 'Árbitro externo (fuera del padrón): ' + nombre
+  if (esSinMatch(p, numero)) return 'Sin match en el padrón: ' + nombre
+  return nombre
+}
+
 /* ====================================================
-   GUARDADO
+   AUTOGUARDADO (con debounce, sin botón manual)
+   Cada edición marca el partido y programa un guardado
+   a los 1,5s. Guarda en segundo plano y actualiza los
+   ids de los partidos nuevos sin recargar toda la grilla.
    ==================================================== */
 const limpiarPartidoParaEnviar = (p) => ({
   id: p.id,
+  _uid: p._uid,
   fecha: p.fecha,
   cancha: p.cancha,
   categoria_division: p.categoria_division,
@@ -661,8 +753,28 @@ const limpiarPartidoParaEnviar = (p) => ({
   id_arb2: p.id_arb2
 })
 
+const programarAutoguardado = () => {
+  estadoGuardado.value = 'pendiente'
+  if (timerAutoguardado) clearTimeout(timerAutoguardado)
+  timerAutoguardado = setTimeout(() => { ejecutarGuardado() }, 1500)
+}
+
+// Guarda los cambios pendientes. Devuelve true/false.
+// No recarga toda la grilla: solo asigna los ids nuevos que devuelve
+// el backend y limpia las marcas de "modificado", para no interrumpir
+// la edición ni reordenar las filas mientras la persona trabaja.
 const ejecutarGuardado = async () => {
+  if (timerAutoguardado) { clearTimeout(timerAutoguardado); timerAutoguardado = null }
+
   const modificados = designaciones.value.filter(p => p._dirty || !p.id)
+  const eliminadosEnviar = [...eliminados.value]
+
+  if (modificados.length === 0 && eliminadosEnviar.length === 0) {
+    estadoGuardado.value = ''
+    return true
+  }
+
+  estadoGuardado.value = 'guardando'
 
   try {
     const res = await api.post({
@@ -670,37 +782,35 @@ const ejecutarGuardado = async () => {
       action: 'guardarPartidos',
       payload: {
         partidos: modificados.map(limpiarPartidoParaEnviar),
-        eliminados: eliminados.value
+        eliminados: eliminadosEnviar
       }
     })
 
     if (res.ok && res.payload && res.payload.success) {
-      await cargarDesignaciones()
+      // Asignar ids nuevos que devuelve el backend (map _uid -> id)
+      const nuevosIds = res.payload.ids || {}
+      modificados.forEach(p => {
+        if (!p.id && p._uid && nuevosIds[p._uid]) p.id = nuevosIds[p._uid]
+        p._dirty = false
+      })
+      eliminados.value = eliminados.value.filter(id => !eliminadosEnviar.includes(id))
+
+      estadoGuardado.value = 'guardado'
+      if (timerOcultar) clearTimeout(timerOcultar)
+      timerOcultar = setTimeout(() => {
+        if (estadoGuardado.value === 'guardado') estadoGuardado.value = ''
+      }, 2000)
       return true
     }
     throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
   } catch (err) {
     console.error('Error al guardar cambios:', err)
-    notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al guardar los cambios.', tipo: 'danger' })
+    estadoGuardado.value = 'error'
     return false
   }
 }
 
-const guardarCambios = async () => {
-  guardando.value = true
-  const ok = await ejecutarGuardado()
-  if (ok) notificar({ titulo: 'Éxito', mensaje: 'Se guardaron los cambios.', tipo: 'success' })
-  guardando.value = false
-}
-
-const descartarCambios = () => {
-  notificar({
-    titulo: 'Descartar Cambios',
-    mensaje: '¿Descartar todos los cambios sin guardar?',
-    tipo: 'warning',
-    alConfirmar: () => cargarDesignaciones()
-  })
-}
+const guardarAhora = () => { ejecutarGuardado() }
 
 /* ====================================================
    IMPORTACION DE EXCEL
@@ -969,6 +1079,29 @@ const enviarATesoreria = () => {
    Si hay cambios sin guardar, se guardan automáticamente
    antes de publicar. El PDF se genera en el servidor.
    ==================================================== */
+const abrirModalPublicar = async (modo) => {
+  modoPublicacion.value = modo
+
+  // Al actualizar, precargamos torneo y fecha de la última publicación
+  if (modo === 'actualizar') {
+    try {
+      const res = await api.get({
+        entity: 'designaciones',
+        action: 'obtenerHistorialDesignaciones'
+      })
+      const ultima = res.payload && res.payload[0]
+      if (ultima && ultima.torneo && ultima.torneo !== 'Información no disponible') {
+        formPublicar.torneo = ultima.torneo
+        formPublicar.fecha = ultima.fecha
+      }
+    } catch (err) {
+      console.error('No se pudo precargar la última publicación:', err)
+    }
+  }
+
+  mostrarModalPublicar.value = true
+}
+
 const publicarDesignaciones = async () => {
   if (!formPublicar.torneo || !formPublicar.fecha) {
     notificar({ titulo: 'Atención', mensaje: 'Completá el torneo y la fecha.', tipo: 'warning' })
@@ -987,7 +1120,8 @@ const publicarDesignaciones = async () => {
       action: 'publicarDesignaciones',
       payload: {
         torneo: formPublicar.torneo,
-        fecha: formPublicar.fecha
+        fecha: formPublicar.fecha,
+        modo: modoPublicacion.value
       }
     })
 
@@ -1151,11 +1285,18 @@ onMounted(async () => {
   color: #adb5bd;
 }
 
-/* Árbitro que no matcheó con el padrón */
+/* Árbitro que no matcheó con el padrón (hay que corregirlo) */
 .celda-arbitro.sin-match {
   background-color: #fef08a;
   border-color: #eab308;
   font-weight: 700;
+}
+
+/* Árbitro externo puesto a mano (intencional, fuera del padrón) */
+.celda-arbitro.externo {
+  background-color: #dbeafe;
+  border-color: #60a5fa;
+  font-weight: 600;
 }
 
 /* Fila con cambios sin guardar o nueva */

@@ -128,38 +128,50 @@
                 </button>
 
                 <div v-show="mesesAbiertos.includes(mes.clave)" class="p-3 bg-light border-top">
-                  <div v-for="dia in mes.dias" :key="'ant-' + dia.fecha" class="mb-4">
-                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                      <span class="badge bg-dark fs-6 rounded-pill px-3 py-2 shadow-sm">
-                        <i class="bi bi-calendar-day me-1"></i> {{ etiquetaDia(dia.fecha) }}
-                      </span>
-                      <span v-if="dia.partidos[0] && dia.partidos[0].torneo" class="badge bg-secondary-subtle text-secondary border rounded-pill px-3 py-2">
-                        <i class="bi bi-trophy me-1"></i> {{ dia.partidos[0].torneo }}
-                      </span>
-                      <span class="text-muted small fw-bold">{{ dia.partidos.length }} {{ dia.partidos.length === 1 ? 'partido' : 'partidos' }}</span>
-                    </div>
+                  <div v-for="dia in mes.dias" :key="'ant-' + dia.fecha" class="card border shadow-sm mb-2 rounded-3 overflow-hidden">
 
-                    <div class="timeline">
-                      <div v-for="p in dia.partidos" :key="p.id" class="timeline-item">
-                        <div class="timeline-hora">
-                          <span class="hora-burbuja">{{ formatearHora(p.horario) }}</span>
-                        </div>
-                        <div class="timeline-card shadow-sm">
-                          <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
-                            <span class="fw-bold text-dark text-uppercase">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
-                            <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
+                    <button
+                      @click="toggleDia(mes.clave, dia.fecha)"
+                      class="acordeon-mes d-flex justify-content-between align-items-center w-100 px-3 py-2"
+                    >
+                      <span class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="badge bg-dark rounded-pill px-3 py-2">
+                          <i class="bi bi-calendar-day me-1"></i> {{ etiquetaDia(dia.fecha) }}
+                        </span>
+                        <span v-if="dia.partidos[0] && dia.partidos[0].torneo" class="badge bg-secondary-subtle text-secondary border rounded-pill px-2 py-1 d-none d-md-inline">
+                          <i class="bi bi-trophy me-1"></i> {{ dia.partidos[0].torneo }}
+                        </span>
+                      </span>
+                      <span class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary rounded-pill">{{ dia.partidos.length }}</span>
+                        <i class="bi text-muted" :class="diaAbierto(mes.clave, dia.fecha) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                      </span>
+                    </button>
+
+                    <div v-show="diaAbierto(mes.clave, dia.fecha)" class="p-3 border-top bg-white">
+                      <div class="timeline">
+                        <div v-for="p in dia.partidos" :key="p.id" class="timeline-item">
+                          <div class="timeline-hora">
+                            <span class="hora-burbuja">{{ formatearHora(p.horario) }}</span>
                           </div>
-                          <div class="small text-muted d-flex align-items-center gap-1 mb-2">
-                            <span class="material-icons" style="font-size: 15px;">stadium</span>
-                            <span class="fw-bold text-dark">{{ p.cancha }}</span>
-                          </div>
-                          <div class="small d-flex align-items-center gap-1 text-dark">
-                            <span class="material-icons text-secondary" style="font-size: 15px;">groups</span>
-                            <strong>Pareja:</strong> {{ obtenerPareja(p) }}
+                          <div class="timeline-card shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
+                              <span class="fw-bold text-dark text-uppercase">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
+                              <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
+                            </div>
+                            <div class="small text-muted d-flex align-items-center gap-1 mb-2">
+                              <span class="material-icons" style="font-size: 15px;">stadium</span>
+                              <span class="fw-bold text-dark">{{ p.cancha }}</span>
+                            </div>
+                            <div class="small d-flex align-items-center gap-1 text-dark">
+                              <span class="material-icons text-secondary" style="font-size: 15px;">groups</span>
+                              <strong>Pareja:</strong> {{ obtenerPareja(p) }}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
@@ -199,6 +211,7 @@ const vistaActiva = ref('proximas')
 
 const anioSeleccionado = ref('')
 const mesesAbiertos = ref([])
+const diasAbiertos = ref([])
 
 const cargarMisDesignaciones = async () => {
   cargando.value = true
@@ -347,15 +360,27 @@ const mesesAnteriores = computed(() => {
     }))
 })
 
-// Al cambiar de año, dejamos abierto solo el mes más reciente
+// Al cambiar de año, todo arranca colapsado
 watch(anioSeleccionado, () => {
-  mesesAbiertos.value = mesesAnteriores.value.length > 0 ? [mesesAnteriores.value[0].clave] : []
-}, { immediate: true })
+  mesesAbiertos.value = []
+  diasAbiertos.value = []
+})
 
 const toggleMes = (clave) => {
   const idx = mesesAbiertos.value.indexOf(clave)
   if (idx === -1) mesesAbiertos.value.push(clave)
   else mesesAbiertos.value.splice(idx, 1)
+}
+
+const claveDia = (mesClave, fecha) => `${mesClave}|${fecha}`
+
+const diaAbierto = (mesClave, fecha) => diasAbiertos.value.includes(claveDia(mesClave, fecha))
+
+const toggleDia = (mesClave, fecha) => {
+  const clave = claveDia(mesClave, fecha)
+  const idx = diasAbiertos.value.indexOf(clave)
+  if (idx === -1) diasAbiertos.value.push(clave)
+  else diasAbiertos.value.splice(idx, 1)
 }
 
 const obtenerPareja = (p) => {
