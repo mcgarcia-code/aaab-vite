@@ -92,46 +92,79 @@
             </div>
           </div>
 
-          <!-- ANTERIORES -->
+          <!-- ANTERIORES: colapsadas por mes, con filtro por año -->
           <div v-else class="anteriores">
             <div v-if="anteriores.length === 0" class="text-center py-5 text-muted bg-light rounded-3">
               <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">history_toggle_off</span>
               <p class="m-0 fw-bold">Todavía no tenés designaciones anteriores.</p>
             </div>
 
-            <div v-else v-for="dia in diasAnteriores" :key="'ant-' + dia.fecha" class="mb-4">
-              <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-                <span class="badge bg-dark fs-6 rounded-pill px-3 py-2 shadow-sm">
-                  <i class="bi bi-calendar-day me-1"></i> {{ etiquetaDia(dia.fecha) }}
-                </span>
-                <span v-if="dia.partidos[0] && dia.partidos[0].torneo" class="badge bg-secondary-subtle text-secondary border rounded-pill px-3 py-2">
-                  <i class="bi bi-trophy me-1"></i> {{ dia.partidos[0].torneo }}
-                </span>
-                <span class="text-muted small fw-bold">{{ dia.partidos.length }} {{ dia.partidos.length === 1 ? 'partido' : 'partidos' }}</span>
+            <template v-else>
+
+              <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="small fw-bold text-muted text-uppercase">Filtrar por año:</span>
+                <select v-model="anioSeleccionado" class="form-select form-select-sm shadow-none w-auto fw-bold">
+                  <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
+                </select>
               </div>
 
-              <div class="timeline">
-                <div v-for="p in dia.partidos" :key="p.id" class="timeline-item">
-                  <div class="timeline-hora">
-                    <span class="hora-burbuja">{{ formatearHora(p.horario) }}</span>
-                  </div>
-                  <div class="timeline-card shadow-sm">
-                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
-                      <span class="fw-bold text-dark text-uppercase">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
-                      <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
+              <div
+                v-for="mes in mesesAnteriores"
+                :key="mes.clave"
+                class="card border shadow-sm mb-3 rounded-3 overflow-hidden"
+              >
+                <button
+                  @click="toggleMes(mes.clave)"
+                  class="acordeon-mes d-flex justify-content-between align-items-center w-100 px-3 py-2"
+                >
+                  <span class="fw-bold text-dark d-flex align-items-center gap-2">
+                    <i class="bi text-secondary" :class="mesesAbiertos.includes(mes.clave) ? 'bi-folder2-open' : 'bi-folder2'"></i>
+                    {{ mes.etiqueta }}
+                  </span>
+                  <span class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary rounded-pill">{{ mes.cantidad }}</span>
+                    <i class="bi text-muted" :class="mesesAbiertos.includes(mes.clave) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                  </span>
+                </button>
+
+                <div v-show="mesesAbiertos.includes(mes.clave)" class="p-3 bg-light border-top">
+                  <div v-for="dia in mes.dias" :key="'ant-' + dia.fecha" class="mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                      <span class="badge bg-dark fs-6 rounded-pill px-3 py-2 shadow-sm">
+                        <i class="bi bi-calendar-day me-1"></i> {{ etiquetaDia(dia.fecha) }}
+                      </span>
+                      <span v-if="dia.partidos[0] && dia.partidos[0].torneo" class="badge bg-secondary-subtle text-secondary border rounded-pill px-3 py-2">
+                        <i class="bi bi-trophy me-1"></i> {{ dia.partidos[0].torneo }}
+                      </span>
+                      <span class="text-muted small fw-bold">{{ dia.partidos.length }} {{ dia.partidos.length === 1 ? 'partido' : 'partidos' }}</span>
                     </div>
-                    <div class="small text-muted d-flex align-items-center gap-1 mb-2">
-                      <span class="material-icons" style="font-size: 15px;">stadium</span>
-                      <span class="fw-bold text-dark">{{ p.cancha }}</span>
-                    </div>
-                    <div class="small d-flex align-items-center gap-1 text-dark">
-                      <span class="material-icons text-secondary" style="font-size: 15px;">groups</span>
-                      <strong>Pareja:</strong> {{ obtenerPareja(p) }}
+
+                    <div class="timeline">
+                      <div v-for="p in dia.partidos" :key="p.id" class="timeline-item">
+                        <div class="timeline-hora">
+                          <span class="hora-burbuja">{{ formatearHora(p.horario) }}</span>
+                        </div>
+                        <div class="timeline-card shadow-sm">
+                          <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
+                            <span class="fw-bold text-dark text-uppercase">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
+                            <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
+                          </div>
+                          <div class="small text-muted d-flex align-items-center gap-1 mb-2">
+                            <span class="material-icons" style="font-size: 15px;">stadium</span>
+                            <span class="fw-bold text-dark">{{ p.cancha }}</span>
+                          </div>
+                          <div class="small d-flex align-items-center gap-1 text-dark">
+                            <span class="material-icons text-secondary" style="font-size: 15px;">groups</span>
+                            <strong>Pareja:</strong> {{ obtenerPareja(p) }}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+
+            </template>
           </div>
 
         </template>
@@ -143,7 +176,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import { useHead } from '@vueuse/head'
@@ -157,10 +190,15 @@ useHead({
   ],
 })
 
+const MESES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE']
+
 const arbitro = ref(auth.getUser() || {})
 const partidos = ref([])
 const cargando = ref(false)
 const vistaActiva = ref('proximas')
+
+const anioSeleccionado = ref('')
+const mesesAbiertos = ref([])
 
 const cargarMisDesignaciones = async () => {
   cargando.value = true
@@ -263,7 +301,6 @@ const agruparPorDia = (lista, orden) => {
 }
 
 const diasProximas = computed(() => agruparPorDia(proximas.value, 'asc'))
-const diasAnteriores = computed(() => agruparPorDia(anteriores.value, 'desc'))
 
 const infoTorneo = computed(() => {
   if (proximas.value.length === 0) return null
@@ -271,6 +308,55 @@ const infoTorneo = computed(() => {
   if (!primero.torneo && !primero.fecha_torneo) return null
   return { torneo: primero.torneo, fecha_torneo: primero.fecha_torneo }
 })
+
+/* ====================================================
+   ANTERIORES: FILTRO POR AÑO + MESES COLAPSABLES
+   ==================================================== */
+const aniosDisponibles = computed(() => {
+  const anios = new Set()
+  anteriores.value.forEach(p => {
+    const f = fechaLimpia(p.fecha)
+    if (f) anios.add(f.slice(0, 4))
+  })
+  return [...anios].sort((a, b) => b.localeCompare(a))
+})
+
+watch(aniosDisponibles, (anios) => {
+  if (!anios.includes(anioSeleccionado.value)) {
+    anioSeleccionado.value = anios.length > 0 ? anios[0] : ''
+  }
+}, { immediate: true })
+
+const mesesAnteriores = computed(() => {
+  const mapa = {}
+  anteriores.value.forEach(p => {
+    const f = fechaLimpia(p.fecha)
+    if (!f || f.slice(0, 4) !== anioSeleccionado.value) return
+    const clave = f.slice(0, 7) // YYYY-MM
+    if (!mapa[clave]) mapa[clave] = []
+    mapa[clave].push(p)
+  })
+
+  return Object.keys(mapa)
+    .sort((a, b) => b.localeCompare(a))
+    .map(clave => ({
+      clave,
+      etiqueta: `${MESES[Number(clave.slice(5, 7)) - 1]} ${clave.slice(0, 4)}`,
+      cantidad: mapa[clave].length,
+      dias: agruparPorDia(mapa[clave], 'desc')
+    }))
+})
+
+// Al cambiar de año, dejamos abierto solo el mes más reciente
+watch(anioSeleccionado, () => {
+  mesesAbiertos.value = mesesAnteriores.value.length > 0 ? [mesesAnteriores.value[0].clave] : []
+}, { immediate: true })
+
+const toggleMes = (clave) => {
+  const idx = mesesAbiertos.value.indexOf(clave)
+  if (idx === -1) mesesAbiertos.value.push(clave)
+  else mesesAbiertos.value.splice(idx, 1)
+}
 
 const obtenerPareja = (p) => {
   const miId = String(arbitro.value.id)
@@ -354,7 +440,21 @@ onMounted(cargarMisDesignaciones)
 
 .anteriores .timeline-card {
   border-left-color: #9ca3af;
-  background: #fafafa;
+  background: #fff;
+}
+
+/* ====================================================
+   ACORDEON DE MESES (ANTERIORES)
+   ==================================================== */
+.acordeon-mes {
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.acordeon-mes:hover {
+  background: #f8fafc;
 }
 
 .animate__animated { animation-duration: 0.5s; }

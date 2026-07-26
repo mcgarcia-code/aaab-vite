@@ -22,11 +22,6 @@
               <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
 
-            <button @click="mostrarModalSubida = true" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white">
-              <span class="material-icons fs-6">cloud_upload</span>
-              <span class="fw-bold d-none d-md-inline small">Publicar</span>
-            </button>
-
             <button @click="solicitarLimpiarChecks" class="btn btn-danger shadow-sm py-2 d-flex align-items-center gap-2 text-white d-none d-md-flex">
               <span class="material-icons fs-6">check_box_outline_blank</span>
               <span class="fw-bold small">Tildes</span>
@@ -283,67 +278,6 @@
       </div>
     </div>
 
-    <ModalBase
-      :show="mostrarModalSubida"
-      titulo="Publicar Designaciones"
-      icono="publish"
-      colorIcono="bg-danger text-white"
-      maxWidth="600px"
-      @close="mostrarModalSubida = false"
-    >
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Torneo</label>
-        <input
-          v-model="formPublicar.torneo"
-          type="text"
-          class="form-control shadow-none border-secondary-subtle"
-          placeholder="Ej: TORNEO APERTURA"
-        >
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Fecha</label>
-        <input
-          v-model="formPublicar.fecha"
-          type="text"
-          class="form-control shadow-none border-secondary-subtle"
-          placeholder="Ej: 18 y 19 de Abril"
-        >
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Archivo Excel</label>
-        <input
-          @change="manejarArchivo"
-          type="file"
-          class="form-control shadow-none border-secondary-subtle"
-          accept=".xlsx,.xls"
-        >
-      </div>
-
-      <template #footer>
-        <button
-          @click="mostrarModalSubida = false"
-          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
-          :disabled="subiendoArchivo"
-        >
-          Cancelar
-        </button>
-
-        <button
-          @click="enviarDesignaciones"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
-          :disabled="subiendoArchivo || !formPublicar.archivoBase64"
-        >
-          <span
-            v-if="subiendoArchivo"
-            class="spinner-border spinner-border-sm me-2"
-          ></span>
-          {{ subiendoArchivo ? 'Publicando...' : 'Publicar Ahora' }}
-        </button>
-      </template>
-    </ModalBase>
-
   </div>
 </template>
 
@@ -353,7 +287,6 @@ import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
 import { api } from '@/api/api';
 import * as XLSX from 'xlsx';
 import { useHead } from '@vueuse/head'
-import ModalBase from '@/components/ModalBase.vue'
 
 useHead({
   title: 'Designaciones de Árbitros| AAAB',
@@ -381,27 +314,8 @@ const filtros = reactive({
   designado_domingo: '',
 });
 
-const mostrarModalSubida = ref(false);
-const subiendoArchivo = ref(false);
 
-const formPublicar = reactive({
-  torneo: '',
-  fecha: '',
-  archivoBase64: '',
-  nombreArchivo: ''
-});
 
-const manejarArchivo = (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = () => {
-    formPublicar.archivoBase64 = reader.result;
-    formPublicar.nombreArchivo = file.name;
-  };
-};
 
 const cambiarPagina = (delta) => {
   paginaActual.value += delta;
@@ -660,44 +574,6 @@ watch(totalPaginas, (nuevoTotal) => {
   if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
 });
 
-const enviarDesignaciones = async () => {
-  if (!formPublicar.torneo || !formPublicar.fecha || !formPublicar.archivoBase64) {
-    notificar({ titulo: 'Atención', mensaje: 'Completá todos los campos y seleccioná un archivo.', tipo: 'warning' });
-    return;
-  }
-
-  subiendoArchivo.value = true;
-
-  try {
-    const res = await api.post({
-      entity: 'designaciones',
-      action: 'subirDesignaciones',
-      payload: {
-        torneo: formPublicar.torneo,
-        fecha: formPublicar.fecha,
-        archivoBase64: formPublicar.archivoBase64,
-        nombreArchivo: formPublicar.nombreArchivo
-      }
-    });
-
-    if (res.ok && res.payload && res.payload.success) {
-      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Las designaciones ya están visibles para el público.', tipo: 'success' });
-
-      mostrarModalSubida.value = false;
-      formPublicar.torneo = '';
-      formPublicar.fecha = '';
-      formPublicar.archivoBase64 = '';
-      formPublicar.nombreArchivo = '';
-    } else {
-      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor al subir designaciones.');
-    }
-  } catch (error) {
-    console.error("Error al publicar:", error);
-    notificar({ titulo: 'Error', mensaje: error.message || 'Hubo un problema al subir las designaciones.', tipo: 'danger' });
-  } finally {
-    subiendoArchivo.value = false;
-  }
-};
 
 const exportarExcel = () => {
   const datos = arbitrosFiltrados.value.map(a => ({

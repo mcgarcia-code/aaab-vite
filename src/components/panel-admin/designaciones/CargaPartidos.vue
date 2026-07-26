@@ -33,10 +33,18 @@
             </button>
 
             <button
+              @click="enviarATesoreria"
+              class="btn btn-dark shadow-sm py-2 d-flex align-items-center gap-2 text-white"
+              :disabled="designaciones.length === 0"
+            >
+              <span class="material-icons fs-6">account_balance</span>
+              <span class="fw-bold d-none d-md-inline small">Tesorería</span>
+            </button>
+
+            <button
               @click="mostrarModalPublicar = true"
               class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white"
-              :disabled="designaciones.length === 0 || hayCambios"
-              :title="hayCambios ? 'Guardá los cambios antes de publicar' : ''"
+              :disabled="designaciones.length === 0"
             >
               <span class="material-icons fs-6">cloud_upload</span>
               <span class="fw-bold d-none d-md-inline small">Publicar</span>
@@ -144,34 +152,24 @@
                         <input v-model="p.visitante" @input="marcar(p)" class="celda-input" placeholder="Visitante...">
                       </td>
                       <td>
-                        <select
-                          :value="valorSelectArbitro(p, 1)"
-                          @change="cambiarArbitro(p, 1, $event.target.value)"
-                          class="celda-select"
-                          :class="{ 'sin-match': p.arbitro_1 && !p.id_arb1 }"
-                          :title="p.arbitro_1 && !p.id_arb1 ? 'Sin match en el padrón: ' + p.arbitro_1 : p.arbitro_1"
+                        <button
+                          @click="abrirSelectorArbitro(p, 1)"
+                          class="celda-arbitro"
+                          :class="{ 'sin-match': p.arbitro_1 && !p.id_arb1, 'vacio': !p.arbitro_1 }"
+                          :title="p.arbitro_1 && !p.id_arb1 ? 'Sin match en el padrón: ' + p.arbitro_1 : (p.arbitro_1 || 'Asignar árbitro')"
                         >
-                          <option value="">—</option>
-                          <option v-if="p.arbitro_1 && !p.id_arb1" value="__texto__">⚠ {{ p.arbitro_1 }}</option>
-                          <option v-for="a in arbitros" :key="'a1-' + a.id" :value="String(a.id)">
-                            {{ a.apellido }}, {{ a.nombre }}
-                          </option>
-                        </select>
+                          {{ p.arbitro_1 || '— Asignar —' }}
+                        </button>
                       </td>
                       <td>
-                        <select
-                          :value="valorSelectArbitro(p, 2)"
-                          @change="cambiarArbitro(p, 2, $event.target.value)"
-                          class="celda-select"
-                          :class="{ 'sin-match': p.arbitro_2 && !p.id_arb2 }"
-                          :title="p.arbitro_2 && !p.id_arb2 ? 'Sin match en el padrón: ' + p.arbitro_2 : p.arbitro_2"
+                        <button
+                          @click="abrirSelectorArbitro(p, 2)"
+                          class="celda-arbitro"
+                          :class="{ 'sin-match': p.arbitro_2 && !p.id_arb2, 'vacio': !p.arbitro_2 }"
+                          :title="p.arbitro_2 && !p.id_arb2 ? 'Sin match en el padrón: ' + p.arbitro_2 : (p.arbitro_2 || 'Asignar árbitro')"
                         >
-                          <option value="">—</option>
-                          <option v-if="p.arbitro_2 && !p.id_arb2" value="__texto__">⚠ {{ p.arbitro_2 }}</option>
-                          <option v-for="a in arbitros" :key="'a2-' + a.id" :value="String(a.id)">
-                            {{ a.apellido }}, {{ a.nombre }}
-                          </option>
-                        </select>
+                          {{ p.arbitro_2 || '— Asignar —' }}
+                        </button>
                       </td>
                       <td class="text-center">
                         <button @click="quitarPartido(p)" class="btn btn-borrar" title="Eliminar partido">
@@ -208,6 +206,39 @@
         </div>
       </div>
     </div>
+
+    <ModalBase
+      :show="mostrarSelectorArbitro"
+      :titulo="tituloSelector"
+      icono="sports"
+      colorIcono="bg-danger text-white"
+      maxWidth="500px"
+      @close="cerrarSelectorArbitro"
+    >
+      <input
+        v-model="busquedaArbitro"
+        type="text"
+        class="form-control shadow-none border-secondary-subtle mb-3"
+        placeholder="Buscar por apellido o nombre..."
+      >
+
+      <div class="lista-arbitros border rounded">
+        <button @click="asignarArbitro(null)" class="opcion-arbitro text-danger fw-bold">
+          — Sin asignar —
+        </button>
+        <button
+          v-for="a in arbitrosFiltrados"
+          :key="a.id"
+          @click="asignarArbitro(a)"
+          class="opcion-arbitro"
+        >
+          {{ a.apellido }}, {{ a.nombre }}
+        </button>
+        <p v-if="arbitrosFiltrados.length === 0" class="text-muted small text-center m-0 py-3">
+          No se encontraron árbitros con esa búsqueda.
+        </p>
+      </div>
+    </ModalBase>
 
     <ModalBase
       :show="mostrarModalCarga"
@@ -274,7 +305,12 @@
     >
       <div class="alert alert-info small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-info-circle-fill"></i>
-        <span>Se publicarán los <strong>{{ designaciones.length }}</strong> partidos: se genera la planilla Excel para la web pública y cada árbitro verá sus partidos en su panel.</span>
+        <span>Se publicarán los <strong>{{ designaciones.length }}</strong> partidos: se genera el <strong>PDF</strong> para la web pública y cada árbitro verá sus partidos en su panel.</span>
+      </div>
+
+      <div v-if="hayCambios" class="alert alert-primary small py-2 px-3 d-flex align-items-center gap-2">
+        <i class="bi bi-pencil-square"></i>
+        <span>Tenés <strong>{{ cantidadCambios }}</strong> {{ cantidadCambios === 1 ? 'cambio pendiente' : 'cambios pendientes' }}: se van a guardar automáticamente antes de publicar.</span>
       </div>
 
       <div v-if="totalSinMatch > 0" class="alert alert-warning small py-2 px-3 d-flex align-items-center gap-2">
@@ -329,7 +365,6 @@
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import * as XLSX from 'xlsx'
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
@@ -363,6 +398,10 @@ const sinMatch = ref(0)
 const fechaManual = ref('')
 
 const guardando = ref(false)
+
+const mostrarSelectorArbitro = ref(false)
+const seleccionArbitro = ref(null)
+const busquedaArbitro = ref('')
 
 const mostrarModalPublicar = ref(false)
 const publicando = ref(false)
@@ -518,33 +557,6 @@ const cantidadCambios = computed(() => {
   return modificados + eliminados.value.length
 })
 
-const valorSelectArbitro = (p, numero) => {
-  const id = numero === 1 ? p.id_arb1 : p.id_arb2
-  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
-  if (id) return String(id)
-  if (nombre) return '__texto__'
-  return ''
-}
-
-const cambiarArbitro = (p, numero, valor) => {
-  if (valor === '__texto__') return
-
-  if (valor === '') {
-    if (numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null }
-    else { p.arbitro_2 = ''; p.id_arb2 = null }
-    marcar(p)
-    return
-  }
-
-  const arbitro = arbitros.value.find(a => String(a.id) === valor)
-  if (!arbitro) return
-
-  const nombreCompleto = `${arbitro.apellido} ${arbitro.nombre}`.toUpperCase()
-  if (numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id }
-  else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id }
-  marcar(p)
-}
-
 const renombrarCancha = (grupo, nuevoNombre) => {
   const nombre = String(nuevoNombre || '').trim().toUpperCase()
   if (!nombre) return
@@ -586,6 +598,55 @@ const quitarPartido = (p) => {
   if (idx !== -1) designaciones.value.splice(idx, 1)
 }
 
+/* ====================================================
+   SELECTOR DE ARBITRO (modal compartido con buscador)
+   Un solo listado en el DOM en vez de un <select> con
+   todo el padrón por cada celda: mucho más liviano.
+   ==================================================== */
+const abrirSelectorArbitro = (partido, numero) => {
+  seleccionArbitro.value = { partido, numero }
+  busquedaArbitro.value = ''
+  mostrarSelectorArbitro.value = true
+}
+
+const cerrarSelectorArbitro = () => {
+  mostrarSelectorArbitro.value = false
+  seleccionArbitro.value = null
+}
+
+const tituloSelector = computed(() => {
+  if (!seleccionArbitro.value) return 'Asignar Árbitro'
+  const p = seleccionArbitro.value.partido
+  return `Árbitro ${seleccionArbitro.value.numero} — ${p.local || '?'} vs ${p.visitante || '?'}`
+})
+
+const arbitrosFiltrados = computed(() => {
+  const busqueda = normalizarTexto(busquedaArbitro.value)
+  if (!busqueda) return arbitros.value
+  return arbitros.value.filter(a => normalizarTexto(`${a.apellido} ${a.nombre}`).includes(busqueda))
+})
+
+const asignarArbitro = (arbitro) => {
+  const sel = seleccionArbitro.value
+  if (!sel) return
+  const p = sel.partido
+
+  if (!arbitro) {
+    if (sel.numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null }
+    else { p.arbitro_2 = ''; p.id_arb2 = null }
+  } else {
+    const nombreCompleto = `${arbitro.apellido} ${arbitro.nombre}`.toUpperCase()
+    if (sel.numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id }
+    else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id }
+  }
+
+  marcar(p)
+  cerrarSelectorArbitro()
+}
+
+/* ====================================================
+   GUARDADO
+   ==================================================== */
 const limpiarPartidoParaEnviar = (p) => ({
   id: p.id,
   fecha: p.fecha,
@@ -600,10 +661,9 @@ const limpiarPartidoParaEnviar = (p) => ({
   id_arb2: p.id_arb2
 })
 
-const guardarCambios = async () => {
+const ejecutarGuardado = async () => {
   const modificados = designaciones.value.filter(p => p._dirty || !p.id)
 
-  guardando.value = true
   try {
     const res = await api.post({
       entity: 'designaciones',
@@ -615,17 +675,22 @@ const guardarCambios = async () => {
     })
 
     if (res.ok && res.payload && res.payload.success) {
-      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Se guardaron los cambios.', tipo: 'success' })
       await cargarDesignaciones()
-    } else {
-      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
+      return true
     }
+    throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
   } catch (err) {
     console.error('Error al guardar cambios:', err)
     notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al guardar los cambios.', tipo: 'danger' })
-  } finally {
-    guardando.value = false
+    return false
   }
+}
+
+const guardarCambios = async () => {
+  guardando.value = true
+  const ok = await ejecutarGuardado()
+  if (ok) notificar({ titulo: 'Éxito', mensaje: 'Se guardaron los cambios.', tipo: 'success' })
+  guardando.value = false
 }
 
 const descartarCambios = () => {
@@ -889,109 +954,21 @@ const eliminarTodo = async () => {
 }
 
 /* ====================================================
-   PUBLICAR (WEB PUBLICA + PANEL DE ARBITROS)
+   TESORERIA (placeholder: la lógica se implementa a futuro)
    ==================================================== */
-const generarExcelPublicacion = async () => {
-  const wb = new ExcelJS.Workbook()
-  const ws = wb.addWorksheet('Designaciones')
-
-  ws.columns = [
-    { width: 28 }, { width: 26 }, { width: 10 },
-    { width: 24 }, { width: 24 }, { width: 26 }, { width: 26 }
-  ]
-
-  const bordeFino = {
-    top: { style: 'thin' }, left: { style: 'thin' },
-    bottom: { style: 'thin' }, right: { style: 'thin' }
-  }
-
-  // Título general
-  ws.mergeCells('A1:G1')
-  const celdaTitulo = ws.getCell('A1')
-  celdaTitulo.value = 'DESIGNACIONES DE ÁRBITROS - AAAB'
-  celdaTitulo.font = { bold: true, size: 14 }
-  celdaTitulo.alignment = { horizontal: 'center', vertical: 'middle' }
-
-  ws.mergeCells('A2:G2')
-  const celdaSubtitulo = ws.getCell('A2')
-  celdaSubtitulo.value = `${formPublicar.torneo} — ${formPublicar.fecha}`
-  celdaSubtitulo.font = { bold: true, size: 11, color: { argb: 'FFDC2626' } }
-  celdaSubtitulo.alignment = { horizontal: 'center' }
-
-  let filaActual = 4
-
-  fechas.value.forEach(f => {
-    // Fila del día (fondo oscuro, como el separador de la grilla)
-    ws.mergeCells(`A${filaActual}:G${filaActual}`)
-    const celdaDia = ws.getCell(`A${filaActual}`)
-    celdaDia.value = etiquetaDia(f.fecha)
-    celdaDia.font = { bold: true, color: { argb: 'FFFFFFFF' } }
-    celdaDia.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } }
-    celdaDia.alignment = { horizontal: 'center', vertical: 'middle' }
-    filaActual++
-
-    // Cabecera de columnas (fondo amarillo, como la planilla original)
-    const cabeceras = ['Cancha', 'Categoría / División', 'Horario', 'Local', 'Visitante', 'Árbitro 1', 'Árbitro 2']
-    const filaCabecera = ws.getRow(filaActual)
-    cabeceras.forEach((texto, i) => {
-      const celda = filaCabecera.getCell(i + 1)
-      celda.value = texto
-      celda.font = { bold: true }
-      celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC000' } }
-      celda.border = bordeFino
-    })
-    filaActual++
-
-    // Partidos agrupados por cancha, con la celda de cancha combinada en vertical
-    const delDia = designaciones.value.filter(p => (String(p.fecha || '').trim() || 'Sin fecha') === f.fecha)
-
-    const grupos = {}
-    delDia.forEach(p => {
-      const nombre = String(p.cancha || 'SIN CANCHA').trim()
-      if (!grupos[nombre]) grupos[nombre] = []
-      grupos[nombre].push(p)
-    })
-
-    Object.keys(grupos).sort((a, b) => a.localeCompare(b)).forEach(nombre => {
-      const partidos = grupos[nombre].sort((a, b) => String(a.horario || '').localeCompare(String(b.horario || '')))
-      const filaInicio = filaActual
-
-      partidos.forEach(p => {
-        const fila = ws.getRow(filaActual)
-        const valores = [nombre, p.categoria_division, p.horario, p.local, p.visitante, p.arbitro_1, p.arbitro_2]
-        valores.forEach((valor, i) => {
-          const celda = fila.getCell(i + 1)
-          celda.value = valor || ''
-          celda.border = bordeFino
-          if (i === 2) celda.alignment = { horizontal: 'center' }
-        })
-        filaActual++
-      })
-
-      // Celda de cancha combinada (como las celdas combinadas del Excel original)
-      if (partidos.length > 1) {
-        ws.mergeCells(`A${filaInicio}:A${filaActual - 1}`)
-      }
-      const celdaCancha = ws.getCell(`A${filaInicio}`)
-      celdaCancha.font = { bold: true }
-      celdaCancha.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }
-      celdaCancha.border = bordeFino
-    })
-
-    filaActual++ // fila en blanco entre días
+const enviarATesoreria = () => {
+  notificar({
+    titulo: 'Próximamente',
+    mensaje: 'El envío de designaciones a tesorería para los balances va a estar disponible próximamente.',
+    tipo: 'warning'
   })
-
-  // Convertir a base64 con el mismo formato data-URI que espera subirDesignaciones
-  const buffer = await wb.xlsx.writeBuffer()
-  const bytes = new Uint8Array(buffer)
-  let binario = ''
-  const tamanoBloque = 0x8000
-  for (let i = 0; i < bytes.length; i += tamanoBloque) {
-    binario += String.fromCharCode.apply(null, bytes.subarray(i, i + tamanoBloque))
-  }
-  return 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + btoa(binario)
 }
 
+/* ====================================================
+   PUBLICAR (PDF PARA LA WEB + PANEL DE ARBITROS)
+   Si hay cambios sin guardar, se guardan automáticamente
+   antes de publicar. El PDF se genera en el servidor.
+   ==================================================== */
 const publicarDesignaciones = async () => {
   if (!formPublicar.torneo || !formPublicar.fecha) {
     notificar({ titulo: 'Atención', mensaje: 'Completá el torneo y la fecha.', tipo: 'warning' })
@@ -1000,16 +977,17 @@ const publicarDesignaciones = async () => {
 
   publicando.value = true
   try {
-    const archivoBase64 = await generarExcelPublicacion()
+    if (hayCambios.value) {
+      const guardado = await ejecutarGuardado()
+      if (!guardado) return
+    }
 
     const res = await api.post({
       entity: 'designaciones',
       action: 'publicarDesignaciones',
       payload: {
         torneo: formPublicar.torneo,
-        fecha: formPublicar.fecha,
-        archivoBase64,
-        nombreArchivo: 'designaciones.xlsx'
+        fecha: formPublicar.fecha
       }
     })
 
@@ -1126,8 +1104,7 @@ onMounted(async () => {
 }
 
 /* Celdas editables: se ven como texto plano hasta que las tocás */
-.celda-input,
-.celda-select {
+.celda-input {
   width: 100%;
   border: 1px solid transparent;
   border-radius: 4px;
@@ -1137,27 +1114,45 @@ onMounted(async () => {
   color: #212529;
 }
 
-.celda-input:hover,
-.celda-select:hover {
+.celda-input:hover {
   border-color: #ced4da;
   background: #fff;
 }
 
-.celda-input:focus,
-.celda-select:focus {
+.celda-input:focus {
   outline: none;
   border-color: #dc3545;
   background: #fff;
   box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15);
 }
 
-.celda-select {
+/* Celda de árbitro: botón liviano que abre el selector compartido */
+.celda-arbitro {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  padding: 5px 6px;
+  font-size: 0.78rem;
+  color: #212529;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
-  appearance: auto;
+}
+
+.celda-arbitro:hover {
+  border-color: #ced4da;
+  background: #fff;
+}
+
+.celda-arbitro.vacio {
+  color: #adb5bd;
 }
 
 /* Árbitro que no matcheó con el padrón */
-.celda-select.sin-match {
+.celda-arbitro.sin-match {
   background-color: #fef08a;
   border-color: #eab308;
   font-weight: 700;
@@ -1182,6 +1177,31 @@ onMounted(async () => {
 
 .btn-borrar .material-icons {
   font-size: 17px;
+}
+
+/* ====================================================
+   SELECTOR DE ARBITRO
+   ==================================================== */
+.lista-arbitros {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.opcion-arbitro {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: none;
+  border-bottom: 1px solid #f1f3f5;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  color: #212529;
+  cursor: pointer;
+}
+
+.opcion-arbitro:hover {
+  background: #fef2f2;
 }
 
 /* ====================================================
