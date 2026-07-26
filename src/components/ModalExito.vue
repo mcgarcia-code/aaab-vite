@@ -28,7 +28,10 @@
         </div>
 
         <h4 class="fw-bold text-dark mt-2 mb-2">{{ titulo }}</h4>
-        <p class="text-muted small mb-4">{{ mensaje }}</p>
+        <!-- mensaje-modal: respeta los saltos de línea (\n) para avisos multilínea.
+             Si el mensaje tiene varias líneas, se alinea a la izquierda para que
+             las viñetas se lean bien; si es una sola, queda centrado. -->
+        <p class="text-muted small mb-4 mensaje-modal" :class="{ 'text-start': esMultilinea }">{{ mensaje }}</p>
 
         <!-- BOTONES: Apilados en móviles (flex-column), en línea en tablets (flex-sm-row) -->
         <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
@@ -56,7 +59,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, watch, ref, nextTick } from 'vue';
+import { onMounted, onUnmounted, watch, ref, nextTick, computed } from 'vue';
 
 const props = defineProps({
   visible: Boolean,
@@ -70,6 +73,9 @@ const props = defineProps({
 const emit = defineEmits(['cerrar', 'confirmar']);
 
 const modalRef = ref(null);
+
+// Si el mensaje tiene saltos de línea, lo alineamos a la izquierda
+const esMultilinea = computed(() => String(props.mensaje || '').includes('\n'));
 
 const cerrar = () => emit('cerrar');
 
@@ -138,6 +144,11 @@ onUnmounted(() => {
 .modal-overlay-custom {
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(8px);
+}
+
+/* Respeta los saltos de línea del mensaje (avisos multilínea) */
+.mensaje-modal {
+  white-space: pre-line;
 }
 
 /* Efecto hover general para los botones principales */

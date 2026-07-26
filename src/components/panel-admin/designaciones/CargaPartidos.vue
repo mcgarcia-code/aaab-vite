@@ -2,9 +2,9 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3 rounded-top">
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-clipboard2-check-fill me-1"></i> Carga de Designaciones
@@ -12,7 +12,7 @@
             <span class="text-muted small d-block mt-1">
               Total: {{ designaciones.length }} partidos
               <template v-if="totalSinMatch > 0">
-                · <span class="text-warning-emphasis fw-bold">{{ totalSinMatch }} árbitros sin match</span>
+                · <span class="text-warning-emphasis fw-bold">{{ totalSinMatch }} árbitros sin coincidencia</span>
               </template>
               <template v-if="totalConflictos > 0">
                 · <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> {{ totalConflictos }} {{ totalConflictos === 1 ? 'conflicto' : 'conflictos' }}</span>
@@ -66,7 +66,7 @@
           </div>
         </div>
 
-        <div class="card-body p-3 bg-light">
+        <div class="card-body p-2 p-md-3 bg-light">
 
           <div v-if="cargando" class="text-center py-5">
             <span class="spinner-border text-danger"></span>
@@ -116,7 +116,8 @@
               <p class="text-muted m-0 fw-bold">No se encontraron partidos con ese filtro.</p>
             </div>
 
-            <div v-else class="border rounded shadow-sm bg-white grilla-container">
+            <!-- ============ VISTA DESKTOP: TABLA TIPO EXCEL ============ -->
+            <div v-else class="d-none d-md-block border rounded shadow-sm bg-white grilla-container">
               <table class="table align-middle mb-0 grilla-designaciones">
                 <thead>
                   <tr>
@@ -187,9 +188,9 @@
                       </td>
                       <td class="text-center">
                         <span
-                          v-if="avisosPartido(p).length > 0"
+                          v-if="avisosPartido(p) > 0"
                           class="material-icons text-warning alerta-partido"
-                          :title="avisosPartido(p).join('\n')"
+                          :title="textoAvisosPartido(p)"
                           @click="mostrarAvisosPartido(p)"
                         >warning</span>
                         <button @click="quitarPartido(p)" class="btn btn-borrar" title="Eliminar partido">
@@ -201,6 +202,105 @@
                   </template>
                 </tbody>
               </table>
+            </div>
+
+            <!-- ============ VISTA MÓVIL: CARDS POR CANCHA ============ -->
+            <div class="d-md-none">
+              <div v-for="c in canchas" :key="'mob-' + fechaSeleccionada + '-' + c.nombre" class="mb-3">
+
+                <!-- Encabezado de cancha (editable) -->
+                <div class="cancha-mobile-header d-flex justify-content-between align-items-center gap-2 px-3 py-2 rounded-top-3">
+                  <div class="d-flex align-items-center gap-2 flex-grow-1">
+                    <span class="material-icons fs-5">stadium</span>
+                    <input
+                      :value="c.nombre"
+                      @change="renombrarCancha(c, $event.target.value)"
+                      class="input-cancha fw-bold text-uppercase"
+                      title="Editar nombre de la cancha"
+                    >
+                    <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }}</span>
+                  </div>
+                  <button @click="agregarPartido(c.nombre)" class="btn btn-sm btn-outline-light fw-bold py-0 px-2 text-nowrap">
+                    <i class="bi bi-plus-lg"></i>
+                  </button>
+                </div>
+
+                <!-- Un card por partido -->
+                <div
+                  v-for="p in c.partidos"
+                  :key="'mobp-' + (p.id || p._uid)"
+                  class="card shadow-sm border-light-subtle rounded-0 partido-mobile"
+                  :class="{ 'partido-modificado': p._dirty || !p.id }"
+                >
+                  <div class="card-body p-3">
+
+                    <!-- Fila superior: categoría + horario + acciones -->
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                      <input
+                        v-model="p.categoria_division"
+                        @input="marcar(p)"
+                        class="form-control form-control-sm shadow-none fw-bold border-0 px-0 flex-grow-1"
+                        placeholder="Categoría / División..."
+                        style="font-size: 0.9rem;"
+                      >
+                      <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                        <span
+                          v-if="avisosPartido(p) > 0"
+                          class="material-icons text-warning alerta-partido"
+                          @click="mostrarAvisosPartido(p)"
+                        >warning</span>
+                        <button @click="quitarPartido(p)" class="btn btn-borrar" title="Eliminar partido">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Horario -->
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <span class="material-icons text-danger" style="font-size: 18px;">schedule</span>
+                      <input v-model="p.horario" @input="marcar(p)" type="time" class="form-control form-control-sm shadow-none w-auto">
+                    </div>
+
+                    <!-- Equipos -->
+                    <div class="bg-light rounded p-2 mb-2">
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-secondary" style="font-size: 0.6rem;">LOCAL</span>
+                        <input v-model="p.local" @input="marcar(p)" class="form-control form-control-sm shadow-none border-0 bg-transparent px-1 fw-bold" placeholder="Equipo local...">
+                      </div>
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.6rem;">VISIT</span>
+                        <input v-model="p.visitante" @input="marcar(p)" class="form-control form-control-sm shadow-none border-0 bg-transparent px-1 fw-bold" placeholder="Equipo visitante...">
+                      </div>
+                    </div>
+
+                    <!-- Árbitros -->
+                    <div class="row g-2">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">Árbitro 1</label>
+                        <button
+                          @click="abrirSelectorArbitro(p, 1)"
+                          class="celda-arbitro-mobile w-100 text-start"
+                          :class="{ 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.arbitro_1 }"
+                        >
+                          {{ p.arbitro_1 || '— Asignar —' }}
+                        </button>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">Árbitro 2</label>
+                        <button
+                          @click="abrirSelectorArbitro(p, 2)"
+                          class="celda-arbitro-mobile w-100 text-start"
+                          :class="{ 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.arbitro_2 }"
+                        >
+                          {{ p.arbitro_2 || '— Asignar —' }}
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
             </div>
 
           </template>
@@ -365,7 +465,7 @@
 
       <div v-if="totalSinMatch > 0" class="alert alert-warning small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>Hay <strong>{{ totalSinMatch }}</strong> árbitros sin match en el padrón: esos partidos <strong>no</strong> les van a aparecer en su panel. Están marcados en amarillo en la grilla.</span>
+        <span>Hay <strong>{{ totalSinMatch }}</strong> árbitros sin coincidencia en el padrón: esos partidos <strong>no</strong> les van a aparecer en su panel. Están marcados en amarillo en la grilla.</span>
       </div>
 
       <div class="mb-3">
@@ -595,7 +695,7 @@ const etiquetaDia = (fecha) => {
 }
 
 /* ====================================================
-   VALIDACIONES AL DESIGNAR (advertencias no bloqueantes)
+   VALIDACIONES AL DESIGNAR
    Chequea disponibilidad del día, sanciones, licencia y
    doble designación en otra cancha el mismo día.
    ==================================================== */
@@ -614,7 +714,6 @@ const campoDisponibilidad = (fecha) => {
 }
 
 // ¿La fecha del partido cae dentro de una cadena de fechas de licencia?
-// Las fechas de licencia vienen como "2026-03-29, 2026-04-05" (coma-separadas)
 const fechaEnCadena = (cadenaFechas, fechaPartido) => {
   if (!cadenaFechas || !fechaPartido) return false
   const objetivo = String(fechaPartido).slice(0, 10)
@@ -663,14 +762,21 @@ const fechaAnteriorA = (fecha) => {
   return anterior
 }
 
-// Genera el listado de advertencias para un árbitro en un partido dado.
-// partidoActual se excluye del chequeo de doble designación.
+// Formatea una fecha ISO (YYYY-MM-DD) como dd-mm-aaaa para los avisos
+const fechaAviso = (fecha) => {
+  const f = String(fecha || '').slice(0, 10)
+  const m = f.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : f
+}
+
+
 const validarDesignacion = (arbitro, partidoActual) => {
   const avisos = []
   if (!arbitro) return avisos
 
   const fecha = partidoActual.fecha
-  const nombre = `${arbitro.apellido}, ${arbitro.nombre}`
+  // Nombre tal como se guarda en el partido (apellido + nombre en mayúscula)
+  const nombreArbitro = `${arbitro.apellido} ${arbitro.nombre}`
 
   // 1. Disponibilidad del día + rango horario declarado
   const campo = campoDisponibilidad(fecha)
@@ -678,9 +784,8 @@ const validarDesignacion = (arbitro, partidoActual) => {
     const disp = arbitro[`disponibilidad_${campo}`]
     const etiquetaDiaCorta = campo === 'sabado' ? 'los sábados' : 'los domingos'
     if (disp === 'NO') {
-      avisos.push(`${nombre} marcó que NO tiene disponibilidad ${etiquetaDiaCorta}.`)
+      avisos.push(`No tiene disponibilidad ${etiquetaDiaCorta}.`)
     } else {
-      // Rango horario declarado (ej: disponibilidad_sabado_desde/hasta)
       const desde = arbitro[`disponibilidad_${campo}_desde`]
       const hasta = arbitro[`disponibilidad_${campo}_hasta`]
       const horaPartido = String(partidoActual.horario || '').slice(0, 5)
@@ -690,11 +795,15 @@ const validarDesignacion = (arbitro, partidoActual) => {
           const m = String(h).slice(0, 5).match(/^(\d{1,2}):(\d{2})$/)
           return m ? Number(m[1]) * 60 + Number(m[2]) : null
         }
-        const mp = min(horaPartido)
+        let mp = min(horaPartido)
         const md = min(desde)
-        const mh = min(hasta)
+        let mh = min(hasta)
+
+        // Un "hasta" de 00:00 / 00:01 significa fin del día (medianoche).
+        if (mh !== null && md !== null && mh <= md) mh += 24 * 60
+
         if (mp !== null && md !== null && mh !== null && (mp < md || mp > mh)) {
-          avisos.push(`${nombre} está designado a las ${horaPartido}, fuera de su disponibilidad ${etiquetaDiaCorta} (${String(desde).slice(0, 5)} a ${String(hasta).slice(0, 5)}).`)
+          avisos.push(`Designado a las ${horaPartido}, fuera de su disponibilidad ${etiquetaDiaCorta} (${String(desde).slice(0, 5)} a ${String(hasta).slice(0, 5)}).`)
         }
       }
     }
@@ -702,33 +811,47 @@ const validarDesignacion = (arbitro, partidoActual) => {
 
   // 2. Sanción vigente (solo si la fecha del partido cae dentro del rango)
   if (arbitro.sancion_vigente && fechaEnRangoSancion(arbitro, fecha)) {
-    const hasta = arbitro.sancion_indefinida ? 'indefinida' : (arbitro.sancion_hasta || 's/f')
-    avisos.push(`${nombre} tiene una SANCIÓN VIGENTE para esa fecha (hasta: ${hasta}).`)
+    const hasta = arbitro.sancion_indefinida ? 'indefinida' : fechaAviso(arbitro.sancion_hasta)
+    avisos.push(`Tiene una SANCIÓN VIGENTE para esa fecha (hasta: ${hasta || 's/f'}).`)
   }
 
   // 3. Licencia que coincida con la fecha exacta del partido
   if (fechaEnCadena(arbitro.fecha_licencia_aprobada, fecha)) {
-    avisos.push(`${nombre} tiene LICENCIA APROBADA para esa fecha.`)
+    avisos.push(`Tiene LICENCIA APROBADA para esa fecha.`)
   }
   if (fechaEnCadena(arbitro.fecha_licencia_rechazada, fecha)) {
-    avisos.push(`${nombre} tiene una LICENCIA RECHAZADA para esa fecha.`)
+    avisos.push(`Tiene una LICENCIA RECHAZADA para esa fecha.`)
   }
 
-  // 4. Doble designación el mismo día (en cualquier otra cancha/partido)
-  const yaDesignado = designaciones.value.filter(p => {
-    if (p === partidoActual) return false
-    if (String(p.fecha || '').slice(0, 10) !== String(fecha || '').slice(0, 10)) return false
-    return p.id_arb1 === arbitro.id || p.id_arb2 === arbitro.id
+  // 4. Doble designación en OTRA cancha el mismo día.
+  const nombreNorm = normalizarTexto(nombreArbitro)
+  const canchaActual = normalizarTexto(partidoActual.cancha)
+
+  const esEsteArbitro = (p, num) => {
+    const idP = num === 1 ? p.id_arb1 : p.id_arb2
+    const nomP = num === 1 ? p.arbitro_1 : p.arbitro_2
+    if (arbitro.id && Number(idP) === Number(arbitro.id)) return true
+    if (nombreNorm && normalizarTexto(nomP) === nombreNorm) return true
+    return false
+  }
+
+  const canchasDistintas = new Set()
+  designaciones.value.forEach(p => {
+    if (p === partidoActual) return
+    if (String(p.fecha || '').slice(0, 10) !== String(fecha || '').slice(0, 10)) return
+    if (!esEsteArbitro(p, 1) && !esEsteArbitro(p, 2)) return
+
+    const canchaOtro = normalizarTexto(p.cancha)
+    if (canchaOtro && canchaOtro !== canchaActual) {
+      canchasDistintas.add(p.cancha)
+    }
   })
 
-  yaDesignado.forEach(p => {
-    const detalle = `${p.cancha || 'sin cancha'}${p.horario ? ' (' + String(p.horario).slice(0, 5) + ')' : ''}`
-    avisos.push(`${nombre} ya está designado ese día en ${detalle}.`)
+  canchasDistintas.forEach(cancha => {
+    avisos.push(`Ya está designado ese día en otra cancha: ${cancha}.`)
   })
 
   // 5. Mismo equipo (local o visitante) en la fecha anterior.
-  // Primero busca una fecha anterior dentro de la planilla actual; si no hay,
-  // usa la última fecha publicada (histórico) de la semana pasada.
   const equiposActuales = [
     normalizarTexto(partidoActual.local),
     normalizarTexto(partidoActual.visitante)
@@ -742,20 +865,18 @@ const validarDesignacion = (arbitro, partidoActual) => {
 
     if (fechaPreviaPlanilla) {
       fuentePrevia = designaciones.value.filter(p => String(p.fecha || '').slice(0, 10) === fechaPreviaPlanilla)
-      fechaPreviaLabel = etiquetaDia(fechaPreviaPlanilla)
+      fechaPreviaLabel = fechaAviso(fechaPreviaPlanilla)
     } else if (ultimaPublicada.value.fecha) {
-      // Solo usamos la publicada si es anterior a la fecha del partido
       const tsPub = parsearFecha(ultimaPublicada.value.fecha)
       if (tsPub && tsPub < parsearFecha(fecha)) {
         fuentePrevia = ultimaPublicada.value.partidos
-        fechaPreviaLabel = etiquetaDia(String(ultimaPublicada.value.fecha).slice(0, 10))
+        fechaPreviaLabel = fechaAviso(ultimaPublicada.value.fecha)
       }
     }
 
     const clubesRepetidos = new Set()
     fuentePrevia.forEach(p => {
-      const mismoArbitro = Number(p.id_arb1) === arbitro.id || Number(p.id_arb2) === arbitro.id
-      if (!mismoArbitro) return
+      if (!esEsteArbitro(p, 1) && !esEsteArbitro(p, 2)) return
 
       const local = normalizarTexto(p.local)
       const visitante = normalizarTexto(p.visitante)
@@ -764,31 +885,81 @@ const validarDesignacion = (arbitro, partidoActual) => {
     })
 
     clubesRepetidos.forEach(club => {
-      avisos.push(`${nombre} ya dirigió a ${club} la fecha anterior (${fechaPreviaLabel}).`)
+      avisos.push(`Ya dirigió a ${club} la fecha anterior (${fechaPreviaLabel}).`)
     })
   }
 
   return avisos
 }
 
-// Chequea los dos árbitros de un partido y devuelve todos los avisos
+// Resuelve el objeto árbitro de un partido: por id si lo tiene, o buscándolo
+// en el padrón por nombre normalizado (para los cargados por texto del Excel).
+const resolverArbitro = (p, numero) => {
+  const id = numero === 1 ? p.id_arb1 : p.id_arb2
+  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
+
+  if (id && arbitrosPorId.value[id]) return arbitrosPorId.value[id]
+
+  if (nombre) {
+    const buscado = normalizarTexto(nombre).replace(/,/g, '')
+    const encontrado = arbitros.value.find(a => {
+      const apellido = normalizarTexto(a.apellido)
+      const nombreComp = normalizarTexto(a.nombre)
+      const primerNombre = nombreComp.split(' ')[0]
+      return [
+        `${apellido} ${nombreComp}`,
+        `${nombreComp} ${apellido}`,
+        `${apellido} ${primerNombre}`,
+        `${primerNombre} ${apellido}`
+      ].includes(buscado)
+    })
+    if (encontrado) return encontrado
+  }
+  return null
+}
+
+// Devuelve los avisos del partido agrupados por árbitro:
+// [{ nombre, avisos: [...] }]. Solo incluye árbitros que tengan avisos.
+const avisosPartidoPorArbitro = (p) => {
+  const grupos = []
+  const chequear = (numero) => {
+    const nombreTexto = numero === 1 ? p.arbitro_1 : p.arbitro_2
+    if (!nombreTexto) return
+
+    const a = resolverArbitro(p, numero)
+    // Si no está en el padrón (árbitro externo por texto), igual chequeamos
+    // doble cancha y mismo equipo usando un objeto mínimo con el nombre.
+    const arbitroParaValidar = a || { id: null, apellido: nombreTexto, nombre: '' }
+    const avisos = validarDesignacion(arbitroParaValidar, p)
+    if (avisos.length > 0) {
+      const etiqueta = a ? `${a.apellido}, ${a.nombre}` : nombreTexto
+      grupos.push({ nombre: etiqueta, avisos })
+    }
+  }
+  chequear(1)
+  chequear(2)
+  return grupos
+}
+
+// Total de avisos de un partido (para saber si mostrar el ícono de alerta)
 const avisosPartido = (p) => {
-  const avisos = []
-  if (p.id_arb1 && arbitrosPorId.value[p.id_arb1]) {
-    avisos.push(...validarDesignacion(arbitrosPorId.value[p.id_arb1], p))
-  }
-  if (p.id_arb2 && arbitrosPorId.value[p.id_arb2]) {
-    avisos.push(...validarDesignacion(arbitrosPorId.value[p.id_arb2], p))
-  }
-  return avisos
+  return avisosPartidoPorArbitro(p).reduce((total, g) => total + g.avisos.length, 0)
+}
+
+// Arma el texto del modal: por cada árbitro con problemas, su nombre y
+// debajo sus avisos con viñeta. Separa los árbitros con una línea en blanco.
+const textoAvisosPartido = (p) => {
+  const grupos = avisosPartidoPorArbitro(p)
+  return grupos
+    .map(g => `${g.nombre}:\n` + g.avisos.map(a => `• ${a}`).join('\n'))
+    .join('\n\n')
 }
 
 const mostrarAvisosPartido = (p) => {
-  const avisos = avisosPartido(p)
-  if (avisos.length === 0) return
+  if (avisosPartido(p) === 0) return
   notificar({
     titulo: '⚠ Avisos de este partido',
-    mensaje: avisos.join('\n'),
+    mensaje: textoAvisosPartido(p),
     tipo: 'warning'
   })
 }
@@ -854,7 +1025,7 @@ const totalSinMatch = computed(() => {
 
 // Cantidad de partidos que tienen al menos un aviso de designación
 const totalConflictos = computed(() => {
-  return designaciones.value.filter(p => avisosPartido(p).length > 0).length
+  return designaciones.value.filter(p => avisosPartido(p) > 0).length
 })
 
 /* ====================================================
@@ -868,7 +1039,6 @@ const marcar = (p) => {
 const hayCambios = computed(() => {
   return eliminados.value.length > 0 || designaciones.value.some(p => p._dirty || !p.id)
 })
-
 
 const renombrarCancha = (grupo, nuevoNombre) => {
   const nombre = String(nuevoNombre || '').trim().toUpperCase()
@@ -914,8 +1084,6 @@ const quitarPartido = (p) => {
 
 /* ====================================================
    SELECTOR DE ARBITRO (modal compartido con buscador)
-   Un solo listado en el DOM en vez de un <select> con
-   todo el padrón por cada celda: mucho más liviano.
    ==================================================== */
 const abrirSelectorArbitro = (partido, numero) => {
   seleccionArbitro.value = { partido, numero }
@@ -953,12 +1121,10 @@ const asignarArbitro = (arbitro) => {
     if (sel.numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id; p._ext1 = false }
     else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id; p._ext2 = false }
 
-    // Validaciones: avisamos pero no bloqueamos
-    const avisos = validarDesignacion(arbitro, p)
-    if (avisos.length > 0) {
+    if (avisosPartido(p) > 0) {
       notificar({
         titulo: '⚠ Atención con esta designación',
-        mensaje: avisos.join('\n'),
+        mensaje: textoAvisosPartido(p),
         tipo: 'warning'
       })
     }
@@ -1008,10 +1174,7 @@ const tituloCelda = (p, numero) => {
 }
 
 /* ====================================================
-   AUTOGUARDADO (con debounce, sin botón manual)
-   Cada edición marca el partido y programa un guardado
-   a los 1,5s. Guarda en segundo plano y actualiza los
-   ids de los partidos nuevos sin recargar toda la grilla.
+   AUTOGUARDADO
    ==================================================== */
 const limpiarPartidoParaEnviar = (p) => ({
   id: p.id,
@@ -1233,7 +1396,6 @@ const manejarArchivoExcel = (event) => {
         if (cancha) ultimaCancha = cancha
         else cancha = ultimaCancha
 
-        // FECHA: mismo criterio de arrastre por si también viene combinada
         let fecha = aFechaISO(leer('fecha'))
         if (fecha) ultimaFecha = fecha
         else fecha = ultimaFecha
@@ -1339,7 +1501,7 @@ const eliminarTodo = async () => {
 }
 
 /* ====================================================
-   TESORERIA (placeholder: la lógica se implementa a futuro)
+   TESORERIA
    ==================================================== */
 const enviarATesoreria = () => {
   notificar({
@@ -1349,11 +1511,6 @@ const enviarATesoreria = () => {
   })
 }
 
-/* ====================================================
-   PUBLICAR (PDF PARA LA WEB + PANEL DE ARBITROS)
-   Si hay cambios sin guardar, se guardan automáticamente
-   antes de publicar. El PDF se genera en el servidor.
-   ==================================================== */
 const abrirModalPublicar = async (modo) => {
   modoPublicacion.value = modo
 
@@ -1642,5 +1799,70 @@ onMounted(async () => {
   padding: 10px 24px;
   z-index: 1050;
   border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ====================================================
+   VISTA MÓVIL: CARDS POR CANCHA
+   ==================================================== */
+.cancha-mobile-header {
+  background-color: #1f2937;
+  color: #fff;
+}
+
+/* El input de cancha ya tiene color blanco (definido arriba),
+   funciona igual en el header móvil */
+.cancha-mobile-header .input-cancha {
+  width: 100%;
+}
+
+.partido-mobile {
+  border-left: 3px solid #dc3545;
+}
+
+.partido-mobile:last-child {
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+  overflow: hidden;
+}
+
+/* Card de partido con cambios sin guardar o nuevo */
+.partido-mobile.partido-modificado {
+  background-color: #eff6ff;
+}
+
+/* Botón de árbitro en móvil: como un select tocable */
+.celda-arbitro-mobile {
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  background: #fff;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  color: #212529;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.celda-arbitro-mobile:active {
+  background: #f8f9fa;
+}
+
+.celda-arbitro-mobile.vacio {
+  color: #adb5bd;
+}
+
+/* Árbitro que no matcheó con el padrón (hay que corregirlo) */
+.celda-arbitro-mobile.sin-match {
+  background-color: #fef08a;
+  border-color: #eab308;
+  font-weight: 700;
+}
+
+/* Árbitro externo puesto a mano (intencional) */
+.celda-arbitro-mobile.externo {
+  background-color: #dbeafe;
+  border-color: #60a5fa;
+  font-weight: 600;
 }
 </style>
