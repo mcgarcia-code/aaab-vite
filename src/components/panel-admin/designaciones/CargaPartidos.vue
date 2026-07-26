@@ -14,6 +14,9 @@
               <template v-if="totalSinMatch > 0">
                 · <span class="text-warning-emphasis fw-bold">{{ totalSinMatch }} árbitros sin match</span>
               </template>
+              <template v-if="totalConflictos > 0">
+                · <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> {{ totalConflictos }} {{ totalConflictos === 1 ? 'conflicto' : 'conflictos' }}</span>
+              </template>
             </span>
           </div>
 
@@ -183,6 +186,12 @@
                         </button>
                       </td>
                       <td class="text-center">
+                        <span
+                          v-if="avisosPartido(p).length > 0"
+                          class="material-icons text-warning alerta-partido"
+                          :title="avisosPartido(p).join('\n')"
+                          @click="mostrarAvisosPartido(p)"
+                        >warning</span>
                         <button @click="quitarPartido(p)" class="btn btn-borrar" title="Eliminar partido">
                           <span class="material-icons">delete</span>
                         </button>
@@ -425,8 +434,8 @@ const notificar = inject('notificar')
 
 const designaciones = ref([])
 const arbitros = ref([])
-const soloActivos = ref(false)
 const cargando = ref(false)
+const ultimaPublicada = ref({ fecha: null, partidos: [] })
 const eliminados = ref([])
 let contadorUid = 0
 
@@ -489,11 +498,71 @@ const cargarArbitros = async () => {
   try {
     const res = await api.get({
       entity: 'arbitros',
-      action: 'getArbitrosBasico',
-      payload: { soloActivos: soloActivos.value }
+      action: 'getArbitros'
     })
-    if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
+
+    // Sanciones (para validar sanción vigente / en proceso al designar)
+    let sancionesPayload = []
+    try {
+      const resSanciones = await api.get({ entity: 'sanciones', action: 'obtenerSanciones' })
+      sancionesPayload = resSanciones.payload || []
+    } catch (e) {
+      console.error('Error al cargar sanciones:', e)
+    }
+
+    const sancionesMap = {}
+    sancionesPayload.forEach(s => {
+      const estado = Number(s.estado_dinamico)
+      if (estado === 1 || estado === 3) {
+        if (!sancionesMap[s.id_arbitro]) {
+          sancionesMap[s.id_arbitro] = s
+        } else if (estado === 1 && Number(sancionesMap[s.id_arbitro].estado_dinamico) === 3) {
+          sancionesMap[s.id_arbitro] = s
+        }
+      }
+    })
+
+    if ((res.ok || res.success) && res.payload) {
+      arbitros.value = res.payload.map(a => {
+        const sancion = sancionesMap[a.id]
+        const estadoSancion = sancion ? Number(sancion.estado_dinamico) : null
+        return {
+          ...a,
+          sancion_vigente: estadoSancion === 1,
+          sancion_proceso: estadoSancion === 3,
+          sancion_desde: sancion ? (sancion.desde || sancion.desde_formateada || null) : null,
+          sancion_hasta: sancion ? (sancion.hasta || sancion.hasta_formateada || null) : null,
+          sancion_indefinida: sancion ? Number(sancion.es_indefinido) === 1 : false
+        }
+      })
+    }
   } catch (err) { console.error(err) }
+}
+
+// Índice id -> árbitro, para las validaciones al designar
+const arbitrosPorId = computed(() => {
+  const mapa = {}
+  arbitros.value.forEach(a => { mapa[a.id] = a })
+  return mapa
+})
+
+// Trae los partidos de la última fecha publicada (histórico), para avisar
+// si un árbitro repite club respecto de la fecha anterior ya publicada.
+const cargarUltimaPublicada = async () => {
+  try {
+    const res = await api.get({
+      entity: 'designaciones',
+      action: 'obtenerUltimaFechaPublicada'
+    })
+    if ((res.ok || res.success) && res.payload) {
+      ultimaPublicada.value = {
+        fecha: res.payload.fecha || null,
+        partidos: res.payload.partidos || []
+      }
+    }
+  } catch (err) {
+    console.error('Error al cargar la última fecha publicada:', err)
+  }
 }
 
 /* ====================================================
@@ -525,6 +594,205 @@ const etiquetaDia = (fecha) => {
   return `${dias[d.getDay()]} ${dd}/${mm}/${d.getFullYear()}`
 }
 
+/* ====================================================
+   VALIDACIONES AL DESIGNAR (advertencias no bloqueantes)
+   Chequea disponibilidad del día, sanciones, licencia y
+   doble designación en otra cancha el mismo día.
+   ==================================================== */
+const normalizarTexto = (valor) => {
+  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+// Devuelve el sufijo de campo de disponibilidad según el día de la semana
+const campoDisponibilidad = (fecha) => {
+  const ts = parsearFecha(fecha)
+  if (!ts) return null
+  const dia = new Date(ts).getDay()
+  if (dia === 6) return 'sabado'
+  if (dia === 0) return 'domingo'
+  return null // entre semana no hay campo de disponibilidad cargado
+}
+
+// ¿La fecha del partido cae dentro de una cadena de fechas de licencia?
+// Las fechas de licencia vienen como "2026-03-29, 2026-04-05" (coma-separadas)
+const fechaEnCadena = (cadenaFechas, fechaPartido) => {
+  if (!cadenaFechas || !fechaPartido) return false
+  const objetivo = String(fechaPartido).slice(0, 10)
+  return String(cadenaFechas)
+    .split(',')
+    .map(f => f.trim().slice(0, 10))
+    .includes(objetivo)
+}
+
+// ¿La fecha del partido cae dentro del rango de una sanción?
+// Compara por día (ignora la hora si el backend la incluye).
+const fechaEnRangoSancion = (arbitro, fechaPartido) => {
+  const ts = parsearFecha(fechaPartido)
+  if (!ts) return false
+  if (arbitro.sancion_indefinida) return true
+
+  const desde = arbitro.sancion_desde ? parsearFecha(arbitro.sancion_desde) : 0
+  const hasta = arbitro.sancion_hasta ? parsearFecha(arbitro.sancion_hasta) : 0
+
+  // Si no hay fechas de rango, la sanción vigente aplica igual
+  if (!desde && !hasta) return true
+
+  if (desde && ts < desde) return false
+  if (hasta && ts > hasta) return false
+  return true
+}
+
+// Devuelve la fecha (YYYY-MM-DD) inmediatamente anterior a la dada,
+// entre las fechas que existen en la planilla. Null si no hay anterior.
+const fechaAnteriorA = (fecha) => {
+  const objetivo = parsearFecha(fecha)
+  if (!objetivo) return null
+
+  let anterior = null
+  let anteriorTs = 0
+
+  designaciones.value.forEach(p => {
+    const f = String(p.fecha || '').slice(0, 10)
+    const ts = parsearFecha(f)
+    if (ts && ts < objetivo && ts > anteriorTs) {
+      anteriorTs = ts
+      anterior = f
+    }
+  })
+
+  return anterior
+}
+
+// Genera el listado de advertencias para un árbitro en un partido dado.
+// partidoActual se excluye del chequeo de doble designación.
+const validarDesignacion = (arbitro, partidoActual) => {
+  const avisos = []
+  if (!arbitro) return avisos
+
+  const fecha = partidoActual.fecha
+  const nombre = `${arbitro.apellido}, ${arbitro.nombre}`
+
+  // 1. Disponibilidad del día + rango horario declarado
+  const campo = campoDisponibilidad(fecha)
+  if (campo) {
+    const disp = arbitro[`disponibilidad_${campo}`]
+    const etiquetaDiaCorta = campo === 'sabado' ? 'los sábados' : 'los domingos'
+    if (disp === 'NO') {
+      avisos.push(`${nombre} marcó que NO tiene disponibilidad ${etiquetaDiaCorta}.`)
+    } else {
+      // Rango horario declarado (ej: disponibilidad_sabado_desde/hasta)
+      const desde = arbitro[`disponibilidad_${campo}_desde`]
+      const hasta = arbitro[`disponibilidad_${campo}_hasta`]
+      const horaPartido = String(partidoActual.horario || '').slice(0, 5)
+
+      if (horaPartido && desde && hasta) {
+        const min = (h) => {
+          const m = String(h).slice(0, 5).match(/^(\d{1,2}):(\d{2})$/)
+          return m ? Number(m[1]) * 60 + Number(m[2]) : null
+        }
+        const mp = min(horaPartido)
+        const md = min(desde)
+        const mh = min(hasta)
+        if (mp !== null && md !== null && mh !== null && (mp < md || mp > mh)) {
+          avisos.push(`${nombre} está designado a las ${horaPartido}, fuera de su disponibilidad ${etiquetaDiaCorta} (${String(desde).slice(0, 5)} a ${String(hasta).slice(0, 5)}).`)
+        }
+      }
+    }
+  }
+
+  // 2. Sanción vigente (solo si la fecha del partido cae dentro del rango)
+  if (arbitro.sancion_vigente && fechaEnRangoSancion(arbitro, fecha)) {
+    const hasta = arbitro.sancion_indefinida ? 'indefinida' : (arbitro.sancion_hasta || 's/f')
+    avisos.push(`${nombre} tiene una SANCIÓN VIGENTE para esa fecha (hasta: ${hasta}).`)
+  }
+
+  // 3. Licencia que coincida con la fecha exacta del partido
+  if (fechaEnCadena(arbitro.fecha_licencia_aprobada, fecha)) {
+    avisos.push(`${nombre} tiene LICENCIA APROBADA para esa fecha.`)
+  }
+  if (fechaEnCadena(arbitro.fecha_licencia_rechazada, fecha)) {
+    avisos.push(`${nombre} tiene una LICENCIA RECHAZADA para esa fecha.`)
+  }
+
+  // 4. Doble designación el mismo día (en cualquier otra cancha/partido)
+  const yaDesignado = designaciones.value.filter(p => {
+    if (p === partidoActual) return false
+    if (String(p.fecha || '').slice(0, 10) !== String(fecha || '').slice(0, 10)) return false
+    return p.id_arb1 === arbitro.id || p.id_arb2 === arbitro.id
+  })
+
+  yaDesignado.forEach(p => {
+    const detalle = `${p.cancha || 'sin cancha'}${p.horario ? ' (' + String(p.horario).slice(0, 5) + ')' : ''}`
+    avisos.push(`${nombre} ya está designado ese día en ${detalle}.`)
+  })
+
+  // 5. Mismo equipo (local o visitante) en la fecha anterior.
+  // Primero busca una fecha anterior dentro de la planilla actual; si no hay,
+  // usa la última fecha publicada (histórico) de la semana pasada.
+  const equiposActuales = [
+    normalizarTexto(partidoActual.local),
+    normalizarTexto(partidoActual.visitante)
+  ].filter(Boolean)
+
+  if (equiposActuales.length > 0) {
+    const fechaPreviaPlanilla = fechaAnteriorA(fecha)
+
+    let fuentePrevia = []
+    let fechaPreviaLabel = ''
+
+    if (fechaPreviaPlanilla) {
+      fuentePrevia = designaciones.value.filter(p => String(p.fecha || '').slice(0, 10) === fechaPreviaPlanilla)
+      fechaPreviaLabel = etiquetaDia(fechaPreviaPlanilla)
+    } else if (ultimaPublicada.value.fecha) {
+      // Solo usamos la publicada si es anterior a la fecha del partido
+      const tsPub = parsearFecha(ultimaPublicada.value.fecha)
+      if (tsPub && tsPub < parsearFecha(fecha)) {
+        fuentePrevia = ultimaPublicada.value.partidos
+        fechaPreviaLabel = etiquetaDia(String(ultimaPublicada.value.fecha).slice(0, 10))
+      }
+    }
+
+    const clubesRepetidos = new Set()
+    fuentePrevia.forEach(p => {
+      const mismoArbitro = Number(p.id_arb1) === arbitro.id || Number(p.id_arb2) === arbitro.id
+      if (!mismoArbitro) return
+
+      const local = normalizarTexto(p.local)
+      const visitante = normalizarTexto(p.visitante)
+      if (local && equiposActuales.includes(local)) clubesRepetidos.add(p.local)
+      if (visitante && equiposActuales.includes(visitante)) clubesRepetidos.add(p.visitante)
+    })
+
+    clubesRepetidos.forEach(club => {
+      avisos.push(`${nombre} ya dirigió a ${club} la fecha anterior (${fechaPreviaLabel}).`)
+    })
+  }
+
+  return avisos
+}
+
+// Chequea los dos árbitros de un partido y devuelve todos los avisos
+const avisosPartido = (p) => {
+  const avisos = []
+  if (p.id_arb1 && arbitrosPorId.value[p.id_arb1]) {
+    avisos.push(...validarDesignacion(arbitrosPorId.value[p.id_arb1], p))
+  }
+  if (p.id_arb2 && arbitrosPorId.value[p.id_arb2]) {
+    avisos.push(...validarDesignacion(arbitrosPorId.value[p.id_arb2], p))
+  }
+  return avisos
+}
+
+const mostrarAvisosPartido = (p) => {
+  const avisos = avisosPartido(p)
+  if (avisos.length === 0) return
+  notificar({
+    titulo: '⚠ Avisos de este partido',
+    mensaje: avisos.join('\n'),
+    tipo: 'warning'
+  })
+}
+
 const fechas = computed(() => {
   const mapa = {}
   designaciones.value.forEach(p => {
@@ -546,10 +814,6 @@ watch(fechas, (nuevas) => {
 /* ====================================================
    AGRUPADO POR CANCHA (DEL DIA SELECCIONADO)
    ==================================================== */
-const normalizarTexto = (valor) => {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
-}
-
 const canchas = computed(() => {
   const busqueda = normalizarTexto(filtroBusqueda.value)
 
@@ -588,6 +852,11 @@ const totalSinMatch = computed(() => {
   return contador
 })
 
+// Cantidad de partidos que tienen al menos un aviso de designación
+const totalConflictos = computed(() => {
+  return designaciones.value.filter(p => avisosPartido(p).length > 0).length
+})
+
 /* ====================================================
    EDICION INLINE
    ==================================================== */
@@ -600,10 +869,6 @@ const hayCambios = computed(() => {
   return eliminados.value.length > 0 || designaciones.value.some(p => p._dirty || !p.id)
 })
 
-const cantidadCambios = computed(() => {
-  const modificados = designaciones.value.filter(p => p._dirty || !p.id).length
-  return modificados + eliminados.value.length
-})
 
 const renombrarCancha = (grupo, nuevoNombre) => {
   const nombre = String(nuevoNombre || '').trim().toUpperCase()
@@ -681,12 +946,22 @@ const asignarArbitro = (arbitro) => {
   const p = sel.partido
 
   if (!arbitro) {
-    if (sel.numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null }
-    else { p.arbitro_2 = ''; p.id_arb2 = null }
+    if (sel.numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null; p._ext1 = false }
+    else { p.arbitro_2 = ''; p.id_arb2 = null; p._ext2 = false }
   } else {
     const nombreCompleto = `${arbitro.apellido} ${arbitro.nombre}`.toUpperCase()
-    if (sel.numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id }
-    else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id }
+    if (sel.numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id; p._ext1 = false }
+    else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id; p._ext2 = false }
+
+    // Validaciones: avisamos pero no bloqueamos
+    const avisos = validarDesignacion(arbitro, p)
+    if (avisos.length > 0) {
+      notificar({
+        titulo: '⚠ Atención con esta designación',
+        mensaje: avisos.join('\n'),
+        tipo: 'warning'
+      })
+    }
   }
 
   marcar(p)
@@ -1144,6 +1419,7 @@ const publicarDesignaciones = async () => {
 onMounted(async () => {
   await cargarArbitros()
   await cargarDesignaciones()
+  cargarUltimaPublicada()
 })
 </script>
 
@@ -1318,6 +1594,14 @@ onMounted(async () => {
 
 .btn-borrar .material-icons {
   font-size: 17px;
+}
+
+/* Ícono de alerta cuando el partido tiene un conflicto de designación */
+.alerta-partido {
+  font-size: 18px;
+  cursor: pointer;
+  vertical-align: middle;
+  margin-right: 2px;
 }
 
 /* ====================================================
