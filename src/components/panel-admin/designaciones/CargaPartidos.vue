@@ -10,7 +10,10 @@
               <i class="bi bi-clipboard2-check-fill me-1"></i> Carga de Designaciones
             </h4>
             <span class="text-muted small d-block mt-1">
-              Total: {{ designaciones.length }} partidos en {{ canchas.length }} canchas
+              Total: {{ designaciones.length }} partidos
+              <template v-if="totalSinMatch > 0">
+                · <span class="text-warning-emphasis fw-bold">{{ totalSinMatch }} árbitros sin match</span>
+              </template>
             </span>
           </div>
 
@@ -53,50 +56,83 @@
             <p class="text-muted small mt-1 mb-0">Usá el botón "Cargar Excel" para importar la planilla de partidos.</p>
           </div>
 
-          <div v-else class="row g-3">
-            <div v-for="c in canchas" :key="c.nombre" class="col-12 col-md-6 col-xl-4">
-              <div class="card shadow-sm border-light-subtle h-100 rounded-3">
+          <template v-else>
 
-                <div class="card-header bg-white d-flex justify-content-between align-items-center py-2 px-3 rounded-top-3">
-                  <div class="d-flex align-items-center gap-2">
-                    <span class="material-icons text-danger fs-5">stadium</span>
-                    <span class="fw-bold text-dark text-uppercase" style="font-size: 0.9rem;">{{ c.nombre }}</span>
-                  </div>
-                  <span class="badge bg-danger rounded-pill">{{ c.partidos.length }}</span>
-                </div>
-
-                <div class="card-body p-2">
-                  <div
-                    v-for="p in c.partidos"
-                    :key="p.id"
-                    class="border-bottom border-light-subtle py-2 px-2 small"
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+              <ul class="nav nav-pills gap-2 flex-wrap">
+                <li v-for="f in fechas" :key="f.fecha" class="nav-item">
+                  <button
+                    @click="fechaSeleccionada = f.fecha"
+                    class="nav-link py-1 px-3 fw-bold small shadow-sm"
+                    :class="fechaSeleccionada === f.fecha ? 'active bg-danger text-white' : 'bg-white border text-dark'"
                   >
-                    <div class="d-flex justify-content-between text-muted mb-1" style="font-size: 0.7rem;">
-                      <span class="fw-bold">{{ p.fecha }}</span>
-                      <span class="fw-bold">{{ p.horario }}</span>
-                    </div>
-                    <div class="text-dark fw-bold mb-1">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</div>
-                    <div class="text-muted" style="font-size: 0.7rem;">{{ p.categoria_division }}</div>
-                    <div class="d-flex flex-wrap gap-1 mt-1">
-                      <span class="badge text-bg-light border" style="font-size: 0.65rem;">
-                        <span class="material-icons align-middle me-1" style="font-size: 10px;">sports</span>{{ p.arbitro_1 || 'Sin asignar' }}
-                      </span>
-                      <span class="badge text-bg-light border" style="font-size: 0.65rem;">
-                        <span class="material-icons align-middle me-1" style="font-size: 10px;">sports</span>{{ p.arbitro_2 || 'Sin asignar' }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="card-footer bg-white border-top py-2 px-3 rounded-bottom-3">
-                  <button @click="abrirEdicionCancha(c)" class="btn btn-outline-danger btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-2">
-                    <span class="material-icons fs-6">edit</span> Editar Cancha
+                    {{ etiquetaDia(f.fecha) }}
+                    <span class="badge ms-1" :class="fechaSeleccionada === f.fecha ? 'bg-white text-danger' : 'bg-light text-dark border'">{{ f.cantidad }}</span>
                   </button>
-                </div>
+                </li>
+              </ul>
 
+              <div class="input-group input-group-sm shadow-sm" style="max-width: 320px;">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input
+                  v-model="filtroBusqueda"
+                  type="text"
+                  class="form-control border-start-0 shadow-none"
+                  placeholder="Buscar cancha, equipo o árbitro..."
+                >
               </div>
             </div>
-          </div>
+
+            <div v-if="canchas.length === 0" class="text-center p-4 bg-white rounded shadow-sm border">
+              <span class="material-icons text-muted opacity-50 d-block mb-2 fs-1">search_off</span>
+              <p class="text-muted m-0 fw-bold">No se encontraron partidos con ese filtro.</p>
+            </div>
+
+            <div v-else class="row g-3">
+              <div v-for="c in canchas" :key="fechaSeleccionada + '-' + c.nombre" class="col-12 col-md-6 col-xl-4">
+                <div class="card shadow-sm border-light-subtle h-100 rounded-3">
+
+                  <div class="card-header bg-white d-flex justify-content-between align-items-center py-2 px-3 rounded-top-3">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="material-icons text-danger fs-5">stadium</span>
+                      <span class="fw-bold text-dark text-uppercase" style="font-size: 0.9rem;">{{ c.nombre }}</span>
+                    </div>
+                    <span class="badge bg-danger rounded-pill">{{ c.partidos.length }}</span>
+                  </div>
+
+                  <div class="card-body p-2 cancha-scroll">
+                    <div
+                      v-for="p in c.partidos"
+                      :key="p.id"
+                      class="border-bottom border-light-subtle py-2 px-2 small"
+                    >
+                      <div class="d-flex justify-content-between text-muted mb-1" style="font-size: 0.7rem;">
+                        <span class="fw-bold">{{ p.categoria_division }}</span>
+                        <span class="fw-bold">{{ p.horario }}</span>
+                      </div>
+                      <div class="text-dark fw-bold mb-1">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</div>
+                      <div class="d-flex flex-wrap gap-1 mt-1">
+                        <span class="badge border" :class="claseBadgeArbitro(p.arbitro_1, p.id_arb1)" style="font-size: 0.65rem;">
+                          <span class="material-icons align-middle me-1" style="font-size: 10px;">sports</span>{{ p.arbitro_1 || 'Sin asignar' }}
+                        </span>
+                        <span class="badge border" :class="claseBadgeArbitro(p.arbitro_2, p.id_arb2)" style="font-size: 0.65rem;">
+                          <span class="material-icons align-middle me-1" style="font-size: 10px;">sports</span>{{ p.arbitro_2 || 'Sin asignar' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card-footer bg-white border-top py-2 px-3 rounded-bottom-3">
+                    <button @click="abrirEdicionCancha(c)" class="btn btn-outline-danger btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-2">
+                      <span class="material-icons fs-6">edit</span> Editar Cancha
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </template>
 
         </div>
       </div>
@@ -203,7 +239,10 @@
             <input v-model="p.visitante" type="text" class="form-control form-control-sm shadow-none">
           </div>
           <div class="col-12 col-md-6">
-            <label class="form-label small fw-bold mb-1">Árbitro 1</label>
+            <label class="form-label small fw-bold mb-1">
+              Árbitro 1
+              <span v-if="p.arbitro_1 && !p.id_arb1" class="badge bg-warning text-dark ms-1" style="font-size: 0.6rem;">SIN MATCH</span>
+            </label>
             <select
               :value="valorSelectArbitro(p, 1)"
               @change="cambiarArbitro(p, 1, $event.target.value)"
@@ -217,7 +256,10 @@
             </select>
           </div>
           <div class="col-12 col-md-6">
-            <label class="form-label small fw-bold mb-1">Árbitro 2</label>
+            <label class="form-label small fw-bold mb-1">
+              Árbitro 2
+              <span v-if="p.arbitro_2 && !p.id_arb2" class="badge bg-warning text-dark ms-1" style="font-size: 0.6rem;">SIN MATCH</span>
+            </label>
             <select
               :value="valorSelectArbitro(p, 2)"
               @change="cambiarArbitro(p, 2, $event.target.value)"
@@ -266,7 +308,12 @@
     >
       <div class="alert alert-info small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-info-circle-fill"></i>
-        <span>Se generará la planilla Excel con los <strong>{{ designaciones.length }}</strong> partidos cargados (con las modificaciones hechas) y quedará visible para el público.</span>
+        <span>Se publicarán los <strong>{{ designaciones.length }}</strong> partidos: se genera la planilla Excel para la web pública y cada árbitro verá sus partidos en su panel.</span>
+      </div>
+
+      <div v-if="totalSinMatch > 0" class="alert alert-warning small py-2 px-3 d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>Hay <strong>{{ totalSinMatch }}</strong> árbitros sin match en el padrón: esos partidos <strong>no</strong> les van a aparecer en su panel. Podés corregirlos desde "Editar Cancha".</span>
       </div>
 
       <div class="mb-3">
@@ -313,7 +360,7 @@
 
 
 <script setup>
-import { ref, onMounted, computed, reactive, inject } from 'vue'
+import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
@@ -336,6 +383,9 @@ const designaciones = ref([])
 const arbitros = ref([])
 const soloActivos = ref(false)
 const cargando = ref(false)
+
+const fechaSeleccionada = ref('')
+const filtroBusqueda = ref('')
 
 const mostrarModalCarga = ref(false)
 const subiendoExcel = ref(false)
@@ -387,12 +437,73 @@ const cargarArbitros = async () => {
 }
 
 /* ====================================================
-   AGRUPADO POR CANCHA
+   FECHAS (PESTAÑAS POR DIA)
    ==================================================== */
-const canchas = computed(() => {
+const parsearFecha = (fecha) => {
+  if (!fecha) return 0
+  const texto = String(fecha).trim()
+
+  let m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
+  if (m) {
+    const anio = m[3].length === 2 ? '20' + m[3] : m[3]
+    return new Date(Number(anio), Number(m[2]) - 1, Number(m[1])).getTime()
+  }
+
+  m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
+
+  return 0
+}
+
+const etiquetaDia = (fecha) => {
+  const timestamp = parsearFecha(fecha)
+  if (!timestamp) return fecha
+  const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO']
+  return `${dias[new Date(timestamp).getDay()]} ${fecha}`
+}
+
+const fechas = computed(() => {
   const mapa = {}
   designaciones.value.forEach(p => {
-    const nombre = (p.cancha || 'SIN CANCHA').trim()
+    const f = String(p.fecha || '').trim() || 'Sin fecha'
+    mapa[f] = (mapa[f] || 0) + 1
+  })
+
+  return Object.keys(mapa)
+    .sort((a, b) => parsearFecha(a) - parsearFecha(b))
+    .map(f => ({ fecha: f, cantidad: mapa[f] }))
+})
+
+watch(fechas, (nuevas) => {
+  if (!nuevas.find(f => f.fecha === fechaSeleccionada.value)) {
+    fechaSeleccionada.value = nuevas.length > 0 ? nuevas[0].fecha : ''
+  }
+}, { immediate: true })
+
+/* ====================================================
+   AGRUPADO POR CANCHA (DEL DIA SELECCIONADO)
+   ==================================================== */
+const normalizarTexto = (valor) => {
+  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+const canchas = computed(() => {
+  const busqueda = normalizarTexto(filtroBusqueda.value)
+
+  const delDia = designaciones.value.filter(p => {
+    const f = String(p.fecha || '').trim() || 'Sin fecha'
+    if (f !== fechaSeleccionada.value) return false
+
+    if (!busqueda) return true
+    const textoPartido = normalizarTexto(
+      `${p.cancha} ${p.local} ${p.visitante} ${p.arbitro_1} ${p.arbitro_2} ${p.categoria_division}`
+    )
+    return textoPartido.includes(busqueda)
+  })
+
+  const mapa = {}
+  delDia.forEach(p => {
+    const nombre = String(p.cancha || 'SIN CANCHA').trim()
     if (!mapa[nombre]) mapa[nombre] = []
     mapa[nombre].push(p)
   })
@@ -405,13 +516,23 @@ const canchas = computed(() => {
     }))
 })
 
+const totalSinMatch = computed(() => {
+  let contador = 0
+  designaciones.value.forEach(p => {
+    if (p.arbitro_1 && !p.id_arb1) contador++
+    if (p.arbitro_2 && !p.id_arb2) contador++
+  })
+  return contador
+})
+
+const claseBadgeArbitro = (nombre, id) => {
+  if (nombre && !id) return 'text-bg-warning'
+  return 'text-bg-light'
+}
+
 /* ====================================================
    IMPORTACION DE EXCEL
    ==================================================== */
-const normalizarTexto = (valor) => {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
-}
-
 const mapearCabecera = (texto) => {
   const t = normalizarTexto(texto).replace(/[^a-z0-9]/g, '')
   if (t.includes('fecha')) return 'fecha'
@@ -436,14 +557,22 @@ const formatearHorarioExcel = (valor) => {
 }
 
 const buscarIdArbitro = (nombreCelda) => {
-  const buscado = normalizarTexto(nombreCelda)
+  const buscado = normalizarTexto(nombreCelda).replace(/,/g, '')
   if (!buscado) return null
 
   const encontrado = arbitros.value.find(a => {
-    const apellidoNombre = normalizarTexto(`${a.apellido} ${a.nombre}`)
-    const nombreApellido = normalizarTexto(`${a.nombre} ${a.apellido}`)
-    const apellidoComaNombre = normalizarTexto(`${a.apellido}, ${a.nombre}`)
-    return buscado === apellidoNombre || buscado === nombreApellido || buscado === apellidoComaNombre
+    const apellido = normalizarTexto(a.apellido)
+    const nombreCompleto = normalizarTexto(a.nombre)
+    const primerNombre = nombreCompleto.split(' ')[0]
+
+    const variantes = [
+      `${apellido} ${nombreCompleto}`,
+      `${nombreCompleto} ${apellido}`,
+      `${apellido} ${primerNombre}`,
+      `${primerNombre} ${apellido}`
+    ]
+
+    return variantes.includes(buscado)
   })
 
   return encontrado ? encontrado.id : null
@@ -595,10 +724,13 @@ const cerrarEdicion = () => {
 }
 
 const agregarPartido = () => {
-  const base = partidosEdit.value[0]
+  const fechaBase = (fechaSeleccionada.value && fechaSeleccionada.value !== 'Sin fecha')
+    ? fechaSeleccionada.value
+    : (partidosEdit.value[0] ? partidosEdit.value[0].fecha : '')
+
   partidosEdit.value.push({
     id: null,
-    fecha: base ? base.fecha : '',
+    fecha: fechaBase,
     cancha: nombreCanchaEdit.value,
     categoria_division: '',
     horario: '',
@@ -712,23 +844,29 @@ const eliminarTodo = async () => {
 }
 
 /* ====================================================
-   PUBLICAR
+   PUBLICAR (WEB PUBLICA + PANEL DE ARBITROS)
    ==================================================== */
 const generarExcelPublicacion = () => {
   const filas = []
 
-  canchas.value.forEach(c => {
-    c.partidos.forEach(p => {
-      filas.push({
-        FECHA: p.fecha,
-        CANCHA: p.cancha,
-        CATEGORIA: p.categoria_division,
-        HORARIO: p.horario,
-        LOCAL: p.local,
-        VISITANTE: p.visitante,
-        'ARBITRO 1': p.arbitro_1,
-        'ARBITRO 2': p.arbitro_2
-      })
+  const ordenadas = [...designaciones.value].sort((a, b) => {
+    const compFecha = parsearFecha(a.fecha) - parsearFecha(b.fecha)
+    if (compFecha !== 0) return compFecha
+    const compCancha = String(a.cancha || '').localeCompare(String(b.cancha || ''))
+    if (compCancha !== 0) return compCancha
+    return String(a.horario || '').localeCompare(String(b.horario || ''))
+  })
+
+  ordenadas.forEach(p => {
+    filas.push({
+      FECHA: p.fecha,
+      CANCHA: p.cancha,
+      CATEGORIA: p.categoria_division,
+      HORARIO: p.horario,
+      LOCAL: p.local,
+      VISITANTE: p.visitante,
+      'ARBITRO 1': p.arbitro_1,
+      'ARBITRO 2': p.arbitro_2
     })
   })
 
@@ -757,7 +895,7 @@ const publicarDesignaciones = async () => {
 
     const res = await api.post({
       entity: 'designaciones',
-      action: 'subirDesignaciones',
+      action: 'publicarDesignaciones',
       payload: {
         torneo: formPublicar.torneo,
         fecha: formPublicar.fecha,
@@ -767,7 +905,7 @@ const publicarDesignaciones = async () => {
     })
 
     if (res.ok && res.payload && res.payload.success) {
-      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Las designaciones ya están visibles para el público.', tipo: 'success' })
+      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Las designaciones se publicaron en la web y en el panel de los árbitros.', tipo: 'success' })
       mostrarModalPublicar.value = false
       formPublicar.torneo = ''
       formPublicar.fecha = ''
@@ -808,5 +946,11 @@ onMounted(async () => {
 
 .animate__animated {
   animation-duration: 0.5s;
+}
+
+/* Limitar la altura de cada cancha para que el scroll general no sea eterno */
+.cancha-scroll {
+  max-height: 320px;
+  overflow-y: auto;
 }
 </style>
