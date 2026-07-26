@@ -100,7 +100,10 @@ const routes = [
       { path: 'historial-notificaciones', name: 'HistorialNotificacionesArbitro', component: () => import('../components/panel-arbitro/notificaciones/HistorialNotificaciones.vue') },
 
       // --- DELEGADO TÉCNICO ---
-      { path: 'delegado-tecnico', name: 'DelegadoTecnico', component: () => import('../components/panel-arbitro/delegado-tecnico/DelegadosTecnicos.vue') }
+      { path: 'delegado-tecnico', name: 'DelegadoTecnico', component: () => import('../components/panel-arbitro/delegado-tecnico/DelegadosTecnicos.vue') },
+
+      // --- DESIGNACIONES ---
+      { path: 'designaciones', name: 'DesignacionesArbitro', component: () => import('../components/panel-arbitro/designaciones/MisDesignaciones.vue') },
     ]
   },
 
@@ -138,6 +141,7 @@ const routes = [
       // --- DESIGNACIONES ---
       { path: 'designaciones', name: 'DesignacionesAdmin', component: () => import('../components/panel-admin/designaciones/DesignacionesAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
       { path: 'designaciones/disponibilidad-licencias', name: 'DisponibilidadLicencias', component: () => import('../components/panel-admin/designaciones/DisponibilidadLicencias.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
+      { path: 'designaciones/partidos', name: 'CargaPartidos', component: () => import('../components/panel-admin/designaciones/CargaPartidos.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
 
       // --- TRIBUNAL ---
       { path: 'tribunal', name: 'TribunalAdmin', component: () => import('../components/panel-admin/etica/TribunalAdmin.vue'), meta: { roles: ['admin', 'etica', 'secretario', 'designador'] } },

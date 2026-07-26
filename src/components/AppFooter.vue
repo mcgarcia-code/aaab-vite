@@ -114,7 +114,7 @@
     <!-- COPYRIGHT BAR -->
     <div class="py-3 text-center" style="background-color: #0a0a0a; border-top: 1px solid #1a1a1a;">
       <span class="small" style="color: #444; letter-spacing: 1px;">
-        MCG Solutions © 2026 | Asociación de Árbitros de Handball
+       © 2026 Asociación de Árbitros de Handball | Todos los derechos reservados.
       </span>
     </div>
   </footer>

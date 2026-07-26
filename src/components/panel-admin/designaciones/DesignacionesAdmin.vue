@@ -62,6 +62,13 @@ const opcionesDesignaciones = [
     icon: 'bi bi-calendar-date-fill',
     desc: 'Chequear disponibilidad y licencias de árbitros.'
   },
+  {
+    to: '/panel-admin/designaciones/partidos',
+    title: 'Carga y visualización de partidos',
+    icon: 'bi bi-clipboard2-data-fill',
+    desc: 'Visualizar partidos asignados y pendientes.'
+  },
+
 ];
 </script>
 
