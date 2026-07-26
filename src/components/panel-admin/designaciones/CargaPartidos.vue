@@ -2,9 +2,9 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px;">
 
-        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3 rounded-top">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-clipboard2-check-fill me-1"></i> Carga de Designaciones
@@ -94,7 +94,7 @@
               <p class="text-muted m-0 fw-bold">No se encontraron partidos con ese filtro.</p>
             </div>
 
-            <div v-else class="table-responsive border rounded shadow-sm bg-white grilla-container">
+            <div v-else class="border rounded shadow-sm bg-white grilla-container">
               <table class="table align-middle mb-0 grilla-designaciones">
                 <thead>
                   <tr>
@@ -329,6 +329,7 @@
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
@@ -890,47 +891,105 @@ const eliminarTodo = async () => {
 /* ====================================================
    PUBLICAR (WEB PUBLICA + PANEL DE ARBITROS)
    ==================================================== */
-const mostrarFechaArg = (fecha) => {
-  if (!fecha) return ''
-  const partes = String(fecha).slice(0, 10).split('-')
-  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha
-}
+const generarExcelPublicacion = async () => {
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Designaciones')
 
-const generarExcelPublicacion = () => {
-  const filas = []
-
-  const ordenadas = [...designaciones.value].sort((a, b) => {
-    const compFecha = parsearFecha(a.fecha) - parsearFecha(b.fecha)
-    if (compFecha !== 0) return compFecha
-    const compCancha = String(a.cancha || '').localeCompare(String(b.cancha || ''))
-    if (compCancha !== 0) return compCancha
-    return String(a.horario || '').localeCompare(String(b.horario || ''))
-  })
-
-  ordenadas.forEach(p => {
-    filas.push({
-      FECHA: mostrarFechaArg(p.fecha),
-      CANCHA: p.cancha,
-      CATEGORIA: p.categoria_division,
-      HORARIO: p.horario,
-      LOCAL: p.local,
-      VISITANTE: p.visitante,
-      'ARBITRO 1': p.arbitro_1,
-      'ARBITRO 2': p.arbitro_2
-    })
-  })
-
-  const ws = XLSX.utils.json_to_sheet(filas)
-  ws['!cols'] = [
-    { wch: 12 }, { wch: 25 }, { wch: 28 }, { wch: 10 },
-    { wch: 25 }, { wch: 25 }, { wch: 28 }, { wch: 28 }
+  ws.columns = [
+    { width: 28 }, { width: 26 }, { width: 10 },
+    { width: 24 }, { width: 24 }, { width: 26 }, { width: 26 }
   ]
 
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Designaciones')
+  const bordeFino = {
+    top: { style: 'thin' }, left: { style: 'thin' },
+    bottom: { style: 'thin' }, right: { style: 'thin' }
+  }
 
-  const base64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
-  return 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + base64
+  // Título general
+  ws.mergeCells('A1:G1')
+  const celdaTitulo = ws.getCell('A1')
+  celdaTitulo.value = 'DESIGNACIONES DE ÁRBITROS - AAAB'
+  celdaTitulo.font = { bold: true, size: 14 }
+  celdaTitulo.alignment = { horizontal: 'center', vertical: 'middle' }
+
+  ws.mergeCells('A2:G2')
+  const celdaSubtitulo = ws.getCell('A2')
+  celdaSubtitulo.value = `${formPublicar.torneo} — ${formPublicar.fecha}`
+  celdaSubtitulo.font = { bold: true, size: 11, color: { argb: 'FFDC2626' } }
+  celdaSubtitulo.alignment = { horizontal: 'center' }
+
+  let filaActual = 4
+
+  fechas.value.forEach(f => {
+    // Fila del día (fondo oscuro, como el separador de la grilla)
+    ws.mergeCells(`A${filaActual}:G${filaActual}`)
+    const celdaDia = ws.getCell(`A${filaActual}`)
+    celdaDia.value = etiquetaDia(f.fecha)
+    celdaDia.font = { bold: true, color: { argb: 'FFFFFFFF' } }
+    celdaDia.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } }
+    celdaDia.alignment = { horizontal: 'center', vertical: 'middle' }
+    filaActual++
+
+    // Cabecera de columnas (fondo amarillo, como la planilla original)
+    const cabeceras = ['Cancha', 'Categoría / División', 'Horario', 'Local', 'Visitante', 'Árbitro 1', 'Árbitro 2']
+    const filaCabecera = ws.getRow(filaActual)
+    cabeceras.forEach((texto, i) => {
+      const celda = filaCabecera.getCell(i + 1)
+      celda.value = texto
+      celda.font = { bold: true }
+      celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC000' } }
+      celda.border = bordeFino
+    })
+    filaActual++
+
+    // Partidos agrupados por cancha, con la celda de cancha combinada en vertical
+    const delDia = designaciones.value.filter(p => (String(p.fecha || '').trim() || 'Sin fecha') === f.fecha)
+
+    const grupos = {}
+    delDia.forEach(p => {
+      const nombre = String(p.cancha || 'SIN CANCHA').trim()
+      if (!grupos[nombre]) grupos[nombre] = []
+      grupos[nombre].push(p)
+    })
+
+    Object.keys(grupos).sort((a, b) => a.localeCompare(b)).forEach(nombre => {
+      const partidos = grupos[nombre].sort((a, b) => String(a.horario || '').localeCompare(String(b.horario || '')))
+      const filaInicio = filaActual
+
+      partidos.forEach(p => {
+        const fila = ws.getRow(filaActual)
+        const valores = [nombre, p.categoria_division, p.horario, p.local, p.visitante, p.arbitro_1, p.arbitro_2]
+        valores.forEach((valor, i) => {
+          const celda = fila.getCell(i + 1)
+          celda.value = valor || ''
+          celda.border = bordeFino
+          if (i === 2) celda.alignment = { horizontal: 'center' }
+        })
+        filaActual++
+      })
+
+      // Celda de cancha combinada (como las celdas combinadas del Excel original)
+      if (partidos.length > 1) {
+        ws.mergeCells(`A${filaInicio}:A${filaActual - 1}`)
+      }
+      const celdaCancha = ws.getCell(`A${filaInicio}`)
+      celdaCancha.font = { bold: true }
+      celdaCancha.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true }
+      celdaCancha.border = bordeFino
+    })
+
+    filaActual++ // fila en blanco entre días
+  })
+
+  // Convertir a base64 con el mismo formato data-URI que espera subirDesignaciones
+  const buffer = await wb.xlsx.writeBuffer()
+  const bytes = new Uint8Array(buffer)
+  let binario = ''
+  const tamanoBloque = 0x8000
+  for (let i = 0; i < bytes.length; i += tamanoBloque) {
+    binario += String.fromCharCode.apply(null, bytes.subarray(i, i + tamanoBloque))
+  }
+  return 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + btoa(binario)
 }
 
 const publicarDesignaciones = async () => {
@@ -941,7 +1000,7 @@ const publicarDesignaciones = async () => {
 
   publicando.value = true
   try {
-    const archivoBase64 = generarExcelPublicacion()
+    const archivoBase64 = await generarExcelPublicacion()
 
     const res = await api.post({
       entity: 'designaciones',
@@ -999,11 +1058,17 @@ onMounted(async () => {
 }
 
 /* ====================================================
-   GRILLA TIPO EXCEL
+   GRILLA TIPO EXCEL (un solo scroll: el de la página)
    ==================================================== */
 .grilla-container {
-  max-height: 72vh;
-  overflow-y: auto;
+  overflow: visible;
+}
+
+/* En pantallas chicas la tabla necesita scroll horizontal propio */
+@media (max-width: 991px) {
+  .grilla-container {
+    overflow-x: auto;
+  }
 }
 
 .grilla-designaciones {

@@ -7,10 +7,10 @@
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
             <i class="bi bi-calendar-week me-2"></i> Mis Designaciones
           </h4>
-          <p class="text-muted small m-0 mt-1">Estos son los partidos que te fueron designados</p>
+          <p class="text-muted small m-0 mt-1">Tus partidos designados, próximos y anteriores</p>
         </div>
 
-        <div v-if="infoTorneo" class="d-flex flex-wrap gap-2 justify-content-md-end">
+        <div v-if="infoTorneo && vistaActiva === 'proximas'" class="d-flex flex-wrap gap-2 justify-content-md-end">
           <span class="badge bg-dark px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
             <i class="bi bi-trophy-fill"></i> {{ infoTorneo.torneo }}
           </span>
@@ -27,57 +27,114 @@
           <p class="text-muted mt-3 m-0 fw-bold small">Cargando tus designaciones...</p>
         </div>
 
-        <div v-else-if="partidos.length === 0" class="text-center py-5 text-muted bg-light rounded-3">
-          <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">event_busy</span>
-          <p class="m-0 fw-bold">Todavía no tenés designaciones publicadas.</p>
-          <p class="small m-0 mt-1">Cuando la asociación publique las designaciones del fin de semana, vas a ver tus partidos acá.</p>
-        </div>
+        <template v-else>
 
-        <div v-else>
-          <div v-for="dia in partidosPorDia" :key="dia.fecha" class="mb-4">
+          <ul class="nav nav-pills gap-2 mb-4 flex-wrap">
+            <li class="nav-item">
+              <button
+                @click="vistaActiva = 'proximas'"
+                class="nav-link py-2 px-4 fw-bold small shadow-sm d-flex align-items-center gap-2"
+                :class="vistaActiva === 'proximas' ? 'active bg-danger text-white' : 'bg-light border text-dark'"
+              >
+                <i class="bi bi-calendar-plus"></i> Próximas
+                <span class="badge rounded-pill" :class="vistaActiva === 'proximas' ? 'bg-white text-danger' : 'bg-secondary'">{{ proximas.length }}</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button
+                @click="vistaActiva = 'anteriores'"
+                class="nav-link py-2 px-4 fw-bold small shadow-sm d-flex align-items-center gap-2"
+                :class="vistaActiva === 'anteriores' ? 'active bg-dark text-white' : 'bg-light border text-dark'"
+              >
+                <i class="bi bi-clock-history"></i> Anteriores
+                <span class="badge rounded-pill" :class="vistaActiva === 'anteriores' ? 'bg-white text-dark' : 'bg-secondary'">{{ anteriores.length }}</span>
+              </button>
+            </li>
+          </ul>
 
-            <div class="d-flex align-items-center gap-2 mb-3">
-              <span class="badge bg-dark fs-6 rounded-pill px-3 py-2 shadow-sm">
-                <i class="bi bi-calendar-day me-1"></i> {{ etiquetaDia(dia.fecha) }}
-              </span>
-              <span class="text-muted small fw-bold">{{ dia.partidos.length }} {{ dia.partidos.length === 1 ? 'partido' : 'partidos' }}</span>
+          <!-- PROXIMAS -->
+          <div v-if="vistaActiva === 'proximas'">
+            <div v-if="proximas.length === 0" class="text-center py-5 text-muted bg-light rounded-3">
+              <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">event_busy</span>
+              <p class="m-0 fw-bold">No tenés designaciones próximas.</p>
+              <p class="small m-0 mt-1">Cuando la asociación publique las designaciones del fin de semana, vas a ver tus partidos acá.</p>
             </div>
 
-            <div class="row g-3">
-              <div v-for="p in dia.partidos" :key="p.id" class="col-12 col-md-6 col-xl-4">
-                <div class="card h-100 shadow-sm border-0 border-start border-danger border-4 rounded-3 partido-card">
-                  <div class="card-body p-3">
+            <div v-else v-for="dia in diasProximas" :key="'prox-' + dia.fecha" class="mb-4">
+              <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <span class="badge bg-danger fs-6 rounded-pill px-3 py-2 shadow-sm">
+                  <i class="bi bi-calendar-day me-1"></i> {{ etiquetaDia(dia.fecha) }}
+                </span>
+                <span class="text-muted small fw-bold">{{ dia.partidos.length }} {{ dia.partidos.length === 1 ? 'partido' : 'partidos' }}</span>
+              </div>
 
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2 fw-bold">
-                        <i class="bi bi-clock me-1"></i> {{ formatearHora(p.horario) }}
-                      </span>
-                      <span class="small text-muted fw-bold text-uppercase">{{ p.categoria_division }}</span>
+              <div class="timeline">
+                <div v-for="p in dia.partidos" :key="p.id" class="timeline-item">
+                  <div class="timeline-hora">
+                    <span class="hora-burbuja">{{ formatearHora(p.horario) }}</span>
+                  </div>
+                  <div class="timeline-card shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
+                      <span class="fw-bold text-dark text-uppercase">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
+                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
                     </div>
-
-                    <div class="text-dark fw-bold fs-6 mb-1 text-uppercase">
-                      {{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}
-                    </div>
-
-                    <div class="small text-muted mb-3 d-flex align-items-center gap-1">
+                    <div class="small text-muted d-flex align-items-center gap-1 mb-2">
                       <span class="material-icons" style="font-size: 15px;">stadium</span>
                       <span class="fw-bold text-dark">{{ p.cancha }}</span>
                     </div>
-
-                    <div class="bg-light rounded p-2 small d-flex align-items-center gap-2">
-                      <span class="material-icons text-danger" style="font-size: 16px;">groups</span>
-                      <span class="text-dark">
-                        <strong>Pareja:</strong> {{ obtenerPareja(p) }}
-                      </span>
+                    <div class="small d-flex align-items-center gap-1 text-dark">
+                      <span class="material-icons text-danger" style="font-size: 15px;">groups</span>
+                      <strong>Pareja:</strong> {{ obtenerPareja(p) }}
                     </div>
-
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
-        </div>
+
+          <!-- ANTERIORES -->
+          <div v-else class="anteriores">
+            <div v-if="anteriores.length === 0" class="text-center py-5 text-muted bg-light rounded-3">
+              <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">history_toggle_off</span>
+              <p class="m-0 fw-bold">Todavía no tenés designaciones anteriores.</p>
+            </div>
+
+            <div v-else v-for="dia in diasAnteriores" :key="'ant-' + dia.fecha" class="mb-4">
+              <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <span class="badge bg-dark fs-6 rounded-pill px-3 py-2 shadow-sm">
+                  <i class="bi bi-calendar-day me-1"></i> {{ etiquetaDia(dia.fecha) }}
+                </span>
+                <span v-if="dia.partidos[0] && dia.partidos[0].torneo" class="badge bg-secondary-subtle text-secondary border rounded-pill px-3 py-2">
+                  <i class="bi bi-trophy me-1"></i> {{ dia.partidos[0].torneo }}
+                </span>
+                <span class="text-muted small fw-bold">{{ dia.partidos.length }} {{ dia.partidos.length === 1 ? 'partido' : 'partidos' }}</span>
+              </div>
+
+              <div class="timeline">
+                <div v-for="p in dia.partidos" :key="p.id" class="timeline-item">
+                  <div class="timeline-hora">
+                    <span class="hora-burbuja">{{ formatearHora(p.horario) }}</span>
+                  </div>
+                  <div class="timeline-card shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
+                      <span class="fw-bold text-dark text-uppercase">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
+                      <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
+                    </div>
+                    <div class="small text-muted d-flex align-items-center gap-1 mb-2">
+                      <span class="material-icons" style="font-size: 15px;">stadium</span>
+                      <span class="fw-bold text-dark">{{ p.cancha }}</span>
+                    </div>
+                    <div class="small d-flex align-items-center gap-1 text-dark">
+                      <span class="material-icons text-secondary" style="font-size: 15px;">groups</span>
+                      <strong>Pareja:</strong> {{ obtenerPareja(p) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </template>
 
       </div>
     </div>
@@ -103,6 +160,7 @@ useHead({
 const arbitro = ref(auth.getUser() || {})
 const partidos = ref([])
 const cargando = ref(false)
+const vistaActiva = ref('proximas')
 
 const cargarMisDesignaciones = async () => {
   cargando.value = true
@@ -111,7 +169,14 @@ const cargarMisDesignaciones = async () => {
       entity: 'designaciones',
       action: 'obtenerMisDesignaciones'
     })
-    if ((res.ok || res.success) && res.payload) partidos.value = res.payload
+    if ((res.ok || res.success) && res.payload) {
+      partidos.value = res.payload
+
+      // Si no hay próximas pero sí historial, arrancamos en Anteriores
+      if (proximas.value.length === 0 && anteriores.value.length > 0) {
+        vistaActiva.value = 'anteriores'
+      }
+    }
   } catch (err) {
     console.error('Error al cargar mis designaciones:', err)
   } finally {
@@ -119,25 +184,21 @@ const cargarMisDesignaciones = async () => {
   }
 }
 
-const infoTorneo = computed(() => {
-  if (partidos.value.length === 0) return null
-  const primero = partidos.value[0]
-  if (!primero.torneo && !primero.fecha_torneo) return null
-  return { torneo: primero.torneo, fecha_torneo: primero.fecha_torneo }
-})
-
+/* ====================================================
+   FECHAS
+   ==================================================== */
 const parsearFecha = (fecha) => {
   if (!fecha) return 0
-  const texto = String(fecha).trim()
+  const texto = String(fecha).trim().slice(0, 10)
 
-  let m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
+  let m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
+
+  m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
   if (m) {
     const anio = m[3].length === 2 ? '20' + m[3] : m[3]
     return new Date(Number(anio), Number(m[2]) - 1, Number(m[1])).getTime()
   }
-
-  m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
-  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
 
   return 0
 }
@@ -153,25 +214,62 @@ const etiquetaDia = (fecha) => {
 }
 
 const formatearHora = (horario) => {
-  if (!horario) return '-'
+  if (!horario) return '--:--'
   return String(horario).slice(0, 5)
 }
 
-const partidosPorDia = computed(() => {
+const fechaLimpia = (fecha) => {
+  const f = String(fecha || '').trim().slice(0, 10)
+  return (!f || f.startsWith('0000')) ? '' : f
+}
+
+const hoy = () => {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d.getTime()
+}
+
+/* ====================================================
+   PROXIMAS / ANTERIORES
+   ==================================================== */
+const proximas = computed(() => {
+  return partidos.value.filter(p => {
+    const t = parsearFecha(fechaLimpia(p.fecha))
+    return !t || t >= hoy()
+  })
+})
+
+const anteriores = computed(() => {
+  return partidos.value.filter(p => {
+    const t = parsearFecha(fechaLimpia(p.fecha))
+    return t && t < hoy()
+  })
+})
+
+const agruparPorDia = (lista, orden) => {
   const mapa = {}
-  partidos.value.forEach(p => {
-    let f = String(p.fecha || '').trim().slice(0, 10)
-    if (!f || f.startsWith('0000')) f = 'Sin fecha'
+  lista.forEach(p => {
+    const f = fechaLimpia(p.fecha) || 'Sin fecha'
     if (!mapa[f]) mapa[f] = []
     mapa[f].push(p)
   })
 
   return Object.keys(mapa)
-    .sort((a, b) => parsearFecha(a) - parsearFecha(b))
+    .sort((a, b) => orden === 'desc' ? parsearFecha(b) - parsearFecha(a) : parsearFecha(a) - parsearFecha(b))
     .map(fecha => ({
       fecha,
       partidos: mapa[fecha].sort((a, b) => String(a.horario || '').localeCompare(String(b.horario || '')))
     }))
+}
+
+const diasProximas = computed(() => agruparPorDia(proximas.value, 'asc'))
+const diasAnteriores = computed(() => agruparPorDia(anteriores.value, 'desc'))
+
+const infoTorneo = computed(() => {
+  if (proximas.value.length === 0) return null
+  const primero = proximas.value[0]
+  if (!primero.torneo && !primero.fecha_torneo) return null
+  return { torneo: primero.torneo, fecha_torneo: primero.fecha_torneo }
 })
 
 const obtenerPareja = (p) => {
@@ -185,13 +283,78 @@ onMounted(cargarMisDesignaciones)
 </script>
 
 <style scoped>
-.partido-card {
+/* ====================================================
+   VISTA TIMELINE
+   ==================================================== */
+.timeline {
+  position: relative;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 14px;
+  position: relative;
+  padding-bottom: 16px;
+}
+
+/* Línea vertical que conecta los partidos del día */
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 34px;
+  top: 34px;
+  bottom: 0;
+  width: 2px;
+  background: #e5e7eb;
+}
+
+.timeline-item:last-child::before {
+  display: none;
+}
+
+.timeline-hora {
+  width: 70px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.hora-burbuja {
+  display: block;
+  background: #dc2626;
+  color: #fff;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 5px 0;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+}
+
+.timeline-card {
+  flex-grow: 1;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #dc2626;
+  border-radius: 10px;
+  padding: 10px 14px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.partido-card:hover {
+.timeline-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Variante apagada para las designaciones anteriores */
+.anteriores .hora-burbuja {
+  background: #6b7280;
+  box-shadow: 0 2px 6px rgba(107, 114, 128, 0.3);
+}
+
+.anteriores .timeline-card {
+  border-left-color: #9ca3af;
+  background: #fafafa;
 }
 
 .animate__animated { animation-duration: 0.5s; }
