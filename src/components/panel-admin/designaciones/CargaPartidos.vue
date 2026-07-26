@@ -560,6 +560,8 @@ const confirmarCargaExcel = async () => {
       payload: { partidos: partidosImportados.value }
     })
 
+    console.log('Respuesta cargarDesignaciones:', res)
+
     if (res.ok && res.payload && res.payload.success) {
       notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || `Se cargaron ${partidosImportados.value.length} partidos.`, tipo: 'success' })
       cerrarModalCarga()
@@ -569,7 +571,7 @@ const confirmarCargaExcel = async () => {
     }
   } catch (err) {
     console.error('Error al cargar designaciones:', err)
-    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al guardar los partidos.', tipo: 'danger' })
+    notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al guardar los partidos.', tipo: 'danger' })
   } finally {
     subiendoExcel.value = false
   }
@@ -671,7 +673,7 @@ const guardarCancha = async () => {
     }
   } catch (err) {
     console.error('Error al guardar cancha:', err)
-    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al guardar los cambios.', tipo: 'danger' })
+    notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al guardar los cambios.', tipo: 'danger' })
   } finally {
     guardando.value = false
   }
