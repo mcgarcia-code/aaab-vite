@@ -50,7 +50,7 @@
 
                     <div class="d-flex justify-content-between align-items-center mb-2">
                       <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2 fw-bold">
-                        <i class="bi bi-clock me-1"></i> {{ p.horario || '-' }}
+                        <i class="bi bi-clock me-1"></i> {{ formatearHora(p.horario) }}
                       </span>
                       <span class="small text-muted fw-bold text-uppercase">{{ p.categoria_division }}</span>
                     </div>
@@ -144,15 +144,24 @@ const parsearFecha = (fecha) => {
 
 const etiquetaDia = (fecha) => {
   const timestamp = parsearFecha(fecha)
-  if (!timestamp) return fecha
+  if (!timestamp) return fecha || 'Sin fecha'
+  const d = new Date(timestamp)
   const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO']
-  return `${dias[new Date(timestamp).getDay()]} ${fecha}`
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  return `${dias[d.getDay()]} ${dd}/${mm}/${d.getFullYear()}`
+}
+
+const formatearHora = (horario) => {
+  if (!horario) return '-'
+  return String(horario).slice(0, 5)
 }
 
 const partidosPorDia = computed(() => {
   const mapa = {}
   partidos.value.forEach(p => {
-    const f = String(p.fecha || '').trim() || 'Sin fecha'
+    let f = String(p.fecha || '').trim().slice(0, 10)
+    if (!f || f.startsWith('0000')) f = 'Sin fecha'
     if (!mapa[f]) mapa[f] = []
     mapa[f].push(p)
   })

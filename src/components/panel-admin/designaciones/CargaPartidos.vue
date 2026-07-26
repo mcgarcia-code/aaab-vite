@@ -35,7 +35,8 @@
             <button
               @click="mostrarModalPublicar = true"
               class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white"
-              :disabled="designaciones.length === 0"
+              :disabled="designaciones.length === 0 || hayCambios"
+              :title="hayCambios ? 'Guardá los cambios antes de publicar' : ''"
             >
               <span class="material-icons fs-6">cloud_upload</span>
               <span class="fw-bold d-none d-md-inline small">Publicar</span>
@@ -72,14 +73,19 @@
                 </li>
               </ul>
 
-              <div class="input-group input-group-sm shadow-sm" style="max-width: 320px;">
-                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input
-                  v-model="filtroBusqueda"
-                  type="text"
-                  class="form-control border-start-0 shadow-none"
-                  placeholder="Buscar cancha, equipo o árbitro..."
-                >
+              <div class="d-flex gap-2 align-items-center">
+                <div class="input-group input-group-sm shadow-sm" style="max-width: 280px;">
+                  <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                  <input
+                    v-model="filtroBusqueda"
+                    type="text"
+                    class="form-control border-start-0 shadow-none"
+                    placeholder="Buscar cancha, equipo o árbitro..."
+                  >
+                </div>
+                <button @click="agregarCancha" class="btn btn-sm btn-outline-dark fw-bold shadow-sm text-nowrap">
+                  <i class="bi bi-plus-lg"></i> Cancha
+                </button>
               </div>
             </div>
 
@@ -88,52 +94,117 @@
               <p class="text-muted m-0 fw-bold">No se encontraron partidos con ese filtro.</p>
             </div>
 
-            <div v-else class="row g-3">
-              <div v-for="c in canchas" :key="fechaSeleccionada + '-' + c.nombre" class="col-12 col-md-6 col-xl-4">
-                <div class="card shadow-sm border-light-subtle h-100 rounded-3">
+            <div v-else class="table-responsive border rounded shadow-sm bg-white grilla-container">
+              <table class="table align-middle mb-0 grilla-designaciones">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-muted" style="width: 22%;">Categoría / División</th>
+                    <th class="text-uppercase text-muted text-center" style="width: 8%;">Horario</th>
+                    <th class="text-uppercase text-muted" style="width: 17%;">Local</th>
+                    <th class="text-uppercase text-muted" style="width: 17%;">Visitante</th>
+                    <th class="text-uppercase text-muted" style="width: 16%;">Árbitro 1</th>
+                    <th class="text-uppercase text-muted" style="width: 16%;">Árbitro 2</th>
+                    <th style="width: 4%;"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template v-for="c in canchas" :key="fechaSeleccionada + '-' + c.nombre">
 
-                  <div class="card-header bg-white d-flex justify-content-between align-items-center py-2 px-3 rounded-top-3">
-                    <div class="d-flex align-items-center gap-2">
-                      <span class="material-icons text-danger fs-5">stadium</span>
-                      <span class="fw-bold text-dark text-uppercase" style="font-size: 0.9rem;">{{ c.nombre }}</span>
-                    </div>
-                    <span class="badge bg-danger rounded-pill">{{ c.partidos.length }}</span>
-                  </div>
+                    <tr class="fila-cancha">
+                      <td colspan="7">
+                        <div class="d-flex justify-content-between align-items-center gap-2">
+                          <div class="d-flex align-items-center gap-2 flex-grow-1">
+                            <span class="material-icons fs-5">stadium</span>
+                            <input
+                              :value="c.nombre"
+                              @change="renombrarCancha(c, $event.target.value)"
+                              class="input-cancha fw-bold text-uppercase"
+                              title="Editar nombre de la cancha"
+                            >
+                            <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }}</span>
+                          </div>
+                          <button @click="agregarPartido(c.nombre)" class="btn btn-sm btn-outline-light fw-bold py-0 px-2 text-nowrap">
+                            <i class="bi bi-plus-lg"></i> Partido
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
 
-                  <div class="card-body p-2 cancha-scroll">
-                    <div
-                      v-for="p in c.partidos"
-                      :key="p.id"
-                      class="border-bottom border-light-subtle py-2 px-2 small"
-                    >
-                      <div class="d-flex justify-content-between text-muted mb-1" style="font-size: 0.7rem;">
-                        <span class="fw-bold">{{ p.categoria_division }}</span>
-                        <span class="fw-bold">{{ p.horario }}</span>
-                      </div>
-                      <div class="text-dark fw-bold mb-1">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</div>
-                      <div class="d-flex flex-wrap gap-1 mt-1">
-                        <span class="badge border" :class="claseBadgeArbitro(p.arbitro_1, p.id_arb1)" style="font-size: 0.65rem;">
-                          <span class="material-icons align-middle me-1" style="font-size: 10px;">sports</span>{{ p.arbitro_1 || 'Sin asignar' }}
-                        </span>
-                        <span class="badge border" :class="claseBadgeArbitro(p.arbitro_2, p.id_arb2)" style="font-size: 0.65rem;">
-                          <span class="material-icons align-middle me-1" style="font-size: 10px;">sports</span>{{ p.arbitro_2 || 'Sin asignar' }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                    <tr v-for="p in c.partidos" :key="p.id || p._uid" :class="{ 'fila-modificada': p._dirty || !p.id }">
+                      <td>
+                        <input v-model="p.categoria_division" @input="marcar(p)" class="celda-input" placeholder="Categoría...">
+                      </td>
+                      <td>
+                        <input v-model="p.horario" @input="marcar(p)" type="time" class="celda-input text-center">
+                      </td>
+                      <td>
+                        <input v-model="p.local" @input="marcar(p)" class="celda-input" placeholder="Local...">
+                      </td>
+                      <td>
+                        <input v-model="p.visitante" @input="marcar(p)" class="celda-input" placeholder="Visitante...">
+                      </td>
+                      <td>
+                        <select
+                          :value="valorSelectArbitro(p, 1)"
+                          @change="cambiarArbitro(p, 1, $event.target.value)"
+                          class="celda-select"
+                          :class="{ 'sin-match': p.arbitro_1 && !p.id_arb1 }"
+                          :title="p.arbitro_1 && !p.id_arb1 ? 'Sin match en el padrón: ' + p.arbitro_1 : p.arbitro_1"
+                        >
+                          <option value="">—</option>
+                          <option v-if="p.arbitro_1 && !p.id_arb1" value="__texto__">⚠ {{ p.arbitro_1 }}</option>
+                          <option v-for="a in arbitros" :key="'a1-' + a.id" :value="String(a.id)">
+                            {{ a.apellido }}, {{ a.nombre }}
+                          </option>
+                        </select>
+                      </td>
+                      <td>
+                        <select
+                          :value="valorSelectArbitro(p, 2)"
+                          @change="cambiarArbitro(p, 2, $event.target.value)"
+                          class="celda-select"
+                          :class="{ 'sin-match': p.arbitro_2 && !p.id_arb2 }"
+                          :title="p.arbitro_2 && !p.id_arb2 ? 'Sin match en el padrón: ' + p.arbitro_2 : p.arbitro_2"
+                        >
+                          <option value="">—</option>
+                          <option v-if="p.arbitro_2 && !p.id_arb2" value="__texto__">⚠ {{ p.arbitro_2 }}</option>
+                          <option v-for="a in arbitros" :key="'a2-' + a.id" :value="String(a.id)">
+                            {{ a.apellido }}, {{ a.nombre }}
+                          </option>
+                        </select>
+                      </td>
+                      <td class="text-center">
+                        <button @click="quitarPartido(p)" class="btn btn-borrar" title="Eliminar partido">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </td>
+                    </tr>
 
-                  <div class="card-footer bg-white border-top py-2 px-3 rounded-bottom-3">
-                    <button @click="abrirEdicionCancha(c)" class="btn btn-outline-danger btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-2">
-                      <span class="material-icons fs-6">edit</span> Editar Cancha
-                    </button>
-                  </div>
-
-                </div>
-              </div>
+                  </template>
+                </tbody>
+              </table>
             </div>
 
           </template>
 
+        </div>
+      </div>
+    </div>
+
+    <div v-if="hayCambios" class="barra-cambios shadow-lg">
+      <div class="d-flex align-items-center gap-3 flex-wrap justify-content-center">
+        <span class="text-white small fw-bold">
+          <i class="bi bi-pencil-square me-1"></i>
+          {{ cantidadCambios }} {{ cantidadCambios === 1 ? 'cambio sin guardar' : 'cambios sin guardar' }}
+        </span>
+        <div class="d-flex gap-2">
+          <button @click="descartarCambios" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold" :disabled="guardando">
+            Descartar
+          </button>
+          <button @click="guardarCambios" class="btn btn-sm btn-success rounded-pill px-4 fw-bold shadow-sm" :disabled="guardando">
+            <span v-if="guardando" class="spinner-border spinner-border-sm me-2"></span>
+            {{ guardando ? 'Guardando...' : 'Guardar Cambios' }}
+          </button>
         </div>
       </div>
     </div>
@@ -164,6 +235,11 @@
         </div>
       </div>
 
+      <div v-if="partidosImportados.length > 0 && faltanFechas" class="mb-3">
+        <label class="form-label small fw-bold">El archivo no trae fechas. Asignales una a todos los partidos:</label>
+        <input v-model="fechaManual" type="date" class="form-control shadow-none border-secondary-subtle">
+      </div>
+
       <div v-if="partidosImportados.length > 0" class="alert alert-success small py-2 px-3 mb-0">
         Se leyeron <strong>{{ partidosImportados.length }}</strong> partidos
         ({{ sinMatch }} árbitros sin coincidencia en el padrón).
@@ -189,116 +265,6 @@
     </ModalBase>
 
     <ModalBase
-      :show="mostrarModalEdicion"
-      :titulo="'Editar Cancha: ' + canchaEditando"
-      icono="edit_location_alt"
-      colorIcono="bg-danger text-white"
-      maxWidth="950px"
-      @close="cerrarEdicion"
-    >
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Nombre de la Cancha</label>
-        <input
-          v-model="nombreCanchaEdit"
-          type="text"
-          class="form-control shadow-none border-secondary-subtle text-uppercase"
-        >
-      </div>
-
-      <div
-        v-for="(p, idx) in partidosEdit"
-        :key="p.id || 'nuevo-' + idx"
-        class="border rounded-3 p-3 mb-3 bg-light position-relative"
-      >
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="badge bg-danger">Partido {{ idx + 1 }}</span>
-          <button @click="quitarPartido(idx)" class="btn btn-outline-danger btn-sm py-0 px-2" title="Eliminar partido">
-            <span class="material-icons fs-6 align-middle">delete</span>
-          </button>
-        </div>
-
-        <div class="row g-2">
-          <div class="col-6 col-md-3">
-            <label class="form-label small fw-bold mb-1">Fecha</label>
-            <input v-model="p.fecha" type="text" class="form-control form-control-sm shadow-none" placeholder="Ej: 18/04/2026">
-          </div>
-          <div class="col-6 col-md-3">
-            <label class="form-label small fw-bold mb-1">Horario</label>
-            <input v-model="p.horario" type="text" class="form-control form-control-sm shadow-none" placeholder="Ej: 14:00">
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small fw-bold mb-1">Categoría / División</label>
-            <input v-model="p.categoria_division" type="text" class="form-control form-control-sm shadow-none" placeholder="Ej: PRIMERA CABALLEROS A">
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small fw-bold mb-1">Local</label>
-            <input v-model="p.local" type="text" class="form-control form-control-sm shadow-none">
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small fw-bold mb-1">Visitante</label>
-            <input v-model="p.visitante" type="text" class="form-control form-control-sm shadow-none">
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small fw-bold mb-1">
-              Árbitro 1
-              <span v-if="p.arbitro_1 && !p.id_arb1" class="badge bg-warning text-dark ms-1" style="font-size: 0.6rem;">SIN MATCH</span>
-            </label>
-            <select
-              :value="valorSelectArbitro(p, 1)"
-              @change="cambiarArbitro(p, 1, $event.target.value)"
-              class="form-select form-select-sm shadow-none"
-            >
-              <option value="">— Sin asignar —</option>
-              <option v-if="p.arbitro_1 && !p.id_arb1" value="__texto__">{{ p.arbitro_1 }} (texto del Excel)</option>
-              <option v-for="a in arbitros" :key="'a1-' + a.id" :value="String(a.id)">
-                {{ a.apellido }}, {{ a.nombre }}
-              </option>
-            </select>
-          </div>
-          <div class="col-12 col-md-6">
-            <label class="form-label small fw-bold mb-1">
-              Árbitro 2
-              <span v-if="p.arbitro_2 && !p.id_arb2" class="badge bg-warning text-dark ms-1" style="font-size: 0.6rem;">SIN MATCH</span>
-            </label>
-            <select
-              :value="valorSelectArbitro(p, 2)"
-              @change="cambiarArbitro(p, 2, $event.target.value)"
-              class="form-select form-select-sm shadow-none"
-            >
-              <option value="">— Sin asignar —</option>
-              <option v-if="p.arbitro_2 && !p.id_arb2" value="__texto__">{{ p.arbitro_2 }} (texto del Excel)</option>
-              <option v-for="a in arbitros" :key="'a2-' + a.id" :value="String(a.id)">
-                {{ a.apellido }}, {{ a.nombre }}
-              </option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <button @click="agregarPartido" class="btn btn-outline-primary btn-sm fw-bold w-100 d-flex align-items-center justify-content-center gap-2">
-        <span class="material-icons fs-6">add_circle</span> Agregar Partido
-      </button>
-
-      <template #footer>
-        <button
-          @click="cerrarEdicion"
-          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
-          :disabled="guardando"
-        >
-          Cancelar
-        </button>
-        <button
-          @click="guardarCancha"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
-          :disabled="guardando"
-        >
-          <span v-if="guardando" class="spinner-border spinner-border-sm me-2"></span>
-          {{ guardando ? 'Guardando...' : 'Guardar Cambios' }}
-        </button>
-      </template>
-    </ModalBase>
-
-    <ModalBase
       :show="mostrarModalPublicar"
       titulo="Publicar Designaciones"
       icono="publish"
@@ -313,7 +279,7 @@
 
       <div v-if="totalSinMatch > 0" class="alert alert-warning small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>Hay <strong>{{ totalSinMatch }}</strong> árbitros sin match en el padrón: esos partidos <strong>no</strong> les van a aparecer en su panel. Podés corregirlos desde "Editar Cancha".</span>
+        <span>Hay <strong>{{ totalSinMatch }}</strong> árbitros sin match en el padrón: esos partidos <strong>no</strong> les van a aparecer en su panel. Están marcados en amarillo en la grilla.</span>
       </div>
 
       <div class="mb-3">
@@ -383,6 +349,8 @@ const designaciones = ref([])
 const arbitros = ref([])
 const soloActivos = ref(false)
 const cargando = ref(false)
+const eliminados = ref([])
+let contadorUid = 0
 
 const fechaSeleccionada = ref('')
 const filtroBusqueda = ref('')
@@ -391,12 +359,8 @@ const mostrarModalCarga = ref(false)
 const subiendoExcel = ref(false)
 const partidosImportados = ref([])
 const sinMatch = ref(0)
+const fechaManual = ref('')
 
-const mostrarModalEdicion = ref(false)
-const canchaEditando = ref('')
-const nombreCanchaEdit = ref('')
-const partidosEdit = ref([])
-const idsEliminados = ref([])
 const guardando = ref(false)
 
 const mostrarModalPublicar = ref(false)
@@ -409,6 +373,14 @@ const formPublicar = reactive({
 /* ====================================================
    CARGA INICIAL
    ==================================================== */
+const normalizarPartido = (p) => ({
+  ...p,
+  fecha: (p.fecha && !String(p.fecha).startsWith('0000')) ? String(p.fecha).slice(0, 10) : '',
+  horario: p.horario ? String(p.horario).slice(0, 5) : '',
+  _dirty: false,
+  _uid: 'u' + (++contadorUid)
+})
+
 const cargarDesignaciones = async () => {
   cargando.value = true
   try {
@@ -416,7 +388,10 @@ const cargarDesignaciones = async () => {
       entity: 'designaciones',
       action: 'obtenerDesignaciones'
     })
-    if ((res.ok || res.success) && res.payload) designaciones.value = res.payload
+    if ((res.ok || res.success) && res.payload) {
+      designaciones.value = res.payload.map(normalizarPartido)
+      eliminados.value = []
+    }
   } catch (err) {
     console.error('Error al cargar designaciones:', err)
     notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar las designaciones.', tipo: 'danger' })
@@ -443,23 +418,26 @@ const parsearFecha = (fecha) => {
   if (!fecha) return 0
   const texto = String(fecha).trim()
 
-  let m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
+  let m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
+
+  m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
   if (m) {
     const anio = m[3].length === 2 ? '20' + m[3] : m[3]
     return new Date(Number(anio), Number(m[2]) - 1, Number(m[1])).getTime()
   }
-
-  m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
-  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
 
   return 0
 }
 
 const etiquetaDia = (fecha) => {
   const timestamp = parsearFecha(fecha)
-  if (!timestamp) return fecha
+  if (!timestamp) return fecha || 'Sin fecha'
+  const d = new Date(timestamp)
   const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO']
-  return `${dias[new Date(timestamp).getDay()]} ${fecha}`
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  return `${dias[d.getDay()]} ${dd}/${mm}/${d.getFullYear()}`
 }
 
 const fechas = computed(() => {
@@ -525,9 +503,137 @@ const totalSinMatch = computed(() => {
   return contador
 })
 
-const claseBadgeArbitro = (nombre, id) => {
-  if (nombre && !id) return 'text-bg-warning'
-  return 'text-bg-light'
+/* ====================================================
+   EDICION INLINE
+   ==================================================== */
+const marcar = (p) => { p._dirty = true }
+
+const hayCambios = computed(() => {
+  return eliminados.value.length > 0 || designaciones.value.some(p => p._dirty || !p.id)
+})
+
+const cantidadCambios = computed(() => {
+  const modificados = designaciones.value.filter(p => p._dirty || !p.id).length
+  return modificados + eliminados.value.length
+})
+
+const valorSelectArbitro = (p, numero) => {
+  const id = numero === 1 ? p.id_arb1 : p.id_arb2
+  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
+  if (id) return String(id)
+  if (nombre) return '__texto__'
+  return ''
+}
+
+const cambiarArbitro = (p, numero, valor) => {
+  if (valor === '__texto__') return
+
+  if (valor === '') {
+    if (numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null }
+    else { p.arbitro_2 = ''; p.id_arb2 = null }
+    marcar(p)
+    return
+  }
+
+  const arbitro = arbitros.value.find(a => String(a.id) === valor)
+  if (!arbitro) return
+
+  const nombreCompleto = `${arbitro.apellido} ${arbitro.nombre}`.toUpperCase()
+  if (numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id }
+  else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id }
+  marcar(p)
+}
+
+const renombrarCancha = (grupo, nuevoNombre) => {
+  const nombre = String(nuevoNombre || '').trim().toUpperCase()
+  if (!nombre) return
+  grupo.partidos.forEach(p => {
+    p.cancha = nombre
+    marcar(p)
+  })
+}
+
+const fechaDelDia = () => {
+  return (fechaSeleccionada.value && fechaSeleccionada.value !== 'Sin fecha') ? fechaSeleccionada.value : ''
+}
+
+const agregarPartido = (cancha) => {
+  designaciones.value.push({
+    id: null,
+    fecha: fechaDelDia(),
+    cancha,
+    categoria_division: '',
+    horario: '',
+    local: '',
+    visitante: '',
+    arbitro_1: '',
+    arbitro_2: '',
+    id_arb1: null,
+    id_arb2: null,
+    _dirty: true,
+    _uid: 'u' + (++contadorUid)
+  })
+}
+
+const agregarCancha = () => {
+  agregarPartido('NUEVA CANCHA')
+}
+
+const quitarPartido = (p) => {
+  if (p.id) eliminados.value.push(p.id)
+  const idx = designaciones.value.indexOf(p)
+  if (idx !== -1) designaciones.value.splice(idx, 1)
+}
+
+const limpiarPartidoParaEnviar = (p) => ({
+  id: p.id,
+  fecha: p.fecha,
+  cancha: p.cancha,
+  categoria_division: p.categoria_division,
+  horario: p.horario,
+  local: p.local,
+  visitante: p.visitante,
+  arbitro_1: p.arbitro_1,
+  arbitro_2: p.arbitro_2,
+  id_arb1: p.id_arb1,
+  id_arb2: p.id_arb2
+})
+
+const guardarCambios = async () => {
+  const modificados = designaciones.value.filter(p => p._dirty || !p.id)
+
+  guardando.value = true
+  try {
+    const res = await api.post({
+      entity: 'designaciones',
+      action: 'guardarPartidos',
+      payload: {
+        partidos: modificados.map(limpiarPartidoParaEnviar),
+        eliminados: eliminados.value
+      }
+    })
+
+    if (res.ok && res.payload && res.payload.success) {
+      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Se guardaron los cambios.', tipo: 'success' })
+      await cargarDesignaciones()
+    } else {
+      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
+    }
+  } catch (err) {
+    console.error('Error al guardar cambios:', err)
+    notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al guardar los cambios.', tipo: 'danger' })
+  } finally {
+    guardando.value = false
+  }
+}
+
+const descartarCambios = () => {
+  notificar({
+    titulo: 'Descartar Cambios',
+    mensaje: '¿Descartar todos los cambios sin guardar?',
+    tipo: 'warning',
+    alConfirmar: () => cargarDesignaciones()
+  })
 }
 
 /* ====================================================
@@ -546,14 +652,34 @@ const mapearCabecera = (texto) => {
   return null
 }
 
-const formatearFechaExcel = (valor) => {
-  if (typeof valor === 'number') return XLSX.SSF.format('dd/mm/yyyy', valor)
-  return String(valor || '').trim()
+// Convierte cualquier formato de fecha (serial de Excel, dd/mm/yyyy, yyyy-mm-dd)
+// a yyyy-mm-dd, que es lo que espera la columna DATE de MySQL
+const aFechaISO = (valor) => {
+  if (typeof valor === 'number') return XLSX.SSF.format('yyyy-mm-dd', valor)
+
+  const texto = String(valor || '').trim()
+
+  let m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+  if (m) return `${m[1]}-${String(m[2]).padStart(2, '0')}-${String(m[3]).padStart(2, '0')}`
+
+  m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
+  if (m) {
+    const anio = m[3].length === 2 ? '20' + m[3] : m[3]
+    return `${anio}-${String(m[2]).padStart(2, '0')}-${String(m[1]).padStart(2, '0')}`
+  }
+
+  return ''
 }
 
-const formatearHorarioExcel = (valor) => {
+// Convierte horarios (serial de Excel o texto) a HH:MM,
+// compatible con la columna TIME de MySQL
+const aHorario = (valor) => {
   if (typeof valor === 'number') return XLSX.SSF.format('hh:mm', valor)
-  return String(valor || '').trim()
+
+  const m = String(valor || '').trim().match(/^(\d{1,2}):(\d{2})/)
+  if (m) return `${m[1].padStart(2, '0')}:${m[2]}`
+
+  return ''
 }
 
 const buscarIdArbitro = (nombreCelda) => {
@@ -578,9 +704,14 @@ const buscarIdArbitro = (nombreCelda) => {
   return encontrado ? encontrado.id : null
 }
 
+const faltanFechas = computed(() => {
+  return partidosImportados.value.length > 0 && partidosImportados.value.every(p => !p.fecha)
+})
+
 const abrirModalCarga = () => {
   partidosImportados.value = []
   sinMatch.value = 0
+  fechaManual.value = ''
   mostrarModalCarga.value = true
 }
 
@@ -588,6 +719,7 @@ const cerrarModalCarga = () => {
   mostrarModalCarga.value = false
   partidosImportados.value = []
   sinMatch.value = 0
+  fechaManual.value = ''
 }
 
 const manejarArchivoExcel = (event) => {
@@ -631,16 +763,29 @@ const manejarArchivoExcel = (event) => {
 
       const partidos = []
       let contadorSinMatch = 0
+      let ultimaCancha = ''
+      let ultimaFecha = ''
 
       for (let i = indiceCabecera + 1; i < filas.length; i++) {
         const fila = filas[i]
         const leer = (campo) => mapaColumnas[campo] !== undefined ? fila[mapaColumnas[campo]] : ''
 
-        const cancha = String(leer('cancha') || '').trim()
         const local = String(leer('local') || '').trim()
         const visitante = String(leer('visitante') || '').trim()
+        const categoria = String(leer('categoria_division') || '').trim()
 
-        if (!cancha && !local && !visitante) continue
+        // Fila vacía de datos: la salteamos
+        if (!local && !visitante && !categoria) continue
+
+        // CANCHA: si viene vacía (celdas combinadas), arrastramos la anterior
+        let cancha = String(leer('cancha') || '').trim()
+        if (cancha) ultimaCancha = cancha
+        else cancha = ultimaCancha
+
+        // FECHA: mismo criterio de arrastre por si también viene combinada
+        let fecha = aFechaISO(leer('fecha'))
+        if (fecha) ultimaFecha = fecha
+        else fecha = ultimaFecha
 
         const arbitro1 = String(leer('arbitro_1') || '').trim()
         const arbitro2 = String(leer('arbitro_2') || '').trim()
@@ -651,10 +796,10 @@ const manejarArchivoExcel = (event) => {
         if (arbitro2 && !idArb2) contadorSinMatch++
 
         partidos.push({
-          fecha: formatearFechaExcel(leer('fecha')),
+          fecha,
           cancha: cancha.toUpperCase(),
-          categoria_division: String(leer('categoria_division') || '').trim(),
-          horario: formatearHorarioExcel(leer('horario')),
+          categoria_division: categoria,
+          horario: aHorario(leer('horario')),
           local,
           visitante,
           arbitro_1: arbitro1,
@@ -681,18 +826,21 @@ const manejarArchivoExcel = (event) => {
 const confirmarCargaExcel = async () => {
   if (partidosImportados.value.length === 0) return
 
+  const partidos = partidosImportados.value.map(p => ({
+    ...p,
+    fecha: p.fecha || fechaManual.value || ''
+  }))
+
   subiendoExcel.value = true
   try {
     const res = await api.post({
       entity: 'designaciones',
       action: 'cargarDesignaciones',
-      payload: { partidos: partidosImportados.value }
+      payload: { partidos }
     })
 
-    console.log('Respuesta cargarDesignaciones:', res)
-
     if (res.ok && res.payload && res.payload.success) {
-      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || `Se cargaron ${partidosImportados.value.length} partidos.`, tipo: 'success' })
+      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || `Se cargaron ${partidos.length} partidos.`, tipo: 'success' })
       cerrarModalCarga()
       await cargarDesignaciones()
     } else {
@@ -703,111 +851,6 @@ const confirmarCargaExcel = async () => {
     notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al guardar los partidos.', tipo: 'danger' })
   } finally {
     subiendoExcel.value = false
-  }
-}
-
-/* ====================================================
-   EDICION POR CANCHA (MODAL)
-   ==================================================== */
-const abrirEdicionCancha = (cancha) => {
-  canchaEditando.value = cancha.nombre
-  nombreCanchaEdit.value = cancha.nombre
-  partidosEdit.value = cancha.partidos.map(p => ({ ...p }))
-  idsEliminados.value = []
-  mostrarModalEdicion.value = true
-}
-
-const cerrarEdicion = () => {
-  mostrarModalEdicion.value = false
-  partidosEdit.value = []
-  idsEliminados.value = []
-}
-
-const agregarPartido = () => {
-  const fechaBase = (fechaSeleccionada.value && fechaSeleccionada.value !== 'Sin fecha')
-    ? fechaSeleccionada.value
-    : (partidosEdit.value[0] ? partidosEdit.value[0].fecha : '')
-
-  partidosEdit.value.push({
-    id: null,
-    fecha: fechaBase,
-    cancha: nombreCanchaEdit.value,
-    categoria_division: '',
-    horario: '',
-    local: '',
-    visitante: '',
-    arbitro_1: '',
-    arbitro_2: '',
-    id_arb1: null,
-    id_arb2: null
-  })
-}
-
-const quitarPartido = (idx) => {
-  const partido = partidosEdit.value[idx]
-  if (partido.id) idsEliminados.value.push(partido.id)
-  partidosEdit.value.splice(idx, 1)
-}
-
-const valorSelectArbitro = (p, numero) => {
-  const id = numero === 1 ? p.id_arb1 : p.id_arb2
-  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
-  if (id) return String(id)
-  if (nombre) return '__texto__'
-  return ''
-}
-
-const cambiarArbitro = (p, numero, valor) => {
-  if (valor === '__texto__') return
-
-  if (valor === '') {
-    if (numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null }
-    else { p.arbitro_2 = ''; p.id_arb2 = null }
-    return
-  }
-
-  const arbitro = arbitros.value.find(a => String(a.id) === valor)
-  if (!arbitro) return
-
-  const nombreCompleto = `${arbitro.apellido} ${arbitro.nombre}`.toUpperCase()
-  if (numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id }
-  else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id }
-}
-
-const guardarCancha = async () => {
-  if (!nombreCanchaEdit.value.trim()) {
-    notificar({ titulo: 'Atención', mensaje: 'La cancha tiene que tener un nombre.', tipo: 'warning' })
-    return
-  }
-
-  guardando.value = true
-  try {
-    const partidos = partidosEdit.value.map(p => ({
-      ...p,
-      cancha: nombreCanchaEdit.value.trim().toUpperCase()
-    }))
-
-    const res = await api.post({
-      entity: 'designaciones',
-      action: 'guardarPartidosCancha',
-      payload: {
-        partidos,
-        eliminados: idsEliminados.value
-      }
-    })
-
-    if (res.ok && res.payload && res.payload.success) {
-      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Se guardaron los cambios de la cancha.', tipo: 'success' })
-      cerrarEdicion()
-      await cargarDesignaciones()
-    } else {
-      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
-    }
-  } catch (err) {
-    console.error('Error al guardar cancha:', err)
-    notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al guardar los cambios.', tipo: 'danger' })
-  } finally {
-    guardando.value = false
   }
 }
 
@@ -833,6 +876,7 @@ const eliminarTodo = async () => {
 
     if (res.ok || res.success) {
       designaciones.value = []
+      eliminados.value = []
       notificar({ titulo: 'Éxito', mensaje: 'Se eliminaron todas las designaciones.', tipo: 'success' })
     } else {
       throw new Error('Error del servidor')
@@ -846,6 +890,12 @@ const eliminarTodo = async () => {
 /* ====================================================
    PUBLICAR (WEB PUBLICA + PANEL DE ARBITROS)
    ==================================================== */
+const mostrarFechaArg = (fecha) => {
+  if (!fecha) return ''
+  const partes = String(fecha).slice(0, 10).split('-')
+  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha
+}
+
 const generarExcelPublicacion = () => {
   const filas = []
 
@@ -859,7 +909,7 @@ const generarExcelPublicacion = () => {
 
   ordenadas.forEach(p => {
     filas.push({
-      FECHA: p.fecha,
+      FECHA: mostrarFechaArg(p.fecha),
       CANCHA: p.cancha,
       CATEGORIA: p.categoria_division,
       HORARIO: p.horario,
@@ -948,9 +998,139 @@ onMounted(async () => {
   animation-duration: 0.5s;
 }
 
-/* Limitar la altura de cada cancha para que el scroll general no sea eterno */
-.cancha-scroll {
-  max-height: 320px;
+/* ====================================================
+   GRILLA TIPO EXCEL
+   ==================================================== */
+.grilla-container {
+  max-height: 72vh;
   overflow-y: auto;
+}
+
+.grilla-designaciones {
+  font-size: 0.78rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.grilla-designaciones thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  padding: 10px 8px;
+  font-size: 0.68rem;
+  letter-spacing: 0.5px;
+}
+
+.grilla-designaciones td {
+  padding: 2px 4px;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+/* Fila separadora de cancha (como la celda combinada del Excel) */
+.fila-cancha td {
+  background-color: #1f2937;
+  color: #fff;
+  padding: 6px 10px;
+  position: sticky;
+  top: 37px;
+  z-index: 4;
+}
+
+.input-cancha {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  min-width: 100px;
+  width: 60%;
+}
+
+.input-cancha:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.input-cancha:focus {
+  outline: none;
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+/* Celdas editables: se ven como texto plano hasta que las tocás */
+.celda-input,
+.celda-select {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  padding: 5px 6px;
+  font-size: 0.78rem;
+  color: #212529;
+}
+
+.celda-input:hover,
+.celda-select:hover {
+  border-color: #ced4da;
+  background: #fff;
+}
+
+.celda-input:focus,
+.celda-select:focus {
+  outline: none;
+  border-color: #dc3545;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15);
+}
+
+.celda-select {
+  cursor: pointer;
+  appearance: auto;
+}
+
+/* Árbitro que no matcheó con el padrón */
+.celda-select.sin-match {
+  background-color: #fef08a;
+  border-color: #eab308;
+  font-weight: 700;
+}
+
+/* Fila con cambios sin guardar o nueva */
+.fila-modificada td {
+  background-color: #eff6ff;
+}
+
+.btn-borrar {
+  border: none;
+  background: transparent;
+  color: #adb5bd;
+  padding: 2px;
+  line-height: 1;
+}
+
+.btn-borrar:hover {
+  color: #dc3545;
+}
+
+.btn-borrar .material-icons {
+  font-size: 17px;
+}
+
+/* ====================================================
+   BARRA FLOTANTE DE CAMBIOS SIN GUARDAR
+   ==================================================== */
+.barra-cambios {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1f2937;
+  border-radius: 50px;
+  padding: 10px 24px;
+  z-index: 1050;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 </style>
