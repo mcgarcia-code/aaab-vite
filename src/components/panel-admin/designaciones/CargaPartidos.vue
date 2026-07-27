@@ -535,9 +535,106 @@ const notificar = inject('notificar')
 const designaciones = ref([])
 const arbitros = ref([])
 const cargando = ref(false)
-const ultimaPublicada = ref({ fecha: null, partidos: [] })
 const eliminados = ref([])
 let contadorUid = 0
+
+/* ====================================================
+   AVISOS DE VALIDACIÓN (calculados en el backend)
+   El servidor valida todo (inactivo, disponibilidad de día
+   y horario, sanción vigente, licencias, doble cancha y
+   mismo equipo la fecha anterior) con la acción
+   obtenerAvisosDesignaciones. Acá solo se muestran.
+   Mapa: { id_partido: [ { nombre, avisos: [...] } ] }
+   ==================================================== */
+const avisosMap = ref({})
+
+const cargarAvisos = async () => {
+  try {
+    const res = await api.get({
+      entity: 'designaciones',
+      action: 'obtenerAvisosDesignaciones'
+    })
+    if (res.ok && res.payload && res.payload.success) {
+      avisosMap.value = res.payload.avisos || {}
+    }
+  } catch (err) {
+    console.error('Error al cargar avisos de validación:', err)
+  }
+}
+
+// Total de avisos de un partido (para el ícono de alerta)
+const avisosPartido = (p) => {
+  const grupos = p.id ? avisosMap.value[p.id] : null
+  if (!grupos) return 0
+  return grupos.reduce((total, g) => total + g.avisos.length, 0)
+}
+
+// Texto del modal: por cada árbitro con problemas, su nombre y
+// debajo sus avisos con viñeta. Árbitros separados por línea en blanco.
+const textoAvisosPartido = (p) => {
+  const grupos = (p.id ? avisosMap.value[p.id] : null) || []
+  return grupos
+    .map(g => `${g.nombre}:\n` + g.avisos.map(a => `• ${a}`).join('\n'))
+    .join('\n\n')
+}
+
+const totalConflictos = computed(() => {
+  return designaciones.value.filter(p => avisosPartido(p) > 0).length
+})
+
+const mostrarAvisosPartido = (p) => {
+  if (avisosPartido(p) === 0) return
+  notificar({
+    titulo: '⚠ Avisos de este partido',
+    mensaje: textoAvisosPartido(p),
+    tipo: 'warning'
+  })
+}
+
+/* ====================================================
+   UTILIDADES DE TEXTO Y FECHAS
+   ==================================================== */
+const normalizarTexto = (valor) => {
+  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+const parsearFecha = (fecha) => {
+  if (!fecha) return 0
+  const texto = String(fecha).trim()
+
+  let m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
+
+  m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
+  if (m) {
+    const anio = m[3].length === 2 ? '20' + m[3] : m[3]
+    return new Date(Number(anio), Number(m[2]) - 1, Number(m[1])).getTime()
+  }
+
+  return 0
+}
+
+const etiquetaDia = (fecha) => {
+  const timestamp = parsearFecha(fecha)
+  if (!timestamp) return fecha || 'Sin fecha'
+  const d = new Date(timestamp)
+  const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO']
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  return `${dias[d.getDay()]} ${dd}/${mm}/${d.getFullYear()}`
+}
+
+// Padrón liviano solo para el selector (las validaciones ya no lo necesitan)
+const cargarArbitros = async () => {
+  try {
+    const res = await api.get({
+      entity: 'arbitros',
+      action: 'getArbitrosBasico',
+      payload: { soloActivos: false }
+    })
+    if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
+  } catch (err) { console.error(err) }
+}
 
 const fechaSeleccionada = ref('')
 const filtroBusqueda = ref('')
@@ -594,376 +691,9 @@ const cargarDesignaciones = async () => {
   }
 }
 
-const cargarArbitros = async () => {
-  try {
-    const res = await api.get({
-      entity: 'arbitros',
-      action: 'getArbitros'
-    })
-
-    // Sanciones (para validar sanción vigente / en proceso al designar)
-    let sancionesPayload = []
-    try {
-      const resSanciones = await api.get({ entity: 'sanciones', action: 'obtenerSanciones' })
-      sancionesPayload = resSanciones.payload || []
-    } catch (e) {
-      console.error('Error al cargar sanciones:', e)
-    }
-
-    const sancionesMap = {}
-    sancionesPayload.forEach(s => {
-      const estado = Number(s.estado_dinamico)
-      if (estado === 1 || estado === 3) {
-        if (!sancionesMap[s.id_arbitro]) {
-          sancionesMap[s.id_arbitro] = s
-        } else if (estado === 1 && Number(sancionesMap[s.id_arbitro].estado_dinamico) === 3) {
-          sancionesMap[s.id_arbitro] = s
-        }
-      }
-    })
-
-    if ((res.ok || res.success) && res.payload) {
-      arbitros.value = res.payload.map(a => {
-        const sancion = sancionesMap[a.id]
-        const estadoSancion = sancion ? Number(sancion.estado_dinamico) : null
-        return {
-          ...a,
-          sancion_vigente: estadoSancion === 1,
-          sancion_proceso: estadoSancion === 3,
-          sancion_desde: sancion ? (sancion.desde || sancion.desde_formateada || null) : null,
-          sancion_hasta: sancion ? (sancion.hasta || sancion.hasta_formateada || null) : null,
-          sancion_indefinida: sancion ? Number(sancion.es_indefinido) === 1 : false
-        }
-      })
-    }
-  } catch (err) { console.error(err) }
-}
-
-// Índice id -> árbitro, para las validaciones al designar
-const arbitrosPorId = computed(() => {
-  const mapa = {}
-  arbitros.value.forEach(a => { mapa[a.id] = a })
-  return mapa
-})
-
-// Trae los partidos de la última fecha publicada (histórico), para avisar
-// si un árbitro repite club respecto de la fecha anterior ya publicada.
-const cargarUltimaPublicada = async () => {
-  try {
-    const res = await api.get({
-      entity: 'designaciones',
-      action: 'obtenerUltimaFechaPublicada'
-    })
-    if ((res.ok || res.success) && res.payload) {
-      ultimaPublicada.value = {
-        fecha: res.payload.fecha || null,
-        partidos: res.payload.partidos || []
-      }
-    }
-  } catch (err) {
-    console.error('Error al cargar la última fecha publicada:', err)
-  }
-}
-
 /* ====================================================
    FECHAS (PESTAÑAS POR DIA)
    ==================================================== */
-const parsearFecha = (fecha) => {
-  if (!fecha) return 0
-  const texto = String(fecha).trim()
-
-  let m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
-  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
-
-  m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
-  if (m) {
-    const anio = m[3].length === 2 ? '20' + m[3] : m[3]
-    return new Date(Number(anio), Number(m[2]) - 1, Number(m[1])).getTime()
-  }
-
-  return 0
-}
-
-const etiquetaDia = (fecha) => {
-  const timestamp = parsearFecha(fecha)
-  if (!timestamp) return fecha || 'Sin fecha'
-  const d = new Date(timestamp)
-  const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO']
-  const dd = String(d.getDate()).padStart(2, '0')
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  return `${dias[d.getDay()]} ${dd}/${mm}/${d.getFullYear()}`
-}
-
-/* ====================================================
-   VALIDACIONES AL DESIGNAR
-   Chequea disponibilidad del día, sanciones, licencia y
-   doble designación en otra cancha el mismo día.
-   ==================================================== */
-const normalizarTexto = (valor) => {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
-}
-
-// Devuelve el sufijo de campo de disponibilidad según el día de la semana
-const campoDisponibilidad = (fecha) => {
-  const ts = parsearFecha(fecha)
-  if (!ts) return null
-  const dia = new Date(ts).getDay()
-  if (dia === 6) return 'sabado'
-  if (dia === 0) return 'domingo'
-  return null // entre semana no hay campo de disponibilidad cargado
-}
-
-// ¿La fecha del partido cae dentro de una cadena de fechas de licencia?
-const fechaEnCadena = (cadenaFechas, fechaPartido) => {
-  if (!cadenaFechas || !fechaPartido) return false
-  const objetivo = String(fechaPartido).slice(0, 10)
-  return String(cadenaFechas)
-    .split(',')
-    .map(f => f.trim().slice(0, 10))
-    .includes(objetivo)
-}
-
-// ¿La fecha del partido cae dentro del rango de una sanción?
-// Compara por día (ignora la hora si el backend la incluye).
-const fechaEnRangoSancion = (arbitro, fechaPartido) => {
-  const ts = parsearFecha(fechaPartido)
-  if (!ts) return false
-  if (arbitro.sancion_indefinida) return true
-
-  const desde = arbitro.sancion_desde ? parsearFecha(arbitro.sancion_desde) : 0
-  const hasta = arbitro.sancion_hasta ? parsearFecha(arbitro.sancion_hasta) : 0
-
-  // Si no hay fechas de rango, la sanción vigente aplica igual
-  if (!desde && !hasta) return true
-
-  if (desde && ts < desde) return false
-  if (hasta && ts > hasta) return false
-  return true
-}
-
-// Devuelve la fecha (YYYY-MM-DD) inmediatamente anterior a la dada,
-// entre las fechas que existen en la planilla. Null si no hay anterior.
-const fechaAnteriorA = (fecha) => {
-  const objetivo = parsearFecha(fecha)
-  if (!objetivo) return null
-
-  let anterior = null
-  let anteriorTs = 0
-
-  designaciones.value.forEach(p => {
-    const f = String(p.fecha || '').slice(0, 10)
-    const ts = parsearFecha(f)
-    if (ts && ts < objetivo && ts > anteriorTs) {
-      anteriorTs = ts
-      anterior = f
-    }
-  })
-
-  return anterior
-}
-
-// Formatea una fecha ISO (YYYY-MM-DD) como dd-mm-aaaa para los avisos
-const fechaAviso = (fecha) => {
-  const f = String(fecha || '').slice(0, 10)
-  const m = f.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  return m ? `${m[3]}-${m[2]}-${m[1]}` : f
-}
-
-
-const validarDesignacion = (arbitro, partidoActual) => {
-  const avisos = []
-  if (!arbitro) return avisos
-
-  const fecha = partidoActual.fecha
-  // Nombre tal como se guarda en el partido (apellido + nombre en mayúscula)
-  const nombreArbitro = `${arbitro.apellido} ${arbitro.nombre}`
-
-  // 1. Disponibilidad del día + rango horario declarado
-  const campo = campoDisponibilidad(fecha)
-  if (campo) {
-    const disp = arbitro[`disponibilidad_${campo}`]
-    const etiquetaDiaCorta = campo === 'sabado' ? 'los sábados' : 'los domingos'
-    if (disp === 'NO') {
-      avisos.push(`No tiene disponibilidad ${etiquetaDiaCorta}.`)
-    } else {
-      const desde = arbitro[`disponibilidad_${campo}_desde`]
-      const hasta = arbitro[`disponibilidad_${campo}_hasta`]
-      const horaPartido = String(partidoActual.horario || '').slice(0, 5)
-
-      if (horaPartido && desde && hasta) {
-        const min = (h) => {
-          const m = String(h).slice(0, 5).match(/^(\d{1,2}):(\d{2})$/)
-          return m ? Number(m[1]) * 60 + Number(m[2]) : null
-        }
-        let mp = min(horaPartido)
-        const md = min(desde)
-        let mh = min(hasta)
-
-        // Un "hasta" de 00:00 / 00:01 significa fin del día (medianoche).
-        if (mh !== null && md !== null && mh <= md) mh += 24 * 60
-
-        if (mp !== null && md !== null && mh !== null && (mp < md || mp > mh)) {
-          avisos.push(`Designado a las ${horaPartido}, fuera de su disponibilidad ${etiquetaDiaCorta} (${String(desde).slice(0, 5)} a ${String(hasta).slice(0, 5)}).`)
-        }
-      }
-    }
-  }
-
-  // 2. Sanción vigente (solo si la fecha del partido cae dentro del rango)
-  if (arbitro.sancion_vigente && fechaEnRangoSancion(arbitro, fecha)) {
-    const hasta = arbitro.sancion_indefinida ? 'indefinida' : fechaAviso(arbitro.sancion_hasta)
-    avisos.push(`Tiene una SANCIÓN VIGENTE para esa fecha (hasta: ${hasta || 's/f'}).`)
-  }
-
-  // 3. Licencia que coincida con la fecha exacta del partido
-  if (fechaEnCadena(arbitro.fecha_licencia_aprobada, fecha)) {
-    avisos.push(`Tiene LICENCIA APROBADA para esa fecha.`)
-  }
-  if (fechaEnCadena(arbitro.fecha_licencia_rechazada, fecha)) {
-    avisos.push(`Tiene una LICENCIA RECHAZADA para esa fecha.`)
-  }
-
-  // 4. Doble designación en OTRA cancha el mismo día.
-  const nombreNorm = normalizarTexto(nombreArbitro)
-  const canchaActual = normalizarTexto(partidoActual.cancha)
-
-  const esEsteArbitro = (p, num) => {
-    const idP = num === 1 ? p.id_arb1 : p.id_arb2
-    const nomP = num === 1 ? p.arbitro_1 : p.arbitro_2
-    if (arbitro.id && Number(idP) === Number(arbitro.id)) return true
-    if (nombreNorm && normalizarTexto(nomP) === nombreNorm) return true
-    return false
-  }
-
-  const canchasDistintas = new Set()
-  designaciones.value.forEach(p => {
-    if (p === partidoActual) return
-    if (String(p.fecha || '').slice(0, 10) !== String(fecha || '').slice(0, 10)) return
-    if (!esEsteArbitro(p, 1) && !esEsteArbitro(p, 2)) return
-
-    const canchaOtro = normalizarTexto(p.cancha)
-    if (canchaOtro && canchaOtro !== canchaActual) {
-      canchasDistintas.add(p.cancha)
-    }
-  })
-
-  canchasDistintas.forEach(cancha => {
-    avisos.push(`Ya está designado ese día en otra cancha: ${cancha}.`)
-  })
-
-  // 5. Mismo equipo (local o visitante) en la fecha anterior.
-  const equiposActuales = [
-    normalizarTexto(partidoActual.local),
-    normalizarTexto(partidoActual.visitante)
-  ].filter(Boolean)
-
-  if (equiposActuales.length > 0) {
-    const fechaPreviaPlanilla = fechaAnteriorA(fecha)
-
-    let fuentePrevia = []
-    let fechaPreviaLabel = ''
-
-    if (fechaPreviaPlanilla) {
-      fuentePrevia = designaciones.value.filter(p => String(p.fecha || '').slice(0, 10) === fechaPreviaPlanilla)
-      fechaPreviaLabel = fechaAviso(fechaPreviaPlanilla)
-    } else if (ultimaPublicada.value.fecha) {
-      const tsPub = parsearFecha(ultimaPublicada.value.fecha)
-      if (tsPub && tsPub < parsearFecha(fecha)) {
-        fuentePrevia = ultimaPublicada.value.partidos
-        fechaPreviaLabel = fechaAviso(ultimaPublicada.value.fecha)
-      }
-    }
-
-    const clubesRepetidos = new Set()
-    fuentePrevia.forEach(p => {
-      if (!esEsteArbitro(p, 1) && !esEsteArbitro(p, 2)) return
-
-      const local = normalizarTexto(p.local)
-      const visitante = normalizarTexto(p.visitante)
-      if (local && equiposActuales.includes(local)) clubesRepetidos.add(p.local)
-      if (visitante && equiposActuales.includes(visitante)) clubesRepetidos.add(p.visitante)
-    })
-
-    clubesRepetidos.forEach(club => {
-      avisos.push(`Ya dirigió a ${club} la fecha anterior (${fechaPreviaLabel}).`)
-    })
-  }
-
-  return avisos
-}
-
-// Resuelve el objeto árbitro de un partido: por id si lo tiene, o buscándolo
-// en el padrón por nombre normalizado (para los cargados por texto del Excel).
-const resolverArbitro = (p, numero) => {
-  const id = numero === 1 ? p.id_arb1 : p.id_arb2
-  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
-
-  if (id && arbitrosPorId.value[id]) return arbitrosPorId.value[id]
-
-  if (nombre) {
-    const buscado = normalizarTexto(nombre).replace(/,/g, '')
-    const encontrado = arbitros.value.find(a => {
-      const apellido = normalizarTexto(a.apellido)
-      const nombreComp = normalizarTexto(a.nombre)
-      const primerNombre = nombreComp.split(' ')[0]
-      return [
-        `${apellido} ${nombreComp}`,
-        `${nombreComp} ${apellido}`,
-        `${apellido} ${primerNombre}`,
-        `${primerNombre} ${apellido}`
-      ].includes(buscado)
-    })
-    if (encontrado) return encontrado
-  }
-  return null
-}
-
-// Devuelve los avisos del partido agrupados por árbitro:
-// [{ nombre, avisos: [...] }]. Solo incluye árbitros que tengan avisos.
-const avisosPartidoPorArbitro = (p) => {
-  const grupos = []
-  const chequear = (numero) => {
-    const nombreTexto = numero === 1 ? p.arbitro_1 : p.arbitro_2
-    if (!nombreTexto) return
-
-    const a = resolverArbitro(p, numero)
-    // Si no está en el padrón (árbitro externo por texto), igual chequeamos
-    // doble cancha y mismo equipo usando un objeto mínimo con el nombre.
-    const arbitroParaValidar = a || { id: null, apellido: nombreTexto, nombre: '' }
-    const avisos = validarDesignacion(arbitroParaValidar, p)
-    if (avisos.length > 0) {
-      const etiqueta = a ? `${a.apellido}, ${a.nombre}` : nombreTexto
-      grupos.push({ nombre: etiqueta, avisos })
-    }
-  }
-  chequear(1)
-  chequear(2)
-  return grupos
-}
-
-// Total de avisos de un partido (para saber si mostrar el ícono de alerta)
-const avisosPartido = (p) => {
-  return avisosPartidoPorArbitro(p).reduce((total, g) => total + g.avisos.length, 0)
-}
-
-// Arma el texto del modal: por cada árbitro con problemas, su nombre y
-// debajo sus avisos con viñeta. Separa los árbitros con una línea en blanco.
-const textoAvisosPartido = (p) => {
-  const grupos = avisosPartidoPorArbitro(p)
-  return grupos
-    .map(g => `${g.nombre}:\n` + g.avisos.map(a => `• ${a}`).join('\n'))
-    .join('\n\n')
-}
-
-const mostrarAvisosPartido = (p) => {
-  if (avisosPartido(p) === 0) return
-  notificar({
-    titulo: '⚠ Avisos de este partido',
-    mensaje: textoAvisosPartido(p),
-    tipo: 'warning'
-  })
-}
-
 const fechas = computed(() => {
   const mapa = {}
   designaciones.value.forEach(p => {
@@ -1023,11 +753,6 @@ const totalSinMatch = computed(() => {
   return contador
 })
 
-// Cantidad de partidos que tienen al menos un aviso de designación
-const totalConflictos = computed(() => {
-  return designaciones.value.filter(p => avisosPartido(p) > 0).length
-})
-
 /* ====================================================
    EDICION INLINE
    ==================================================== */
@@ -1084,6 +809,8 @@ const quitarPartido = (p) => {
 
 /* ====================================================
    SELECTOR DE ARBITRO (modal compartido con buscador)
+   Un solo listado en el DOM en vez de un <select> con
+   todo el padrón por cada celda: mucho más liviano.
    ==================================================== */
 const abrirSelectorArbitro = (partido, numero) => {
   seleccionArbitro.value = { partido, numero }
@@ -1108,7 +835,7 @@ const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => normalizarTexto(`${a.apellido} ${a.nombre}`).includes(busqueda))
 })
 
-const asignarArbitro = (arbitro) => {
+const asignarArbitro = async (arbitro) => {
   const sel = seleccionArbitro.value
   if (!sel) return
   const p = sel.partido
@@ -1120,23 +847,31 @@ const asignarArbitro = (arbitro) => {
     const nombreCompleto = `${arbitro.apellido} ${arbitro.nombre}`.toUpperCase()
     if (sel.numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id; p._ext1 = false }
     else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id; p._ext2 = false }
-
-    if (avisosPartido(p) > 0) {
-      notificar({
-        titulo: '⚠ Atención con esta designación',
-        mensaje: textoAvisosPartido(p),
-        tipo: 'warning'
-      })
-    }
   }
 
   marcar(p)
   cerrarSelectorArbitro()
+
+  // Guardado inmediato (sin esperar el debounce) para que el backend
+  // valide la designación y avise si hay algún conflicto.
+  if (arbitro) {
+    const ok = await ejecutarGuardado()
+    if (ok) {
+      await cargarAvisos()
+      if (avisosPartido(p) > 0) {
+        notificar({
+          titulo: '⚠ Atención con esta designación',
+          mensaje: textoAvisosPartido(p),
+          tipo: 'warning'
+        })
+      }
+    }
+  }
 }
 
 // Asigna un árbitro que no está en el padrón (ej: viene del interior).
 // Queda como texto libre, sin id_arb, y por eso no le aparece en su panel.
-const asignarArbitroLibre = (texto) => {
+const asignarArbitroLibre = async (texto) => {
   const sel = seleccionArbitro.value
   if (!sel) return
   const nombre = String(texto || '').trim().toUpperCase()
@@ -1148,6 +883,19 @@ const asignarArbitroLibre = (texto) => {
 
   marcar(p)
   cerrarSelectorArbitro()
+
+  // También validamos externos: doble cancha y mismo equipo aplican igual
+  const ok = await ejecutarGuardado()
+  if (ok) {
+    await cargarAvisos()
+    if (avisosPartido(p) > 0) {
+      notificar({
+        titulo: '⚠ Atención con esta designación',
+        mensaje: textoAvisosPartido(p),
+        tipo: 'warning'
+      })
+    }
+  }
 }
 
 // Helpers de estado de la celda de árbitro
@@ -1174,7 +922,10 @@ const tituloCelda = (p, numero) => {
 }
 
 /* ====================================================
-   AUTOGUARDADO
+   AUTOGUARDADO (con debounce, sin botón manual)
+   Cada edición marca el partido y programa un guardado
+   a los 1,5s. Guarda en segundo plano y actualiza los
+   ids de los partidos nuevos sin recargar toda la grilla.
    ==================================================== */
 const limpiarPartidoParaEnviar = (p) => ({
   id: p.id,
@@ -1238,6 +989,9 @@ const ejecutarGuardado = async () => {
       timerOcultar = setTimeout(() => {
         if (estadoGuardado.value === 'guardado') estadoGuardado.value = ''
       }, 2000)
+
+      // Con los datos ya persistidos, el backend recalcula los avisos
+      cargarAvisos()
       return true
     }
     throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
@@ -1396,6 +1150,7 @@ const manejarArchivoExcel = (event) => {
         if (cancha) ultimaCancha = cancha
         else cancha = ultimaCancha
 
+        // FECHA: mismo criterio de arrastre por si también viene combinada
         let fecha = aFechaISO(leer('fecha'))
         if (fecha) ultimaFecha = fecha
         else fecha = ultimaFecha
@@ -1456,6 +1211,7 @@ const confirmarCargaExcel = async () => {
       notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || `Se cargaron ${partidos.length} partidos.`, tipo: 'success' })
       cerrarModalCarga()
       await cargarDesignaciones()
+      cargarAvisos()
     } else {
       throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
     }
@@ -1490,6 +1246,7 @@ const eliminarTodo = async () => {
     if (res.ok || res.success) {
       designaciones.value = []
       eliminados.value = []
+      avisosMap.value = {}
       notificar({ titulo: 'Éxito', mensaje: 'Se eliminaron todas las designaciones.', tipo: 'success' })
     } else {
       throw new Error('Error del servidor')
@@ -1501,7 +1258,7 @@ const eliminarTodo = async () => {
 }
 
 /* ====================================================
-   TESORERIA
+   TESORERIA (placeholder: la lógica se implementa a futuro)
    ==================================================== */
 const enviarATesoreria = () => {
   notificar({
@@ -1511,6 +1268,11 @@ const enviarATesoreria = () => {
   })
 }
 
+/* ====================================================
+   PUBLICAR (PDF PARA LA WEB + PANEL DE ARBITROS)
+   Si hay cambios sin guardar, se guardan automáticamente
+   antes de publicar. El PDF se genera en el servidor.
+   ==================================================== */
 const abrirModalPublicar = async (modo) => {
   modoPublicacion.value = modo
 
@@ -1576,7 +1338,7 @@ const publicarDesignaciones = async () => {
 onMounted(async () => {
   await cargarArbitros()
   await cargarDesignaciones()
-  cargarUltimaPublicada()
+  cargarAvisos()
 })
 </script>
 
