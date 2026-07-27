@@ -95,20 +95,31 @@
                 </li>
               </ul>
 
-              <div class="d-flex gap-2 align-items-center">
-                <div class="input-group input-group-sm shadow-sm" style="max-width: 280px;">
-                  <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                  <input
-                    v-model="filtroBusqueda"
-                    type="text"
-                    class="form-control border-start-0 shadow-none"
-                    placeholder="Buscar cancha, equipo o árbitro..."
-                  >
-                </div>
-                <button @click="agregarCancha" class="btn btn-sm btn-outline-dark fw-bold shadow-sm text-nowrap">
-                  <i class="bi bi-plus-lg"></i> Cancha
-                </button>
-              </div>
+<div class="d-flex gap-2 align-items-center flex-grow-1 justify-content-md-end">
+  <!-- Agregamos la clase 'buscador-grupo' acá -->
+  <div class="input-group input-group-sm shadow-sm flex-grow-1 flex-md-grow-0 buscador-grupo" style="min-width: 300px; max-width: 450px;">
+    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+    <input
+      v-model="filtroBusqueda"
+      type="text"
+      class="form-control border-start-0 shadow-none"
+      :class="{ 'border-end-0': filtroBusqueda.length > 0 }"
+      placeholder="Buscar cancha, equipo o árbitro..."
+    >
+    <button
+      v-if="filtroBusqueda.length > 0"
+      @click="filtroBusqueda = ''"
+      class="btn border border-start-0 bg-white text-muted d-flex align-items-center px-2 shadow-none"
+      type="button"
+      title="Limpiar búsqueda"
+    >
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+  <button @click="agregarCancha" class="btn btn-sm btn-outline-dark fw-bold shadow-sm text-nowrap">
+    <i class="bi bi-plus-lg"></i> Cancha
+  </button>
+</div>
             </div>
 
             <div v-if="canchas.length === 0" class="text-center p-4 bg-white rounded shadow-sm border">
@@ -556,6 +567,9 @@ const cargarAvisos = async () => {
     })
     if (res.ok && res.payload && res.payload.success) {
       avisosMap.value = res.payload.avisos || {}
+    } else {
+      const detalle = (res.payload && res.payload.mensaje) ? res.payload.mensaje : JSON.stringify(res)
+      console.error('obtenerAvisosDesignaciones falló:', detalle)
     }
   } catch (err) {
     console.error('Error al cargar avisos de validación:', err)
@@ -1626,5 +1640,31 @@ onMounted(async () => {
   background-color: #dbeafe;
   border-color: #60a5fa;
   font-weight: 600;
+}
+
+/* ====================================================
+   ESTILOS DEL BUSCADOR (Bordes unificados)
+   ==================================================== */
+.buscador-grupo {
+  border-radius: var(--bs-border-radius-sm);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Evitar que el input ponga su propio borde cuando tiene foco */
+.buscador-grupo .form-control:focus {
+  border-color: #dee2e6; /* Mantiene el gris base si no está en focus el grupo */
+  box-shadow: none;
+}
+
+/* Aplicar el color celeste de Bootstrap a todos los hijos cuando el grupo tiene foco */
+.buscador-grupo:focus-within > .input-group-text,
+.buscador-grupo:focus-within > .form-control,
+.buscador-grupo:focus-within > .btn {
+  border-color: #86b7fe !important;
+}
+
+/* Opcional: Agregar la sombra exterior (anillo) celeste a todo el grupo */
+.buscador-grupo:focus-within {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
 }
 </style>

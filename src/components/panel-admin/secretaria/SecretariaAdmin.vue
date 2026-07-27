@@ -16,7 +16,7 @@
     </div>
 
     <div class="row g-3 g-md-4">
-      <div v-for="item in opcionesSecretaria" :key="item.title" class="col-12 col-md-4">
+      <div v-for="item in opcionesSecretaria" :key="item.title" class="col-12 col-md-6">
         <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
 
           <!-- Todo el layout de la tarjeta pasado a clases nativas de Bootstrap -->
@@ -77,6 +77,12 @@ const opcionesSecretaria = [
     icon: 'bi bi-bell',
     desc: 'Gestionar avisos, reuniones y noticias para los árbitros.'
   },
+  {
+    to: '/panel-admin/secretaria/grupos',
+    title: 'Grupos',
+    icon: 'bi bi-people-fill',
+    desc: 'Administrar grupos de árbitros',
+  }
 
 ];
 </script>
