@@ -32,12 +32,22 @@
                 <input v-model="soloActivos" class="form-check-input" type="checkbox" id="chkSoloActivos">
                 <label class="form-check-label text-muted" for="chkSoloActivos">Solo activos</label>
               </div>
-              <input
-                v-model="busqueda"
-                class="form-control form-control-sm shadow-none"
-                style="max-width: 200px;"
-                placeholder="Buscar árbitro..."
-              >
+              <div class="busqueda-wrap">
+                <input
+                  v-model="busqueda"
+                  class="form-control form-control-sm shadow-none"
+                  placeholder="Buscar árbitro..."
+                >
+                <button
+                  v-if="busqueda"
+                  class="btn-limpiar-busqueda"
+                  @click="busqueda = ''"
+                  title="Limpiar búsqueda"
+                  type="button"
+                >
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
               <button
                 @click="descargarExcel"
                 class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1"
@@ -230,7 +240,11 @@ const cargarArbitros = async () => {
       action: 'obtenerArbitrosFiltradosPorGrupo',
       payload: { soloActivos: soloActivos.value }
     })
-    if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
+    if ((res.ok || res.success) && res.payload) {
+      arbitros.value = res.payload
+      // DIAGNÓSTICO temporal: descomentá para ver los campos que llegan
+      // if (res.payload[0]) console.log('Campos del árbitro:', Object.keys(res.payload[0]), res.payload[0])
+    }
   } catch (e) { console.error('cargarArbitros:', e) }
 }
 
@@ -338,29 +352,47 @@ const etiquetaGrupo = (g) => {
 }
 
 const perteneceAlGrupo = (a, g) => {
-  const grupoArb = a.nombre_grupo || a.grupo || ''
-  const subArb = a.subgrupo || ''
+  const idGrupoArb = a.id_grupo ?? a.idGrupo ?? null
+
   if (g.clave === 'singrupo') {
-    // Árbitro que no matchea con ningún grupo de la lista
-    return !grupos.value.some(gr =>
-      normalizar(grupoArb) === normalizar(gr.nombre) &&
-      normalizar(subArb) === normalizar(gr.subgrupo || '')
-    )
+    return idGrupoArb == null
   }
-  return normalizar(grupoArb) === normalizar(g.nombre) &&
-         normalizar(subArb) === normalizar(g.subgrupo || '')
+
+  if (idGrupoArb != null && g.id != null) {
+    return Number(idGrupoArb) === Number(g.id)
+  }
+
+  // Fallback por nombre si no hubiera id
+  const grupoArb = a.nombre_grupo || a.grupo || ''
+  return normalizar(grupoArb) === normalizar(g.nombre)
 }
 
 const gruposTabs = computed(() => {
-  // Coordinador: solo las solapas de grupos que tienen árbitros en su lista
-  // (obtenerArbitrosFiltradosPorGrupo ya devuelve solo los de sus grupos).
-  const tabs = grupos.value
-    .map(g => ({ ...g, clave: `${g.id}` }))
-    .filter(g => arbitros.value.some(a => perteneceAlGrupo(a, g)))
+  // Coordinador: armamos las solapas a partir de los grupos que realmente
+  // tienen árbitros en la lista (que el backend ya filtró a sus grupos).
+  // Buscamos el nombre en obtenerGrupos; si no está, usamos el que traiga
+  // el propio árbitro.
+  const idsPresentes = new Map() // id_grupo -> { id, nombre, subgrupo }
 
-  // Solapa extra para árbitros sin grupo asignado (solo si existen)
+  arbitros.value.forEach(a => {
+    const idGrupo = a.id_grupo ?? a.idGrupo ?? null
+    if (idGrupo == null) return
+    if (idsPresentes.has(String(idGrupo))) return
+
+    const grupoObj = grupos.value.find(gr => Number(gr.id) === Number(idGrupo))
+    idsPresentes.set(String(idGrupo), {
+      id: idGrupo,
+      clave: `${idGrupo}`,
+      nombre: grupoObj ? grupoObj.nombre : (a.grupo || a.nombre_grupo || `Grupo ${idGrupo}`),
+      subgrupo: grupoObj ? (grupoObj.subgrupo || '') : (a.subgrupo || '')
+    })
+  })
+
+  const tabs = [...idsPresentes.values()]
+
+  // Solapa extra para árbitros sin id_grupo (por las dudas)
   const sinGrupo = { clave: 'singrupo', id: null, nombre: 'Sin grupo', subgrupo: '' }
-  const haySinGrupo = arbitros.value.some(a => perteneceAlGrupo(a, sinGrupo))
+  const haySinGrupo = arbitros.value.some(a => (a.id_grupo ?? a.idGrupo) == null)
   return haySinGrupo ? [...tabs, sinGrupo] : tabs
 })
 
@@ -408,11 +440,17 @@ const examenAplicaAlGrupo = (ev, g) => {
 const reunionAplicaAlGrupo = (r, g) => {
   if (r.todosLosGrupos || Number(r.todos_grupos) === 1) return true
   if (g.clave === 'singrupo') return false
-  // Por ids si vienen; si no, por nombres de grupo
+  // Match por ids de grupo del evento
   const ids = String(r.id_grupos ?? '').split(',').map(s => s.trim()).filter(Boolean)
   if (ids.length > 0 && g.id) return ids.includes(String(g.id))
+  // Fallback por nombres de grupo (obtenerReuniones devuelve nombresGrupos)
   const nombres = (r.nombresGrupos || []).map(normalizar)
-  return nombres.includes(normalizar(etiquetaGrupo(g))) || nombres.includes(normalizar(g.nombre))
+  if (nombres.length > 0) {
+    return nombres.includes(normalizar(etiquetaGrupo(g))) || nombres.includes(normalizar(g.nombre))
+  }
+  // Si la reunión no trae info de grupo pero llegó igual (backend ya la
+  // filtró para el coordinador), la mostramos en su grupo.
+  return true
 }
 
 const fechaDeEvento = (ev) => ev.fecha_examen || ev.fecha_formateada || ev.fecha_evento || ev.fecha || ''
@@ -1095,4 +1133,40 @@ const descargarExcel = async () => {
 .btn-mini.borrar { background-color: #f8d7da; color: #842029; }
 .btn-mini.no { background-color: #e9ecef; color: #495057; }
 .btn-mini:disabled { opacity: 0.6; }
+
+/* ====================================================
+   BUSCADOR CON BOTÓN DE LIMPIAR (X)
+   ==================================================== */
+.busqueda-wrap {
+  position: relative;
+  max-width: 200px;
+  flex: 0 0 auto;
+}
+
+.busqueda-wrap input {
+  padding-right: 30px;
+}
+
+.btn-limpiar-busqueda {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #adb5bd;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.btn-limpiar-busqueda:hover {
+  color: #dc3545;
+}
 </style>

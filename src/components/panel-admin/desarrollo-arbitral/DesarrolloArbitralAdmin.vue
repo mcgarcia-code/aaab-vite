@@ -65,12 +65,6 @@ const opcionesDesarrollo = [
     desc: 'Registro y seguimiento de las observaciones arbitrales.'
   },
   {
-    to: '/panel-admin/desarrollo-arbitral/examenes-anuales', // Puedes ajustar esta ruta
-    title: 'Asamblea General de Árbitros',
-    icon: 'bi bi-journal-check',
-    desc: 'Administración de exámenes teóricos/físicos.'
-  },
-    {
     to: '/panel-admin/desarrollo-arbitral/reuniones-mensuales', // Puedes ajustar esta ruta
     title: 'Reuniones Mensuales',
     icon: 'bi bi-calendar-event',
@@ -78,9 +72,9 @@ const opcionesDesarrollo = [
   },
       {
     to: '/panel-admin/desarrollo-arbitral/resumen-arbitros', // Puedes ajustar esta ruta
-    title: 'Resumen de Árbitros',
+    title: 'Planilla General de Árbitros',
     icon: 'bi bi-graph-up-arrow',
-    desc: 'Visualización de estadísticas y rendimiento de árbitros'
+    desc: 'Administración de exámenes teóricos/físicos.'
   }
 ];
 </script>

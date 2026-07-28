@@ -32,12 +32,22 @@
                 <input v-model="soloActivos" class="form-check-input" type="checkbox" id="chkSoloActivos">
                 <label class="form-check-label text-muted" for="chkSoloActivos">Solo activos</label>
               </div>
-              <input
-                v-model="busqueda"
-                class="form-control form-control-sm shadow-none"
-                style="max-width: 200px;"
-                placeholder="Buscar árbitro..."
-              >
+              <div class="busqueda-wrap">
+                <input
+                  v-model="busqueda"
+                  class="form-control form-control-sm shadow-none"
+                  placeholder="Buscar árbitro..."
+                >
+                <button
+                  v-if="busqueda"
+                  class="btn-limpiar-busqueda"
+                  @click="busqueda = ''"
+                  title="Limpiar búsqueda"
+                  type="button"
+                >
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
               <button
                 @click="descargarExcel"
                 class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1"
@@ -172,7 +182,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'
 import { api } from '@/api/api'
-//import ExcelJS from 'exceljs'
+import ExcelJS from 'exceljs'
 
 const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 
@@ -258,7 +268,10 @@ const cargarReuniones = async () => {
   } catch (e) { console.error('cargarReuniones:', e) }
 }
 
-
+// Notas de TODOS los árbitros: una fila por evaluación (teorico/fisico).
+// Usa la acción obtenerNotasPlanilla (hay que agregarla en examenes.php).
+// Los registros viejos guardan el estado como número: 1 aprobado,
+// 2 desaprobado, 3 no lo hizo, 4 borrado. Los nuevos usan texto.
 const MAPA_ESTADOS_NUMERICOS = { '1': 'aprobado', '2': 'desaprobado', '3': 'no lo hizo' }
 
 const cargarNotas = async () => {
@@ -268,7 +281,7 @@ const cargarNotas = async () => {
       const mapa = {}
       res.payload.forEach(row => {
         let estado = String(row.estado ?? '').trim().toLowerCase()
-        if (estado === '4') return
+        if (estado === '4') return // borrado lógico
         if (MAPA_ESTADOS_NUMERICOS[estado]) estado = MAPA_ESTADOS_NUMERICOS[estado]
         if (!row.tipo) return
         const clave = `${row.id_evento}|${row.id_arbitro}|${String(row.tipo).trim().toLowerCase()}`
@@ -284,7 +297,9 @@ const cargarNotas = async () => {
   } catch (e) { console.error('cargarNotas:', e) }
 }
 
-
+// Asistencias de TODOS los eventos, leídas directo de eventos_asistencia
+// (estado 1 = presente, 0 = ausente). Al no pasar por la lista de árbitros,
+// también trae las ausencias de los árbitros inactivos.
 const cargarAsistencias = async () => {
   try {
     const res = await api.get({ entity: 'reuniones', action: 'obtenerAsistenciasPlanilla' })
@@ -322,7 +337,9 @@ watch(soloActivos, async () => {
 
 onMounted(cargarTodo)
 
-
+/* ====================================================
+   GRUPOS (SOLAPAS)
+   ==================================================== */
 const etiquetaGrupo = (g) => {
   if (!g) return ''
   if (g.clave === 'singrupo') return 'Sin grupo'
@@ -333,7 +350,7 @@ const perteneceAlGrupo = (a, g) => {
   const grupoArb = a.nombre_grupo || a.grupo || ''
   const subArb = a.subgrupo || ''
   if (g.clave === 'singrupo') {
-
+    // Árbitro que no matchea con ningún grupo de la lista
     return !grupos.value.some(gr =>
       normalizar(grupoArb) === normalizar(gr.nombre) &&
       normalizar(subArb) === normalizar(gr.subgrupo || '')
@@ -365,7 +382,7 @@ const estiloTab = (g, indice) => {
   const activa = g.clave === grupoActivo.value?.clave
   return {
     borderTop: `3px solid ${color}`,
-    backgroundColor: activa ? '#fff' : color + '14',
+    backgroundColor: activa ? '#fff' : color + '14', // tinte suave al color cuando está inactiva
     color: activa ? color : '#495057'
   }
 }
@@ -383,7 +400,11 @@ const arbitrosVisibles = computed(() => {
   return arbitrosDelGrupo.value.filter(a => normalizar(`${a.apellido} ${a.nombre}`).includes(b))
 })
 
-
+/* ====================================================
+   COLUMNAS DEL GRUPO ACTIVO (orden cronológico)
+   Asamblea (Teó/Fís) → Recuperatorio (Teó/Fís) → Reuniones →
+   siguiente asamblea... según las fechas de los eventos.
+   ==================================================== */
 const examenAplicaAlGrupo = (ev, g) => {
   if (Number(ev.todos_grupos) === 1) return true
   if (g.clave === 'singrupo') return Number(ev.todos_grupos) === 1
@@ -407,7 +428,8 @@ const columnasGrupo = computed(() => {
   if (!grupoActivo.value) return []
   const g = grupoActivo.value
 
-
+  // Primero todos los exámenes (asambleas y recuperatorios) por fecha,
+  // después todas las reuniones por fecha: bloques contiguos.
   const examenes = eventosExamen.value
     .filter(ev => examenAplicaAlGrupo(ev, g))
     .map(ev => ({
@@ -434,7 +456,7 @@ const columnasGrupo = computed(() => {
     }))
     .sort((a, b) => a._ts - b._ts)
 
-
+  // Marca visual: la primera reunión lleva un separador a la izquierda
   if (reunionesCols.length > 0) reunionesCols[0].separador = true
 
   return [...examenes, ...reunionesCols]
@@ -444,11 +466,13 @@ const totalColumnasFisicas = computed(() =>
   columnasGrupo.value.reduce((total, c) => total + (c.esExamen ? 2 : 1), 0)
 )
 
-
+/* ====================================================
+   CELDAS
+   ==================================================== */
 const notaDe = (a, col, tipo) => notasExamenes.value[`${col.id}|${a.id}|${tipo}`] || null
 const asistenciaDe = (a, col) => asistencias.value[`${col.id}|${a.id}`] || ''
 
-
+// Nota numérica (acepta "80", "80%", "72,5")
 const notaNumerica = (nota) => {
   if (!nota) return null
   const num = parseFloat(String(nota.calificacion ?? '').replace('%', '').replace(',', '.').trim())
@@ -458,8 +482,8 @@ const notaNumerica = (nota) => {
 const textoCeldaExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
-    if (nota.estado === 'no lo hizo') return 'No lo hizo'
-
+    if (nota.estado === 'no lo hizo') return 'SAF'
+    // El físico nunca lleva nota: solo aprobado/desaprobado
     if (tipo === 'fisico') {
       if (nota.estado === 'aprobado') return 'APROB.'
       if (nota.estado === 'desaprobado') return 'DESAP.'
@@ -471,7 +495,7 @@ const textoCeldaExamen = (a, col, tipo) => {
     if (nota.estado === 'desaprobado') return 'DESAP.'
     return nota.estado ? nota.estado.toUpperCase() : ''
   }
-
+  // Sin evaluación cargada: si figura ausente en la asistencia del evento, mostrarlo
   if (asistenciaDe(a, col) === 'ausente') return 'AUS'
   return ''
 }
@@ -480,6 +504,8 @@ const claseCeldaExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
     if (nota.estado === 'no lo hizo') return 'celda-gris'
+    // Umbral SOLO para el teórico: verde con 75 o más, rojo con 74 o menos.
+    // El físico se colorea siempre por su estado.
     if (tipo === 'teorico') {
       const num = notaNumerica(nota)
       if (num !== null) return num >= 75 ? 'celda-verde' : 'celda-roja'
@@ -506,6 +532,13 @@ const claseCeldaReunion = (a, col) => {
   return ''
 }
 
+/* ====================================================
+   EDICIÓN INLINE (solo asambleas y recuperatorios)
+   Guarda en examenes_panel vía guardarNotaPlanilla, la
+   misma tabla que usa Exámenes Generales: los cambios
+   se ven en ambas pantallas. Las reuniones NO se editan
+   acá (se cargan desde su propia pantalla).
+   ==================================================== */
 const editor = ref(null)
 const editorInputRef = ref(null)
 
@@ -524,6 +557,7 @@ const abrirEditor = async (a, col, tipo) => {
     idArbitro: a.id,
     idEvento: col.id,
     tipo,
+    // El físico no lleva nota
     calificacion: tipo === 'fisico' ? '' : (existente ? String(existente.calificacion ?? '') : ''),
     estado: existente ? existente.estado : (estaAusente ? 'ausente' : 'aprobado'),
     guardando: false
@@ -535,7 +569,8 @@ const abrirEditor = async (a, col, tipo) => {
 
 const cerrarEditor = () => { editor.value = null }
 
-
+// En el teórico, al tipear la nota se autocompleta el estado por el umbral 75
+// (se puede cambiar a mano igual)
 const alTipearNota = () => {
   const e = editor.value
   if (!e || e.tipo !== 'teorico') return
@@ -552,6 +587,8 @@ const guardarEditor = async () => {
   const claveAsis = `${e.idEvento}|${e.idArbitro}`
 
   try {
+    // Caso AUSENTE: no es una nota. Se registra la ausencia en
+    // eventos_asistencia y se borra cualquier nota que hubiera en examenes_panel.
     if (e.estado === 'ausente') {
       const res = await api.post({
         entity: 'reuniones',
@@ -560,6 +597,7 @@ const guardarEditor = async () => {
       })
 
       if (res.ok || res.success) {
+        // Borrar la nota de este tipo si existía (ausente no lleva nota)
         if (notasExamenes.value[claveNota]) {
           api.post({
             entity: 'examenes',
@@ -579,6 +617,7 @@ const guardarEditor = async () => {
       return
     }
 
+    // Caso con NOTA (aprobado / desaprobado / no lo hizo)
     const res = await api.post({
       entity: 'examenes',
       action: 'guardarNotaPlanilla',
@@ -600,6 +639,8 @@ const guardarEditor = async () => {
         }
       }
 
+      // Tener una evaluación implica presente: registrar la asistencia
+      // (igual que hace Exámenes Generales al guardar un examen)
       if (asistencias.value[claveAsis] !== 'presente') {
         asistencias.value = { ...asistencias.value, [claveAsis]: 'presente' }
         api.post({
@@ -622,6 +663,8 @@ const guardarEditor = async () => {
   }
 }
 
+// Borra el contenido de la celda (marca la evaluación como borrada en el
+// backend con borrarExamenPlanilla). No toca la asistencia.
 const borrarCelda = async () => {
   const e = editor.value
   if (!e || e.guardando) return
@@ -655,7 +698,9 @@ const borrarCelda = async () => {
   }
 }
 
-
+/* ====================================================
+   EXPORTAR A EXCEL (una hoja por grupo)
+   ==================================================== */
 const textoExcelExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
@@ -694,6 +739,7 @@ const nombreHoja = (texto, usados) => {
   return nombre
 }
 
+// Relleno ARGB para cada color de celda (sin el # y con FF de alfa adelante)
 const RELLENO = {
   verde: 'FFD1E7DD',
   roja: 'FFF8D7DA',
@@ -707,6 +753,7 @@ const FUENTE_COLOR = {
   gris: 'FF6C757D'
 }
 
+// Reusa la lógica de color de la vista, devolviendo la clave del relleno
 const colorCeldaExamen = (a, col, tipo) => {
   const clase = claseCeldaExamen(a, col, tipo)
   if (clase === 'celda-verde') return 'verde'
@@ -750,6 +797,7 @@ const descargarExcel = async () => {
       .filter(a => perteneceAlGrupo(a, g))
       .sort((a, b) => `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`, 'es'))
 
+    // Columnas de este grupo (misma lógica que la vista: exámenes primero, reuniones después)
     const columnas = [
       ...eventosExamen.value.filter(ev => examenAplicaAlGrupo(ev, g)).map(ev => ({
         esExamen: true, id: ev.id,
@@ -769,9 +817,10 @@ const descargarExcel = async () => {
       views: [{ state: 'frozen', xSplit: 1, ySplit: 2 }] // fija árbitro + cabecera
     })
 
-
+    // Color de la solapa igual al de la vista
     ws.properties.tabColor = { argb: 'FF' + colorDeGrupo(indiceGrupo).replace('#', '').toUpperCase() }
 
+    // ---- Cabecera de dos filas ----
     const fila1 = ['ÁRBITRO']
     const fila2 = ['']
     columnas.forEach(col => {
@@ -787,6 +836,7 @@ const descargarExcel = async () => {
     ws.addRow(fila1)
     ws.addRow(fila2)
 
+    // ---- Filas de datos ----
     lista.forEach(a => {
       const fila = [`${a.apellido}, ${a.nombre}`]
       columnas.forEach(col => {
@@ -799,24 +849,24 @@ const descargarExcel = async () => {
       ws.addRow(fila)
     })
 
--
-    ws.mergeCells(1, 1, 2, 1)
+    // ---- Merges de cabecera ----
+    ws.mergeCells(1, 1, 2, 1) // ÁRBITRO ocupa las dos filas
     let c = 2
     columnas.forEach(col => {
       if (col.esExamen) {
-        ws.mergeCells(1, c, 1, c + 1)
+        ws.mergeCells(1, c, 1, c + 1) // título abarca teórico+físico
         c += 2
       } else {
-        ws.mergeCells(1, c, 2, c)
+        ws.mergeCells(1, c, 2, c) // reunión ocupa las dos filas
         c += 1
       }
     })
 
-
+    // ---- Estilos de cabecera ----
     ws.getRow(1).eachCell({ includeEmpty: true }, celda => pintarCelda(celda, 'cabecera', { bold: true, wrap: true, size: 10 }))
     ws.getRow(2).eachCell({ includeEmpty: true }, celda => pintarCelda(celda, 'cabecera', { bold: true, size: 10 }))
 
-
+    // ---- Estilos de datos (con los colores del front) ----
     lista.forEach((a, i) => {
       const filaExcel = ws.getRow(i + 3)
       pintarCelda(filaExcel.getCell(1), 'ninguno', { left: true, bold: true }) // nombre
@@ -833,7 +883,7 @@ const descargarExcel = async () => {
       })
     })
 
-
+    // ---- Anchos ----
     ws.getColumn(1).width = 26
     let cw = 2
     columnas.forEach(col => {
@@ -843,7 +893,7 @@ const descargarExcel = async () => {
     ws.getRow(1).height = 30
   })
 
-
+  // Descargar
   const buffer = await wb.xlsx.writeBuffer()
   const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
   const url = URL.createObjectURL(blob)
@@ -1052,4 +1102,40 @@ const descargarExcel = async () => {
 .btn-mini.borrar { background-color: #f8d7da; color: #842029; }
 .btn-mini.no { background-color: #e9ecef; color: #495057; }
 .btn-mini:disabled { opacity: 0.6; }
+
+/* ====================================================
+   BUSCADOR CON BOTÓN DE LIMPIAR (X)
+   ==================================================== */
+.busqueda-wrap {
+  position: relative;
+  max-width: 200px;
+  flex: 0 0 auto;
+}
+
+.busqueda-wrap input {
+  padding-right: 30px;
+}
+
+.btn-limpiar-busqueda {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #adb5bd;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.btn-limpiar-busqueda:hover {
+  color: #dc3545;
+}
 </style>

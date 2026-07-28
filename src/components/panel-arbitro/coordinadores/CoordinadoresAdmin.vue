@@ -65,12 +65,6 @@ const opcionesCoordinadores = [
     desc: 'Registro de presentes y ausentes en reuniones mensuales.'
   },
   {
-    to: '/panel-arbitro/coordinadores/examenes-anuales', // Puedes ajustar esta ruta
-    title: 'Asamblea General de Árbitros',
-    icon: 'bi bi-journal-check',
-    desc: 'Administración de exámenes teóricos/físicos.'
-  },
-        {
     to: '/panel-arbitro/coordinadores/disponibilidad-horaria', // Puedes ajustar esta ruta
     title: 'Disponibilidad Horaria',
     icon: 'bi bi-clock-history',
@@ -78,9 +72,9 @@ const opcionesCoordinadores = [
   },
         {
     to: '/panel-arbitro/coordinadores/resumen-arbitros', // Puedes ajustar esta ruta
-    title: 'Resumen de Árbitros',
+    title: 'Planilla General de Árbitros',
     icon: 'bi bi-graph-up-arrow',
-    desc: 'Visualización de estadísticas y rendimiento de árbitros'
+    desc: 'Administración de exámenes teóricos/físicos.'
   }
 ];
 </script>
