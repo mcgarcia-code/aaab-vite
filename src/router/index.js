@@ -83,7 +83,7 @@ const routes = [
 
       // --- COORDINADORES ---
       { path: 'coordinadores', name: 'PanelCoordinadoresAdmin', component: () => import('../components/panel-arbitro/coordinadores/CoordinadoresAdmin.vue') },
-      { path: 'coordinadores/resumen-arbitros', name: 'CoordinadoresResumen', component: () => import('../components/panel-arbitro/coordinadores/PlanillaGeneralCoordinadores.vue/index.js') },
+      { path: 'coordinadores/resumen-arbitros', name: 'CoordinadoresResumen', component: () => import('../components/panel-arbitro/coordinadores/PlanillaGeneralCoordinadores.vue') },
       { path: 'coordinadores/reuniones-mensuales', name: 'CoordinadoresReuniones', component: () => import('../components/panel-arbitro/coordinadores/ReunionesMensualesCoordinadores.vue') },
       { path: 'coordinadores/disponibilidad-horaria', name: 'CoordinadoresDisponibilidad', component: () => import('../components/panel-arbitro/coordinadores/DisponibilidadHorariaCoordinadores.vue') },
 
@@ -164,7 +164,7 @@ const routes = [
       { path: 'desarrollo-arbitral', name: 'DesarrolloArbitralAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/DesarrolloArbitralAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
       { path: 'desarrollo-arbitral/observaciones', name: 'ObservacionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ObservacionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
       { path: 'desarrollo-arbitral/reuniones-mensuales', name: 'ReunionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ReunionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
-      { path: 'desarrollo-arbitral/resumen-arbitros', name: 'ResumenArbitrosAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/PlanillaGeneralAdmin.vue/index.js'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
+      { path: 'desarrollo-arbitral/resumen-arbitros', name: 'ResumenArbitrosAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/PlanillaGeneralAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
 
       // --- CURSOS ---
       { path: 'curso-arbitros', name: 'CursoArbitrosAdmin', component: () => import('../components/panel-admin/curso-arbitros/CursoArbitrosAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] } },
