@@ -335,7 +335,8 @@
                 </select>
               </div>
 
-              <div class="col-md-4">
+              <!-- AQUÍ ESTÁ EL CAMBIO SOLICITADO: v-if="detalle.tipo !== 'fisico'" -->
+              <div class="col-md-4" v-if="detalle.tipo !== 'fisico'">
                 <label class="small fw-bold text-dark mb-1">Calificación</label>
                 <input v-model="detalle.calificacion"
                   maxlength="10"
@@ -354,15 +355,15 @@
         </div>
       </form>
 
-<template #footer v-if="vistaModal !== 'lista'">
-  <button @click="volverAListado" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">
-    <i class="bi bi-chevron-left me-1"></i> Volver al listado
-  </button>
-  <button type="submit" form="formExamen" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
-    <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
-    {{ modoFormulario === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR EXAMEN' }}
-  </button>
-</template>
+      <template #footer v-if="vistaModal !== 'lista'">
+        <button @click="volverAListado" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">
+          <i class="bi bi-chevron-left me-1"></i> Volver al listado
+        </button>
+        <button type="submit" form="formExamen" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
+          <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
+          {{ modoFormulario === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR EXAMEN' }}
+        </button>
+      </template>
     </ModalBase>
 
     <ModalBase :show="mostrarModalDetalle" @close="mostrarModalDetalle = false" icono="person_search" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="950px">
@@ -671,12 +672,12 @@ const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => {
     if (apellido && !normalizarTexto(a.apellido).includes(normalizarTexto(apellido))) return false
     if (nombre   && !normalizarTexto(a.nombre).includes(normalizarTexto(nombre)))     return false
-    if (grupo    && String(a.grupo) !== String(grupo))                                 return false
-    if (subgrupo && String(a.subgrupo) !== String(subgrupo))                           return false
+    if (grupo    && String(a.grupo) !== String(grupo))                                return false
+    if (subgrupo && String(a.subgrupo) !== String(subgrupo))                          return false
     const lista      = examenesPorArbitro.value[a.id] || []
     const listaEnAño = año ? lista.filter(ex => añoDeFecha(ex.fecha_examen) === año) : lista
-    if (año && !listaEnAño.length)                                                     return false
-    if (tieneTipo && !listaEnAño.some(ex => ex.tipo === tieneTipo))                    return false
+    if (año && !listaEnAño.length)                                                    return false
+    if (tieneTipo && !listaEnAño.some(ex => ex.tipo === tieneTipo))                   return false
     return true
   })
 })
@@ -734,14 +735,12 @@ const examenesPorTipoDetalle = computed(() => {
   return map
 })
 
-// Tipos de evento (asamblea/recuperatorio) presentes en el detalle — para la sección "Eventos"
 const tipoDelArbitro = computed(() =>
   Object.keys(examenesPorTipoDetalle.value).sort((a, b) =>
     (examenesPorTipoDetalle.value[b][0]._ts ?? 0) - (examenesPorTipoDetalle.value[a][0]._ts ?? 0)
   )
 )
 
-// Evaluaciones agrupadas por tipo (fisico/teorico) — para la sección "Rendimiento"
 const rendimientoPorTipo = computed(() => {
   const map = {}
   for (const ex of examenesFiltradosDetalle.value)
@@ -753,7 +752,6 @@ const rendimientoPorTipo = computed(() => {
   return map
 })
 
-// Tipos de evaluación que tienen al menos un registro — para la sección "Rendimiento"
 const tiposConEvaluacion = computed(() => TIPOS_EVALUACION.filter(s => rendimientoPorTipo.value[s]?.length))
 
 // ============== MODAL GESTIÓN ==============
@@ -803,13 +801,13 @@ const iniciarNuevoExamen = () => {
 
 const iniciarEditarExamen = (ex) => {
   const match    = eventosParaArbitro.value.find(ev => ev.id && String(ev.id) === String(ex.id_evento)) ?? null
-  const isAusente = ex.detalles.length === 1 && ex.detalles[0].estado === 'ausente'  // ← nuevo
+  const isAusente = ex.detalles.length === 1 && ex.detalles[0].estado === 'ausente'
   formExamen.value = {
     id_arbitro:   ex.id_arbitro,
     id_evento:    match ? String(match.id) : null,
     fecha_examen: fechaParaInput(ex.fecha_examen),
     tipo:         ex.tipo ?? '',
-    asistencia:   isAusente ? 'ausente' : 'presente',                                // ← nuevo
+    asistencia:   isAusente ? 'ausente' : 'presente',
     detalles:     isAusente ? [detallePlantilla()] : JSON.parse(JSON.stringify(ex.detalles)),
   }
   if (!formExamen.value.detalles.length) formExamen.value.detalles.push(detallePlantilla())
@@ -849,6 +847,7 @@ const validarFormulario = () => {
   return true
 }
 
+// AQUÍ ESTÁ EL CAMBIO SOLICITADO PARA EL PAYLOAD
 const prepararPayload = () => {
   const f = formExamen.value
   return {
@@ -856,7 +855,7 @@ const prepararPayload = () => {
     idArbitro: f.id_arbitro || arbitroEnModal.value.id,
     detalles:  f.detalles.map(d => ({
       tipo:         String(d.tipo).trim(),
-      calificacion: d.estado === 'no lo hizo' ? '' : String(d.calificacion || '').trim(),
+      calificacion: (d.estado === 'no lo hizo' || String(d.tipo).trim() === 'fisico') ? '' : String(d.calificacion || '').trim(),
       estado:       d.estado,
     }))
   }
@@ -867,7 +866,6 @@ const llamarAPI = async (action, successMsg) => {
   if (!validarFormulario()) return
   cargando.value = true
   try {
-    // Paso 1: asistencia — siempre
     const resAsistencia = await api.post({
       entity: 'reuniones',
       action: 'registrarAsistenciaArbitro',
@@ -882,7 +880,6 @@ const llamarAPI = async (action, successMsg) => {
       return
     }
 
-    // Paso 2: evaluaciones — siempre; si ausente, detalle sintético
     const payload = formExamen.value.asistencia === 'ausente'
       ? {
           idEvento:  eventoEnForm.value?.id ?? null,
@@ -925,7 +922,7 @@ const borrarExamen = async (idEvento, idArbitro) => {
       return
     }
     notificar({ titulo: '¡Éxito!', mensaje: 'Examen borrado correctamente.', tipo: 'success' })
-    await Promise.all([cargarExamenesArbitro(idArbitro), cargarResumenExamenes()])  // ← ambos en paralelo
+    await Promise.all([cargarExamenesArbitro(idArbitro), cargarResumenExamenes()])
     vistaModal.value  = 'lista'
     formExamen.value  = formExamenVacio()
     formExamenSnapshot.value = ''
@@ -935,7 +932,6 @@ const borrarExamen = async (idEvento, idArbitro) => {
     cargando.value = false
   }
 }
-
 
 const confirmarBorrarExamen = (ex) => {
   const idEvento  = ex ? ex.id_evento  : (eventoEnForm.value?.id ?? null)
@@ -1022,12 +1018,11 @@ const cargarResumenExamenes = async () => {
   try {
     const res = await api.get({ entity: 'examenes', action: 'obtenerResumenExamenes' })
     if ((res.ok || res.success) && res.payload) {
-      // Solo poblar lo necesario para los conteos, sin pisar datos ya cargados de modales
       const yaLoadedIds = new Set(examenes.value.map(ex => `${ex.id_evento}_${ex.id_arbitro}`))
       const nuevos = res.payload
         .filter(row => !yaLoadedIds.has(`${row.id_evento}_${row.id_arbitro}`))
         .map(row => ({
-          id:        `${row.id_evento}_${row.id_arbitro}`,
+          id:         `${row.id_evento}_${row.id_arbitro}`,
           id_evento:  row.id_evento,
           id_arbitro: row.id_arbitro,
           tipo:       row.categoria,
