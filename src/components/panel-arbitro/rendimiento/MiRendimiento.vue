@@ -40,153 +40,173 @@
         </div>
 
         <!-- ── Contenido principal ── -->
-        <div v-else class="card-body p-3 bg-white">
+        <div v-else class="card-body p-0 bg-white">
 
-          <!-- Stats globales -->
-          <div class="row g-2 mb-4">
-            <div class="col-6 col-md-2">
-              <div class="card border-0 shadow-sm h-100 bg-success">
-                <div class="card-body p-2 text-center text-white">
-                  <i class="bi bi-check-circle-fill" style="font-size: 1.2rem;"></i>
-                  <div class="fw-bold fs-5 mt-1 lh-1">{{ statsGlobales.aprobadosExamen }}</div>
-                  <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Aprob.</div>
-                </div>
-              </div>
-            </div>
-            <div class="col-6 col-md-2">
-              <div class="card border-0 shadow-sm h-100 bg-danger">
-                <div class="card-body p-2 text-center text-white">
-                  <i class="bi bi-x-circle-fill" style="font-size: 1.2rem;"></i>
-                  <div class="fw-bold fs-5 mt-1 lh-1">{{ statsGlobales.desaprobadosExamen }}</div>
-                  <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Desap.</div>
-                </div>
-              </div>
-            </div>
-            <div class="col-6 col-md-2">
-              <div class="card border-0 shadow-sm h-100 bg-secondary">
-                <div class="card-body p-2 text-center text-white">
-                  <i class="bi bi-person-dash-fill" style="font-size: 1.2rem;"></i>
-                  <div class="fw-bold fs-5 mt-1 lh-1">{{ statsGlobales.ausentesExamen }}</div>
-                  <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Aus. Exam.</div>
-                </div>
-              </div>
-            </div>
-            <div class="col-6 col-md-2">
-              <div class="card border-0 shadow-sm h-100 bg-info">
-                <div class="card-body p-2 text-center text-white">
-                  <i class="bi bi-dash-circle-fill" style="font-size: 1.2rem;"></i>
-                  <div class="fw-bold fs-5 mt-1 lh-1">{{ statsGlobales.noHizoExamen }}</div>
-                  <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">No hizo</div>
-                </div>
-              </div>
-            </div>
-            <div class="col-6 col-md-2">
-              <div class="card border-0 shadow-sm h-100 bg-primary">
-                <div class="card-body p-2 text-center text-white">
-                  <i class="bi bi-person-check-fill" style="font-size: 1.2rem;"></i>
-                  <div class="fw-bold fs-5 mt-1 lh-1">{{ statsGlobales.presentesReunion }}</div>
-                  <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Pres. Reun.</div>
-                </div>
-              </div>
-            </div>
-            <div class="col-6 col-md-2">
-              <div class="card border-0 shadow-sm h-100 bg-secondary">
-                <div class="card-body p-2 text-center text-white">
-                  <i class="bi bi-person-x-fill" style="font-size: 1.2rem;"></i>
-                  <div class="fw-bold fs-5 mt-1 lh-1">{{ statsGlobales.ausentesReunion }}</div>
-                  <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Aus. Reun.</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- ══ SECCIÓN MOTIVACIONAL Y ESTADÍSTICAS ══ -->
+          <div class="p-3 p-md-4 bg-light border-bottom">
+            <h5 class="fw-bold text-dark mb-1">{{ fraseMotivadora }}</h5>
+            <p class="text-muted small mb-4">El entrenamiento invisible se nota en la cancha. Acá está el resumen de tu preparación.</p>
 
-          <!-- ══ REUNIONES ══ -->
-          <div class="mb-5">
-            <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-primary">
-              <i class="bi bi-people-fill text-primary me-2 fs-5"></i>
-              <h6 class="fw-bold m-0 text-dark text-uppercase">Reuniones</h6>
-              <span class="badge bg-primary rounded-pill px-2 ms-2">{{ reunionesFiltradas.length }}</span>
-            </div>
+            <div class="row g-4">
+              <!-- Progreso Asistencia -->
+              <div class="col-12 col-md-6">
+                <div class="d-flex justify-content-between align-items-end mb-1">
+                  <span class="fw-bold text-primary small text-uppercase"><i class="bi bi-people-fill me-1"></i> Asistencia a Reuniones</span>
+                  <span class="fw-bold fs-5 text-primary">{{ porcentajeAsistencia }}%</span>
+                </div>
+                <div class="progress shadow-sm" style="height: 12px; border-radius: 12px; background-color: #e2e8f0;">
+                  <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar"
+                       :style="{ width: porcentajeAsistencia + '%' }"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2 small fw-bold text-muted">
+                  <span><span class="text-success">{{ statsGlobales.presentesReunion }}</span> Presentes</span>
+                  <span><span class="text-danger">{{ statsGlobales.ausentesReunion }}</span> Ausentes</span>
+                </div>
+              </div>
 
-            <div v-if="!reunionesFiltradas.length" class="text-center py-4 bg-light rounded border border-light-subtle">
-              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">history_toggle_off</span>
-              <p class="text-muted m-0 fw-bold small">Sin reuniones registradas en el período seleccionado.</p>
-            </div>
-
-            <div v-else class="row g-2">
-              <div v-for="r in reunionesFiltradas" :key="r.id_evento" class="col-12 col-md-6 col-lg-4">
-                <div class="card border border-light-subtle shadow-sm h-100 bg-white">
-                  <div class="card-body p-3 d-flex justify-content-between align-items-start gap-2">
-                    <div>
-                      <div class="text-dark fw-bold small mb-1">
-                        <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(r.fecha_reunion) }}
-                      </div>
-                      <div v-if="r.titulo" class="text-muted small fst-italic">{{ r.titulo }}</div>
-                    </div>
-                    <AsistenciaBadge :asistencia="r.asistencia" />
+              <!-- Progreso Exámenes -->
+              <div class="col-12 col-md-6">
+                <div class="d-flex justify-content-between align-items-end mb-1">
+                  <span class="fw-bold text-danger small text-uppercase"><i class="bi bi-clipboard2-check-fill me-1"></i> Evaluaciones Aprobadas</span>
+                  <span class="fw-bold fs-5 text-danger">{{ porcentajeExamenes }}%</span>
+                </div>
+                <div class="progress shadow-sm" style="height: 12px; border-radius: 12px; background-color: #e2e8f0;">
+                  <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar"
+                       :style="{ width: porcentajeExamenes + '%' }"></div>
+                </div>
+                <!-- Desglose de exámenes en 4 estados -->
+                <div class="row row-cols-2 row-cols-sm-4 mt-2 small fw-bold text-muted g-2 text-center text-sm-start">
+                  <div class="col">
+                    <span class="text-success d-block d-sm-inline">{{ statsGlobales.aprobadosExamen }}</span> Aprobados
+                  </div>
+                  <div class="col">
+                    <span class="text-danger d-block d-sm-inline">{{ statsGlobales.desaprobadosExamen }}</span> Desaprobados
+                  </div>
+                  <div class="col">
+                    <span class="text-secondary d-block d-sm-inline">{{ statsGlobales.ausentesExamen }}</span> Ausentes
+                  </div>
+                  <div class="col">
+                    <span class="text-info d-block d-sm-inline">{{ statsGlobales.noHizoExamen }}</span> SAF
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- ══ EXÁMENES ══ -->
-          <div>
-            <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-danger">
-              <i class="bi bi-clipboard2-check-fill text-danger me-2 fs-5"></i>
-              <h6 class="fw-bold m-0 text-dark text-uppercase">Exámenes</h6>
-              <span class="badge bg-danger rounded-pill px-2 ms-2">{{ examenesFiltrados.length }}</span>
-            </div>
+          <div class="p-3 p-md-4">
 
-            <div v-if="!examenesFiltrados.length" class="text-center py-4 bg-light rounded border border-light-subtle">
-              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">assignment</span>
-              <p class="text-muted m-0 fw-bold small">Sin exámenes registrados en el período seleccionado.</p>
-            </div>
+            <!-- ══ TARJETAS DE EXÁMENES ══ -->
+            <div class="mb-5">
+              <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-danger">
+                <i class="bi bi-clipboard2-check-fill text-danger me-2 fs-5"></i>
+                <h6 class="fw-bold m-0 text-dark text-uppercase">Historial de Exámenes</h6>
+                <span class="badge bg-danger rounded-pill px-2 ms-auto">{{ examenesFiltrados.length }}</span>
+              </div>
 
-            <template v-else>
-              <div v-for="tipo in tiposExamenPresentes" :key="tipo" class="mb-4">
-                <div class="d-flex align-items-center justify-content-between mb-2 bg-white p-2 ps-3 rounded shadow-sm border border-light-subtle">
-                  <div class="d-flex align-items-center gap-2">
-                    <span class="badge text-uppercase px-2 py-1" :class="badgeTipo(tipo)">{{ tipo }}</span>
-                    <span class="small text-muted fw-bold">
-                      {{ examenesPorTipo[tipo].length }}
-                      {{ examenesPorTipo[tipo].length === 1 ? 'registro' : 'registros' }}
-                    </span>
-                  </div>
-                  <span class="d-none d-md-inline small text-muted fst-italic">
-                    Último: {{ formatFecha(examenesPorTipo[tipo][0].fecha_examen) }}
-                  </span>
-                </div>
+              <div v-if="!examenesFiltrados.length" class="text-center py-4 bg-light rounded border border-light-subtle">
+                <p class="text-muted m-0 fw-bold small">Sin exámenes registrados en el período seleccionado.</p>
+              </div>
 
-                <div class="row g-2">
-                  <div v-for="ex in examenesPorTipo[tipo]" :key="ex.id" class="col-12 col-md-6">
-                    <div class="card border border-light-subtle shadow-sm h-100 bg-white">
-                      <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2 border-bottom border-secondary-subtle pb-1">
-                          <div class="text-dark fw-bold small">
+              <div v-else class="row g-3">
+                <div v-for="ex in examenesFiltrados" :key="ex.id" class="col-12 col-xl-6">
+                  <div class="card h-100 shadow-sm border-light-subtle">
+                    <div class="card-body p-3">
+                      <!-- Cabecera de la tarjeta del examen -->
+                      <div class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2">
+                        <div>
+                          <div class="text-dark fw-bold small mb-1">
                             <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(ex.fecha_examen) }}
                           </div>
-                          <span v-if="ex.titulo" class="text-muted small fst-italic text-truncate ms-2" style="max-width: 160px;">
-                            {{ ex.titulo }}
-                          </span>
+                          <div class="text-muted small text-truncate" style="max-width: 200px;">
+                            {{ ex.titulo || 'Evaluación General' }}
+                          </div>
                         </div>
-                        <DetallesExamen :detalles="ex.detalles" />
+                        <span class="badge" :class="badgeTipo(ex.tipo)">{{ ex.tipo.toUpperCase() }}</span>
                       </div>
+
+                      <!-- Si faltó a todo el evento -->
+                      <div v-if="esAusenteTotal(ex)" class="text-center p-3 bg-secondary bg-opacity-10 rounded">
+                        <span class="badge bg-secondary px-3 py-2">AUSENTE A LA JORNADA</span>
+                      </div>
+
+                      <!-- Detalle Teórico / Físico -->
+                      <div v-else class="row g-2">
+                        <!-- Teórico -->
+                        <div class="col-6">
+                          <div class="p-2 h-100 rounded text-center border" :class="fondoTarjetaExamen(getDetalle(ex, 'teorico'))">
+                            <span class="d-block small fw-bold text-uppercase text-muted mb-1">Teórico</span>
+                            <div v-if="getDetalle(ex, 'teorico')">
+                              <span class="badge w-100 py-2" :class="claseBadgeExamen(getDetalle(ex, 'teorico'))">
+                                {{ formatEstadoExamen(getDetalle(ex, 'teorico')) }}
+                              </span>
+                              <div v-if="getNota(getDetalle(ex, 'teorico'))" class="small fw-bold mt-1 text-dark">
+                                Nota: {{ getNota(getDetalle(ex, 'teorico')) }}
+                              </div>
+                            </div>
+                            <span v-else class="text-muted small">—</span>
+                          </div>
+                        </div>
+
+                        <!-- Físico -->
+                        <div class="col-6">
+                          <div class="p-2 h-100 rounded text-center border" :class="fondoTarjetaExamen(getDetalle(ex, 'fisico'))">
+                            <span class="d-block small fw-bold text-uppercase text-muted mb-1">Físico</span>
+                            <div v-if="getDetalle(ex, 'fisico')">
+                              <span class="badge w-100 py-2" :class="claseBadgeExamen(getDetalle(ex, 'fisico'))">
+                                {{ formatEstadoExamen(getDetalle(ex, 'fisico')) }}
+                              </span>
+                            </div>
+                            <span v-else class="text-muted small">—</span>
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
                 </div>
               </div>
-            </template>
+            </div>
+
+            <!-- ══ TARJETAS DE REUNIONES ══ -->
+            <div>
+              <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-primary">
+                <i class="bi bi-people-fill text-primary me-2 fs-5"></i>
+                <h6 class="fw-bold m-0 text-dark text-uppercase">Historial de Reuniones</h6>
+                <span class="badge bg-primary rounded-pill px-2 ms-auto">{{ reunionesFiltradas.length }}</span>
+              </div>
+
+              <div v-if="!reunionesFiltradas.length" class="text-center py-4 bg-light rounded border border-light-subtle">
+                <p class="text-muted m-0 fw-bold small">Sin reuniones registradas en el período seleccionado.</p>
+              </div>
+
+              <div v-else class="row g-2">
+                <div v-for="r in reunionesFiltradas" :key="r.id_evento" class="col-12 col-md-6 col-lg-4">
+                  <div class="card shadow-sm h-100 bg-white"
+                       :class="r.asistencia === 'presente' ? 'border-success border-start border-4' : (r.asistencia === 'ausente' ? 'border-danger border-start border-4' : 'border-light-subtle')">
+                    <div class="card-body p-3 d-flex justify-content-between align-items-center gap-2">
+                      <div>
+                        <div class="text-dark fw-bold small mb-1">
+                          <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(r.fecha_reunion) }}
+                        </div>
+                        <div class="text-muted small text-truncate" style="max-width: 170px;">
+                          {{ r.titulo || 'Reunión General' }}
+                        </div>
+                      </div>
+                      <AsistenciaBadge :asistencia="r.asistencia" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
 
-          <!-- ── Alerta datos erróneos ── -->
-          <div class="alert alert-warning border-warning-subtle text-dark d-flex align-items-start gap-2 mt-4 mb-0"
-              style="font-size: 0.85rem;">
+          <!-- ── Alerta de soporte ── -->
+          <div class="alert alert-warning border-warning-subtle text-dark d-flex align-items-start gap-2 m-3 m-md-4 rounded-3" style="font-size: 0.85rem;">
             <i class="bi bi-info-circle-fill text-dark mt-1 flex-shrink-0"></i>
             <span>
               <strong>¿Detectaste algún dato erróneo?</strong>
-              Si alguno de tus exámenes o reuniones no figura correctamente, por favor comunicate con tu
-              <strong>coordinador de grupo</strong> para que pueda revisarlo y corregirlo.
+              Si alguna evaluación o asistencia no figura correctamente, por favor comunicate con tu <strong>coordinador de grupo</strong> para que pueda revisarlo.
             </span>
           </div>
 
@@ -210,12 +230,7 @@ useHead({
 // ═══════════ CONSTANTES ═══════════
 const TIPOS_EXAMEN = ['asamblea', 'recuperatorio']
 
-const ESTADO_MAP = {
-  'aprobado':    { texto: 'APROBADO',    dot: 'bg-success',   txt: 'text-success'   },
-  'desaprobado': { texto: 'DESAPROBADO', dot: 'bg-danger',    txt: 'text-danger'    },
-  'no lo hizo':  { texto: 'NO LO HIZO',  dot: 'bg-info',      txt: 'text-info'      },
-  'ausente':     { texto: 'AUSENTE',     dot: 'bg-secondary', txt: 'text-secondary' },
-}
+const MAPA_ESTADOS_NUMERICOS = { '1': 'aprobado', '2': 'desaprobado', '3': 'no lo hizo', '5': 'ausente' }
 
 const TIPO_BADGE_MAP = {
   asamblea:      'bg-dark text-white',
@@ -223,26 +238,65 @@ const TIPO_BADGE_MAP = {
 }
 
 // ═══════════ HELPERS ═══════════
-// Los registros viejos guardan el estado como número (1 aprobado,
-// 2 desaprobado, 3 no lo hizo). Los normalizamos a texto para que
-// no aparezcan como "OTRO".
-const MAPA_ESTADOS_NUMERICOS = { '1': 'aprobado', '2': 'desaprobado', '3': 'no lo hizo', '5': 'ausente' }
 const normalizarEstado = (e) => {
   const s = String(e ?? '').trim().toLowerCase()
   return MAPA_ESTADOS_NUMERICOS[s] ?? s
 }
 
-const textoEstado      = (e) => ESTADO_MAP[e]?.texto ?? 'OTRO'
-const claseDot         = (e) => ESTADO_MAP[e]?.dot   ?? 'bg-dark'
-const claseTextoEstado = (e) => ESTADO_MAP[e]?.txt   ?? 'text-dark'
-const badgeTipo        = (t) => TIPO_BADGE_MAP[t]    ?? 'bg-dark text-white'
-const formatFecha      = (f) => f?.split(' ')[0] ?? ''
-const añoDeFecha       = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
-const parseFecha       = (f) => {
+const formatFecha = (f) => f?.split(' ')[0] ?? ''
+const añoDeFecha = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
+const parseFecha = (f) => {
   const [d, m, y] = (f?.split(' ')[0] ?? '').split('/')
   return new Date(`${y}-${m}-${d}`).getTime() || 0
 }
 const sortPorFecha = (lista) => [...lista].sort((a, b) => (b._ts ?? 0) - (a._ts ?? 0))
+
+const badgeTipo = (t) => TIPO_BADGE_MAP[t] ?? 'bg-dark text-white'
+
+// Extraer el detalle específico (teórico o físico) de un examen
+const getDetalle = (ex, tipo) => {
+  return ex.detalles.find(d => d.tipo.toLowerCase() === tipo.toLowerCase()) || null
+}
+
+const esAusenteTotal = (examen) => {
+  return examen.detalles.length === 1 &&
+         (examen.detalles[0].estado === 'ausente' || examen.detalles[0].tipo === 'ausente')
+}
+
+// Lógica para las tarjetas de Exámenes
+const formatEstadoExamen = (detalle) => {
+  if (!detalle) return ''
+  const est = detalle.estado
+  if (est === 'aprobado') return 'APROBADO'
+  if (est === 'desaprobado') return 'DESAPROBADO'
+  if (est === 'no lo hizo') return 'SAF'
+  if (est === 'ausente') return 'AUSENTE'
+  return est.toUpperCase()
+}
+
+const getNota = (detalle) => {
+  if (!detalle || !detalle.calificacion || detalle.estado === 'no lo hizo' || detalle.estado === 'ausente') return null
+  return detalle.calificacion
+}
+
+const fondoTarjetaExamen = (detalle) => {
+  if (!detalle) return 'bg-light border-light-subtle'
+  const est = detalle.estado
+  if (est === 'aprobado') return 'bg-success bg-opacity-10 border-success-subtle'
+  if (est === 'desaprobado') return 'bg-danger bg-opacity-10 border-danger-subtle'
+  if (est === 'ausente') return 'bg-secondary bg-opacity-10 border-secondary-subtle'
+  if (est === 'no lo hizo') return 'bg-info bg-opacity-10 border-info-subtle'
+  return 'bg-light border-light-subtle'
+}
+
+const claseBadgeExamen = (detalle) => {
+  if (!detalle) return 'bg-secondary'
+  const est = detalle.estado
+  if (est === 'aprobado') return 'bg-success'
+  if (est === 'desaprobado') return 'bg-danger'
+  if (est === 'no lo hizo') return 'bg-info text-dark' // Celeste para el SAF
+  return 'bg-secondary'
+}
 
 const normalizarAsistencia = (valor) => {
   if (valor === null || valor === undefined) return ''
@@ -262,45 +316,19 @@ const AsistenciaBadge = defineComponent({
         class: estado === 'presente'
           ? 'badge bg-success text-white px-2 py-1'
           : estado === 'ausente'
-            ? 'badge bg-secondary text-white px-2 py-1'
+            ? 'badge bg-danger text-white px-2 py-1'
             : 'badge bg-light text-muted border px-2 py-1',
       }, estado === 'presente' ? 'PRESENTE' : estado === 'ausente' ? 'AUSENTE' : 'SIN INFO')
     }
   },
 })
 
-const DetallesExamen = defineComponent({
-  props: { detalles: Array },
-  setup(props) {
-    return () => {
-      const dets = props.detalles || []
-      if (!dets.length)
-        return h('span', { class: 'text-muted small' }, '—')
-      if (dets.length === 1 && (dets[0].estado === 'ausente' || dets[0].tipo === 'ausente'))
-        return h('span', { class: 'badge bg-secondary text-white px-2 py-1' }, 'AUSENTE')
-      return h('div', { class: 'd-flex flex-wrap gap-1' }, dets.map(det =>
-        h('span', {
-          key: det.id || det.tipo,
-          class: 'badge border bg-light text-dark px-2 py-1 d-flex align-items-center gap-1',
-        }, [
-          h('span', { class: 'fw-bold text-uppercase' }, det.tipo),
-          h('span', { class: `status-dot ms-1 ${claseDot(det.estado)}` }),
-          h('span', { class: `fw-bold ms-1 ${claseTextoEstado(det.estado)}` }, textoEstado(det.estado)),
-          (det.calificacion && det.estado !== 'no lo hizo' && det.estado !== 'ausente')
-            ? h('span', { class: 'text-muted ms-1' }, `(${det.calificacion})`)
-            : null,
-        ])
-      ))
-    }
-  },
-})
-
 // ═══════════ ESTADO ═══════════
 const datosArbitro = ref({ id: null, nombre: '', apellido: '' })
-const reuniones     = ref([])
-const examenes      = ref([])
-const cargando      = ref(true)
-const filtroAño     = ref('')
+const reuniones    = ref([])
+const examenes     = ref([])
+const cargando     = ref(true)
+const filtroAño    = ref('')
 
 // ═══════════ MAPPERS ═══════════
 const mapearFilasReuniones = (filas) => {
@@ -343,6 +371,7 @@ const mapearFilasExamenes = (filas) => {
       id:           row.id,
       tipo:         row.tipo,
       calificacion: row.calificacion,
+      // Aplicamos el normalizador acá para asegurar que un '3' se convierta en 'no lo hizo'
       estado:       normalizarEstado(row.estado),
     })
   })
@@ -397,46 +426,53 @@ const examenesFiltrados = computed(() => {
   return lista.filter(ex => TIPOS_EXAMEN.includes(ex.tipo))
 })
 
-const examenesPorTipo = computed(() => {
-  const map = {}
-  for (const ex of examenesFiltrados.value) {
-    ;(map[ex.tipo] ??= []).push(ex)
-  }
-  return map
-})
-
-const tiposExamenPresentes = computed(() =>
-  TIPOS_EXAMEN.filter(t => examenesPorTipo.value[t]?.length)
-)
-
 const statsGlobales = computed(() => {
-  const r = {
-    aprobadosExamen:    0,
-    desaprobadosExamen: 0,
-    ausentesExamen:     0,
-    noHizoExamen:       0,
-    presentesReunion:   0,
-    ausentesReunion:    0,
-  }
+  const r = { aprobadosExamen: 0, desaprobadosExamen: 0, ausentesExamen: 0, noHizoExamen: 0, presentesReunion: 0, ausentesReunion: 0 }
+
+  // Reuniones
   for (const reunion of reunionesFiltradas.value) {
     const estado = normalizarAsistencia(reunion.asistencia)
     if      (estado === 'presente') r.presentesReunion++
     else if (estado === 'ausente')  r.ausentesReunion++
   }
+
+  // Exámenes
   for (const ex of examenesFiltrados.value) {
-    const esAusenteTotal = ex.detalles.length === 1 &&
-      (ex.detalles[0].estado === 'ausente' || ex.detalles[0].tipo === 'ausente')
-    if (esAusenteTotal) {
+    if (esAusenteTotal(ex)) {
       r.ausentesExamen++
     } else {
       for (const det of ex.detalles) {
         if      (det.estado === 'aprobado')    r.aprobadosExamen++
         else if (det.estado === 'desaprobado') r.desaprobadosExamen++
         else if (det.estado === 'no lo hizo')  r.noHizoExamen++
+        else if (det.estado === 'ausente')     r.ausentesExamen++
       }
     }
   }
   return r
+})
+
+const porcentajeAsistencia = computed(() => {
+  const totales = statsGlobales.value.presentesReunion + statsGlobales.value.ausentesReunion
+  return totales === 0 ? 0 : Math.round((statsGlobales.value.presentesReunion / totales) * 100)
+})
+
+const porcentajeExamenes = computed(() => {
+  const totales = statsGlobales.value.aprobadosExamen + statsGlobales.value.desaprobadosExamen
+  return totales === 0 ? 0 : Math.round((statsGlobales.value.aprobadosExamen / totales) * 100)
+})
+
+// Frases motivadoras exclusivas de Handball
+const fraseMotivadora = computed(() => {
+  if (reunionesFiltradas.value.length === 0 && examenesFiltrados.value.length === 0)
+    return 'Todo listo para dar el saque de centro.'
+
+  const promedio = (porcentajeAsistencia.value + porcentajeExamenes.value) / 2
+
+  if (promedio >= 90) return '¡Que nivel! Tu compromiso con el arbitraje está rindiendo sus frutos.'
+  if (promedio >= 75) return '¡Vas por excelente camino! Un último empujón de constancia y estás en tu mejor versión.'
+  if (promedio >= 50) return '¡A no bajar los brazos! Estás en carrera, pero necesitás un esfuerzo extra para hacer la diferencia.'
+  return '¡Toca hacer autocrítica y volver más fuerte! El arbitraje no perdona falta de preparación.'
 })
 
 // ═══════════ INIT ═══════════
@@ -456,8 +492,24 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
-.panel-personal { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
-.animate__animated { animation-duration: 0.4s; }
-.status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  padding-bottom: 120px;
+}
+.panel-personal {
+  width: 100%;
+  background-color: #0f172a;
+  min-height: 100vh;
+  border-radius: 12px;
+}
+.animate__animated {
+  animation-duration: 0.4s;
+}
+.w-fit-content {
+  width: fit-content;
+}
 </style>
