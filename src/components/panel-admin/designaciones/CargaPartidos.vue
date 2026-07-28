@@ -404,15 +404,15 @@
       maxWidth="600px"
       @close="cerrarModalCarga"
     >
-      <div class="alert alert-warning small py-2 px-3 d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>Cargar un nuevo archivo <strong>reemplaza</strong> todas las designaciones actuales.</span>
+      <div class="alert alert-info small py-2 px-3 d-flex align-items-center gap-2">
+        <i class="bi bi-info-circle-fill"></i>
+        <span>El archivo se procesa en el servidor y sus partidos se agregan a la tabla de designaciones.</span>
       </div>
 
       <div class="mb-3">
         <label class="form-label small fw-bold">Archivo Excel</label>
         <input
-          @change="manejarArchivoExcel"
+          @change="seleccionarArchivoExcel"
           type="file"
           class="form-control shadow-none border-secondary-subtle"
           accept=".xlsx,.xls"
@@ -422,14 +422,9 @@
         </div>
       </div>
 
-      <div v-if="partidosImportados.length > 0 && faltanFechas" class="mb-3">
-        <label class="form-label small fw-bold">El archivo no trae fechas. Asignales una a todos los partidos:</label>
-        <input v-model="fechaManual" type="date" class="form-control shadow-none border-secondary-subtle">
-      </div>
-
-      <div v-if="partidosImportados.length > 0" class="alert alert-success small py-2 px-3 mb-0">
-        Se leyeron <strong>{{ partidosImportados.length }}</strong> partidos
-        ({{ sinMatch }} árbitros sin coincidencia en el padrón).
+      <div v-if="archivoExcel" class="alert alert-success small py-2 px-3 mb-0 d-flex align-items-center gap-2">
+        <i class="bi bi-file-earmark-excel-fill"></i>
+        <span>Archivo seleccionado: <strong>{{ archivoExcel.name }}</strong></span>
       </div>
 
       <template #footer>
@@ -443,7 +438,7 @@
         <button
           @click="confirmarCargaExcel"
           class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm w-100"
-          :disabled="subiendoExcel || partidosImportados.length === 0"
+          :disabled="subiendoExcel || !archivoExcel"
         >
           <span v-if="subiendoExcel" class="spinner-border spinner-border-sm me-2"></span>
           {{ subiendoExcel ? 'Cargando...' : 'Cargar Partidos' }}
@@ -526,7 +521,6 @@
 <script setup>
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { api } from '@/api/api'
-import * as XLSX from 'xlsx'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
@@ -655,9 +649,7 @@ const filtroBusqueda = ref('')
 
 const mostrarModalCarga = ref(false)
 const subiendoExcel = ref(false)
-const partidosImportados = ref([])
-const sinMatch = ref(0)
-const fechaManual = ref('')
+const archivoExcel = ref(null)
 
 const estadoGuardado = ref('') // '' | 'pendiente' | 'guardando' | 'guardado' | 'error'
 let timerAutoguardado = null
@@ -1020,209 +1012,40 @@ const guardarAhora = () => { ejecutarGuardado() }
 
 /* ====================================================
    IMPORTACION DE EXCEL
+   El archivo se sube tal cual al servidor: es el backend
+   (designaciones/cargarDesignacionesExcel) el que lo lee
+   e inserta los partidos en la tabla.
    ==================================================== */
-const mapearCabecera = (texto) => {
-  const t = normalizarTexto(texto).replace(/[^a-z0-9]/g, '')
-  if (t.includes('fecha')) return 'fecha'
-  if (t.includes('cancha')) return 'cancha'
-  if (t.includes('categoria') || t.includes('division')) return 'categoria_division'
-  if (t.includes('horario') || t === 'hora') return 'horario'
-  if (t.includes('local')) return 'local'
-  if (t.includes('visitante')) return 'visitante'
-  if (t.includes('arbitro1') || t === 'arbitroa' || t.includes('arbitrouno')) return 'arbitro_1'
-  if (t.includes('arbitro2') || t === 'arbitrob' || t.includes('arbitrodos')) return 'arbitro_2'
-  return null
-}
-
-// Convierte cualquier formato de fecha (serial de Excel, dd/mm/yyyy, yyyy-mm-dd)
-// a yyyy-mm-dd, que es lo que espera la columna DATE de MySQL
-const aFechaISO = (valor) => {
-  if (typeof valor === 'number') return XLSX.SSF.format('yyyy-mm-dd', valor)
-
-  const texto = String(valor || '').trim()
-
-  let m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
-  if (m) return `${m[1]}-${String(m[2]).padStart(2, '0')}-${String(m[3]).padStart(2, '0')}`
-
-  m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
-  if (m) {
-    const anio = m[3].length === 2 ? '20' + m[3] : m[3]
-    return `${anio}-${String(m[2]).padStart(2, '0')}-${String(m[1]).padStart(2, '0')}`
-  }
-
-  return ''
-}
-
-// Convierte horarios (serial de Excel o texto) a HH:MM,
-// compatible con la columna TIME de MySQL
-const aHorario = (valor) => {
-  if (typeof valor === 'number') return XLSX.SSF.format('hh:mm', valor)
-
-  const m = String(valor || '').trim().match(/^(\d{1,2}):(\d{2})/)
-  if (m) return `${m[1].padStart(2, '0')}:${m[2]}`
-
-  return ''
-}
-
-const buscarIdArbitro = (nombreCelda) => {
-  const buscado = normalizarTexto(nombreCelda).replace(/,/g, '')
-  if (!buscado) return null
-
-  const encontrado = arbitros.value.find(a => {
-    const apellido = normalizarTexto(a.apellido)
-    const nombreCompleto = normalizarTexto(a.nombre)
-    const primerNombre = nombreCompleto.split(' ')[0]
-
-    const variantes = [
-      `${apellido} ${nombreCompleto}`,
-      `${nombreCompleto} ${apellido}`,
-      `${apellido} ${primerNombre}`,
-      `${primerNombre} ${apellido}`
-    ]
-
-    return variantes.includes(buscado)
-  })
-
-  return encontrado ? encontrado.id : null
-}
-
-const faltanFechas = computed(() => {
-  return partidosImportados.value.length > 0 && partidosImportados.value.every(p => !p.fecha)
-})
-
 const abrirModalCarga = () => {
-  partidosImportados.value = []
-  sinMatch.value = 0
-  fechaManual.value = ''
+  archivoExcel.value = null
   mostrarModalCarga.value = true
 }
 
 const cerrarModalCarga = () => {
   mostrarModalCarga.value = false
-  partidosImportados.value = []
-  sinMatch.value = 0
-  fechaManual.value = ''
+  archivoExcel.value = null
 }
 
-const manejarArchivoExcel = (event) => {
-  const file = event.target.files[0]
-  if (!file) return
-
-  const reader = new FileReader()
-  reader.readAsArrayBuffer(file)
-  reader.onload = (e) => {
-    try {
-      const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' })
-      const hoja = workbook.Sheets[workbook.SheetNames[0]]
-      const filas = XLSX.utils.sheet_to_json(hoja, { header: 1, defval: '' })
-
-      if (filas.length < 2) {
-        notificar({ titulo: 'Atención', mensaje: 'El archivo no tiene datos.', tipo: 'warning' })
-        return
-      }
-
-      // Buscar la fila de cabecera (la primera que tenga CANCHA y LOCAL)
-      let indiceCabecera = -1
-      let mapaColumnas = {}
-
-      for (let i = 0; i < Math.min(filas.length, 10); i++) {
-        const mapa = {}
-        filas[i].forEach((celda, col) => {
-          const campo = mapearCabecera(celda)
-          if (campo && mapa[campo] === undefined) mapa[campo] = col
-        })
-        if (mapa.cancha !== undefined && mapa.local !== undefined) {
-          indiceCabecera = i
-          mapaColumnas = mapa
-          break
-        }
-      }
-
-      if (indiceCabecera === -1) {
-        notificar({ titulo: 'Atención', mensaje: 'No se encontraron las columnas esperadas (CANCHA, LOCAL, etc.) en el archivo.', tipo: 'warning' })
-        return
-      }
-
-      const partidos = []
-      let contadorSinMatch = 0
-      let ultimaCancha = ''
-      let ultimaFecha = ''
-
-      for (let i = indiceCabecera + 1; i < filas.length; i++) {
-        const fila = filas[i]
-        const leer = (campo) => mapaColumnas[campo] !== undefined ? fila[mapaColumnas[campo]] : ''
-
-        const local = String(leer('local') || '').trim()
-        const visitante = String(leer('visitante') || '').trim()
-        const categoria = String(leer('categoria_division') || '').trim()
-
-        // Fila vacía de datos: la salteamos
-        if (!local && !visitante && !categoria) continue
-
-        // CANCHA: si viene vacía (celdas combinadas), arrastramos la anterior
-        let cancha = String(leer('cancha') || '').trim()
-        if (cancha) ultimaCancha = cancha
-        else cancha = ultimaCancha
-
-        // FECHA: mismo criterio de arrastre por si también viene combinada
-        let fecha = aFechaISO(leer('fecha'))
-        if (fecha) ultimaFecha = fecha
-        else fecha = ultimaFecha
-
-        const arbitro1 = String(leer('arbitro_1') || '').trim()
-        const arbitro2 = String(leer('arbitro_2') || '').trim()
-        const idArb1 = buscarIdArbitro(arbitro1)
-        const idArb2 = buscarIdArbitro(arbitro2)
-
-        if (arbitro1 && !idArb1) contadorSinMatch++
-        if (arbitro2 && !idArb2) contadorSinMatch++
-
-        partidos.push({
-          fecha,
-          cancha: cancha.toUpperCase(),
-          categoria_division: categoria,
-          horario: aHorario(leer('horario')),
-          local,
-          visitante,
-          arbitro_1: arbitro1,
-          arbitro_2: arbitro2,
-          id_arb1: idArb1,
-          id_arb2: idArb2
-        })
-      }
-
-      if (partidos.length === 0) {
-        notificar({ titulo: 'Atención', mensaje: 'No se leyeron partidos válidos del archivo.', tipo: 'warning' })
-        return
-      }
-
-      partidosImportados.value = partidos
-      sinMatch.value = contadorSinMatch
-    } catch (err) {
-      console.error('Error al leer Excel:', err)
-      notificar({ titulo: 'Error', mensaje: 'No se pudo leer el archivo Excel.', tipo: 'danger' })
-    }
-  }
+const seleccionarArchivoExcel = (event) => {
+  archivoExcel.value = event.target.files[0] || null
 }
 
 const confirmarCargaExcel = async () => {
-  if (partidosImportados.value.length === 0) return
+  if (!archivoExcel.value) return
 
-  const partidos = partidosImportados.value.map(p => ({
-    ...p,
-    fecha: p.fecha || fechaManual.value || ''
-  }))
+  const formData = new FormData()
+  formData.append('archivo', archivoExcel.value)
 
   subiendoExcel.value = true
   try {
-    const res = await api.post({
+    const res = await api.postFile({
       entity: 'designaciones',
-      action: 'cargarDesignaciones',
-      payload: { partidos }
+      action: 'cargarDesignacionesExcel',
+      payload: formData
     })
 
     if (res.ok && res.payload && res.payload.success) {
-      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || `Se cargaron ${partidos.length} partidos.`, tipo: 'success' })
+      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Se cargaron los partidos.', tipo: 'success' })
       cerrarModalCarga()
       await cargarDesignaciones()
       cargarAvisos()
@@ -1231,7 +1054,7 @@ const confirmarCargaExcel = async () => {
     }
   } catch (err) {
     console.error('Error al cargar designaciones:', err)
-    notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al guardar los partidos.', tipo: 'danger' })
+    notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al subir el archivo.', tipo: 'danger' })
   } finally {
     subiendoExcel.value = false
   }
