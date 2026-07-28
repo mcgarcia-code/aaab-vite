@@ -181,20 +181,20 @@
                         <button
                           @click="abrirSelectorArbitro(p, 1)"
                           class="celda-arbitro"
-                          :class="{ 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.arbitro_1 }"
+                          :class="{ 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.nombre_arbitro1 }"
                           :title="tituloCelda(p, 1)"
                         >
-                          {{ p.arbitro_1 || '— Asignar —' }}
+                          {{ p.nombre_arbitro1 || '— Asignar —' }}
                         </button>
                       </td>
                       <td>
                         <button
                           @click="abrirSelectorArbitro(p, 2)"
                           class="celda-arbitro"
-                          :class="{ 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.arbitro_2 }"
+                          :class="{ 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.nombre_arbitro2 }"
                           :title="tituloCelda(p, 2)"
                         >
-                          {{ p.arbitro_2 || '— Asignar —' }}
+                          {{ p.nombre_arbitro2 || '— Asignar —' }}
                         </button>
                       </td>
                       <td class="text-center">
