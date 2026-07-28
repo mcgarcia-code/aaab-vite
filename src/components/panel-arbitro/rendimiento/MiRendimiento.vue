@@ -223,6 +223,15 @@ const TIPO_BADGE_MAP = {
 }
 
 // ═══════════ HELPERS ═══════════
+// Los registros viejos guardan el estado como número (1 aprobado,
+// 2 desaprobado, 3 no lo hizo). Los normalizamos a texto para que
+// no aparezcan como "OTRO".
+const MAPA_ESTADOS_NUMERICOS = { '1': 'aprobado', '2': 'desaprobado', '3': 'no lo hizo', '5': 'ausente' }
+const normalizarEstado = (e) => {
+  const s = String(e ?? '').trim().toLowerCase()
+  return MAPA_ESTADOS_NUMERICOS[s] ?? s
+}
+
 const textoEstado      = (e) => ESTADO_MAP[e]?.texto ?? 'OTRO'
 const claseDot         = (e) => ESTADO_MAP[e]?.dot   ?? 'bg-dark'
 const claseTextoEstado = (e) => ESTADO_MAP[e]?.txt   ?? 'text-dark'
@@ -334,7 +343,7 @@ const mapearFilasExamenes = (filas) => {
       id:           row.id,
       tipo:         row.tipo,
       calificacion: row.calificacion,
-      estado:       row.estado,
+      estado:       normalizarEstado(row.estado),
     })
   })
   return Object.values(map)

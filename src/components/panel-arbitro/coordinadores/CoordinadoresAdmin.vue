@@ -16,7 +16,7 @@
     </div>
 
     <div class="row g-3 g-md-4">
-      <div v-for="item in opcionesCoordinadores" :key="item.title" class="col-12 col-md-6">
+      <div v-for="item in opcionesCoordinadores" :key="item.title" class="col-12 col-md-4">
         <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
 
           <!-- Todo el layout de la tarjeta pasado a clases nativas de Bootstrap -->

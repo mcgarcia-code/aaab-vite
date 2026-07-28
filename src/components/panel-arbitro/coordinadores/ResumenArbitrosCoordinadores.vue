@@ -8,7 +8,7 @@
         <div class="card-header bg-white py-3 border-bottom">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-table me-1"></i> Planilla Resumen de mis Grupos
+              <i class="bi bi-table me-1"></i> Planilla General de mis Grupos
             </h4>
             <span class="text-muted small d-block mt-1">
               Asambleas, recuperatorios y reuniones de tus grupos. Hacé clic en una celda de Teórico o Físico para editarla.
