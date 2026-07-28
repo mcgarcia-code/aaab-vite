@@ -155,6 +155,14 @@
                               class="input-cancha fw-bold text-uppercase"
                               title="Editar nombre de la cancha"
                             >
+                            <a
+                              v-if="c.linkMapa"
+                              :href="c.linkMapa"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="link-mapa"
+                              title="Ver ubicación en Google Maps"
+                            >Mapa</a>
                             <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }}</span>
                           </div>
                           <button @click="agregarPartido(c.nombre)" class="btn btn-sm btn-outline-light fw-bold py-0 px-2 text-nowrap">
@@ -181,20 +189,20 @@
                         <button
                           @click="abrirSelectorArbitro(p, 1)"
                           class="celda-arbitro"
-                          :class="{ 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.arbitro_1 }"
+                          :class="{ 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.nombre_arbitro1 }"
                           :title="tituloCelda(p, 1)"
                         >
-                          {{ p.arbitro_1 || '— Asignar —' }}
+                          {{ p.nombre_arbitro1 || '— Asignar —' }}
                         </button>
                       </td>
                       <td>
                         <button
                           @click="abrirSelectorArbitro(p, 2)"
                           class="celda-arbitro"
-                          :class="{ 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.arbitro_2 }"
+                          :class="{ 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.nombre_arbitro2 }"
                           :title="tituloCelda(p, 2)"
                         >
-                          {{ p.arbitro_2 || '— Asignar —' }}
+                          {{ p.nombre_arbitro2 || '— Asignar —' }}
                         </button>
                       </td>
                       <td class="text-center">
@@ -229,6 +237,14 @@
                       class="input-cancha fw-bold text-uppercase"
                       title="Editar nombre de la cancha"
                     >
+                    <a
+                      v-if="c.linkMapa"
+                      :href="c.linkMapa"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="link-mapa"
+                      title="Ver ubicación en Google Maps"
+                    >Mapa</a>
                     <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }}</span>
                   </div>
                   <button @click="agregarPartido(c.nombre)" class="btn btn-sm btn-outline-light fw-bold py-0 px-2 text-nowrap">
@@ -744,10 +760,17 @@ const canchas = computed(() => {
 
   return Object.keys(mapa)
     .sort((a, b) => a.localeCompare(b))
-    .map(nombre => ({
-      nombre,
-      partidos: mapa[nombre].sort((a, b) => String(a.horario || '').localeCompare(String(b.horario || '')))
-    }))
+    .map(nombre => {
+      const partidos = mapa[nombre].sort((a, b) => String(a.horario || '').localeCompare(String(b.horario || '')))
+      const primero = partidos[0] || {}
+      const direccion = [primero.cj_domicilio, primero.cj_localidad].filter(Boolean).join(', ').trim()
+
+      return {
+        nombre,
+        partidos,
+        linkMapa: direccion ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}` : null
+      }
+    })
 })
 
 const totalSinMatch = computed(() => {
@@ -1267,6 +1290,23 @@ onMounted(async () => {
   background: #fff;
   color: #000;
   border-color: #fff;
+}
+
+/* Link a Google Maps con la dirección de la cancha */
+.link-mapa {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 2px 8px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.link-mapa:hover {
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
 }
 
 /* Celdas editables: se ven como texto plano hasta que las tocás */
