@@ -168,6 +168,7 @@ const menuItems = [
   { to: '/panel-arbitro/coordinadores', title: 'Coordinadores', icon: 'bi bi-check', desc: 'Cargar y visualizar exámenes', rolesPermitidos: [4] },
   { to: '/panel-arbitro/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Consultá los datos fiscales de los Clubes'},
   { to: '/panel-arbitro/delegado-tecnico', title: 'Delegado Técnico', icon: 'bi bi-person-bounding-box', desc: 'Planilla Digital para Delegados Técnicos'},
+  { to: '/panel-arbitro/examen-asamblea', title: 'Examen Asamblea General', icon: 'bi bi-journal-check', desc: 'Rendí el examen teórico de la Asamblea General' }
 
 ];
 

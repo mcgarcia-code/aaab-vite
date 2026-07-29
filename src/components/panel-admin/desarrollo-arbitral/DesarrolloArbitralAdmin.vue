@@ -75,6 +75,12 @@ const opcionesDesarrollo = [
     title: 'Planilla General de Árbitros',
     icon: 'bi bi-graph-up-arrow',
     desc: 'Administración de exámenes teóricos/físicos.'
+  },
+  {
+    to: '/panel-admin/desarrollo-arbitral/habilitacion-examenes-asamblea', // Puedes ajustar esta ruta
+    title: 'Habilitación de Exámenes — Asamblea',
+    icon: 'bi bi-shield-check',
+    desc: 'Elegí qué grupos quedan habilitados para rendir el examen teórico.'
   }
 ];
 </script>

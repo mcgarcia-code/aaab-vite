@@ -182,7 +182,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'
 import { api } from '@/api/api'
-//import ExcelJS from 'exceljs'
+import ExcelJS from 'exceljs'
 
 const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 

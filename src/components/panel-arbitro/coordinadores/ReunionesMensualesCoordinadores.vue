@@ -692,7 +692,7 @@ const onReunionSeleccionada = async () => {
     const resArb = await api.get({
       entity: 'reuniones',
       action: 'obtenerArbitrosReunion',
-      payload: { idEvento: Number(reunionSeleccionada.value) }
+      payload: { idEvento: Number(reunionSeleccionada.value), soloActivos: soloActivos.value }
     })
     if ((resArb.ok || resArb.success) && resArb.payload) {
       arbitrosReunion.value = resArb.payload
@@ -780,10 +780,16 @@ watch(modoReunion,  () => { paginaActual.value = 1 })
 watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
 
 watch(soloActivos, async () => {
-  cargandoInicial.value = true
-  await cargarArbitros()
-  await cargarAsistenciasGlobales()
-  cargandoInicial.value = false
+  if (modoReunion.value) {
+    cargandoArbitros.value = true
+    await onReunionSeleccionada()
+    cargandoArbitros.value = false
+  } else {
+    cargandoInicial.value = true
+    await cargarArbitros()
+    await cargarAsistenciasGlobales()
+    cargandoInicial.value = false
+  }
 })
 
 onMounted(async () => {

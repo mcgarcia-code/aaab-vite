@@ -103,6 +103,10 @@ const routes = [
 
       // --- DESIGNACIONES ---
       { path: 'designaciones', name: 'DesignacionesArbitro', component: () => import('../components/panel-arbitro/designaciones/MisDesignaciones.vue') },
+
+      // --- EXAMEN ASAMBLEA GENERAL ---
+      { path: 'examen-asamblea', name: 'ExamenAsamblea', component: () => import('../components/panel-arbitro/examenes/ExamenAsambleaGeneral.vue') },
+
     ]
   },
 
@@ -165,6 +169,7 @@ const routes = [
       { path: 'desarrollo-arbitral/observaciones', name: 'ObservacionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ObservacionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
       { path: 'desarrollo-arbitral/reuniones-mensuales', name: 'ReunionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ReunionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
       { path: 'desarrollo-arbitral/resumen-arbitros', name: 'ResumenArbitrosAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/PlanillaGeneralAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
+      { path: 'desarrollo-arbitral/habilitacion-examenes-asamblea', name: 'HabilitacionExamenesAsamblea', component: () => import('../components/panel-admin/desarrollo-arbitral/HabilitacionExamenesAsamblea.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
 
       // --- CURSOS ---
       { path: 'curso-arbitros', name: 'CursoArbitrosAdmin', component: () => import('../components/panel-admin/curso-arbitros/CursoArbitrosAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] } },
