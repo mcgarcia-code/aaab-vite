@@ -56,8 +56,8 @@
                 <i class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
               </button>
               <span class="ms-auto d-flex flex-wrap gap-3">
-                <span><span class="cuadrito bg-success-subtle border-success-subtle"></span> Aprobado / Teó ≥ 75 / Presente</span>
-                <span><span class="cuadrito bg-danger-subtle border-danger-subtle"></span> Desaprobado / Teó ≤ 74 / Ausente</span>
+                <span><span class="cuadrito bg-success-subtle border-success-subtle"></span> Aprobado / Teórico ≥ 75 / Presente</span>
+                <span><span class="cuadrito bg-danger-subtle border-danger-subtle"></span> Desaprobado / Teórico ≤ 74 / Ausente</span>
                 <span><span class="cuadrito bg-secondary-subtle border-secondary-subtle"></span> No lo hizo</span>
               </span>
             </div>
@@ -482,7 +482,7 @@ const notaNumerica = (nota) => {
 const textoCeldaExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
-    if (nota.estado === 'no lo hizo') return 'SAF'
+    if (nota.estado === 'no lo hizo') return 'No lo hizo'
     // El físico nunca lleva nota: solo aprobado/desaprobado
     if (tipo === 'fisico') {
       if (nota.estado === 'aprobado') return 'APROB.'

@@ -86,7 +86,7 @@
                     <span class="text-secondary d-block d-sm-inline">{{ statsGlobales.ausentesExamen }}</span> Ausentes
                   </div>
                   <div class="col">
-                    <span class="text-info d-block d-sm-inline">{{ statsGlobales.noHizoExamen }}</span> SAF
+                    <span class="text-info d-block d-sm-inline">{{ statsGlobales.noHizoExamen }}</span> No lo hizo
                   </div>
                 </div>
               </div>
@@ -269,7 +269,7 @@ const formatEstadoExamen = (detalle) => {
   const est = detalle.estado
   if (est === 'aprobado') return 'APROBADO'
   if (est === 'desaprobado') return 'DESAPROBADO'
-  if (est === 'no lo hizo') return 'SAF'
+  if (est === 'no lo hizo') return 'No lo hizo'
   if (est === 'ausente') return 'AUSENTE'
   return est.toUpperCase()
 }
@@ -468,11 +468,18 @@ const fraseMotivadora = computed(() => {
     return 'Todo listo para dar el saque de centro.'
 
   const promedio = (porcentajeAsistencia.value + porcentajeExamenes.value) / 2
+  const nombre = datosArbitro.value.nombre
 
-  if (promedio >= 90) return '¡Que nivel! Tu compromiso con el arbitraje está rindiendo sus frutos.'
-  if (promedio >= 75) return '¡Vas por excelente camino! Un último empujón de constancia y estás en tu mejor versión.'
-  if (promedio >= 50) return '¡A no bajar los brazos! Estás en carrera, pero necesitás un esfuerzo extra para hacer la diferencia.'
-  return '¡Toca hacer autocrítica y volver más fuerte! El arbitraje no perdona falta de preparación.'
+  if (promedio >= 90)
+    return `¡Qué nivel, ${nombre}! Tu compromiso con el arbitraje está rindiendo sus frutos.`
+
+  if (promedio >= 75)
+    return `¡Vas por excelente camino, ${nombre}! Un último empujón de constancia y estás en tu mejor versión.`
+
+  if (promedio >= 50)
+    return `¡A no bajar los brazos, ${nombre}! Estás en carrera, seguí preparándote y hacé la diferencia.`
+
+  return `¡${nombre}, toca hacer autocrítica y volver más fuerte! El arbitraje no perdona la falta de preparación.`
 })
 
 // ═══════════ INIT ═══════════
