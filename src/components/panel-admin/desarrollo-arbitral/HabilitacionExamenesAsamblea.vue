@@ -50,26 +50,24 @@
       </div>
     </div>
 
-    <ModalBase v-if="modalAbierto" @cerrar="cerrarModal">
-      <template #titulo>
+    <ModalBase :show="modalAbierto" @close="cerrarModal">
+      <template #header>
         <i class="bi bi-people-fill me-2 text-danger"></i>Habilitar grupos — {{ eventoActual?.titulo }}
       </template>
-      <template #body>
-        <p class="text-muted small mb-3">
-          Marcá los grupos que van a poder rendir este examen. Los desmarcados dejan de verlo en su panel.
-        </p>
-        <div class="d-flex gap-2 mb-3">
-          <button class="btn btn-outline-danger btn-sm rounded-pill" @click="marcarTodos">Marcar todos</button>
-          <button class="btn btn-outline-secondary btn-sm rounded-pill" @click="desmarcarTodos">Desmarcar todos</button>
-        </div>
-        <div class="grupos-grid">
-          <label v-for="g in grupos" :key="g.id" class="grupo-item" :class="{ activo: gruposElegidos.includes(g.id) }">
-            <input type="checkbox" class="form-check-input me-2"
-                   :checked="gruposElegidos.includes(g.id)" @change="toggleGrupo(g.id)">
-            <span>{{ g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre }}</span>
-          </label>
-        </div>
-      </template>
+      <p class="text-muted small mb-3">
+        Marcá los grupos que van a poder rendir este examen. Los desmarcados dejan de verlo en su panel.
+      </p>
+      <div class="d-flex gap-2 mb-3">
+        <button class="btn btn-outline-danger btn-sm rounded-pill" @click="marcarTodos">Marcar todos</button>
+        <button class="btn btn-outline-secondary btn-sm rounded-pill" @click="desmarcarTodos">Desmarcar todos</button>
+      </div>
+      <div class="grupos-grid">
+        <label v-for="g in grupos" :key="g.id" class="grupo-item" :class="{ activo: gruposElegidos.includes(g.id) }">
+          <input type="checkbox" class="form-check-input me-2"
+                 :checked="gruposElegidos.includes(g.id)" @change="toggleGrupo(g.id)">
+          <span>{{ g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre }}</span>
+        </label>
+      </div>
       <template #footer>
         <button class="btn btn-outline-secondary rounded-pill px-4" @click="cerrarModal">Cancelar</button>
         <button class="btn btn-danger rounded-pill px-4 fw-bold" :disabled="guardando" @click="guardar">
@@ -126,7 +124,7 @@ function gruposDeEvento(idEvento) {
 
 async function cargarTodo() {
   const [ev, gr, hab] = await Promise.all([
-    api.get({ entity: 'eventos', action: 'obtenerEventos' }),
+    api.get({ entity: 'eventos', action: 'obtenerEventosProximos' }),
     api.get({ entity: 'grupos', action: 'obtenerGrupos' }),
     api.get({ entity: 'examenes_habilitaciones', action: 'obtenerHabilitaciones' })
   ])
