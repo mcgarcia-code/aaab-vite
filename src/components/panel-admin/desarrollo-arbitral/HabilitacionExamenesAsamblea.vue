@@ -28,7 +28,7 @@
                   <div>
                     <span class="badge bg-danger-subtle text-danger text-uppercase mb-2">{{ ev.categoria }}</span>
                     <h5 class="fw-bold text-dark mb-1">{{ ev.titulo }}</h5>
-                    <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ formatoFecha(ev.fecha) }}</small>
+                    <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ formatoFecha(ev.fecha_evento) }}</small>
                   </div>
                   <button class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" @click="abrirModal(ev.id)">
                     <i class="bi bi-pencil-square me-1"></i>Habilitar
@@ -124,7 +124,11 @@ function gruposDeEvento(idEvento) {
 
 async function cargarTodo() {
   const [ev, gr, hab] = await Promise.all([
-    api.get({ entity: 'eventos', action: 'obtenerEventosProximos' }),
+    api.get({ 
+      entity: 'reuniones', 
+      action: 'obtenerAsambleas',
+      payload: {} 
+    }),
     api.get({ entity: 'grupos', action: 'obtenerGrupos' }),
     api.get({ entity: 'examenes_habilitaciones', action: 'obtenerHabilitaciones' })
   ])
