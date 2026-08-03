@@ -50,7 +50,12 @@ async function guardarAvance() {
     await api.post({
       entity: 'examen_online',
       action: 'guardarAvance',
-      payload: { idEvento: props.idEvento, indice: indice.value, seleccion: seleccion.value }
+      payload: {
+        idEvento: props.idEvento,
+        indice: indice.value,
+        seleccion: seleccion.value,
+        tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
+      }
     })
   } catch{ /* silencioso: es respaldo */ }
 }
