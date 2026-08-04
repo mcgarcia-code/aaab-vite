@@ -1,4 +1,3 @@
-
 <template>
   <!-- Utilizamos clases responsivas para los paddings desde Bootstrap -->
   <div class="examen-overlay px-2 py-3 px-md-4 py-md-5">
@@ -128,32 +127,56 @@
             <button v-if="indice < total - 1" class="btn btn-danger rounded-pill px-3 px-md-4 py-2 fw-bold w-100" @click="siguiente">
               Siguiente<i class="bi bi-arrow-right ms-1 ms-md-2"></i>
             </button>
-<button v-else class="btn btn-danger rounded-pill px-3 px-md-4 py-2 fw-bold w-100 shadow" @click="mostrarConfirmar = true">
-  <i class="bi bi-check-circle-fill me-1 me-md-2"></i>Finalizar
-</button>
+            <button v-else class="btn btn-danger rounded-pill px-3 px-md-4 py-2 fw-bold w-100 shadow" @click="pedirConfirmacionFinalizar">
+              <i class="bi bi-check-circle-fill me-1 me-md-2"></i>Finalizar
+            </button>
           </div>
 
         </div>
-      </div>
 
-      <ModalExito
-        :visible="mostrarConfirmar"
-        tipo="danger"
-        titulo="¿Finalizar examen?"
-        mensaje="Una vez que finalices no vas a poder modificar tus respuestas. ¿Querés continuar?"
-        :tiene-accion="true"
-        @cerrar="mostrarConfirmar = false"
-        @confirmar="confirmarFinalizar"
-      />
+        <!-- Navegación rápida (debajo de los botones Anterior/Siguiente) -->
+        <div class="border-top pt-3 mt-3">
+          <small class="text-muted d-block mb-2 fw-bold text-center text-sm-start">
+            Navegación rápida
+            <span class="fw-normal">— tocá un número para ir a esa pregunta</span>
+          </small>
+          <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
+            <button v-for="(p, i) in preguntas" :key="p.id"
+                    type="button"
+                    class="btn btn-sm nav-pregunta fw-bold"
+                    :class="[
+                      i === indice ? 'btn-danger' : (preguntaRespondida(p.id) ? 'btn-success' : 'btn-light border')
+                    ]"
+                    @click="irAPregunta(i)">
+              {{ i + 1 }}
+            </button>
+          </div>
+          <div class="d-flex flex-wrap gap-3 mt-2 justify-content-center justify-content-sm-start small text-muted">
+            <span><i class="bi bi-square-fill text-danger me-1"></i>Actual</span>
+            <span><i class="bi bi-square-fill text-success me-1"></i>Respondida</span>
+            <span><i class="bi bi-square text-secondary me-1"></i>Sin responder</span>
+          </div>
+        </div>
+
+      </div>
 
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
 import { api } from '@/api/api'
-import ModalExito from '@/components/ModalExito.vue'
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Examen Online | AAAB',
+  meta: [
+    { name: 'description', content: 'Examen online para los árbitros de la AAAB.' }
+  ],
+})
+
+const notificar = inject('notificar')
 
 const props = defineProps({
   idEvento: { type: [Number, String], required: true },
@@ -166,15 +189,12 @@ const fase = ref('cargando')
 const mensajeError = ref('')
 
 const preguntas = ref([])
-const opciones = ref({})       // { pid: [{id, texto}] }
-const seleccion = ref({})      // { pid: [rid, ...] }
+const opciones = ref({})
+const seleccion = ref({})
 const indice = ref(0)
 const limiteSeg = ref(0)
 const restante = ref(0)
 let timer = null
-
-//modal confirmacion
-const mostrarConfirmar = ref(false)
 
 // Tiempo (en ms) que la pestaña permaneció visible durante el examen (Page Visibility API)
 const tiempoVisibleMs = ref(0)
@@ -199,6 +219,16 @@ function toggleOpcion(pid, rid) {
   if (i === -1) arr.push(rid)
   else arr.splice(i, 1)
   seleccion.value = { ...seleccion.value, [pid]: arr }
+}
+
+function preguntaRespondida(pid) {
+  return (seleccion.value[pid] || []).length > 0
+}
+
+async function irAPregunta(i) {
+  if (i === indice.value) return
+  indice.value = i
+  await guardarAvance()
 }
 
 async function guardarAvance() {
@@ -247,10 +277,13 @@ async function iniciar() {
   }
 }
 
-//abre el modal antes de finalizar
-function confirmarFinalizar() {
-  mostrarConfirmar.value = false
-  finalizar()
+function pedirConfirmacionFinalizar() {
+  notificar({
+    titulo: '¿Finalizar examen?',
+    mensaje: 'Una vez que finalices no vas a poder modificar tus respuestas. ¿Querés continuar?',
+    tipo: 'danger',
+    alConfirmar: finalizar
+  })
 }
 
 async function finalizar() {
@@ -345,5 +378,15 @@ onBeforeUnmount(() => { detenerReloj(); detenerTrackingVisibilidad() })
 
 .opcion-item:hover {
   background: #fff5f5;
+}
+
+.nav-pregunta {
+  width: 42px;
+  height: 42px;
+  border-radius: .6rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

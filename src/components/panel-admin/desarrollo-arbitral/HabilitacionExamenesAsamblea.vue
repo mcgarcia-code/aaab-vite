@@ -153,7 +153,13 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 
-useHead({ title: 'Habilitación de Exámenes - Asamblea' })
+// Actualización de Meta Tags
+useHead({
+  title: 'Habilitación de Exámenes - Asamblea General| AAAB',
+  meta: [
+    { name: 'description', content: 'Habilitación de exámenes para la Asamblea General de la AAAB.' }
+  ],
+})
 
 const notificar = inject('notificar')
 

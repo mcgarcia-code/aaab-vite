@@ -49,7 +49,17 @@ async function recargar() {
 }
 
 function comenzar() { estado.value = 'rindiendo' }
-function alTerminar() { recargar() }
+
+// El examen terminó, pero seguimos mostrando el resultado DENTRO del runner.
+// No recargamos ni cambiamos de estado acá: si lo hiciéramos, el v-if="estado === 'rindiendo'"
+// dejaría de cumplirse y el runner se desmontaría, ocultando la pantalla de resultado.
+function alTerminar() { /* intencionalmente vacío */ }
+
+// Recién al salir (botón "Volver a mi panel") recargamos y volvemos al panel con el historial actualizado.
+function volverAlPanel() {
+  estado.value = 'cargando'
+  recargar()
+}
 
 async function descargarPdf(idEvento) {
   descargando.value = { ...descargando.value, [idEvento]: true }
@@ -82,7 +92,7 @@ onMounted(recargar)
     :id-evento="evento.id_evento"
     :titulo="evento.titulo"
     @terminar="alTerminar"
-    @salir="recargar"
+    @salir="volverAlPanel"
   />
 
   <!-- Estructura alineada a "Mis Designaciones" -->

@@ -183,6 +183,15 @@
 import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'
 import { api } from '@/api/api'
 //import ExcelJS from 'exceljs'
+import { useHead } from '@vueuse/head';
+
+// Actualización de Meta Tags
+useHead({
+  title: 'Planilla General de árbitros | AAAB',
+  meta: [
+    { name: 'description', content: 'Planilla general de árbitros para la AAAB.' }
+  ],
+})
 
 const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 
