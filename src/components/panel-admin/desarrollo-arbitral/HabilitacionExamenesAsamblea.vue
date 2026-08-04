@@ -146,10 +146,10 @@ function gruposDeEvento(idEvento) {
 
 async function cargarTodo() {
   const [ev, gr, hab] = await Promise.all([
-    api.get({ 
-      entity: 'reuniones', 
+    api.get({
+      entity: 'reuniones',
       action: 'obtenerAsambleas',
-      payload: {} 
+      payload: {}
     }),
     api.get({ entity: 'grupos', action: 'obtenerGrupos' }),
     api.get({ entity: 'examenes_habilitaciones', action: 'obtenerHabilitaciones' })
