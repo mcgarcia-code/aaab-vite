@@ -95,31 +95,27 @@
                 </li>
               </ul>
 
-<div class="d-flex gap-2 align-items-center flex-grow-1 justify-content-md-end">
-  <!-- Agregamos la clase 'buscador-grupo' acá -->
-  <div class="input-group input-group-sm shadow-sm flex-grow-1 flex-md-grow-0 buscador-grupo" style="min-width: 300px; max-width: 450px;">
-    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-    <input
-      v-model="filtroBusqueda"
-      type="text"
-      class="form-control border-start-0 shadow-none"
-      :class="{ 'border-end-0': filtroBusqueda.length > 0 }"
-      placeholder="Buscar cancha, equipo o árbitro..."
-    >
-    <button
-      v-if="filtroBusqueda.length > 0"
-      @click="filtroBusqueda = ''"
-      class="btn border border-start-0 bg-white text-muted d-flex align-items-center px-2 shadow-none"
-      type="button"
-      title="Limpiar búsqueda"
-    >
-      <i class="bi bi-x-lg"></i>
-    </button>
-  </div>
-  <button @click="agregarCancha" class="btn btn-sm btn-outline-dark fw-bold shadow-sm text-nowrap">
-    <i class="bi bi-plus-lg"></i> Cancha
-  </button>
-</div>
+              <div class="d-flex gap-2 align-items-center flex-grow-1 justify-content-md-end">
+                <div class="input-group input-group-sm shadow-sm flex-grow-1 flex-md-grow-0 buscador-grupo" style="min-width: 300px; max-width: 450px;">
+                  <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                  <input
+                    v-model="filtroBusqueda"
+                    type="text"
+                    class="form-control border-start-0 shadow-none"
+                    :class="{ 'border-end-0': filtroBusqueda.length > 0 }"
+                    placeholder="Buscar cancha, equipo o árbitro..."
+                  >
+                  <button
+                    v-if="filtroBusqueda.length > 0"
+                    @click="filtroBusqueda = ''"
+                    class="btn border border-start-0 bg-white text-muted d-flex align-items-center px-2 shadow-none"
+                    type="button"
+                    title="Limpiar búsqueda"
+                  >
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div v-if="canchas.length === 0" class="text-center p-4 bg-white rounded shadow-sm border">
@@ -134,11 +130,11 @@
                   <tr>
                     <th class="text-uppercase text-muted" style="width: 22%;">Categoría / División</th>
                     <th class="text-uppercase text-muted text-center" style="width: 8%;">Horario</th>
-                    <th class="text-uppercase text-muted" style="width: 17%;">Local</th>
-                    <th class="text-uppercase text-muted" style="width: 17%;">Visitante</th>
+                    <th class="text-uppercase text-muted" style="width: 18%;">Local</th>
+                    <th class="text-uppercase text-muted" style="width: 18%;">Visitante</th>
                     <th class="text-uppercase text-muted" style="width: 16%;">Árbitro 1</th>
                     <th class="text-uppercase text-muted" style="width: 16%;">Árbitro 2</th>
-                    <th style="width: 4%;"></th>
+                    <th style="width: 2%;"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -146,63 +142,45 @@
 
                     <tr class="fila-cancha">
                       <td colspan="7">
-                        <div class="d-flex justify-content-between align-items-center gap-2">
-                          <div class="d-flex align-items-center gap-2 flex-grow-1">
-                            <span class="material-icons fs-5">stadium</span>
-                            <input
-                              :value="c.nombre"
-                              @change="renombrarCancha(c, $event.target.value)"
-                              class="input-cancha fw-bold text-uppercase"
-                              title="Editar nombre de la cancha"
-                            >
-                            <a
-                              v-if="c.linkMapa"
-                              :href="c.linkMapa"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              class="link-mapa"
-                              title="Ver ubicación en Google Maps"
-                            >Mapa</a>
-                            <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }}</span>
-                          </div>
-                          <button @click="agregarPartido(c.nombre)" class="btn btn-sm btn-outline-light fw-bold py-0 px-2 text-nowrap">
-                            <i class="bi bi-plus-lg"></i> Partido
-                          </button>
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="material-icons fs-5">stadium</span>
+                          <span class="nombre-cancha fw-bold text-uppercase">{{ c.nombre }}</span>
+                          <a
+                            v-if="c.linkMapa"
+                            :href="c.linkMapa"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="link-mapa"
+                            title="Ver ubicación en Google Maps"
+                          >Mapa</a>
+                          <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }} PARTIDOS </span>
                         </div>
                       </td>
                     </tr>
 
-                    <tr v-for="p in c.partidos" :key="p.id || p._uid" :class="{ 'fila-modificada': p._dirty || !p.id }">
-                      <td>
-                        <input v-model="p.categoria_division" @input="marcar(p)" class="celda-input" placeholder="Categoría...">
-                      </td>
-                      <td>
-                        <input v-model="p.horario" @input="marcar(p)" type="time" class="celda-input text-center">
-                      </td>
-                      <td>
-                        <input v-model="p.local" @input="marcar(p)" class="celda-input" placeholder="Local...">
-                      </td>
-                      <td>
-                        <input v-model="p.visitante" @input="marcar(p)" class="celda-input" placeholder="Visitante...">
-                      </td>
+                    <tr v-for="p in c.partidos" :key="p.id || p._uid">
+                      <td><span class="celda-texto">{{ p.categoria_division || '—' }}</span></td>
+                      <td class="text-center"><span class="celda-texto">{{ p.horario || '—' }}</span></td>
+                      <td><span class="celda-texto">{{ p.local || '—' }}</span></td>
+                      <td><span class="celda-texto">{{ p.visitante || '—' }}</span></td>
                       <td>
                         <button
                           @click="abrirSelectorArbitro(p, 1)"
                           class="celda-arbitro"
-                          :class="{ 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.nombre_arbitro1 }"
+                          :class="{ 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.arbitro_1 }"
                           :title="tituloCelda(p, 1)"
                         >
-                          {{ p.nombre_arbitro1 || '— Asignar —' }}
+                          {{ p.arbitro_1 || '— Asignar —' }}
                         </button>
                       </td>
                       <td>
                         <button
                           @click="abrirSelectorArbitro(p, 2)"
                           class="celda-arbitro"
-                          :class="{ 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.nombre_arbitro2 }"
+                          :class="{ 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.arbitro_2 }"
                           :title="tituloCelda(p, 2)"
                         >
-                          {{ p.nombre_arbitro2 || '— Asignar —' }}
+                          {{ p.arbitro_2 || '— Asignar —' }}
                         </button>
                       </td>
                       <td class="text-center">
@@ -212,9 +190,6 @@
                           :title="textoAvisosPartido(p)"
                           @click="mostrarAvisosPartido(p)"
                         >warning</span>
-                        <button @click="quitarPartido(p)" class="btn btn-borrar" title="Eliminar partido">
-                          <span class="material-icons">delete</span>
-                        </button>
                       </td>
                     </tr>
 
@@ -227,29 +202,19 @@
             <div class="d-md-none">
               <div v-for="c in canchas" :key="'mob-' + fechaSeleccionada + '-' + c.nombre" class="mb-3">
 
-                <!-- Encabezado de cancha (editable) -->
-                <div class="cancha-mobile-header d-flex justify-content-between align-items-center gap-2 px-3 py-2 rounded-top-3">
-                  <div class="d-flex align-items-center gap-2 flex-grow-1">
-                    <span class="material-icons fs-5">stadium</span>
-                    <input
-                      :value="c.nombre"
-                      @change="renombrarCancha(c, $event.target.value)"
-                      class="input-cancha fw-bold text-uppercase"
-                      title="Editar nombre de la cancha"
-                    >
-                    <a
-                      v-if="c.linkMapa"
-                      :href="c.linkMapa"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="link-mapa"
-                      title="Ver ubicación en Google Maps"
-                    >Mapa</a>
-                    <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }}</span>
-                  </div>
-                  <button @click="agregarPartido(c.nombre)" class="btn btn-sm btn-outline-light fw-bold py-0 px-2 text-nowrap">
-                    <i class="bi bi-plus-lg"></i>
-                  </button>
+                <!-- Encabezado de cancha (solo lectura) -->
+                <div class="cancha-mobile-header d-flex align-items-center gap-2 px-3 py-2 rounded-top-3">
+                  <span class="material-icons fs-5">stadium</span>
+                  <span class="nombre-cancha fw-bold text-uppercase flex-grow-1">{{ c.nombre }}</span>
+                  <a
+                    v-if="c.linkMapa"
+                    :href="c.linkMapa"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="link-mapa"
+                    title="Ver ubicación en Google Maps"
+                  >Mapa</a>
+                  <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }}</span>
                 </div>
 
                 <!-- Un card por partido -->
@@ -257,50 +222,38 @@
                   v-for="p in c.partidos"
                   :key="'mobp-' + (p.id || p._uid)"
                   class="card shadow-sm border-light-subtle rounded-0 partido-mobile"
-                  :class="{ 'partido-modificado': p._dirty || !p.id }"
                 >
                   <div class="card-body p-3">
 
-                    <!-- Fila superior: categoría + horario + acciones -->
+                    <!-- Fila superior: categoría + alerta -->
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                      <input
-                        v-model="p.categoria_division"
-                        @input="marcar(p)"
-                        class="form-control form-control-sm shadow-none fw-bold border-0 px-0 flex-grow-1"
-                        placeholder="Categoría / División..."
-                        style="font-size: 0.9rem;"
-                      >
-                      <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                        <span
-                          v-if="avisosPartido(p) > 0"
-                          class="material-icons text-warning alerta-partido"
-                          @click="mostrarAvisosPartido(p)"
-                        >warning</span>
-                        <button @click="quitarPartido(p)" class="btn btn-borrar" title="Eliminar partido">
-                          <span class="material-icons">delete</span>
-                        </button>
-                      </div>
+                      <span class="fw-bold flex-grow-1" style="font-size: 0.9rem;">{{ p.categoria_division || '—' }}</span>
+                      <span
+                        v-if="avisosPartido(p) > 0"
+                        class="material-icons text-warning alerta-partido flex-shrink-0"
+                        @click="mostrarAvisosPartido(p)"
+                      >warning</span>
                     </div>
 
                     <!-- Horario -->
                     <div class="d-flex align-items-center gap-2 mb-2">
                       <span class="material-icons text-danger" style="font-size: 18px;">schedule</span>
-                      <input v-model="p.horario" @input="marcar(p)" type="time" class="form-control form-control-sm shadow-none w-auto">
+                      <span class="fw-bold">{{ p.horario || '—' }}</span>
                     </div>
 
                     <!-- Equipos -->
                     <div class="bg-light rounded p-2 mb-2">
                       <div class="d-flex align-items-center gap-2 mb-1">
                         <span class="badge bg-secondary" style="font-size: 0.6rem;">LOCAL</span>
-                        <input v-model="p.local" @input="marcar(p)" class="form-control form-control-sm shadow-none border-0 bg-transparent px-1 fw-bold" placeholder="Equipo local...">
+                        <span class="fw-bold">{{ p.local || '—' }}</span>
                       </div>
                       <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.6rem;">VISIT</span>
-                        <input v-model="p.visitante" @input="marcar(p)" class="form-control form-control-sm shadow-none border-0 bg-transparent px-1 fw-bold" placeholder="Equipo visitante...">
+                        <span class="fw-bold">{{ p.visitante || '—' }}</span>
                       </div>
                     </div>
 
-                    <!-- Árbitros -->
+                    <!-- Árbitros (único editable) -->
                     <div class="row g-2">
                       <div class="col-6">
                         <label class="form-label small fw-bold text-muted mb-1">Árbitro 1</label>
@@ -783,7 +736,7 @@ const totalSinMatch = computed(() => {
 })
 
 /* ====================================================
-   EDICION INLINE
+   MARCA DE CAMBIO (solo para la asignación de árbitros)
    ==================================================== */
 const marcar = (p) => {
   p._dirty = true
@@ -793,48 +746,6 @@ const marcar = (p) => {
 const hayCambios = computed(() => {
   return eliminados.value.length > 0 || designaciones.value.some(p => p._dirty || !p.id)
 })
-
-const renombrarCancha = (grupo, nuevoNombre) => {
-  const nombre = String(nuevoNombre || '').trim().toUpperCase()
-  if (!nombre) return
-  grupo.partidos.forEach(p => {
-    p.cancha = nombre
-    marcar(p)
-  })
-}
-
-const fechaDelDia = () => {
-  return (fechaSeleccionada.value && fechaSeleccionada.value !== 'Sin fecha') ? fechaSeleccionada.value : ''
-}
-
-const agregarPartido = (cancha) => {
-  designaciones.value.push({
-    id: null,
-    fecha: fechaDelDia(),
-    cancha,
-    categoria_division: '',
-    horario: '',
-    local: '',
-    visitante: '',
-    arbitro_1: '',
-    arbitro_2: '',
-    id_arb1: null,
-    id_arb2: null,
-    _dirty: true,
-    _uid: 'u' + (++contadorUid)
-  })
-}
-
-const agregarCancha = () => {
-  agregarPartido('NUEVA CANCHA')
-}
-
-const quitarPartido = (p) => {
-  if (p.id) eliminados.value.push(p.id)
-  const idx = designaciones.value.indexOf(p)
-  if (idx !== -1) designaciones.value.splice(idx, 1)
-  programarAutoguardado()
-}
 
 /* ====================================================
    SELECTOR DE ARBITRO (modal compartido con buscador)
@@ -952,8 +863,8 @@ const tituloCelda = (p, numero) => {
 
 /* ====================================================
    AUTOGUARDADO (con debounce, sin botón manual)
-   Cada edición marca el partido y programa un guardado
-   a los 1,5s. Guarda en segundo plano y actualiza los
+   Cada asignación de árbitro marca el partido y programa un
+   guardado a los 1,5s. Guarda en segundo plano y actualiza los
    ids de los partidos nuevos sin recargar toda la grilla.
    ==================================================== */
 const limpiarPartidoParaEnviar = (p) => ({
@@ -1270,26 +1181,11 @@ onMounted(async () => {
   z-index: 4;
 }
 
-.input-cancha {
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 4px;
+/* Nombre de cancha (solo lectura) */
+.nombre-cancha {
   color: #fff;
   font-size: 0.8rem;
   padding: 2px 6px;
-  min-width: 100px;
-  width: 60%;
-}
-
-.input-cancha:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.input-cancha:focus {
-  outline: none;
-  background: #fff;
-  color: #000;
-  border-color: #fff;
 }
 
 /* Link a Google Maps con la dirección de la cancha */
@@ -1309,27 +1205,13 @@ onMounted(async () => {
   color: #fff;
 }
 
-/* Celdas editables: se ven como texto plano hasta que las tocás */
-.celda-input {
+/* Celdas de solo lectura (categoría, horario, equipos) */
+.celda-texto {
+  display: block;
   width: 100%;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  background: transparent;
   padding: 5px 6px;
   font-size: 0.78rem;
   color: #212529;
-}
-
-.celda-input:hover {
-  border-color: #ced4da;
-  background: #fff;
-}
-
-.celda-input:focus {
-  outline: none;
-  border-color: #dc3545;
-  background: #fff;
-  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15);
 }
 
 /* Celda de árbitro: botón liviano que abre el selector compartido */
@@ -1369,27 +1251,6 @@ onMounted(async () => {
   background-color: #dbeafe;
   border-color: #60a5fa;
   font-weight: 600;
-}
-
-/* Fila con cambios sin guardar o nueva */
-.fila-modificada td {
-  background-color: #eff6ff;
-}
-
-.btn-borrar {
-  border: none;
-  background: transparent;
-  color: #adb5bd;
-  padding: 2px;
-  line-height: 1;
-}
-
-.btn-borrar:hover {
-  color: #dc3545;
-}
-
-.btn-borrar .material-icons {
-  font-size: 17px;
 }
 
 /* Ícono de alerta cuando el partido tiene un conflicto de designación */
@@ -1448,12 +1309,6 @@ onMounted(async () => {
   color: #fff;
 }
 
-/* El input de cancha ya tiene color blanco (definido arriba),
-   funciona igual en el header móvil */
-.cancha-mobile-header .input-cancha {
-  width: 100%;
-}
-
 .partido-mobile {
   border-left: 3px solid #dc3545;
 }
@@ -1462,11 +1317,6 @@ onMounted(async () => {
   border-bottom-left-radius: 12px !important;
   border-bottom-right-radius: 12px !important;
   overflow: hidden;
-}
-
-/* Card de partido con cambios sin guardar o nuevo */
-.partido-mobile.partido-modificado {
-  background-color: #eff6ff;
 }
 
 /* Botón de árbitro en móvil: como un select tocable */
@@ -1515,7 +1365,7 @@ onMounted(async () => {
 
 /* Evitar que el input ponga su propio borde cuando tiene foco */
 .buscador-grupo .form-control:focus {
-  border-color: #dee2e6; /* Mantiene el gris base si no está en focus el grupo */
+  border-color: #dee2e6;
   box-shadow: none;
 }
 
@@ -1526,7 +1376,7 @@ onMounted(async () => {
   border-color: #86b7fe !important;
 }
 
-/* Opcional: Agregar la sombra exterior (anillo) celeste a todo el grupo */
+/* Sombra exterior (anillo) celeste a todo el grupo */
 .buscador-grupo:focus-within {
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
 }
