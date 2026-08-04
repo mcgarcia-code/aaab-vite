@@ -98,7 +98,7 @@
           </div>
         </div>
 
-        <p class="fw-bold mb-4 fs-6 fs-md-5 lh-base px-1">{{ preguntaActual?.texto }}</p>
+        <p class="fw-bold mb-4 fs-6 fs-md-5 lh-base px-1 text-break texto-ofuscado"><template v-for="(seg, i) in segmentosPregunta" :key="i">{{ seg }}<template v-if="i < segmentosPregunta.length - 1"><span class="espacio-oculto">@</span><wbr></template></template></p>
 
         <div class="list-group mb-4 gap-2">
           <label v-for="(o, i) in opcionesActuales" :key="o.id"
@@ -208,6 +208,10 @@ const opcionesActuales = computed(() => {
   const p = preguntaActual.value
   return p ? (opciones.value[p.id] || []) : []
 })
+// El BE reemplaza los espacios del enunciado por '@'; acá se separan en segmentos
+// para poder renderizar cada '@' como un span invisible (mismo ancho, opacity 0),
+// de forma que se vea como un espacio normal pero al copiar el texto arrastre el '@'.
+const segmentosPregunta = computed(() => (preguntaActual.value?.texto || '').split('@'))
 
 function estaElegida(pid, rid) {
   return (seleccion.value[pid] || []).includes(rid)
@@ -378,6 +382,14 @@ onBeforeUnmount(() => { detenerReloj(); detenerTrackingVisibilidad() })
 
 .opcion-item:hover {
   background: #fff5f5;
+}
+
+.espacio-oculto {
+  display: inline-block;
+  width: 0.27em;
+  overflow: hidden;
+  opacity: 0;
+  vertical-align: bottom;
 }
 
 .nav-pregunta {
