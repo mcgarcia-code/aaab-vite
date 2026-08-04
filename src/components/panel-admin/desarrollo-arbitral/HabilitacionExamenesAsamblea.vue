@@ -88,6 +88,44 @@
         </label>
       </div>
 
+      <hr class="my-3">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <p class="text-muted small mb-0 fw-bold">
+          Árbitros habilitados
+          <span class="text-secondary fw-normal">({{ arrArbitrosSeleccionados.length }} seleccionados)</span>
+        </p>
+        <input v-model="busquedaArbitro" type="search" class="form-control form-control-sm buscador-arbitro"
+               placeholder="Buscar por apellido...">
+      </div>
+      <div class="arbitros-tabla-wrap mb-2">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light sticky-top">
+            <tr>
+              <th style="width:40px;"></th>
+              <th>Árbitro</th>
+              <th>Grupo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="a in arbitrosFiltrados" :key="a.id" :class="{ 'fila-deshabilitada': arbitroDeshabilitado(a) }">
+              <td>
+                <input type="checkbox" class="form-check-input"
+                       :checked="arbitroDeshabilitado(a) || arrArbitrosSeleccionados.includes(a.id)"
+                       :disabled="arbitroDeshabilitado(a)"
+                       @change="toggleArbitro(a.id)">
+              </td>
+              <td class="text-break">{{ a.apellido }}, {{ a.nombre }}</td>
+              <td class="text-muted small">{{ grupoTextoArbitro(a) }}</td>
+            </tr>
+            <tr v-if="!arbitrosFiltrados.length">
+              <td colspan="3" class="text-center text-muted small py-3">
+                {{ arbitros.length ? 'Ningún árbitro coincide con la búsqueda.' : 'No hay árbitros cargados.' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <template #footer>
         <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 w-100">
           <button class="btn btn-outline-secondary rounded-pill px-4 w-100 w-sm-auto" @click="cerrarModal">Cancelar</button>
@@ -116,10 +154,13 @@ const guardando = ref(false)
 const eventos = ref([])
 const grupos = ref([])
 const habilitaciones = ref([])
+const arbitros = ref([])
 
 const modalAbierto = ref(false)
 const eventoSeleccionado = ref(null)
 const gruposElegidos = ref([])
+const arrArbitrosSeleccionados = ref([])
+const busquedaArbitro = ref('')
 
 const eventoActual = computed(() =>
   eventos.value.find(e => e.id === eventoSeleccionado.value) || null
@@ -134,6 +175,16 @@ const habilitadosPorEvento = computed(() => {
   return mapa
 })
 
+function normalizar(v) {
+  return String(v || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+}
+
+const arbitrosFiltrados = computed(() => {
+  const b = normalizar(busquedaArbitro.value)
+  if (!b) return arbitros.value
+  return arbitros.value.filter(a => normalizar(a.apellido).includes(b))
+})
+
 function nombreGrupo(idGrupo) {
   const g = grupos.value.find(x => x.id === idGrupo)
   if (!g) return '—'
@@ -144,30 +195,46 @@ function gruposDeEvento(idEvento) {
   return (habilitadosPorEvento.value[idEvento] || []).map(nombreGrupo)
 }
 
+function grupoTextoArbitro(a) {
+  return nombreGrupo(a.id_grupo)
+}
+
+function arbitroDeshabilitado(a) {
+  return gruposElegidos.value.some(id => Number(id) === Number(a.id_grupo))
+}
+
 async function cargarTodo() {
+<<<<<<< HEAD
   const [ev, gr, hab] = await Promise.all([
+=======
+  const [ev, gr, hab, arb] = await Promise.all([
+>>>>>>> 3c5f6dc3454bcbefcf625ba07cdf232222af29f6
     api.get({
       entity: 'reuniones',
       action: 'obtenerAsambleas',
       payload: {}
     }),
     api.get({ entity: 'grupos', action: 'obtenerGrupos' }),
-    api.get({ entity: 'examenes_habilitaciones', action: 'obtenerHabilitaciones' })
+    api.get({ entity: 'examenes_habilitaciones', action: 'obtenerHabilitaciones' }),
+    api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: {} })
   ])
   const listaEv = ev?.payload ?? ev ?? []
   const listaGr = gr?.payload ?? gr ?? []
   const listaHab = hab?.payload ?? hab ?? []
+  const listaArb = arb?.payload ?? arb ?? []
 
   eventos.value = listaEv.filter(e =>
     ['asamblea', 'recuperatorio'].includes(String(e.categoria || '').toLowerCase())
   )
   grupos.value = listaGr
   habilitaciones.value = listaHab.filter(h => Number(h.activo) === 1)
+  arbitros.value = listaArb
 }
 
 function abrirModal(idEvento) {
   eventoSeleccionado.value = idEvento
   gruposElegidos.value = [...(habilitadosPorEvento.value[idEvento] || [])]
+  arrArbitrosSeleccionados.value = []
   modalAbierto.value = true
 }
 
@@ -175,6 +242,8 @@ function cerrarModal() {
   modalAbierto.value = false
   eventoSeleccionado.value = null
   gruposElegidos.value = []
+  arrArbitrosSeleccionados.value = []
+  busquedaArbitro.value = ''
 }
 
 function toggleGrupo(idGrupo) {
@@ -183,8 +252,19 @@ function toggleGrupo(idGrupo) {
   else gruposElegidos.value.splice(i, 1)
 }
 
-function marcarTodos() { gruposElegidos.value = grupos.value.map(g => g.id) }
-function desmarcarTodos() { gruposElegidos.value = [] }
+function toggleArbitro(idArbitro) {
+  const i = arrArbitrosSeleccionados.value.indexOf(idArbitro)
+  if (i === -1) arrArbitrosSeleccionados.value.push(idArbitro)
+  else arrArbitrosSeleccionados.value.splice(i, 1)
+}
+
+function marcarTodos() {
+  gruposElegidos.value = grupos.value.map(g => g.id)
+}
+function desmarcarTodos() {
+  gruposElegidos.value = []
+  arrArbitrosSeleccionados.value = []
+}
 
 async function guardar() {
   if (!eventoSeleccionado.value) return
@@ -193,7 +273,11 @@ async function guardar() {
     await api.post({
       entity: 'examenes_habilitaciones',
       action: 'guardarHabilitacion',
-      payload: { idEvento: eventoSeleccionado.value, idsGrupos: gruposElegidos.value }
+      payload: {
+        idEvento: eventoSeleccionado.value,
+        idsGrupos: gruposElegidos.value,
+        arrArbitros: arrArbitrosSeleccionados.value
+      }
     })
     await cargarTodo()
     notificar?.({ tipo: 'success', mensaje: 'Habilitación guardada' })
@@ -263,5 +347,20 @@ onMounted(async () => {
   border-color: #dc3545;
   background: #fff0f0;
   font-weight: 600;
+}
+
+.buscador-arbitro {
+  max-width: 220px;
+}
+
+.fila-deshabilitada {
+  opacity: 0.5;
+}
+
+.arbitros-tabla-wrap {
+  max-height: 40vh;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
 }
 </style>

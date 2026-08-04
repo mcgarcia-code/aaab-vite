@@ -20,6 +20,10 @@ const limiteSeg = ref(0)
 const restante = ref(0)
 let timer = null
 
+// Tiempo (en ms) que la pestaña permaneció visible durante el examen (Page Visibility API)
+const tiempoVisibleMs = ref(0)
+let visibleDesde = null
+
 const resultado = ref(null)    // { calificacion, aprobado, puntaje, posible, revision }
 
 const total = computed(() => preguntas.value.length)
@@ -46,7 +50,12 @@ async function guardarAvance() {
     await api.post({
       entity: 'examen_online',
       action: 'guardarAvance',
-      payload: { idEvento: props.idEvento, indice: indice.value, seleccion: seleccion.value }
+      payload: {
+        idEvento: props.idEvento,
+        indice: indice.value,
+        seleccion: seleccion.value,
+        tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
+      }
     })
   } catch{ /* silencioso: es respaldo */ }
 }
@@ -74,6 +83,7 @@ async function iniciar() {
     limiteSeg.value = data.limite_seg || 0
     restante.value = data.restante || 0
     fase.value = 'examen'
+    iniciarTrackingVisibilidad()
     if (limiteSeg.value > 0) arrancarReloj()
   } catch (e) {
     mensajeError.value = e?.message || 'No se pudo iniciar el examen'
@@ -83,12 +93,17 @@ async function iniciar() {
 
 async function finalizar() {
   detenerReloj()
+  detenerTrackingVisibilidad()
   fase.value = 'enviando'
   try {
     const res = await api.post({
       entity: 'examen_online',
       action: 'finalizarExamen',
-      payload: { idEvento: props.idEvento, seleccion: seleccion.value }
+      payload: {
+        idEvento: props.idEvento,
+        seleccion: seleccion.value,
+        tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
+      }
     })
     resultado.value = res?.payload ?? res
     fase.value = 'resultado'
@@ -108,6 +123,29 @@ function arrancarReloj() {
 }
 function detenerReloj() { if (timer) { clearInterval(timer); timer = null } }
 
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    visibleDesde = Date.now()
+  } else if (visibleDesde !== null) {
+    tiempoVisibleMs.value += Date.now() - visibleDesde
+    visibleDesde = null
+  }
+}
+
+function iniciarTrackingVisibilidad() {
+  tiempoVisibleMs.value = 0
+  visibleDesde = document.visibilityState === 'visible' ? Date.now() : null
+  document.addEventListener('visibilitychange', onVisibilityChange)
+}
+
+function detenerTrackingVisibilidad() {
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  if (visibleDesde !== null) {
+    tiempoVisibleMs.value += Date.now() - visibleDesde
+    visibleDesde = null
+  }
+}
+
 const relojTexto = computed(() => {
   const m = String(Math.floor(restante.value / 60)).padStart(2, '0')
   const s = String(restante.value % 60).padStart(2, '0')
@@ -117,7 +155,7 @@ const relojTexto = computed(() => {
 function letra(i) { return String.fromCharCode(97 + i) }
 
 onMounted(iniciar)
-onBeforeUnmount(detenerReloj)
+onBeforeUnmount(() => { detenerReloj(); detenerTrackingVisibilidad() })
 </script>
 
 <template>

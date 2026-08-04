@@ -13,7 +13,7 @@
         <div class="user-header d-flex align-items-center justify-content-between mb-4 p-2 p-md-3 rounded-4 shadow">
           <div class="d-flex align-items-center">
             <img :src="urlFoto" @error="(e) => e.target.src = 'https://via.placeholder.com/150'"
-                 class="perfil-img me-2 me-md-3 shadow-sm">
+                 class="perfil-img me-2 me-md-3 shadow-sm" role="button" @click="mostrarFotoAmpliada = true">
 
             <div>
               <h2 class="text-white fw-bold m-0 fs-5 fs-md-3" style="line-height: 1.2;">
@@ -86,6 +86,13 @@
         <RouterView />
       </div>
     </div>
+
+    <div v-if="mostrarFotoAmpliada" class="foto-overlay" @click="mostrarFotoAmpliada = false">
+      <button class="foto-overlay-cerrar" @click.stop="mostrarFotoAmpliada = false" aria-label="Cerrar">
+        <i class="bi bi-x-lg"></i>
+      </button>
+      <img :src="urlFoto" class="foto-overlay-img shadow-lg" @click.stop>
+    </div>
   </div>
 </template>
 
@@ -101,6 +108,7 @@ const router = useRouter();
 
 // Datos del Árbitro
 const arbitro = ref(auth.getUser() || {});
+const mostrarFotoAmpliada = ref(false);
 
 const urlFoto = computed(() => {
   if (!arbitro.value || !arbitro.value.dni) {
@@ -217,6 +225,56 @@ useHead({
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #dc2626;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.perfil-img:hover {
+  transform: scale(1.05);
+}
+
+.foto-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 20px;
+  cursor: zoom-out;
+}
+
+.foto-overlay-img {
+  max-width: min(90vw, 500px);
+  max-height: 90vh;
+  border-radius: 12px;
+  border: 3px solid #dc2626;
+  object-fit: cover;
+  cursor: default;
+}
+
+.foto-overlay-cerrar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.foto-overlay-cerrar:hover {
+  background: #dc2626;
+  border-color: #dc2626;
 }
 
 .navbar {
