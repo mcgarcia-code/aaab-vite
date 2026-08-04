@@ -153,7 +153,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { api } from '@/api/api'
-import ModalExito from './components/ModalExito.vue'
+import ModalExito from '@/components/ModalExito.vue'
 
 const props = defineProps({
   idEvento: { type: [Number, String], required: true },

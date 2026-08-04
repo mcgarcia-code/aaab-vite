@@ -8,7 +8,7 @@
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center justify-content-center justify-content-md-start gap-2 fs-5 fs-md-4">
             <i class="bi bi-shield-check me-1 me-md-2"></i> Administración de Exámenes Generales — Asamblea
           </h4>
-          <p class="text-muted small m-0 mt-1">Elegí una asamblea y qué grupos quedan habilitados para rendir el examen teórico.</p>
+          <p class="text-muted small m-0 mt-1">Elegí una asamblea/recuperatorio y qué grupos quedan habilitados para rendir el examen teórico.</p>
         </div>
       </div>
 
