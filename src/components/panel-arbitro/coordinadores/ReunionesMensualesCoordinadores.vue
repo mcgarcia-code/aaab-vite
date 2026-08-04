@@ -5,7 +5,7 @@
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
               <i class="bi bi-people-fill me-1"></i> Gestión de Reuniones
             </h4>
             <span class="text-muted small d-block mt-1">

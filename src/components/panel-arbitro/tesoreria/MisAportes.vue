@@ -5,7 +5,7 @@
 
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <div>
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
             <i class="bi bi-cash-coin me-2"></i> Mis Aportes
           </h4>
           <p class="text-muted small m-0 mt-1">Consultá el estado de tus aportes</p>

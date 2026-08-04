@@ -103,7 +103,7 @@
                     </div>
                   </td>
                   <td class="text-center">
-                    <span :class="['badge-category', `cat-${evento.categoria}`]">{{ evento.categoria.toUpperCase() }}</span>
+                    <span class="badge-category" :class="badgeCategoria(evento.categoria)">{{ evento.categoria.toUpperCase() }}</span>
                   </td>
                   <td class="text-center pe-3">
                     <span v-for="(nombre,k) in evento.nombresGrupos" :key="k" class="badge-status-sm bg-dark text-white">
@@ -120,7 +120,7 @@
               <div class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 d-flex flex-column gap-1">
                 <div class="d-flex justify-content-between align-items-center">
                   <span class="small text-primary fw-bold font-monospace">{{ formatearFecha(evento.fecha_evento) }}</span>
-                  <span :class="['badge-category', `cat-${evento.categoria}`]">{{ evento.categoria.toUpperCase() }}</span>
+                  <span class="badge-category" :class="badgeCategoria(evento.categoria)">{{ evento.categoria.toUpperCase() }}</span>
                 </div>
                 <div class="fw-bold text-dark fs-6 mt-1 lh-sm">
                   {{ evento.titulo }}
@@ -516,6 +516,18 @@ const eliminar = async (id) => {
 
 const formatearFecha = (f) => f ? f.substring(0, 10).split('-').reverse().join('/') : ''
 
+const CAT_BADGE_MAP = {
+  reunion:       'bg-primary text-white',
+  recordatorio:  'bg-warning-subtle text-dark',
+  urgente:       'bg-danger text-white',
+  asamblea:      'bg-dark text-white',
+  recuperatorio: 'bg-warning text-dark',
+}
+
+function badgeCategoria(categoria) {
+  return CAT_BADGE_MAP[String(categoria || '').toLowerCase()] || 'bg-secondary text-white'
+}
+
 onMounted(() => {
   obtenerEventos()
   obtenerGrupos()
@@ -547,13 +559,6 @@ onMounted(() => {
   font-weight: 800;
   display: inline-block;
 }
-
-.cat-reunion { background: #0d6efd; color: #ffffff; }
-.cat-recordatorio { background: #fe9900; color: #000000; }
-.cat-urgente { background: #ff0000; color: #000000; }
-.cat-asamblea { background: #000000; color: #fefefe; }
-.cat-recuperatorio { background: #FFC107; color: #000000; }
-
 
 .badge-status-sm {
   padding: 4px 10px;

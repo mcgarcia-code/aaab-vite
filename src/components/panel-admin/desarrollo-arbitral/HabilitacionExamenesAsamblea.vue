@@ -36,7 +36,7 @@
 
                   <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start gap-2 mb-3">
                     <div>
-                      <span class="badge bg-danger-subtle text-danger text-uppercase mb-2">{{ ev.categoria }}</span>
+                      <span class="badge text-uppercase mb-2" :class="badgeCategoria(ev.categoria)">{{ ev.categoria }}</span>
                       <h5 class="fw-bold text-dark mb-1 fs-5">{{ ev.titulo }}</h5>
                       <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ formatoFecha(ev.fecha_evento) }}</small>
                     </div>
@@ -52,6 +52,15 @@
                             class="badge bg-success-subtle text-success border border-success-subtle">{{ g }}</span>
                     </div>
                     <span v-else class="text-secondary small fst-italic">Ningún grupo habilitado todavía</span>
+                  </div>
+
+                  <div class="border-top pt-3 mt-3">
+                    <small class="text-muted d-block mb-2 fw-bold">Árbitros habilitados ({{ arbitrosDeEvento(ev.id).length }})</small>
+                    <div v-if="arbitrosDeEvento(ev.id).length" class="d-flex flex-wrap gap-1">
+                      <span v-for="(a, i) in arbitrosDeEvento(ev.id)" :key="i"
+                            class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ a }}</span>
+                    </div>
+                    <span v-else class="text-secondary small fst-italic">Ningún árbitro habilitado individualmente</span>
                   </div>
 
                 </div>
@@ -169,11 +178,26 @@ const eventoActual = computed(() =>
 const habilitadosPorEvento = computed(() => {
   const mapa = {}
   for (const h of habilitaciones.value) {
+    if (!h.id_grupo) continue
     if (!mapa[h.id_evento]) mapa[h.id_evento] = []
     mapa[h.id_evento].push(h.id_grupo)
   }
   return mapa
 })
+
+const arbitrosHabilitadosPorEvento = computed(() => {
+  const mapa = {}
+  for (const h of habilitaciones.value) {
+    if (!h.id_arbitro) continue
+    if (!mapa[h.id_evento]) mapa[h.id_evento] = []
+    mapa[h.id_evento].push(`${h.arbitro_apellido}, ${h.arbitro_nombre}`)
+  }
+  return mapa
+})
+
+function arbitrosDeEvento(idEvento) {
+  return arbitrosHabilitadosPorEvento.value[idEvento] || []
+}
 
 function normalizar(v) {
   return String(v || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
@@ -203,12 +227,17 @@ function arbitroDeshabilitado(a) {
   return gruposElegidos.value.some(id => Number(id) === Number(a.id_grupo))
 }
 
+const TIPO_BADGE_MAP = {
+  asamblea:      'bg-dark text-white',
+  recuperatorio: 'bg-warning text-dark',
+}
+
+function badgeCategoria(categoria) {
+  return TIPO_BADGE_MAP[String(categoria || '').toLowerCase()] || 'bg-danger-subtle text-danger'
+}
+
 async function cargarTodo() {
-<<<<<<< HEAD
-  const [ev, gr, hab] = await Promise.all([
-=======
   const [ev, gr, hab, arb] = await Promise.all([
->>>>>>> 3c5f6dc3454bcbefcf625ba07cdf232222af29f6
     api.get({
       entity: 'reuniones',
       action: 'obtenerAsambleas',

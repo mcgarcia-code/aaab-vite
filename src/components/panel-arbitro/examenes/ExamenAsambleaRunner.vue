@@ -1,162 +1,3 @@
-<script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { api } from '@/api/api'
-
-const props = defineProps({
-  idEvento: { type: [Number, String], required: true },
-  titulo: { type: String, default: 'Examen Asamblea General' }
-})
-const emit = defineEmits(['terminar', 'salir'])
-
-// fase: 'cargando' | 'examen' | 'enviando' | 'resultado' | 'error'
-const fase = ref('cargando')
-const mensajeError = ref('')
-
-const preguntas = ref([])
-const opciones = ref({})       // { pid: [{id, texto}] }
-const seleccion = ref({})      // { pid: [rid, ...] }
-const indice = ref(0)
-const limiteSeg = ref(0)
-const restante = ref(0)
-let timer = null
-
-// Tiempo (en ms) que la pestaña permaneció visible durante el examen (Page Visibility API)
-const tiempoVisibleMs = ref(0)
-let visibleDesde = null
-
-const resultado = ref(null)    // { calificacion, aprobado, puntaje, posible, revision }
-
-const total = computed(() => preguntas.value.length)
-const preguntaActual = computed(() => preguntas.value[indice.value] || null)
-const opcionesActuales = computed(() => {
-  const p = preguntaActual.value
-  return p ? (opciones.value[p.id] || []) : []
-})
-
-function estaElegida(pid, rid) {
-  return (seleccion.value[pid] || []).includes(rid)
-}
-
-function toggleOpcion(pid, rid) {
-  const arr = seleccion.value[pid] ? [...seleccion.value[pid]] : []
-  const i = arr.indexOf(rid)
-  if (i === -1) arr.push(rid)
-  else arr.splice(i, 1)
-  seleccion.value = { ...seleccion.value, [pid]: arr }
-}
-
-async function guardarAvance() {
-  try {
-    await api.post({
-      entity: 'examen_online',
-      action: 'guardarAvance',
-      payload: {
-        idEvento: props.idEvento,
-        indice: indice.value,
-        seleccion: seleccion.value,
-        tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
-      }
-    })
-  } catch{ /* silencioso: es respaldo */ }
-}
-
-async function anterior() {
-  if (indice.value > 0) { indice.value--; await guardarAvance() }
-}
-async function siguiente() {
-  if (indice.value < total.value - 1) { indice.value++; await guardarAvance() }
-}
-
-async function iniciar() {
-  fase.value = 'cargando'
-  try {
-    const res = await api.post({
-      entity: 'examen_online',
-      action: 'iniciarOReanudar',
-      payload: { idEvento: props.idEvento }
-    })
-    const data = res?.payload ?? res
-    preguntas.value = data.preguntas || []
-    opciones.value = data.opciones || {}
-    seleccion.value = data.seleccion || {}
-    indice.value = data.indice || 0
-    limiteSeg.value = data.limite_seg || 0
-    restante.value = data.restante || 0
-    fase.value = 'examen'
-    iniciarTrackingVisibilidad()
-    if (limiteSeg.value > 0) arrancarReloj()
-  } catch (e) {
-    mensajeError.value = e?.message || 'No se pudo iniciar el examen'
-    fase.value = 'error'
-  }
-}
-
-async function finalizar() {
-  detenerReloj()
-  detenerTrackingVisibilidad()
-  fase.value = 'enviando'
-  try {
-    const res = await api.post({
-      entity: 'examen_online',
-      action: 'finalizarExamen',
-      payload: {
-        idEvento: props.idEvento,
-        seleccion: seleccion.value,
-        tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
-      }
-    })
-    resultado.value = res?.payload ?? res
-    fase.value = 'resultado'
-    emit('terminar')
-  } catch (e) {
-    mensajeError.value = e?.message || 'No se pudo finalizar el examen'
-    fase.value = 'error'
-  }
-}
-
-function arrancarReloj() {
-  detenerReloj()
-  timer = setInterval(() => {
-    restante.value--
-    if (restante.value <= 0) { restante.value = 0; finalizar() }
-  }, 1000)
-}
-function detenerReloj() { if (timer) { clearInterval(timer); timer = null } }
-
-function onVisibilityChange() {
-  if (document.visibilityState === 'visible') {
-    visibleDesde = Date.now()
-  } else if (visibleDesde !== null) {
-    tiempoVisibleMs.value += Date.now() - visibleDesde
-    visibleDesde = null
-  }
-}
-
-function iniciarTrackingVisibilidad() {
-  tiempoVisibleMs.value = 0
-  visibleDesde = document.visibilityState === 'visible' ? Date.now() : null
-  document.addEventListener('visibilitychange', onVisibilityChange)
-}
-
-function detenerTrackingVisibilidad() {
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  if (visibleDesde !== null) {
-    tiempoVisibleMs.value += Date.now() - visibleDesde
-    visibleDesde = null
-  }
-}
-
-const relojTexto = computed(() => {
-  const m = String(Math.floor(restante.value / 60)).padStart(2, '0')
-  const s = String(restante.value % 60).padStart(2, '0')
-  return `${m}:${s}`
-})
-
-function letra(i) { return String.fromCharCode(97 + i) }
-
-onMounted(iniciar)
-onBeforeUnmount(() => { detenerReloj(); detenerTrackingVisibilidad() })
-</script>
 
 <template>
   <!-- Utilizamos clases responsivas para los paddings desde Bootstrap -->
@@ -287,17 +128,197 @@ onBeforeUnmount(() => { detenerReloj(); detenerTrackingVisibilidad() })
             <button v-if="indice < total - 1" class="btn btn-danger rounded-pill px-3 px-md-4 py-2 fw-bold w-100" @click="siguiente">
               Siguiente<i class="bi bi-arrow-right ms-1 ms-md-2"></i>
             </button>
-            <button v-else class="btn btn-danger rounded-pill px-3 px-md-4 py-2 fw-bold w-100 shadow" @click="finalizar">
-              <i class="bi bi-check-circle-fill me-1 me-md-2"></i>Finalizar
-            </button>
+<button v-else class="btn btn-danger rounded-pill px-3 px-md-4 py-2 fw-bold w-100 shadow" @click="mostrarConfirmar = true">
+  <i class="bi bi-check-circle-fill me-1 me-md-2"></i>Finalizar
+</button>
           </div>
 
         </div>
       </div>
 
+      <ModalExito
+        :visible="mostrarConfirmar"
+        tipo="danger"
+        titulo="¿Finalizar examen?"
+        mensaje="Una vez que finalices no vas a poder modificar tus respuestas. ¿Querés continuar?"
+        :tiene-accion="true"
+        @cerrar="mostrarConfirmar = false"
+        @confirmar="confirmarFinalizar"
+      />
+
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { api } from '@/api/api'
+import ModalExito from './components/ModalExito.vue'
+
+const props = defineProps({
+  idEvento: { type: [Number, String], required: true },
+  titulo: { type: String, default: 'Examen Asamblea General' }
+})
+const emit = defineEmits(['terminar', 'salir'])
+
+// fase: 'cargando' | 'examen' | 'enviando' | 'resultado' | 'error'
+const fase = ref('cargando')
+const mensajeError = ref('')
+
+const preguntas = ref([])
+const opciones = ref({})       // { pid: [{id, texto}] }
+const seleccion = ref({})      // { pid: [rid, ...] }
+const indice = ref(0)
+const limiteSeg = ref(0)
+const restante = ref(0)
+let timer = null
+
+//modal confirmacion
+const mostrarConfirmar = ref(false)
+
+// Tiempo (en ms) que la pestaña permaneció visible durante el examen (Page Visibility API)
+const tiempoVisibleMs = ref(0)
+let visibleDesde = null
+
+const resultado = ref(null)    // { calificacion, aprobado, puntaje, posible, revision }
+
+const total = computed(() => preguntas.value.length)
+const preguntaActual = computed(() => preguntas.value[indice.value] || null)
+const opcionesActuales = computed(() => {
+  const p = preguntaActual.value
+  return p ? (opciones.value[p.id] || []) : []
+})
+
+function estaElegida(pid, rid) {
+  return (seleccion.value[pid] || []).includes(rid)
+}
+
+function toggleOpcion(pid, rid) {
+  const arr = seleccion.value[pid] ? [...seleccion.value[pid]] : []
+  const i = arr.indexOf(rid)
+  if (i === -1) arr.push(rid)
+  else arr.splice(i, 1)
+  seleccion.value = { ...seleccion.value, [pid]: arr }
+}
+
+async function guardarAvance() {
+  try {
+    await api.post({
+      entity: 'examen_online',
+      action: 'guardarAvance',
+      payload: {
+        idEvento: props.idEvento,
+        indice: indice.value,
+        seleccion: seleccion.value,
+        tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
+      }
+    })
+  } catch{ /* silencioso: es respaldo */ }
+}
+
+async function anterior() {
+  if (indice.value > 0) { indice.value--; await guardarAvance() }
+}
+async function siguiente() {
+  if (indice.value < total.value - 1) { indice.value++; await guardarAvance() }
+}
+
+async function iniciar() {
+  fase.value = 'cargando'
+  try {
+    const res = await api.post({
+      entity: 'examen_online',
+      action: 'iniciarOReanudar',
+      payload: { idEvento: props.idEvento }
+    })
+    const data = res?.payload ?? res
+    preguntas.value = data.preguntas || []
+    opciones.value = data.opciones || {}
+    seleccion.value = data.seleccion || {}
+    indice.value = data.indice || 0
+    limiteSeg.value = data.limite_seg || 0
+    restante.value = data.restante || 0
+    fase.value = 'examen'
+    iniciarTrackingVisibilidad()
+    if (limiteSeg.value > 0) arrancarReloj()
+  } catch (e) {
+    mensajeError.value = e?.message || 'No se pudo iniciar el examen'
+    fase.value = 'error'
+  }
+}
+
+//abre el modal antes de finalizar
+function confirmarFinalizar() {
+  mostrarConfirmar.value = false
+  finalizar()
+}
+
+async function finalizar() {
+  detenerReloj()
+  detenerTrackingVisibilidad()
+  fase.value = 'enviando'
+  try {
+    const res = await api.post({
+      entity: 'examen_online',
+      action: 'finalizarExamen',
+      payload: {
+        idEvento: props.idEvento,
+        seleccion: seleccion.value,
+        tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
+      }
+    })
+    resultado.value = res?.payload ?? res
+    fase.value = 'resultado'
+    emit('terminar')
+  } catch (e) {
+    mensajeError.value = e?.message || 'No se pudo finalizar el examen'
+    fase.value = 'error'
+  }
+}
+
+function arrancarReloj() {
+  detenerReloj()
+  timer = setInterval(() => {
+    restante.value--
+    if (restante.value <= 0) { restante.value = 0; finalizar() }
+  }, 1000)
+}
+function detenerReloj() { if (timer) { clearInterval(timer); timer = null } }
+
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    visibleDesde = Date.now()
+  } else if (visibleDesde !== null) {
+    tiempoVisibleMs.value += Date.now() - visibleDesde
+    visibleDesde = null
+  }
+}
+
+function iniciarTrackingVisibilidad() {
+  tiempoVisibleMs.value = 0
+  visibleDesde = document.visibilityState === 'visible' ? Date.now() : null
+  document.addEventListener('visibilitychange', onVisibilityChange)
+}
+
+function detenerTrackingVisibilidad() {
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  if (visibleDesde !== null) {
+    tiempoVisibleMs.value += Date.now() - visibleDesde
+    visibleDesde = null
+  }
+}
+
+const relojTexto = computed(() => {
+  const m = String(Math.floor(restante.value / 60)).padStart(2, '0')
+  const s = String(restante.value % 60).padStart(2, '0')
+  return `${m}:${s}`
+})
+
+function letra(i) { return String.fromCharCode(97 + i) }
+
+onMounted(iniciar)
+onBeforeUnmount(() => { detenerReloj(); detenerTrackingVisibilidad() })
+</script>
 
 <style scoped>
 .examen-overlay {
