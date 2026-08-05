@@ -135,11 +135,11 @@ const routes = [
       { path: '', name: 'AdminInicio', component: () => import('../components/panel-admin/AdminInicio.vue') },
 
       // --- SECRETARÍA ---
-      { path: 'secretaria', name: 'SecretariaAdmin', component: () => import('../components/panel-admin/secretaria/SecretariaAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica'] } },
-      { path: 'secretaria/modificacion-datos', name: 'LegajosPersonales', component: () => import('../components/panel-admin/secretaria/LegajosPersonales.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica'] } },
-      { path: 'secretaria/licencias', name: 'LicenciasAdmin', component: () => import('../components/panel-admin/secretaria/LicenciasAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica'] } },
-      { path: 'secretaria/eventos-notificaciones', name: 'GestionEventos', component: () => import('../components/panel-admin/secretaria/GestionEventos.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica'] } },
-      { path: 'secretaria/grupos', name: 'GruposAdmin', component: () => import('../components/panel-admin/secretaria/GruposAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica'] } },
+      { path: 'secretaria', name: 'SecretariaAdmin', component: () => import('../components/panel-admin/secretaria/SecretariaAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica', 'coordinador general'] } },
+      { path: 'secretaria/modificacion-datos', name: 'LegajosPersonales', component: () => import('../components/panel-admin/secretaria/LegajosPersonales.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica', 'coordinador general'] } },
+      { path: 'secretaria/licencias', name: 'LicenciasAdmin', component: () => import('../components/panel-admin/secretaria/LicenciasAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica', 'coordinador general'] } },
+      { path: 'secretaria/eventos-notificaciones', name: 'GestionEventos', component: () => import('../components/panel-admin/secretaria/GestionEventos.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica', 'coordinador general'] } },
+      { path: 'secretaria/grupos', name: 'GruposAdmin', component: () => import('../components/panel-admin/secretaria/GruposAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica', 'coordinador general'] } },
 
 
       // --- DESIGNACIONES ---
@@ -165,11 +165,11 @@ const routes = [
       { path: 'facturacion', name: 'InstitucionesCuitAdmin', component: () => import('../components/panel-admin/facturacion/InstitucionesCuitAdmin.vue'), meta: { roles: ['admin', 'secretario', 'tesorero', 'facturacion'] } },
 
       // --- DESARROLLO ARBITRAL ---
-      { path: 'desarrollo-arbitral', name: 'DesarrolloArbitralAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/DesarrolloArbitralAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
-      { path: 'desarrollo-arbitral/observaciones', name: 'ObservacionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ObservacionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
-      { path: 'desarrollo-arbitral/reuniones-mensuales', name: 'ReunionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ReunionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
-      { path: 'desarrollo-arbitral/resumen-arbitros', name: 'ResumenArbitrosAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/PlanillaGeneralAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
-      { path: 'desarrollo-arbitral/habilitacion-examenes-asamblea', name: 'HabilitacionExamenesAsamblea', component: () => import('../components/panel-admin/desarrollo-arbitral/HabilitacionExamenesAsamblea.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario'] } },
+      { path: 'desarrollo-arbitral', name: 'DesarrolloArbitralAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/DesarrolloArbitralAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario', 'designador'] } },
+      { path: 'desarrollo-arbitral/observaciones', name: 'ObservacionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ObservacionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario', 'designador'] } },
+      { path: 'desarrollo-arbitral/reuniones-mensuales', name: 'ReunionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ReunionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario', 'designador'] } },
+      { path: 'desarrollo-arbitral/resumen-arbitros', name: 'ResumenArbitrosAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/PlanillaGeneralAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario', 'designador'] } },
+      { path: 'desarrollo-arbitral/habilitacion-examenes-asamblea', name: 'HabilitacionExamenesAsamblea', component: () => import('../components/panel-admin/desarrollo-arbitral/HabilitacionExamenesAsamblea.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario', 'designador'] } },
 
       // --- CURSOS ---
       { path: 'curso-arbitros', name: 'CursoArbitrosAdmin', component: () => import('../components/panel-admin/curso-arbitros/CursoArbitrosAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] } },

@@ -54,7 +54,7 @@ const menuItems = [
     title: 'Secretaría',
     icon: 'bi bi-pc-display-horizontal',
     desc: 'Datos personales y licencias.',
-    rolesPermitidos: ['admin', 'etica', 'secretario', 'designador']
+    rolesPermitidos: ['admin', 'etica', 'secretario', 'designador', 'coordinador general']
   },
   {
     to: '/panel-admin/tribunal',
@@ -82,7 +82,7 @@ const menuItems = [
     title: 'Desarrollo Arbitral',
     icon: 'bi bi-person-workspace',
     desc: 'Reuniones mensuales y evaluaciones.',
-    rolesPermitidos: ['admin', 'coordinador general', 'secretario']
+    rolesPermitidos: ['admin', 'coordinador general', 'secretario', 'designador']
   },
     {
     to: '/panel-admin/facturacion',

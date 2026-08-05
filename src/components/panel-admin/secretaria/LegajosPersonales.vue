@@ -690,7 +690,7 @@ const solicitudesPendientes = computed(() =>
 const solicitudesMostradas = computed(() => {
   return solicitudes.value
     .filter(s => s.estado === tabActivo.value)
-    .slice(0, 30); // a futuro si queremos lo cambiamos, depende de flor y flor
+    .slice(0, 50); // a futuro si queremos lo cambiamos, depende de flor y flor
 })
 // FUNCIÓN DE SCROLL MÓVIL AL CAMBIAR PÁGINA
 const cambiarPagina = (delta) => {
@@ -1006,9 +1006,9 @@ const obtenerProvinciasLocalidades = async () => {
 
 const obtenerGrupos = async () => {
   try {
-    const { payload } = await api.get({ 
-      entity: 'grupos', 
-      action: 'obtenerGrupos' 
+    const { payload } = await api.get({
+      entity: 'grupos',
+      action: 'obtenerGrupos'
     })
     grupos.value = payload
   } catch (error) {

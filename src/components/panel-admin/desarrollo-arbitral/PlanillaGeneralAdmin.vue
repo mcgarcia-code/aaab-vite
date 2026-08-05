@@ -182,7 +182,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'
 import { api } from '@/api/api'
-//import ExcelJS from 'exceljs'
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head';
 
 // Actualización de Meta Tags
