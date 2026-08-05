@@ -68,6 +68,30 @@
 
         <div class="card-body p-2 p-md-3 bg-light">
 
+          <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+            <button
+              @click="semanaAnterior"
+              class="btn btn-outline-secondary btn-sm shadow-sm d-flex align-items-center gap-1"
+              :disabled="cargando"
+            >
+              <i class="bi bi-chevron-left"></i>
+              <span class="fw-bold small">Semana anterior</span>
+            </button>
+
+            <span class="text-muted small fw-bold">
+              {{labelSemana}}
+            </span>
+
+            <button
+              @click="semanaSiguiente"
+              class="btn btn-outline-secondary btn-sm shadow-sm d-flex align-items-center gap-1"
+              :disabled="cargando || semanaAtras === 0"
+            >
+              <span class="fw-bold small">Semana siguiente</span>
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </div>
+
           <div v-if="cargando" class="text-center py-5">
             <span class="spinner-border text-danger"></span>
             <p class="text-muted mt-3 m-0 fw-bold small">Cargando designaciones...</p>
@@ -507,9 +531,11 @@ useHead({
 const notificar = inject('notificar')
 
 const designaciones = ref([])
+const labelSemana = ref('')
 const arbitros = ref([])
 const cargando = ref(false)
 const eliminados = ref([])
+const semanaAtras = ref(0)
 let contadorUid = 0
 
 /* ====================================================
@@ -652,10 +678,12 @@ const cargarDesignaciones = async () => {
   try {
     const res = await api.get({
       entity: 'designaciones',
-      action: 'obtenerDesignaciones'
+      action: 'obtenerDesignaciones',
+      payload: { semanaAtras: semanaAtras.value }
     })
     if ((res.ok || res.success) && res.payload) {
-      designaciones.value = res.payload.map(normalizarPartido)
+      designaciones.value = res.payload.designaciones.map(normalizarPartido)
+      labelSemana.value = res.payload.labelSemana
       eliminados.value = []
     }
   } catch (err) {
@@ -664,6 +692,19 @@ const cargarDesignaciones = async () => {
   } finally {
     cargando.value = false
   }
+}
+
+const semanaAnterior = async () => {
+  semanaAtras.value++
+  await cargarDesignaciones()
+  await cargarAvisos()
+}
+
+const semanaSiguiente = async () => {
+  if (semanaAtras.value === 0) return
+  semanaAtras.value--
+  await cargarDesignaciones()
+  await cargarAvisos()
 }
 
 /* ====================================================
