@@ -2,7 +2,8 @@
   <div class="container-fluid py-4 animate__animated animate__fadeIn">
 
     <!-- ============ CHIP CONTEXTUAL ============ -->
-
+    <!-- DESCOMENTAR PARA ACTIVAR: header con la próxima designación (probar cuando haya una designación cargada) -->
+    <!--
     <div v-if="proximaDesignacion" class="chips-contextuales mb-4">
       <RouterLink
         to="/panel-arbitro/designaciones"
@@ -16,6 +17,7 @@
         </div>
       </RouterLink>
     </div>
+    -->
 
 
     <div class="row g-3 g-md-4">
@@ -155,7 +157,7 @@ useHead({ title: 'Panel de Inicio | AAAB' })
 // ====================================================
 const CATEGORIAS = [
   { categoria: 'Mi Perfil', icono: 'bi bi-person-circle' },
-  { categoria: 'Actividad Arbitral', icono: 'bi bi-whistle' },
+  { categoria: 'Actividad Arbitral', icono: 'bi bi-person-raised-hand' },
   { categoria: 'Administración', icono: 'bi bi-folder2' },
   { categoria: 'Tesorería', icono: 'bi bi-cash-stack' },
   { categoria: 'Herramientas', icono: 'bi bi-tools' }
