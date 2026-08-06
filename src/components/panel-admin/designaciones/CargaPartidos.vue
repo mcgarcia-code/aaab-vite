@@ -27,24 +27,6 @@
             </button>
 
             <button
-              @click="solicitarEliminarTodo"
-              class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2"
-              :disabled="designaciones.length === 0"
-            >
-              <span class="material-icons text-danger fs-6">delete_sweep</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Eliminar Todo</span>
-            </button>
-
-            <button
-              @click="enviarATesoreria"
-              class="btn btn-dark shadow-sm py-2 d-flex align-items-center gap-2 text-white"
-              :disabled="designaciones.length === 0"
-            >
-              <span class="material-icons fs-6">account_balance</span>
-              <span class="fw-bold d-none d-md-inline small">Tesorería</span>
-            </button>
-
-            <button
               @click="abrirModalPublicar('actualizar')"
               class="btn btn-warning shadow-sm py-2 d-flex align-items-center gap-2 text-dark"
               :disabled="designaciones.length === 0"
@@ -150,22 +132,25 @@
             <!-- ============ VISTA DESKTOP: TABLA TIPO EXCEL ============ -->
             <div v-else class="d-none d-md-block border rounded shadow-sm bg-white grilla-container">
               <table class="table align-middle mb-0 grilla-designaciones">
-                <thead>
-                  <tr>
-                    <th class="text-uppercase text-muted" style="width: 22%;">Categoría / División</th>
-                    <th class="text-uppercase text-muted text-center" style="width: 8%;">Horario</th>
-                    <th class="text-uppercase text-muted" style="width: 18%;">Local</th>
-                    <th class="text-uppercase text-muted" style="width: 18%;">Visitante</th>
-                    <th class="text-uppercase text-muted" style="width: 16%;">Árbitro 1</th>
-                    <th class="text-uppercase text-muted" style="width: 16%;">Árbitro 2</th>
-                    <th style="width: 2%;"></th>
-                  </tr>
-                </thead>
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-muted" style="width: 15%;">Categoría / División</th>
+                  <th class="text-uppercase text-muted text-center" style="width: 6%;">Horario</th>
+                  <th class="text-uppercase text-muted" style="width: 14%;">Local</th>
+                  <th class="text-uppercase text-muted" style="width: 14%;">Visitante</th>
+                  <th class="text-uppercase text-muted text-center" style="width: 5%;">Susp.</th>
+                  <th class="text-uppercase text-muted" style="width: 10%;">Árbitro 1</th>
+                  <th class="text-uppercase text-muted" style="width: 10%;">Árbitro 2</th>
+                  <th class="text-uppercase text-muted" style="width: 10%;">Observador</th>
+                  <th class="text-uppercase text-muted" style="width: 10%;">Del. Técnico</th>
+                  <th style="width: 2%;"></th>
+                </tr>
+              </thead>
                 <tbody>
                   <template v-for="c in canchas" :key="fechaSeleccionada + '-' + c.nombre">
 
                     <tr class="fila-cancha">
-                      <td colspan="7">
+                      <td colspan="10">
                         <div class="d-flex align-items-center gap-2">
                           <span class="material-icons fs-5">stadium</span>
                           <span class="nombre-cancha fw-bold text-uppercase">{{ c.nombre }}</span>
@@ -182,29 +167,80 @@
                       </td>
                     </tr>
 
-                    <tr v-for="p in c.partidos" :key="p.id || p._uid">
+                    <tr v-for="p in c.partidos" :key="p.id || p._uid" :class="{ 'fila-suspendida': p.suspendido }">
                       <td><span class="celda-texto">{{ p.categoria_division || '—' }}</span></td>
                       <td class="text-center"><span class="celda-texto">{{ p.horario || '—' }}</span></td>
                       <td><span class="celda-texto">{{ p.local || '—' }}</span></td>
                       <td><span class="celda-texto">{{ p.visitante || '—' }}</span></td>
+                      <td class="text-center">
+                        <input
+                          type="checkbox"
+                          class="form-check-input susp-check"
+                          :checked="p.suspendido"
+                          @change="toggleSuspendido(p, $event)"
+                          title="Partido suspendido antes del inicio"
+                        >
+                      </td>
+                      <td>
+                        <div class="celda-arb-wrap">
+                          <button
+                            @click="abrirSelectorArbitro(p, 1)"
+                            class="celda-arbitro"
+                            :class="[colorClase(p, 1), { 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.arbitro_1 }]"
+                            :title="tituloCelda(p, 1)"
+                          >
+                            {{ p.arbitro_1 || '— Asignar —' }}
+                          </button>
+                          <button
+                            v-if="p.arbitro_1"
+                            @click="abrirSelectorColor(p, 1)"
+                            class="btn-color-tag"
+                            :class="colorClase(p, 1)"
+                            title="Marcar estado del árbitro"
+                          >
+                            <span class="material-icons" style="font-size: 14px;">label</span>
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="celda-arb-wrap">
+                          <button
+                            @click="abrirSelectorArbitro(p, 2)"
+                            class="celda-arbitro"
+                            :class="[colorClase(p, 2), { 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.arbitro_2 }]"
+                            :title="tituloCelda(p, 2)"
+                          >
+                            {{ p.arbitro_2 || '— Asignar —' }}
+                          </button>
+                          <button
+                            v-if="p.arbitro_2"
+                            @click="abrirSelectorColor(p, 2)"
+                            class="btn-color-tag"
+                            :class="colorClase(p, 2)"
+                            title="Marcar estado del árbitro"
+                          >
+                            <span class="material-icons" style="font-size: 14px;">label</span>
+                          </button>
+                        </div>
+                      </td>
                       <td>
                         <button
-                          @click="abrirSelectorArbitro(p, 1)"
+                          @click="abrirSelectorArbitro(p, 'observador')"
                           class="celda-arbitro"
-                          :class="{ 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.arbitro_1 }"
-                          :title="tituloCelda(p, 1)"
+                          :class="{ 'externo': esExternoRol(p, 'observador'), 'vacio': !p.observador }"
+                          :title="tituloCeldaRol(p, 'observador')"
                         >
-                          {{ p.arbitro_1 || '— Asignar —' }}
+                          {{ p.observador || '— Asignar —' }}
                         </button>
                       </td>
                       <td>
                         <button
-                          @click="abrirSelectorArbitro(p, 2)"
+                          @click="abrirSelectorArbitro(p, 'delegado')"
                           class="celda-arbitro"
-                          :class="{ 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.arbitro_2 }"
-                          :title="tituloCelda(p, 2)"
+                          :class="{ 'externo': esExternoRol(p, 'delegado'), 'vacio': !p.delegado }"
+                          :title="tituloCeldaRol(p, 'delegado')"
                         >
-                          {{ p.arbitro_2 || '— Asignar —' }}
+                          {{ p.delegado || '— Asignar —' }}
                         </button>
                       </td>
                       <td class="text-center">
@@ -271,35 +307,47 @@
                         <span class="badge bg-secondary" style="font-size: 0.6rem;">LOCAL</span>
                         <span class="fw-bold">{{ p.local || '—' }}</span>
                       </div>
-                      <div class="d-flex align-items-center gap-2">
+                      <div class="d-flex align-items-center gap-2 mb-2">
                         <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.6rem;">VISIT</span>
                         <span class="fw-bold">{{ p.visitante || '—' }}</span>
+                      </div>
+                      <div class="form-check mb-0">
+                        <input
+                          type="checkbox"
+                          class="form-check-input"
+                          :id="'susp-' + (p.id || p._uid)"
+                          :checked="p.suspendido"
+                          @change="toggleSuspendido(p, $event)"
+                        >
+                        <label class="form-check-label small fw-bold text-danger" :for="'susp-' + (p.id || p._uid)">
+                          Partido suspendido antes del inicio
+                        </label>
                       </div>
                     </div>
 
                     <!-- Árbitros (único editable) -->
-                    <div class="row g-2">
-                      <div class="col-6">
-                        <label class="form-label small fw-bold text-muted mb-1">Árbitro 1</label>
-                        <button
-                          @click="abrirSelectorArbitro(p, 1)"
-                          class="celda-arbitro-mobile w-100 text-start"
-                          :class="{ 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.arbitro_1 }"
-                        >
-                          {{ p.arbitro_1 || '— Asignar —' }}
-                        </button>
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold text-muted mb-1">Árbitro 2</label>
-                        <button
-                          @click="abrirSelectorArbitro(p, 2)"
-                          class="celda-arbitro-mobile w-100 text-start"
-                          :class="{ 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.arbitro_2 }"
-                        >
-                          {{ p.arbitro_2 || '— Asignar —' }}
-                        </button>
-                      </div>
-                    </div>
+<div class="row g-2 mt-1">
+  <div class="col-6">
+    <label class="form-label small fw-bold text-muted mb-1">Observador</label>
+    <button
+      @click="abrirSelectorArbitro(p, 'observador')"
+      class="celda-arbitro-mobile w-100 text-start"
+      :class="{ 'externo': esExternoRol(p, 'observador'), 'vacio': !p.observador }"
+    >
+      {{ p.observador || '— Asignar —' }}
+    </button>
+  </div>
+  <div class="col-6">
+    <label class="form-label small fw-bold text-muted mb-1">Del. Técnico</label>
+    <button
+      @click="abrirSelectorArbitro(p, 'delegado')"
+      class="celda-arbitro-mobile w-100 text-start"
+      :class="{ 'externo': esExternoRol(p, 'delegado'), 'vacio': !p.delegado }"
+    >
+      {{ p.delegado || '— Asignar —' }}
+    </button>
+  </div>
+</div>
 
                   </div>
                 </div>
@@ -334,6 +382,31 @@
         </template>
       </div>
     </div>
+
+    <ModalBase
+  :show="mostrarSelectorColor"
+  titulo="Estado del árbitro"
+  icono="label"
+  colorIcono="bg-danger text-white"
+  maxWidth="420px"
+  @close="cerrarSelectorColor"
+>
+  <div class="lista-colores">
+    <button @click="asignarColor('')" class="opcion-color">
+      <span class="muestra-color muestra-none"></span>
+      Sin marca
+    </button>
+    <button
+      v-for="op in opcionesColor"
+      :key="op.valor"
+      @click="asignarColor(op.valor)"
+      class="opcion-color"
+    >
+      <span class="muestra-color" :class="'estado-' + op.valor"></span>
+      {{ op.etiqueta }}
+    </button>
+  </div>
+</ModalBase>
 
     <ModalBase
       :show="mostrarSelectorArbitro"
@@ -538,14 +611,7 @@ const eliminados = ref([])
 const semanaAtras = ref(0)
 let contadorUid = 0
 
-/* ====================================================
-   AVISOS DE VALIDACIÓN (calculados en el backend)
-   El servidor valida todo (inactivo, disponibilidad de día
-   y horario, sanción vigente, licencias, doble cancha y
-   mismo equipo la fecha anterior) con la acción
-   obtenerAvisosDesignaciones. Acá solo se muestran.
-   Mapa: { id_partido: [ { nombre, avisos: [...] } ] }
-   ==================================================== */
+
 const avisosMap = ref({})
 
 const cargarAvisos = async () => {
@@ -599,6 +665,15 @@ const mostrarAvisosPartido = (p) => {
    ==================================================== */
 const normalizarTexto = (valor) => {
   return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+const capitalizarNombre = (texto) => {
+  return String(texto || '')
+    .toLowerCase()
+    .split(' ')
+    .filter(Boolean)
+    .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+    .join(' ')
 }
 
 const parsearFecha = (fecha) => {
@@ -663,12 +738,121 @@ const formPublicar = reactive({
 })
 
 /* ====================================================
+   MARCA DE ESTADO POR COLOR (etiqueta del árbitro)
+   Se persiste con la acción editarEtiquetaArbitro.
+   Payload: { id, numero, etiqueta }.
+   El backend devuelve etiqueta_arb1 / etiqueta_arb2 al
+   cargar las designaciones; acá se mapean a _estado1/_estado2.
+   ==================================================== */
+const opcionesColor = [
+  { valor: 'observaciones', etiqueta: 'Observaciones', color: 'violeta' },
+  { valor: 'reemplazar', etiqueta: 'Reemplazar', color: 'rojo' },
+  { valor: 'cambiar', etiqueta: 'Cambiar', color: 'naranja' },
+  { valor: 'confirmado', etiqueta: 'Cambio confirmado', color: 'amarillo' },
+  { valor: 'posible', etiqueta: 'Posible cambio', color: 'verde' }
+]
+
+const mostrarSelectorColor = ref(false)
+const seleccionColor = ref(null)
+
+const abrirSelectorColor = (partido, numero) => {
+  seleccionColor.value = { partido, numero }
+  mostrarSelectorColor.value = true
+}
+
+const cerrarSelectorColor = () => {
+  mostrarSelectorColor.value = false
+  seleccionColor.value = null
+}
+
+const colorClase = (p, numero) => {
+  const estado = numero === 1 ? p._estado1 : p._estado2
+  return estado ? 'estado-' + estado : ''
+}
+
+const asignarColor = async (valor) => {
+  const sel = seleccionColor.value
+  if (!sel) return
+  const p = sel.partido
+  const numero = sel.numero
+
+  const valorAnterior = numero === 1 ? p._estado1 : p._estado2
+
+  // Actualización optimista
+  if (numero === 1) p._estado1 = valor
+  else p._estado2 = valor
+  cerrarSelectorColor()
+
+  try {
+    const resultado = await api.post({
+      entity: 'designaciones',
+      action: 'editarEtiquetaArbitro',
+      payload: {
+        id: p.id,
+        numero,
+        etiqueta: valor
+      }
+    })
+
+    if (!(resultado.ok && resultado.payload && resultado.payload.success)) {
+      throw new Error((resultado.payload && resultado.payload.mensaje) ? resultado.payload.mensaje : 'Error del servidor')
+    }
+  } catch (err) {
+    console.error('Error al editar etiqueta de árbitro:', err)
+    // Revertir
+    if (numero === 1) p._estado1 = valorAnterior
+    else p._estado2 = valorAnterior
+    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la etiqueta del árbitro.', tipo: 'danger' })
+  }
+}
+
+/* ====================================================
+   SUSPENDER PARTIDO (antes del inicio)
+   ==================================================== */
+const toggleSuspendido = async (p, event) => {
+  const nuevoValor = event.target.checked
+  const valorAnterior = p.suspendido
+
+  // Actualización optimista
+  p.suspendido = nuevoValor
+
+
+  try {
+    const resultado = await api.post({
+      entity: 'designaciones',
+      action: 'marcarPartidoSuspendido',
+      payload: {
+        id: p.id,
+        suspendido: nuevoValor
+      }
+    })
+
+    if (!(resultado.ok && resultado.payload && resultado.payload.success)) {
+      throw new Error((resultado.payload && resultado.payload.mensaje) ? resultado.payload.mensaje : 'Error del servidor')
+    }
+  } catch (err) {
+    console.error('Error al marcar partido suspendido:', err)
+    // Revertir estado y checkbox
+    p.suspendido = valorAnterior
+    event.target.checked = valorAnterior
+    notificar({ titulo: 'Error', mensaje: 'No se pudo cambiar el estado del partido.', tipo: 'danger' })
+  }
+}
+
+/* ====================================================
    CARGA INICIAL
    ==================================================== */
 const normalizarPartido = (p) => ({
   ...p,
   fecha: (p.fecha && !String(p.fecha).startsWith('0000')) ? String(p.fecha).slice(0, 10) : '',
   horario: p.horario ? String(p.horario).slice(0, 5) : '',
+  suspendido: p.suspendido === true || p.suspendido === 1 || p.suspendido === '1',
+  _estado1: p.etiqueta_arb1 || '',
+  _estado2: p.etiqueta_arb2 || '',
+  observador: p.observador || '',
+  id_observador: p.id_observador || null,
+  delegado: p.delegado || '',
+  id_delegado: p.id_delegado || null,
   _dirty: false,
   _uid: 'u' + (++contadorUid)
 })
@@ -807,7 +991,11 @@ const cerrarSelectorArbitro = () => {
 const tituloSelector = computed(() => {
   if (!seleccionArbitro.value) return 'Asignar Árbitro'
   const p = seleccionArbitro.value.partido
-  return `Árbitro ${seleccionArbitro.value.numero} — ${p.local || '?'} vs ${p.visitante || '?'}`
+  const num = seleccionArbitro.value.numero
+  const versus = `${p.local || '?'} vs ${p.visitante || '?'}`
+  if (num === 'observador') return `Observador — ${versus}`
+  if (num === 'delegado') return `Delegado técnico — ${versus}`
+  return `Árbitro ${num} — ${versus}`
 })
 
 const arbitrosFiltrados = computed(() => {
@@ -821,11 +1009,18 @@ const asignarArbitro = async (arbitro) => {
   if (!sel) return
   const p = sel.partido
 
+  // ---- Observador / Delegado técnico (acción propia) ----
+  if (sel.numero === 'observador' || sel.numero === 'delegado') {
+    await asignarObservadorDelegado(arbitro, sel.numero, p)
+    return
+  }
+
+  // ---- Árbitro 1 / 2 (flujo existente) ----
   if (!arbitro) {
     if (sel.numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null; p._ext1 = false }
     else { p.arbitro_2 = ''; p.id_arb2 = null; p._ext2 = false }
   } else {
-    const nombreCompleto = `${arbitro.apellido} ${arbitro.nombre}`.toUpperCase()
+    const nombreCompleto = capitalizarNombre(`${arbitro.apellido} ${arbitro.nombre}`)
     if (sel.numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id; p._ext1 = false }
     else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id; p._ext2 = false }
   }
@@ -833,8 +1028,6 @@ const asignarArbitro = async (arbitro) => {
   marcar(p)
   cerrarSelectorArbitro()
 
-  // Guardado inmediato (sin esperar el debounce) para que el backend
-  // valide la designación y avise si hay algún conflicto.
   if (arbitro) {
     const ok = await ejecutarGuardado()
     if (ok) {
@@ -855,7 +1048,7 @@ const asignarArbitro = async (arbitro) => {
 const asignarArbitroLibre = async (texto) => {
   const sel = seleccionArbitro.value
   if (!sel) return
-  const nombre = String(texto || '').trim().toUpperCase()
+  const nombre = capitalizarNombre(texto)
   if (!nombre) return
   const p = sel.partido
 
@@ -876,6 +1069,55 @@ const asignarArbitroLibre = async (texto) => {
         tipo: 'warning'
       })
     }
+  }
+}
+
+/* ====================================================
+   OBSERVADOR / DELEGADO TÉCNICO
+   Se persiste con la acción editarObservadorDelegado.
+   Payload: { id, tipo, id_arbitro }.
+   tipo: 'observador' | 'delegado'. id_arbitro null = sin asignar.
+   Actualización optimista con reversión si falla.
+   ==================================================== */
+const asignarObservadorDelegado = async (arbitro, tipo, p) => {
+  const campoNombre = tipo === 'observador' ? 'observador' : 'delegado'
+  const campoId = tipo === 'observador' ? 'id_observador' : 'id_delegado'
+
+  // Guardo valores anteriores por si hay que revertir
+  const nombreAnterior = p[campoNombre]
+  const idAnterior = p[campoId]
+
+  // Actualización optimista
+  if (!arbitro) {
+    p[campoNombre] = ''
+    p[campoId] = null
+  } else {
+    p[campoNombre] = capitalizarNombre(`${arbitro.apellido} ${arbitro.nombre}`)
+    p[campoId] = arbitro.id
+  }
+
+  cerrarSelectorArbitro()
+
+  try {
+    const resultado = await api.post({
+      entity: 'designaciones',
+      action: 'editarObservadorDelegado',
+      payload: {
+        id: p.id,
+        tipo,                        // 'observador' | 'delegado'
+        id_arbitro: arbitro ? arbitro.id : null
+      }
+    })
+
+    if (!(resultado.ok && resultado.payload && resultado.payload.success)) {
+      throw new Error((resultado.payload && resultado.payload.mensaje) ? resultado.payload.mensaje : 'Error del servidor')
+    }
+  } catch (err) {
+    console.error('Error al editar observador/delegado:', err)
+    // Revertir
+    p[campoNombre] = nombreAnterior
+    p[campoId] = idAnterior
+    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar el observador/delegado técnico.', tipo: 'danger' })
   }
 }
 
@@ -902,12 +1144,21 @@ const tituloCelda = (p, numero) => {
   return nombre
 }
 
-/* ====================================================
-   AUTOGUARDADO (con debounce, sin botón manual)
-   Cada asignación de árbitro marca el partido y programa un
-   guardado a los 1,5s. Guarda en segundo plano y actualiza los
-   ids de los partidos nuevos sin recargar toda la grilla.
-   ==================================================== */
+// Observador / delegado sin id = puesto a mano (externo)
+const esExternoRol = (p, tipo) => {
+  const nombre = tipo === 'observador' ? p.observador : p.delegado
+  const id = tipo === 'observador' ? p.id_observador : p.id_delegado
+  return !!nombre && !id
+}
+
+const tituloCeldaRol = (p, tipo) => {
+  const nombre = tipo === 'observador' ? p.observador : p.delegado
+  const etiqueta = tipo === 'observador' ? 'Observador' : 'Delegado técnico'
+  if (!nombre) return 'Asignar ' + etiqueta.toLowerCase()
+  return etiqueta + ': ' + nombre
+}
+
+
 const limpiarPartidoParaEnviar = (p) => ({
   id: p.id,
   _uid: p._uid,
@@ -929,10 +1180,6 @@ const programarAutoguardado = () => {
   timerAutoguardado = setTimeout(() => { ejecutarGuardado() }, 1500)
 }
 
-// Guarda los cambios pendientes. Devuelve true/false.
-// No recarga toda la grilla: solo asigna los ids nuevos que devuelve
-// el backend y limpia las marcas de "modificado", para no interrumpir
-// la edición ni reordenar las filas mientras la persona trabaja.
 const ejecutarGuardado = async () => {
   if (timerAutoguardado) { clearTimeout(timerAutoguardado); timerAutoguardado = null }
 
@@ -985,12 +1232,6 @@ const ejecutarGuardado = async () => {
 
 const guardarAhora = () => { ejecutarGuardado() }
 
-/* ====================================================
-   IMPORTACION DE EXCEL
-   El archivo se sube tal cual al servidor: es el backend
-   (designaciones/cargarDesignacionesExcel) el que lo lee
-   e inserta los partidos en la tabla.
-   ==================================================== */
 const abrirModalCarga = () => {
   archivoExcel.value = null
   mostrarModalCarga.value = true
@@ -1035,50 +1276,6 @@ const confirmarCargaExcel = async () => {
   }
 }
 
-/* ====================================================
-   ELIMINAR TODO
-   ==================================================== */
-const solicitarEliminarTodo = () => {
-  notificar({
-    titulo: 'Eliminar Designaciones',
-    mensaje: '¿Estás segura que deseas eliminar todos los partidos cargados? Esta acción no se puede deshacer.',
-    tipo: 'warning',
-    alConfirmar: () => eliminarTodo()
-  })
-}
-
-const eliminarTodo = async () => {
-  try {
-    const res = await api.post({
-      entity: 'designaciones',
-      action: 'eliminarDesignaciones',
-      payload: {}
-    })
-
-    if (res.ok || res.success) {
-      designaciones.value = []
-      eliminados.value = []
-      avisosMap.value = {}
-      notificar({ titulo: 'Éxito', mensaje: 'Se eliminaron todas las designaciones.', tipo: 'success' })
-    } else {
-      throw new Error('Error del servidor')
-    }
-  } catch (err) {
-    console.error('Error al eliminar designaciones:', err)
-    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al eliminar las designaciones.', tipo: 'danger' })
-  }
-}
-
-/* ====================================================
-   TESORERIA (placeholder: la lógica se implementa a futuro)
-   ==================================================== */
-const enviarATesoreria = () => {
-  notificar({
-    titulo: 'Próximamente',
-    mensaje: 'El envío de designaciones a tesorería para los balances va a estar disponible próximamente.',
-    tipo: 'warning'
-  })
-}
 
 /* ====================================================
    PUBLICAR (PDF PARA LA WEB + PANEL DE ARBITROS)
@@ -1420,5 +1617,128 @@ onMounted(async () => {
 /* Sombra exterior (anillo) celeste a todo el grupo */
 .buscador-grupo:focus-within {
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+/* ====================================================
+   FILA SUSPENDIDA
+   ==================================================== */
+.fila-suspendida td {
+  background-color: #fee2e2 !important;
+}
+
+.fila-suspendida .celda-texto {
+  color: #991b1b;
+  text-decoration: line-through;
+}
+
+.susp-check {
+  cursor: pointer;
+}
+
+.susp-check:checked {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+/* ====================================================
+   MARCAS DE ESTADO POR COLOR (árbitros)
+   ==================================================== */
+.celda-arb-wrap {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.celda-arb-wrap .celda-arbitro {
+  flex-grow: 1;
+}
+
+.btn-color-tag,
+.btn-color-tag-mobile {
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: #fff;
+  color: #6c757d;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.btn-color-tag:hover,
+.btn-color-tag-mobile:hover {
+  background: #f8f9fa;
+}
+
+/* Colores de estado (celda y botón toman el mismo fondo) */
+.estado-observaciones {
+  background-color: #ede9fe !important;
+  border-color: #8b5cf6 !important;
+  color: #5b21b6 !important;
+}
+
+.estado-reemplazar {
+  background-color: #fee2e2 !important;
+  border-color: #ef4444 !important;
+  color: #991b1b !important;
+}
+
+.estado-cambiar {
+  background-color: #ffedd5 !important;
+  border-color: #f97316 !important;
+  color: #9a3412 !important;
+}
+
+.estado-confirmado {
+  background-color: #fef9c3 !important;
+  border-color: #eab308 !important;
+  color: #854d0e !important;
+}
+
+.estado-posible {
+  background-color: #dcfce7 !important;
+  border-color: #22c55e !important;
+  color: #166534 !important;
+}
+
+/* ====================================================
+   SELECTOR DE COLOR (modal)
+   ==================================================== */
+.lista-colores {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.opcion-color {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid #f1f3f5;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: #212529;
+  cursor: pointer;
+}
+
+.opcion-color:hover {
+  background: #f8f9fa;
+}
+
+.muestra-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.muestra-none {
+  background: repeating-linear-gradient(45deg, #f1f3f5, #f1f3f5 4px, #fff 4px, #fff 8px);
 }
 </style>
