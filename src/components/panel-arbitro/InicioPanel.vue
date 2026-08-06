@@ -2,7 +2,7 @@
   <div class="container-fluid py-4 animate__animated animate__fadeIn">
 
     <!-- ============ CHIP CONTEXTUAL ============ -->
-    <!--
+
     <div v-if="proximaDesignacion" class="chips-contextuales mb-4">
       <RouterLink
         to="/panel-arbitro/designaciones"
@@ -16,7 +16,6 @@
         </div>
       </RouterLink>
     </div>
-    -->
 
 
     <div class="row g-3 g-md-4">
