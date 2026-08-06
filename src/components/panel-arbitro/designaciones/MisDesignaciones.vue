@@ -163,7 +163,7 @@
                       <span class="d-flex align-items-center gap-2">
                         <span class="badge bg-secondary rounded-pill">{{ dia.partidos.length }}</span>
                         <i class="bi text-muted" :class="diaAbierto(mes.clave, dia.fecha) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                      </span>
+                      </span> 
                     </button>
 
                     <div v-show="diaAbierto(mes.clave, dia.fecha)" class="p-3 border-top bg-white">
