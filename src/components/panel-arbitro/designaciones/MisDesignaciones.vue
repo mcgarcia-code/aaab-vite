@@ -159,7 +159,7 @@
                         <span v-if="dia.partidos[0] && dia.partidos[0].torneo" class="badge bg-secondary-subtle text-secondary border rounded-pill px-2 py-1 d-none d-md-inline">
                           <i class="bi bi-trophy me-1"></i> {{ dia.partidos[0].torneo }}
                         </span>
-                      </span>
+                      </span> 
                       <span class="d-flex align-items-center gap-2">
                         <span class="badge bg-secondary rounded-pill">{{ dia.partidos.length }}</span>
                         <i class="bi text-muted" :class="diaAbierto(mes.clave, dia.fecha) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
