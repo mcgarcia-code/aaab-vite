@@ -3,7 +3,6 @@
 
     <!-- ============ CHIP CONTEXTUAL ============ -->
     <!-- DESCOMENTAR PARA ACTIVAR: header con la próxima designación (probar cuando haya una designación cargada) -->
-    <!--
     <div v-if="proximaDesignacion" class="chips-contextuales mb-4">
       <RouterLink
         to="/panel-arbitro/designaciones"
@@ -17,7 +16,6 @@
         </div>
       </RouterLink>
     </div>
-    -->
 
 
     <div class="row g-3 g-md-4">
@@ -254,7 +252,7 @@ const fechaLimpiaDesignacion = (fecha) => {
 
 const cargarProximaDesignacion = async () => {
   try {
-    const res = await api.get({ entity: 'designaciones', action: 'obtenerMisDesignaciones' })
+    const res = await api.get({ entity: 'designaciones', action: 'obtenerDesignacionesArbitro' })
     if ((res.ok || res.success) && res.payload) {
       const hoy = new Date()
       hoy.setHours(0, 0, 0, 0)

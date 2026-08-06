@@ -81,11 +81,29 @@
                     <div class="small text-muted d-flex align-items-center gap-1 mb-2">
                       <span class="material-icons" style="font-size: 15px;">stadium</span>
                       <span class="fw-bold text-dark">{{ p.cancha }}</span>
+                      <a
+                        v-if="linkMapaCancha(p)"
+                        :href="linkMapaCancha(p)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="link-mapa-cancha"
+                        title="Ver ubicación en Google Maps"
+                      ><i class="bi bi-geo-alt-fill"></i> Ver Mapa</a>
                     </div>
-                    <div class="small d-flex align-items-center gap-1 text-dark">
+                    <div v-if="p.funcion == 'arbitro'" class="small d-flex align-items-center gap-1 text-dark">
                       <span class="material-icons text-danger" style="font-size: 15px;">groups</span>
                       <strong>Pareja:</strong> {{ obtenerPareja(p) }}
                     </div>
+                    <template v-if="p.funcion == 'delegado'">
+                      <div class="small d-flex align-items-center gap-1 text-dark mb-1">
+                        <span class="material-icons text-danger" style="font-size: 15px;">person</span>
+                        <strong>Función:</strong> Delegado Técnico
+                      </div>
+                      <div class="small d-flex align-items-center gap-1 text-dark">
+                        <span class="material-icons text-danger" style="font-size: 15px;">groups</span>
+                        <strong>Arbitros:</strong> {{ p.arbitro_1 }} - {{ p.arbitro_2 }}
+                      </div>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -162,11 +180,29 @@
                             <div class="small text-muted d-flex align-items-center gap-1 mb-2">
                               <span class="material-icons" style="font-size: 15px;">stadium</span>
                               <span class="fw-bold text-dark">{{ p.cancha }}</span>
+                              <a
+                                v-if="linkMapaCancha(p)"
+                                :href="linkMapaCancha(p)"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="link-mapa-cancha"
+                                title="Ver ubicación en Google Maps"
+                              ><i class="bi bi-geo-alt-fill"></i> Ver Mapa</a>
                             </div>
-                            <div class="small d-flex align-items-center gap-1 text-dark">
+                            <div v-if="p.funcion=='arbitro'" class="small d-flex align-items-center gap-1 text-dark">
                               <span class="material-icons text-secondary" style="font-size: 15px;">groups</span>
                               <strong>Pareja:</strong> {{ obtenerPareja(p) }}
                             </div>
+                            <template v-if="p.funcion=='delegado'">
+                              <div class="small d-flex align-items-center gap-1 text-dark mb-1">
+                                <span class="material-icons text-secondary" style="font-size: 15px;">person</span>
+                                <strong>Función:</strong> Delegado Técnico
+                              </div>
+                              <div class="small d-flex align-items-center gap-1 text-dark">
+                                <span class="material-icons text-secondary" style="font-size: 15px;">groups</span>
+                                <strong>Arbitros:</strong> {{ p.arbitro_1 }} - {{ p.arbitro_2 }}
+                              </div>
+                            </template>
                           </div>
                         </div>
                       </div>
@@ -252,6 +288,11 @@ const parsearFecha = (fecha) => {
   }
 
   return 0
+}
+
+const linkMapaCancha = (p) => {
+  const direccion = [p.cj_domicilio, p.cj_localidad].filter(Boolean).join(', ').trim()
+  return direccion ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}` : null
 }
 
 const etiquetaDia = (fecha) => {
@@ -384,6 +425,7 @@ const toggleDia = (mesClave, fecha) => {
 }
 
 const obtenerPareja = (p) => {
+  console.log(p)
   const miId = String(arbitro.value.id)
   if (String(p.id_arb1) === miId) return p.arbitro_2 || 'Sin pareja asignada'
   if (String(p.id_arb2) === miId) return p.arbitro_1 || 'Sin pareja asignada'
@@ -455,6 +497,20 @@ onMounted(cargarMisDesignaciones)
 .timeline-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.link-mapa-cancha {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #dc2626;
+  text-decoration: none;
+  white-space: nowrap;
+  margin-left: 2px;
+}
+
+.link-mapa-cancha:hover {
+  text-decoration: underline;
+  color: #dc2626;
 }
 
 /* Variante apagada para las designaciones anteriores */
