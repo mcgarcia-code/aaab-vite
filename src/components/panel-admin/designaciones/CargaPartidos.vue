@@ -143,6 +143,7 @@
                   <th class="text-uppercase text-muted" style="width: 10%;">Árbitro 2</th>
                   <th class="text-uppercase text-muted" style="width: 10%;">Observador</th>
                   <th class="text-uppercase text-muted" style="width: 10%;">Del. Técnico</th>
+                  <th class="text-uppercase text-muted text-center" style="width: 4%;">Mesa</th>
                   <th style="width: 2%;"></th>
                 </tr>
               </thead>
@@ -150,7 +151,7 @@
                   <template v-for="c in canchas" :key="fechaSeleccionada + '-' + c.nombre">
 
                     <tr class="fila-cancha">
-                      <td colspan="10">
+                      <td colspan="11">
                         <div class="d-flex align-items-center gap-2">
                           <span class="material-icons fs-5">stadium</span>
                           <span class="nombre-cancha fw-bold text-uppercase">{{ c.nombre }}</span>
@@ -244,6 +245,16 @@
                         </button>
                       </td>
                       <td class="text-center">
+                      <button
+                        @click="abrirModalMesa(p)"
+                        class="btn-mesa"
+                        :class="{ 'con-mesa': tieneMesa(p) }"
+                        :title="tituloMesa(p)"
+                      >
+                        <span class="material-icons" style="font-size: 18px;">table_restaurant</span>
+                      </button>
+                    </td>
+                      <td class="text-center">
                         <span
                           v-if="avisosPartido(p) > 0"
                           class="material-icons text-warning alerta-partido"
@@ -326,29 +337,37 @@
                     </div>
 
                     <!-- Árbitros (único editable) -->
-<div class="row g-2 mt-1">
-  <div class="col-6">
-    <label class="form-label small fw-bold text-muted mb-1">Observador</label>
-    <button
-      @click="abrirSelectorArbitro(p, 'observador')"
-      class="celda-arbitro-mobile w-100 text-start"
-      :class="{ 'externo': esExternoRol(p, 'observador'), 'vacio': !p.observador }"
-    >
-      {{ p.observador || '— Asignar —' }}
-    </button>
-  </div>
-  <div class="col-6">
-    <label class="form-label small fw-bold text-muted mb-1">Del. Técnico</label>
-    <button
-      @click="abrirSelectorArbitro(p, 'delegado')"
-      class="celda-arbitro-mobile w-100 text-start"
-      :class="{ 'externo': esExternoRol(p, 'delegado'), 'vacio': !p.delegado }"
-    >
-      {{ p.delegado || '— Asignar —' }}
-    </button>
-  </div>
-</div>
+                    <div class="row g-2 mt-1">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">Observador</label>
+                        <button
+                          @click="abrirSelectorArbitro(p, 'observador')"
+                          class="celda-arbitro-mobile w-100 text-start"
+                          :class="{ 'externo': esExternoRol(p, 'observador'), 'vacio': !p.observador }"
+                        >
+                          {{ p.observador || '— Asignar —' }}
+                        </button>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">Del. Técnico</label>
+                        <button
+                          @click="abrirSelectorArbitro(p, 'delegado')"
+                          class="celda-arbitro-mobile w-100 text-start"
+                          :class="{ 'externo': esExternoRol(p, 'delegado'), 'vacio': !p.delegado }"
+                        >
+                          {{ p.delegado || '— Asignar —' }}
+                        </button>
+                      </div>
+                    </div>
 
+                    <button
+                      @click="abrirModalMesa(p)"
+                      class="btn btn-sm w-100 mt-2 d-flex align-items-center justify-content-center gap-2"
+                      :class="tieneMesa(p) ? 'btn-danger' : 'btn-outline-secondary'"
+                    >
+                      <span class="material-icons" style="font-size: 16px;">table_restaurant</span>
+                      <span class="small fw-bold">{{ tieneMesa(p) ? 'Mesa de control asignada' : 'Planillero / Cronometrista' }}</span>
+                    </button>
                   </div>
                 </div>
 
@@ -408,14 +427,15 @@
   </div>
 </ModalBase>
 
-    <ModalBase
-      :show="mostrarSelectorArbitro"
-      :titulo="tituloSelector"
-      icono="sports"
-      colorIcono="bg-danger text-white"
-      maxWidth="500px"
-      @close="cerrarSelectorArbitro"
-    >
+<ModalBase
+  :show="mostrarSelectorArbitro"
+  :titulo="tituloSelector"
+  icono="sports"
+  colorIcono="bg-danger text-white"
+  maxWidth="500px"
+  :zIndex="zIndexSelector"
+  @close="cerrarSelectorArbitro"
+>
       <input
         v-model="busquedaArbitro"
         type="text"
@@ -510,6 +530,35 @@
           {{ subiendoExcel ? 'Cargando...' : 'Cargar Partidos' }}
         </button>
       </template>
+    </ModalBase>
+
+<ModalBase
+  :show="mostrarModalMesa"
+  titulo="Mesa de control"
+  icono="table_restaurant"
+  colorIcono="bg-danger text-white"
+  maxWidth="480px"
+  :zIndex="1055"
+  @close="cerrarModalMesa"
+>
+      <p class="text-muted small mb-3">
+        <i class="bi bi-info-circle me-1"></i>
+        Asigná planillero y/o cronometrista solo si este partido se juega con mesa de control. Ambos son opcionales.
+      </p>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold text-muted">Planillero</label>
+        <button @click="abrirSelectorMesa('planillero')" class="celda-arbitro-mobile w-100 text-start" :class="{ 'vacio': !partidoMesa?.planillero }">
+          {{ partidoMesa?.planillero || '— Asignar planillero —' }}
+        </button>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label small fw-bold text-muted">Cronometrista</label>
+        <button @click="abrirSelectorMesa('cronometrista')" class="celda-arbitro-mobile w-100 text-start" :class="{ 'vacio': !partidoMesa?.cronometrista }">
+          {{ partidoMesa?.cronometrista || '— Asignar cronometrista —' }}
+        </button>
+      </div>
     </ModalBase>
 
     <ModalBase
@@ -737,6 +786,10 @@ const formPublicar = reactive({
   fecha: ''
 })
 
+const zIndexSelector = computed(() => {
+  return mostrarModalMesa.value ? 1060 : 1040
+})
+
 /* ====================================================
    MARCA DE ESTADO POR COLOR (etiqueta del árbitro)
    Se persiste con la acción editarEtiquetaArbitro.
@@ -853,10 +906,13 @@ const normalizarPartido = (p) => ({
   id_observador: p.id_observador || null,
   delegado: p.delegado || '',
   id_delegado: p.id_delegado || null,
+  planillero: p.planillero || '',
+  id_planillero: p.id_planillero || null,
+  cronometrista: p.cronometrista || '',
+  id_cronometrista: p.id_cronometrista || null,
   _dirty: false,
   _uid: 'u' + (++contadorUid)
 })
-
 const cargarDesignaciones = async () => {
   cargando.value = true
   try {
@@ -995,6 +1051,8 @@ const tituloSelector = computed(() => {
   const versus = `${p.local || '?'} vs ${p.visitante || '?'}`
   if (num === 'observador') return `Observador — ${versus}`
   if (num === 'delegado') return `Delegado técnico — ${versus}`
+  if (num === 'planillero') return `Planillero — ${versus}`
+  if (num === 'cronometrista') return `Cronometrista — ${versus}`
   return `Árbitro ${num} — ${versus}`
 })
 
@@ -1008,6 +1066,12 @@ const asignarArbitro = async (arbitro) => {
   const sel = seleccionArbitro.value
   if (!sel) return
   const p = sel.partido
+
+  // ---- Mesa de control (planillero / cronometrista) ----
+  if (sel.numero === 'planillero' || sel.numero === 'cronometrista') {
+    await asignarMesa(arbitro, sel.numero, p)
+    return
+  }
 
   // ---- Observador / Delegado técnico (acción propia) ----
   if (sel.numero === 'observador' || sel.numero === 'delegado') {
@@ -1069,6 +1133,85 @@ const asignarArbitroLibre = async (texto) => {
         tipo: 'warning'
       })
     }
+  }
+}
+
+/* ====================================================
+   MESA DE CONTROL (planillero / cronometrista)
+   Opcional por partido. Se abre un modal con los dos roles.
+   Cada asignación reutiliza el selector de árbitros y se
+   persiste con la acción editarCronometristaPlanillero.
+   Payload: { idPartido, tipo, idArbitro }.
+   tipo: 'planillero' | 'cronometrista'.
+   ==================================================== */
+const mostrarModalMesa = ref(false)
+const partidoMesa = ref(null)
+
+const abrirModalMesa = (partido) => {
+  partidoMesa.value = partido
+  mostrarModalMesa.value = true
+}
+
+const cerrarModalMesa = () => {
+  mostrarModalMesa.value = false
+  partidoMesa.value = null
+}
+
+const tieneMesa = (p) => !!p.planillero || !!p.cronometrista
+
+const tituloMesa = (p) => {
+  const partes = []
+  if (p.planillero) partes.push('Planillero: ' + p.planillero)
+  if (p.cronometrista) partes.push('Cronometrista: ' + p.cronometrista)
+  return partes.length ? partes.join(' · ') : 'Mesa de control (sin asignar)'
+}
+
+// Abre el selector de árbitros reutilizado, marcando el rol de mesa.
+// No cerramos el modal de mesa: el selector se abre encima.
+const abrirSelectorMesa = (tipo) => {
+  if (!partidoMesa.value) return
+  seleccionArbitro.value = { partido: partidoMesa.value, numero: tipo } // 'planillero' | 'cronometrista'
+  busquedaArbitro.value = ''
+  mostrarSelectorArbitro.value = true
+}
+
+const asignarMesa = async (arbitro, tipo, p) => {
+  const campoNombre = tipo === 'planillero' ? 'planillero' : 'cronometrista'
+  const campoId = tipo === 'planillero' ? 'id_planillero' : 'id_cronometrista'
+
+  const nombreAnterior = p[campoNombre]
+  const idAnterior = p[campoId]
+
+  // Actualización optimista
+  if (!arbitro) {
+    p[campoNombre] = ''
+    p[campoId] = null
+  } else {
+    p[campoNombre] = capitalizarNombre(`${arbitro.apellido} ${arbitro.nombre}`)
+    p[campoId] = arbitro.id
+  }
+
+  setTimeout(() => cerrarSelectorArbitro(), 0)
+
+  try {
+    const resultado = await api.post({
+      entity: 'designaciones',
+      action: 'editarCronometristaPlanillero',
+      payload: {
+        idPartido: p.id,
+        tipo,                            // 'planillero' | 'cronometrista'
+        idArbitro: arbitro ? arbitro.id : null
+      }
+    })
+
+    if (!resultado.ok) {
+      throw new Error((resultado.payload && resultado.payload.mensaje) ? resultado.payload.mensaje : 'Error del servidor')
+    }
+  } catch (err) {
+    console.error('Error al editar planillero/cronometrista:', err)
+    p[campoNombre] = nombreAnterior
+    p[campoId] = idAnterior
+    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la mesa de control.', tipo: 'danger' })
   }
 }
 
@@ -1740,5 +1883,31 @@ onMounted(async () => {
 
 .muestra-none {
   background: repeating-linear-gradient(45deg, #f1f3f5, #f1f3f5 4px, #fff 4px, #fff 8px);
+}
+
+/* ====================================================
+   BOTÓN MESA DE CONTROL (planillero / cronometrista)
+   ==================================================== */
+.btn-mesa {
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: #fff;
+  color: #adb5bd;
+  padding: 3px 6px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.btn-mesa:hover {
+  background: #f8f9fa;
+  color: #6c757d;
+}
+
+/* Cuando el partido ya tiene planillero o cronometrista */
+.btn-mesa.con-mesa {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #dc2626;
 }
 </style>

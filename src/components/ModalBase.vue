@@ -6,7 +6,7 @@
       v-if="show"
       class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center p-3 modal-overlay-custom animate__animated animate__fadeIn animate__faster"
       :style="{ zIndex: zIndex }"
-      @click.self="cerrar"
+      @mousedown.self="cerrar"
     >
 
       <!-- CONTENEDOR MODAL: rounded-4 (16px) y max-height para que no desborde la pantalla -->
@@ -76,17 +76,21 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
-
 const modalRef = ref(null);
-
+const modalId = Symbol('modal')
 const cerrar = () => emit('close');
 
 
-// ESC
+// ESC — solo cierra el modal que está más arriba en la pila
 const handleKeydown = (e) => {
-  if (e.key === 'Escape' && props.show) cerrar();
-};
-
+  if (e.key !== 'Escape' || !props.show) return
+  // Solo responde el modal de arriba de todo (el último abierto)
+  if (window.__modalStack && window.__modalStack.length > 0) {
+    const topId = window.__modalStack[window.__modalStack.length - 1]
+    if (topId !== modalId) return
+  }
+  cerrar()
+}
 // FOCUS TRAP
 const handleTab = (e) => {
   if (!props.show || e.key !== 'Tab') return;
@@ -113,50 +117,55 @@ const handleTab = (e) => {
 // Observador unificado con contador de modales abiertos
 watch(() => props.show, async (val) => {
   if (val) {
-    // Sumamos 1 al contador de modales
-    let modalCount = parseInt(document.body.dataset.modalCount || '0') + 1;
-    document.body.dataset.modalCount = modalCount;
+    // Registramos este modal como el de arriba de la pila
+    if (!window.__modalStack) window.__modalStack = []
+    window.__modalStack.push(modalId)
 
-    // Bloqueamos el scroll
-    document.body.style.overflow = 'hidden';
+    let modalCount = parseInt(document.body.dataset.modalCount || '0') + 1
+    document.body.dataset.modalCount = modalCount
+    document.body.style.overflow = 'hidden'
 
-    // Enfocamos el modal
-    await nextTick();
-    modalRef.value?.focus();
+    await nextTick()
+    modalRef.value?.focus()
   } else {
-    // Restamos 1 al contador
-    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1;
-    if (modalCount < 0) modalCount = 0;
-    document.body.dataset.modalCount = modalCount;
+    // Lo sacamos de la pila
+    if (window.__modalStack) {
+      window.__modalStack = window.__modalStack.filter(id => id !== modalId)
+    }
 
-    // SOLO restauramos el scroll si ya no queda NINGÚN modal abierto
+    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1
+    if (modalCount < 0) modalCount = 0
+    document.body.dataset.modalCount = modalCount
+
     if (modalCount === 0) {
-      document.body.style.overflow = '';
+      document.body.style.overflow = ''
     }
   }
-});
+})
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
   window.addEventListener('keydown', handleTab);
 });
-
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown);
-  window.removeEventListener('keydown', handleTab);
+  window.removeEventListener('keydown', handleKeydown)
+  window.removeEventListener('keydown', handleTab)
 
-  // Por seguridad, si el componente se destruye mientras estaba abierto, limpiamos su cuenta
   if (props.show) {
-    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1;
-    if (modalCount < 0) modalCount = 0;
-    document.body.dataset.modalCount = modalCount;
+    // Sacar de la pila si se destruye abierto
+    if (window.__modalStack) {
+      window.__modalStack = window.__modalStack.filter(id => id !== modalId)
+    }
+
+    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1
+    if (modalCount < 0) modalCount = 0
+    document.body.dataset.modalCount = modalCount
 
     if (modalCount === 0) {
-      document.body.style.overflow = '';
+      document.body.style.overflow = ''
     }
   }
-});
-
+})
 
 // Estilos computados
 const modalStyle = computed(() => ({
