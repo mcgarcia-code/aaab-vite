@@ -1,4 +1,4 @@
-﻿name: Deploy Vue 3 to cPanel
+name: Deploy Vue 3 to cPanel
 
 on:
   push:
