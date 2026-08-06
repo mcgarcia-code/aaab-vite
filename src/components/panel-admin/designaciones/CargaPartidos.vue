@@ -788,13 +788,13 @@ const asignarColor = async (valor) => {
       entity: 'designaciones',
       action: 'editarEtiquetaArbitro',
       payload: {
-        id: p.id,
+        idPartido: p.id,
         numero,
         etiqueta: valor
       }
     })
 
-    if (!(resultado.ok && resultado.payload && resultado.payload.success)) {
+    if (!resultado.ok) {
       throw new Error((resultado.payload && resultado.payload.mensaje) ? resultado.payload.mensaje : 'Error del servidor')
     }
   } catch (err) {
@@ -822,12 +822,12 @@ const toggleSuspendido = async (p, event) => {
       entity: 'designaciones',
       action: 'marcarPartidoSuspendido',
       payload: {
-        id: p.id,
+        idPartido: p.id,
         suspendido: nuevoValor
       }
     })
 
-    if (!(resultado.ok && resultado.payload && resultado.payload.success)) {
+    if (!resultado.ok) {
       throw new Error((resultado.payload && resultado.payload.mensaje) ? resultado.payload.mensaje : 'Error del servidor')
     }
   } catch (err) {
@@ -1103,13 +1103,13 @@ const asignarObservadorDelegado = async (arbitro, tipo, p) => {
       entity: 'designaciones',
       action: 'editarObservadorDelegado',
       payload: {
-        id: p.id,
+        idPartido: p.id,
         tipo,                        // 'observador' | 'delegado'
-        id_arbitro: arbitro ? arbitro.id : null
+        idArbitro: arbitro ? arbitro.id : null
       }
     })
 
-    if (!(resultado.ok && resultado.payload && resultado.payload.success)) {
+    if (!resultado.ok) {
       throw new Error((resultado.payload && resultado.payload.mensaje) ? resultado.payload.mensaje : 'Error del servidor')
     }
   } catch (err) {
