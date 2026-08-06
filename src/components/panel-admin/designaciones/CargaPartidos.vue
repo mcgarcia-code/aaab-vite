@@ -1511,7 +1511,7 @@ const publicarDesignaciones = async () => {
       }
     })
 
-    if (res.ok && res.payload && res.payload.success) {
+    if (res.ok) {
       notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Las designaciones se publicaron en la web y en el panel de los árbitros.', tipo: 'success' })
       mostrarModalPublicar.value = false
       formPublicar.torneo = ''
