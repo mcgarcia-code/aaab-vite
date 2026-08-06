@@ -576,7 +576,23 @@
 
       <div v-else class="alert alert-info small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-info-circle-fill"></i>
-        <span>Se publicarán los <strong>{{ designaciones.length }}</strong> partidos como una <strong>publicación nueva</strong>: se genera el PDF para la web pública y cada árbitro verá sus partidos en su panel.</span>
+        <span>Se publicarán los <strong>{{ cantidadPartidosAPublicar }}</strong> partidos de las fechas tildadas como una <strong>publicación nueva</strong>: se genera el PDF para la web pública y cada árbitro verá sus partidos en su panel.</span>
+      </div>
+
+      <div v-if="modoPublicacion === 'publicar'" class="mb-3">
+        <label class="form-label small fw-bold">Fechas a publicar</label>
+        <div class="d-flex flex-column gap-1 border rounded p-2">
+          <label v-for="f in fechas" :key="f.fecha" class="d-flex align-items-center gap-2 small mb-0" style="cursor:pointer;">
+            <input
+              type="checkbox"
+              class="form-check-input m-0 flex-shrink-0"
+              :checked="fechasSeleccionadas.includes(f.fecha)"
+              @change="toggleFechaSeleccionada(f.fecha)"
+            >
+            <span>{{ etiquetaDia(f.fecha) }}</span>
+            <span class="badge bg-light text-dark border ms-auto">{{ f.cantidad }}</span>
+          </label>
+        </div>
       </div>
 
       <div v-if="hayCambios" class="alert alert-primary small py-2 px-3 d-flex align-items-center gap-2">
@@ -620,7 +636,7 @@
         <button
           @click="publicarDesignaciones"
           class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
-          :disabled="publicando"
+          :disabled="publicando || (modoPublicacion === 'publicar' && fechasSeleccionadas.length === 0)"
         >
           <span v-if="publicando" class="spinner-border spinner-border-sm me-2"></span>
           <template v-if="publicando">{{ modoPublicacion === 'actualizar' ? 'Actualizando...' : 'Publicando...' }}</template>
@@ -786,6 +802,19 @@ const formPublicar = reactive({
   fecha: ''
 })
 
+// Fechas tildadas en el modal de Publicar: solo se publican los partidos de esas fechas
+const fechasSeleccionadas = ref([])
+
+const toggleFechaSeleccionada = (fecha) => {
+  const i = fechasSeleccionadas.value.indexOf(fecha)
+  if (i === -1) fechasSeleccionadas.value.push(fecha)
+  else fechasSeleccionadas.value.splice(i, 1)
+}
+
+const cantidadPartidosAPublicar = computed(() =>
+  designaciones.value.filter(p => fechasSeleccionadas.value.includes(claveFecha(p))).length
+)
+
 const zIndexSelector = computed(() => {
   return mostrarModalMesa.value ? 1060 : 1040
 })
@@ -950,10 +979,12 @@ const semanaSiguiente = async () => {
 /* ====================================================
    FECHAS (PESTAÑAS POR DIA)
    ==================================================== */
+const claveFecha = (p) => String(p.fecha || '').trim() || 'Sin fecha'
+
 const fechas = computed(() => {
   const mapa = {}
   designaciones.value.forEach(p => {
-    const f = String(p.fecha || '').trim() || 'Sin fecha'
+    const f = claveFecha(p)
     mapa[f] = (mapa[f] || 0) + 1
   })
 
@@ -1428,6 +1459,9 @@ const confirmarCargaExcel = async () => {
 const abrirModalPublicar = async (modo) => {
   modoPublicacion.value = modo
 
+  // Al publicar, arrancamos con todas las fechas tildadas (el usuario puede destildar)
+  fechasSeleccionadas.value = modo === 'publicar' ? fechas.value.map(f => f.fecha) : []
+
   // Al actualizar, precargamos torneo y fecha de la última publicación
   if (modo === 'actualizar') {
     try {
@@ -1454,6 +1488,11 @@ const publicarDesignaciones = async () => {
     return
   }
 
+  if (modoPublicacion.value === 'publicar' && fechasSeleccionadas.value.length === 0) {
+    notificar({ titulo: 'Atención', mensaje: 'Tildá al menos una fecha para publicar.', tipo: 'warning' })
+    return
+  }
+
   publicando.value = true
   try {
     if (hayCambios.value) {
@@ -1467,7 +1506,8 @@ const publicarDesignaciones = async () => {
       payload: {
         torneo: formPublicar.torneo,
         fecha: formPublicar.fecha,
-        modo: modoPublicacion.value
+        modo: modoPublicacion.value,
+        fechas: fechasSeleccionadas.value
       }
     })
 

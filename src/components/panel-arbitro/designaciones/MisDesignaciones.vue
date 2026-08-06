@@ -218,7 +218,7 @@ const cargarMisDesignaciones = async () => {
   try {
     const res = await api.get({
       entity: 'designaciones',
-      action: 'obtenerMisDesignaciones'
+      action: 'obtenerDesignacionesArbitro'
     })
     if ((res.ok || res.success) && res.payload) {
       partidos.value = res.payload
