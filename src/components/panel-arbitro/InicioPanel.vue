@@ -2,7 +2,6 @@
   <div class="container-fluid py-4 animate__animated animate__fadeIn">
 
     <!-- ============ CHIP CONTEXTUAL ============ -->
-    <!-- DESCOMENTAR PARA ACTIVAR: header con la próxima designación (probar cuando haya una designación cargada) -->
     <!--
     <div v-if="proximaDesignacion" class="chips-contextuales mb-4">
       <RouterLink
