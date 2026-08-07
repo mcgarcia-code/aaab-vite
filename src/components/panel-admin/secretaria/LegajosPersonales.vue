@@ -615,7 +615,7 @@
 <script setup>
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import selLocalidad from '@/components/select/selLocalidad.vue'
 import selProvincia from '@/components/select/selProvincia.vue'
@@ -964,9 +964,21 @@ const columnasExcel = ref([
   { id: 'juega_handball', label: 'Juega', visible: false }, { id: 'donde_juega', label: 'Club', visible: false }, { id: 'categoria_handball', label: 'Cat. Juega', visible: false }, { id: 'observaciones', label: 'Observaciones', visible: false },
 ])
 
-const ejecutarDescargaExcel = () => {
+const ejecutarDescargaExcel = async () => {
   const cols = columnasExcel.value.filter(c => c.visible)
-  const datos = arbitrosFiltrados.value.map(a => {
+
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Arbitros')
+
+  // Definir columnas (header = label, key = id)
+  ws.columns = cols.map(col => ({
+    header: col.label,
+    key: col.id,
+    width: 18
+  }))
+
+  // Agregar filas
+  arbitrosFiltrados.value.forEach(a => {
     const fila = {}
     cols.forEach(col => {
       let valor = a[col.id]
@@ -974,14 +986,26 @@ const ejecutarDescargaExcel = () => {
       else if (col.id === 'es_activo') valor = valor == 1 ? 'SI' : 'NO'
       else if (col.id === 'apto_medico') valor = valor ? 'SI' : 'NO'
       else if (col.id === 'fecha_nacimiento') valor = mostrarFechaArg(valor)
-      fila[col.label] = valor || ''
+      fila[col.id] = valor || ''
     })
-    return fila
+    ws.addRow(fila)
   })
-  const ws = XLSX.utils.json_to_sheet(datos)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Arbitros')
-  XLSX.writeFile(wb, 'Reporte_AAAB.xlsx')
+
+  // Estilo opcional del header
+  ws.getRow(1).font = { bold: true }
+
+  // Generar y descargar el archivo
+  const buffer = await wb.xlsx.writeBuffer()
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Reporte_AAAB.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
+
   mostrarModalExcel.value = false
 }
 

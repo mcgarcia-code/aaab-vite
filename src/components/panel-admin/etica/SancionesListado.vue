@@ -475,7 +475,7 @@
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
@@ -790,7 +790,7 @@ const cerrarSancionDesdeDescargo = () => {
   editarSancion(sancionActiva.value);
 };
 
-const exportarExcel = () => {
+const exportarExcel = async () => {
   const data = sancionesFiltradas.value.map(s => ({
     ID: s.id,
     Árbitro: s.arbitro,
@@ -801,10 +801,24 @@ const exportarExcel = () => {
     Estado: obtenerTextoEstado(s.estado_dinamico)
   }))
 
-  const ws = XLSX.utils.json_to_sheet(data)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, "Sanciones")
-  XLSX.writeFile(wb, "Sanciones_AAAB.xlsx")
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Sanciones')
+
+  const claves = Object.keys(data[0] || {})
+  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 18 }))
+  data.forEach(fila => ws.addRow(fila))
+  if (claves.length) ws.getRow(1).font = { bold: true }
+
+  const buffer = await wb.xlsx.writeBuffer()
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Sanciones_AAAB.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
 }
 
 const limpiarFiltros = () => {

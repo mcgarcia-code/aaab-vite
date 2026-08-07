@@ -1,8 +1,8 @@
 <template>
   <div class="container-fluid py-4 animate__animated animate__fadeIn">
-
+    <div class="row g-3 g-md-4">
+      <div class="col-12 col-lg-8 col-xl-9 order-2 order-lg-1">
     <!-- ============ CHIP CONTEXTUAL ============ -->
-    <!-- DESCOMENTAR PARA ACTIVAR: header con la próxima designación (probar cuando haya una designación cargada) -->
     <div v-if="proximaDesignacion" class="chips-contextuales mb-4">
       <RouterLink
         to="/panel-arbitro/designaciones"
@@ -16,13 +16,7 @@
         </div>
       </RouterLink>
     </div>
-
-
-    <div class="row g-3 g-md-4">
-
       <!-- ============ MODULOS CATEGORIZADOS ============ -->
-      <div class="col-12 col-lg-8 col-xl-9 order-2 order-lg-1">
-
         <div v-for="grupo in gruposConItems" :key="grupo.categoria" class="mb-4">
           <div class="categoria-label">
             <i :class="grupo.icono"></i>
@@ -318,18 +312,17 @@ onMounted(() => {
 <style scoped>
 /* ============ CHIP CONTEXTUAL ============ */
 .chips-contextuales {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: block;
 }
 
 .chip-contextual {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 14px;
   padding: 12px 18px;
   border-radius: 14px;
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .chip-designacion {

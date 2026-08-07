@@ -206,7 +206,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, reactive, inject, watch } from 'vue';
 import { api } from '@/api/api';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
 
@@ -444,7 +444,7 @@ const obtenerImagen = (item) => {
   return primeraFoto ? item.folder_imagenes + encodeURIComponent(primeraFoto) : "https://placehold.co/400x400?text=Indumentaria";
 };
 
-const exportarExcel = () => {
+const exportarExcel = async () => {
   const data = stockFiltrado.value.map(item => {
     let row = { 'ID Item': item.id_item, 'Modelo': item.descripcion, 'Precio Referencia': `$${item.precio_general}` };
     tallesEstandar.forEach(talle => {
@@ -454,10 +454,24 @@ const exportarExcel = () => {
     return row;
   });
 
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Inventario");
-  XLSX.writeFile(wb, "Inventario_Indumentaria.xlsx");
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Inventario');
+
+  const claves = Object.keys(data[0] || {});
+  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 16 }));
+  data.forEach(fila => ws.addRow(fila));
+  if (claves.length) ws.getRow(1).font = { bold: true };
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'Inventario_Indumentaria.xlsx';
+  link.click();
+  URL.revokeObjectURL(url);
 };
 
 onMounted(() => {

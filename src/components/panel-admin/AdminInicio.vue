@@ -1,116 +1,159 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <!-- Margen responsivo: mb-4 en móvil, mb-5 en PC -->
+    <!-- CABECERA -->
     <div class="dashboard-header mb-4 mb-md-5 mt-4 text-center text-md-start">
       <h3 class="text-white fw-bold mb-1 fs-4 fs-md-3" style="letter-spacing: -0.5px;">¡Bienvenido al Panel de Gestión!</h3>
       <p class="text-white opacity-75 m-0 small">Seleccioná un módulo para gestionar la AAAB</p>
     </div>
 
-    <div class="row g-3 g-md-4">
-      <div class="col-12 col-sm-6 col-lg-4" v-for="item in filteredMenu" :key="item.title">
-        <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
+    <!-- CATEGORIAS -->
+    <div v-for="grupo in gruposConItems" :key="grupo.categoria" class="mb-4 mb-md-5">
+      <div class="categoria-label">
+        <i :class="grupo.icono"></i>
+        <span>{{ grupo.categoria }}</span>
+      </div>
 
-          <!-- Manejamos padding (p-4 p-md-3) y flexbox nativamente -->
-          <div class="modern-card d-flex align-items-center gap-3 p-4 p-md-3 w-100 h-100 bg-white shadow-sm">
+      <div class="row g-3 g-md-4">
+        <div class="col-12 col-sm-6 col-lg-4" v-for="item in grupo.items" :key="item.title">
+          <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
+            <div class="modern-card d-flex align-items-center gap-3 p-4 p-md-3 w-100 h-100 bg-white shadow-sm">
 
-            <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
-              <i :class="item.icon"></i>
+              <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
+                <i :class="item.icon"></i>
+              </div>
+
+              <div class="flex-grow-1">
+                <h5 class="m-0 fw-bold text-dark fs-6">{{ item.title }}</h5>
+                <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.85rem;">{{ item.desc }}</p>
+              </div>
+
+              <div class="card-arrow text-secondary fs-5">
+                <i class="bi bi-chevron-right"></i>
+              </div>
+
             </div>
-
-            <div class="flex-grow-1">
-              <h5 class="m-0 fw-bold text-dark fs-6">{{ item.title }}</h5>
-              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.85rem;">{{ item.desc }}</p>
-            </div>
-
-            <div class="card-arrow text-secondary fs-5">
-              <i class="bi bi-chevron-right"></i>
-            </div>
-
-          </div>
-
-        </RouterLink>
+          </RouterLink>
+        </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { auth } from '@/api/auth';
-import { computed } from 'vue';
-import { RouterLink } from 'vue-router';
-import { useHead } from '@vueuse/head';
+import { auth } from '@/api/auth'
+import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
+import { useHead } from '@vueuse/head'
 
-const user = auth.getUser();
-const userRole = user ? user.rol : null;
+const user = auth.getUser()
+const userRole = user ? user.rol : null
 
 useHead({
   title: 'Panel de Gestión | AAAB',
-});
+})
 
-const menuItems = [
+// ====================================================
+// CATEGORIAS (cada una con sus roles y sub-tarjetas)
+// ====================================================
+const categorias = [
   {
-    to: '/panel-admin/secretaria',
-    title: 'Secretaría',
-    icon: 'bi bi-pc-display-horizontal',
-    desc: 'Datos personales y licencias.',
-    rolesPermitidos: ['admin', 'etica', 'secretario', 'designador', 'coordinador general']
-  },
-  {
-    to: '/panel-admin/tribunal',
-    title: 'Tribunal de Ética',
-    icon: 'bi bi-shield-exclamation',
-    desc: 'Sanciones y resoluciones.',
-    rolesPermitidos: ['admin', 'etica', 'secretario', 'designador']
-  },
-  {
-    to: '/panel-admin/tesoreria',
-    title: 'Tesorería',
-    icon: 'bi bi-cash-stack',
-    desc: 'Contabilidad y stock de ropa.',
-    rolesPermitidos: ['admin', 'tesorero','secretario', 'designador']
+    categoria: 'Secretaría General',
+    icono: 'bi bi-pc-display-horizontal',
+    rolesPermitidos: ['admin', 'etica', 'secretario', 'designador', 'coordinador general'],
+    items: [
+      { to: '/panel-admin/secretaria/modificacion-datos', title: 'Legajos', icon: 'bi bi-people', desc: 'Actualizar información personal y disponibilidad de los árbitros.' },
+      { to: '/panel-admin/secretaria/licencias', title: 'Licencias', icon: 'bi bi-calendar-date-fill', desc: 'Gestionar las licencias y permisos de inasistencia.' },
+      { to: '/panel-admin/secretaria/eventos-notificaciones', title: 'Eventos', icon: 'bi bi-bell', desc: 'Gestionar avisos, reuniones y noticias para los árbitros.' },
+      { to: '/panel-admin/secretaria/grupos', title: 'Grupos', icon: 'bi bi-people-fill', desc: 'Administrar grupos de árbitros' }
+    ]
   },
   {
-    to: '/panel-admin/designaciones',
-    title: 'Designaciones',
-    icon: 'bi bi-calendar4-week',
-    desc: 'Disponibilidad, licencias y partidos',
-    rolesPermitidos: ['admin', 'designador', 'secretario']
+    categoria: 'Tribunal de Ética',
+    icono: 'bi bi-shield-exclamation',
+    rolesPermitidos: ['admin', 'etica', 'secretario', 'designador'],
+    items: [
+      { to: '/panel-admin/tribunal/sanciones', title: 'Listado de Sanciones', icon: 'bi bi-journal-text', desc: 'Consultar, editar o dar de baja sanciones vigentes e históricas.' },
+      { to: '/panel-admin/tribunal/cargar-sancion', title: 'Cargar Sanción', icon: 'bi bi-shield-plus', desc: 'Registrar una nueva resolución disciplinaria en el legajo del árbitro.' }
+    ]
   },
   {
-    to: '/panel-admin/desarrollo-arbitral',
-    title: 'Desarrollo Arbitral',
-    icon: 'bi bi-person-workspace',
-    desc: 'Reuniones mensuales y evaluaciones.',
-    rolesPermitidos: ['admin', 'coordinador general', 'secretario', 'designador']
+    categoria: 'Designaciones Arbitrales',
+    icono: 'bi bi-calendar4-week',
+    rolesPermitidos: ['admin', 'designador', 'secretario'],
+    items: [
+      { to: '/panel-admin/designaciones/disponibilidad-licencias', title: 'Disponibilidad y Licencias', icon: 'bi bi-calendar-date-fill', desc: 'Chequear disponibilidad y licencias de árbitros.' },
+      { to: '/panel-admin/designaciones/partidos', title: 'Carga y visualización de partidos', icon: 'bi bi-clipboard2-data-fill', desc: 'Visualizar partidos asignados y pendientes.' }
+    ]
   },
-    {
-    to: '/panel-admin/facturacion',
-    title: 'Facturación',
-    icon: 'bi bi-receipt',
-    desc: 'Administrar datos fiscales y entidades vinculadas',
-    rolesPermitidos: ['admin', 'secretario', 'facturacion', 'tesorero']
+  {
+    categoria: 'Tesorería',
+    icono: 'bi bi-cash-stack',
+    rolesPermitidos: ['admin', 'tesorero', 'secretario', 'designador'],
+    items: [
+      { to: '/panel-admin/tesoreria/datos-personales', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Consultar y gestionar información de los miembros.' },
+      { to: '/panel-admin/tesoreria/aportes-pagos', title: 'Aportes y Pagos', icon: 'bi bi-cash-coin', desc: 'Registrar cobros de cuotas y aportes mensuales.' },
+      { to: '/panel-admin/tesoreria/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-check', desc: 'Control de inventario, talles y entrega de pedidos.' }
+    ]
   },
-    {
-    to: '/panel-admin/curso-arbitros',
-    title: 'Curso de Árbitros',
-    icon: 'bi bi-file-person-fill',
-    desc: 'Gestionar el curso de árbitros, inscripciones y seguimiento del progreso.',
-    rolesPermitidos: ['admin', 'secretario', 'curso']
+  {
+    categoria: 'Coordinador de Desarrollo Arbitral',
+    icono: 'bi bi-person-workspace',
+    rolesPermitidos: ['admin', 'coordinador general', 'secretario', 'designador'],
+    items: [
+      { to: '/panel-admin/desarrollo-arbitral/observaciones', title: 'Observaciones realizadas', icon: 'bi bi-clipboard-data-fill', desc: 'Registro y seguimiento de las observaciones arbitrales.' },
+      { to: '/panel-admin/desarrollo-arbitral/reuniones-mensuales', title: 'Reuniones Mensuales', icon: 'bi bi-calendar-event', desc: 'Registro de presentes y ausentes en reuniones mensuales.' },
+      { to: '/panel-admin/desarrollo-arbitral/resumen-arbitros', title: 'Planilla General de Árbitros', icon: 'bi bi-graph-up-arrow', desc: 'Administración de exámenes teóricos/físicos.' },
+      { to: '/panel-admin/desarrollo-arbitral/habilitacion-examenes-asamblea', title: 'Habilitación de Exámenes — Asamblea', icon: 'bi bi-shield-check', desc: 'Elegí qué grupos quedan habilitados para rendir el examen teórico.' }
+    ]
   },
+  {
+    categoria: 'Curso de Árbitros',
+    icono: 'bi bi-file-person-fill',
+    rolesPermitidos: ['admin', 'secretario', 'curso'],
+    items: [
+      { to: '/panel-admin/curso-arbitros/legajos-curso', title: 'Legajos', icon: 'bi bi-person-lines-fill', desc: 'Consultar y gestionar información de los miembros.' },
+      { to: '/panel-admin/curso-arbitros/observaciones-curso', title: 'Observaciones Realizadas', icon: 'bi bi-clipboard-data-fill', desc: 'Registro y seguimiento de las observaciones arbitrales.' },
+      { to: '/panel-admin/curso-arbitros/examenes-curso', title: 'Exámenes', icon: 'bi bi-journal-check', desc: 'Gestionar exámenes y resultados del curso.' }
+    ]
+  },
+  {
+    categoria: 'Herramientas',
+    icono: 'bi bi-tools',
+    rolesPermitidos: ['admin', 'secretario', 'facturacion', 'tesorero'],
+    items: [
+      { to: '/panel-admin/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Administrar datos fiscales y entidades vinculadas.' }
+    ]
+  }
+]
 
-];
-
-const filteredMenu = computed(() => {
-  return menuItems.filter(item => {
-    if (userRole === 'admin') return true;
-    return item.rolesPermitidos && item.rolesPermitidos.includes(userRole);
-  });
-});
+const gruposConItems = computed(() => {
+  return categorias.filter(cat => {
+    if (userRole === 'admin') return true
+    return cat.rolesPermitidos && cat.rolesPermitidos.includes(userRole)
+  })
+})
 </script>
 
 <style scoped>
-/* Tarjeta Moderna Horizontal */
+/* ============ CATEGORIAS ============ */
+.categoria-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+.categoria-label i { font-size: 1rem; color: #f87171; }
+
+/* ============ TARJETA MODERNA HORIZONTAL ============ */
 .modern-card {
   border: 1px solid #f1f5f9;
   border-radius: 16px;
@@ -118,23 +161,20 @@ const filteredMenu = computed(() => {
   cursor: pointer;
 }
 
-/* Caja de Icono (Tamaño responsivo automático con clamp) */
 .icon-box {
   width: clamp(48px, 10vw, 56px);
   height: clamp(48px, 10vw, 56px);
   background: #fef2f2;
-  color: #dc2626; /* Rojo AAAB */
+  color: #dc2626;
   border-radius: 16px;
   font-size: clamp(1.2rem, 3vw, 1.5rem);
   transition: all 0.3s ease;
 }
 
-/* Flecha derecha */
 .card-arrow {
   transition: all 0.3s ease;
 }
 
-/* --- EFECTOS INTERACTIVOS (HOVER) --- */
 .modern-card:hover {
   border-color: #f87171;
   transform: translateY(-5px);
@@ -152,5 +192,4 @@ const filteredMenu = computed(() => {
 }
 
 .animate__animated { animation-duration: 0.5s; }
-
 </style>

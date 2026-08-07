@@ -484,7 +484,7 @@
 <script setup>
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
 import { api } from '@/api/api';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
 
@@ -735,8 +735,7 @@ const obtenerClaseEstado = (estado) => {
     default: return 'estado-creado';
   }
 };
-
-const exportarExcel = () => {
+const exportarExcel = async () => {
   if (observacionesFiltradas.value.length === 0) {
     notificar({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' }); return;
   }
@@ -744,10 +743,25 @@ const exportarExcel = () => {
     'ID': o.id, 'Fecha': o.fecha, 'Observador': o.observador, 'Árbitros': o.arbitros, 'Grupo': o.grupo,
     'Subgrupo': o.subgrupo, 'Categoría': o.categoria, 'Partido': o.partido, 'Puntaje (Calc)': o.puntaje_calculado, 'Estado': o.estado.toUpperCase()
   }));
-  const ws = XLSX.utils.json_to_sheet(datosExportar);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Observaciones");
-  XLSX.writeFile(wb, "Reporte_Observaciones.xlsx");
+
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Observaciones');
+
+  const claves = Object.keys(datosExportar[0] || {});
+  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 18 }));
+  datosExportar.forEach(fila => ws.addRow(fila));
+  if (claves.length) ws.getRow(1).font = { bold: true };
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'Reporte_Observaciones.xlsx';
+  link.click();
+  URL.revokeObjectURL(url);
 };
 
 // Inicialización

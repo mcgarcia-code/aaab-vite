@@ -263,7 +263,7 @@
 <script setup>
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
@@ -376,8 +376,7 @@ const limpiarFiltros = () => {
 }
 
 const normalizarTexto = (valor) => String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-
-const exportarExcel = () => {
+const exportarExcel = async () => {
   const datos = institucionesFiltradas.value.map(i => ({
     ID: i.id,
     Club: i.club,
@@ -386,10 +385,25 @@ const exportarExcel = () => {
     Email: i.email,
     Celular: i.celular
   }))
-  const ws = XLSX.utils.json_to_sheet(datos)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Instituciones')
-  XLSX.writeFile(wb, 'Listado_Instituciones_AAAB.xlsx')
+
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Instituciones')
+
+  const claves = Object.keys(datos[0] || {})
+  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 18 }))
+  datos.forEach(fila => ws.addRow(fila))
+  if (claves.length) ws.getRow(1).font = { bold: true }
+
+  const buffer = await wb.xlsx.writeBuffer()
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Listado_Instituciones_AAAB.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
 }
 
 const institucionesFiltradas = computed(() => {
