@@ -81,7 +81,7 @@ const categorias = [
   {
     categoria: 'Designaciones Arbitrales',
     icono: 'bi bi-calendar4-week',
-    rolesPermitidos: ['admin', 'designador', 'secretario'],
+    rolesPermitidos: ['admin', 'designador', 'secretario','coordinador general'],
     items: [
       { to: '/panel-admin/designaciones/disponibilidad-licencias', title: 'Disponibilidad y Licencias', icon: 'bi bi-calendar-date-fill', desc: 'Chequear disponibilidad y licencias de árbitros.' },
       { to: '/panel-admin/designaciones/partidos', title: 'Carga y visualización de partidos', icon: 'bi bi-clipboard2-data-fill', desc: 'Visualizar partidos asignados y pendientes.' }
