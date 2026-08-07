@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { api } from '@/api/api'
-import { descargarExamenPdf } from '@/api/descargarExamenPdf'
 import ExamenAsambleaRunner from './ExamenAsambleaRunner.vue'
 
 // Estado de la habilitación actual:
@@ -65,7 +64,11 @@ async function descargarPdf(idEvento) {
   descargando.value = { ...descargando.value, [idEvento]: true }
   errorPdf.value = ''
   try {
-    await descargarExamenPdf(idEvento)
+    await api.getFile({
+      entity: 'examen_online',
+      action: 'descargarPdfExamen',
+      payload: { idEvento }
+    }, 'examen_asamblea.pdf')
   } catch (e) {
     errorPdf.value = e?.message || 'No se pudo descargar el PDF'
   } finally {

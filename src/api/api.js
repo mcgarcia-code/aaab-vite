@@ -67,8 +67,37 @@ async function request(metodo, datos = {}, tipoPost = 'json') {
   return respuesta.json()
 }
 
+// Descarga un archivo (PDF, Excel, etc.) devuelto por el backend y dispara
+// la descarga en el navegador. El backend responde el archivo directamente,
+// o un JSON de error (exitScript) si algo falló: lo distinguimos por el
+// content-type para no terminar bajando un archivo roto.
+async function descargarArchivo(datos = {}, nombreArchivo = 'archivo') {
+  const respuesta = await fetch(BASE_URL, obtenerConfigJson(datos))
+
+  const tipo = respuesta.headers.get('content-type') || ''
+  if (!respuesta.ok || tipo.includes('application/json')) {
+    let mensaje = 'No se pudo descargar el archivo'
+    try {
+      const error = await respuesta.json()
+      mensaje = error.message || mensaje
+    } catch { /* noop */ }
+    throw new Error(mensaje)
+  }
+
+  const blob = await respuesta.blob()
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = nombreArchivo
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  window.URL.revokeObjectURL(url)
+}
+
 export const api = {
   get: (params = {}) => request('GET', params),
   post: (data = {}) => request('POST', data, 'json'),
   postFile: (data = {}) => request('POST', data, 'archivo'),
+  getFile: (data = {}, nombreArchivo) => descargarArchivo(data, nombreArchivo),
 }

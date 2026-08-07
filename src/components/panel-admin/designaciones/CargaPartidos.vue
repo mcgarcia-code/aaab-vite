@@ -45,6 +45,17 @@
               <span class="material-icons fs-6">cloud_upload</span>
               <span class="fw-bold d-none d-md-inline small">Publicar</span>
             </button>
+
+            <button
+              @click="descargarPdfDesignaciones"
+              class="btn btn-dark shadow-sm py-2 d-flex align-items-center gap-2 text-white"
+              :disabled="designaciones.length === 0 || descargandoPdf"
+              title="Descarga el PDF de las designaciones"
+            >
+              <span v-if="descargandoPdf" class="spinner-border spinner-border-sm"></span>
+              <span v-else class="material-icons fs-6">picture_as_pdf</span>
+              <span class="fw-bold d-none d-md-inline small">Descargar PDF</span>
+            </button>
           </div>
         </div>
 
@@ -1495,10 +1506,10 @@ const publicarDesignaciones = async () => {
 
   publicando.value = true
   try {
-    if (hayCambios.value) {
+    //if (hayCambios.value) {
       const guardado = await ejecutarGuardado()
       if (!guardado) return
-    }
+    //}
 
     const res = await api.post({
       entity: 'designaciones',
@@ -1524,6 +1535,26 @@ const publicarDesignaciones = async () => {
     notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al publicar las designaciones.', tipo: 'danger' })
   } finally {
     publicando.value = false
+  }
+}
+
+const descargandoPdf = ref(false)
+
+const descargarPdfDesignaciones = async () => {
+  descargandoPdf.value = true
+  try {
+    await api.getFile({
+      entity: 'designaciones',
+      action: 'descargarPdfDesignaciones',
+      payload: {
+        semanaAtras: semanaAtras.value
+      }
+    }, 'designaciones.pdf')
+  } catch (err) {
+    console.error('Error al descargar el PDF:', err)
+    notificar({ titulo: 'Error', mensaje: err.message || 'No se pudo descargar el PDF.', tipo: 'danger' })
+  } finally {
+    descargandoPdf.value = false
   }
 }
 
