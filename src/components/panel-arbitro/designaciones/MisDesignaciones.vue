@@ -101,10 +101,20 @@
                         title="Ver ubicación en Google Maps"
                       ><i class="bi bi-geo-alt-fill"></i> Ver Mapa</a>
                     </div>
-                    <div v-if="p.funcion == 'arbitro'" class="small d-flex align-items-start gap-1 text-dark">
-                      <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">groups</span>
-                      <span class="text-break"><strong>Pareja:</strong> {{ obtenerPareja(p) }}</span>
-                    </div>
+
+                    <!-- FUNCION ARBITRO -->
+                    <template v-if="p.funcion == 'arbitro'">
+                      <div class="small d-flex align-items-start gap-1 text-dark">
+                        <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">groups</span>
+                        <span class="text-break"><strong>Pareja:</strong> {{ obtenerPareja(p) }}</span>
+                      </div>
+                      <div v-if="p.delegado" class="small d-flex align-items-start gap-1 text-dark mt-1">
+                        <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">person</span>
+                        <span class="text-break"><strong>Delegado Técnico:</strong> {{ p.delegado }}</span>
+                      </div>
+                    </template>
+
+                    <!-- FUNCION DELEGADO -->
                     <template v-if="p.funcion == 'delegado'">
                       <div class="small d-flex align-items-start gap-1 text-dark mb-1">
                         <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">person</span>
@@ -200,10 +210,20 @@
                                 title="Ver ubicación en Google Maps"
                               ><i class="bi bi-geo-alt-fill"></i> Ver Mapa</a>
                             </div>
-                            <div v-if="p.funcion=='arbitro'" class="small d-flex align-items-start gap-1 text-dark">
-                              <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">groups</span>
-                              <span class="text-break"><strong>Pareja:</strong> {{ obtenerPareja(p) }}</span>
-                            </div>
+
+                            <!-- FUNCION ARBITRO -->
+                            <template v-if="p.funcion=='arbitro'">
+                              <div class="small d-flex align-items-start gap-1 text-dark">
+                                <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">groups</span>
+                                <span class="text-break"><strong>Pareja:</strong> {{ obtenerPareja(p) }}</span>
+                              </div>
+                              <div v-if="p.delegado" class="small d-flex align-items-start gap-1 text-dark mt-1">
+                                <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">person</span>
+                                <span class="text-break"><strong>Delegado Técnico:</strong> {{ p.delegado }}</span>
+                              </div>
+                            </template>
+
+                            <!-- FUNCION DELEGADO -->
                             <template v-if="p.funcion=='delegado'">
                               <div class="small d-flex align-items-start gap-1 text-dark mb-1">
                                 <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">person</span>
