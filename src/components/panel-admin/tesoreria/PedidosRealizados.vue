@@ -309,7 +309,7 @@
 <script setup>
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
 import { api } from '@/api/api';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
 
@@ -452,13 +452,13 @@ const obtenerClaseEstado = (estado) => {
   }
 };
 
-const exportarExcel = () => {
+const exportarExcel = async () => {
   if (pedidosFiltrados.value.length === 0) {
     notificar({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' });
     return;
   }
 
-  // --- HOJA 1: RESUMEN PROVEEDOR (FABRICAR) - SE MANTIENE AGRUPADO ---
+  // --- HOJA 1: RESUMEN PROVEEDOR (FABRICAR) ---
   const pedidosAProducir = pedidosFiltrados.value.filter(p =>
     p.estado.toLowerCase() !== 'rechazado' &&
     p.estado.toLowerCase() !== 'cancelado' &&
@@ -466,7 +466,6 @@ const exportarExcel = () => {
   );
 
   const mapaAgrupado = {};
-
   pedidosAProducir.forEach(p => {
     const key = `${p.descripcion}_${p.talle}`;
     if (!mapaAgrupado[key]) {
@@ -479,16 +478,14 @@ const exportarExcel = () => {
     mapaAgrupado[key]['Cantidad a Fabricar'] += Number(p.cantidad_encargada);
   });
 
-  const datosHoja1 = Object.values(mapaAgrupado).sort((a, b) => a['Prenda / Modelo'].localeCompare(b['Prenda / Modelo']));
-  const wsAgrupado = XLSX.utils.json_to_sheet(datosHoja1);
+  const datosHoja1 = Object.values(mapaAgrupado)
+    .sort((a, b) => a['Prenda / Modelo'].localeCompare(b['Prenda / Modelo']));
 
-
-
+  // --- HOJA 2: DETALLE INDIVIDUAL A COBRAR ---
   const pedidosActivosDetalle = pedidosFiltrados.value.filter(p =>
     p.estado.toLowerCase() !== 'rechazado' &&
     p.estado.toLowerCase() !== 'cancelado'
   );
-
 
   const datosHoja2 = pedidosActivosDetalle.map(p => {
     const nombreArbitro = `${p.apellido}, ${p.nombre}`;
@@ -499,23 +496,41 @@ const exportarExcel = () => {
       'Árbitro': nombreArbitro,
       'Detalle del Pedido': `${cantidadTotal}x ${p.descripcion} (Talle: ${p.talle})`,
       'Prendas Totales': cantidadTotal,
-      'Monto Total a Cobrar': `$${montoCalculado}`, // Aquí agregamos el signo pesos solicitado
+      'Monto Total a Cobrar': `$${montoCalculado}`,
       'Estado(s)': p.estado.toUpperCase(),
       'Nro(s) de Pedido': `#${p.id}`,
       'Fecha de Registro': p.fecha_creacion || 'S/F'
     };
   });
 
-  // Ordenamos para que los pedidos del mismo árbitro aparezcan uno debajo del otro
   datosHoja2.sort((a, b) => a['Árbitro'].localeCompare(b['Árbitro']));
-  const wsDetallado = XLSX.utils.json_to_sheet(datosHoja2);
 
   // --- GENERACIÓN DEL ARCHIVO ---
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, wsAgrupado, "Resumen Proveedor (Fabricar)");
-  XLSX.utils.book_append_sheet(wb, wsDetallado, "Detalle Individual a Cobrar");
+  const wb = new ExcelJS.Workbook();
 
-  XLSX.writeFile(wb, "Reporte_Pedidos_AAAB.xlsx");
+  // Helper para cargar un array de objetos en una hoja
+  const cargarHoja = (nombreHoja, datos) => {
+    const ws = wb.addWorksheet(nombreHoja);
+    const claves = Object.keys(datos[0] || {});
+    ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 22 }));
+    datos.forEach(fila => ws.addRow(fila));
+    if (claves.length) ws.getRow(1).font = { bold: true };
+  };
+
+  cargarHoja('Resumen Proveedor (Fabricar)', datosHoja1);
+  cargarHoja('Detalle Individual a Cobrar', datosHoja2);
+
+  // Descargar
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'Reporte_Pedidos_AAAB.xlsx';
+  link.click();
+  URL.revokeObjectURL(url);
 };
 
 onMounted(obtenerPedidos);

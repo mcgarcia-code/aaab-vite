@@ -322,7 +322,7 @@
 <script setup>
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { api } from '@/api/api'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
@@ -525,8 +525,7 @@ watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n 
 
 // ─── Excel ───────────────────────────────────────────────────────
 const exportarExcel = () => { mostrarModalExcel.value = true }
-
-const ejecutarDescargaExcel = () => {
+const ejecutarDescargaExcel = async () => {
   const cols  = columnasExcel.value.filter(c => c.visible)
   const datos = arbitrosFiltrados.value.map(a => {
     const fila = {}
@@ -543,10 +542,24 @@ const ejecutarDescargaExcel = () => {
     return fila
   })
 
-  const ws = XLSX.utils.json_to_sheet(datos)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Datos_Grupo')
-  XLSX.writeFile(wb, 'Disponibilidad_Grupo_AAAB.xlsx')
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Datos_Grupo')
+
+  ws.columns = cols.map(col => ({ header: col.label, key: col.label, width: 18 }))
+  datos.forEach(fila => ws.addRow(fila))
+  if (cols.length) ws.getRow(1).font = { bold: true }
+
+  const buffer = await wb.xlsx.writeBuffer()
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Disponibilidad_Grupo_AAAB.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
+
   mostrarModalExcel.value = false
 }
 

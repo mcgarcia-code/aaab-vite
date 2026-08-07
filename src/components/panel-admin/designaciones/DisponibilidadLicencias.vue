@@ -285,7 +285,7 @@
 <script setup>
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
 import { api } from '@/api/api';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 
 useHead({
@@ -575,24 +575,55 @@ watch(totalPaginas, (nuevoTotal) => {
 });
 
 
-const exportarExcel = () => {
+const exportarExcel = async () => {
   const datos = arbitrosFiltrados.value.map(a => ({
-    APELLIDO: a.apellido, NOMBRE: a.nombre,
+    APELLIDO: a.apellido,
+    NOMBRE: a.nombre,
     CELULAR: a.celular,
     SAB_DESIGNADO: designadosSabado.value.has(a.id) ? 'SI' : 'NO',
     DOM_DESIGNADO: designadosDomingo.value.has(a.id) ? 'SI' : 'NO',
     LICENCIA_O_SANCION: obtenerTextoLicencia(a),
     ACTIVO: a.es_activo == 1 ? 'SI' : 'NO',
-    ZONA: a.zona, MOVILIDAD: a.movilidad,
-    SAB_DISP: a.disponibilidad_sabado, SAB_HORA: `${a.disponibilidad_sabado_desde} a ${a.disponibilidad_sabado_hasta}`,
-    DOM_DISP: a.disponibilidad_domingo, DOM_HORA: `${a.disponibilidad_domingo_desde} a ${a.disponibilidad_domingo_hasta}`,
-    JUEGA: a.juega_handball, CLUB: a.donde_juega, OBS: a.observaciones
-  }));
-  const ws = XLSX.utils.json_to_sheet(datos);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Designaciones");
-  XLSX.writeFile(wb, "Planilla_Designaciones_AAAB.xlsx");
-};
+    ZONA: a.zona,
+    MOVILIDAD: a.movilidad,
+    SAB_DISP: a.disponibilidad_sabado,
+    SAB_HORA: `${a.disponibilidad_sabado_desde} a ${a.disponibilidad_sabado_hasta}`,
+    DOM_DISP: a.disponibilidad_domingo,
+    DOM_HORA: `${a.disponibilidad_domingo_desde} a ${a.disponibilidad_domingo_hasta}`,
+    JUEGA: a.juega_handball,
+    CLUB: a.donde_juega,
+    OBS: a.observaciones
+  }))
+
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Designaciones')
+
+  // Definir columnas a partir de las claves del primer objeto
+  const claves = Object.keys(datos[0] || {})
+  ws.columns = claves.map(clave => ({
+    header: clave,
+    key: clave,
+    width: 18
+  }))
+
+  // Agregar filas
+  datos.forEach(fila => ws.addRow(fila))
+
+  // Header en negrita
+  ws.getRow(1).font = { bold: true }
+
+  // Generar y descargar
+  const buffer = await wb.xlsx.writeBuffer()
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Planilla_Designaciones_AAAB.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
+}
 
 onMounted(cargarDatos);
 </script>

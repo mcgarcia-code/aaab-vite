@@ -160,7 +160,7 @@
 <script setup>
 import { ref, onMounted, computed, reactive, watch } from 'vue'
 import { api } from '@/api/api'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 
 useHead({
@@ -234,7 +234,7 @@ const cambiarPagina = (delta) => {
 
 const limpiarFiltros = () => Object.keys(filtros).forEach(key => filtros[key] = '');
 
-const exportarExcel = () => {
+const exportarExcel = async () => {
   const datosExcel = datosFiltrados.value.map(a => ({
     'ID': a.id,
     'APELLIDO': a.apellido,
@@ -247,10 +247,25 @@ const exportarExcel = () => {
     'DNI': a.dni,
     'EMAIL': a.email
   }));
-  const ws = XLSX.utils.json_to_sheet(datosExcel);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Datos");
-  XLSX.writeFile(wb, "Reporte_Consulta.xlsx");
+
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Datos');
+
+  const claves = Object.keys(datosExcel[0] || {});
+  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 18 }));
+  datosExcel.forEach(fila => ws.addRow(fila));
+  if (claves.length) ws.getRow(1).font = { bold: true };
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'Reporte_Consulta.xlsx';
+  link.click();
+  URL.revokeObjectURL(url);
 };
 
 watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
