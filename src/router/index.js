@@ -144,8 +144,8 @@ const routes = [
 
       // --- DESIGNACIONES ---
 
-      { path: 'designaciones/disponibilidad-licencias', name: 'DisponibilidadLicencias', component: () => import('../components/panel-admin/designaciones/DisponibilidadLicencias.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
-      { path: 'designaciones/partidos', name: 'CargaPartidos', component: () => import('../components/panel-admin/designaciones/CargaPartidos.vue'), meta: { roles: ['admin', 'secretario', 'designador'] } },
+      { path: 'designaciones/disponibilidad-licencias', name: 'DisponibilidadLicencias', component: () => import('../components/panel-admin/designaciones/DisponibilidadLicencias.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'coordinador general'] } },
+      { path: 'designaciones/partidos', name: 'CargaPartidos', component: () => import('../components/panel-admin/designaciones/CargaPartidos.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'coordinador general'] } },
 
       // --- TRIBUNAL ---
 

@@ -27,17 +27,7 @@
             </button>
 
             <button
-              @click="abrirModalPublicar('actualizar')"
-              class="btn btn-warning shadow-sm py-2 d-flex align-items-center gap-2 text-dark"
-              :disabled="designaciones.length === 0"
-              title="Reemplaza la última publicación sin duplicarla"
-            >
-              <span class="material-icons fs-6">sync</span>
-              <span class="fw-bold d-none d-md-inline small">Actualizar</span>
-            </button>
-
-            <button
-              @click="abrirModalPublicar('publicar')"
+              @click="abrirModalPublicar"
               class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white"
               :disabled="designaciones.length === 0"
               title="Primera publicación de esta designación"
@@ -365,7 +355,57 @@
                       </div>
                     </div>
 
-                    <!-- Árbitros (único editable) -->
+                    <!-- Árbitros principales (prioridad) -->
+                    <div class="row g-2 mt-1">
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">Árbitro 1</label>
+                        <button
+                          @click="abrirSelectorArbitro(p, 1)"
+                          class="celda-arbitro-mobile w-100 text-start"
+                          :class="[colorClase(p, 1), { 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.arbitro_1 }]"
+                        >
+                          {{ p.arbitro_1 || '— Asignar —' }}
+                        </button>
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">Árbitro 2</label>
+                        <button
+                          @click="abrirSelectorArbitro(p, 2)"
+                          class="celda-arbitro-mobile w-100 text-start"
+                          :class="[colorClase(p, 2), { 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.arbitro_2 }]"
+                        >
+                          {{ p.arbitro_2 || '— Asignar —' }}
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Botones de etiqueta de color (estado del árbitro) -->
+                    <div class="row g-2 mt-1" v-if="p.arbitro_1 || p.arbitro_2">
+                      <div class="col-6">
+                        <button
+                          v-if="p.arbitro_1"
+                          @click="abrirSelectorColor(p, 1)"
+                          class="btn btn-sm btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-1"
+                          :class="colorClase(p, 1)"
+                        >
+                          <span class="material-icons" style="font-size: 14px;">label</span>
+                          <span class="small">Estado Árb. 1</span>
+                        </button>
+                      </div>
+                      <div class="col-6">
+                        <button
+                          v-if="p.arbitro_2"
+                          @click="abrirSelectorColor(p, 2)"
+                          class="btn btn-sm btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-1"
+                          :class="colorClase(p, 2)"
+                        >
+                          <span class="material-icons" style="font-size: 14px;">label</span>
+                          <span class="small">Estado Árb. 2</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Observador / Delegado técnico -->
                     <div class="row g-2 mt-1">
                       <div class="col-6">
                         <label class="form-label small fw-bold text-muted mb-1">Observador</label>
@@ -592,23 +632,18 @@
 
     <ModalBase
       :show="mostrarModalPublicar"
-      :titulo="modoPublicacion === 'actualizar' ? 'Actualizar Designaciones' : 'Publicar Designaciones'"
-      :icono="modoPublicacion === 'actualizar' ? 'sync' : 'publish'"
+      titulo="Publicar Designaciones"
+      icono="publish"
       colorIcono="bg-danger text-white"
       maxWidth="600px"
       @close="mostrarModalPublicar = false"
     >
-      <div v-if="modoPublicacion === 'actualizar'" class="alert alert-warning small py-2 px-3 d-flex align-items-center gap-2">
-        <i class="bi bi-arrow-repeat"></i>
-        <span>Se <strong>reemplaza la última publicación</strong> con los {{ designaciones.length }} partidos actuales: mismo lugar en el historial público (sin duplicar) y se actualizan los partidos en el panel de los árbitros.</span>
-      </div>
-
-      <div v-else class="alert alert-info small py-2 px-3 d-flex align-items-center gap-2">
+      <div class="alert alert-info small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-info-circle-fill"></i>
         <span>Se publicarán los <strong>{{ cantidadPartidosAPublicar }}</strong> partidos de las fechas tildadas como una <strong>publicación nueva</strong>: se genera el PDF para la web pública y cada árbitro verá sus partidos en su panel.</span>
       </div>
 
-      <div v-if="modoPublicacion === 'publicar'" class="mb-3">
+      <div class="mb-3">
         <label class="form-label small fw-bold">Fechas a publicar</label>
         <div class="d-flex flex-column gap-1 border rounded p-2">
           <label v-for="f in fechas" :key="f.fecha" class="d-flex align-items-center gap-2 small mb-0" style="cursor:pointer;">
@@ -626,32 +661,12 @@
 
       <div v-if="hayCambios" class="alert alert-primary small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-pencil-square"></i>
-        <span>Hay cambios recientes: se terminan de guardar automáticamente antes de {{ modoPublicacion === 'actualizar' ? 'actualizar' : 'publicar' }}.</span>
+        <span>Hay cambios recientes: se terminan de guardar automáticamente antes de publicar.</span>
       </div>
 
       <div v-if="totalSinMatch > 0" class="alert alert-warning small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-exclamation-triangle-fill"></i>
         <span>Hay <strong>{{ totalSinMatch }}</strong> árbitros sin coincidencia en el padrón: esos partidos <strong>no</strong> les van a aparecer en su panel. Están marcados en amarillo en la grilla.</span>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Torneo</label>
-        <input
-          v-model="formPublicar.torneo"
-          type="text"
-          class="form-control shadow-none border-secondary-subtle"
-          placeholder="Ej: TORNEO APERTURA"
-        >
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Fecha</label>
-        <input
-          v-model="formPublicar.fecha"
-          type="text"
-          class="form-control shadow-none border-secondary-subtle"
-          placeholder="Ej: 18 y 19 de Abril"
-        >
       </div>
 
       <template #footer>
@@ -665,11 +680,10 @@
         <button
           @click="publicarDesignaciones"
           class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
-          :disabled="publicando || (modoPublicacion === 'publicar' && fechasSeleccionadas.length === 0)"
+          :disabled="publicando || fechasSeleccionadas.length === 0"
         >
           <span v-if="publicando" class="spinner-border spinner-border-sm me-2"></span>
-          <template v-if="publicando">{{ modoPublicacion === 'actualizar' ? 'Actualizando...' : 'Publicando...' }}</template>
-          <template v-else>{{ modoPublicacion === 'actualizar' ? 'Actualizar Ahora' : 'Publicar Ahora' }}</template>
+          {{ publicando ? 'Publicando...' : 'Publicar Ahora' }}
         </button>
       </template>
     </ModalBase>
@@ -679,7 +693,7 @@
 
 
 <script setup>
-import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
+import { ref, onMounted, computed, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
@@ -825,11 +839,6 @@ const busquedaArbitro = ref('')
 
 const mostrarModalPublicar = ref(false)
 const publicando = ref(false)
-const modoPublicacion = ref('publicar')
-const formPublicar = reactive({
-  torneo: '',
-  fecha: ''
-})
 
 // Fechas tildadas en el modal de Publicar: solo se publican los partidos de esas fechas
 const fechasSeleccionadas = ref([])
@@ -1485,57 +1494,27 @@ const confirmarCargaExcel = async () => {
    Si hay cambios sin guardar, se guardan automáticamente
    antes de publicar. El PDF se genera en el servidor.
    ==================================================== */
-const abrirModalPublicar = async (modo) => {
-  modoPublicacion.value = modo
-
-  // Al publicar, arrancamos con todas las fechas tildadas (el usuario puede destildar)
-  fechasSeleccionadas.value = modo === 'publicar' ? fechas.value.map(f => f.fecha) : []
-
-  // Al actualizar, precargamos torneo y fecha de la última publicación
-  if (modo === 'actualizar') {
-    try {
-      const res = await api.get({
-        entity: 'designaciones',
-        action: 'obtenerHistorialDesignaciones'
-      })
-      const ultima = res.payload && res.payload[0]
-      if (ultima && ultima.torneo && ultima.torneo !== 'Información no disponible') {
-        formPublicar.torneo = ultima.torneo
-        formPublicar.fecha = ultima.fecha
-      }
-    } catch (err) {
-      console.error('No se pudo precargar la última publicación:', err)
-    }
-  }
-
+const abrirModalPublicar = () => {
+  // Arrancamos con todas las fechas tildadas (el usuario puede destildar)
+  fechasSeleccionadas.value = fechas.value.map(f => f.fecha)
   mostrarModalPublicar.value = true
 }
 
 const publicarDesignaciones = async () => {
-  if (!formPublicar.torneo || !formPublicar.fecha) {
-    notificar({ titulo: 'Atención', mensaje: 'Completá el torneo y la fecha.', tipo: 'warning' })
-    return
-  }
-
-  if (modoPublicacion.value === 'publicar' && fechasSeleccionadas.value.length === 0) {
+  if (fechasSeleccionadas.value.length === 0) {
     notificar({ titulo: 'Atención', mensaje: 'Tildá al menos una fecha para publicar.', tipo: 'warning' })
     return
   }
 
   publicando.value = true
   try {
-    //if (hayCambios.value) {
-      const guardado = await ejecutarGuardado()
-      if (!guardado) return
-    //}
+    const guardado = await ejecutarGuardado()
+    if (!guardado) return
 
     const res = await api.post({
       entity: 'designaciones',
       action: 'publicarDesignaciones',
       payload: {
-        torneo: formPublicar.torneo,
-        fecha: formPublicar.fecha,
-        modo: modoPublicacion.value,
         fechas: fechasSeleccionadas.value
       }
     })
@@ -1543,8 +1522,6 @@ const publicarDesignaciones = async () => {
     if (res.ok) {
       notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Las designaciones se publicaron en la web y en el panel de los árbitros.', tipo: 'success' })
       mostrarModalPublicar.value = false
-      formPublicar.torneo = ''
-      formPublicar.fecha = ''
     } else {
       throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor al publicar designaciones.')
     }
@@ -1584,7 +1561,6 @@ onMounted(async () => {
   cargarAvisos()
 })
 </script>
-
 
 <style scoped>
 .full-screen-wrapper {
@@ -1702,6 +1678,13 @@ onMounted(async () => {
   cursor: pointer;
 }
 
+/* Árbitro que no matcheó con el padrón (hay que corregirlo) */
+.celda-arbitro-mobile.sin-match {
+  background-color: #fef08a;
+  border-color: #eab308;
+  font-weight: 700;
+}
+
 .celda-arbitro:hover {
   border-color: #ced4da;
   background: #fff;
@@ -1813,13 +1796,6 @@ onMounted(async () => {
   color: #adb5bd;
 }
 
-/* Árbitro que no matcheó con el padrón (hay que corregirlo) */
-.celda-arbitro-mobile.sin-match {
-  background-color: #fef08a;
-  border-color: #eab308;
-  font-weight: 700;
-}
-
 /* Árbitro externo puesto a mano (intencional) */
 .celda-arbitro-mobile.externo {
   background-color: #dbeafe;
@@ -1887,8 +1863,7 @@ onMounted(async () => {
   flex-grow: 1;
 }
 
-.btn-color-tag,
-.btn-color-tag-mobile {
+.btn-color-tag {
   border: 1px solid #ced4da;
   border-radius: 4px;
   background: #fff;
@@ -1900,8 +1875,7 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 
-.btn-color-tag:hover,
-.btn-color-tag-mobile:hover {
+.btn-color-tag:hover {
   background: #f8f9fa;
 }
 
