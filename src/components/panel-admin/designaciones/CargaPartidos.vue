@@ -46,16 +46,34 @@
               <span class="fw-bold d-none d-md-inline small">Publicar</span>
             </button>
 
-            <button
-              @click="descargarPdfDesignaciones"
-              class="btn btn-dark shadow-sm py-2 d-flex align-items-center gap-2 text-white"
-              :disabled="designaciones.length === 0 || descargandoPdf"
-              title="Descarga el PDF de las designaciones"
-            >
-              <span v-if="descargandoPdf" class="spinner-border spinner-border-sm"></span>
-              <span v-else class="material-icons fs-6">picture_as_pdf</span>
-              <span class="fw-bold d-none d-md-inline small">Descargar PDF</span>
-            </button>
+            <div class="dropdown">
+              <button
+                class="btn btn-dark shadow-sm py-2 d-flex align-items-center gap-2 text-white dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                :disabled="designaciones.length === 0 || descargandoArchivo"
+                title="Descargar las designaciones"
+              >
+                <span v-if="descargandoArchivo" class="spinner-border spinner-border-sm"></span>
+                <span v-else class="material-icons fs-6">download</span>
+                <span class="fw-bold d-none d-md-inline small">Descargar</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow">
+                <li>
+                  <button class="dropdown-item d-flex align-items-center gap-2" @click="descargarDesignaciones('pdf')">
+                    <span class="material-icons fs-6 text-danger">picture_as_pdf</span>
+                    <span class="small fw-bold">PDF</span>
+                  </button>
+                </li>
+                <li>
+                  <button class="dropdown-item d-flex align-items-center gap-2" @click="descargarDesignaciones('excel')">
+                    <span class="material-icons fs-6 text-success">table_view</span>
+                    <span class="small fw-bold">Excel</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -1538,23 +1556,25 @@ const publicarDesignaciones = async () => {
   }
 }
 
-const descargandoPdf = ref(false)
+const descargandoArchivo = ref(false)
 
-const descargarPdfDesignaciones = async () => {
-  descargandoPdf.value = true
+const descargarDesignaciones = async (formato = 'pdf') => {
+  const esExcel = formato === 'excel'
+  descargandoArchivo.value = true
   try {
     await api.getFile({
       entity: 'designaciones',
-      action: 'descargarPdfDesignaciones',
+      action: 'descargarDesignaciones',
       payload: {
-        semanaAtras: semanaAtras.value
+        semanaAtras: semanaAtras.value,
+        ...(esExcel ? { formato: 'excel' } : {})
       }
-    }, 'designaciones.pdf')
+    }, esExcel ? 'designaciones.xlsx' : 'designaciones.pdf')
   } catch (err) {
-    console.error('Error al descargar el PDF:', err)
-    notificar({ titulo: 'Error', mensaje: err.message || 'No se pudo descargar el PDF.', tipo: 'danger' })
+    console.error('Error al descargar las designaciones:', err)
+    notificar({ titulo: 'Error', mensaje: err.message || 'No se pudo descargar el archivo.', tipo: 'danger' })
   } finally {
-    descargandoPdf.value = false
+    descargandoArchivo.value = false
   }
 }
 
