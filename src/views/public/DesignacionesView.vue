@@ -15,7 +15,7 @@
             </div>
 
             <h1 class="display-5 display-md-3 fw-bold text-white mb-3 text-shadow">
-              {{ designacionPrincipal.torneo }}
+              Designaciones
             </h1>
 
             <p class="lead text-white-50 mb-4 mx-auto mx-md-0" style="max-width: 90%;">
@@ -27,22 +27,24 @@
                 <span class="material-icons fs-4">event</span>
               </div>
               <div>
-                <span class="d-block small fw-bold text-muted text-uppercase mb-1">Fecha</span>
-                <span class="d-block fs-5 text-dark fw-bold lh-1">{{ designacionPrincipal.fecha }}</span>
+                <span class="d-block small fw-bold text-muted text-uppercase mb-1">Semana</span>
+                <span class="d-block fs-5 text-dark fw-bold lh-1">{{ designacionPrincipal ? designacionPrincipal.label : etiquetaPlaceholder }}</span>
               </div>
             </div>
 
             <div>
-              <a
-                :href="designacionPrincipal.link"
-                target="_blank"
+              <button
+                type="button"
+                @click="descargar(designacionPrincipal.semanaAtras)"
                 class="btn btn-danger btn-lg fw-bold px-4 py-3 d-inline-flex align-items-center justify-content-center gap-2 shadow-lg w-100 btn-download"
                 style="max-width: 350px;"
-                :class="{ 'disabled-link': designacionPrincipal.link === '#' }"
+                :class="{ 'disabled-link': !designacionPrincipal }"
+                :disabled="!designacionPrincipal || descargando !== null"
               >
-                <span class="material-icons">cloud_download</span>
+                <span v-if="descargando === designacionPrincipal?.semanaAtras" class="spinner-border spinner-border-sm"></span>
+                <span v-else class="material-icons">cloud_download</span>
                 <span>Descargar Designaciones</span>
-              </a>
+              </button>
             </div>
 
           </div>
@@ -65,22 +67,22 @@
           </div>
 
           <div class="row g-3">
-            <div v-for="(item, index) in historialDesignaciones" :key="index" class="col-12 col-md-6 col-lg-3">
+            <div v-for="item in historialDesignaciones" :key="item.semanaAtras" class="col-12 col-md-6 col-lg-3">
               <div class="card h-100 border-0 rounded-4 p-3 shadow-sm history-card">
-                <div class="d-flex align-items-center mb-2">
+                <div class="d-flex align-items-center mb-3 flex-grow-1">
                   <span class="material-icons text-danger me-2 fs-5">history</span>
-                  <span class="text-dark fw-bold small">{{ item.fecha }}</span>
+                  <span class="text-dark fw-bold small">{{ item.label }}</span>
                 </div>
-                <h6 class="text-danger fw-bold mb-3 flex-grow-1 small lh-sm">
-                  {{ item.torneo }}
-                </h6>
-                <a
-                  :href="item.link"
-                  target="_blank"
+                <button
+                  type="button"
+                  @click="descargar(item.semanaAtras)"
                   class="btn btn-outline-dark btn-sm w-100 fw-bold rounded-pill d-flex align-items-center justify-content-center gap-2 mt-auto"
+                  :disabled="descargando !== null"
                 >
-                  <span class="material-icons" style="font-size: 16px;">download</span> Descargar
-                </a>
+                  <span v-if="descargando === item.semanaAtras" class="spinner-border spinner-border-sm"></span>
+                  <span v-else class="material-icons" style="font-size: 16px;">download</span>
+                  Descargar
+                </button>
               </div>
             </div>
           </div>
@@ -98,15 +100,17 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import designacionesImg from '@/assets/fotos/designaciones-mobile.png'
 
-// Estado principal para la última designación
-const designacionPrincipal = ref({
-  torneo: 'Cargando información...',
-  fecha: '...',
-  link: '#'
-})
+// Semana más reciente (semanaAtras = 0): { label, semanaAtras }
+const designacionPrincipal = ref(null)
 
 // Estado para el historial (las anteriores a la principal)
 const historialDesignaciones = ref([])
+
+// Texto del recuadro de fecha mientras no hay datos cargados
+const etiquetaPlaceholder = ref('Cargando...')
+
+// semanaAtras que se está descargando (null si no hay ninguna en curso)
+const descargando = ref(null)
 
 useHead({
   title: 'Designaciones | AAAB',
@@ -126,21 +130,33 @@ const fetchDesignaciones = async () => {
       action: 'obtenerHistorialDesignaciones'
     });
 
-    if (res.payload && Array.isArray(res.payload) && res.payload.length > 0) {
-      designacionPrincipal.value = res.payload[0];
-      historialDesignaciones.value = res.payload.slice(1, 5);
-    } else if (res.payload && !Array.isArray(res.payload)) {
-      designacionPrincipal.value = {
-        torneo: res.payload.torneo,
-        fecha: res.payload.fecha,
-        link: res.payload.link
-      };
-      historialDesignaciones.value = [];
+    const lista = Array.isArray(res.payload) ? res.payload : []
+
+    if (lista.length > 0) {
+      // El item 0 es la semana más reciente; el resto son las anteriores
+      designacionPrincipal.value = lista[0];
+      historialDesignaciones.value = lista.slice(1, 5);
+    } else {
+      etiquetaPlaceholder.value = 'Próximamente'
     }
   } catch (error) {
     console.error("Error cargando designaciones", error);
-    designacionPrincipal.value.torneo = "Información no disponible";
-    designacionPrincipal.value.fecha = "Próximamente";
+    etiquetaPlaceholder.value = 'Información no disponible'
+  }
+}
+
+const descargar = async (semanaAtras) => {
+  descargando.value = semanaAtras
+  try {
+    await api.getFile({
+      entity: 'designaciones',
+      action: 'descargarDesignaciones',
+      payload: { semanaAtras }
+    }, 'designaciones.pdf')
+  } catch (error) {
+    console.error('Error al descargar las designaciones', error)
+  } finally {
+    descargando.value = null
   }
 }
 
