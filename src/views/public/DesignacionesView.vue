@@ -130,7 +130,7 @@ const fetchDesignaciones = async () => {
       action: 'obtenerHistorialDesignaciones'
     });
 
-    const lista = Array.isArray(res.payload) ? res.payload : []
+    const lista = [] // Array.isArray(res.payload) ? res.payload : []
 
     if (lista.length > 0) {
       // El item 0 es la semana más reciente; el resto son las anteriores

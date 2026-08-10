@@ -672,13 +672,12 @@ const confirmarRechazo = async () => {
         motivo
       }
     })
-
-if (res.ok || res.success) {
+  if (res.ok) {
       // Marca optimista: la card queda en rojo
       p.rechazada = true
       p.rechazo_motivo = motivoSeleccionado.value
       p.rechazo_estado = 'creado'
-      p.id_rechazo = (res.payload && res.payload.id) ? res.payload.id : p.id_rechazo
+      p.id_rechazo = (res.payload) ? res.payload : p.id_rechazo
       cerrarModalRechazo()
       notificar({ titulo: 'Designación rechazada', mensaje: 'Se registró el rechazo. La asociación fue notificada.', tipo: 'success' })
     } else {
