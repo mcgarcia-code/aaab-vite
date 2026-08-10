@@ -169,23 +169,32 @@
                 <tbody>
                   <template v-for="c in canchas" :key="fechaSeleccionada + '-' + c.nombre">
 
-                    <tr class="fila-cancha">
-                      <td colspan="11">
-                        <div class="d-flex align-items-center gap-2">
-                          <span class="material-icons fs-5">stadium</span>
-                          <span class="nombre-cancha fw-bold text-uppercase">{{ c.nombre }}</span>
-                          <a
-                            v-if="c.linkMapa"
-                            :href="c.linkMapa"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="link-mapa"
-                            title="Ver ubicación en Google Maps"
-                          >Mapa</a>
-                          <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }} PARTIDOS </span>
-                        </div>
-                      </td>
-                    </tr>
+              <tr class="fila-cancha">
+                <td colspan="11">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="material-icons fs-5">stadium</span>
+
+                    <span class="nombre-cancha fw-bold text-uppercase">
+                      {{ c.nombre }}
+                    </span>
+
+                    <a
+                      v-if="c.linkMapa"
+                      :href="c.linkMapa"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="link-mapa"
+                      title="Ver ubicación en Google Maps"
+                    >
+                      Mapa
+                    </a>
+
+                    <span class="badge bg-white text-dark rounded-pill">
+                      {{ c.partidos.length }} PARTIDOS
+                    </span>
+                  </div>
+                </td>
+              </tr>
 
                     <tr v-for="p in c.partidos" :key="p.id || p._uid" :class="{ 'fila-suspendida': p.suspendido }">
                       <td><span class="celda-texto">{{ p.categoria_division || '—' }}</span></td>
@@ -292,20 +301,22 @@
             <div class="d-md-none">
               <div v-for="c in canchas" :key="'mob-' + fechaSeleccionada + '-' + c.nombre" class="mb-3">
 
-                <!-- Encabezado de cancha (solo lectura) -->
-                <div class="cancha-mobile-header d-flex align-items-center gap-2 px-3 py-2 rounded-top-3">
-                  <span class="material-icons fs-5">stadium</span>
-                  <span class="nombre-cancha fw-bold text-uppercase flex-grow-1">{{ c.nombre }}</span>
-                  <a
-                    v-if="c.linkMapa"
-                    :href="c.linkMapa"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="link-mapa"
-                    title="Ver ubicación en Google Maps"
-                  >Mapa</a>
-                  <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }}</span>
-                </div>
+            <!-- Encabezado de cancha (solo lectura) -->
+            <div class="cancha-mobile-header d-flex align-items-center gap-2 px-3 py-2 rounded-top-3">
+              <span class="material-icons fs-5">stadium</span>
+              <span class="nombre-cancha fw-bold text-uppercase flex-grow-1">{{ c.nombre }}</span>
+
+              <a
+                v-if="c.linkMapa"
+                :href="c.linkMapa"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link-mapa"
+                title="Ver ubicación en Google Maps"
+              >Mapa</a>
+
+              <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }}</span>
+            </div>
 
                 <!-- Un card por partido -->
                 <div
@@ -1149,13 +1160,15 @@ const asignarArbitro = async (arbitro) => {
   }
 
   // ---- Árbitro 1 / 2 (flujo existente) ----
+  // Al cambiar de árbitro se limpia la etiqueta: si el anterior había
+  // rechazado (quedó en 'reemplazar'), esa marca ya no corresponde.
   if (!arbitro) {
-    if (sel.numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null; p._ext1 = false }
-    else { p.arbitro_2 = ''; p.id_arb2 = null; p._ext2 = false }
+    if (sel.numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null; p._ext1 = false; p._estado1 = '' }
+    else { p.arbitro_2 = ''; p.id_arb2 = null; p._ext2 = false; p._estado2 = '' }
   } else {
     const nombreCompleto = capitalizarNombre(`${arbitro.apellido} ${arbitro.nombre}`)
-    if (sel.numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id; p._ext1 = false }
-    else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id; p._ext2 = false }
+    if (sel.numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id; p._ext1 = false; p._estado1 = '' }
+    else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id; p._ext2 = false; p._estado2 = '' }
   }
 
   marcar(p)
@@ -1185,8 +1198,8 @@ const asignarArbitroLibre = async (texto) => {
   if (!nombre) return
   const p = sel.partido
 
-  if (sel.numero === 1) { p.arbitro_1 = nombre; p.id_arb1 = null; p._ext1 = true }
-  else { p.arbitro_2 = nombre; p.id_arb2 = null; p._ext2 = true }
+  if (sel.numero === 1) { p.arbitro_1 = nombre; p.id_arb1 = null; p._ext1 = true; p._estado1 = '' }
+  else { p.arbitro_2 = nombre; p.id_arb2 = null; p._ext2 = true; p._estado2 = '' }
 
   marcar(p)
   cerrarSelectorArbitro()

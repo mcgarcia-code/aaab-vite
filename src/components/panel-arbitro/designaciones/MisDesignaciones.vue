@@ -84,7 +84,7 @@
                   <div class="timeline-hora">
                     <span class="hora-burbuja">{{ formatearHora(p.horario) }}</span>
                   </div>
-                  <div class="timeline-card shadow-sm">
+                  <div class="timeline-card shadow-sm" :class="{ 'card-rechazada': p.rechazada }">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
                       <span class="fw-bold text-dark text-uppercase text-break">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
                       <span class="badge bg-danger-subtle text-danger border border-danger-subtle flex-shrink-0" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
@@ -92,8 +92,8 @@
                     <div class="small text-muted d-flex align-items-center flex-wrap gap-1 mb-2">
                       <span class="material-icons flex-shrink-0" style="font-size: 15px;">stadium</span>
                       <span class="fw-bold text-dark text-break">{{ p.cancha }}</span>
-                      <a
-                        v-if="linkMapaCancha(p)"
+
+                      <a v-if="linkMapaCancha(p)"
                         :href="linkMapaCancha(p)"
                         target="_blank"
                         rel="noopener noreferrer"
@@ -125,6 +125,32 @@
                         <span class="text-break"><strong>Arbitros:</strong> {{ p.arbitro_1 }} - {{ p.arbitro_2 }}</span>
                       </div>
                     </template>
+
+                    <!-- ACCION / ESTADO DE RECHAZO -->
+                    <div class="mt-2 pt-2 border-top">
+                      <div v-if="p.rechazada">
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                          <span class="badge d-inline-flex align-items-center gap-1" :class="badgeEstadoRechazo(p.rechazo_estado)">
+                            <i class="bi" :class="iconoEstadoRechazo(p.rechazo_estado)"></i>
+                            {{ textoEstadoRechazo(p.rechazo_estado) }}
+                          </span>
+                          <span v-if="p.rechazo_motivo" class="small text-muted fw-bold text-break">
+                            {{ etiquetaMotivo(p.rechazo_motivo) }}
+                          </span>
+                        </div>
+                        <p class="small mb-0 text-break" :class="claseTextoEstadoRechazo(p.rechazo_estado)">
+                          {{ mensajeEstadoRechazo(p.rechazo_estado) }}
+                        </p>
+                      </div>
+                      <button
+                        v-else
+                        @click="abrirModalRechazo(p)"
+                        class="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1"
+                      >
+                        <span class="material-icons" style="font-size: 15px;">block</span>
+                        Rechazar designación
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -193,7 +219,7 @@
                           <div class="timeline-hora">
                             <span class="hora-burbuja">{{ formatearHora(p.horario) }}</span>
                           </div>
-                          <div class="timeline-card shadow-sm">
+                          <div class="timeline-card shadow-sm" :class="{ 'card-rechazada': p.rechazada }">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
                               <span class="fw-bold text-dark text-uppercase text-break">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
                               <span class="badge bg-secondary-subtle text-secondary border flex-shrink-0" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
@@ -201,8 +227,8 @@
                             <div class="small text-muted d-flex align-items-center flex-wrap gap-1 mb-2">
                               <span class="material-icons flex-shrink-0" style="font-size: 15px;">stadium</span>
                               <span class="fw-bold text-dark text-break">{{ p.cancha }}</span>
-                              <a
-                                v-if="linkMapaCancha(p)"
+
+                              <a v-if="linkMapaCancha(p)"
                                 :href="linkMapaCancha(p)"
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -234,6 +260,22 @@
                                 <span class="text-break"><strong>Arbitros:</strong> {{ p.arbitro_1 }} - {{ p.arbitro_2 }}</span>
                               </div>
                             </template>
+
+                          <!-- ESTADO DE RECHAZO (solo lectura en anteriores) -->
+                          <div v-if="p.rechazada" class="mt-2 pt-2 border-top">
+                            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                              <span class="badge d-inline-flex align-items-center gap-1" :class="badgeEstadoRechazo(p.rechazo_estado)">
+                                <i class="bi" :class="iconoEstadoRechazo(p.rechazo_estado)"></i>
+                                {{ textoEstadoRechazo(p.rechazo_estado) }}
+                              </span>
+                              <span v-if="p.rechazo_motivo" class="small text-muted fw-bold text-break">
+                                {{ etiquetaMotivo(p.rechazo_motivo) }}
+                              </span>
+                            </div>
+                            <p class="small mb-0 text-break" :class="claseTextoEstadoRechazo(p.rechazo_estado)">
+                              {{ mensajeEstadoRechazo(p.rechazo_estado) }}
+                            </p>
+                          </div>
                           </div>
                         </div>
                       </div>
@@ -251,14 +293,80 @@
       </div>
     </div>
 
+    <!-- ================= MODAL RECHAZAR DESIGNACION ================= -->
+    <ModalBase
+      :show="mostrarModalRechazo"
+      titulo="Rechazar designación"
+      icono="block"
+      colorIcono="bg-danger text-white"
+      maxWidth="520px"
+      @close="cerrarModalRechazo"
+    >
+      <div v-if="partidoRechazo" class="alert alert-danger small py-2 px-3 d-flex align-items-start gap-2 mb-3">
+        <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+        <span>
+          Estás por rechazar el partido
+          <strong>{{ partidoRechazo.local }} vs {{ partidoRechazo.visitante }}</strong>
+          ({{ partidoRechazo.categoria_division }}) del {{ etiquetaDia(partidoRechazo.fecha) }}.
+        </span>
+      </div>
+
+      <label class="form-label small fw-bold text-dark mb-2">Seleccioná el motivo del rechazo *</label>
+      <div class="lista-motivos border rounded mb-3">
+        <label
+          v-for="op in opcionesMotivo"
+          :key="op.valor"
+          class="opcion-motivo d-flex align-items-start gap-2"
+          :class="{ activa: motivoSeleccionado === op.valor }"
+        >
+          <input
+            type="radio"
+            class="form-check-input mt-1 flex-shrink-0"
+            :value="op.valor"
+            v-model="motivoSeleccionado"
+          >
+          <span class="small">{{ op.etiqueta }}</span>
+        </label>
+      </div>
+
+      <div v-if="motivoSeleccionado === 'otro'" class="mb-2">
+        <label class="form-label small fw-bold text-dark mb-1">Escribí el motivo *</label>
+        <textarea
+          v-model="motivoOtro"
+          class="form-control shadow-none border-secondary-subtle"
+          rows="3"
+          placeholder="Contanos brevemente el motivo del rechazo..."
+        ></textarea>
+      </div>
+
+      <template #footer>
+        <button
+          @click="cerrarModalRechazo"
+          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
+          :disabled="enviandoRechazo"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="confirmarRechazo"
+          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
+          :disabled="enviandoRechazo || !motivoValido"
+        >
+          <span v-if="enviandoRechazo" class="spinner-border spinner-border-sm me-2"></span>
+          {{ enviandoRechazo ? 'Enviando...' : 'Confirmar rechazo' }}
+        </button>
+      </template>
+    </ModalBase>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import { useHead } from '@vueuse/head'
+import ModalBase from '@/components/ModalBase.vue'
 
 useHead({
   title: 'Mis Designaciones | AAAB',
@@ -269,7 +377,55 @@ useHead({
   ],
 })
 
+const notificar = inject('notificar')
+
 const MESES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE']
+
+// Motivos de rechazo compartidos (mismo listado que usa la sección de admin)
+const opcionesMotivo = [
+  { valor: 'no_llego', etiqueta: 'No llego a jugar' },
+  { valor: 'club_vinculo', etiqueta: 'No puedo pitar ese club (jugué ahí o vínculo personal)' },
+  { valor: 'club_otra', etiqueta: 'No puedo pitar ese club (problema de otra índole)' },
+  { valor: 'licencia', etiqueta: 'Tengo licencia aprobada' },
+  { valor: 'fuera_horario', etiqueta: 'Estoy designado fuera de mi disponibilidad horaria' },
+  { valor: 'otro', etiqueta: 'Otro (escribir motivo)' }
+]
+
+const etiquetaMotivo = (valor) => {
+  const op = opcionesMotivo.find(o => o.valor === valor)
+  return op ? op.etiqueta : valor
+}
+
+// Estado del rechazo tal como lo resuelve la asociación
+const textoEstadoRechazo = (estado) => {
+  if (estado === 'justificado') return 'Rechazo justificado'
+  if (estado === 'injustificado') return 'Rechazo injustificado'
+  return 'Rechazo registrado'
+}
+
+const mensajeEstadoRechazo = (estado) => {
+  if (estado === 'justificado') return 'Tu motivo fue justificado. No fuiste enviado al Tribunal de Ética.'
+  if (estado === 'injustificado') return 'Tu motivo fue considerado injustificado. Fuiste enviado al Tribunal de Ética.'
+  return 'Tu rechazo fue registrado y está pendiente de revisión por la asociación.'
+}
+
+const badgeEstadoRechazo = (estado) => {
+  if (estado === 'justificado') return 'bg-success'
+  if (estado === 'injustificado') return 'bg-danger'
+  return 'bg-warning text-dark'
+}
+
+const iconoEstadoRechazo = (estado) => {
+  if (estado === 'justificado') return 'bi-check-circle-fill'
+  if (estado === 'injustificado') return 'bi-exclamation-octagon-fill'
+  return 'bi-hourglass-split'
+}
+
+const claseTextoEstadoRechazo = (estado) => {
+  if (estado === 'justificado') return 'text-dark'
+  if (estado === 'injustificado') return 'text-dark'
+  return 'text-dark'
+}
 
 const arbitro = ref(auth.getUser() || {})
 const partidos = ref([])
@@ -288,7 +444,7 @@ const cargarMisDesignaciones = async () => {
       action: 'obtenerDesignacionesArbitro'
     })
     if ((res.ok || res.success) && res.payload) {
-      partidos.value = res.payload
+      partidos.value = res.payload.map(normalizarRechazo)
 
       // Si no hay próximas pero sí historial, arrancamos en Anteriores
       if (proximas.value.length === 0 && anteriores.value.length > 0) {
@@ -301,6 +457,15 @@ const cargarMisDesignaciones = async () => {
     cargando.value = false
   }
 }
+
+// Normaliza los campos de rechazo que devuelve el backend por partido
+const normalizarRechazo = (p) => ({
+  ...p,
+  rechazada: p.rechazada === true || p.rechazada === 1 || p.rechazada === '1' || !!p.id_rechazo,
+  id_rechazo: p.id_rechazo || null,
+  rechazo_motivo: p.rechazo_motivo || p.motivo_rechazo || '',
+  rechazo_estado: p.rechazo_estado || 'creado'
+})
 
 /* ====================================================
    FECHAS
@@ -456,11 +621,75 @@ const toggleDia = (mesClave, fecha) => {
 }
 
 const obtenerPareja = (p) => {
-  console.log(p)
   const miId = String(arbitro.value.id)
   if (String(p.id_arb1) === miId) return p.arbitro_2 || 'Sin pareja asignada'
   if (String(p.id_arb2) === miId) return p.arbitro_1 || 'Sin pareja asignada'
   return p.arbitro_2 || p.arbitro_1 || '-'
+}
+
+/* ====================================================
+   RECHAZO DE DESIGNACION
+   ==================================================== */
+const mostrarModalRechazo = ref(false)
+const partidoRechazo = ref(null)
+const motivoSeleccionado = ref('')
+const motivoOtro = ref('')
+const enviandoRechazo = ref(false)
+
+const motivoValido = computed(() => {
+  if (!motivoSeleccionado.value) return false
+  if (motivoSeleccionado.value === 'otro') return motivoOtro.value.trim().length > 0
+  return true
+})
+
+const abrirModalRechazo = (partido) => {
+  partidoRechazo.value = partido
+  motivoSeleccionado.value = ''
+  motivoOtro.value = ''
+  mostrarModalRechazo.value = true
+}
+
+const cerrarModalRechazo = () => {
+  mostrarModalRechazo.value = false
+  partidoRechazo.value = null
+}
+
+const confirmarRechazo = async () => {
+  if (!motivoValido.value || !partidoRechazo.value) return
+
+  const p = partidoRechazo.value
+  const motivo = motivoSeleccionado.value === 'otro'
+    ? motivoOtro.value.trim()
+    : motivoSeleccionado.value
+
+  enviandoRechazo.value = true
+  try {
+    const res = await api.post({
+      entity: 'designaciones',
+      action: 'rechazarDesignacion',
+      payload: {
+        idPartido: p.id,
+        motivo
+      }
+    })
+
+if (res.ok || res.success) {
+      // Marca optimista: la card queda en rojo
+      p.rechazada = true
+      p.rechazo_motivo = motivoSeleccionado.value
+      p.rechazo_estado = 'creado'
+      p.id_rechazo = (res.payload && res.payload.id) ? res.payload.id : p.id_rechazo
+      cerrarModalRechazo()
+      notificar({ titulo: 'Designación rechazada', mensaje: 'Se registró el rechazo. La asociación fue notificada.', tipo: 'success' })
+    } else {
+      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
+    }
+  } catch (err) {
+    console.error('Error al rechazar designación:', err)
+    notificar({ titulo: 'Error', mensaje: err.message || 'No se pudo registrar el rechazo.', tipo: 'danger' })
+  } finally {
+    enviandoRechazo.value = false
+  }
 }
 
 onMounted(cargarMisDesignaciones)
@@ -543,6 +772,13 @@ onMounted(cargarMisDesignaciones)
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
 }
 
+/* Card de un partido rechazado: fondo rojo (como el estado reemplazar) */
+.timeline-card.card-rechazada {
+  background-color: #fee2e2 !important;
+  border-color: #ef4444 !important;
+  border-left-color: #dc2626 !important;
+}
+
 .link-mapa-cancha {
   font-size: 0.7rem;
   font-weight: 700;
@@ -568,6 +804,13 @@ onMounted(cargarMisDesignaciones)
   background: #fff;
 }
 
+/* El rechazo pinta de rojo aun en anteriores */
+.anteriores .timeline-card.card-rechazada {
+  background-color: #fee2e2 !important;
+  border-color: #ef4444 !important;
+  border-left-color: #dc2626 !important;
+}
+
 /* ====================================================
    ACORDEON DE MESES (ANTERIORES)
    ==================================================== */
@@ -582,9 +825,39 @@ onMounted(cargarMisDesignaciones)
   background: #f8fafc;
 }
 
+/* ====================================================
+   MODAL DE MOTIVOS DE RECHAZO
+   ==================================================== */
+.lista-motivos {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.opcion-motivo {
+  background: #fff;
+  border-bottom: 1px solid #f1f3f5;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  margin: 0;
+}
+
+.opcion-motivo:last-child {
+  border-bottom: none;
+}
+
+.opcion-motivo:hover {
+  background: #fef2f2;
+}
+
+.opcion-motivo.activa {
+  background: #fee2e2;
+  font-weight: 600;
+}
+
 .animate__animated { animation-duration: 0.5s; }
 
-/* Desde tablet, la hora vuelve a 70px y el timeline respira más */
 @media (min-width: 576px) {
   .timeline-hora { width: 70px; }
   .timeline-item { gap: 14px; }

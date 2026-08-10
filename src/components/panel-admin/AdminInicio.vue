@@ -17,14 +17,21 @@
       <div class="row g-3 g-md-4">
         <div class="col-12 col-sm-6 col-lg-4" v-for="item in grupo.items" :key="item.title">
           <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
-            <div class="modern-card d-flex align-items-center gap-3 p-4 p-md-3 w-100 h-100 bg-white shadow-sm">
+            <div class="modern-card d-flex align-items-center gap-3 p-4 p-md-3 w-100 h-100 bg-white shadow-sm position-relative">
 
-              <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
-                <i :class="item.icon"></i>
-              </div>
+            <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center position-relative">
+              <!-- Dot rojo de notificación (solo Designaciones Rechazadas con pendientes) -->
+              <span v-if="item.badgeRechazos && rechazosPendientes > 0" class="dot-notif"></span>
+              <i :class="item.icon"></i>
+            </div>
 
               <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold text-dark fs-6">{{ item.title }}</h5>
+                <h5 class="m-0 fw-bold text-dark fs-6 d-flex align-items-center gap-2 flex-wrap">
+                  {{ item.title }}
+                  <span v-if="item.badgeRechazos && rechazosPendientes > 0" class="badge-nuevos rounded-pill">
+                    {{ rechazosPendientes }} {{ rechazosPendientes === 1 ? 'NUEVO' : 'NUEVOS' }}
+                  </span>
+                </h5>
                 <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.85rem;">{{ item.desc }}</p>
               </div>
 
@@ -43,8 +50,9 @@
 
 <script setup>
 import { auth } from '@/api/auth'
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 
 const user = auth.getUser()
@@ -53,6 +61,23 @@ const userRole = user ? user.rol : null
 useHead({
   title: 'Panel de Gestión | AAAB',
 })
+
+// Conteo de designaciones rechazadas sin resolver (estado = 'creado')
+const rechazosPendientes = ref(0)
+
+const cargarRechazosPendientes = async () => {
+  try {
+    const res = await api.get({
+      entity: 'designaciones',
+      action: 'contarRechazosPendientes'
+    })
+    if (res.ok || res.success) {
+      rechazosPendientes.value = res.payload || 0
+    }
+  } catch (err) {
+    console.error('Error al contar rechazos pendientes:', err)
+  }
+}
 
 // ====================================================
 // CATEGORIAS (cada una con sus roles y sub-tarjetas)
@@ -84,7 +109,8 @@ const categorias = [
     rolesPermitidos: ['admin', 'designador', 'secretario','coordinador general'],
     items: [
       { to: '/panel-admin/designaciones/disponibilidad-licencias', title: 'Disponibilidad y Licencias', icon: 'bi bi-calendar-date-fill', desc: 'Chequear disponibilidad y licencias de árbitros.' },
-      { to: '/panel-admin/designaciones/partidos', title: 'Carga y visualización de partidos', icon: 'bi bi-clipboard2-data-fill', desc: 'Visualizar partidos asignados y pendientes.' }
+      { to: '/panel-admin/designaciones/partidos', title: 'Carga y visualización de partidos', icon: 'bi bi-clipboard2-data-fill', desc: 'Visualizar partidos asignados y pendientes.' },
+      { to: '/panel-admin/designaciones/designaciones-rechazadas', title: 'Designaciones Rechazadas', icon: 'bi bi-graph-up-arrow', desc: 'Visualizar designaciones rechazadas.', badgeRechazos: true }
     ]
   },
   {
@@ -134,6 +160,8 @@ const gruposConItems = computed(() => {
     return cat.rolesPermitidos && cat.rolesPermitidos.includes(userRole)
   })
 })
+
+onMounted(cargarRechazosPendientes)
 </script>
 
 <style scoped>
@@ -192,4 +220,35 @@ const gruposConItems = computed(() => {
 }
 
 .animate__animated { animation-duration: 0.5s; }
+
+/* ============ BADGE "NUEVOS" + DOT ============ */
+.badge-nuevos {
+  background: #dc3545;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.dot-notif {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 14px;
+  height: 14px;
+  background: #dc3545;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  animation: pulso 1.5s infinite;
+  z-index: 2;
+}
+
+@keyframes pulso {
+  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
 </style>

@@ -600,5 +600,4 @@ onMounted(() => {
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
 
-/* Cero media queries necesarias para la estructura. Bootstrap hace todo el trabajo. */
 </style>
