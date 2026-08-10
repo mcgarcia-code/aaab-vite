@@ -130,14 +130,18 @@ const fetchDesignaciones = async () => {
       action: 'obtenerHistorialDesignaciones'
     });
 
-    const lista = [] // Array.isArray(res.payload) ? res.payload : []
+    const lista = Array.isArray(res.payload) ? res.payload : []
+    const principal = lista.find(item => item.semanaAtras === 0)
 
-    if (lista.length > 0) {
-      // El item 0 es la semana más reciente; el resto son las anteriores
-      designacionPrincipal.value = lista[0];
-      historialDesignaciones.value = lista.slice(1, 5);
+    if (principal) {
+      designacionPrincipal.value = principal;
+      historialDesignaciones.value = lista.filter(item => item.semanaAtras !== 0).slice(0, 4);
     } else {
+      // Sin designaciones publicadas para la semana en curso: mostramos
+      // "Próximamente" y el historial completo de semanas anteriores.
+      designacionPrincipal.value = null;
       etiquetaPlaceholder.value = 'Próximamente'
+      historialDesignaciones.value = lista.slice(0, 4);
     }
   } catch (error) {
     console.error("Error cargando designaciones", error);

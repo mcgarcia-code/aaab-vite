@@ -1166,7 +1166,7 @@ const asignarArbitro = async (arbitro) => {
     if (sel.numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null; p._ext1 = false; p._estado1 = '' }
     else { p.arbitro_2 = ''; p.id_arb2 = null; p._ext2 = false; p._estado2 = '' }
   } else {
-    const nombreCompleto = capitalizarNombre(`${arbitro.apellido} ${arbitro.nombre}`)
+    const nombreCompleto = capitalizarNombre(`${arbitro.apellido}, ${arbitro.nombre}`)
     if (sel.numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id; p._ext1 = false; p._estado1 = '' }
     else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id; p._ext2 = false; p._estado2 = '' }
   }
