@@ -140,7 +140,7 @@ const routes = [
       { path: 'secretaria/licencias', name: 'LicenciasAdmin', component: () => import('../components/panel-admin/secretaria/LicenciasAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica', 'coordinador general'] } },
       { path: 'secretaria/eventos-notificaciones', name: 'GestionEventos', component: () => import('../components/panel-admin/secretaria/GestionEventos.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica', 'coordinador general'] } },
       { path: 'secretaria/grupos', name: 'GruposAdmin', component: () => import('../components/panel-admin/secretaria/GruposAdmin.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica', 'coordinador general'] } },
-
+      { path: 'secretaria/solicitudes-institucionales', name: 'SolicitudesInstitucionales', component: () => import('../components/panel-admin/secretaria/SolicitudesInstitucionales.vue'), meta: { roles: ['admin', 'secretario', 'designador', 'etica', 'coordinador general'] } },
 
       // --- DESIGNACIONES ---
 

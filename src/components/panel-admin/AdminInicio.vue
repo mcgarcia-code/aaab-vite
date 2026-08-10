@@ -91,7 +91,8 @@ const categorias = [
       { to: '/panel-admin/secretaria/modificacion-datos', title: 'Legajos', icon: 'bi bi-people', desc: 'Actualizar información personal y disponibilidad de los árbitros.' },
       { to: '/panel-admin/secretaria/licencias', title: 'Licencias', icon: 'bi bi-calendar-date-fill', desc: 'Gestionar las licencias y permisos de inasistencia.' },
       { to: '/panel-admin/secretaria/eventos-notificaciones', title: 'Eventos', icon: 'bi bi-bell', desc: 'Gestionar avisos, reuniones y noticias para los árbitros.' },
-      { to: '/panel-admin/secretaria/grupos', title: 'Grupos', icon: 'bi bi-people-fill', desc: 'Administrar grupos de árbitros' }
+      { to: '/panel-admin/secretaria/grupos', title: 'Grupos', icon: 'bi bi-people-fill', desc: 'Administrar grupos de árbitros' },
+      { to: '/panel-admin/secretaria/solicitudes-institucionales', title: 'Solicitudes Institucionales', icon: 'bi bi-envelope-paper', desc: 'Gestionar solicitudes de coordinadores.' },
     ]
   },
   {
