@@ -143,7 +143,7 @@
                         </p>
                       </div>
                       <button
-                        v-else
+                        v-else-if="p.funcion == 'arbitro'"
                         @click="abrirModalRechazo(p)"
                         class="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1"
                       >
@@ -669,7 +669,9 @@ const confirmarRechazo = async () => {
       action: 'rechazarDesignacion',
       payload: {
         idPartido: p.id,
-        motivo
+        motivo,
+        id_arb1: p.id_arb1,
+        id_arb2: p.id_arb2,
       }
     })
   if (res.ok) {

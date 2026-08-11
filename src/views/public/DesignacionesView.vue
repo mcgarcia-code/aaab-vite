@@ -130,7 +130,7 @@ const fetchDesignaciones = async () => {
       action: 'obtenerHistorialDesignaciones'
     });
 
-    const lista = Array.isArray(res.payload) ? res.payload : []
+    const lista = [] // Array.isArray(res.payload) ? res.payload : []
     const principal = lista.find(item => item.semanaAtras === 0)
 
     if (principal) {

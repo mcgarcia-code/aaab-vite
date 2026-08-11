@@ -469,6 +469,7 @@ const historial = ref([])
 
 const verHistorialRechazo = async (r) => {
   arbitroHistorial.value = r
+  console.log(r)
   mostrarModalHistorial.value = true
   cargandoHistorial.value = true
   historial.value = []
@@ -476,7 +477,7 @@ const verHistorialRechazo = async (r) => {
     const res = await api.get({
       entity: 'designaciones',
       action: 'obtenerHistorialRechazos',
-      payload: { id_arbitro: r.id_arbitro }
+      payload: { idArbitro: r.id_arbitro }
     })
     if ((res.ok || res.success) && Array.isArray(res.payload)) {
       historial.value = res.payload
