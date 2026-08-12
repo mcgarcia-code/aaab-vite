@@ -183,7 +183,7 @@ const eventoActual = computed(() =>
 
 const habilitadosPorEvento = computed(() => {
   const mapa = {}
-  for (const h of habilitaciones.value) {
+  for (const h of habilitaciones.value['grupos']) {
     if (!h.id_grupo) continue
     if (!mapa[h.id_evento]) mapa[h.id_evento] = []
     mapa[h.id_evento].push(h.id_grupo)
@@ -193,7 +193,7 @@ const habilitadosPorEvento = computed(() => {
 
 const arbitrosHabilitadosPorEvento = computed(() => {
   const mapa = {}
-  for (const h of habilitaciones.value) {
+  for (const h of habilitaciones.value['arbitros']) {
     if (!h.id_arbitro) continue
     if (!mapa[h.id_evento]) mapa[h.id_evento] = []
     mapa[h.id_evento].push(`${h.arbitro_apellido}, ${h.arbitro_nombre}`)
@@ -249,20 +249,29 @@ async function cargarTodo() {
       action: 'obtenerAsambleas',
       payload: {}
     }),
-    api.get({ entity: 'grupos', action: 'obtenerGrupos' }),
-    api.get({ entity: 'examenes_habilitaciones', action: 'obtenerHabilitaciones' }),
-    api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: {} })
+    api.get({ 
+      entity: 'grupos', 
+      action: 'obtenerGrupos' 
+    }),
+    api.get({ 
+      entity: 'examenes_habilitaciones', 
+      action: 'obtenerHabilitaciones' 
+    }),
+    api.get({ 
+      entity: 'arbitros', 
+      action: 'getArbitrosBasico', 
+      payload: {} 
+    })
   ])
   const listaEv = ev?.payload ?? ev ?? []
   const listaGr = gr?.payload ?? gr ?? []
   const listaHab = hab?.payload ?? hab ?? []
   const listaArb = arb?.payload ?? arb ?? []
-
   eventos.value = listaEv.filter(e =>
     ['asamblea', 'recuperatorio'].includes(String(e.categoria || '').toLowerCase())
   )
   grupos.value = listaGr
-  habilitaciones.value = listaHab.filter(h => Number(h.activo) === 1)
+  habilitaciones.value = listaHab
   arbitros.value = listaArb
 }
 
