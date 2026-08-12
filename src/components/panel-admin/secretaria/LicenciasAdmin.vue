@@ -79,109 +79,117 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
 
-          <!-- TABLA (Solo Escritorio) -->
-          <div class="d-none d-md-block table-responsive border rounded shadow-sm">
-            <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem;">
-              <thead class="table-light">
-                <tr>
-                  <th class="py-3 ps-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 1px;">ID</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
-                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
-                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Motivo</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">F. Solicitud</th>
-                  <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">F. Ausencia</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="lic in licenciasPaginadas" :key="lic.id">
-                  <td class="ps-3 text-muted fw-bold font-monospace">{{ lic.id }}</td>
-                  <td class="text-center">
-                    <div class="d-flex justify-content-center gap-1">
-                      <button @click="editarLicencia(lic)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar Licencia">
-                        <span class="material-icons" style="font-size:16px;">edit</span>
-                      </button>
-                      <button @click="verHistorialLicencia(lic)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver Historial">
-                        <span class="material-icons" style="font-size:16px;">manage_search</span>
-                      </button>
-                      <button @click="eliminarLicencia(lic.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
-                        <span class="material-icons" style="font-size:16px;">delete</span>
-                      </button>
-                    </div>
-                  </td>
-                  <td class="fw-bold text-uppercase text-dark">{{ lic.apellido }}, {{ lic.nombre }}</td>
-                  <td class="text-center">
-                    <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
-                  </td>
-                  <td class="text-muted small">{{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</td>
-                  <td class="text-center text-muted fw-bold">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
-                  <td class="text-center pe-3 text-primary fw-bold">{{ formatearFechaVista(lic.fecha_licencia) }}</td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargando" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando licencias...</p>
           </div>
 
-          <!-- CARDS (Solo Celular) -->
-          <div class="d-md-none p-3 bg-light">
-            <div v-for="lic in licenciasPaginadas" :key="'mob-'+lic.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
-
-              <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
-                <div class="text-uppercase text-dark fw-bold" style="font-size: 1.05rem;">
-                  {{ lic.apellido }}, {{ lic.nombre }}
-                </div>
-                <div class="small text-muted fw-bold font-monospace">#{{ lic.id }}</div>
-              </div>
-
-              <div class="card-body pt-0 px-3 pb-3">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <span class="fw-bold text-primary fs-5">{{ formatearFechaVista(lic.fecha_licencia) }}</span>
-                  <span :class="['badge-status-sm', lic.estado]" style="font-size: 0.7rem; padding: 3px 10px;">{{ lic.estado.toUpperCase() }}</span>
-                </div>
-
-                <div class="bg-light p-2 rounded border small mb-3">
-                  <div class="d-flex justify-content-between mb-1">
-                    <span class="text-muted">Motivo:</span>
-                    <span class="fw-bold text-dark">{{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</span>
-                  </div>
-                  <div class="d-flex justify-content-between">
-                    <span class="text-muted">Solicitada:</span>
-                    <span class="fw-bold text-dark">{{ formatearFechaVista(lic.fecha_solicitud) }}</span>
-                  </div>
-                </div>
-
-                <!-- Botones Acciones -->
-                <div class="d-flex gap-2">
-                  <button @click="editarLicencia(lic)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                    <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
-                  </button>
-                  <button @click="verHistorialLicencia(lic)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
-                    <span class="material-icons" style="font-size: 18px;">manage_search</span>
-                  </button>
-                  <button @click="eliminarLicencia(lic.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
-                    <span class="material-icons" style="font-size: 18px;">delete</span>
-                  </button>
-                </div>
-              </div>
-
+          <template v-else>
+            <!-- TABLA (Solo Escritorio) -->
+            <div class="d-none d-md-block table-responsive border rounded shadow-sm">
+              <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem;">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-3 ps-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 1px;">ID</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Motivo</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">F. Solicitud</th>
+                    <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">F. Ausencia</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="lic in licenciasPaginadas" :key="lic.id">
+                    <td class="ps-3 text-muted fw-bold font-monospace">{{ lic.id }}</td>
+                    <td class="text-center">
+                      <div class="d-flex justify-content-center gap-1">
+                        <button @click="editarLicencia(lic)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar Licencia">
+                          <span class="material-icons" style="font-size:16px;">edit</span>
+                        </button>
+                        <button @click="verHistorialLicencia(lic)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver Historial">
+                          <span class="material-icons" style="font-size:16px;">manage_search</span>
+                        </button>
+                        <button @click="eliminarLicencia(lic.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
+                          <span class="material-icons" style="font-size:16px;">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                    <td class="fw-bold text-uppercase text-dark">{{ lic.apellido }}, {{ lic.nombre }}</td>
+                    <td class="text-center">
+                      <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
+                    </td>
+                    <td class="text-muted small">{{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</td>
+                    <td class="text-center text-muted fw-bold">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
+                    <td class="text-center pe-3 text-primary fw-bold">{{ formatearFechaVista(lic.fecha_licencia) }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          </div>
 
-          <!-- EMPTY STATE -->
-          <div v-if="licenciasPaginadas.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-3">
-            <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">search_off</span>
-            <p class="text-muted m-0 fw-bold">No se encontraron licencias.</p>
-          </div>
+            <!-- CARDS (Solo Celular) -->
+            <div class="d-md-none p-3 bg-light">
+              <div v-for="lic in licenciasPaginadas" :key="'mob-'+lic.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
 
-          <!-- PAGINACIÓN -->
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+                <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
+                  <div class="text-uppercase text-dark fw-bold" style="font-size: 1.05rem;">
+                    {{ lic.apellido }}, {{ lic.nombre }}
+                  </div>
+                  <div class="small text-muted fw-bold font-monospace">#{{ lic.id }}</div>
+                </div>
+
+                <div class="card-body pt-0 px-3 pb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-bold text-primary fs-5">{{ formatearFechaVista(lic.fecha_licencia) }}</span>
+                    <span :class="['badge-status-sm', lic.estado]" style="font-size: 0.7rem; padding: 3px 10px;">{{ lic.estado.toUpperCase() }}</span>
+                  </div>
+
+                  <div class="bg-light p-2 rounded border small mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                      <span class="text-muted">Motivo:</span>
+                      <span class="fw-bold text-dark">{{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                      <span class="text-muted">Solicitada:</span>
+                      <span class="fw-bold text-dark">{{ formatearFechaVista(lic.fecha_solicitud) }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Botones Acciones -->
+                  <div class="d-flex gap-2">
+                    <button @click="editarLicencia(lic)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                      <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
+                    </button>
+                    <button @click="verHistorialLicencia(lic)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
+                      <span class="material-icons" style="font-size: 18px;">manage_search</span>
+                    </button>
+                    <button @click="eliminarLicencia(lic.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
+                      <span class="material-icons" style="font-size: 18px;">delete</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div v-if="licenciasPaginadas.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-3">
+              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">search_off</span>
+              <p class="text-muted m-0 fw-bold">No se encontraron licencias.</p>
+            </div>
+
+            <!-- PAGINACIÓN -->
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+                <i class="bi bi-chevron-left"></i> Ant
+              </button>
+              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+                Sig <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </template>
 
         </div>
       </div>
@@ -399,12 +407,15 @@ const cambiarPagina = (delta) => {
 
 const obtenerLicencias = async () => {
   cargando.value = true;
-  const res = await api.get({
-    entity: 'licencias',
-    action: 'obtenerTodasLasLicencias'
-  });
-  if (res.ok) licencias.value = res.payload;
-  cargando.value = false;
+  try {
+    const res = await api.get({
+      entity: 'licencias',
+      action: 'obtenerTodasLasLicencias'
+    });
+    if (res.ok) licencias.value = res.payload;
+  } finally {
+    cargando.value = false;
+  }
 };
 
 const obtenerArbitros = async () => {
@@ -504,7 +515,7 @@ const verHistorialLicencia = async (lic) => {
   historialLicencia.value = [];
 
   try {
-    const res = await await api.get({
+    const res = await api.get({
       entity: 'licencias',
       action: 'obtenerHistorial',
       payload: { id_arbitro: lic.id_arbitro }

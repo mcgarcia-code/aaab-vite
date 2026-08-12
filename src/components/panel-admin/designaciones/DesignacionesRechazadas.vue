@@ -513,11 +513,11 @@ const verHistorialRechazo = async (r) => {
   cargandoHistorial.value = true
   historial.value = []
   try {
-const res = await api.get({
-  entity: 'designaciones',
-  action: 'obtenerHistorialRechazos',
-  payload: { idArbitro: r.id_arbitro }
-})
+    const res = await api.get({
+      entity: 'designaciones',
+      action: 'obtenerHistorialRechazos',
+      payload: { idArbitro: r.id_arbitro }
+    })
     if ((res.ok || res.success) && Array.isArray(res.payload)) {
       historial.value = res.payload
     }

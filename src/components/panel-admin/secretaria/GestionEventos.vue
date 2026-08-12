@@ -14,8 +14,9 @@
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <button @click="obtenerEventos" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span class="material-icons text-dark fs-6">refresh</span>
+            <button @click="obtenerEventos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
 
@@ -45,10 +46,10 @@
             <div class="col-12 col-md-3">
               <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar tema o descripcion...">
             </div>
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-2">
               <input type="date" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center">
             </div>
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-2">
               <select v-model="filtros.categoria" class="form-select form-select-sm shadow-none">
                 <option value="">TODAS LAS CATEGORIAS</option>
                 <option value="reunion">REUNION</option>
@@ -58,8 +59,14 @@
                 <option value="recuperatorio">RECUPERATORIO</option>
               </select>
             </div>
-            <div class="col-12 col-md-3">
+            <div class="col-6 col-md-3">
               <input v-model="filtros.grupo" class="form-control form-control-sm shadow-none" placeholder="Grupo (Ej: Pre Liga, 3-A...)">
+            </div>
+                        <div class="col-6 col-md-2">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+                <option value="">AÑO (TODOS)</option>
+                <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
+              </select>
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
@@ -68,108 +75,118 @@
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">
-          <div class="d-none d-md-block table-responsive border rounded shadow-sm">
-            <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem; table-layout: fixed;">
-              <thead class="table-light">
-                <tr>
-                  <th class="py-3 ps-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 110px;">Fecha</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 100px;">Acciones</th>
-                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 25%;">Tema del Evento</th>
-                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 35%;">Lugar / Descripcion</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 130px;">Categoria</th>
-                  <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 150px;">Alcance</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="evento in eventosPaginados" :key="evento.id">
-                  <td class="ps-3 text-center text-muted fw-bold">{{ formatearFecha(evento.fecha_evento) }}</td>
-                  <td class="text-center">
-                    <div class="d-flex justify-content-center gap-1">
-                      <button @click="cargarDatosEdicion(evento)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar Evento">
-                        <span class="material-icons" style="font-size:16px;">edit</span>
-                      </button>
-                      <button @click="confirmarEliminacion(evento.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar Evento">
-                        <span class="material-icons" style="font-size:16px;">delete</span>
-                      </button>
-                    </div>
-                  </td>
-                  <td class="fw-bold text-dark text-truncate" :title="evento.titulo">{{ evento.titulo }}</td>
-                  <td class="text-muted small text-truncate" :title="evento.descripcion">
-                    {{ evento.descripcion || '-' }}
-                    <div v-if="esLink(evento.descripcion)" class="mt-1">
-                      <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none" style="font-size: 0.75rem;">
-                        <i class="bi bi-link-45deg"></i> ABRIR ENLACE
-                      </a>
-                    </div>
-                  </td>
-                  <td class="text-center">
-                    <span class="badge-category" :class="badgeCategoria(evento.categoria)">{{ evento.categoria.toUpperCase() }}</span>
-                  </td>
-                  <td class="text-center pe-3">
-                    <span v-for="(nombre,k) in evento.nombresGrupos" :key="k" class="badge-status-sm bg-dark text-white">
-                      {{ nombre }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargando" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando eventos...</p>
           </div>
 
-          <div class="d-md-none p-3 bg-light">
-            <div v-for="evento in eventosPaginados" :key="'mob-'+evento.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
-              <div class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 d-flex flex-column gap-1">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="small text-primary fw-bold font-monospace">{{ formatearFecha(evento.fecha_evento) }}</span>
-                  <span class="badge-category" :class="badgeCategoria(evento.categoria)">{{ evento.categoria.toUpperCase() }}</span>
-                </div>
-                <div class="fw-bold text-dark fs-6 mt-1 lh-sm">
-                  {{ evento.titulo }}
-                </div>
-              </div>
+          <template v-else>
+            <div class="d-none d-md-block table-responsive border rounded shadow-sm">
+              <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem; table-layout: fixed;">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-3 ps-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 110px;">Fecha</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 100px;">Acciones</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 25%;">Tema del Evento</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 35%;">Lugar / Descripcion</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 130px;">Categoria</th>
+                    <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 150px;">Alcance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="evento in eventosPaginados" :key="evento.id">
+                    <td class="ps-3 text-center text-muted fw-bold">{{ formatearFecha(evento.fecha_evento) }}</td>
+                    <td class="text-center">
+                      <div class="d-flex justify-content-center gap-1">
+                        <button @click="cargarDatosEdicion(evento)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar Evento">
+                          <span class="material-icons" style="font-size:16px;">edit</span>
+                        </button>
+                        <button @click="confirmarEliminacion(evento.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar Evento">
+                          <span class="material-icons" style="font-size:16px;">delete</span>
+                        </button>
+                      </div>
+                    </td>
+                    <td class="fw-bold text-dark text-truncate" :title="evento.titulo">{{ evento.titulo }}</td>
+                    <td class="text-muted small text-truncate" :title="evento.descripcion">
+                      {{ evento.descripcion || '-' }}
+                      <div v-if="esLink(evento.descripcion)" class="mt-1">
+                        <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none" style="font-size: 0.75rem;">
+                          <i class="bi bi-link-45deg"></i> ABRIR ENLACE
+                        </a>
+                      </div>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge-category" :class="badgeCategoria(evento.categoria)">{{ evento.categoria.toUpperCase() }}</span>
+                    </td>
+                    <td class="text-center pe-3">
+                      <span v-for="(nombre,k) in evento.nombresGrupos" :key="k" class="badge-status-sm bg-dark text-white">
+                        {{ nombre }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-              <div class="card-body pt-0 px-3 pb-3">
-                <div class="bg-light p-2 rounded border small mb-3">
-                  <p class="text-muted m-0" style="white-space: pre-line;">{{ evento.descripcion || 'Sin descripcion' }}</p>
-                  <div v-if="esLink(evento.descripcion)" class="mt-2">
-                    <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none">
-                      <span class="material-icons align-middle" style="font-size: 16px;">link</span> Abrir Enlace
-                    </a>
+            <div class="d-md-none p-3 bg-light">
+              <div v-for="evento in eventosPaginados" :key="'mob-'+evento.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
+                <div class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 d-flex flex-column gap-1">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="small text-primary fw-bold font-monospace">{{ formatearFecha(evento.fecha_evento) }}</span>
+                    <span class="badge-category" :class="badgeCategoria(evento.categoria)">{{ evento.categoria.toUpperCase() }}</span>
+                  </div>
+                  <div class="fw-bold text-dark fs-6 mt-1 lh-sm">
+                    {{ evento.titulo }}
                   </div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <span class="text-muted small">Alcance:</span>
-                  <span v-for="(nombre,k) in evento.nombresGrupos" :key="k" class="badge-status-sm bg-dark text-white">
-                    {{ nombre }}
-                  </span>
-                </div>
+                <div class="card-body pt-0 px-3 pb-3">
+                  <div class="bg-light p-2 rounded border small mb-3">
+                    <p class="text-muted m-0" style="white-space: pre-line;">{{ evento.descripcion || 'Sin descripcion' }}</p>
+                    <div v-if="esLink(evento.descripcion)" class="mt-2">
+                      <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none">
+                        <span class="material-icons align-middle" style="font-size: 16px;">link</span> Abrir Enlace
+                      </a>
+                    </div>
+                  </div>
 
-                <div class="d-flex gap-2">
-                  <button @click="cargarDatosEdicion(evento)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                    <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
-                  </button>
-                  <button @click="confirmarEliminacion(evento.id)" class="btn btn-sm btn-outline-danger flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                    <span class="material-icons" style="font-size: 16px;">delete</span> ELIMINAR
-                  </button>
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted small">Alcance:</span>
+                    <span v-for="(nombre,k) in evento.nombresGrupos" :key="k" class="badge-status-sm bg-dark text-white">
+                      {{ nombre }}
+                    </span>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button @click="cargarDatosEdicion(evento)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                      <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
+                    </button>
+                    <button @click="confirmarEliminacion(evento.id)" class="btn btn-sm btn-outline-danger flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                      <span class="material-icons" style="font-size: 16px;">delete</span> ELIMINAR
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div v-if="eventosPaginados.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-3">
-            <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">event_busy</span>
-            <p class="text-muted m-0 fw-bold">No se encontraron eventos.</p>
-          </div>
+            <div v-if="eventosPaginados.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-3">
+              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">event_busy</span>
+              <p class="text-muted m-0 fw-bold">No se encontraron eventos.</p>
+            </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Pagina {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+                <i class="bi bi-chevron-left"></i> Ant
+              </button>
+              <span class="fw-bold text-dark small">Pagina {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+                Sig <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </template>
+
         </div>
       </div>
     </div>
@@ -196,7 +213,7 @@
 
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Lugar*</label>
-            <textarea v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="2" placeholder="Ej: Casa del Handball..." required></textarea>
+            <textarea v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="2  " placeholder="Ej: Casa del Handball..." required></textarea>
           </div>
 
           <div class="col-md-6">
@@ -292,6 +309,8 @@ const formBase = {
   categoria: 'reunion'
 }
 
+const cargando = ref(false)
+
 const form = reactive({ ...formBase })
 
 const mostrarModal = ref(false)
@@ -300,6 +319,7 @@ const mostrarFiltrosMobile = ref(false)
 
 const filtros = reactive({
   busqueda: '',
+  anio: '',
   fecha: '',
   categoria: '',
   grupo: ''
@@ -315,6 +335,16 @@ const normalizarTexto = (texto) => {
     .toLowerCase()
 }
 
+// Años presentes en los eventos, ordenados de mayor a menor
+const aniosDisponibles = computed(() => {
+  const anios = new Set()
+  listaEventos.value.forEach(e => {
+    const anio = (e.fecha_evento || '').substring(0, 4)
+    if (anio) anios.add(anio)
+  })
+  return [...anios].sort((a, b) => b.localeCompare(a))
+})
+
 const eventosFiltrados = computed(() => {
   let resultado = listaEventos.value
 
@@ -323,6 +353,11 @@ const eventosFiltrados = computed(() => {
     if (filtros.busqueda) {
       const search = normalizarTexto(filtros.busqueda)
       matchBusqueda = normalizarTexto(e.titulo).includes(search) || normalizarTexto(e.descripcion).includes(search)
+    }
+
+    let matchAnio = true
+    if (filtros.anio) {
+      matchAnio = (e.fecha_evento || '').substring(0, 4) === filtros.anio
     }
 
     let matchFecha = true
@@ -342,7 +377,7 @@ const eventosFiltrados = computed(() => {
       matchGrupo = alcance.includes(searchG)
     }
 
-    return matchBusqueda && matchFecha && matchCategoria && matchGrupo
+    return matchBusqueda && matchAnio && matchFecha && matchCategoria && matchGrupo
   })
 
   const fechaActual = new Date()
@@ -401,15 +436,21 @@ const esLink = (texto) => {
 
 const limpiarFiltrosTabla = () => {
   filtros.busqueda = ''
+  filtros.anio = ''
   filtros.fecha = ''
   filtros.categoria = ''
   filtros.grupo = ''
 }
 
 const obtenerEventos = async () => {
-  const res = await api.get({ entity: 'eventos', action: 'obtenerTodosLosEventos' })
-  if (res.ok) {
-    listaEventos.value = res.payload ?? []
+  cargando.value = true
+  try {
+    const res = await api.get({ entity: 'eventos', action: 'obtenerTodosLosEventos' })
+    if (res.ok) {
+      listaEventos.value = res.payload ?? []
+    }
+  } finally {
+    cargando.value = false
   }
 }
 

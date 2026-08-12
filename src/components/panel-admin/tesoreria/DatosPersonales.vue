@@ -13,6 +13,13 @@
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <!-- Botón Recargar -->
+            <button @click="cargarDatos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
+            </button>
+
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
@@ -64,7 +71,13 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
 
-          <div v-if="datosPaginados.length === 0" class="text-center p-4 p-md-5 bg-light m-3 rounded shadow-sm border border-light-subtle">
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargando" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando registros...</p>
+          </div>
+
+          <div v-else-if="datosPaginados.length === 0" class="text-center p-4 p-md-5 bg-light m-3 rounded shadow-sm border border-light-subtle">
             <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">search_off</span>
             <p class="text-muted m-0 fw-bold">No se encontraron registros.</p>
           </div>
@@ -174,6 +187,7 @@ useHead({
 });
 
 const listaCompleta = ref([]);
+const cargando = ref(false);
 const mostrarFiltrosMobile = ref(false);
 const filtros = reactive({
   apellido: '', nombre: '', es_activo: '', grupo: '', subgrupo: '', fecha_nacimiento: '', celular: '', dni: '', email: ''
@@ -182,6 +196,7 @@ const paginaActual = ref(1);
 const registrosPorPagina = 10;
 
 const cargarDatos = async () => {
+  cargando.value = true;
   try {
     const { payload } = await api.get({ entity: 'arbitros', action: 'getArbitros' });
     if (payload) {
@@ -193,6 +208,8 @@ const cargarDatos = async () => {
     }
   } catch (err) {
     console.error("Error cargando datos:", err);
+  } finally {
+    cargando.value = false;
   }
 };
 

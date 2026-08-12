@@ -84,215 +84,223 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
 
-          <!-- TABLA (Solo Escritorio) -->
-          <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
-            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
-              <thead class="table-light">
-                <!-- Títulos -->
-                <tr>
-                  <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id">ID</th>
-                  <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones">Acciones</th>
-                  <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
-                  <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Activo</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Rol</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Apto</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Subg.</th>
-                  <th class="py-3 text-center text-uppercase text-muted">DNI</th>
-                  <th class="py-3 text-uppercase text-muted">Email</th>
-                  <th class="py-3 text-uppercase text-muted">Dirección</th>
-                  <th class="py-3 text-uppercase text-muted">Provincia</th>
-                  <th class="py-3 text-uppercase text-muted">Localidad</th>
-                  <th class="py-3 text-uppercase text-muted">Zona</th>
-                  <th class="py-3 text-uppercase text-muted">Celular</th>
-                  <th class="py-3 text-uppercase text-muted">F. Nacimiento</th>
-                  <th class="py-3 text-uppercase text-muted">Tel. Contacto</th>
-                  <th class="py-3 text-uppercase text-muted">Parentesco</th>
-                  <th class="py-3 text-uppercase text-muted">Movilidad</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Sáb. Disp</th>
-                  <th class="py-3 text-uppercase text-muted">Sáb. Desde</th>
-                  <th class="py-3 text-uppercase text-muted">Sáb. Hasta</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Dom. Disp</th>
-                  <th class="py-3 text-uppercase text-muted">Dom. Desde</th>
-                  <th class="py-3 text-uppercase text-muted">Dom. Hasta</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Juega</th>
-                  <th class="py-3 text-uppercase text-muted">Club</th>
-                  <th class="py-3 text-uppercase text-muted">Cat. Juega</th>
-                  <th class="py-3 text-uppercase text-muted">Observaciones</th>
-                </tr>
-                <!-- Filtros Desktop -->
-                <tr class="bg-light">
-                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
-                    <button @click="obtenerArbitros" class="btn btn-sm btn-light border rounded text-secondary shadow-sm px-2 py-1"><i class="bi bi-arrow-clockwise"></i></button>
-                  </td>
-                  <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
-                  <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
-                  <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
-                  <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none">
-                      <option value="">Todos</option><option value="NO">No</option><option value="SI">Sí</option>
-                    </select>
-                  </td>
-                  <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.rol" class="form-select form-select-sm shadow-none">
-                      <option value="">Todos</option><option :value="0">Ninguno</option><option :value="1">Árbitro</option><option :value="2">Observador</option><option :value="4">Coordinador</option>
-                    </select>
-                  </td>
-                  <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none">
-                      <option value="">Todos</option><option value="SI">Sí</option><option value="NO">No</option>
-                    </select>
-                  </td>
-                  <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
-                      <option value="">Todos</option><option value="LH">LH</option><option value="Pre Liga">Pre Liga</option><option value="SR">SR</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
-                    </select>
-                  </td>
-                  <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
-                      <option value="">Todos</option><option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                    </select>
-                  </td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none text-center"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.email" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.direccion" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><selProvincia v-model="filtros.provincia" :provincias="provincias" class="form-select form-select-sm shadow-none" /></td>
-                  <td class="p-2 border-bottom border-2"><selLocalidad v-model="filtros.localidad" :localidades="localidadesFiltradas" class="form-select form-select-sm shadow-none" /></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.zona" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.celular" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.fecha_nacimiento" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.telefonocontacto" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.parentescocontacto" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.movilidad" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado_desde" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado_hasta" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo_desde" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo_hasta" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.juega_handball" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.donde_juega" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.categoria_handball" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.observaciones" class="form-control form-control-sm shadow-none"></td>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="a in arbitrosPaginados" :key="a.id" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
-                  <td class="ps-3 text-muted fw-bold font-monospace col-fija col-id">{{ a.id }}</td>
-                  <td class="text-center col-fija col-acciones">
-                    <div class="d-flex justify-content-center gap-1">
-                      <button @click="editarArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar árbitro">
-                        <span class="material-icons" style="font-size:16px;">edit</span>
-                      </button>
-                      <button @click="verHistorialArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver historial de cambios">
-                        <span class="material-icons" style="font-size:16px;">manage_search</span>
-                      </button>
-                    </div>
-                  </td>
-                  <td class="text-dark fw-bold text-uppercase col-fija col-apellido">{{ a.apellido }}</td>
-                  <td class="text-dark fw-bold text-uppercase col-fija col-nombre">{{ a.nombre }}</td>
-                  <td class="text-center">
-                    <div class="d-flex align-items-center justify-content-center gap-1">
-                      <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
-                      <span class="small text-dark fw-bold">{{ a.es_activo == 1 ? 'SI' : 'NO' }}</span>
-                    </div>
-                  </td>
-                  <td class="text-center text-dark fw-bold">{{ obtenerNombreRol(a.rol) }}</td>
-                  <td class="text-center">
-                    <div class="d-flex align-items-center justify-content-center gap-1">
-                      <span class="status-dot" :class="a.apto_medico == 1 ? 'bg-success' : 'bg-danger'"></span>
-                      <span class="small text-dark fw-bold">{{ a.apto_medico == 1 ? 'SI' : 'NO' }}</span>
-                    </div>
-                  </td>
-                  <td class="text-center text-dark">{{ a.grupo }}</td>
-                  <td class="text-center text-dark">{{ a.subgrupo }}</td>
-                  <td class="text-center text-dark">{{ a.dni }}</td>
-                  <td class="text-dark">{{ a.email }}</td>
-                  <td class="text-dark">{{ a.direccion }}</td>
-                  <td class="text-dark">{{ a.nombre_provincia }}</td>
-                  <td class="text-dark">{{ a.nombre_localidad }}</td>
-                  <td class="text-dark">{{ a.zona }}</td>
-                  <td class="text-dark">{{ a.celular }}</td>
-                  <td class="text-dark">{{ a.fecha_nacimiento ? mostrarFechaArg(a.fecha_nacimiento) : '' }}</td>
-                  <td class="text-dark">{{ a.telefonocontacto }}</td>
-                  <td class="text-dark">{{ a.parentescocontacto }}</td>
-                  <td class="text-dark">{{ a.movilidad }}</td>
-                  <td class="text-center text-dark">{{ a.disponibilidad_sabado }}</td>
-                  <td class="text-dark">{{ a.disponibilidad_sabado_desde }}</td>
-                  <td class="text-dark">{{ a.disponibilidad_sabado_hasta }}</td>
-                  <td class="text-center text-dark">{{ a.disponibilidad_domingo }}</td>
-                  <td class="text-dark">{{ a.disponibilidad_domingo_desde }}</td>
-                  <td class="text-dark">{{ a.disponibilidad_domingo_hasta }}</td>
-                  <td class="text-center text-dark">{{ a.juega_handball }}</td>
-                  <td class="text-dark">{{ a.donde_juega }}</td>
-                  <td class="text-dark">{{ a.categoria_handball }}</td>
-                  <td class="text-dark">
-                      <span
-                        class="d-inline-block text-truncate"
-                        style="max-width: 180px; cursor: help;"
-                        :title="a.observaciones"
-                      >
-                        {{ a.observaciones }}
-                      </span>
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargandoTabla" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando árbitros...</p>
+          </div>
+
+          <template v-else>
+            <!-- TABLA (Solo Escritorio) -->
+            <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
+                <thead class="table-light">
+                  <!-- Títulos -->
+                  <tr>
+                    <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id">ID</th>
+                    <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones">Acciones</th>
+                    <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
+                    <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Activo</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Rol</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Apto</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Subg.</th>
+                    <th class="py-3 text-center text-uppercase text-muted">DNI</th>
+                    <th class="py-3 text-uppercase text-muted">Email</th>
+                    <th class="py-3 text-uppercase text-muted">Dirección</th>
+                    <th class="py-3 text-uppercase text-muted">Provincia</th>
+                    <th class="py-3 text-uppercase text-muted">Localidad</th>
+                    <th class="py-3 text-uppercase text-muted">Zona</th>
+                    <th class="py-3 text-uppercase text-muted">Celular</th>
+                    <th class="py-3 text-uppercase text-muted">F. Nacimiento</th>
+                    <th class="py-3 text-uppercase text-muted">Tel. Contacto</th>
+                    <th class="py-3 text-uppercase text-muted">Parentesco</th>
+                    <th class="py-3 text-uppercase text-muted">Movilidad</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Sáb. Disp</th>
+                    <th class="py-3 text-uppercase text-muted">Sáb. Desde</th>
+                    <th class="py-3 text-uppercase text-muted">Sáb. Hasta</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Dom. Disp</th>
+                    <th class="py-3 text-uppercase text-muted">Dom. Desde</th>
+                    <th class="py-3 text-uppercase text-muted">Dom. Hasta</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Juega</th>
+                    <th class="py-3 text-uppercase text-muted">Club</th>
+                    <th class="py-3 text-uppercase text-muted">Cat. Juega</th>
+                    <th class="py-3 text-uppercase text-muted">Observaciones</th>
+                  </tr>
+                  <!-- Filtros Desktop -->
+                  <tr class="bg-light">
+                    <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
+                      <button @click="obtenerArbitros" class="btn btn-sm btn-light border rounded text-secondary shadow-sm px-2 py-1"><i class="bi bi-arrow-clockwise"></i></button>
                     </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                    <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
+                    <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
+                    <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
+                    <td class="p-2 border-bottom border-2">
+                      <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none">
+                        <option value="">Todos</option><option value="NO">No</option><option value="SI">Sí</option>
+                      </select>
+                    </td>
+                    <td class="p-2 border-bottom border-2">
+                      <select v-model="filtros.rol" class="form-select form-select-sm shadow-none">
+                        <option value="">Todos</option><option :value="0">Ninguno</option><option :value="1">Árbitro</option><option :value="2">Observador</option><option :value="4">Coordinador</option>
+                      </select>
+                    </td>
+                    <td class="p-2 border-bottom border-2">
+                      <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none">
+                        <option value="">Todos</option><option value="SI">Sí</option><option value="NO">No</option>
+                      </select>
+                    </td>
+                    <td class="p-2 border-bottom border-2">
+                      <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
+                        <option value="">Todos</option><option value="LH">LH</option><option value="Pre Liga">Pre Liga</option><option value="SR">SR</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                      </select>
+                    </td>
+                    <td class="p-2 border-bottom border-2">
+                      <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
+                        <option value="">Todos</option><option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                      </select>
+                    </td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none text-center"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.email" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.direccion" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><selProvincia v-model="filtros.provincia" :provincias="provincias" class="form-select form-select-sm shadow-none" /></td>
+                    <td class="p-2 border-bottom border-2"><selLocalidad v-model="filtros.localidad" :localidades="localidadesFiltradas" class="form-select form-select-sm shadow-none" /></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.zona" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.celular" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.fecha_nacimiento" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.telefonocontacto" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.parentescocontacto" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.movilidad" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado_desde" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado_hasta" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo_desde" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo_hasta" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.juega_handball" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.donde_juega" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.categoria_handball" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.observaciones" class="form-control form-control-sm shadow-none"></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="a in arbitrosPaginados" :key="a.id" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
+                    <td class="ps-3 text-muted fw-bold font-monospace col-fija col-id">{{ a.id }}</td>
+                    <td class="text-center col-fija col-acciones">
+                      <div class="d-flex justify-content-center gap-1">
+                        <button @click="editarArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar árbitro">
+                          <span class="material-icons" style="font-size:16px;">edit</span>
+                        </button>
+                        <button @click="verHistorialArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver historial de cambios">
+                          <span class="material-icons" style="font-size:16px;">manage_search</span>
+                        </button>
+                      </div>
+                    </td>
+                    <td class="text-dark fw-bold text-uppercase col-fija col-apellido">{{ a.apellido }}</td>
+                    <td class="text-dark fw-bold text-uppercase col-fija col-nombre">{{ a.nombre }}</td>
+                    <td class="text-center">
+                      <div class="d-flex align-items-center justify-content-center gap-1">
+                        <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
+                        <span class="small text-dark fw-bold">{{ a.es_activo == 1 ? 'SI' : 'NO' }}</span>
+                      </div>
+                    </td>
+                    <td class="text-center text-dark fw-bold">{{ obtenerNombreRol(a.rol) }}</td>
+                    <td class="text-center">
+                      <div class="d-flex align-items-center justify-content-center gap-1">
+                        <span class="status-dot" :class="a.apto_medico == 1 ? 'bg-success' : 'bg-danger'"></span>
+                        <span class="small text-dark fw-bold">{{ a.apto_medico == 1 ? 'SI' : 'NO' }}</span>
+                      </div>
+                    </td>
+                    <td class="text-center text-dark">{{ a.grupo }}</td>
+                    <td class="text-center text-dark">{{ a.subgrupo }}</td>
+                    <td class="text-center text-dark">{{ a.dni }}</td>
+                    <td class="text-dark">{{ a.email }}</td>
+                    <td class="text-dark">{{ a.direccion }}</td>
+                    <td class="text-dark">{{ a.nombre_provincia }}</td>
+                    <td class="text-dark">{{ a.nombre_localidad }}</td>
+                    <td class="text-dark">{{ a.zona }}</td>
+                    <td class="text-dark">{{ a.celular }}</td>
+                    <td class="text-dark">{{ a.fecha_nacimiento ? mostrarFechaArg(a.fecha_nacimiento) : '' }}</td>
+                    <td class="text-dark">{{ a.telefonocontacto }}</td>
+                    <td class="text-dark">{{ a.parentescocontacto }}</td>
+                    <td class="text-dark">{{ a.movilidad }}</td>
+                    <td class="text-center text-dark">{{ a.disponibilidad_sabado }}</td>
+                    <td class="text-dark">{{ a.disponibilidad_sabado_desde }}</td>
+                    <td class="text-dark">{{ a.disponibilidad_sabado_hasta }}</td>
+                    <td class="text-center text-dark">{{ a.disponibilidad_domingo }}</td>
+                    <td class="text-dark">{{ a.disponibilidad_domingo_desde }}</td>
+                    <td class="text-dark">{{ a.disponibilidad_domingo_hasta }}</td>
+                    <td class="text-center text-dark">{{ a.juega_handball }}</td>
+                    <td class="text-dark">{{ a.donde_juega }}</td>
+                    <td class="text-dark">{{ a.categoria_handball }}</td>
+                    <td class="text-dark">
+                        <span
+                          class="d-inline-block text-truncate"
+                          style="max-width: 180px; cursor: help;"
+                          :title="a.observaciones"
+                        >
+                          {{ a.observaciones }}
+                        </span>
+                      </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-          <!-- CARDS (Solo Celular) -->
-          <div class="d-md-none p-3 bg-light">
-            <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
+            <!-- CARDS (Solo Celular) -->
+            <div class="d-md-none p-3 bg-light">
+              <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
 
-              <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                <div class="text-dark fw-bold text-uppercase d-flex align-items-center gap-2" style="font-size: 1.05rem;">
-                  <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
-                  {{ a.apellido }}, {{ a.nombre }}
+                <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
+                  <div class="text-dark fw-bold text-uppercase d-flex align-items-center gap-2" style="font-size: 1.05rem;">
+                    <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
+                    {{ a.apellido }}, {{ a.nombre }}
+                  </div>
+                  <div class="small text-muted fw-bold font-monospace">#{{ a.id }}</div>
                 </div>
-                <div class="small text-muted fw-bold font-monospace">#{{ a.id }}</div>
+
+                <div class="card-body pt-0 px-3 pb-3">
+                  <div class="d-flex justify-content-between text-dark mb-2 border-bottom border-secondary-subtle pb-2">
+                    <span class="small"><strong>Rol:</strong> {{ obtenerNombreRol(a.rol) }}</span>
+                    <span class="small"><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
+                  </div>
+
+                  <div class="bg-light p-2 rounded border small mb-3 border-light-subtle">
+                    <p class="m-0 text-dark"><strong>Apto:</strong> <span :class="a.apto_medico ? 'text-success fw-bold' : 'text-danger fw-bold'">{{ a.apto_medico ? 'SÍ' : 'NO' }}</span></p>
+                    <p v-if="a.celular" class="m-0 text-dark mt-1"><strong>Celular:</strong> {{ a.celular }}</p>
+                    <p v-if="a.email" class="m-0 text-dark mt-1 text-truncate"><strong>Email:</strong> {{ a.email }}</p>
+                    <p v-if="a.zona" class="m-0 text-dark mt-1"><strong>Zona:</strong> {{ a.zona }}</p>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button @click="editarArbitro(a)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                      <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
+                    </button>
+                    <button @click="verHistorialArbitro(a)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
+                      <span class="material-icons" style="font-size: 18px;">manage_search</span>
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              <div class="card-body pt-0 px-3 pb-3">
-                <div class="d-flex justify-content-between text-dark mb-2 border-bottom border-secondary-subtle pb-2">
-                  <span class="small"><strong>Rol:</strong> {{ obtenerNombreRol(a.rol) }}</span>
-                  <span class="small"><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
-                </div>
-
-                <div class="bg-light p-2 rounded border small mb-3 border-light-subtle">
-                  <p class="m-0 text-dark"><strong>Apto:</strong> <span :class="a.apto_medico ? 'text-success fw-bold' : 'text-danger fw-bold'">{{ a.apto_medico ? 'SÍ' : 'NO' }}</span></p>
-                  <p v-if="a.celular" class="m-0 text-dark mt-1"><strong>Celular:</strong> {{ a.celular }}</p>
-                  <p v-if="a.email" class="m-0 text-dark mt-1 text-truncate"><strong>Email:</strong> {{ a.email }}</p>
-                  <p v-if="a.zona" class="m-0 text-dark mt-1"><strong>Zona:</strong> {{ a.zona }}</p>
-                </div>
-
-                <div class="d-flex gap-2">
-                  <button @click="editarArbitro(a)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                    <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
-                  </button>
-                  <button @click="verHistorialArbitro(a)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
-                    <span class="material-icons" style="font-size: 18px;">manage_search</span>
-                  </button>
-                </div>
+              <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
+                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
+                <p class="text-muted m-0 fw-bold">No se encontraron registros.</p>
               </div>
             </div>
 
-            <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
-              <p class="text-muted m-0 fw-bold">No se encontraron registros.</p>
+            <!-- PAGINACIÓN -->
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+                <i class="bi bi-chevron-left"></i> Ant
+              </button>
+              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+                Sig <i class="bi bi-chevron-right"></i>
+              </button>
             </div>
-          </div>
-
-          <!-- PAGINACIÓN -->
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          </template>
 
         </div>
       </div>
@@ -625,6 +633,8 @@ useHead({
   title: 'Legajos | AAAB',
   meta: [{ name: 'description', content: 'Gestión de árbitros registrados en la AAAB.' }],
 })
+
+const cargandoTabla = ref(false)
 
 const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 
@@ -1010,6 +1020,7 @@ const ejecutarDescargaExcel = async () => {
 }
 
 const cargarDatos = async () => {
+  cargandoTabla.value = true
   try {
     const { payload } = await api.get({ entity: 'arbitros', action: 'getArbitros' })
     if (payload) {
@@ -1019,7 +1030,11 @@ const cargarDatos = async () => {
         rol: a.rol !== null ? parseInt(a.rol) : 0,
       }))
     }
-  } catch (err) { console.error('Error al cargar:', err) }
+  } catch (err) {
+    console.error('Error al cargar:', err)
+  } finally {
+    cargandoTabla.value = false
+  }
 }
 
 const obtenerProvinciasLocalidades = async () => {

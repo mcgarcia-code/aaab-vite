@@ -14,6 +14,13 @@
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <!-- Botón Recargar -->
+            <button @click="fetchSanciones" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
+            </button>
+
             <!-- Botón Filtros (Solo Móvil) -->
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
               <span class="material-icons fs-6">filter_alt</span>
@@ -99,9 +106,7 @@
                   <th class="py-3 text-center pe-3 text-uppercase text-muted" style="width: 120px;">Estado</th>
                 </tr>
                 <tr class="bg-light">
-                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
-                    <button @click="fetchSanciones" class="btn btn-sm btn-light border rounded text-secondary shadow-sm px-2 py-1"><i class="bi bi-arrow-clockwise"></i></button>
-                  </td>
+                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id"></td>
                   <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-acciones">
                     <div class="form-check form-switch d-flex justify-content-center m-0" title="Ver solo pendientes de respuesta">
                       <input class="form-check-input shadow-none" type="checkbox" v-model="filtros.conNuevos" style="cursor: pointer;">

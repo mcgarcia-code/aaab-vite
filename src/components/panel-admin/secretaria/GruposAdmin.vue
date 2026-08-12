@@ -14,8 +14,9 @@
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <button @click="obtenerGrupos" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span class="material-icons text-dark fs-6">refresh</span>
+            <button @click="obtenerGrupos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
 
@@ -29,7 +30,7 @@
             </button>
 
             <button @click="abrirModalNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
-              <span class="material-icons fs-6">add</span>
+              <span class="material-icons fs-6">person_add</span>
               <span class="fw-bold d-none d-md-inline small">Nuevo</span>
             </button>
           </div>
@@ -53,47 +54,56 @@
 
         <div class="card-body p-3 bg-white">
 
-          <!-- GRID MOSAICO -->
-          <div class="grupos-grid">
-            <div v-for="grupo in gruposPaginados" :key="grupo.id" class="grupo-tile">
-              <span class="tile-orden">{{ grupo.orden }}</span>
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargando" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando grupos...</p>
+          </div>
 
-              <div class="tile-avatar" :style="{ background: colorAvatar(grupo).bg, color: colorAvatar(grupo).text }">
-                {{ inicialesGrupo(grupo) }}
-              </div>
+          <template v-else>
+            <!-- GRID MOSAICO -->
+            <div class="grupos-grid">
+              <div v-for="grupo in gruposPaginados" :key="grupo.id" class="grupo-tile">
+                <span class="tile-orden">{{ grupo.orden }}</span>
 
-              <div class="tile-nombre text-truncate" :title="nombreCompleto(grupo)" :style="{ color: colorAvatar(grupo).text }">
-                {{ grupo.nombre }}
-                <span v-if="grupo.subgrupo" class="tile-subgrupo">· {{ grupo.subgrupo }}</span>
-              </div>
+                <div class="tile-avatar" :style="{ background: colorAvatar(grupo).bg, color: colorAvatar(grupo).text }">
+                  {{ inicialesGrupo(grupo) }}
+                </div>
 
-              <div class="tile-acciones">
-                <button @click="cargarDatosEdicion(grupo)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary flex-grow-1 d-flex justify-content-center align-items-center gap-1" title="Editar Grupo">
-                  <span class="material-icons" style="font-size:16px;">edit</span>
-                  <span class="fw-bold small d-none d-sm-inline">Editar</span>
-                </button>
-                <button @click="confirmarEliminacion(grupo.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger flex-grow-1 d-flex justify-content-center align-items-center gap-1" title="Eliminar Grupo">
-                  <span class="material-icons" style="font-size:16px;">delete</span>
-                  <span class="fw-bold small d-none d-sm-inline">Borrar</span>
-                </button>
+                <div class="tile-nombre text-truncate" :title="nombreCompleto(grupo)" :style="{ color: colorAvatar(grupo).text }">
+                  {{ grupo.nombre }}
+                  <span v-if="grupo.subgrupo" class="tile-subgrupo">· {{ grupo.subgrupo }}</span>
+                </div>
+
+                <div class="tile-acciones">
+                  <button @click="cargarDatosEdicion(grupo)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary flex-grow-1 d-flex justify-content-center align-items-center gap-1" title="Editar Grupo">
+                    <span class="material-icons" style="font-size:16px;">edit</span>
+                    <span class="fw-bold small d-none d-sm-inline">Editar</span>
+                  </button>
+                  <button @click="confirmarEliminacion(grupo.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger flex-grow-1 d-flex justify-content-center align-items-center gap-1" title="Eliminar Grupo">
+                    <span class="material-icons" style="font-size:16px;">delete</span>
+                    <span class="fw-bold small d-none d-sm-inline">Borrar</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div v-if="gruposPaginados.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-1 mt-3">
-            <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">group_off</span>
-            <p class="text-muted m-0 fw-bold">No se encontraron grupos.</p>
-          </div>
+            <div v-if="gruposPaginados.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-1 mt-3">
+              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">group_off</span>
+              <p class="text-muted m-0 fw-bold">No se encontraron grupos.</p>
+            </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Pagina {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+                <i class="bi bi-chevron-left"></i> Ant
+              </button>
+              <span class="fw-bold text-dark small">Pagina {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+                Sig <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </template>
+
         </div>
       </div>
     </div>
@@ -163,6 +173,8 @@ const formBase = {
   subgrupo: '',
   orden: null
 }
+
+const cargando = ref(false)
 
 const form = reactive({ ...formBase })
 
@@ -283,9 +295,14 @@ const limpiarFiltrosTabla = () => {
 }
 
 const obtenerGrupos = async () => {
-  const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos', payload: {} })
-  if (res.ok) {
-    listaGrupos.value = Array.isArray(res.payload) ? res.payload : []
+  cargando.value = true
+  try {
+    const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos', payload: {} })
+    if (res.ok) {
+      listaGrupos.value = Array.isArray(res.payload) ? res.payload : []
+    }
+  } finally {
+    cargando.value = false
   }
 }
 
