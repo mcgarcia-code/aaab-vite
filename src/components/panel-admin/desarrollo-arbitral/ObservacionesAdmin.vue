@@ -49,17 +49,12 @@
           </div>
 
           <div class="filter-grid-mobile">
-            <input v-model="filtros.fecha" class="filter-input-mobile" placeholder="Fecha (DD/MM/YY)...">
+            <input v-model="filtros.fecha" class="filter-input-mobile" placeholder="Fecha (AAAA-MM-DD)...">
             <input v-model="filtros.observador" class="filter-input-mobile" placeholder="Observador...">
             <input v-model="filtros.arbitros" class="filter-input-mobile full-width" placeholder="Árbitros observados...">
+            <input v-model="filtros.competencia" class="filter-input-mobile full-width" placeholder="Competencia...">
             <input v-model="filtros.categoria" class="filter-input-mobile" placeholder="Categoría...">
-
-            <select v-model="filtros.estado" class="filter-input-mobile">
-              <option value="">Estado (Todos)</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="aprobada">Aprobada</option>
-              <option value="anulada">Anulada</option>
-            </select>
+            <input v-model="filtros.partido" class="filter-input-mobile" placeholder="Partido...">
           </div>
 
           <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm" style="font-size: 0.95rem;">Aplicar Filtros</button>
@@ -77,11 +72,10 @@
                   <th class="sticky-col col-fecha text-center">Fecha</th>
                   <th>Observador</th>
                   <th>Árbitros Observados</th>
-                  <th class="text-center">Grupo/Sub.</th>
+                  <th>Competencia</th>
                   <th>Categoría</th>
                   <th>Partido</th>
-                  <th class="text-center">Puntaje</th>
-                  <th class="text-center">Estado</th>
+                  <th class="text-center">Cargado</th>
                 </tr>
                 <tr class="filter-row">
                   <td class="sticky-col col-id text-center">
@@ -91,21 +85,13 @@
                     </button>
                   </td>
                   <td class="sticky-col col-acciones"></td>
-                  <td class="sticky-col col-fecha"><input v-model="filtros.fecha" class="filter-input shadow-none text-center" placeholder="DD/MM/YY"></td>
+                  <td class="sticky-col col-fecha"><input v-model="filtros.fecha" class="filter-input shadow-none text-center" placeholder="AAAA-MM-DD"></td>
                   <td><input v-model="filtros.observador" class="filter-input shadow-none" placeholder="Filtrar observador.."></td>
                   <td><input v-model="filtros.arbitros" class="filter-input shadow-none" placeholder="Filtrar árbitros.."></td>
-                  <td><input v-model="filtros.grupo" class="filter-input shadow-none text-center" placeholder="Filtrar.."></td>
+                  <td><input v-model="filtros.competencia" class="filter-input shadow-none" placeholder="Filtrar competencia.."></td>
                   <td><input v-model="filtros.categoria" class="filter-input shadow-none" placeholder="Filtrar.."></td>
                   <td><input v-model="filtros.partido" class="filter-input shadow-none" placeholder="Filtrar partido.."></td>
                   <td></td>
-                  <td>
-                    <select v-model="filtros.estado" class="filter-input shadow-none text-center">
-                      <option value="">TODOS</option>
-                      <option value="pendiente">PENDIENTE</option>
-                      <option value="aprobada">APROBADA</option>
-                      <option value="anulada">ANULADA</option>
-                    </select>
-                  </td>
                 </tr>
               </thead>
               <tbody>
@@ -121,19 +107,19 @@
                       </button>
                     </div>
                   </td>
-                  <td class="sticky-col col-fecha text-center cell-ro fw-bold">{{ o.fecha || 'S/F' }}</td>
+                  <td class="sticky-col col-fecha text-center cell-ro fw-bold">{{ formatearFecha(o.fecha_partido) }}</td>
                   <td class="cell-ro text-dark">{{ o.observador }}</td>
                   <td class="cell-ro fw-bold text-uppercase text-dark">{{ o.arbitros }}</td>
-                  <td class="text-center cell-ro text-muted">{{ o.grupo }} <span v-if="o.subgrupo">/ {{ o.subgrupo }}</span></td>
-                  <td class="cell-ro text-dark">{{ o.categoria }}</td>
-                  <td class="cell-ro text-dark">{{ o.partido }}</td>
-                  <td class="text-center cell-ro fw-bold text-primary">{{ o.puntaje_calculado || '-' }}</td>
-                  <td class="text-center cell-ro">
-                    <span :class="['badge-status-sm', obtenerClaseEstado(o.estado)]">{{ (o.estado || 'N/A').toUpperCase() }}</span>
+                  <td class="cell-ro text-dark">{{ o.competencia }}</td>
+                  <td class="cell-ro text-dark">{{ o.categoria_edad }}</td>
+                  <td class="cell-ro text-dark">
+                    {{ o.equipo_local }} vs {{ o.equipo_visitante }}
+                    <span v-if="o.numero_partido" class="text-muted">(Nº {{ o.numero_partido }})</span>
                   </td>
+                  <td class="text-center cell-ro text-muted">{{ formatearFechaHora(o.creado_en) }}</td>
                 </tr>
                 <tr v-if="observacionesPaginadas.length === 0">
-                  <td colspan="10" class="text-center py-5 text-muted bg-light italic border-0">
+                  <td colspan="9" class="text-center py-5 text-muted bg-light italic border-0">
                     <span class="material-icons d-block mb-2" style="font-size: 40px;">assignment_late</span>
                     <p class="m-0 fw-bold">No hay ninguna observación registrada.</p>
                   </td>
@@ -151,19 +137,20 @@
                 </div>
                 <div class="text-xs text-muted fw-bold text-end">
                   #{{ o.id }}<br>
-                  {{ o.fecha || 'S/F' }}
+                  {{ formatearFecha(o.fecha_partido) }}
                 </div>
               </div>
               <div class="card-body pt-0 px-3 pb-3">
-                <div class="card-row mb-2">
-                  <span :class="['badge-status-sm', obtenerClaseEstado(o.estado)]" style="font-size: 0.7rem; padding: 3px 10px;">{{ (o.estado || 'N/A').toUpperCase() }}</span>
-                </div>
                 <div class="card-info bg-light p-2 rounded border mt-2">
                   <p class="m-0 text-dark small"><strong class="text-muted">Obs:</strong> {{ o.observador }}</p>
-                  <p class="m-0 text-dark small mt-1"><strong class="text-muted">Partido:</strong> {{ o.partido }} <span class="badge bg-secondary ms-1">{{ o.categoria }}</span></p>
+                  <p class="m-0 text-dark small mt-1"><strong class="text-muted">Competencia:</strong> {{ o.competencia }}</p>
+                  <p class="m-0 text-dark small mt-1">
+                    <strong class="text-muted">Partido:</strong> {{ o.equipo_local }} vs {{ o.equipo_visitante }}
+                    <span class="badge bg-secondary ms-1">{{ o.categoria_edad }}</span>
+                  </p>
                   <div class="d-flex justify-content-between mt-2 border-top border-secondary-subtle pt-2">
-                    <span class="text-dark small">G/S: <strong>{{ o.grupo }}<template v-if="o.subgrupo">/{{ o.subgrupo }}</template></strong></span>
-                    <span class="text-primary fw-bold small">Puntaje: {{ o.puntaje_calculado || '-' }}</span>
+                    <span class="text-dark small" v-if="o.numero_partido">Nº Partido: <strong>{{ o.numero_partido }}</strong></span>
+                    <span class="text-muted small">Cargado: {{ formatearFechaHora(o.creado_en) }}</span>
                   </div>
                 </div>
                 <div class="d-flex gap-2 mt-3">
@@ -202,15 +189,18 @@
          ========================================== -->
     <ModalBase :show="mostrarModal" @close="cerrarModal" titulo="Gestionar Observación" icono="edit_document" colorIcono="bg-primary text-white" maxWidth="500px">
       <div class="text-center mb-3">
-        <p class="text-muted small mt-1 mb-0">Observación #{{ observacionActual.id }} — {{ observacionActual.fecha }}</p>
+        <p class="text-muted small mt-1 mb-0">Observación #{{ observacionActual.id }} — {{ formatearFecha(observacionActual.fecha_partido) }}</p>
       </div>
       <div class="text-start bg-light p-3 rounded border mb-4 border-secondary-subtle">
         <p class="m-0 fw-bold small text-dark mb-1">Árbitros: <span class="text-danger">{{ observacionActual.arbitros }}</span></p>
         <p class="m-0 small text-dark"><strong class="text-muted">Observador:</strong> {{ observacionActual.observador }}</p>
-        <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ observacionActual.partido }} ({{ observacionActual.categoria }})</p>
+        <p class="m-0 small text-dark mt-1"><strong class="text-muted">Competencia:</strong> {{ observacionActual.competencia }}</p>
+        <p class="m-0 small text-dark mt-1">
+          <strong class="text-muted">Partido:</strong> {{ observacionActual.equipo_local }} vs {{ observacionActual.equipo_visitante }} ({{ observacionActual.categoria_edad }})
+        </p>
         <div class="alert alert-info py-2 px-3 mt-3 mb-0 d-flex align-items-center gap-2" style="font-size: 0.8rem;">
           <span class="material-icons" style="font-size: 16px;">info</span>
-          El puntaje actual calculado es <strong>{{ observacionActual.puntaje_calculado || '-' }}</strong>.
+          Cargada el <strong>{{ formatearFechaHora(observacionActual.creado_en) }}</strong>.
         </div>
       </div>
       <div class="text-start">
@@ -238,19 +228,7 @@
          ========================================== -->
     <ModalBase :show="mostrarModalCarga" @close="cerrarModalCarga" titulo="Cargar Observación Manual" icono="add_box" colorIcono="bg-danger text-white" maxWidth="900px">
 
-      <form @submit.prevent="enviarFormularioCarga" class="text-start pb-2">
-        <!-- SECCIÓN 1: OBSERVADOR -->
-        <div class="sacf-section bg-light-soft border-bottom">
-          <h2 class="section-title">Datos del Observador</h2>
-          <label class="form-label-custom">Observador a cargo *</label>
-          <select v-model="formulario.observador_id" class="sacf-input" required>
-            <option value="" disabled>Seleccione el observador...</option>
-            <option v-for="arb in listas.arbitros" :key="'obs-'+arb.id" :value="arb.id">
-              {{ arb.apellido }}, {{ arb.nombre }}
-            </option>
-          </select>
-        </div>
-
+      <form @submit.prevent="cargarObservacionExcel" class="text-start pb-2">
         <!-- SECCIÓN 2: PARTIDO -->
         <div class="sacf-section">
           <h2 class="section-title">Datos del Partido</h2>
@@ -330,75 +308,64 @@
             <div class="col-md-6">
               <div class="referee-box shadow-sm bg-white">
                 <label class="fw-bold mb-2 text-dark small">ÁRBITRO 1</label>
-                <select v-model="formulario.ref1_nombre" class="sacf-input mb-2" required>
+                <select v-model="formulario.ref1_id" class="sacf-input" required>
                   <option value="" disabled>Seleccione Árbitro</option>
-                  <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.nombre">{{arb.apellido}}, {{ arb.nombre }}</option>
-                </select>
-                <select v-model="formulario.ref1_group" class="sacf-input" required>
-                  <option value="" disabled>Grupo</option>
-                  <option v-for="g in listas.grupos" :key="g" :value="g">{{ g }}</option>
+                  <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.id">{{ arb.apellido }}, {{ arb.nombre }}</option>
                 </select>
               </div>
             </div>
             <div class="col-md-6" v-if="formulario.ref_count === '2'">
               <div class="referee-box shadow-sm bg-white anim-fade">
                 <label class="fw-bold mb-2 text-dark small">ÁRBITRO 2</label>
-                <select v-model="formulario.ref2_nombre" class="sacf-input mb-2" required>
+                <select v-model="formulario.ref2_id" class="sacf-input" required>
                   <option value="" disabled>Seleccione Árbitro</option>
-                  <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.nombre">{{arb.apellido}}, {{ arb.nombre }}</option>
-                </select>
-                <select v-model="formulario.ref2_group" class="sacf-input" required>
-                  <option value="" disabled>Grupo</option>
-                  <option v-for="g in listas.grupos" :key="g" :value="g">{{ g }}</option>
+                  <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.id">{{ arb.apellido }}, {{ arb.nombre }}</option>
                 </select>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- SECCIÓN 4: EVALUACIÓN -->
+        <!-- SECCIÓN 4: PLANILLA DE EVALUACIÓN (EXCEL) -->
         <div class="sacf-section">
-          <h2 class="section-title">Evaluación Final</h2>
-          <div class="field-group mb-4">
-            <label class="form-label-custom">Comentarios / Observaciones *</label>
-            <textarea v-model="formulario.comentarios" rows="3" class="sacf-input" placeholder="Detalle la actuación..." required></textarea>
-          </div>
+          <h2 class="section-title">Planilla de Evaluación</h2>
 
-          <div class="field-group mb-4">
-            <label class="form-label-custom">Puntaje Performance (Base) *</label>
-            <div class="perf-scale-container">
-              <div v-for="opcion in perfScoreOptions" :key="opcion.value"
-                class="perf-opt-item" :class="[{ 'is-active': formulario.perf_score == opcion.value }, 'tone-' + opcion.tone]"
-                @click="formulario.perf_score = opcion.value">
-                <div class="perf-num">{{ opcion.value }}</div>
-                <div class="perf-desc">{{ opcion.label }}</div>
-              </div>
-            </div>
-          </div>
+          <div
+            class="excel-dropzone"
+            :class="{ 'is-dragover': arrastrandoArchivo, 'has-file': archivoObservacion }"
+            @dragover.prevent="arrastrandoArchivo = true"
+            @dragleave.prevent="arrastrandoArchivo = false"
+            @drop.prevent="soltarArchivoObservacion"
+            @click="$refs.inputArchivoObservacion.click()"
+          >
+            <input
+              ref="inputArchivoObservacion"
+              type="file"
+              accept=".xlsx,.xls"
+              class="d-none"
+              @change="seleccionarArchivoObservacion"
+            >
 
-          <div class="field-group mb-4">
-            <label class="form-label-custom">Dificultad del Encuentro *</label>
-            <select v-model="formulario.diff_mult" class="sacf-input" required>
-              <option value="" disabled>Seleccione dificultad</option>
-              <option v-for="d in listas.dificultades" :key="d.valor" :value="d.valor">
-                x {{ d.valor }} - {{ d.nombre }}
-              </option>
-            </select>
-          </div>
-
-          <div class="total-score-card anim-fade" v-if="formulario.perf_score">
-            <div class="d-flex flex-column">
-              <span class="text-uppercase small opacity-75">Puntaje Dinámico</span>
-              <span class="fw-light small">Se calculará automáticamente (sin guardarse estático)</span>
-            </div>
-            <strong>{{ puntajeCalculado }}</strong>
+            <template v-if="!archivoObservacion">
+              <span class="material-icons excel-dropzone-icon">upload_file</span>
+              <p class="m-0 fw-bold text-dark">Arrastrá aquí la planilla de Excel</p>
+              <p class="m-0 small text-muted">o hacé clic para seleccionar un archivo (.xlsx, .xls)</p>
+            </template>
+            <template v-else>
+              <span class="material-icons excel-dropzone-icon text-success">check_circle</span>
+              <p class="m-0 fw-bold text-dark">{{ archivoObservacion.name }}</p>
+              <p class="m-0 small text-muted">Archivo listo para cargar. Hacé clic para reemplazarlo.</p>
+              <button type="button" class="btn btn-light btn-sm rounded-pill px-3 mt-2 border" @click.stop="quitarArchivoObservacion">
+                Quitar archivo
+              </button>
+            </template>
           </div>
         </div>
 
         <!-- Botones de Acción Formulario -->
         <div class="d-flex gap-3 mt-4 px-4 pb-2">
           <button type="button" @click="cerrarModalCarga" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1" style="border: 1px solid #cbd5e1;">CANCELAR</button>
-          <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="procesandoCarga">
+          <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="procesandoCarga || !archivoObservacion">
             <span v-if="procesandoCarga" class="spinner-border spinner-border-sm me-2"></span>
             {{ procesandoCarga ? 'GUARDANDO...' : 'GUARDAR OBSERVACIÓN' }}
           </button>
@@ -425,26 +392,21 @@
             <tr>
               <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Fecha</th>
               <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Categoría / Partido</th>
-              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Observador</th>
-              <th class="text-center py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Puntaje</th>
-              <th class="text-center py-2 pe-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Estado</th>
+              <th class="py-2 pe-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Observador</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="h in historialSeleccionado" :key="'h-'+h.id" style="border-bottom: 1px solid #f1f5f9;">
-              <td class="text-nowrap text-muted fw-bold ps-3 py-3">{{ h.fecha || 'S/F' }}</td>
+              <td class="text-nowrap text-muted fw-bold ps-3 py-3">{{ formatearFecha(h.fecha_partido) }}</td>
               <td class="py-3 text-dark">
-                <span class="badge bg-secondary mb-1">{{ h.categoria }}</span><br>
-                {{ h.partido }}
+                <span class="badge bg-secondary mb-1">{{ h.categoria_edad }}</span><br>
+                {{ h.equipo_local }} vs {{ h.equipo_visitante }}
+                <span class="text-muted"> — {{ h.competencia }}</span>
               </td>
-              <td class="py-3 text-dark">{{ h.observador }}</td>
-              <td class="text-center fw-bold text-primary py-3">{{ h.puntaje_calculado || '-' }}</td>
-              <td class="text-center pe-3 py-3">
-                <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">{{ (h.estado || 'N/A').toUpperCase() }}</span>
-              </td>
+              <td class="py-3 pe-3 text-dark">{{ h.observador }}</td>
             </tr>
             <tr v-if="historialSeleccionado.length === 0">
-              <td colspan="5" class="text-center py-4 text-muted">No hay registros previos en el historial.</td>
+              <td colspan="3" class="text-center py-4 text-muted">No hay registros previos en el historial.</td>
             </tr>
           </tbody>
         </table>
@@ -457,11 +419,8 @@
         <div v-for="h in historialSeleccionado" :key="'hmob-'+h.id" class="card-licencia bg-light mb-3 border">
           <div class="card-header border-0 pb-2 mb-2 d-flex justify-content-between align-items-start">
             <div class="card-name fw-bold lh-sm text-dark pe-2" style="font-size: 0.95rem;">
-              {{ h.partido }}
-              <div class="text-danger mt-1" style="font-size: 0.75rem;">{{ h.categoria }} • {{ h.fecha }}</div>
-            </div>
-            <div>
-              <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">{{ (h.estado || 'N/A').toUpperCase() }}</span>
+              {{ h.equipo_local }} vs {{ h.equipo_visitante }}
+              <div class="text-danger mt-1" style="font-size: 0.75rem;">{{ h.categoria_edad }} • {{ formatearFecha(h.fecha_partido) }}</div>
             </div>
           </div>
           <div class="px-1">
@@ -470,8 +429,8 @@
               <span class="text-muted">{{ h.observador }}</span>
             </div>
             <div class="card-row mb-0">
-              <span class="fw-bold text-dark">Puntaje Dinámico:</span>
-              <span class="text-primary fw-bold fs-6">{{ h.puntaje_calculado || '-' }}</span>
+              <span class="fw-bold text-dark">Competencia:</span>
+              <span class="text-muted">{{ h.competencia }}</span>
             </div>
           </div>
         </div>
@@ -501,7 +460,7 @@ const notificar = inject('notificar', (msg) => console.log('Notificación:', msg
 const observaciones = ref([]);
 const cargando = ref(false);
 
-const filtros = reactive({ fecha: '', observador: '', arbitros: '', grupo: '', categoria: '', partido: '', estado: '' });
+const filtros = reactive({ fecha: '', observador: '', arbitros: '', competencia: '', categoria: '', partido: '' });
 const mostrarFiltrosMobile = ref(false);
 
 const paginaActual = ref(1);
@@ -510,17 +469,29 @@ const registrosPorPagina = 10;
 // Filtros y Paginación
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
+const formatearFecha = (fechaIso) => {
+  if (!fechaIso) return 'S/F';
+  const [anio, mes, dia] = fechaIso.split(' ')[0].split('-');
+  if (!anio || !mes || !dia) return fechaIso;
+  return `${dia}/${mes}/${anio}`;
+};
+
+const formatearFechaHora = (fechaHora) => {
+  if (!fechaHora) return '-';
+  const [fecha, hora] = fechaHora.split(' ');
+  return `${formatearFecha(fecha)}${hora ? ' ' + hora.slice(0, 5) : ''}`;
+};
+
 const observacionesFiltradas = computed(() => {
   return observaciones.value.filter(o => {
-    const matchFec = o.fecha && o.fecha.includes(filtros.fecha);
+    const matchFec = (o.fecha_partido || '').includes(filtros.fecha);
     const matchObs = normalizar(o.observador).includes(normalizar(filtros.observador));
     const matchArb = normalizar(o.arbitros).includes(normalizar(filtros.arbitros));
-    const matchCat = normalizar(o.categoria).includes(normalizar(filtros.categoria));
-    const matchPar = normalizar(o.partido).includes(normalizar(filtros.partido));
-    const matchGru = normalizar(o.grupo).includes(normalizar(filtros.grupo)) || normalizar(o.subgrupo).includes(normalizar(filtros.grupo));
-    const matchEst = filtros.estado === '' || (o.estado && o.estado.toLowerCase() === filtros.estado.toLowerCase());
+    const matchComp = normalizar(o.competencia).includes(normalizar(filtros.competencia));
+    const matchCat = normalizar(o.categoria_edad).includes(normalizar(filtros.categoria));
+    const matchPar = normalizar(`${o.equipo_local} ${o.equipo_visitante} ${o.numero_partido}`).includes(normalizar(filtros.partido));
 
-    return matchFec && matchObs && matchArb && matchCat && matchPar && matchGru && matchEst;
+    return matchFec && matchObs && matchArb && matchComp && matchCat && matchPar;
   });
 });
 
@@ -543,15 +514,15 @@ watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.val
 const obtenerObservaciones = async () => {
   cargando.value = true;
   try {
-    const res = await api.get({ entity: 'observaciones', action: 'obtenerTodas' });
+    const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluaciones' });
     if (res && res.ok) {
       observaciones.value = res.payload.sort((a, b) => b.id - a.id);
     } else {
       // MOCKUPS TEMPORALES (Si el back no está listo)
       observaciones.value = [
-        { id: 101, fecha: '12/05/26', observador: 'Ladelfa, Marcelo', arbitros: 'García, Mariana / Gómez, Luis', grupo: 'A', subgrupo: 'A1', categoria: 'Liga de Honor', partido: 'VILO vs SEDALO', puntaje_calculado: '8.5', estado: 'pendiente' },
-        { id: 100, fecha: '05/05/26', observador: 'Pérez, Juan', arbitros: 'García, Mariana / Gómez, Luis', grupo: 'A', subgrupo: 'A1', categoria: 'Primera', partido: 'Dorrego vs River', puntaje_calculado: '9.0', estado: 'aprobada' },
-        { id: 99, fecha: '28/04/26', observador: 'Ladelfa, Marcelo', arbitros: 'Fernández, D. / Ruiz, M.', grupo: 'B', subgrupo: 'B2', categoria: 'Segunda', partido: 'Ferro vs SAG', puntaje_calculado: '6.5', estado: 'anulada' }
+        { id: 101, id_partido: null, competencia: 'Liga de Honor', categoria_edad: 'Mayores', equipo_local: 'VILO', equipo_visitante: 'SEDALO', fecha_partido: '2026-05-12', arbitros: 'García, Mariana / Gómez, Luis', observador: 'Ladelfa, Marcelo', numero_partido: '3', creado_en: '2026-05-12 10:00:00' },
+        { id: 100, id_partido: null, competencia: 'Primera', categoria_edad: 'Mayores', equipo_local: 'Dorrego', equipo_visitante: 'River', fecha_partido: '2026-05-05', arbitros: 'García, Mariana / Gómez, Luis', observador: 'Pérez, Juan', numero_partido: '1', creado_en: '2026-05-05 09:30:00' },
+        { id: 99, id_partido: null, competencia: 'Segunda', categoria_edad: 'Mayores', equipo_local: 'Ferro', equipo_visitante: 'SAG', fecha_partido: '2026-04-28', arbitros: 'Fernández, D. / Ruiz, M.', observador: 'Ladelfa, Marcelo', numero_partido: '5', creado_en: '2026-04-28 18:15:00' }
       ];
     }
   } catch {
@@ -607,37 +578,30 @@ const procesandoCarga = ref(false);
 const cargandoCategorias = ref(false);
 
 const listas = reactive({
-  categorias_especificas: [], divisiones_categorias: [], divisiones: [],
-  dificultades: [], arbitros: [], grupos: [], equipos: []
+  categorias_especificas: [], divisiones_categorias: [], divisiones: [], equipos: [], arbitros: []
 });
 
 const formulario = reactive({
-  observador_id: '', partido_genero: '', partido_categoria: '', inf_nivel: '',
-  id_categoria_especifica: '', equipo_1: '', equipo_2: '', ref_count: '1',
-  ref1_nombre: '', ref1_group: '', ref2_nombre: '', ref2_group: '',
-  comentarios: '', perf_score: null, diff_mult: ''
+  partido_genero: '', partido_categoria: '', inf_nivel: '',
+  id_categoria_especifica: '', equipo_1: '', equipo_2: '',
+  ref_count: '1', ref1_id: '', ref2_id: ''
 });
 
-const perfScoreOptions = [
-  { value: '7', label: 'Muy bien', tone: 'green' }, { value: '6', label: 'Bien', tone: 'green' },
-  { value: '5', label: 'Adecuado - Bien', tone: 'lgreen' }, { value: '4', label: 'Adecuado', tone: 'yellow' },
-  { value: '3', label: 'Debajo de adecuado', tone: 'yellow' }, { value: '2', label: 'Insuficiente', tone: 'red' },
-  { value: '1', label: 'Mal', tone: 'red' }
-];
+const archivoObservacion = ref(null);
+const arrastrandoArchivo = ref(false);
 
 const abrirModalCarga = () => { mostrarModalCarga.value = true; };
 const cerrarModalCarga = () => { mostrarModalCarga.value = false; reiniciarFormularioCarga(); };
 
-const cargarCatalogosBase = async () => {
+// Padrón liviano solo para el selector (igual a como se usa en el resto del panel)
+const cargarArbitros = async () => {
   try {
-    const [resD, resA, resG] = await Promise.all([
-      api.get({ entity: 'observaciones', action: 'obtenerDificultades' }),
-      api.get({ entity: 'arbitros', action: 'getArbitros' }),
-      api.get({ entity: 'arbitros', action: 'obtenerGrupos' })
-    ]);
-    if (resD && resD.ok) listas.dificultades = resD.payload;
-    if (resA && resA.ok) listas.arbitros = resA.payload;
-    if (resG && resG.ok) listas.grupos = resG.payload;
+    const res = await api.get({
+      entity: 'arbitros',
+      action: 'getArbitrosBasico',
+      payload: { soloActivos: false }
+    });
+    if ((res.ok || res.success) && res.payload) listas.arbitros = res.payload;
   } catch (e) { console.error(e); }
 };
 
@@ -669,31 +633,50 @@ const obtenerEquipos = async () => {
 
 watch(() => [formulario.partido_genero, formulario.partido_categoria], pedirCategoriasEspecíficas);
 
-const puntajeCalculado = computed(() => {
-  const perf = parseFloat(formulario.perf_score) || 0;
-  const mult = parseFloat(formulario.diff_mult) || 0;
-  return (perf * mult).toFixed(2);
-});
+const ACEPTA_EXCEL = /\.(xlsx|xls)$/i;
 
-const enviarFormularioCarga = async () => {
-  if (!formulario.observador_id || !formulario.perf_score) {
-    notificar({ titulo: 'Dato Faltante', mensaje: 'Faltan datos obligatorios (Observador o Puntaje).', tipo: 'warning' });
+const asignarArchivoObservacion = (file) => {
+  if (!file) return;
+  if (!ACEPTA_EXCEL.test(file.name)) {
+    notificar({ titulo: 'Archivo inválido', mensaje: 'Seleccioná un archivo de Excel (.xlsx o .xls).', tipo: 'warning' });
+    return;
+  }
+  archivoObservacion.value = file;
+};
+
+const seleccionarArchivoObservacion = (event) => {
+  asignarArchivoObservacion(event.target.files[0] || null);
+  event.target.value = '';
+};
+
+const soltarArchivoObservacion = (event) => {
+  arrastrandoArchivo.value = false;
+  asignarArchivoObservacion(event.dataTransfer.files[0] || null);
+};
+
+const quitarArchivoObservacion = () => { archivoObservacion.value = null; };
+
+const cargarObservacionExcel = async () => {
+  if (!archivoObservacion.value) {
+    notificar({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el archivo de Excel para continuar.', tipo: 'warning' });
     return;
   }
   procesandoCarga.value = true;
   try {
-    // Recordatorio: NO enviar puntaje_final, se calcula dinámicamente
-    const res = await api.post({ entity: 'observaciones', action: 'guardarObservacion', payload: { ...formulario } });
+    const formData = new FormData();
+    formData.append('archivo', archivoObservacion.value);
+    formData.append('datos', JSON.stringify(formulario));
+
+    const res = await api.postFile({ entity: 'observaciones', action: 'cargarObservacionExcel', payload: formData });
 
     if (res && res.ok) {
-      notificar({ titulo: 'Guardado', mensaje: 'La evaluación se ha registrado.', tipo: 'success' });
+      notificar({ titulo: 'Guardado', mensaje: 'La observación se ha registrado.', tipo: 'success' });
       await obtenerObservaciones();
       cerrarModalCarga();
     } else {
-      notificar({ titulo: 'Simulación Exitosa', mensaje: 'Observación simulada (falta backend real).', tipo: 'success' });
-      cerrarModalCarga();
+      notificar({ titulo: 'Error al guardar', mensaje: res?.message || 'No se pudo procesar el envío.', tipo: 'danger' });
     }
-  } catch{
+  } catch {
     notificar({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' });
   } finally {
     procesandoCarga.value = false;
@@ -702,10 +685,11 @@ const enviarFormularioCarga = async () => {
 
 const reiniciarFormularioCarga = () => {
   Object.assign(formulario, {
-    observador_id: '', partido_genero: '', partido_categoria: '', inf_nivel: '', id_categoria_especifica: '',
-    equipo_1: '', equipo_2: '', ref_count: '1', ref1_nombre: '', ref1_group: '', ref2_nombre: '', ref2_group: '',
-    comentarios: '', perf_score: null, diff_mult: ''
+    partido_genero: '', partido_categoria: '', inf_nivel: '', id_categoria_especifica: '',
+    equipo_1: '', equipo_2: '', ref_count: '1', ref1_id: '', ref2_id: ''
   });
+  archivoObservacion.value = null;
+  arrastrandoArchivo.value = false;
 };
 
 /* ====================================================
@@ -726,22 +710,14 @@ const verHistorial = (obs) => {
    ==================================================== */
 const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); };
 
-const obtenerClaseEstado = (estado) => {
-  if (!estado) return 'estado-creado';
-  switch (estado.toLowerCase()) {
-    case 'pendiente': return 'estado-proceso';
-    case 'aprobada': return 'estado-aceptado';
-    case 'anulada': return 'estado-rechazado';
-    default: return 'estado-creado';
-  }
-};
 const exportarExcel = async () => {
   if (observacionesFiltradas.value.length === 0) {
     notificar({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' }); return;
   }
   const datosExportar = observacionesFiltradas.value.map(o => ({
-    'ID': o.id, 'Fecha': o.fecha, 'Observador': o.observador, 'Árbitros': o.arbitros, 'Grupo': o.grupo,
-    'Subgrupo': o.subgrupo, 'Categoría': o.categoria, 'Partido': o.partido, 'Puntaje (Calc)': o.puntaje_calculado, 'Estado': o.estado.toUpperCase()
+    'ID': o.id, 'Fecha': formatearFecha(o.fecha_partido), 'Observador': o.observador, 'Árbitros': o.arbitros,
+    'Competencia': o.competencia, 'Categoría': o.categoria_edad, 'Local': o.equipo_local, 'Visitante': o.equipo_visitante,
+    'Nº Partido': o.numero_partido, 'Cargado': o.creado_en
   }));
 
   const wb = new ExcelJS.Workbook();
@@ -767,7 +743,7 @@ const exportarExcel = async () => {
 // Inicialización
 onMounted(() => {
   obtenerObservaciones();
-  cargarCatalogosBase();
+  cargarArbitros();
 });
 </script>
 
@@ -856,14 +832,6 @@ onMounted(() => {
 .btn-editar-mobile { background: #fff; color: #3b82f6; border-color: #bfdbfe !important; }
 .btn-historial-mobile { background: #fff; color: #d97706; border-color: #fde68a !important; }
 
-/* Estados */
-.badge-status-sm { font-size: 0.7rem; font-weight: bold; padding: 4px 8px; border-radius: 4px; color: white; display: inline-block; }
-.estado-creado { background-color: #64748b; }
-.estado-proceso { background-color: #f59e0b; color: #000; }
-.estado-aceptado { background-color: #10b981; }
-.estado-entregado { background-color: #3b82f6; }
-.estado-rechazado { background-color: #ef4444; }
-
 .desktop-only { display: none; }
 .mobile-only { display: block; }
 .mobile-only-flex { display: flex; }
@@ -879,11 +847,6 @@ onMounted(() => {
 }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .referee-box { background: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; }
-.total-score-card {
-  margin-top: 20px; padding: 25px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  color: #fff; display: flex; justify-content: space-between; align-items: center; border-radius: 12px;
-}
-.total-score-card strong { font-size: 2.2rem; color: #ff4d4d; text-shadow: 0 0 15px rgba(255, 77, 77, 0.4); }
 
 .form-label-custom { display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.75rem; color: #000; text-transform: uppercase; }
 .sacf-input {
@@ -898,18 +861,18 @@ onMounted(() => {
 }
 .custom-radio-group button.active { background: #dc2626; color: white; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2); }
 
-.perf-scale-container { display: flex; flex-direction: column; gap: 10px; }
-.perf-opt-item {
-  display: flex; align-items: center; padding: 15px; border: 2px solid #f1f5f9; border-radius: 10px;
-  cursor: pointer; background: #fff; transition: 0.3s; border-left: 6px solid #cbd5e1;
+.excel-dropzone {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  padding: 40px 20px; border: 2px dashed #cbd5e1; border-radius: 12px; background: #f8fafc;
+  cursor: pointer; transition: 0.2s;
 }
-.perf-opt-item:hover { transform: translateX(6px); border-color: #cbd5e1; }
-.perf-opt-item.is-active { border-color: #dc2626; background: #fff8f8; transform: scale(1.02); box-shadow: 0 8px 20px rgba(220, 38, 38, 0.1); }
-.perf-num { font-size: 1.5rem; font-weight: 900; min-width: 45px; color: #0f172a; }
-.perf-desc { font-size: 0.85rem; font-weight: 700; color: #475569; margin-left: 10px; }
-
-.tone-green { border-left-color: #10b981; } .tone-lgreen { border-left-color: #84cc16; }
-.tone-yellow { border-left-color: #f59e0b; } .tone-red { border-left-color: #ef4444; }
+.excel-dropzone:hover { border-color: #dc2626; background: #fff8f8; }
+.excel-dropzone.is-dragover { border-color: #dc2626; background: #fff8f8; transform: scale(1.01); }
+.excel-dropzone.has-file { border-style: solid; border-color: #10b981; background: #f0fdf4; }
+.excel-dropzone-icon { font-size: 42px; color: #94a3b8; margin-bottom: 10px; }
+.excel-dropzone.is-dragover .excel-dropzone-icon,
+.excel-dropzone:hover .excel-dropzone-icon { color: #dc2626; }
+.excel-dropzone.has-file .excel-dropzone-icon { color: #10b981; }
 
 .anim-fade { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -952,20 +915,11 @@ onMounted(() => {
   thead tr.main-header th.sticky-col { background-color: #e2e8f0 !important; z-index: 110 !important; }
   thead tr.filter-row td.sticky-col { background-color: #f1f5f9 !important; z-index: 95 !important; }
 
-  .col-id { left: 0; width: 50px; } .col-acciones { left: 50px; width: 90px; } .col-fecha { left: 140px; width: 100px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
+  .col-id { left: 0; width: 50px; } .col-acciones { left: 50px; width: 90px; } .col-fecha { left: 140px; width: 110px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
   .cell-ro { padding: 12px 10px; font-size: 0.85rem; } .row-hover:hover td { background-color: #f8fafc !important; }
 
   .filter-input { font-size: 0.75rem; height: 30px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; box-sizing: border-box; background-color: #ffffff; }
   .btn-refresh { background: none; border: none; cursor: pointer; color: #64748b; } .btn-refresh:hover { color: #0f172a; }
-
-  /* Estilos Formulario Desktop */
-  .perf-scale-container { flex-direction: row; gap: 8px; }
-  .perf-opt-item { flex: 1; flex-direction: column; padding: 20px 5px; text-align: center; border-left: 2px solid #f1f5f9; border-bottom: 6px solid #cbd5e1; }
-  .perf-opt-item:hover { transform: translateY(-6px); }
-  .perf-desc { margin-left: 0; margin-top: 10px; font-size: 0.7rem; }
-  .tone-green { border-bottom-color: #10b981; } .tone-lgreen { border-bottom-color: #84cc16; }
-  .tone-yellow { border-bottom-color: #f59e0b; } .tone-red { border-bottom-color: #ef4444; }
-  .perf-opt-item.is-active { border-bottom-color: #dc2626; transform: translateY(-8px); }
 }
 
 @media (min-width: 1200px) { .full-screen-wrapper { width: 99vw; margin-left: 50%; transform: translateX(-50%); } }
