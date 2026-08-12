@@ -195,8 +195,8 @@
           </div>
 
           <div class="col-12">
-            <label class="small fw-bold text-dark mb-1">Lugar o Descripcion *</label>
-            <textarea v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Ej: Link de Zoom..." required></textarea>
+            <label class="small fw-bold text-dark mb-1">Lugar*</label>
+            <textarea v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="2" placeholder="Ej: Casa del Handball..." required></textarea>
           </div>
 
           <div class="col-md-6">
