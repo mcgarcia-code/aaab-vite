@@ -133,11 +133,11 @@
                       <div v-else class="row g-2">
                         <!-- Teórico -->
                         <div class="col-6">
-                          <div class="p-2 h-100 rounded text-center border" :class="fondoTarjetaExamen(getDetalle(ex, 'teorico'))">
+                          <div class="p-2 h-100 rounded text-center border" :class="fondoTarjetaExamen(getDetalle(ex, 'teorico'), 'teorico')">
                             <span class="d-block small fw-bold text-uppercase text-muted mb-1">Teórico</span>
                             <div v-if="getDetalle(ex, 'teorico')">
-                              <span class="badge w-100 py-2" :class="claseBadgeExamen(getDetalle(ex, 'teorico'))">
-                                {{ formatEstadoExamen(getDetalle(ex, 'teorico')) }}
+                              <span class="badge w-100 py-2" :class="claseBadgeExamen(getDetalle(ex, 'teorico'), 'teorico')">
+                                {{ formatEstadoExamen(getDetalle(ex, 'teorico'), 'teorico') }}
                               </span>
                               <div v-if="getNota(getDetalle(ex, 'teorico'))" class="small fw-bold mt-1 text-dark">
                                 Nota: {{ getNota(getDetalle(ex, 'teorico')) }}
@@ -149,11 +149,11 @@
 
                         <!-- Físico -->
                         <div class="col-6">
-                          <div class="p-2 h-100 rounded text-center border" :class="fondoTarjetaExamen(getDetalle(ex, 'fisico'))">
+                          <div class="p-2 h-100 rounded text-center border" :class="fondoTarjetaExamen(getDetalle(ex, 'fisico'), 'fisico')">
                             <span class="d-block small fw-bold text-uppercase text-muted mb-1">Físico</span>
                             <div v-if="getDetalle(ex, 'fisico')">
-                              <span class="badge w-100 py-2" :class="claseBadgeExamen(getDetalle(ex, 'fisico'))">
-                                {{ formatEstadoExamen(getDetalle(ex, 'fisico')) }}
+                              <span class="badge w-100 py-2" :class="claseBadgeExamen(getDetalle(ex, 'fisico'), 'fisico')">
+                                {{ formatEstadoExamen(getDetalle(ex, 'fisico'), 'fisico') }}
                               </span>
                             </div>
                             <span v-else class="text-muted small">—</span>
@@ -263,10 +263,29 @@ const esAusenteTotal = (examen) => {
          (examen.detalles[0].estado === 'ausente' || examen.detalles[0].tipo === 'ausente')
 }
 
-// Lógica para las tarjetas de Exámenes
-const formatEstadoExamen = (detalle) => {
+// Nota numérica (acepta "80", "80%", "72,5") — igual que la planilla admin
+const notaNumerica = (detalle) => {
+  if (!detalle) return null
+  const num = parseFloat(String(detalle.calificacion ?? '').replace('%', '').replace(',', '.').trim())
+  return Number.isNaN(num) ? null : num
+}
+
+// Estado efectivo del teórico según el umbral 75 (≥75 aprobado, ≤74 desaprobado),
+// igual que en la Planilla General. El físico y los estados especiales
+// (ausente / no lo hizo) usan el estado tal cual viene.
+const estadoEfectivo = (detalle, tipo) => {
   if (!detalle) return ''
-  const est = detalle.estado
+  if (tipo === 'teorico' && detalle.estado !== 'no lo hizo' && detalle.estado !== 'ausente') {
+    const num = notaNumerica(detalle)
+    if (num !== null) return num >= 75 ? 'aprobado' : 'desaprobado'
+  }
+  return detalle.estado
+}
+
+// Lógica para las tarjetas de Exámenes
+const formatEstadoExamen = (detalle, tipo) => {
+  const est = estadoEfectivo(detalle, tipo)
+  if (!est) return ''
   if (est === 'aprobado') return 'APROBADO'
   if (est === 'desaprobado') return 'DESAPROBADO'
   if (est === 'no lo hizo') return 'No lo hizo'
@@ -279,9 +298,8 @@ const getNota = (detalle) => {
   return detalle.calificacion
 }
 
-const fondoTarjetaExamen = (detalle) => {
-  if (!detalle) return 'bg-light border-light-subtle'
-  const est = detalle.estado
+const fondoTarjetaExamen = (detalle, tipo) => {
+  const est = estadoEfectivo(detalle, tipo)
   if (est === 'aprobado') return 'bg-success bg-opacity-10 border-success-subtle'
   if (est === 'desaprobado') return 'bg-danger bg-opacity-10 border-danger-subtle'
   if (est === 'ausente') return 'bg-secondary bg-opacity-10 border-secondary-subtle'
@@ -289,9 +307,8 @@ const fondoTarjetaExamen = (detalle) => {
   return 'bg-light border-light-subtle'
 }
 
-const claseBadgeExamen = (detalle) => {
-  if (!detalle) return 'bg-secondary'
-  const est = detalle.estado
+const claseBadgeExamen = (detalle, tipo) => {
+  const est = estadoEfectivo(detalle, tipo)
   if (est === 'aprobado') return 'bg-success'
   if (est === 'desaprobado') return 'bg-danger'
   if (est === 'no lo hizo') return 'bg-info text-dark' // Celeste para el SAF
@@ -436,16 +453,17 @@ const statsGlobales = computed(() => {
     else if (estado === 'ausente')  r.ausentesReunion++
   }
 
-  // Exámenes
+  // Exámenes (el teórico respeta el umbral 75, igual que el badge)
   for (const ex of examenesFiltrados.value) {
     if (esAusenteTotal(ex)) {
       r.ausentesExamen++
     } else {
       for (const det of ex.detalles) {
-        if      (det.estado === 'aprobado')    r.aprobadosExamen++
-        else if (det.estado === 'desaprobado') r.desaprobadosExamen++
-        else if (det.estado === 'no lo hizo')  r.noHizoExamen++
-        else if (det.estado === 'ausente')     r.ausentesExamen++
+        const est = estadoEfectivo(det, det.tipo)
+        if      (est === 'aprobado')    r.aprobadosExamen++
+        else if (est === 'desaprobado') r.desaprobadosExamen++
+        else if (est === 'no lo hizo')  r.noHizoExamen++
+        else if (est === 'ausente')     r.ausentesExamen++
       }
     }
   }

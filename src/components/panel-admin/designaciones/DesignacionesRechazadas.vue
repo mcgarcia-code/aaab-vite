@@ -63,6 +63,7 @@
                 <option value="creado">CREADO</option>
                 <option value="justificado">JUSTIFICADO</option>
                 <option value="injustificado">INJUSTIFICADO</option>
+                <option value="borrado">BORRADO</option>
               </select>
             </div>
             <div class="col-6 col-md-3">
@@ -102,6 +103,9 @@
                       </button>
                       <button @click="verHistorialRechazo(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver Historial">
                         <span class="material-icons" style="font-size:16px;">manage_search</span>
+                      </button>
+                      <button @click="borrarRechazo(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Borrar">
+                        <span class="material-icons" style="font-size:16px;">delete</span>
                       </button>
                     </div>
                   </td>
@@ -156,6 +160,9 @@
                   </button>
                   <button @click="verHistorialRechazo(r)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
                     <span class="material-icons" style="font-size: 18px;">manage_search</span>
+                  </button>
+                  <button @click="borrarRechazo(r)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
+                    <span class="material-icons" style="font-size: 18px;">delete</span>
                   </button>
                 </div>
               </div>
@@ -227,6 +234,7 @@
           <option value="creado">Creado</option>
           <option value="justificado">Justificado</option>
           <option value="injustificado">Injustificado</option>
+          <option value="borrado">Borrado</option>
         </select>
 
         <!-- Aviso según estado -->
@@ -459,6 +467,38 @@ const confirmarEdicion = async () => {
 }
 
 /* ====================================================
+   BORRAR RECHAZO (borrado lógico → estado = 'borrado')
+   El rechazo sigue apareciendo en la lista con ese estado.
+   ==================================================== */
+const borrarRechazo = (r) => {
+  notificar({
+    titulo: '¿Borrar rechazo?',
+    mensaje: `Se marcará como borrado el rechazo de ${r.apellido}, ${r.nombre} (${r.local} vs ${r.visitante}).`,
+    tipo: 'danger',
+    alConfirmar: async () => {
+      try {
+        const res = await api.post({
+          entity: 'designaciones',
+          action: 'actualizarEstadoRechazo',
+          payload: { id: r.id, estado: 'borrado' }
+        })
+
+        if (res.ok || res.success) {
+          const item = rechazos.value.find(x => x.id === r.id)
+          if (item) item.estado = 'borrado'
+          notificar({ titulo: 'Borrado', mensaje: 'El rechazo fue marcado como borrado.', tipo: 'success' })
+        } else {
+          throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
+        }
+      } catch (err) {
+        console.error('Error al borrar rechazo:', err)
+        notificar({ titulo: 'Error', mensaje: err.message || 'No se pudo borrar el rechazo.', tipo: 'danger' })
+      }
+    }
+  })
+}
+
+/* ====================================================
    MODAL HISTORIAL (todos los rechazos del árbitro)
    Solo lectura: el estado se resuelve desde el botón Editar.
    ==================================================== */
@@ -469,16 +509,15 @@ const historial = ref([])
 
 const verHistorialRechazo = async (r) => {
   arbitroHistorial.value = r
-  console.log(r)
   mostrarModalHistorial.value = true
   cargandoHistorial.value = true
   historial.value = []
   try {
-    const res = await api.get({
-      entity: 'designaciones',
-      action: 'obtenerHistorialRechazos',
-      payload: { idArbitro: r.id_arbitro }
-    })
+const res = await api.get({
+  entity: 'designaciones',
+  action: 'obtenerHistorialRechazos',
+  payload: { idArbitro: r.id_arbitro }
+})
     if ((res.ok || res.success) && Array.isArray(res.payload)) {
       historial.value = res.payload
     }
@@ -596,4 +635,6 @@ onMounted(obtenerRechazos)
 .justificado { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 .creado { background: #fef3c7; color: #d97706; border: 1px solid #fde047; }
 .injustificado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-</style>
+.borrado { background: #e5e7eb; color: #4b5563; border: 1px solid #d1d5db; }
+</style>ado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
