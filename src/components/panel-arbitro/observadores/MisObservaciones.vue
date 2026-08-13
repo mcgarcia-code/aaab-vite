@@ -195,7 +195,7 @@ const cambiarPagina = (delta) => {
 const obtenerObservaciones = async () => {
   const resultado = await api.get({
     entity: 'observaciones',
-    action: 'obtenerObservacionesRealizadas'
+    action: 'obtenerEvaluaciones'
   })
 
   observaciones.value = resultado.payload
