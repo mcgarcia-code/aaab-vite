@@ -68,7 +68,7 @@
             <div v-if="proximas.length === 0" class="text-center py-5 text-muted bg-light rounded-3">
               <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">event_busy</span>
               <p class="m-0 fw-bold">No tenés designaciones próximas.</p>
-              <p class="small m-0 mt-1">Cuando la asociación publique las designaciones del fin de semana, vas a ver tus partidos acá.</p>
+              <p class="small m-0 mt-1">Este fin de semana no fuiste designado.</p>
             </div>
 
             <div v-else v-for="dia in diasProximas" :key="'prox-' + dia.fecha" class="mb-4">
