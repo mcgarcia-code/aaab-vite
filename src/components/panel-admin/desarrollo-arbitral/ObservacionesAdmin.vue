@@ -107,13 +107,13 @@
                       </button>
                     </div>
                   </td>
-                  <td class="sticky-col col-fecha text-center cell-ro fw-bold">{{ formatearFecha(o.fecha_partido) }}</td>
+                  <td class="sticky-col col-fecha text-center cell-ro fw-bold">{{ formatearFecha(o.fecha) }}</td>
                   <td class="cell-ro text-dark">{{ o.observador }}</td>
-                  <td class="cell-ro fw-bold text-uppercase text-dark">{{ o.arbitros }}</td>
+                  <td class="cell-ro fw-bold text-uppercase text-dark">{{ o.arb1 }} - {{ o.arb2 }}</td>
                   <td class="cell-ro text-dark">{{ o.competencia }}</td>
-                  <td class="cell-ro text-dark">{{ o.categoria_edad }}</td>
+                  <td class="cell-ro text-dark">{{ o.categoria }}</td>
                   <td class="cell-ro text-dark">
-                    {{ o.equipo_local }} vs {{ o.equipo_visitante }}
+                    {{ o.local }} vs {{ o.visitante }}
                     <span v-if="o.numero_partido" class="text-muted">(Nº {{ o.numero_partido }})</span>
                   </td>
                   <td class="text-center cell-ro text-muted">{{ formatearFechaHora(o.creado_en) }}</td>
@@ -133,11 +133,11 @@
             <div v-for="o in observacionesPaginadas" :key="'mob-'+o.id" class="card-licencia border-light-subtle shadow-sm mb-3 bg-white rounded">
               <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
                 <div class="card-name text-uppercase text-dark fw-bold" style="font-size: 1.05rem; line-height: 1.2;">
-                  {{ o.arbitros }}
+                  {{ o.arb1 }} - {{ o.arb2 }}
                 </div>
                 <div class="text-xs text-muted fw-bold text-end">
                   #{{ o.id }}<br>
-                  {{ formatearFecha(o.fecha_partido) }}
+                  {{ formatearFecha(o.fecha) }}
                 </div>
               </div>
               <div class="card-body pt-0 px-3 pb-3">
@@ -145,8 +145,8 @@
                   <p class="m-0 text-dark small"><strong class="text-muted">Obs:</strong> {{ o.observador }}</p>
                   <p class="m-0 text-dark small mt-1"><strong class="text-muted">Competencia:</strong> {{ o.competencia }}</p>
                   <p class="m-0 text-dark small mt-1">
-                    <strong class="text-muted">Partido:</strong> {{ o.equipo_local }} vs {{ o.equipo_visitante }}
-                    <span class="badge bg-secondary ms-1">{{ o.categoria_edad }}</span>
+                    <strong class="text-muted">Partido:</strong> {{ o.local }} vs {{ o.visitante }}
+                    <span class="badge bg-secondary ms-1">{{ o.categoria }}</span>
                   </p>
                   <div class="d-flex justify-content-between mt-2 border-top border-secondary-subtle pt-2">
                     <span class="text-dark small" v-if="o.numero_partido">Nº Partido: <strong>{{ o.numero_partido }}</strong></span>
@@ -192,7 +192,7 @@
         <p class="text-muted small mt-1 mb-0">Observación #{{ observacionActual.id }} — {{ formatearFecha(observacionActual.fecha_partido) }}</p>
       </div>
       <div class="text-start bg-light p-3 rounded border mb-4 border-secondary-subtle">
-        <p class="m-0 fw-bold small text-dark mb-1">Árbitros: <span class="text-danger">{{ observacionActual.arbitros }}</span></p>
+        <p class="m-0 fw-bold small text-dark mb-1">Árbitros: <span class="text-danger">{{ observacionActual.arb1 }} - {{ observacionActual.arb2 }}</span></p>
         <p class="m-0 small text-dark"><strong class="text-muted">Observador:</strong> {{ observacionActual.observador }}</p>
         <p class="m-0 small text-dark mt-1"><strong class="text-muted">Competencia:</strong> {{ observacionActual.competencia }}</p>
         <p class="m-0 small text-dark mt-1">
