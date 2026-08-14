@@ -14,6 +14,13 @@
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <!-- Botón Recargar -->
+            <button @click="obtenerStock" :disabled="cargandoTabla" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargandoTabla" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
+            </button>
+
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
@@ -52,6 +59,14 @@
         </div>
 
         <div class="card-body p-3 p-md-4">
+
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargandoTabla" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando inventario...</p>
+          </div>
+
+          <template v-else>
           <!-- GRILLA DE CARDS -->
           <div class="row g-3 g-md-4">
             <div v-for="modelo in stockPaginado" :key="modelo.id_item" class="col-12 col-sm-6 col-md-4 col-lg-3">
@@ -120,6 +135,7 @@
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
+          </template>
 
         </div>
       </div>
@@ -219,6 +235,7 @@ const notificar = inject('notificar');
 
 const listaStock = ref([]);
 const cargando = ref(false);
+const cargandoTabla = ref(false);
 
 const filtros = reactive({ modelo: '' });
 const mostrarFiltrosMobile = ref(false);
@@ -270,21 +287,28 @@ watch(totalPaginas, (nuevo) => {
 });
 
 const obtenerStock = async () => {
-  const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
+  cargandoTabla.value = true;
+  try {
+    const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
 
-  if (respuesta.ok) {
-    listaStock.value = respuesta.payload.map(prenda => {
-      prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
-      prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
-      prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
+    if (respuesta.ok) {
+      listaStock.value = respuesta.payload.map(prenda => {
+        prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
+        prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
+        prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
 
-      return {
-        ...prenda,
-        itemSeleccionado: 0,
-        cantidadSeleccionada: 1,
-        fotoActualIndex: 0
-      };
-    });
+        return {
+          ...prenda,
+          itemSeleccionado: 0,
+          cantidadSeleccionada: 1,
+          fotoActualIndex: 0
+        };
+      });
+    }
+  } catch (err) {
+    console.error("Error al cargar el inventario:", err);
+  } finally {
+    cargandoTabla.value = false;
   }
 };
 

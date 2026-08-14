@@ -19,6 +19,13 @@
               <span class="material-icons fs-6">filter_alt</span>
             </button>
 
+            <!-- Botón Recargar -->
+            <button @click="cargarDatos" :disabled="cargandoTabla" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargandoTabla" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
+            </button>
+
             <!-- Botón Solicitudes -->
             <button @click="abrirModalSolicitudes" class="btn btn-primary position-relative shadow-sm py-2 d-flex align-items-center gap-2">
               <span class="material-icons fs-6">notifications</span>
@@ -130,9 +137,7 @@
                   </tr>
                   <!-- Filtros Desktop -->
                   <tr class="bg-light">
-                    <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
-                      <button @click="obtenerArbitros" class="btn btn-sm btn-light border rounded text-secondary shadow-sm px-2 py-1"><i class="bi bi-arrow-clockwise"></i></button>
-                    </td>
+                    <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id"></td>
                     <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
                     <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
                     <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>

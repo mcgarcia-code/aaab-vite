@@ -13,6 +13,13 @@
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <!-- Botón Recargar -->
+            <button @click="cargarDatos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
+            </button>
+
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
@@ -71,6 +78,13 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
 
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargando" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando árbitros...</p>
+          </div>
+
+          <template v-else>
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
             <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
               <thead class="table-light">
@@ -273,6 +287,7 @@
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
+          </template>
 
         </div>
       </div>
@@ -302,6 +317,7 @@ useHead({
 const notificar = inject('notificar');
 
 const arbitros = ref([]);
+const cargando = ref(false);
 const mostrarFiltrosMobile = ref(false);
 
 const filtros = reactive({
@@ -333,6 +349,7 @@ const paginaActual = ref(1);
 const registrosPorPagina = 8;
 
 const cargarDatos = async () => {
+  cargando.value = true;
   try {
     const {payload} = await api.get({
       entity: "arbitros",
@@ -392,6 +409,8 @@ const cargarDatos = async () => {
   } catch (err) {
     console.error("Error al cargar datos:", err);
     notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
+  } finally {
+    cargando.value = false;
   }
 };
 

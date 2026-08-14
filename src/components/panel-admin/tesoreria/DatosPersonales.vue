@@ -77,92 +77,95 @@
             <p class="text-muted mt-3 fw-bold">Cargando registros...</p>
           </div>
 
-          <div v-else-if="datosPaginados.length === 0" class="text-center p-4 p-md-5 bg-light m-3 rounded shadow-sm border border-light-subtle">
-            <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">search_off</span>
-            <p class="text-muted m-0 fw-bold">No se encontraron registros.</p>
-          </div>
-
-          <div v-else class="border shadow-sm rounded-3 overflow-hidden border-light-subtle bg-white">
-            <div class="row g-0 d-none d-md-flex bg-light border-bottom border-light-subtle p-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">
-              <div class="col-md-1 ps-2">ID</div>
-              <div class="col-md-2">Apellido y Nombre</div>
-              <div class="col-md-1 text-center">Activo</div>
-              <div class="col-md-1 text-center">Grupo</div>
-              <div class="col-md-2 text-center">F. Nac</div>
-              <div class="col-md-2 text-center">Celular</div>
-              <div class="col-md-1 text-center">DNI</div>
-              <div class="col-md-2 pe-2 text-end">Email</div>
+          <template v-else>
+            <!-- TABLA (Solo Escritorio) -->
+            <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id">ID</th>
+                    <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
+                    <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Activo</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Subg.</th>
+                    <th class="py-3 text-center text-uppercase text-muted">F. Nacimiento</th>
+                    <th class="py-3 text-center text-uppercase text-muted">DNI</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Celular</th>
+                    <th class="py-3 text-uppercase text-muted">Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="a in datosPaginados" :key="a.id" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
+                    <td class="ps-3 text-muted fw-bold font-monospace col-fija col-id">{{ a.id }}</td>
+                    <td class="text-dark fw-bold text-uppercase col-fija col-apellido">{{ a.apellido }}</td>
+                    <td class="text-dark fw-bold text-uppercase col-fija col-nombre">{{ a.nombre }}</td>
+                    <td class="text-center">
+                      <div class="d-flex align-items-center justify-content-center gap-1">
+                        <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
+                        <span class="small text-dark fw-bold">{{ a.es_activo == 1 ? 'SI' : 'NO' }}</span>
+                      </div>
+                    </td>
+                    <td class="text-center text-dark">{{ a.grupo }}</td>
+                    <td class="text-center text-dark">{{ a.subgrupo }}</td>
+                    <td class="text-center text-dark">{{ mostrarFechaArg(a.fecha_nacimiento) || '-' }}</td>
+                    <td class="text-center text-dark">{{ a.dni || '-' }}</td>
+                    <td class="text-center text-dark">{{ a.celular || '-' }}</td>
+                    <td class="text-dark">{{ a.email || '-' }}</td>
+                  </tr>
+                  <tr v-if="datosPaginados.length === 0">
+                    <td colspan="10" class="py-5 text-center text-muted border-0 bg-white">
+                      <span class="material-icons d-block fs-1 mb-2">search_off</span>
+                      <p class="m-0 fw-bold">No se encontraron registros.</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
-            <div class="d-flex flex-column">
-              <div v-for="a in datosPaginados" :key="a.id" class="row g-0 align-items-center p-3 p-md-2 border-bottom border-light-subtle item-row" :class="{ 'bg-danger-subtle': a.es_activo == 0, 'bg-white': a.es_activo != 0 }">
+            <!-- CARDS (Solo Celular) -->
+            <div class="d-md-none p-3 bg-light">
+              <div v-for="a in datosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
 
-                <div class="col-12 d-md-none d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" :class="a.es_activo == 0 ? 'border-danger' : 'border-secondary-subtle'">
-                  <div class="d-flex align-items-center gap-2">
-                    <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'" style="width: 10px; height: 10px; border-radius: 50%;"></span>
-                    <strong class="text-dark fs-6 text-uppercase">{{ a.apellido }}, {{ a.nombre }}</strong>
+                <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
+                  <div class="text-dark fw-bold text-uppercase d-flex align-items-center gap-2" style="font-size: 1.05rem;">
+                    <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
+                    {{ a.apellido }}, {{ a.nombre }}
                   </div>
-                  <span class="text-muted small fw-bold font-monospace">#{{ a.id }}</span>
+                  <div class="small text-muted fw-bold font-monospace">#{{ a.id }}</div>
                 </div>
 
-                <div class="col-12 d-md-none small text-dark d-flex flex-column gap-2 bg-light p-2 rounded border border-light-subtle" :class="{'bg-transparent border-0': a.es_activo == 0}">
-                  <div class="d-flex justify-content-between border-bottom pb-1" :class="{'border-danger-subtle': a.es_activo == 0, 'border-secondary-subtle': a.es_activo != 0}">
-                    <span><strong>DNI:</strong> {{ a.dni || '-' }}</span>
-                    <span><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
+                <div class="card-body pt-0 px-3 pb-3">
+                  <div class="d-flex justify-content-between text-dark mb-2 border-bottom border-secondary-subtle pb-2">
+                    <span class="small"><strong>Grupo:</strong> {{ a.grupo || '-' }}<template v-if="a.subgrupo">/{{ a.subgrupo }}</template></span>
+                    <span class="small"><strong>DNI:</strong> {{ a.dni || '-' }}</span>
                   </div>
-                  <div v-if="a.fecha_nacimiento"><strong>F. Nac:</strong> {{ mostrarFechaArg(a.fecha_nacimiento) }}</div>
-                  <div v-if="a.celular"><strong>Celular:</strong> {{ a.celular }}</div>
-                  <div class="text-truncate" v-if="a.email"><strong>Email:</strong> {{ a.email }}</div>
-                </div>
 
-                <div class="col-md-1 d-none d-md-block ps-2 small font-monospace fw-bold" :class="a.es_activo == 0 ? 'text-danger' : 'text-muted'">
-                  {{ a.id }}
-                </div>
-
-                <div class="col-md-2 d-none d-md-block text-dark small fw-bold text-uppercase text-truncate pe-2" :title="a.apellido + ', ' + a.nombre">
-                  {{ a.apellido }}, {{ a.nombre }}
-                </div>
-
-                <div class="col-md-1 d-none d-md-flex justify-content-center">
-                  <div class="d-flex align-items-center gap-1">
-                    <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'" style="width: 8px; height: 8px; border-radius: 50%;"></span>
-                    <span class="small fw-bold" :class="a.es_activo == 0 ? 'text-danger' : 'text-dark'">{{ a.es_activo == 1 ? 'SI' : 'NO' }}</span>
+                  <div class="bg-light p-2 rounded border small border-light-subtle" :class="{'bg-transparent border-0': a.es_activo == 0}">
+                    <p v-if="a.fecha_nacimiento" class="m-0 text-dark"><strong>F. Nac:</strong> {{ mostrarFechaArg(a.fecha_nacimiento) }}</p>
+                    <p v-if="a.celular" class="m-0 text-dark mt-1"><strong>Celular:</strong> {{ a.celular }}</p>
+                    <p v-if="a.email" class="m-0 text-dark mt-1 text-truncate"><strong>Email:</strong> {{ a.email }}</p>
                   </div>
                 </div>
+              </div>
 
-                <div class="col-md-1 d-none d-md-block text-center small fw-bold text-dark">
-                  {{ a.grupo }}<span v-if="a.subgrupo" class="text-muted fw-normal">/{{ a.subgrupo }}</span>
-                </div>
-
-                <div class="col-md-2 d-none d-md-block text-center small text-dark">
-                  {{ mostrarFechaArg(a.fecha_nacimiento) || '-' }}
-                </div>
-
-                <div class="col-md-2 d-none d-md-block text-center small text-dark">
-                  {{ a.celular || '-' }}
-                </div>
-
-                <div class="col-md-1 d-none d-md-block text-center small fw-bold text-dark">
-                  {{ a.dni || '-' }}
-                </div>
-
-                <div class="col-md-2 d-none d-md-block small text-dark text-truncate pe-2 text-end" :title="a.email">
-                  {{ a.email || '-' }}
-                </div>
-
+              <div v-if="datosPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
+                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
+                <p class="text-muted m-0 fw-bold">No se encontraron registros.</p>
               </div>
             </div>
-          </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3 mb-md-0" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border border-light-subtle" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border border-light-subtle" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+            <!-- PAGINACIÓN -->
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3 mb-md-0" v-if="totalPaginas > 1">
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border border-light-subtle" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+                <i class="bi bi-chevron-left"></i> Ant
+              </button>
+              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border border-light-subtle" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+                Sig <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </template>
 
         </div>
       </div>
@@ -291,7 +294,7 @@ onMounted(cargarDatos);
 
 <style scoped>
 /* ====================================================
-   ESTILOS BASE
+   ESTILOS GENERALES
    ==================================================== */
 .full-screen-wrapper {
   position: relative;
@@ -310,26 +313,98 @@ onMounted(cargarDatos);
 }
 
 /* ====================================================
-   EFECTOS HOVER DE FILAS
+   PUNTOS DE ESTADO (Activo/Inactivo)
    ==================================================== */
-.item-row {
-  transition: background-color 0.2s ease;
-}
-
-.item-row.bg-white:hover {
-  background-color: #f8fafc !important; /* Gris muy clarito para activos */
-}
-
-.item-row.bg-danger-subtle:hover {
-  background-color: #fca5a5 !important; /* Rojo un poco más oscuro para inactivos */
-}
-
-/* Utilidades generales */
 .status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
 }
 
-.animate__animated { animation-duration: 0.5s; }
+/* ====================================================
+   UTILIDADES
+   ==================================================== */
+.btn-danger-subtle {
+  background: #fee2e2;
+  color: #dc3545;
+  border: 1px solid transparent;
+}
+.btn-danger-subtle:hover {
+  background: #fecaca;
+}
 
+.animate__animated {
+  animation-duration: 0.5s;
+}
+
+/* ====================================================
+   TABLA CON COLUMNAS FIJAS
+   ==================================================== */
+.tabla-container {
+  overflow-x: auto;
+}
+
+.tabla-fija {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Eliminar bordes verticales de las celdas */
+.tabla-fija th,
+.tabla-fija td {
+  border-left: none !important;
+  border-right: none !important;
+}
+
+/* Columnas fijas con position: sticky base (para los datos) */
+.col-fija {
+  position: sticky;
+  background-color: inherit;
+  z-index: 10;
+}
+
+/* Fondo para thead y Z-INDEX ALTO para que tape los datos al scrollear hacia abajo */
+.tabla-fija thead .col-fija {
+  background-color: #f8f9fa;
+  z-index: 12;
+}
+
+/* Fondo para tbody */
+.tabla-fija tbody .col-fija {
+  background-color: #ffffff;
+}
+
+/* Fondo especial para filas con bg-danger-subtle */
+.tabla-fija tbody tr.bg-danger-subtle .col-fija {
+  background-color: #f8d7da;
+}
+
+/* Posiciones de las columnas fijas */
+.col-id {
+  left: 0;
+  min-width: 60px;
+}
+
+.col-apellido {
+  left: 60px;
+  min-width: 150px;
+}
+
+.col-nombre {
+  left: 210px;
+  min-width: 150px;
+}
+
+/* Sombra sutil en el borde derecho de la última columna fija */
+.col-nombre::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent);
+}
 </style>
