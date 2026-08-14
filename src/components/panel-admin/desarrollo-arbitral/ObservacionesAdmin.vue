@@ -1,184 +1,202 @@
 <template>
-  <div class="full-screen-wrapper">
+  <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-<!-- Cabecera y Botones Generales -->
-        <div class="header-section border-bottom" style="margin-bottom: 0; box-shadow: none; border-radius: 0; padding: 20px;">
-          <div class="header-info">
-            <h4 class="title text-danger fw-bold m-0 d-flex align-items-center gap-2">
+        <!-- HEADER RESPONSIVO -->
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div class="border-start border-danger border-5 ps-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-clipboard-data-fill me-1"></i> Gestión de Observaciones
             </h4>
-            <span class="counter mt-1 d-block text-muted">Total: {{ observacionesFiltradas.length }} registros</span>
+            <span class="text-muted small d-block mt-1">Total: {{ observacionesFiltradas.length }} registros</span>
           </div>
 
-          <div class="header-actions">
-            <!-- Filtros Mobile -->
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn-action btn-blue mobile-only-flex" title="Mostrar Filtros">
-              <span class="material-icons" style="font-size: 16px; line-height: 1;">filter_alt</span>
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <!-- Botón Recargar -->
+            <button @click="obtenerObservaciones" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
 
-            <!-- Limpiar -->
-            <button @click="limpiarFiltros" class="btn-action btn-clear" style="padding-left: 8px; padding-right: 10px;" title="Limpiar Filtros">
-              <span class="material-icons" style="font-size: 16px; line-height: 1;">filter_alt_off</span>
-              <span class="btn-text" style="line-height: 1;">Limpiar</span>
+            <!-- Botón Filtros (Solo Móvil) -->
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+              <span class="material-icons fs-6">filter_alt</span>
             </button>
 
-            <!-- Botón Cargar Observación -->
-            <button @click="abrirModalCarga" class="btn-action btn-danger-custom" style="padding-left: 8px; padding-right: 10px;" title="Cargar Nueva Observación">
-              <span class="material-icons" style="font-size: 16px; line-height: 1;">add_box</span>
-              <span class="btn-text fw-bold" style="line-height: 1;">Nueva Obs.</span>
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
 
-            <!-- Excel -->
-            <button @click="exportarExcel" class="btn-action btn-export" style="padding-left: 8px; padding-right: 10px;" title="Exportar Reporte">
-              <span class="material-icons" style="font-size: 16px; line-height: 1;">download</span>
-              <span class="btn-text" style="line-height: 1;">Excel</span>
+            <button @click="abrirModalCarga" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+              <span class="material-icons fs-6">add_box</span>
+              <span class="fw-bold d-none d-md-inline small">Nueva Obs.</span>
+            </button>
+
+            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
+              <span class="material-icons fs-6">download</span>
+              <span class="fw-bold d-none d-md-inline small">Excel</span>
             </button>
           </div>
         </div>
 
-        <!-- Panel Filtros Mobile -->
-        <div v-if="mostrarFiltrosMobile" class="mobile-filter-panel mobile-only animate__animated animate__fadeInDown animate__faster shadow-sm" style="border-radius: 0; border-left: 0; border-right: 0; margin-bottom: 0; background-color: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; box-shadow: none;">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;">FILTRAR OBSERVACIONES</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn btn-sm btn-light border-0 p-1" style="line-height: 1; background: transparent;">
-              <span class="material-icons" style="font-size: 20px;">close</span>
-            </button>
+        <!-- PANEL DE FILTROS UNIFICADO -->
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
+          <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Observaciones</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
-          <div class="filter-grid-mobile">
-            <input v-model="filtros.fecha" class="filter-input-mobile" placeholder="Fecha (AAAA-MM-DD)...">
-            <input v-model="filtros.observador" class="filter-input-mobile" placeholder="Observador...">
-            <input v-model="filtros.arbitros" class="filter-input-mobile full-width" placeholder="Árbitros observados...">
-            <input v-model="filtros.competencia" class="filter-input-mobile full-width" placeholder="Competencia...">
-            <input v-model="filtros.categoria" class="filter-input-mobile" placeholder="Categoría...">
-            <input v-model="filtros.partido" class="filter-input-mobile" placeholder="Partido...">
+          <div class="row g-2">
+            <div class="col-6 col-md-1">
+              <input v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="DD/MM/AAAA">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.observador" class="form-control form-control-sm shadow-none" placeholder="Observador...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.arbitros" class="form-control form-control-sm shadow-none" placeholder="Árbitros observados...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.competencia" class="form-control form-control-sm shadow-none" placeholder="Competencia...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="Categoría...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.partido" class="form-control form-control-sm shadow-none" placeholder="Partido...">
+            </div>
+            <div class="col-6 col-md-1">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+                <option value="">AÑO</option>
+                <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
+              </select>
+            </div>
+            <div class="col-12 d-md-none mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+            </div>
           </div>
-
-          <button @click="mostrarFiltrosMobile = false" class="btn-blue w-100 mt-3 py-2 rounded fw-bold border-0 shadow-sm" style="font-size: 0.95rem;">Aplicar Filtros</button>
         </div>
 
-        <div class="card-body p-3 p-md-4">
+        <div class="card-body p-0 p-md-3 bg-white">
 
-          <!-- TABLA DESKTOP -->
-          <div class="table-container shadow-sm desktop-only border" style="border-radius: 8px;">
-            <table>
-              <thead>
-                <tr class="main-header">
-                  <th class="sticky-col col-id">ID</th>
-                  <th class="sticky-col col-acciones text-center">Acciones</th>
-                  <th class="sticky-col col-fecha text-center">Fecha</th>
-                  <th>Observador</th>
-                  <th>Árbitros Observados</th>
-                  <th>Competencia</th>
-                  <th>Categoría</th>
-                  <th>Partido</th>
-                  <th class="text-center">Cargado</th>
-                </tr>
-                <tr class="filter-row">
-                  <td class="sticky-col col-id text-center">
-                    <button @click="obtenerObservaciones" :disabled="cargando" class="btn-refresh mx-auto d-flex align-items-center justify-content-center" title="Recargar">
-                      <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary" style="width: 16px; height: 16px; border-width: 2px;"></span>
-                      <span v-else class="material-icons" style="font-size: 16px;">refresh</span>
-                    </button>
-                  </td>
-                  <td class="sticky-col col-acciones"></td>
-                  <td class="sticky-col col-fecha"><input v-model="filtros.fecha" class="filter-input shadow-none text-center" placeholder="AAAA-MM-DD"></td>
-                  <td><input v-model="filtros.observador" class="filter-input shadow-none" placeholder="Filtrar observador.."></td>
-                  <td><input v-model="filtros.arbitros" class="filter-input shadow-none" placeholder="Filtrar árbitros.."></td>
-                  <td><input v-model="filtros.competencia" class="filter-input shadow-none" placeholder="Filtrar competencia.."></td>
-                  <td><input v-model="filtros.categoria" class="filter-input shadow-none" placeholder="Filtrar.."></td>
-                  <td><input v-model="filtros.partido" class="filter-input shadow-none" placeholder="Filtrar partido.."></td>
-                  <td></td>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="o in observacionesPaginadas" :key="o.id" class="row-hover">
-                  <td class="sticky-col col-id cell-ro text-center text-muted fw-bold">{{ o.id }}</td>
-                  <td class="sticky-col col-acciones cell-ro text-center">
-                    <div class="d-flex justify-content-center gap-1">
-                      <button @click="abrirModalGestion(o)" class="btn-editar border shadow-sm rounded p-1" title="Gestionar / Modificar">
-                        <span class="material-icons text-primary" style="font-size:16px;">edit_document</span>
-                      </button>
-                      <button @click="verHistorial(o)" class="btn-historial border shadow-sm rounded p-1" title="Historial de estos árbitros">
-                        <span class="material-icons text-warning" style="font-size:16px;">history</span>
-                      </button>
-                    </div>
-                  </td>
-                  <td class="sticky-col col-fecha text-center cell-ro fw-bold">{{ formatearFecha(o.fecha) }}</td>
-                  <td class="cell-ro text-dark">{{ o.observador }}</td>
-                  <td class="cell-ro fw-bold text-uppercase text-dark">{{ o.arb1 }} - {{ o.arb2 }}</td>
-                  <td class="cell-ro text-dark">{{ o.competencia }}</td>
-                  <td class="cell-ro text-dark">{{ o.categoria }}</td>
-                  <td class="cell-ro text-dark">
-                    {{ o.local }} vs {{ o.visitante }}
-                    <span v-if="o.numero_partido" class="text-muted">(Nº {{ o.numero_partido }})</span>
-                  </td>
-                  <td class="text-center cell-ro text-muted">{{ formatearFechaHora(o.creado_en) }}</td>
-                </tr>
-                <tr v-if="observacionesPaginadas.length === 0">
-                  <td colspan="9" class="text-center py-5 text-muted bg-light italic border-0">
-                    <span class="material-icons d-block mb-2" style="font-size: 40px;">assignment_late</span>
-                    <p class="m-0 fw-bold">No hay ninguna observación registrada.</p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargando" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando observaciones...</p>
           </div>
 
-          <!-- TARJETAS MOBILE -->
-          <div class="mobile-only mt-3">
-            <div v-for="o in observacionesPaginadas" :key="'mob-'+o.id" class="card-licencia border-light-subtle shadow-sm mb-3 bg-white rounded">
-              <div class="card-header border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
-                <div class="card-name text-uppercase text-dark fw-bold" style="font-size: 1.05rem; line-height: 1.2;">
-                  {{ o.arb1 }} - {{ o.arb2 }}
-                </div>
-                <div class="text-xs text-muted fw-bold text-end">
-                  #{{ o.id }}<br>
-                  {{ formatearFecha(o.fecha) }}
-                </div>
-              </div>
-              <div class="card-body pt-0 px-3 pb-3">
-                <div class="card-info bg-light p-2 rounded border mt-2">
-                  <p class="m-0 text-dark small"><strong class="text-muted">Obs:</strong> {{ o.observador }}</p>
-                  <p class="m-0 text-dark small mt-1"><strong class="text-muted">Competencia:</strong> {{ o.competencia }}</p>
-                  <p class="m-0 text-dark small mt-1">
-                    <strong class="text-muted">Partido:</strong> {{ o.local }} vs {{ o.visitante }}
-                    <span class="badge bg-secondary ms-1">{{ o.categoria }}</span>
-                  </p>
-                  <div class="d-flex justify-content-between mt-2 border-top border-secondary-subtle pt-2">
-                    <span class="text-dark small" v-if="o.numero_partido">Nº Partido: <strong>{{ o.numero_partido }}</strong></span>
-                    <span class="text-muted small">Cargado: {{ formatearFechaHora(o.creado_en) }}</span>
+          <template v-else>
+            <!-- TABLA (Solo Escritorio) -->
+            <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem; table-layout: fixed;">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
+                    <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 110px;">Acciones</th>
+                    <th class="py-3 text-center text-uppercase text-muted col-fija col-fecha" style="width: 110px;">Fecha</th>
+                    <th class="py-3 text-uppercase text-muted" style="width: 180px;">Observador</th>
+                    <th class="py-3 text-uppercase text-muted" style="width: 220px;">Árbitros Observados</th>
+                    <th class="py-3 text-uppercase text-muted" style="width: 180px;">Competencia</th>
+                    <th class="py-3 text-uppercase text-muted" style="width: 130px;">Categoría</th>
+                    <th class="py-3 text-uppercase text-muted" style="width: 220px;">Partido</th>
+                    <th class="py-3 text-center pe-3 text-uppercase text-muted" style="width: 140px;">Cargado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="o in observacionesPaginadas" :key="o.id">
+                    <td class="text-center text-muted fw-bold font-monospace col-fija col-id">{{ o.id }}</td>
+                    <td class="text-center col-fija col-acciones">
+                      <div class="d-flex justify-content-center gap-1">
+                        <button @click="abrirModalGestion(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Gestionar / Modificar">
+                          <span class="material-icons" style="font-size:16px;">edit_document</span>
+                        </button>
+                        <button @click="verHistorial(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial de estos árbitros">
+                          <span class="material-icons" style="font-size:16px;">history</span>
+                        </button>
+                      </div>
+                    </td>
+                    <td class="text-center fw-bold col-fija col-fecha">{{ formatearFecha(o.fecha_partido) }}</td>
+                    <td class="text-dark">{{ o.observador }}</td>
+                    <td class="fw-bold text-uppercase text-dark text-truncate" :title="o.arbitros">{{ o.arbitros }}</td>
+                    <td class="text-dark text-truncate" :title="o.competencia">{{ o.competencia }}</td>
+                    <td class="text-dark">{{ o.categoria_edad }}</td>
+                    <td class="text-dark text-truncate" :title="`${o.equipo_local} vs ${o.equipo_visitante}`">
+                      {{ o.equipo_local }} vs {{ o.equipo_visitante }}
+                      <span v-if="o.numero_partido" class="text-muted">(Nº {{ o.numero_partido }})</span>
+                    </td>
+                    <td class="text-center pe-3 text-muted">{{ formatearFechaHora(o.creado_en) }}</td>
+                  </tr>
+                  <tr v-if="observacionesPaginadas.length === 0">
+                    <td colspan="9" class="py-5 text-center text-muted border-0 bg-white">
+                      <span class="material-icons d-block fs-1 mb-2">assignment_late</span>
+                      <p class="m-0 fw-bold">No hay ninguna observación registrada.</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- CARDS (Solo Celular) -->
+            <div class="d-md-none p-3 bg-light">
+              <div v-for="o in observacionesPaginadas" :key="'mob-'+o.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
+
+                <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
+                  <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem; line-height: 1.2;">
+                    {{ o.arb1 }} - {{ o.arb2 }}
+                    <span v-if="!o.arb1">{{ o.arbitros }}</span>
+                  </div>
+                  <div class="small text-muted fw-bold text-end">
+                    #{{ o.id }}<br>
+                    {{ formatearFecha(o.fecha_partido) }}
                   </div>
                 </div>
-                <div class="d-flex gap-2 mt-3">
-                  <button @click="abrirModalGestion(o)" class="btn-editar-mobile flex-grow-1 border shadow-sm">
-                    <span class="material-icons" style="font-size: 18px;">edit_document</span> Gestionar
-                  </button>
-                  <button @click="verHistorial(o)" class="btn-historial-mobile border shadow-sm px-3" title="Ver historial">
-                    <span class="material-icons" style="font-size: 18px;">history</span>
-                  </button>
+
+                <div class="card-body pt-0 px-3 pb-3">
+                  <div class="bg-light p-2 rounded border mt-2 border-light-subtle">
+                    <p class="m-0 text-dark small"><strong class="text-muted">Obs:</strong> {{ o.observador }}</p>
+                    <p class="m-0 text-dark small mt-1"><strong class="text-muted">Competencia:</strong> {{ o.competencia }}</p>
+                    <p class="m-0 text-dark small mt-1">
+                      <strong class="text-muted">Partido:</strong> {{ o.equipo_local }} vs {{ o.equipo_visitante }}
+                      <span class="badge bg-secondary ms-1">{{ o.categoria_edad }}</span>
+                    </p>
+                    <div class="d-flex justify-content-between mt-2 border-top border-secondary-subtle pt-2">
+                      <span class="text-dark small" v-if="o.numero_partido">Nº Partido: <strong>{{ o.numero_partido }}</strong></span>
+                      <span class="text-muted small">Cargado: {{ formatearFechaHora(o.creado_en) }}</span>
+                    </div>
+                  </div>
+
+                  <div class="d-flex gap-2 mt-3">
+                    <button @click="abrirModalGestion(o)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                      <span class="material-icons" style="font-size: 18px;">edit_document</span> Gestionar
+                    </button>
+                    <button @click="verHistorial(o)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center" title="Ver historial">
+                      <span class="material-icons" style="font-size: 18px;">history</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div v-if="observacionesPaginadas.length === 0" class="text-center p-4 bg-light rounded shadow-sm border mt-3">
-              <span class="material-icons text-muted" style="font-size: 40px;">assignment_late</span>
-              <p class="text-muted mt-2 mb-0 fw-bold">No hay observaciones registradas.</p>
-            </div>
-          </div>
 
-          <!-- PAGINACIÓN -->
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+              <div v-if="observacionesPaginadas.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
+                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">assignment_late</span>
+                <p class="text-muted m-0 fw-bold">No hay observaciones registradas.</p>
+              </div>
+            </div>
+
+            <!-- PAGINACIÓN -->
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+                <i class="bi bi-chevron-left"></i> Ant
+              </button>
+              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+                Sig <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </template>
 
         </div>
       </div>
@@ -205,7 +223,7 @@
       </div>
       <div class="text-start">
         <label class="small fw-bold mb-1 text-dark">Actualizar Estado de la Observación</label>
-        <select v-model="nuevoEstado" class="form-select shadow-none border-primary-subtle fw-bold custom-input">
+        <select v-model="nuevoEstado" class="form-select shadow-none border-primary-subtle fw-bold">
           <option value="pendiente">Pendiente de Revisión</option>
           <option value="aprobada">Aprobar Observación</option>
           <option value="anulada">Anular Observación</option>
@@ -251,14 +269,11 @@
             <label class="form-label-custom">Competencia Mayores *</label>
             <select @change='obtenerEquipos()' v-model="formulario.inf_nivel" class="sacf-input" required>
               <option value="" disabled>Seleccione competencia</option>
-
-              <!-- Solución aplicada aquí -->
               <template v-if="listas.divisiones_categorias.length > 0">
                 <option v-for="(div, k) in listas.divisiones_categorias[0].divisiones" :key="k" :value="div">
                   {{ div }}
                 </option>
               </template>
-
             </select>
           </div>
 
@@ -386,7 +401,8 @@
         </div>
       </template>
 
-      <div class="desktop-only table-responsive border rounded shadow-sm m-0">
+      <!-- Historial PC -->
+      <div class="d-none d-md-block table-responsive border rounded shadow-sm m-0">
         <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.75rem;">
           <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
             <tr>
@@ -412,26 +428,25 @@
         </table>
       </div>
 
-      <div class="mobile-only">
+      <!-- Historial Móvil -->
+      <div class="d-md-none">
         <div v-if="historialSeleccionado.length === 0" class="text-center py-4 text-muted">
           No hay registros en el historial.
         </div>
-        <div v-for="h in historialSeleccionado" :key="'hmob-'+h.id" class="card-licencia bg-light mb-3 border">
-          <div class="card-header border-0 pb-2 mb-2 d-flex justify-content-between align-items-start">
-            <div class="card-name fw-bold lh-sm text-dark pe-2" style="font-size: 0.95rem;">
+        <div v-for="h in historialSeleccionado" :key="'hmob-'+h.id" class="border border-light-subtle rounded-3 p-3 shadow-sm bg-light mb-3">
+          <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
+            <div class="fw-bold lh-sm text-dark pe-2" style="font-size: 0.95rem;">
               {{ h.equipo_local }} vs {{ h.equipo_visitante }}
               <div class="text-danger mt-1" style="font-size: 0.75rem;">{{ h.categoria_edad }} • {{ formatearFecha(h.fecha_partido) }}</div>
             </div>
           </div>
-          <div class="px-1">
-            <div class="card-row border-bottom pb-2 mb-2">
-              <span class="fw-bold text-dark">Observador:</span>
-              <span class="text-muted">{{ h.observador }}</span>
-            </div>
-            <div class="card-row mb-0">
-              <span class="fw-bold text-dark">Competencia:</span>
-              <span class="text-muted">{{ h.competencia }}</span>
-            </div>
+          <div class="d-flex justify-content-between border-bottom pb-2 mb-2 small">
+            <span class="fw-bold text-dark">Observador:</span>
+            <span class="text-muted">{{ h.observador }}</span>
+          </div>
+          <div class="d-flex justify-content-between small">
+            <span class="fw-bold text-dark">Competencia:</span>
+            <span class="text-muted">{{ h.competencia }}</span>
           </div>
         </div>
       </div>
@@ -460,7 +475,7 @@ const notificar = inject('notificar', (msg) => console.log('Notificación:', msg
 const observaciones = ref([]);
 const cargando = ref(false);
 
-const filtros = reactive({ fecha: '', observador: '', arbitros: '', competencia: '', categoria: '', partido: '' });
+const filtros = reactive({ fecha: '', anio: '', observador: '', arbitros: '', competencia: '', categoria: '', partido: '' });
 const mostrarFiltrosMobile = ref(false);
 
 const paginaActual = ref(1);
@@ -482,16 +497,26 @@ const formatearFechaHora = (fechaHora) => {
   return `${formatearFecha(fecha)}${hora ? ' ' + hora.slice(0, 5) : ''}`;
 };
 
+const aniosDisponibles = computed(() => {
+  const anios = new Set()
+  observaciones.value.forEach(o => {
+    const anio = (o.fecha_partido || '').substring(0, 4)
+    if (anio) anios.add(anio)
+  })
+  return [...anios].sort((a, b) => b.localeCompare(a))
+});
+
 const observacionesFiltradas = computed(() => {
   return observaciones.value.filter(o => {
-    const matchFec = (o.fecha_partido || '').includes(filtros.fecha);
+    const matchFec = formatearFecha(o.fecha_partido).includes(filtros.fecha);
+    const matchAnio = !filtros.anio || (o.fecha_partido || '').substring(0, 4) === filtros.anio;
     const matchObs = normalizar(o.observador).includes(normalizar(filtros.observador));
     const matchArb = normalizar(o.arbitros).includes(normalizar(filtros.arbitros));
     const matchComp = normalizar(o.competencia).includes(normalizar(filtros.competencia));
     const matchCat = normalizar(o.categoria_edad).includes(normalizar(filtros.categoria));
     const matchPar = normalizar(`${o.equipo_local} ${o.equipo_visitante} ${o.numero_partido}`).includes(normalizar(filtros.partido));
 
-    return matchFec && matchObs && matchArb && matchComp && matchCat && matchPar;
+    return matchFec && matchAnio && matchObs && matchArb && matchComp && matchCat && matchPar;
   });
 });
 
@@ -527,8 +552,9 @@ const obtenerObservaciones = async () => {
     }
   } catch {
     notificar({ titulo: 'Error', mensaje: 'Problema al cargar las observaciones.', tipo: 'danger' });
+  } finally {
+    cargando.value = false;
   }
-  cargando.value = false;
 };
 
 /* ====================================================
@@ -566,8 +592,9 @@ const guardarCambiosGestion = async () => {
     cerrarModal();
   } catch{
     notificar({ titulo: 'Error', mensaje: 'Ocurrió un problema al guardar los cambios.', tipo: 'danger' });
+  } finally {
+    cargando.value = false;
   }
-  cargando.value = false;
 };
 
 /* ====================================================
@@ -749,92 +776,71 @@ onMounted(() => {
 
 <style scoped>
 /* ====================================================
-   ESTILOS GENERALES Y DE TABLA
+   ESTILOS GENERALES
    ==================================================== */
 .full-screen-wrapper {
   position: relative;
   width: 99vw;
   min-height: 100vh;
-  height: auto !important;
   margin-left: 50%;
   transform: translateX(-50%);
-  padding: 20px;
   padding-bottom: 120px;
-  box-sizing: border-box;
 }
 
 .admin-panel {
   width: 100%;
-  max-width: 100%;
-  padding: 0;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;
   background-color: #0f172a;
   min-height: 100vh;
-  border-radius: 0;
+  border-radius: 12px;
 }
 
-.header-section {
-  background: white;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 15px;
-  border-left: 5px solid #ef4444;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+/* ====================================================
+   UTILIDADES
+   ==================================================== */
+.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
+.btn-danger-subtle:hover { background: #fecaca; }
+
+.animate__animated { animation-duration: 0.5s; }
+
+/* ====================================================
+   TABLA CON COLUMNAS FIJAS Y SIN LÍNEAS
+   ==================================================== */
+.tabla-sin-lineas th,
+.tabla-sin-lineas td {
+  border-left: none !important;
+  border-right: none !important;
 }
 
-.header-info { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
-.header-actions {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: center;
-  gap: 8px;
-  overflow-x: auto;
+.tabla-fija {
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-.btn-action {
-  border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: opacity 0.2s, transform 0.1s;
-  flex: none; width: 42px; height: 42px; padding: 0;
+@media (min-width: 768px) {
+  .col-fija {
+    position: sticky !important;
+    background-color: inherit;
+    z-index: 10;
+  }
+
+  .tabla-fija thead .col-fija {
+    background-color: #f8f9fa !important;
+    z-index: 12;
+  }
+
+  .tabla-fija tbody .col-fija {
+    background-color: #ffffff !important;
+  }
+
+  .col-id       { left: 0; min-width: 50px !important; max-width: 50px !important; }
+  .col-acciones { left: 50px; min-width: 110px !important; max-width: 110px !important; }
+  .col-fecha    {
+    left: 160px;
+    min-width: 110px !important;
+    max-width: 110px !important;
+    box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1);
+  }
 }
-.btn-action:hover { opacity: 0.85; }
-.btn-action:active { transform: scale(0.95); }
-
-.btn-clear { background: #e2e8f0; color: #000; }
-.btn-export { background: #10b981; color: white; }
-.btn-blue { background: #3b82f6; color: white; }
-.btn-danger-custom { background: #dc2626; color: white; } /* BOTÓN NUEVO ROJO */
-.btn-text { display: none; }
-
-.mobile-filter-panel { background: #e2e8f0; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; }
-.filter-grid-mobile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.filter-grid-mobile .full-width { grid-column: 1 / -1; }
-.filter-input-mobile {
-  padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; width: 100%;
-  outline: none; background: #ffffff; color: #334155;
-}
-
-/* Tarjetas Mobile */
-.card-licencia { border-radius: 8px; overflow: hidden; }
-.card-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 10px; }
-.card-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #000; }
-.card-info p { margin: 4px 0; }
-.btn-editar-mobile, .btn-historial-mobile {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 8px; border-radius: 6px; font-weight: bold; font-size: 0.85rem; cursor: pointer;
-}
-.btn-editar-mobile { background: #fff; color: #3b82f6; border-color: #bfdbfe !important; }
-.btn-historial-mobile { background: #fff; color: #d97706; border-color: #fde68a !important; }
-
-.desktop-only { display: none; }
-.mobile-only { display: block; }
-.mobile-only-flex { display: flex; }
 
 /* ====================================================
    ESTILOS FORMULARIO (MODAL CARGA)
@@ -876,51 +882,4 @@ onMounted(() => {
 
 .anim-fade { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-/* ====================================================
-   MEDIA QUERIES (DESKTOP)
-   ==================================================== */
-@media (min-width: 768px) {
-  .desktop-only { display: block; }
-  .mobile-only, .mobile-only-flex { display: none !important; }
-
-  .full-screen-wrapper { padding: 20px; }
-  .admin-panel { padding: 20px; border-radius: 8px; }
-
-  .header-section {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    border-radius: 8px;
-    padding: 15px 25px !important;
-    margin-bottom: 15px !important;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1) !important;
-  }
-
-  .title { font-size: 1.1rem; }
-
-  .header-info { width: auto; }
-  .header-actions { width: auto; justify-content: flex-end; flex-wrap: nowrap; gap: 8px; }
-
-
-  .btn-action { width: auto; height: auto; padding: 8px 12px; font-size: 0.75rem; justify-content: flex-start; gap: 5px; }
-  .btn-text { display: inline; }
-
-  .table-container { width: 100%; overflow: auto; max-height: 75vh; background: white; }
-  table { width: 100%; min-width: max-content; border-collapse: collapse; }
-  thead tr.main-header th { position: sticky; top: 0; z-index: 100; background-color: #e2e8f0 !important; border-bottom: 2px solid #cbd5e1; font-size: 0.75rem; color: #1e293b; text-transform: uppercase; font-weight: 800; padding: 14px 10px; }
-  thead tr.filter-row td { position: sticky; top: 46px; z-index: 90; background-color: #f1f5f9 !important; border-bottom: 2px solid #cbd5e1; padding: 10px 8px; }
-
-  .sticky-col { position: sticky !important; background: white !important; box-shadow: inset -1px 0 0 #e2e8f0; }
-  thead tr.main-header th.sticky-col { background-color: #e2e8f0 !important; z-index: 110 !important; }
-  thead tr.filter-row td.sticky-col { background-color: #f1f5f9 !important; z-index: 95 !important; }
-
-  .col-id { left: 0; width: 50px; } .col-acciones { left: 50px; width: 90px; } .col-fecha { left: 140px; width: 110px; box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1); }
-  .cell-ro { padding: 12px 10px; font-size: 0.85rem; } .row-hover:hover td { background-color: #f8fafc !important; }
-
-  .filter-input { font-size: 0.75rem; height: 30px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 8px; width: 100%; box-sizing: border-box; background-color: #ffffff; }
-  .btn-refresh { background: none; border: none; cursor: pointer; color: #64748b; } .btn-refresh:hover { color: #0f172a; }
-}
-
-@media (min-width: 1200px) { .full-screen-wrapper { width: 99vw; margin-left: 50%; transform: translateX(-50%); } }
 </style>

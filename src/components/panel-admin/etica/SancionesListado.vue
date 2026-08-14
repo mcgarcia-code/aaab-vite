@@ -53,13 +53,13 @@
           </div>
 
           <div class="row g-2 align-items-center">
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-2">
               <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="Buscar árbitro...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.motivo" class="form-control form-control-sm shadow-none" placeholder="Motivo / Art...">
+              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Motivo / Art. / Sanción...">
             </div>
-            <div class="col-12 col-md-2">
+            <div class="col-6 col-md-2">
               <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
                 <option value="">ESTADO (TODOS)</option>
                 <option value="vigente">VIGENTE</option>
@@ -74,12 +74,16 @@
             <div class="col-6 col-md-2">
               <input type="text" v-model="filtros.hasta" class="form-control form-control-sm shadow-none text-center" placeholder="Hasta (DD/MM/AA)">
             </div>
-
-            <!-- Checkbox de Respuestas Pendientes -->
-            <div class="col-12 mt-2 mt-md-0 d-md-none">
-              <div class="form-check form-switch bg-white border p-2 rounded shadow-sm">
-                <input class="form-check-input ms-1 shadow-none" type="checkbox" role="switch" v-model="filtros.conNuevos" id="conNuevosMob" style="cursor:pointer;">
-                <label class="form-check-label ms-2 small fw-bold text-danger cursor-pointer" for="conNuevosMob">Solo pendientes de respuesta</label>
+            <div class="col-6 col-md-1">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+                <option value="">AÑO</option>
+                <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-1">
+              <div class="form-check form-switch bg-white border rounded shadow-sm m-0 h-100 d-flex align-items-center justify-content-center px-2 py-1" title="Solo pendientes de respuesta">
+                <input class="form-check-input shadow-none m-0" type="checkbox" role="switch" v-model="filtros.conNuevos" id="conNuevos" style="cursor:pointer;">
+                <label class="form-check-label ms-2 small fw-bold text-danger d-none d-xl-inline" for="conNuevos" style="cursor:pointer; font-size:0.80rem; ">Pendientes</label>
               </div>
             </div>
 
@@ -91,157 +95,143 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
 
-          <!-- TABLA (Solo Escritorio) -->
-          <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem; table-layout: fixed;">
-              <thead class="table-light">
-                <tr>
-                  <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
-                  <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 140px;">Acciones</th>
-                  <th class="py-3 text-uppercase text-muted col-fija col-arbitro" style="width: 200px;">Árbitro</th>
-                  <th class="py-3 text-uppercase text-muted" style="width: 300px;">Motivo / Art.</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="width: 150px;">Sanción</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="width: 100px;">Desde</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="width: 100px;">Hasta</th>
-                  <th class="py-3 text-center pe-3 text-uppercase text-muted" style="width: 120px;">Estado</th>
-                </tr>
-                <tr class="bg-light">
-                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id"></td>
-                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-acciones">
-                    <div class="form-check form-switch d-flex justify-content-center m-0" title="Ver solo pendientes de respuesta">
-                      <input class="form-check-input shadow-none" type="checkbox" v-model="filtros.conNuevos" style="cursor: pointer;">
-                    </div>
-                  </td>
-                  <td class="p-2 border-bottom border-2 col-fija col-arbitro"><input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="Buscar árbitro..."></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.motivo" class="form-control form-control-sm shadow-none" placeholder="Filtrar motivo..."></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.sancion" class="form-control form-control-sm shadow-none text-center" placeholder="Filtrar..."></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.desde" class="form-control form-control-sm shadow-none text-center" placeholder="DD/MM/AA"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.hasta" class="form-control form-control-sm shadow-none text-center" placeholder="DD/MM/AA"></td>
-                  <td class="p-2 border-bottom border-2 pe-3">
-                    <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
-                      <option value="">TODOS</option>
-                      <option value="vigente">VIGENTE</option>
-                      <option value="cumplida">CUMPLIDA</option>
-                      <option value="en_proceso">EN PROCESO</option>
-                      <option value="anulada">ANULADA</option>
-                    </select>
-                  </td>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="s in sancionesPaginadas" :key="s.id">
-                  <td class="text-center text-muted fw-bold font-monospace col-fija col-id">{{ s.id }}</td>
-                  <td class="text-center col-fija col-acciones">
-                    <div class="d-flex justify-content-center gap-1">
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargando" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando sanciones...</p>
+          </div>
 
-                      <!-- Botón de Chat Dinámico (Refactorizado a clases de Bootstrap) -->
-                      <button @click="gestionarDescargo(s)" class="btn btn-sm shadow-sm rounded p-1 position-relative d-flex align-items-center justify-content-center"
-                              :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-danger text-white border-danger' : 'btn-primary text-white border-primary') : 'btn-secondary text-white border-secondary'"
-                              :title="s.estado_dinamico == 3 ? 'Ver Descargos' : 'Historial Chat'">
-                        <span class="material-icons" style="font-size:16px;">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
-                        <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle"></span>
-                      </button>
+          <template v-else>
+            <!-- TABLA (Solo Escritorio) -->
+            <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem; table-layout: fixed;">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
+                    <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 140px;">Acciones</th>
+                    <th class="py-3 text-uppercase text-muted col-fija col-arbitro" style="width: 200px;">Árbitro</th>
+                    <th class="py-3 text-uppercase text-muted" style="width: 300px;">Motivo / Art.</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="width: 150px;">Sanción</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="width: 100px;">Desde</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="width: 100px;">Hasta</th>
+                    <th class="py-3 text-center pe-3 text-uppercase text-muted" style="width: 120px;">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="s in sancionesPaginadas" :key="s.id">
+                    <td class="text-center text-muted fw-bold font-monospace col-fija col-id">{{ s.id }}</td>
+                    <td class="text-center col-fija col-acciones">
+                      <div class="d-flex justify-content-center gap-1">
 
-                      <button @click="editarSancion(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar"><span class="material-icons" style="font-size:16px;">edit</span></button>
-                      <button @click="verHistorialArbitro(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial"><span class="material-icons" style="font-size:16px;">manage_search</span></button>
-                      <button @click="eliminarSancionRegistro(s.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar"><span class="material-icons" style="font-size:16px;">delete</span></button>
-                    </div>
-                  </td>
-                  <td class="text-dark fw-bold text-uppercase col-fija col-arbitro text-truncate" :title="s.arbitro">{{ s.arbitro }}</td>
-                  <td class="text-muted">
-                    <div class="text-truncate" style="max-width: 280px;" :title="s.motivo">
-                      <strong class="text-dark">Art. {{ s.articulo }}</strong> - {{ s.motivo }}
-                    </div>
-                  </td>
-                  <td class="text-center fw-bold">
-                    <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
-                  </td>
-                  <td class="text-center fw-bold">{{ s.desde_formateada || '-' }}</td>
-                  <td class="text-center fw-bold">
-                    <span v-if="s.es_indefinido == 1" class="text-danger">Indefinido</span>
-                    <span v-else>{{ s.hasta_formateada || '-' }}</span>
-                  </td>
-                  <td class="text-center pe-3">
-                    <span :class="['badge-status-sm', obtenerClaseEstado(s.estado_dinamico)]">
+                        <!-- Botón de Chat Dinámico (Refactorizado a clases de Bootstrap) -->
+                        <button @click="gestionarDescargo(s)" class="btn btn-sm shadow-sm rounded p-1 position-relative d-flex align-items-center justify-content-center"
+                                :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-danger text-white border-danger' : 'btn-primary text-white border-primary') : 'btn-secondary text-white border-secondary'"
+                                :title="s.estado_dinamico == 3 ? 'Ver Descargos' : 'Historial Chat'">
+                          <span class="material-icons" style="font-size:16px;">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
+                          <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle"></span>
+                        </button>
+
+                        <button @click="editarSancion(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar"><span class="material-icons" style="font-size:16px;">edit</span></button>
+                        <button @click="verHistorialArbitro(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial"><span class="material-icons" style="font-size:16px;">manage_search</span></button>
+                        <button @click="eliminarSancionRegistro(s.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar"><span class="material-icons" style="font-size:16px;">delete</span></button>
+                      </div>
+                    </td>
+                    <td class="text-dark fw-bold text-uppercase col-fija col-arbitro text-truncate" :title="s.arbitro">{{ s.arbitro }}</td>
+                    <td class="text-muted">
+                      <div class="text-truncate" style="max-width: 280px;" :title="s.motivo">
+                        <strong class="text-dark">Art. {{ s.articulo }}</strong> - {{ s.motivo }}
+                      </div>
+                    </td>
+                    <td class="text-center fw-bold">
+                      <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
+                    </td>
+                    <td class="text-center fw-bold">{{ s.desde_formateada || '-' }}</td>
+                    <td class="text-center fw-bold">
+                      <span v-if="s.es_indefinido == 1" class="text-danger">Indefinido</span>
+                      <span v-else>{{ s.hasta_formateada || '-' }}</span>
+                    </td>
+                    <td class="text-center pe-3">
+                      <span :class="['badge-status-sm', obtenerClaseEstado(s.estado_dinamico)]">
+                        {{ obtenerTextoEstado(s.estado_dinamico) }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr v-if="sancionesPaginadas.length === 0">
+                    <td colspan="8" class="py-5 text-center text-muted border-0 bg-white">
+                      <span class="material-icons d-block fs-1 mb-2">search_off</span>
+                      <p class="m-0 fw-bold">No se encontraron sanciones.</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- CARDS (Solo Celular) -->
+            <div class="d-md-none p-3 bg-light">
+              <div v-for="s in sancionesPaginadas" :key="'mob-'+s.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
+
+                <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
+                  <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
+                    {{ s.arbitro }}
+                  </div>
+                  <div class="small text-muted fw-bold font-monospace">#{{ s.id }}</div>
+                </div>
+
+                <div class="px-3 pt-1 pb-2">
+                  <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                    <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" class="fs-6 fw-bold">{{ s.sancion }}</span>
+                    <span :class="['badge-status-sm', obtenerClaseEstado(s.estado_dinamico, true)]">
                       {{ obtenerTextoEstado(s.estado_dinamico) }}
                     </span>
-                  </td>
-                </tr>
-                <tr v-if="sancionesPaginadas.length === 0">
-                  <td colspan="8" class="py-5 text-center text-muted border-0 bg-white">
-                    <span class="material-icons d-block fs-1 mb-2">search_off</span>
-                    <p class="m-0 fw-bold">No se encontraron sanciones.</p>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- CARDS (Solo Celular) -->
-          <div class="d-md-none p-3 bg-light">
-            <div v-for="s in sancionesPaginadas" :key="'mob-'+s.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
-
-              <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
-                  {{ s.arbitro }}
+                  </div>
                 </div>
-                <div class="small text-muted fw-bold font-monospace">#{{ s.id }}</div>
+
+                <div class="card-body pt-0 px-3 pb-3">
+                  <p class="text-muted small mb-3 mt-1 lh-sm">
+                    <strong class="text-dark" v-if="s.articulo">Art. {{ s.articulo }} -</strong> {{ s.motivo }}
+                  </p>
+
+                  <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center mb-3 border-light-subtle">
+                    <span class="small text-muted">Desde: <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong></span>
+                    <span class="small text-muted">Hasta:
+                      <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
+                      <strong class="text-dark" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
+                      <strong class="text-dark" v-else>-</strong>
+                    </span>
+                  </div>
+
+                  <div class="d-flex gap-2 flex-wrap">
+                    <!-- Botón Chat Móvil -->
+                    <button @click="gestionarDescargo(s)" class="btn btn-sm flex-grow-1 shadow-sm position-relative d-flex justify-content-center align-items-center gap-1 fw-bold"
+                            :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-outline-danger' : 'btn-outline-primary') : 'btn-outline-secondary'">
+                      <span class="material-icons" style="font-size: 16px;">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
+                      {{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'NUEVOS' : 'DESCARGOS') : 'HISTORIAL' }}
+                      <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="margin-left: -15px;"></span>
+                    </button>
+                    <button @click="editarSancion(s)" class="btn btn-sm btn-outline-primary shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">edit</span></button>
+                    <button @click="verHistorialArbitro(s)" class="btn btn-sm btn-outline-warning shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">manage_search</span></button>
+                    <button @click="eliminarSancionRegistro(s.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">delete</span></button>
+                  </div>
+                </div>
               </div>
 
-              <div class="px-3 pt-1 pb-2">
-                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
-                  <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" class="fs-6 fw-bold">{{ s.sancion }}</span>
-                  <span :class="['badge-status-sm', obtenerClaseEstado(s.estado_dinamico, true)]">
-                    {{ obtenerTextoEstado(s.estado_dinamico) }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="card-body pt-0 px-3 pb-3">
-                <p class="text-muted small mb-3 mt-1 lh-sm">
-                  <strong class="text-dark" v-if="s.articulo">Art. {{ s.articulo }} -</strong> {{ s.motivo }}
-                </p>
-
-                <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center mb-3 border-light-subtle">
-                  <span class="small text-muted">Desde: <strong class="text-dark">{{ s.desde_formateada || '-' }}</strong></span>
-                  <span class="small text-muted">Hasta:
-                    <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
-                    <strong class="text-dark" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
-                    <strong class="text-dark" v-else>-</strong>
-                  </span>
-                </div>
-
-                <div class="d-flex gap-2 flex-wrap">
-                  <!-- Botón Chat Móvil -->
-                  <button @click="gestionarDescargo(s)" class="btn btn-sm flex-grow-1 shadow-sm position-relative d-flex justify-content-center align-items-center gap-1 fw-bold"
-                          :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-outline-danger' : 'btn-outline-primary') : 'btn-outline-secondary'">
-                    <span class="material-icons" style="font-size: 16px;">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
-                    {{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'NUEVOS' : 'DESCARGOS') : 'HISTORIAL' }}
-                    <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="margin-left: -15px;"></span>
-                  </button>
-                  <button @click="editarSancion(s)" class="btn btn-sm btn-outline-primary shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">edit</span></button>
-                  <button @click="verHistorialArbitro(s)" class="btn btn-sm btn-outline-warning shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">manage_search</span></button>
-                  <button @click="eliminarSancionRegistro(s.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">delete</span></button>
-                </div>
+              <div v-if="sancionesPaginadas.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
+                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
+                <p class="text-muted m-0 fw-bold">No se encontraron sanciones.</p>
               </div>
             </div>
 
-            <div v-if="sancionesPaginadas.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
-              <p class="text-muted m-0 fw-bold">No se encontraron sanciones.</p>
+            <!-- PAGINACIÓN -->
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+                <i class="bi bi-chevron-left"></i> Ant
+              </button>
+              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+                Sig <i class="bi bi-chevron-right"></i>
+              </button>
             </div>
-          </div>
-
-          <!-- PAGINACIÓN -->
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          </template>
 
         </div>
       </div>
@@ -494,7 +484,7 @@ const cargando = ref(false)
 const cargandoProceso = ref(false)
 
 const filtros = reactive({
-  arbitro: '', motivo: '', sancion: '', desde: '', hasta: '', estado: '', conNuevos: false
+  arbitro: '', busqueda: '', desde: '', hasta: '', anio: '', estado: '', conNuevos: false
 })
 
 const mostrarFiltrosMobile = ref(false)
@@ -532,6 +522,21 @@ const revertirFechaParaInput = (fecha) => {
   return `${partes[2]}-${partes[1]}-${partes[0]}`;
 }
 
+// Extrae el año a 4 dígitos desde 'desde' (soporta DD/MM/AA, DD/MM/AAAA y YYYY-MM-DD)
+const extraerAnio = (fecha) => {
+  if (!fecha) return ''
+  const texto = String(fecha)
+  if (texto.includes('-')) {
+    // Formato YYYY-MM-DD
+    return texto.substring(0, 4)
+  }
+  const partes = texto.split('/')
+  if (partes.length !== 3) return ''
+  let anio = partes[2]
+  if (anio.length === 2) anio = '20' + anio
+  return anio
+}
+
 const obtenerTextoEstado = (estado_dinamico) => {
   if (estado_dinamico == 1) return 'VIGENTE';
   if (estado_dinamico == 2) return 'CUMPLIDA';
@@ -557,14 +562,26 @@ const obtenerClaseTextoSancion = (estado_dinamico) => {
   return 'text-danger fw-bold';
 }
 
+// Años presentes en las sanciones (tomados de 'desde'), ordenados de mayor a menor
+const aniosDisponibles = computed(() => {
+  const anios = new Set()
+  sanciones.value.forEach(s => {
+    const anio = extraerAnio(s.desde)
+    if (anio) anios.add(anio)
+  })
+  return [...anios].sort((a, b) => b.localeCompare(a))
+})
+
 const sancionesFiltradas = computed(() => {
   return sanciones.value.filter(s => {
     const matchArb = normalizar(s.arbitro).includes(normalizar(filtros.arbitro))
-    const matchMot = normalizar((s.motivo || '') + ' ' + (s.articulo || '')).includes(normalizar(filtros.motivo))
-    const matchSan = normalizar(s.sancion || '').includes(normalizar(filtros.sancion))
+    const matchBusqueda = normalizar((s.motivo || '') + ' ' + (s.articulo || '') + ' ' + (s.sancion || '')).includes(normalizar(filtros.busqueda))
     const matchDes = (s.desde || '').includes(filtros.desde)
     const textoHasta = s.es_indefinido == 1 ? 'indefinido' : (s.hasta || '')
     const matchHas = normalizar(textoHasta).includes(normalizar(filtros.hasta))
+
+    let matchAnio = true
+    if (filtros.anio) matchAnio = extraerAnio(s.desde) === filtros.anio
 
     let matchEst = true
     if (filtros.estado === 'vigente') matchEst = (s.estado_dinamico == 1);
@@ -575,7 +592,7 @@ const sancionesFiltradas = computed(() => {
     let matchNuevos = true
     if (filtros.conNuevos) matchNuevos = (s.tiene_nuevos && s.estado_dinamico == 3);
 
-    return matchArb && matchMot && matchSan && matchDes && matchHas && matchEst && matchNuevos
+    return matchArb && matchBusqueda && matchDes && matchHas && matchAnio && matchEst && matchNuevos
   }).sort((a, b) => b.id - a.id);
 })
 
@@ -827,7 +844,7 @@ const exportarExcel = async () => {
 }
 
 const limpiarFiltros = () => {
-  filtros.arbitro = ''; filtros.motivo = ''; filtros.sancion = ''; filtros.desde = ''; filtros.hasta = ''; filtros.estado = ''; filtros.conNuevos = false;
+  filtros.arbitro = ''; filtros.busqueda = ''; filtros.desde = ''; filtros.hasta = ''; filtros.anio = ''; filtros.estado = ''; filtros.conNuevos = false;
 }
 
 onMounted(fetchSanciones)
@@ -928,5 +945,4 @@ onMounted(fetchSanciones)
   }
 }
 </style>
-
 

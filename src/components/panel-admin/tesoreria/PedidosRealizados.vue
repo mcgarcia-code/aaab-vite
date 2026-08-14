@@ -58,7 +58,7 @@
             <div class="col-6 col-md-3">
               <input v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="Fecha (DD/MM/YY)">
             </div>
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-2">
               <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
                 <option value="">ESTADO (TODOS)</option>
                 <option value="creado">CREADO</option>
@@ -69,6 +69,12 @@
                 <option value="cancelado">CANCELADO</option>
               </select>
             </div>
+            <div class="col-6 col-md-1">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+                <option value="">AÑO</option>
+                <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
+              </select>
+            </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
@@ -77,6 +83,13 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
 
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargando" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando pedidos...</p>
+          </div>
+
+          <template v-else>
           <!-- TABLA (Solo Escritorio) -->
           <div class="d-none d-md-block table-responsive border rounded shadow-sm">
             <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem;">
@@ -172,6 +185,7 @@
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
+          </template>
 
         </div>
       </div>
@@ -323,7 +337,7 @@ const notificar = inject('notificar');
 const pedidos = ref([]);
 const cargando = ref(false);
 
-const filtros = reactive({ arbitro: '', prenda: '', estado: '', fecha: '' });
+const filtros = reactive({ arbitro: '', prenda: '', estado: '', fecha: '', anio: '' });
 const mostrarFiltrosMobile = ref(false);
 
 const paginaActual = ref(1);
@@ -343,6 +357,25 @@ const pedidosNuevos = computed(() => {
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
+// Extrae el año a 4 dígitos desde fecha_creacion (formato DD/MM/YY o DD/MM/YYYY)
+const extraerAnio = (fecha) => {
+  if (!fecha) return ''
+  const partes = String(fecha).split('/')
+  if (partes.length !== 3) return ''
+  let anio = partes[2]
+  if (anio.length === 2) anio = '20' + anio
+  return anio
+};
+
+const aniosDisponibles = computed(() => {
+  const anios = new Set()
+  pedidos.value.forEach(p => {
+    const anio = extraerAnio(p.fecha_creacion)
+    if (anio) anios.add(anio)
+  })
+  return [...anios].sort((a, b) => b.localeCompare(a))
+});
+
 const pedidosFiltrados = computed(() => {
   return pedidos.value.filter(p => {
     const nombreCompleto = `${p.apellido} ${p.nombre}`;
@@ -350,8 +383,9 @@ const pedidosFiltrados = computed(() => {
     const matchPrenda = normalizar(p.descripcion).includes(normalizar(filtros.prenda));
     const matchEst = filtros.estado === '' || (p.estado && p.estado.toLowerCase() === filtros.estado.toLowerCase());
     const matchFecha = p.fecha_creacion && p.fecha_creacion.includes(filtros.fecha);
+    const matchAnio = !filtros.anio || extraerAnio(p.fecha_creacion) === filtros.anio;
 
-    return matchArb && matchPrenda && matchEst && matchFecha;
+    return matchArb && matchPrenda && matchEst && matchFecha && matchAnio;
   });
 });
 
@@ -437,6 +471,7 @@ const limpiarFiltros = () => {
   filtros.prenda = '';
   filtros.estado = '';
   filtros.fecha = '';
+  filtros.anio = '';
 };
 
 const obtenerClaseEstado = (estado) => {

@@ -11,6 +11,9 @@
             </h4>
             <span class="text-muted small d-block mt-1">
               Total: {{ designaciones.length }} partidos
+              <template v-if="totalADesignar > 0">
+                · <span class="text-danger fw-bold"><i class="bi bi-exclamation-circle-fill"></i> {{ totalADesignar }} {{ totalADesignar === 1 ? 'sin designar' : 'sin designar' }}</span>
+              </template>
               <template v-if="totalSinMatch > 0">
                 · <span class="text-warning-emphasis fw-bold">{{ totalSinMatch }} árbitros sin coincidencia</span>
               </template>
@@ -105,13 +108,13 @@
           </div>
 
           <template v-else>
-
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
-              <ul class="nav nav-pills gap-2 flex-wrap">
+<!-- Pestañas por día (una sola línea, con scroll si no entran) -->
+            <div class="fechas-scroll mb-3">
+              <ul class="nav nav-pills gap-2 flex-nowrap">
                 <li v-for="f in fechas" :key="f.fecha" class="nav-item">
                   <button
                     @click="fechaSeleccionada = f.fecha"
-                    class="nav-link py-1 px-3 fw-bold small shadow-sm"
+                    class="nav-link py-1 px-3 fw-bold small shadow-sm text-nowrap"
                     :class="fechaSeleccionada === f.fecha ? 'active bg-danger text-white' : 'bg-white border text-dark'"
                   >
                     {{ etiquetaDia(f.fecha) }}
@@ -119,29 +122,69 @@
                   </button>
                 </li>
               </ul>
+            </div>
 
-              <div class="d-flex gap-2 align-items-center flex-grow-1 justify-content-md-end">
-                <div class="input-group input-group-sm shadow-sm flex-grow-1 flex-md-grow-0 buscador-grupo" style="min-width: 300px; max-width: 450px;">
-                  <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                  <input
-                    v-model="filtroBusqueda"
-                    type="text"
-                    class="form-control border-start-0 shadow-none"
-                    :class="{ 'border-end-0': filtroBusqueda.length > 0 }"
-                    placeholder="Buscar cancha, equipo o árbitro..."
-                  >
-                  <button
-                    v-if="filtroBusqueda.length > 0"
-                    @click="filtroBusqueda = ''"
-                    class="btn border border-start-0 bg-white text-muted d-flex align-items-center px-2 shadow-none"
-                    type="button"
-                    title="Limpiar búsqueda"
-                  >
-                    <i class="bi bi-x-lg"></i>
-                  </button>
-                </div>
+            <!-- Barra de estado: filtros por estado + buscador -->
+            <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 mb-3 px-3 py-2 bg-white border rounded shadow-sm">
+              <span class="text-muted small fw-bold text-uppercase flex-shrink-0" style="letter-spacing: 0.5px;">Estado:</span>
+
+              <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
+                <button
+                  @click="filtroEstado = ''"
+                  class="chip-estado"
+                  :class="{ 'chip-activo': filtroEstado === '' }"
+                >
+                  <span class="leyenda-muestra muestra-todos"></span>
+                  Todos
+                </button>
+                <button
+                  @click="toggleFiltroEstado('a_designar')"
+                  class="chip-estado"
+                  :class="{ 'chip-activo': filtroEstado === 'a_designar' }"
+                >
+                  <span class="leyenda-muestra muestra-a-designar"></span>
+                  Sin designar
+                </button>
+                <button
+                  @click="toggleFiltroEstado('designado')"
+                  class="chip-estado"
+                  :class="{ 'chip-activo': filtroEstado === 'designado' }"
+                >
+                  <span class="leyenda-muestra muestra-designado"></span>
+                  Designado
+                </button>
+                <button
+                  @click="toggleFiltroEstado('publicado')"
+                  class="chip-estado"
+                  :class="{ 'chip-activo': filtroEstado === 'publicado' }"
+                >
+                  <span class="leyenda-muestra muestra-publicado"></span>
+                  Publicado
+                </button>
+              </div>
+
+              <div class="input-group input-group-sm shadow-sm buscador-grupo flex-shrink-0" style="min-width: 260px; max-width: 380px;">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input
+                  v-model="filtroBusqueda"
+                  type="text"
+                  class="form-control border-start-0 shadow-none"
+                  :class="{ 'border-end-0': filtroBusqueda.length > 0 }"
+                  placeholder="Buscar cancha, equipo o árbitro..."
+                >
+                <button
+                  v-if="filtroBusqueda.length > 0"
+                  @click="filtroBusqueda = ''"
+                  class="btn border border-start-0 bg-white text-muted d-flex align-items-center px-2 shadow-none"
+                  type="button"
+                  title="Limpiar búsqueda"
+                >
+                  <i class="bi bi-x-lg"></i>
+                </button>
               </div>
             </div>
+
+            <!-- Leyenda de estados de designación -->
 
             <div v-if="canchas.length === 0" class="text-center p-4 bg-white rounded shadow-sm border">
               <span class="material-icons text-muted opacity-50 d-block mb-2 fs-1">search_off</span>
@@ -196,8 +239,20 @@
                 </td>
               </tr>
 
-                    <tr v-for="p in c.partidos" :key="p.id || p._uid" :class="{ 'fila-suspendida': p.suspendido }">
-                      <td><span class="celda-texto">{{ p.categoria_division || '—' }}</span></td>
+                    <tr
+                      v-for="p in c.partidos"
+                      :key="p.id || p._uid"
+                      :class="[
+                        'fila-estado-' + estadoDesignacion(p),
+                        { 'fila-suspendida': p.suspendido }
+                      ]"
+                    >
+                      <td>
+                        <span class="celda-texto d-flex align-items-center gap-2">
+                          <span class="punto-estado" :class="'punto-' + estadoDesignacion(p)" :title="tituloEstado(p)"></span>
+                          {{ p.categoria_division || '—' }}
+                        </span>
+                      </td>
                       <td class="text-center"><span class="celda-texto">{{ p.horario || '—' }}</span></td>
                       <td><span class="celda-texto">{{ p.local || '—' }}</span></td>
                       <td><span class="celda-texto">{{ p.visitante || '—' }}</span></td>
@@ -323,12 +378,14 @@
                   v-for="p in c.partidos"
                   :key="'mobp-' + (p.id || p._uid)"
                   class="card shadow-sm border-light-subtle rounded-0 partido-mobile"
+                  :class="'card-estado-' + estadoDesignacion(p)"
                 >
                   <div class="card-body p-3">
 
-                    <!-- Fila superior: categoría + alerta -->
+                    <!-- Fila superior: categoría + estado + alerta -->
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                       <span class="fw-bold flex-grow-1" style="font-size: 0.9rem;">{{ p.categoria_division || '—' }}</span>
+                      <span class="badge-estado" :class="'badge-' + estadoDesignacion(p)">{{ etiquetaEstado(p) }}</span>
                       <span
                         v-if="avisosPartido(p) > 0"
                         class="material-icons text-warning alerta-partido flex-shrink-0"
@@ -651,7 +708,7 @@
     >
       <div class="alert alert-info small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-info-circle-fill"></i>
-        <span>Se publicarán los <strong>{{ cantidadPartidosAPublicar }}</strong> partidos de las fechas tildadas como una <strong>publicación nueva</strong>: se genera el PDF para la web pública y cada árbitro verá sus partidos en su panel.</span>
+        <span>Se publicarán los <strong>{{ cantidadPartidosAPublicar }}</strong> partidos designados de las fechas tildadas como una <strong>publicación nueva</strong>: se genera el PDF para la web pública y cada árbitro verá sus partidos en su panel.</span>
       </div>
 
       <div class="mb-3">
@@ -673,6 +730,11 @@
       <div v-if="hayCambios" class="alert alert-primary small py-2 px-3 d-flex align-items-center gap-2">
         <i class="bi bi-pencil-square"></i>
         <span>Hay cambios recientes: se terminan de guardar automáticamente antes de publicar.</span>
+      </div>
+
+      <div v-if="totalADesignarEnSeleccion > 0" class="alert alert-danger small py-2 px-3 d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>Hay <strong>{{ totalADesignarEnSeleccion }}</strong> partidos sin árbitros en las fechas tildadas: esos <strong>no</strong> se publican. Están marcados en rojo en la grilla.</span>
       </div>
 
       <div v-if="totalSinMatch > 0" class="alert alert-warning small py-2 px-3 d-flex align-items-center gap-2">
@@ -780,6 +842,46 @@ const mostrarAvisosPartido = (p) => {
 }
 
 /* ====================================================
+   ESTADO DE DESIGNACIÓN DEL PARTIDO (ayuda visual)
+   - a_designar: sin árbitro 1 ni árbitro 2.
+   - designado:  al menos un árbitro asignado.
+   - publicado:  ya fue publicado (campo publicado del backend).
+   El estado publicado prevalece sobre los demás. Un partido
+   a_designar nunca puede estar publicado.
+   ==================================================== */
+
+const estadoDesignacion = (p) => {
+  const estado = String(p.estado || '').trim()
+  if (estado === 'publicado' || estado === 'designado' || estado === 'a_designar') return estado
+  // Fallback por si un registro viejo no tiene estado seteado
+  return (p.arbitro_1 || p.arbitro_2) ? 'designado' : 'a_designar'
+}
+
+const etiquetaEstado = (p) => {
+  const estado = estadoDesignacion(p)
+  if (estado === 'publicado') return 'Publicado'
+  if (estado === 'designado') return 'Designado'
+  return 'Sin designar'
+}
+
+const tituloEstado = (p) => {
+  const estado = estadoDesignacion(p)
+  if (estado === 'publicado') return 'Partido publicado'
+  if (estado === 'designado') return 'Partido designado (falta publicar)'
+  return 'Sin árbitros designados'
+}
+
+const totalADesignar = computed(() =>
+  designaciones.value.filter(p => estadoDesignacion(p) === 'a_designar').length
+)
+
+const totalADesignarEnSeleccion = computed(() =>
+  designaciones.value.filter(p =>
+    fechasSeleccionadas.value.includes(claveFecha(p)) && estadoDesignacion(p) === 'a_designar'
+  ).length
+)
+
+/* ====================================================
    UTILIDADES DE TEXTO Y FECHAS
    ==================================================== */
 const normalizarTexto = (valor) => {
@@ -835,6 +937,11 @@ const cargarArbitros = async () => {
 
 const fechaSeleccionada = ref('')
 const filtroBusqueda = ref('')
+const filtroEstado = ref('') // '' | 'a_designar' | 'designado' | 'publicado'
+
+const toggleFiltroEstado = (estado) => {
+  filtroEstado.value = filtroEstado.value === estado ? '' : estado
+}
 
 const mostrarModalCarga = ref(false)
 const subiendoExcel = ref(false)
@@ -860,8 +967,11 @@ const toggleFechaSeleccionada = (fecha) => {
   else fechasSeleccionadas.value.splice(i, 1)
 }
 
+// Solo cuentan los partidos designados (los a_designar no se publican)
 const cantidadPartidosAPublicar = computed(() =>
-  designaciones.value.filter(p => fechasSeleccionadas.value.includes(claveFecha(p))).length
+  designaciones.value.filter(p =>
+    fechasSeleccionadas.value.includes(claveFecha(p)) && estadoDesignacion(p) !== 'a_designar'
+  ).length
 )
 
 const zIndexSelector = computed(() => {
@@ -1058,6 +1168,9 @@ const canchas = computed(() => {
     const f = String(p.fecha || '').trim() || 'Sin fecha'
     if (f !== fechaSeleccionada.value) return false
 
+    // Filtro por estado de designación
+    if (filtroEstado.value && estadoDesignacion(p) !== filtroEstado.value) return false
+
     if (!busqueda) return true
     const textoPartido = normalizarTexto(
       `${p.cancha} ${p.local} ${p.visitante} ${p.arbitro_1} ${p.arbitro_2} ${p.categoria_division}`
@@ -1171,6 +1284,10 @@ const asignarArbitro = async (arbitro) => {
     else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id; p._ext2 = false; p._estado2 = '' }
   }
 
+  // Recalcular estado local para que la ayuda visual reaccione al instante.
+  // El backend lo confirma igual al guardar (guardarPartidos).
+  p.estado = (p.arbitro_1 || p.arbitro_2) ? 'designado' : 'a_designar'
+
   marcar(p)
   cerrarSelectorArbitro()
 
@@ -1200,6 +1317,10 @@ const asignarArbitroLibre = async (texto) => {
 
   if (sel.numero === 1) { p.arbitro_1 = nombre; p.id_arb1 = null; p._ext1 = true; p._estado1 = '' }
   else { p.arbitro_2 = nombre; p.id_arb2 = null; p._ext2 = true; p._estado2 = '' }
+
+  // Recalcular estado local para que la ayuda visual reaccione al instante.
+  // El backend lo confirma igual al guardar (guardarPartidos).
+  p.estado = (p.arbitro_1 || p.arbitro_2) ? 'designado' : 'a_designar'
 
   marcar(p)
   cerrarSelectorArbitro()
@@ -1535,6 +1656,9 @@ const publicarDesignaciones = async () => {
     if (res.ok) {
       notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Las designaciones se publicaron en la web y en el panel de los árbitros.', tipo: 'success' })
       mostrarModalPublicar.value = false
+      // Refrescamos para reflejar el nuevo estado publicado de los partidos
+      await cargarDesignaciones()
+      cargarAvisos()
     } else {
       throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor al publicar designaciones.')
     }
@@ -1730,6 +1854,73 @@ onMounted(async () => {
 }
 
 /* ====================================================
+   CHIPS DE FILTRO
+   ==================================================== */
+
+.leyenda-muestra {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.muestra-a-designar {
+  background-color: #fee2e2;
+  border-color: #f87171;
+}
+
+.muestra-designado {
+  background-color: #fef9c3;
+  border-color: #facc15;
+}
+
+.muestra-publicado {
+  background-color: #dcfce7;
+  border-color: #4ade80;
+}
+
+/* ====================================================
+   FONDOS DE FILA SEGÚN ESTADO (DESKTOP)
+   a_designar: rojo tenue (hay que resolverlo)
+   designado:  amarillo tenue (falta publicar)
+   publicado:  verde tenue (ya publicado)
+   La fila suspendida (más abajo) prevalece sobre estos.
+   ==================================================== */
+.fila-estado-a_designar td {
+  background-color: #fef2f2;
+}
+
+.fila-estado-designado td {
+  background-color: #fefce8;
+}
+
+.fila-estado-publicado td {
+  background-color: #f0fdf4;
+}
+
+/* Punto de color junto a la categoría (refuerzo del estado) */
+.punto-estado {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.punto-a_designar {
+  background-color: #ef4444;
+}
+
+.punto-designado {
+  background-color: #eab308;
+}
+
+.punto-publicado {
+  background-color: #22c55e;
+}
+
+/* ====================================================
    SELECTOR DE ARBITRO
    ==================================================== */
 .lista-arbitros {
@@ -1785,6 +1976,52 @@ onMounted(async () => {
   border-bottom-left-radius: 12px !important;
   border-bottom-right-radius: 12px !important;
   overflow: hidden;
+}
+
+/* Fondos y borde izquierdo de card según estado (móvil) */
+.card-estado-a_designar {
+  background-color: #fef2f2;
+  border-left-color: #ef4444;
+}
+
+.card-estado-designado {
+  background-color: #fefce8;
+  border-left-color: #eab308;
+}
+
+.card-estado-publicado {
+  background-color: #f0fdf4;
+  border-left-color: #22c55e;
+}
+
+/* Badge de estado en el card móvil */
+.badge-estado {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 3px 8px;
+  border-radius: 50px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badge-a_designar {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #f87171;
+}
+
+.badge-designado {
+  background-color: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #facc15;
+}
+
+.badge-publicado {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #4ade80;
 }
 
 /* Botón de árbitro en móvil: como un select tocable */
@@ -1987,5 +2224,57 @@ onMounted(async () => {
   background: #fee2e2;
   border-color: #ef4444;
   color: #dc2626;
+}
+
+/* Fechas en una sola línea, con scroll horizontal si no entran */
+.fechas-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+}
+
+.fechas-scroll .nav {
+  width: max-content;
+}
+
+/* Scrollbar fina y discreta */
+.fechas-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+
+.fechas-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+/* Chips de filtro por estado */
+.chip-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 50px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.chip-estado:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.chip-estado.chip-activo {
+  border-color: #1f2937;
+  background: #1f2937;
+  color: #fff;
+}
+
+.muestra-todos {
+  background: linear-gradient(135deg, #fee2e2 0%, #fee2e2 33%, #fef9c3 33%, #fef9c3 66%, #dcfce7 66%);
 }
 </style>
