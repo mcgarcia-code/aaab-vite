@@ -252,6 +252,15 @@
                           <span class="punto-estado" :class="'punto-' + estadoDesignacion(p)" :title="tituloEstado(p)"></span>
                           {{ p.categoria_division || '—' }}
                         </span>
+                        <button
+                          v-if="!p.cancha"
+                          @click="abrirSelectorCancha(p)"
+                          class="badge-sin-cancha"
+                          title="Asignar cancha a este partido"
+                        >
+                          <span class="material-icons" style="font-size: 12px; vertical-align: middle;">stadium</span>
+                          SIN CANCHA
+                        </button>
                       </td>
                       <td class="text-center"><span class="celda-texto">{{ p.horario || '—' }}</span></td>
                       <td><span class="celda-texto">{{ p.local || '—' }}</span></td>
@@ -398,6 +407,17 @@
                       <span class="material-icons text-danger" style="font-size: 18px;">schedule</span>
                       <span class="fw-bold">{{ p.horario || '—' }}</span>
                     </div>
+
+                    <!-- Cancha sin asignar (tocar para elegir) -->
+                    <button
+                      v-if="!p.cancha"
+                      @click="abrirSelectorCancha(p)"
+                      class="badge-sin-cancha w-100 text-start mb-2"
+                      title="Asignar cancha a este partido"
+                    >
+                      <span class="material-icons" style="font-size: 14px; vertical-align: middle;">stadium</span>
+                      SIN CANCHA — Tocá para asignar
+                    </button>
 
                     <!-- Equipos -->
                     <div class="bg-light rounded p-2 mb-2">
@@ -699,6 +719,47 @@
     </ModalBase>
 
     <ModalBase
+      :show="mostrarSelectorCancha"
+      titulo="Asignar cancha"
+      icono="stadium"
+      colorIcono="bg-danger text-white"
+      maxWidth="480px"
+      @close="cerrarSelectorCancha"
+    >
+      <p class="text-muted small mb-3" v-if="partidoCancha">
+        {{ partidoCancha.local || '?' }} vs {{ partidoCancha.visitante || '?' }}
+      </p>
+
+      <div class="mb-2">
+        <label class="form-label small fw-bold">Cancha</label>
+        <select v-model="campoJuegoSeleccionado" class="form-select shadow-none border-secondary-subtle">
+          <option value="" disabled>Seleccione una cancha</option>
+          <option v-for="cj in camposJuego" :key="cj.cj_id" :value="cj.cj_id">
+            {{ cj.cj_nombre }} — {{ cj.club_nombre }}
+          </option>
+        </select>
+      </div>
+
+      <template #footer>
+        <button
+          @click="cerrarSelectorCancha"
+          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
+          :disabled="guardandoCancha"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="confirmarCancha"
+          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
+          :disabled="guardandoCancha || !campoJuegoSeleccionado"
+        >
+          <span v-if="guardandoCancha" class="spinner-border spinner-border-sm me-2"></span>
+          {{ guardandoCancha ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </template>
+    </ModalBase>
+
+    <ModalBase
       :show="mostrarModalPublicar"
       titulo="Publicar Designaciones"
       icono="publish"
@@ -933,6 +994,69 @@ const cargarArbitros = async () => {
     })
     if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
   } catch (err) { console.error(err) }
+}
+
+/* ====================================================
+   CANCHA (editable cuando llega vacía desde el Excel)
+   Se persiste con la acción editarCampoDeJuego.
+   Payload: { idPartido, cancha, idCampoJuego }.
+   ==================================================== */
+const camposJuego = ref([])
+
+const cargarCamposJuego = async () => {
+  try {
+    const res = await api.get({ entity: 'clubes', action: 'obtenerCamposDeJuego' })
+    if ((res.ok || res.success) && res.payload) camposJuego.value = res.payload
+  } catch (err) { console.error(err) }
+}
+
+const mostrarSelectorCancha = ref(false)
+const partidoCancha = ref(null)
+const campoJuegoSeleccionado = ref('')
+const guardandoCancha = ref(false)
+
+const abrirSelectorCancha = (partido) => {
+  partidoCancha.value = partido
+  campoJuegoSeleccionado.value = partido.id_campo_juego || ''
+  mostrarSelectorCancha.value = true
+}
+
+const cerrarSelectorCancha = () => {
+  mostrarSelectorCancha.value = false
+  partidoCancha.value = null
+  campoJuegoSeleccionado.value = ''
+}
+
+const confirmarCancha = async () => {
+  const p = partidoCancha.value
+  const campo = camposJuego.value.find(cj => cj.cj_id === campoJuegoSeleccionado.value)
+  if (!p || !campo) return
+
+  guardandoCancha.value = true
+  try {
+    const resultado = await api.post({
+      entity: 'clubes',
+      action: 'editarCampoDeJuego',
+      payload: {
+        idPartido: p.id,
+        cancha: campo.cj_nombre,
+        idCampoJuego: campo.cj_id
+      }
+    })
+
+    if (!resultado.ok) {
+      throw new Error((resultado.payload && resultado.payload.mensaje) ? resultado.payload.mensaje : 'Error del servidor')
+    }
+
+    p.cancha = campo.cj_nombre
+    p.id_campo_juego = campo.cj_id
+    cerrarSelectorCancha()
+  } catch (err) {
+    console.error('Error al editar cancha:', err)
+    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la cancha.', tipo: 'danger' })
+  } finally {
+    guardandoCancha.value = false
+  }
 }
 
 const fechaSeleccionada = ref('')
@@ -1696,6 +1820,7 @@ onMounted(async () => {
   await cargarArbitros()
   await cargarDesignaciones()
   cargarAvisos()
+  cargarCamposJuego()
 })
 </script>
 
@@ -1797,6 +1922,26 @@ onMounted(async () => {
   padding: 5px 6px;
   font-size: 0.78rem;
   color: #212529;
+}
+
+/* Cancha sin asignar: chip clickeable que abre el selector de cancha */
+.badge-sin-cancha {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  padding: 2px 8px;
+  border: 1px solid #eab308;
+  border-radius: 20px;
+  background-color: #fef9c3;
+  color: #854d0e;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.badge-sin-cancha:hover {
+  background-color: #fef08a;
 }
 
 /* Celda de árbitro: botón liviano que abre el selector compartido */
