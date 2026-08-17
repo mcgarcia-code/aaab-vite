@@ -636,5 +636,5 @@ onMounted(obtenerRechazos)
 .creado { background: #fef3c7; color: #d97706; border: 1px solid #fde047; }
 .injustificado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 .borrado { background: #e5e7eb; color: #4b5563; border: 1px solid #d1d5db; }
-</style>ado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+</style>
 
