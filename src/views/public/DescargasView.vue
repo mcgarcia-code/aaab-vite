@@ -159,7 +159,7 @@ const categorias = ref([
       },
       {
         nombre: 'Planilla de Observación Final',
-        url: 'https://docs.google.com/spreadsheets/d/1POiK2JSYPxr0hjnJHSn8n6bCS7TFwUxW/edit?usp=drive_link&ouid=110583671843914808563&rtpof=true&sd=true',
+        url: 'https://docs.google.com/spreadsheets/d/1KYqCcYbTQ0UIGcnHp1vmMuqXaA-EilJR/edit?usp=sharing&ouid=110583671843914808563&rtpof=true&sd=true',
       },
       {
         nombre: 'Performance Arbitral',
