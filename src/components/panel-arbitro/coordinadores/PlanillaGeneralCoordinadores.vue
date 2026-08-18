@@ -11,7 +11,7 @@
               <i class="bi bi-table me-1"></i> Planilla General de mis Grupos
             </h4>
             <span class="text-muted small d-block mt-1">
-              Asambleas, recuperatorios y reuniones de tus grupos. Hacé clic en una celda de Teórico o Físico para editarla.
+              Asambleas, recuperatorios y reuniones de tus grupos. Vista de solo lectura.
             </span>
           </div>
         </div>
@@ -119,41 +119,10 @@
                         <td
                           v-for="tipoDet in ['teorico', 'fisico']"
                           :key="col.clave + '-' + tipoDet"
-                          class="celda celda-editable"
+                          class="celda"
                           :class="claseCeldaExamen(a, col, tipoDet)"
-                          @click="abrirEditor(a, col, tipoDet)"
-                          title="Clic para editar"
                         >
-                          <div v-if="esCeldaEnEdicion(a, col, tipoDet)" class="editor-celda" @click.stop>
-                            <input
-                              v-if="tipoDet === 'teorico' && editor.estado !== 'ausente' && editor.estado !== 'no lo hizo'"
-                              v-model="editor.calificacion"
-                              @input="alTipearNota"
-                              @keyup.enter="guardarEditor"
-                              @keyup.esc="cerrarEditor"
-                              class="editor-input"
-                              placeholder="Nota"
-                              ref="editorInputRef"
-                            >
-                            <select v-model="editor.estado" class="editor-select" @keyup.enter="guardarEditor">
-                              <option value="aprobado">Aprobado</option>
-                              <option value="desaprobado">Desaprobado</option>
-                              <option value="no lo hizo">No lo hizo</option>
-                              <option value="ausente">Ausente</option>
-                            </select>
-                            <div class="editor-botones">
-                              <button class="btn-mini ok" @click="guardarEditor" :disabled="editor.guardando" title="Guardar">
-                                <i class="bi" :class="editor.guardando ? 'bi-hourglass-split' : 'bi-check-lg'"></i>
-                              </button>
-                              <button class="btn-mini borrar" @click="borrarCelda" :disabled="editor.guardando" title="Borrar contenido">
-                                <i class="bi bi-trash"></i>
-                              </button>
-                              <button class="btn-mini no" @click="cerrarEditor" title="Cancelar">
-                                <i class="bi bi-x-lg"></i>
-                              </button>
-                            </div>
-                          </div>
-                          <template v-else>{{ textoCeldaExamen(a, col, tipoDet) }}</template>
+                          {{ textoCeldaExamen(a, col, tipoDet) }}
                         </td>
                       </template>
                       <td v-else class="celda" :class="[claseCeldaReunion(a, col), { 'sep-reuniones': col.separador }]">
@@ -180,9 +149,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { api } from '@/api/api'
-//import ExcelJS from 'exceljs'
+import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head';
 
 // Actualización de Meta Tags
@@ -192,8 +161,6 @@ useHead({
     { name: 'description', content: 'Planilla general de árbitros para la AAAB.' }
   ],
 })
-
-const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
 
 /* ====================================================
    ESTADO
@@ -573,172 +540,6 @@ const claseCeldaReunion = (a, col) => {
 }
 
 /* ====================================================
-   EDICIÓN INLINE (solo asambleas y recuperatorios)
-   Guarda en examenes_panel vía guardarNotaPlanilla, la
-   misma tabla que usa Exámenes Generales: los cambios
-   se ven en ambas pantallas. Las reuniones NO se editan
-   acá (se cargan desde su propia pantalla).
-   ==================================================== */
-const editor = ref(null)
-const editorInputRef = ref(null)
-
-const esCeldaEnEdicion = (a, col, tipo) => {
-  const e = editor.value
-  return !!e && e.idArbitro === a.id && e.idEvento === col.id && e.tipo === tipo
-}
-
-const abrirEditor = async (a, col, tipo) => {
-  if (!col.esExamen) return
-  if (editor.value && editor.value.guardando) return
-
-  const existente = notaDe(a, col, tipo)
-  const estaAusente = asistenciaDe(a, col) === 'ausente'
-  editor.value = {
-    idArbitro: a.id,
-    idEvento: col.id,
-    tipo,
-    // El físico no lleva nota
-    calificacion: tipo === 'fisico' ? '' : (existente ? String(existente.calificacion ?? '') : ''),
-    estado: existente ? existente.estado : (estaAusente ? 'ausente' : 'aprobado'),
-    guardando: false
-  }
-  await nextTick()
-  const input = Array.isArray(editorInputRef.value) ? editorInputRef.value[0] : editorInputRef.value
-  if (input) input.focus()
-}
-
-const cerrarEditor = () => { editor.value = null }
-
-// En el teórico, al tipear la nota se autocompleta el estado por el umbral 75
-// (se puede cambiar a mano igual)
-const alTipearNota = () => {
-  const e = editor.value
-  if (!e || e.tipo !== 'teorico') return
-  const num = parseFloat(String(e.calificacion ?? '').replace('%', '').replace(',', '.').trim())
-  if (!Number.isNaN(num)) e.estado = num >= 75 ? 'aprobado' : 'desaprobado'
-}
-
-const guardarEditor = async () => {
-  const e = editor.value
-  if (!e || e.guardando) return
-  e.guardando = true
-
-  const claveNota = `${e.idEvento}|${e.idArbitro}|${e.tipo}`
-  const claveAsis = `${e.idEvento}|${e.idArbitro}`
-
-  try {
-    // Caso AUSENTE: no es una nota. Se registra la ausencia en
-    // eventos_asistencia y se borra cualquier nota que hubiera en examenes_panel.
-    if (e.estado === 'ausente') {
-      const res = await api.post({
-        entity: 'reuniones',
-        action: 'registrarAsistenciaArbitro',
-        payload: { idArbitro: e.idArbitro, idEvento: e.idEvento, tipo: 'ausente' }
-      })
-
-      if (res.ok || res.success) {
-        // Borrar la nota de este tipo si existía (ausente no lleva nota)
-        if (notasExamenes.value[claveNota]) {
-          api.post({
-            entity: 'examenes',
-            action: 'borrarExamenPlanilla',
-            payload: { idEvento: e.idEvento, idArbitro: e.idArbitro, tipo: e.tipo }
-          }).catch(err => console.error('borrarExamenPlanilla:', err))
-          const copia = { ...notasExamenes.value }
-          delete copia[claveNota]
-          notasExamenes.value = copia
-        }
-        asistencias.value = { ...asistencias.value, [claveAsis]: 'ausente' }
-        cerrarEditor()
-      } else {
-        notificar({ titulo: 'Error', mensaje: 'No se pudo registrar la ausencia.', tipo: 'danger' })
-        e.guardando = false
-      }
-      return
-    }
-
-    // Caso con NOTA (aprobado / desaprobado / no lo hizo)
-    const res = await api.post({
-      entity: 'examenes',
-      action: 'guardarNotaPlanilla',
-      payload: {
-        idEvento: e.idEvento,
-        idArbitro: e.idArbitro,
-        tipo: e.tipo,
-        calificacion: (e.tipo === 'fisico' || e.estado === 'no lo hizo') ? '' : String(e.calificacion ?? '').trim(),
-        estado: e.estado
-      }
-    })
-
-    if (res.ok || res.success) {
-      notasExamenes.value = {
-        ...notasExamenes.value,
-        [claveNota]: {
-          calificacion: e.tipo === 'fisico' || e.estado === 'no lo hizo' ? '' : String(e.calificacion ?? '').trim(),
-          estado: e.estado
-        }
-      }
-
-      // Tener una evaluación implica presente: registrar la asistencia
-      // (igual que hace Exámenes Generales al guardar un examen)
-      if (asistencias.value[claveAsis] !== 'presente') {
-        asistencias.value = { ...asistencias.value, [claveAsis]: 'presente' }
-        api.post({
-          entity: 'reuniones',
-          action: 'registrarAsistenciaArbitro',
-          payload: { idArbitro: e.idArbitro, idEvento: e.idEvento, tipo: 'presente' }
-        }).catch(err => console.error('registrarAsistenciaArbitro:', err))
-      }
-
-      cerrarEditor()
-    } else {
-      const mensaje = (res.payload && res.payload.mensaje) ? res.payload.mensaje : 'No se pudo guardar la nota.'
-      notificar({ titulo: 'Error', mensaje, tipo: 'danger' })
-      e.guardando = false
-    }
-  } catch (err) {
-    console.error('guardarEditor:', err)
-    notificar({ titulo: 'Error', mensaje: 'Fallo de conexión al guardar.', tipo: 'danger' })
-    e.guardando = false
-  }
-}
-
-// Borra el contenido de la celda (marca la evaluación como borrada en el
-// backend con borrarExamenPlanilla). No toca la asistencia.
-const borrarCelda = async () => {
-  const e = editor.value
-  if (!e || e.guardando) return
-
-  const clave = `${e.idEvento}|${e.idArbitro}|${e.tipo}`
-  // Si no hay nada cargado, solo cerrar
-  if (!notasExamenes.value[clave]) { cerrarEditor(); return }
-
-  e.guardando = true
-  try {
-    const res = await api.post({
-      entity: 'examenes',
-      action: 'borrarExamenPlanilla',
-      payload: { idEvento: e.idEvento, idArbitro: e.idArbitro, tipo: e.tipo }
-    })
-
-    if (res.ok || res.success) {
-      const copia = { ...notasExamenes.value }
-      delete copia[clave]
-      notasExamenes.value = copia
-      cerrarEditor()
-    } else {
-      const mensaje = (res.payload && res.payload.mensaje) ? res.payload.mensaje : 'No se pudo borrar.'
-      notificar({ titulo: 'Error', mensaje, tipo: 'danger' })
-      e.guardando = false
-    }
-  } catch (err) {
-    console.error('borrarExamenPlanilla:', err)
-    notificar({ titulo: 'Error', mensaje: 'Fallo de conexión al borrar.', tipo: 'danger' })
-    e.guardando = false
-  }
-}
-
-/* ====================================================
    EXPORTAR A EXCEL (una hoja por grupo)
    ==================================================== */
 const textoExcelExamen = (a, col, tipo) => {
@@ -1093,55 +894,6 @@ const descargarExcel = async () => {
   font-size: 0.65rem;
   padding: 1px 6px;
 }
-
-/* ====================================================
-   EDICIÓN INLINE DE CELDAS
-   ==================================================== */
-.celda-editable { cursor: pointer; }
-.celda-editable:hover { outline: 2px solid #0d6efd; outline-offset: -2px; }
-
-.editor-celda {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px;
-  cursor: default;
-}
-
-.editor-input {
-  width: 52px;
-  border: 1px solid #0d6efd;
-  border-radius: 4px;
-  padding: 2px 4px;
-  font-size: 0.75rem;
-  text-align: center;
-}
-
-.editor-select {
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  padding: 2px;
-  font-size: 0.72rem;
-  max-width: 92px;
-}
-
-.editor-botones { display: flex; gap: 2px; }
-
-.btn-mini {
-  border: none;
-  border-radius: 4px;
-  width: 22px;
-  height: 22px;
-  font-size: 0.7rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-.btn-mini.ok { background-color: #198754; color: #fff; }
-.btn-mini.borrar { background-color: #f8d7da; color: #842029; }
-.btn-mini.no { background-color: #e9ecef; color: #495057; }
-.btn-mini:disabled { opacity: 0.6; }
 
 /* ====================================================
    BUSCADOR CON BOTÓN DE LIMPIAR (X)
