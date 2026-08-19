@@ -337,7 +337,7 @@ const formModal = ref(formModalVacio())
 const cargarDatos = async () => {
   cargando.value = true // Habilita el spinner al iniciar
   try {
-    const res = await api.get({ entity: 'instituciones', action: 'getInstitucionesCuit' })
+    const res = await api.get({ entity: 'facturacion', action: 'getInstitucionesCuit' })
     if (res.payload) {
       instituciones.value = res.payload
     }
@@ -389,7 +389,7 @@ const guardarDatos = async () => {
   try {
     const action = modoModal.value === 'nuevo' ? 'guardarInstitucion' : 'editarInstitucion'
     const res = await api.post({
-      entity: 'instituciones',
+      entity: 'facturacion',
       action: action,
       payload: formModal.value
     })
@@ -419,7 +419,7 @@ const confirmarEliminacion = (id) => {
 
 const eliminarInstitucion = async (id) => {
   try {
-    const res = await api.post({ entity: 'instituciones', action: 'eliminarInstitucion', payload: { id } })
+    const res = await api.post({ entity: 'facturacion', action: 'eliminarInstitucion', payload: { id } })
     if (res.ok || res.success) {
       notificar({ titulo: 'Eliminado', mensaje: 'La institución fue eliminada.', tipo: 'success' })
       await cargarDatos()

@@ -19,6 +19,13 @@
               <span class="material-icons fs-6">filter_alt</span>
             </button>
 
+            <!-- Botón Recargar -->
+            <button @click="cargarDatos" :disabled="cargandoTabla" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargandoTabla" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
+            </button>
+
             <!-- Botón Solicitudes -->
             <button @click="abrirModalSolicitudes" class="btn btn-primary position-relative shadow-sm py-2 d-flex align-items-center gap-2">
               <span class="material-icons fs-6">notifications</span>
@@ -130,9 +137,7 @@
                   </tr>
                   <!-- Filtros Desktop -->
                   <tr class="bg-light">
-                    <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
-                      <button @click="obtenerArbitros" class="btn btn-sm btn-light border rounded text-secondary shadow-sm px-2 py-1"><i class="bi bi-arrow-clockwise"></i></button>
-                    </td>
+                    <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id"></td>
                     <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
                     <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
                     <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
@@ -648,6 +653,25 @@ const filtros = reactive({
   subgrupo: '',
 })
 
+// Campos de texto por los que se filtra (se normalizan una sola vez al cargar).
+// Los especiales (rol, es_activo, apto_medico) se tratan aparte.
+const CAMPOS_TEXTO_FILTRO = [
+  'apellido', 'nombre', 'dni', 'email', 'celular', 'direccion', 'zona',
+  'localidad', 'provincia', 'movilidad', 'fecha_nacimiento',
+  'telefonocontacto', 'parentescocontacto', 'donde_juega', 'categoria_handball',
+  'observaciones', 'juega_handball', 'grupo', 'subgrupo',
+  'disponibilidad_sabado', 'disponibilidad_sabado_desde', 'disponibilidad_sabado_hasta',
+  'disponibilidad_domingo', 'disponibilidad_domingo_desde', 'disponibilidad_domingo_hasta',
+]
+
+// Copia "retrasada" de los filtros: el input escribe en `filtros` (instantáneo)
+// y este objeto se actualiza con un pequeño delay para no recalcular en cada tecla.
+const filtrosDebounced = reactive({})
+let debounceTimer = null
+
+// Colador reutilizable para ordenar (mucho más rápido que localeCompare por fila)
+const collator = new Intl.Collator('es', { sensitivity: 'base' })
+
 const cargando = ref(false)
 const provincias = ref([])
 const localidades = ref([])
@@ -951,7 +975,13 @@ const obtenerNombreRol = (bitRol) => {
   return roles[bitRol] || 'Desconocido'
 }
 
-const limpiarFiltros = () => { Object.keys(filtros).forEach(key => (filtros[key] = '')) }
+const limpiarFiltros = () => {
+  Object.keys(filtros).forEach(key => (filtros[key] = ''))
+  // Sincronizamos la copia debounced al instante para que la limpieza sea inmediata
+  clearTimeout(debounceTimer)
+  Object.assign(filtrosDebounced, filtros)
+  paginaActual.value = 1
+}
 const mostrarFechaArg = (fecha) => {
   if (!fecha) return ''
   const partes = fecha.split('-')
@@ -1024,11 +1054,20 @@ const cargarDatos = async () => {
   try {
     const { payload } = await api.get({ entity: 'arbitros', action: 'getArbitros' })
     if (payload) {
-      arbitros.value = payload.map(a => ({
-        ...a,
-        apto_medico: a.apto_medico == 1,
-        rol: a.rol !== null ? parseInt(a.rol) : 0,
-      }))
+      arbitros.value = payload.map(a => {
+        const base = {
+          ...a,
+          apto_medico: a.apto_medico == 1,
+          rol: a.rol !== null ? parseInt(a.rol) : 0,
+        }
+        // Pre-normalizamos una sola vez los campos de texto buscables.
+        // Así el filtrado no tiene que normalizar en cada tecla.
+        base._buscar = {}
+        for (const key of CAMPOS_TEXTO_FILTRO) {
+          base._buscar[key] = normalizarTexto(base[key])
+        }
+        return base
+      })
     }
   } catch (err) {
     console.error('Error al cargar:', err)
@@ -1061,21 +1100,37 @@ const localidadesFiltradas = computed(() => {
 })
 
 const arbitrosFiltrados = computed(() => {
-  const filtrados = arbitros.value.filter(a =>
-    Object.keys(filtros).every(key => {
-      if (!filtros[key]) return true
-      if (key === 'rol') return a.rol == filtros.rol
-      const busqueda = String(filtros[key]).toLowerCase()
-      if (key === 'es_activo') return busqueda === 'si' ? a.es_activo == 1 : a.es_activo == 0
-      if (key === 'apto_medico') return busqueda === 'si' ? a.apto_medico : !a.apto_medico
-      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]))
-    })
-  )
+  // Armamos una sola vez la lista de filtros activos (los que tienen valor),
+  // ya normalizados. Evita recorrer 28 claves vacías por cada árbitro.
+  const activos = []
+  for (const key in filtrosDebounced) {
+    const val = filtrosDebounced[key]
+    if (val === '' || val === null || val === undefined) continue
+    if (key === 'rol' || key === 'es_activo' || key === 'apto_medico') {
+      activos.push({ key, val })
+    } else {
+      activos.push({ key, val: normalizarTexto(val) })
+    }
+  }
+
+  const filtrados = activos.length === 0
+    ? arbitros.value.slice()
+    : arbitros.value.filter(a => {
+        for (const { key, val } of activos) {
+          if (key === 'rol') { if (a.rol != val) return false; continue }
+          if (key === 'es_activo') { if ((val === 'si') !== (a.es_activo == 1)) return false; continue }
+          if (key === 'apto_medico') { if ((val === 'si') !== !!a.apto_medico) return false; continue }
+          // Texto: usamos el valor pre-normalizado guardado en _buscar
+          const campo = a._buscar ? a._buscar[key] : normalizarTexto(a[key])
+          if (!campo || !campo.includes(val)) return false
+        }
+        return true
+      })
 
   return filtrados.sort((a, b) => {
-    const comparacionApellido = String(a.apellido || '').localeCompare(String(b.apellido || ''), 'es')
-    if (comparacionApellido !== 0) return comparacionApellido
-    return String(a.nombre || '').localeCompare(String(b.nombre || ''), 'es')
+    const c1 = collator.compare(a.apellido || '', b.apellido || '')
+    if (c1 !== 0) return c1
+    return collator.compare(a.nombre || '', b.nombre || '')
   })
 })
 
@@ -1091,7 +1146,15 @@ watch([() => filtros.provincia, localidadesFiltradas], () => {
   const existe = localidadesFiltradas.value.some(l => String(l.id) === String(filtros.localidad))
   if (!existe) filtros.localidad = ''
 })
-watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
+watch(filtros, () => {
+  // Actualizamos la copia debounced con un pequeño retraso.
+  // El input se ve instantáneo; el filtrado pesado corre una sola vez al frenar de tipear.
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    Object.assign(filtrosDebounced, filtros)
+    paginaActual.value = 1
+  }, 200)
+}, { deep: true })
 watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal })
 
 const cargarEstadoEdicion = async () => {
