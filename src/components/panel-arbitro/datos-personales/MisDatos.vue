@@ -75,6 +75,24 @@
                 <input v-if="edicionAbierta" v-model="arbitro.celular" type="text" class="form-control form-control-sm">
                 <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.celular }}</span>
             </div>
+            <div class="col-12 col-md-6">
+                <label class="small text-muted mb-1 d-block">Género</label>
+                <select v-if="edicionAbierta" v-model="arbitro.genero" class="form-select form-select-sm">
+                    <option value="">Seleccionar...</option>
+                    <option value="masculino">Masculino</option>
+                    <option value="femenino">Femenino</option>
+                    <option value="x">X</option>
+                    <option value="otro">Otro</option>
+                </select>
+                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ generoLabel(arbitro.genero) }}</span>
+            </div>
+            <div class="col-12 col-md-6">
+                <label class="small text-muted mb-1 d-block">Fecha de Ingreso a la AAAB</label>
+                <div v-if="edicionAbierta" class="date-custom-wrapper" :data-date="arbitro.fecha_ingreso ? mostrarFechaArg(arbitro.fecha_ingreso) : 'Seleccionar fecha'">
+                    <input type="date" v-model="arbitro.fecha_ingreso" class="form-control form-control-sm input-fecha-nativa">
+                </div>
+                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.fecha_ingreso ? mostrarFechaArg(arbitro.fecha_ingreso) : '-' }}</span>
+            </div>
             <div class="col-12">
                 <label class="small text-muted mb-1 d-block">Dirección Residencial</label>
                 <input v-if="edicionAbierta" v-model="arbitro.direccion" type="text" class="form-control form-control-sm">
@@ -248,6 +266,11 @@ const mostrarFechaArg = (fecha) => {
     const partes = fecha.split('-');
     if (partes.length !== 3) return fecha;
     return `${partes[2]}-${partes[1]}-${partes[0]}`;
+};
+
+const generoLabel = (genero) => {
+    const labels = { masculino: 'Masculino', femenino: 'Femenino', x: 'X', otro: 'Otro' };
+    return labels[genero] || '-';
 };
 
 const obtenerHistorialRectificaciones = async () => {
