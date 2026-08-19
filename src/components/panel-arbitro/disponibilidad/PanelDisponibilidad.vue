@@ -11,10 +11,10 @@
         </div>
 
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-          <span v-if="edicionAbierta" class="badge bg-success px-3 py-2 shadow-sm d-inline-block text-center w-auto">
+          <span v-if="edicionAbierta" class="badge bg-primary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
             <i class="bi bi-pencil-square me-1"></i> Edición Abierta
           </span>
-          <span v-else class="badge bg-secondary px-3 py-2 shadow-sm d-inline-block text-center w-auto">
+          <span v-else class="badge bg-secondary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
             <i class="bi bi-lock-fill me-1"></i> Edición Cerrada
           </span>
         </div>
@@ -370,6 +370,10 @@ const enviarSolicitudRectificacion = async () => {
 
 .custom-textarea::placeholder {
   color: #6c757d;
+}
+
+.badge {
+  letter-spacing: 1px;
 }
 
 /* ====================================================
