@@ -262,7 +262,17 @@
                           SIN CANCHA
                         </button>
                       </td>
-                      <td class="text-center"><span class="celda-texto">{{ p.horario || '—' }}</span></td>
+                      <td class="text-center">
+                        <button
+                          v-if="esAdmin"
+                          @click="abrirModalFechaHorario(p)"
+                          class="celda-arbitro"
+                          title="Editar fecha y horario (admin)"
+                        >
+                          {{ p.horario || '—' }}
+                        </button>
+                        <span v-else class="celda-texto">{{ p.horario || '—' }}</span>
+                      </td>
                       <td><span class="celda-texto">{{ p.local || '—' }}</span></td>
                       <td><span class="celda-texto">{{ p.visitante || '—' }}</span></td>
                       <td class="text-center">
@@ -405,7 +415,16 @@
                     <!-- Horario -->
                     <div class="d-flex align-items-center gap-2 mb-2">
                       <span class="material-icons text-danger" style="font-size: 18px;">schedule</span>
-                      <span class="fw-bold">{{ p.horario || '—' }}</span>
+                      <button
+                        v-if="esAdmin"
+                        @click="abrirModalFechaHorario(p)"
+                        class="btn btn-sm btn-outline-secondary py-0 px-2 d-flex align-items-center gap-1"
+                        title="Editar fecha y horario (admin)"
+                      >
+                        <span class="fw-bold">{{ p.horario || '—' }}</span>
+                        <span class="material-icons" style="font-size: 14px;">edit</span>
+                      </button>
+                      <span v-else class="fw-bold">{{ p.horario || '—' }}</span>
                     </div>
 
                     <!-- Cancha sin asignar (tocar para elegir) -->
@@ -760,6 +779,47 @@
     </ModalBase>
 
     <ModalBase
+      :show="mostrarModalFechaHorario"
+      titulo="Editar fecha y horario"
+      icono="event"
+      colorIcono="bg-danger text-white"
+      maxWidth="420px"
+      @close="cerrarModalFechaHorario"
+    >
+      <p class="text-muted small mb-3" v-if="partidoFechaHorario">
+        {{ partidoFechaHorario.local || '?' }} vs {{ partidoFechaHorario.visitante || '?' }}
+      </p>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Fecha</label>
+        <input v-model="fechaEditada" type="date" class="form-control shadow-none border-secondary-subtle">
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label small fw-bold">Horario</label>
+        <input v-model="horarioEditada" type="time" class="form-control shadow-none border-secondary-subtle">
+      </div>
+
+      <template #footer>
+        <button
+          @click="cerrarModalFechaHorario"
+          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
+          :disabled="guardandoFechaHorario"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="confirmarFechaHorario"
+          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
+          :disabled="guardandoFechaHorario || !fechaEditada || !horarioEditada"
+        >
+          <span v-if="guardandoFechaHorario" class="spinner-border spinner-border-sm me-2"></span>
+          {{ guardandoFechaHorario ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </template>
+    </ModalBase>
+
+    <ModalBase
       :show="mostrarModalPublicar"
       titulo="Publicar Designaciones"
       icono="publish"
@@ -829,6 +889,7 @@
 <script setup>
 import { ref, onMounted, computed, watch, inject } from 'vue'
 import { api } from '@/api/api'
+import { auth } from '@/api/auth'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
@@ -844,6 +905,9 @@ useHead({
 })
 
 const notificar = inject('notificar')
+
+// Solo un admin puede editar fecha y horario de un partido ya cargado
+const esAdmin = computed(() => auth.getUser()?.rol === 'admin')
 
 const designaciones = ref([])
 const labelSemana = ref('')
@@ -1035,7 +1099,7 @@ const confirmarCancha = async () => {
   guardandoCancha.value = true
   try {
     const resultado = await api.post({
-      entity: 'clubes',
+      entity: 'designaciones',
       action: 'editarCampoDeJuego',
       payload: {
         idPartido: p.id,
@@ -1056,6 +1120,56 @@ const confirmarCancha = async () => {
     notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la cancha.', tipo: 'danger' })
   } finally {
     guardandoCancha.value = false
+  }
+}
+
+/* ====================================================
+   FECHA Y HORARIO (solo admin)
+   Se persiste reutilizando guardarPartidos, que ya acepta
+   fecha/horario por partido (ver limpiarPartidoParaEnviar).
+   ==================================================== */
+const mostrarModalFechaHorario = ref(false)
+const partidoFechaHorario = ref(null)
+const fechaEditada = ref('')
+const horarioEditada = ref('')
+const guardandoFechaHorario = ref(false)
+
+const abrirModalFechaHorario = (p) => {
+  if (!esAdmin.value) return
+  partidoFechaHorario.value = p
+  fechaEditada.value = p.fecha || ''
+  horarioEditada.value = p.horario || ''
+  mostrarModalFechaHorario.value = true
+}
+
+const cerrarModalFechaHorario = () => {
+  mostrarModalFechaHorario.value = false
+  partidoFechaHorario.value = null
+  fechaEditada.value = ''
+  horarioEditada.value = ''
+}
+
+const confirmarFechaHorario = async () => {
+  const p = partidoFechaHorario.value
+  if (!p || !fechaEditada.value || !horarioEditada.value) return
+
+  const fechaAnterior = p.fecha
+  const horarioAnterior = p.horario
+
+  guardandoFechaHorario.value = true
+  p.fecha = fechaEditada.value
+  p.horario = horarioEditada.value
+  marcar(p)
+
+  const ok = await ejecutarGuardado()
+  guardandoFechaHorario.value = false
+
+  if (ok) {
+    cerrarModalFechaHorario()
+  } else {
+    p.fecha = fechaAnterior
+    p.horario = horarioAnterior
+    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la fecha/horario.', tipo: 'danger' })
   }
 }
 
