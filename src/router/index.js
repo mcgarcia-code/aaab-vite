@@ -196,7 +196,7 @@ router.beforeEach((to, from, next) => {
   const user = auth.getUser();
   const userRole = user?.rol;
 
-  const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso'];
+  const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso', 'indumentaria'];
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!estaLogueado) {
