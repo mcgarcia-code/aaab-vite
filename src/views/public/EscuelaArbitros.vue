@@ -270,12 +270,6 @@ const cuerpoDocente = ref([
     image: new URL('../../assets/fotos/mariela-policano.webp', import.meta.url).href
   },
   {
-    name: 'Bárbara Fernández',
-    role: 'Encuentros de Mini Handball',
-    bio: 'Árbitra Nacional',
-    image: new URL('../../assets/fotos/barbara-fernandez.webp', import.meta.url).href
-  },
-  {
     name: 'Nicolás Cimiotto',
     role: 'Encuentros de Mini Handball',
     bio: 'Árbitro Local / Técnico Químico',

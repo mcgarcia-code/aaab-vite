@@ -52,9 +52,9 @@
 
             <div v-if="formulario.partido_categoria === 'Mayores'" class="mb-3 animate__animated animate__fadeIn">
               <label class="form-label fw-bold text-uppercase small text-dark">Competencia Mayores *</label>
-              <select @change='obtenerIdCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
+              <select @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
                 <option value="" disabled>Seleccione competencia</option>
-                <option v-for="(div, k) in divisionesMayores" :key="k" :value="div">{{ div }}</option>
+                <option v-for="(div, k) in divisionesMayores" :key="k" :value="div.idCategoria">{{ div.division }}</option>
               </select>
             </div>
 
@@ -68,9 +68,9 @@
               </div>
               <div class="col-12 col-md-4">
                 <label class="form-label fw-bold text-uppercase small text-dark">Nivel *</label>
-                <select @change='obtenerIdCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
+                <select @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
                   <option value="" disabled>Nivel</option>
-                  <option v-for="opt in listas.divisiones" :key="opt" :value="opt">{{ opt }}</option>
+                  <option v-for="opt in listas.divisiones" :key="opt.idCategoria" :value="opt.idCategoria">{{ opt.division }}</option>
                 </select>
               </div>
             </div>
@@ -289,22 +289,8 @@ const setDivisiones = () => {
   listas.divisiones = listas.divisiones_categorias[formulario.id_categoria_especifica].divisiones
 }
 
-const obtenerIdCategoria = async () => {
-  let categoria = ''
-  if (formulario.id_categoria_especifica !== '') {
-    categoria = listas.divisiones_categorias[formulario.id_categoria_especifica].categoria
-  }
-  const r = await api.get({
-    entity: 'equipos',
-    action: 'obtenerIdCategoria',
-    payload: {
-      genero: formulario.partido_genero,
-      tipo: formulario.partido_categoria,
-      categoria,
-      division: formulario.inf_nivel
-    }
-  })
-  idCategoria.value = r.payload
+const seleccionarCategoria = async () => {
+  idCategoria.value = formulario.inf_nivel
   fechaPartido.value = ''
   partidos.value = []
   idPartido.value = null

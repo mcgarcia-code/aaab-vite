@@ -114,6 +114,8 @@
                     <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
                     <th class="py-3 text-center text-uppercase text-muted">Subg.</th>
                     <th class="py-3 text-center text-uppercase text-muted">DNI</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Género</th>
+                    <th class="py-3 text-uppercase text-muted">F. Ingreso</th>
                     <th class="py-3 text-uppercase text-muted">Email</th>
                     <th class="py-3 text-uppercase text-muted">Dirección</th>
                     <th class="py-3 text-uppercase text-muted">Provincia</th>
@@ -167,6 +169,12 @@
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none text-center"></td>
+                    <td class="p-2 border-bottom border-2">
+                      <select v-model="filtros.genero" class="form-select form-select-sm shadow-none">
+                        <option value="">Todos</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="x">X</option><option value="otro">Otro</option>
+                      </select>
+                    </td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.fecha_ingreso" class="form-control form-control-sm shadow-none"></td>
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.email" class="form-control form-control-sm shadow-none"></td>
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.direccion" class="form-control form-control-sm shadow-none"></td>
                     <td class="p-2 border-bottom border-2"><selProvincia v-model="filtros.provincia" :provincias="provincias" class="form-select form-select-sm shadow-none" /></td>
@@ -220,6 +228,11 @@
                     <td class="text-center text-dark">{{ a.grupo }}</td>
                     <td class="text-center text-dark">{{ a.subgrupo }}</td>
                     <td class="text-center text-dark">{{ a.dni }}</td>
+                    <td class="text-center">
+                      <span v-if="generoIconos[a.genero]" class="material-icons" :style="{ color: generoIconos[a.genero].color }" :title="generoIconos[a.genero].label">{{ generoIconos[a.genero].icono }}</span>
+                      <span v-else class="text-muted">-</span>
+                    </td>
+                    <td class="text-dark">{{ a.fecha_ingreso ? mostrarFechaArg(a.fecha_ingreso) : '' }}</td>
                     <td class="text-dark">{{ a.email }}</td>
                     <td class="text-dark">{{ a.direccion }}</td>
                     <td class="text-dark">{{ a.nombre_provincia }}</td>
@@ -365,6 +378,20 @@
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">{{ modoModal === 'nuevo' ? 'Password *' : 'Password (vacío no cambia)' }}</label>
             <input v-model="formModal.password" type="text" class="form-control shadow-none border-secondary-subtle" :placeholder="modoModal === 'editar' ? '••••••••' : ''" :required="modoModal === 'nuevo'">
+          </div>
+          <div class="col-md-6">
+            <label class="small fw-bold text-dark mb-1">Género</label>
+            <select v-model="formModal.genero" class="form-select shadow-none border-secondary-subtle">
+              <option value="">Seleccionar...</option>
+              <option value="masculino">Masculino</option>
+              <option value="femenino">Femenino</option>
+              <option value="x">X</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="small fw-bold text-dark mb-1">Fecha de Ingreso a la AAAB</label>
+            <input type="date" v-model="formModal.fecha_ingreso" class="form-control shadow-none border-secondary-subtle">
           </div>
 
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Clasificación</div>
@@ -621,6 +648,20 @@
       </div>
     </ModalBase>
 
+    <!-- Toast flotante de guardado exitoso -->
+    <Teleport to="body">
+      <Transition name="toast-fade">
+        <div
+          v-if="toastExito.visible"
+          class="position-fixed bottom-0 end-0 m-3 m-md-4 bg-white shadow-lg rounded-3 border-start border-success border-4 d-flex align-items-center gap-2 py-3 px-4"
+          style="z-index: 2000; max-width: 340px;"
+        >
+          <span class="material-icons text-success">check_circle</span>
+          <span class="fw-bold text-dark small">{{ toastExito.mensaje }}</span>
+        </div>
+      </Transition>
+    </Teleport>
+
   </div>
 </template>
 
@@ -657,7 +698,7 @@ const filtros = reactive({
 // Los especiales (rol, es_activo, apto_medico) se tratan aparte.
 const CAMPOS_TEXTO_FILTRO = [
   'apellido', 'nombre', 'dni', 'email', 'celular', 'direccion', 'zona',
-  'localidad', 'provincia', 'movilidad', 'fecha_nacimiento',
+  'localidad', 'provincia', 'movilidad', 'fecha_nacimiento', 'fecha_ingreso', 'genero',
   'telefonocontacto', 'parentescocontacto', 'donde_juega', 'categoria_handball',
   'observaciones', 'juega_handball', 'grupo', 'subgrupo',
   'disponibilidad_sabado', 'disponibilidad_sabado_desde', 'disponibilidad_sabado_hasta',
@@ -700,6 +741,22 @@ const cargandoHistorialArbitro = ref(false)
 
 const edicionAbierta = ref(false);
 
+const generoIconos = {
+  masculino: { icono: 'male', color: '#0d6efd', label: 'Masculino' },
+  femenino: { icono: 'female', color: '#d63384', label: 'Femenino' },
+  x: { icono: 'transgender', color: '#6f42c1', label: 'X' },
+  otro: { icono: 'wc', color: '#6c757d', label: 'Otro' },
+}
+
+const toastExito = reactive({ visible: false, mensaje: '' })
+let toastTimer = null
+const mostrarToastExito = (mensaje) => {
+  clearTimeout(toastTimer)
+  toastExito.mensaje = mensaje
+  toastExito.visible = true
+  toastTimer = setTimeout(() => { toastExito.visible = false }, 3500)
+}
+
 const formModalVacio = () => ({
   id: null,
   apellido: '', nombre: '', dni: '', email: '', password: '',
@@ -709,6 +766,7 @@ const formModalVacio = () => ({
   grupos: [],
   telefonocontacto: '', parentescocontacto: '',
   fecha_nacimiento: '', movilidad: '',
+  genero: '', fecha_ingreso: '',
   disponibilidad_sabado: 'FT', disponibilidad_sabado_desde: '', disponibilidad_sabado_hasta: '',
   disponibilidad_domingo: 'FT', disponibilidad_domingo_desde: '', disponibilidad_domingo_hasta: '',
   juega_handball: 'NO', donde_juega: '', categoria_handball: '',
@@ -916,7 +974,7 @@ const confirmarAlta = async () => {
       payload: { listaArbitros: [prepararPayload(formModal.value)] },
     })
     if (res.ok || res.success) {
-      notificar({ titulo: 'Éxito', mensaje: 'Árbitro creado correctamente.', tipo: 'success' })
+      mostrarToastExito('Árbitro creado correctamente.')
       cerrarModal()
       await cargarDatos()
     }
@@ -940,9 +998,9 @@ const confirmarEdicion = async () => {
       payload: { listaArbitros: [prepararPayload(formModal.value)] },
     })
     if (res.ok || res.success) {
-      notificar({ titulo: '¡Guardado!', mensaje: 'Árbitro actualizado correctamente.', tipo: 'success' })
+      actualizarArbitroLocal(formModal.value)
+      mostrarToastExito('Árbitro actualizado correctamente.')
       cerrarModal()
-      await cargarDatos()
     } else {
       notificar({ titulo: 'Error', mensaje: res.message || 'Error al guardar.', tipo: 'danger' })
     }
@@ -961,13 +1019,44 @@ const prepararPayload = (a) => {
 
   ;['disponibilidad_sabado_desde', 'disponibilidad_sabado_hasta',
     'disponibilidad_domingo_desde', 'disponibilidad_domingo_hasta',
-    'fecha_nacimiento'].forEach(campo => {
+    'fecha_nacimiento', 'fecha_ingreso'].forEach(campo => {
     if (clon[campo] === '' || clon[campo] === undefined) clon[campo] = null
   })
   if (!clon.password) delete clon.password
   clon.apto_medico = clon.apto_medico ? 1 : 0
   clon.rol = parseInt(clon.rol)
   return clon
+}
+
+// Refleja en la tabla los cambios del árbitro editado sin recargar todo el listado.
+// Actualiza la fila en memoria, resuelve nombres de provincia/localidad y
+// vuelve a normalizar los campos buscables para que el filtrado siga andando.
+const actualizarArbitroLocal = (datosForm) => {
+  const idx = arbitros.value.findIndex(a => a.id == datosForm.id)
+  if (idx === -1) return
+
+  const provinciaObj = provincias.value.find(p => p.id == datosForm.provincia)
+  const localidadObj = localidades.value.find(l => l.id == datosForm.localidad)
+
+  const actualizado = {
+    ...arbitros.value[idx],
+    ...datosForm,
+    movilidad: movilidadArray.value.join(', '),
+    apto_medico: !!datosForm.apto_medico,
+    rol: datosForm.rol !== null ? parseInt(datosForm.rol) : 0,
+    nombre_provincia: provinciaObj ? provinciaObj.nombre : arbitros.value[idx].nombre_provincia,
+    nombre_localidad: localidadObj ? localidadObj.nombre : arbitros.value[idx].nombre_localidad,
+  }
+
+  // No guardamos el password en la fila de la tabla
+  delete actualizado.password
+
+  actualizado._buscar = {}
+  for (const key of CAMPOS_TEXTO_FILTRO) {
+    actualizado._buscar[key] = normalizarTexto(actualizado[key])
+  }
+
+  arbitros.value[idx] = actualizado
 }
 
 const obtenerNombreRol = (bitRol) => {
@@ -995,6 +1084,7 @@ const columnasExcel = ref([
   { id: 'id', label: 'ID', visible: true },
   { id: 'apellido', label: 'Apellido', visible: true }, { id: 'nombre', label: 'Nombre', visible: true }, { id: 'dni', label: 'DNI', visible: true },
   { id: 'rol', label: 'Rol', visible: true }, { id: 'grupo', label: 'Grupo', visible: true }, { id: 'subgrupo', label: 'Subgrupo', visible: true },
+  { id: 'genero', label: 'Género', visible: false }, { id: 'fecha_ingreso', label: 'F. Ingreso', visible: false },
   { id: 'es_activo', label: 'Estado', visible: false }, { id: 'apto_medico', label: 'Apto Médico', visible: false }, { id: 'email', label: 'Email', visible: false },
   { id: 'direccion', label: 'Dirección', visible: false }, { id: 'nombre_provincia', label: 'Provincia', visible: false }, { id: 'nombre_localidad', label: 'Localidad', visible: false },
   { id: 'zona', label: 'Zona', visible: false }, { id: 'celular', label: 'Celular', visible: false }, { id: 'fecha_nacimiento', label: 'F. Nacimiento', visible: false },
@@ -1026,6 +1116,8 @@ const ejecutarDescargaExcel = async () => {
       else if (col.id === 'es_activo') valor = valor == 1 ? 'SI' : 'NO'
       else if (col.id === 'apto_medico') valor = valor ? 'SI' : 'NO'
       else if (col.id === 'fecha_nacimiento') valor = mostrarFechaArg(valor)
+      else if (col.id === 'fecha_ingreso') valor = mostrarFechaArg(valor)
+      else if (col.id === 'genero') valor = generoIconos[valor]?.label || ''
       fila[col.id] = valor || ''
     })
     ws.addRow(fila)
@@ -1331,5 +1423,16 @@ onMounted(() => {
   bottom: 0;
   width: 1px;
   background: linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent);
+}
+
+/* Transición del toast flotante de guardado exitoso */
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.toast-fade-enter-from,
+.toast-fade-leave-to {
+  opacity: 0;
+  transform: translateY(12px);
 }
 </style>

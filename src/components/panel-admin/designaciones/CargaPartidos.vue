@@ -1880,9 +1880,10 @@ const publicarDesignaciones = async () => {
 
   publicando.value = true
   try {
+  /*
     const guardado = await ejecutarGuardado()
     if (!guardado) return
-
+*/
     const res = await api.post({
       entity: 'designaciones',
       action: 'publicarDesignaciones',
