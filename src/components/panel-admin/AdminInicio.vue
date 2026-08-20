@@ -117,7 +117,7 @@ const categorias = [
   {
     categoria: 'Tesorería',
     icono: 'bi bi-cash-stack',
-    rolesPermitidos: ['admin', 'tesorero', 'secretario', 'designador'],
+    rolesPermitidos: ['admin', 'tesorero', 'secretario', 'designador', 'indumentaria'],
     items: [
       { to: '/panel-admin/tesoreria/datos-personales', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Consultar y gestionar información de los miembros.' },
       { to: '/panel-admin/tesoreria/aportes-pagos', title: 'Aportes y Pagos', icon: 'bi bi-cash-coin', desc: 'Registrar cobros de cuotas y aportes mensuales.' },
