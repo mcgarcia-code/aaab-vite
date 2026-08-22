@@ -267,13 +267,9 @@
 
           <div v-if="formulario.partido_categoria === 'Mayores'" class="field-group anim-fade mb-3">
             <label class="form-label-custom">Competencia Mayores *</label>
-            <select @change='obtenerEquipos()' v-model="formulario.inf_nivel" class="sacf-input" required>
+            <select @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="sacf-input" required>
               <option value="" disabled>Seleccione competencia</option>
-              <template v-if="listas.divisiones_categorias.length > 0">
-                <option v-for="(div, k) in listas.divisiones_categorias[0].divisiones" :key="k" :value="div">
-                  {{ div }}
-                </option>
-              </template>
+              <option v-for="(div, k) in divisionesMayores" :key="k" :value="div.idCategoria">{{ div.division }}</option>
             </select>
           </div>
 
@@ -287,55 +283,46 @@
             </div>
             <div class="col-md-4 mb-3">
               <label class="form-label-custom">Nivel *</label>
-              <select @change='obtenerEquipos()' v-model="formulario.inf_nivel" class="sacf-input" required>
+              <select @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="sacf-input" required>
                 <option value="" disabled>Nivel</option>
-                <option v-for="opt in listas.divisiones" :key="opt" :value="opt">{{ opt }}</option>
+                <option v-for="opt in listas.divisiones" :key="opt.idCategoria" :value="opt.idCategoria">{{ opt.division }}</option>
               </select>
             </div>
           </div>
 
-          <div class="field-group mb-2">
-            <label class="form-label-custom">Equipos *</label>
-            <div class="grid-2">
-              <select v-model="formulario.equipo_1" class="sacf-input" required>
-                <option value="" disabled>Local</option>
-                <option v-for="(eq, k) in listas.equipos" :key="k" :value="eq.eq_id">{{ eq.club }}</option>
-              </select>
-              <select v-model="formulario.equipo_2" class="sacf-input" required>
-                <option value="" disabled>Visitante</option>
-                <option v-for="(eq, k) in listas.equipos" :key="k" :value="eq.eq_id">{{ eq.club }}</option>
-              </select>
-            </div>
+          <div v-if="idCategoria" class="field-group mb-3 anim-fade">
+            <label class="form-label-custom">Fecha del Partido *</label>
+            <input type="date" @change="obtenerPartidos()" v-model="fechaPartido" class="sacf-input" required>
+          </div>
+
+          <div v-if="fechaPartido" class="field-group mb-2 anim-fade">
+            <label class="form-label-custom">Partido *</label>
+            <select v-model="idPartido" class="sacf-input" required :disabled="cargandoPartidos">
+              <option value="" disabled>{{ cargandoPartidos ? 'Cargando...' : (partidos.length ? 'Seleccione partido' : 'No hay partidos para esa fecha') }}</option>
+              <option v-for="p in partidos" :key="p.id" :value="p.id">{{ p.local }} vs {{ p.visitante }}</option>
+            </select>
           </div>
         </div>
 
-        <!-- SECCIÓN 3: ARBITRAJE -->
+        <!-- SECCIÓN 3: ARBITRAJE (solo lectura, se obtiene del partido seleccionado) -->
         <div class="sacf-section bg-light-soft border-bottom">
           <h2 class="section-title">Arbitraje Observado</h2>
-          <div class="field-group mb-4">
-            <label class="form-label-custom">Cantidad de Árbitros *</label>
-            <div class="custom-radio-group mini" style="max-width: 200px;">
-              <button type="button" :class="{ active: formulario.ref_count === '1' }" @click="formulario.ref_count = '1'">1</button>
-              <button type="button" :class="{ active: formulario.ref_count === '2' }" @click="formulario.ref_count = '2'">2</button>
-            </div>
+
+          <div v-if="!partidoSeleccionado" class="text-muted small fst-italic">
+            Seleccioná un partido para ver los árbitros designados.
           </div>
-          <div class="row g-3">
+
+          <div v-else class="row g-3">
             <div class="col-md-6">
               <div class="referee-box shadow-sm bg-white">
                 <label class="fw-bold mb-2 text-dark small">ÁRBITRO 1</label>
-                <select v-model="formulario.ref1_id" class="sacf-input" required>
-                  <option value="" disabled>Seleccione Árbitro</option>
-                  <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.id">{{ arb.apellido }}, {{ arb.nombre }}</option>
-                </select>
+                <p class="m-0 fw-bold text-dark">{{ partidoSeleccionado.arbitro_1 || 'Sin designar' }}</p>
               </div>
             </div>
-            <div class="col-md-6" v-if="formulario.ref_count === '2'">
+            <div class="col-md-6" v-if="partidoSeleccionado.arbitro_2">
               <div class="referee-box shadow-sm bg-white anim-fade">
                 <label class="fw-bold mb-2 text-dark small">ÁRBITRO 2</label>
-                <select v-model="formulario.ref2_id" class="sacf-input" required>
-                  <option value="" disabled>Seleccione Árbitro</option>
-                  <option v-for="arb in listas.arbitros" :key="arb.id" :value="arb.id">{{ arb.apellido }}, {{ arb.nombre }}</option>
-                </select>
+                <p class="m-0 fw-bold text-dark">{{ partidoSeleccionado.arbitro_2 }}</p>
               </div>
             </div>
           </div>
@@ -604,15 +591,26 @@ const mostrarModalCarga = ref(false);
 const procesandoCarga = ref(false);
 const cargandoCategorias = ref(false);
 
+const divisionesMayores = ref([]);
+
 const listas = reactive({
-  categorias_especificas: [], divisiones_categorias: [], divisiones: [], equipos: [], arbitros: []
+  divisiones_categorias: [], divisiones: []
 });
 
 const formulario = reactive({
   partido_genero: '', partido_categoria: '', inf_nivel: '',
-  id_categoria_especifica: '', equipo_1: '', equipo_2: '',
-  ref_count: '1', ref1_id: '', ref2_id: ''
+  id_categoria_especifica: '', categoria: ''
 });
+
+const idCategoria = ref(null);
+
+const fechaPartido = ref('');
+const cargandoPartidos = ref(false);
+const partidos = ref([]);
+const idPartido = ref(null);
+
+// Partido completo seleccionado: de ahí se leen los árbitros designados (solo lectura)
+const partidoSeleccionado = computed(() => partidos.value.find(p => p.id === idPartido.value) || null);
 
 const archivoObservacion = ref(null);
 const arrastrandoArchivo = ref(false);
@@ -620,42 +618,48 @@ const arrastrandoArchivo = ref(false);
 const abrirModalCarga = () => { mostrarModalCarga.value = true; };
 const cerrarModalCarga = () => { mostrarModalCarga.value = false; reiniciarFormularioCarga(); };
 
-// Padrón liviano solo para el selector (igual a como se usa en el resto del panel)
-const cargarArbitros = async () => {
-  try {
-    const res = await api.get({
-      entity: 'arbitros',
-      action: 'getArbitrosBasico',
-      payload: { soloActivos: false }
-    });
-    if ((res.ok || res.success) && res.payload) listas.arbitros = res.payload;
-  } catch (e) { console.error(e); }
-};
-
 const pedirCategoriasEspecíficas = async () => {
   if (!formulario.partido_genero || !formulario.partido_categoria) return;
   cargandoCategorias.value = true;
-  listas.divisiones = []; listas.categorias_especificas = []; formulario.id_categoria_especifica = '';
+  listas.divisiones = []; formulario.id_categoria_especifica = '';
   try {
     const res = await api.get({
       entity: 'observaciones', action: 'obtenerCategorias',
       payload: { genero: formulario.partido_genero, tipo: formulario.partido_categoria }
     });
-    if (res.ok) listas.divisiones_categorias = res.payload;
+    if (res.ok) {
+      if (formulario.partido_categoria === 'Mayores') {
+        divisionesMayores.value = res.payload[0]?.divisiones || [];
+      } else {
+        listas.divisiones_categorias = res.payload;
+      }
+    }
   } catch (error) { console.error(error); }
   finally { cargandoCategorias.value = false; }
 };
 
 const setDivisiones = () => { listas.divisiones = listas.divisiones_categorias[formulario.id_categoria_especifica].divisiones; };
 
-const obtenerEquipos = async () => {
-  let categoria = '';
-  if (formulario.id_categoria_especifica != '') categoria = listas.divisiones_categorias[formulario.id_categoria_especifica].categoria;
-  const r = await api.get({
-    entity: 'observaciones', action: 'obtenerEquipos',
-    payload: { genero: formulario.partido_genero, tipo: formulario.partido_categoria, categoria: categoria, division: formulario.inf_nivel }
-  });
-  listas.equipos = r.payload || [];
+const seleccionarCategoria = async () => {
+  idCategoria.value = formulario.inf_nivel;
+  fechaPartido.value = '';
+  partidos.value = [];
+  idPartido.value = null;
+};
+
+const obtenerPartidos = async () => {
+  partidos.value = [];
+  idPartido.value = null;
+  if (!fechaPartido.value || !idCategoria.value) return;
+  cargandoPartidos.value = true;
+  try {
+    const r = await api.get({
+      entity: 'designaciones', action: 'obtenerPartidos',
+      payload: { fecha: fechaPartido.value, idCategoria: idCategoria.value }
+    });
+    if (r.ok) partidos.value = r.payload;
+  } catch (error) { console.error('Error pidiendo partidos:', error); }
+  finally { cargandoPartidos.value = false; }
 };
 
 watch(() => [formulario.partido_genero, formulario.partido_categoria], pedirCategoriasEspecíficas);
@@ -683,6 +687,21 @@ const soltarArchivoObservacion = (event) => {
 
 const quitarArchivoObservacion = () => { archivoObservacion.value = null; };
 
+const armarDatosPartido = () => {
+  const datos = { ...formulario };
+  if (formulario.partido_categoria === 'Mayores') {
+    datos.categoria = 'Mayores';
+  } else if (formulario.id_categoria_especifica !== '') {
+    datos.categoria = listas.divisiones_categorias[formulario.id_categoria_especifica].categoria;
+  }
+  datos.id_categoria = idCategoria.value;
+  datos.fecha_partido = fechaPartido.value;
+  datos.id_partido = idPartido.value;
+  datos.id_arb1 = partidoSeleccionado.value?.id_arb1 ?? null;
+  datos.id_arb2 = partidoSeleccionado.value?.id_arb2 ?? null;
+  return datos;
+};
+
 const cargarObservacionExcel = async () => {
   if (!archivoObservacion.value) {
     notificar({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el archivo de Excel para continuar.', tipo: 'warning' });
@@ -692,7 +711,7 @@ const cargarObservacionExcel = async () => {
   try {
     const formData = new FormData();
     formData.append('archivo', archivoObservacion.value);
-    formData.append('datos', JSON.stringify(formulario));
+    formData.append('datos', JSON.stringify(armarDatosPartido()));
 
     const res = await api.postFile({ entity: 'observaciones', action: 'cargarObservacionExcel', payload: formData });
 
@@ -712,9 +731,12 @@ const cargarObservacionExcel = async () => {
 
 const reiniciarFormularioCarga = () => {
   Object.assign(formulario, {
-    partido_genero: '', partido_categoria: '', inf_nivel: '', id_categoria_especifica: '',
-    equipo_1: '', equipo_2: '', ref_count: '1', ref1_id: '', ref2_id: ''
+    partido_genero: '', partido_categoria: '', inf_nivel: '', id_categoria_especifica: '', categoria: ''
   });
+  idCategoria.value = null;
+  fechaPartido.value = '';
+  partidos.value = [];
+  idPartido.value = null;
   archivoObservacion.value = null;
   arrastrandoArchivo.value = false;
 };
@@ -770,7 +792,6 @@ const exportarExcel = async () => {
 // Inicialización
 onMounted(() => {
   obtenerObservaciones();
-  cargarArbitros();
 });
 </script>
 
