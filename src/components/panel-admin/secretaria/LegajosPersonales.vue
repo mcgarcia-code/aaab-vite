@@ -160,12 +160,14 @@
                     </td>
                     <td class="p-2 border-bottom border-2">
                       <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
-                        <option value="">Todos</option><option value="LH">LH</option><option value="Pre Liga">Pre Liga</option><option value="SR">SR</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+                        <option value="">Todos</option>
+                        <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2">
                       <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
-                        <option value="">Todos</option><option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                        <option value="">Todos</option>
+                        <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none text-center"></td>
@@ -1191,6 +1193,26 @@ const localidadesFiltradas = computed(() => {
   return localidades.value.filter(l => Number(l.provincia_id) === Number(filtros.provincia))
 })
 
+// Opciones de filtro derivadas de los grupos reales (misma fuente que GruposAdmin),
+// asi se mantienen sincronizadas y no hay que hardcodear cada grupo/subgrupo.
+const opcionesGrupo = computed(() => {
+  const vistos = []
+  for (const g of grupos.value) {
+    const nombre = String(g.nombre || '').trim()
+    if (nombre && !vistos.includes(nombre)) vistos.push(nombre)
+  }
+  return vistos.sort((a, b) => collator.compare(a, b))
+})
+
+const opcionesSubgrupo = computed(() => {
+  const vistos = []
+  for (const g of grupos.value) {
+    const sub = String(g.subgrupo || '').trim()
+    if (sub && !vistos.includes(sub)) vistos.push(sub)
+  }
+  return vistos.sort((a, b) => collator.compare(a, b))
+})
+
 const arbitrosFiltrados = computed(() => {
   // Armamos una sola vez la lista de filtros activos (los que tienen valor),
   // ya normalizados. Evita recorrer 28 claves vacías por cada árbitro.
@@ -1212,6 +1234,13 @@ const arbitrosFiltrados = computed(() => {
           if (key === 'rol') { if (a.rol != val) return false; continue }
           if (key === 'es_activo') { if ((val === 'si') !== (a.es_activo == 1)) return false; continue }
           if (key === 'apto_medico') { if ((val === 'si') !== !!a.apto_medico) return false; continue }
+          // Grupo y subgrupo salen de un select: comparacion exacta para que
+          // "1" no matchee "10" ni "A" matchee dentro de otro texto.
+          if (key === 'grupo' || key === 'subgrupo') {
+            const campoExacto = a._buscar ? a._buscar[key] : normalizarTexto(a[key])
+            if (campoExacto !== val) return false
+            continue
+          }
           // Texto: usamos el valor pre-normalizado guardado en _buscar
           const campo = a._buscar ? a._buscar[key] : normalizarTexto(a[key])
           if (!campo || !campo.includes(val)) return false

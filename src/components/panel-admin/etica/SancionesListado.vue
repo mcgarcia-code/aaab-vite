@@ -60,6 +60,12 @@
               <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Motivo / Art. / Sanción...">
             </div>
             <div class="col-6 col-md-2">
+              <input type="text" v-model="filtros.desde" class="form-control form-control-sm shadow-none text-center" placeholder="Desde (DD/MM/AA)">
+            </div>
+            <div class="col-6 col-md-2">
+              <input type="text" v-model="filtros.hasta" class="form-control form-control-sm shadow-none text-center" placeholder="Hasta (DD/MM/AA)">
+            </div>
+            <div class="col-6 col-md-2">
               <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
                 <option value="">ESTADO (TODOS)</option>
                 <option value="vigente">VIGENTE</option>
@@ -67,12 +73,6 @@
                 <option value="en_proceso">EN PROCESO</option>
                 <option value="anulada">ANULADA</option>
               </select>
-            </div>
-            <div class="col-6 col-md-2">
-              <input type="text" v-model="filtros.desde" class="form-control form-control-sm shadow-none text-center" placeholder="Desde (DD/MM/AA)">
-            </div>
-            <div class="col-6 col-md-2">
-              <input type="text" v-model="filtros.hasta" class="form-control form-control-sm shadow-none text-center" placeholder="Hasta (DD/MM/AA)">
             </div>
             <div class="col-6 col-md-1">
               <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
