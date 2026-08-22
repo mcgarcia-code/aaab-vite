@@ -579,39 +579,39 @@
     </div>
 
     <ModalBase
-  :show="mostrarSelectorColor"
-  titulo="Estado del árbitro"
-  icono="label"
-  colorIcono="bg-danger text-white"
-  maxWidth="420px"
-  @close="cerrarSelectorColor"
->
-  <div class="lista-colores">
-    <button @click="asignarColor('')" class="opcion-color">
-      <span class="muestra-color muestra-none"></span>
-      Sin marca
-    </button>
-    <button
-      v-for="op in opcionesColor"
-      :key="op.valor"
-      @click="asignarColor(op.valor)"
-      class="opcion-color"
+      :show="mostrarSelectorColor"
+      titulo="Estado del árbitro"
+      icono="label"
+      colorIcono="bg-danger text-white"
+      maxWidth="420px"
+      @close="cerrarSelectorColor"
     >
-      <span class="muestra-color" :class="'estado-' + op.valor"></span>
-      {{ op.etiqueta }}
-    </button>
-  </div>
-</ModalBase>
+      <div class="lista-colores">
+        <button @click="asignarColor('')" class="opcion-color">
+          <span class="muestra-color muestra-none"></span>
+          Sin marca
+        </button>
+        <button
+          v-for="op in opcionesColor"
+          :key="op.valor"
+          @click="asignarColor(op.valor)"
+          class="opcion-color"
+        >
+          <span class="muestra-color" :class="'estado-' + op.valor"></span>
+          {{ op.etiqueta }}
+        </button>
+      </div>
+    </ModalBase>
 
-<ModalBase
-  :show="mostrarSelectorArbitro"
-  :titulo="tituloSelector"
-  icono="sports"
-  colorIcono="bg-danger text-white"
-  maxWidth="500px"
-  :zIndex="zIndexSelector"
-  @close="cerrarSelectorArbitro"
->
+    <ModalBase
+      :show="mostrarSelectorArbitro"
+      :titulo="tituloSelector"
+      icono="sports"
+      colorIcono="bg-danger text-white"
+      maxWidth="500px"
+      :zIndex="zIndexSelector"
+      @close="cerrarSelectorArbitro"
+    >
       <input
         v-model="busquedaArbitro"
         type="text"
@@ -657,7 +657,35 @@
         Si el árbitro no está en el padrón (ej: viene del interior), escribí su nombre y usá la opción azul. Queda designado pero no le aparece en su panel.
       </p>
     </ModalBase>
+    //Confirmar designación con avisos (conflictos detectados antes de guardar)
+    <ModalBase
+      :show="mostrarModalConfirmarDesignacion"
+      titulo="⚠ Avisos de esta designación"
+      icono="warning"
+      colorIcono="bg-warning text-dark"
+      maxWidth="480px"
+      :zIndex="1060"
+      @close="rechazarDesignacionConAvisos"
+    >
+      <p class="text-muted small mb-3">¿Deseás continuar con esta designación de todos modos?</p>
+      <pre class="small mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ textoAvisosDesignacionPendiente }}</pre>
 
+      <template #footer>
+        <button
+          @click="rechazarDesignacionConAvisos"
+          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
+        >
+          No, quitar
+        </button>
+        <button
+          @click="confirmarDesignacionConAvisos"
+          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
+        >
+          Sí, designar
+        </button>
+      </template>
+    </ModalBase>
+    //Carga del Excel
     <ModalBase
       :show="mostrarModalCarga"
       titulo="Cargar Designaciones desde Excel"
@@ -707,36 +735,36 @@
         </button>
       </template>
     </ModalBase>
+    //Autoridades de mesa
+    <ModalBase
+      :show="mostrarModalMesa"
+      titulo="Mesa de control"
+      icono="table_restaurant"
+      colorIcono="bg-danger text-white"
+      maxWidth="480px"
+      :zIndex="1055"
+      @close="cerrarModalMesa"
+    >
+          <p class="text-muted small mb-3">
+            <i class="bi bi-info-circle me-1"></i>
+            Asigná planillero y/o cronometrista solo si este partido se juega con mesa de control. Ambos son opcionales.
+          </p>
 
-<ModalBase
-  :show="mostrarModalMesa"
-  titulo="Mesa de control"
-  icono="table_restaurant"
-  colorIcono="bg-danger text-white"
-  maxWidth="480px"
-  :zIndex="1055"
-  @close="cerrarModalMesa"
->
-      <p class="text-muted small mb-3">
-        <i class="bi bi-info-circle me-1"></i>
-        Asigná planillero y/o cronometrista solo si este partido se juega con mesa de control. Ambos son opcionales.
-      </p>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted">Planillero</label>
+            <button @click="abrirSelectorMesa('planillero')" class="celda-arbitro-mobile w-100 text-start" :class="{ 'vacio': !partidoMesa?.planillero }">
+              {{ partidoMesa?.planillero || '— Asignar planillero —' }}
+            </button>
+          </div>
 
-      <div class="mb-3">
-        <label class="form-label small fw-bold text-muted">Planillero</label>
-        <button @click="abrirSelectorMesa('planillero')" class="celda-arbitro-mobile w-100 text-start" :class="{ 'vacio': !partidoMesa?.planillero }">
-          {{ partidoMesa?.planillero || '— Asignar planillero —' }}
-        </button>
-      </div>
-
-      <div class="mb-2">
-        <label class="form-label small fw-bold text-muted">Cronometrista</label>
-        <button @click="abrirSelectorMesa('cronometrista')" class="celda-arbitro-mobile w-100 text-start" :class="{ 'vacio': !partidoMesa?.cronometrista }">
-          {{ partidoMesa?.cronometrista || '— Asignar cronometrista —' }}
-        </button>
-      </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-muted">Cronometrista</label>
+            <button @click="abrirSelectorMesa('cronometrista')" class="celda-arbitro-mobile w-100 text-start" :class="{ 'vacio': !partidoMesa?.cronometrista }">
+              {{ partidoMesa?.cronometrista || '— Asignar cronometrista —' }}
+            </button>
+          </div>
     </ModalBase>
-
+    //Seleccion de cancha
     <ModalBase
       :show="mostrarSelectorCancha"
       titulo="Asignar cancha"
@@ -777,7 +805,7 @@
         </button>
       </template>
     </ModalBase>
-
+    //Cambiar Fecha/Hora
     <ModalBase
       :show="mostrarModalFechaHorario"
       titulo="Editar fecha y horario"
@@ -818,7 +846,7 @@
         </button>
       </template>
     </ModalBase>
-
+    //Publicar Partidos
     <ModalBase
       :show="mostrarModalPublicar"
       titulo="Publicar Designaciones"
@@ -913,7 +941,6 @@ const designaciones = ref([])
 const labelSemana = ref('')
 const arbitros = ref([])
 const cargando = ref(false)
-const eliminados = ref([])
 const semanaAtras = ref(0)
 let contadorUid = 0
 
@@ -924,7 +951,10 @@ const cargarAvisos = async () => {
   try {
     const res = await api.get({
       entity: 'designaciones',
-      action: 'obtenerAvisosDesignaciones'
+      action: 'obtenerAvisosDesignaciones',
+      payload: {
+        semanaAtras: semanaAtras.value
+      }
     })
     if (res.ok && res.payload && res.payload.success) {
       avisosMap.value = res.payload.avisos || {}
@@ -1185,13 +1215,17 @@ const mostrarModalCarga = ref(false)
 const subiendoExcel = ref(false)
 const archivoExcel = ref(null)
 
-const estadoGuardado = ref('') // '' | 'pendiente' | 'guardando' | 'guardado' | 'error'
-let timerAutoguardado = null
+const estadoGuardado = ref('') // '' | 'guardando' | 'guardado' | 'error'
 let timerOcultar = null
 
 const mostrarSelectorArbitro = ref(false)
 const seleccionArbitro = ref(null)
 const busquedaArbitro = ref('')
+
+// Confirmación de avisos al designar árbitro 1/2 (antes de guardar)
+const mostrarModalConfirmarDesignacion = ref(false)
+const avisosDesignacionPendiente = ref([])
+const designacionPendiente = ref(null) // { p, numero }
 
 const mostrarModalPublicar = ref(false)
 const publicando = ref(false)
@@ -1350,7 +1384,6 @@ const cargarDesignaciones = async () => {
     if ((res.ok || res.success) && res.payload) {
       designaciones.value = res.payload.designaciones.map(normalizarPartido)
       labelSemana.value = res.payload.labelSemana
-      eliminados.value = []
     }
   } catch (err) {
     console.error('Error al cargar designaciones:', err)
@@ -1452,11 +1485,11 @@ const totalSinMatch = computed(() => {
    ==================================================== */
 const marcar = (p) => {
   p._dirty = true
-  programarAutoguardado()
+  ejecutarGuardado()
 }
 
 const hayCambios = computed(() => {
-  return eliminados.value.length > 0 || designaciones.value.some(p => p._dirty || !p.id)
+  return designaciones.value.some(p => p._dirty || !p.id)
 })
 
 /* ====================================================
@@ -1493,6 +1526,66 @@ const arbitrosFiltrados = computed(() => {
   return arbitros.value.filter(a => normalizarTexto(`${a.apellido} ${a.nombre}`).includes(busqueda))
 })
 
+// Texto del modal de confirmación: lista simple de avisos (un solo árbitro).
+const textoAvisosDesignacionPendiente = computed(() => {
+  return avisosDesignacionPendiente.value.map(a => `• ${a}`).join('\n')
+})
+
+// Antes de guardar la designación de árbitro 1/2, se consulta si genera
+// conflictos (doble cancha, mismo equipo, etc). Si no hay avisos, se guarda
+// directo; si hay, se pide confirmación antes de persistir.
+// numero (1 o 2) es solo para uso del FE, para saber qué puesto vaciar si se rechaza.
+const consultarDesignacion = async (p, numero, idArbitro) => {
+  try {
+    const res = await api.get({
+      entity: 'designaciones',
+      action: 'obtenerAvisosArbitro',
+      payload: {
+        idPartido: p.id,
+        idArbitro
+      }
+    })
+    const avisos = (res.ok && res.payload && res.payload.success) ? (res.payload.avisos || []) : []
+
+    if (avisos.length === 0) {
+      marcar(p)
+      return
+    }
+
+    avisosDesignacionPendiente.value = avisos
+    designacionPendiente.value = { p, numero }
+    mostrarModalConfirmarDesignacion.value = true
+  } catch (err) {
+    console.error('Error al calcular avisos del árbitro:', err)
+    marcar(p)
+  }
+}
+
+const cerrarModalConfirmarDesignacion = () => {
+  mostrarModalConfirmarDesignacion.value = false
+  avisosDesignacionPendiente.value = []
+  designacionPendiente.value = null
+}
+
+// Sí: recién acá se persiste la designación con ejecutarGuardado (vía marcar).
+const confirmarDesignacionConAvisos = () => {
+  const pendiente = designacionPendiente.value
+  cerrarModalConfirmarDesignacion()
+  if (!pendiente) return
+  marcar(pendiente.p)
+}
+
+// No: se quita el árbitro seleccionado y el puesto vuelve a quedar en blanco.
+const rechazarDesignacionConAvisos = () => {
+  const pendiente = designacionPendiente.value
+  cerrarModalConfirmarDesignacion()
+  if (!pendiente) return
+  const { p, numero } = pendiente
+  if (numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null; p._ext1 = false; p._estado1 = '' }
+  else { p.arbitro_2 = ''; p.id_arb2 = null; p._ext2 = false; p._estado2 = '' }
+  p.estado = (p.arbitro_1 || p.arbitro_2) ? 'designado' : 'a_designar'
+}
+
 const asignarArbitro = async (arbitro) => {
   const sel = seleccionArbitro.value
   if (!sel) return
@@ -1513,45 +1606,37 @@ const asignarArbitro = async (arbitro) => {
   // ---- Árbitro 1 / 2 (flujo existente) ----
   // Al cambiar de árbitro se limpia la etiqueta: si el anterior había
   // rechazado (quedó en 'reemplazar'), esa marca ya no corresponde.
+  cerrarSelectorArbitro()
+
   if (!arbitro) {
     if (sel.numero === 1) { p.arbitro_1 = ''; p.id_arb1 = null; p._ext1 = false; p._estado1 = '' }
     else { p.arbitro_2 = ''; p.id_arb2 = null; p._ext2 = false; p._estado2 = '' }
-  } else {
-    const nombreCompleto = capitalizarNombre(`${arbitro.apellido}, ${arbitro.nombre}`)
-    if (sel.numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id; p._ext1 = false; p._estado1 = '' }
-    else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id; p._ext2 = false; p._estado2 = '' }
+    p.estado = (p.arbitro_1 || p.arbitro_2) ? 'designado' : 'a_designar'
+    marcar(p)
+    return
   }
+
+  const nombreCompleto = capitalizarNombre(`${arbitro.apellido}, ${arbitro.nombre}`)
+  if (sel.numero === 1) { p.arbitro_1 = nombreCompleto; p.id_arb1 = arbitro.id; p._ext1 = false; p._estado1 = '' }
+  else { p.arbitro_2 = nombreCompleto; p.id_arb2 = arbitro.id; p._ext2 = false; p._estado2 = '' }
 
   // Recalcular estado local para que la ayuda visual reaccione al instante.
   // El backend lo confirma igual al guardar (guardarPartidos).
   p.estado = (p.arbitro_1 || p.arbitro_2) ? 'designado' : 'a_designar'
 
-  marcar(p)
-  cerrarSelectorArbitro()
-
-  if (arbitro) {
-    const ok = await ejecutarGuardado()
-    if (ok) {
-      await cargarAvisos()
-      if (avisosPartido(p) > 0) {
-        notificar({
-          titulo: '⚠ Atención con esta designación',
-          mensaje: textoAvisosPartido(p),
-          tipo: 'warning'
-        })
-      }
-    }
-  }
+  await consultarDesignacion(p, sel.numero, arbitro.id)
 }
 
 // Asigna un árbitro que no está en el padrón (ej: viene del interior).
 // Queda como texto libre, sin id_arb, y por eso no le aparece en su panel.
+// Al no tener id no hay contra qué calcular avisos: se guarda directo.
 const asignarArbitroLibre = async (texto) => {
   const sel = seleccionArbitro.value
   if (!sel) return
   const nombre = capitalizarNombre(texto)
   if (!nombre) return
   const p = sel.partido
+  cerrarSelectorArbitro()
 
   if (sel.numero === 1) { p.arbitro_1 = nombre; p.id_arb1 = null; p._ext1 = true; p._estado1 = '' }
   else { p.arbitro_2 = nombre; p.id_arb2 = null; p._ext2 = true; p._estado2 = '' }
@@ -1561,20 +1646,6 @@ const asignarArbitroLibre = async (texto) => {
   p.estado = (p.arbitro_1 || p.arbitro_2) ? 'designado' : 'a_designar'
 
   marcar(p)
-  cerrarSelectorArbitro()
-
-  // También validamos externos: doble cancha y mismo equipo aplican igual
-  const ok = await ejecutarGuardado()
-  if (ok) {
-    await cargarAvisos()
-    if (avisosPartido(p) > 0) {
-      notificar({
-        titulo: '⚠ Atención con esta designación',
-        mensaje: textoAvisosPartido(p),
-        tipo: 'warning'
-      })
-    }
-  }
 }
 
 /* ====================================================
@@ -1758,19 +1829,10 @@ const limpiarPartidoParaEnviar = (p) => ({
   id_arb2: p.id_arb2
 })
 
-const programarAutoguardado = () => {
-  estadoGuardado.value = 'pendiente'
-  if (timerAutoguardado) clearTimeout(timerAutoguardado)
-  timerAutoguardado = setTimeout(() => { ejecutarGuardado() }, 1500)
-}
-
 const ejecutarGuardado = async () => {
-  if (timerAutoguardado) { clearTimeout(timerAutoguardado); timerAutoguardado = null }
-
   const modificados = designaciones.value.filter(p => p._dirty || !p.id)
-  const eliminadosEnviar = [...eliminados.value]
 
-  if (modificados.length === 0 && eliminadosEnviar.length === 0) {
+  if (modificados.length === 0) {
     estadoGuardado.value = ''
     return true
   }
@@ -1782,8 +1844,7 @@ const ejecutarGuardado = async () => {
       entity: 'designaciones',
       action: 'guardarPartidos',
       payload: {
-        partidos: modificados.map(limpiarPartidoParaEnviar),
-        eliminados: eliminadosEnviar
+        partidos: modificados.map(limpiarPartidoParaEnviar)
       }
     })
 
@@ -1794,7 +1855,6 @@ const ejecutarGuardado = async () => {
         if (!p.id && p._uid && nuevosIds[p._uid]) p.id = nuevosIds[p._uid]
         p._dirty = false
       })
-      eliminados.value = eliminados.value.filter(id => !eliminadosEnviar.includes(id))
 
       estadoGuardado.value = 'guardado'
       if (timerOcultar) clearTimeout(timerOcultar)
