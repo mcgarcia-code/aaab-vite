@@ -419,10 +419,40 @@ useHead({
 })
 
 // ─── Constantes ───────────────────────────────────────────────────
-const GRUPOS         = ['LH', 'Pre Liga', 'SR', '1', '2', '3', '4']
-const SUBGRUPOS      = ['A', 'B', 'C']
 const CATEGORIA      = 'reunion'
 const MOBILE_BREAKPOINT = 768
+
+// Grupos reales (misma fuente que GruposAdmin). Las opciones de filtro
+// se derivan de aca para no hardcodear cada grupo/subgrupo.
+const grupos = ref([])
+const collator = new Intl.Collator('es', { sensitivity: 'base' })
+
+const GRUPOS = computed(() => {
+  const vistos = []
+  for (const g of grupos.value) {
+    const nombre = String(g.nombre || '').trim()
+    if (nombre && !vistos.includes(nombre)) vistos.push(nombre)
+  }
+  return vistos.sort((a, b) => collator.compare(a, b))
+})
+
+const SUBGRUPOS = computed(() => {
+  const vistos = []
+  for (const g of grupos.value) {
+    const sub = String(g.subgrupo || '').trim()
+    if (sub && !vistos.includes(sub)) vistos.push(sub)
+  }
+  return vistos.sort((a, b) => collator.compare(a, b))
+})
+
+const obtenerGrupos = async () => {
+  try {
+    const { payload } = await api.get({ entity: 'grupos', action: 'obtenerGrupos' })
+    grupos.value = Array.isArray(payload) ? payload : []
+  } catch (error) {
+    console.error('Error al obtener grupos:', error)
+  }
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────
 const normalizarTexto = (v) =>
@@ -480,7 +510,7 @@ const AsistenciaBadge = defineComponent({
 })
 
 // ─── Inyectado ───────────────────────────────────────────────────
-const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
 
 // ─── Estado ──────────────────────────────────────────────────────
 const arrReuniones        = ref([])
@@ -745,7 +775,7 @@ const onReunionSeleccionada = async () => {
     }
   } catch (e) {
     console.error('onReunionSeleccionada:', e)
-    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la reunión.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la reunión.', tipo: 'danger' })
   } finally {
     cargandoArbitros.value = false
   }
@@ -774,10 +804,10 @@ const guardarAsistencia = async (a) => {
       const prev = registrosExistentes.value[a.id]
       if (prev) asistencias[a.id] = prev.estado == 2 ? 'ausente' : 'presente'
       else delete asistencias[a.id]
-      notificar({ titulo: 'Error', mensaje: res.message || 'No se pudo guardar la asistencia.', tipo: 'danger' })
+      toast({ titulo: 'Error', mensaje: res.message || 'No se pudo guardar la asistencia.', tipo: 'danger' })
     }
   } catch {
-    notificar({ titulo: 'Error fatal', mensaje: 'Error de conexión con el servidor.', tipo: 'danger' })
+    toast({ titulo: 'Error fatal', mensaje: 'Error de conexión con el servidor.', tipo: 'danger' })
   } finally {
     guardando[a.id] = false
   }
@@ -846,7 +876,7 @@ watch(soloActivos, async () => {
 })
 
 onMounted(async () => {
-  await Promise.all([obtenerReuniones(), cargarArbitros()])
+  await Promise.all([obtenerReuniones(), cargarArbitros(), obtenerGrupos()])
   // Una vez que tenemos las reuniones y árbitros, calculamos el agrupado general
   await cargarAsistenciasGlobales()
   cargandoInicial.value = false

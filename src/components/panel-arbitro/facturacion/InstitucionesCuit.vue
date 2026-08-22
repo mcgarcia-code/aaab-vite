@@ -234,28 +234,11 @@
 
     </div>
 
-    <!-- Toast flotante -->
-    <Teleport to="body">
-      <Transition name="toast-fade">
-        <div
-          v-if="toast.visible"
-          class="position-fixed bottom-0 end-0 m-3 m-md-4 bg-white shadow-lg rounded-3 d-flex align-items-center gap-2 py-3 px-4"
-          :class="toast.tipo === 'danger' ? 'border-start border-danger border-4' : 'border-start border-success border-4'"
-          style="z-index: 2000; max-width: 340px;"
-        >
-          <span class="material-icons" :class="toast.tipo === 'danger' ? 'text-danger' : 'text-success'">
-            {{ toast.tipo === 'danger' ? 'error' : 'check_circle' }}
-          </span>
-          <span class="fw-bold text-dark small">{{ toast.mensaje }}</span>
-        </div>
-      </Transition>
-    </Teleport>
-
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, watch } from 'vue';
+import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 
@@ -270,14 +253,9 @@ useHead({
   ],
 });
 
-const toast = reactive({ visible: false, mensaje: '', tipo: 'success' });
-let toastTimer = null;
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const mostrarToast = (mensaje, tipo = 'success') => {
-  clearTimeout(toastTimer);
-  toast.mensaje = mensaje;
-  toast.tipo = tipo;
-  toast.visible = true;
-  toastTimer = setTimeout(() => { toast.visible = false }, 3500);
+  toast({ mensaje, tipo });
 };
 
 const instituciones = ref([]);
@@ -418,16 +396,4 @@ onMounted(cargarDatos);
   border-right: none !important;
 }
 
-/* ====================================================
-   TOAST FLOTANTE
-   ==================================================== */
-.toast-fade-enter-active,
-.toast-fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.toast-fade-enter-from,
-.toast-fade-leave-to {
-  opacity: 0;
-  transform: translateY(12px);
-}
 </style>

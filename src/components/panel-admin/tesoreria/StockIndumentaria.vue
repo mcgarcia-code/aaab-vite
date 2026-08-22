@@ -232,6 +232,7 @@ useHead({
 });
 
 const notificar = inject('notificar');
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 
 const listaStock = ref([]);
 const cargando = ref(false);
@@ -377,9 +378,9 @@ const confirmarEliminacionItem = async () => {
   if (r.ok) {
     const indice = listaStock.value.findIndex(modelo => modelo.id_item === itemAEliminar.value.id_item);
     if (indice !== -1) listaStock.value.splice(indice, 1);
-    notificar({ titulo: 'Item eliminado', mensaje: 'El item fue eliminado correctamente.', tipo: 'success' });
+    toast({ titulo: 'Item eliminado', mensaje: 'El item fue eliminado correctamente.', tipo: 'success' });
   } else {
-    notificar({ titulo: 'Error', mensaje: 'No se pudo eliminar el item.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'No se pudo eliminar el item.', tipo: 'danger' });
   }
 
   itemAEliminar.value = null;
@@ -396,13 +397,13 @@ const eliminarArchivo = (index) => {
 
 const guardarCambios = async () => {
   if (!formModal.value.descripcion) {
-    notificar({ titulo: 'Faltan datos', mensaje: 'El nombre del modelo es obligatorio.', tipo: 'danger' });
+    toast({ titulo: 'Faltan datos', mensaje: 'El nombre del modelo es obligatorio.', tipo: 'danger' });
     return;
   }
 
   // Validación del precio general único
   if (formModal.value.precioGeneral <= 0) {
-    notificar({ titulo: 'Atención', mensaje: 'Debes ingresar un precio mayor a 0.', tipo: 'warning' });
+    toast({ titulo: 'Atención', mensaje: 'Debes ingresar un precio mayor a 0.', tipo: 'warning' });
     return;
   }
   const itemsTodos = modoModal.value === 'editar'
@@ -446,11 +447,11 @@ const guardarCambios = async () => {
   }
 
   if (res.ok) {
-    notificar({ titulo: '¡Éxito!', mensaje: 'Inventario guardado correctamente.', tipo: 'success' });
+    toast({ titulo: '¡Éxito!', mensaje: 'Inventario guardado correctamente.', tipo: 'success' });
     cerrarModal();
     await obtenerStock();
   } else {
-    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al guardar el inventario.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Hubo un problema al guardar el inventario.', tipo: 'danger' });
   }
 
   cargando.value = false;

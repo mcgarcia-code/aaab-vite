@@ -80,6 +80,13 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
 
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargando" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando designaciones rechazadas...</p>
+          </div>
+
+          <template v-else>
           <!-- TABLA (Escritorio) -->
           <div class="d-none d-md-block table-responsive border rounded shadow-sm">
             <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem;">
@@ -185,6 +192,7 @@
               Sig <i class="bi bi-chevron-right"></i>
             </button>
           </div>
+          </template>
 
         </div>
       </div>
@@ -342,6 +350,7 @@ useHead({
 })
 
 const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 // Mismos motivos que ve el árbitro al rechazar
 const opcionesMotivo = [
@@ -454,13 +463,13 @@ const confirmarEdicion = async () => {
       const item = rechazos.value.find(r => r.id === rechazoSeleccionado.value.id)
       if (item) item.estado = estadoEdicion.value
       cerrarModal()
-      notificar({ titulo: 'Guardado', mensaje: 'El estado del rechazo se actualizó correctamente.', tipo: 'success' })
+      toast({ titulo: 'Guardado', mensaje: 'El estado del rechazo se actualizó correctamente.', tipo: 'success' })
     } else {
       throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
     }
   } catch (err) {
     console.error('Error al actualizar rechazo:', err)
-    notificar({ titulo: 'Error', mensaje: err.message || 'No se pudieron guardar los cambios.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: err.message || 'No se pudieron guardar los cambios.', tipo: 'danger' })
   } finally {
     guardando.value = false
   }
@@ -486,13 +495,13 @@ const borrarRechazo = (r) => {
         if (res.ok || res.success) {
           const item = rechazos.value.find(x => x.id === r.id)
           if (item) item.estado = 'borrado'
-          notificar({ titulo: 'Borrado', mensaje: 'El rechazo fue marcado como borrado.', tipo: 'success' })
+          toast({ titulo: 'Borrado', mensaje: 'El rechazo fue marcado como borrado.', tipo: 'success' })
         } else {
           throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
         }
       } catch (err) {
         console.error('Error al borrar rechazo:', err)
-        notificar({ titulo: 'Error', mensaje: err.message || 'No se pudo borrar el rechazo.', tipo: 'danger' })
+        toast({ titulo: 'Error', mensaje: err.message || 'No se pudo borrar el rechazo.', tipo: 'danger' })
       }
     }
   })
@@ -637,4 +646,3 @@ onMounted(obtenerRechazos)
 .injustificado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 .borrado { background: #e5e7eb; color: #4b5563; border: 1px solid #d1d5db; }
 </style>
-

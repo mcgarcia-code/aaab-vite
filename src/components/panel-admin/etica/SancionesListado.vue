@@ -477,6 +477,7 @@ import ModalBase from '@/components/ModalBase.vue'
 useHead({ title: 'Gestión de Sanciones | AAAB' })
 
 const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 const adminLogueado = ref(auth.getUser() || { id: 1 })
 const sanciones = ref([])
@@ -653,11 +654,11 @@ const editarSancion = (s) => {
 
 const confirmarEdicion = async () => {
   if (['amonestacion', 'dias', 'meses', 'anios'].includes(tipoSancion.value) && !formModal.value.desde) {
-    return notificar({ titulo: 'Dato Faltante', mensaje: 'Debe ingresar la fecha de inicio.', tipo: 'warning' })
+    return toast({ titulo: 'Dato Faltante', mensaje: 'Debe ingresar la fecha de inicio.', tipo: 'warning' })
   }
 
   if (['dias','meses','anios'].includes(tipoSancion.value) && (!cantidadSancion.value || cantidadSancion.value <= 0)) {
-    return notificar({ titulo: 'Dato Faltante', mensaje: 'Debe ingresar una cantidad válida.', tipo: 'warning' })
+    return toast({ titulo: 'Dato Faltante', mensaje: 'Debe ingresar una cantidad válida.', tipo: 'warning' })
   }
 
   cargandoProceso.value = true
@@ -699,10 +700,10 @@ const confirmarEdicion = async () => {
     if (res?.ok !== false) {
       mostrarModalEditar.value = false
       fetchSanciones()
-      notificar({ titulo: 'Guardado', mensaje: 'Sanción actualizada correctamente.', tipo: 'success' })
+      toast({ titulo: 'Guardado', mensaje: 'Sanción actualizada correctamente.', tipo: 'success' })
     }
   } catch {
-    notificar({ titulo: 'Error', mensaje: 'Error de conexión con el servidor.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'Error de conexión con el servidor.', tipo: 'danger' })
   } finally {
     cargandoProceso.value = false
   }
@@ -801,7 +802,7 @@ const enviarDescargoAdmin = async () => {
       await cargarDescargos(sancionActiva.value.id);
     }
   } catch {
-    notificar({ titulo: 'Error', mensaje: 'No se pudo enviar la respuesta', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'No se pudo enviar la respuesta', tipo: 'danger' });
   } finally {
     enviandoDescargo.value = false;
   }

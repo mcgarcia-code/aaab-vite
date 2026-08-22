@@ -43,7 +43,7 @@
           </div>
 
           <div class="row g-2">
-            <div class="col-12 col-md-3">
+            <div class="col-12 col-md-2">
               <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar tema o descripcion...">
             </div>
             <div class="col-6 col-md-2">
@@ -59,10 +59,19 @@
                 <option value="recuperatorio">RECUPERATORIO</option>
               </select>
             </div>
-            <div class="col-6 col-md-3">
-              <input v-model="filtros.grupo" class="form-control form-control-sm shadow-none" placeholder="Grupo (Ej: Pre Liga, 3-A...)">
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
+                <option value="">GRUPO (TODOS)</option>
+                <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
+              </select>
             </div>
-                        <div class="col-6 col-md-2">
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
+                <option value="">SUBGRUPO (TODOS)</option>
+                <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
               <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
                 <option value="">AÑO (TODOS)</option>
                 <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
@@ -294,6 +303,7 @@ useHead({
 })
 
 const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 const procesando = ref(false)
 const listaEventos = ref([])
 const grupos = ref([])
@@ -322,7 +332,8 @@ const filtros = reactive({
   anio: '',
   fecha: '',
   categoria: '',
-  grupo: ''
+  grupo: '',
+  subgrupo: ''
 })
 
 const paginaActual = ref(1)
@@ -333,6 +344,50 @@ const normalizarTexto = (texto) => {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+}
+
+// Opciones de filtro derivadas de los grupos reales (misma fuente que
+// GruposAdmin), separadas en grupo y subgrupo como en los demas paneles.
+const opcionesGrupo = computed(() => {
+  const vistos = []
+  for (const g of grupos.value) {
+    const nombre = String(g.nombre || '').trim()
+    if (nombre && !vistos.includes(nombre)) vistos.push(nombre)
+  }
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'))
+})
+
+const opcionesSubgrupo = computed(() => {
+  const vistos = []
+  for (const g of grupos.value) {
+    const sub = String(g.subgrupo || '').trim()
+    if (sub && !vistos.includes(sub)) vistos.push(sub)
+  }
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'))
+})
+
+// Descompone los destinatarios de un evento (nombresGrupos) en pares
+// { nombre, subgrupo } cotejando contra los grupos reales, asi el filtro
+// de grupo y el de subgrupo pueden evaluarse por separado.
+const destinatariosDescompuestos = (evento) => {
+  const nombres = Array.isArray(evento.nombresGrupos) ? evento.nombresGrupos : []
+  return nombres.map(n => {
+    const normal = normalizarTexto(n)
+    const match = grupos.value.find(g => {
+      const nombre = String(g.nombre || '').trim()
+      const sub = String(g.subgrupo || '').trim()
+      const completo = sub ? `${nombre} ${sub}` : nombre
+      return normalizarTexto(completo) === normal
+    })
+    if (match) {
+      return {
+        nombre: normalizarTexto(match.nombre),
+        subgrupo: normalizarTexto(match.subgrupo)
+      }
+    }
+    // Fallback si el destinatario no matchea un grupo actual
+    return { nombre: normal, subgrupo: '' }
+  })
 }
 
 // Años presentes en los eventos, ordenados de mayor a menor
@@ -371,10 +426,16 @@ const eventosFiltrados = computed(() => {
     }
 
     let matchGrupo = true
-    if (filtros.grupo) {
-      const searchG = normalizarTexto(filtros.grupo)
-      const alcance = normalizarTexto(e.nombresGrupos.join("/"))
-      matchGrupo = alcance.includes(searchG)
+    if (filtros.grupo || filtros.subgrupo) {
+      const gFiltro = normalizarTexto(filtros.grupo)
+      const sFiltro = normalizarTexto(filtros.subgrupo)
+      const destinatarios = destinatariosDescompuestos(e)
+      // El evento pasa si algun destinatario cumple ambos filtros activos.
+      matchGrupo = destinatarios.some(d => {
+        const okGrupo = !gFiltro || d.nombre === gFiltro
+        const okSubgrupo = !sFiltro || d.subgrupo === sFiltro
+        return okGrupo && okSubgrupo
+      })
     }
 
     return matchBusqueda && matchAnio && matchFecha && matchCategoria && matchGrupo
@@ -440,6 +501,7 @@ const limpiarFiltrosTabla = () => {
   filtros.fecha = ''
   filtros.categoria = ''
   filtros.grupo = ''
+  filtros.subgrupo = ''
 }
 
 const obtenerEventos = async () => {
@@ -498,7 +560,7 @@ const toggleGrupoSeleccionado = (id, estaChequeado) => {
 }
 const guardarEvento = async () => {
   if (!form.todosLosGrupos && gruposSeleccionados.value.length==0) {
-    notificar({ titulo: 'Faltan grupos', mensaje: 'Selecciona al menos un grupo destinatario.', tipo: 'danger' })
+    toast({ titulo: 'Faltan grupos', mensaje: 'Selecciona al menos un grupo destinatario.', tipo: 'danger' })
     return
   }
 
@@ -517,16 +579,16 @@ const guardarEvento = async () => {
       gruposSeleccionados.value = []
       mostrarModal.value = false
       await obtenerEventos()
-      notificar({
+      toast({
         titulo: 'Exito',
         mensaje: `El evento se ${modoEdicion.value ? 'actualizo' : 'publico'} correctamente.`,
         tipo: 'success'
       })
     } else {
-      notificar({ titulo: 'Error', mensaje: res.message || 'El servidor rechazo la solicitud.', tipo: 'danger' })
+      toast({ titulo: 'Error', mensaje: res.message || 'El servidor rechazo la solicitud.', tipo: 'danger' })
     }
   } catch {
-    notificar({ titulo: 'Error', mensaje: 'Fallo de conexion.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexion.', tipo: 'danger' })
   } finally {
     procesando.value = false
   }
@@ -551,7 +613,7 @@ const eliminar = async (id) => {
   const res = await api.post({ entity: 'eventos', action: 'eliminarEvento', payload: { id } })
   if (res.ok) {
     obtenerEventos()
-    notificar({ titulo: 'Eliminado', mensaje: 'El evento fue borrado.', tipo: 'success' })
+    toast({ titulo: 'Eliminado', mensaje: 'El evento fue borrado.', tipo: 'success' })
   }
 }
 

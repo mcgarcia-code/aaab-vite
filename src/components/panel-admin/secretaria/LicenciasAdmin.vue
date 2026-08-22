@@ -348,6 +348,7 @@ useHead({
 })
 
 const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 const licencias = ref([])
 const arbitrosLista = ref([])
@@ -459,9 +460,9 @@ const confirmarAlta = async () => {
   if (res.ok) {
     mostrarModal.value = false;
     obtenerLicencias();
-    notificar({ titulo: 'Éxito', mensaje: 'Licencia registrada correctamente.', tipo: 'success' });
+    toast({ titulo: 'Éxito', mensaje: 'Licencia registrada correctamente.', tipo: 'success' });
   } else {
-    notificar({ titulo: 'Error', mensaje: 'No se pudo registrar la licencia.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'No se pudo registrar la licencia.', tipo: 'danger' });
   }
 };
 
@@ -483,9 +484,9 @@ const confirmarEdicion = async () => {
   if (res.ok) {
     mostrarModal.value = false;
     obtenerLicencias();
-    notificar({ titulo: 'Guardado', mensaje: 'Licencia actualizada correctamente.', tipo: 'success' });
+    toast({ titulo: 'Guardado', mensaje: 'Licencia actualizada correctamente.', tipo: 'success' });
   } else {
-    notificar({ titulo: 'Error', mensaje: 'No se pudieron guardar los cambios.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'No se pudieron guardar los cambios.', tipo: 'danger' });
   }
 };
 
@@ -502,7 +503,7 @@ const eliminarLicencia = (id) => {
       });
       if(res.ok) {
         licencias.value = licencias.value.filter(l => l.id !== id);
-        notificar({ titulo: 'Eliminado', mensaje: 'La licencia ha sido removida.', tipo: 'success' });
+        toast({ titulo: 'Eliminado', mensaje: 'La licencia ha sido removida.', tipo: 'success' });
       }
     }
   });

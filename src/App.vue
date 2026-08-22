@@ -20,13 +20,16 @@
     @cerrar="cerrarModal"
     @confirmar="ejecutarAccion"
   />
+
+  <ToastNotificacion ref="toastRef" />
 </template>
 
 <script setup>
-import { reactive, provide } from 'vue'
+import { reactive, provide, ref } from 'vue'
 import AppHeader from './components/AppHeader.vue'
 import AppFooter from './components/AppFooter.vue'
 import ModalExito from './components/ModalExito.vue'
+import ToastNotificacion from './components/ToastNotificacion.vue'
 
 const modalConfig = reactive({
   visible: false,
@@ -61,6 +64,15 @@ const ejecutarAccion = () => {
 }
 
 provide('notificar', abrirModal)
+
+// Toast: avisos breves de éxito/error/atención que se autocierran.
+// A diferencia de notificar (modal), no interrumpe ni pide confirmación.
+const toastRef = ref(null)
+const toast = ({ titulo = '', mensaje = '', tipo = 'success', duracion = 4000 } = {}) => {
+  toastRef.value?.mostrar({ titulo, mensaje, tipo, duracion })
+}
+
+provide('toast', toast)
 </script>
 
 <style>

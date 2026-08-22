@@ -161,7 +161,7 @@ useHead({
   ],
 })
 
-const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 const cargandoInicial = ref(true)
 const guardando = ref(false)
@@ -249,18 +249,18 @@ async function cargarTodo() {
       action: 'obtenerAsambleas',
       payload: {}
     }),
-    api.get({ 
-      entity: 'grupos', 
-      action: 'obtenerGrupos' 
+    api.get({
+      entity: 'grupos',
+      action: 'obtenerGrupos'
     }),
-    api.get({ 
-      entity: 'examenes_habilitaciones', 
-      action: 'obtenerHabilitaciones' 
+    api.get({
+      entity: 'examenes_habilitaciones',
+      action: 'obtenerHabilitaciones'
     }),
-    api.get({ 
-      entity: 'arbitros', 
-      action: 'getArbitrosBasico', 
-      payload: {} 
+    api.get({
+      entity: 'arbitros',
+      action: 'getArbitrosBasico',
+      payload: {}
     })
   ])
   const listaEv = ev?.payload ?? ev ?? []
@@ -324,10 +324,10 @@ async function guardar() {
       }
     })
     await cargarTodo()
-    notificar?.({ tipo: 'success', mensaje: 'Habilitación guardada' })
+    toast({ tipo: 'success', mensaje: 'Habilitación guardada' })
     cerrarModal()
   } catch{
-    notificar?.({ tipo: 'error', mensaje: 'No se pudo guardar la habilitación' })
+    toast({ tipo: 'danger', mensaje: 'No se pudo guardar la habilitación' })
   } finally {
     guardando.value = false
   }

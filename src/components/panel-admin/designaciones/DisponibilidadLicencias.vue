@@ -141,8 +141,18 @@
                       <option value="">Todos</option><option value="1">SÍ</option><option value="0">NO</option>
                     </select>
                   </td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.grupo" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.subgrupo" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option>
+                      <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
+                    </select>
+                  </td>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option>
+                      <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
+                    </select>
+                  </td>
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.zona" class="form-control form-control-sm shadow-none"></td>
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.movilidad" class="form-control form-control-sm shadow-none"></td>
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado" class="form-control form-control-sm shadow-none"></td>
@@ -315,6 +325,7 @@ useHead({
 })
 
 const notificar = inject('notificar');
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 
 const arbitros = ref([]);
 const cargando = ref(false);
@@ -329,6 +340,37 @@ const filtros = reactive({
   designado_sabado: '',
   designado_domingo: '',
 });
+
+// Grupos reales (misma fuente que GruposAdmin). Las opciones de filtro
+// se derivan de aca para no hardcodear cada grupo/subgrupo.
+const grupos = ref([]);
+
+const opcionesGrupo = computed(() => {
+  const vistos = [];
+  for (const g of grupos.value) {
+    const nombre = String(g.nombre || '').trim();
+    if (nombre && !vistos.includes(nombre)) vistos.push(nombre);
+  }
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'));
+});
+
+const opcionesSubgrupo = computed(() => {
+  const vistos = [];
+  for (const g of grupos.value) {
+    const sub = String(g.subgrupo || '').trim();
+    if (sub && !vistos.includes(sub)) vistos.push(sub);
+  }
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'));
+});
+
+const obtenerGrupos = async () => {
+  try {
+    const { payload } = await api.get({ entity: 'grupos', action: 'obtenerGrupos' });
+    grupos.value = Array.isArray(payload) ? payload : [];
+  } catch (error) {
+    console.error('Error al obtener grupos:', error);
+  }
+};
 
 
 
@@ -408,7 +450,7 @@ const cargarDatos = async () => {
     }
   } catch (err) {
     console.error("Error al cargar datos:", err);
-    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
   } finally {
     cargando.value = false;
   }
@@ -429,7 +471,7 @@ const toggleDesignacion = async (id, dia) => {
   } catch (err) {
     console.error("Error al guardar tilde:", err);
     if (nuevoValor) set.delete(id); else set.add(id);
-    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la designación.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'No se pudo guardar la designación.', tipo: 'danger' });
   }
 };
 
@@ -453,13 +495,13 @@ const limpiarChecks = async () => {
     if (res.ok || res.success) {
       designadosSabado.value.clear();
       designadosDomingo.value.clear();
-      notificar({ titulo: 'Éxito', mensaje: 'Se limpiaron todas las designaciones.', tipo: 'success' });
+      toast({ titulo: 'Éxito', mensaje: 'Se limpiaron todas las designaciones.', tipo: 'success' });
     } else {
       throw new Error("Error del servidor");
     }
   } catch (err) {
     console.error("Error al limpiar tildes en BE:", err);
-    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al limpiar las designaciones.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Hubo un problema al limpiar las designaciones.', tipo: 'danger' });
   }
 };
 
@@ -539,6 +581,8 @@ const arbitrosFiltrados = computed(() => {
     const cumpleTexto = Object.keys(filtros).every(key => {
       if (!filtros[key] || key === 'licencia' || key === 'apto_medico' || key === 'designado_sabado' || key === 'designado_domingo') return true;
       if (key === 'es_activo') return String(a[key]) === filtros[key];
+      // Grupo y subgrupo salen de un select: comparacion exacta.
+      if (key === 'grupo' || key === 'subgrupo') return normalizarTexto(a[key]) === normalizarTexto(filtros[key]);
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
 
@@ -644,7 +688,10 @@ const exportarExcel = async () => {
   URL.revokeObjectURL(url)
 }
 
-onMounted(cargarDatos);
+onMounted(() => {
+  cargarDatos();
+  obtenerGrupos();
+});
 </script>
 
 
