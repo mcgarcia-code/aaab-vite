@@ -50,7 +50,7 @@
             <div class="col-6 col-md">
               <input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI...">
             </div>
-                        <div class="col-6 col-md">
+            <div class="col-6 col-md">
               <input v-model="filtros.celular" class="form-control form-control-sm shadow-none" placeholder="Celular...">
             </div>
             <div class="col-6 col-md">

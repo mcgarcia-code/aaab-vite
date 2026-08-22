@@ -141,8 +141,18 @@
                       <option value="">Todos</option><option value="1">SÍ</option><option value="0">NO</option>
                     </select>
                   </td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.grupo" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.subgrupo" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option>
+                      <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
+                    </select>
+                  </td>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
+                      <option value="">Todos</option>
+                      <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
+                    </select>
+                  </td>
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.zona" class="form-control form-control-sm shadow-none"></td>
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.movilidad" class="form-control form-control-sm shadow-none"></td>
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado" class="form-control form-control-sm shadow-none"></td>
@@ -329,6 +339,37 @@ const filtros = reactive({
   designado_sabado: '',
   designado_domingo: '',
 });
+
+// Grupos reales (misma fuente que GruposAdmin). Las opciones de filtro
+// se derivan de aca para no hardcodear cada grupo/subgrupo.
+const grupos = ref([]);
+
+const opcionesGrupo = computed(() => {
+  const vistos = [];
+  for (const g of grupos.value) {
+    const nombre = String(g.nombre || '').trim();
+    if (nombre && !vistos.includes(nombre)) vistos.push(nombre);
+  }
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'));
+});
+
+const opcionesSubgrupo = computed(() => {
+  const vistos = [];
+  for (const g of grupos.value) {
+    const sub = String(g.subgrupo || '').trim();
+    if (sub && !vistos.includes(sub)) vistos.push(sub);
+  }
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'));
+});
+
+const obtenerGrupos = async () => {
+  try {
+    const { payload } = await api.get({ entity: 'grupos', action: 'obtenerGrupos' });
+    grupos.value = Array.isArray(payload) ? payload : [];
+  } catch (error) {
+    console.error('Error al obtener grupos:', error);
+  }
+};
 
 
 
@@ -539,6 +580,8 @@ const arbitrosFiltrados = computed(() => {
     const cumpleTexto = Object.keys(filtros).every(key => {
       if (!filtros[key] || key === 'licencia' || key === 'apto_medico' || key === 'designado_sabado' || key === 'designado_domingo') return true;
       if (key === 'es_activo') return String(a[key]) === filtros[key];
+      // Grupo y subgrupo salen de un select: comparacion exacta.
+      if (key === 'grupo' || key === 'subgrupo') return normalizarTexto(a[key]) === normalizarTexto(filtros[key]);
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
 
@@ -644,7 +687,10 @@ const exportarExcel = async () => {
   URL.revokeObjectURL(url)
 }
 
-onMounted(cargarDatos);
+onMounted(() => {
+  cargarDatos();
+  obtenerGrupos();
+});
 </script>
 
 
