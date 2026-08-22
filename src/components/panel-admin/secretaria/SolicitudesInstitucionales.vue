@@ -56,17 +56,17 @@
                 <tbody>
                   <tr v-for="s in solicitudesPaginadas" :key="s.id">
                     <td class="ps-3 text-dark fw-bold">
-                      <div v-for="a in s.arbitros" :key="a.id" class="d-block">{{ a.apellido }}, {{ a.nombre }}</div>
+                      <div class="d-block">{{ s.apellido }}, {{ s.nombre }}</div>
                     </td>
                     <td class="text-muted">
                       <span class="badge bg-danger-subtle text-danger border">No ser designado</span>
                     </td>
-                    <td class="text-dark">{{ s.club_nombre || '-' }}</td>
+                    <td class="text-dark">{{ s.club || '-' }}</td>
                     <td class="text-center text-muted">{{ etiquetaRama(s.rama) }}</td>
                     <td class="text-muted" style="white-space: normal;">
                       <span v-if="s.todas_categorias" class="badge bg-info-subtle text-primary border">TODAS</span>
                       <template v-else>
-                        <span v-for="c in s.categorias" :key="c.id" class="badge bg-light text-dark border me-1 mb-1">{{ c.categoria }}</span>
+                        <span class="badge bg-light text-dark border me-1 mb-1">{{ s.categoria }}</span>
                       </template>
                     </td>
                     <td class="text-muted small">
@@ -104,7 +104,7 @@
                   <div class="text-dark fw-bold d-flex align-items-center gap-2" style="font-size: 1rem;">
                     <span class="material-icons text-primary" style="font-size: 20px;">person</span>
                     <div>
-                      <div v-for="a in s.arbitros" :key="a.id">{{ a.apellido }}, {{ a.nombre }}</div>
+                      <div>{{ s.apellido }}, {{ s.nombre }}</div>
                     </div>
                   </div>
                   <span class="badge" :class="claseEstado(s.estado)">{{ (s.estado || '').toUpperCase() }}</span>
@@ -112,13 +112,13 @@
                 <div class="card-body pt-0 px-3 pb-3">
                   <div class="d-flex flex-column gap-2 bg-light p-2 rounded border mb-2 border-light-subtle">
                     <span class="text-dark small"><strong>Solicitud:</strong> No ser designado</span>
-                    <span class="text-dark small"><strong>Club:</strong> {{ s.club_nombre || '-' }}</span>
+                    <span class="text-dark small"><strong>Club:</strong> {{ s.club || '-' }}</span>
                     <span class="text-dark small"><strong>Rama:</strong> {{ etiquetaRama(s.rama) }}</span>
                     <div class="text-dark small">
                       <strong>Categorías:</strong>
                       <span v-if="s.todas_categorias" class="badge bg-info-subtle text-primary ms-1">TODAS</span>
                       <template v-else>
-                        <span v-for="c in s.categorias" :key="c.id" class="badge bg-white text-dark border ms-1">{{ c.categoria }}</span>
+                        <span class="badge bg-white text-dark border ms-1">{{ s.categoria }}</span>
                       </template>
                     </div>
                     <span class="text-dark small"><strong>Vigencia:</strong> {{ formatearFecha(s.fecha_desde) }} → {{ formatearFecha(s.fecha_hasta) }}</span>
@@ -244,7 +244,7 @@
               <div v-for="c in categorias" :key="c.id" class="form-check">
                 <input class="form-check-input shadow-none" type="checkbox" :id="'cat-'+c.id" :value="c.id" v-model="form.categorias" :disabled="form.todas_categorias">
                 <label class="form-check-label small" :for="'cat-'+c.id">
-                  {{ c.categoria }}<span v-if="c.division" class="text-muted"> — {{ c.division }}</span>
+                  {{ c.categoria }}<span v-if="c.div_nombre" class="text-muted"> — {{ c.div_nombre }}</span>
                 </label>
               </div>
             </div>
@@ -435,7 +435,10 @@ const solicitudesPaginadas = computed(() => {
 const cargarSolicitudes = async () => {
   cargando.value = true
   try {
-    const { payload } = await api.get({ entity: 'solicitudes_institucionales', action: 'obtenerSolicitudes' })
+    const { payload } = await api.get({ 
+      entity: 'solicitudes', 
+      action: 'obtenerSolicitudes' 
+    })
     solicitudes.value = payload || []
   } catch (err) {
     console.error('Error al cargar solicitudes:', err)
@@ -474,7 +477,7 @@ const cargarCategorias = async () => {
     const { payload } = await api.get({
       entity: 'equipos',
       action: 'obtenerCategoriasPorClub',
-      payload: { club_id: form.club_id, rama: form.rama }
+      payload: { idClub: form.club_id, rama: form.rama }
     })
     categorias.value = payload || []
   } catch (err) {
@@ -568,7 +571,7 @@ const guardarSolicitud = async () => {
   const esEdicion = modoModal.value === 'editar'
   const payload = {
     arbitros: form.arbitros,
-    tipo: 'no_designado',
+    tipo: 'no_designar',
     club_id: form.club_id,
     rama: form.rama,
     todas_categorias: form.todas_categorias,
@@ -580,8 +583,8 @@ const guardarSolicitud = async () => {
 
   try {
     const res = await api.post({
-      entity: 'solicitudes_institucionales',
-      action: esEdicion ? 'actualizarSolicitud' : 'crearSolicitud',
+      entity: 'solicitudes',
+      action: esEdicion ? 'editarSolicitud' : 'crearSolicitud',
       payload
     })
 
@@ -613,7 +616,7 @@ const eliminarSolicitud = async () => {
   eliminando.value = true
   try {
     const res = await api.post({
-      entity: 'solicitudes_institucionales',
+      entity: 'solicitudes',
       action: 'eliminarSolicitud',
       payload: { id: solicitudAEliminar.value.id }
     })
