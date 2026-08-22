@@ -253,6 +253,14 @@ useHead({
 // Inyectamos el notificador global
 const notificar = inject('notificar');
 const arbitro = ref(auth.getUser() || {});
+
+// Los <input type="date"> solo aceptan 'YYYY-MM-DD'. Si la fecha viene con hora
+// (ej: '1990-05-15 00:00:00') el input queda en blanco y podría perderse al guardar.
+// Recortamos a los primeros 10 caracteres para que se muestre y edite bien.
+const soloFecha = (f) => (f ? String(f).slice(0, 10) : '');
+arbitro.value.fecha_nacimiento = soloFecha(arbitro.value.fecha_nacimiento);
+arbitro.value.fecha_ingreso = soloFecha(arbitro.value.fecha_ingreso);
+
 const opciones = ref({ provincias: [], localidades: [] });
 const localidadesFiltradas = ref([]);
 const cargando = ref(false);
@@ -331,7 +339,10 @@ const guardarCambios = async () => {
                 arbitro: arbitro.value
             }
         })
-        if (res.success) {
+        // El api devuelve { ok, payload }: el resultado real del PHP viene en res.payload.
+        // (Antes se chequeaba res.success / res.data.message, que no existen, y por eso
+        // aunque el backend guardara bien caía siempre en el catch mostrando un error.)
+        if (res.ok || res.payload?.success) {
             notificar({
               titulo: '¡Perfil Actualizado!',
               mensaje: 'Tus datos se guardaron correctamente en el legajo.',
@@ -341,7 +352,7 @@ const guardarCambios = async () => {
         } else {
             notificar({
               titulo: 'Error',
-              mensaje: res.data.message || 'No se pudieron actualizar los datos.',
+              mensaje: res.payload?.message || 'No se pudieron actualizar los datos.',
               tipo: 'danger'
             });
         }
@@ -385,7 +396,7 @@ const cambiarPassword = async () => {
         } else {
             notificar({
               titulo: 'Error',
-              mensaje: res.data.message || 'No se pudo cambiar la contraseña.',
+              mensaje: res.payload?.message || 'No se pudo cambiar la contraseña.',
               tipo: 'danger'
             });
         }
