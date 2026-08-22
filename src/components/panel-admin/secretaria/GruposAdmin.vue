@@ -164,6 +164,7 @@ useHead({
 })
 
 const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 const procesando = ref(false)
 const listaGrupos = ref([])
 
@@ -340,16 +341,16 @@ const guardarGrupo = async () => {
     if (res.ok) {
       mostrarModal.value = false
       await obtenerGrupos()
-      notificar({
+      toast({
         titulo: 'Exito',
         mensaje: `El grupo se ${modoEdicion.value ? 'actualizo' : 'creo'} correctamente.`,
         tipo: 'success'
       })
     } else {
-      notificar({ titulo: 'Error', mensaje: res.message || 'El servidor rechazo la solicitud.', tipo: 'danger' })
+      toast({ titulo: 'Error', mensaje: res.message || 'El servidor rechazo la solicitud.', tipo: 'danger' })
     }
   } catch {
-    notificar({ titulo: 'Error', mensaje: 'Fallo de conexion.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexion.', tipo: 'danger' })
   } finally {
     procesando.value = false
   }
@@ -374,7 +375,7 @@ const eliminar = async (id) => {
   const res = await api.post({ entity: 'grupos', action: 'borrarGrupo', payload: { id } })
   if (res.ok) {
     obtenerGrupos()
-    notificar({ titulo: 'Eliminado', mensaje: 'El grupo fue desactivado.', tipo: 'success' })
+    toast({ titulo: 'Eliminado', mensaje: 'El grupo fue desactivado.', tipo: 'success' })
   }
 }
 

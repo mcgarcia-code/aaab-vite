@@ -454,7 +454,7 @@ useHead({
   meta: [{ name: 'description', content: 'Administración y seguimiento de observaciones arbitrales.' }],
 });
 
-const notificar = inject('notificar', (msg) => console.log('Notificación:', msg));
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 
 /* ====================================================
    ESTADO GLOBAL DE LA TABLA
@@ -538,7 +538,7 @@ const obtenerObservaciones = async () => {
       ];
     }
   } catch {
-    notificar({ titulo: 'Error', mensaje: 'Problema al cargar las observaciones.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Problema al cargar las observaciones.', tipo: 'danger' });
   } finally {
     cargando.value = false;
   }
@@ -569,16 +569,16 @@ const guardarCambiosGestion = async () => {
     const res = await api.post({ entity: 'observaciones', action: 'actualizarEstado', payload: payload });
 
     if (res && res.ok) {
-      notificar({ titulo: 'Actualizado', mensaje: 'Observación modificada con éxito.', tipo: 'success' });
+      toast({ titulo: 'Actualizado', mensaje: 'Observación modificada con éxito.', tipo: 'success' });
       await obtenerObservaciones();
     } else {
       const index = observaciones.value.findIndex(o => o.id === payload.id);
       if (index !== -1) observaciones.value[index].estado = payload.estado;
-      notificar({ titulo: 'Simulación', mensaje: 'Estado actualizado en memoria.', tipo: 'success' });
+      toast({ titulo: 'Simulación', mensaje: 'Estado actualizado en memoria.', tipo: 'success' });
     }
     cerrarModal();
   } catch{
-    notificar({ titulo: 'Error', mensaje: 'Ocurrió un problema al guardar los cambios.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Ocurrió un problema al guardar los cambios.', tipo: 'danger' });
   } finally {
     cargando.value = false;
   }
@@ -669,7 +669,7 @@ const ACEPTA_EXCEL = /\.(xlsx|xls)$/i;
 const asignarArchivoObservacion = (file) => {
   if (!file) return;
   if (!ACEPTA_EXCEL.test(file.name)) {
-    notificar({ titulo: 'Archivo inválido', mensaje: 'Seleccioná un archivo de Excel (.xlsx o .xls).', tipo: 'warning' });
+    toast({ titulo: 'Archivo inválido', mensaje: 'Seleccioná un archivo de Excel (.xlsx o .xls).', tipo: 'warning' });
     return;
   }
   archivoObservacion.value = file;
@@ -704,7 +704,7 @@ const armarDatosPartido = () => {
 
 const cargarObservacionExcel = async () => {
   if (!archivoObservacion.value) {
-    notificar({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el archivo de Excel para continuar.', tipo: 'warning' });
+    toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el archivo de Excel para continuar.', tipo: 'warning' });
     return;
   }
   procesandoCarga.value = true;
@@ -716,14 +716,14 @@ const cargarObservacionExcel = async () => {
     const res = await api.postFile({ entity: 'observaciones', action: 'cargarObservacionExcel', payload: formData });
 
     if (res && res.ok) {
-      notificar({ titulo: 'Guardado', mensaje: 'La observación se ha registrado.', tipo: 'success' });
+      toast({ titulo: 'Guardado', mensaje: 'La observación se ha registrado.', tipo: 'success' });
       await obtenerObservaciones();
       cerrarModalCarga();
     } else {
-      notificar({ titulo: 'Error al guardar', mensaje: res?.message || 'No se pudo procesar el envío.', tipo: 'danger' });
+      toast({ titulo: 'Error al guardar', mensaje: res?.message || 'No se pudo procesar el envío.', tipo: 'danger' });
     }
   } catch {
-    notificar({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' });
   } finally {
     procesandoCarga.value = false;
   }
@@ -761,7 +761,7 @@ const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] 
 
 const exportarExcel = async () => {
   if (observacionesFiltradas.value.length === 0) {
-    notificar({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' }); return;
+    toast({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' }); return;
   }
   const datosExportar = observacionesFiltradas.value.map(o => ({
     'ID': o.id, 'Fecha': formatearFecha(o.fecha_partido), 'Observador': o.observador, 'Árbitros': o.arbitros,

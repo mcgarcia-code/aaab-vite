@@ -650,20 +650,6 @@
       </div>
     </ModalBase>
 
-    <!-- Toast flotante de guardado exitoso -->
-    <Teleport to="body">
-      <Transition name="toast-fade">
-        <div
-          v-if="toastExito.visible"
-          class="position-fixed bottom-0 end-0 m-3 m-md-4 bg-white shadow-lg rounded-3 border-start border-success border-4 d-flex align-items-center gap-2 py-3 px-4"
-          style="z-index: 2000; max-width: 340px;"
-        >
-          <span class="material-icons text-success">check_circle</span>
-          <span class="fw-bold text-dark small">{{ toastExito.mensaje }}</span>
-        </div>
-      </Transition>
-    </Teleport>
-
   </div>
 </template>
 
@@ -685,6 +671,7 @@ useHead({
 const cargandoTabla = ref(false)
 
 const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 const arbitros = ref([])
 
@@ -750,13 +737,8 @@ const generoIconos = {
   otro: { icono: 'wc', color: '#6c757d', label: 'Otro' },
 }
 
-const toastExito = reactive({ visible: false, mensaje: '' })
-let toastTimer = null
 const mostrarToastExito = (mensaje) => {
-  clearTimeout(toastTimer)
-  toastExito.mensaje = mensaje
-  toastExito.visible = true
-  toastTimer = setTimeout(() => { toastExito.visible = false }, 3500)
+  toast({ mensaje, tipo: 'success' })
 }
 
 const formModalVacio = () => ({
@@ -1452,16 +1434,5 @@ onMounted(() => {
   bottom: 0;
   width: 1px;
   background: linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent);
-}
-
-/* Transición del toast flotante de guardado exitoso */
-.toast-fade-enter-active,
-.toast-fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.toast-fade-enter-from,
-.toast-fade-leave-to {
-  opacity: 0;
-  transform: translateY(12px);
 }
 </style>

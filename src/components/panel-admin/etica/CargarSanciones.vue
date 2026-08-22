@@ -122,7 +122,7 @@ useHead({
   title: 'Cargar Sanción | AAAB'
 });
 
-const notificar = inject('notificar', (opts) => {
+const toast = inject('toast', (opts) => {
     console.error("No se encontró el notificador global", opts);
     alert(opts.mensaje);
 });
@@ -205,7 +205,7 @@ const cargarUltimasSanciones = async () => {
 
 const guardarSancion = async () => {
   if (!nuevaSancion.value.id_arbitro || !nuevaSancion.value.articulo.trim() || !nuevaSancion.value.motivo.trim()) {
-    notificar({ titulo: 'Datos incompletos', mensaje: 'Por favor completá todos los campos obligatorios.', tipo: 'warning' });
+    toast({ titulo: 'Datos incompletos', mensaje: 'Por favor completá todos los campos obligatorios.', tipo: 'warning' });
     return;
   }
 
@@ -219,15 +219,15 @@ const guardarSancion = async () => {
     });
 
     if (res?.ok !== false) {
-      notificar({ titulo: '¡Proceso Iniciado!', mensaje: 'La sanción se registró y se notificó al árbitro.', tipo: 'success' });
+      toast({ titulo: '¡Proceso Iniciado!', mensaje: 'La sanción se registró y se notificó al árbitro.', tipo: 'success' });
       nuevaSancion.value = sancionVacia();
       await cargarUltimasSanciones();
     } else {
-      notificar({ titulo: 'Error al registrar', mensaje: res?.message || 'Hubo un problema en el servidor al intentar guardar.', tipo: 'danger' });
+      toast({ titulo: 'Error al registrar', mensaje: res?.message || 'Hubo un problema en el servidor al intentar guardar.', tipo: 'danger' });
     }
   } catch (error) {
     console.error("Error en guardarSancion:", error);
-    notificar({ titulo: 'Error de Conexión', mensaje: 'No se pudo contactar con el servidor. Revisá tu conexión.', tipo: 'danger' });
+    toast({ titulo: 'Error de Conexión', mensaje: 'No se pudo contactar con el servidor. Revisá tu conexión.', tipo: 'danger' });
   } finally {
     cargando.value = false;
   }

@@ -193,7 +193,7 @@ useHead({
   ],
 })
 
-const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
 
 /* ====================================================
    ESTADO
@@ -620,7 +620,7 @@ const guardarEditor = async () => {
         asistencias.value = { ...asistencias.value, [claveAsis]: 'ausente' }
         cerrarEditor()
       } else {
-        notificar({ titulo: 'Error', mensaje: 'No se pudo registrar la ausencia.', tipo: 'danger' })
+        toast({ titulo: 'Error', mensaje: 'No se pudo registrar la ausencia.', tipo: 'danger' })
         e.guardando = false
       }
       return
@@ -662,12 +662,12 @@ const guardarEditor = async () => {
       cerrarEditor()
     } else {
       const mensaje = (res.payload && res.payload.mensaje) ? res.payload.mensaje : 'No se pudo guardar la nota.'
-      notificar({ titulo: 'Error', mensaje, tipo: 'danger' })
+      toast({ titulo: 'Error', mensaje, tipo: 'danger' })
       e.guardando = false
     }
   } catch (err) {
     console.error('guardarEditor:', err)
-    notificar({ titulo: 'Error', mensaje: 'Fallo de conexión al guardar.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexión al guardar.', tipo: 'danger' })
     e.guardando = false
   }
 }
@@ -697,12 +697,12 @@ const borrarCelda = async () => {
       cerrarEditor()
     } else {
       const mensaje = (res.payload && res.payload.mensaje) ? res.payload.mensaje : 'No se pudo borrar.'
-      notificar({ titulo: 'Error', mensaje, tipo: 'danger' })
+      toast({ titulo: 'Error', mensaje, tipo: 'danger' })
       e.guardando = false
     }
   } catch (err) {
     console.error('borrarExamenPlanilla:', err)
-    notificar({ titulo: 'Error', mensaje: 'Fallo de conexión al borrar.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexión al borrar.', tipo: 'danger' })
     e.guardando = false
   }
 }

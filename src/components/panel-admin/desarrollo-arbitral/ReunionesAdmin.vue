@@ -510,7 +510,7 @@ const AsistenciaBadge = defineComponent({
 })
 
 // ─── Inyectado ───────────────────────────────────────────────────
-const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
 
 // ─── Estado ──────────────────────────────────────────────────────
 const arrReuniones        = ref([])
@@ -775,7 +775,7 @@ const onReunionSeleccionada = async () => {
     }
   } catch (e) {
     console.error('onReunionSeleccionada:', e)
-    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la reunión.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la reunión.', tipo: 'danger' })
   } finally {
     cargandoArbitros.value = false
   }
@@ -804,10 +804,10 @@ const guardarAsistencia = async (a) => {
       const prev = registrosExistentes.value[a.id]
       if (prev) asistencias[a.id] = prev.estado == 2 ? 'ausente' : 'presente'
       else delete asistencias[a.id]
-      notificar({ titulo: 'Error', mensaje: res.message || 'No se pudo guardar la asistencia.', tipo: 'danger' })
+      toast({ titulo: 'Error', mensaje: res.message || 'No se pudo guardar la asistencia.', tipo: 'danger' })
     }
   } catch {
-    notificar({ titulo: 'Error fatal', mensaje: 'Error de conexión con el servidor.', tipo: 'danger' })
+    toast({ titulo: 'Error fatal', mensaje: 'Error de conexión con el servidor.', tipo: 'danger' })
   } finally {
     guardando[a.id] = false
   }

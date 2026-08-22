@@ -1036,7 +1036,7 @@ useHead({
   ],
 })
 
-const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 // Solo un admin puede editar fecha y horario de un partido ya cargado
 const esAdmin = computed(() => auth.getUser()?.rol === 'admin')
@@ -1257,7 +1257,7 @@ const confirmarCancha = async () => {
     cerrarSelectorCancha()
   } catch (err) {
     console.error('Error al editar cancha:', err)
-    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la cancha.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'No se pudo guardar la cancha.', tipo: 'danger' })
   } finally {
     guardandoCancha.value = false
   }
@@ -1309,7 +1309,7 @@ const confirmarFechaHorario = async () => {
   } else {
     p.fecha = fechaAnterior
     p.horario = horarioAnterior
-    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la fecha/horario.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'No se pudo guardar la fecha/horario.', tipo: 'danger' })
   }
 }
 
@@ -1434,7 +1434,7 @@ const asignarColor = async (valor) => {
     // Revertir
     if (numero === 1) p._estado1 = valorAnterior
     else p._estado2 = valorAnterior
-    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la etiqueta del árbitro.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'No se pudo guardar la etiqueta del árbitro.', tipo: 'danger' })
   }
 }
 
@@ -1467,7 +1467,7 @@ const toggleSuspendido = async (p, event) => {
     // Revertir estado y checkbox
     p.suspendido = valorAnterior
     event.target.checked = valorAnterior
-    notificar({ titulo: 'Error', mensaje: 'No se pudo cambiar el estado del partido.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'No se pudo cambiar el estado del partido.', tipo: 'danger' })
   }
 }
 
@@ -1506,7 +1506,7 @@ const cargarDesignaciones = async () => {
     }
   } catch (err) {
     console.error('Error al cargar designaciones:', err)
-    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar las designaciones.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar las designaciones.', tipo: 'danger' })
   } finally {
     cargando.value = false
   }
@@ -1846,7 +1846,7 @@ const asignarMesa = async (arbitro, tipo, p) => {
     console.error('Error al editar planillero/cronometrista:', err)
     p[campoNombre] = nombreAnterior
     p[campoId] = idAnterior
-    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la mesa de control.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'No se pudo guardar la mesa de control.', tipo: 'danger' })
   }
 }
 
@@ -1895,7 +1895,7 @@ const asignarObservadorDelegado = async (arbitro, tipo, p) => {
     // Revertir
     p[campoNombre] = nombreAnterior
     p[campoId] = idAnterior
-    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar el observador/delegado técnico.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'No se pudo guardar el observador/delegado técnico.', tipo: 'danger' })
   }
 }
 
@@ -2126,7 +2126,7 @@ const confirmarCargaExcel = async () => {
     })
 
     if (res.ok && res.payload && res.payload.success) {
-      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Se cargaron los partidos.', tipo: 'success' })
+      toast({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Se cargaron los partidos.', tipo: 'success' })
       cerrarModalCarga()
       await cargarDesignaciones()
       cargarAvisos()
@@ -2135,7 +2135,7 @@ const confirmarCargaExcel = async () => {
     }
   } catch (err) {
     console.error('Error al cargar designaciones:', err)
-    notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al subir el archivo.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al subir el archivo.', tipo: 'danger' })
   } finally {
     subiendoExcel.value = false
   }
@@ -2155,7 +2155,7 @@ const abrirModalPublicar = () => {
 
 const publicarDesignaciones = async () => {
   if (fechasSeleccionadas.value.length === 0) {
-    notificar({ titulo: 'Atención', mensaje: 'Tildá al menos una fecha para publicar.', tipo: 'warning' })
+    toast({ titulo: 'Atención', mensaje: 'Tildá al menos una fecha para publicar.', tipo: 'warning' })
     return
   }
 
@@ -2174,7 +2174,7 @@ const publicarDesignaciones = async () => {
     })
 
     if (res.ok) {
-      notificar({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Las designaciones se publicaron en la web y en el panel de los árbitros.', tipo: 'success' })
+      toast({ titulo: 'Éxito', mensaje: res.payload.mensaje || 'Las designaciones se publicaron en la web y en el panel de los árbitros.', tipo: 'success' })
       mostrarModalPublicar.value = false
       // Refrescamos para reflejar el nuevo estado publicado de los partidos
       await cargarDesignaciones()
@@ -2184,7 +2184,7 @@ const publicarDesignaciones = async () => {
     }
   } catch (err) {
     console.error('Error al publicar:', err)
-    notificar({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al publicar las designaciones.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: err.message || 'Hubo un problema al publicar las designaciones.', tipo: 'danger' })
   } finally {
     publicando.value = false
   }
@@ -2206,7 +2206,7 @@ const descargarDesignaciones = async (formato = 'pdf') => {
     }, esExcel ? 'designaciones.xlsx' : 'designaciones.pdf')
   } catch (err) {
     console.error('Error al descargar las designaciones:', err)
-    notificar({ titulo: 'Error', mensaje: err.message || 'No se pudo descargar el archivo.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo descargar el archivo.', tipo: 'danger' })
   } finally {
     descargandoArchivo.value = false
   }

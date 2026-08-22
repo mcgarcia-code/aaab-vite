@@ -332,7 +332,7 @@ useHead({
   meta: [{ name: 'description', content: 'Administración de pedidos de indumentaria.' }],
 });
 
-const notificar = inject('notificar');
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 
 const pedidos = ref([]);
 const cargando = ref(false);
@@ -417,7 +417,7 @@ const obtenerPedidos = async () => {
       pedidos.value = res.payload.sort((a, b) => b.id - a.id);
     }
   } catch {
-    notificar({ titulo: 'Error', mensaje: 'Problema al cargar los pedidos.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Problema al cargar los pedidos.', tipo: 'danger' });
   }
   cargando.value = false;
 };
@@ -443,16 +443,16 @@ const guardarEstado = async () => {
     });
 
     if (res.ok) {
-      notificar({ titulo: 'Actualizado', mensaje: 'Estado del pedido modificado con éxito.', tipo: 'success' });
+      toast({ titulo: 'Actualizado', mensaje: 'Estado del pedido modificado con éxito.', tipo: 'success' });
       await obtenerPedidos();
       cerrarModal();
     } else {
-      notificar({ titulo: 'Error', mensaje: 'No se pudo actualizar el estado.', tipo: 'danger' });
+      toast({ titulo: 'Error', mensaje: 'No se pudo actualizar el estado.', tipo: 'danger' });
     }
   } catch (error) {
     console.error(error);
     // ACÁ ESTÁ EL CAMBIO DE LA NOTIFICACIÓN DE ERROR
-    notificar({ titulo: 'Error de conexión', mensaje: 'Ocurrió un problema al intentar guardar los cambios.', tipo: 'danger' });
+    toast({ titulo: 'Error de conexión', mensaje: 'Ocurrió un problema al intentar guardar los cambios.', tipo: 'danger' });
   }
   cargando.value = false;
 };
@@ -489,7 +489,7 @@ const obtenerClaseEstado = (estado) => {
 
 const exportarExcel = async () => {
   if (pedidosFiltrados.value.length === 0) {
-    notificar({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' });
+    toast({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' });
     return;
   }
 

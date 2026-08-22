@@ -303,6 +303,7 @@ useHead({
 })
 
 const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 const procesando = ref(false)
 const listaEventos = ref([])
 const grupos = ref([])
@@ -559,7 +560,7 @@ const toggleGrupoSeleccionado = (id, estaChequeado) => {
 }
 const guardarEvento = async () => {
   if (!form.todosLosGrupos && gruposSeleccionados.value.length==0) {
-    notificar({ titulo: 'Faltan grupos', mensaje: 'Selecciona al menos un grupo destinatario.', tipo: 'danger' })
+    toast({ titulo: 'Faltan grupos', mensaje: 'Selecciona al menos un grupo destinatario.', tipo: 'danger' })
     return
   }
 
@@ -578,16 +579,16 @@ const guardarEvento = async () => {
       gruposSeleccionados.value = []
       mostrarModal.value = false
       await obtenerEventos()
-      notificar({
+      toast({
         titulo: 'Exito',
         mensaje: `El evento se ${modoEdicion.value ? 'actualizo' : 'publico'} correctamente.`,
         tipo: 'success'
       })
     } else {
-      notificar({ titulo: 'Error', mensaje: res.message || 'El servidor rechazo la solicitud.', tipo: 'danger' })
+      toast({ titulo: 'Error', mensaje: res.message || 'El servidor rechazo la solicitud.', tipo: 'danger' })
     }
   } catch {
-    notificar({ titulo: 'Error', mensaje: 'Fallo de conexion.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexion.', tipo: 'danger' })
   } finally {
     procesando.value = false
   }
@@ -612,7 +613,7 @@ const eliminar = async (id) => {
   const res = await api.post({ entity: 'eventos', action: 'eliminarEvento', payload: { id } })
   if (res.ok) {
     obtenerEventos()
-    notificar({ titulo: 'Eliminado', mensaje: 'El evento fue borrado.', tipo: 'success' })
+    toast({ titulo: 'Eliminado', mensaje: 'El evento fue borrado.', tipo: 'success' })
   }
 }
 

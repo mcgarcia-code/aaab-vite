@@ -325,6 +325,7 @@ useHead({
 })
 
 const notificar = inject('notificar');
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 
 const arbitros = ref([]);
 const cargando = ref(false);
@@ -449,7 +450,7 @@ const cargarDatos = async () => {
     }
   } catch (err) {
     console.error("Error al cargar datos:", err);
-    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
   } finally {
     cargando.value = false;
   }
@@ -470,7 +471,7 @@ const toggleDesignacion = async (id, dia) => {
   } catch (err) {
     console.error("Error al guardar tilde:", err);
     if (nuevoValor) set.delete(id); else set.add(id);
-    notificar({ titulo: 'Error', mensaje: 'No se pudo guardar la designación.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'No se pudo guardar la designación.', tipo: 'danger' });
   }
 };
 
@@ -494,13 +495,13 @@ const limpiarChecks = async () => {
     if (res.ok || res.success) {
       designadosSabado.value.clear();
       designadosDomingo.value.clear();
-      notificar({ titulo: 'Éxito', mensaje: 'Se limpiaron todas las designaciones.', tipo: 'success' });
+      toast({ titulo: 'Éxito', mensaje: 'Se limpiaron todas las designaciones.', tipo: 'success' });
     } else {
       throw new Error("Error del servidor");
     }
   } catch (err) {
     console.error("Error al limpiar tildes en BE:", err);
-    notificar({ titulo: 'Error', mensaje: 'Hubo un problema al limpiar las designaciones.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Hubo un problema al limpiar las designaciones.', tipo: 'danger' });
   }
 };
 
