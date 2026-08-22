@@ -41,28 +41,38 @@
           </div>
 
           <div class="row g-2">
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md">
               <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido...">
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md">
               <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre...">
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md">
               <input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI...">
             </div>
-            <div class="col-6 col-md-2">
+                        <div class="col-6 col-md">
+              <input v-model="filtros.celular" class="form-control form-control-sm shadow-none" placeholder="Celular...">
+            </div>
+            <div class="col-6 col-md">
               <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none">
                 <option value="">Estado (Todos)</option>
                 <option value="si">Activo</option>
                 <option value="no">Inactivo</option>
               </select>
             </div>
-            <div class="col-6 col-md-2">
-              <input v-model="filtros.grupo" class="form-control form-control-sm shadow-none" placeholder="Grupo...">
+            <div class="col-6 col-md">
+              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
+                <option value="">Grupo (Todos)</option>
+                <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
+              </select>
             </div>
-            <div class="col-6 col-md-2">
-              <input v-model="filtros.celular" class="form-control form-control-sm shadow-none" placeholder="Celular...">
+            <div class="col-6 col-md">
+              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
+                <option value="">Subgrupo (Todos)</option>
+                <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
+              </select>
             </div>
+
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
@@ -197,6 +207,36 @@ const filtros = reactive({
 });
 const paginaActual = ref(1);
 const registrosPorPagina = 10;
+const grupos = ref([]);
+
+// Opciones de filtro derivadas de los grupos reales (misma fuente que GruposAdmin),
+// asi se sincronizan solos y no hay que hardcodear cada grupo/subgrupo.
+const opcionesGrupo = computed(() => {
+  const vistos = [];
+  for (const g of grupos.value) {
+    const nombre = String(g.nombre || '').trim();
+    if (nombre && !vistos.includes(nombre)) vistos.push(nombre);
+  }
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'));
+});
+
+const opcionesSubgrupo = computed(() => {
+  const vistos = [];
+  for (const g of grupos.value) {
+    const sub = String(g.subgrupo || '').trim();
+    if (sub && !vistos.includes(sub)) vistos.push(sub);
+  }
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'));
+});
+
+const obtenerGrupos = async () => {
+  try {
+    const { payload } = await api.get({ entity: 'grupos', action: 'obtenerGrupos' });
+    grupos.value = Array.isArray(payload) ? payload : [];
+  } catch (error) {
+    console.error('Error al obtener grupos:', error);
+  }
+};
 
 const cargarDatos = async () => {
   cargando.value = true;
@@ -230,6 +270,8 @@ const datosFiltrados = computed(() => {
       if (!filtros[key]) return true;
       const busqueda = filtros[key].toLowerCase();
       if (key === 'es_activo') return (busqueda === 'si' ? a.es_activo == 1 : a.es_activo == 0);
+      // Grupo y subgrupo salen de un select: comparacion exacta.
+      if (key === 'grupo' || key === 'subgrupo') return normalizarTexto(a[key]) === normalizarTexto(filtros[key]);
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
   });
@@ -289,7 +331,10 @@ const exportarExcel = async () => {
 };
 
 watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
-onMounted(cargarDatos);
+onMounted(() => {
+  cargarDatos();
+  obtenerGrupos();
+});
 </script>
 
 <style scoped>
@@ -408,3 +453,4 @@ onMounted(cargarDatos);
   background: linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent);
 }
 </style>
+
