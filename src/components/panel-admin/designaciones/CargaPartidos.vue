@@ -12,10 +12,13 @@
             <span class="text-muted small d-block mt-1">
               Total: {{ designaciones.length }} partidos
               <template v-if="totalADesignar > 0">
-                · <span class="text-danger fw-bold"><i class="bi bi-exclamation-circle-fill"></i> {{ totalADesignar }} {{ totalADesignar === 1 ? 'sin designar' : 'sin designar' }}</span>
+                · <button type="button" @click="abrirModalPendientes('a_designar')" class="btn-contador text-danger fw-bold" title="Ver lista de partidos sin designar"><i class="bi bi-exclamation-circle-fill"></i> {{ totalADesignar }} sin designar</button>
               </template>
               <template v-if="totalSinMatch > 0">
-                · <span class="text-warning-emphasis fw-bold">{{ totalSinMatch }} árbitros sin coincidencia</span>
+                · <button type="button" @click="abrirModalPendientes('sin_match')" class="btn-contador text-warning-emphasis fw-bold" title="Ver lista de árbitros sin coincidencia">{{ totalSinMatch }} árbitros sin coincidencia</button>
+              </template>
+              <template v-if="totalSinCancha > 0">
+                · <button type="button" @click="abrirModalPendientes('sin_cancha')" class="btn-contador text-danger fw-bold" title="Ver lista de partidos sin cancha"><i class="bi bi-geo-alt-fill"></i> {{ totalSinCancha }} sin cancha</button>
               </template>
               <template v-if="totalConflictos > 0">
                 · <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> {{ totalConflictos }} {{ totalConflictos === 1 ? 'conflicto' : 'conflictos' }}</span>
@@ -242,9 +245,10 @@
                     <tr
                       v-for="p in c.partidos"
                       :key="p.id || p._uid"
+                      :id="'partido-' + (p.id || p._uid)"
                       :class="[
                         'fila-estado-' + estadoDesignacion(p),
-                        { 'fila-suspendida': p.suspendido }
+                        { 'fila-suspendida': p.suspendido, 'fila-resaltada': partidoResaltado === (p.id || p._uid) }
                       ]"
                     >
                       <td>
@@ -396,8 +400,9 @@
                 <div
                   v-for="p in c.partidos"
                   :key="'mobp-' + (p.id || p._uid)"
+                  :id="'partido-mob-' + (p.id || p._uid)"
                   class="card shadow-sm border-light-subtle rounded-0 partido-mobile"
-                  :class="'card-estado-' + estadoDesignacion(p)"
+                  :class="['card-estado-' + estadoDesignacion(p), { 'card-resaltada': partidoResaltado === (p.id || p._uid) }]"
                 >
                   <div class="card-body p-3">
 
@@ -668,7 +673,10 @@
       @close="rechazarDesignacionConAvisos"
     >
       <p class="text-muted small mb-3">¿Deseás continuar con esta designación de todos modos?</p>
-      <pre class="small mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ textoAvisosDesignacionPendiente }}</pre>
+      <div class="alert alert-warning small py-2 px-3 d-flex align-items-start gap-2 mb-0">
+        <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+        <span style="white-space: pre-wrap;">{{ textoAvisosDesignacionPendiente }}</span>
+      </div>
 
       <template #footer>
         <button
@@ -682,6 +690,30 @@
           class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
         >
           Sí, designar
+        </button>
+      </template>
+    </ModalBase>
+
+    <ModalBase
+      :show="mostrarModalAvisosPartido"
+      titulo="⚠ Avisos de este partido"
+      icono="warning"
+      colorIcono="bg-warning text-dark"
+      maxWidth="480px"
+      @close="mostrarModalAvisosPartido = false"
+    >
+      <p class="text-muted small mb-3">Este partido tiene los siguientes avisos:</p>
+      <div class="alert alert-warning small py-2 px-3 d-flex align-items-start gap-2 mb-0">
+        <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+        <span style="white-space: pre-wrap;">{{ textoAvisosPartidoActual }}</span>
+      </div>
+
+      <template #footer>
+        <button
+          @click="mostrarModalAvisosPartido = false"
+          class="btn btn-light rounded-pill px-4 fw-bold border w-100"
+        >
+          Cerrar
         </button>
       </template>
     </ModalBase>
@@ -910,12 +942,84 @@
       </template>
     </ModalBase>
 
+    <!-- Modal de navegación: partidos sin designar / árbitros sin coincidencia -->
+    <ModalBase
+      :show="mostrarModalPendientes"
+      :titulo="tituloModalPendientes"
+      :icono="iconoModalPendientes"
+      :colorIcono="tipoPendientes === 'sin_match' ? 'bg-warning text-dark' : 'bg-danger text-white'"
+      maxWidth="640px"
+      @close="mostrarModalPendientes = false"
+    >
+      <p v-if="tipoPendientes === 'sin_match'" class="text-muted small mb-3">
+        Estos árbitros no coinciden con el padrón: los partidos <strong>no</strong> les aparecerán en su panel. Tocá un partido para ir a corregirlo.
+      </p>
+      <p v-else-if="tipoPendientes === 'sin_cancha'" class="text-muted small mb-3">
+        Estos partidos no tienen cancha asignada. Tocá uno para ir a asignarle la cancha.
+      </p>
+      <p v-else class="text-muted small mb-3">
+        Estos partidos todavía no tienen árbitros asignados. Tocá uno para ir a designarlo.
+      </p>
+
+      <div v-if="partidosPendientesModal.length === 0" class="text-center py-4 text-muted">
+        <span class="material-icons d-block mb-2 opacity-50" style="font-size: 40px;">check_circle</span>
+        <p class="m-0 fw-bold small">No hay pendientes.</p>
+      </div>
+
+      <div v-else class="lista-pendientes">
+        <div v-for="grupo in pendientesAgrupados" :key="grupo.fecha" class="mb-3">
+          <div class="fecha-encabezado small fw-bold text-uppercase text-muted mb-2">
+            <i class="bi bi-calendar-event me-1"></i> {{ etiquetaDia(grupo.fecha) }}
+            <span class="badge bg-light text-dark border ms-1">{{ grupo.partidos.length }}</span>
+          </div>
+
+          <button
+            v-for="p in grupo.partidos"
+            :key="p.id || p._uid"
+            @click="irAPartido(p)"
+            class="item-pendiente w-100 text-start"
+            type="button"
+          >
+            <div class="d-flex align-items-center gap-2">
+              <span class="punto-estado flex-shrink-0" :class="'punto-' + estadoDesignacion(p)"></span>
+              <div class="flex-grow-1 overflow-hidden">
+                <div class="fw-bold text-truncate">
+                  {{ p.local || '—' }} <span class="text-muted fw-normal">vs</span> {{ p.visitante || '—' }}
+                </div>
+                <div class="small text-muted text-truncate">
+                  <span v-if="p.horario">{{ p.horario }} · </span>
+                  <span v-if="p.categoria_division">{{ p.categoria_division }} · </span>
+                  {{ p.cancha || 'Sin cancha' }}
+                </div>
+                <div v-if="tipoPendientes === 'sin_match'" class="small text-warning-emphasis fw-bold text-truncate">
+                  <i class="bi bi-person-x me-1"></i>{{ arbitrosSinMatchDe(p).join(', ') }}
+                </div>
+                <div v-else-if="tipoPendientes === 'sin_cancha'" class="small text-danger fw-bold text-truncate">
+                  <i class="bi bi-geo-alt me-1"></i>Sin cancha asignada
+                </div>
+              </div>
+              <span class="material-icons text-muted flex-shrink-0">chevron_right</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <template #footer>
+        <button
+          @click="mostrarModalPendientes = false"
+          class="btn btn-light rounded-pill px-4 fw-bold border w-100"
+        >
+          Cerrar
+        </button>
+      </template>
+    </ModalBase>
+
   </div>
 </template>
 
 
 <script setup>
-import { ref, onMounted, computed, watch, inject } from 'vue'
+import { ref, onMounted, computed, watch, inject, nextTick } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import { useHead } from '@vueuse/head'
@@ -989,11 +1093,8 @@ const totalConflictos = computed(() => {
 
 const mostrarAvisosPartido = (p) => {
   if (avisosPartido(p) === 0) return
-  notificar({
-    titulo: '⚠ Avisos de este partido',
-    mensaje: textoAvisosPartido(p),
-    tipo: 'warning'
-  })
+  textoAvisosPartidoActual.value = textoAvisosPartido(p)
+  mostrarModalAvisosPartido.value = true
 }
 
 /* ====================================================
@@ -1128,6 +1229,15 @@ const confirmarCancha = async () => {
 
   guardandoCancha.value = true
   try {
+    // Si el partido todavía no está en la base (recién cargado del Excel),
+    // primero lo persistimos para que tenga id; editarCampoDeJuego lo necesita.
+    if (!p.id) {
+      const ok = await ejecutarGuardado()
+      if (!ok || !p.id) {
+        throw new Error('No se pudo guardar el partido antes de asignar la cancha')
+      }
+    }
+
     const resultado = await api.post({
       entity: 'designaciones',
       action: 'editarCampoDeJuego',
@@ -1207,6 +1317,11 @@ const fechaSeleccionada = ref('')
 const filtroBusqueda = ref('')
 const filtroEstado = ref('') // '' | 'a_designar' | 'designado' | 'publicado'
 
+// Modal de navegación rápida (sin designar / sin coincidencia)
+const mostrarModalPendientes = ref(false)
+const tipoPendientes = ref('') // 'a_designar' | 'sin_match'
+const partidoResaltado = ref('') // id/_uid del partido al que se saltó
+
 const toggleFiltroEstado = (estado) => {
   filtroEstado.value = filtroEstado.value === estado ? '' : estado
 }
@@ -1226,6 +1341,10 @@ const busquedaArbitro = ref('')
 const mostrarModalConfirmarDesignacion = ref(false)
 const avisosDesignacionPendiente = ref([])
 const designacionPendiente = ref(null) // { p, numero }
+
+// Modal de avisos de un partido ya designado (ícono ⚠ en la grilla)
+const mostrarModalAvisosPartido = ref(false)
+const textoAvisosPartidoActual = ref('')
 
 const mostrarModalPublicar = ref(false)
 const publicando = ref(false)
@@ -1479,6 +1598,10 @@ const totalSinMatch = computed(() => {
   })
   return contador
 })
+
+const totalSinCancha = computed(() =>
+  designaciones.value.filter(p => !p.cancha).length
+)
 
 /* ====================================================
    MARCA DE CAMBIO (solo para la asignación de árbitros)
@@ -1789,6 +1912,104 @@ const esSinMatch = (p, numero) => {
   const id = numero === 1 ? p.id_arb1 : p.id_arb2
   const ext = numero === 1 ? p._ext1 : p._ext2
   return !!nombre && !id && !ext
+}
+
+// Un partido "tiene sin coincidencia" si alguno de sus arbitros esta sin match
+const partidoTieneSinMatch = (p) => esSinMatch(p, 1) || esSinMatch(p, 2)
+
+// Listas de partidos pendientes (de todas las fechas), ordenadas por fecha y horario
+const ordenarPorFechaHorario = (a, b) => {
+  const df = parsearFecha(claveFecha(a)) - parsearFecha(claveFecha(b))
+  if (df !== 0) return df
+  return String(a.horario || '').localeCompare(String(b.horario || ''))
+}
+
+const partidosSinDesignar = computed(() =>
+  designaciones.value
+    .filter(p => estadoDesignacion(p) === 'a_designar')
+    .sort(ordenarPorFechaHorario)
+)
+
+const partidosSinCoincidencia = computed(() =>
+  designaciones.value
+    .filter(p => partidoTieneSinMatch(p))
+    .sort(ordenarPorFechaHorario)
+)
+
+const partidosSinCancha = computed(() =>
+  designaciones.value
+    .filter(p => !p.cancha)
+    .sort(ordenarPorFechaHorario)
+)
+
+// Lista que se muestra en el modal segun el tipo abierto
+const partidosPendientesModal = computed(() => {
+  if (tipoPendientes.value === 'sin_match') return partidosSinCoincidencia.value
+  if (tipoPendientes.value === 'sin_cancha') return partidosSinCancha.value
+  return partidosSinDesignar.value
+})
+
+const tituloModalPendientes = computed(() => {
+  if (tipoPendientes.value === 'sin_match') return 'Árbitros sin coincidencia'
+  if (tipoPendientes.value === 'sin_cancha') return 'Partidos sin cancha'
+  return 'Partidos sin designar'
+})
+
+const iconoModalPendientes = computed(() => {
+  if (tipoPendientes.value === 'sin_match') return 'person_off'
+  if (tipoPendientes.value === 'sin_cancha') return 'wrong_location'
+  return 'error_outline'
+})
+
+// Agrupa la lista del modal por fecha para mostrarla con encabezados
+const pendientesAgrupados = computed(() => {
+  const mapa = {}
+  partidosPendientesModal.value.forEach(p => {
+    const f = claveFecha(p)
+    if (!mapa[f]) mapa[f] = []
+    mapa[f].push(p)
+  })
+  return Object.keys(mapa)
+    .sort((a, b) => parsearFecha(a) - parsearFecha(b))
+    .map(f => ({ fecha: f, partidos: mapa[f] }))
+})
+
+const abrirModalPendientes = (tipo) => {
+  tipoPendientes.value = tipo
+  mostrarModalPendientes.value = true
+}
+
+// Nombres de arbitros sin match de un partido (para mostrarlos en el modal)
+const arbitrosSinMatchDe = (p) => {
+  const nombres = []
+  if (esSinMatch(p, 1)) nombres.push(p.arbitro_1)
+  if (esSinMatch(p, 2)) nombres.push(p.arbitro_2)
+  return nombres
+}
+
+// Salta al partido elegido: cambia a su fecha, limpia filtros, cierra el modal,
+// hace scroll a la fila y la resalta unos segundos.
+let timerResaltado = null
+const irAPartido = (p) => {
+  const destino = claveFecha(p)
+  if (fechaSeleccionada.value !== destino) fechaSeleccionada.value = destino
+  filtroEstado.value = ''
+  filtroBusqueda.value = ''
+  const abrirCancha = tipoPendientes.value === 'sin_cancha' && !p.cancha
+  mostrarModalPendientes.value = false
+
+  const uid = p.id || p._uid
+  partidoResaltado.value = uid
+
+  nextTick(() => {
+    const fila = document.getElementById('partido-' + uid) || document.getElementById('partido-mob-' + uid)
+    if (fila) fila.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    // Si vino desde "sin cancha", abrimos directo el selector para asignarla
+    if (abrirCancha) setTimeout(() => abrirSelectorCancha(p), 350)
+  })
+
+  clearTimeout(timerResaltado)
+  timerResaltado = setTimeout(() => { partidoResaltado.value = '' }, 3000)
 }
 
 const tituloCelda = (p, numero) => {
@@ -2198,6 +2419,66 @@ onMounted(async () => {
 .muestra-publicado {
   background-color: #dcfce7;
   border-color: #4ade80;
+}
+
+/* Contadores clickeables del encabezado (sin designar / sin coincidencia) */
+.btn-contador {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-style: dotted;
+}
+
+.btn-contador:hover {
+  text-decoration-style: solid;
+}
+
+/* ====================================================
+   MODAL DE PENDIENTES (lista navegable)
+   ==================================================== */
+.lista-pendientes {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.fecha-encabezado {
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 4px;
+}
+
+.item-pendiente {
+  display: block;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
+}
+
+.item-pendiente:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+/* Resaltado temporal al saltar a un partido desde el modal */
+.fila-resaltada td {
+  animation: destello 3s ease-out;
+}
+
+.card-resaltada {
+  animation: destello 3s ease-out;
+}
+
+@keyframes destello {
+  0%, 40% { background-color: #bfdbfe !important; box-shadow: inset 0 0 0 2px #3b82f6; }
+  100% { background-color: transparent; box-shadow: none; }
 }
 
 /* ====================================================
