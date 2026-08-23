@@ -377,7 +377,7 @@ useHead({
   ],
 })
 
-const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 const MESES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE']
 
@@ -681,13 +681,13 @@ const confirmarRechazo = async () => {
       p.rechazo_estado = 'creado'
       p.id_rechazo = (res.payload) ? res.payload : p.id_rechazo
       cerrarModalRechazo()
-      notificar({ titulo: 'Designación rechazada', mensaje: 'Se registró el rechazo. La asociación fue notificada.', tipo: 'success' })
+      toast({ titulo: 'Designación rechazada', mensaje: 'Se registró el rechazo. La asociación fue notificada.', tipo: 'success' })
     } else {
       throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
     }
   } catch (err) {
     console.error('Error al rechazar designación:', err)
-    notificar({ titulo: 'Error', mensaje: err.message || 'No se pudo registrar el rechazo.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo registrar el rechazo.', tipo: 'danger' })
   } finally {
     enviandoRechazo.value = false
   }

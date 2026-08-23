@@ -199,7 +199,7 @@ useHead({
   ]
 })
 
-const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 const procesandoCarga = ref(false)
 const cargandoCategorias = ref(false)
@@ -240,7 +240,7 @@ const ACEPTA_EXCEL = /\.(xlsx|xls)$/i
 const asignarArchivoObservacion = (file) => {
   if (!file) return
   if (!ACEPTA_EXCEL.test(file.name)) {
-    notificar({ titulo: 'Archivo inválido', mensaje: 'Seleccioná un archivo de Excel (.xlsx o .xls).', tipo: 'warning' })
+    toast({ titulo: 'Archivo inválido', mensaje: 'Seleccioná un archivo de Excel (.xlsx o .xls).', tipo: 'warning' })
     return
   }
   archivoObservacion.value = file
@@ -359,7 +359,7 @@ const reiniciarFormulario = () => {
 // -------------------- SUBIR OBSERVACIÓN (Excel) --------------------
 const cargarObservacionExcel = async () => {
   if (!archivoObservacion.value) {
-    notificar({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el archivo de Excel para continuar.', tipo: 'warning' })
+    toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el archivo de Excel para continuar.', tipo: 'warning' })
     return
   }
   procesandoCarga.value = true
@@ -375,13 +375,13 @@ const cargarObservacionExcel = async () => {
     })
 
     if (res && res.ok) {
-      notificar({ titulo: '¡Observación guardada!', mensaje: 'La observación se registró correctamente.', tipo: 'success' })
+      toast({ titulo: '¡Observación guardada!', mensaje: 'La observación se registró correctamente.', tipo: 'success' })
       reiniciarFormulario()
     } else {
-      notificar({ titulo: 'Error al guardar', mensaje: res?.message || 'No se pudo procesar el envío.', tipo: 'danger' })
+      toast({ titulo: 'Error al guardar', mensaje: res?.message || 'No se pudo procesar el envío.', tipo: 'danger' })
     }
   } catch {
-    notificar({ titulo: 'Error', mensaje: 'Fallo de conexión con el servidor.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexión con el servidor.', tipo: 'danger' })
   } finally {
     procesandoCarga.value = false
   }

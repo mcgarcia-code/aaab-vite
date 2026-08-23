@@ -251,7 +251,7 @@ useHead({
 });
 
 // Inyectamos el notificador global
-const notificar = inject('notificar');
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const arbitro = ref(auth.getUser() || {});
 
 // Los <input type="date"> solo aceptan 'YYYY-MM-DD'. Si la fecha viene con hora
@@ -343,21 +343,21 @@ const guardarCambios = async () => {
         // (Antes se chequeaba res.success / res.data.message, que no existen, y por eso
         // aunque el backend guardara bien caía siempre en el catch mostrando un error.)
         if (res.ok || res.payload?.success) {
-            notificar({
+            toast({
               titulo: '¡Perfil Actualizado!',
               mensaje: 'Tus datos se guardaron correctamente en el legajo.',
               tipo: 'success'
             });
-            auth.setUser(arbitro.value);
+            auth.updateUser(arbitro.value);
         } else {
-            notificar({
+            toast({
               titulo: 'Error',
               mensaje: res.payload?.message || 'No se pudieron actualizar los datos.',
               tipo: 'danger'
             });
         }
     } catch {
-        notificar({
+        toast({
           titulo: 'Error de Conexión',
           mensaje: 'No pudimos conectar con el servidor para guardar los cambios.',
           tipo: 'danger'
@@ -369,7 +369,7 @@ const guardarCambios = async () => {
 
 const cambiarPassword = async () => {
     if (nuevaPassword.value.length < 6) {
-        notificar({
+        toast({
           titulo: 'Clave demasiado corta',
           mensaje: 'La contraseña debe tener al menos 6 caracteres.',
           tipo: 'danger'
@@ -387,21 +387,21 @@ const cambiarPassword = async () => {
             }
         });
         if (res.ok) {
-            notificar({
+            toast({
               titulo: '¡Clave Actualizada!',
               mensaje: 'Tu nueva contraseña ha sido guardada con éxito.',
               tipo: 'success'
             });
             nuevaPassword.value = '';
         } else {
-            notificar({
+            toast({
               titulo: 'Error',
               mensaje: res.payload?.message || 'No se pudo cambiar la contraseña.',
               tipo: 'danger'
             });
         }
     } catch {
-        notificar({
+        toast({
           titulo: 'Error',
           mensaje: 'Hubo un problema al intentar actualizar tu contraseña.',
           tipo: 'danger'
@@ -425,7 +425,7 @@ const enviarSolicitudRectificacion = async () => {
         });
 
         if (res.ok || res.success) {
-            notificar({
+            toast({
                 titulo: 'Solicitud Enviada',
                 mensaje: 'Tu pedido de rectificación fue enviado a la asociación.',
                 tipo: 'success'
@@ -436,7 +436,7 @@ const enviarSolicitudRectificacion = async () => {
             throw new Error();
         }
     } catch {
-        notificar({
+        toast({
             titulo: 'Error',
             mensaje: 'No se pudo enviar la solicitud.',
             tipo: 'danger'

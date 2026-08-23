@@ -218,7 +218,7 @@ useHead({
 })
 
 // Inyección del notificador global
-const notificar = inject('notificar');
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const arbitro = ref(auth.getUser() || {});
 const solicitudCambio = ref('');
 const historialRectificaciones = ref([]);
@@ -283,21 +283,21 @@ const guardarCambios = async () => {
             }
         })
         if (res.success) {
-            notificar({
+            toast({
               titulo: '¡Perfil Actualizado!',
               mensaje: 'Tus datos se guardaron correctamente en el legajo.',
               tipo: 'success'
             });
-            auth.setUser(arbitro.value);
+            auth.updateUser(arbitro.value);
         } else {
-            notificar({
+            toast({
               titulo: 'Error',
               mensaje: res.data.message || 'No se pudieron actualizar los datos.',
               tipo: 'danger'
             });
         }
     } catch {
-        notificar({
+        toast({
           titulo: 'Error de Conexión',
           mensaje: 'No pudimos conectar con el servidor para guardar los cambios.',
           tipo: 'danger'
@@ -321,7 +321,7 @@ const enviarSolicitudRectificacion = async () => {
         });
 
         if (res.ok || res.success) {
-            notificar({
+            toast({
                 titulo: 'Solicitud Enviada',
                 mensaje: 'Tu pedido de rectificación fue enviado a la asociación.',
                 tipo: 'success'
@@ -332,7 +332,7 @@ const enviarSolicitudRectificacion = async () => {
             throw new Error();
         }
     } catch {
-        notificar({
+        toast({
             titulo: 'Error',
             mensaje: 'No se pudo enviar la solicitud.',
             tipo: 'danger'

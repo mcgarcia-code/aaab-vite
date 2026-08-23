@@ -579,6 +579,7 @@ useHead({
 });
 
 const notificar = inject('notificar');
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const STORAGE_KEY = 'aaab_delegado_match_state';
 
 // ─── ESTADO PRINCIPAL ────────────────────────────────────────────────────────
@@ -631,7 +632,7 @@ const modalConfig    = reactive({ visible: false, halfMinutes: 30, otMinutes: 5,
 const modalPenalidad = reactive({ visible: false, penaltyId: null, mm: 0, ss: 0, label: '' });
 
 const mostrarNotificacion = (titulo, mensaje, tipo = 'success') =>
-  notificar({ titulo, mensaje, tipo });
+  toast({ titulo, mensaje, tipo });
 
 // ─── COMPUTADOS ──────────────────────────────────────────────────────────────
 

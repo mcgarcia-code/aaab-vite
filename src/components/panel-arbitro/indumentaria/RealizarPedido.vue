@@ -292,7 +292,7 @@ useHead({
   ],
 });
 
-const notificar = inject('notificar');
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 
 const listaAgrupada = ref([]);
 const busqueda = ref('');
@@ -428,7 +428,7 @@ const agregarAlCarrito = (prenda) => {
   const permiteSinStock = permitePedidoSinStock(prenda)
   const precio_general = prenda.precio_general
   if (itemTalle.cantidad <= 0 && !permiteSinStock) {
-    notificar({ titulo: 'Agotado', mensaje: 'Lo sentimos, este modelo no admite encargos.', tipo: 'danger' });
+    toast({ titulo: 'Agotado', mensaje: 'Lo sentimos, este modelo no admite encargos.', tipo: 'danger' });
     return;
   }
 
@@ -440,7 +440,7 @@ const agregarAlCarrito = (prenda) => {
 
     // Comparamos contra el stock real de la base
     if (!permiteSinStock && nuevaCantidadTotal > itemTalle.cantidad) {
-      notificar({
+      toast({
         titulo: 'Stock Insuficiente',
         mensaje: `Solo hay ${itemTalle.cantidad} en stock. Ya tenés ${itemExistente.cantidad} en el carrito.`,
         tipo: 'warning'
@@ -453,7 +453,7 @@ const agregarAlCarrito = (prenda) => {
   } else {
     // Validación de seguridad por si es la primera vez que lo agrega
     if (!permiteSinStock && prenda.cantidadSeleccionada > itemTalle.cantidad) {
-       notificar({
+       toast({
          titulo: 'Stock Insuficiente',
          mensaje: `Solo quedan ${itemTalle.cantidad} unidades en stock.`,
          tipo: 'warning'
@@ -492,7 +492,7 @@ const realizarPedidoFinal = async () => {
     });
 
     if (respuesta.ok) {
-      notificar({
+      toast({
         titulo: '¡Pedido Recibido!',
         mensaje: 'Tu pedido se registró con éxito. Recordá enviar el comprobante.',
         tipo: 'success'
@@ -501,10 +501,10 @@ const realizarPedidoFinal = async () => {
       mostrarPago.value = false;
       await cargarStock();
     } else {
-      notificar({ titulo: 'Error', mensaje: 'No pudimos procesar tu pedido.', tipo: 'danger' });
+      toast({ titulo: 'Error', mensaje: 'No pudimos procesar tu pedido.', tipo: 'danger' });
     }
   } catch{
-    notificar({ titulo: 'Error de Red', mensaje: 'Error al conectar.', tipo: 'danger' });
+    toast({ titulo: 'Error de Red', mensaje: 'Error al conectar.', tipo: 'danger' });
   } finally {
     cargando.value = false;
   }

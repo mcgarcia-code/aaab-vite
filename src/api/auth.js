@@ -18,10 +18,21 @@ export const auth = {
     this.startInactivityTimer()
   },
 
+  // Actualiza solo los datos del usuario en sesión, sin tocar el token.
+  updateUser(arbitro) {
+    sessionStorage.setItem(USER_KEY, JSON.stringify(arbitro));
+    window.dispatchEvent(new Event('storage'));
+  },
+
   getUser() {
     // CAMBIO: Ahora buscamos en sessionStorage
     const user = sessionStorage.getItem(USER_KEY);
-    return user ? JSON.parse(user) : null;
+    if (!user || user === 'undefined') return null;
+    try {
+      return JSON.parse(user);
+    } catch {
+      return null;
+    }
   },
 
   isLoggedIn() {

@@ -168,6 +168,7 @@ useHead({
 });
 
 const notificar = inject('notificar');
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 
 const pedidos = ref([]);
 const busqueda = ref('');
@@ -218,13 +219,13 @@ const abrirModalCancelar = (id) => {
         });
 
         if (res.ok) {
-          notificar({ titulo: 'Pedido cancelado', mensaje: 'El pedido ha sido cancelado con éxito.', tipo: 'success' });
+          toast({ titulo: 'Pedido cancelado', mensaje: 'El pedido ha sido cancelado con éxito.', tipo: 'success' });
           await obtenerPedidos();
         } else {
-          notificar({ titulo: 'Error', mensaje: 'No se pudo cancelar el pedido.', tipo: 'danger' });
+          toast({ titulo: 'Error', mensaje: 'No se pudo cancelar el pedido.', tipo: 'danger' });
         }
       } catch {
-        notificar({ titulo: 'Error de Red', mensaje: 'Ocurrió un problema al conectar con el servidor.', tipo: 'danger' });
+        toast({ titulo: 'Error de Red', mensaje: 'Ocurrió un problema al conectar con el servidor.', tipo: 'danger' });
       } finally {
         cargando.value = false;
       }

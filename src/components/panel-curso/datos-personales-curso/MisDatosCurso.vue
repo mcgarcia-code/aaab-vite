@@ -314,7 +314,7 @@ const guardarCambios = async () => {
               mensaje: 'Tus datos se guardaron correctamente en el legajo.',
               tipo: 'success'
             });
-            auth.setUser(arbitro.value);
+            auth.updateUser(arbitro.value);
         } else {
             notificar({
               titulo: 'Error',

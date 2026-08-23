@@ -156,6 +156,7 @@ useHead({
 });
 
 const notificar = inject('notificar');
+const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const fechaSeleccionada = ref('');
 const motivoSeleccionado = ref('particular');
 const cargando = ref(false);
@@ -247,7 +248,7 @@ const solicitarLicencia = async () => {
       }
 
       // Disparamos la notificación con los textos exactos
-      notificar({
+      toast({
         titulo: tituloNotificacion,
         mensaje: mensajeNotificacion,
         tipo: tipoNotificacion
@@ -259,7 +260,7 @@ const solicitarLicencia = async () => {
       await obtenerLicencias();
 
     } else {
-      notificar({
+      toast({
         titulo: 'Error',
         mensaje: res?.message || "No se pudo procesar la solicitud.",
         tipo: 'danger'
@@ -267,7 +268,7 @@ const solicitarLicencia = async () => {
     }
   } catch (error) {
     console.error("Detalle del error JS:", error);
-    notificar({
+    toast({
       titulo: 'Error de Red',
       mensaje: 'No se pudo conectar con el servidor o hubo un error de procesamiento.',
       tipo: 'danger'
@@ -287,7 +288,7 @@ const esFechaFutura = (fechaStr) => {
 
 const anularLicencia = (lic) => {
   if (!lic.puede_anular) {
-    notificar({
+    toast({
       titulo: 'No se puede anular',
       mensaje: 'Faltan menos de 6 días para la fecha. Por favor, enviá un e-mail a licencias@arbitroshandball.com.ar',
       tipo: 'danger'
@@ -312,14 +313,14 @@ const anularLicencia = (lic) => {
         });
 
         if (res.ok && res.payload.success) {
-          notificar({
+          toast({
             titulo: 'Licencia Anulada',
             mensaje: 'La licencia fue anulada correctamente.',
             tipo: 'success'
           });
           await obtenerLicencias();
         } else {
-          notificar({
+          toast({
             titulo: 'Error',
             mensaje: res?.message || "No se pudo anular la licencia.",
             tipo: 'danger'
@@ -327,7 +328,7 @@ const anularLicencia = (lic) => {
         }
       } catch(err){
         console.error("Detalle del error anular:", err);
-        notificar({
+        toast({
           titulo: 'Error de Red',
           mensaje: 'No se pudo conectar con el servidor.',
           tipo: 'danger'
