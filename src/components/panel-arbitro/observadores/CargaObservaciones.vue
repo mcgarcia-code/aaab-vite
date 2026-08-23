@@ -95,7 +95,7 @@
           <div class="p-3 p-md-4 bg-light border-bottom">
             <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-danger">
               <i class="bi bi-person-badge text-danger me-2 fs-5"></i>
-              <h6 class="fw-bold m-0 text-dark text-uppercase">Arbitraje</h6>
+              <h6 class="fw-bold m-0 text-dark text-uppercase">Arbitraje Observado</h6>
             </div>
 
             <div v-if="!partidoSeleccionado" class="text-muted small fst-italic">
@@ -164,11 +164,10 @@
             </div>
 
             <div class="d-grid d-sm-flex justify-content-sm-center mt-4">
-              <button type="button" class="btn btn-danger fw-bold px-4 py-2 shadow"
+              <button type="button" class="btn btn-danger rounded-pill fw-bold px-4 py-2 shadow-sm"
                 :disabled="procesandoCarga || !archivoObservacion" @click="cargarObservacionExcel">
                 <span v-if="procesandoCarga" class="spinner-border spinner-border-sm me-2"></span>
-                <i v-else class="bi bi-upload me-1"></i>
-                {{ procesandoCarga ? 'GUARDANDO...' : 'SUBIR OBSERVACIÓN' }}
+                {{ procesandoCarga ? 'GUARDANDO...' : 'GUARDAR OBSERVACIÓN' }}
               </button>
             </div>
           </div>
@@ -305,8 +304,8 @@ const obtenerPartidos = async () => {
     const r = await api.get({
       entity: 'designaciones',
       action: 'obtenerPartidos',
-      payload: { 
-        fecha: fechaPartido.value, 
+      payload: {
+        fecha: fechaPartido.value,
         idCategoria: idCategoria.value
       }
     })
@@ -369,10 +368,10 @@ const cargarObservacionExcel = async () => {
     formData.append('archivo', archivoObservacion.value)
     formData.append('datos', JSON.stringify(armarDatosPartido()))
 
-    const res = await api.postFile({ 
-      entity: 'observaciones', 
-      action: 'cargarObservacionExcel', 
-      payload: formData 
+    const res = await api.postFile({
+      entity: 'observaciones',
+      action: 'cargarObservacionExcel',
+      payload: formData
     })
 
     if (res && res.ok) {

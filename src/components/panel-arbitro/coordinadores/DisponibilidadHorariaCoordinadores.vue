@@ -331,7 +331,7 @@ useHead({
   meta: [{ name: 'description', content: 'Datos personales del grupo coordinado.' }],
 })
 
-const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 // ─── Estado ──────────────────────────────────────────────────────
 const arbitros             = ref([])
@@ -470,7 +470,7 @@ const cargarDatos = async () => {
       : []
   } catch (err) {
     console.error('Error al cargar datos:', err)
-    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' })
+    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' })
   } finally {
     cargando.value = false
   }
