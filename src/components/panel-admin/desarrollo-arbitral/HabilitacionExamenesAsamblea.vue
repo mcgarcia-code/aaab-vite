@@ -10,6 +10,9 @@
           </h4>
           <p class="text-muted small m-0 mt-1">Elegí una asamblea/recuperatorio y qué grupos quedan habilitados para rendir el examen teórico.</p>
         </div>
+        <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold flex-shrink-0" @click="abrirModalReunion">
+          <i class="bi bi-calendar2-check me-1"></i>Habilitar en Reuniones
+        </button>
       </div>
 
       <!-- Card Body -->
@@ -144,6 +147,61 @@
         </div>
       </template>
     </ModalBase>
+
+    <!-- Modal Habilitar en Reuniones -->
+    <ModalBase :show="modalReunionAbierto" @close="cerrarModalReunion">
+      <template #header>
+        <div class="d-flex align-items-center text-wrap text-break pe-2">
+          <i class="bi bi-calendar2-check me-2 text-danger flex-shrink-0"></i>
+          <span>Habilitar examen en una reunión</span>
+        </div>
+      </template>
+
+      <p class="text-muted small mb-3">
+        Elegí la reunión en la que querés habilitar el examen. Se habilitan automáticamente los grupos que participan de esa reunión.
+      </p>
+
+      <div v-if="cargandoReuniones" class="text-center py-4">
+        <span class="spinner-border text-danger" role="status"></span>
+      </div>
+
+      <div v-else>
+        <div v-if="!reuniones.length" class="text-center py-4 px-3 text-muted bg-light rounded-3">
+          <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">event_busy</span>
+          <p class="m-0 fw-bold small">No hay reuniones cargadas.</p>
+        </div>
+
+        <div v-else>
+          <label class="form-label small fw-bold text-muted">Reunión</label>
+          <select class="form-select mb-3" v-model="reunionSeleccionada">
+            <option :value="null" disabled>Seleccioná una reunión...</option>
+            <option v-for="r in reuniones" :key="r.id" :value="r.id">
+              {{ r.fecha_formateada }} — {{ r.descripcion || r.titulo }}
+            </option>
+          </select>
+
+          <div v-if="reunionActual" class="border-top pt-3">
+            <small class="text-muted d-block mb-2 fw-bold">Grupos que quedarán habilitados</small>
+            <div v-if="nombresGruposReunion.length" class="d-flex flex-wrap gap-1">
+              <span v-for="(g, i) in nombresGruposReunion" :key="i"
+                    class="badge bg-success-subtle text-success border border-success-subtle">{{ g }}</span>
+            </div>
+            <span v-else class="text-danger small fst-italic">Esta reunión no tiene grupos asociados.</span>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 w-100">
+          <button class="btn btn-outline-secondary rounded-pill px-4 w-100 w-sm-auto" @click="cerrarModalReunion">Cancelar</button>
+          <button class="btn btn-danger rounded-pill px-4 fw-bold w-100 w-sm-auto"
+                  :disabled="guardandoReunion || !reunionSeleccionada || !idsGruposReunion.length"
+                  @click="guardarReunion">
+            <span v-if="guardandoReunion" class="spinner-border spinner-border-sm me-2"></span>Habilitar
+          </button>
+        </div>
+      </template>
+    </ModalBase>
   </div>
 </template>
 
@@ -177,9 +235,33 @@ const gruposElegidos = ref([])
 const arrArbitrosSeleccionados = ref([])
 const busquedaArbitro = ref('')
 
+const modalReunionAbierto = ref(false)
+const cargandoReuniones = ref(false)
+const guardandoReunion = ref(false)
+const reuniones = ref([])
+const reunionSeleccionada = ref(null)
+
 const eventoActual = computed(() =>
   eventos.value.find(e => e.id === eventoSeleccionado.value) || null
 )
+
+const reunionActual = computed(() =>
+  reuniones.value.find(r => r.id === reunionSeleccionada.value) || null
+)
+
+const idsGruposReunion = computed(() => {
+  if (!reunionActual.value) return []
+  return reunionActual.value.todosLosGrupos
+    ? grupos.value.map(g => g.id)
+    : (reunionActual.value.idsGrupos || [])
+})
+
+const nombresGruposReunion = computed(() => {
+  if (!reunionActual.value) return []
+  return reunionActual.value.todosLosGrupos
+    ? grupos.value.map(g => (g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre))
+    : idsGruposReunion.value.map(nombreGrupo)
+})
 
 const habilitadosPorEvento = computed(() => {
   const mapa = {}
@@ -288,6 +370,53 @@ function cerrarModal() {
   gruposElegidos.value = []
   arrArbitrosSeleccionados.value = []
   busquedaArbitro.value = ''
+}
+
+async function abrirModalReunion() {
+  modalReunionAbierto.value = true
+  reunionSeleccionada.value = null
+  cargandoReuniones.value = true
+  try {
+    const res = await api.get({
+      entity: 'reuniones',
+      action: 'obtenerReuniones',
+      payload: {}
+    })
+    const lista = res?.payload ?? res ?? []
+    reuniones.value = lista.filter(r => String(r.categoria || '').toLowerCase() === 'reunion')
+  } catch {
+    toast({ tipo: 'danger', mensaje: 'No se pudieron obtener las reuniones' })
+  } finally {
+    cargandoReuniones.value = false
+  }
+}
+
+function cerrarModalReunion() {
+  modalReunionAbierto.value = false
+  reunionSeleccionada.value = null
+}
+
+async function guardarReunion() {
+  if (!reunionSeleccionada.value || !idsGruposReunion.value.length) return
+  guardandoReunion.value = true
+  try {
+    await api.post({
+      entity: 'examenes_habilitaciones',
+      action: 'guardarHabilitacion',
+      payload: {
+        idEvento: reunionSeleccionada.value,
+        idsGrupos: idsGruposReunion.value,
+        arrArbitros: []
+      }
+    })
+    await cargarTodo()
+    toast({ tipo: 'success', mensaje: 'Examen habilitado para la reunión' })
+    cerrarModalReunion()
+  } catch {
+    toast({ tipo: 'danger', mensaje: 'No se pudo guardar la habilitación' })
+  } finally {
+    guardandoReunion.value = false
+  }
 }
 
 function toggleGrupo(idGrupo) {

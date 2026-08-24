@@ -164,7 +164,7 @@ const menuItems = [
   { to: '/panel-arbitro/designaciones', title: 'Mis Designaciones', icon: 'bi bi-calendar4-week', desc: 'Mis Designaciones', categoria: 'Actividad Arbitral' },
   { to: '/panel-arbitro/coordinadores', title: 'Coordinadores', icon: 'bi bi-check', desc: 'Cargar y visualizar exámenes', rolesPermitidos: [4], categoria: 'Actividad Arbitral' },
   { to: '/panel-arbitro/observaciones', title: 'Observaciones', icon: 'bi bi-eye', desc: 'Cargar y visualizar observaciones', rolesPermitidos: [2, 4], categoria: 'Actividad Arbitral' },
-  { to: '/panel-arbitro/examen-asamblea', title: 'Examen Asamblea General', icon: 'bi bi-journal-check', desc: 'Rendí el examen teórico de la Asamblea General', categoria: 'Actividad Arbitral' },
+  { to: '/panel-arbitro/examen-asamblea', title: 'Examen Asamblea General - Reunión', icon: 'bi bi-journal-check', desc: 'Rendí el examen teórico online', categoria: 'Actividad Arbitral' },
 
   { to: '/panel-arbitro/licencia', title: 'Solicitar Licencias', icon: 'bi bi-calendar-check', desc: 'Inasistencias con antelación.', categoria: 'Administración' },
   { to: '/panel-arbitro/sanciones', title: 'Tribunal de Ética', icon: 'bi bi-shield-exclamation', desc: 'Consultá tus sanciones.', categoria: 'Administración' },
