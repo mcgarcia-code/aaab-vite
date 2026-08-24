@@ -235,7 +235,7 @@
                   </div>
 
                   <div v-if="obtenerTextoLicencia(a) !== '-'" class="alert py-2 px-3 small fw-bold mb-3 d-flex align-items-center gap-2"
-                       :class="((Number(a.tiene_aprobada) > 0) || a.sancion_vigente) ? 'alert-danger border-danger-subtle text-danger' : 'alert-warning border-warning-subtle text-warning-emphasis'">
+                       :class="((Number(a.tiene_aprobada) > 0) || (Number(a.licencia_indeterminada) > 0) || a.sancion_vigente) ? 'alert-danger border-danger-subtle text-danger' : 'alert-warning border-warning-subtle text-warning-emphasis'">
                     <i class="bi bi-exclamation-triangle-fill fs-5"></i>
                     <span class="text-break" style="white-space: normal; line-height: 1.3;">{{ obtenerTextoLicencia(a) }}</span>
                   </div>
@@ -413,6 +413,7 @@ const obtenerTextoLicencia = (a) => {
     textos.push('SANC. EN PROCESO')
   }
 
+  if (Number(a.licencia_indeterminada) > 0) textos.push('APR: Tiempo indeterminado')
   if (Number(a.tiene_aprobada)  > 0 && a.fecha_licencia_aprobada)  textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`)
   if (Number(a.tiene_pendiente) > 0 && a.fecha_licencia_pendiente) textos.push(`PEN: ${formatearVariasFechas(a.fecha_licencia_pendiente)}`)
   if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`)
@@ -421,7 +422,7 @@ const obtenerTextoLicencia = (a) => {
 }
 
 const obtenerClaseFila = (a) => {
-  if (a.es_activo == 0 || Number(a.tiene_aprobada) > 0 || a.sancion_vigente) return 'fila-roja'
+  if (a.es_activo == 0 || Number(a.tiene_aprobada) > 0 || Number(a.licencia_indeterminada) > 0 || a.sancion_vigente) return 'fila-roja'
   if (Number(a.tiene_rechazada) > 0 || Number(a.tiene_pendiente) > 0 || a.sancion_proceso) return 'fila-amarilla'
   return ''
 }
@@ -486,12 +487,12 @@ const arbitrosFiltrados = computed(() => {
     })
 
     let cumpleLicencia = true
-    if      (filtros.licencia === 'aprobada')       cumpleLicencia = Number(a.tiene_aprobada  || 0) > 0
+    if      (filtros.licencia === 'aprobada')       cumpleLicencia = Number(a.tiene_aprobada  || 0) > 0 || Number(a.licencia_indeterminada || 0) > 0
     else if (filtros.licencia === 'rechazada')      cumpleLicencia = Number(a.tiene_rechazada || 0) > 0
     else if (filtros.licencia === 'pendiente')      cumpleLicencia = Number(a.tiene_pendiente || 0) > 0
     else if (filtros.licencia === 'sancion_vigente') cumpleLicencia = a.sancion_vigente === true
     else if (filtros.licencia === 'sancion_proceso') cumpleLicencia = a.sancion_proceso === true
-    else if (filtros.licencia === 'sin_licencia')   cumpleLicencia = Number(a.tiene_aprobada || 0) === 0 && Number(a.tiene_rechazada || 0) === 0 && Number(a.tiene_pendiente || 0) === 0
+    else if (filtros.licencia === 'sin_licencia')   cumpleLicencia = Number(a.tiene_aprobada || 0) === 0 && Number(a.tiene_rechazada || 0) === 0 && Number(a.tiene_pendiente || 0) === 0 && Number(a.licencia_indeterminada || 0) === 0
 
     let cumpleApto = true
     if (filtros.apto_medico !== '') cumpleApto = a.apto_medico === (filtros.apto_medico === '1')

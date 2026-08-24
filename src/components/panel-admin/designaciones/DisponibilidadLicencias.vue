@@ -242,7 +242,7 @@
                 </div>
 
                 <div v-if="obtenerTextoLicencia(a) !== '-'" class="alert py-2 px-3 small fw-bold mb-3 d-flex align-items-center gap-2"
-                     :class="((Number(a.tiene_aprobada) > 0) || a.sancion_vigente) ? 'alert-danger border-danger-subtle text-danger' : 'alert-warning border-warning-subtle text-warning-emphasis'">
+                     :class="((Number(a.tiene_aprobada) > 0) || (Number(a.licencia_indeterminada) > 0) || a.sancion_vigente) ? 'alert-danger border-danger-subtle text-danger' : 'alert-warning border-warning-subtle text-warning-emphasis'">
                      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
                      <span class="text-break" style="white-space: normal; line-height: 1.3;">{{ obtenerTextoLicencia(a) }}</span>
                 </div>
@@ -506,7 +506,7 @@ const limpiarChecks = async () => {
 };
 
 const obtenerClaseFila = (a) => {
-  const tieneAprobada = Number(a.tiene_aprobada) > 0;
+  const tieneAprobada = Number(a.tiene_aprobada) > 0 || Number(a.licencia_indeterminada) > 0;
   const tieneRechazada = Number(a.tiene_rechazada) > 0;
   const tienePendiente = Number(a.tiene_pendiente) > 0;
   const esInactivo = a.es_activo == 0;
@@ -559,6 +559,9 @@ const obtenerTextoLicencia = (a) => {
     textos.push(`SANC. EN PROCESO`);
   }
 
+  if (Number(a.licencia_indeterminada) > 0) {
+    textos.push('APR: Tiempo indeterminado');
+  }
   if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
     textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
   }
@@ -587,7 +590,7 @@ const arbitrosFiltrados = computed(() => {
     });
 
     let cumpleLicencia = true;
-    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0;
+    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0 || Number(a.licencia_indeterminada || 0) > 0;
     else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada || 0) > 0;
     else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente || 0) > 0;
     else if (filtros.licencia === 'sancion_vigente') cumpleLicencia = a.sancion_vigente === true;
@@ -595,7 +598,8 @@ const arbitrosFiltrados = computed(() => {
     else if (filtros.licencia === 'sin_licencia') {
       cumpleLicencia = Number(a.tiene_aprobada || 0) === 0 &&
                        Number(a.tiene_rechazada || 0) === 0 &&
-                       Number(a.tiene_pendiente || 0) === 0;
+                       Number(a.tiene_pendiente || 0) === 0 &&
+                       Number(a.licencia_indeterminada || 0) === 0;
     }
 
     let cumpleApto = true;
