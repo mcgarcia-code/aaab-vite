@@ -14,7 +14,7 @@
 
           <div class="mb-3">
             <label class="form-label fw-bold small text-dark">Motivo de la Licencia</label>
-            <select v-model="motivoSeleccionado" class="form-select form-select-lg shadow-none fs-6" :disabled="cargando">
+            <select v-model="motivoSeleccionado" class="form-select form-select-lg shadow-none fs-6" :disabled="cargando || tiempoIndeterminado">
               <option value="particular">Particular</option>
               <option value="lesion_enfermedad">Lesión / Enfermedad</option>
             </select>
@@ -25,21 +25,30 @@
             Tu licencia quedará <strong>Pendiente</strong>. Tenés 72 hs para enviar el certificado médico a <strong>licencias@arbitroshandball.com.ar</strong>, sino será rechazada y enviada al Tribunal de Ética. Avisá a tu coordinador.
           </div>
 
-          <div class="mb-4">
+          <div class="mb-3">
             <label class="form-label fw-bold small text-dark">Fecha de la Licencia</label>
             <input
               type="date"
               v-model="fechaSeleccionada"
               class="form-control form-control-lg custom-input-date shadow-none"
               onkeydown="return false"
-              :disabled="cargando"
+              :disabled="cargando || tiempoIndeterminado"
             >
+          </div>
+
+          <div class="mb-4">
+            <div class="form-check">
+              <input v-model="tiempoIndeterminado" @change="onToggleTiempoIndeterminado" class="form-check-input" type="checkbox" id="chkTiempoIndeterminadoArb" :disabled="cargando">
+              <label class="form-check-label small fw-bold text-dark" for="chkTiempoIndeterminadoArb">
+                Por tiempo indeterminado
+              </label>
+            </div>
           </div>
 
           <div class="mt-auto">
             <button
               @click="solicitarLicencia"
-              :disabled="!fechaSeleccionada || cargando"
+              :disabled="(!fechaSeleccionada && !tiempoIndeterminado) || cargando"
               class="btn btn-primary w-100 fw-bold py-3 py-md-2 shadow-sm"
             >
               <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
@@ -81,7 +90,7 @@
 
                   <!-- HEADER MOBILE: Datos (Se oculta en PC) -->
                   <div class="col-12 d-md-none mb-3 border-bottom pb-2">
-                    <div class="fw-bold text-dark fs-6">{{ formatearFecha(lic.fecha_licencia) }}</div>
+                    <div class="fw-bold text-dark fs-6">{{ formatearFechaAusencia(lic) }}</div>
                     <div class="text-muted mt-1" style="font-size: 0.8rem;">
                       <i class="bi bi-clock me-1"></i> Solicitada: {{ formatearFecha(lic.fecha_solicitud) }}
                     </div>
@@ -92,7 +101,7 @@
 
                   <!-- COLUMNAS ESCRITORIO -->
                   <div class="col-md-3 d-none d-md-block fw-bold text-dark ps-3" style="font-size: 0.85rem;">
-                    {{ formatearFecha(lic.fecha_licencia) }}
+                    {{ formatearFechaAusencia(lic) }}
                   </div>
                   <div class="col-md-2 d-none d-md-block text-muted small">
                     {{ formatearFecha(lic.fecha_solicitud) }}
@@ -159,8 +168,16 @@ const notificar = inject('notificar');
 const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const fechaSeleccionada = ref('');
 const motivoSeleccionado = ref('particular');
+const tiempoIndeterminado = ref(false);
 const cargando = ref(false);
 const licencias = ref([]);
+
+const onToggleTiempoIndeterminado = () => {
+  if (tiempoIndeterminado.value) {
+    fechaSeleccionada.value = '';
+    motivoSeleccionado.value = 'particular';
+  }
+};
 
 // Variables de Paginación
 const paginaActual = ref(1);
@@ -190,7 +207,10 @@ const formatearFecha = (fechaStr) => {
   return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fechaStr;
 };
 
+const formatearFechaAusencia = (lic) => (lic.tiempo_indeterminado == 1 ? 'Tiempo indeterminado' : formatearFecha(lic.fecha_licencia));
+
 const parseFecha = (fechaStr) => {
+  if (!fechaStr) return new Date(8640000000000000); // sin fecha (licencia por tiempo indeterminado): siempre "futura"
   const [dia, mes, anio] = fechaStr.split('/');
   return new Date(`20${anio}-${mes}-${dia}`);
 };
@@ -211,7 +231,7 @@ const obtenerLicencias = async () => {
 };
 
 const solicitarLicencia = async () => {
-  if (!fechaSeleccionada.value) return;
+  if (!fechaSeleccionada.value && !tiempoIndeterminado.value) return;
 
   cargando.value = true;
 
@@ -221,7 +241,8 @@ const solicitarLicencia = async () => {
       action: 'crearLicencia',
       payload: {
         fecha_licencia: fechaSeleccionada.value,
-        motivo: motivoSeleccionado.value
+        motivo: motivoSeleccionado.value,
+        tiempo_indeterminado: tiempoIndeterminado.value
       }
     });
 
@@ -257,6 +278,7 @@ const solicitarLicencia = async () => {
       // Limpiamos el formulario y recargamos la tabla
       fechaSeleccionada.value = '';
       motivoSeleccionado.value = 'particular';
+      tiempoIndeterminado.value = false;
       await obtenerLicencias();
 
     } else {

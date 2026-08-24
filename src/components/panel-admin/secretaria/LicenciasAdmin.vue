@@ -122,7 +122,7 @@
                     </td>
                     <td class="text-muted small">{{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</td>
                     <td class="text-center text-muted fw-bold">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
-                    <td class="text-center pe-3 text-primary fw-bold">{{ formatearFechaVista(lic.fecha_licencia) }}</td>
+                    <td class="text-center pe-3 text-primary fw-bold">{{ formatearFechaAusencia(lic) }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -141,7 +141,7 @@
 
                 <div class="card-body pt-0 px-3 pb-3">
                   <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="fw-bold text-primary fs-5">{{ formatearFechaVista(lic.fecha_licencia) }}</span>
+                    <span class="fw-bold text-primary fs-5">{{ formatearFechaAusencia(lic) }}</span>
                     <span :class="['badge-status-sm', lic.estado]" style="font-size: 0.7rem; padding: 3px 10px;">{{ lic.estado.toUpperCase() }}</span>
                   </div>
 
@@ -230,7 +230,7 @@
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Motivo</label>
-            <select v-model="formModal.motivo" class="form-select shadow-none border-secondary-subtle">
+            <select v-model="formModal.motivo" class="form-select shadow-none border-secondary-subtle" :disabled="formModal.tiempo_indeterminado">
               <option value="particular">Particular</option>
               <option value="lesion_enfermedad">Lesión / Enfermedad</option>
             </select>
@@ -247,12 +247,21 @@
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Fecha Solicitud *</label>
-            <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none border-secondary-subtle" required>
+            <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none border-secondary-subtle" required :disabled="formModal.tiempo_indeterminado">
           </div>
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Fecha Ausencia *</label>
-            <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-secondary-subtle" required>
+            <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-secondary-subtle" required :disabled="formModal.tiempo_indeterminado">
+          </div>
+
+          <div class="col-12" v-if="modoModal === 'nuevo'">
+            <div class="form-check">
+              <input v-model="formModal.tiempo_indeterminado" @change="onToggleTiempoIndeterminado" class="form-check-input" type="checkbox" id="chkTiempoIndeterminado">
+              <label class="form-check-label small fw-bold text-dark" for="chkTiempoIndeterminado">
+                Por tiempo indeterminado
+              </label>
+            </div>
           </div>
         </div>
       </form>
@@ -304,7 +313,7 @@
             <tbody>
               <tr v-for="h in historialLicencia" :key="h.id">
                 <td class="text-nowrap text-muted fw-bold py-3 ps-3">{{ formatearFechaVista(h.fecha_solicitud) }}</td>
-                <td class="text-nowrap text-primary fw-bold py-3">{{ formatearFechaVista(h.fecha_licencia) }}</td>
+                <td class="text-nowrap text-primary fw-bold py-3">{{ formatearFechaAusencia(h) }}</td>
                 <td class="text-muted py-3" style="white-space: normal; word-wrap: break-word;">
                   {{ h.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}
                 </td>
@@ -320,7 +329,7 @@
         <div class="d-md-none d-flex flex-column gap-2">
           <div v-for="h in historialLicencia" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-3 p-3 shadow-sm bg-light">
             <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-              <span class="fw-bold text-primary fs-5">{{ formatearFechaVista(h.fecha_licencia) }}</span>
+              <span class="fw-bold text-primary fs-5">{{ formatearFechaAusencia(h) }}</span>
               <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
             </div>
             <div class="d-flex justify-content-between align-items-center text-muted small mt-2">
@@ -366,7 +375,7 @@ const registrosPorPagina = 10
 const mostrarModal = ref(false)
 const modoModal = ref('nuevo')
 // MODIFICADO: Agregué motivo al estado inicial del formModal
-const formModal = ref({ id: null, id_arbitro: '', fecha_solicitud: '', fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '', motivo: 'particular' })
+const formModal = ref({ id: null, id_arbitro: '', fecha_solicitud: '', fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '', motivo: 'particular', tiempo_indeterminado: false })
 
 const mostrarModalHistorial = ref(false)
 const cargandoHistorial = ref(false)
@@ -375,6 +384,7 @@ const historialLicencia = ref([])
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : '';
+const formatearFechaAusencia = (lic) => (lic.tiempo_indeterminado == 1 ? 'Tiempo indeterminado' : formatearFechaVista(lic.fecha_licencia));
 
 const licenciasFiltradas = computed(() => {
   return licencias.value.filter(l => {
@@ -432,7 +442,7 @@ const obtenerArbitros = async () => {
 const abrirModalNuevo = () => {
   const hoy = new Date().toISOString().split('T')[0];
   // MODIFICADO: Reiniciar motivo a particular por defecto
-  formModal.value = { id: null, id_arbitro: '', fecha_solicitud: hoy, fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '', motivo: 'particular' };
+  formModal.value = { id: null, id_arbitro: '', fecha_solicitud: hoy, fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '', motivo: 'particular', tiempo_indeterminado: false };
   modoModal.value = 'nuevo';
   mostrarModal.value = true;
 };
@@ -442,6 +452,14 @@ const editarLicencia = (lic) => {
   formModal.value = { ...lic, motivo: lic.motivo || 'particular' }
   modoModal.value = 'editar'
   mostrarModal.value = true
+};
+
+const onToggleTiempoIndeterminado = () => {
+  if (formModal.value.tiempo_indeterminado) {
+    formModal.value.fecha_solicitud = new Date().toISOString().split('T')[0];
+    formModal.value.fecha_licencia = '';
+    formModal.value.motivo = 'particular';
+  }
 };
 
 const cerrarModal = () => {
@@ -538,7 +556,7 @@ const exportarExcel = async () => {
     'Estado': l.estado.toUpperCase(),
     'Motivo': l.motivo === 'lesion_enfermedad' ? 'Lesión/Enfermedad' : 'Particular',
     'Fecha Solicitud': formatearFechaVista(l.fecha_solicitud),
-    'Fecha Licencia': formatearFechaVista(l.fecha_licencia)
+    'Fecha Licencia': formatearFechaAusencia(l)
   }));
 
   const wb = new ExcelJS.Workbook();
