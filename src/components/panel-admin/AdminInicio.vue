@@ -49,7 +49,7 @@
 </template>
 
 <script setup>
-import { auth } from '@/api/auth'
+import { auth } from '../../api/auth'
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { api } from '@/api/api'

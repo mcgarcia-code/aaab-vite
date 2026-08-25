@@ -40,43 +40,24 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-              <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.85rem;">
+              <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.75rem;">
                 <thead class="table-light">
                   <tr>
-                    <th class="py-3 ps-3 text-uppercase text-muted" style="width: 20%;">Árbitro/s</th>
-                    <th class="py-3 text-uppercase text-muted" style="width: 13%;">Solicitud</th>
-                    <th class="py-3 text-uppercase text-muted" style="width: 16%;">Club</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="width: 9%;">Rama</th>
-                    <th class="py-3 text-uppercase text-muted" style="width: 17%;">Categorías</th>
-                    <th class="py-3 text-uppercase text-muted" style="width: 13%;">Vigencia</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="width: 8%;">Estado</th>
-                    <th class="py-3 text-center text-uppercase text-muted pe-3" style="width: 4%;">Acciones</th>
+                    <th class="py-3 ps-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 1px;">ID</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro/s</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Solicitud</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Club</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Rama</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Categorías</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Vigencia</th>
+                    <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="s in solicitudesPaginadas" :key="s.id">
-                    <td class="ps-3 text-dark fw-bold">
-                      <div class="d-block">{{ s.apellido }}, {{ s.nombre }}</div>
-                    </td>
-                    <td class="text-muted">
-                      <span class="badge bg-danger-subtle text-danger border">No ser designado</span>
-                    </td>
-                    <td class="text-dark">{{ s.club || '-' }}</td>
-                    <td class="text-center text-muted">{{ etiquetaRama(s.rama) }}</td>
-                    <td class="text-muted" style="white-space: normal;">
-                      <span v-if="s.todas_categorias" class="badge bg-info-subtle text-primary border">TODAS</span>
-                      <template v-else>
-                        <span class="badge bg-light text-dark border me-1 mb-1">{{ s.categoria }}</span>
-                      </template>
-                    </td>
-                    <td class="text-muted small">
-                      <div>{{ formatearFecha(s.fecha_desde) }}</div>
-                      <div class="text-secondary">→ {{ formatearFecha(s.fecha_hasta) }}</div>
-                    </td>
+                    <td class="ps-3 text-muted fw-bold font-monospace">{{ s.id }}</td>
                     <td class="text-center">
-                      <span class="badge" :class="claseEstado(s.estado)">{{ (s.estado || '').toUpperCase() }}</span>
-                    </td>
-                    <td class="text-center pe-3">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="abrirModalEditar(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
                           <span class="material-icons" style="font-size:16px;">edit</span>
@@ -86,9 +67,37 @@
                         </button>
                       </div>
                     </td>
+                    <td class="text-dark fw-bold">
+                      <div class="d-block">{{ s.apellido }}, {{ s.nombre }}</div>
+                    </td>
+                    <td class="text-muted">
+                      <span v-if="esSolicitudPar(s)" class="badge bg-warning-subtle text-warning-emphasis border">No ser designado con árbitro</span>
+                      <span v-else class="badge bg-danger-subtle text-danger border">No ser designado a club</span>
+                    </td>
+                    <td class="text-dark">
+                      <template v-if="esSolicitudPar(s)">
+                        <span class="text-muted">Junto a: </span>{{ s.arbitro_par_apellido }}, {{ s.arbitro_par_nombre }}
+                      </template>
+                      <template v-else>{{ s.club || '-' }}</template>
+                    </td>
+                    <td class="text-center text-muted">{{ esSolicitudPar(s) ? '-' : etiquetaRama(s.rama) }}</td>
+                    <td class="text-muted" style="white-space: normal;">
+                      <span v-if="esSolicitudPar(s)" class="text-muted">-</span>
+                      <span v-else-if="s.todas_categorias" class="badge bg-info-subtle text-primary border">TODAS</span>
+                      <template v-else>
+                        <span class="badge bg-light text-dark border me-1 mb-1">{{ s.categoria }}</span>
+                      </template>
+                    </td>
+                    <td class="text-muted small">
+                      <div>{{ formatearFecha(s.fecha_desde) }}</div>
+                      <div class="text-secondary">→ {{ formatearFecha(s.fecha_hasta) }}</div>
+                    </td>
+                    <td class="text-center pe-3">
+                      <span class="badge" :class="claseEstado(s.estado)">{{ (s.estado || '').toUpperCase() }}</span>
+                    </td>
                   </tr>
                   <tr v-if="solicitudesPaginadas.length === 0">
-                    <td colspan="8" class="py-5 text-center text-muted border-0 bg-white">
+                    <td colspan="9" class="py-5 text-center text-muted border-0 bg-white">
                       <span class="material-icons d-block fs-1 mb-2">inbox</span>
                       <p class="m-0 fw-bold">No hay solicitudes cargadas.</p>
                     </td>
@@ -107,20 +116,29 @@
                       <div>{{ s.apellido }}, {{ s.nombre }}</div>
                     </div>
                   </div>
-                  <span class="badge" :class="claseEstado(s.estado)">{{ (s.estado || '').toUpperCase() }}</span>
+                  <div class="d-flex flex-column align-items-end gap-1">
+                    <span class="small text-muted fw-bold font-monospace">#{{ s.id }}</span>
+                    <span class="badge" :class="claseEstado(s.estado)">{{ (s.estado || '').toUpperCase() }}</span>
+                  </div>
                 </div>
                 <div class="card-body pt-0 px-3 pb-3">
                   <div class="d-flex flex-column gap-2 bg-light p-2 rounded border mb-2 border-light-subtle">
-                    <span class="text-dark small"><strong>Solicitud:</strong> No ser designado</span>
-                    <span class="text-dark small"><strong>Club:</strong> {{ s.club || '-' }}</span>
-                    <span class="text-dark small"><strong>Rama:</strong> {{ etiquetaRama(s.rama) }}</span>
-                    <div class="text-dark small">
-                      <strong>Categorías:</strong>
-                      <span v-if="s.todas_categorias" class="badge bg-info-subtle text-primary ms-1">TODAS</span>
-                      <template v-else>
-                        <span class="badge bg-white text-dark border ms-1">{{ s.categoria }}</span>
-                      </template>
-                    </div>
+                    <template v-if="esSolicitudPar(s)">
+                      <span class="text-dark small"><strong>Solicitud:</strong> No ser designado con árbitro</span>
+                      <span class="text-dark small"><strong>Junto a:</strong> {{ s.arbitro_par_apellido }}, {{ s.arbitro_par_nombre }}</span>
+                    </template>
+                    <template v-else>
+                      <span class="text-dark small"><strong>Solicitud:</strong> No ser designado a club</span>
+                      <span class="text-dark small"><strong>Club:</strong> {{ s.club || '-' }}</span>
+                      <span class="text-dark small"><strong>Rama:</strong> {{ etiquetaRama(s.rama) }}</span>
+                      <div class="text-dark small">
+                        <strong>Categorías:</strong>
+                        <span v-if="s.todas_categorias" class="badge bg-info-subtle text-primary ms-1">TODAS</span>
+                        <template v-else>
+                          <span class="badge bg-white text-dark border ms-1">{{ s.categoria }}</span>
+                        </template>
+                      </div>
+                    </template>
                     <span class="text-dark small"><strong>Vigencia:</strong> {{ formatearFecha(s.fecha_desde) }} → {{ formatearFecha(s.fecha_hasta) }}</span>
                   </div>
                   <div class="d-flex gap-2">
@@ -140,13 +158,13 @@
             </div>
 
             <!-- PAGINACIÓN -->
-            <div v-if="totalPaginas > 1" class="d-flex justify-content-center align-items-center gap-3 py-3">
-              <button @click="cambiarPagina(-1)" :disabled="paginaActual === 1" class="btn btn-light border shadow-sm btn-sm">
-                <span class="material-icons fs-6">chevron_left</span>
+            <div v-if="totalPaginas > 1" class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3">
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+                <i class="bi bi-chevron-left"></i> Ant
               </button>
-              <span class="small fw-bold text-dark">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button @click="cambiarPagina(1)" :disabled="paginaActual === totalPaginas" class="btn btn-light border shadow-sm btn-sm">
-                <span class="material-icons fs-6">chevron_right</span>
+              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+                Sig <i class="bi bi-chevron-right"></i>
               </button>
             </div>
           </template>
@@ -181,16 +199,41 @@
           <span class="text-muted" style="font-size: 0.75rem;">Podés marcar más de uno (por ejemplo, una pareja arbitral).</span>
         </div>
 
-        <!-- TIPO DE SOLICITUD (por ahora única) -->
+        <!-- TIPO DE SOLICITUD -->
         <div>
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">Solicitud</label>
-          <div class="bg-danger-subtle text-danger border border-danger-subtle rounded p-2 small fw-bold text-center">
-            No ser designado a
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <button type="button" class="btn btn-sm flex-fill text-start"
+                    :class="form.tipo === 'no_designar' ? 'btn-danger text-white shadow-sm' : 'btn-light border'"
+                    @click="form.tipo = 'no_designar'">
+              No ser designado a un club
+            </button>
+            <button type="button" class="btn btn-sm flex-fill text-start"
+                    :class="form.tipo === 'no_designar_arbitro' ? 'btn-danger text-white shadow-sm' : 'btn-light border'"
+                    @click="form.tipo = 'no_designar_arbitro'">
+              No ser designado con un árbitro
+            </button>
           </div>
         </div>
 
-        <!-- CLUB -->
-        <div>
+        <!-- ÁRBITRO A EVITAR (solo tipo no_designar_arbitro) -->
+        <div v-if="form.tipo === 'no_designar_arbitro'">
+          <label class="form-label fw-bold small text-uppercase text-muted mb-2">
+            Árbitro con el que no ser designado <span class="text-danger">*</span>
+          </label>
+          <input v-model="filtroArbitroPar" class="form-control form-control-sm shadow-none mb-2" placeholder="Buscar árbitro por apellido o nombre...">
+          <div class="border rounded p-2 bg-light" style="max-height: 200px; overflow-y: auto;">
+            <div v-for="a in arbitrosParFiltrados" :key="'par-'+a.id" class="form-check">
+              <input class="form-check-input shadow-none" type="radio" :id="'arbpar-'+a.id" :value="a.id" v-model="form.id_arbitro_par">
+              <label class="form-check-label small" :for="'arbpar-'+a.id">{{ a.apellido }}, {{ a.nombre }}</label>
+            </div>
+            <p v-if="arbitrosParFiltrados.length === 0" class="text-muted small m-0 text-center py-2">Sin resultados.</p>
+          </div>
+          <span class="text-muted" style="font-size: 0.75rem;">No aplican club, rama ni categorías para este tipo de solicitud.</span>
+        </div>
+
+        <!-- CLUB (solo tipo no_designar) -->
+        <div v-if="form.tipo === 'no_designar'">
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">
             Club <span class="text-danger">*</span>
           </label>
@@ -200,8 +243,8 @@
           </select>
         </div>
 
-        <!-- RAMA -->
-        <div>
+        <!-- RAMA (solo tipo no_designar) -->
+        <div v-if="form.tipo === 'no_designar'">
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">
             Rama <span class="text-danger">*</span>
           </label>
@@ -212,14 +255,11 @@
             <button type="button" class="btn btn-sm flex-fill"
                     :class="form.rama === 'M' ? 'btn-primary text-white shadow-sm' : 'btn-light border'"
                     @click="form.rama = 'M'">Masculina</button>
-            <button type="button" class="btn btn-sm flex-fill"
-                    :class="form.rama === 'ambas' ? 'btn-primary text-white shadow-sm' : 'btn-light border'"
-                    @click="form.rama = 'ambas'">Ambas</button>
           </div>
         </div>
 
-        <!-- CATEGORÍAS -->
-        <div>
+        <!-- CATEGORÍAS (solo tipo no_designar) -->
+        <div v-if="form.tipo === 'no_designar'">
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">Categorías</label>
 
           <div v-if="cargandoCategorias" class="text-center py-3">
@@ -281,49 +321,11 @@
       </template>
     </ModalBase>
 
-    <!-- MODAL CONFIRMAR ELIMINAR -->
-    <ModalBase :show="mostrarModalEliminar" @close="mostrarModalEliminar = false" icono="delete_forever" colorIcono="bg-danger-subtle text-danger" maxWidth="450px">
-      <template #header>
-        <div class="text-center">
-          <span class="fw-bold fs-5">Eliminar Solicitud</span>
-        </div>
-      </template>
-      <p class="text-center text-muted small mb-0">
-        ¿Seguro que querés eliminar esta solicitud? Esta acción la marcará como borrada.
-      </p>
-      <template #footer>
-        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center w-100">
-          <button @click="mostrarModalEliminar = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
-          <button @click="eliminarSolicitud" :disabled="eliminando" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
-            <span v-if="eliminando" class="spinner-border spinner-border-sm"></span>
-            ELIMINAR
-          </button>
-        </div>
-      </template>
-    </ModalBase>
-
-    <!-- Toast flotante -->
-    <Teleport to="body">
-      <Transition name="toast-fade">
-        <div
-          v-if="toast.visible"
-          class="position-fixed bottom-0 end-0 m-3 m-md-4 bg-white shadow-lg rounded-3 d-flex align-items-center gap-2 py-3 px-4"
-          :class="toast.tipo === 'danger' ? 'border-start border-danger border-4' : 'border-start border-success border-4'"
-          style="z-index: 2000; max-width: 340px;"
-        >
-          <span class="material-icons" :class="toast.tipo === 'danger' ? 'text-danger' : 'text-success'">
-            {{ toast.tipo === 'danger' ? 'error' : 'check_circle' }}
-          </span>
-          <span class="fw-bold text-dark small">{{ toast.mensaje }}</span>
-        </div>
-      </Transition>
-    </Teleport>
-
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, watch } from 'vue'
+import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
@@ -333,17 +335,17 @@ useHead({
   meta: [{ name: 'description', content: 'Gestión de solicitudes institucionales de la AAAB.' }],
 })
 
-// ====================================================
-//  TOAST FLOTANTE
-// ====================================================
-const toast = reactive({ visible: false, mensaje: '', tipo: 'success' })
-let toastTimer = null
+// Sistemas globales (mismos que usa toda la web)
+const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+
+// Wrapper para conservar la firma (mensaje, tipo) usada en este componente
 const mostrarToast = (mensaje, tipo = 'success') => {
-  clearTimeout(toastTimer)
-  toast.mensaje = mensaje
-  toast.tipo = tipo
-  toast.visible = true
-  toastTimer = setTimeout(() => { toast.visible = false }, 3500)
+  toast({
+    titulo: tipo === 'danger' ? 'Error' : 'Éxito',
+    mensaje,
+    tipo
+  })
 }
 
 // ====================================================
@@ -351,7 +353,6 @@ const mostrarToast = (mensaje, tipo = 'success') => {
 // ====================================================
 const cargando = ref(false)
 const guardando = ref(false)
-const eliminando = ref(false)
 const solicitudes = ref([])
 const arbitros = ref([])
 const clubes = ref([])
@@ -359,17 +360,18 @@ const categorias = ref([])
 const cargandoCategorias = ref(false)
 
 const mostrarModal = ref(false)
-const mostrarModalEliminar = ref(false)
 const modoModal = ref('nuevo')
 const filtroArbitro = ref('')
+const filtroArbitroPar = ref('')
 const solicitudEnEdicion = ref(null)
-const solicitudAEliminar = ref(null)
 
 const paginaActual = ref(1)
 const registrosPorPagina = 8
 
 const formVacio = () => ({
+  tipo: 'no_designar',
   arbitros: [],
+  id_arbitro_par: null,
   club_id: '',
   rama: '',
   categorias: [],
@@ -389,6 +391,8 @@ const normalizarTexto = (valor) => {
   return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 }
 
+const esSolicitudPar = (s) => s.tipo === 'no_designar_arbitro'
+
 const etiquetaRama = (rama) => {
   if (rama === 'F') return 'Femenina'
   if (rama === 'M') return 'Masculina'
@@ -397,10 +401,10 @@ const etiquetaRama = (rama) => {
 }
 
 const claseEstado = (estado) => {
-  if (estado === 'vigente') return 'bg-success'
   if (estado === 'creado') return 'bg-warning text-dark'
-  if (estado === 'cumplida') return 'bg-secondary'
-  if (estado === 'borrado') return 'bg-dark'
+  if (estado === 'vigente') return 'bg-danger'
+  if (estado === 'cumplida') return 'bg-success'
+  if (estado === 'borrado') return 'bg-secondary'
   return 'bg-light text-dark border'
 }
 
@@ -422,6 +426,16 @@ const arbitrosFiltrados = computed(() => {
   )
 })
 
+// Para el par: mismo listado pero excluyendo a los árbitros solicitantes ya elegidos.
+const arbitrosParFiltrados = computed(() => {
+  const q = normalizarTexto(filtroArbitroPar.value)
+  return arbitros.value.filter(a => {
+    if (form.arbitros.includes(a.id)) return false
+    if (!q) return true
+    return normalizarTexto(a.apellido).includes(q) || normalizarTexto(a.nombre).includes(q)
+  })
+})
+
 const totalPaginas = computed(() => Math.ceil(solicitudes.value.length / registrosPorPagina) || 1)
 
 const solicitudesPaginadas = computed(() => {
@@ -435,9 +449,9 @@ const solicitudesPaginadas = computed(() => {
 const cargarSolicitudes = async () => {
   cargando.value = true
   try {
-    const { payload } = await api.get({ 
-      entity: 'solicitudes', 
-      action: 'obtenerSolicitudes' 
+    const { payload } = await api.get({
+      entity: 'solicitudes',
+      action: 'obtenerSolicitudes'
     })
     solicitudes.value = payload || []
   } catch (err) {
@@ -493,6 +507,7 @@ const cargarCategorias = async () => {
 // Si venimos de "editar", no reseteamos (la selección viene de la solicitud).
 watch(() => [form.club_id, form.rama], () => {
   if (cargandoDesdeEdicion.value) return
+  if (form.tipo !== 'no_designar') return
   form.categorias = []
   form.todas_categorias = false
   cargarCategorias()
@@ -515,11 +530,14 @@ const abrirModalEditar = async (solicitud) => {
   solicitudEnEdicion.value = solicitud
   filtroArbitro.value = ''
 
+  filtroArbitroPar.value = ''
   cargandoDesdeEdicion.value = true
   Object.assign(form, {
+    tipo: solicitud.tipo || 'no_designar',
     arbitros: (solicitud.arbitros || []).map(a => a.id),
-    club_id: solicitud.club_id,
-    rama: solicitud.rama,
+    id_arbitro_par: solicitud.id_arbitro_par ?? null,
+    club_id: solicitud.club_id || '',
+    rama: solicitud.rama || '',
     categorias: (solicitud.categorias || []).map(c => c.id),
     todas_categorias: !!solicitud.todas_categorias,
     fecha_desde: solicitud.fecha_desde || '',
@@ -527,8 +545,10 @@ const abrirModalEditar = async (solicitud) => {
   })
 
   mostrarModal.value = true
-  // Cargamos las categorías del club/rama sin que el watch borre la selección
-  await cargarCategorias()
+  // Solo cargamos categorías si es una solicitud por club/rama
+  if (form.tipo === 'no_designar') {
+    await cargarCategorias()
+  }
   cargandoDesdeEdicion.value = false
 }
 
@@ -541,17 +561,28 @@ const validarForm = () => {
     mostrarToast('Seleccioná al menos un árbitro', 'danger')
     return false
   }
-  if (!form.club_id) {
-    mostrarToast('Seleccioná un club', 'danger')
-    return false
-  }
-  if (!form.rama) {
-    mostrarToast('Seleccioná una rama', 'danger')
-    return false
-  }
-  if (!form.todas_categorias && form.categorias.length === 0) {
-    mostrarToast('Seleccioná al menos una categoría o marcá TODAS', 'danger')
-    return false
+  if (form.tipo === 'no_designar_arbitro') {
+    if (!form.id_arbitro_par) {
+      mostrarToast('Seleccioná el árbitro con el que no ser designado', 'danger')
+      return false
+    }
+    if (form.arbitros.includes(form.id_arbitro_par)) {
+      mostrarToast('El árbitro a evitar no puede ser uno de los solicitantes', 'danger')
+      return false
+    }
+  } else {
+    if (!form.club_id) {
+      mostrarToast('Seleccioná un club', 'danger')
+      return false
+    }
+    if (!form.rama) {
+      mostrarToast('Seleccioná una rama', 'danger')
+      return false
+    }
+    if (!form.todas_categorias && form.categorias.length === 0) {
+      mostrarToast('Seleccioná al menos una categoría o marcá TODAS', 'danger')
+      return false
+    }
   }
   if (!form.fecha_desde || !form.fecha_hasta) {
     mostrarToast('Completá el período de vigencia', 'danger')
@@ -569,13 +600,15 @@ const guardarSolicitud = async () => {
 
   guardando.value = true
   const esEdicion = modoModal.value === 'editar'
+  const esPar = form.tipo === 'no_designar_arbitro'
   const payload = {
     arbitros: form.arbitros,
-    tipo: 'no_designar',
-    club_id: form.club_id,
-    rama: form.rama,
-    todas_categorias: form.todas_categorias,
-    categorias: form.todas_categorias ? [] : form.categorias,
+    tipo: form.tipo,
+    id_arbitro_par: esPar ? form.id_arbitro_par : null,
+    club_id: esPar ? null : form.club_id,
+    rama: esPar ? null : form.rama,
+    todas_categorias: esPar ? false : form.todas_categorias,
+    categorias: esPar ? [] : (form.todas_categorias ? [] : form.categorias),
     fecha_desde: form.fecha_desde,
     fecha_hasta: form.fecha_hasta,
   }
@@ -607,34 +640,25 @@ const guardarSolicitud = async () => {
 //  ELIMINAR
 // ====================================================
 const confirmarEliminar = (solicitud) => {
-  solicitudAEliminar.value = solicitud
-  mostrarModalEliminar.value = true
-}
+  notificar({
+    titulo: '¿Eliminar Solicitud?',
+    mensaje: 'Esta acción es irreversible. El registro será borrado permanentemente.',
+    tipo: 'danger',
+    alConfirmar: async () => {
+      const res = await api.post({
+        entity: 'solicitudes',
+        action: 'eliminarSolicitud',
+        payload: { id: solicitud.id }
+      })
 
-const eliminarSolicitud = async () => {
-  if (!solicitudAEliminar.value) return
-  eliminando.value = true
-  try {
-    const res = await api.post({
-      entity: 'solicitudes',
-      action: 'eliminarSolicitud',
-      payload: { id: solicitudAEliminar.value.id }
-    })
-
-    if (res?.ok) {
-      mostrarToast('Solicitud eliminada correctamente')
-      mostrarModalEliminar.value = false
-      solicitudAEliminar.value = null
-      cargarSolicitudes()
-    } else {
-      mostrarToast(res?.payload?.mensaje || 'No se pudo eliminar la solicitud', 'danger')
+      if (res?.ok) {
+        cargarSolicitudes()
+        mostrarToast('Solicitud eliminada correctamente')
+      } else {
+        mostrarToast(res?.payload?.mensaje || 'No se pudo eliminar la solicitud', 'danger')
+      }
     }
-  } catch (err) {
-    console.error('Error al eliminar solicitud:', err)
-    mostrarToast('Error al conectar con el servidor', 'danger')
-  } finally {
-    eliminando.value = false
-  }
+  })
 }
 
 // ====================================================
@@ -704,18 +728,5 @@ onMounted(() => {
 .tabla-sin-lineas td {
   border-left: none !important;
   border-right: none !important;
-}
-
-/* ====================================================
-   TOAST FLOTANTE
-   ==================================================== */
-.toast-fade-enter-active,
-.toast-fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.toast-fade-enter-from,
-.toast-fade-leave-to {
-  opacity: 0;
-  transform: translateY(12px);
 }
 </style>

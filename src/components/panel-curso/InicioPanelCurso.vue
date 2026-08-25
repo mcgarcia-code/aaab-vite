@@ -135,7 +135,7 @@
 import { ref, reactive, onMounted, computed } from 'vue';
 import { useHead } from '@vueuse/head';
 import { api } from '@/api/api';
-import { auth } from '@/api/auth';
+import { auth } from '../../api/auth';
 
 useHead({ title: 'Inicio Curso | AAAB' })
 

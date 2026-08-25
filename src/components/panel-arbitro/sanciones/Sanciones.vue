@@ -279,7 +279,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
-import { auth } from '@/api/auth';
+import { auth } from '../../../api/auth';
 import { api }  from '@/api/api';
 import ModalBase from '@/components/ModalBase.vue';
 

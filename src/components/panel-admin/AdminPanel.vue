@@ -41,7 +41,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { RouterView, useRoute, useRouter } from 'vue-router';
-import { auth } from '@/api/auth';
+import { auth } from '../../api/auth';
 import { useHead } from '@vueuse/head';
 
 const route = useRoute();

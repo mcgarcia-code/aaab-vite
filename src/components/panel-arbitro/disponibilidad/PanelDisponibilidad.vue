@@ -206,7 +206,7 @@
 
 <script setup>
 import { ref, onMounted, watch, inject } from 'vue';
-import { auth } from '@/api/auth';
+import { auth } from '../../../api/auth';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head'
 

@@ -219,7 +219,7 @@
 <script setup>
 import { ref, onMounted, computed, defineComponent, h } from 'vue'
 import { api } from '@/api/api'
-import { auth } from '@/api/auth'
+import { auth } from '../../../api/auth'
 import { useHead } from '@vueuse/head'
 
 useHead({

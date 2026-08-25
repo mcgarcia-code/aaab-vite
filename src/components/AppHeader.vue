@@ -48,7 +48,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import logo from '@/assets/fotos/logo.png'
-import { auth } from '@/api/auth'
+import { auth } from '../api/auth'
 
 const navbarNav = ref(null)
 const logueado = ref(auth.isLoggedIn())

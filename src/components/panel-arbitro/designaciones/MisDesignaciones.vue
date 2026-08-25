@@ -364,7 +364,7 @@
 <script setup>
 import { ref, onMounted, computed, watch, inject } from 'vue'
 import { api } from '@/api/api'
-import { auth } from '@/api/auth'
+import { auth } from '../../../api/auth'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 

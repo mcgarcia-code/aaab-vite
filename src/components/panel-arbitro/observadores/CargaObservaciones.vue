@@ -189,7 +189,7 @@
 <script setup>
 import { ref, reactive, computed, watch, inject } from 'vue'
 import { api } from '@/api/api'
-import { auth } from '@/api/auth'
+import { auth } from '../../../api/auth'
 import { useHead } from '@vueuse/head'
 
 useHead({

@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/public/HomeView.vue';
-import { auth } from '@/api/auth';
+import { auth } from '../api/auth.js';
 
 // --- PUBLIC ---
 const routes = [

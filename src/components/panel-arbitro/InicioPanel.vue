@@ -140,7 +140,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
-import { auth } from '@/api/auth'
+import { auth } from '../../api/auth'
 
 useHead({ title: 'Panel de Inicio | AAAB' })
 
