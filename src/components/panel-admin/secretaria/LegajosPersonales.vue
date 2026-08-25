@@ -353,10 +353,16 @@
     </ModalBase>
 
     <!-- 2. Modal Alta / Edición -->
-    <ModalBase :show="mostrarModal" @close="cerrarModal" :icono="modoModal === 'editar' ? 'edit' : 'person_add'" :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" maxWidth="900px">
+    <ModalBase :show="mostrarModal" @close="cerrarModal" :icono="modoModal !== 'editar' ? 'person_add' : ''" :colorIcono="modoModal !== 'editar' ? 'bg-success-subtle text-success' : ''" maxWidth="900px">
       <template #header>
         <div class="text-center">
-          <span class="fw-bold fs-5">{{ modoModal === 'editar' ? `Editar árbitro` : 'Registrar Nuevo Árbitro' }}</span>
+          <img
+            v-if="modoModal === 'editar'"
+            :src="urlFotoModal"
+            @error="(e) => e.target.src = 'https://via.placeholder.com/150'"
+            class="perfil-img-legajo shadow-sm mb-2"
+          >
+          <span class="fw-bold fs-5 d-block">{{ modoModal === 'editar' ? `Editar árbitro` : 'Registrar Nuevo Árbitro' }}</span>
           <div v-if="modoModal === 'editar'" class="text-muted small">ID #{{ formModal.id }} — {{ formModal.apellido }}, {{ formModal.nombre }}</div>
         </div>
       </template>
@@ -758,6 +764,14 @@ const formModalVacio = () => ({
 })
 
 const formModal = ref(formModalVacio())
+
+const urlFotoModal = computed(() => {
+  if (!formModal.value.dni) {
+    return 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'
+  }
+  const dniLimpio = String(formModal.value.dni).trim()
+  return `https://arbitroshandball.com.ar/uploads/carnet-arbitros/${dniLimpio}.webp`
+})
 
 const solicitudesPendientes = computed(() =>
   solicitudes.value.filter(s => s.estado === 'enviado')
@@ -1333,6 +1347,17 @@ onMounted(() => {
   background-color: #0f172a;
   min-height: 100vh;
   border-radius: 12px;
+}
+
+/* ====================================================
+   FOTO DE PERFIL (Modal Edición)
+   ==================================================== */
+.perfil-img-legajo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #dc2626;
 }
 
 /* ====================================================
