@@ -173,17 +173,17 @@
 
         <div v-else>
           <label class="form-label small fw-bold text-muted">Reunión</label>
-          <select class="form-select mb-3" v-model="reunionSeleccionada">
+          <select class="form-select mb-3" v-model="opcionReunionSeleccionada">
             <option :value="null" disabled>Seleccioná una reunión...</option>
-            <option v-for="r in reuniones" :key="r.id" :value="r.id">
-              {{ r.fecha_formateada }} — {{ r.descripcion || r.titulo }}
+            <option v-for="op in opcionesReunion" :key="op.key" :value="op.key">
+              {{ op.label }}
             </option>
           </select>
 
-          <div v-if="reunionActual" class="border-top pt-3">
+          <div v-if="opcionActual" class="border-top pt-3">
             <small class="text-muted d-block mb-2 fw-bold">Grupos que quedarán habilitados</small>
-            <div v-if="nombresGruposReunion.length" class="d-flex flex-wrap gap-1">
-              <span v-for="(g, i) in nombresGruposReunion" :key="i"
+            <div v-if="opcionActual.nombresGrupos.length" class="d-flex flex-wrap gap-1">
+              <span v-for="(g, i) in opcionActual.nombresGrupos" :key="i"
                     class="badge bg-success-subtle text-success border border-success-subtle">{{ g }}</span>
             </div>
             <span v-else class="text-danger small fst-italic">Esta reunión no tiene grupos asociados.</span>
@@ -195,7 +195,7 @@
         <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 w-100">
           <button class="btn btn-outline-secondary rounded-pill px-4 w-100 w-sm-auto" @click="cerrarModalReunion">Cancelar</button>
           <button class="btn btn-danger rounded-pill px-4 fw-bold w-100 w-sm-auto"
-                  :disabled="guardandoReunion || !reunionSeleccionada || !idsGruposReunion.length"
+                  :disabled="guardandoReunion || !opcionActual || !opcionActual.idsGrupos.length"
                   @click="guardarReunion">
             <span v-if="guardandoReunion" class="spinner-border spinner-border-sm me-2"></span>Habilitar
           </button>
@@ -239,29 +239,45 @@ const modalReunionAbierto = ref(false)
 const cargandoReuniones = ref(false)
 const guardandoReunion = ref(false)
 const reuniones = ref([])
-const reunionSeleccionada = ref(null)
+const opcionReunionSeleccionada = ref(null)
 
 const eventoActual = computed(() =>
   eventos.value.find(e => e.id === eventoSeleccionado.value) || null
 )
 
-const reunionActual = computed(() =>
-  reuniones.value.find(r => r.id === reunionSeleccionada.value) || null
+// Lista de opciones del select: cada reunión-evento se desglosa en una opción
+// por grupo (cada una habilita SOLO ese grupo). Si la reunión es de "todos los
+// grupos", queda como una única opción que los habilita a todos.
+const opcionesReunion = computed(() => {
+  const ops = []
+  for (const r of reuniones.value) {
+    const base = `${r.fecha_formateada} — ${r.descripcion || r.titulo || ''}`.trim()
+    if (r.todosLosGrupos) {
+      ops.push({
+        key: `${r.id}|all`,
+        idEvento: r.id,
+        label: `${base} (Todos los grupos)`,
+        idsGrupos: grupos.value.map(g => g.id),
+        nombresGrupos: grupos.value.map(g => (g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre)),
+      })
+    } else {
+      for (const idGrupo of (r.idsGrupos || [])) {
+        ops.push({
+          key: `${r.id}|${idGrupo}`,
+          idEvento: r.id,
+          label: `${base} (${nombreGrupo(idGrupo)})`,
+          idsGrupos: [idGrupo],
+          nombresGrupos: [nombreGrupo(idGrupo)],
+        })
+      }
+    }
+  }
+  return ops
+})
+
+const opcionActual = computed(() =>
+  opcionesReunion.value.find(o => o.key === opcionReunionSeleccionada.value) || null
 )
-
-const idsGruposReunion = computed(() => {
-  if (!reunionActual.value) return []
-  return reunionActual.value.todosLosGrupos
-    ? grupos.value.map(g => g.id)
-    : (reunionActual.value.idsGrupos || [])
-})
-
-const nombresGruposReunion = computed(() => {
-  if (!reunionActual.value) return []
-  return reunionActual.value.todosLosGrupos
-    ? grupos.value.map(g => (g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre))
-    : idsGruposReunion.value.map(nombreGrupo)
-})
 
 const habilitadosPorEvento = computed(() => {
   const mapa = {}
@@ -279,6 +295,18 @@ const arbitrosHabilitadosPorEvento = computed(() => {
     if (!h.id_arbitro) continue
     if (!mapa[h.id_evento]) mapa[h.id_evento] = []
     mapa[h.id_evento].push(`${h.arbitro_apellido}, ${h.arbitro_nombre}`)
+  }
+  return mapa
+})
+
+// Mapa evento => [ids de árbitros habilitados individualmente], para precargar
+// los tildados al abrir el modal y poder deshabilitarlos.
+const arbitrosIdsHabilitadosPorEvento = computed(() => {
+  const mapa = {}
+  for (const h of habilitaciones.value['arbitros']) {
+    if (!h.id_arbitro) continue
+    if (!mapa[h.id_evento]) mapa[h.id_evento] = []
+    mapa[h.id_evento].push(Number(h.id_arbitro))
   }
   return mapa
 })
@@ -360,7 +388,7 @@ async function cargarTodo() {
 function abrirModal(idEvento) {
   eventoSeleccionado.value = idEvento
   gruposElegidos.value = [...(habilitadosPorEvento.value[idEvento] || [])]
-  arrArbitrosSeleccionados.value = []
+  arrArbitrosSeleccionados.value = [...(arbitrosIdsHabilitadosPorEvento.value[idEvento] || [])]
   modalAbierto.value = true
 }
 
@@ -374,7 +402,7 @@ function cerrarModal() {
 
 async function abrirModalReunion() {
   modalReunionAbierto.value = true
-  reunionSeleccionada.value = null
+  opcionReunionSeleccionada.value = null
   cargandoReuniones.value = true
   try {
     const res = await api.get({
@@ -393,20 +421,22 @@ async function abrirModalReunion() {
 
 function cerrarModalReunion() {
   modalReunionAbierto.value = false
-  reunionSeleccionada.value = null
+  opcionReunionSeleccionada.value = null
 }
 
 async function guardarReunion() {
-  if (!reunionSeleccionada.value || !idsGruposReunion.value.length) return
+  const op = opcionActual.value
+  if (!op || !op.idsGrupos.length) return
   guardandoReunion.value = true
   try {
     await api.post({
       entity: 'examenes_habilitaciones',
       action: 'guardarHabilitacion',
       payload: {
-        idEvento: reunionSeleccionada.value,
-        idsGrupos: idsGruposReunion.value,
-        arrArbitros: []
+        idEvento: op.idEvento,
+        idsGrupos: op.idsGrupos,
+        arrArbitros: [],
+        sumar: true
       }
     })
     await cargarTodo()

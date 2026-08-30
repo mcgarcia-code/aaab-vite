@@ -106,7 +106,7 @@ onMounted(recargar)
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-center border-bottom gap-3 text-center text-md-start">
         <div class="w-100 w-md-auto">
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center justify-content-center justify-content-md-start gap-2 fs-5 fs-md-4">
-            <i class="bi bi-journal-check me-1 me-md-2"></i> Examen Asamblea General
+            <i class="bi bi-journal-check me-1 me-md-2"></i> Examen Asamblea General - Reunión Mensual
           </h4>
           <p class="text-muted small m-0 mt-1">Consultá tus habilitaciones y exámenes teóricos</p>
         </div>

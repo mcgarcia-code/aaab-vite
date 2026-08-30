@@ -104,7 +104,7 @@ const routes = [
       // --- DESIGNACIONES ---
       { path: 'designaciones', name: 'DesignacionesArbitro', component: () => import('../components/panel-arbitro/designaciones/MisDesignaciones.vue') },
 
-      // --- EXAMEN ASAMBLEA GENERAL ---
+      // --- EXAMEN ASAMBLEA GENERAL - REUNIÓN MENSUAL ---
       { path: 'examen-asamblea', name: 'ExamenAsamblea', component: () => import('../components/panel-arbitro/examenes/ExamenAsambleaGeneral.vue') },
 
     ]

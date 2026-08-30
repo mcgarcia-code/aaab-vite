@@ -63,6 +63,8 @@
                 <option value="pendiente">PENDIENTE</option>
                 <option value="aprobada">APROBADA</option>
                 <option value="rechazada">RECHAZADA</option>
+                <option value="anulada">ANULADA</option>
+                <option value="borrada">BORRADA</option>
               </select>
             </div>
             <div class="col-6 col-md-3">
@@ -248,7 +250,7 @@
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Fecha Solicitud *</label>
-            <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none border-secondary-subtle" required :disabled="formModal.tiempo_indeterminado">
+            <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none border-secondary-subtle" required :disabled="formModal.tiempo_indeterminado && modoModal === 'nuevo'">
           </div>
 
           <div class="col-12 col-md-6">

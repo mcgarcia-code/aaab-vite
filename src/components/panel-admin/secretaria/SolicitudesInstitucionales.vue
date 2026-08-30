@@ -10,7 +10,7 @@
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-clipboard-check me-1"></i> Solicitudes Institucionales
             </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ solicitudes.length }} solicitudes</span>
+            <span class="text-muted small d-block mt-1">Total: {{ solicitudesFiltradas.length }} de {{ solicitudes.length }} solicitudes</span>
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
@@ -19,6 +19,12 @@
               <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
               <span v-else class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
+            </button>
+
+            <!-- Botón Limpiar filtros -->
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Limpiar filtros">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
 
             <!-- Botón Agregar Solicitud -->
@@ -38,6 +44,58 @@
           </div>
 
           <template v-else>
+
+            <!-- ============================================ -->
+            <!--  FILTROS DE BÚSQUEDA (fuera de la tabla)     -->
+            <!-- ============================================ -->
+            <div class="filtros-wrapper border rounded shadow-sm bg-light p-2 p-md-3 mb-3">
+              <div class="row g-2 align-items-center">
+                <!-- Árbitro/s -->
+                <div class="col-12 col-sm-6 col-lg">
+                  <input v-model="filtros.arbitro" type="text" class="form-control form-control-sm shadow-none" placeholder="Árbitro...">
+                </div>
+
+                <!-- Solicitud (tipo) -->
+                <div class="col-12 col-sm-6 col-lg">
+                  <select v-model="filtros.tipo" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.tipo }">
+                    <option value="">SOLICITUD (TODAS)</option>
+                    <option value="no_designar">No ser designado a club</option>
+                    <option value="no_designar_arbitro">No ser designado con árbitro</option>
+                  </select>
+                </div>
+
+                <!-- Árbitro a evitar -->
+                <div class="col-12 col-sm-6 col-lg">
+                  <input v-model="filtros.arbitroPar" type="text" class="form-control form-control-sm shadow-none" placeholder="Árbitro a evitar...">
+                </div>
+
+                <!-- Club -->
+                <div class="col-12 col-sm-6 col-lg">
+                  <input v-model="filtros.club" type="text" class="form-control form-control-sm shadow-none" placeholder="Club...">
+                </div>
+
+                <!-- Rama -->
+                <div class="col-12 col-sm-6 col-lg">
+                  <select v-model="filtros.rama" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.rama }">
+                    <option value="">RAMA (TODAS)</option>
+                    <option value="F">Femenina</option>
+                    <option value="M">Masculina</option>
+                  </select>
+                </div>
+
+                <!-- Estado -->
+                <div class="col-12 col-sm-6 col-lg">
+                  <select v-model="filtros.estado" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.estado }">
+                    <option value="">ESTADO (TODOS)</option>
+                    <option value="creado">Creado</option>
+                    <option value="vigente">Vigente</option>
+                    <option value="cumplida">Cumplida</option>
+                    <option value="borrado">Borrado</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
               <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.75rem;">
@@ -47,6 +105,7 @@
                     <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
                     <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro/s</th>
                     <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Solicitud</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro a evitar</th>
                     <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Club</th>
                     <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Rama</th>
                     <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Categorías</th>
@@ -76,8 +135,12 @@
                     </td>
                     <td class="text-dark">
                       <template v-if="esSolicitudPar(s)">
-                        <span class="text-muted">Junto a: </span>{{ s.arbitro_par_apellido }}, {{ s.arbitro_par_nombre }}
+                        {{ s.arbitro_par_apellido }}, {{ s.arbitro_par_nombre }}
                       </template>
+                      <span v-else class="text-muted">-</span>
+                    </td>
+                    <td class="text-dark">
+                      <template v-if="esSolicitudPar(s)"><span class="text-muted">-</span></template>
                       <template v-else>{{ s.club || '-' }}</template>
                     </td>
                     <td class="text-center text-muted">{{ esSolicitudPar(s) ? '-' : etiquetaRama(s.rama) }}</td>
@@ -97,9 +160,9 @@
                     </td>
                   </tr>
                   <tr v-if="solicitudesPaginadas.length === 0">
-                    <td colspan="9" class="py-5 text-center text-muted border-0 bg-white">
+                    <td colspan="10" class="py-5 text-center text-muted border-0 bg-white">
                       <span class="material-icons d-block fs-1 mb-2">inbox</span>
-                      <p class="m-0 fw-bold">No hay solicitudes cargadas.</p>
+                      <p class="m-0 fw-bold">{{ hayFiltrosActivos ? 'No hay solicitudes que coincidan con los filtros.' : 'No hay solicitudes cargadas.' }}</p>
                     </td>
                   </tr>
                 </tbody>
@@ -125,7 +188,7 @@
                   <div class="d-flex flex-column gap-2 bg-light p-2 rounded border mb-2 border-light-subtle">
                     <template v-if="esSolicitudPar(s)">
                       <span class="text-dark small"><strong>Solicitud:</strong> No ser designado con árbitro</span>
-                      <span class="text-dark small"><strong>Junto a:</strong> {{ s.arbitro_par_apellido }}, {{ s.arbitro_par_nombre }}</span>
+                      <span class="text-dark small"><strong>Árbitro a evitar:</strong> {{ s.arbitro_par_apellido }}, {{ s.arbitro_par_nombre }}</span>
                     </template>
                     <template v-else>
                       <span class="text-dark small"><strong>Solicitud:</strong> No ser designado a club</span>
@@ -153,7 +216,7 @@
               </div>
               <div v-if="solicitudesPaginadas.length === 0" class="text-center py-5 text-muted">
                 <span class="material-icons d-block fs-1 mb-2">inbox</span>
-                <p class="m-0 fw-bold">No hay solicitudes cargadas.</p>
+                <p class="m-0 fw-bold">{{ hayFiltrosActivos ? 'No hay solicitudes que coincidan con los filtros.' : 'No hay solicitudes cargadas.' }}</p>
               </div>
             </div>
 
@@ -368,6 +431,31 @@ const solicitudEnEdicion = ref(null)
 const paginaActual = ref(1)
 const registrosPorPagina = 8
 
+// ----------------------------------------------------
+//  FILTROS DE BÚSQUEDA POR COLUMNA
+// ----------------------------------------------------
+const filtros = reactive({
+  arbitro: '',
+  tipo: '',
+  arbitroPar: '',
+  club: '',
+  rama: '',
+  estado: '',
+})
+
+const limpiarFiltros = () => {
+  filtros.arbitro = ''
+  filtros.tipo = ''
+  filtros.arbitroPar = ''
+  filtros.club = ''
+  filtros.rama = ''
+  filtros.estado = ''
+}
+
+const hayFiltrosActivos = computed(() =>
+  Object.values(filtros).some(v => String(v || '').trim() !== '')
+)
+
 const formVacio = () => ({
   tipo: 'no_designar',
   arbitros: [],
@@ -401,11 +489,11 @@ const etiquetaRama = (rama) => {
 }
 
 const claseEstado = (estado) => {
-  if (estado === 'creado') return 'bg-warning text-dark'
-  if (estado === 'vigente') return 'bg-danger'
-  if (estado === 'cumplida') return 'bg-success'
-  if (estado === 'borrado') return 'bg-secondary'
-  return 'bg-light text-dark border'
+  if (estado === 'creado') return 'estado-pill estado-creado'
+  if (estado === 'vigente') return 'estado-pill estado-vigente'
+  if (estado === 'cumplida') return 'estado-pill estado-cumplida'
+  if (estado === 'borrado') return 'estado-pill estado-borrado'
+  return 'estado-pill estado-default'
 }
 
 const formatearFecha = (fecha) => {
@@ -436,11 +524,51 @@ const arbitrosParFiltrados = computed(() => {
   })
 })
 
-const totalPaginas = computed(() => Math.ceil(solicitudes.value.length / registrosPorPagina) || 1)
+// ----------------------------------------------------
+//  APLICACIÓN DE FILTROS SOBRE LA TABLA
+// ----------------------------------------------------
+const solicitudesFiltradas = computed(() => {
+  const fArb = normalizarTexto(filtros.arbitro)
+  const fPar = normalizarTexto(filtros.arbitroPar)
+  const fClub = normalizarTexto(filtros.club)
+
+  return solicitudes.value.filter(s => {
+    // Árbitro solicitante (apellido o nombre)
+    if (fArb) {
+      const nom = normalizarTexto(`${s.apellido} ${s.nombre}`)
+      if (!nom.includes(fArb)) return false
+    }
+    // Tipo de solicitud
+    if (filtros.tipo && s.tipo !== filtros.tipo) return false
+
+    // Árbitro a evitar (solo aplica a solicitudes de tipo par)
+    if (fPar) {
+      const par = normalizarTexto(`${s.arbitro_par_apellido || ''} ${s.arbitro_par_nombre || ''}`)
+      if (!par.includes(fPar)) return false
+    }
+    // Club
+    if (fClub && !normalizarTexto(s.club).includes(fClub)) return false
+
+    // Rama
+    if (filtros.rama && s.rama !== filtros.rama) return false
+
+    // Estado
+    if (filtros.estado && s.estado !== filtros.estado) return false
+
+    return true
+  })
+})
+
+const totalPaginas = computed(() => Math.ceil(solicitudesFiltradas.value.length / registrosPorPagina) || 1)
 
 const solicitudesPaginadas = computed(() => {
   const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return solicitudes.value.slice(inicio, inicio + registrosPorPagina)
+  return solicitudesFiltradas.value.slice(inicio, inicio + registrosPorPagina)
+})
+
+// Al cambiar cualquier filtro, volvemos a la primera página
+watch(filtros, () => {
+  paginaActual.value = 1
 })
 
 // ====================================================
@@ -521,6 +649,7 @@ const abrirModalNueva = () => {
   solicitudEnEdicion.value = null
   Object.assign(form, formVacio())
   filtroArbitro.value = ''
+  filtroArbitroPar.value = ''
   categorias.value = []
   mostrarModal.value = true
 }
@@ -532,13 +661,14 @@ const abrirModalEditar = async (solicitud) => {
 
   filtroArbitroPar.value = ''
   cargandoDesdeEdicion.value = true
+  // Modelo 1 fila = 1 solicitud: reconstruimos el form desde la fila única.
   Object.assign(form, {
     tipo: solicitud.tipo || 'no_designar',
-    arbitros: (solicitud.arbitros || []).map(a => a.id),
+    arbitros: solicitud.id_arbitro != null ? [solicitud.id_arbitro] : [],
     id_arbitro_par: solicitud.id_arbitro_par ?? null,
     club_id: solicitud.club_id || '',
     rama: solicitud.rama || '',
-    categorias: (solicitud.categorias || []).map(c => c.id),
+    categorias: (!solicitud.todas_categorias && solicitud.id_categoria != null) ? [solicitud.id_categoria] : [],
     todas_categorias: !!solicitud.todas_categorias,
     fecha_desde: solicitud.fecha_desde || '',
     fecha_hasta: solicitud.fecha_hasta || '',
@@ -642,7 +772,7 @@ const guardarSolicitud = async () => {
 const confirmarEliminar = (solicitud) => {
   notificar({
     titulo: '¿Eliminar Solicitud?',
-    mensaje: 'Esta acción es irreversible. El registro será borrado permanentemente.',
+    mensaje: 'La solicitud pasará a estado BORRADO y dejará de aplicarse.',
     tipo: 'danger',
     alConfirmar: async () => {
       const res = await api.post({
@@ -728,5 +858,51 @@ onMounted(() => {
 .tabla-sin-lineas td {
   border-left: none !important;
   border-right: none !important;
+}
+
+/* ====================================================
+   PÍLDORAS DE ESTADO
+   ==================================================== */
+.estado-pill {
+  border-radius: 999px;
+  padding: 0.35em 0.85em;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+/* VIGENTE — rojo/rosa */
+.estado-vigente {
+  background-color: #fde7ea;
+  color: #c0304a;
+  border-color: #f5c2cb;
+}
+
+/* CUMPLIDA — verde */
+.estado-cumplida {
+  background-color: #e3f5e6;
+  color: #2f8a45;
+  border-color: #bfe6c8;
+}
+
+/* CREADO — amarillo (EN PROCESO) */
+.estado-creado {
+  background-color: #fdf3d3;
+  color: #a6841f;
+  border-color: #f2e2a5;
+}
+
+/* BORRADO — gris azulado (ANULADA) */
+.estado-borrado {
+  background-color: #eef1f5;
+  color: #5b6b7f;
+  border-color: #d4dbe4;
+}
+
+.estado-default {
+  background-color: #f1f3f5;
+  color: #495057;
+  border-color: #dee2e6;
 }
 </style>

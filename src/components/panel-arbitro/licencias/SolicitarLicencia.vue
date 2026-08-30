@@ -125,7 +125,7 @@
                   </div>
                   <div class="col-6 col-md-2 text-start text-md-center pe-2 pe-md-0">
                     <button
-                      v-if="(lic.estado === 'pendiente' || lic.estado === 'aprobada') && esFechaFutura(lic.fecha_licencia)"
+                      v-if="puedeAnular(lic)"
                       @click="anularLicencia(lic)"
                       class="btn btn-sm btn-anular w-90 py-2 py-md-1 shadow-sm" style="font-size: 0.7rem; letter-spacing: 0.5px;"
                       :disabled="cargando"
@@ -322,7 +322,67 @@ const esFechaFutura = (fechaStr) => {
   return fechaLicencia >= hoy;
 };
 
+// ¿Se puede mostrar el botón Anular para esta licencia?
+// - Indeterminada aprobada: sí (la anulación la evalúa la comisión).
+// - Resto: pendiente o aprobada, y con fecha futura (como antes).
+const esIndeterminada = (lic) => lic.tiempo_indeterminado == 1;
+
+const puedeAnular = (lic) => {
+  if (esIndeterminada(lic)) {
+    return lic.estado === 'aprobada';
+  }
+  return (lic.estado === 'pendiente' || lic.estado === 'aprobada') && esFechaFutura(lic.fecha_licencia);
+};
+
 const anularLicencia = (lic) => {
+  // Anulación de licencia por tiempo indeterminado: no se borra al instante,
+  // queda a la espera de que la comisión directiva la evalúe (estado pendiente).
+  if (esIndeterminada(lic)) {
+    notificar({
+      titulo: '¿Solicitar anulación?',
+      mensaje: 'Tu solicitud de anulación de licencia indeterminada será evaluada por la Comisión Directiva.',
+      tipo: 'warning',
+      alConfirmar: async () => {
+        cargando.value = true;
+        try {
+          const res = await api.post({
+            entity: 'licencias',
+            action: 'actualizarLicencia',
+            payload: {
+              id: lic.id,
+              estado: 'pendiente'
+            }
+          });
+
+          if (res.ok && res.payload.success) {
+            toast({
+              titulo: 'Solicitud enviada',
+              mensaje: 'Tu solicitud de anulación de licencia indeterminada será evaluada por la Comisión Directiva.',
+              tipo: 'success'
+            });
+            await obtenerLicencias();
+          } else {
+            toast({
+              titulo: 'Error',
+              mensaje: res?.message || 'No se pudo enviar la solicitud de anulación.',
+              tipo: 'danger'
+            });
+          }
+        } catch (err) {
+          console.error('Detalle del error anular indeterminada:', err);
+          toast({
+            titulo: 'Error de Red',
+            mensaje: 'No se pudo conectar con el servidor.',
+            tipo: 'danger'
+          });
+        } finally {
+          cargando.value = false;
+        }
+      }
+    });
+    return;
+  }
+
   if (!lic.puede_anular) {
     toast({
       titulo: 'No se puede anular',

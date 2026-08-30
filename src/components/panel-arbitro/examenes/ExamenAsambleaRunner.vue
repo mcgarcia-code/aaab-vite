@@ -180,7 +180,7 @@ const notificar = inject('notificar')
 
 const props = defineProps({
   idEvento: { type: [Number, String], required: true },
-  titulo: { type: String, default: 'Examen Asamblea General' }
+  titulo: { type: String, default: 'Examen Asamblea General - Reunión Mensual' }
 })
 const emit = defineEmits(['terminar', 'salir'])
 

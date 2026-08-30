@@ -19,12 +19,13 @@
             </span>
           </div>
 
-          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+          <!-- Select y botones agrupados bajo un flex-nowrap -->
+          <div class="d-flex flex-nowrap gap-2 align-items-center mt-2 mt-md-0 overflow-x-auto pb-1">
             <select
               v-model="reunionSeleccionada"
               @change="onReunionSeleccionada"
-              class="form-select shadow-sm border-secondary-subtle fw-semibold"
-              style="min-width: 260px; max-width: 420px;"
+              class="form-select shadow-sm border-secondary-subtle fw-semibold flex-shrink-0"
+              style="width: auto; min-width: 260px; max-width: 420px;"
               :disabled="cargandoInicial || cargandoArbitros"
             >
               <option value="">— Ver listado general —</option>
@@ -32,10 +33,34 @@
                 {{ opcionReunion(r) }}
               </option>
             </select>
+
+            <template v-if="modoReunion">
+              <button
+                class="btn btn-danger fw-bold shadow-sm d-flex align-items-center gap-2 flex-shrink-0"
+                :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || reunionActual?.examen_habilitado"
+                @click="habilitarExamenReunion"
+                :title="idsGruposExamenReunion.length ? 'Habilitar el examen para los grupos de esta reunión' : 'Esta reunión no tiene grupos asociados'"
+              >
+                <span v-if="habilitandoExamen" class="spinner-border spinner-border-sm"></span>
+                <i v-else class="bi bi-shield-check"></i>
+                <span class="d-none d-md-inline">Habilitar examen</span>
+              </button>
+
+              <button
+                class="btn btn-outline-danger fw-bold shadow-sm d-flex align-items-center gap-2 flex-shrink-0"
+                :disabled="deshabilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || !reunionActual?.examen_habilitado"
+                @click="deshabilitarExamenReunion"
+                title="Deshabilitar el examen de esta reunión"
+              >
+                <span v-if="deshabilitandoExamen" class="spinner-border spinner-border-sm"></span>
+                <i v-else class="bi bi-shield-slash"></i>
+                <span class="d-none d-md-inline">Deshabilitar examen</span>
+              </button>
+            </template>
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white">
+            <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white flex-shrink-0">
               <input
                 class="form-check-input"
                 type="checkbox"
@@ -48,10 +73,10 @@
                 Solo activos
               </label>
             </div>
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2" aria-label="Mostrar filtros">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2 flex-shrink-0" aria-label="Mostrar filtros">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" aria-label="Limpiar filtros">
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 flex-shrink-0" aria-label="Limpiar filtros">
               <span class="material-icons text-dark fs-6">filter_alt_off</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
@@ -93,7 +118,6 @@
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">
-
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
             <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
               <thead class="table-light">
@@ -483,6 +507,9 @@ const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
 const arrReuniones        = ref([])
 const arbitros            = ref([])
 const arbitrosReunion     = ref([])
+const grupos              = ref([])
+const habilitandoExamen   = ref(false)
+const deshabilitandoExamen = ref(false)
 
 const reunionSeleccionada = ref('')
 const soloActivos         = ref(false)
@@ -512,6 +539,62 @@ const modoReunion  = computed(() => !!reunionSeleccionada.value)
 const reunionActual = computed(() =>
   arrReuniones.value.find(r => String(r.id) === String(reunionSeleccionada.value)) ?? null
 )
+
+// Ids de grupos que se habilitarían para el examen de la reunión elegida:
+// los que participan de la reunión (o todos, si la reunión es "todos los grupos").
+const idsGruposExamenReunion = computed(() => {
+  const r = reunionActual.value
+  if (!r) return []
+  return r.todosLosGrupos ? grupos.value.map(g => g.id) : (r.idsGrupos || [])
+})
+
+async function habilitarExamenReunion() {
+  const r = reunionActual.value
+  if (!r || !idsGruposExamenReunion.value.length) return
+  habilitandoExamen.value = true
+  try {
+    await api.post({
+      entity: 'examenes_habilitaciones',
+      action: 'guardarHabilitacion',
+      payload: {
+        idEvento: r.id,
+        idsGrupos: idsGruposExamenReunion.value,
+        arrArbitros: [],
+        sumar: true
+      }
+    })
+    toast({ tipo: 'success', mensaje: 'Examen habilitado para la reunión' })
+    r.examen_habilitado = true
+  } catch (e) {
+    console.error('habilitarExamenReunion:', e)
+    toast({ tipo: 'danger', mensaje: 'No se pudo habilitar el examen' })
+  } finally {
+    habilitandoExamen.value = false
+  }
+}
+
+async function deshabilitarExamenReunion() {
+  const r = reunionActual.value
+  if (!r || !idsGruposExamenReunion.value.length) return
+  deshabilitandoExamen.value = true
+  try {
+    await api.post({
+      entity: 'examenes_habilitaciones',
+      action: 'deshabilitarHabilitacion',
+      payload: {
+        idEvento: r.id,
+        idsGrupos: idsGruposExamenReunion.value
+      }
+    })
+    toast({ tipo: 'success', mensaje: 'Examen deshabilitado para la reunión' })
+    r.examen_habilitado = false
+  } catch (e) {
+    console.error('deshabilitarExamenReunion:', e)
+    toast({ tipo: 'danger', mensaje: 'No se pudo deshabilitar el examen' })
+  } finally {
+    deshabilitandoExamen.value = false
+  }
+}
 
 const resumenReunionActual = computed(() => {
   const r = { presentes: 0, ausentes: 0, sinRegistro: 0 }
@@ -597,8 +680,8 @@ const arbitrosFiltrados = computed(() => {
   return arbitrosMostrados.value.filter(a => {
     if (apellido && !normalizarTexto(a.apellido).includes(normalizarTexto(apellido))) return false
     if (nombre   && !normalizarTexto(a.nombre).includes(normalizarTexto(nombre)))     return false
-    if (grupo    && (a.nombre_grupo || a.grupo) !== grupo)                             return false
-    if (subgrupo && (a.subgrupo ?? '') !== subgrupo)                                   return false
+    if (grupo    && (a.nombre_grupo || a.grupo) !== grupo)                            return false
+    if (subgrupo && (a.subgrupo ?? '') !== subgrupo)                                  return false
     if (modoReunion.value && asistencia) {
       const estadoActual = asistencias[a.id] || ''
       if (asistencia === 'presente'     && estadoActual !== 'presente')                                    return false
@@ -629,6 +712,14 @@ const obtenerReuniones = async () => {
     if ((res.ok || res.success) && res.payload)
       arrReuniones.value = res.payload.filter(r => r.categoria === 'reunion')
   } catch (e) { console.error('obtenerReuniones:', e) }
+}
+
+const obtenerGrupos = async () => {
+  try {
+    const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos' })
+    const lista = res?.payload ?? res ?? []
+    grupos.value = Array.isArray(lista) ? lista : []
+  } catch (e) { console.error('obtenerGrupos:', e) }
 }
 
 // ← ÚNICO CAMBIO vs. admin: obtenerArbitrosFiltradosPorGrupo
@@ -793,7 +884,7 @@ watch(soloActivos, async () => {
 })
 
 onMounted(async () => {
-  await Promise.all([obtenerReuniones(), cargarArbitros()])
+  await Promise.all([obtenerReuniones(), cargarArbitros(), obtenerGrupos()])
   await cargarAsistenciasGlobales()
   cargandoInicial.value = false
 })
