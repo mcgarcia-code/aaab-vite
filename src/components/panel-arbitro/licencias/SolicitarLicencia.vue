@@ -17,12 +17,18 @@
             <select v-model="motivoSeleccionado" class="form-select form-select-lg shadow-none fs-6" :disabled="cargando || tiempoIndeterminado">
               <option value="particular">Particular</option>
               <option value="lesion_enfermedad">Lesión / Enfermedad</option>
+              <option value="designacion_torneo_nacional">Designación Torneo Nacional</option>
             </select>
           </div>
 
           <div v-if="motivoSeleccionado === 'lesion_enfermedad'" class="alert alert-warning small py-2 px-3 mb-3 border-0" style="border-radius: 8px;">
             <i class="bi bi-exclamation-triangle-fill me-1"></i>
             Tu licencia quedará <strong>Pendiente</strong>. Tenés 72 hs para enviar el certificado médico a <strong>licencias@arbitroshandball.com.ar</strong>, sino será rechazada y enviada al Tribunal de Ética. Avisá a tu coordinador.
+          </div>
+
+          <div v-if="motivoSeleccionado === 'designacion_torneo_nacional'" class="alert alert-warning small py-2 px-3 mb-3 border-0" style="border-radius: 8px;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            Tu licencia quedará <strong>Pendiente</strong> hasta que sea autorizada por la Comisión Directiva.
           </div>
 
           <div class="mb-3">
@@ -95,7 +101,7 @@
                       <i class="bi bi-clock me-1"></i> Solicitada: {{ formatearFecha(lic.fecha_solicitud) }}
                     </div>
                     <div class="text-muted" style="font-size: 0.8rem;">
-                      <i class="bi bi-tag me-1"></i> Motivo: {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}
+                      <i class="bi bi-tag me-1"></i> Motivo: {{ etiquetaMotivo(lic.motivo, true) }}
                     </div>
                   </div>
 
@@ -107,7 +113,7 @@
                     {{ formatearFecha(lic.fecha_solicitud) }}
                   </div>
                   <div class="col-md-3 d-none d-md-block text-muted small text-truncate pe-2">
-                    {{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enfermedad' : 'Particular' }}
+                    {{ etiquetaMotivo(lic.motivo) }}
                   </div>
 
                   <!-- ESTADO Y ACCIÓN (Ambos, en celular se parten mitad y mitad) -->
@@ -209,6 +215,12 @@ const formatearFecha = (fechaStr) => {
 
 const formatearFechaAusencia = (lic) => (lic.tiempo_indeterminado == 1 ? 'Tiempo indeterminado' : formatearFecha(lic.fecha_licencia));
 
+const etiquetaMotivo = (motivo, corto = false) => {
+  if (motivo === 'lesion_enfermedad') return corto ? 'Lesión/Enf.' : 'Lesión/Enfermedad';
+  if (motivo === 'designacion_torneo_nacional') return corto ? 'Desig. T. Nac.' : 'Designación Torneo Nacional';
+  return 'Particular';
+};
+
 const parseFecha = (fechaStr) => {
   if (!fechaStr) return new Date(8640000000000000); // sin fecha (licencia por tiempo indeterminado): siempre "futura"
   const [dia, mes, anio] = fechaStr.split('/');
@@ -264,7 +276,9 @@ const solicitarLicencia = async () => {
         tipoNotificacion = 'danger';
       } else if (estadoServidor === 'pendiente') {
         tituloNotificacion = 'Licencia Pendiente';
-        mensajeNotificacion = 'Recordá enviar el certificado médico dentro de las 72 hs.';
+        mensajeNotificacion = motivoSeleccionado.value === 'designacion_torneo_nacional'
+          ? 'Tu licencia quedará Pendiente hasta que sea autorizada por la Comisión Directiva.'
+          : 'Recordá enviar el certificado médico dentro de las 72 hs.';
         tipoNotificacion = 'warning';
       }
 

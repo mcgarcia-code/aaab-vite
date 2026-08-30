@@ -120,7 +120,7 @@
                     <td class="text-center">
                       <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
                     </td>
-                    <td class="text-muted small">{{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</td>
+                    <td class="text-muted small">{{ etiquetaMotivo(lic.motivo, true) }}</td>
                     <td class="text-center text-muted fw-bold">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
                     <td class="text-center pe-3 text-primary fw-bold">{{ formatearFechaAusencia(lic) }}</td>
                   </tr>
@@ -148,7 +148,7 @@
                   <div class="bg-light p-2 rounded border small mb-3">
                     <div class="d-flex justify-content-between mb-1">
                       <span class="text-muted">Motivo:</span>
-                      <span class="fw-bold text-dark">{{ lic.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</span>
+                      <span class="fw-bold text-dark">{{ etiquetaMotivo(lic.motivo, true) }}</span>
                     </div>
                     <div class="d-flex justify-content-between">
                       <span class="text-muted">Solicitada:</span>
@@ -233,6 +233,7 @@
             <select v-model="formModal.motivo" class="form-select shadow-none border-secondary-subtle" :disabled="formModal.tiempo_indeterminado">
               <option value="particular">Particular</option>
               <option value="lesion_enfermedad">Lesión / Enfermedad</option>
+              <option value="designacion_torneo_nacional">Designación Torneo Nacional</option>
             </select>
           </div>
 
@@ -315,7 +316,7 @@
                 <td class="text-nowrap text-muted fw-bold py-3 ps-3">{{ formatearFechaVista(h.fecha_solicitud) }}</td>
                 <td class="text-nowrap text-primary fw-bold py-3">{{ formatearFechaAusencia(h) }}</td>
                 <td class="text-muted py-3" style="white-space: normal; word-wrap: break-word;">
-                  {{ h.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}
+                  {{ etiquetaMotivo(h.motivo, true) }}
                 </td>
                 <td class="text-center py-3 pe-3">
                   <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
@@ -334,7 +335,7 @@
             </div>
             <div class="d-flex justify-content-between align-items-center text-muted small mt-2">
               <span><strong>Solicitada:</strong> {{ formatearFechaVista(h.fecha_solicitud) }}</span>
-              <span>{{ h.motivo === 'lesion_enfermedad' ? 'Lesión/Enf.' : 'Particular' }}</span>
+              <span>{{ etiquetaMotivo(h.motivo, true) }}</span>
             </div>
           </div>
         </div>
@@ -385,6 +386,12 @@ const historialLicencia = ref([])
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : '';
 const formatearFechaAusencia = (lic) => (lic.tiempo_indeterminado == 1 ? 'Tiempo indeterminado' : formatearFechaVista(lic.fecha_licencia));
+
+const etiquetaMotivo = (motivo, corto = false) => {
+  if (motivo === 'lesion_enfermedad') return corto ? 'Lesión/Enf.' : 'Lesión/Enfermedad';
+  if (motivo === 'designacion_torneo_nacional') return corto ? 'Desig. T. Nac.' : 'Designación Torneo Nacional';
+  return 'Particular';
+};
 
 const licenciasFiltradas = computed(() => {
   return licencias.value.filter(l => {
@@ -554,7 +561,7 @@ const exportarExcel = async () => {
     'Apellido': l.apellido,
     'Nombre': l.nombre,
     'Estado': l.estado.toUpperCase(),
-    'Motivo': l.motivo === 'lesion_enfermedad' ? 'Lesión/Enfermedad' : 'Particular',
+    'Motivo': etiquetaMotivo(l.motivo),
     'Fecha Solicitud': formatearFechaVista(l.fecha_solicitud),
     'Fecha Licencia': formatearFechaAusencia(l)
   }));
