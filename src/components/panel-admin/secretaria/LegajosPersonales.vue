@@ -353,7 +353,7 @@
     </ModalBase>
 
     <!-- 2. Modal Alta / Edición -->
-    <ModalBase :show="mostrarModal" @close="cerrarModal" :icono="modoModal !== 'editar' ? 'person_add' : ''" :colorIcono="modoModal !== 'editar' ? 'bg-success-subtle text-success' : ''" maxWidth="900px">
+    <ModalBase :show="mostrarModal" @close="cerrarModal" :icono="modoModal !== 'editar' ? 'person_add' : ''" :colorIcono= "modoModal !== 'editar' ? 'bg-success-subtle text-success' : ''" maxWidth="900px">
       <template #header>
         <div class="text-center">
           <img
