@@ -290,7 +290,11 @@ const confirmarFoto = async () => {
     if (res.ok) {
       // Forzamos la recarga de la imagen en el panel (y en la credencial la próxima vez que se abra)
       versionFoto.value = Date.now()
-      cancelarFoto()
+      // Cerramos el modal directamente. No usamos cancelarFoto() acá porque su
+      // guarda (if subiendoFoto) todavía es true en este punto y no cerraría.
+      if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+      previewUrl.value = ''
+      mostrarModalFoto.value = false
       toastRef.value?.mostrar({
         tipo: 'success',
         titulo: 'Foto actualizada',
