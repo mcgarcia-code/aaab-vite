@@ -132,7 +132,8 @@ const categorias = [
       { to: '/panel-admin/desarrollo-arbitral/observaciones', title: 'Observaciones realizadas', icon: 'bi bi-clipboard-data-fill', desc: 'Registro y seguimiento de las observaciones arbitrales.' },
       { to: '/panel-admin/desarrollo-arbitral/reuniones-mensuales', title: 'Reuniones Mensuales', icon: 'bi bi-calendar-event', desc: 'Registro de presentes y ausentes en reuniones mensuales.' },
       { to: '/panel-admin/desarrollo-arbitral/resumen-arbitros', title: 'Planilla General de Árbitros', icon: 'bi bi-graph-up-arrow', desc: 'Administración de exámenes teóricos/físicos.' },
-      { to: '/panel-admin/desarrollo-arbitral/habilitacion-examenes-asamblea', title: 'Habilitación de Exámenes Asamblea - Reuniones Mensuales', icon: 'bi bi-shield-check', desc: 'Elegí qué grupos quedan habilitados para rendir el examen teórico.' }
+      { to: '/panel-admin/desarrollo-arbitral/habilitacion-examenes-asamblea', title: 'Habilitación de Exámenes Asamblea - Reuniones Mensuales', icon: 'bi bi-shield-check', desc: 'Elegí qué grupos quedan habilitados para rendir el examen teórico.' },
+      { to: '/panel-admin/desarrollo-arbitral/planilla-general-observaciones', title: 'Planilla General de Observaciones', icon: 'bi bi-clipboard2-data-fill', desc: 'Visualizar todas las observaciones realizadas a los árbitros.' }
     ]
   },
   {

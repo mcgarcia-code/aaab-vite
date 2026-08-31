@@ -160,10 +160,12 @@ const menuItems = [
   { to: '/panel-arbitro/disponibilidad', title: 'Disponibilidad', icon: 'bi bi-clock-history', desc: 'Modificá tus horarios.', categoria: 'Mi Perfil' },
   { to: '/panel-arbitro/credencial', title: 'Credencial Digital', icon: 'bi bi-person-badge', desc: 'Carnet oficial 2026.', categoria: 'Mi Perfil' },
 
-  { to: '/panel-arbitro/rendimiento', title: 'Mi Rendimiento', icon: 'bi bi-graph-up-arrow', desc: 'Exámenes y Observaciones', categoria: 'Actividad Arbitral' },
+  { to: '/panel-arbitro/rendimiento', title: 'Mi Rendimiento', icon: 'bi bi-graph-up-arrow', desc: 'Exámenes y asistencia a reuniones', categoria: 'Actividad Arbitral' },
+  { to: '/panel-arbitro/mis-observaciones', title: 'Mis Observaciones', icon: 'bi bi-eye', desc: 'Visualizar observaciones de tus partidos', categoria: 'Actividad Arbitral' },
+
   { to: '/panel-arbitro/designaciones', title: 'Mis Designaciones', icon: 'bi bi-calendar4-week', desc: 'Mis Designaciones', categoria: 'Actividad Arbitral' },
   { to: '/panel-arbitro/coordinadores', title: 'Coordinadores', icon: 'bi bi-check', desc: 'Cargar y visualizar exámenes', rolesPermitidos: [4], categoria: 'Actividad Arbitral' },
-  { to: '/panel-arbitro/observaciones', title: 'Observaciones', icon: 'bi bi-eye', desc: 'Cargar y visualizar observaciones', rolesPermitidos: [2, 4], categoria: 'Actividad Arbitral' },
+  { to: '/panel-arbitro/observaciones', title: 'Observaciones', icon: 'bi bi-eye', desc: 'Cargar y visualizar observaciones realizadas por vos', rolesPermitidos: [2, 4], categoria: 'Actividad Arbitral' },
   { to: '/panel-arbitro/examen-asamblea', title: 'Examen Asamblea General - Reunión Mensual', icon: 'bi bi-journal-check', desc: 'Rendí el examen teórico online', categoria: 'Actividad Arbitral' },
 
   { to: '/panel-arbitro/licencia', title: 'Solicitar Licencias', icon: 'bi bi-calendar-check', desc: 'Inasistencias con antelación.', categoria: 'Administración' },

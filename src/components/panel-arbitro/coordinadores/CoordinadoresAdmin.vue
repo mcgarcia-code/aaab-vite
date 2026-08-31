@@ -75,6 +75,12 @@ const opcionesCoordinadores = [
     title: 'Planilla General de Árbitros',
     icon: 'bi bi-graph-up-arrow',
     desc: 'Administración de exámenes teóricos/físicos.'
+  },
+  {
+    to: '/panel-arbitro/coordinadores/planilla-general-observaciones', // Puedes ajustar esta ruta
+    title: 'Planilla General de Observaciones',
+    icon: 'bi bi-clipboard2-data-fill',
+    desc: 'Visualizar todas las observaciones realizadas a los árbitros.'
   }
 ];
 </script>

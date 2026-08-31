@@ -60,15 +60,15 @@
                   <th class="py-3 text-uppercase text-muted">Categoría / Partido</th>
                   <th class="py-3 text-center text-uppercase text-muted" style="width: 90px;">Puntaje</th>
                   <th class="py-3 text-center text-uppercase text-muted" style="width: 140px;">Estado</th>
-                  <th class="py-3 text-center text-uppercase text-muted pe-3" style="width: 120px;">Acciones</th>
+                  <th class="py-3 text-center text-uppercase text-muted pe-3" style="width: 200px;">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="obs in observacionesPaginadas" :key="obs.id">
-                  <td class="fw-bold text-muted ps-3">{{ obs.fecha_partido_fmt }}</td>
+                  <td class="fw-bold text-muted ps-3">{{ formatearFecha(obs.fecha_partido) }}</td>
                   <td class="fw-bold text-uppercase text-dark">
                     <div>{{ obs.arb1 }}</div>
-                    <div v-if="obs.arb2_apellido">{{ obs.arb2 }}</div>
+                    <div v-if="obs.arb2 && obs.ref2_id">{{ obs.arb2 }}</div>
                   </td>
                   <td class="text-dark">
                     <div class="fw-bold">{{ obs.categoria || obs.categoria_edad || '-' }}</div>
@@ -76,19 +76,30 @@
                   </td>
                   <td class="text-center fw-bold text-danger">{{ obs.puntaje_final ?? '-' }}</td>
                   <td class="text-center">
-                    <span class="badge rounded-pill px-3 py-2" :class="badgeEstado(obs.estado)">
+                    <span :class="badgeEstado(obs.estado)">
                       {{ etiquetaEstado(obs.estado) }}
                     </span>
-                    <div v-if="obs.estado === 'anulada' && obs.comentario_estado" class="text-danger small mt-1" style="font-size: 0.7rem;">
+                    <div v-if="(obs.estado === 'anulada' || obs.estado === 'rechazada') && obs.comentario_estado" class="text-danger small mt-1" style="font-size: 0.7rem;">
                       <i class="bi bi-info-circle"></i> {{ obs.comentario_estado }}
                     </div>
                   </td>
                   <td class="text-center pe-3">
-                    <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-3 d-flex align-items-center gap-1 mx-auto" @click="descargarExcel(obs)" :disabled="descargandoId === obs.id">
-                      <span v-if="descargandoId === obs.id" class="spinner-border spinner-border-sm"></span>
-                      <span v-else class="material-icons" style="font-size: 16px;">download</span>
-                      Excel
-                    </button>
+                    <div class="d-flex justify-content-center gap-1">
+                      <!-- Ver detalle: siempre disponible -->
+                      <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id" title="Ver detalle">
+                        <span v-if="cargandoDetalleId === obs.id" class="spinner-border spinner-border-sm"></span>
+                        <span v-else class="material-icons" style="font-size: 16px;">visibility</span>
+                      </button>
+                      <!-- Excel -->
+                      <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="descargarExcel(obs)" :disabled="descargandoId === obs.id" title="Descargar Excel">
+                        <span v-if="descargandoId === obs.id" class="spinner-border spinner-border-sm"></span>
+                        <span v-else class="material-icons" style="font-size: 16px;">download</span>
+                      </button>
+                      <!-- Anular: sólo si está pendiente -->
+                      <button v-if="esPendiente(obs)" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="pedirAnular(obs)" title="Anular observación">
+                        <span class="material-icons" style="font-size: 16px;">block</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
                 <tr v-if="observacionesPaginadas.length === 0">
@@ -108,26 +119,34 @@
                 <div class="d-flex justify-content-between align-items-start mb-2">
                   <div class="fw-bold text-uppercase text-dark" style="font-size: 1rem; line-height: 1.2;">
                     <div>{{ obs.arb1 }}</div>
-                    <div v-if="obs.arb2_apellido">{{ obs.arb2 }}</div>
+                    <div v-if="obs.arb2 && obs.ref2_id">{{ obs.arb2 }}</div>
                   </div>
-                  <span class="badge rounded-pill px-2 py-1" :class="badgeEstado(obs.estado)">
+                  <span :class="badgeEstado(obs.estado)">
                     {{ etiquetaEstado(obs.estado) }}
                   </span>
                 </div>
                 <div class="text-muted fw-bold mb-2" style="font-size: 0.8rem;">
-                  {{ obs.fecha_partido_fmt }} <span class="mx-1">•</span> {{ obs.categoria || obs.categoria_edad || '-' }}
+                  {{ formatearFecha(obs.fecha_partido) }} <span class="mx-1">•</span> {{ obs.categoria || obs.categoria_edad || '-' }}
                 </div>
                 <div class="text-dark small mb-2">{{ obs.equipo_local }} vs {{ obs.equipo_visitante }}</div>
-                <div v-if="obs.estado === 'anulada' && obs.comentario_estado" class="alert alert-danger py-1 px-2 small mb-2 mt-1">
+                <div v-if="(obs.estado === 'anulada' || obs.estado === 'rechazada') && obs.comentario_estado" class="alert alert-danger py-1 px-2 small mb-2 mt-1">
                   <i class="bi bi-info-circle me-1"></i>{{ obs.comentario_estado }}
                 </div>
                 <div class="d-flex justify-content-between align-items-center border-top pt-2">
                   <span class="fw-bold text-danger small">Puntaje: {{ obs.puntaje_final ?? '-' }}</span>
-                  <button class="btn btn-sm btn-dark rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="descargarExcel(obs)" :disabled="descargandoId === obs.id">
-                    <span v-if="descargandoId === obs.id" class="spinner-border spinner-border-sm"></span>
-                    <span v-else class="material-icons" style="font-size: 16px;">download</span>
-                    Excel
-                  </button>
+                  <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id">
+                      <span v-if="cargandoDetalleId === obs.id" class="spinner-border spinner-border-sm"></span>
+                      <span v-else class="material-icons" style="font-size: 16px;">visibility</span>
+                    </button>
+                    <button class="btn btn-sm btn-dark rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="descargarExcel(obs)" :disabled="descargandoId === obs.id">
+                      <span v-if="descargandoId === obs.id" class="spinner-border spinner-border-sm"></span>
+                      <span v-else class="material-icons" style="font-size: 16px;">download</span>
+                    </button>
+                    <button v-if="esPendiente(obs)" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="pedirAnular(obs)">
+                      <span class="material-icons" style="font-size: 16px;">block</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -151,6 +170,90 @@
         </template>
       </div>
     </div>
+
+    <!-- ==========================================
+         MODAL: VER DETALLE DE LA OBSERVACIÓN
+         ========================================== -->
+    <ModalBase :show="mostrarDetalle" @close="cerrarDetalle" titulo="Detalle de la Observación" icono="visibility" colorIcono="bg-primary text-white" maxWidth="800px">
+      <div v-if="detalle" class="text-start">
+        <!-- Cabecera -->
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <p class="m-0 fw-bold small text-dark">Observación #{{ detalle.id }}</p>
+            <p class="m-0 text-muted small">{{ formatearFecha(detalle.fecha_partido) }} — {{ detalle.competencia }}</p>
+          </div>
+          <span class="align-self-center" :class="badgeEstado(detalle.estado)">
+            {{ etiquetaEstado(detalle.estado) }}
+          </span>
+        </div>
+
+        <div class="bg-light p-3 rounded border mb-3 border-secondary-subtle">
+          <p class="m-0 small text-dark"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }} <span v-if="detalle.categoria_edad" class="badge bg-secondary ms-1">{{ detalle.categoria_edad }}</span></p>
+          <p class="m-0 small text-dark mt-1" v-if="detalle.numero_partido"><strong class="text-muted">Nº Partido:</strong> {{ detalle.numero_partido }}</p>
+          <p class="m-0 small text-dark mt-1" v-if="detalle.puntaje_final != null"><strong class="text-muted">Puntaje final:</strong> <span class="fw-bold text-danger">{{ detalle.puntaje_final }}</span></p>
+        </div>
+
+        <div v-if="(detalle.estado === 'anulada' || detalle.estado === 'rechazada') && detalle.comentario_estado" class="alert alert-danger py-2 px-3 small mb-3">
+          <i class="bi bi-info-circle me-1"></i><strong>{{ detalle.estado === 'anulada' ? 'Motivo de anulación' : 'Motivo de rechazo' }}:</strong> {{ detalle.comentario_estado }}
+        </div>
+
+        <!-- Ítems de la evaluación -->
+        <div class="border rounded overflow-hidden">
+          <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
+            <thead class="table-light">
+              <tr>
+                <th class="py-2 ps-3 text-uppercase text-muted">Categoría / Ítem</th>
+                <th class="py-2 text-center text-uppercase text-muted" style="width: 150px;">Valoración</th>
+                <th class="py-2 text-center text-uppercase text-muted" style="width: 90px;">Puntaje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="it in (detalle.items || [])" :key="'it-' + it.id">
+                <tr v-if="it.tipo === 'categoria'" class="table-light">
+                  <td class="fw-bold text-dark ps-3">{{ it.categoria }}</td>
+                  <td></td>
+                  <td class="text-center fw-bold text-danger">{{ it.puntaje ?? '-' }}</td>
+                </tr>
+                <tr v-else>
+                  <td class="text-dark ps-4">{{ it.item }}</td>
+                  <td class="text-center text-muted">{{ it.valoracion || '-' }}</td>
+                  <td class="text-center">{{ it.puntaje ?? '-' }}</td>
+                </tr>
+              </template>
+              <tr v-if="!detalle.items || detalle.items.length === 0">
+                <td colspan="3" class="text-center py-3 text-muted">Sin ítems cargados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div v-else class="text-center py-4">
+        <span class="spinner-border text-danger"></span>
+      </div>
+    </ModalBase>
+
+    <!-- ==========================================
+         MODAL: CONFIRMAR ANULACIÓN
+         ========================================== -->
+    <ModalBase :show="mostrarConfirmAnular" @close="cerrarAnular" titulo="Anular Observación" icono="block" colorIcono="bg-danger text-white" maxWidth="480px">
+      <div class="text-center">
+        <p class="text-dark mb-1">¿Seguro que querés anular esta observación?</p>
+        <p class="text-muted small mb-0" v-if="obsAAnular">
+          #{{ obsAAnular.id }} — {{ obsAAnular.equipo_local }} vs {{ obsAAnular.equipo_visitante }}
+        </p>
+        <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          Una vez anulada no se puede revertir. Sólo se pueden anular observaciones en estado pendiente.
+        </div>
+      </div>
+      <template #footer>
+        <button @click="cerrarAnular" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1">CANCELAR</button>
+        <button @click="confirmarAnular" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="anulando">
+          <span v-if="anulando" class="spinner-border spinner-border-sm me-1"></span> ANULAR
+        </button>
+      </template>
+    </ModalBase>
+
   </div>
 </template>
 
@@ -158,6 +261,7 @@
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
+import ModalBase from '@/components/ModalBase.vue'
 
 const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
@@ -177,19 +281,30 @@ const registrosPorPagina = 10
 const normalizar = (texto) =>
   texto ? texto.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : ''
 
+const formatearFecha = (fechaIso) => {
+  if (!fechaIso) return 'S/F'
+  const [anio, mes, dia] = fechaIso.split(' ')[0].split('-')
+  if (!anio || !mes || !dia) return fechaIso
+  return `${dia}/${mes}/${anio}`
+}
+
 const etiquetaEstado = (estado) => {
   const e = (estado || 'pendiente').toLowerCase()
   if (e === 'aprobada') return 'Aprobada'
+  if (e === 'rechazada') return 'Rechazada'
   if (e === 'anulada') return 'Anulada'
   return 'Pendiente'
 }
 
 const badgeEstado = (estado) => {
   const e = (estado || 'pendiente').toLowerCase()
-  if (e === 'aprobada') return 'bg-success-subtle text-success border border-success-subtle'
-  if (e === 'anulada') return 'bg-danger-subtle text-danger border border-danger-subtle'
-  return 'bg-warning-subtle text-warning-emphasis border border-warning-subtle'
+  if (e === 'aprobada') return 'estado-pill estado-aprobada'
+  if (e === 'rechazada') return 'estado-pill estado-rechazada'
+  if (e === 'anulada') return 'estado-pill estado-anulada'
+  return 'estado-pill estado-pendiente'
 }
+
+const esPendiente = (obs) => (obs.estado || 'pendiente').toLowerCase() === 'pendiente'
 
 const observacionesFiltradas = computed(() => {
   const q = normalizar(busqueda.value)
@@ -214,6 +329,7 @@ const cambiarPagina = (delta) => {
   if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+// -------------------- DESCARGA EXCEL --------------------
 const descargandoId = ref(null)
 
 const descargarExcel = async (obs) => {
@@ -230,6 +346,70 @@ const descargarExcel = async (obs) => {
   }
 }
 
+// -------------------- VER DETALLE --------------------
+const mostrarDetalle = ref(false)
+const detalle = ref(null)
+const cargandoDetalleId = ref(null)
+
+const verDetalle = async (obs) => {
+  cargandoDetalleId.value = obs.id
+  detalle.value = null
+  try {
+    const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluacion', payload: { id: obs.id } })
+    if (res && res.ok && res.payload) {
+      // Fusionamos con lo que ya teníamos en la fila por si el detalle no trae algún campo de display
+      detalle.value = { ...obs, ...res.payload }
+      mostrarDetalle.value = true
+    } else {
+      toast({ titulo: 'Error', mensaje: 'No se pudo cargar el detalle.', tipo: 'danger' })
+    }
+  } catch (error) {
+    toast({ titulo: 'Error', mensaje: error.message || 'Fallo al cargar el detalle.', tipo: 'danger' })
+  } finally {
+    cargandoDetalleId.value = null
+  }
+}
+
+const cerrarDetalle = () => { mostrarDetalle.value = false; detalle.value = null }
+
+// -------------------- ANULAR --------------------
+const mostrarConfirmAnular = ref(false)
+const obsAAnular = ref(null)
+const anulando = ref(false)
+
+const pedirAnular = (obs) => {
+  if (!esPendiente(obs)) {
+    toast({ titulo: 'No permitido', mensaje: 'Sólo se pueden anular observaciones pendientes.', tipo: 'warning' })
+    return
+  }
+  obsAAnular.value = obs
+  mostrarConfirmAnular.value = true
+}
+
+const cerrarAnular = () => { mostrarConfirmAnular.value = false; obsAAnular.value = null }
+
+const confirmarAnular = async () => {
+  if (!obsAAnular.value) return
+  anulando.value = true
+  try {
+    const res = await api.post({ entity: 'observaciones', action: 'anularEvaluacion', payload: { id: obsAAnular.value.id } })
+    if (res && res.ok) {
+      toast({ titulo: 'Observación anulada', mensaje: 'La observación fue anulada correctamente.', tipo: 'success' })
+      // Actualizamos el estado en memoria sin recargar todo
+      const idx = observaciones.value.findIndex(o => o.id === obsAAnular.value.id)
+      if (idx !== -1) observaciones.value[idx].estado = 'anulada'
+      cerrarAnular()
+    } else {
+      toast({ titulo: 'No se pudo anular', mensaje: res?.message || 'La observación no pudo anularse.', tipo: 'danger' })
+    }
+  } catch (error) {
+    toast({ titulo: 'Error', mensaje: error.message || 'Fallo de conexión al anular.', tipo: 'danger' })
+  } finally {
+    anulando.value = false
+  }
+}
+
+// -------------------- CARGA --------------------
 const obtenerObservaciones = async () => {
   cargando.value = true
   try {
@@ -247,4 +427,47 @@ onMounted(obtenerObservaciones)
 
 <style scoped>
 .animate__animated { animation-duration: 0.5s; }
+
+/* ====================================================
+   PÍLDORAS DE ESTADO (mismo estilo que Solicitudes Institucionales)
+   ==================================================== */
+.estado-pill {
+  border-radius: 999px;
+  padding: 0.35em 0.85em;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* PENDIENTE — amarillo */
+.estado-pendiente {
+  background-color: #fdf3d3;
+  color: #a6841f;
+  border-color: #f2e2a5;
+}
+
+/* APROBADA — verde */
+.estado-aprobada {
+  background-color: #e3f5e6;
+  color: #2f8a45;
+  border-color: #bfe6c8;
+}
+
+/* RECHAZADA — rojo/rosa */
+.estado-rechazada {
+  background-color: #fde7ea;
+  color: #c0304a;
+  border-color: #f5c2cb;
+}
+
+/* ANULADA — gris azulado */
+.estado-anulada {
+  background-color: #eef1f5;
+  color: #5b6b7f;
+  border-color: #d4dbe4;
+}
+
 </style>

@@ -69,6 +69,9 @@ const routes = [
       // --- RENDIMIENTO ---
       { path: 'rendimiento', name: 'PanelRendimiento', component: () => import('../components/panel-arbitro/rendimiento/MiRendimiento.vue') },
 
+      // --- MIS OBSERVACIONES ---
+      { path: 'mis-observaciones', name: 'PanelMisObservaciones', component: () => import('../components/panel-arbitro/mis-observaciones/MisObservacionesPartidos.vue') },
+
       // --- APORTES Y PAGOS ---
       { path: 'aportes', name: 'PanelAportes', component: () => import('../components/panel-arbitro/tesoreria/MisAportes.vue') },
 
@@ -86,6 +89,7 @@ const routes = [
       { path: 'coordinadores/resumen-arbitros', name: 'CoordinadoresResumen', component: () => import('../components/panel-arbitro/coordinadores/PlanillaGeneralCoordinadores.vue') },
       { path: 'coordinadores/reuniones-mensuales', name: 'CoordinadoresReuniones', component: () => import('../components/panel-arbitro/coordinadores/ReunionesMensualesCoordinadores.vue') },
       { path: 'coordinadores/disponibilidad-horaria', name: 'CoordinadoresDisponibilidad', component: () => import('../components/panel-arbitro/coordinadores/DisponibilidadHorariaCoordinadores.vue') },
+      { path: 'coordinadores/planilla-general-observaciones', name: 'CoordinadoresPlanillaGeneralObservaciones', component: () => import('../components/panel-arbitro/coordinadores/PlanillaGeneralObservaciones.vue') },
 
       // --- INDUMENTARIA ---
       { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/IndumentariaArbitro.vue') },
@@ -171,6 +175,7 @@ const routes = [
       { path: 'desarrollo-arbitral/reuniones-mensuales', name: 'ReunionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ReunionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario', 'designador'] } },
       { path: 'desarrollo-arbitral/resumen-arbitros', name: 'ResumenArbitrosAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/PlanillaGeneralAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario', 'designador'] } },
       { path: 'desarrollo-arbitral/habilitacion-examenes-asamblea', name: 'HabilitacionExamenesAsamblea', component: () => import('../components/panel-admin/desarrollo-arbitral/HabilitacionExamenesAsamblea.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario', 'designador'] } },
+      { path: 'desarrollo-arbitral/planilla-general-observaciones', name: 'PlanillaGeneralObservaciones', component: () => import('../components/panel-admin/desarrollo-arbitral/PlanillaGeneralObservacionesAdmin.vue'), meta: { roles: ['admin', 'coordinador general', 'secretario', 'designador'] } },
 
       // --- CURSOS ---
 

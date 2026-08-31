@@ -1,3 +1,4 @@
+
 <template>
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
@@ -70,6 +71,15 @@
               <input v-model="filtros.partido" class="form-control form-control-sm shadow-none" placeholder="Partido...">
             </div>
             <div class="col-6 col-md-1">
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.estado }">
+                <option value="">ESTADO</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="aprobada">Aprobada</option>
+                <option value="rechazada">Rechazada</option>
+                <option value="anulada">Anulada</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-1">
               <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
                 <option value="">AÑO</option>
                 <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
@@ -103,6 +113,7 @@
                     <th class="py-3 text-uppercase text-muted" style="width: 180px;">Competencia</th>
                     <th class="py-3 text-uppercase text-muted" style="width: 130px;">Categoría</th>
                     <th class="py-3 text-uppercase text-muted" style="width: 220px;">Partido</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="width: 120px;">Estado</th>
                     <th class="py-3 text-center pe-3 text-uppercase text-muted" style="width: 140px;">Cargado</th>
                   </tr>
                 </thead>
@@ -113,6 +124,10 @@
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="abrirModalGestion(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Gestionar / Modificar">
                           <span class="material-icons" style="font-size:16px;">edit_document</span>
+                        </button>
+                        <button @click="verDetalle(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Ver detalle" :disabled="cargandoDetalleId === o.id">
+                          <span v-if="cargandoDetalleId === o.id" class="spinner-border spinner-border-sm"></span>
+                          <span v-else class="material-icons" style="font-size:16px;">visibility</span>
                         </button>
                         <button @click="verHistorial(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial de estos árbitros">
                           <span class="material-icons" style="font-size:16px;">history</span>
@@ -128,10 +143,13 @@
                       {{ o.equipo_local }} vs {{ o.equipo_visitante }}
                       <span v-if="o.numero_partido" class="text-muted">(Nº {{ o.numero_partido }})</span>
                     </td>
+                    <td class="text-center">
+                      <span :class="badgeEstado(o.estado)">{{ etiquetaEstado(o.estado) }}</span>
+                    </td>
                     <td class="text-center pe-3 text-muted">{{ formatearFechaHora(o.creado_en) }}</td>
                   </tr>
                   <tr v-if="observacionesPaginadas.length === 0">
-                    <td colspan="9" class="py-5 text-center text-muted border-0 bg-white">
+                    <td colspan="10" class="py-5 text-center text-muted border-0 bg-white">
                       <span class="material-icons d-block fs-1 mb-2">assignment_late</span>
                       <p class="m-0 fw-bold">No hay ninguna observación registrada.</p>
                     </td>
@@ -152,6 +170,9 @@
                   <div class="small text-muted fw-bold text-end">
                     #{{ o.id }}<br>
                     {{ formatearFecha(o.fecha_partido) }}
+                    <div class="mt-1">
+                      <span :class="badgeEstado(o.estado)">{{ etiquetaEstado(o.estado) }}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -172,6 +193,10 @@
                   <div class="d-flex gap-2 mt-3">
                     <button @click="abrirModalGestion(o)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
                       <span class="material-icons" style="font-size: 18px;">edit_document</span> Gestionar
+                    </button>
+                    <button @click="verDetalle(o)" class="btn btn-sm btn-outline-secondary shadow-sm px-3 d-flex justify-content-center align-items-center" title="Ver detalle" :disabled="cargandoDetalleId === o.id">
+                      <span v-if="cargandoDetalleId === o.id" class="spinner-border spinner-border-sm"></span>
+                      <span v-else class="material-icons" style="font-size: 18px;">visibility</span>
                     </button>
                     <button @click="verHistorial(o)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center" title="Ver historial">
                       <span class="material-icons" style="font-size: 18px;">history</span>
@@ -207,7 +232,8 @@
          ========================================== -->
     <ModalBase :show="mostrarModal" @close="cerrarModal" titulo="Gestionar Observación" icono="edit_document" colorIcono="bg-primary text-white" maxWidth="500px">
       <div class="text-center mb-3">
-        <p class="text-muted small mt-1 mb-0">Observación #{{ observacionActual.id }} — {{ formatearFecha(observacionActual.fecha_partido) }}</p>
+        <p class="text-muted small mt-1 mb-1">Observación #{{ observacionActual.id }} — {{ formatearFecha(observacionActual.fecha_partido) }}</p>
+        <span :class="badgeEstado(observacionActual.estado)">Estado actual: {{ etiquetaEstado(observacionActual.estado) }}</span>
       </div>
       <div class="text-start bg-light p-3 rounded border mb-4 border-secondary-subtle">
         <p class="m-0 fw-bold small text-dark mb-1">Árbitros: <span class="text-danger">{{ observacionActual.arb1 }} - {{ observacionActual.arb2 }}</span></p>
@@ -226,8 +252,13 @@
         <select v-model="nuevoEstado" class="form-select shadow-none border-primary-subtle fw-bold">
           <option value="pendiente">Pendiente de Revisión</option>
           <option value="aprobada">Aprobar Observación</option>
-          <option value="anulada">Anular Observación</option>
+          <option value="rechazada">Rechazar Observación</option>
+          <!-- Anular sólo disponible mientras la observación esté pendiente -->
+          <option value="anulada" :disabled="!gestionEsPendiente">Anular Observación{{ gestionEsPendiente ? '' : ' (no disponible: ya revisada)' }}</option>
         </select>
+        <p v-if="!gestionEsPendiente" class="text-muted small mt-1 mb-0">
+          <i class="bi bi-info-circle me-1"></i>Una observación aprobada o rechazada no puede anularse.
+        </p>
         <div class="mt-3">
           <label class="small fw-bold mb-1 text-dark">Comentarios Adicionales (Opcional)</label>
           <textarea v-model="comentariosRevision" class="form-control shadow-none border-secondary-subtle" rows="2" placeholder="Motivo de anulación, correcciones, etc..."></textarea>
@@ -458,6 +489,68 @@
       </div>
     </ModalBase>
 
+    <!-- ==========================================
+         MODAL 4: DETALLE DE LA OBSERVACIÓN (notas + ítems)
+         ========================================== -->
+    <ModalBase :show="mostrarDetalle" @close="cerrarDetalle" titulo="Detalle de la Observación" icono="visibility" colorIcono="bg-secondary text-white" maxWidth="800px">
+      <div v-if="detalle" class="text-start">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <p class="m-0 fw-bold small text-dark">Observación #{{ detalle.id }}</p>
+            <p class="m-0 text-muted small">{{ formatearFecha(detalle.fecha_partido) }} — {{ detalle.competencia }}</p>
+          </div>
+          <span class="align-self-center" :class="badgeEstado(detalle.estado)">
+            {{ etiquetaEstado(detalle.estado) }}
+          </span>
+        </div>
+
+        <div class="bg-light p-3 rounded border mb-3 border-secondary-subtle">
+          <p class="m-0 small text-dark"><strong class="text-muted">Árbitros:</strong> {{ detalle.arbitros }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Observador:</strong> {{ detalle.observador }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }} <span v-if="detalle.categoria_edad" class="badge bg-secondary ms-1">{{ detalle.categoria_edad }}</span></p>
+          <p class="m-0 small text-dark mt-1" v-if="detalle.numero_partido"><strong class="text-muted">Nº Partido:</strong> {{ detalle.numero_partido }}</p>
+          <p class="m-0 small text-dark mt-1" v-if="detalle.puntaje_final != null"><strong class="text-muted">Puntaje final:</strong> <span class="fw-bold text-danger">{{ detalle.puntaje_final }}</span></p>
+        </div>
+
+        <div v-if="(detalle.estado === 'anulada' || detalle.estado === 'rechazada') && detalle.comentario_estado" class="alert alert-danger py-2 px-3 small mb-3">
+          <i class="bi bi-info-circle me-1"></i><strong>{{ detalle.estado === 'anulada' ? 'Motivo de anulación' : 'Motivo de rechazo' }}:</strong> {{ detalle.comentario_estado }}
+        </div>
+
+        <!-- Ítems -->
+        <div class="border rounded overflow-hidden">
+          <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
+            <thead class="table-light">
+              <tr>
+                <th class="py-2 ps-3 text-uppercase text-muted">Categoría / Ítem</th>
+                <th class="py-2 text-center text-uppercase text-muted" style="width: 150px;">Valoración</th>
+                <th class="py-2 text-center text-uppercase text-muted" style="width: 90px;">Puntaje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="it in (detalle.items || [])" :key="'it-' + it.id">
+                <tr v-if="it.tipo === 'categoria'" class="table-light">
+                  <td class="fw-bold text-dark ps-3">{{ it.categoria }}</td>
+                  <td></td>
+                  <td class="text-center fw-bold text-danger">{{ it.puntaje ?? '-' }}</td>
+                </tr>
+                <tr v-else>
+                  <td class="text-dark ps-4">{{ it.item }}</td>
+                  <td class="text-center text-muted">{{ it.valoracion || '-' }}</td>
+                  <td class="text-center">{{ it.puntaje ?? '-' }}</td>
+                </tr>
+              </template>
+              <tr v-if="!detalle.items || detalle.items.length === 0">
+                <td colspan="3" class="text-center py-3 text-muted">Sin ítems cargados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div v-else class="text-center py-4">
+        <span class="spinner-border text-danger"></span>
+      </div>
+    </ModalBase>
+
   </div>
 </template>
 
@@ -481,7 +574,7 @@ const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const observaciones = ref([]);
 const cargando = ref(false);
 
-const filtros = reactive({ fecha: '', anio: '', observador: '', arbitros: '', competencia: '', categoria: '', partido: '' });
+const filtros = reactive({ fecha: '', anio: '', estado: '', observador: '', arbitros: '', competencia: '', categoria: '', partido: '' });
 const mostrarFiltrosMobile = ref(false);
 
 const paginaActual = ref(1);
@@ -503,6 +596,22 @@ const formatearFechaHora = (fechaHora) => {
   return `${formatearFecha(fecha)}${hora ? ' ' + hora.slice(0, 5) : ''}`;
 };
 
+const etiquetaEstado = (estado) => {
+  const e = (estado || 'pendiente').toLowerCase();
+  if (e === 'aprobada') return 'Aprobada';
+  if (e === 'rechazada') return 'Rechazada';
+  if (e === 'anulada') return 'Anulada';
+  return 'Pendiente';
+};
+
+const badgeEstado = (estado) => {
+  const e = (estado || 'pendiente').toLowerCase();
+  if (e === 'aprobada') return 'estado-pill estado-aprobada';
+  if (e === 'rechazada') return 'estado-pill estado-rechazada';
+  if (e === 'anulada') return 'estado-pill estado-anulada';
+  return 'estado-pill estado-pendiente';
+};
+
 const aniosDisponibles = computed(() => {
   const anios = new Set()
   observaciones.value.forEach(o => {
@@ -516,13 +625,14 @@ const observacionesFiltradas = computed(() => {
   return observaciones.value.filter(o => {
     const matchFec = formatearFecha(o.fecha_partido).includes(filtros.fecha);
     const matchAnio = !filtros.anio || (o.fecha_partido || '').substring(0, 4) === filtros.anio;
+    const matchEstado = !filtros.estado || (o.estado || 'pendiente').toLowerCase() === filtros.estado;
     const matchObs = normalizar(o.observador).includes(normalizar(filtros.observador));
     const matchArb = normalizar(o.arbitros).includes(normalizar(filtros.arbitros));
     const matchComp = normalizar(o.competencia).includes(normalizar(filtros.competencia));
     const matchCat = normalizar(o.categoria_edad).includes(normalizar(filtros.categoria));
     const matchPar = normalizar(`${o.equipo_local} ${o.equipo_visitante} ${o.numero_partido}`).includes(normalizar(filtros.partido));
 
-    return matchFec && matchAnio && matchObs && matchArb && matchComp && matchCat && matchPar;
+    return matchFec && matchAnio && matchEstado && matchObs && matchArb && matchComp && matchCat && matchPar;
   });
 });
 
@@ -549,12 +659,8 @@ const obtenerObservaciones = async () => {
     if (res && res.ok) {
       observaciones.value = res.payload.sort((a, b) => b.id - a.id);
     } else {
-      // MOCKUPS TEMPORALES (Si el back no está listo)
-      observaciones.value = [
-        { id: 101, id_partido: null, competencia: 'Liga de Honor', categoria_edad: 'Mayores', equipo_local: 'VILO', equipo_visitante: 'SEDALO', fecha_partido: '2026-05-12', arbitros: 'García, Mariana / Gómez, Luis', observador: 'Ladelfa, Marcelo', numero_partido: '3', creado_en: '2026-05-12 10:00:00' },
-        { id: 100, id_partido: null, competencia: 'Primera', categoria_edad: 'Mayores', equipo_local: 'Dorrego', equipo_visitante: 'River', fecha_partido: '2026-05-05', arbitros: 'García, Mariana / Gómez, Luis', observador: 'Pérez, Juan', numero_partido: '1', creado_en: '2026-05-05 09:30:00' },
-        { id: 99, id_partido: null, competencia: 'Segunda', categoria_edad: 'Mayores', equipo_local: 'Ferro', equipo_visitante: 'SAG', fecha_partido: '2026-04-28', arbitros: 'Fernández, D. / Ruiz, M.', observador: 'Ladelfa, Marcelo', numero_partido: '5', creado_en: '2026-04-28 18:15:00' }
-      ];
+      observaciones.value = [];
+      toast({ titulo: 'Sin datos', mensaje: 'No se pudieron cargar las observaciones.', tipo: 'warning' });
     }
   } catch {
     toast({ titulo: 'Error', mensaje: 'Problema al cargar las observaciones.', tipo: 'danger' });
@@ -570,6 +676,9 @@ const mostrarModal = ref(false);
 const observacionActual = ref({});
 const nuevoEstado = ref('');
 const comentariosRevision = ref('');
+
+// La opción "anular" en el modal sólo se habilita si la observación sigue pendiente.
+const gestionEsPendiente = computed(() => (observacionActual.value.estado || 'pendiente').toLowerCase() === 'pendiente');
 
 const abrirModalGestion = (obs) => {
   observacionActual.value = { ...obs };
@@ -590,12 +699,10 @@ const guardarCambiosGestion = async () => {
     if (res && res.ok) {
       toast({ titulo: 'Actualizado', mensaje: 'Observación modificada con éxito.', tipo: 'success' });
       await obtenerObservaciones();
+      cerrarModal();
     } else {
-      const index = observaciones.value.findIndex(o => o.id === payload.id);
-      if (index !== -1) observaciones.value[index].estado = payload.estado;
-      toast({ titulo: 'Simulación', mensaje: 'Estado actualizado en memoria.', tipo: 'success' });
+      toast({ titulo: 'No se pudo actualizar', mensaje: res?.message || 'El cambio de estado fue rechazado.', tipo: 'danger' });
     }
-    cerrarModal();
   } catch{
     toast({ titulo: 'Error', mensaje: 'Ocurrió un problema al guardar los cambios.', tipo: 'danger' });
   } finally {
@@ -761,6 +868,33 @@ const reiniciarFormularioCarga = () => {
 };
 
 /* ====================================================
+   ESTADO MODAL 4: DETALLE DE LA OBSERVACIÓN
+   ==================================================== */
+const mostrarDetalle = ref(false);
+const detalle = ref(null);
+const cargandoDetalleId = ref(null);
+
+const verDetalle = async (obs) => {
+  cargandoDetalleId.value = obs.id;
+  detalle.value = null;
+  try {
+    const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluacion', payload: { id: obs.id } });
+    if (res && res.ok && res.payload) {
+      detalle.value = { ...obs, ...res.payload };
+      mostrarDetalle.value = true;
+    } else {
+      toast({ titulo: 'Error', mensaje: 'No se pudo cargar el detalle.', tipo: 'danger' });
+    }
+  } catch (error) {
+    toast({ titulo: 'Error', mensaje: 'Fallo al cargar el detalle.', tipo: 'danger' });
+  } finally {
+    cargandoDetalleId.value = null;
+  }
+};
+
+const cerrarDetalle = () => { mostrarDetalle.value = false; detalle.value = null; };
+
+/* ====================================================
    ESTADO MODAL 3: HISTORIAL DEL ÁRBITRO
    ==================================================== */
 const mostrarModalHistorial = ref(false);
@@ -785,7 +919,7 @@ const exportarExcel = async () => {
   const datosExportar = observacionesFiltradas.value.map(o => ({
     'ID': o.id, 'Fecha': formatearFecha(o.fecha_partido), 'Observador': o.observador, 'Árbitros': o.arbitros,
     'Competencia': o.competencia, 'Categoría': o.categoria_edad, 'Local': o.equipo_local, 'Visitante': o.equipo_visitante,
-    'Nº Partido': o.numero_partido, 'Cargado': o.creado_en
+    'Nº Partido': o.numero_partido, 'Estado': etiquetaEstado(o.estado), 'Cargado': o.creado_en
   }));
 
   const wb = new ExcelJS.Workbook();
@@ -897,4 +1031,47 @@ onMounted(() => {
 .excel-dropzone.is-dragover .excel-dropzone-icon,
 .excel-dropzone:hover .excel-dropzone-icon { color: #dc3545; }
 .excel-dropzone.has-file .excel-dropzone-icon { color: #198754; }
+
+/* ====================================================
+   PÍLDORAS DE ESTADO (mismo estilo que Solicitudes Institucionales)
+   ==================================================== */
+.estado-pill {
+  border-radius: 999px;
+  padding: 0.35em 0.85em;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* PENDIENTE — amarillo */
+.estado-pendiente {
+  background-color: #fdf3d3;
+  color: #a6841f;
+  border-color: #f2e2a5;
+}
+
+/* APROBADA — verde */
+.estado-aprobada {
+  background-color: #e3f5e6;
+  color: #2f8a45;
+  border-color: #bfe6c8;
+}
+
+/* RECHAZADA — rojo/rosa */
+.estado-rechazada {
+  background-color: #fde7ea;
+  color: #c0304a;
+  border-color: #f5c2cb;
+}
+
+/* ANULADA — gris azulado */
+.estado-anulada {
+  background-color: #eef1f5;
+  color: #5b6b7f;
+  border-color: #d4dbe4;
+}
+
 </style>
