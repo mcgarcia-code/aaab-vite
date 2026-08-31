@@ -1228,8 +1228,8 @@ const arbitrosFiltrados = computed(() => {
     : arbitros.value.filter(a => {
         for (const { key, val } of activos) {
           if (key === 'rol') { if (a.rol != val) return false; continue }
-          if (key === 'es_activo') { if ((val === 'si') !== (a.es_activo == 1)) return false; continue }
-          if (key === 'apto_medico') { if ((val === 'si') !== !!a.apto_medico) return false; continue }
+          if (key === 'es_activo') { if ((val === 'SI') !== (a.es_activo == 1)) return false; continue }
+          if (key === 'apto_medico') { if ((val === 'SI') !== !!a.apto_medico) return false; continue }
           // Grupo y subgrupo salen de un select: comparacion exacta para que
           // "1" no matchee "10" ni "A" matchee dentro de otro texto.
           if (key === 'grupo' || key === 'subgrupo') {
