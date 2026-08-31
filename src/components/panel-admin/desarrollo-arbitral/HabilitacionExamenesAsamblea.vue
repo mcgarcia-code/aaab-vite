@@ -166,9 +166,9 @@
       </div>
 
       <div v-else>
-        <div v-if="!reuniones.length" class="text-center py-4 px-3 text-muted bg-light rounded-3">
+        <div v-if="!opcionesReunion.length" class="text-center py-4 px-3 text-muted bg-light rounded-3">
           <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">event_busy</span>
-          <p class="m-0 fw-bold small">No hay reuniones cargadas.</p>
+          <p class="m-0 fw-bold small">No hay reuniones con fecha vigente para habilitar.</p>
         </div>
 
         <div v-else>
@@ -251,6 +251,8 @@ const eventoActual = computed(() =>
 const opcionesReunion = computed(() => {
   const ops = []
   for (const r of reuniones.value) {
+    // No se habilita examen para reuniones con fecha pasada.
+    if (esFechaPasada(r.fecha_evento)) continue
     const base = `${r.fecha_formateada} — ${r.descripcion || r.titulo || ''}`.trim()
     if (r.todosLosGrupos) {
       ops.push({
@@ -278,6 +280,25 @@ const opcionesReunion = computed(() => {
 const opcionActual = computed(() =>
   opcionesReunion.value.find(o => o.key === opcionReunionSeleccionada.value) || null
 )
+
+// True si la fecha del evento ya pasó (comparación por día, hora 00:00).
+// No se puede habilitar un examen para una reunión con fecha pasada.
+function esFechaPasada(fechaEvento) {
+  if (!fechaEvento) return false
+  const soloFecha = String(fechaEvento).split(' ')[0] // "YYYY-MM-DD" o "DD/MM/YYYY"
+  let d
+  if (soloFecha.includes('/')) {
+    const [dia, mes, anio] = soloFecha.split('/')
+    d = new Date(Number(anio), Number(mes) - 1, Number(dia))
+  } else {
+    const [anio, mes, dia] = soloFecha.split('-')
+    d = new Date(Number(anio), Number(mes) - 1, Number(dia))
+  }
+  if (isNaN(d)) return false
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  return d < hoy
+}
 
 const habilitadosPorEvento = computed(() => {
   const mapa = {}

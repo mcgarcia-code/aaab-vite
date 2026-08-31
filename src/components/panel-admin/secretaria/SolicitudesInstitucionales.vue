@@ -66,7 +66,7 @@
 
                 <!-- Árbitro a evitar -->
                 <div class="col-12 col-sm-6 col-lg">
-                  <input v-model="filtros.arbitroPar" type="text" class="form-control form-control-sm shadow-none" placeholder="Árbitro a evitar...">
+                  <input v-model="filtros.arbitroPar" type="text" class="form-control form-control-sm shadow-none" placeholder="No ser designado con...">
                 </div>
 
                 <!-- Club -->
@@ -105,7 +105,7 @@
                     <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
                     <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro/s</th>
                     <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Solicitud</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro a evitar</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">No ser designado con</th>
                     <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Club</th>
                     <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Rama</th>
                     <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Categorías</th>

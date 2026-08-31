@@ -57,7 +57,7 @@
             </div>
             <div class="col-6">
               <select v-model="filtros.licencia" class="form-select form-select-sm shadow-none">
-                <option value="">Licencia (Todas)</option><option value="sin_licencia">Sin Licencia</option><option value="aprobada">Aprobada</option><option value="rechazada">Rechazada</option><option value="pendiente">Pendiente</option><option value="sancion_vigente">Sanción Vigente</option><option value="sancion_proceso">Sanción en Proceso</option>
+                <option value="">Licencia (Todas)</option><option value="sin_licencia">Sin Licencia</option><option value="aprobada">Aprobada</option><option value="indeterminada">Indeterminada</option><option value="rechazada">Rechazada</option><option value="pendiente">Pendiente</option><option value="sancion_vigente">Sanción Vigente</option><option value="sancion_proceso">Sanción en Proceso</option>
               </select>
             </div>
             <div class="col-6">
@@ -127,7 +127,7 @@
                   </td>
                   <td class="p-2 border-bottom border-2 col-fija col-licencia">
                     <select v-model="filtros.licencia" class="form-select form-select-sm shadow-none">
-                      <option value="">Todas</option><option value="sin_licencia">Sin Lic.</option><option value="aprobada">Aprobada</option><option value="rechazada">Rechazada</option><option value="pendiente">Pendiente</option><option value="sancion_vigente">Sanción Vig.</option><option value="sancion_proceso">Sanc. Proc.</option>
+                      <option value="">Todas</option><option value="sin_licencia">Sin Lic.</option><option value="aprobada">Aprobada</option><option value="indeterminada">Indeterminada</option><option value="rechazada">Rechazada</option><option value="pendiente">Pendiente</option><option value="sancion_vigente">Sanción Vig.</option><option value="sancion_proceso">Sanc. Proc.</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2"></td>
@@ -590,7 +590,8 @@ const arbitrosFiltrados = computed(() => {
     });
 
     let cumpleLicencia = true;
-    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0 || Number(a.licencia_indeterminada || 0) > 0;
+    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0;
+    else if (filtros.licencia === 'indeterminada') cumpleLicencia = Number(a.licencia_indeterminada || 0) > 0;
     else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada || 0) > 0;
     else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente || 0) > 0;
     else if (filtros.licencia === 'sancion_vigente') cumpleLicencia = a.sancion_vigente === true;

@@ -37,9 +37,11 @@
             <template v-if="modoReunion">
               <button
                 class="btn btn-danger fw-bold shadow-sm d-flex align-items-center gap-2 flex-shrink-0"
-                :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || reunionActual?.examen_habilitado"
+                :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || reunionActual?.examen_habilitado || reunionEsPasada"
                 @click="habilitarExamenReunion"
-                :title="idsGruposExamenReunion.length ? 'Habilitar el examen para los grupos de esta reunión' : 'Esta reunión no tiene grupos asociados'"
+                :title="reunionEsPasada
+                  ? 'No se puede habilitar el examen: la reunión ya pasó'
+                  : (idsGruposExamenReunion.length ? 'Habilitar el examen para los grupos de esta reunión' : 'Esta reunión no tiene grupos asociados')"
               >
                 <span v-if="habilitandoExamen" class="spinner-border spinner-border-sm"></span>
                 <i v-else class="bi bi-shield-check"></i>
@@ -453,6 +455,25 @@ const formatFecha  = (f) => f?.split(' ')[0] ?? ''
 const añoDeFecha   = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
 const sortPorFecha = (lista) => [...lista].sort((a, b) => (b._ts ?? 0) - (a._ts ?? 0))
 
+// True si la fecha del evento ya pasó (comparación por día, hora 00:00).
+// No se puede habilitar un examen para una reunión con fecha pasada.
+const esFechaPasada = (fechaEvento) => {
+  if (!fechaEvento) return false
+  const soloFecha = String(fechaEvento).split(' ')[0] // "YYYY-MM-DD" o "DD/MM/YYYY"
+  let d
+  if (soloFecha.includes('/')) {
+    const [dia, mes, anio] = soloFecha.split('/')
+    d = new Date(Number(anio), Number(mes) - 1, Number(dia))
+  } else {
+    const [anio, mes, dia] = soloFecha.split('-')
+    d = new Date(Number(anio), Number(mes) - 1, Number(dia))
+  }
+  if (isNaN(d)) return false
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  return d < hoy
+}
+
 const normalizarAsistencia = (valor) => {
   if (valor === null || valor === undefined) return ''
   const texto = String(valor).trim().toLowerCase()
@@ -548,9 +569,18 @@ const idsGruposExamenReunion = computed(() => {
   return r.todosLosGrupos ? grupos.value.map(g => g.id) : (r.idsGrupos || [])
 })
 
+// La reunión seleccionada tiene fecha pasada => no se puede habilitar examen.
+const reunionEsPasada = computed(() =>
+  reunionActual.value ? esFechaPasada(reunionActual.value.fecha_evento) : false
+)
+
 async function habilitarExamenReunion() {
   const r = reunionActual.value
   if (!r || !idsGruposExamenReunion.value.length) return
+  if (reunionEsPasada.value) {
+    toast({ tipo: 'danger', mensaje: 'No se puede habilitar el examen: la reunión ya pasó' })
+    return
+  }
   habilitandoExamen.value = true
   try {
     await api.post({

@@ -1995,7 +1995,6 @@ const irAPartido = (p) => {
   if (fechaSeleccionada.value !== destino) fechaSeleccionada.value = destino
   filtroEstado.value = ''
   filtroBusqueda.value = ''
-  const abrirCancha = tipoPendientes.value === 'sin_cancha' && !p.cancha
   mostrarModalPendientes.value = false
 
   const uid = p.id || p._uid
@@ -2004,8 +2003,6 @@ const irAPartido = (p) => {
   nextTick(() => {
     const fila = document.getElementById('partido-' + uid) || document.getElementById('partido-mob-' + uid)
     if (fila) fila.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    // Si vino desde "sin cancha", abrimos directo el selector para asignarla
-    if (abrirCancha) setTimeout(() => abrirSelectorCancha(p), 350)
   })
 
   clearTimeout(timerResaltado)
