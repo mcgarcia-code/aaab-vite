@@ -82,9 +82,6 @@
                   <tr>
                     <th class="col-arbitro esquina">ÁRBITRO</th>
                     <th v-for="n in maxObservaciones" :key="'h-' + n" class="th-obs">Obs {{ n }}</th>
-                    <th v-if="maxObservaciones === 0" class="text-muted fst-italic fw-normal">
-                      Sin observaciones para este grupo
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -95,18 +92,27 @@
                       :key="a.id + '-obs-' + n"
                       class="celda"
                       :class="claseCeldaObs(observacionDe(a, n))"
-                      @click="observacionDe(a, n) && verDetalle(observacionDe(a, n))"
                       :title="tituloCeldaObs(observacionDe(a, n))"
                     >
-                      <template v-if="observacionDe(a, n)">
-                        {{ textoCeldaObs(observacionDe(a, n)) }}
-                      </template>
+                      <div v-if="observacionDe(a, n)" class="celda-obs-contenido">
+                        <span class="celda-obs-nota" @click="verDetalle(observacionDe(a, n))" title="Ver detalle y comentarios">
+                          {{ textoCeldaObs(observacionDe(a, n)) }}
+                        </span>
+                        <button
+                          class="btn-excel-celda"
+                          @click.stop="descargarObservacionExcel(observacionDe(a, n))"
+                          :disabled="descargandoId === observacionDe(a, n).id"
+                          title="Descargar Excel de esta observación"
+                        >
+                          <span v-if="descargandoId === observacionDe(a, n).id" class="spinner-border spinner-border-sm"></span>
+                          <i v-else class="bi bi-file-earmark-excel"></i>
+                        </button>
+                      </div>
                     </td>
-                    <td v-if="maxObservaciones === 0"></td>
                   </tr>
                   <tr v-if="arbitrosVisibles.length === 0">
                     <td class="col-arbitro celda-nombre text-muted fst-italic">Sin árbitros</td>
-                    <td :colspan="maxObservaciones || 1" class="text-muted fst-italic px-3">
+                    <td :colspan="maxObservaciones" class="text-muted fst-italic px-3">
                       No hay árbitros para mostrar en este grupo.
                     </td>
                   </tr>
@@ -287,22 +293,45 @@ const etiquetaGrupo = (g) => {
 }
 
 const perteneceAlGrupo = (a, g) => {
-  const grupoArb = a.nombre_grupo || a.grupo || ''
-  const subArb = a.subgrupo || ''
+  const idGrupoArb = a.id_grupo ?? a.idGrupo ?? null
+
   if (g.clave === 'singrupo') {
-    return !grupos.value.some(gr =>
-      normalizar(grupoArb) === normalizar(gr.nombre) &&
-      normalizar(subArb) === normalizar(gr.subgrupo || '')
-    )
+    return idGrupoArb == null
   }
-  return normalizar(grupoArb) === normalizar(g.nombre) &&
-         normalizar(subArb) === normalizar(g.subgrupo || '')
+
+  if (idGrupoArb != null && g.id != null) {
+    return Number(idGrupoArb) === Number(g.id)
+  }
+
+  // Fallback por nombre si no hubiera id
+  const grupoArb = a.nombre_grupo || a.grupo || ''
+  return normalizar(grupoArb) === normalizar(g.nombre)
 }
 
 const gruposTabs = computed(() => {
-  const tabs = grupos.value.map(g => ({ ...g, clave: `${g.id}` }))
+  // Coordinador: armamos las solapas a partir de los grupos que realmente
+  // tienen árbitros en la lista (que el backend ya filtró a sus grupos).
+  const idsPresentes = new Map() // id_grupo -> { id, nombre, subgrupo }
+
+  arbitros.value.forEach(a => {
+    const idGrupo = a.id_grupo ?? a.idGrupo ?? null
+    if (idGrupo == null) return
+    if (idsPresentes.has(String(idGrupo))) return
+
+    const grupoObj = grupos.value.find(gr => Number(gr.id) === Number(idGrupo))
+    idsPresentes.set(String(idGrupo), {
+      id: idGrupo,
+      clave: `${idGrupo}`,
+      nombre: grupoObj ? grupoObj.nombre : (a.grupo || a.nombre_grupo || `Grupo ${idGrupo}`),
+      subgrupo: grupoObj ? (grupoObj.subgrupo || '') : (a.subgrupo || '')
+    })
+  })
+
+  const tabs = [...idsPresentes.values()]
+
+  // Solapa extra para árbitros sin id_grupo (por las dudas)
   const sinGrupo = { clave: 'singrupo', id: null, nombre: 'Sin grupo', subgrupo: '' }
-  const haySinGrupo = arbitros.value.some(a => perteneceAlGrupo(a, sinGrupo))
+  const haySinGrupo = arbitros.value.some(a => (a.id_grupo ?? a.idGrupo) == null)
   return haySinGrupo ? [...tabs, sinGrupo] : tabs
 })
 
@@ -368,13 +397,17 @@ const observacionesPorArbitro = computed(() => {
 
 // Cantidad máxima de observaciones que tiene un árbitro del grupo visible:
 // determina cuántas columnas Obs 1..N se dibujan.
+// Columnas mínimas que se muestran siempre, aunque no haya observaciones,
+// para que la planilla quede enumerada (1..N) con casilleros vacíos.
+const MIN_COLUMNAS = 10
+
 const maxObservaciones = computed(() => {
   let max = 0
   arbitrosVisibles.value.forEach(a => {
     const lista = observacionesPorArbitro.value[a.id] || []
     if (lista.length > max) max = lista.length
   })
-  return max
+  return Math.max(max, MIN_COLUMNAS)
 })
 
 // Observación n-ésima (1-based) de un árbitro, o null.
@@ -409,6 +442,7 @@ const tituloCeldaObs = (obs) => {
    ==================================================== */
 const mostrarDetalle = ref(false)
 const detalle = ref(null)
+const descargandoId = ref(null)
 
 const verDetalle = async (obs) => {
   detalle.value = null
@@ -435,6 +469,22 @@ const cerrarDetalle = () => {
 /* ====================================================
    EXPORTAR EXCEL (misma grilla que se ve en pantalla)
    ==================================================== */
+const descargarObservacionExcel = async (obs) => {
+  if (!obs) return
+  descargandoId.value = obs.id
+  try {
+    await api.getFile(
+      { entity: 'observaciones', action: 'descargarEvaluacionExcel', payload: { id: obs.id } },
+      `observacion_${obs.id}.xlsx`
+    )
+  } catch (e) {
+    console.error('descargarObservacionExcel:', e)
+    toast({ titulo: 'Error', mensaje: 'No se pudo descargar el Excel de la observación.', tipo: 'danger' })
+  } finally {
+    descargandoId.value = null
+  }
+}
+
 const descargarExcel = async () => {
   const wb = new ExcelJS.Workbook()
   const ws = wb.addWorksheet(etiquetaGrupo(grupoActivo.value) || 'Observaciones')
@@ -486,7 +536,7 @@ const descargarExcel = async () => {
 .tabla-scroll { overflow-x: auto; }
 .tabla-excel {
   border-collapse: separate; border-spacing: 0;
-  width: max-content; min-width: 100%; font-size: 0.8rem; background: #fff;
+  width: max-content; min-width: 0; font-size: 0.8rem; background: #fff;
 }
 .tabla-excel th, .tabla-excel td {
   border-right: 1px solid #d4d4d8; border-bottom: 1px solid #d4d4d8;
@@ -500,16 +550,28 @@ const descargarExcel = async () => {
 
 /* Primera columna fija (árbitro) */
 .col-arbitro {
-  position: sticky; left: 0; background-color: #fff; z-index: 6; min-width: 190px; text-align: left !important;
+  position: sticky; left: 0; background-color: #fff; z-index: 6; width: 1%; white-space: nowrap; text-align: left !important;
 }
 .tabla-excel thead .esquina { z-index: 8; background-color: #e9ecef; }
-.celda-nombre { font-weight: 600; color: #212529; border-right: 2px solid #adb5bd !important; }
+.celda-nombre { font-weight: 600; color: #212529; border-right: 2px solid #adb5bd !important; padding-right: 14px; }
 
 /* Celdas de datos */
-.celda { text-align: center; min-width: 56px; color: #212529; }
-.celda-obs { cursor: pointer; font-weight: 600; }
-.celda-obs:hover { outline: 2px solid #0d6efd; outline-offset: -2px; }
+.celda { text-align: center; min-width: 72px; color: #212529; padding: 2px 4px; }
+.celda-obs { font-weight: 600; }
 .celda-vacia { background: #fff; }
+
+/* Contenido de la celda: nota + botón de Excel al lado */
+.celda-obs-contenido { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.celda-obs-nota {
+  cursor: pointer; min-width: 22px; padding: 1px 3px; border-radius: 3px;
+}
+.celda-obs-nota:hover { outline: 2px solid #0d6efd; outline-offset: -1px; }
+.btn-excel-celda {
+  border: none; background: transparent; color: #198754; cursor: pointer;
+  padding: 0 2px; line-height: 1; font-size: 0.85rem; display: inline-flex; align-items: center;
+}
+.btn-excel-celda:hover { color: #0f5132; }
+.btn-excel-celda:disabled { opacity: 0.5; cursor: default; }
 
 /* Colores de estado en celda (mismos tonos que las píldoras) */
 .celda-aprobada { background-color: #e3f5e6; color: #2f8a45; }

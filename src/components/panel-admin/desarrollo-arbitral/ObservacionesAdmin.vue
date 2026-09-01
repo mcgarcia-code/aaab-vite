@@ -1,4 +1,3 @@
-
 <template>
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
@@ -51,7 +50,7 @@
             <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
-          <div class="row g-2">
+          <div class="row g-2 flex-md-nowrap">
             <div class="col-6 col-md-1">
               <input v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="DD/MM/AAAA">
             </div>
@@ -67,7 +66,7 @@
             <div class="col-6 col-md-2">
               <input v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="Categoría...">
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md-1">
               <input v-model="filtros.partido" class="form-control form-control-sm shadow-none" placeholder="Partido...">
             </div>
             <div class="col-6 col-md-1">
@@ -123,14 +122,14 @@
                     <td class="text-center col-fija col-acciones">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="abrirModalGestion(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Gestionar / Modificar">
-                          <span class="material-icons" style="font-size:16px;">edit_document</span>
+                          <span class="material-icons" style="font-size:16px;">edit</span>
                         </button>
                         <button @click="verDetalle(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Ver detalle" :disabled="cargandoDetalleId === o.id">
                           <span v-if="cargandoDetalleId === o.id" class="spinner-border spinner-border-sm"></span>
                           <span v-else class="material-icons" style="font-size:16px;">visibility</span>
                         </button>
                         <button @click="verHistorial(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial de estos árbitros">
-                          <span class="material-icons" style="font-size:16px;">history</span>
+                          <span class="material-icons" style="font-size:16px;">manage_search</span>
                         </button>
                       </div>
                     </td>
@@ -192,14 +191,14 @@
 
                   <div class="d-flex gap-2 mt-3">
                     <button @click="abrirModalGestion(o)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <span class="material-icons" style="font-size: 18px;">edit_document</span> Gestionar
+                      <span class="material-icons" style="font-size: 18px;">edit</span> Gestionar
                     </button>
                     <button @click="verDetalle(o)" class="btn btn-sm btn-outline-secondary shadow-sm px-3 d-flex justify-content-center align-items-center" title="Ver detalle" :disabled="cargandoDetalleId === o.id">
                       <span v-if="cargandoDetalleId === o.id" class="spinner-border spinner-border-sm"></span>
                       <span v-else class="material-icons" style="font-size: 18px;">visibility</span>
                     </button>
                     <button @click="verHistorial(o)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center" title="Ver historial">
-                      <span class="material-icons" style="font-size: 18px;">history</span>
+                      <span class="material-icons" style="font-size: 18px;">manage_search</span>
                     </button>
                   </div>
                 </div>
@@ -230,7 +229,7 @@
     <!-- ==========================================
          MODAL 1: GESTIONAR OBSERVACIÓN (APROBAR/ANULAR)
          ========================================== -->
-    <ModalBase :show="mostrarModal" @close="cerrarModal" titulo="Gestionar Observación" icono="edit_document" colorIcono="bg-primary text-white" maxWidth="500px">
+    <ModalBase :show="mostrarModal" @close="cerrarModal" titulo="Gestionar Observación" icono="edit" colorIcono="bg-primary text-white" maxWidth="500px">
       <div class="text-center mb-3">
         <p class="text-muted small mt-1 mb-1">Observación #{{ observacionActual.id }} — {{ formatearFecha(observacionActual.fecha_partido) }}</p>
         <span :class="badgeEstado(observacionActual.estado)">Estado actual: {{ etiquetaEstado(observacionActual.estado) }}</span>
@@ -428,10 +427,10 @@
     <!-- ==========================================
          MODAL 3: HISTORIAL DEL ÁRBITRO
          ========================================== -->
-    <ModalBase :show="mostrarModalHistorial" @close="mostrarModalHistorial = false" icono="history" colorIcono="bg-warning text-dark" maxWidth="700px">
+    <ModalBase :show="mostrarModalHistorial" @close="mostrarModalHistorial = false" icono="manage_search" colorIcono="bg-warning text-dark" maxWidth="700px">
       <template #header>
         <div class="d-flex align-items-center justify-content-center gap-2">
-          Historial: {{ arbitrosHistorialNombre }}
+          Historial de {{ observadorHistorialNombre }}
           <span class="badge bg-dark rounded-pill fs-6 d-flex align-items-center justify-content-center" style="min-width: 28px; min-height: 28px;">
             {{ historialSeleccionado.length }}
           </span>
@@ -445,7 +444,8 @@
             <tr>
               <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Fecha</th>
               <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Categoría / Partido</th>
-              <th class="py-2 pe-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Observador</th>
+              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Árbitros</th>
+              <th class="py-2 pe-3 fw-bold text-uppercase text-center" style="font-size: 0.75rem;">Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -456,10 +456,11 @@
                 {{ h.equipo_local }} vs {{ h.equipo_visitante }}
                 <span class="text-muted"> — {{ h.competencia }}</span>
               </td>
-              <td class="py-3 pe-3 text-dark">{{ h.observador }}</td>
+              <td class="py-3 text-dark">{{ h.arbitros }}</td>
+              <td class="py-3 pe-3 text-center"><span :class="badgeEstado(h.estado)">{{ etiquetaEstado(h.estado) }}</span></td>
             </tr>
             <tr v-if="historialSeleccionado.length === 0">
-              <td colspan="3" class="text-center py-4 text-muted">No hay registros previos en el historial.</td>
+              <td colspan="4" class="text-center py-4 text-muted">No hay registros previos en el historial.</td>
             </tr>
           </tbody>
         </table>
@@ -478,12 +479,16 @@
             </div>
           </div>
           <div class="d-flex justify-content-between border-bottom pb-2 mb-2 small">
-            <span class="fw-bold text-dark">Observador:</span>
-            <span class="text-muted">{{ h.observador }}</span>
+            <span class="fw-bold text-dark">Árbitros:</span>
+            <span class="text-muted text-end">{{ h.arbitros }}</span>
           </div>
-          <div class="d-flex justify-content-between small">
+          <div class="d-flex justify-content-between border-bottom pb-2 mb-2 small">
             <span class="fw-bold text-dark">Competencia:</span>
             <span class="text-muted">{{ h.competencia }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center small">
+            <span class="fw-bold text-dark">Estado:</span>
+            <span :class="badgeEstado(h.estado)">{{ etiquetaEstado(h.estado) }}</span>
           </div>
         </div>
       </div>
@@ -598,10 +603,10 @@ const formatearFechaHora = (fechaHora) => {
 
 const etiquetaEstado = (estado) => {
   const e = (estado || 'pendiente').toLowerCase();
-  if (e === 'aprobada') return 'Aprobada';
-  if (e === 'rechazada') return 'Rechazada';
-  if (e === 'anulada') return 'Anulada';
-  return 'Pendiente';
+  if (e === 'aprobada') return 'APROBADA';
+  if (e === 'rechazada') return 'RECHAZADA';
+  if (e === 'anulada') return 'ANULADA';
+  return 'PENDIENTE';
 };
 
 const badgeEstado = (estado) => {
@@ -899,11 +904,15 @@ const cerrarDetalle = () => { mostrarDetalle.value = false; detalle.value = null
    ==================================================== */
 const mostrarModalHistorial = ref(false);
 const historialSeleccionado = ref([]);
-const arbitrosHistorialNombre = ref('');
+const observadorHistorialNombre = ref('');
 
 const verHistorial = (obs) => {
-  arbitrosHistorialNombre.value = obs.arbitros;
-  historialSeleccionado.value = observaciones.value.filter(o => o.arbitros === obs.arbitros).sort((a, b) => b.id - a.id);
+  // Agrupa el historial por observador: todas las observaciones que cargó
+  // el mismo observador que la fila seleccionada.
+  observadorHistorialNombre.value = obs.observador || 'Observador';
+  historialSeleccionado.value = observaciones.value
+    .filter(o => o.observador === obs.observador)
+    .sort((a, b) => b.id - a.id);
   mostrarModalHistorial.value = true;
 };
 

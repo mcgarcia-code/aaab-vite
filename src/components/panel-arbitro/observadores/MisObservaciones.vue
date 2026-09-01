@@ -19,8 +19,13 @@
             <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
           </button>
 
+          <button @click="limpiarFiltros" :disabled="!busqueda" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Limpiar filtros">
+            <span class="material-icons" style="font-size: 20px;">filter_alt_off</span>
+            <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Limpiar</span>
+          </button>
+
           <RouterLink to="/panel-arbitro/observaciones/carga" class="text-decoration-none">
-            <button class="btn btn-primary shadow-sm py-2 d-flex align-items-center gap-2" title="Nueva Evaluación">
+            <button class="btn btn-danger shadow-sm py-2 d-flex align-items-center gap-2" title="Nueva Evaluación">
               <span class="material-icons" style="font-size: 20px;">add</span>
               <span class="d-none d-md-inline fw-bold" style="font-size: 0.8rem;">Nueva Evaluación</span>
             </button>
@@ -290,10 +295,10 @@ const formatearFecha = (fechaIso) => {
 
 const etiquetaEstado = (estado) => {
   const e = (estado || 'pendiente').toLowerCase()
-  if (e === 'aprobada') return 'Aprobada'
-  if (e === 'rechazada') return 'Rechazada'
-  if (e === 'anulada') return 'Anulada'
-  return 'Pendiente'
+  if (e === 'aprobada') return 'APROBADA'
+  if (e === 'rechazada') return 'RECHAZADA'
+  if (e === 'anulada') return 'ANULADA'
+  return 'PENDIENTE'
 }
 
 const badgeEstado = (estado) => {
@@ -323,6 +328,11 @@ const observacionesPaginadas = computed(() => {
 })
 
 watch(busqueda, () => { paginaActual.value = 1 })
+
+const limpiarFiltros = () => {
+  busqueda.value = ''
+  paginaActual.value = 1
+}
 
 const cambiarPagina = (delta) => {
   paginaActual.value += delta

@@ -19,48 +19,49 @@
             </span>
           </div>
 
-          <!-- Select y botones agrupados bajo un flex-nowrap -->
-          <div class="d-flex flex-nowrap gap-2 align-items-center mt-2 mt-md-0 overflow-x-auto pb-1">
+          <!-- Select y botones de examen agrupados -->
+          <div class="d-flex flex-wrap flex-md-nowrap gap-2 align-items-center mt-2 mt-md-0">
             <select
               v-model="reunionSeleccionada"
               @change="onReunionSeleccionada"
-              class="form-select shadow-sm border-secondary-subtle fw-semibold flex-shrink-0"
-              style="width: auto; min-width: 260px; max-width: 420px;"
+              class="form-select shadow-sm border-secondary-subtle fw-semibold flex-grow-1 flex-md-grow-0"
+              style="min-width: 220px; max-width: 420px;"
               :disabled="cargandoInicial || cargandoArbitros"
             >
               <option value="">— Ver listado general —</option>
-              <option v-for="r in arrReuniones" :key="r.id" :value="r.id">
-                {{ opcionReunion(r) }}
+              <option v-for="op in opcionesReunion" :key="op.key" :value="op.key">
+                {{ op.label }}
               </option>
             </select>
 
             <template v-if="modoReunion">
               <button
-                class="btn btn-danger fw-bold shadow-sm d-flex align-items-center gap-2 flex-shrink-0"
+                class="btn btn-danger fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
                 :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || reunionActual?.examen_habilitado || reunionEsPasada"
                 @click="habilitarExamenReunion"
                 :title="reunionEsPasada
                   ? 'No se puede habilitar el examen: la reunión ya pasó'
-                  : (idsGruposExamenReunion.length ? 'Habilitar el examen para los grupos de esta reunión' : 'Esta reunión no tiene grupos asociados')"
+                  : (idsGruposExamenReunion.length ? 'Habilitar el examen para el grupo de esta reunión' : 'Esta reunión no tiene grupos asociados')"
               >
                 <span v-if="habilitandoExamen" class="spinner-border spinner-border-sm"></span>
                 <i v-else class="bi bi-shield-check"></i>
-                <span class="d-none d-md-inline">Habilitar examen</span>
+                <span>Habilitar examen</span>
               </button>
 
               <button
-                class="btn btn-outline-danger fw-bold shadow-sm d-flex align-items-center gap-2 flex-shrink-0"
+                class="btn btn-outline-danger fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
                 :disabled="deshabilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || !reunionActual?.examen_habilitado"
                 @click="deshabilitarExamenReunion"
                 title="Deshabilitar el examen de esta reunión"
               >
                 <span v-if="deshabilitandoExamen" class="spinner-border spinner-border-sm"></span>
                 <i v-else class="bi bi-shield-slash"></i>
-                <span class="d-none d-md-inline">Deshabilitar examen</span>
+                <span>Deshabilitar examen</span>
               </button>
             </template>
           </div>
 
+          <!-- Solo activos / filtros / limpiar -->
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white flex-shrink-0">
               <input
@@ -474,6 +475,13 @@ const esFechaPasada = (fechaEvento) => {
   return d < hoy
 }
 
+// Nombre legible de un grupo a partir de su id (usa la lista cargada de grupos).
+const nombreGrupo = (idGrupo) => {
+  const g = grupos.value.find(x => Number(x.id) === Number(idGrupo))
+  if (!g) return '—'
+  return g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre
+}
+
 const normalizarAsistencia = (valor) => {
   if (valor === null || valor === undefined) return ''
   const texto = String(valor).trim().toLowerCase()
@@ -556,18 +564,60 @@ const reunionesArbitroSeleccionado   = ref([])
 const asistenciasGlobales            = ref({})
 
 // ─── Computeds: modo ─────────────────────────────────────────────
-const modoReunion  = computed(() => !!reunionSeleccionada.value)
-const reunionActual = computed(() =>
-  arrReuniones.value.find(r => String(r.id) === String(reunionSeleccionada.value)) ?? null
+// El select trabaja con una clave "idEvento|idGrupo" (o "idEvento|all" para
+// reuniones de todos los grupos), de modo que cada grupo de una reunión es una
+// opción separada. Igual acá derivamos el idEvento y el idGrupo elegidos.
+const modoReunion = computed(() => !!reunionSeleccionada.value)
+
+// Opciones del select: una por evento + grupo. Para un coordinador, el backend
+// adjunta idsGruposCoordinados/nombresGruposCoordinados (solo los grupos que
+// coordina, ya intersectados con los de la reunión); en ese caso desglosamos
+// únicamente esos. Para otros roles se desglosa por los grupos de la reunión
+// (o todos los del sistema, si la reunión es "todos los grupos").
+const opcionesReunion = computed(() => {
+  const ops = []
+  for (const r of arrReuniones.value) {
+    const base = `${r.fecha_formateada}  —  ${r.titulo}`
+
+    let ids = []
+    let nombres = []
+    if (Array.isArray(r.idsGruposCoordinados)) {
+      ids = r.idsGruposCoordinados
+      nombres = r.nombresGruposCoordinados || []
+    } else if (r.todosLosGrupos) {
+      ids = grupos.value.map(g => g.id)
+      nombres = grupos.value.map(g => (g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre))
+    } else {
+      ids = r.idsGrupos || []
+      nombres = r.nombresGrupos || []
+    }
+
+    ids.forEach((idGrupo, i) => {
+      ops.push({
+        key: `${r.id}|${idGrupo}`,
+        idEvento: r.id,
+        idsGrupos: [idGrupo],
+        label: `${base} (${nombres[i] ?? nombreGrupo(idGrupo)})`,
+      })
+    })
+  }
+  return ops
+})
+
+const opcionSeleccionada = computed(() =>
+  opcionesReunion.value.find(o => o.key === reunionSeleccionada.value) ?? null
 )
 
-// Ids de grupos que se habilitarían para el examen de la reunión elegida:
-// los que participan de la reunión (o todos, si la reunión es "todos los grupos").
-const idsGruposExamenReunion = computed(() => {
-  const r = reunionActual.value
-  if (!r) return []
-  return r.todosLosGrupos ? grupos.value.map(g => g.id) : (r.idsGrupos || [])
-})
+// idEvento derivado de la opción elegida (para cargar árbitros del evento).
+const idEventoSeleccionado = computed(() => opcionSeleccionada.value?.idEvento ?? null)
+
+const reunionActual = computed(() =>
+  arrReuniones.value.find(r => String(r.id) === String(idEventoSeleccionado.value)) ?? null
+)
+
+// Ids de grupos que se habilitarían para el examen de la opción elegida:
+// solo el grupo de la opción (o todos, si la reunión es "todos los grupos").
+const idsGruposExamenReunion = computed(() => opcionSeleccionada.value?.idsGrupos ?? [])
 
 // La reunión seleccionada tiene fecha pasada => no se puede habilitar examen.
 const reunionEsPasada = computed(() =>
@@ -690,16 +740,6 @@ const resumenDetalle = computed(() => {
   return r
 })
 
-const opcionReunion = (r) => {
-  let texto = `${r.fecha_formateada}  —  ${r.titulo}`
-  if (r.todosLosGrupos) {
-    texto += ' (Todos los grupos)'
-  } else {
-    texto += ` (${r.nombresGrupos.join(" / ")})`
-  }
-  return texto
-}
-
 // ─── Computeds: filtrado y paginación ────────────────────────────
 const arbitrosMostrados = computed(() =>
   modoReunion.value ? arbitrosReunion.value : arbitros.value
@@ -813,7 +853,7 @@ const onReunionSeleccionada = async () => {
     const resArb = await api.get({
       entity: 'reuniones',
       action: 'obtenerArbitrosReunion',
-      payload: { idEvento: Number(reunionSeleccionada.value), soloActivos: soloActivos.value }
+      payload: { idEvento: Number(idEventoSeleccionado.value), soloActivos: soloActivos.value }
     })
     if ((resArb.ok || resArb.success) && resArb.payload) {
       arbitrosReunion.value = resArb.payload
@@ -839,7 +879,7 @@ const guardarAsistencia = async (a) => {
     const res = await api.post({
       entity: 'reuniones',
       action: 'registrarAsistenciaArbitro',
-      payload: { idEvento: Number(reunionSeleccionada.value), idArbitro: a.id, tipo: estado },
+      payload: { idEvento: Number(idEventoSeleccionado.value), idArbitro: a.id, tipo: estado },
     })
     if (res.payload) {
       guardadoOk[a.id] = true

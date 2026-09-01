@@ -161,6 +161,7 @@ const menuItems = [
   { to: '/panel-arbitro/credencial', title: 'Credencial Digital', icon: 'bi bi-person-badge', desc: 'Carnet oficial 2026.', categoria: 'Mi Perfil' },
 
   { to: '/panel-arbitro/rendimiento', title: 'Mi Rendimiento', icon: 'bi bi-graph-up-arrow', desc: 'Exámenes y asistencia a reuniones', categoria: 'Actividad Arbitral' },
+
   { to: '/panel-arbitro/mis-observaciones', title: 'Mis Observaciones', icon: 'bi bi-eye', desc: 'Visualizar observaciones de tus partidos', categoria: 'Actividad Arbitral' },
 
   { to: '/panel-arbitro/designaciones', title: 'Mis Designaciones', icon: 'bi bi-calendar4-week', desc: 'Mis Designaciones', categoria: 'Actividad Arbitral' },

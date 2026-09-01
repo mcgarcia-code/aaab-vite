@@ -22,12 +22,12 @@
           </div>
 
           <!-- Select de reunión (desglosado por grupo) -->
-          <div class="d-flex flex-nowrap gap-2 align-items-center mt-2 mt-md-0 overflow-x-auto pb-1">
+          <div class="w-100 mt-2 mt-md-0" style="max-width: 460px;">
             <select
               v-model="reunionSeleccionada"
               @change="onReunionSeleccionada"
-              class="form-select shadow-sm border-secondary-subtle fw-semibold flex-shrink-0"
-              style="width: auto; min-width: 260px; max-width: 460px;"
+              class="form-select shadow-sm border-secondary-subtle fw-semibold w-100"
+              style="min-width: 260px;"
               :disabled="cargandoInicial || cargandoArbitros"
             >
               <option value="">— Ver listado general —</option>

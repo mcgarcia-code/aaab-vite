@@ -83,67 +83,83 @@
             <div class="col-md-2">Hasta</div>
           </div>
 
-          <!-- LISTA ÚNICA RESPONSIVA (Reemplaza a la tabla y a las tarjetas mobile) -->
+          <!-- LISTA RESPONSIVA -->
           <div class="d-flex flex-column">
-            <div v-for="s in sancionesPaginadas" :key="s.id" class="row g-0 align-items-center p-3 p-md-2 border-bottom item-sancion bg-white">
+            <div v-for="s in sancionesPaginadas" :key="s.id" class="border-bottom item-sancion bg-white">
 
-              <!-- HEADER MOBILE: Sanción + Estado (Se oculta en escritorio) -->
-              <div class="col-12 d-md-none d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" class="fs-6 fw-bold">{{ s.sancion }}</span>
-                <span :class="obtenerClaseEstado(s.estado_dinamico, true)" style="font-size: 0.7rem; padding: 3px 10px;">{{ obtenerTextoEstado(s.estado_dinamico) }}</span>
-              </div>
-
-              <!-- COLUMNA 1: ESTADO (Escritorio) -->
-              <div class="col-md-2 d-none d-md-flex justify-content-center order-1">
-                <span :class="obtenerClaseEstado(s.estado_dinamico)">{{ obtenerTextoEstado(s.estado_dinamico) }}</span>
-              </div>
-
-              <!-- COLUMNA 2: ACCIÓN (Ambos) -->
-              <div class="col-12 col-md-2 order-5 order-md-2 mt-3 mt-md-0 px-0 px-md-2">
-                <div class="d-flex flex-column gap-2 align-items-center">
-                  <button @click="abrirDescargo(s)" class="btn btn-sm fw-bold position-relative w-100" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary') : 'btn-outline-secondary'">
-                    <i class="bi" :class="s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history'"></i>
-                    <span class="d-md-none ms-1">{{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'Nuevo Mensaje' : 'Realizar Descargo') : 'Historial de Descargos' }}</span>
-                    <span class="d-none d-md-inline ms-1">{{ s.estado_dinamico == 3 ? 'Descargo' : 'Historial' }}</span>
-                    <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
-                  </button>
-
-                  <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-sm btn-danger fw-bold w-100 text-white">
-                    <i class="bi bi-envelope d-md-none"></i> APELAR <span class="d-md-none">A CD</span>
-                  </button>
+              <!-- ================= LAYOUT ESCRITORIO ================= -->
+              <div class="row g-0 d-none d-md-flex align-items-center p-2 text-center">
+                <!-- ESTADO -->
+                <div class="col-md-2 d-flex justify-content-center">
+                  <span :class="obtenerClaseEstado(s.estado_dinamico)">{{ obtenerTextoEstado(s.estado_dinamico) }}</span>
+                </div>
+                <!-- ACCIÓN -->
+                <div class="col-md-2 px-2">
+                  <div class="d-flex flex-column gap-2 align-items-center">
+                    <button @click="abrirDescargo(s)" class="btn btn-sm fw-bold position-relative w-100" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary') : 'btn-outline-secondary'">
+                      <i class="bi" :class="s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history'"></i>
+                      <span class="ms-1">{{ s.estado_dinamico == 3 ? 'Descargo' : 'Historial' }}</span>
+                      <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                    </button>
+                    <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-sm btn-danger fw-bold w-100 text-white">
+                      APELAR
+                    </button>
+                  </div>
+                </div>
+                <!-- SANCIÓN -->
+                <div class="col-md-2 text-start px-2 text-truncate">
+                  <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
+                </div>
+                <!-- MOTIVO / ART. -->
+                <div class="col-md-3 text-start px-2">
+                  <p class="mb-0 text-dark" style="font-size: 0.85rem; line-height: 1.3;">
+                    <span v-if="s.articulo" class="fw-bold">Art. {{ s.articulo }} - </span>
+                    <span class="text-muted">{{ s.motivo }}</span>
+                  </p>
+                </div>
+                <!-- DESDE -->
+                <div class="col-md-1 fw-bold text-dark" style="font-size: 0.85rem;">
+                  {{ s.desde_formateada || '-' }}
+                </div>
+                <!-- HASTA -->
+                <div class="col-md-2 fw-bold" style="font-size: 0.85rem;" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">
+                  <span v-if="s.es_indefinido == 1">Indefinido</span>
+                  <span v-else>{{ s.hasta_formateada || '-' }}</span>
                 </div>
               </div>
 
-              <!-- COLUMNA 3: SANCIÓN (Escritorio) -->
-              <div class="col-md-2 d-none d-md-block order-3 px-2 text-truncate">
-                <span :class="obtenerClaseTextoSancion(s.estado_dinamico)">{{ s.sancion }}</span>
-              </div>
-
-              <!-- COLUMNA 4: MOTIVO (Ambos) -->
-              <div class="col-12 col-md-3 order-3 order-md-4 mb-3 mb-md-0 px-0 px-md-2">
-                <p class="mb-0 text-dark" style="font-size: 0.85rem; line-height: 1.3;">
+              <!-- ================= LAYOUT MOBILE ================= -->
+              <div class="d-md-none p-3">
+                <!-- Sanción + Estado -->
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                  <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" class="fs-6 fw-bold">{{ s.sancion }}</span>
+                  <span :class="obtenerClaseEstado(s.estado_dinamico, true)" style="font-size: 0.7rem; padding: 3px 10px;">{{ obtenerTextoEstado(s.estado_dinamico) }}</span>
+                </div>
+                <!-- Motivo -->
+                <p class="mb-3 text-dark" style="font-size: 0.85rem; line-height: 1.3;">
                   <span v-if="s.articulo" class="fw-bold">Art. {{ s.articulo }} - </span>
                   <span class="text-muted">{{ s.motivo }}</span>
                 </p>
-              </div>
-
-              <!-- COLUMNA 5: FECHAS MOBILE (Se oculta en escritorio) -->
-              <div class="col-12 order-4 d-md-none bg-light p-2 rounded border d-flex justify-content-between align-items-center">
-                <span class="text-dark" style="font-size: 0.85rem;">Desde: <strong>{{ s.desde_formateada || '-' }}</strong></span>
-                <span class="text-dark" style="font-size: 0.85rem;">Hasta:
-                  <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
-                  <strong class="text-danger" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
-                  <strong class="text-muted" v-else>-</strong>
-                </span>
-              </div>
-
-              <!-- COLUMNA 6: FECHAS ESCRITORIO -->
-              <div class="col-md-1 d-none d-md-block order-5 text-center fw-bold text-dark" style="font-size: 0.85rem;">
-                {{ s.desde_formateada || '-' }}
-              </div>
-              <div class="col-md-2 d-none d-md-block order-6 text-center fw-bold" style="font-size: 0.85rem;" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">
-                <span v-if="s.es_indefinido == 1">Indefinido</span>
-                <span v-else>{{ s.hasta_formateada || '-' }}</span>
+                <!-- Fechas -->
+                <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center mb-3">
+                  <span class="text-dark" style="font-size: 0.85rem;">Desde: <strong>{{ s.desde_formateada || '-' }}</strong></span>
+                  <span class="text-dark" style="font-size: 0.85rem;">Hasta:
+                    <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
+                    <strong class="text-danger" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
+                    <strong class="text-muted" v-else>-</strong>
+                  </span>
+                </div>
+                <!-- Acciones -->
+                <div class="d-flex flex-column gap-2">
+                  <button @click="abrirDescargo(s)" class="btn btn-sm fw-bold position-relative w-100" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary') : 'btn-outline-secondary'">
+                    <i class="bi" :class="s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history'"></i>
+                    <span class="ms-1">{{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'Nuevo Mensaje' : 'Realizar Descargo') : 'Historial de Descargos' }}</span>
+                    <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                  </button>
+                  <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-sm btn-danger fw-bold w-100 text-white">
+                    <i class="bi bi-envelope"></i> APELAR A CD
+                  </button>
+                </div>
               </div>
 
             </div>
