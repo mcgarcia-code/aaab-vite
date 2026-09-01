@@ -14,16 +14,21 @@
 
           <div class="mb-3">
             <label class="form-label fw-bold small text-dark">Motivo de la Licencia</label>
-            <select v-model="motivoSeleccionado" class="form-select form-select-lg shadow-none fs-6" :disabled="cargando || tiempoIndeterminado">
+            <select v-model="motivoSeleccionado" class="form-select form-select-lg shadow-none fs-6" :disabled="cargando">
               <option value="particular">Particular</option>
               <option value="lesion_enfermedad">Lesión / Enfermedad</option>
-              <option value="designacion_torneo_nacional">Designación Torneo Nacional</option>
+              <option v-if="!tiempoIndeterminado" value="designacion_torneo_nacional">Designación Torneo Nacional</option>
             </select>
           </div>
 
-          <div v-if="motivoSeleccionado === 'lesion_enfermedad'" class="alert alert-warning small py-2 px-3 mb-3 border-0" style="border-radius: 8px;">
+          <div v-if="motivoSeleccionado === 'lesion_enfermedad' && !tiempoIndeterminado" class="alert alert-warning small py-2 px-3 mb-3 border-0" style="border-radius: 8px;">
             <i class="bi bi-exclamation-triangle-fill me-1"></i>
             Tu licencia quedará <strong>Pendiente</strong>. Tenés 72 hs para enviar el certificado médico a <strong>licencias@arbitroshandball.com.ar</strong>, sino será rechazada y enviada al Tribunal de Ética. Avisá a tu coordinador.
+          </div>
+
+          <div v-if="motivoSeleccionado === 'lesion_enfermedad' && tiempoIndeterminado" class="alert alert-warning small py-2 px-3 mb-3 border-0" style="border-radius: 8px;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            La licencia por lesión/enfermedad por tiempo indeterminado es para <strong>lesiones de largo tratamiento</strong>. Tu licencia quedará <strong>Aprobada</strong>. Recordá enviar el certificado médico a <strong>licencias@arbitroshandball.com.ar</strong> y avisarle a tu coordinador.
           </div>
 
           <div v-if="motivoSeleccionado === 'designacion_torneo_nacional'" class="alert alert-warning small py-2 px-3 mb-3 border-0" style="border-radius: 8px;">
@@ -48,6 +53,10 @@
               <label class="form-check-label small fw-bold text-dark" for="chkTiempoIndeterminadoArb">
                 Por tiempo indeterminado
               </label>
+            </div>
+            <div v-if="tiempoIndeterminado" class="form-text small text-muted mt-1">
+              <i class="bi bi-info-circle me-1"></i>
+              Las licencias indeterminadas solo pueden ser Particulares o por Lesión/Enfermedad.
             </div>
           </div>
 
@@ -181,7 +190,10 @@ const licencias = ref([]);
 const onToggleTiempoIndeterminado = () => {
   if (tiempoIndeterminado.value) {
     fechaSeleccionada.value = '';
-    motivoSeleccionado.value = 'particular';
+    // Las indeterminadas solo admiten particular o lesión/enfermedad.
+    if (motivoSeleccionado.value === 'designacion_torneo_nacional') {
+      motivoSeleccionado.value = 'particular';
+    }
   }
 };
 
@@ -276,9 +288,13 @@ const solicitarLicencia = async () => {
         tipoNotificacion = 'danger';
       } else if (estadoServidor === 'pendiente') {
         tituloNotificacion = 'Licencia Pendiente';
-        mensajeNotificacion = motivoSeleccionado.value === 'designacion_torneo_nacional'
-          ? 'Tu licencia quedará Pendiente hasta que sea autorizada por la Comisión Directiva.'
-          : 'Recordá enviar el certificado médico dentro de las 72 hs.';
+        if (motivoSeleccionado.value === 'designacion_torneo_nacional') {
+          mensajeNotificacion = 'Tu licencia quedará Pendiente hasta que sea autorizada por la Comisión Directiva.';
+        } else if (tiempoIndeterminado.value) {
+          mensajeNotificacion = 'Recordá enviar el certificado médico a licencias@arbitroshandball.com.ar.';
+        } else {
+          mensajeNotificacion = 'Recordá enviar el certificado médico dentro de las 72 hs.';
+        }
         tipoNotificacion = 'warning';
       }
 

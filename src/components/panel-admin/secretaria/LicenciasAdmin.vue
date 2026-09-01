@@ -232,10 +232,10 @@
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Motivo</label>
-            <select v-model="formModal.motivo" class="form-select shadow-none border-secondary-subtle" :disabled="formModal.tiempo_indeterminado">
+            <select v-model="formModal.motivo" class="form-select shadow-none border-secondary-subtle">
               <option value="particular">Particular</option>
               <option value="lesion_enfermedad">Lesión / Enfermedad</option>
-              <option value="designacion_torneo_nacional">Designación Torneo Nacional</option>
+              <option v-if="!formModal.tiempo_indeterminado" value="designacion_torneo_nacional">Designación Torneo Nacional</option>
             </select>
           </div>
 
@@ -254,16 +254,20 @@
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="small fw-bold text-dark mb-1">Fecha Ausencia *</label>
-            <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-secondary-subtle" required :disabled="formModal.tiempo_indeterminado">
+            <label class="small fw-bold text-dark mb-1">Fecha Ausencia {{ formModal.tiempo_indeterminado ? '' : '*' }}</label>
+            <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-secondary-subtle" :required="!formModal.tiempo_indeterminado" :disabled="formModal.tiempo_indeterminado" :placeholder="formModal.tiempo_indeterminado ? 'Tiempo indeterminado' : ''">
           </div>
 
-          <div class="col-12" v-if="modoModal === 'nuevo'">
+          <div class="col-12">
             <div class="form-check">
               <input v-model="formModal.tiempo_indeterminado" @change="onToggleTiempoIndeterminado" class="form-check-input" type="checkbox" id="chkTiempoIndeterminado">
               <label class="form-check-label small fw-bold text-dark" for="chkTiempoIndeterminado">
                 Por tiempo indeterminado
               </label>
+            </div>
+            <div v-if="formModal.tiempo_indeterminado" class="form-text small text-muted mt-1">
+              <i class="bi bi-info-circle me-1"></i>
+              Las licencias indeterminadas solo pueden ser por Lesión/Enfermedad o Particulares.
             </div>
           </div>
         </div>
@@ -458,16 +462,26 @@ const abrirModalNuevo = () => {
 
 const editarLicencia = (lic) => {
   // MODIFICADO: Asegurarse de que el motivo se cargue al editar
-  formModal.value = { ...lic, motivo: lic.motivo || 'particular' }
+  // y normalizar tiempo_indeterminado (1/0) a booleano para el checkbox.
+  formModal.value = {
+    ...lic,
+    motivo: lic.motivo || 'particular',
+    tiempo_indeterminado: lic.tiempo_indeterminado == 1
+  }
   modoModal.value = 'editar'
   mostrarModal.value = true
 };
 
 const onToggleTiempoIndeterminado = () => {
   if (formModal.value.tiempo_indeterminado) {
-    formModal.value.fecha_solicitud = new Date().toISOString().split('T')[0];
+    if (modoModal.value === 'nuevo') {
+      formModal.value.fecha_solicitud = new Date().toISOString().split('T')[0];
+    }
     formModal.value.fecha_licencia = '';
-    formModal.value.motivo = 'particular';
+    // Las indeterminadas solo admiten lesión/enfermedad o particular.
+    if (formModal.value.motivo !== 'lesion_enfermedad') {
+      formModal.value.motivo = 'particular';
+    }
   }
 };
 
@@ -503,7 +517,8 @@ const confirmarEdicion = async () => {
       estado: formModal.value.estado,
       fecha_licencia: formModal.value.fecha_licencia,
       fecha_solicitud: formModal.value.fecha_solicitud,
-      motivo: formModal.value.motivo
+      motivo: formModal.value.motivo,
+      tiempo_indeterminado: formModal.value.tiempo_indeterminado ? 1 : 0
     }
   });
   cargando.value = false;
