@@ -21,6 +21,11 @@
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
 
+            <!-- Botón Filtros (Solo Móvil) -->
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+              <span class="material-icons fs-6">filter_alt</span>
+            </button>
+
             <!-- Botón Limpiar filtros -->
             <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Limpiar filtros">
               <span class="material-icons text-dark fs-6">filter_alt_off</span>
@@ -35,6 +40,72 @@
           </div>
         </div>
 
+        <!-- PANEL DE FILTROS UNIFICADO (estilo Licencias) -->
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
+          <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Solicitudes</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+          </div>
+
+          <div class="row g-2">
+            <!-- Árbitro/s -->
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.arbitro" type="text" class="form-control form-control-sm shadow-none" placeholder="Árbitro...">
+            </div>
+
+            <!-- Solicitud (tipo) -->
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.tipo" class="form-select form-select-sm shadow-none">
+                <option value="">SOLICITUD (TODAS)</option>
+                <option value="no_designar">No ser designado a club</option>
+                <option value="no_designar_arbitro">No ser designado con árbitro</option>
+              </select>
+            </div>
+
+            <!-- Árbitro a evitar -->
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.arbitroPar" type="text" class="form-control form-control-sm shadow-none" placeholder="No designado con...">
+            </div>
+
+            <!-- Club -->
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.club" type="text" class="form-control form-control-sm shadow-none" placeholder="Club...">
+            </div>
+
+            <!-- Rama -->
+            <div class="col-6 col-md-1">
+              <select v-model="filtros.rama" class="form-select form-select-sm shadow-none">
+                <option value="">RAMA</option>
+                <option value="F">Femenina</option>
+                <option value="M">Masculina</option>
+              </select>
+            </div>
+
+            <!-- Estado -->
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
+                <option value="">ESTADO (TODOS)</option>
+                <option value="creado">Creado</option>
+                <option value="vigente">Vigente</option>
+                <option value="cumplida">Cumplida</option>
+                <option value="borrado">Borrado</option>
+              </select>
+            </div>
+
+            <!-- Año -->
+            <div class="col-6 col-md-1">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+                <option value="">AÑO</option>
+                <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
+              </select>
+            </div>
+
+            <div class="col-12 d-md-none mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+            </div>
+          </div>
+        </div>
+
         <div class="card-body p-0 p-md-3 bg-white">
 
           <!-- SPINNER DE CARGA -->
@@ -44,57 +115,6 @@
           </div>
 
           <template v-else>
-
-            <!-- ============================================ -->
-            <!--  FILTROS DE BÚSQUEDA (fuera de la tabla)     -->
-            <!-- ============================================ -->
-            <div class="filtros-wrapper border rounded shadow-sm bg-light p-2 p-md-3 mb-3">
-              <div class="row g-2 align-items-center">
-                <!-- Árbitro/s -->
-                <div class="col-12 col-sm-6 col-lg">
-                  <input v-model="filtros.arbitro" type="text" class="form-control form-control-sm shadow-none" placeholder="Árbitro...">
-                </div>
-
-                <!-- Solicitud (tipo) -->
-                <div class="col-12 col-sm-6 col-lg">
-                  <select v-model="filtros.tipo" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.tipo }">
-                    <option value="">SOLICITUD (TODAS)</option>
-                    <option value="no_designar">No ser designado a club</option>
-                    <option value="no_designar_arbitro">No ser designado con árbitro</option>
-                  </select>
-                </div>
-
-                <!-- Árbitro a evitar -->
-                <div class="col-12 col-sm-6 col-lg">
-                  <input v-model="filtros.arbitroPar" type="text" class="form-control form-control-sm shadow-none" placeholder="No ser designado con...">
-                </div>
-
-                <!-- Club -->
-                <div class="col-12 col-sm-6 col-lg">
-                  <input v-model="filtros.club" type="text" class="form-control form-control-sm shadow-none" placeholder="Club...">
-                </div>
-
-                <!-- Rama -->
-                <div class="col-12 col-sm-6 col-lg">
-                  <select v-model="filtros.rama" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.rama }">
-                    <option value="">RAMA (TODAS)</option>
-                    <option value="F">Femenina</option>
-                    <option value="M">Masculina</option>
-                  </select>
-                </div>
-
-                <!-- Estado -->
-                <div class="col-12 col-sm-6 col-lg">
-                  <select v-model="filtros.estado" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.estado }">
-                    <option value="">ESTADO (TODOS)</option>
-                    <option value="creado">Creado</option>
-                    <option value="vigente">Vigente</option>
-                    <option value="cumplida">Cumplida</option>
-                    <option value="borrado">Borrado</option>
-                  </select>
-                </div>
-              </div>
-            </div>
 
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
@@ -427,6 +447,7 @@ const modoModal = ref('nuevo')
 const filtroArbitro = ref('')
 const filtroArbitroPar = ref('')
 const solicitudEnEdicion = ref(null)
+const mostrarFiltrosMobile = ref(false)
 
 const paginaActual = ref(1)
 const registrosPorPagina = 8
@@ -441,6 +462,7 @@ const filtros = reactive({
   club: '',
   rama: '',
   estado: '',
+  anio: '',
 })
 
 const limpiarFiltros = () => {
@@ -450,6 +472,7 @@ const limpiarFiltros = () => {
   filtros.club = ''
   filtros.rama = ''
   filtros.estado = ''
+  filtros.anio = ''
 }
 
 const hayFiltrosActivos = computed(() =>
@@ -503,6 +526,25 @@ const formatearFecha = (fecha) => {
   return `${partes[2]}/${partes[1]}/${partes[0]}`
 }
 
+// Extrae el año (AAAA) de una fecha 'AAAA-MM-DD ...'. Devuelve '' si no hay fecha.
+const anioDeFecha = (f) => {
+  if (!f) return ''
+  const t = String(f).trim().slice(0, 10)
+  return /^\d{4}-/.test(t) ? t.slice(0, 4) : ''
+}
+
+// Años presentes en las solicitudes (según vigencia: desde o hasta), ordenados descendente.
+const aniosDisponibles = computed(() => {
+  const set = new Set()
+  solicitudes.value.forEach(s => {
+    const aDesde = anioDeFecha(s.fecha_desde)
+    const aHasta = anioDeFecha(s.fecha_hasta)
+    if (aDesde) set.add(aDesde)
+    if (aHasta) set.add(aHasta)
+  })
+  return [...set].sort((a, b) => b.localeCompare(a))
+})
+
 // ====================================================
 //  COMPUTED
 // ====================================================
@@ -554,6 +596,11 @@ const solicitudesFiltradas = computed(() => {
 
     // Estado
     if (filtros.estado && s.estado !== filtros.estado) return false
+
+    // Año: coincide por vigencia desde o hasta
+    if (filtros.anio) {
+      if (anioDeFecha(s.fecha_desde) !== filtros.anio && anioDeFecha(s.fecha_hasta) !== filtros.anio) return false
+    }
 
     return true
   })

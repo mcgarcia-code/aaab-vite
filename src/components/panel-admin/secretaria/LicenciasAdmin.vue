@@ -67,11 +67,17 @@
                 <option value="borrada">BORRADA</option>
               </select>
             </div>
-            <div class="col-6 col-md-3">
-              <input type="text" v-model="filtros.fecha_solicitud" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. Solicitud (DD/MM/AAAA)">
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+                <option value="">AÑO (TODOS)</option>
+                <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
+              </select>
             </div>
-            <div class="col-6 col-md-3">
-              <input type="text" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. Ausencia (DD/MM/AAAA) o indeterminado">
+            <div class="col-6 col-md-2">
+              <input type="text" v-model="filtros.fecha_solicitud" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. Solicitud">
+            </div>
+            <div class="col-6 col-md-2">
+              <input type="text" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. Ausencia o indeterminada">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
@@ -371,7 +377,7 @@ const arbitrosLista = ref([])
 const cargando = ref(false)
 
 const filtros = reactive({
-  apellido: '', nombre: '', estado: '', fecha: '', fecha_solicitud: ''
+  apellido: '', nombre: '', estado: '', fecha: '', fecha_solicitud: '', anio: ''
 })
 
 const mostrarFiltrosMobile = ref(false)
@@ -393,11 +399,26 @@ const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replac
 const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : '';
 const formatearFechaAusencia = (lic) => (lic.tiempo_indeterminado == 1 ? 'Tiempo indeterminado' : formatearFechaVista(lic.fecha_licencia));
 
+// Extrae el año (AAAA) de una fecha en formato 'AAAA-MM-DD ...'. Devuelve '' si no hay fecha.
+const anioDeFecha = (f) => (f ? String(f).split(' ')[0].split('-')[0] : '');
+
 const etiquetaMotivo = (motivo, corto = false) => {
   if (motivo === 'lesion_enfermedad') return corto ? 'Lesión/Enf.' : 'Lesión/Enfermedad';
   if (motivo === 'designacion_torneo_nacional') return corto ? 'Desig. T. Nac.' : 'Designación Torneo Nacional';
   return 'Particular';
 };
+
+// Años presentes en las licencias (según fecha de ausencia o de solicitud), ordenados descendente.
+const aniosDisponibles = computed(() => {
+  const set = new Set();
+  licencias.value.forEach(l => {
+    const aAus = anioDeFecha(l.fecha_licencia);
+    const aSol = anioDeFecha(l.fecha_solicitud);
+    if (aAus) set.add(aAus);
+    if (aSol) set.add(aSol);
+  });
+  return [...set].sort((a, b) => b.localeCompare(a));
+});
 
 const licenciasFiltradas = computed(() => {
   return licencias.value.filter(l => {
@@ -406,7 +427,13 @@ const licenciasFiltradas = computed(() => {
     const matchEst = filtros.estado === '' || l.estado === filtros.estado;
     const matchFec = normalizar(formatearFechaAusencia(l)).includes(normalizar(filtros.fecha));
     const matchFecSol = formatearFechaVista(l.fecha_solicitud).includes(filtros.fecha_solicitud);
-    return matchApe && matchNom && matchEst && matchFec && matchFecSol;
+    // Año: coincide por fecha de ausencia o de solicitud.
+    // Las indeterminadas (sin fecha de ausencia) se muestran siempre.
+    const matchAnio = filtros.anio === ''
+      || l.tiempo_indeterminado == 1
+      || anioDeFecha(l.fecha_licencia) === filtros.anio
+      || anioDeFecha(l.fecha_solicitud) === filtros.anio;
+    return matchApe && matchNom && matchEst && matchFec && matchFecSol && matchAnio;
   });
 });
 
@@ -604,7 +631,7 @@ const exportarExcel = async () => {
 };
 
 const limpiarFiltros = () => {
-  filtros.nombre = ''; filtros.apellido = ''; filtros.estado = ''; filtros.fecha = ''; filtros.fecha_solicitud = '';
+  filtros.nombre = ''; filtros.apellido = ''; filtros.estado = ''; filtros.fecha = ''; filtros.fecha_solicitud = ''; filtros.anio = '';
 };
 
 onMounted(() => {

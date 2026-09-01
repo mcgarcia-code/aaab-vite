@@ -52,12 +52,15 @@
 
           <div class="row g-2">
             <div class="col-6 col-md-3">
-              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido...">
+              <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="Árbitro (apellido o nombre)...">
             </div>
-            <div class="col-6 col-md-3">
-              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre...">
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+                <option value="">AÑO (TODOS)</option>
+                <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
+              </select>
             </div>
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-2">
               <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
                 <option value="">ESTADO (TODOS)</option>
                 <option value="creado">CREADO</option>
@@ -66,10 +69,11 @@
                 <option value="borrado">BORRADO</option>
               </select>
             </div>
-            <div class="col-6 col-md-3">
-              <select v-model="filtros.motivo" class="form-select form-select-sm shadow-none">
-                <option value="">MOTIVO (TODOS)</option>
-                <option v-for="op in opcionesMotivo" :key="op.valor" :value="op.valor">{{ op.etiqueta }}</option>
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.funcion" class="form-select form-select-sm shadow-none">
+                <option value="">FUNCIÓN (TODAS)</option>
+                <option value="arbitro">ÁRBITRO</option>
+                <option value="delegado">DELEGADO TÉCNICO</option>
               </select>
             </div>
             <div class="col-12 d-md-none mt-2">
@@ -96,6 +100,7 @@
                   <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
                   <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro</th>
                   <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Partido</th>
+                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Función</th>
                   <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Motivo</th>
                   <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
                 </tr>
@@ -120,6 +125,11 @@
                   <td class="text-muted small">
                     <div class="fw-bold text-dark">{{ r.local }} vs {{ r.visitante }}</div>
                     <div>{{ r.categoria_division }} · {{ formatearFechaVista(r.fecha) }}</div>
+                  </td>
+                  <td>
+                    <span class="badge-funcion" :class="r.funcion === 'delegado' ? 'func-delegado' : 'func-arbitro'">
+                      {{ etiquetaFuncion(r.funcion) }}
+                    </span>
                   </td>
                   <td class="text-muted small">{{ etiquetaMotivo(r.motivo) }}</td>
                   <td class="text-center pe-3">
@@ -150,6 +160,10 @@
                   <div class="d-flex justify-content-between mb-1">
                     <span class="text-muted">Categoría:</span>
                     <span class="fw-bold text-dark">{{ r.categoria_division }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between mb-1">
+                    <span class="text-muted">Función:</span>
+                    <span class="fw-bold text-dark">{{ etiquetaFuncion(r.funcion) }}</span>
                   </div>
                   <div class="d-flex justify-content-between mb-1">
                     <span class="text-muted">Fecha:</span>
@@ -228,6 +242,10 @@
             <span class="fw-bold text-dark">{{ rechazoSeleccionado.categoria_division }}</span>
           </div>
           <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Función:</span>
+            <span class="fw-bold text-dark">{{ etiquetaFuncion(rechazoSeleccionado.funcion) }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
             <span class="text-muted">Fecha:</span>
             <span class="fw-bold text-dark">{{ formatearFechaVista(rechazoSeleccionado.fecha) }}</span>
           </div>
@@ -297,6 +315,7 @@
             <thead class="table-light">
               <tr>
                 <th class="py-2 ps-3 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Partido</th>
+                <th class="py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Función</th>
                 <th class="py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Fecha</th>
                 <th class="py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Motivo</th>
                 <th class="text-center py-2 pe-3 fw-bold text-uppercase text-muted" style="width: 150px; font-size: 0.75rem;">Estado</th>
@@ -307,6 +326,11 @@
                 <td class="py-3 ps-3">
                   <div class="fw-bold text-dark">{{ h.local }} vs {{ h.visitante }}</div>
                   <div class="text-muted small">{{ h.categoria_division }}</div>
+                </td>
+                <td class="py-3">
+                  <span class="badge-funcion" :class="h.funcion === 'delegado' ? 'func-delegado' : 'func-arbitro'">
+                    {{ etiquetaFuncion(h.funcion) }}
+                  </span>
                 </td>
                 <td class="text-nowrap text-primary fw-bold py-3">{{ formatearFechaVista(h.fecha) }}</td>
                 <td class="text-muted py-3" style="white-space: normal; word-wrap: break-word;">{{ etiquetaMotivo(h.motivo) }}</td>
@@ -327,6 +351,7 @@
             </div>
             <div class="d-flex justify-content-between align-items-center text-muted small mt-1">
               <span><strong>Fecha:</strong> {{ formatearFechaVista(h.fecha) }}</span>
+              <span><strong>Función:</strong> {{ etiquetaFuncion(h.funcion) }}</span>
             </div>
             <div class="text-muted small mt-1"><strong>Motivo:</strong> {{ etiquetaMotivo(h.motivo) }}</div>
           </div>
@@ -368,10 +393,13 @@ const etiquetaMotivo = (valor) => {
   return op ? op.etiqueta : (valor || '—')
 }
 
+// Función del rechazo: 'arbitro' | 'delegado'
+const etiquetaFuncion = (valor) => (valor === 'delegado' ? 'Delegado Técnico' : 'Árbitro')
+
 const rechazos = ref([])
 const cargando = ref(false)
 
-const filtros = reactive({ apellido: '', nombre: '', estado: '', motivo: '' })
+const filtros = reactive({ arbitro: '', estado: '', funcion: '', anio: '' })
 const mostrarFiltrosMobile = ref(false)
 
 const paginaActual = ref(1)
@@ -380,13 +408,31 @@ const registrosPorPagina = 10
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : ''
 const formatearFechaVista = (f) => f ? String(f).split(' ')[0].split('-').reverse().join('/') : ''
 
+// Extrae el año (AAAA) de la fecha del partido, en formato 'AAAA-MM-DD ...'. '' si no hay.
+const anioDeFecha = (f) => {
+  if (!f) return ''
+  const t = String(f).trim().slice(0, 10)
+  return /^\d{4}-/.test(t) ? t.slice(0, 4) : ''
+}
+
+// Años presentes en los rechazos (según la fecha del partido), ordenados descendente.
+const aniosDisponibles = computed(() => {
+  const set = new Set()
+  rechazos.value.forEach(r => {
+    const a = anioDeFecha(r.fecha)
+    if (a) set.add(a)
+  })
+  return [...set].sort((a, b) => b.localeCompare(a))
+})
+
 const rechazosFiltrados = computed(() => {
   return rechazos.value.filter(r => {
-    const matchApe = normalizar(r.apellido).includes(normalizar(filtros.apellido))
-    const matchNom = normalizar(r.nombre).includes(normalizar(filtros.nombre))
+    const nombreCompleto = `${r.apellido || ''} ${r.nombre || ''}`
+    const matchArb = normalizar(nombreCompleto).includes(normalizar(filtros.arbitro))
     const matchEst = filtros.estado === '' || r.estado === filtros.estado
-    const matchMot = filtros.motivo === '' || r.motivo === filtros.motivo
-    return matchApe && matchNom && matchEst && matchMot
+    const matchFun = filtros.funcion === '' || r.funcion === filtros.funcion
+    const matchAnio = filtros.anio === '' || anioDeFecha(r.fecha) === filtros.anio
+    return matchArb && matchEst && matchFun && matchAnio
   })
 })
 
@@ -548,6 +594,7 @@ const exportarExcel = async () => {
     'Local': r.local,
     'Visitante': r.visitante,
     'Categoría': r.categoria_division,
+    'Función': etiquetaFuncion(r.funcion),
     'Fecha': formatearFechaVista(r.fecha),
     'Motivo': etiquetaMotivo(r.motivo),
     'Estado': (r.estado || '').toUpperCase()
@@ -574,7 +621,7 @@ const exportarExcel = async () => {
 }
 
 const limpiarFiltros = () => {
-  filtros.apellido = ''; filtros.nombre = ''; filtros.estado = ''; filtros.motivo = ''
+  filtros.arbitro = ''; filtros.estado = ''; filtros.funcion = ''; filtros.anio = ''
 }
 
 onMounted(obtenerRechazos)
@@ -645,4 +692,19 @@ onMounted(obtenerRechazos)
 .creado { background: #fef3c7; color: #d97706; border: 1px solid #fde047; }
 .injustificado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 .borrado { background: #e5e7eb; color: #4b5563; border: 1px solid #d1d5db; }
+
+/* ====================================================
+   BADGE DE FUNCIÓN (árbitro / delegado técnico)
+   ==================================================== */
+.badge-funcion {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.func-arbitro { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.func-delegado { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+
 </style>

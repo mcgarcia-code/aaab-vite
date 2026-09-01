@@ -143,7 +143,7 @@
                         </p>
                       </div>
                       <button
-                        v-else-if="p.funcion == 'arbitro'"
+                        v-else-if="p.funcion == 'arbitro' || p.funcion == 'delegado'"
                         @click="abrirModalRechazo(p)"
                         class="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1"
                       >
@@ -307,37 +307,51 @@
         <span>
           Estás por rechazar el partido
           <strong>{{ partidoRechazo.local }} vs {{ partidoRechazo.visitante }}</strong>
-          ({{ partidoRechazo.categoria_division }}) del {{ etiquetaDia(partidoRechazo.fecha) }}.
+          ({{ partidoRechazo.categoria_division }}) del {{ etiquetaDia(partidoRechazo.fecha) }}<template v-if="esDelegadoRechazo">, en tu función de <strong>Delegado Técnico</strong></template>.
         </span>
       </div>
 
-      <label class="form-label small fw-bold text-dark mb-2">Seleccioná el motivo del rechazo *</label>
-      <div class="lista-motivos border rounded mb-3">
-        <label
-          v-for="op in opcionesMotivo"
-          :key="op.valor"
-          class="opcion-motivo d-flex align-items-start gap-2"
-          :class="{ activa: motivoSeleccionado === op.valor }"
-        >
-          <input
-            type="radio"
-            class="form-check-input mt-1 flex-shrink-0"
-            :value="op.valor"
-            v-model="motivoSeleccionado"
+      <!-- ARBITRO: lista de motivos predefinidos -->
+      <template v-if="!esDelegadoRechazo">
+        <label class="form-label small fw-bold text-dark mb-2">Seleccioná el motivo del rechazo *</label>
+        <div class="lista-motivos border rounded mb-3">
+          <label
+            v-for="op in opcionesMotivo"
+            :key="op.valor"
+            class="opcion-motivo d-flex align-items-start gap-2"
+            :class="{ activa: motivoSeleccionado === op.valor }"
           >
-          <span class="small">{{ op.etiqueta }}</span>
-        </label>
-      </div>
+            <input
+              type="radio"
+              class="form-check-input mt-1 flex-shrink-0"
+              :value="op.valor"
+              v-model="motivoSeleccionado"
+            >
+            <span class="small">{{ op.etiqueta }}</span>
+          </label>
+        </div>
 
-      <div v-if="motivoSeleccionado === 'otro'" class="mb-2">
-        <label class="form-label small fw-bold text-dark mb-1">Escribí el motivo *</label>
+        <div v-if="motivoSeleccionado === 'otro'" class="mb-2">
+          <label class="form-label small fw-bold text-dark mb-1">Escribí el motivo *</label>
+          <textarea
+            v-model="motivoOtro"
+            class="form-control shadow-none border-secondary-subtle"
+            rows="3"
+            placeholder="Contanos brevemente el motivo del rechazo..."
+          ></textarea>
+        </div>
+      </template>
+
+      <!-- DELEGADO TECNICO: motivo de texto libre -->
+      <template v-else>
+        <label class="form-label small fw-bold text-dark mb-1">Escribí el motivo del rechazo *</label>
         <textarea
           v-model="motivoOtro"
           class="form-control shadow-none border-secondary-subtle"
-          rows="3"
+          rows="4"
           placeholder="Contanos brevemente el motivo del rechazo..."
         ></textarea>
-      </div>
+      </template>
 
       <template #footer>
         <button
@@ -636,7 +650,11 @@ const motivoSeleccionado = ref('')
 const motivoOtro = ref('')
 const enviandoRechazo = ref(false)
 
+// El delegado técnico rechaza con motivo de texto libre; el árbitro con lista de opciones.
+const esDelegadoRechazo = computed(() => partidoRechazo.value?.funcion == 'delegado')
+
 const motivoValido = computed(() => {
+  if (esDelegadoRechazo.value) return motivoOtro.value.trim().length > 0
   if (!motivoSeleccionado.value) return false
   if (motivoSeleccionado.value === 'otro') return motivoOtro.value.trim().length > 0
   return true
@@ -658,7 +676,7 @@ const confirmarRechazo = async () => {
   if (!motivoValido.value || !partidoRechazo.value) return
 
   const p = partidoRechazo.value
-  const motivo = motivoSeleccionado.value === 'otro'
+  const motivo = (esDelegadoRechazo.value || motivoSeleccionado.value === 'otro')
     ? motivoOtro.value.trim()
     : motivoSeleccionado.value
 
@@ -670,6 +688,7 @@ const confirmarRechazo = async () => {
       payload: {
         idPartido: p.id,
         motivo,
+        funcion: p.funcion,
         id_arb1: p.id_arb1,
         id_arb2: p.id_arb2,
       }
@@ -677,7 +696,7 @@ const confirmarRechazo = async () => {
   if (res.ok) {
       // Marca optimista: la card queda en rojo
       p.rechazada = true
-      p.rechazo_motivo = motivoSeleccionado.value
+      p.rechazo_motivo = motivo
       p.rechazo_estado = 'creado'
       p.id_rechazo = (res.payload) ? res.payload : p.id_rechazo
       cerrarModalRechazo()
