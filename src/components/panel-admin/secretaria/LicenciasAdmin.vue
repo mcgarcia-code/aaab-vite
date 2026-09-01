@@ -71,7 +71,7 @@
               <input type="text" v-model="filtros.fecha_solicitud" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. Solicitud (DD/MM/AAAA)">
             </div>
             <div class="col-6 col-md-3">
-              <input type="text" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. Ausencia (DD/MM/AAAA)">
+              <input type="text" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. Ausencia (DD/MM/AAAA) o indeterminado">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
@@ -404,7 +404,7 @@ const licenciasFiltradas = computed(() => {
     const matchApe = normalizar(l.apellido).includes(normalizar(filtros.apellido));
     const matchNom = normalizar(l.nombre).includes(normalizar(filtros.nombre));
     const matchEst = filtros.estado === '' || l.estado === filtros.estado;
-    const matchFec = formatearFechaVista(l.fecha_licencia).includes(filtros.fecha);
+    const matchFec = normalizar(formatearFechaAusencia(l)).includes(normalizar(filtros.fecha));
     const matchFecSol = formatearFechaVista(l.fecha_solicitud).includes(filtros.fecha_solicitud);
     return matchApe && matchNom && matchEst && matchFec && matchFecSol;
   });
