@@ -795,6 +795,21 @@
               {{ partidoMesa?.cronometrista || '— Asignar cronometrista —' }}
             </button>
           </div>
+
+      <template #footer>
+        <button
+          @click="cerrarModalMesa"
+          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="cerrarModalMesa"
+          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
+        >
+          Confirmar
+        </button>
+      </template>
     </ModalBase>
     //Seleccion de cancha
     <ModalBase
