@@ -167,7 +167,7 @@ const menuItems = [
   { to: '/panel-arbitro/designaciones', title: 'Mis Designaciones', icon: 'bi bi-calendar4-week', desc: 'Mis Designaciones', categoria: 'Actividad Arbitral' },
   { to: '/panel-arbitro/coordinadores', title: 'Coordinadores', icon: 'bi bi-check', desc: 'Cargar y visualizar exámenes', rolesPermitidos: [4], categoria: 'Actividad Arbitral' },
   { to: '/panel-arbitro/observaciones', title: 'Observaciones', icon: 'bi bi-eye', desc: 'Cargar y visualizar observaciones realizadas por vos', rolesPermitidos: [2, 4], categoria: 'Actividad Arbitral' },
-  { to: '/panel-arbitro/examen-asamblea', title: 'Examen Asamblea General - Reunión Mensual', icon: 'bi bi-journal-check', desc: 'Rendí el examen teórico online', categoria: 'Actividad Arbitral' },
+  { to: '/panel-arbitro/examen-asamblea', title: 'Exámenes Asambleas y Reuniones', icon: 'bi bi-journal-check', desc: 'Rendí el examen teórico online', categoria: 'Actividad Arbitral' },
 
   { to: '/panel-arbitro/licencia', title: 'Solicitar Licencias', icon: 'bi bi-calendar-check', desc: 'Inasistencias con antelación.', categoria: 'Administración' },
   { to: '/panel-arbitro/sanciones', title: 'Tribunal de Ética', icon: 'bi bi-shield-exclamation', desc: 'Consultá tus sanciones.', categoria: 'Administración' },
@@ -370,7 +370,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -409,7 +409,7 @@ onMounted(() => {
 }
 
 .card-text { flex: 1; min-width: 0; }
-.card-text h5 { font-size: 0.92rem; color: #1e293b; }
+.card-text h5 { font-size: 0.9rem; color: #1e293b; }
 .extra-small { font-size: 0.72rem; }
 .card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; align-self: center; }
 

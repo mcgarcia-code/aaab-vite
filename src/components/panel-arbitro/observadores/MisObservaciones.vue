@@ -84,21 +84,13 @@
                     <span :class="badgeEstado(obs.estado)">
                       {{ etiquetaEstado(obs.estado) }}
                     </span>
-                    <div v-if="(obs.estado === 'anulada' || obs.estado === 'rechazada') && obs.comentario_estado" class="text-danger small mt-1" style="font-size: 0.7rem;">
-                      <i class="bi bi-info-circle"></i> {{ obs.comentario_estado }}
-                    </div>
                   </td>
                   <td class="text-center pe-3">
                     <div class="d-flex justify-content-center gap-1">
                       <!-- Ver detalle: siempre disponible -->
-                      <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id" title="Ver detalle">
+                      <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-2 d-flex align-items-center gap-1 text-secondary" @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id" title="Ver detalle">
                         <span v-if="cargandoDetalleId === obs.id" class="spinner-border spinner-border-sm"></span>
                         <span v-else class="material-icons" style="font-size: 16px;">visibility</span>
-                      </button>
-                      <!-- Excel -->
-                      <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="descargarExcel(obs)" :disabled="descargandoId === obs.id" title="Descargar Excel">
-                        <span v-if="descargandoId === obs.id" class="spinner-border spinner-border-sm"></span>
-                        <span v-else class="material-icons" style="font-size: 16px;">download</span>
                       </button>
                       <!-- Anular: sólo si está pendiente -->
                       <button v-if="esPendiente(obs)" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="pedirAnular(obs)" title="Anular observación">
@@ -134,19 +126,12 @@
                   {{ formatearFecha(obs.fecha_partido) }} <span class="mx-1">•</span> {{ obs.categoria || obs.categoria_edad || '-' }}
                 </div>
                 <div class="text-dark small mb-2">{{ obs.equipo_local }} vs {{ obs.equipo_visitante }}</div>
-                <div v-if="(obs.estado === 'anulada' || obs.estado === 'rechazada') && obs.comentario_estado" class="alert alert-danger py-1 px-2 small mb-2 mt-1">
-                  <i class="bi bi-info-circle me-1"></i>{{ obs.comentario_estado }}
-                </div>
                 <div class="d-flex justify-content-between align-items-center border-top pt-2">
                   <span class="fw-bold text-danger small">Puntaje: {{ obs.puntaje_final ?? '-' }}</span>
                   <div class="d-flex gap-1">
-                    <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id">
+                    <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold d-flex align-items-center gap-1 text-secondary" @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id">
                       <span v-if="cargandoDetalleId === obs.id" class="spinner-border spinner-border-sm"></span>
                       <span v-else class="material-icons" style="font-size: 16px;">visibility</span>
-                    </button>
-                    <button class="btn btn-sm btn-dark rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="descargarExcel(obs)" :disabled="descargandoId === obs.id">
-                      <span v-if="descargandoId === obs.id" class="spinner-border spinner-border-sm"></span>
-                      <span v-else class="material-icons" style="font-size: 16px;">download</span>
                     </button>
                     <button v-if="esPendiente(obs)" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="pedirAnular(obs)">
                       <span class="material-icons" style="font-size: 16px;">block</span>
@@ -179,9 +164,8 @@
     <!-- ==========================================
          MODAL: VER DETALLE DE LA OBSERVACIÓN
          ========================================== -->
-    <ModalBase :show="mostrarDetalle" @close="cerrarDetalle" titulo="Detalle de la Observación" icono="visibility" colorIcono="bg-primary text-white" maxWidth="800px">
+    <ModalBase :show="mostrarDetalle" @close="cerrarDetalle" titulo="Detalle de la Observación" icono="visibility" colorIcono="bg-secondary text-white" maxWidth="800px">
       <div v-if="detalle" class="text-start">
-        <!-- Cabecera -->
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
           <div>
             <p class="m-0 fw-bold small text-dark">Observación #{{ detalle.id }}</p>
@@ -193,7 +177,10 @@
         </div>
 
         <div class="bg-light p-3 rounded border mb-3 border-secondary-subtle">
-          <p class="m-0 small text-dark"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }} <span v-if="detalle.categoria_edad" class="badge bg-secondary ms-1">{{ detalle.categoria_edad }}</span></p>
+          <p class="m-0 small text-dark"><strong class="text-muted">Árbitros:</strong> {{ nombresArbitros(detalle) }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Observador:</strong> {{ detalle.observador }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Categoría:</strong> {{ categoriaObs(detalle) }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }}</p>
           <p class="m-0 small text-dark mt-1" v-if="detalle.numero_partido"><strong class="text-muted">Nº Partido:</strong> {{ detalle.numero_partido }}</p>
           <p class="m-0 small text-dark mt-1" v-if="detalle.puntaje_final != null"><strong class="text-muted">Puntaje final:</strong> <span class="fw-bold text-danger">{{ detalle.puntaje_final }}</span></p>
         </div>
@@ -202,8 +189,22 @@
           <i class="bi bi-info-circle me-1"></i><strong>{{ detalle.estado === 'anulada' ? 'Motivo de anulación' : 'Motivo de rechazo' }}:</strong> {{ detalle.comentario_estado }}
         </div>
 
-        <!-- Ítems de la evaluación -->
-        <div class="border rounded overflow-hidden">
+        <!-- Tabs: Score sheet (puntajes) / Comment sheet (comentarios) -->
+        <ul class="nav nav-tabs mb-0" role="tablist">
+          <li class="nav-item">
+            <button class="nav-link" :class="{ active: tabDetalle === 'puntajes' }" type="button" @click="tabDetalle = 'puntajes'">
+              <i class="bi bi-list-ol me-1"></i> Puntajes
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" :class="{ active: tabDetalle === 'comentarios' }" type="button" @click="tabDetalle = 'comentarios'">
+              <i class="bi bi-chat-left-text me-1"></i> Comentarios
+            </button>
+          </li>
+        </ul>
+
+        <!-- TAB PUNTAJES (Score sheet) -->
+        <div v-show="tabDetalle === 'puntajes'" class="border border-top-0 rounded-bottom overflow-hidden">
           <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
             <thead class="table-light">
               <tr>
@@ -230,6 +231,42 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- TAB COMENTARIOS (Comment sheet) -->
+        <div v-show="tabDetalle === 'comentarios'" class="border border-top-0 rounded-bottom p-3">
+          <div v-if="comentariosPorCategoria.length">
+            <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
+              <div class="fw-bold small text-dark">{{ c.categoria }}</div>
+              <div class="small text-muted" style="white-space: pre-line;">{{ c.comentario }}</div>
+            </div>
+          </div>
+
+          <div v-if="detalle.prioridad_mejora_1 || detalle.prioridad_mejora_2 || detalle.prioridad_mejora_resto" class="mt-2 pt-2 border-top">
+            <div class="fw-bold small text-dark mb-1">Prioridades de mejora</div>
+            <div v-if="detalle.prioridad_mejora_1" class="small text-muted mb-1"><strong>1.</strong> {{ detalle.prioridad_mejora_1 }}</div>
+            <div v-if="detalle.prioridad_mejora_2" class="small text-muted mb-1"><strong>2.</strong> {{ detalle.prioridad_mejora_2 }}</div>
+            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1" style="white-space: pre-line;">{{ detalle.prioridad_mejora_resto }}</div>
+          </div>
+
+          <div v-if="detalle.influencia_resultado_comentarios" class="mt-2 pt-2 border-top">
+            <div class="fw-bold small text-dark mb-1">Influencia en el resultado</div>
+            <div class="small text-muted" style="white-space: pre-line;">{{ detalle.influencia_resultado_comentarios }}</div>
+          </div>
+
+          <div v-if="!tieneComentarios" class="text-center py-3 text-muted small">
+            Esta observación no tiene comentarios cargados.
+          </div>
+        </div>
+
+        <!-- Acciones (dentro del cuerpo para que se vean también en mobile) -->
+        <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+          <button @click="descargarExcel(detalle)" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm order-1 order-sm-2 flex-sm-grow-1 d-flex align-items-center justify-content-center gap-2" :disabled="descargandoId === detalle.id">
+            <span v-if="descargandoId === detalle.id" class="spinner-border spinner-border-sm"></span>
+            <i v-else class="bi bi-file-earmark-excel"></i>
+            DESCARGAR EXCEL
+          </button>
+          <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold order-2 order-sm-1 flex-sm-grow-1">CERRAR</button>
         </div>
       </div>
       <div v-else class="text-center py-4">
@@ -292,6 +329,16 @@ const formatearFecha = (fechaIso) => {
   if (!anio || !mes || !dia) return fechaIso
   return `${dia}/${mes}/${anio}`
 }
+
+// Árbitros observados: prioriza los nombres reales (arb1/arb2); cae al texto del Excel si no hay ids.
+const nombresArbitros = (o) => {
+  const partes = [o.arb1, o.arb2].filter(n => n && n.trim() && n !== ', ')
+  if (partes.length) return partes.join(' - ')
+  return o.arbitros || '-'
+}
+
+// Categoría del partido con fallback a la categoría de edad del Excel.
+const categoriaObs = (o) => o.categoria || o.categoria_edad || '-'
 
 const etiquetaEstado = (estado) => {
   const e = (estado || 'pendiente').toLowerCase()
@@ -360,10 +407,29 @@ const descargarExcel = async (obs) => {
 const mostrarDetalle = ref(false)
 const detalle = ref(null)
 const cargandoDetalleId = ref(null)
+const tabDetalle = ref('puntajes')
+
+// Comentarios por categoría (Comment sheet): ítems tipo categoría con comentario.
+const comentariosPorCategoria = computed(() => {
+  if (!detalle.value || !Array.isArray(detalle.value.items)) return []
+  return detalle.value.items
+    .filter(it => it.tipo === 'categoria' && it.comentario)
+    .map(it => ({ categoria: it.categoria, comentario: it.comentario }))
+})
+
+const tieneComentarios = computed(() => {
+  if (!detalle.value) return false
+  return comentariosPorCategoria.value.length > 0
+    || !!detalle.value.prioridad_mejora_1
+    || !!detalle.value.prioridad_mejora_2
+    || !!detalle.value.prioridad_mejora_resto
+    || !!detalle.value.influencia_resultado_comentarios
+})
 
 const verDetalle = async (obs) => {
   cargandoDetalleId.value = obs.id
   detalle.value = null
+  tabDetalle.value = 'puntajes'
   try {
     const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluacion', payload: { id: obs.id } })
     if (res && res.ok && res.payload) {

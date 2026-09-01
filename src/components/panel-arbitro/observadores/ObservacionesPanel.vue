@@ -51,13 +51,13 @@ useHead({
 const opcionesObservaciones = [
   {
     to: '/panel-arbitro/observaciones/carga',
-    title: 'Cargar Observaciones (Partidos Fe.Me.Bal)',
+    title: 'Partidos Fe.Me.Bal',
     icon: 'bi bi-cloud-upload',
     desc: 'Registrar nuevas evaluaciones con detalles y categorías.'
   },
     {
     to: '/panel-arbitro/observaciones/observaciones-mini',
-    title: 'Cargar Observaciones (Encuentros de Mini)',
+    title: 'Encuentros de Mini',
     icon: 'bi bi-envelope-check',
     desc: 'Registrar observaciones del curso de árbitros'
   },

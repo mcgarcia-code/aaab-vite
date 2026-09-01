@@ -19,15 +19,15 @@
       <!-- Módulo Stock -->
       <div class="col-12 col-md-6">
         <RouterLink to="/panel-admin/tesoreria/indumentaria/stock" class="text-decoration-none h-100 d-block">
-          <div class="modern-menu-card d-flex align-items-center gap-3 p-4 p-md-3 bg-white w-100 h-100 shadow-sm">
+          <div class="modern-menu-card d-flex align-items-center gap-3 px-4 py-3 p-md-3 bg-white w-100 h-100 shadow-sm">
 
             <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
               <i class="bi bi-box-seam"></i>
             </div>
 
             <div class="flex-grow-1">
-              <h5 class="fw-bold m-0 text-dark" style="font-size: 1.1rem;">Stock</h5>
-              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.85rem;">Control de talles, ingresos y cantidades disponibles.</p>
+              <h5 class="fw-bold m-0 text-dark" style="font-size: 0.95rem;">Stock</h5>
+              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">Control de talles, ingresos y cantidades disponibles.</p>
             </div>
 
             <div class="card-arrow text-secondary fs-5">
@@ -40,7 +40,7 @@
       <!-- Módulo Pedidos -->
       <div class="col-12 col-md-6">
         <RouterLink to="/panel-admin/tesoreria/indumentaria/pedidos" class="text-decoration-none h-100 d-block">
-          <div class="modern-menu-card d-flex align-items-center gap-3 p-4 p-md-3 bg-white w-100 h-100 shadow-sm">
+          <div class="modern-menu-card d-flex align-items-center gap-3 px-4 py-3 p-md-3 bg-white w-100 h-100 shadow-sm">
 
             <div class="icon-box position-relative flex-shrink-0 d-flex align-items-center justify-content-center">
               <i class="bi bi-list-check"></i>
@@ -51,13 +51,13 @@
             </div>
 
             <div class="flex-grow-1">
-              <h5 class="fw-bold m-0 text-dark d-flex align-items-center gap-2 flex-wrap" style="font-size: 1.1rem;">
+              <h5 class="fw-bold m-0 text-dark d-flex align-items-center gap-2 flex-wrap" style="font-size: 0.95rem;">
                 Pedidos Realizados
                 <span v-if="pedidosNuevos > 0" class="badge bg-danger rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.6rem;">
                   {{ pedidosNuevos }} NUEVO{{ pedidosNuevos > 1 ? 'S' : '' }}
                 </span>
               </h5>
-              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.85rem;">Listado de solicitudes, estados de entrega y pendientes.</p>
+              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">Listado de solicitudes, estados de entrega y pendientes.</p>
             </div>
 
             <div class="card-arrow text-secondary fs-5">
@@ -137,12 +137,13 @@ onMounted(() => {
 
 /* Adaptación fluida del tamaño del ícono */
 .icon-box {
-  width: clamp(48px, 10vw, 52px);
-  height: clamp(48px, 10vw, 52px);
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
   background: #fef2f2;
   color: #dc2626;
-  border-radius: 14px;
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  border-radius: 16px;
+  font-size: 1.5rem;
   transition: all 0.3s ease;
 }
 

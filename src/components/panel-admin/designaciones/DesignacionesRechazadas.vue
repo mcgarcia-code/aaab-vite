@@ -394,7 +394,7 @@ const etiquetaMotivo = (valor) => {
 }
 
 // Función del rechazo: 'arbitro' | 'delegado'
-const etiquetaFuncion = (valor) => (valor === 'delegado' ? 'Delegado Técnico' : 'Árbitro')
+const etiquetaFuncion = (valor) => (valor === 'delegado' ? 'DELEGADO TÉCNICO' : 'ÁRBITRO')
 
 const rechazos = ref([])
 const cargando = ref(false)

@@ -13,12 +13,12 @@
               {{ datosArbitro.apellido }}, {{ datosArbitro.nombre }} — Reuniones y Exámenes
             </span>
           </div>
-          <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
+          <div class="d-flex align-items-center gap-2 mt-2 mt-md-0 w-100 w-md-auto">
             <label class="small fw-bold text-dark text-uppercase m-0 text-nowrap">Año:</label>
             <select
               v-model="filtroAño"
-              class="form-select shadow-sm border-secondary-subtle fw-semibold"
-              style="min-width: 160px;"
+              class="form-select shadow-sm border-secondary-subtle fw-semibold flex-grow-1"
+              style="min-width: 0;"
               :disabled="cargando"
             >
               <option value="">Todos los años</option>
@@ -112,16 +112,16 @@
                   <div class="card h-100 shadow-sm border-light-subtle">
                     <div class="card-body p-3">
                       <!-- Cabecera de la tarjeta del examen -->
-                      <div class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2">
-                        <div>
+                      <div class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2 gap-2">
+                        <div class="flex-grow-1" style="min-width: 0;">
                           <div class="text-dark fw-bold small mb-1">
                             <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(ex.fecha_examen) }}
                           </div>
-                          <div class="text-muted small text-truncate" style="max-width: 200px;">
+                          <div class="text-muted small text-truncate">
                             {{ ex.titulo || 'Evaluación General' }}
                           </div>
                         </div>
-                        <span class="badge" :class="badgeTipo(ex.tipo)">{{ ex.tipo.toUpperCase() }}</span>
+                        <span class="badge flex-shrink-0" :class="badgeTipo(ex.tipo)">{{ ex.tipo.toUpperCase() }}</span>
                       </div>
 
                       <!-- Si faltó a todo el evento -->
@@ -184,11 +184,11 @@
                   <div class="card shadow-sm h-100 bg-white"
                        :class="r.asistencia === 'presente' ? 'border-success border-start border-4' : (r.asistencia === 'ausente' ? 'border-danger border-start border-4' : 'border-light-subtle')">
                     <div class="card-body p-3 d-flex justify-content-between align-items-center gap-2">
-                      <div>
+                      <div class="flex-grow-1" style="min-width: 0;">
                         <div class="text-dark fw-bold small mb-1">
                           <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(r.fecha_reunion) }}
                         </div>
-                        <div class="text-muted small text-truncate" style="max-width: 170px;">
+                        <div class="text-muted small text-truncate">
                           {{ r.titulo || 'Reunión General' }}
                         </div>
                       </div>
@@ -519,10 +519,10 @@ onMounted(async () => {
 <style scoped>
 .full-screen-wrapper {
   position: relative;
-  width: 99vw;
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
+  overflow-x: hidden;
   padding-bottom: 120px;
 }
 .panel-personal {
@@ -536,5 +536,10 @@ onMounted(async () => {
 }
 .w-fit-content {
   width: fit-content;
+}
+@media (min-width: 768px) {
+  .w-md-auto {
+    width: auto !important;
+  }
 }
 </style>

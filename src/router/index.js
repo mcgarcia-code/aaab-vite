@@ -167,7 +167,10 @@ const routes = [
       { path: 'tesoreria/pagos-curso', name: 'PagosCurso', component: () => import('../components/panel-admin/tesoreria/PagosCurso.vue'), meta: { roles: ['admin', 'tesorero', 'secretario', 'designador'] } },
 
       // --- HERRAMIENTAS ---
-      { path: 'facturacion', name: 'InstitucionesCuitAdmin', component: () => import('../components/panel-admin/facturacion/InstitucionesCuitAdmin.vue'), meta: { roles: ['admin', 'secretario', 'tesorero', 'facturacion'] } },
+      { path: 'facturacion', name: 'InstitucionesCuitAdmin', component: () => import('../components/panel-admin/facturacion/InstitucionesCuitAdmin.vue'), meta: { roles: ['admin', 'secretario', 'tesorero', 'facturacion', 'etica'] } },
+
+      // --- INFORMES ---
+      { path: 'informes', name: 'InformesAdmin', component: () => import('../components/panel-admin/informes/InformesAdmin.vue'), meta: { roles: ['admin', 'secretario', 'tesorero', 'facturacion', 'etica'] } },
 
       // --- DESARROLLO ARBITRAL ---
 

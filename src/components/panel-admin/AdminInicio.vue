@@ -17,7 +17,7 @@
       <div class="row g-3 g-md-4">
         <div class="col-12 col-sm-6 col-lg-4" v-for="item in grupo.items" :key="item.title">
           <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
-            <div class="modern-card d-flex align-items-center gap-3 p-4 p-md-3 w-100 h-100 bg-white shadow-sm position-relative">
+            <div class="modern-card d-flex align-items-center gap-3 px-4 py-3 p-md-3 w-100 h-100 bg-white shadow-sm position-relative">
 
             <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center position-relative">
               <!-- Dot rojo de notificación (solo Designaciones Rechazadas con pendientes) -->
@@ -26,13 +26,13 @@
             </div>
 
               <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold text-dark fs-6 d-flex align-items-center gap-2 flex-wrap">
+                <h5 class="m-0 fw-bold text-dark d-flex align-items-center gap-2 flex-wrap" style="font-size: 0.90rem;">
                   {{ item.title }}
                   <span v-if="item.badgeRechazos && rechazosPendientes > 0" class="badge-nuevos rounded-pill">
                     {{ rechazosPendientes }} {{ rechazosPendientes === 1 ? 'NUEVO' : 'NUEVOS' }}
                   </span>
                 </h5>
-                <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.85rem;">{{ item.desc }}</p>
+                <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">{{ item.desc }}</p>
               </div>
 
               <div class="card-arrow text-secondary fs-5">
@@ -132,7 +132,7 @@ const categorias = [
       { to: '/panel-admin/desarrollo-arbitral/observaciones', title: 'Observaciones realizadas', icon: 'bi bi-clipboard-data-fill', desc: 'Registro y seguimiento de las observaciones arbitrales.' },
       { to: '/panel-admin/desarrollo-arbitral/reuniones-mensuales', title: 'Reuniones Mensuales', icon: 'bi bi-calendar-event', desc: 'Registro de presentes y ausentes en reuniones mensuales.' },
       { to: '/panel-admin/desarrollo-arbitral/resumen-arbitros', title: 'Planilla General de Árbitros', icon: 'bi bi-graph-up-arrow', desc: 'Administración de exámenes teóricos/físicos.' },
-      { to: '/panel-admin/desarrollo-arbitral/habilitacion-examenes-asamblea', title: 'Habilitación de Exámenes Asamblea - Reuniones Mensuales', icon: 'bi bi-shield-check', desc: 'Elegí qué grupos quedan habilitados para rendir el examen teórico.' },
+      { to: '/panel-admin/desarrollo-arbitral/habilitacion-examenes-asamblea', title: 'Habilitación Exámenes Asambleas y Reuniones', icon: 'bi bi-shield-check', desc: 'Elegí qué grupos quedan habilitados para rendir el examen teórico.' },
       { to: '/panel-admin/desarrollo-arbitral/planilla-general-observaciones', title: 'Planilla General de Observaciones', icon: 'bi bi-clipboard2-data-fill', desc: 'Visualizar todas las observaciones realizadas a los árbitros.' }
     ]
   },
@@ -149,9 +149,10 @@ const categorias = [
   {
     categoria: 'Herramientas',
     icono: 'bi bi-tools',
-    rolesPermitidos: ['admin', 'secretario', 'facturacion', 'tesorero'],
+    rolesPermitidos: ['admin', 'secretario', 'facturacion', 'tesorero', 'etica'],
     items: [
-      { to: '/panel-admin/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Administrar datos fiscales y entidades vinculadas.' }
+      { to: '/panel-admin/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Administrar datos fiscales y entidades vinculadas.' },
+      { to: '/panel-admin/informes', title: 'Informes', icon: 'bi bi-file-earmark-text', desc: 'Gestionar informes arbitrales.' }
     ]
   }
 ]
@@ -172,7 +173,7 @@ onMounted(cargarRechazosPendientes)
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -192,12 +193,13 @@ onMounted(cargarRechazosPendientes)
 }
 
 .icon-box {
-  width: clamp(48px, 10vw, 56px);
-  height: clamp(48px, 10vw, 56px);
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
   background: #fef2f2;
   color: #dc2626;
   border-radius: 16px;
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  font-size: 1.5rem;
   transition: all 0.3s ease;
 }
 

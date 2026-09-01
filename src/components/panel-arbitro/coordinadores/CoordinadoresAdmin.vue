@@ -20,15 +20,15 @@
         <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
 
           <!-- Todo el layout de la tarjeta pasado a clases nativas de Bootstrap -->
-          <div class="modern-menu-card d-flex align-items-center gap-3 p-4 p-md-3 bg-white w-100 h-100 shadow-sm">
+          <div class="modern-menu-card d-flex align-items-center gap-3 px-4 py-3 p-md-3 bg-white w-100 h-100 shadow-sm">
 
             <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
               <i :class="item.icon"></i>
             </div>
 
             <div class="flex-grow-1">
-              <h5 class="fw-bold m-0 text-dark" style="font-size: 1.1rem;">{{ item.title }}</h5>
-              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.85rem;">{{ item.desc }}</p>
+              <h5 class="fw-bold m-0 text-dark" style="font-size: 0.95rem;">{{ item.title }}</h5>
+              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">{{ item.desc }}</p>
             </div>
 
             <div class="card-arrow text-secondary fs-5">
@@ -111,14 +111,15 @@ const opcionesCoordinadores = [
   cursor: pointer;
 }
 
-/* El tamaño del ícono escala automáticamente con clamp() */
+/* El tamaño del ícono coincide con la referencia (IndumentariaArbitro) */
 .icon-box {
-  width: clamp(48px, 10vw, 52px);
-  height: clamp(48px, 10vw, 52px);
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
   background: #fef2f2;
   color: #dc2626;
-  border-radius: 14px;
-  font-size: clamp(1.3rem, 3vw, 1.5rem);
+  border-radius: 16px;
+  font-size: 1.5rem;
   transition: all 0.3s ease;
 }
 

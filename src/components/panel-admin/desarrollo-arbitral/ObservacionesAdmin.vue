@@ -134,11 +134,11 @@
                       </div>
                     </td>
                     <td class="text-center fw-bold col-fija col-fecha">{{ formatearFecha(o.fecha_partido) }}</td>
-                    <td class="text-dark">{{ o.observador }}</td>
-                    <td class="fw-bold text-uppercase text-dark text-truncate" :title="o.arbitros">{{ o.arbitros }}</td>
-                    <td class="text-dark text-truncate" :title="o.competencia">{{ o.competencia }}</td>
-                    <td class="text-dark">{{ o.categoria_edad }}</td>
-                    <td class="text-dark text-truncate" :title="`${o.equipo_local} vs ${o.equipo_visitante}`">
+                    <td class="text-dark text-truncate" :title="o.observador" style="max-width: 180px;">{{ o.observador }}</td>
+                    <td class="fw-bold text-uppercase text-dark text-truncate" :title="nombresArbitros(o)" style="max-width: 220px;">{{ nombresArbitros(o) }}</td>
+                    <td class="text-dark text-truncate" :title="o.competencia" style="max-width: 180px;">{{ o.competencia }}</td>
+                    <td class="text-dark text-truncate" :title="categoriaObs(o)" style="max-width: 130px;">{{ categoriaObs(o) }}</td>
+                    <td class="text-dark text-truncate" :title="`${o.equipo_local} vs ${o.equipo_visitante}`" style="max-width: 220px;">
                       {{ o.equipo_local }} vs {{ o.equipo_visitante }}
                       <span v-if="o.numero_partido" class="text-muted">(Nº {{ o.numero_partido }})</span>
                     </td>
@@ -181,7 +181,7 @@
                     <p class="m-0 text-dark small mt-1"><strong class="text-muted">Competencia:</strong> {{ o.competencia }}</p>
                     <p class="m-0 text-dark small mt-1">
                       <strong class="text-muted">Partido:</strong> {{ o.equipo_local }} vs {{ o.equipo_visitante }}
-                      <span class="badge bg-secondary ms-1">{{ o.categoria_edad }}</span>
+                      <span class="badge bg-secondary ms-1">{{ categoriaObs(o) }}</span>
                     </p>
                     <div class="d-flex justify-content-between mt-2 border-top border-secondary-subtle pt-2">
                       <span class="text-dark small" v-if="o.numero_partido">Nº Partido: <strong>{{ o.numero_partido }}</strong></span>
@@ -235,11 +235,10 @@
         <span :class="badgeEstado(observacionActual.estado)">Estado actual: {{ etiquetaEstado(observacionActual.estado) }}</span>
       </div>
       <div class="text-start bg-light p-3 rounded border mb-4 border-secondary-subtle">
-        <p class="m-0 fw-bold small text-dark mb-1">Árbitros: <span class="text-danger">{{ observacionActual.arb1 }} - {{ observacionActual.arb2 }}</span></p>
+        <p class="m-0 fw-bold small text-dark mb-1">Árbitros: <span class="text-danger">{{ nombresArbitros(observacionActual) }}</span></p>
         <p class="m-0 small text-dark"><strong class="text-muted">Observador:</strong> {{ observacionActual.observador }}</p>
-        <p class="m-0 small text-dark mt-1"><strong class="text-muted">Competencia:</strong> {{ observacionActual.competencia }}</p>
         <p class="m-0 small text-dark mt-1">
-          <strong class="text-muted">Partido:</strong> {{ observacionActual.equipo_local }} vs {{ observacionActual.equipo_visitante }} ({{ observacionActual.categoria_edad }})
+          <strong class="text-muted">Partido:</strong> {{ observacionActual.equipo_local }} vs {{ observacionActual.equipo_visitante }} ({{ categoriaObs(observacionActual) }})
         </p>
         <div class="alert alert-info py-2 px-3 mt-3 mb-0 d-flex align-items-center gap-2" style="font-size: 0.8rem;">
           <span class="material-icons" style="font-size: 16px;">info</span>
@@ -247,6 +246,9 @@
         </div>
       </div>
       <div class="text-start">
+        <label class="small fw-bold mb-1 text-dark">Competencia</label>
+        <input v-model="competenciaEditada" class="form-control shadow-none border-secondary-subtle mb-3" placeholder="Competencia (corregir si hay error de tipeo)">
+
         <label class="small fw-bold mb-1 text-dark">Actualizar Estado de la Observación</label>
         <select v-model="nuevoEstado" class="form-select shadow-none border-primary-subtle fw-bold">
           <option value="pendiente">Pendiente de Revisión</option>
@@ -374,6 +376,19 @@
           </div>
         </div>
 
+        <!-- SECCIÓN 3.5: OBSERVADOR -->
+        <div class="p-3 p-md-4 border-bottom">
+          <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-danger">
+            <i class="bi bi-person-check text-danger me-2 fs-5"></i>
+            <h6 class="fw-bold m-0 text-dark text-uppercase">Observador</h6>
+          </div>
+          <label class="form-label fw-bold text-uppercase small text-dark">Quién realizó la observación *</label>
+          <select v-model="formulario.id_observador" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoArbitros">
+            <option value="" disabled>{{ cargandoArbitros ? 'Cargando árbitros...' : 'Seleccione observador' }}</option>
+            <option v-for="a in listaArbitros" :key="a.id" :value="a.id">{{ a.apellido }}, {{ a.nombre }}</option>
+          </select>
+        </div>
+
         <!-- SECCIÓN 4: PLANILLA DE EVALUACIÓN (EXCEL) -->
         <div class="p-3 p-md-4">
           <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-danger">
@@ -443,7 +458,9 @@
           <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
             <tr>
               <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Fecha</th>
-              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Categoría / Partido</th>
+              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Categoría</th>
+              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Partido</th>
+              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Competencia</th>
               <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Árbitros</th>
               <th class="py-2 pe-3 fw-bold text-uppercase text-center" style="font-size: 0.75rem;">Estado</th>
             </tr>
@@ -451,16 +468,17 @@
           <tbody>
             <tr v-for="h in historialSeleccionado" :key="'h-'+h.id" style="border-bottom: 1px solid #f1f5f9;">
               <td class="text-nowrap text-muted fw-bold ps-3 py-3">{{ formatearFecha(h.fecha_partido) }}</td>
+              <td class="py-3"><span class="badge bg-secondary">{{ categoriaObs(h) }}</span></td>
               <td class="py-3 text-dark">
-                <span class="badge bg-secondary mb-1">{{ h.categoria_edad }}</span><br>
                 {{ h.equipo_local }} vs {{ h.equipo_visitante }}
-                <span class="text-muted"> — {{ h.competencia }}</span>
+                <span v-if="h.numero_partido" class="text-muted">(Nº {{ h.numero_partido }})</span>
               </td>
-              <td class="py-3 text-dark">{{ h.arbitros }}</td>
+              <td class="py-3 text-dark">{{ h.competencia }}</td>
+              <td class="py-3 text-dark">{{ nombresArbitros(h) }}</td>
               <td class="py-3 pe-3 text-center"><span :class="badgeEstado(h.estado)">{{ etiquetaEstado(h.estado) }}</span></td>
             </tr>
             <tr v-if="historialSeleccionado.length === 0">
-              <td colspan="4" class="text-center py-4 text-muted">No hay registros previos en el historial.</td>
+              <td colspan="6" class="text-center py-4 text-muted">No hay registros previos en el historial.</td>
             </tr>
           </tbody>
         </table>
@@ -475,12 +493,12 @@
           <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
             <div class="fw-bold lh-sm text-dark pe-2" style="font-size: 0.95rem;">
               {{ h.equipo_local }} vs {{ h.equipo_visitante }}
-              <div class="text-danger mt-1" style="font-size: 0.75rem;">{{ h.categoria_edad }} • {{ formatearFecha(h.fecha_partido) }}</div>
+              <div class="text-danger mt-1" style="font-size: 0.75rem;">{{ categoriaObs(h) }} • {{ formatearFecha(h.fecha_partido) }}</div>
             </div>
           </div>
           <div class="d-flex justify-content-between border-bottom pb-2 mb-2 small">
             <span class="fw-bold text-dark">Árbitros:</span>
-            <span class="text-muted text-end">{{ h.arbitros }}</span>
+            <span class="text-muted text-end">{{ nombresArbitros(h) }}</span>
           </div>
           <div class="d-flex justify-content-between border-bottom pb-2 mb-2 small">
             <span class="fw-bold text-dark">Competencia:</span>
@@ -510,9 +528,10 @@
         </div>
 
         <div class="bg-light p-3 rounded border mb-3 border-secondary-subtle">
-          <p class="m-0 small text-dark"><strong class="text-muted">Árbitros:</strong> {{ detalle.arbitros }}</p>
+          <p class="m-0 small text-dark"><strong class="text-muted">Árbitros:</strong> {{ nombresArbitros(detalle) }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Observador:</strong> {{ detalle.observador }}</p>
-          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }} <span v-if="detalle.categoria_edad" class="badge bg-secondary ms-1">{{ detalle.categoria_edad }}</span></p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Categoría:</strong> {{ categoriaObs(detalle) }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }}</p>
           <p class="m-0 small text-dark mt-1" v-if="detalle.numero_partido"><strong class="text-muted">Nº Partido:</strong> {{ detalle.numero_partido }}</p>
           <p class="m-0 small text-dark mt-1" v-if="detalle.puntaje_final != null"><strong class="text-muted">Puntaje final:</strong> <span class="fw-bold text-danger">{{ detalle.puntaje_final }}</span></p>
         </div>
@@ -521,8 +540,22 @@
           <i class="bi bi-info-circle me-1"></i><strong>{{ detalle.estado === 'anulada' ? 'Motivo de anulación' : 'Motivo de rechazo' }}:</strong> {{ detalle.comentario_estado }}
         </div>
 
-        <!-- Ítems -->
-        <div class="border rounded overflow-hidden">
+        <!-- Tabs: Score sheet (puntajes) / Comment sheet (comentarios) -->
+        <ul class="nav nav-tabs mb-0" role="tablist">
+          <li class="nav-item">
+            <button class="nav-link" :class="{ active: tabDetalle === 'puntajes' }" type="button" @click="tabDetalle = 'puntajes'">
+              <i class="bi bi-list-ol me-1"></i> Puntajes
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" :class="{ active: tabDetalle === 'comentarios' }" type="button" @click="tabDetalle = 'comentarios'">
+              <i class="bi bi-chat-left-text me-1"></i> Comentarios
+            </button>
+          </li>
+        </ul>
+
+        <!-- TAB PUNTAJES (Score sheet) -->
+        <div v-show="tabDetalle === 'puntajes'" class="border border-top-0 rounded-bottom overflow-hidden">
           <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
             <thead class="table-light">
               <tr>
@@ -549,6 +582,45 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- TAB COMENTARIOS (Comment sheet) -->
+        <div v-show="tabDetalle === 'comentarios'" class="border border-top-0 rounded-bottom p-3">
+          <!-- Comentario por categoría -->
+          <div v-if="comentariosPorCategoria.length">
+            <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
+              <div class="fw-bold small text-dark">{{ c.categoria }}</div>
+              <div class="small text-muted" style="white-space: pre-line;">{{ c.comentario }}</div>
+            </div>
+          </div>
+
+          <!-- Prioridades de mejora -->
+          <div v-if="detalle.prioridad_mejora_1 || detalle.prioridad_mejora_2 || detalle.prioridad_mejora_resto" class="mt-2 pt-2 border-top">
+            <div class="fw-bold small text-dark mb-1">Prioridades de mejora</div>
+            <div v-if="detalle.prioridad_mejora_1" class="small text-muted mb-1"><strong>1.</strong> {{ detalle.prioridad_mejora_1 }}</div>
+            <div v-if="detalle.prioridad_mejora_2" class="small text-muted mb-1"><strong>2.</strong> {{ detalle.prioridad_mejora_2 }}</div>
+            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1" style="white-space: pre-line;">{{ detalle.prioridad_mejora_resto }}</div>
+          </div>
+
+          <!-- Influencia en el resultado -->
+          <div v-if="detalle.influencia_resultado_comentarios" class="mt-2 pt-2 border-top">
+            <div class="fw-bold small text-dark mb-1">Influencia en el resultado</div>
+            <div class="small text-muted" style="white-space: pre-line;">{{ detalle.influencia_resultado_comentarios }}</div>
+          </div>
+
+          <div v-if="!tieneComentarios" class="text-center py-3 text-muted small">
+            Esta observación no tiene comentarios cargados.
+          </div>
+        </div>
+
+        <!-- Acciones (dentro del cuerpo para que se vean también en mobile) -->
+        <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+          <button @click="descargarObservacionExcel(detalle)" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm order-1 order-sm-2 flex-sm-grow-1 d-flex align-items-center justify-content-center gap-2" :disabled="descargandoId === detalle.id">
+            <span v-if="descargandoId === detalle.id" class="spinner-border spinner-border-sm"></span>
+            <i v-else class="bi bi-file-earmark-excel"></i>
+            DESCARGAR EXCEL
+          </button>
+          <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold order-2 order-sm-1 flex-sm-grow-1">CERRAR</button>
         </div>
       </div>
       <div v-else class="text-center py-4">
@@ -601,6 +673,18 @@ const formatearFechaHora = (fechaHora) => {
   return `${formatearFecha(fecha)}${hora ? ' ' + hora.slice(0, 5) : ''}`;
 };
 
+// Árbitros observados: prioriza los nombres reales (arb1/arb2, que salen de ref1_id/ref2_id);
+// si no hay ids cargados, cae al texto libre del Excel (o.arbitros).
+const nombresArbitros = (o) => {
+  const partes = [o.arb1, o.arb2].filter(n => n && n.trim() && n !== ', ');
+  if (partes.length) return partes.join(' - ');
+  return o.arbitros || '-';
+};
+
+// Categoría del partido: usa la categoría del partido (o.categoria) y cae a la
+// categoría de edad del Excel (categoria_edad) si aquella no está.
+const categoriaObs = (o) => o.categoria || o.categoria_edad || '-';
+
 const etiquetaEstado = (estado) => {
   const e = (estado || 'pendiente').toLowerCase();
   if (e === 'aprobada') return 'APROBADA';
@@ -632,9 +716,9 @@ const observacionesFiltradas = computed(() => {
     const matchAnio = !filtros.anio || (o.fecha_partido || '').substring(0, 4) === filtros.anio;
     const matchEstado = !filtros.estado || (o.estado || 'pendiente').toLowerCase() === filtros.estado;
     const matchObs = normalizar(o.observador).includes(normalizar(filtros.observador));
-    const matchArb = normalizar(o.arbitros).includes(normalizar(filtros.arbitros));
+    const matchArb = normalizar(nombresArbitros(o)).includes(normalizar(filtros.arbitros));
     const matchComp = normalizar(o.competencia).includes(normalizar(filtros.competencia));
-    const matchCat = normalizar(o.categoria_edad).includes(normalizar(filtros.categoria));
+    const matchCat = normalizar(categoriaObs(o)).includes(normalizar(filtros.categoria));
     const matchPar = normalizar(`${o.equipo_local} ${o.equipo_visitante} ${o.numero_partido}`).includes(normalizar(filtros.partido));
 
     return matchFec && matchAnio && matchEstado && matchObs && matchArb && matchComp && matchCat && matchPar;
@@ -681,6 +765,7 @@ const mostrarModal = ref(false);
 const observacionActual = ref({});
 const nuevoEstado = ref('');
 const comentariosRevision = ref('');
+const competenciaEditada = ref('');
 
 // La opción "anular" en el modal sólo se habilita si la observación sigue pendiente.
 const gestionEsPendiente = computed(() => (observacionActual.value.estado || 'pendiente').toLowerCase() === 'pendiente');
@@ -689,6 +774,7 @@ const abrirModalGestion = (obs) => {
   observacionActual.value = { ...obs };
   nuevoEstado.value = (obs.estado || 'pendiente').toLowerCase();
   comentariosRevision.value = '';
+  competenciaEditada.value = obs.competencia || '';
   mostrarModal.value = true;
 };
 
@@ -697,8 +783,14 @@ const cerrarModal = () => { mostrarModal.value = false; };
 const guardarCambiosGestion = async () => {
   cargando.value = true;
   try {
-    // Recordatorio: NO enviar puntaje_final, se calcula dinámicamente
-    const payload = { id: observacionActual.value.id, estado: nuevoEstado.value, comentarios: comentariosRevision.value };
+    // Recordatorio: NO enviar puntaje_final, se calcula dinámicamente.
+    // Se envía la competencia por si el admin la corrigió (error de tipeo del observador).
+    const payload = {
+      id: observacionActual.value.id,
+      estado: nuevoEstado.value,
+      comentarios: comentariosRevision.value,
+      competencia: competenciaEditada.value
+    };
     const res = await api.post({ entity: 'observaciones', action: 'actualizarEstado', payload: payload });
 
     if (res && res.ok) {
@@ -721,8 +813,10 @@ const guardarCambiosGestion = async () => {
 const mostrarModalCarga = ref(false);
 const procesandoCarga = ref(false);
 const cargandoCategorias = ref(false);
+const cargandoArbitros = ref(false);
 
 const divisionesMayores = ref([]);
+const listaArbitros = ref([]);
 
 const listas = reactive({
   divisiones_categorias: [], divisiones: []
@@ -730,7 +824,7 @@ const listas = reactive({
 
 const formulario = reactive({
   partido_genero: '', partido_categoria: '', inf_nivel: '',
-  id_categoria_especifica: '', categoria: ''
+  id_categoria_especifica: '', categoria: '', id_observador: ''
 });
 
 const idCategoria = ref(null);
@@ -746,8 +840,26 @@ const partidoSeleccionado = computed(() => partidos.value.find(p => p.id === idP
 const archivoObservacion = ref(null);
 const arrastrandoArchivo = ref(false);
 
-const abrirModalCarga = () => { mostrarModalCarga.value = true; };
+const abrirModalCarga = () => { mostrarModalCarga.value = true; cargarArbitrosObservadores(); };
 const cerrarModalCarga = () => { mostrarModalCarga.value = false; reiniciarFormularioCarga(); };
+
+// Trae todos los árbitros para el select de observador.
+const cargarArbitrosObservadores = async () => {
+  if (listaArbitros.value.length) return; // ya cargados
+  cargandoArbitros.value = true;
+  try {
+    const res = await api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: true } });
+    if (res && res.ok && Array.isArray(res.payload)) {
+      listaArbitros.value = res.payload
+        .slice()
+        .sort((a, b) => `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`, 'es'));
+    }
+  } catch (e) {
+    console.error('cargarArbitrosObservadores:', e);
+  } finally {
+    cargandoArbitros.value = false;
+  }
+};
 
 const pedirCategoriasEspecíficas = async () => {
   if (!formulario.partido_genero || !formulario.partido_categoria) return;
@@ -838,6 +950,10 @@ const cargarObservacionExcel = async () => {
     toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el archivo de Excel para continuar.', tipo: 'warning' });
     return;
   }
+  if (!formulario.id_observador) {
+    toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el observador que realizó la observación.', tipo: 'warning' });
+    return;
+  }
   procesandoCarga.value = true;
   try {
     const formData = new FormData();
@@ -862,7 +978,7 @@ const cargarObservacionExcel = async () => {
 
 const reiniciarFormularioCarga = () => {
   Object.assign(formulario, {
-    partido_genero: '', partido_categoria: '', inf_nivel: '', id_categoria_especifica: '', categoria: ''
+    partido_genero: '', partido_categoria: '', inf_nivel: '', id_categoria_especifica: '', categoria: '', id_observador: ''
   });
   idCategoria.value = null;
   fechaPartido.value = '';
@@ -878,10 +994,47 @@ const reiniciarFormularioCarga = () => {
 const mostrarDetalle = ref(false);
 const detalle = ref(null);
 const cargandoDetalleId = ref(null);
+const tabDetalle = ref('puntajes');
+const descargandoId = ref(null);
+
+// Descarga el Excel de una observación puntual (solo observador/coordinador/admin en el back).
+const descargarObservacionExcel = async (obs) => {
+  if (!obs) return;
+  descargandoId.value = obs.id;
+  try {
+    await api.getFile(
+      { entity: 'observaciones', action: 'descargarEvaluacionExcel', payload: { id: obs.id } },
+      `observacion_${obs.id}.xlsx`
+    );
+  } catch (e) {
+    console.error('descargarObservacionExcel:', e);
+    toast({ titulo: 'Error', mensaje: 'No se pudo descargar el Excel de la observación.', tipo: 'danger' });
+  } finally {
+    descargandoId.value = null;
+  }
+};
+
+// Comentarios por categoría (Comment sheet): los ítems tipo categoría que tienen comentario.
+const comentariosPorCategoria = computed(() => {
+  if (!detalle.value || !Array.isArray(detalle.value.items)) return [];
+  return detalle.value.items
+    .filter(it => it.tipo === 'categoria' && it.comentario)
+    .map(it => ({ categoria: it.categoria, comentario: it.comentario }));
+});
+
+const tieneComentarios = computed(() => {
+  if (!detalle.value) return false;
+  return comentariosPorCategoria.value.length > 0
+    || !!detalle.value.prioridad_mejora_1
+    || !!detalle.value.prioridad_mejora_2
+    || !!detalle.value.prioridad_mejora_resto
+    || !!detalle.value.influencia_resultado_comentarios;
+});
 
 const verDetalle = async (obs) => {
   cargandoDetalleId.value = obs.id;
   detalle.value = null;
+  tabDetalle.value = 'puntajes';
   try {
     const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluacion', payload: { id: obs.id } });
     if (res && res.ok && res.payload) {

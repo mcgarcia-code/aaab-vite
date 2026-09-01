@@ -64,7 +64,7 @@
                         </div>
                         <div class="text-muted small text-truncate" style="max-width: 220px;">{{ obs.competencia || 'Observación' }}</div>
                       </div>
-                      <span class="badge bg-secondary">{{ obs.categoria_edad || '-' }}</span>
+                      <span class="badge bg-secondary">{{ categoriaObs(obs) }}</span>
                     </div>
 
                     <div class="text-dark small mb-2 flex-grow-1">
@@ -90,48 +90,53 @@
     <!-- ==========================================
          MODAL: DETALLE (sin nota / puntaje)
          ========================================== -->
-    <ModalBase :show="mostrarDetalle" @close="cerrarDetalle" titulo="Detalle de la Observación" icono="visibility" colorIcono="bg-danger text-white" maxWidth="760px">
+    <ModalBase :show="mostrarDetalle" @close="cerrarDetalle" titulo="Detalle de la Observación" icono="visibility" colorIcono="bg-secondary text-white" maxWidth="760px">
       <div v-if="detalle" class="text-start">
+        <!-- Datos básicos: día, partido, categoría, observador -->
         <div class="bg-light p-3 rounded border mb-3 border-secondary-subtle">
-          <p class="m-0 small text-dark"><strong class="text-muted">Fecha:</strong> {{ formatearFecha(detalle.fecha_partido) }}</p>
+          <p class="m-0 small text-dark"><strong class="text-muted">Día:</strong> {{ formatearFecha(detalle.fecha_partido) }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Competencia:</strong> {{ detalle.competencia || '-' }}</p>
-          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }} <span v-if="detalle.categoria_edad" class="badge bg-secondary ms-1">{{ detalle.categoria_edad }}</span></p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Categoría:</strong> {{ categoriaObs(detalle) }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Observador:</strong> {{ detalle.observador }}</p>
         </div>
 
-        <!-- Ítems evaluados: SIN puntaje/nota -->
-        <div class="border rounded overflow-hidden">
-          <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
-            <thead class="table-light">
-              <tr>
-                <th class="py-2 ps-3 text-uppercase text-muted">Categoría / Ítem</th>
-                <th class="py-2 text-center text-uppercase text-muted" style="width: 170px;">Valoración</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template v-for="it in (detalle.items || [])" :key="'it-' + it.id">
-                <tr v-if="it.tipo === 'categoria'" class="table-light">
-                  <td class="fw-bold text-dark ps-3" colspan="2">{{ it.categoria }}</td>
-                </tr>
-                <tr v-else>
-                  <td class="text-dark ps-4">{{ it.item }}</td>
-                  <td class="text-center text-muted">{{ it.valoracion || '-' }}</td>
-                </tr>
-              </template>
-              <tr v-if="!detalle.items || detalle.items.length === 0">
-                <td colspan="2" class="text-center py-3 text-muted">Sin ítems cargados.</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Comentarios (Comment sheet). El árbitro NO ve puntajes ni valoraciones. -->
+        <div class="border rounded p-3">
+          <h6 class="fw-bold text-dark small text-uppercase mb-3 d-flex align-items-center gap-1">
+            <i class="bi bi-chat-left-text"></i> Comentarios del observador
+          </h6>
+
+          <!-- Comentario por categoría -->
+          <div v-if="comentariosCategoria.length">
+            <div v-for="(c, idx) in comentariosCategoria" :key="'com-' + idx" class="mb-3">
+              <div class="fw-bold small text-dark">{{ c.categoria }}</div>
+              <div class="small text-muted" style="white-space: pre-line;">{{ c.comentario }}</div>
+            </div>
+          </div>
+
+          <!-- Prioridades de mejora -->
+          <div v-if="detalle.prioridad_mejora_1 || detalle.prioridad_mejora_2 || detalle.prioridad_mejora_resto" class="mt-2 pt-2 border-top">
+            <div class="fw-bold small text-dark mb-1">Prioridades de mejora</div>
+            <div v-if="detalle.prioridad_mejora_1" class="small text-muted mb-1"><strong>1.</strong> {{ detalle.prioridad_mejora_1 }}</div>
+            <div v-if="detalle.prioridad_mejora_2" class="small text-muted mb-1"><strong>2.</strong> {{ detalle.prioridad_mejora_2 }}</div>
+            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1" style="white-space: pre-line;">{{ detalle.prioridad_mejora_resto }}</div>
+          </div>
+
+          <!-- Influencia en el resultado -->
+          <div v-if="detalle.influencia_resultado_comentarios" class="mt-2 pt-2 border-top">
+            <div class="fw-bold small text-dark mb-1">Influencia en el resultado</div>
+            <div class="small text-muted" style="white-space: pre-line;">{{ detalle.influencia_resultado_comentarios }}</div>
+          </div>
+
+          <div v-if="!tieneComentarios" class="text-center py-3 text-muted small">
+            El observador no dejó comentarios en esta observación.
+          </div>
         </div>
 
-        <!-- Comentarios por categoría (si los hay) -->
-        <div v-if="comentariosCategoria.length" class="mt-3">
-          <h6 class="fw-bold text-dark small text-uppercase mb-2">Comentarios</h6>
-          <div v-for="(c, idx) in comentariosCategoria" :key="'com-' + idx" class="mb-2">
-            <div class="fw-bold small text-dark">{{ c.categoria }}</div>
-            <div class="small text-muted">{{ c.comentario }}</div>
-          </div>
+        <!-- Acciones (mobile-first) -->
+        <div class="d-flex mt-4">
+          <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold w-100">CERRAR</button>
         </div>
       </div>
       <div v-else class="text-center py-4">
@@ -167,6 +172,9 @@ const formatearFecha = (fechaIso) => {
   return `${dia}/${mes}/${anio}`
 }
 
+// Categoría del partido con fallback a la categoría de edad del Excel.
+const categoriaObs = (o) => o.categoria || o.categoria_edad || '-'
+
 const aniosDisponibles = computed(() => {
   const set = new Set()
   observaciones.value.forEach(o => {
@@ -194,18 +202,30 @@ const comentariosCategoria = computed(() => {
     .map(it => ({ categoria: it.categoria, comentario: it.comentario }))
 })
 
+const tieneComentarios = computed(() => {
+  if (!detalle.value) return false
+  return comentariosCategoria.value.length > 0
+    || !!detalle.value.prioridad_mejora_1
+    || !!detalle.value.prioridad_mejora_2
+    || !!detalle.value.prioridad_mejora_resto
+    || !!detalle.value.influencia_resultado_comentarios
+})
+
 const verDetalle = async (obs) => {
   cargandoDetalleId.value = obs.id
   detalle.value = null
   try {
     const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluacion', payload: { id: obs.id } })
     if ((res.ok || res.success) && res.payload) {
-      // Resguardo: el árbitro nunca ve el puntaje, aunque el backend ya lo recorta.
+      // Resguardo en cliente: el árbitro observado NO ve ninguna nota.
+      // El backend ya recorta el puntaje; acá quitamos puntaje y valoración de los ítems,
+      // y cualquier puntaje/promedio de la cabecera. Solo quedan los comentarios.
       const limpio = { ...obs, ...res.payload }
       if (Array.isArray(limpio.items)) {
         limpio.items = limpio.items.map(it => {
           const copia = { ...it }
           delete copia.puntaje
+          delete copia.valoracion
           return copia
         })
       }
