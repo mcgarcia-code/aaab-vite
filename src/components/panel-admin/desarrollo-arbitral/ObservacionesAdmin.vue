@@ -55,7 +55,7 @@
               <input v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="DD/MM/AAAA">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.observador" class="form-control form-control-sm shadow-none" placeholder="Observador...">
+              <input v-model="filtros.nombre_observador" class="form-control form-control-sm shadow-none" placeholder="Observador...">
             </div>
             <div class="col-6 col-md-2">
               <input v-model="filtros.arbitros" class="form-control form-control-sm shadow-none" placeholder="Árbitros observados...">
@@ -134,7 +134,7 @@
                       </div>
                     </td>
                     <td class="text-center fw-bold col-fija col-fecha">{{ formatearFecha(o.fecha_partido) }}</td>
-                    <td class="text-dark text-truncate" :title="o.observador" style="max-width: 180px;">{{ o.observador }}</td>
+                    <td class="text-dark text-truncate" :title="o.nombre_observador" style="max-width: 180px;">{{ o.nombre_observador }}</td>
                     <td class="fw-bold text-uppercase text-dark text-truncate" :title="nombresArbitros(o)" style="max-width: 220px;">{{ nombresArbitros(o) }}</td>
                     <td class="text-dark text-truncate" :title="o.competencia" style="max-width: 180px;">{{ o.competencia }}</td>
                     <td class="text-dark text-truncate" :title="categoriaObs(o)" style="max-width: 130px;">{{ categoriaObs(o) }}</td>
@@ -177,7 +177,7 @@
 
                 <div class="card-body pt-0 px-3 pb-3">
                   <div class="bg-light p-2 rounded border mt-2 border-light-subtle">
-                    <p class="m-0 text-dark small"><strong class="text-muted">Obs:</strong> {{ o.observador }}</p>
+                    <p class="m-0 text-dark small"><strong class="text-muted">Obs:</strong> {{ o.nombre_observador }}</p>
                     <p class="m-0 text-dark small mt-1"><strong class="text-muted">Competencia:</strong> {{ o.competencia }}</p>
                     <p class="m-0 text-dark small mt-1">
                       <strong class="text-muted">Partido:</strong> {{ o.equipo_local }} vs {{ o.equipo_visitante }}
@@ -236,7 +236,7 @@
       </div>
       <div class="text-start bg-light p-3 rounded border mb-4 border-secondary-subtle">
         <p class="m-0 fw-bold small text-dark mb-1">Árbitros: <span class="text-danger">{{ nombresArbitros(observacionActual) }}</span></p>
-        <p class="m-0 small text-dark"><strong class="text-muted">Observador:</strong> {{ observacionActual.observador }}</p>
+        <p class="m-0 small text-dark"><strong class="text-muted">Observador:</strong> {{ observacionActual.nombre_observador }}</p>
         <p class="m-0 small text-dark mt-1">
           <strong class="text-muted">Partido:</strong> {{ observacionActual.equipo_local }} vs {{ observacionActual.equipo_visitante }} ({{ categoriaObs(observacionActual) }})
         </p>
@@ -529,7 +529,7 @@
 
         <div class="bg-light p-3 rounded border mb-3 border-secondary-subtle">
           <p class="m-0 small text-dark"><strong class="text-muted">Árbitros:</strong> {{ nombresArbitros(detalle) }}</p>
-          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Observador:</strong> {{ detalle.observador }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Observador:</strong> {{ detalle.nombre_observador }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Categoría:</strong> {{ categoriaObs(detalle) }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }}</p>
           <p class="m-0 small text-dark mt-1" v-if="detalle.numero_partido"><strong class="text-muted">Nº Partido:</strong> {{ detalle.numero_partido }}</p>
@@ -651,7 +651,7 @@ const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const observaciones = ref([]);
 const cargando = ref(false);
 
-const filtros = reactive({ fecha: '', anio: '', estado: '', observador: '', arbitros: '', competencia: '', categoria: '', partido: '' });
+const filtros = reactive({ fecha: '', anio: '', estado: '', nombre_observador: '', arbitros: '', competencia: '', categoria: '', partido: '' });
 const mostrarFiltrosMobile = ref(false);
 
 const paginaActual = ref(1);
@@ -715,7 +715,7 @@ const observacionesFiltradas = computed(() => {
     const matchFec = formatearFecha(o.fecha_partido).includes(filtros.fecha);
     const matchAnio = !filtros.anio || (o.fecha_partido || '').substring(0, 4) === filtros.anio;
     const matchEstado = !filtros.estado || (o.estado || 'pendiente').toLowerCase() === filtros.estado;
-    const matchObs = normalizar(o.observador).includes(normalizar(filtros.observador));
+    const matchObs = normalizar(o.nombre_observador).includes(normalizar(filtros.nombre_observador));
     const matchArb = normalizar(nombresArbitros(o)).includes(normalizar(filtros.arbitros));
     const matchComp = normalizar(o.competencia).includes(normalizar(filtros.competencia));
     const matchCat = normalizar(categoriaObs(o)).includes(normalizar(filtros.categoria));
@@ -1062,9 +1062,9 @@ const observadorHistorialNombre = ref('');
 const verHistorial = (obs) => {
   // Agrupa el historial por observador: todas las observaciones que cargó
   // el mismo observador que la fila seleccionada.
-  observadorHistorialNombre.value = obs.observador || 'Observador';
+  observadorHistorialNombre.value = obs.nombre_observador || 'Observador';
   historialSeleccionado.value = observaciones.value
-    .filter(o => o.observador === obs.observador)
+    .filter(o => o.nombre_observador === obs.nombre_observador)
     .sort((a, b) => b.id - a.id);
   mostrarModalHistorial.value = true;
 };
@@ -1079,7 +1079,7 @@ const exportarExcel = async () => {
     toast({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' }); return;
   }
   const datosExportar = observacionesFiltradas.value.map(o => ({
-    'ID': o.id, 'Fecha': formatearFecha(o.fecha_partido), 'Observador': o.observador, 'Árbitros': o.arbitros,
+    'ID': o.id, 'Fecha': formatearFecha(o.fecha_partido), 'Observador': o.nombre_observador, 'Árbitros': o.arbitros,
     'Competencia': o.competencia, 'Categoría': o.categoria_edad, 'Local': o.equipo_local, 'Visitante': o.equipo_visitante,
     'Nº Partido': o.numero_partido, 'Estado': etiquetaEstado(o.estado), 'Cargado': o.creado_en
   }));
