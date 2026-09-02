@@ -361,12 +361,20 @@
                       </button>
                     </td>
                       <td class="text-center">
-                        <span
-                          v-if="avisosPartido(p) > 0"
-                          class="material-icons text-warning alerta-partido"
-                          :title="textoAvisosPartido(p)"
-                          @click="mostrarAvisosPartido(p)"
-                        >warning</span>
+                        <div class="d-flex align-items-center justify-content-center gap-1">
+                          <span
+                            v-if="avisosPartido(p) > 0"
+                            class="material-icons text-warning alerta-partido"
+                            :title="textoAvisosPartido(p)"
+                            @click="mostrarAvisosPartido(p)"
+                          >warning</span>
+                          <span
+                            v-if="estadoDesignacion(p) === 'a_designar'"
+                            class="material-icons text-danger borrar-partido"
+                            title="Borrar partido"
+                            @click="borrarPartido(p)"
+                          >cancel</span>
+                        </div>
                       </td>
                     </tr>
 
@@ -415,6 +423,12 @@
                         class="material-icons text-warning alerta-partido flex-shrink-0"
                         @click="mostrarAvisosPartido(p)"
                       >warning</span>
+                      <span
+                        v-if="estadoDesignacion(p) === 'a_designar'"
+                        class="material-icons text-danger borrar-partido flex-shrink-0"
+                        title="Borrar partido"
+                        @click="borrarPartido(p)"
+                      >cancel</span>
                     </div>
 
                     <!-- Horario -->
@@ -1052,6 +1066,7 @@ useHead({
 })
 
 const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const notificar = inject('notificar', ({ mensaje }) => alert(mensaje))
 
 // Solo un admin puede editar fecha y horario de un partido ya cargado
 const esAdmin = computed(() => auth.getUser()?.rol === 'admin')
@@ -1483,6 +1498,40 @@ const toggleSuspendido = async (p, event) => {
     p.suspendido = valorAnterior
     event.target.checked = valorAnterior
     toast({ titulo: 'Error', mensaje: 'No se pudo cambiar el estado del partido.', tipo: 'danger' })
+  }
+}
+
+/* ====================================================
+   BORRAR PARTIDO (solo sin árbitros, estado a_designar)
+   ==================================================== */
+const borrarPartido = (p) => {
+  notificar({
+    titulo: '¿Borrar partido?',
+    mensaje: `${p.local || '?'} vs ${p.visitante || '?'}\nEsta acción no se puede deshacer.`,
+    tipo: 'danger',
+    alConfirmar: () => confirmarBorrarPartido(p)
+  })
+}
+
+const confirmarBorrarPartido = async (p) => {
+  try {
+    const resultado = await api.post({
+      entity: 'designaciones',
+      action: 'borrarPartido',
+      payload: {
+        idPartido: p.id
+      }
+    })
+
+    if (!resultado.ok || resultado.payload !== true) {
+      throw new Error((resultado.payload && resultado.payload.mensaje) ? resultado.payload.mensaje : 'Error del servidor')
+    }
+
+    designaciones.value = designaciones.value.filter(d => d !== p)
+    toast({ titulo: 'Éxito', mensaje: 'Partido borrado correctamente.', tipo: 'success' })
+  } catch (err) {
+    console.error('Error al borrar partido:', err)
+    toast({ titulo: 'Error', mensaje: 'No se pudo borrar el partido.', tipo: 'danger' })
   }
 }
 
@@ -2404,6 +2453,18 @@ onMounted(async () => {
   cursor: pointer;
   vertical-align: middle;
   margin-right: 2px;
+}
+
+/* Ícono para borrar un partido sin designar */
+.borrar-partido {
+  font-size: 18px;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: transform 0.12s ease;
+}
+
+.borrar-partido:hover {
+  transform: scale(1.15);
 }
 
 /* ====================================================
