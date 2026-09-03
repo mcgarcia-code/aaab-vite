@@ -8,7 +8,7 @@
         <div class="card-header bg-white py-3 border-bottom">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-              <i class="bi bi-table me-1"></i> Observaciones de mis Árbitros
+              <i class="bi bi-table me-1"></i> Observacione de mis Árbitros
             </h4>
             <span class="text-muted small d-block mt-1">
               Observaciones de los árbitros de tus grupos. Hacé clic en una celda para ver el detalle.
