@@ -251,6 +251,7 @@
               <option value="pendiente">Pendiente</option>
               <option value="aprobada">Aprobada</option>
               <option value="rechazada">Rechazada</option>
+              <option v-if="modoModal === 'editar'" value="anulada">Anulada</option>
             </select>
           </div>
 
@@ -673,6 +674,7 @@ onMounted(() => {
 .aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 .pendiente { background: #fef3c7; color: #d97706; border: 1px solid #fde047; }
 .rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.anulada { background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; }
 
 /* ====================================================
    UTILIDADES
