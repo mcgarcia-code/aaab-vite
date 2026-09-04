@@ -69,6 +69,7 @@
 
                     <div class="text-dark small mb-2 flex-grow-1">
                       <div class="fw-bold">{{ obs.equipo_local }} vs {{ obs.equipo_visitante }}</div>
+                      <div class="text-muted mt-1"><i class="bi bi-tag me-1"></i>Categoría: {{ categoriaObs(obs) }}</div>
                       <div class="text-muted mt-1"><i class="bi bi-person-badge me-1"></i>Observador: {{ obs.observador }}</div>
                     </div>
 
