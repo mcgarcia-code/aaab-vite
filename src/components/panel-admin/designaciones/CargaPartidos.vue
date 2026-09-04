@@ -341,14 +341,25 @@
                         </button>
                       </td>
                       <td>
-                        <button
-                          @click="abrirSelectorArbitro(p, 'delegado')"
-                          class="celda-arbitro"
-                          :class="{ 'externo': esExternoRol(p, 'delegado'), 'vacio': !p.delegado }"
-                          :title="tituloCeldaRol(p, 'delegado')"
-                        >
-                          {{ p.delegado || '— Asignar —' }}
-                        </button>
+                        <div class="celda-arb-wrap">
+                          <button
+                            @click="abrirSelectorArbitro(p, 'delegado')"
+                            class="celda-arbitro"
+                            :class="[colorClaseDelegado(p), { 'externo': esExternoRol(p, 'delegado'), 'vacio': !p.delegado }]"
+                            :title="tituloCeldaRol(p, 'delegado')"
+                          >
+                            {{ p.delegado || '— Asignar —' }}
+                          </button>
+                          <button
+                            v-if="p.delegado"
+                            @click="abrirSelectorColor(p, 'delegado')"
+                            class="btn-color-tag"
+                            :class="colorClaseDelegado(p)"
+                            title="Marcar estado del delegado técnico"
+                          >
+                            <span class="material-icons" style="font-size: 14px;">label</span>
+                          </button>
+                        </div>
                       </td>
                       <td class="text-center">
                       <button
@@ -548,9 +559,18 @@
                         <button
                           @click="abrirSelectorArbitro(p, 'delegado')"
                           class="celda-arbitro-mobile w-100 text-start"
-                          :class="{ 'externo': esExternoRol(p, 'delegado'), 'vacio': !p.delegado }"
+                          :class="[colorClaseDelegado(p), { 'externo': esExternoRol(p, 'delegado'), 'vacio': !p.delegado }]"
                         >
                           {{ p.delegado || '— Asignar —' }}
+                        </button>
+                        <button
+                          v-if="p.delegado"
+                          @click="abrirSelectorColor(p, 'delegado')"
+                          class="btn btn-sm btn-outline-secondary w-100 mt-1 d-flex align-items-center justify-content-center gap-1"
+                          :class="colorClaseDelegado(p)"
+                        >
+                          <span class="material-icons" style="font-size: 14px;">label</span>
+                          <span class="small">Estado</span>
                         </button>
                       </div>
                     </div>
@@ -599,7 +619,7 @@
 
     <ModalBase
       :show="mostrarSelectorColor"
-      titulo="Estado del árbitro"
+      :titulo="tituloSelectorColor"
       icono="label"
       colorIcono="bg-danger text-white"
       maxWidth="420px"
@@ -1417,6 +1437,7 @@ const opcionesColor = [
 const mostrarSelectorColor = ref(false)
 const seleccionColor = ref(null)
 
+// numero: 1 | 2 para árbitros, o 'delegado' para el delegado técnico.
 const abrirSelectorColor = (partido, numero) => {
   seleccionColor.value = { partido, numero }
   mostrarSelectorColor.value = true
@@ -1427,10 +1448,19 @@ const cerrarSelectorColor = () => {
   seleccionColor.value = null
 }
 
+const tituloSelectorColor = computed(() =>
+  seleccionColor.value?.numero === 'delegado' ? 'Estado del delegado técnico' : 'Estado del árbitro'
+)
+
 const colorClase = (p, numero) => {
   const estado = numero === 1 ? p._estado1 : p._estado2
   return estado ? 'estado-' + estado : ''
 }
+
+// La etiqueta del delegado técnico (solo lectura para el admin): la fija el
+// backend cuando el delegado rechaza el partido ('reemplazar'). Se limpia sola
+// al cambiar de delegado (ver asignarObservadorDelegado / editarObservadorDelegado).
+const colorClaseDelegado = (p) => (p._estadoDel ? 'estado-' + p._estadoDel : '')
 
 const asignarColor = async (valor) => {
   const sel = seleccionColor.value
@@ -1438,6 +1468,37 @@ const asignarColor = async (valor) => {
   const p = sel.partido
   const numero = sel.numero
 
+  // ---- Delegado técnico ----
+  if (numero === 'delegado') {
+    const valorAnterior = p._estadoDel
+
+    // Actualización optimista
+    p._estadoDel = valor
+    cerrarSelectorColor()
+
+    try {
+      const resultado = await api.post({
+        entity: 'designaciones',
+        action: 'editarEtiquetaDelegado',
+        payload: {
+          idPartido: p.id,
+          etiqueta: valor
+        }
+      })
+
+      if (!resultado.ok) {
+        throw new Error((resultado.payload && resultado.payload.mensaje) ? resultado.payload.mensaje : 'Error del servidor')
+      }
+    } catch (err) {
+      console.error('Error al editar etiqueta del delegado:', err)
+      // Revertir
+      p._estadoDel = valorAnterior
+      toast({ titulo: 'Error', mensaje: 'No se pudo guardar la etiqueta del delegado técnico.', tipo: 'danger' })
+    }
+    return
+  }
+
+  // ---- Árbitro 1 / 2 ----
   const valorAnterior = numero === 1 ? p._estado1 : p._estado2
 
   // Actualización optimista
@@ -1549,6 +1610,7 @@ const normalizarPartido = (p) => ({
   id_observador: p.id_observador || null,
   delegado: p.delegado || '',
   id_delegado: p.id_delegado || null,
+  _estadoDel: p.etiqueta_delegado || '',
   planillero: p.planillero || '',
   id_planillero: p.id_planillero || null,
   cronometrista: p.cronometrista || '',
@@ -1627,7 +1689,7 @@ const canchas = computed(() => {
 
     if (!busqueda) return true
     const textoPartido = normalizarTexto(
-      `${p.cancha} ${p.local} ${p.visitante} ${p.arbitro_1} ${p.arbitro_2} ${p.categoria_division}`
+      `${p.cancha} ${p.local} ${p.visitante} ${p.arbitro_1} ${p.arbitro_2} ${p.observador} ${p.delegado} ${p.categoria_division}`
     )
     return textoPartido.includes(busqueda)
   })
@@ -1928,6 +1990,7 @@ const asignarObservadorDelegado = async (arbitro, tipo, p) => {
   // Guardo valores anteriores por si hay que revertir
   const nombreAnterior = p[campoNombre]
   const idAnterior = p[campoId]
+  const estadoDelAnterior = p._estadoDel
 
   // Actualización optimista
   if (!arbitro) {
@@ -1937,6 +2000,10 @@ const asignarObservadorDelegado = async (arbitro, tipo, p) => {
     p[campoNombre] = capitalizarNombre(`${arbitro.apellido} ${arbitro.nombre}`)
     p[campoId] = arbitro.id
   }
+
+  // Al cambiar el delegado técnico, su etiqueta ('reemplazar' por rechazo del
+  // delegado anterior) deja de corresponder: se limpia acá y en el backend.
+  if (tipo === 'delegado') p._estadoDel = ''
 
   cerrarSelectorArbitro()
 
@@ -1959,6 +2026,7 @@ const asignarObservadorDelegado = async (arbitro, tipo, p) => {
     // Revertir
     p[campoNombre] = nombreAnterior
     p[campoId] = idAnterior
+    if (tipo === 'delegado') p._estadoDel = estadoDelAnterior
     toast({ titulo: 'Error', mensaje: 'No se pudo guardar el observador/delegado técnico.', tipo: 'danger' })
   }
 }

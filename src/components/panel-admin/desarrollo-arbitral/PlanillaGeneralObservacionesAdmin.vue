@@ -95,17 +95,15 @@
                       :title="tituloCeldaObs(observacionDe(a, n))"
                     >
                       <div v-if="observacionDe(a, n)" class="celda-obs-contenido">
-                        <span class="celda-obs-nota" @click="verDetalle(observacionDe(a, n))" title="Ver detalle y comentarios">
-                          {{ textoCeldaObs(observacionDe(a, n)) }}
-                        </span>
+                        <span class="celda-obs-nota">{{ textoCeldaObs(observacionDe(a, n)) }}</span>
                         <button
-                          class="btn-excel-celda"
-                          @click.stop="descargarObservacionExcel(observacionDe(a, n))"
-                          :disabled="descargandoId === observacionDe(a, n).id"
-                          title="Descargar Excel de esta observación"
+                          class="btn-ver-celda"
+                          @click.stop="verDetalle(observacionDe(a, n))"
+                          :disabled="cargandoDetalleId === observacionDe(a, n).id"
+                          title="Ver detalle y comentarios"
                         >
-                          <span v-if="descargandoId === observacionDe(a, n).id" class="spinner-border spinner-border-sm"></span>
-                          <i v-else class="bi bi-file-earmark-excel"></i>
+                          <span v-if="cargandoDetalleId === observacionDe(a, n).id" class="spinner-border spinner-border-sm"></span>
+                          <span v-else class="material-icons">visibility</span>
                         </button>
                       </div>
                     </td>
@@ -128,7 +126,7 @@
     <!-- ==========================================
          MODAL: DETALLE DE LA OBSERVACIÓN
          ========================================== -->
-    <ModalBase :show="mostrarDetalle" @close="cerrarDetalle" titulo="Detalle de la Observación" icono="visibility" colorIcono="bg-primary text-white" maxWidth="800px">
+    <ModalBase :show="mostrarDetalle" @close="cerrarDetalle" titulo="Detalle de la Observación" icono="visibility" colorIcono="bg-secondary text-white" maxWidth="800px">
       <div v-if="detalle" class="text-start">
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
           <div>
@@ -141,7 +139,8 @@
         <div class="bg-light p-3 rounded border mb-3 border-secondary-subtle">
           <p class="m-0 small text-dark"><strong class="text-muted">Árbitros:</strong> {{ detalle.arb1 }}<span v-if="detalle.arb2 && detalle.ref2_id"> — {{ detalle.arb2 }}</span></p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Observador:</strong> {{ detalle.observador }}</p>
-          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }} <span v-if="detalle.categoria_edad" class="badge bg-secondary ms-1">{{ detalle.categoria_edad }}</span></p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Categoría:</strong> {{ categoriaObs(detalle) }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }}</p>
           <p class="m-0 small text-dark mt-1" v-if="detalle.numero_partido"><strong class="text-muted">Nº Partido:</strong> {{ detalle.numero_partido }}</p>
           <p class="m-0 small text-dark mt-1" v-if="detalle.puntaje_final != null"><strong class="text-muted">Puntaje final:</strong> <span class="fw-bold text-danger">{{ detalle.puntaje_final }}</span></p>
         </div>
@@ -150,7 +149,22 @@
           <i class="bi bi-info-circle me-1"></i><strong>{{ detalle.estado === 'anulada' ? 'Motivo de anulación' : 'Motivo de rechazo' }}:</strong> {{ detalle.comentario_estado }}
         </div>
 
-        <div class="border rounded overflow-hidden">
+        <!-- Tabs: Score sheet (puntajes) / Comment sheet (comentarios) -->
+        <ul class="nav nav-tabs mb-0" role="tablist">
+          <li class="nav-item">
+            <button class="nav-link" :class="{ active: tabDetalle === 'puntajes' }" type="button" @click="tabDetalle = 'puntajes'">
+              <i class="bi bi-list-ol me-1"></i> Puntajes
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" :class="{ active: tabDetalle === 'comentarios' }" type="button" @click="tabDetalle = 'comentarios'">
+              <i class="bi bi-chat-left-text me-1"></i> Comentarios
+            </button>
+          </li>
+        </ul>
+
+        <!-- TAB PUNTAJES (Score sheet) -->
+        <div v-show="tabDetalle === 'puntajes'" class="border border-top-0 rounded-bottom overflow-hidden">
           <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
             <thead class="table-light">
               <tr>
@@ -177,6 +191,45 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- TAB COMENTARIOS (Comment sheet) -->
+        <div v-show="tabDetalle === 'comentarios'" class="border border-top-0 rounded-bottom p-3">
+          <!-- Comentario por categoría -->
+          <div v-if="comentariosPorCategoria.length">
+            <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
+              <div class="fw-bold small text-dark">{{ c.categoria }}</div>
+              <div class="small text-muted" style="white-space: pre-line;">{{ c.comentario }}</div>
+            </div>
+          </div>
+
+          <!-- Prioridades de mejora -->
+          <div v-if="detalle.prioridad_mejora_1 || detalle.prioridad_mejora_2 || detalle.prioridad_mejora_resto" class="mt-2 pt-2 border-top">
+            <div class="fw-bold small text-dark mb-1">Prioridades de mejora</div>
+            <div v-if="detalle.prioridad_mejora_1" class="small text-muted mb-1"><strong>1.</strong> {{ detalle.prioridad_mejora_1 }}</div>
+            <div v-if="detalle.prioridad_mejora_2" class="small text-muted mb-1"><strong>2.</strong> {{ detalle.prioridad_mejora_2 }}</div>
+            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1" style="white-space: pre-line;">{{ detalle.prioridad_mejora_resto }}</div>
+          </div>
+
+          <!-- Influencia en el resultado -->
+          <div v-if="detalle.influencia_resultado_comentarios" class="mt-2 pt-2 border-top">
+            <div class="fw-bold small text-dark mb-1">Influencia en el resultado</div>
+            <div class="small text-muted" style="white-space: pre-line;">{{ detalle.influencia_resultado_comentarios }}</div>
+          </div>
+
+          <div v-if="!tieneComentarios" class="text-center py-3 text-muted small">
+            Esta observación no tiene comentarios cargados.
+          </div>
+        </div>
+
+        <!-- Acciones (dentro del cuerpo para que se vean también en mobile) -->
+        <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+          <button @click="descargarObservacionExcel(detalle)" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm order-1 order-sm-2 flex-sm-grow-1 d-flex align-items-center justify-content-center gap-2" :disabled="descargandoId === detalle.id">
+            <span v-if="descargandoId === detalle.id" class="spinner-border spinner-border-sm"></span>
+            <i v-else class="bi bi-file-earmark-excel"></i>
+            DESCARGAR EXCEL
+          </button>
+          <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold order-2 order-sm-1 flex-sm-grow-1">CERRAR</button>
         </div>
       </div>
       <div v-else class="text-center py-4">
@@ -375,7 +428,7 @@ const observacionesPorArbitro = computed(() => {
 // determina cuántas columnas Obs 1..N se dibujan.
 // Columnas mínimas que se muestran siempre, aunque no haya observaciones,
 // para que la planilla quede enumerada (1..N) con casilleros vacíos.
-const MIN_COLUMNAS = 10
+const MIN_COLUMNAS = 20
 
 const maxObservaciones = computed(() => {
   let max = 0
@@ -419,9 +472,33 @@ const tituloCeldaObs = (obs) => {
 const mostrarDetalle = ref(false)
 const detalle = ref(null)
 const descargandoId = ref(null)
+const cargandoDetalleId = ref(null)
+const tabDetalle = ref('puntajes')
+
+// Categoría del partido con fallback a la categoría de edad del Excel.
+const categoriaObs = (o) => o?.categoria || o?.categoria_edad || '-'
+
+// Comentarios por categoría (Comment sheet): los ítems tipo categoría que tienen comentario.
+const comentariosPorCategoria = computed(() => {
+  if (!detalle.value || !Array.isArray(detalle.value.items)) return []
+  return detalle.value.items
+    .filter(it => it.tipo === 'categoria' && it.comentario)
+    .map(it => ({ categoria: it.categoria, comentario: it.comentario }))
+})
+
+const tieneComentarios = computed(() => {
+  if (!detalle.value) return false
+  return comentariosPorCategoria.value.length > 0
+    || !!detalle.value.prioridad_mejora_1
+    || !!detalle.value.prioridad_mejora_2
+    || !!detalle.value.prioridad_mejora_resto
+    || !!detalle.value.influencia_resultado_comentarios
+})
 
 const verDetalle = async (obs) => {
+  cargandoDetalleId.value = obs.id
   detalle.value = null
+  tabDetalle.value = 'puntajes'
   mostrarDetalle.value = true
   try {
     const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluacion', payload: { id: obs.id } })
@@ -434,6 +511,8 @@ const verDetalle = async (obs) => {
   } catch (e) {
     console.error('verDetalle:', e)
     mostrarDetalle.value = false
+  } finally {
+    cargandoDetalleId.value = null
   }
 }
 
@@ -509,10 +588,20 @@ const descargarExcel = async () => {
 /* ====================================================
    TABLA TIPO EXCEL
    ==================================================== */
-.tabla-scroll { overflow-x: auto; }
+.tabla-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .tabla-excel {
   border-collapse: separate; border-spacing: 0;
   width: max-content; min-width: 0; font-size: 0.8rem; background: #fff;
+}
+
+/* Mobile-first: en pantallas chicas achicamos un poco todo y limitamos
+   el ancho de la columna fija de árbitro para que quede más lugar de scroll. */
+@media (max-width: 575.98px) {
+  .tabla-excel { font-size: 0.72rem; }
+  .tabla-excel th, .tabla-excel td { padding: 3px 5px; }
+  .celda-nombre { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+  .th-obs { min-width: 52px; }
+  .celda { min-width: 58px; }
 }
 .tabla-excel th, .tabla-excel td {
   border-right: 1px solid #d4d4d8; border-bottom: 1px solid #d4d4d8;
@@ -536,18 +625,18 @@ const descargarExcel = async () => {
 .celda-obs { font-weight: 600; }
 .celda-vacia { background: #fff; }
 
-/* Contenido de la celda: nota + botón de Excel al lado */
+/* Contenido de la celda: nota + botón de Ver al lado */
 .celda-obs-contenido { display: flex; align-items: center; justify-content: center; gap: 4px; }
 .celda-obs-nota {
-  cursor: pointer; min-width: 22px; padding: 1px 3px; border-radius: 3px;
+  min-width: 22px; padding: 1px 3px; border-radius: 3px;
 }
-.celda-obs-nota:hover { outline: 2px solid #0d6efd; outline-offset: -1px; }
-.btn-excel-celda {
-  border: none; background: transparent; color: #198754; cursor: pointer;
-  padding: 0 2px; line-height: 1; font-size: 0.85rem; display: inline-flex; align-items: center;
+.btn-ver-celda {
+  border: none; background: transparent; color: #0d6efd; cursor: pointer;
+  padding: 0 2px; line-height: 1; display: inline-flex; align-items: center;
 }
-.btn-excel-celda:hover { color: #0f5132; }
-.btn-excel-celda:disabled { opacity: 0.5; cursor: default; }
+.btn-ver-celda .material-icons { font-size: 17px; }
+.btn-ver-celda:hover { color: #0a58ca; }
+.btn-ver-celda:disabled { opacity: 0.5; cursor: default; }
 
 /* Colores de estado en celda (mismos tonos que las píldoras) */
 .celda-aprobada { background-color: #e3f5e6; color: #2f8a45; }

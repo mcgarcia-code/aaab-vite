@@ -9,7 +9,7 @@
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
             <i class="bi bi-clipboard-check me-1"></i> Mis Observaciones
           </h4>
-          <p class="text-muted small m-0 mt-1">Observaciones de tus partidos aprobadas por la comisión</p>
+          <p class="text-muted small m-0 mt-1">Partidos en los que fuiste observado, con la observación aprobada</p>
         </div>
 
         <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
@@ -41,14 +41,14 @@
           <div class="px-3 px-md-4 pt-3">
             <p class="text-muted small mb-0">
               <i class="bi bi-info-circle me-1"></i>
-              Solo se muestran observaciones aprobadas. Podés ver el detalle de cada ítem evaluado.
+              Solo se muestran los partidos observados con la observación aprobada. Podés ver los comentarios del observador.
             </p>
           </div>
 
           <!-- SIN DATOS -->
           <div v-if="observacionesFiltradas.length === 0" class="text-center p-5 bg-white">
             <span class="material-icons d-block fs-1 mb-2 text-muted opacity-50">assignment_turned_in</span>
-            <p class="m-0 fw-bold text-muted">No tenés observaciones aprobadas en el período seleccionado.</p>
+            <p class="m-0 fw-bold text-muted">No tenés partidos observados aprobados en el período seleccionado.</p>
           </div>
 
           <!-- TARJETAS -->
@@ -184,6 +184,8 @@ const aniosDisponibles = computed(() => {
   return [...set].sort((a, b) => b.localeCompare(a))
 })
 
+// El backend (obtenerRendimientoArbitro) ya devuelve SOLO las observaciones aprobadas
+// del árbitro, y no incluye la columna `estado`. Por eso acá solo filtramos por año.
 const observacionesFiltradas = computed(() =>
   filtroAnio.value
     ? observaciones.value.filter(o => (o.fecha_partido || '').substring(0, 4) === filtroAnio.value)
