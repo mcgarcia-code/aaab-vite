@@ -434,6 +434,7 @@ const observacionesPorArbitro = computed(() => {
   const mapa = {}
   const anio = filtroAnio.value
   observaciones.value.forEach(o => {
+    if (['anulada', 'rechazada'].includes((o.estado || '').toLowerCase())) return
     if (anio && (o.fecha_partido || '').substring(0, 4) !== anio) return
     const ids = [o.ref1_id, o.ref2_id].filter(Boolean)
     ids.forEach(id => {
