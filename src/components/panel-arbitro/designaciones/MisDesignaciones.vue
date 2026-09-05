@@ -154,24 +154,9 @@
                           Rechazar designación
                         </button>
 
-                        <!-- Informe con estado (si ya existe) -->
-                        <template v-if="puedeInformar(p) && p.informe">
-                          <span class="badge d-inline-flex align-items-center gap-1" :class="badgeEstadoInforme(p.informe.estado)">
-                            <i class="bi" :class="iconoEstadoInforme(p.informe.estado)"></i>
-                            Informe {{ textoEstadoInforme(p.informe.estado) }}
-                          </span>
-                          <button
-                            v-if="p.informe.estado === 'creado' || p.informe.estado === 'pendiente'"
-                            @click="abrirModalInforme(p)"
-                            class="btn btn-sm btn-link text-danger fw-bold p-0 text-decoration-none"
-                          >
-                            <i class="bi bi-pencil-square me-1"></i>Editar
-                          </button>
-                        </template>
-
-                        <!-- Informe sin cargar -->
+                        <!-- Cargar informe (siempre disponible: se admiten varios) -->
                         <button
-                          v-else-if="puedeInformar(p)"
+                          v-if="puedeInformar(p)"
                           @click="abrirModalInforme(p)"
                           class="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 btn-informe"
                         >
@@ -179,6 +164,12 @@
                           ¿Tu partido tuvo informe? Cargalo desde acá
                         </button>
                       </div>
+
+                      <!-- Aviso de informes cargados -->
+                      <p v-if="puedeInformar(p) && informesDe(p) > 0" class="small fw-bold text-danger mb-0 mt-2 d-flex align-items-center gap-1">
+                        <i class="bi bi-clipboard-check"></i>
+                        Este partido tiene {{ informesDe(p) }} {{ informesDe(p) === 1 ? 'informe' : 'informes' }}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -308,27 +299,17 @@
 
                           <!-- AVISO / ACCION DE INFORME -->
                           <div v-if="puedeInformar(p)" class="aviso-informe mt-2 pt-2 border-top">
-                            <div v-if="p.informe" class="d-flex align-items-center gap-2 flex-wrap">
-                              <span class="badge d-inline-flex align-items-center gap-1" :class="badgeEstadoInforme(p.informe.estado)">
-                                <i class="bi" :class="iconoEstadoInforme(p.informe.estado)"></i>
-                                Informe {{ textoEstadoInforme(p.informe.estado) }}
-                              </span>
-                              <button
-                                v-if="p.informe.estado === 'creado' || p.informe.estado === 'pendiente'"
-                                @click="abrirModalInforme(p)"
-                                class="btn btn-sm btn-link text-danger fw-bold p-0 text-decoration-none"
-                              >
-                                <i class="bi bi-pencil-square me-1"></i>Editar
-                              </button>
-                            </div>
                             <button
-                              v-else
                               @click="abrirModalInforme(p)"
                               class="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 btn-informe"
                             >
                               <i class="bi bi-clipboard-plus"></i>
                               ¿Tu partido tuvo informe? Cargalo desde acá
                             </button>
+                            <p v-if="informesDe(p) > 0" class="small fw-bold text-danger mb-0 mt-2 d-flex align-items-center gap-1">
+                              <i class="bi bi-clipboard-check"></i>
+                              Este partido tiene {{ informesDe(p) }} {{ informesDe(p) === 1 ? 'informe' : 'informes' }}
+                            </p>
                           </div>
                           </div>
                         </div>
@@ -429,7 +410,7 @@
     <!-- ================= MODAL CARGAR INFORME ================= -->
     <ModalBase
       :show="mostrarModalInforme"
-      :titulo="informeEsEdicion ? 'Editar informe del partido' : 'Cargar informe del partido'"
+      titulo="Cargar informe del partido"
       icono="description"
       colorIcono="bg-danger text-white"
       maxWidth="640px"
@@ -475,7 +456,7 @@
           </div>
           <div class="col-md-6">
             <label class="form-label small fw-bold text-dark mb-1">Sanción *</label>
-            <input v-model="formInforme.sancion" type="text" class="form-control form-control-sm shadow-none" placeholder="Ej: Descalificación con informe escrito...">
+            <input v-model="formInforme.sancion" type="text" class="form-control form-control-sm shadow-none" placeholder="Ej: Informe escrito, Desc. más informe escrito...">
           </div>
         </div>
 
@@ -513,7 +494,7 @@
           :disabled="enviandoInforme || !informeValido"
         >
           <span v-if="enviandoInforme" class="spinner-border spinner-border-sm me-2"></span>
-          {{ enviandoInforme ? 'Guardando...' : (informeEsEdicion ? 'Guardar cambios' : 'Cargar informe') }}
+          {{ enviandoInforme ? 'Guardando...' : 'Cargar informe' }}
         </button>
       </template>
     </ModalBase>
@@ -610,11 +591,39 @@ const cargarMisDesignaciones = async () => {
       if (proximas.value.length === 0 && anteriores.value.length > 0) {
         vistaActiva.value = 'anteriores'
       }
+
+      // Traemos la cantidad de informes por partido (solo para los del árbitro)
+      cargarContadoresInformes()
     }
   } catch (err) {
     console.error('Error al cargar mis designaciones:', err)
   } finally {
     cargando.value = false
+  }
+}
+
+// Pide al backend cuántos informes tiene cada partido y actualiza las cards
+const cargarContadoresInformes = async () => {
+  const ids = partidos.value
+    .filter(p => p.funcion === 'arbitro')
+    .map(p => p.id)
+    .filter(Boolean)
+  if (ids.length === 0) return
+
+  try {
+    const res = await api.post({
+      entity: 'informes',
+      action: 'contarInformesPartido',
+      payload: { ids_partido: ids }
+    })
+    if ((res.ok || res.success) && res.payload) {
+      const mapa = res.payload  // { id_partido: cantidad }
+      partidos.value.forEach(p => {
+        if (mapa[p.id] != null) p.informes_count = Number(mapa[p.id])
+      })
+    }
+  } catch (err) {
+    console.error('Error al contar informes:', err)
   }
 }
 
@@ -625,8 +634,8 @@ const normalizarRechazo = (p) => ({
   id_rechazo: p.id_rechazo || null,
   rechazo_motivo: p.rechazo_motivo || p.motivo_rechazo || '',
   rechazo_estado: p.rechazo_estado || 'creado',
-  // Informe asociado al partido (si el backend lo devuelve)
-  informe: p.informe || null
+  // Cantidad de informes cargados para este partido (si el backend lo devuelve)
+  informes_count: Number(p.informes_count || 0)
 })
 
 /* ====================================================
@@ -873,35 +882,17 @@ const opcionesTorneo = [
   { valor: 'otros', etiqueta: 'Otros' }
 ]
 
-// Estados del informe (mismos que ve el coordinador)
-const textoEstadoInforme = (estado) => {
-  if (estado === 'aprobado') return 'aprobado'
-  if (estado === 'anulado') return 'anulado'
-  if (estado === 'pendiente') return 'pendiente'
-  return 'creado'
-}
-const badgeEstadoInforme = (estado) => {
-  if (estado === 'aprobado') return 'bg-success'
-  if (estado === 'anulado') return 'bg-secondary'
-  if (estado === 'pendiente') return 'bg-warning text-dark'
-  return 'bg-info text-dark'
-}
-const iconoEstadoInforme = (estado) => {
-  if (estado === 'aprobado') return 'bi-check-circle-fill'
-  if (estado === 'anulado') return 'bi-x-circle-fill'
-  if (estado === 'pendiente') return 'bi-hourglass-split'
-  return 'bi-file-earmark-text-fill'
-}
-
 // Solo el árbitro (no el delegado) puede cargar informe
 const puedeInformar = (p) => p.funcion === 'arbitro'
+
+// Cantidad de informes que tiene un partido
+const informesDe = (p) => Number(p.informes_count || 0)
 
 const arbitrosDelPartido = (p) => [p.arbitro_1, p.arbitro_2].filter(Boolean).join(' - ') || '-'
 
 const mostrarModalInforme = ref(false)
 const partidoInforme = ref(null)
 const enviandoInforme = ref(false)
-const informeEsEdicion = ref(false)
 
 const formInforme = ref({
   torneo: '',
@@ -918,19 +909,8 @@ const informeValido = computed(() => {
 
 const abrirModalInforme = (partido) => {
   partidoInforme.value = partido
-  if (partido.informe) {
-    informeEsEdicion.value = true
-    formInforme.value = {
-      torneo: partido.informe.torneo || '',
-      implicado: partido.informe.implicado || '',
-      sancion: partido.informe.sancion || '',
-      institucion: partido.informe.institucion || '',
-      motivo_descripcion: partido.informe.motivo_descripcion || ''
-    }
-  } else {
-    informeEsEdicion.value = false
-    formInforme.value = { torneo: '', implicado: '', sancion: '', institucion: '', motivo_descripcion: '' }
-  }
+  // Siempre carga nueva: se admiten varios informes por partido
+  formInforme.value = { torneo: '', implicado: '', sancion: '', institucion: '', motivo_descripcion: '' }
   mostrarModalInforme.value = true
 }
 
@@ -950,9 +930,8 @@ const confirmarInforme = async () => {
   try {
     const res = await api.post({
       entity: 'informes',
-      action: informeEsEdicion.value ? 'actualizarInforme' : 'crearInforme',
+      action: 'crearInforme',
       payload: {
-        id_informe: p.informe ? p.informe.id : null,
         id_partido: p.id,
         fecha_partido: fechaLimpia(p.fecha),
         encuentro: `${p.local} vs ${p.visitante}`,
@@ -969,23 +948,14 @@ const confirmarInforme = async () => {
       }
     })
     if (res.ok || res.success) {
-      // Marca optimista en la card
-      p.informe = {
-        id: (res.payload && res.payload.id) ? res.payload.id : (p.informe ? p.informe.id : null),
-        estado: p.informe ? p.informe.estado : 'creado',
-        torneo: f.torneo,
-        implicado: f.implicado.trim(),
-        sancion: f.sancion.trim(),
-        institucion: f.institucion,
-        institucion_nombre: institucionNombre,
-        motivo_descripcion: f.motivo_descripcion.trim()
-      }
+      // Marca optimista: sumamos uno al contador de la card
+      p.informes_count = (res.payload && res.payload.total != null)
+        ? Number(res.payload.total)
+        : informesDe(p) + 1
       cerrarModalInforme()
       toast({
-        titulo: informeEsEdicion.value ? 'Informe actualizado' : 'Informe cargado',
-        mensaje: informeEsEdicion.value
-          ? 'Se guardaron los cambios del informe.'
-          : 'El informe fue enviado al coordinador de tu grupo.',
+        titulo: 'Informe cargado',
+        mensaje: 'El informe fue enviado al coordinador de tu grupo.',
         tipo: 'success'
       })
     } else {

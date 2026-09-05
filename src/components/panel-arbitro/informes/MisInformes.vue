@@ -8,7 +8,7 @@
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-clipboard-check-fill me-1"></i> Informes resueltos
+              <i class="bi bi-clipboard-data-fill me-1"></i> Mis Informes
             </h4>
             <span class="text-muted small d-block mt-1">Total: {{ informesFiltrados.length }} registros</span>
           </div>
@@ -45,11 +45,11 @@
             <div class="col-6 col-md-2">
               <input v-model="filtros.encuentro" class="form-control form-control-sm shadow-none" placeholder="Encuentro...">
             </div>
-            <div class="col-6 col-md-1">
-              <input v-model="filtros.arbitros" class="form-control form-control-sm shadow-none" placeholder="Árbitros...">
-            </div>
             <div class="col-6 col-md-2">
               <input v-model="filtros.implicado" class="form-control form-control-sm shadow-none" placeholder="Implicado...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="Categoría...">
             </div>
             <div class="col-6 col-md-2">
               <select v-model="filtros.torneo" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.torneo }">
@@ -60,15 +60,11 @@
             <div class="col-6 col-md-1">
               <select v-model="filtros.estado" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.estado }">
                 <option value="">ESTADO</option>
+                <option value="creado">Creado</option>
+                <option value="pendiente">Pendiente</option>
                 <option value="aprobado">Aprobado</option>
+                <option value="anulado">Anulado</option>
                 <option value="desestimado">Desestimado</option>
-              </select>
-            </div>
-            <div class="col-6 col-md-1">
-              <select v-model="filtros.larry" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.larry }">
-                <option value="">LARRY</option>
-                <option value="si">Cargado</option>
-                <option value="no">Sin cargar</option>
               </select>
             </div>
             <div class="col-6 col-md-1">
@@ -88,7 +84,7 @@
           <!-- SPINNER DE CARGA -->
           <div v-if="cargando" class="text-center p-5 bg-white">
             <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando informes...</p>
+            <p class="text-muted mt-3 fw-bold">Cargando tus informes...</p>
           </div>
 
           <template v-else>
@@ -98,15 +94,14 @@
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
-                    <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 100px;">Acciones</th>
+                    <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 120px;">Acciones</th>
                     <th class="py-3 text-center text-uppercase text-muted col-fija col-fecha" style="width: 110px;">Fecha</th>
                     <th class="py-3 text-uppercase text-muted" style="width: 220px;">Encuentro</th>
                     <th class="py-3 text-uppercase text-muted" style="width: 130px;">Categoría</th>
                     <th class="py-3 text-uppercase text-muted" style="width: 180px;">Torneo</th>
                     <th class="py-3 text-uppercase text-muted" style="width: 160px;">Implicado</th>
-                    <th class="py-3 text-uppercase text-muted" style="width: 200px;">Árbitros</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="width: 110px;">Estado</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="width: 150px;">Cargado en Larry</th>
+                    <th class="py-3 text-uppercase text-muted" style="width: 140px;">Sanción</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="width: 120px;">Estado</th>
                     <th class="py-3 text-center pe-3 text-uppercase text-muted" style="width: 140px;">Cargado</th>
                   </tr>
                 </thead>
@@ -119,13 +114,20 @@
                           <span class="material-icons" style="font-size:16px;">visibility</span>
                         </button>
                         <button
-                          @click="descargarPDF(inf)"
-                          class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger"
-                          title="Descargar PDF"
-                          :disabled="descargandoId === inf.id"
+                          v-if="puedeEditar(inf)"
+                          @click="abrirEdicion(inf)"
+                          class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary"
+                          title="Editar"
                         >
-                          <span v-if="descargandoId === inf.id" class="spinner-border spinner-border-sm" style="width:14px;height:14px;"></span>
-                          <span v-else class="material-icons" style="font-size:16px;">picture_as_pdf</span>
+                          <span class="material-icons" style="font-size:16px;">edit</span>
+                        </button>
+                        <button
+                          v-if="puedeAnular(inf)"
+                          @click="pedirAnular(inf)"
+                          class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger"
+                          title="Anular informe"
+                        >
+                          <span class="material-icons" style="font-size:16px;">block</span>
                         </button>
                       </div>
                     </td>
@@ -134,31 +136,17 @@
                     <td class="text-dark text-truncate" :title="inf.categoria" style="max-width: 130px;">{{ inf.categoria || '-' }}</td>
                     <td class="text-dark text-truncate" :title="etiquetaTorneo(inf.torneo)" style="max-width: 180px;">{{ etiquetaTorneo(inf.torneo) }}</td>
                     <td class="text-dark text-truncate" :title="inf.implicado" style="max-width: 160px;">{{ inf.implicado }}</td>
-                    <td class="text-dark text-truncate" :title="inf.arbitros" style="max-width: 200px;">{{ inf.arbitros || '-' }}</td>
+                    <td class="text-dark text-truncate" :title="inf.sancion" style="max-width: 140px;">{{ inf.sancion }}</td>
                     <td class="text-center">
                       <span :class="badgeEstado(inf.estado)">{{ etiquetaEstado(inf.estado) }}</span>
-                    </td>
-                    <td class="text-center">
-                      <div class="form-check form-switch d-inline-flex align-items-center gap-2 m-0 justify-content-center">
-                        <input
-                          class="form-check-input m-0"
-                          type="checkbox"
-                          role="switch"
-                          :checked="!!inf.cargado_larry"
-                          :disabled="guardandoLarry === inf.id"
-                          @change="toggleLarry(inf, $event)"
-                        >
-                        <span class="small fw-bold" :class="inf.cargado_larry ? 'text-success' : 'text-muted'">
-                          {{ inf.cargado_larry ? 'Sí' : 'No' }}
-                        </span>
-                      </div>
                     </td>
                     <td class="text-center pe-3 text-muted">{{ formatearFechaHora(inf.creado_en) }}</td>
                   </tr>
                   <tr v-if="informesPaginados.length === 0">
-                    <td colspan="11" class="py-5 text-center text-muted border-0 bg-white">
-                      <span class="material-icons d-block fs-1 mb-2">fact_check</span>
-                      <p class="m-0 fw-bold">Todavía no hay informes resueltos.</p>
+                    <td colspan="10" class="py-5 text-center text-muted border-0 bg-white">
+                      <span class="material-icons d-block fs-1 mb-2">description</span>
+                      <p class="m-0 fw-bold">Todavía no cargaste ningún informe.</p>
+                      <p class="small m-0 mt-1">Podés cargar informes desde "Mis Designaciones".</p>
                     </td>
                   </tr>
                 </tbody>
@@ -186,26 +174,13 @@
                   <div class="bg-light p-2 rounded border mt-2 border-light-subtle">
                     <p class="m-0 text-dark small"><strong class="text-muted">Torneo:</strong> {{ etiquetaTorneo(inf.torneo) }}</p>
                     <p class="m-0 text-dark small mt-1"><strong class="text-muted">Implicado:</strong> {{ inf.implicado }}</p>
+                    <p class="m-0 text-dark small mt-1"><strong class="text-muted">Sanción:</strong> {{ inf.sancion }}</p>
                     <p class="m-0 text-dark small mt-1">
                       <strong class="text-muted">Categoría:</strong>
                       <span class="badge bg-secondary ms-1">{{ inf.categoria || '-' }}</span>
                     </p>
-                    <p class="m-0 text-dark small mt-1"><strong class="text-muted">Árbitros:</strong> {{ inf.arbitros || '-' }}</p>
-                    <div class="d-flex justify-content-between align-items-center mt-2 border-top border-secondary-subtle pt-2">
-                      <div class="form-check form-switch d-inline-flex align-items-center gap-2 m-0">
-                        <input
-                          class="form-check-input m-0"
-                          type="checkbox"
-                          role="switch"
-                          :checked="!!inf.cargado_larry"
-                          :disabled="guardandoLarry === inf.id"
-                          @change="toggleLarry(inf, $event)"
-                        >
-                        <span class="small fw-bold" :class="inf.cargado_larry ? 'text-success' : 'text-muted'">
-                          Larry: {{ inf.cargado_larry ? 'Sí' : 'No' }}
-                        </span>
-                      </div>
-                      <span class="text-muted small">{{ formatearFechaHora(inf.creado_en) }}</span>
+                    <div class="d-flex justify-content-end mt-2 border-top border-secondary-subtle pt-2">
+                      <span class="text-muted small">Cargado: {{ formatearFechaHora(inf.creado_en) }}</span>
                     </div>
                   </div>
 
@@ -214,20 +189,29 @@
                       <span class="material-icons" style="font-size: 18px;">visibility</span> Ver detalle
                     </button>
                     <button
-                      @click="descargarPDF(inf)"
-                      class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center gap-1 fw-bold"
-                      :disabled="descargandoId === inf.id"
+                      v-if="puedeEditar(inf)"
+                      @click="abrirEdicion(inf)"
+                      class="btn btn-sm btn-outline-primary shadow-sm px-3 d-flex justify-content-center align-items-center"
+                      title="Editar"
                     >
-                      <span v-if="descargandoId === inf.id" class="spinner-border spinner-border-sm"></span>
-                      <span v-else class="material-icons" style="font-size: 18px;">picture_as_pdf</span> PDF
+                      <span class="material-icons" style="font-size: 18px;">edit</span>
+                    </button>
+                    <button
+                      v-if="puedeAnular(inf)"
+                      @click="pedirAnular(inf)"
+                      class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center"
+                      title="Anular informe"
+                    >
+                      <span class="material-icons" style="font-size: 18px;">block</span>
                     </button>
                   </div>
                 </div>
               </div>
 
               <div v-if="informesPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">fact_check</span>
-                <p class="text-muted m-0 fw-bold">Todavía no hay informes aprobados.</p>
+                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">description</span>
+                <p class="text-muted m-0 fw-bold">Todavía no cargaste ningún informe.</p>
+                <p class="text-muted small m-0 mt-1">Podés cargar informes desde "Mis Designaciones".</p>
               </div>
             </div>
 
@@ -270,22 +254,111 @@
             <label class="form-label small fw-bold text-muted mb-1">Motivo y descripción</label>
             <div class="border rounded p-2 bg-light small text-break" style="white-space: pre-wrap;">{{ informeSel.motivo_descripcion }}</div>
           </div>
-          <div class="col-6"><DatoDetalle etiqueta="Cargado por el árbitro" :valor="formatearFechaHora(informeSel.creado_en)" /></div>
-          <div class="col-6"><DatoDetalle etiqueta="Cargado en Larry" :valor="informeSel.cargado_larry ? 'Sí' : 'No'" /></div>
+          <div class="col-12">
+            <DatoDetalle etiqueta="Cargado" :valor="formatearFechaHora(informeSel.creado_en)" />
+          </div>
         </div>
       </div>
 
       <template #footer>
         <button
-          v-if="informeSel"
-          @click="descargarPDF(informeSel)"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-          :disabled="descargandoId === informeSel.id"
+          v-if="informeSel && puedeAnular(informeSel)"
+          @click="pedirAnularDesdeDetalle"
+          class="btn btn-outline-danger rounded-pill px-4 fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-1"
         >
-          <span v-if="descargandoId === informeSel.id" class="spinner-border spinner-border-sm"></span>
-          <span v-else class="material-icons" style="font-size:18px;">picture_as_pdf</span> Descargar PDF
+          <span class="material-icons" style="font-size:18px;">block</span> Anular
         </button>
-        <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1">CERRAR</button>
+        <button
+          v-if="informeSel && puedeEditar(informeSel)"
+          @click="editarDesdeDetalle"
+          class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+        >
+          <span class="material-icons" style="font-size:18px;">edit</span> Editar
+        </button>
+        <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1">Cerrar</button>
+      </template>
+    </ModalBase>
+
+    <!-- ==========================================
+         MODAL EDICIÓN
+         ========================================== -->
+    <ModalBase :show="mostrarEdicion" @close="cerrarEdicion" titulo="Editar informe" icono="edit" colorIcono="bg-primary text-white" maxWidth="640px">
+      <div v-if="informeEdit" class="text-start">
+
+        <!-- Datos automáticos (solo lectura) -->
+        <div class="row g-2 mb-3">
+          <div class="col-12 col-sm-6">
+            <label class="form-label small fw-bold text-dark mb-1">Fecha</label>
+            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="formatearFecha(informeEdit.fecha_partido)" readonly>
+          </div>
+          <div class="col-12 col-sm-6">
+            <label class="form-label small fw-bold text-dark mb-1">Categoría</label>
+            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="informeEdit.categoria || '-'" readonly>
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-bold text-dark mb-1">Encuentro</label>
+            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="informeEdit.encuentro" readonly>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-dark mb-1">Torneo *</label>
+          <select v-model="formEdit.torneo" class="form-select form-select-sm shadow-none">
+            <option v-for="t in opcionesTorneo" :key="t.valor" :value="t.valor">{{ t.etiqueta }}</option>
+          </select>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label small fw-bold text-dark mb-1">Implicado *</label>
+            <input v-model="formEdit.implicado" type="text" class="form-control form-control-sm shadow-none">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold text-dark mb-1">Sanción *</label>
+            <input v-model="formEdit.sancion" type="text" class="form-control form-control-sm shadow-none">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-dark mb-1">Institución a la que pertenece *</label>
+          <select v-model="formEdit.institucion" class="form-select form-select-sm shadow-none">
+            <option value="local">{{ informeEdit.equipo_local }}</option>
+            <option value="visitante">{{ informeEdit.equipo_visitante }}</option>
+          </select>
+        </div>
+        <div class="mb-1">
+          <label class="form-label small fw-bold text-dark mb-1">Motivo y descripción *</label>
+          <textarea v-model="formEdit.motivo_descripcion" class="form-control shadow-none" rows="4"></textarea>
+        </div>
+      </div>
+
+      <template #footer>
+        <button @click="cerrarEdicion" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1 border" :disabled="procesando">Cancelar</button>
+        <button @click="guardarEdicion" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="procesando || !edicionValida">
+          <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span> Guardar cambios
+        </button>
+      </template>
+    </ModalBase>
+
+    <!-- ==========================================
+         MODAL: CONFIRMAR ANULACIÓN
+         ========================================== -->
+    <ModalBase :show="mostrarConfirmAnular" @close="cerrarAnular" titulo="Anular informe" icono="block" colorIcono="bg-danger text-white" maxWidth="480px">
+      <div class="text-center">
+        <p class="text-dark mb-1">¿Seguro que querés anular este informe?</p>
+        <p class="text-muted small mb-0" v-if="infoAAnular">
+          #{{ infoAAnular.id }} — {{ infoAAnular.encuentro }}
+        </p>
+        <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          El informe quedará fuera del circuito y no llegará al coordinador. Solo se pueden anular informes en estado creado.
+        </div>
+      </div>
+      <template #footer>
+        <button @click="cerrarAnular" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1">CANCELAR</button>
+        <button @click="confirmarAnular" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="anulando">
+          <span v-if="anulando" class="spinner-border spinner-border-sm me-1"></span> ANULAR
+        </button>
       </template>
     </ModalBase>
 
@@ -295,13 +368,16 @@
 <script setup>
 import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue';
 import { api } from '@/api/api';
-import html2pdf from 'html2pdf.js';
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
 
 useHead({
-  title: 'Informes | AAAB',
-  meta: [{ name: 'description', content: 'Panel de administración de informes de partidos.' }],
+  title: 'Mis Informes | AAAB',
+  meta: [
+    { name: 'description', content: 'Consultá y editá los informes de partido que cargaste.' },
+    { property: 'og:title', content: 'Mis Informes | AAAB' },
+    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' }
+  ],
 });
 
 const toast = inject('toast', ({ mensaje }) => alert(mensaje));
@@ -326,26 +402,41 @@ const opcionesTorneo = [
 ];
 const etiquetaTorneo = (v) => (opcionesTorneo.find(t => t.valor === v) || {}).etiqueta || v;
 
-/* Estados (píldoras) — en admin solo llegan aprobado y desestimado */
+/* ====================================================
+   ESTADOS (píldoras)
+   ==================================================== */
 const etiquetaEstado = (estado) => {
-  const e = (estado || '').toLowerCase();
+  const e = (estado || 'creado').toLowerCase();
+  if (e === 'aprobado') return 'APROBADO';
   if (e === 'desestimado') return 'DESESTIMADO';
-  return 'APROBADO';
+  if (e === 'anulado') return 'ANULADO';
+  if (e === 'pendiente') return 'PENDIENTE';
+  return 'CREADO';
 };
+
 const badgeEstado = (estado) => {
-  const e = (estado || '').toLowerCase();
+  const e = (estado || 'creado').toLowerCase();
+  if (e === 'aprobado') return 'estado-pill estado-aprobado';
   if (e === 'desestimado') return 'estado-pill estado-desestimado';
-  return 'estado-pill estado-aprobado';
+  if (e === 'anulado') return 'estado-pill estado-anulado';
+  if (e === 'pendiente') return 'estado-pill estado-pendiente';
+  return 'estado-pill estado-creado';
 };
+
+// El árbitro solo puede editar mientras el informe no fue resuelto
+const puedeEditar = (inf) => inf.estado === 'creado' || inf.estado === 'pendiente';
+
+// El árbitro solo puede anular su informe mientras esté en 'creado'
+const puedeAnular = (inf) => inf.estado === 'creado';
 
 /* ====================================================
    ESTADO GLOBAL DE LA TABLA
    ==================================================== */
 const informes = ref([]);
 const cargando = ref(false);
-const guardandoLarry = ref(null);
+const procesando = ref(false);
 
-const filtros = reactive({ fecha: '', anio: '', torneo: '', estado: '', larry: '', encuentro: '', arbitros: '', implicado: '' });
+const filtros = reactive({ fecha: '', anio: '', estado: '', encuentro: '', implicado: '', categoria: '', torneo: '' });
 const mostrarFiltrosMobile = ref(false);
 
 const paginaActual = ref(1);
@@ -385,16 +476,13 @@ const informesFiltrados = computed(() => {
   return informes.value.filter(inf => {
     const matchFec = formatearFecha(inf.fecha_partido).includes(filtros.fecha);
     const matchAnio = !filtros.anio || (inf.fecha_partido || '').substring(0, 4) === filtros.anio;
+    const matchEstado = !filtros.estado || (inf.estado || 'creado').toLowerCase() === filtros.estado;
     const matchTorneo = !filtros.torneo || inf.torneo === filtros.torneo;
-    const matchEstado = !filtros.estado || (inf.estado || '').toLowerCase() === filtros.estado;
-    const matchLarry = !filtros.larry
-      || (filtros.larry === 'si' && !!inf.cargado_larry)
-      || (filtros.larry === 'no' && !inf.cargado_larry);
     const matchEnc = normalizar(inf.encuentro).includes(normalizar(filtros.encuentro));
-    const matchArb = normalizar(inf.arbitros).includes(normalizar(filtros.arbitros));
     const matchImp = normalizar(inf.implicado).includes(normalizar(filtros.implicado));
+    const matchCat = normalizar(inf.categoria).includes(normalizar(filtros.categoria));
 
-    return matchFec && matchAnio && matchTorneo && matchEstado && matchLarry && matchEnc && matchArb && matchImp;
+    return matchFec && matchAnio && matchEstado && matchTorneo && matchEnc && matchImp && matchCat;
   });
 });
 
@@ -422,43 +510,17 @@ watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.va
 const obtenerInformes = async () => {
   cargando.value = true;
   try {
-    const res = await api.get({ entity: 'informes', action: 'obtenerInformesAdmin' });
+    const res = await api.get({ entity: 'informes', action: 'obtenerMisInformes' });
     if ((res && res.ok) || (res && res.success)) {
       informes.value = (res.payload || []).sort((a, b) => b.id - a.id);
     } else {
       informes.value = [];
-      toast({ titulo: 'Sin datos', mensaje: 'No se pudieron cargar los informes.', tipo: 'warning' });
-    }
-  } catch {
-    toast({ titulo: 'Error', mensaje: 'Problema al cargar los informes.', tipo: 'danger' });
-  } finally {
-    cargando.value = false;
-  }
-};
-
-/* ====================================================
-   CHECKBOX CARGADO EN LARRY
-   ==================================================== */
-const toggleLarry = async (inf, event) => {
-  const nuevoValor = event.target.checked ? 1 : 0;
-  guardandoLarry.value = inf.id;
-  try {
-    const res = await api.post({
-      entity: 'informes',
-      action: 'marcarCargadoLarry',
-      payload: { id_informe: inf.id, cargado_larry: nuevoValor }
-    });
-    if (res.ok || res.success) {
-      inf.cargado_larry = nuevoValor;
-    } else {
-      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor');
     }
   } catch (err) {
-    // Revertir el checkbox visual
-    event.target.checked = !!inf.cargado_larry;
-    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo actualizar.', tipo: 'danger' });
+    console.error('Error al cargar mis informes:', err);
+    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar tus informes.', tipo: 'danger' });
   } finally {
-    guardandoLarry.value = null;
+    cargando.value = false;
   }
 };
 
@@ -471,76 +533,124 @@ const verDetalle = (inf) => { informeSel.value = inf; mostrarDetalle.value = tru
 const cerrarDetalle = () => { mostrarDetalle.value = false; informeSel.value = null; };
 
 /* ====================================================
-   DESCARGAR PDF
+   ANULACIÓN (por el propio árbitro, solo si está en 'creado')
    ==================================================== */
-const descargandoId = ref(null);
+const mostrarConfirmAnular = ref(false);
+const infoAAnular = ref(null);
+const anulando = ref(false);
 
-const escapar = (v) => String(v ?? '-')
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const pedirAnular = (inf) => {
+  if (!puedeAnular(inf)) {
+    toast({ titulo: 'No permitido', mensaje: 'Solo se pueden anular informes en estado creado.', tipo: 'warning' });
+    return;
+  }
+  infoAAnular.value = inf;
+  mostrarConfirmAnular.value = true;
+};
 
-const filaPDF = (etiqueta, valor) => `
-  <tr>
-    <td style="padding:8px 10px;border:1px solid #e5e7eb;background:#f8f9fa;font-weight:bold;width:38%;color:#334155;">${escapar(etiqueta)}</td>
-    <td style="padding:8px 10px;border:1px solid #e5e7eb;color:#111;">${escapar(valor)}</td>
-  </tr>`;
+const cerrarAnular = () => { mostrarConfirmAnular.value = false; infoAAnular.value = null; };
 
-const descargarPDF = async (inf) => {
-  descargandoId.value = inf.id;
+// Desde el modal de detalle: cerramos el detalle y abrimos la confirmación
+const pedirAnularDesdeDetalle = () => {
+  const inf = informeSel.value;
+  cerrarDetalle();
+  pedirAnular(inf);
+};
+
+const confirmarAnular = async () => {
+  if (!infoAAnular.value) return;
+  const inf = infoAAnular.value;
+  anulando.value = true;
   try {
-    const contenedor = document.createElement('div');
-    contenedor.style.padding = '28px';
-    contenedor.style.fontFamily = 'Arial, Helvetica, sans-serif';
-    contenedor.style.color = '#111';
-    contenedor.innerHTML = `
-      <div style="display:flex;align-items:center;gap:14px;border-bottom:3px solid #dc2626;padding-bottom:14px;margin-bottom:18px;">
-        <img src="https://arbitroshandball.com.ar/logo.png" style="height:56px;" crossorigin="anonymous"
-             onerror="this.style.display='none'">
-        <div>
-          <h1 style="margin:0;font-size:20px;color:#dc2626;">Informe de Partido</h1>
-          <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Asociación Argentina de Árbitros de Balonmano</p>
-        </div>
-        <div style="margin-left:auto;text-align:right;font-size:12px;color:#64748b;">
-          <div><strong>Informe #${escapar(inf.id)}</strong></div>
-          <div>Estado: ${escapar(etiquetaEstado(inf.estado))}</div>
-        </div>
-      </div>
-
-      <table style="width:100%;border-collapse:collapse;font-size:13px;">
-        ${filaPDF('Fecha del partido', formatearFecha(inf.fecha_partido))}
-        ${filaPDF('Torneo', etiquetaTorneo(inf.torneo))}
-        ${filaPDF('Categoría', inf.categoria || '-')}
-        ${filaPDF('Encuentro', inf.encuentro)}
-        ${filaPDF('Árbitros', inf.arbitros || '-')}
-        ${filaPDF('Implicado', inf.implicado)}
-        ${filaPDF('Sanción', inf.sancion)}
-        ${filaPDF('Institución a la que pertenece', inf.institucion_nombre)}
-      </table>
-
-      <div style="margin-top:16px;">
-        <div style="font-weight:bold;font-size:13px;color:#334155;margin-bottom:6px;">Motivo y descripción</div>
-        <div style="border:1px solid #e5e7eb;border-radius:6px;padding:12px;font-size:13px;line-height:1.5;white-space:pre-wrap;background:#fff;">${escapar(inf.motivo_descripcion)}</div>
-      </div>
-
-      <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Cargado por el árbitro el ${escapar(formatearFechaHora(inf.creado_en))}.
-        Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
-      </div>
-    `;
-
-    const opciones = {
-      margin: 10,
-      filename: `Informe_${inf.id}_${(inf.encuentro || '').replace(/[^\w]+/g, '_')}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    await html2pdf().set(opciones).from(contenedor).save();
+    const res = await api.post({
+      entity: 'informes',
+      action: 'cambiarEstadoInforme',
+      payload: { id_informe: inf.id, estado: 'anulado' }
+    });
+    if (res.ok || res.success) {
+      const idx = informes.value.findIndex(i => i.id === inf.id);
+      if (idx !== -1) informes.value[idx].estado = 'anulado';
+      cerrarAnular();
+      toast({ titulo: 'Informe anulado', mensaje: 'Tu informe fue anulado correctamente.', tipo: 'success' });
+    } else {
+      toast({ titulo: 'No se pudo anular', mensaje: (res && res.message) || 'El informe no pudo anularse.', tipo: 'danger' });
+    }
   } catch (err) {
-    console.error('Error al generar PDF:', err);
-    toast({ titulo: 'Error', mensaje: 'No se pudo generar el PDF.', tipo: 'danger' });
+    console.error('Error al anular informe:', err);
+    toast({ titulo: 'Error', mensaje: err.message || 'Fallo de conexión al anular.', tipo: 'danger' });
   } finally {
-    descargandoId.value = null;
+    anulando.value = false;
+  }
+};
+
+/* ====================================================
+   EDICIÓN
+   ==================================================== */
+const mostrarEdicion = ref(false);
+const informeEdit = ref(null);
+const formEdit = reactive({ torneo: '', implicado: '', sancion: '', institucion: '', motivo_descripcion: '' });
+
+const edicionValida = computed(() =>
+  formEdit.torneo && formEdit.implicado.trim() && formEdit.sancion.trim() && formEdit.institucion && formEdit.motivo_descripcion.trim()
+);
+
+const abrirEdicion = (inf) => {
+  informeEdit.value = inf;
+  formEdit.torneo = inf.torneo || '';
+  formEdit.implicado = inf.implicado || '';
+  formEdit.sancion = inf.sancion || '';
+  formEdit.institucion = inf.institucion || '';
+  formEdit.motivo_descripcion = inf.motivo_descripcion || '';
+  mostrarEdicion.value = true;
+};
+const cerrarEdicion = () => { mostrarEdicion.value = false; informeEdit.value = null; };
+
+// Abrir edición directamente desde el modal de detalle
+const editarDesdeDetalle = () => {
+  const inf = informeSel.value;
+  cerrarDetalle();
+  abrirEdicion(inf);
+};
+
+const guardarEdicion = async () => {
+  if (!edicionValida.value || !informeEdit.value) return;
+  const inf = informeEdit.value;
+  const institucionNombre = formEdit.institucion === 'local' ? inf.equipo_local : inf.equipo_visitante;
+
+  procesando.value = true;
+  try {
+    const res = await api.post({
+      entity: 'informes',
+      action: 'actualizarInforme',
+      payload: {
+        id_informe: inf.id,
+        torneo: formEdit.torneo,
+        implicado: formEdit.implicado.trim(),
+        sancion: formEdit.sancion.trim(),
+        institucion: formEdit.institucion,
+        institucion_nombre: institucionNombre,
+        motivo_descripcion: formEdit.motivo_descripcion.trim()
+      }
+    });
+    if (res.ok || res.success) {
+      Object.assign(inf, {
+        torneo: formEdit.torneo,
+        implicado: formEdit.implicado.trim(),
+        sancion: formEdit.sancion.trim(),
+        institucion: formEdit.institucion,
+        institucion_nombre: institucionNombre,
+        motivo_descripcion: formEdit.motivo_descripcion.trim()
+      });
+      cerrarEdicion();
+      toast({ titulo: 'Informe actualizado', mensaje: 'Se guardaron los cambios.', tipo: 'success' });
+    } else {
+      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor');
+    }
+  } catch (err) {
+    console.error('Error al editar informe:', err);
+    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo guardar.', tipo: 'danger' });
+  } finally {
+    procesando.value = false;
   }
 };
 
@@ -569,6 +679,10 @@ onMounted(obtenerInformes);
 
 .animate__animated { animation-duration: 0.5s; }
 
+/* Inputs de solo lectura: sin borde azul de foco */
+.input-readonly { cursor: default; }
+.input-readonly:focus { border-color: #dee2e6; box-shadow: none; }
+
 /* ====================================================
    TABLA CON COLUMNAS FIJAS Y SIN LÍNEAS
    ==================================================== */
@@ -581,11 +695,6 @@ onMounted(obtenerInformes);
 .tabla-fija {
   border-collapse: separate;
   border-spacing: 0;
-}
-
-.form-switch .form-check-input:checked {
-  background-color: #198754;
-  border-color: #198754;
 }
 
 @media (min-width: 768px) {
@@ -605,9 +714,9 @@ onMounted(obtenerInformes);
   }
 
   .col-id       { left: 0; min-width: 50px !important; max-width: 50px !important; }
-  .col-acciones { left: 50px; min-width: 100px !important; max-width: 100px !important; }
+  .col-acciones { left: 50px; min-width: 120px !important; max-width: 120px !important; }
   .col-fecha    {
-    left: 150px;
+    left: 170px;
     min-width: 110px !important;
     max-width: 110px !important;
     box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1);
@@ -628,10 +737,32 @@ onMounted(obtenerInformes);
   white-space: nowrap;
 }
 
+/* CREADO — celeste */
+.estado-creado {
+  background-color: #dceefb;
+  color: #1c6ea4;
+  border-color: #b6dcf5;
+}
+
+/* PENDIENTE — amarillo */
+.estado-pendiente {
+  background-color: #fdf3d3;
+  color: #a6841f;
+  border-color: #f2e2a5;
+}
+
+/* APROBADO — verde */
 .estado-aprobado {
   background-color: #e3f5e6;
   color: #2f8a45;
   border-color: #bfe6c8;
+}
+
+/* ANULADO — gris azulado */
+.estado-anulado {
+  background-color: #eef1f5;
+  color: #5b6b7f;
+  border-color: #d4dbe4;
 }
 
 /* DESESTIMADO — naranja */

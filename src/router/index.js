@@ -112,6 +112,9 @@ const routes = [
       // --- EXAMEN ASAMBLEA GENERAL - REUNIÓN MENSUAL ---
       { path: 'examen-asamblea', name: 'ExamenAsamblea', component: () => import('../components/panel-arbitro/examenes/ExamenAsambleaGeneral.vue') },
 
+      // --- INFORMES ---
+      { path: 'informes', name: 'InformesArbitro', component: () => import('../components/panel-arbitro/informes/MisInformes.vue') },
+
     ]
   },
 
