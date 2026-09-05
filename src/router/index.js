@@ -90,6 +90,7 @@ const routes = [
       { path: 'coordinadores/reuniones-mensuales', name: 'CoordinadoresReuniones', component: () => import('../components/panel-arbitro/coordinadores/ReunionesMensualesCoordinadores.vue') },
       { path: 'coordinadores/disponibilidad-horaria', name: 'CoordinadoresDisponibilidad', component: () => import('../components/panel-arbitro/coordinadores/DisponibilidadHorariaCoordinadores.vue') },
       { path: 'coordinadores/planilla-general-observaciones', name: 'CoordinadoresPlanillaGeneralObservaciones', component: () => import('../components/panel-arbitro/coordinadores/PlanillaGeneralObservacionesCoordinadores.vue') },
+      {path: 'coordinadores/informes-coordinadores', name: 'InformesCoordinadores', component: () => import('../components/panel-arbitro/coordinadores/InformesCoordinadores.vue')},
 
       // --- INDUMENTARIA ---
       { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/IndumentariaArbitro.vue') },

@@ -87,7 +87,7 @@
                   <div class="timeline-card shadow-sm" :class="{ 'card-rechazada': p.rechazada }">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
                       <span class="fw-bold text-dark text-uppercase text-break">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
-                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle flex-shrink-0" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
+                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
                     </div>
                     <div class="small text-muted d-flex align-items-center flex-wrap gap-1 mb-2">
                       <span class="material-icons flex-shrink-0" style="font-size: 15px;">stadium</span>
@@ -126,9 +126,9 @@
                       </div>
                     </template>
 
-                    <!-- ACCION / ESTADO DE RECHAZO -->
+                    <!-- ACCION / ESTADO DE RECHAZO + INFORME -->
                     <div class="mt-2 pt-2 border-top">
-                      <div v-if="p.rechazada">
+                      <div v-if="p.rechazada" class="mb-2">
                         <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                           <span class="badge d-inline-flex align-items-center gap-1" :class="badgeEstadoRechazo(p.rechazo_estado)">
                             <i class="bi" :class="iconoEstadoRechazo(p.rechazo_estado)"></i>
@@ -142,14 +142,43 @@
                           {{ mensajeEstadoRechazo(p.rechazo_estado) }}
                         </p>
                       </div>
-                      <button
-                        v-else-if="p.funcion == 'arbitro' || p.funcion == 'delegado'"
-                        @click="abrirModalRechazo(p)"
-                        class="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1"
-                      >
-                        <span class="material-icons" style="font-size: 15px;">block</span>
-                        Rechazar designación
-                      </button>
+
+                      <!-- Botones de acción: rechazar + informe en la misma línea -->
+                      <div class="d-flex flex-wrap align-items-center gap-2">
+                        <button
+                          v-if="!p.rechazada && (p.funcion == 'arbitro' || p.funcion == 'delegado')"
+                          @click="abrirModalRechazo(p)"
+                          class="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1"
+                        >
+                          <span class="material-icons" style="font-size: 15px;">block</span>
+                          Rechazar designación
+                        </button>
+
+                        <!-- Informe con estado (si ya existe) -->
+                        <template v-if="puedeInformar(p) && p.informe">
+                          <span class="badge d-inline-flex align-items-center gap-1" :class="badgeEstadoInforme(p.informe.estado)">
+                            <i class="bi" :class="iconoEstadoInforme(p.informe.estado)"></i>
+                            Informe {{ textoEstadoInforme(p.informe.estado) }}
+                          </span>
+                          <button
+                            v-if="p.informe.estado === 'creado' || p.informe.estado === 'pendiente'"
+                            @click="abrirModalInforme(p)"
+                            class="btn btn-sm btn-link text-danger fw-bold p-0 text-decoration-none"
+                          >
+                            <i class="bi bi-pencil-square me-1"></i>Editar
+                          </button>
+                        </template>
+
+                        <!-- Informe sin cargar -->
+                        <button
+                          v-else-if="puedeInformar(p)"
+                          @click="abrirModalInforme(p)"
+                          class="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 btn-informe"
+                        >
+                          <i class="bi bi-clipboard-plus"></i>
+                          ¿Tu partido tuvo informe? Cargalo desde acá
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -222,7 +251,7 @@
                           <div class="timeline-card shadow-sm" :class="{ 'card-rechazada': p.rechazada }">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
                               <span class="fw-bold text-dark text-uppercase text-break">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
-                              <span class="badge bg-secondary-subtle text-secondary border flex-shrink-0" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
+                              <span class="badge bg-secondary-subtle text-secondary border text-wrap text-break text-start" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
                             </div>
                             <div class="small text-muted d-flex align-items-center flex-wrap gap-1 mb-2">
                               <span class="material-icons flex-shrink-0" style="font-size: 15px;">stadium</span>
@@ -275,6 +304,31 @@
                             <p class="small mb-0 text-break" :class="claseTextoEstadoRechazo(p.rechazo_estado)">
                               {{ mensajeEstadoRechazo(p.rechazo_estado) }}
                             </p>
+                          </div>
+
+                          <!-- AVISO / ACCION DE INFORME -->
+                          <div v-if="puedeInformar(p)" class="aviso-informe mt-2 pt-2 border-top">
+                            <div v-if="p.informe" class="d-flex align-items-center gap-2 flex-wrap">
+                              <span class="badge d-inline-flex align-items-center gap-1" :class="badgeEstadoInforme(p.informe.estado)">
+                                <i class="bi" :class="iconoEstadoInforme(p.informe.estado)"></i>
+                                Informe {{ textoEstadoInforme(p.informe.estado) }}
+                              </span>
+                              <button
+                                v-if="p.informe.estado === 'creado' || p.informe.estado === 'pendiente'"
+                                @click="abrirModalInforme(p)"
+                                class="btn btn-sm btn-link text-danger fw-bold p-0 text-decoration-none"
+                              >
+                                <i class="bi bi-pencil-square me-1"></i>Editar
+                              </button>
+                            </div>
+                            <button
+                              v-else
+                              @click="abrirModalInforme(p)"
+                              class="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 btn-informe"
+                            >
+                              <i class="bi bi-clipboard-plus"></i>
+                              ¿Tu partido tuvo informe? Cargalo desde acá
+                            </button>
                           </div>
                           </div>
                         </div>
@@ -368,6 +422,98 @@
         >
           <span v-if="enviandoRechazo" class="spinner-border spinner-border-sm me-2"></span>
           {{ enviandoRechazo ? 'Enviando...' : 'Confirmar rechazo' }}
+        </button>
+      </template>
+    </ModalBase>
+
+    <!-- ================= MODAL CARGAR INFORME ================= -->
+    <ModalBase
+      :show="mostrarModalInforme"
+      :titulo="informeEsEdicion ? 'Editar informe del partido' : 'Cargar informe del partido'"
+      icono="description"
+      colorIcono="bg-danger text-white"
+      maxWidth="640px"
+      @close="cerrarModalInforme"
+    >
+      <div v-if="partidoInforme" class="informe-form">
+
+        <!-- Datos automáticos (solo lectura) -->
+        <div class="row g-2 mb-3">
+          <div class="col-12 col-sm-6">
+            <label class="form-label small fw-bold text-dark mb-1">Fecha</label>
+            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="etiquetaDia(partidoInforme.fecha)" readonly>
+          </div>
+          <div class="col-12 col-sm-6">
+            <label class="form-label small fw-bold text-dark mb-1">Categoría</label>
+            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="partidoInforme.categoria_division || '-'" readonly>
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-bold text-dark mb-1">Encuentro</label>
+            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="`${partidoInforme.local} vs ${partidoInforme.visitante}`" readonly>
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-bold text-dark mb-1">Árbitros</label>
+            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="arbitrosDelPartido(partidoInforme)" readonly>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Datos a completar -->
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-dark mb-1">Torneo *</label>
+          <select v-model="formInforme.torneo" class="form-select form-select-sm shadow-none">
+            <option value="" disabled>Seleccioná el torneo...</option>
+            <option v-for="t in opcionesTorneo" :key="t.valor" :value="t.valor">{{ t.etiqueta }}</option>
+          </select>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label small fw-bold text-dark mb-1">Implicado *</label>
+            <input v-model="formInforme.implicado" type="text" class="form-control form-control-sm shadow-none" placeholder="Nombre del implicado">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small fw-bold text-dark mb-1">Sanción *</label>
+            <input v-model="formInforme.sancion" type="text" class="form-control form-control-sm shadow-none" placeholder="Ej: Descalificación con informe escrito...">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold text-dark mb-1">Institución a la que pertenece *</label>
+          <select v-model="formInforme.institucion" class="form-select form-select-sm shadow-none">
+            <option value="" disabled>Seleccioná la institución...</option>
+            <option value="local">{{ partidoInforme.local }}</option>
+            <option value="visitante">{{ partidoInforme.visitante }}</option>
+          </select>
+        </div>
+
+        <div class="mb-1">
+          <label class="form-label small fw-bold text-dark mb-1">Motivo y descripción *</label>
+          <textarea
+            v-model="formInforme.motivo_descripcion"
+            class="form-control shadow-none"
+            rows="4"
+            placeholder="Describí el motivo del informe con el mayor detalle posible..."
+          ></textarea>
+        </div>
+      </div>
+
+      <template #footer>
+        <button
+          @click="cerrarModalInforme"
+          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
+          :disabled="enviandoInforme"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="confirmarInforme"
+          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
+          :disabled="enviandoInforme || !informeValido"
+        >
+          <span v-if="enviandoInforme" class="spinner-border spinner-border-sm me-2"></span>
+          {{ enviandoInforme ? 'Guardando...' : (informeEsEdicion ? 'Guardar cambios' : 'Cargar informe') }}
         </button>
       </template>
     </ModalBase>
@@ -478,7 +624,9 @@ const normalizarRechazo = (p) => ({
   rechazada: p.rechazada === true || p.rechazada === 1 || p.rechazada === '1' || !!p.id_rechazo,
   id_rechazo: p.id_rechazo || null,
   rechazo_motivo: p.rechazo_motivo || p.motivo_rechazo || '',
-  rechazo_estado: p.rechazo_estado || 'creado'
+  rechazo_estado: p.rechazo_estado || 'creado',
+  // Informe asociado al partido (si el backend lo devuelve)
+  informe: p.informe || null
 })
 
 /* ====================================================
@@ -712,6 +860,145 @@ const confirmarRechazo = async () => {
   }
 }
 
+/* ====================================================
+   INFORME DE PARTIDO
+   ==================================================== */
+const opcionesTorneo = [
+  { valor: 'metropolitano_apertura', etiqueta: 'Metropolitano Apertura' },
+  { valor: 'metropolitano_clausura', etiqueta: 'Metropolitano Clausura' },
+  { valor: 'super_8', etiqueta: 'Super 8' },
+  { valor: 'copa_campeones', etiqueta: 'Copa de Campeones' },
+  { valor: 'desarrollo_apertura', etiqueta: 'Torneo Desarrollo Apertura' },
+  { valor: 'desarrollo_clausura', etiqueta: 'Torneo Desarrollo Clausura' },
+  { valor: 'otros', etiqueta: 'Otros' }
+]
+
+// Estados del informe (mismos que ve el coordinador)
+const textoEstadoInforme = (estado) => {
+  if (estado === 'aprobado') return 'aprobado'
+  if (estado === 'anulado') return 'anulado'
+  if (estado === 'pendiente') return 'pendiente'
+  return 'creado'
+}
+const badgeEstadoInforme = (estado) => {
+  if (estado === 'aprobado') return 'bg-success'
+  if (estado === 'anulado') return 'bg-secondary'
+  if (estado === 'pendiente') return 'bg-warning text-dark'
+  return 'bg-info text-dark'
+}
+const iconoEstadoInforme = (estado) => {
+  if (estado === 'aprobado') return 'bi-check-circle-fill'
+  if (estado === 'anulado') return 'bi-x-circle-fill'
+  if (estado === 'pendiente') return 'bi-hourglass-split'
+  return 'bi-file-earmark-text-fill'
+}
+
+// Solo el árbitro (no el delegado) puede cargar informe
+const puedeInformar = (p) => p.funcion === 'arbitro'
+
+const arbitrosDelPartido = (p) => [p.arbitro_1, p.arbitro_2].filter(Boolean).join(' - ') || '-'
+
+const mostrarModalInforme = ref(false)
+const partidoInforme = ref(null)
+const enviandoInforme = ref(false)
+const informeEsEdicion = ref(false)
+
+const formInforme = ref({
+  torneo: '',
+  implicado: '',
+  sancion: '',
+  institucion: '',
+  motivo_descripcion: ''
+})
+
+const informeValido = computed(() => {
+  const f = formInforme.value
+  return f.torneo && f.implicado.trim() && f.sancion.trim() && f.institucion && f.motivo_descripcion.trim()
+})
+
+const abrirModalInforme = (partido) => {
+  partidoInforme.value = partido
+  if (partido.informe) {
+    informeEsEdicion.value = true
+    formInforme.value = {
+      torneo: partido.informe.torneo || '',
+      implicado: partido.informe.implicado || '',
+      sancion: partido.informe.sancion || '',
+      institucion: partido.informe.institucion || '',
+      motivo_descripcion: partido.informe.motivo_descripcion || ''
+    }
+  } else {
+    informeEsEdicion.value = false
+    formInforme.value = { torneo: '', implicado: '', sancion: '', institucion: '', motivo_descripcion: '' }
+  }
+  mostrarModalInforme.value = true
+}
+
+const cerrarModalInforme = () => {
+  mostrarModalInforme.value = false
+  partidoInforme.value = null
+}
+
+const confirmarInforme = async () => {
+  if (!informeValido.value || !partidoInforme.value) return
+
+  const p = partidoInforme.value
+  const f = formInforme.value
+  const institucionNombre = f.institucion === 'local' ? p.local : p.visitante
+
+  enviandoInforme.value = true
+  try {
+    const res = await api.post({
+      entity: 'informes',
+      action: informeEsEdicion.value ? 'actualizarInforme' : 'crearInforme',
+      payload: {
+        id_informe: p.informe ? p.informe.id : null,
+        id_partido: p.id,
+        fecha_partido: fechaLimpia(p.fecha),
+        encuentro: `${p.local} vs ${p.visitante}`,
+        equipo_local: p.local,
+        equipo_visitante: p.visitante,
+        categoria: p.categoria_division || '',
+        arbitros: arbitrosDelPartido(p),
+        torneo: f.torneo,
+        implicado: f.implicado.trim(),
+        sancion: f.sancion.trim(),
+        institucion: f.institucion,
+        institucion_nombre: institucionNombre,
+        motivo_descripcion: f.motivo_descripcion.trim()
+      }
+    })
+    if (res.ok || res.success) {
+      // Marca optimista en la card
+      p.informe = {
+        id: (res.payload && res.payload.id) ? res.payload.id : (p.informe ? p.informe.id : null),
+        estado: p.informe ? p.informe.estado : 'creado',
+        torneo: f.torneo,
+        implicado: f.implicado.trim(),
+        sancion: f.sancion.trim(),
+        institucion: f.institucion,
+        institucion_nombre: institucionNombre,
+        motivo_descripcion: f.motivo_descripcion.trim()
+      }
+      cerrarModalInforme()
+      toast({
+        titulo: informeEsEdicion.value ? 'Informe actualizado' : 'Informe cargado',
+        mensaje: informeEsEdicion.value
+          ? 'Se guardaron los cambios del informe.'
+          : 'El informe fue enviado al coordinador de tu grupo.',
+        tipo: 'success'
+      })
+    } else {
+      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
+    }
+  } catch (err) {
+    console.error('Error al guardar informe:', err)
+    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo guardar el informe.', tipo: 'danger' })
+  } finally {
+    enviandoInforme.value = false
+  }
+}
+
 onMounted(cargarMisDesignaciones)
 </script>
 
@@ -874,6 +1161,37 @@ onMounted(cargarMisDesignaciones)
 .opcion-motivo.activa {
   background: #fee2e2;
   font-weight: 600;
+}
+
+/* ====================================================
+   AVISO / BOTON DE INFORME
+   ==================================================== */
+.btn-informe {
+  border: 1px dashed #dc2626;
+  color: #dc2626;
+  background: #fff5f5;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 0.75rem;
+  transition: background-color 0.15s ease;
+}
+
+.btn-informe:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ====================================================
+   MODAL DE INFORME
+   ==================================================== */
+/* Inputs de solo lectura: sin borde azul de foco */
+.input-readonly {
+  cursor: default;
+}
+
+.input-readonly:focus {
+  border-color: #dee2e6;
+  box-shadow: none;
 }
 
 .animate__animated { animation-duration: 0.5s; }

@@ -81,6 +81,12 @@ const opcionesCoordinadores = [
     title: 'Planilla General de Observaciones',
     icon: 'bi bi-clipboard2-data-fill',
     desc: 'Visualizar todas las observaciones realizadas a los árbitros.'
+  },
+  {
+    to: '/panel-arbitro/coordinadores/informes-coordinadores', // Puedes ajustar esta ruta
+    title: 'Informes',
+    icon: 'bi bi-file-earmark-text-fill',
+    desc: 'Administración de informes.'
   }
 ];
 </script>
