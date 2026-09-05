@@ -121,6 +121,17 @@
                 </div>
               </div>
             </div>
+
+            <!-- ── Advertencia: verificar que los árbitros coincidan ── -->
+            <div v-if="partidoSeleccionado" class="alert alert-warning border-warning-subtle text-dark d-flex align-items-start gap-2 mt-3 mb-0 rounded-3 animate__animated animate__fadeIn" style="font-size: 0.85rem;" role="alert">
+              <i class="bi bi-exclamation-triangle-fill text-warning mt-1 flex-shrink-0 fs-6"></i>
+              <span>
+                <strong>Importante:</strong> Verificá que los árbitros que figuran arriba coincidan con los de la observación que vas a cargar.
+                Si <strong>no coinciden</strong>, por favor <strong>no cargues la observación</strong> y comunicate con el
+                <strong>coordinador de desarrollo</strong> o los <strong>encargados de sistema</strong>, indicando el
+                <strong>día</strong> y el <strong>partido</strong> en cuestión, y cuáles serían los <strong>árbitros correctos</strong>.
+              </span>
+            </div>
           </div>
 
           <!-- ══════════════════════════════════════════════════
@@ -177,6 +188,8 @@
             <i class="bi bi-info-circle-fill text-dark mt-1 flex-shrink-0"></i>
             <span>
               <strong>Recordá:</strong> adjuntá la planilla de Excel completa de la observación. Se sube junto con los datos del partido y de los árbitros cargados arriba.
+              La planilla <strong>debe tener nota final e inicial</strong> para poder cargarse correctamente.
+              Verificá que el Excel esté correcto antes de subirlo.
             </span>
           </div>
 
