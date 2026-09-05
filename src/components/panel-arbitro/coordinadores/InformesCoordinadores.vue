@@ -405,7 +405,7 @@
             @change="onArchivosEditSeleccionados"
           >
           <p class="text-muted small mt-1 mb-2">
-            Podés adjuntar fotos, PDFs u otros documentos. Máx. 10&nbsp;MB por archivo.
+            Podés adjuntar fotos, videos u otros documentos. Máx. 10&nbsp;MB por archivo.
           </p>
 
           <ul v-if="formEdit.archivos_nuevos.length" class="list-group list-group-flush border rounded">
