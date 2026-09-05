@@ -1,4 +1,4 @@
-name: Deploy Vue 3 to cPanel
+name: Deploy Vue 3 to cPanel and VPS
 
 on:
   push:
@@ -24,16 +24,31 @@ jobs:
       - name: Build Vue
         run: npm run build
 
-      - name: Setup SSH key
+      # ---- Deploy al dominio principal (cPanel) ----
+      - name: Setup SSH key (cPanel)
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SFTP_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-      - name: Deploy with rsync
+      - name: Deploy with rsync (cPanel)
         run: |
           rsync -avz \
             --exclude='.htaccess' \
             -e "ssh -p 46464 -o StrictHostKeyChecking=no" \
             dist/ \
             ${{ secrets.SFTP_USERNAME }}@${{ secrets.SFTP_HOST }}:/home/${{ secrets.SFTP_USERNAME }}/public_html/
+
+      # ---- Deploy al VPS (dominio alternativo) ----
+      - name: Setup SSH key (VPS)
+        run: |
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/vps_deploy
+          chmod 600 ~/.ssh/vps_deploy
+
+      - name: Deploy with rsync (VPS)
+        run: |
+          rsync -avz \
+            --exclude='.htaccess' \
+            -e "ssh -p 22 -i ~/.ssh/vps_deploy -o StrictHostKeyChecking=no" \
+            dist/ \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/html/
