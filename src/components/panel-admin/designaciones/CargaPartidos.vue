@@ -173,7 +173,7 @@
                   type="text"
                   class="form-control border-start-0 shadow-none"
                   :class="{ 'border-end-0': filtroBusqueda.length > 0 }"
-                  placeholder="Buscar cancha, equipo o árbitro..."
+                  placeholder="Buscar cancha, equipo, delegado o árbitro..."
                 >
                 <button
                   v-if="filtroBusqueda.length > 0"
