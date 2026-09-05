@@ -154,7 +154,7 @@
                           Rechazar designación
                         </button>
 
-                        <!-- Cargar informe (siempre disponible: se admiten varios) -->
+                        <!-- Cargar informe (árbitro o delegado técnico; se admiten varios) -->
                         <button
                           v-if="puedeInformar(p)"
                           @click="abrirModalInforme(p)"
@@ -436,6 +436,11 @@
             <label class="form-label small fw-bold text-dark mb-1">Árbitros</label>
             <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="arbitrosDelPartido(partidoInforme)" readonly>
           </div>
+          <div class="col-12" v-if="partidoInforme.funcion === 'delegado'">
+            <label class="form-label small fw-bold text-dark mb-1">Delegado técnico</label>
+            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="nombreDelegadoLogueado()" readonly>
+            <small class="text-muted">Este informe quedará registrado a tu nombre como delegado técnico.</small>
+          </div>
         </div>
 
         <hr class="my-3">
@@ -469,7 +474,7 @@
           </select>
         </div>
 
-        <div class="mb-1">
+        <div class="mb-3">
           <label class="form-label small fw-bold text-dark mb-1">Motivo y descripción *</label>
           <textarea
             v-model="formInforme.motivo_descripcion"
@@ -477,6 +482,45 @@
             rows="4"
             placeholder="Describí el motivo del informe con el mayor detalle posible..."
           ></textarea>
+        </div>
+
+        <!-- ADJUNTAR ARCHIVOS (opcional, todo tipo) -->
+        <div class="mb-1">
+          <label class="form-label small fw-bold text-dark mb-1">
+            <i class="bi bi-paperclip me-1"></i>Archivos adjuntos <span class="text-muted fw-normal">(opcional)</span>
+          </label>
+          <input
+            ref="inputArchivos"
+            type="file"
+            class="form-control form-control-sm shadow-none"
+            multiple
+            @change="onArchivosSeleccionados"
+          >
+          <p class="text-muted small mt-1 mb-2">
+            Podés adjuntar fotos, PDFs u otros documentos. Máx. 10&nbsp;MB por archivo.
+          </p>
+
+          <!-- Lista de archivos elegidos -->
+          <ul v-if="formInforme.archivos.length" class="list-group list-group-flush border rounded">
+            <li
+              v-for="(arc, idx) in formInforme.archivos"
+              :key="idx"
+              class="list-group-item d-flex justify-content-between align-items-center py-2 px-2 small"
+            >
+              <span class="text-break d-flex align-items-center gap-2 min-w-0">
+                <i class="bi bi-file-earmark-text text-danger flex-shrink-0"></i>
+                <span class="text-truncate">{{ arc.nombre }}</span>
+              </span>
+              <button
+                type="button"
+                @click="quitarArchivo(idx)"
+                class="btn btn-sm btn-link text-danger p-0 ms-2 flex-shrink-0"
+                title="Quitar"
+              >
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -605,7 +649,7 @@ const cargarMisDesignaciones = async () => {
 // Pide al backend cuántos informes tiene cada partido y actualiza las cards
 const cargarContadoresInformes = async () => {
   const ids = partidos.value
-    .filter(p => p.funcion === 'arbitro')
+    .filter(p => p.funcion === 'arbitro' || p.funcion === 'delegado')
     .map(p => p.id)
     .filter(Boolean)
   if (ids.length === 0) return
@@ -882,25 +926,74 @@ const opcionesTorneo = [
   { valor: 'otros', etiqueta: 'Otros' }
 ]
 
-// Solo el árbitro (no el delegado) puede cargar informe
-const puedeInformar = (p) => p.funcion === 'arbitro'
+// El árbitro y el delegado técnico pueden cargar informe
+const puedeInformar = (p) => p.funcion === 'arbitro' || p.funcion === 'delegado'
 
 // Cantidad de informes que tiene un partido
 const informesDe = (p) => Number(p.informes_count || 0)
 
 const arbitrosDelPartido = (p) => [p.arbitro_1, p.arbitro_2].filter(Boolean).join(' - ') || '-'
 
+// Nombre del delegado técnico que carga el informe (solo cuando la función es 'delegado').
+// El delegado es el propio usuario logueado.
+const nombreDelegadoLogueado = () => {
+  const u = arbitro.value || {}
+  const nom = [u.apellido, u.nombre].filter(Boolean).join(', ')
+  return nom || u.nombre || u.apellido || ''
+}
+
+// El campo delegado del informe se completa SOLO cuando quien carga es el delegado técnico.
+// Si carga un árbitro, queda vacío (el informe lo hizo el árbitro, no el delegado).
+const delegadoDelInforme = (p) => (p.funcion === 'delegado' ? nombreDelegadoLogueado() : '')
+
 const mostrarModalInforme = ref(false)
 const partidoInforme = ref(null)
 const enviandoInforme = ref(false)
+
+const inputArchivos = ref(null)
 
 const formInforme = ref({
   torneo: '',
   implicado: '',
   sancion: '',
   institucion: '',
-  motivo_descripcion: ''
+  motivo_descripcion: '',
+  archivos: []  // [{ nombre, base64 }]
 })
+
+// Límite por archivo (10 MB)
+const MAX_ARCHIVO_BYTES = 10 * 1024 * 1024
+
+// Convierte un File a base64 (dataURL, igual que en descargos de sanciones)
+const fileABase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = () => resolve(reader.result)
+  reader.onerror = reject
+  reader.readAsDataURL(file)
+})
+
+const onArchivosSeleccionados = async (e) => {
+  const files = Array.from(e.target.files || [])
+  for (const file of files) {
+    if (file.size > MAX_ARCHIVO_BYTES) {
+      toast({ titulo: 'Archivo muy grande', mensaje: `"${file.name}" supera los 10 MB y no se adjuntó.`, tipo: 'warning' })
+      continue
+    }
+    try {
+      const base64 = await fileABase64(file)
+      formInforme.value.archivos.push({ nombre: file.name, base64 })
+    } catch (err) {
+      console.error('Error al leer archivo:', err)
+      toast({ titulo: 'Error', mensaje: `No se pudo procesar "${file.name}".`, tipo: 'danger' })
+    }
+  }
+  // Reset del input para poder volver a elegir el mismo archivo si hace falta
+  if (inputArchivos.value) inputArchivos.value.value = ''
+}
+
+const quitarArchivo = (idx) => {
+  formInforme.value.archivos.splice(idx, 1)
+}
 
 const informeValido = computed(() => {
   const f = formInforme.value
@@ -910,7 +1003,8 @@ const informeValido = computed(() => {
 const abrirModalInforme = (partido) => {
   partidoInforme.value = partido
   // Siempre carga nueva: se admiten varios informes por partido
-  formInforme.value = { torneo: '', implicado: '', sancion: '', institucion: '', motivo_descripcion: '' }
+  formInforme.value = { torneo: '', implicado: '', sancion: '', institucion: '', motivo_descripcion: '', archivos: [] }
+  if (inputArchivos.value) inputArchivos.value.value = ''
   mostrarModalInforme.value = true
 }
 
@@ -939,12 +1033,15 @@ const confirmarInforme = async () => {
         equipo_visitante: p.visitante,
         categoria: p.categoria_division || '',
         arbitros: arbitrosDelPartido(p),
+        delegado_tecnico: delegadoDelInforme(p),
         torneo: f.torneo,
         implicado: f.implicado.trim(),
         sancion: f.sancion.trim(),
         institucion: f.institucion,
         institucion_nombre: institucionNombre,
-        motivo_descripcion: f.motivo_descripcion.trim()
+        motivo_descripcion: f.motivo_descripcion.trim(),
+        funcion: p.funcion,
+        archivos: f.archivos  // [{ nombre, base64 }]
       }
     })
     if (res.ok || res.success) {

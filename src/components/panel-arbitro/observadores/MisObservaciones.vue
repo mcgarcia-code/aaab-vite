@@ -95,7 +95,7 @@
                       <!-- Anular: sólo si está pendiente -->
                       <button v-if="esPendiente(obs)" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="pedirAnular(obs)" title="Anular observación">
                         <span class="material-icons" style="font-size: 16px;">block</span>
-                      </button>
+                      </button> class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger"
                     </div>
                   </td>
                 </tr>

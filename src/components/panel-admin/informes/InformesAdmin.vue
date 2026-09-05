@@ -8,7 +8,7 @@
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-clipboard-check-fill me-1"></i> Informes resueltos
+              <i class="bi bi-clipboard-check-fill me-1"></i> Informes de partidos
             </h4>
             <span class="text-muted small d-block mt-1">Total: {{ informesFiltrados.length }} registros</span>
           </div>
@@ -60,6 +60,8 @@
             <div class="col-6 col-md-1">
               <select v-model="filtros.estado" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.estado }">
                 <option value="">ESTADO</option>
+                <option value="creado">Creado</option>
+                <option value="pendiente">Pendiente</option>
                 <option value="aprobado">Aprobado</option>
                 <option value="desestimado">Desestimado</option>
               </select>
@@ -158,7 +160,7 @@
                   <tr v-if="informesPaginados.length === 0">
                     <td colspan="11" class="py-5 text-center text-muted border-0 bg-white">
                       <span class="material-icons d-block fs-1 mb-2">fact_check</span>
-                      <p class="m-0 fw-bold">Todavía no hay informes resueltos.</p>
+                      <p class="m-0 fw-bold">Todavía no hay informes cargados.</p>
                     </td>
                   </tr>
                 </tbody>
@@ -191,6 +193,7 @@
                       <span class="badge bg-secondary ms-1">{{ inf.categoria || '-' }}</span>
                     </p>
                     <p class="m-0 text-dark small mt-1"><strong class="text-muted">Árbitros:</strong> {{ inf.arbitros || '-' }}</p>
+                    <p v-if="inf.delegado_tecnico" class="m-0 text-dark small mt-1"><strong class="text-muted">Delegado técnico:</strong> {{ inf.delegado_tecnico }}</p>
                     <div class="d-flex justify-content-between align-items-center mt-2 border-top border-secondary-subtle pt-2">
                       <div class="form-check form-switch d-inline-flex align-items-center gap-2 m-0">
                         <input
@@ -227,7 +230,7 @@
 
               <div v-if="informesPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
                 <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">fact_check</span>
-                <p class="text-muted m-0 fw-bold">Todavía no hay informes aprobados.</p>
+                <p class="text-muted m-0 fw-bold">Todavía no hay informes cargados.</p>
               </div>
             </div>
 
@@ -263,6 +266,9 @@
           <div class="col-12"><DatoDetalle etiqueta="Torneo" :valor="etiquetaTorneo(informeSel.torneo)" /></div>
           <div class="col-12"><DatoDetalle etiqueta="Encuentro" :valor="informeSel.encuentro" /></div>
           <div class="col-12"><DatoDetalle etiqueta="Árbitros" :valor="informeSel.arbitros || '-'" /></div>
+          <div class="col-12" v-if="informeSel.delegado_tecnico">
+            <DatoDetalle etiqueta="Delegado técnico (cargó el informe)" :valor="informeSel.delegado_tecnico" />
+          </div>
           <div class="col-6"><DatoDetalle etiqueta="Implicado" :valor="informeSel.implicado" /></div>
           <div class="col-6"><DatoDetalle etiqueta="Sanción" :valor="informeSel.sancion" /></div>
           <div class="col-12"><DatoDetalle etiqueta="Institución" :valor="informeSel.institucion_nombre" /></div>
@@ -272,6 +278,36 @@
           </div>
           <div class="col-6"><DatoDetalle etiqueta="Cargado por el árbitro" :valor="formatearFechaHora(informeSel.creado_en)" /></div>
           <div class="col-6"><DatoDetalle etiqueta="Cargado en Larry" :valor="informeSel.cargado_larry ? 'Sí' : 'No'" /></div>
+
+          <!-- ARCHIVOS ADJUNTOS -->
+          <div class="col-12" v-if="informeSel.archivos && informeSel.archivos.length">
+            <label class="form-label small fw-bold text-muted mb-1">
+              <i class="bi bi-paperclip me-1"></i>Archivos adjuntos ({{ informeSel.archivos.length }})
+            </label>
+            <ul class="list-group list-group-flush border rounded">
+              <li
+                v-for="(arc, idx) in informeSel.archivos"
+                :key="idx"
+                class="list-group-item d-flex justify-content-between align-items-center py-2 px-2 small"
+              >
+                <span class="text-break d-flex align-items-center gap-2 min-w-0">
+                  <i class="bi bi-file-earmark-arrow-down text-danger flex-shrink-0"></i>
+                  <span class="text-truncate">{{ arc.archivo_nombre }}</span>
+                </span>
+                <button
+                  type="button"
+                  @click="descargarArchivo(arc)"
+                  class="btn btn-sm btn-outline-danger py-0 px-2 ms-2 flex-shrink-0 d-flex align-items-center gap-1"
+                  :disabled="descargandoArchivo === arc.url_completa"
+                  title="Descargar"
+                >
+                  <span v-if="descargandoArchivo === arc.url_completa" class="spinner-border spinner-border-sm" style="width:12px;height:12px;"></span>
+                  <i v-else class="bi bi-download"></i>
+                  <span class="d-none d-sm-inline">Descargar</span>
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -326,15 +362,19 @@ const opcionesTorneo = [
 ];
 const etiquetaTorneo = (v) => (opcionesTorneo.find(t => t.valor === v) || {}).etiqueta || v;
 
-/* Estados (píldoras) — en admin solo llegan aprobado y desestimado */
+/* Estados (píldoras) — en admin llegan creado, pendiente, aprobado y desestimado */
 const etiquetaEstado = (estado) => {
   const e = (estado || '').toLowerCase();
   if (e === 'desestimado') return 'DESESTIMADO';
+  if (e === 'pendiente') return 'PENDIENTE';
+  if (e === 'creado') return 'CREADO';
   return 'APROBADO';
 };
 const badgeEstado = (estado) => {
   const e = (estado || '').toLowerCase();
   if (e === 'desestimado') return 'estado-pill estado-desestimado';
+  if (e === 'pendiente') return 'estado-pill estado-pendiente';
+  if (e === 'creado') return 'estado-pill estado-creado';
   return 'estado-pill estado-aprobado';
 };
 
@@ -475,6 +515,35 @@ const cerrarDetalle = () => { mostrarDetalle.value = false; informeSel.value = n
    ==================================================== */
 const descargandoId = ref(null);
 
+/* ====================================================
+   DESCARGAR ARCHIVOS ADJUNTOS
+   ==================================================== */
+const descargandoArchivo = ref(null);
+
+const descargarArchivo = async (arc) => {
+  if (!arc || !arc.url_completa) return;
+  descargandoArchivo.value = arc.url_completa;
+  try {
+    const resp = await fetch(arc.url_completa);
+    if (!resp.ok) throw new Error('No se pudo descargar el archivo');
+    const blob = await resp.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = arc.archivo_nombre || 'archivo';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Error al descargar archivo:', err);
+    // Fallback: abrir en pestaña nueva
+    window.open(arc.url_completa, '_blank');
+  } finally {
+    descargandoArchivo.value = null;
+  }
+};
+
 const escapar = (v) => String(v ?? '-')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -511,6 +580,7 @@ const descargarPDF = async (inf) => {
         ${filaPDF('Categoría', inf.categoria || '-')}
         ${filaPDF('Encuentro', inf.encuentro)}
         ${filaPDF('Árbitros', inf.arbitros || '-')}
+        ${inf.delegado_tecnico ? filaPDF('Delegado técnico (cargó el informe)', inf.delegado_tecnico) : ''}
         ${filaPDF('Implicado', inf.implicado)}
         ${filaPDF('Sanción', inf.sancion)}
         ${filaPDF('Institución a la que pertenece', inf.institucion_nombre)}
@@ -568,6 +638,8 @@ onMounted(obtenerInformes);
 }
 
 .animate__animated { animation-duration: 0.5s; }
+
+.min-w-0 { min-width: 0; }
 
 /* ====================================================
    TABLA CON COLUMNAS FIJAS Y SIN LÍNEAS
@@ -632,6 +704,20 @@ onMounted(obtenerInformes);
   background-color: #e3f5e6;
   color: #2f8a45;
   border-color: #bfe6c8;
+}
+
+/* CREADO — celeste */
+.estado-creado {
+  background-color: #dceefb;
+  color: #1c6ea4;
+  border-color: #b6dcf5;
+}
+
+/* PENDIENTE — amarillo */
+.estado-pendiente {
+  background-color: #fdf3d3;
+  color: #a6841f;
+  border-color: #f2e2a5;
 }
 
 /* DESESTIMADO — naranja */

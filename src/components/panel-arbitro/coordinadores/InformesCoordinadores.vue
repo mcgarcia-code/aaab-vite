@@ -94,7 +94,7 @@
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
-                    <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 90px;">Acciones</th>
+                    <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 130px;">Acciones</th>
                     <th class="py-3 text-center text-uppercase text-muted col-fija col-fecha" style="width: 110px;">Fecha</th>
                     <th class="py-3 text-uppercase text-muted" style="width: 220px;">Encuentro</th>
                     <th class="py-3 text-uppercase text-muted" style="width: 130px;">Categoría</th>
@@ -112,6 +112,15 @@
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="verDetalle(inf)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Ver detalle">
                           <span class="material-icons" style="font-size:16px;">visibility</span>
+                        </button>
+                        <button
+                          @click="descargarPDF(inf)"
+                          class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger"
+                          title="Descargar PDF"
+                          :disabled="descargandoId === inf.id"
+                        >
+                          <span v-if="descargandoId === inf.id" class="spinner-border spinner-border-sm" style="width:14px;height:14px;"></span>
+                          <span v-else class="material-icons" style="font-size:16px;">picture_as_pdf</span>
                         </button>
                         <button
                           v-if="inf.estado === 'creado' || inf.estado === 'pendiente'"
@@ -170,6 +179,7 @@
                       <span class="badge bg-secondary ms-1">{{ inf.categoria || '-' }}</span>
                     </p>
                     <p class="m-0 text-dark small mt-1"><strong class="text-muted">Árbitros:</strong> {{ inf.arbitros || '-' }}</p>
+                    <p v-if="inf.delegado_tecnico" class="m-0 text-dark small mt-1"><strong class="text-muted">Delegado técnico:</strong> {{ inf.delegado_tecnico }}</p>
                     <div class="d-flex justify-content-end mt-2 border-top border-secondary-subtle pt-2">
                       <span class="text-muted small">Cargado: {{ formatearFechaHora(inf.creado_en) }}</span>
                     </div>
@@ -178,6 +188,15 @@
                   <div class="d-flex gap-2 mt-3">
                     <button @click="verDetalle(inf)" class="btn btn-sm btn-outline-secondary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
                       <span class="material-icons" style="font-size: 18px;">visibility</span> Ver detalle
+                    </button>
+                    <button
+                      @click="descargarPDF(inf)"
+                      class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center gap-1 fw-bold"
+                      :disabled="descargandoId === inf.id"
+                      title="Descargar PDF"
+                    >
+                      <span v-if="descargandoId === inf.id" class="spinner-border spinner-border-sm"></span>
+                      <span v-else class="material-icons" style="font-size: 18px;">picture_as_pdf</span>
                     </button>
                     <button
                       v-if="inf.estado === 'creado' || inf.estado === 'pendiente'"
@@ -229,6 +248,9 @@
           <div class="col-12"><DatoDetalle etiqueta="Torneo" :valor="etiquetaTorneo(informeSel.torneo)" /></div>
           <div class="col-12"><DatoDetalle etiqueta="Encuentro" :valor="informeSel.encuentro" /></div>
           <div class="col-12"><DatoDetalle etiqueta="Árbitros" :valor="informeSel.arbitros || '-'" /></div>
+          <div class="col-12" v-if="informeSel.delegado_tecnico">
+            <DatoDetalle etiqueta="Delegado técnico (cargó el informe)" :valor="informeSel.delegado_tecnico" />
+          </div>
           <div class="col-6"><DatoDetalle etiqueta="Implicado" :valor="informeSel.implicado" /></div>
           <div class="col-6"><DatoDetalle etiqueta="Sanción" :valor="informeSel.sancion" /></div>
           <div class="col-12"><DatoDetalle etiqueta="Institución" :valor="informeSel.institucion_nombre" /></div>
@@ -238,6 +260,36 @@
           </div>
           <div class="col-12">
             <DatoDetalle etiqueta="Cargado por el árbitro" :valor="formatearFechaHora(informeSel.creado_en)" />
+          </div>
+
+          <!-- ARCHIVOS ADJUNTOS -->
+          <div class="col-12" v-if="informeSel.archivos && informeSel.archivos.length">
+            <label class="form-label small fw-bold text-muted mb-1">
+              <i class="bi bi-paperclip me-1"></i>Archivos adjuntos ({{ informeSel.archivos.length }})
+            </label>
+            <ul class="list-group list-group-flush border rounded">
+              <li
+                v-for="(arc, idx) in informeSel.archivos"
+                :key="idx"
+                class="list-group-item d-flex justify-content-between align-items-center py-2 px-2 small"
+              >
+                <span class="text-break d-flex align-items-center gap-2 min-w-0">
+                  <i class="bi bi-file-earmark-arrow-down text-danger flex-shrink-0"></i>
+                  <span class="text-truncate">{{ arc.archivo_nombre }}</span>
+                </span>
+                <button
+                  type="button"
+                  @click="descargarArchivo(arc)"
+                  class="btn btn-sm btn-outline-danger py-0 px-2 ms-2 flex-shrink-0 d-flex align-items-center gap-1"
+                  :disabled="descargandoArchivo === arc.url_completa"
+                  title="Descargar"
+                >
+                  <span v-if="descargandoArchivo === arc.url_completa" class="spinner-border spinner-border-sm" style="width:12px;height:12px;"></span>
+                  <i v-else class="bi bi-download"></i>
+                  <span class="d-none d-sm-inline">Descargar</span>
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
 
@@ -258,6 +310,15 @@
       </div>
 
       <template #footer>
+        <button
+          v-if="informeSel"
+          @click="descargarPDF(informeSel)"
+          class="btn btn-outline-danger rounded-pill px-4 fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+          :disabled="descargandoId === informeSel.id"
+        >
+          <span v-if="descargandoId === informeSel.id" class="spinner-border spinner-border-sm"></span>
+          <span v-else class="material-icons" style="font-size:18px;">picture_as_pdf</span> PDF
+        </button>
         <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1" :disabled="procesando">
           Cancelar
         </button>
@@ -296,9 +357,77 @@
             <option value="visitante">{{ informeEdit.equipo_visitante }}</option>
           </select>
         </div>
-        <div class="mb-1">
+        <div class="mb-3">
           <label class="form-label small fw-bold text-dark mb-1">Motivo y descripción *</label>
           <textarea v-model="formEdit.motivo_descripcion" class="form-control shadow-none" rows="4"></textarea>
+        </div>
+
+        <!-- ARCHIVOS YA ADJUNTOS -->
+        <div class="mb-3" v-if="informeEdit.archivos && informeEdit.archivos.length">
+          <label class="form-label small fw-bold text-dark mb-1">
+            <i class="bi bi-paperclip me-1"></i>Archivos adjuntos actuales
+          </label>
+          <ul class="list-group list-group-flush border rounded">
+            <li
+              v-for="(arc, idx) in informeEdit.archivos"
+              :key="'exist-'+idx"
+              class="list-group-item d-flex justify-content-between align-items-center py-2 px-2 small"
+              :class="{ 'text-decoration-line-through text-muted opacity-75': archivosAEliminar.includes(arc.id) }"
+            >
+              <span class="text-break d-flex align-items-center gap-2 min-w-0">
+                <i class="bi bi-file-earmark-text text-danger flex-shrink-0"></i>
+                <span class="text-truncate">{{ arc.archivo_nombre }}</span>
+              </span>
+              <button
+                type="button"
+                v-if="informeEdit.estado === 'creado' || informeEdit.estado === 'pendiente'"
+                @click="toggleEliminarArchivo(arc.id)"
+                class="btn btn-sm btn-link p-0 ms-2 flex-shrink-0"
+                :class="archivosAEliminar.includes(arc.id) ? 'text-secondary' : 'text-danger'"
+                :title="archivosAEliminar.includes(arc.id) ? 'Deshacer' : 'Quitar'"
+              >
+                <i class="bi" :class="archivosAEliminar.includes(arc.id) ? 'bi-arrow-counterclockwise' : 'bi-x-circle-fill'"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- AGREGAR NUEVOS ARCHIVOS (solo mientras el informe sea editable) -->
+        <div class="mb-1" v-if="informeEdit.estado === 'creado' || informeEdit.estado === 'pendiente'">
+          <label class="form-label small fw-bold text-dark mb-1">
+            <i class="bi bi-plus-circle me-1"></i>Agregar archivos <span class="text-muted fw-normal">(opcional)</span>
+          </label>
+          <input
+            ref="inputArchivosEdit"
+            type="file"
+            class="form-control form-control-sm shadow-none"
+            multiple
+            @change="onArchivosEditSeleccionados"
+          >
+          <p class="text-muted small mt-1 mb-2">
+            Podés adjuntar fotos, PDFs u otros documentos. Máx. 10&nbsp;MB por archivo.
+          </p>
+
+          <ul v-if="formEdit.archivos_nuevos.length" class="list-group list-group-flush border rounded">
+            <li
+              v-for="(arc, idx) in formEdit.archivos_nuevos"
+              :key="'nuevo-'+idx"
+              class="list-group-item d-flex justify-content-between align-items-center py-2 px-2 small"
+            >
+              <span class="text-break d-flex align-items-center gap-2 min-w-0">
+                <i class="bi bi-file-earmark-plus text-success flex-shrink-0"></i>
+                <span class="text-truncate">{{ arc.nombre }}</span>
+              </span>
+              <button
+                type="button"
+                @click="quitarArchivoEdit(idx)"
+                class="btn btn-sm btn-link text-danger p-0 ms-2 flex-shrink-0"
+                title="Quitar"
+              >
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -316,6 +445,7 @@
 <script setup>
 import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue';
 import { api } from '@/api/api';
+import html2pdf from 'html2pdf.js';
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
 
@@ -477,6 +607,109 @@ const verDetalle = (inf) => {
 };
 const cerrarDetalle = () => { mostrarDetalle.value = false; informeSel.value = null; };
 
+/* ====================================================
+   DESCARGAR ARCHIVOS ADJUNTOS
+   ==================================================== */
+const descargandoArchivo = ref(null);
+
+const descargarArchivo = async (arc) => {
+  if (!arc || !arc.url_completa) return;
+  descargandoArchivo.value = arc.url_completa;
+  try {
+    const resp = await fetch(arc.url_completa);
+    if (!resp.ok) throw new Error('No se pudo descargar el archivo');
+    const blob = await resp.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = arc.archivo_nombre || 'archivo';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Error al descargar archivo:', err);
+    window.open(arc.url_completa, '_blank');
+  } finally {
+    descargandoArchivo.value = null;
+  }
+};
+
+/* ====================================================
+   DESCARGAR PDF (dinámico, no se guarda en disco)
+   ==================================================== */
+const descargandoId = ref(null);
+
+const escapar = (v) => String(v ?? '-')
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+const filaPDF = (etiqueta, valor) => `
+  <tr>
+    <td style="padding:8px 10px;border:1px solid #e5e7eb;background:#f8f9fa;font-weight:bold;width:38%;color:#334155;">${escapar(etiqueta)}</td>
+    <td style="padding:8px 10px;border:1px solid #e5e7eb;color:#111;">${escapar(valor)}</td>
+  </tr>`;
+
+const descargarPDF = async (inf) => {
+  descargandoId.value = inf.id;
+  try {
+    const contenedor = document.createElement('div');
+    contenedor.style.padding = '28px';
+    contenedor.style.fontFamily = 'Arial, Helvetica, sans-serif';
+    contenedor.style.color = '#111';
+    contenedor.innerHTML = `
+      <div style="display:flex;align-items:center;gap:14px;border-bottom:3px solid #dc2626;padding-bottom:14px;margin-bottom:18px;">
+        <img src="https://arbitroshandball.com.ar/logo.png" style="height:56px;" crossorigin="anonymous"
+             onerror="this.style.display='none'">
+        <div>
+          <h1 style="margin:0;font-size:20px;color:#dc2626;">Informe de Partido</h1>
+          <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Asociación Argentina de Árbitros de Balonmano</p>
+        </div>
+        <div style="margin-left:auto;text-align:right;font-size:12px;color:#64748b;">
+          <div><strong>Informe #${escapar(inf.id)}</strong></div>
+          <div>Estado: ${escapar(etiquetaEstado(inf.estado))}</div>
+        </div>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        ${filaPDF('Fecha del partido', formatearFecha(inf.fecha_partido))}
+        ${filaPDF('Torneo', etiquetaTorneo(inf.torneo))}
+        ${filaPDF('Categoría', inf.categoria || '-')}
+        ${filaPDF('Encuentro', inf.encuentro)}
+        ${filaPDF('Árbitros', inf.arbitros || '-')}
+        ${inf.delegado_tecnico ? filaPDF('Delegado técnico (cargó el informe)', inf.delegado_tecnico) : ''}
+        ${filaPDF('Implicado', inf.implicado)}
+        ${filaPDF('Sanción', inf.sancion)}
+        ${filaPDF('Institución a la que pertenece', inf.institucion_nombre)}
+      </table>
+
+      <div style="margin-top:16px;">
+        <div style="font-weight:bold;font-size:13px;color:#334155;margin-bottom:6px;">Motivo y descripción</div>
+        <div style="border:1px solid #e5e7eb;border-radius:6px;padding:12px;font-size:13px;line-height:1.5;white-space:pre-wrap;background:#fff;">${escapar(inf.motivo_descripcion)}</div>
+      </div>
+
+      <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
+        Cargado por el árbitro el ${escapar(formatearFechaHora(inf.creado_en))}.
+        Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
+      </div>
+    `;
+
+    const opciones = {
+      margin: 10,
+      filename: `Informe_${inf.id}_${(inf.encuentro || '').replace(/[^\w]+/g, '_')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    await html2pdf().set(opciones).from(contenedor).save();
+  } catch (err) {
+    console.error('Error al generar PDF:', err);
+    toast({ titulo: 'Error', mensaje: 'No se pudo generar el PDF.', tipo: 'danger' });
+  } finally {
+    descargandoId.value = null;
+  }
+};
+
 // El coordinador puede pasar el informe a: creado, pendiente, aprobado o anulado
 const guardarEstado = async () => {
   if (!informeSel.value || nuevoEstado.value === informeSel.value.estado) return;
@@ -521,11 +754,54 @@ const mensajeEstado = (estado) => {
    ==================================================== */
 const mostrarEdicion = ref(false);
 const informeEdit = ref(null);
-const formEdit = reactive({ torneo: '', implicado: '', sancion: '', institucion: '', motivo_descripcion: '' });
+const inputArchivosEdit = ref(null);
+const archivosAEliminar = ref([]);  // ids de archivos existentes a borrar
+const formEdit = reactive({
+  torneo: '', implicado: '', sancion: '', institucion: '', motivo_descripcion: '',
+  archivos_nuevos: []  // [{ nombre, base64 }]
+});
 
 const edicionValida = computed(() =>
   formEdit.torneo && formEdit.implicado.trim() && formEdit.sancion.trim() && formEdit.institucion && formEdit.motivo_descripcion.trim()
 );
+
+// Límite por archivo (10 MB)
+const MAX_ARCHIVO_BYTES = 10 * 1024 * 1024;
+
+const fileABase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = reject;
+  reader.readAsDataURL(file);
+});
+
+const onArchivosEditSeleccionados = async (e) => {
+  const files = Array.from(e.target.files || []);
+  for (const file of files) {
+    if (file.size > MAX_ARCHIVO_BYTES) {
+      toast({ titulo: 'Archivo muy grande', mensaje: `"${file.name}" supera los 10 MB y no se adjuntó.`, tipo: 'warning' });
+      continue;
+    }
+    try {
+      const base64 = await fileABase64(file);
+      formEdit.archivos_nuevos.push({ nombre: file.name, base64 });
+    } catch (err) {
+      console.error('Error al leer archivo:', err);
+      toast({ titulo: 'Error', mensaje: `No se pudo procesar "${file.name}".`, tipo: 'danger' });
+    }
+  }
+  if (inputArchivosEdit.value) inputArchivosEdit.value.value = '';
+};
+
+const quitarArchivoEdit = (idx) => {
+  formEdit.archivos_nuevos.splice(idx, 1);
+};
+
+const toggleEliminarArchivo = (id) => {
+  const i = archivosAEliminar.value.indexOf(id);
+  if (i === -1) archivosAEliminar.value.push(id);
+  else archivosAEliminar.value.splice(i, 1);
+};
 
 const abrirEdicion = (inf) => {
   informeEdit.value = inf;
@@ -534,6 +810,9 @@ const abrirEdicion = (inf) => {
   formEdit.sancion = inf.sancion || '';
   formEdit.institucion = inf.institucion || '';
   formEdit.motivo_descripcion = inf.motivo_descripcion || '';
+  formEdit.archivos_nuevos = [];
+  archivosAEliminar.value = [];
+  if (inputArchivosEdit.value) inputArchivosEdit.value.value = '';
   mostrarEdicion.value = true;
 };
 const cerrarEdicion = () => { mostrarEdicion.value = false; informeEdit.value = null; };
@@ -555,7 +834,9 @@ const guardarEdicion = async () => {
         sancion: formEdit.sancion.trim(),
         institucion: formEdit.institucion,
         institucion_nombre: institucionNombre,
-        motivo_descripcion: formEdit.motivo_descripcion.trim()
+        motivo_descripcion: formEdit.motivo_descripcion.trim(),
+        archivos_nuevos: formEdit.archivos_nuevos,          // [{ nombre, base64 }]
+        archivos_eliminar: archivosAEliminar.value          // [id, ...]
       }
     });
     if (res.ok || res.success) {
@@ -567,6 +848,9 @@ const guardarEdicion = async () => {
         institucion_nombre: institucionNombre,
         motivo_descripcion: formEdit.motivo_descripcion.trim()
       });
+      if (res.payload && Array.isArray(res.payload.archivos)) {
+        inf.archivos = res.payload.archivos;
+      }
       cerrarEdicion();
       toast({ titulo: 'Informe actualizado', mensaje: 'Se guardaron los cambios.', tipo: 'success' });
     } else {
@@ -604,6 +888,8 @@ onMounted(obtenerInformes);
 
 .animate__animated { animation-duration: 0.5s; }
 
+.min-w-0 { min-width: 0; }
+
 /* ====================================================
    TABLA CON COLUMNAS FIJAS Y SIN LÍNEAS
    ==================================================== */
@@ -635,9 +921,9 @@ onMounted(obtenerInformes);
   }
 
   .col-id       { left: 0; min-width: 50px !important; max-width: 50px !important; }
-  .col-acciones { left: 50px; min-width: 90px !important; max-width: 90px !important; }
+  .col-acciones { left: 50px; min-width: 130px !important; max-width: 130px !important; }
   .col-fecha    {
-    left: 140px;
+    left: 180px;
     min-width: 110px !important;
     max-width: 110px !important;
     box-shadow: 4px 0 8px -4px rgba(0,0,0,0.1);
