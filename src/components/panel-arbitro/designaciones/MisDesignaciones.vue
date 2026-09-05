@@ -497,7 +497,7 @@
             @change="onArchivosSeleccionados"
           >
           <p class="text-muted small mt-1 mb-2">
-            Podés adjuntar fotos, PDFs u otros documentos. Máx. 10&nbsp;MB por archivo.
+            Podés adjuntar fotos, videos u otros documentos. Máx. 10&nbsp;MB por archivo.
           </p>
 
           <!-- Lista de archivos elegidos -->

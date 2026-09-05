@@ -259,7 +259,7 @@
             <div class="border rounded p-2 bg-light small text-break" style="white-space: pre-wrap;">{{ informeSel.motivo_descripcion }}</div>
           </div>
           <div class="col-12">
-            <DatoDetalle etiqueta="Cargado por el árbitro" :valor="formatearFechaHora(informeSel.creado_en)" />
+            <DatoDetalle :etiqueta="informeSel.delegado_tecnico ? 'Cargado por el delegado técnico' : 'Cargado por el árbitro'" :valor="formatearFechaHora(informeSel.creado_en)" />
           </div>
 
           <!-- ARCHIVOS ADJUNTOS -->
@@ -688,7 +688,7 @@ const descargarPDF = async (inf) => {
       </div>
 
       <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Cargado por el árbitro el ${escapar(formatearFechaHora(inf.creado_en))}.
+        Cargado por ${inf.delegado_tecnico ? 'el delegado técnico' : 'el árbitro'} el ${escapar(formatearFechaHora(inf.creado_en))}.
         Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
       </div>
     `;

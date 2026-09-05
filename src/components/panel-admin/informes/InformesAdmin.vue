@@ -276,8 +276,35 @@
             <label class="form-label small fw-bold text-muted mb-1">Motivo y descripción</label>
             <div class="border rounded p-2 bg-light small text-break" style="white-space: pre-wrap;">{{ informeSel.motivo_descripcion }}</div>
           </div>
-          <div class="col-6"><DatoDetalle etiqueta="Cargado por el árbitro" :valor="formatearFechaHora(informeSel.creado_en)" /></div>
+          <div class="col-6"><DatoDetalle :etiqueta="informeSel.delegado_tecnico ? 'Cargado por el delegado técnico' : 'Cargado por el árbitro'" :valor="formatearFechaHora(informeSel.creado_en)" /></div>
           <div class="col-6"><DatoDetalle etiqueta="Cargado en Larry" :valor="informeSel.cargado_larry ? 'Sí' : 'No'" /></div>
+
+          <!-- COORDINADOR/ES DEL GRUPO (para contacto desde admin) -->
+          <div class="col-12">
+            <label class="form-label small fw-bold text-muted mb-1">
+              <i class="bi bi-person-badge me-1"></i>Coordinador del grupo
+            </label>
+            <div v-if="informeSel.coordinadores && informeSel.coordinadores.length" class="d-flex flex-column gap-1">
+              <div
+                v-for="(co, idx) in informeSel.coordinadores"
+                :key="idx"
+                class="border rounded p-2 bg-light small d-flex flex-column flex-sm-row justify-content-between gap-1"
+              >
+                <span class="fw-bold text-dark text-break">{{ co.nombre || 'Coordinador' }}</span>
+                <a
+                  v-if="co.email"
+                  :href="`mailto:${co.email}`"
+                  class="text-danger fw-bold text-break text-decoration-none d-flex align-items-center gap-1"
+                >
+                  <i class="bi bi-envelope-fill"></i>{{ co.email }}
+                </a>
+                <span v-else class="text-muted">Sin email</span>
+              </div>
+            </div>
+            <div v-else class="border rounded p-2 bg-light small text-muted">
+              Sin coordinador asignado al grupo.
+            </div>
+          </div>
 
           <!-- ARCHIVOS ADJUNTOS -->
           <div class="col-12" v-if="informeSel.archivos && informeSel.archivos.length">
@@ -592,7 +619,7 @@ const descargarPDF = async (inf) => {
       </div>
 
       <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Cargado por el árbitro el ${escapar(formatearFechaHora(inf.creado_en))}.
+        Cargado por ${inf.delegado_tecnico ? 'el delegado técnico' : 'el árbitro'} el ${escapar(formatearFechaHora(inf.creado_en))}.
         Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
       </div>
     `;

@@ -143,7 +143,7 @@
                     <td class="text-center fw-bold col-fija col-fecha">{{ formatearFecha(inf.fecha_partido) }}</td>
                     <td class="fw-bold text-uppercase text-dark text-truncate" :title="inf.encuentro" style="max-width: 220px;">
                       {{ inf.encuentro }}
-                      <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal" style="font-size:0.6rem;">De mi pareja srbitral</span>
+                      <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal" style="font-size:0.6rem;">de mi pareja</span>
                     </td>
                     <td class="text-dark text-truncate" :title="inf.categoria" style="max-width: 130px;">{{ inf.categoria || '-' }}</td>
                     <td class="text-dark text-truncate" :title="etiquetaTorneo(inf.torneo)" style="max-width: 180px;">{{ etiquetaTorneo(inf.torneo) }}</td>
@@ -172,7 +172,7 @@
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
                   <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem; line-height: 1.2;">
                     {{ inf.encuentro }}
-                    <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal align-middle" style="font-size:0.6rem;">De mi pareja arbitral</span>
+                    <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal align-middle" style="font-size:0.6rem;">de mi pareja</span>
                   </div>
                   <div class="small text-muted fw-bold text-end">
                     #{{ inf.id }}<br>
@@ -761,7 +761,7 @@ const descargarPDF = async (inf) => {
       </div>
 
       <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Cargado el ${escapar(formatearFechaHora(inf.creado_en))}.
+        Cargado por ${inf.delegado_tecnico ? 'el delegado técnico' : 'el árbitro'} el ${escapar(formatearFechaHora(inf.creado_en))}.
         Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
       </div>
     `;
