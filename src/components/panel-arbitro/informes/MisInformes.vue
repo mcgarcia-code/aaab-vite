@@ -459,7 +459,7 @@
             >
               <span class="text-break d-flex align-items-center gap-2 min-w-0">
                 <i class="bi bi-file-earmark-plus text-success flex-shrink-0"></i>
-                <span class="text-truncate">{{ arc.nombre }}</span>
+                <span class="text-truncate">{{ arc.name }}</span>
               </span>
               <button
                 type="button"
@@ -761,7 +761,7 @@ const descargarPDF = async (inf) => {
       </div>
 
       <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Cargado por ${inf.delegado_tecnico ? 'el delegado técnico' : 'el árbitro'} el ${escapar(formatearFechaHora(inf.creado_en))}.
+        Cargado por ${inf.delegado_tecnico ? 'el delegado técnico' : 'el árbitro'} ${escapar(inf.cargado_por_nombre || inf.delegado_tecnico || inf.arbitros || '')} el ${escapar(formatearFechaHora(inf.creado_en))}.
         Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
       </div>
     `;
@@ -843,7 +843,7 @@ const inputArchivosEdit = ref(null);
 const archivosAEliminar = ref([]);  // ids de archivos existentes a borrar
 const formEdit = reactive({
   torneo: '', implicado: '', sancion: '', institucion: '', motivo_descripcion: '',
-  archivos_nuevos: []  // [{ nombre, base64 }]
+  archivos_nuevos: []  // File[] (binario, multipart)
 });
 
 const edicionValida = computed(() =>
@@ -853,27 +853,14 @@ const edicionValida = computed(() =>
 // Límite por archivo (10 MB)
 const MAX_ARCHIVO_BYTES = 10 * 1024 * 1024;
 
-const fileABase64 = (file) => new Promise((resolve, reject) => {
-  const reader = new FileReader();
-  reader.onload = () => resolve(reader.result);
-  reader.onerror = reject;
-  reader.readAsDataURL(file);
-});
-
-const onArchivosEditSeleccionados = async (e) => {
+const onArchivosEditSeleccionados = (e) => {
   const files = Array.from(e.target.files || []);
   for (const file of files) {
     if (file.size > MAX_ARCHIVO_BYTES) {
       toast({ titulo: 'Archivo muy grande', mensaje: `"${file.name}" supera los 10 MB y no se adjuntó.`, tipo: 'warning' });
       continue;
     }
-    try {
-      const base64 = await fileABase64(file);
-      formEdit.archivos_nuevos.push({ nombre: file.name, base64 });
-    } catch (err) {
-      console.error('Error al leer archivo:', err);
-      toast({ titulo: 'Error', mensaje: `No se pudo procesar "${file.name}".`, tipo: 'danger' });
-    }
+    formEdit.archivos_nuevos.push(file);
   }
   if (inputArchivosEdit.value) inputArchivosEdit.value.value = '';
 };
@@ -916,20 +903,23 @@ const guardarEdicion = async () => {
 
   procesando.value = true;
   try {
-    const res = await api.post({
+    const fd = new FormData();
+    fd.append('id_informe', inf.id);
+    fd.append('torneo', formEdit.torneo);
+    fd.append('implicado', formEdit.implicado.trim());
+    fd.append('sancion', formEdit.sancion.trim());
+    fd.append('institucion', formEdit.institucion);
+    fd.append('institucion_nombre', institucionNombre);
+    fd.append('motivo_descripcion', formEdit.motivo_descripcion.trim());
+    // ids a eliminar como JSON string
+    fd.append('archivos_eliminar', JSON.stringify(archivosAEliminar.value));
+    // archivos nuevos binarios
+    formEdit.archivos_nuevos.forEach(file => fd.append('archivos_nuevos[]', file, file.name));
+
+    const res = await api.postFile({
       entity: 'informes',
       action: 'actualizarInforme',
-      payload: {
-        id_informe: inf.id,
-        torneo: formEdit.torneo,
-        implicado: formEdit.implicado.trim(),
-        sancion: formEdit.sancion.trim(),
-        institucion: formEdit.institucion,
-        institucion_nombre: institucionNombre,
-        motivo_descripcion: formEdit.motivo_descripcion.trim(),
-        archivos_nuevos: formEdit.archivos_nuevos,          // [{ nombre, base64 }]
-        archivos_eliminar: archivosAEliminar.value          // [id, ...]
-      }
+      payload: fd
     });
     if (res.ok || res.success) {
       Object.assign(inf, {

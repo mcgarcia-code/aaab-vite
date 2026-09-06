@@ -174,7 +174,7 @@ const routes = [
       { path: 'facturacion', name: 'InstitucionesCuitAdmin', component: () => import('../components/panel-admin/facturacion/InstitucionesCuitAdmin.vue'), meta: { roles: ['admin', 'secretario', 'tesorero', 'facturacion', 'etica'] } },
 
       // --- INFORMES ---
-      { path: 'informes', name: 'InformesAdmin', component: () => import('../components/panel-admin/informes/InformesAdmin.vue'), meta: { roles: ['admin', 'secretario', 'tesorero', 'facturacion', 'etica'] } },
+      { path: 'informes', name: 'InformesAdmin', component: () => import('../components/panel-admin/informes/InformesAdmin.vue'), meta: { roles: ['admin', 'secretario', 'tesorero', 'etica'] } },
 
       // --- DESARROLLO ARBITRAL ---
 

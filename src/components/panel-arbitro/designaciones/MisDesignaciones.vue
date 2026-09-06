@@ -509,7 +509,7 @@
             >
               <span class="text-break d-flex align-items-center gap-2 min-w-0">
                 <i class="bi bi-file-earmark-text text-danger flex-shrink-0"></i>
-                <span class="text-truncate">{{ arc.nombre }}</span>
+                <span class="text-truncate">{{ arc.name }}</span>
               </span>
               <button
                 type="button"
@@ -934,17 +934,18 @@ const informesDe = (p) => Number(p.informes_count || 0)
 
 const arbitrosDelPartido = (p) => [p.arbitro_1, p.arbitro_2].filter(Boolean).join(' - ') || '-'
 
-// Nombre del delegado técnico que carga el informe (solo cuando la función es 'delegado').
-// El delegado es el propio usuario logueado.
-const nombreDelegadoLogueado = () => {
+// Nombre "Apellido, Nombre" del usuario logueado (quien carga el informe).
+const nombreUsuarioLogueado = () => {
   const u = arbitro.value || {}
   const nom = [u.apellido, u.nombre].filter(Boolean).join(', ')
   return nom || u.nombre || u.apellido || ''
 }
+// Alias usado en el modal cuando el que carga es el delegado técnico.
+const nombreDelegadoLogueado = () => nombreUsuarioLogueado()
 
 // El campo delegado del informe se completa SOLO cuando quien carga es el delegado técnico.
 // Si carga un árbitro, queda vacío (el informe lo hizo el árbitro, no el delegado).
-const delegadoDelInforme = (p) => (p.funcion === 'delegado' ? nombreDelegadoLogueado() : '')
+const delegadoDelInforme = (p) => (p.funcion === 'delegado' ? nombreUsuarioLogueado() : '')
 
 const mostrarModalInforme = ref(false)
 const partidoInforme = ref(null)
@@ -958,34 +959,20 @@ const formInforme = ref({
   sancion: '',
   institucion: '',
   motivo_descripcion: '',
-  archivos: []  // [{ nombre, base64 }]
+  archivos: []  // File[] (binario, se envían por multipart)
 })
 
 // Límite por archivo (10 MB)
 const MAX_ARCHIVO_BYTES = 10 * 1024 * 1024
 
-// Convierte un File a base64 (dataURL, igual que en descargos de sanciones)
-const fileABase64 = (file) => new Promise((resolve, reject) => {
-  const reader = new FileReader()
-  reader.onload = () => resolve(reader.result)
-  reader.onerror = reject
-  reader.readAsDataURL(file)
-})
-
-const onArchivosSeleccionados = async (e) => {
+const onArchivosSeleccionados = (e) => {
   const files = Array.from(e.target.files || [])
   for (const file of files) {
     if (file.size > MAX_ARCHIVO_BYTES) {
       toast({ titulo: 'Archivo muy grande', mensaje: `"${file.name}" supera los 10 MB y no se adjuntó.`, tipo: 'warning' })
       continue
     }
-    try {
-      const base64 = await fileABase64(file)
-      formInforme.value.archivos.push({ nombre: file.name, base64 })
-    } catch (err) {
-      console.error('Error al leer archivo:', err)
-      toast({ titulo: 'Error', mensaje: `No se pudo procesar "${file.name}".`, tipo: 'danger' })
-    }
+    formInforme.value.archivos.push(file)
   }
   // Reset del input para poder volver a elegir el mismo archivo si hace falta
   if (inputArchivos.value) inputArchivos.value.value = ''
@@ -1022,27 +1009,29 @@ const confirmarInforme = async () => {
 
   enviandoInforme.value = true
   try {
-    const res = await api.post({
+    const fd = new FormData()
+    fd.append('id_partido', p.id)
+    fd.append('fecha_partido', fechaLimpia(p.fecha))
+    fd.append('encuentro', `${p.local} vs ${p.visitante}`)
+    fd.append('equipo_local', p.local)
+    fd.append('equipo_visitante', p.visitante)
+    fd.append('categoria', p.categoria_division || '')
+    fd.append('arbitros', arbitrosDelPartido(p))
+    fd.append('delegado_tecnico', delegadoDelInforme(p))
+    fd.append('torneo', f.torneo)
+    fd.append('implicado', f.implicado.trim())
+    fd.append('sancion', f.sancion.trim())
+    fd.append('institucion', f.institucion)
+    fd.append('institucion_nombre', institucionNombre)
+    fd.append('motivo_descripcion', f.motivo_descripcion.trim())
+    fd.append('funcion', p.funcion)
+    // Archivos binarios (multipart). El backend los lee de $_FILES['archivos']
+    f.archivos.forEach(file => fd.append('archivos[]', file, file.name))
+
+    const res = await api.postFile({
       entity: 'informes',
       action: 'crearInforme',
-      payload: {
-        id_partido: p.id,
-        fecha_partido: fechaLimpia(p.fecha),
-        encuentro: `${p.local} vs ${p.visitante}`,
-        equipo_local: p.local,
-        equipo_visitante: p.visitante,
-        categoria: p.categoria_division || '',
-        arbitros: arbitrosDelPartido(p),
-        delegado_tecnico: delegadoDelInforme(p),
-        torneo: f.torneo,
-        implicado: f.implicado.trim(),
-        sancion: f.sancion.trim(),
-        institucion: f.institucion,
-        institucion_nombre: institucionNombre,
-        motivo_descripcion: f.motivo_descripcion.trim(),
-        funcion: p.funcion,
-        archivos: f.archivos  // [{ nombre, base64 }]
-      }
+      payload: fd
     })
     if (res.ok || res.success) {
       // Marca optimista: sumamos uno al contador de la card

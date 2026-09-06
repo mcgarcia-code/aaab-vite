@@ -274,9 +274,31 @@
           <div class="col-12"><DatoDetalle etiqueta="Institución" :valor="informeSel.institucion_nombre" /></div>
           <div class="col-12">
             <label class="form-label small fw-bold text-muted mb-1">Motivo y descripción</label>
-            <div class="border rounded p-2 bg-light small text-break" style="white-space: pre-wrap;">{{ informeSel.motivo_descripcion }}</div>
+            <div v-if="!modoEdicion" class="border rounded p-2 bg-light small text-break" style="white-space: pre-wrap;">{{ informeSel.motivo_descripcion }}</div>
+            <textarea
+              v-else
+              v-model="formAdmin.motivo_descripcion"
+              class="form-control shadow-none"
+              rows="5"
+              placeholder="Motivo y descripción del informe..."
+            ></textarea>
           </div>
-          <div class="col-6"><DatoDetalle :etiqueta="informeSel.delegado_tecnico ? 'Cargado por el delegado técnico' : 'Cargado por el árbitro'" :valor="formatearFechaHora(informeSel.creado_en)" /></div>
+
+          <!-- Cambiar estado (solo en modo edición y si el informe no fue resuelto) -->
+          <div class="col-12" v-if="modoEdicion">
+            <label class="form-label small fw-bold text-muted mb-1">Estado del informe</label>
+            <select v-model="formAdmin.estado" class="form-select form-select-sm shadow-none">
+              <option value="creado">Creado</option>
+              <option value="pendiente">Pendiente (necesita corrección)</option>
+              <option value="aprobado">Aprobado</option>
+              <option value="desestimado">Desestimado</option>
+            </select>
+            <small class="text-muted d-block mt-1">
+              Al pasar a <strong>Pendiente</strong> o <strong>Aprobado</strong> se le avisa por email al árbitro que cargó el informe.
+            </small>
+          </div>
+
+          <div class="col-6"><DatoDetalle :etiqueta="informeSel.delegado_tecnico ? 'Cargado por el delegado técnico' : 'Cargado por el árbitro'" :valor="`${formatearFechaHora(informeSel.creado_en)} — ${informeSel.cargado_por_nombre || informeSel.delegado_tecnico || informeSel.arbitros || '-'}`" /></div>
           <div class="col-6"><DatoDetalle etiqueta="Cargado en Larry" :valor="informeSel.cargado_larry ? 'Sí' : 'No'" /></div>
 
           <!-- COORDINADOR/ES DEL GRUPO (para contacto desde admin) -->
@@ -339,16 +361,39 @@
       </div>
 
       <template #footer>
-        <button
-          v-if="informeSel"
-          @click="descargarPDF(informeSel)"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-          :disabled="descargandoId === informeSel.id"
-        >
-          <span v-if="descargandoId === informeSel.id" class="spinner-border spinner-border-sm"></span>
-          <span v-else class="material-icons" style="font-size:18px;">picture_as_pdf</span> Descargar PDF
-        </button>
-        <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1">CERRAR</button>
+        <!-- Modo edición: guardar / cancelar -->
+        <template v-if="modoEdicion">
+          <button
+            @click="guardarCambiosAdmin"
+            class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+            :disabled="guardandoAdmin"
+          >
+            <span v-if="guardandoAdmin" class="spinner-border spinner-border-sm"></span>
+            <span v-else class="material-icons" style="font-size:18px;">save</span> Guardar cambios
+          </button>
+          <button @click="cancelarEdicionAdmin" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1" :disabled="guardandoAdmin">CANCELAR</button>
+        </template>
+
+        <!-- Modo lectura: editar / PDF / cerrar -->
+        <template v-else>
+          <button
+            v-if="informeSel && (informeSel.estado === 'creado' || informeSel.estado === 'pendiente')"
+            @click="abrirEdicionAdmin"
+            class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+          >
+            <span class="material-icons" style="font-size:18px;">edit</span> Editar
+          </button>
+          <button
+            v-if="informeSel"
+            @click="descargarPDF(informeSel)"
+            class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+            :disabled="descargandoId === informeSel.id"
+          >
+            <span v-if="descargandoId === informeSel.id" class="spinner-border spinner-border-sm"></span>
+            <span v-else class="material-icons" style="font-size:18px;">picture_as_pdf</span> Descargar PDF
+          </button>
+          <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1">CERRAR</button>
+        </template>
       </template>
     </ModalBase>
 
@@ -534,8 +579,83 @@ const toggleLarry = async (inf, event) => {
    ==================================================== */
 const mostrarDetalle = ref(false);
 const informeSel = ref(null);
-const verDetalle = (inf) => { informeSel.value = inf; mostrarDetalle.value = true; };
-const cerrarDetalle = () => { mostrarDetalle.value = false; informeSel.value = null; };
+const verDetalle = (inf) => { informeSel.value = inf; modoEdicion.value = false; mostrarDetalle.value = true; };
+const cerrarDetalle = () => { mostrarDetalle.value = false; informeSel.value = null; modoEdicion.value = false; };
+
+/* ====================================================
+   EDICIÓN DESDE ADMIN (motivo/descripción + estado)
+   Disponible mientras el informe esté 'creado' o 'pendiente'.
+   ==================================================== */
+const modoEdicion = ref(false);
+const guardandoAdmin = ref(false);
+const formAdmin = reactive({ motivo_descripcion: '', estado: '' });
+
+const abrirEdicionAdmin = () => {
+  if (!informeSel.value) return;
+  formAdmin.motivo_descripcion = informeSel.value.motivo_descripcion || '';
+  formAdmin.estado = informeSel.value.estado || 'creado';
+  modoEdicion.value = true;
+};
+
+const cancelarEdicionAdmin = () => {
+  modoEdicion.value = false;
+};
+
+const guardarCambiosAdmin = async () => {
+  const inf = informeSel.value;
+  if (!inf) return;
+  if (!formAdmin.motivo_descripcion.trim()) {
+    toast({ titulo: 'Falta el motivo', mensaje: 'El motivo y descripción no puede quedar vacío.', tipo: 'warning' });
+    return;
+  }
+
+  guardandoAdmin.value = true;
+  try {
+    const estadoCambio = formAdmin.estado !== inf.estado;
+
+    // 1) Guardar motivo/descripción (y demás datos que exige el backend)
+    const fd = new FormData();
+    fd.append('id_informe', inf.id);
+    fd.append('torneo', inf.torneo || '');
+    fd.append('implicado', inf.implicado || '');
+    fd.append('sancion', inf.sancion || '');
+    fd.append('institucion', inf.institucion || '');
+    fd.append('institucion_nombre', inf.institucion_nombre || '');
+    fd.append('motivo_descripcion', formAdmin.motivo_descripcion.trim());
+    fd.append('archivos_eliminar', JSON.stringify([]));
+
+    const resEdit = await api.postFile({
+      entity: 'informes',
+      action: 'actualizarInforme',
+      payload: fd
+    });
+    if (!(resEdit.ok || resEdit.success)) {
+      throw new Error((resEdit.payload && resEdit.payload.mensaje) ? resEdit.payload.mensaje : 'No se pudo guardar el motivo.');
+    }
+    inf.motivo_descripcion = formAdmin.motivo_descripcion.trim();
+
+    // 2) Si cambió el estado, lo actualizamos aparte (dispara el email al árbitro)
+    if (estadoCambio) {
+      const resEstado = await api.post({
+        entity: 'informes',
+        action: 'cambiarEstadoInforme',
+        payload: { id_informe: inf.id, estado: formAdmin.estado }
+      });
+      if (!(resEstado.ok || resEstado.success)) {
+        throw new Error((resEstado.payload && resEstado.payload.mensaje) ? resEstado.payload.mensaje : 'No se pudo cambiar el estado.');
+      }
+      inf.estado = formAdmin.estado;
+    }
+
+    modoEdicion.value = false;
+    toast({ titulo: 'Informe actualizado', mensaje: 'Se guardaron los cambios.', tipo: 'success' });
+  } catch (err) {
+    console.error('Error al guardar cambios admin:', err);
+    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo guardar.', tipo: 'danger' });
+  } finally {
+    guardandoAdmin.value = false;
+  }
+};
 
 /* ====================================================
    DESCARGAR PDF
@@ -619,7 +739,7 @@ const descargarPDF = async (inf) => {
       </div>
 
       <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Cargado por ${inf.delegado_tecnico ? 'el delegado técnico' : 'el árbitro'} el ${escapar(formatearFechaHora(inf.creado_en))}.
+        Cargado por ${inf.delegado_tecnico ? 'el delegado técnico' : 'el árbitro'} ${escapar(inf.cargado_por_nombre || inf.delegado_tecnico || inf.arbitros || '')} el ${escapar(formatearFechaHora(inf.creado_en))}.
         Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
       </div>
     `;
