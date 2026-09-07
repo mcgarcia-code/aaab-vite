@@ -174,9 +174,19 @@
               </template>
             </div>
 
+            <!-- ══════════════════════════════════════════════════
+                 VISTA PREVIA (cómo se verá en el detalle de la observación)
+                 ══════════════════════════════════════════════════ -->
+            <VistaPreviaObservacion
+              v-if="archivoObservacion"
+              :preview="preview"
+              :analizando="analizando"
+              :error-lectura="errorLectura"
+            />
+
             <div class="d-grid d-sm-flex justify-content-sm-center mt-4">
               <button type="button" class="btn btn-danger rounded-pill fw-bold px-4 py-2 shadow-sm"
-                :disabled="procesandoCarga || !archivoObservacion" @click="cargarObservacionExcel">
+                :disabled="procesandoCarga || !archivoObservacion || analizando || !previewValida" @click="cargarObservacionExcel">
                 <span v-if="procesandoCarga" class="spinner-border spinner-border-sm me-2"></span>
                 {{ procesandoCarga ? 'GUARDANDO...' : 'GUARDAR OBSERVACIÓN' }}
               </button>
@@ -204,6 +214,8 @@ import { ref, reactive, computed, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '../../../api/auth'
 import { useHead } from '@vueuse/head'
+import VistaPreviaObservacion from '@/components/VistaPreviaObservacion.vue'
+import { useVistaPreviaObservacion } from '@/composables/useVistaPreviaObservacion'
 
 useHead({
   title: 'Observación Arbitral | AAAB',
@@ -250,6 +262,9 @@ const archivoObservacion = ref(null)
 const arrastrandoArchivo = ref(false)
 const ACEPTA_EXCEL = /\.(xlsx|xls)$/i
 
+// Vista previa (lectura del Excel en el navegador)
+const { analizando, preview, previewValida, errorLectura, analizarArchivo, limpiarPreview } = useVistaPreviaObservacion()
+
 const asignarArchivoObservacion = (file) => {
   if (!file) return
   if (!ACEPTA_EXCEL.test(file.name)) {
@@ -257,6 +272,7 @@ const asignarArchivoObservacion = (file) => {
     return
   }
   archivoObservacion.value = file
+  analizarArchivo(file)
 }
 
 const seleccionarArchivoObservacion = (event) => {
@@ -269,7 +285,7 @@ const soltarArchivoObservacion = (event) => {
   asignarArchivoObservacion(event.dataTransfer.files[0] || null)
 }
 
-const quitarArchivoObservacion = () => { archivoObservacion.value = null }
+const quitarArchivoObservacion = () => { archivoObservacion.value = null; limpiarPreview() }
 
 // -------------------- CARGA DE CATÁLOGOS (igual a la planilla original) --------------------
 const pedirCategoriasEspecificas = async () => {
@@ -367,12 +383,18 @@ const reiniciarFormulario = () => {
   idPartido.value = null
   archivoObservacion.value = null
   arrastrandoArchivo.value = false
+  limpiarPreview()
 }
 
 // -------------------- SUBIR OBSERVACIÓN (Excel) --------------------
 const cargarObservacionExcel = async () => {
   if (!archivoObservacion.value) {
     toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el archivo de Excel para continuar.', tipo: 'warning' })
+    return
+  }
+  // No se permite cargar si la planilla tiene errores o no se pudo leer el puntaje final.
+  if (!previewValida.value) {
+    toast({ titulo: 'Planilla con errores', mensaje: errorLectura.value || 'Revisá la vista previa: no se puede cargar hasta corregir los errores del Excel.', tipo: 'danger' })
     return
   }
   procesandoCarga.value = true

@@ -140,7 +140,6 @@
                     <td class="text-dark text-truncate" :title="categoriaObs(o)" style="max-width: 130px;">{{ categoriaObs(o) }}</td>
                     <td class="text-dark text-truncate" :title="`${o.equipo_local} vs ${o.equipo_visitante}`" style="max-width: 220px;">
                       {{ o.equipo_local }} vs {{ o.equipo_visitante }}
-                      <span v-if="o.numero_partido" class="text-muted">(Nº {{ o.numero_partido }})</span>
                     </td>
                     <td class="text-center">
                       <span :class="badgeEstado(o.estado)">{{ etiquetaEstado(o.estado) }}</span>
@@ -183,8 +182,7 @@
                       <strong class="text-muted">Partido:</strong> {{ o.equipo_local }} vs {{ o.equipo_visitante }}
                       <span class="badge bg-secondary ms-1">{{ categoriaObs(o) }}</span>
                     </p>
-                    <div class="d-flex justify-content-between mt-2 border-top border-secondary-subtle pt-2">
-                      <span class="text-dark small" v-if="o.numero_partido">Nº Partido: <strong>{{ o.numero_partido }}</strong></span>
+                    <div class="d-flex justify-content-end mt-2 border-top border-secondary-subtle pt-2">
                       <span class="text-muted small">Cargado: {{ formatearFechaHora(o.creado_en) }}</span>
                     </div>
                   </div>
@@ -426,12 +424,20 @@
               </button>
             </template>
           </div>
+
+          <!-- VISTA PREVIA: cómo se verá en el detalle de la observación -->
+          <VistaPreviaObservacion
+            v-if="archivoObservacion"
+            :preview="preview"
+            :analizando="analizando"
+            :error-lectura="errorLectura"
+          />
         </div>
 
         <!-- Botones de Acción Formulario -->
         <div class="d-flex gap-3 mt-2 px-3 px-md-4 pb-2">
           <button type="button" @click="cerrarModalCarga" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1 border">CANCELAR</button>
-          <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="procesandoCarga || !archivoObservacion">
+          <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="procesandoCarga || !archivoObservacion || analizando || !previewValida">
             <span v-if="procesandoCarga" class="spinner-border spinner-border-sm me-2"></span>
             {{ procesandoCarga ? 'GUARDANDO...' : 'GUARDAR OBSERVACIÓN' }}
           </button>
@@ -471,7 +477,6 @@
               <td class="py-3"><span class="badge bg-secondary">{{ categoriaObs(h) }}</span></td>
               <td class="py-3 text-dark">
                 {{ h.equipo_local }} vs {{ h.equipo_visitante }}
-                <span v-if="h.numero_partido" class="text-muted">(Nº {{ h.numero_partido }})</span>
               </td>
               <td class="py-3 text-dark">{{ h.competencia }}</td>
               <td class="py-3 text-dark">{{ nombresArbitros(h) }}</td>
@@ -532,7 +537,6 @@
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Observador:</strong> {{ detalle.nombre_observador }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Categoría:</strong> {{ categoriaObs(detalle) }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }}</p>
-          <p class="m-0 small text-dark mt-1" v-if="detalle.numero_partido"><strong class="text-muted">Nº Partido:</strong> {{ detalle.numero_partido }}</p>
           <p class="m-0 small text-dark mt-1" v-if="detalle.puntaje_final != null"><strong class="text-muted">Puntaje final:</strong> <span class="fw-bold text-danger">{{ detalle.puntaje_final }}</span></p>
         </div>
 
@@ -637,6 +641,8 @@ import { api } from '@/api/api';
 import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
+import VistaPreviaObservacion from '@/components/VistaPreviaObservacion.vue';
+import { useVistaPreviaObservacion } from '@/composables/useVistaPreviaObservacion';
 
 useHead({
   title: 'Observaciones | AAAB',
@@ -719,7 +725,7 @@ const observacionesFiltradas = computed(() => {
     const matchArb = normalizar(nombresArbitros(o)).includes(normalizar(filtros.arbitros));
     const matchComp = normalizar(o.competencia).includes(normalizar(filtros.competencia));
     const matchCat = normalizar(categoriaObs(o)).includes(normalizar(filtros.categoria));
-    const matchPar = normalizar(`${o.equipo_local} ${o.equipo_visitante} ${o.numero_partido}`).includes(normalizar(filtros.partido));
+    const matchPar = normalizar(`${o.equipo_local} ${o.equipo_visitante}`).includes(normalizar(filtros.partido));
 
     return matchFec && matchAnio && matchEstado && matchObs && matchArb && matchComp && matchCat && matchPar;
   });
@@ -840,6 +846,9 @@ const partidoSeleccionado = computed(() => partidos.value.find(p => p.id === idP
 const archivoObservacion = ref(null);
 const arrastrandoArchivo = ref(false);
 
+// Vista previa (lectura del Excel en el navegador)
+const { analizando, preview, previewValida, errorLectura, analizarArchivo, limpiarPreview } = useVistaPreviaObservacion();
+
 const abrirModalCarga = () => { mostrarModalCarga.value = true; cargarArbitrosObservadores(); };
 const cerrarModalCarga = () => { mostrarModalCarga.value = false; reiniciarFormularioCarga(); };
 
@@ -916,6 +925,7 @@ const asignarArchivoObservacion = (file) => {
     return;
   }
   archivoObservacion.value = file;
+  analizarArchivo(file);
 };
 
 const seleccionarArchivoObservacion = (event) => {
@@ -928,7 +938,7 @@ const soltarArchivoObservacion = (event) => {
   asignarArchivoObservacion(event.dataTransfer.files[0] || null);
 };
 
-const quitarArchivoObservacion = () => { archivoObservacion.value = null; };
+const quitarArchivoObservacion = () => { archivoObservacion.value = null; limpiarPreview(); };
 
 const armarDatosPartido = () => {
   const datos = { ...formulario };
@@ -952,6 +962,11 @@ const cargarObservacionExcel = async () => {
   }
   if (!formulario.id_observador) {
     toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el observador que realizó la observación.', tipo: 'warning' });
+    return;
+  }
+  // No se permite cargar si la planilla tiene errores o no se pudo leer el puntaje final.
+  if (!previewValida.value) {
+    toast({ titulo: 'Planilla con errores', mensaje: errorLectura.value || 'Revisá la vista previa: no se puede cargar hasta corregir los errores del Excel.', tipo: 'danger' });
     return;
   }
   procesandoCarga.value = true;
@@ -986,6 +1001,7 @@ const reiniciarFormularioCarga = () => {
   idPartido.value = null;
   archivoObservacion.value = null;
   arrastrandoArchivo.value = false;
+  limpiarPreview();
 };
 
 /* ====================================================
@@ -1043,7 +1059,7 @@ const verDetalle = async (obs) => {
     } else {
       toast({ titulo: 'Error', mensaje: 'No se pudo cargar el detalle.', tipo: 'danger' });
     }
-  } catch (error) {
+  } catch {
     toast({ titulo: 'Error', mensaje: 'Fallo al cargar el detalle.', tipo: 'danger' });
   } finally {
     cargandoDetalleId.value = null;
