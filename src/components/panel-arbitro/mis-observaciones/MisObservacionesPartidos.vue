@@ -62,7 +62,7 @@
                         <div class="text-dark fw-bold small mb-1">
                           <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatearFecha(obs.fecha_partido) }}
                         </div>
-                        <div class="text-muted small text-truncate" style="max-width: 220px;">{{ obs.competencia || 'Observación' }}</div>
+                        <div class="text-muted small text-truncate" style="max-width: 220px;">{{ nombreTorneo(obs) || 'Observación' }}</div>
                       </div>
                       <span class="badge bg-secondary">{{ categoriaObs(obs) }}</span>
                     </div>
@@ -96,7 +96,7 @@
         <!-- Datos básicos: día, partido, categoría, observador -->
         <div class="bg-light p-3 rounded border mb-3 border-secondary-subtle">
           <p class="m-0 small text-dark"><strong class="text-muted">Día:</strong> {{ formatearFecha(detalle.fecha_partido) }}</p>
-          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Competencia:</strong> {{ detalle.competencia || '-' }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Competencia:</strong> {{ nombreTorneo(detalle) || '-' }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Categoría:</strong> {{ categoriaObs(detalle) }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Observador:</strong> {{ detalle.observador }}</p>
@@ -165,6 +165,25 @@ useHead({
 const observaciones = ref([])
 const cargando = ref(false)
 const filtroAnio = ref('')
+
+// Torneos: se resuelve id -> nombre (reemplaza la competencia que venía del Excel)
+const torneos = ref([])
+
+const obtenerTorneos = async () => {
+  try {
+    const res = await api.get({ entity: 'observaciones', action: 'obtenerTorneos' })
+    if ((res.ok || res.success) && Array.isArray(res.payload)) torneos.value = res.payload
+  } catch (error) {
+    console.error('Error pidiendo torneos:', error)
+  }
+}
+
+// Devuelve el nombre del torneo a partir del id guardado en la observación.
+// Cadena vacía si no hay match, para respetar el fallback ('Observación') de la tarjeta.
+const nombreTorneo = (o) => {
+  const t = torneos.value.find(t => String(t.id) === String(o?.id_torneo))
+  return t ? t.nombre : ''
+}
 
 const formatearFecha = (fechaIso) => {
   if (!fechaIso) return 'S/F'
@@ -271,7 +290,10 @@ const obtenerObservaciones = async () => {
   }
 }
 
-onMounted(obtenerObservaciones)
+onMounted(() => {
+  obtenerObservaciones()
+  obtenerTorneos()
+})
 </script>
 
 <style scoped>

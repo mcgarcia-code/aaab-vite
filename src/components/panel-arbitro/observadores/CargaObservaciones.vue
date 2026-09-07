@@ -75,6 +75,14 @@
               </div>
             </div>
 
+            <div class="mb-3 animate__animated animate__fadeIn">
+              <label class="form-label fw-bold text-uppercase small text-dark">Torneo *</label>
+              <select v-model="formulario.id_torneo" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoTorneos">
+                <option value="" disabled>{{ cargandoTorneos ? 'Cargando...' : 'Seleccione torneo' }}</option>
+                <option v-for="t in torneos" :key="t.id" :value="t.id">{{ t.nombre }}</option>
+              </select>
+            </div>
+
             <div v-if="idCategoria" class="mb-3 animate__animated animate__fadeIn">
               <label class="form-label fw-bold text-uppercase small text-dark">Fecha del Partido *</label>
               <input type="date" @change="obtenerPartidos()" v-model="fechaPartido" class="form-control shadow-sm border-secondary-subtle" required>
@@ -210,7 +218,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, inject } from 'vue'
+import { ref, reactive, computed, watch, inject, onMounted } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '../../../api/auth'
 import { useHead } from '@vueuse/head'
@@ -245,8 +253,25 @@ const formulario = reactive({
   partido_categoria: '',
   inf_nivel: '',
   id_categoria_especifica: '',
-  categoria: ''
+  categoria: '',
+  id_torneo: ''
 })
+
+// Torneos (reemplazan a la competencia que venía del Excel)
+const torneos = ref([])
+const cargandoTorneos = ref(false)
+
+const obtenerTorneos = async () => {
+  cargandoTorneos.value = true
+  try {
+    const res = await api.get({ entity: 'observaciones', action: 'obtenerTorneos' })
+    if (res && res.ok && Array.isArray(res.payload)) torneos.value = res.payload
+  } catch (error) {
+    console.error('Error pidiendo torneos:', error)
+  } finally {
+    cargandoTorneos.value = false
+  }
+}
 
 const idCategoria = ref(null)
 
@@ -352,6 +377,8 @@ watch(() => [formulario.partido_genero, formulario.partido_categoria], () => {
   pedirCategoriasEspecificas()
 })
 
+onMounted(obtenerTorneos)
+
 // -------------------- ARMADO DE DATOS DEL PARTIDO --------------------
 const armarDatosPartido = () => {
   const datos = { ...formulario }
@@ -364,6 +391,8 @@ const armarDatosPartido = () => {
     datos.categoria = listas.divisiones_categorias[formulario.id_categoria_especifica].categoria
   }
   datos.id_categoria = idCategoria.value
+  // El torneo lo elige el usuario; el back guarda id + nombre. Se descarta la competencia del Excel.
+  datos.id_torneo = formulario.id_torneo
   datos.fecha_partido = fechaPartido.value
   datos.id_partido = idPartido.value
   // Los árbitros son de solo lectura: se extraen del partido designado
@@ -375,7 +404,7 @@ const armarDatosPartido = () => {
 const reiniciarFormulario = () => {
   Object.assign(formulario, {
     partido_genero: '', partido_categoria: '', inf_nivel: '', id_categoria_especifica: '',
-    categoria: ''
+    categoria: '', id_torneo: ''
   })
   idCategoria.value = null
   fechaPartido.value = ''

@@ -95,7 +95,7 @@
                       <!-- Anular: sólo si está pendiente -->
                       <button v-if="esPendiente(obs)" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="pedirAnular(obs)" title="Anular observación">
                         <span class="material-icons" style="font-size: 16px;">block</span>
-                      </button> class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger"
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -169,7 +169,7 @@
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
           <div>
             <p class="m-0 fw-bold small text-dark">Observación #{{ detalle.id }}</p>
-            <p class="m-0 text-muted small">{{ formatearFecha(detalle.fecha_partido) }} — {{ detalle.competencia }}</p>
+            <p class="m-0 text-muted small">{{ formatearFecha(detalle.fecha_partido) }} — {{ nombreTorneo(detalle) }}</p>
           </div>
           <span class="align-self-center" :class="badgeEstado(detalle.estado)">
             {{ etiquetaEstado(detalle.estado) }}
@@ -316,6 +316,24 @@ useHead({
 const busqueda = ref('')
 const observaciones = ref([])
 const cargando = ref(false)
+
+// Torneos: se resuelve id -> nombre (reemplaza la competencia que venía del Excel)
+const torneos = ref([])
+
+const obtenerTorneos = async () => {
+  try {
+    const res = await api.get({ entity: 'observaciones', action: 'obtenerTorneos' })
+    if (res && res.ok && Array.isArray(res.payload)) torneos.value = res.payload
+  } catch (error) {
+    console.error('Error pidiendo torneos:', error)
+  }
+}
+
+// Devuelve el nombre del torneo a partir del id guardado en la observación.
+const nombreTorneo = (o) => {
+  const t = torneos.value.find(t => String(t.id) === String(o?.id_torneo))
+  return t ? t.nombre : '-'
+}
 const paginaActual = ref(1)
 const registrosPorPagina = 10
 
@@ -497,7 +515,10 @@ const obtenerObservaciones = async () => {
   }
 }
 
-onMounted(obtenerObservaciones)
+onMounted(() => {
+  obtenerObservaciones()
+  obtenerTorneos()
+})
 </script>
 
 <style scoped>

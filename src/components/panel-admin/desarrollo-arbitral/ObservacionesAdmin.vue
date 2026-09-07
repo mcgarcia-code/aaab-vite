@@ -136,7 +136,7 @@
                     <td class="text-center fw-bold col-fija col-fecha">{{ formatearFecha(o.fecha_partido) }}</td>
                     <td class="text-dark text-truncate" :title="o.nombre_observador" style="max-width: 180px;">{{ o.nombre_observador }}</td>
                     <td class="fw-bold text-uppercase text-dark text-truncate" :title="nombresArbitros(o)" style="max-width: 220px;">{{ nombresArbitros(o) }}</td>
-                    <td class="text-dark text-truncate" :title="o.competencia" style="max-width: 180px;">{{ o.competencia }}</td>
+                    <td class="text-dark text-truncate" :title="nombreTorneo(o)" style="max-width: 180px;">{{ nombreTorneo(o) }}</td>
                     <td class="text-dark text-truncate" :title="categoriaObs(o)" style="max-width: 130px;">{{ categoriaObs(o) }}</td>
                     <td class="text-dark text-truncate" :title="`${o.equipo_local} vs ${o.equipo_visitante}`" style="max-width: 220px;">
                       {{ o.equipo_local }} vs {{ o.equipo_visitante }}
@@ -177,7 +177,7 @@
                 <div class="card-body pt-0 px-3 pb-3">
                   <div class="bg-light p-2 rounded border mt-2 border-light-subtle">
                     <p class="m-0 text-dark small"><strong class="text-muted">Obs:</strong> {{ o.nombre_observador }}</p>
-                    <p class="m-0 text-dark small mt-1"><strong class="text-muted">Competencia:</strong> {{ o.competencia }}</p>
+                    <p class="m-0 text-dark small mt-1"><strong class="text-muted">Competencia:</strong> {{ nombreTorneo(o) }}</p>
                     <p class="m-0 text-dark small mt-1">
                       <strong class="text-muted">Partido:</strong> {{ o.equipo_local }} vs {{ o.equipo_visitante }}
                       <span class="badge bg-secondary ms-1">{{ categoriaObs(o) }}</span>
@@ -244,8 +244,11 @@
         </div>
       </div>
       <div class="text-start">
-        <label class="small fw-bold mb-1 text-dark">Competencia</label>
-        <input v-model="competenciaEditada" class="form-control shadow-none border-secondary-subtle mb-3" placeholder="Competencia (corregir si hay error de tipeo)">
+        <label class="small fw-bold mb-1 text-dark">Torneo</label>
+        <select v-model="torneoEditado" class="form-select shadow-none border-secondary-subtle mb-3" :disabled="cargandoTorneos">
+          <option value="" disabled>{{ cargandoTorneos ? 'Cargando...' : 'Seleccione torneo' }}</option>
+          <option v-for="t in torneos" :key="t.id" :value="t.id">{{ t.nombre }}</option>
+        </select>
 
         <label class="small fw-bold mb-1 text-dark">Actualizar Estado de la Observación</label>
         <select v-model="nuevoEstado" class="form-select shadow-none border-primary-subtle fw-bold">
@@ -327,6 +330,14 @@
                 <option v-for="opt in listas.divisiones" :key="opt.idCategoria" :value="opt.idCategoria">{{ opt.division }}</option>
               </select>
             </div>
+          </div>
+
+          <div class="mb-3 animate__animated animate__fadeIn">
+            <label class="form-label fw-bold text-uppercase small text-dark">Torneo *</label>
+            <select v-model="formulario.id_torneo" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoTorneos">
+              <option value="" disabled>{{ cargandoTorneos ? 'Cargando...' : 'Seleccione torneo' }}</option>
+              <option v-for="t in torneos" :key="t.id" :value="t.id">{{ t.nombre }}</option>
+            </select>
           </div>
 
           <div v-if="idCategoria" class="mb-3 animate__animated animate__fadeIn">
@@ -478,7 +489,7 @@
               <td class="py-3 text-dark">
                 {{ h.equipo_local }} vs {{ h.equipo_visitante }}
               </td>
-              <td class="py-3 text-dark">{{ h.competencia }}</td>
+              <td class="py-3 text-dark">{{ nombreTorneo(h) }}</td>
               <td class="py-3 text-dark">{{ nombresArbitros(h) }}</td>
               <td class="py-3 pe-3 text-center"><span :class="badgeEstado(h.estado)">{{ etiquetaEstado(h.estado) }}</span></td>
             </tr>
@@ -507,7 +518,7 @@
           </div>
           <div class="d-flex justify-content-between border-bottom pb-2 mb-2 small">
             <span class="fw-bold text-dark">Competencia:</span>
-            <span class="text-muted">{{ h.competencia }}</span>
+            <span class="text-muted">{{ nombreTorneo(h) }}</span>
           </div>
           <div class="d-flex justify-content-between align-items-center small">
             <span class="fw-bold text-dark">Estado:</span>
@@ -525,7 +536,7 @@
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
           <div>
             <p class="m-0 fw-bold small text-dark">Observación #{{ detalle.id }}</p>
-            <p class="m-0 text-muted small">{{ formatearFecha(detalle.fecha_partido) }} — {{ detalle.competencia }}</p>
+            <p class="m-0 text-muted small">{{ formatearFecha(detalle.fecha_partido) }} — {{ nombreTorneo(detalle) }}</p>
           </div>
           <span class="align-self-center" :class="badgeEstado(detalle.estado)">
             {{ etiquetaEstado(detalle.estado) }}
@@ -723,7 +734,7 @@ const observacionesFiltradas = computed(() => {
     const matchEstado = !filtros.estado || (o.estado || 'pendiente').toLowerCase() === filtros.estado;
     const matchObs = normalizar(o.nombre_observador).includes(normalizar(filtros.nombre_observador));
     const matchArb = normalizar(nombresArbitros(o)).includes(normalizar(filtros.arbitros));
-    const matchComp = normalizar(o.competencia).includes(normalizar(filtros.competencia));
+    const matchComp = normalizar(nombreTorneo(o)).includes(normalizar(filtros.competencia));
     const matchCat = normalizar(categoriaObs(o)).includes(normalizar(filtros.categoria));
     const matchPar = normalizar(`${o.equipo_local} ${o.equipo_visitante}`).includes(normalizar(filtros.partido));
 
@@ -771,7 +782,7 @@ const mostrarModal = ref(false);
 const observacionActual = ref({});
 const nuevoEstado = ref('');
 const comentariosRevision = ref('');
-const competenciaEditada = ref('');
+const torneoEditado = ref('');
 
 // La opción "anular" en el modal sólo se habilita si la observación sigue pendiente.
 const gestionEsPendiente = computed(() => (observacionActual.value.estado || 'pendiente').toLowerCase() === 'pendiente');
@@ -780,7 +791,7 @@ const abrirModalGestion = (obs) => {
   observacionActual.value = { ...obs };
   nuevoEstado.value = (obs.estado || 'pendiente').toLowerCase();
   comentariosRevision.value = '';
-  competenciaEditada.value = obs.competencia || '';
+  torneoEditado.value = obs.id_torneo || '';
   mostrarModal.value = true;
 };
 
@@ -790,12 +801,12 @@ const guardarCambiosGestion = async () => {
   cargando.value = true;
   try {
     // Recordatorio: NO enviar puntaje_final, se calcula dinámicamente.
-    // Se envía la competencia por si el admin la corrigió (error de tipeo del observador).
+    // Se envía el torneo por si el admin lo corrigió (el back guarda id + nombre).
     const payload = {
       id: observacionActual.value.id,
       estado: nuevoEstado.value,
       comentarios: comentariosRevision.value,
-      competencia: competenciaEditada.value
+      id_torneo: torneoEditado.value
     };
     const res = await api.post({ entity: 'observaciones', action: 'actualizarEstado', payload: payload });
 
@@ -830,8 +841,29 @@ const listas = reactive({
 
 const formulario = reactive({
   partido_genero: '', partido_categoria: '', inf_nivel: '',
-  id_categoria_especifica: '', categoria: '', id_observador: ''
+  id_categoria_especifica: '', categoria: '', id_observador: '', id_torneo: ''
 });
+
+// Torneos: se usa en el select de carga/gestión y para resolver id -> nombre en las tablas.
+const torneos = ref([]);
+const cargandoTorneos = ref(false);
+
+const obtenerTorneos = async () => {
+  cargandoTorneos.value = true;
+  try {
+    const res = await api.get({ entity: 'observaciones', action: 'obtenerTorneos' });
+    if (res && res.ok && Array.isArray(res.payload)) torneos.value = res.payload;
+  } catch (error) {
+    console.error('Error pidiendo torneos:', error);
+  } finally {
+    cargandoTorneos.value = false;
+  }
+};
+
+const nombreTorneo = (o) => {
+  const t = torneos.value.find(t => String(t.id) === String(o?.id_torneo));
+  return t ? t.nombre : '-';
+};
 
 const idCategoria = ref(null);
 
@@ -857,7 +889,7 @@ const cargarArbitrosObservadores = async () => {
   if (listaArbitros.value.length) return; // ya cargados
   cargandoArbitros.value = true;
   try {
-    const res = await api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: true } });
+    const res = await api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: false } });
     if (res && res.ok && Array.isArray(res.payload)) {
       listaArbitros.value = res.payload
         .slice()
@@ -948,6 +980,8 @@ const armarDatosPartido = () => {
     datos.categoria = listas.divisiones_categorias[formulario.id_categoria_especifica].categoria;
   }
   datos.id_categoria = idCategoria.value;
+  // El torneo lo elige el usuario; el back guarda id + nombre. Se descarta la competencia del Excel.
+  datos.id_torneo = formulario.id_torneo;
   datos.fecha_partido = fechaPartido.value;
   datos.id_partido = idPartido.value;
   datos.id_arb1 = partidoSeleccionado.value?.id_arb1 ?? null;
@@ -962,6 +996,10 @@ const cargarObservacionExcel = async () => {
   }
   if (!formulario.id_observador) {
     toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el observador que realizó la observación.', tipo: 'warning' });
+    return;
+  }
+  if (!formulario.id_torneo) {
+    toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el torneo.', tipo: 'warning' });
     return;
   }
   // No se permite cargar si la planilla tiene errores o no se pudo leer el puntaje final.
@@ -993,7 +1031,7 @@ const cargarObservacionExcel = async () => {
 
 const reiniciarFormularioCarga = () => {
   Object.assign(formulario, {
-    partido_genero: '', partido_categoria: '', inf_nivel: '', id_categoria_especifica: '', categoria: '', id_observador: ''
+    partido_genero: '', partido_categoria: '', inf_nivel: '', id_categoria_especifica: '', categoria: '', id_observador: '', id_torneo: ''
   });
   idCategoria.value = null;
   fechaPartido.value = '';
@@ -1096,8 +1134,8 @@ const exportarExcel = async () => {
   }
   const datosExportar = observacionesFiltradas.value.map(o => ({
     'ID': o.id, 'Fecha': formatearFecha(o.fecha_partido), 'Observador': o.nombre_observador, 'Árbitros': o.arbitros,
-    'Competencia': o.competencia, 'Categoría': o.categoria_edad, 'Local': o.equipo_local, 'Visitante': o.equipo_visitante,
-    'Nº Partido': o.numero_partido, 'Estado': etiquetaEstado(o.estado), 'Cargado': o.creado_en
+    'Competencia': nombreTorneo(o), 'Categoría': o.categoria_edad, 'Local': o.equipo_local, 'Visitante': o.equipo_visitante,
+    'Estado': etiquetaEstado(o.estado), 'Cargado': o.creado_en
   }));
 
   const wb = new ExcelJS.Workbook();
@@ -1123,6 +1161,7 @@ const exportarExcel = async () => {
 // Inicialización
 onMounted(() => {
   obtenerObservaciones();
+  obtenerTorneos();
 });
 </script>
 

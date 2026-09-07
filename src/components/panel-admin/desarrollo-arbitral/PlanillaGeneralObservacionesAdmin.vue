@@ -131,7 +131,7 @@
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
           <div>
             <p class="m-0 fw-bold small text-dark">Observación #{{ detalle.id }}</p>
-            <p class="m-0 text-muted small">{{ formatearFecha(detalle.fecha_partido) }} — {{ detalle.competencia }}</p>
+            <p class="m-0 text-muted small">{{ formatearFecha(detalle.fecha_partido) }} — {{ nombreTorneo(detalle) }}</p>
           </div>
           <span class="align-self-center" :class="badgeEstado(detalle.estado)">{{ etiquetaEstado(detalle.estado) }}</span>
         </div>
@@ -141,7 +141,6 @@
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Observador:</strong> {{ detalle.observador }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Categoría:</strong> {{ categoriaObs(detalle) }}</p>
           <p class="m-0 small text-dark mt-1"><strong class="text-muted">Partido:</strong> {{ detalle.equipo_local }} vs {{ detalle.equipo_visitante }}</p>
-          <p class="m-0 small text-dark mt-1" v-if="detalle.numero_partido"><strong class="text-muted">Nº Partido:</strong> {{ detalle.numero_partido }}</p>
           <p class="m-0 small text-dark mt-1" v-if="detalle.puntaje_final != null"><strong class="text-muted">Puntaje final:</strong> <span class="fw-bold text-danger">{{ detalle.puntaje_final }}</span></p>
         </div>
 
@@ -312,6 +311,21 @@ const cargarGrupos = async () => {
   } catch (e) { console.error('cargarGrupos:', e) }
 }
 
+// Torneos: se resuelve id -> nombre (reemplaza la competencia del Excel)
+const torneos = ref([])
+
+const cargarTorneos = async () => {
+  try {
+    const res = await api.get({ entity: 'observaciones', action: 'obtenerTorneos' })
+    if ((res.ok || res.success) && Array.isArray(res.payload)) torneos.value = res.payload
+  } catch (e) { console.error('cargarTorneos:', e) }
+}
+
+const nombreTorneo = (o) => {
+  const t = torneos.value.find(t => String(t.id) === String(o?.id_torneo))
+  return t ? t.nombre : '-'
+}
+
 const cargarObservaciones = async () => {
   try {
     // El admin ve TODAS las observaciones (obtenerEvaluaciones ya devuelve todo para roles altos).
@@ -322,7 +336,7 @@ const cargarObservaciones = async () => {
 
 const cargarTodo = async () => {
   cargando.value = true
-  await Promise.all([cargarArbitros(), cargarGrupos(), cargarObservaciones()])
+  await Promise.all([cargarArbitros(), cargarGrupos(), cargarObservaciones(), cargarTorneos()])
   if (!grupoActivo.value && gruposTabs.value.length > 0) grupoActivo.value = gruposTabs.value[0]
   cargando.value = false
 }

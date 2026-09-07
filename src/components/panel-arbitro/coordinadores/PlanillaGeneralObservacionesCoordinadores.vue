@@ -131,7 +131,7 @@
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
           <div>
             <p class="m-0 fw-bold small text-dark">Observación #{{ detalle.id }}</p>
-            <p class="m-0 text-muted small">{{ formatearFecha(detalle.fecha_partido) }} — {{ detalle.competencia }}</p>
+            <p class="m-0 text-muted small">{{ formatearFecha(detalle.fecha_partido) }} — {{ nombreTorneo(detalle) }}</p>
           </div>
           <span class="align-self-center" :class="badgeEstado(detalle.estado)">{{ etiquetaEstado(detalle.estado) }}</span>
         </div>
@@ -295,6 +295,23 @@ const badgeEstado = (estado) => {
 }
 
 /* ====================================================
+   TORNEOS: se resuelve id -> nombre (reemplaza la competencia del Excel)
+   ==================================================== */
+const torneos = ref([])
+
+const cargarTorneos = async () => {
+  try {
+    const res = await api.get({ entity: 'observaciones', action: 'obtenerTorneos' })
+    if ((res.ok || res.success) && Array.isArray(res.payload)) torneos.value = res.payload
+  } catch (e) { console.error('cargarTorneos:', e) }
+}
+
+const nombreTorneo = (o) => {
+  const t = torneos.value.find(t => String(t.id) === String(o?.id_torneo))
+  return t ? t.nombre : '-'
+}
+
+/* ====================================================
    CARGA DE DATOS
    ==================================================== */
 const cargarArbitros = async () => {
@@ -322,7 +339,7 @@ const cargarObservaciones = async () => {
 
 const cargarTodo = async () => {
   cargando.value = true
-  await Promise.all([cargarArbitros(), cargarGrupos(), cargarObservaciones()])
+  await Promise.all([cargarArbitros(), cargarGrupos(), cargarObservaciones(), cargarTorneos()])
   if (!grupoActivo.value && gruposTabs.value.length > 0) grupoActivo.value = gruposTabs.value[0]
   cargando.value = false
 }
