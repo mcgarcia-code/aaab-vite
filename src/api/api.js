@@ -47,7 +47,6 @@ function obtenerConfigArchivo(datos = {}) {
 }
 
 async function request(metodo, datos = {}, tipoPost = 'json') {
-  console.log(datos)
   const config = metodo === 'POST'
     ? (tipoPost === 'archivo' ? obtenerConfigArchivo(datos) : obtenerConfigJson(datos))
     : {
