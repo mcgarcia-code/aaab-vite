@@ -28,6 +28,11 @@
               <span class="material-icons text-dark fs-6">filter_alt_off</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
+
+            <button @click="abrirModalCarga" class="btn btn-danger shadow-sm py-2 d-flex align-items-center gap-2 fw-bold">
+              <span class="material-icons fs-6">note_add</span>
+              <span class="d-none d-md-inline small">Cargar informe</span>
+            </button>
           </div>
         </div>
 
@@ -259,7 +264,7 @@
             <div class="border rounded p-2 bg-light small text-break" style="white-space: pre-wrap;">{{ informeSel.motivo_descripcion }}</div>
           </div>
           <div class="col-12">
-            <DatoDetalle :etiqueta="informeSel.delegado_tecnico ? 'Cargado por el delegado técnico' : 'Cargado por el árbitro'" :valor="`${formatearFechaHora(informeSel.creado_en)} — ${informeSel.cargado_por_nombre || informeSel.delegado_tecnico || informeSel.arbitros || '-'}`" />
+            <DatoDetalle :etiqueta="informeSel.cargado_por_es_rol ? 'Cargado por' : (informeSel.delegado_tecnico ? 'Cargado por el delegado técnico' : 'Cargado por el árbitro')" :valor="`${formatearFechaHora(informeSel.creado_en)} — ${informeSel.cargado_por_nombre || informeSel.delegado_tecnico || informeSel.arbitros || '-'}`" />
           </div>
 
           <!-- ARCHIVOS ADJUNTOS -->
@@ -310,15 +315,6 @@
       </div>
 
       <template #footer>
-        <button
-          v-if="informeSel"
-          @click="descargarPDF(informeSel)"
-          class="btn btn-outline-danger rounded-pill px-4 fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-          :disabled="descargandoId === informeSel.id"
-        >
-          <span v-if="descargandoId === informeSel.id" class="spinner-border spinner-border-sm"></span>
-          <span v-else class="material-icons" style="font-size:18px;">picture_as_pdf</span> PDF
-        </button>
         <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1" :disabled="procesando">
           Cancelar
         </button>
@@ -439,6 +435,9 @@
       </template>
     </ModalBase>
 
+    <!-- Modal compartido de carga de informe -->
+    <ModalCargarInforme :show="mostrarCarga" @close="cerrarModalCarga" @cargado="obtenerInformes" />
+
   </div>
 </template>
 
@@ -448,6 +447,7 @@ import { api } from '@/api/api';
 import html2pdf from 'html2pdf.js';
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
+import ModalCargarInforme from '@/components/ModalCargarInforme.vue';
 
 useHead({
   title: 'Informes de mi grupo | AAAB',
@@ -688,7 +688,7 @@ const descargarPDF = async (inf) => {
       </div>
 
       <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Cargado por ${inf.delegado_tecnico ? 'el delegado técnico' : 'el árbitro'} ${escapar(inf.cargado_por_nombre || inf.delegado_tecnico || inf.arbitros || '')} el ${escapar(formatearFechaHora(inf.creado_en))}.
+        Cargado por ${inf.cargado_por_es_rol ? escapar(inf.cargado_por_nombre || '') : ((inf.delegado_tecnico ? 'el delegado técnico ' : 'el árbitro ') + escapar(inf.cargado_por_nombre || inf.delegado_tecnico || inf.arbitros || ''))} el ${escapar(formatearFechaHora(inf.creado_en))}.
         Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
       </div>
     `;
@@ -850,6 +850,13 @@ const guardarEdicion = async () => {
     procesando.value = false;
   }
 };
+
+/* ====================================================
+   CARGAR INFORME (modal compartido)
+   ==================================================== */
+const mostrarCarga = ref(false);
+const abrirModalCarga = () => { mostrarCarga.value = true; };
+const cerrarModalCarga = () => { mostrarCarga.value = false; };
 
 onMounted(obtenerInformes);
 </script>

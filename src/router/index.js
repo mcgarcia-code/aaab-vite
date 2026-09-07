@@ -24,7 +24,7 @@ const routes = [
     beforeEnter: (to, from, next) => {
       if (auth.isLoggedIn()) {
         const user = auth.getUser();
-        const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso', 'indumentaria'];
+        const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso', 'informes', 'indumentaria'];
         rolesStaff.includes(user?.rol) ? next('/panel-admin') : next('/panel-arbitro');
       } else {
         next();
@@ -138,7 +138,7 @@ const routes = [
   {
     path: '/panel-admin',
     component: () => import('../components/panel-admin/AdminPanel.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso', 'indumentaria'] },
+    meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso', 'informes', 'indumentaria'] },
     children: [
       { path: '', name: 'AdminInicio', component: () => import('../components/panel-admin/AdminInicio.vue') },
 
@@ -174,7 +174,7 @@ const routes = [
       { path: 'facturacion', name: 'InstitucionesCuitAdmin', component: () => import('../components/panel-admin/facturacion/InstitucionesCuitAdmin.vue'), meta: { roles: ['admin', 'secretario', 'tesorero', 'facturacion', 'etica'] } },
 
       // --- INFORMES ---
-      { path: 'informes', name: 'InformesAdmin', component: () => import('../components/panel-admin/informes/InformesAdmin.vue'), meta: { roles: ['admin', 'secretario', 'tesorero', 'etica'] } },
+      { path: 'informes', name: 'InformesAdmin', component: () => import('../components/panel-admin/informes/InformesAdmin.vue'), meta: { roles: ['admin', 'secretario', 'etica', 'informes', 'coordinador general'] } },
 
       // --- DESARROLLO ARBITRAL ---
 
@@ -208,7 +208,7 @@ router.beforeEach((to, from, next) => {
   const user = auth.getUser();
   const userRole = user?.rol;
 
-  const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso', 'indumentaria'];
+  const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso', 'informes', 'indumentaria'];
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!estaLogueado) {

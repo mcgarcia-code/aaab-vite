@@ -28,6 +28,11 @@
               <span class="material-icons text-dark fs-6">filter_alt_off</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
+
+            <button @click="abrirModalCarga" class="btn btn-danger shadow-sm py-2 d-flex align-items-center gap-2 fw-bold">
+              <span class="material-icons fs-6">note_add</span>
+              <span class="d-none d-md-inline small">Cargar informe</span>
+            </button>
           </div>
         </div>
 
@@ -128,6 +133,14 @@
                         >
                           <span v-if="descargandoId === inf.id" class="spinner-border spinner-border-sm" style="width:14px;height:14px;"></span>
                           <span v-else class="material-icons" style="font-size:16px;">picture_as_pdf</span>
+                        </button>
+                        <button
+                          v-if="inf.estado === 'creado' || inf.estado === 'pendiente'"
+                          @click="editarDesdeTabla(inf)"
+                          class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary"
+                          title="Editar"
+                        >
+                          <span class="material-icons" style="font-size:16px;">edit</span>
                         </button>
                       </div>
                     </td>
@@ -292,13 +305,15 @@
               <option value="pendiente">Pendiente (necesita corrección)</option>
               <option value="aprobado">Aprobado</option>
               <option value="desestimado">Desestimado</option>
+              <option value="anulado">Anulado</option>
             </select>
             <small class="text-muted d-block mt-1">
               Al pasar a <strong>Pendiente</strong> o <strong>Aprobado</strong> se le avisa por email al árbitro que cargó el informe.
+              Si lo pasás a <strong>Anulado</strong>, el informe deja de aparecer en la tabla.
             </small>
           </div>
 
-          <div class="col-6"><DatoDetalle :etiqueta="informeSel.delegado_tecnico ? 'Cargado por el delegado técnico' : 'Cargado por el árbitro'" :valor="`${formatearFechaHora(informeSel.creado_en)} — ${informeSel.cargado_por_nombre || informeSel.delegado_tecnico || informeSel.arbitros || '-'}`" /></div>
+          <div class="col-6"><DatoDetalle :etiqueta="informeSel.cargado_por_es_rol ? 'Cargado por' : (informeSel.delegado_tecnico ? 'Cargado por el delegado técnico' : 'Cargado por el árbitro')" :valor="`${formatearFechaHora(informeSel.creado_en)} — ${informeSel.cargado_por_nombre || informeSel.delegado_tecnico || informeSel.arbitros || '-'}`" /></div>
           <div class="col-6"><DatoDetalle etiqueta="Cargado en Larry" :valor="informeSel.cargado_larry ? 'Sí' : 'No'" /></div>
 
           <!-- COORDINADOR/ES DEL GRUPO (para contacto desde admin) -->
@@ -374,28 +389,15 @@
           <button @click="cancelarEdicionAdmin" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1" :disabled="guardandoAdmin">CANCELAR</button>
         </template>
 
-        <!-- Modo lectura: editar / PDF / cerrar -->
+        <!-- Modo lectura: solo cerrar (PDF y editar están en las acciones de la tabla) -->
         <template v-else>
-          <button
-            v-if="informeSel && (informeSel.estado === 'creado' || informeSel.estado === 'pendiente')"
-            @click="abrirEdicionAdmin"
-            class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-          >
-            <span class="material-icons" style="font-size:18px;">edit</span> Editar
-          </button>
-          <button
-            v-if="informeSel"
-            @click="descargarPDF(informeSel)"
-            class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-            :disabled="descargandoId === informeSel.id"
-          >
-            <span v-if="descargandoId === informeSel.id" class="spinner-border spinner-border-sm"></span>
-            <span v-else class="material-icons" style="font-size:18px;">picture_as_pdf</span> Descargar PDF
-          </button>
           <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1">CERRAR</button>
         </template>
       </template>
     </ModalBase>
+
+    <!-- Modal compartido de carga de informe -->
+    <ModalCargarInforme :show="mostrarCarga" @close="cerrarModalCarga" @cargado="obtenerInformes" />
 
   </div>
 </template>
@@ -406,6 +408,7 @@ import { api } from '@/api/api';
 import html2pdf from 'html2pdf.js';
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
+import ModalCargarInforme from '@/components/ModalCargarInforme.vue';
 
 useHead({
   title: 'Informes | AAAB',
@@ -582,6 +585,13 @@ const informeSel = ref(null);
 const verDetalle = (inf) => { informeSel.value = inf; modoEdicion.value = false; mostrarDetalle.value = true; };
 const cerrarDetalle = () => { mostrarDetalle.value = false; informeSel.value = null; modoEdicion.value = false; };
 
+// Abrir el modal directamente en modo edición desde el botón de la tabla.
+const editarDesdeTabla = (inf) => {
+  informeSel.value = inf;
+  mostrarDetalle.value = true;
+  abrirEdicionAdmin();
+};
+
 /* ====================================================
    EDICIÓN DESDE ADMIN (motivo/descripción + estado)
    Disponible mientras el informe esté 'creado' o 'pendiente'.
@@ -645,6 +655,14 @@ const guardarCambiosAdmin = async () => {
         throw new Error((resEstado.payload && resEstado.payload.mensaje) ? resEstado.payload.mensaje : 'No se pudo cambiar el estado.');
       }
       inf.estado = formAdmin.estado;
+    }
+
+    // Si se anuló, el informe ya no debe figurar en la tabla de admin.
+    if (estadoCambio && formAdmin.estado === 'anulado') {
+      informes.value = informes.value.filter(i => i.id !== inf.id);
+      cerrarDetalle();
+      toast({ titulo: 'Informe anulado', mensaje: 'El informe fue anulado y quitado de la lista.', tipo: 'success' });
+      return;
     }
 
     modoEdicion.value = false;
@@ -739,7 +757,7 @@ const descargarPDF = async (inf) => {
       </div>
 
       <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Cargado por ${inf.delegado_tecnico ? 'el delegado técnico' : 'el árbitro'} ${escapar(inf.cargado_por_nombre || inf.delegado_tecnico || inf.arbitros || '')} el ${escapar(formatearFechaHora(inf.creado_en))}.
+        Cargado por ${inf.cargado_por_es_rol ? escapar(inf.cargado_por_nombre || '') : ((inf.delegado_tecnico ? 'el delegado técnico ' : 'el árbitro ') + escapar(inf.cargado_por_nombre || inf.delegado_tecnico || inf.arbitros || ''))} el ${escapar(formatearFechaHora(inf.creado_en))}.
         Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
       </div>
     `;
@@ -760,6 +778,13 @@ const descargarPDF = async (inf) => {
     descargandoId.value = null;
   }
 };
+
+/* ====================================================
+   CARGAR INFORME (modal compartido)
+   ==================================================== */
+const mostrarCarga = ref(false);
+const abrirModalCarga = () => { mostrarCarga.value = true; };
+const cerrarModalCarga = () => { mostrarCarga.value = false; };
 
 onMounted(obtenerInformes);
 </script>

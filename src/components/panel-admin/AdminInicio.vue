@@ -149,7 +149,7 @@ const categorias = [
   {
     categoria: 'Herramientas',
     icono: 'bi bi-tools',
-    rolesPermitidos: ['admin', 'secretario', 'facturacion', 'tesorero', 'etica'],
+    rolesPermitidos: ['admin', 'secretario', 'facturacion', 'tesorero', 'informes', 'etica'],
     items: [
       { to: '/panel-admin/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Administrar datos fiscales y entidades vinculadas.' },
       { to: '/panel-admin/informes', title: 'Informes', icon: 'bi bi-file-earmark-text', desc: 'Gestionar informes arbitrales.' }

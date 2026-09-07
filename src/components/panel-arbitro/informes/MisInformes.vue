@@ -143,7 +143,7 @@
                     <td class="text-center fw-bold col-fija col-fecha">{{ formatearFecha(inf.fecha_partido) }}</td>
                     <td class="fw-bold text-uppercase text-dark text-truncate" :title="inf.encuentro" style="max-width: 220px;">
                       {{ inf.encuentro }}
-                      <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal" style="font-size:0.6rem;">de mi pareja</span>
+                      <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal" style="font-size:0.6rem;">{{ etiquetaOrigen(inf) }}</span>
                     </td>
                     <td class="text-dark text-truncate" :title="inf.categoria" style="max-width: 130px;">{{ inf.categoria || '-' }}</td>
                     <td class="text-dark text-truncate" :title="etiquetaTorneo(inf.torneo)" style="max-width: 180px;">{{ etiquetaTorneo(inf.torneo) }}</td>
@@ -172,7 +172,7 @@
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
                   <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem; line-height: 1.2;">
                     {{ inf.encuentro }}
-                    <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal align-middle" style="font-size:0.6rem;">de mi pareja</span>
+                    <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal align-middle" style="font-size:0.6rem;">{{ etiquetaOrigen(inf) }}</span>
                   </div>
                   <div class="small text-muted fw-bold text-end">
                     #{{ inf.id }}<br>
@@ -266,7 +266,8 @@
 
         <div v-if="!esAutor(informeSel)" class="alert alert-secondary small py-2 px-3 d-flex align-items-start gap-2 mb-3">
           <i class="bi bi-info-circle-fill mt-1"></i>
-          <span>Este informe lo cargó tu compañero de designación. Podés verlo y descargarlo, pero solo quien lo cargó puede modificarlo.</span>
+          <span v-if="cargadoPorExterno(informeSel)">Este informe fue cargado por la AAAB (administración) sobre un partido tuyo. Podés verlo y descargarlo, pero no modificarlo.</span>
+          <span v-else>Este informe lo cargó tu compañero de designación. Podés verlo y descargarlo, pero solo quien lo cargó puede modificarlo.</span>
         </div>
 
         <div class="row g-3">
@@ -322,29 +323,6 @@
       </div>
 
       <template #footer>
-        <button
-          v-if="informeSel"
-          @click="descargarPDF(informeSel)"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-          :disabled="descargandoId === informeSel.id"
-        >
-          <span v-if="descargandoId === informeSel.id" class="spinner-border spinner-border-sm"></span>
-          <span v-else class="material-icons" style="font-size:18px;">picture_as_pdf</span> PDF
-        </button>
-        <button
-          v-if="informeSel && puedeAnular(informeSel)"
-          @click="pedirAnularDesdeDetalle"
-          class="btn btn-outline-danger rounded-pill px-4 fw-bold flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-        >
-          <span class="material-icons" style="font-size:18px;">block</span> Anular
-        </button>
-        <button
-          v-if="informeSel && puedeEditar(informeSel)"
-          @click="editarDesdeDetalle"
-          class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-        >
-          <span class="material-icons" style="font-size:18px;">edit</span> Editar
-        </button>
         <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1">Cerrar</button>
       </template>
     </ModalBase>
@@ -570,6 +548,12 @@ const badgeEstado = (estado) => {
 // Si no viene (retrocompat), asumimos que es propio.
 const esAutor = (inf) => inf.es_autor === undefined || inf.es_autor === true || inf.es_autor === 1;
 
+// Distingue el origen de un informe que no cargó el usuario:
+//  - cargado_por_externo (admin/rol alto): "cargado por AAAB"
+//  - si no, fue la pareja de designación: "de mi pareja"
+const cargadoPorExterno = (inf) => inf.cargado_por_externo === true || inf.cargado_por_externo === 1;
+const etiquetaOrigen = (inf) => (cargadoPorExterno(inf) ? 'cargado por AAAB' : 'de mi pareja');
+
 // El árbitro solo puede editar SU informe mientras no fue resuelto.
 // Los informes de la pareja se ven pero no se editan.
 const puedeEditar = (inf) => esAutor(inf) && (inf.estado === 'creado' || inf.estado === 'pendiente');
@@ -761,7 +745,7 @@ const descargarPDF = async (inf) => {
       </div>
 
       <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Cargado por ${inf.delegado_tecnico ? 'el delegado técnico' : 'el árbitro'} ${escapar(inf.cargado_por_nombre || inf.delegado_tecnico || inf.arbitros || '')} el ${escapar(formatearFechaHora(inf.creado_en))}.
+        Cargado por ${inf.cargado_por_es_rol ? escapar(inf.cargado_por_nombre || '') : ((inf.delegado_tecnico ? 'el delegado técnico ' : 'el árbitro ') + escapar(inf.cargado_por_nombre || inf.delegado_tecnico || inf.arbitros || ''))} el ${escapar(formatearFechaHora(inf.creado_en))}.
         Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
       </div>
     `;
@@ -802,12 +786,6 @@ const pedirAnular = (inf) => {
 const cerrarAnular = () => { mostrarConfirmAnular.value = false; infoAAnular.value = null; };
 
 // Desde el modal de detalle: cerramos el detalle y abrimos la confirmación
-const pedirAnularDesdeDetalle = () => {
-  const inf = informeSel.value;
-  cerrarDetalle();
-  pedirAnular(inf);
-};
-
 const confirmarAnular = async () => {
   if (!infoAAnular.value) return;
   const inf = infoAAnular.value;
@@ -888,13 +866,6 @@ const abrirEdicion = (inf) => {
   mostrarEdicion.value = true;
 };
 const cerrarEdicion = () => { mostrarEdicion.value = false; informeEdit.value = null; };
-
-// Abrir edición directamente desde el modal de detalle
-const editarDesdeDetalle = () => {
-  const inf = informeSel.value;
-  cerrarDetalle();
-  abrirEdicion(inf);
-};
 
 const guardarEdicion = async () => {
   if (!edicionValida.value || !informeEdit.value) return;
