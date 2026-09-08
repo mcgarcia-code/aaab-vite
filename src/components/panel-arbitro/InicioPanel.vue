@@ -213,7 +213,7 @@ const proximasFechas = computed(() => {
 const tabs = computed(() => [
   { clave: 'reuniones', etiqueta: 'Reuniones', cantidad: proximasFechas.value.length },
   { clave: 'cumpleanos', etiqueta: 'Cumples', cantidad: (avisos.value.cumpleanos || []).length },
-  { clave: 'recordatorios', etiqueta: 'Notas', cantidad: (avisos.value.recordatorio || []).length }
+  { clave: 'recordatorios', etiqueta: 'Recordatorios', cantidad: (avisos.value.recordatorio || []).length }
 ])
 
 const cargarAvisos = async () => {
