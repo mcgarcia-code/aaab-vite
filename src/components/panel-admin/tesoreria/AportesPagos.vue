@@ -5,31 +5,27 @@
     <div class="dashboard-header mb-4 mb-md-5 mt-4 text-start">
       <div class="d-flex align-items-center justify-content-start gap-3">
         <div class="main-icon-container flex-shrink-0">
-          <i class="bi bi-bag-check text-danger"></i>
+          <i class="bi bi-cash-coin text-danger"></i>
         </div>
         <div>
-          <h4 class="fw-bold text-white m-0 fs-5 fs-md-4">Gestión de Indumentaria</h4>
-          <p class="text-white opacity-75 m-0 small">Administración de stock y pedidos de árbitros</p>
+          <h4 class="fw-bold text-white m-0 fs-5 fs-md-4">Aportes y Pagos</h4>
+          <p class="text-white opacity-75 m-0 small">Valores, recargos, movimientos y cierres mensuales de tesorería</p>
         </div>
       </div>
     </div>
 
     <div class="row g-3 g-md-4">
 
-      <!-- Módulo Stock -->
       <div class="col-12 col-md-6">
-        <RouterLink to="/panel-admin/tesoreria/indumentaria/stock" class="text-decoration-none h-100 d-block">
+        <RouterLink to="/panel-admin/tesoreria/aportes-pagos/valores" class="text-decoration-none h-100 d-block">
           <div class="modern-menu-card d-flex align-items-center gap-3 px-4 py-3 p-md-3 bg-white w-100 h-100 shadow-sm">
-
             <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
-              <i class="bi bi-box-seam"></i>
+              <i class="bi bi-currency-dollar"></i>
             </div>
-
             <div class="flex-grow-1">
-              <h5 class="fw-bold m-0 text-dark" style="font-size: 0.95rem;">Stock</h5>
-              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">Control de talles, ingresos y cantidades disponibles.</p>
+              <h5 class="fw-bold m-0 text-dark" style="font-size: 0.95rem;">Valores y Porcentaje</h5>
+              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">Valor de partido por categoría, pagos a observadores/mesa/delegado y % de aporte.</p>
             </div>
-
             <div class="card-arrow text-secondary fs-5">
               <i class="bi bi-chevron-right"></i>
             </div>
@@ -37,33 +33,70 @@
         </RouterLink>
       </div>
 
-      <!-- Módulo Pedidos -->
       <div class="col-12 col-md-6">
-        <RouterLink to="/panel-admin/tesoreria/indumentaria/pedidos" class="text-decoration-none h-100 d-block">
+        <RouterLink to="/panel-admin/tesoreria/aportes-pagos/recargos" class="text-decoration-none h-100 d-block">
           <div class="modern-menu-card d-flex align-items-center gap-3 px-4 py-3 p-md-3 bg-white w-100 h-100 shadow-sm">
-
-            <div class="icon-box position-relative flex-shrink-0 d-flex align-items-center justify-content-center">
-              <i class="bi bi-list-check"></i>
-              <!-- Punto de notificación -->
-              <span v-if="pedidosNuevos > 0" class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle animate__animated animate__pulse animate__infinite">
-                <span class="visually-hidden">Nuevos pedidos</span>
-              </span>
+            <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
+              <i class="bi bi-graph-up-arrow"></i>
             </div>
-
             <div class="flex-grow-1">
-              <h5 class="fw-bold m-0 text-dark d-flex align-items-center gap-2 flex-wrap" style="font-size: 0.95rem;">
-                Pedidos Realizados
-                <span v-if="pedidosNuevos > 0" class="badge bg-danger rounded-pill px-2 py-1 shadow-sm" style="font-size: 0.6rem;">
-                  {{ pedidosNuevos }} NUEVO{{ pedidosNuevos > 1 ? 'S' : '' }}
-                </span>
-              </h5>
-              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">Listado de solicitudes, estados de entrega y pendientes.</p>
+              <h5 class="fw-bold m-0 text-dark" style="font-size: 0.95rem;">Recargos de Porcentaje</h5>
+              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">Recargos individuales sobre el aporte de un árbitro.</p>
             </div>
-
             <div class="card-arrow text-secondary fs-5">
               <i class="bi bi-chevron-right"></i>
             </div>
+          </div>
+        </RouterLink>
+      </div>
 
+      <div class="col-12 col-md-6">
+        <RouterLink to="/panel-admin/tesoreria/aportes-pagos/movimientos" class="text-decoration-none h-100 d-block">
+          <div class="modern-menu-card d-flex align-items-center gap-3 px-4 py-3 p-md-3 bg-white w-100 h-100 shadow-sm">
+            <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
+              <i class="bi bi-list-check"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h5 class="fw-bold m-0 text-dark" style="font-size: 0.95rem;">Movimientos</h5>
+              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">Generar aportes del período, ver el detalle y cargar ajustes manuales.</p>
+            </div>
+            <div class="card-arrow text-secondary fs-5">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+          </div>
+        </RouterLink>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <RouterLink to="/panel-admin/tesoreria/aportes-pagos/cierres" class="text-decoration-none h-100 d-block">
+          <div class="modern-menu-card d-flex align-items-center gap-3 px-4 py-3 p-md-3 bg-white w-100 h-100 shadow-sm">
+            <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
+              <i class="bi bi-calendar-check"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h5 class="fw-bold m-0 text-dark" style="font-size: 0.95rem;">Cierre Mensual</h5>
+              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">Cerrar el período y consultar el historial de cierres realizados.</p>
+            </div>
+            <div class="card-arrow text-secondary fs-5">
+              <i class="bi bi-chevron-right"></i>
+            </div>
+          </div>
+        </RouterLink>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <RouterLink to="/panel-admin/tesoreria/aportes-pagos/estado-cuenta" class="text-decoration-none h-100 d-block">
+          <div class="modern-menu-card d-flex align-items-center gap-3 px-4 py-3 p-md-3 bg-white w-100 h-100 shadow-sm">
+            <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
+              <i class="bi bi-people"></i>
+            </div>
+            <div class="flex-grow-1">
+              <h5 class="fw-bold m-0 text-dark" style="font-size: 0.95rem;">Estado de Cuenta General</h5>
+              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">Saldo de todos los árbitros: último cierre y pendiente sin cerrar.</p>
+            </div>
+            <div class="card-arrow text-secondary fs-5">
+              <i class="bi bi-chevron-right"></i>
+            </div>
           </div>
         </RouterLink>
       </div>
@@ -74,45 +107,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useHead } from '@vueuse/head';
-import { api } from '@/api/api';
 
 useHead({
-  title: 'Gestión de Indumentaria | AAAB',
+  title: 'Aportes y Pagos | AAAB',
   meta: [
-    { name: 'description', content: 'Administración de stock y pedidos de indumentaria para árbitros AAAB.' },
-    { property: 'og:title', content: 'Gestión de Indumentaria | AAAB' },
+    { name: 'description', content: 'Administración de valores, recargos, movimientos y cierres de tesorería.' },
+    { property: 'og:title', content: 'Aportes y Pagos | AAAB' },
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
     { property: 'og:type', content: 'website' }
   ],
 });
-
-// Variable reactiva para guardar la cantidad de pedidos nuevos
-const pedidosNuevos = ref(0);
-
-// Función silenciosa para contar los pedidos en estado "creado"
-const cargarNotificaciones = async () => {
-  try {
-    const res = await api.get({ entity: 'indumentaria', action: 'obtenerPedidos' });
-    if (res.ok && res.payload) {
-      pedidosNuevos.value = res.payload.filter(p => p.estado && p.estado.toLowerCase() === 'creado').length;
-    }
-  } catch (error) {
-    console.error("Error cargando notificaciones:", error);
-  }
-};
-
-onMounted(() => {
-  cargarNotificaciones();
-});
 </script>
 
 <style scoped>
-/* ====================================================
-   ESTILOS DE LA CABECERA
-   ==================================================== */
 .main-icon-container {
   width: 60px;
   height: 60px;
@@ -125,9 +134,6 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* ====================================================
-   TARJETAS DE NAVEGACIÓN
-   ==================================================== */
 .modern-menu-card {
   border: 1px solid #f1f5f9;
   border-radius: 16px;
@@ -135,7 +141,6 @@ onMounted(() => {
   cursor: pointer;
 }
 
-/* Adaptación fluida del tamaño del ícono */
 .icon-box {
   width: 56px;
   height: 56px;
@@ -151,7 +156,6 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-/* --- EFECTOS HOVER --- */
 .modern-menu-card:hover {
   border-color: #f87171;
   transform: translateY(-5px);
@@ -170,5 +174,4 @@ onMounted(() => {
 }
 
 .animate__animated { animation-duration: 0.5s; }
-
 </style>

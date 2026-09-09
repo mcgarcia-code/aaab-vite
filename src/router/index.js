@@ -165,6 +165,11 @@ const routes = [
 
       { path: 'tesoreria/datos-personales', name: 'DatosPersonales', component: () => import('../components/panel-admin/tesoreria/DatosPersonales.vue'), meta: { roles: ['admin', 'tesorero', 'secretario', 'designador', 'indumentaria'] } },
       { path: 'tesoreria/aportes-pagos', name: 'TesoreriaAportes', component: () => import('../components/panel-admin/tesoreria/AportesPagos.vue'), meta: { roles: ['admin', 'tesorero', 'secretario', 'designador'] } },
+      { path: 'tesoreria/aportes-pagos/valores', name: 'TesoreriaValores', component: () => import('../components/panel-admin/tesoreria/ValoresAporte.vue'), meta: { roles: ['admin', 'tesorero'] } },
+      { path: 'tesoreria/aportes-pagos/recargos', name: 'TesoreriaRecargos', component: () => import('../components/panel-admin/tesoreria/RecargosPorcentaje.vue'), meta: { roles: ['admin', 'tesorero'] } },
+      { path: 'tesoreria/aportes-pagos/movimientos', name: 'TesoreriaMovimientos', component: () => import('../components/panel-admin/tesoreria/MovimientosTesoreria.vue'), meta: { roles: ['admin', 'tesorero'] } },
+      { path: 'tesoreria/aportes-pagos/cierres', name: 'TesoreriaCierres', component: () => import('../components/panel-admin/tesoreria/CierresTesoreria.vue'), meta: { roles: ['admin', 'tesorero'] } },
+      { path: 'tesoreria/aportes-pagos/estado-cuenta', name: 'TesoreriaEstadoCuenta', component: () => import('../components/panel-admin/tesoreria/EstadoCuentaGeneral.vue'), meta: { roles: ['admin', 'tesorero'] } },
       { path: 'tesoreria/indumentaria', name: 'TesoreriaIndumentaria', component: () => import('../components/panel-admin/tesoreria/IndumentariaAdmin.vue'), meta: { roles: ['admin', 'tesorero', 'secretario', 'designador', 'indumentaria'] } },
       { path: 'tesoreria/indumentaria/stock', name: 'IndumentariaStock', component: () => import('../components/panel-admin/tesoreria/StockIndumentaria.vue'), meta: { roles: ['admin', 'tesorero', 'secretario', 'designador', 'indumentaria'] } },
       { path: 'tesoreria/indumentaria/pedidos', name: 'IndumentariaPedidos', component: () => import('../components/panel-admin/tesoreria/PedidosRealizados.vue'), meta: { roles: ['admin', 'tesorero', 'secretario', 'designador', 'indumentaria'] } },

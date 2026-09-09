@@ -173,7 +173,7 @@ const menuItems = [
   { to: '/panel-arbitro/sanciones', title: 'Tribunal de Ética', icon: 'bi bi-shield-exclamation', desc: 'Consultá tus sanciones.', categoria: 'Administración' },
 
   { to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Pedidos de indumentaria.', categoria: 'Tesorería' },
-  { to: '/panel-arbitro/aportes', title: 'Mis Aportes', icon: 'bi bi-cash-coin', desc: 'Consultá el estado de tus aportes.', categoria: 'Tesorería' },
+  { to: '/panel-arbitro/aportes', title: 'Mis Aportes', icon: 'bi bi-cash-coin', desc: 'Consultá el estado de tus aportes.', categoria: 'Tesorería', idsPermitidos: [1, 2] },
 
   { to: '/panel-arbitro/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Consultá los datos fiscales de los Clubes', categoria: 'Herramientas' },
   { href: 'https://refflix.com.ar', title: 'Ref-Flix', icon: 'bi bi-cast', desc: 'Plataforma de videos', categoria: 'Herramientas' },
@@ -185,7 +185,10 @@ const menuItems = [
 const menuItemsFiltrados = computed(() => {
   const sesion = auth.getUser()
   if (!sesion) return []
-  return menuItems.filter((item) => !item.rolesPermitidos || item.rolesPermitidos.includes(sesion.rol))
+  return menuItems.filter((item) =>
+    (!item.rolesPermitidos || item.rolesPermitidos.includes(sesion.rol)) &&
+    (!item.idsPermitidos || item.idsPermitidos.includes(sesion.id))
+  )
 })
 
 const gruposConItems = computed(() => {
