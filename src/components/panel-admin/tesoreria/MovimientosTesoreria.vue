@@ -331,7 +331,7 @@ const generarAportes = async () => {
     const res = await api.post({ entity: 'tesoreria', action: 'generarAportesPeriodo', payload: { periodo: periodoGenerar.value } })
     if (res.ok) {
       await obtenerMovimientos()
-      toast({ titulo: 'Aportes generados', mensaje: `Generados: ${res.payload.generados} · Omitidos: ${res.payload.omitidos}`, tipo: 'success' })
+      toast({ titulo: 'Aportes generados', mensaje: `Generados: ${res.payload.generados} · Exentos: ${res.payload.exentos ?? 0} · Omitidos: ${res.payload.omitidos}`, tipo: 'success' })
     } else {
       toast({ titulo: 'Error', mensaje: res.message || 'El servidor rechazó la solicitud.', tipo: 'danger' })
     }

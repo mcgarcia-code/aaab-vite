@@ -58,8 +58,9 @@
               <div v-for="cat in valoresPartido" :key="cat.id" class="valor-tile">
                 <div class="tile-icono"><i class="bi bi-tag"></i></div>
                 <div class="tile-nombre text-truncate" :title="cat.nombre_completo">{{ cat.nombre_completo }}</div>
-                <div class="tile-valor" :class="{ 'text-muted': cat.valor === null }">
-                  {{ cat.valor !== null ? formatearMonto(cat.valor) : 'Sin definir' }}
+                <div class="tile-valor" :class="{ 'text-muted': cat.valor === null && !cat.exento }">
+                  <span v-if="cat.exento" class="badge bg-secondary fw-bold">EXENTA</span>
+                  <span v-else>{{ cat.valor !== null ? formatearMonto(cat.valor) : 'Sin definir' }}</span>
                 </div>
                 <div class="tile-acciones">
                   <button @click="abrirModalEditar('valor_partido', cat.id, cat.nombre_completo)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary flex-grow-1 d-flex justify-content-center align-items-center gap-1">
@@ -88,8 +89,18 @@
       <p class="text-muted small mb-3">{{ formEdicion.etiqueta }}</p>
 
       <form id="formValor" @submit.prevent="confirmarGuardado" class="text-start">
-        <label class="small fw-bold text-dark mb-1">{{ formEdicion.concepto === 'porcentaje_aporte' ? 'Porcentaje (%) *' : 'Monto ($) *' }}</label>
-        <input v-model.number="formEdicion.valor" type="number" step="0.01" min="0" class="form-control shadow-none border-secondary-subtle" required>
+        <div v-if="formEdicion.concepto === 'valor_partido'" class="form-check bg-light p-2 rounded border d-flex align-items-center gap-2 mb-3">
+          <input class="form-check-input m-0 shadow-none" type="checkbox" v-model="formEdicion.exento" id="checkExento">
+          <label class="form-check-label small fw-bold text-dark m-0" for="checkExento" style="cursor: pointer;">
+            Categoría exenta de aporte (no genera débito de arbitraje)
+          </label>
+        </div>
+
+        <template v-if="!(formEdicion.concepto === 'valor_partido' && formEdicion.exento)">
+          <label class="small fw-bold text-dark mb-1">{{ formEdicion.concepto === 'porcentaje_aporte' ? 'Porcentaje (%) *' : 'Monto ($) *' }}</label>
+          <input v-model.number="formEdicion.valor" type="number" step="0.01" min="0" class="form-control shadow-none border-secondary-subtle" required>
+        </template>
+
         <span class="text-muted small d-block mt-2">El valor anterior queda registrado en el historial con fecha de fin hoy.</span>
       </form>
 
@@ -126,7 +137,10 @@
           </thead>
           <tbody>
             <tr v-for="h in historial" :key="h.id">
-              <td class="fw-bold">{{ h.concepto === 'porcentaje_aporte' ? h.valor + ' %' : formatearMonto(h.valor) }}</td>
+              <td class="fw-bold">
+                <span v-if="h.concepto === 'valor_partido' && Number(h.exento) === 1" class="badge bg-secondary">EXENTA</span>
+                <span v-else>{{ h.concepto === 'porcentaje_aporte' ? h.valor + ' %' : formatearMonto(h.valor) }}</span>
+              </td>
               <td>{{ h.fecha_desde }}</td>
               <td>{{ h.fecha_hasta || 'Vigente' }}</td>
             </tr>
@@ -168,14 +182,22 @@ const conceptosFijos = computed(() => ([
 ]))
 
 const valoresPartido = computed(() => {
-  return categorias.value.map(cat => ({
-    ...cat,
-    valor: buscarValor('valor_partido', cat.id)
-  }))
+  return categorias.value.map(cat => {
+    const registro = buscarRegistro('valor_partido', cat.id)
+    return {
+      ...cat,
+      valor: registro ? Number(registro.valor) : null,
+      exento: registro ? Number(registro.exento) === 1 : false
+    }
+  })
 })
 
+function buscarRegistro(concepto, idCategoria) {
+  return valoresVigentes.value.find(v => v.concepto === concepto && Number(v.id_categoria) === Number(idCategoria || 0)) || null
+}
+
 function buscarValor(concepto, idCategoria) {
-  const encontrado = valoresVigentes.value.find(v => v.concepto === concepto && Number(v.id_categoria) === Number(idCategoria || 0))
+  const encontrado = buscarRegistro(concepto, idCategoria)
   return encontrado ? Number(encontrado.valor) : null
 }
 
@@ -208,13 +230,15 @@ const cargarTodo = async () => {
 
 // --- Modal Editar ---
 const mostrarModalEditar = ref(false)
-const formEdicion = reactive({ concepto: '', id_categoria: null, etiqueta: '', valor: null })
+const formEdicion = reactive({ concepto: '', id_categoria: null, etiqueta: '', valor: null, exento: false })
 
 const abrirModalEditar = (concepto, idCategoria, etiqueta) => {
+  const registro = buscarRegistro(concepto, idCategoria)
   formEdicion.concepto = concepto
   formEdicion.id_categoria = idCategoria
   formEdicion.etiqueta = etiqueta
-  formEdicion.valor = buscarValor(concepto, idCategoria) ?? null
+  formEdicion.valor = registro ? Number(registro.valor) : null
+  formEdicion.exento = concepto === 'valor_partido' && registro ? Number(registro.exento) === 1 : false
   mostrarModalEditar.value = true
 }
 
@@ -230,13 +254,15 @@ const confirmarGuardado = () => {
 const guardarValor = async () => {
   procesando.value = true
   try {
+    const esExenta = formEdicion.concepto === 'valor_partido' && formEdicion.exento
     const res = await api.post({
       entity: 'tesoreria',
       action: 'actualizarValor',
       payload: {
         concepto: formEdicion.concepto,
         id_categoria: formEdicion.id_categoria,
-        valor: formEdicion.valor
+        valor: esExenta ? 0 : formEdicion.valor,
+        exento: esExenta ? 1 : 0
       }
     })
     if (res.ok && res.payload !== false) {
