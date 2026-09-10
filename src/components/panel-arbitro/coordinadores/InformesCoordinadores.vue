@@ -28,11 +28,6 @@
               <span class="material-icons text-dark fs-6">filter_alt_off</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
-
-            <button @click="abrirModalCarga" class="btn btn-danger shadow-sm py-2 d-flex align-items-center gap-2 fw-bold">
-              <span class="material-icons fs-6">note_add</span>
-              <span class="d-none d-md-inline small">Cargar informe</span>
-            </button>
           </div>
         </div>
 
@@ -435,9 +430,6 @@
       </template>
     </ModalBase>
 
-    <!-- Modal compartido de carga de informe -->
-    <ModalCargarInforme :show="mostrarCarga" @close="cerrarModalCarga" @cargado="obtenerInformes" />
-
   </div>
 </template>
 
@@ -447,7 +439,6 @@ import { api } from '@/api/api';
 import html2pdf from 'html2pdf.js';
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
-import ModalCargarInforme from '@/components/ModalCargarInforme.vue';
 
 useHead({
   title: 'Informes de mi grupo | AAAB',
@@ -850,13 +841,6 @@ const guardarEdicion = async () => {
     procesando.value = false;
   }
 };
-
-/* ====================================================
-   CARGAR INFORME (modal compartido)
-   ==================================================== */
-const mostrarCarga = ref(false);
-const abrirModalCarga = () => { mostrarCarga.value = true; };
-const cerrarModalCarga = () => { mostrarCarga.value = false; };
 
 onMounted(obtenerInformes);
 </script>
