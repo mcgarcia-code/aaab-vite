@@ -373,12 +373,13 @@
                     </td>
                       <td class="text-center">
                         <div class="d-flex align-items-center justify-content-center gap-1">
-                          <span
+                          <div
                             v-if="avisosPartido(p) > 0"
-                            class="material-icons text-warning alerta-partido"
+                            class="aviso-barra"
+                            :class="'aviso-' + etiquetaPartido(p)"
                             :title="textoAvisosPartido(p)"
                             @click="mostrarAvisosPartido(p)"
-                          >warning</span>
+                          ></div>
                           <span
                             v-if="estadoDesignacion(p) === 'a_designar'"
                             class="material-icons text-danger borrar-partido"
@@ -429,11 +430,13 @@
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                       <span class="fw-bold flex-grow-1" style="font-size: 0.9rem;">{{ p.categoria_division || '—' }}</span>
                       <span class="badge-estado" :class="'badge-' + estadoDesignacion(p)">{{ etiquetaEstado(p) }}</span>
-                      <span
+                      <div
                         v-if="avisosPartido(p) > 0"
-                        class="material-icons text-warning alerta-partido flex-shrink-0"
+                        class="aviso-barra flex-shrink-0"
+                        :class="'aviso-' + etiquetaPartido(p)"
+                        :title="textoAvisosPartido(p)"
                         @click="mostrarAvisosPartido(p)"
-                      >warning</span>
+                      ></div>
                       <span
                         v-if="estadoDesignacion(p) === 'a_designar'"
                         class="material-icons text-danger borrar-partido flex-shrink-0"
@@ -1126,6 +1129,17 @@ const avisosPartido = (p) => {
   const grupos = p.id ? avisosMap.value[p.id] : null
   if (!grupos) return 0
   return grupos.reduce((total, g) => total + g.avisos.length, 0)
+}
+
+// Color de la barra de alerta: se toma el más grave entre los grupos
+// de avisos del partido (rojo > naranja > amarillo > verde).
+const PRIORIDAD_ETIQUETA = { rojo: 4, naranja: 3, amarillo: 2, verde: 1 }
+const etiquetaPartido = (p) => {
+  const grupos = (p.id ? avisosMap.value[p.id] : null) || []
+  return grupos.reduce((peor, g) => {
+    const prioridad = PRIORIDAD_ETIQUETA[g.etiqueta] || 0
+    return prioridad > (PRIORIDAD_ETIQUETA[peor] || 0) ? g.etiqueta : peor
+  }, 'amarillo')
 }
 
 // Texto del modal: por cada árbitro con problemas, su nombre y
@@ -2515,12 +2529,32 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-/* Ícono de alerta cuando el partido tiene un conflicto de designación */
-.alerta-partido {
-  font-size: 18px;
+/* Barra de alerta cuando el partido tiene un conflicto de designación.
+   El color indica la gravedad (etiqueta que devuelve el backend). */
+.aviso-barra {
+  display: inline-block;
+  width: 10px;
+  height: 18px;
+  border-radius: 2px;
   cursor: pointer;
   vertical-align: middle;
   margin-right: 2px;
+}
+
+.aviso-verde {
+  background-color: #22c55e;
+}
+
+.aviso-amarillo {
+  background-color: #eab308;
+}
+
+.aviso-naranja {
+  background-color: #f97316;
+}
+
+.aviso-rojo {
+  background-color: #ef4444;
 }
 
 /* Ícono para borrar un partido sin designar */
