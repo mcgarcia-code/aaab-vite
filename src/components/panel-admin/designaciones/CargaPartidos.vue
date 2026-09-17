@@ -57,13 +57,13 @@
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow">
                 <li>
-                  <button class="dropdown-item d-flex align-items-center gap-2" @click="descargarDesignaciones('pdf')">
+                  <button class="dropdown-item d-flex align-items-center gap-2" @click="abrirModalDescarga('pdf')">
                     <span class="material-icons fs-6 text-danger">picture_as_pdf</span>
                     <span class="small fw-bold">PDF</span>
                   </button>
                 </li>
                 <li>
-                  <button class="dropdown-item d-flex align-items-center gap-2" @click="descargarDesignaciones('excel')">
+                  <button class="dropdown-item d-flex align-items-center gap-2" @click="abrirModalDescarga('excel')">
                     <span class="material-icons fs-6 text-success">table_view</span>
                     <span class="small fw-bold">Excel</span>
                   </button>
@@ -990,6 +990,52 @@
         >
           <span v-if="publicando" class="spinner-border spinner-border-sm me-2"></span>
           {{ publicando ? 'Publicando...' : 'Publicar Ahora' }}
+        </button>
+      </template>
+    </ModalBase>
+
+    <!-- Modal: elegir qué estados incluir al descargar PDF/Excel -->
+    <ModalBase
+      :show="mostrarModalDescarga"
+      :titulo="'Descargar ' + (formatoDescarga === 'excel' ? 'Excel' : 'PDF')"
+      icono="download"
+      colorIcono="bg-dark text-white"
+      maxWidth="420px"
+      @close="mostrarModalDescarga = false"
+    >
+      <label class="form-label small fw-bold">Estados a incluir</label>
+      <div class="d-flex flex-column gap-1 border rounded p-2">
+        <label v-for="e in opcionesEstadoDescarga" :key="e.valor" class="d-flex align-items-center gap-2 small mb-0" style="cursor:pointer;">
+          <input
+            type="checkbox"
+            class="form-check-input m-0 flex-shrink-0"
+            :checked="estadosDescarga.includes(e.valor)"
+            @change="toggleEstadoDescarga(e.valor)"
+          >
+          <span>{{ e.etiqueta }}</span>
+        </label>
+      </div>
+
+      <div v-if="estadosDescarga.length === 0" class="alert alert-danger small py-2 px-3 mt-3 mb-0 d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>Tildá al menos un estado para descargar.</span>
+      </div>
+
+      <template #footer>
+        <button
+          @click="mostrarModalDescarga = false"
+          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
+          :disabled="descargandoArchivo"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="confirmarDescarga"
+          class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100"
+          :disabled="descargandoArchivo || estadosDescarga.length === 0"
+        >
+          <span v-if="descargandoArchivo" class="spinner-border spinner-border-sm me-2"></span>
+          {{ descargandoArchivo ? 'Descargando...' : 'Descargar' }}
         </button>
       </template>
     </ModalBase>
@@ -2335,6 +2381,33 @@ const publicarDesignaciones = async () => {
 
 const descargandoArchivo = ref(false)
 
+// Modal para elegir qué estados de designación incluir en la descarga
+const mostrarModalDescarga = ref(false)
+const formatoDescarga = ref('pdf')
+const opcionesEstadoDescarga = [
+  { valor: 'a_designar', etiqueta: 'Sin designar' },
+  { valor: 'designado', etiqueta: 'Designado' },
+  { valor: 'publicado', etiqueta: 'Publicado' }
+]
+const estadosDescarga = ref(opcionesEstadoDescarga.map(e => e.valor))
+
+const toggleEstadoDescarga = (estado) => {
+  const i = estadosDescarga.value.indexOf(estado)
+  if (i === -1) estadosDescarga.value.push(estado)
+  else estadosDescarga.value.splice(i, 1)
+}
+
+const abrirModalDescarga = (formato) => {
+  formatoDescarga.value = formato
+  mostrarModalDescarga.value = true
+}
+
+const confirmarDescarga = async () => {
+  if (estadosDescarga.value.length === 0) return
+  await descargarDesignaciones(formatoDescarga.value)
+  mostrarModalDescarga.value = false
+}
+
 const descargarDesignaciones = async (formato = 'pdf') => {
   const esExcel = formato === 'excel'
   descargandoArchivo.value = true
@@ -2344,6 +2417,7 @@ const descargarDesignaciones = async (formato = 'pdf') => {
       action: 'descargarDesignaciones',
       payload: {
         semanaAtras: semanaAtras.value,
+        estados: estadosDescarga.value,
         ...(esExcel ? { formato: 'excel' } : {})
       }
     }, esExcel ? 'designaciones.xlsx' : 'designaciones.pdf')
