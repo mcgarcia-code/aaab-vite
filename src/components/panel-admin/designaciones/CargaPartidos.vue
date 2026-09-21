@@ -699,7 +699,6 @@
         Si el árbitro no está en el padrón (ej: viene del interior), escribí su nombre y usá la opción azul. Queda designado pero no le aparece en su panel.
       </p>
     </ModalBase>
-    //Confirmar designación con avisos (conflictos detectados antes de guardar)
     <ModalBase
       :show="mostrarModalConfirmarDesignacion"
       titulo="⚠ Avisos de esta designación"
@@ -754,7 +753,6 @@
         </button>
       </template>
     </ModalBase>
-    //Carga del Excel
     <ModalBase
       :show="mostrarModalCarga"
       titulo="Cargar Designaciones desde Excel"
@@ -804,7 +802,6 @@
         </button>
       </template>
     </ModalBase>
-    //Autoridades de mesa
     <ModalBase
       :show="mostrarModalMesa"
       titulo="Mesa de control"
@@ -848,7 +845,6 @@
         </button>
       </template>
     </ModalBase>
-    //Seleccion de cancha
     <ModalBase
       :show="mostrarSelectorCancha"
       titulo="Asignar cancha"
@@ -889,7 +885,6 @@
         </button>
       </template>
     </ModalBase>
-    //Cambiar Fecha/Hora
     <ModalBase
       :show="mostrarModalFechaHorario"
       titulo="Editar fecha y horario"
@@ -930,7 +925,6 @@
         </button>
       </template>
     </ModalBase>
-    //Publicar Partidos
     <ModalBase
       :show="mostrarModalPublicar"
       titulo="Publicar Designaciones"
@@ -1137,7 +1131,6 @@ useHead({
 const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 const notificar = inject('notificar', ({ mensaje }) => alert(mensaje))
 
-// Solo un admin puede editar fecha y horario de un partido ya cargado
 const esAdmin = computed(() => auth.getUser()?.rol === 'admin')
 
 const designaciones = ref([])
