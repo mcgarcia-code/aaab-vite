@@ -92,7 +92,7 @@
             <button
               @click="semanaSiguiente"
               class="btn btn-outline-secondary btn-sm shadow-sm d-flex align-items-center gap-1"
-              :disabled="cargando || semanaAtras === 0"
+              :disabled="cargando || (semanaAtras <= 0 && !hayPosteriores)"
             >
               <span class="fw-bold small">Semana siguiente</span>
               <i class="bi bi-chevron-right"></i>
@@ -1138,6 +1138,7 @@ const labelSemana = ref('')
 const arbitros = ref([])
 const cargando = ref(false)
 const semanaAtras = ref(0)
+const hayPosteriores = ref(false)
 let contadorUid = 0
 
 
@@ -1682,6 +1683,7 @@ const cargarDesignaciones = async () => {
     if ((res.ok || res.success) && res.payload) {
       designaciones.value = res.payload.designaciones.map(normalizarPartido)
       labelSemana.value = res.payload.labelSemana
+      hayPosteriores.value = !!res.payload.hayPosteriores
     }
   } catch (err) {
     console.error('Error al cargar designaciones:', err)
@@ -1698,7 +1700,7 @@ const semanaAnterior = async () => {
 }
 
 const semanaSiguiente = async () => {
-  if (semanaAtras.value === 0) return
+  if (semanaAtras.value <= 0 && !hayPosteriores.value) return
   semanaAtras.value--
   await cargarDesignaciones()
   await cargarAvisos()
