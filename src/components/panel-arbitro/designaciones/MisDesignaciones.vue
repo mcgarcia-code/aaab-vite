@@ -114,11 +114,11 @@
                       </div>
                     </template>
 
-                    <!-- FUNCION DELEGADO -->
-                    <template v-if="p.funcion == 'delegado'">
+                    <!-- FUNCION DELEGADO / OBSERVADOR / PLANILLERO / CRONOMETRISTA -->
+                    <template v-if="p.funcion != 'arbitro'">
                       <div class="small d-flex align-items-start gap-1 text-dark mb-1">
                         <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">person</span>
-                        <span class="text-break"><strong>Función:</strong> Delegado Técnico</span>
+                        <span class="text-break"><strong>Función:</strong> {{ etiquetaFuncion(p.funcion) }}</span>
                       </div>
                       <div class="small d-flex align-items-start gap-1 text-dark">
                         <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">groups</span>
@@ -269,11 +269,11 @@
                               </div>
                             </template>
 
-                            <!-- FUNCION DELEGADO -->
-                            <template v-if="p.funcion=='delegado'">
+                            <!-- FUNCION DELEGADO / OBSERVADOR / PLANILLERO / CRONOMETRISTA -->
+                            <template v-if="p.funcion!='arbitro'">
                               <div class="small d-flex align-items-start gap-1 text-dark mb-1">
                                 <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">person</span>
-                                <span class="text-break"><strong>Función:</strong> Delegado Técnico</span>
+                                <span class="text-break"><strong>Función:</strong> {{ etiquetaFuncion(p.funcion) }}</span>
                               </div>
                               <div class="small d-flex align-items-start gap-1 text-dark">
                                 <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">groups</span>
@@ -580,6 +580,15 @@ const etiquetaMotivo = (valor) => {
   const op = opcionesMotivo.find(o => o.valor === valor)
   return op ? op.etiqueta : valor
 }
+
+// Etiqueta visible para las funciones distintas de "arbitro" (delegado, observador, planillero, cronometrista)
+const ETIQUETAS_FUNCION = {
+  delegado: 'Delegado Técnico',
+  observador: 'Observador',
+  planillero: 'Planillero',
+  cronometrista: 'Cronometrista'
+}
+const etiquetaFuncion = (funcion) => ETIQUETAS_FUNCION[funcion] || funcion
 
 // Estado del rechazo tal como lo resuelve la asociación
 const textoEstadoRechazo = (estado) => {

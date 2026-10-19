@@ -57,13 +57,13 @@
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow">
                 <li>
-                  <button class="dropdown-item d-flex align-items-center gap-2" @click="descargarDesignaciones('pdf')">
+                  <button class="dropdown-item d-flex align-items-center gap-2" @click="abrirModalDescarga('pdf')">
                     <span class="material-icons fs-6 text-danger">picture_as_pdf</span>
                     <span class="small fw-bold">PDF</span>
                   </button>
                 </li>
                 <li>
-                  <button class="dropdown-item d-flex align-items-center gap-2" @click="descargarDesignaciones('excel')">
+                  <button class="dropdown-item d-flex align-items-center gap-2" @click="abrirModalDescarga('excel')">
                     <span class="material-icons fs-6 text-success">table_view</span>
                     <span class="small fw-bold">Excel</span>
                   </button>
@@ -92,7 +92,7 @@
             <button
               @click="semanaSiguiente"
               class="btn btn-outline-secondary btn-sm shadow-sm d-flex align-items-center gap-1"
-              :disabled="cargando || semanaAtras === 0"
+              :disabled="cargando || (semanaAtras <= 0 && !hayPosteriores)"
             >
               <span class="fw-bold small">Semana siguiente</span>
               <i class="bi bi-chevron-right"></i>
@@ -373,12 +373,13 @@
                     </td>
                       <td class="text-center">
                         <div class="d-flex align-items-center justify-content-center gap-1">
-                          <span
+                          <div
                             v-if="avisosPartido(p) > 0"
-                            class="material-icons text-warning alerta-partido"
+                            class="aviso-barra"
+                            :class="'aviso-' + etiquetaPartido(p)"
                             :title="textoAvisosPartido(p)"
                             @click="mostrarAvisosPartido(p)"
-                          >warning</span>
+                          ></div>
                           <span
                             v-if="estadoDesignacion(p) === 'a_designar'"
                             class="material-icons text-danger borrar-partido"
@@ -429,11 +430,13 @@
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                       <span class="fw-bold flex-grow-1" style="font-size: 0.9rem;">{{ p.categoria_division || '—' }}</span>
                       <span class="badge-estado" :class="'badge-' + estadoDesignacion(p)">{{ etiquetaEstado(p) }}</span>
-                      <span
+                      <div
                         v-if="avisosPartido(p) > 0"
-                        class="material-icons text-warning alerta-partido flex-shrink-0"
+                        class="aviso-barra flex-shrink-0"
+                        :class="'aviso-' + etiquetaPartido(p)"
+                        :title="textoAvisosPartido(p)"
                         @click="mostrarAvisosPartido(p)"
-                      >warning</span>
+                      ></div>
                       <span
                         v-if="estadoDesignacion(p) === 'a_designar'"
                         class="material-icons text-danger borrar-partido flex-shrink-0"
@@ -696,7 +699,6 @@
         Si el árbitro no está en el padrón (ej: viene del interior), escribí su nombre y usá la opción azul. Queda designado pero no le aparece en su panel.
       </p>
     </ModalBase>
-    //Confirmar designación con avisos (conflictos detectados antes de guardar)
     <ModalBase
       :show="mostrarModalConfirmarDesignacion"
       titulo="⚠ Avisos de esta designación"
@@ -751,7 +753,6 @@
         </button>
       </template>
     </ModalBase>
-    //Carga del Excel
     <ModalBase
       :show="mostrarModalCarga"
       titulo="Cargar Designaciones desde Excel"
@@ -801,7 +802,6 @@
         </button>
       </template>
     </ModalBase>
-    //Autoridades de mesa
     <ModalBase
       :show="mostrarModalMesa"
       titulo="Mesa de control"
@@ -845,7 +845,6 @@
         </button>
       </template>
     </ModalBase>
-    //Seleccion de cancha
     <ModalBase
       :show="mostrarSelectorCancha"
       titulo="Asignar cancha"
@@ -886,7 +885,6 @@
         </button>
       </template>
     </ModalBase>
-    //Cambiar Fecha/Hora
     <ModalBase
       :show="mostrarModalFechaHorario"
       titulo="Editar fecha y horario"
@@ -927,7 +925,6 @@
         </button>
       </template>
     </ModalBase>
-    //Publicar Partidos
     <ModalBase
       :show="mostrarModalPublicar"
       titulo="Publicar Designaciones"
@@ -987,6 +984,52 @@
         >
           <span v-if="publicando" class="spinner-border spinner-border-sm me-2"></span>
           {{ publicando ? 'Publicando...' : 'Publicar Ahora' }}
+        </button>
+      </template>
+    </ModalBase>
+
+    <!-- Modal: elegir qué estados incluir al descargar PDF/Excel -->
+    <ModalBase
+      :show="mostrarModalDescarga"
+      :titulo="'Descargar ' + (formatoDescarga === 'excel' ? 'Excel' : 'PDF')"
+      icono="download"
+      colorIcono="bg-dark text-white"
+      maxWidth="420px"
+      @close="mostrarModalDescarga = false"
+    >
+      <label class="form-label small fw-bold">Estados a incluir</label>
+      <div class="d-flex flex-column gap-1 border rounded p-2">
+        <label v-for="e in opcionesEstadoDescarga" :key="e.valor" class="d-flex align-items-center gap-2 small mb-0" style="cursor:pointer;">
+          <input
+            type="checkbox"
+            class="form-check-input m-0 flex-shrink-0"
+            :checked="estadosDescarga.includes(e.valor)"
+            @change="toggleEstadoDescarga(e.valor)"
+          >
+          <span>{{ e.etiqueta }}</span>
+        </label>
+      </div>
+
+      <div v-if="estadosDescarga.length === 0" class="alert alert-danger small py-2 px-3 mt-3 mb-0 d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>Tildá al menos un estado para descargar.</span>
+      </div>
+
+      <template #footer>
+        <button
+          @click="mostrarModalDescarga = false"
+          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
+          :disabled="descargandoArchivo"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="confirmarDescarga"
+          class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100"
+          :disabled="descargandoArchivo || estadosDescarga.length === 0"
+        >
+          <span v-if="descargandoArchivo" class="spinner-border spinner-border-sm me-2"></span>
+          {{ descargandoArchivo ? 'Descargando...' : 'Descargar' }}
         </button>
       </template>
     </ModalBase>
@@ -1088,7 +1131,6 @@ useHead({
 const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 const notificar = inject('notificar', ({ mensaje }) => alert(mensaje))
 
-// Solo un admin puede editar fecha y horario de un partido ya cargado
 const esAdmin = computed(() => auth.getUser()?.rol === 'admin')
 
 const designaciones = ref([])
@@ -1096,6 +1138,7 @@ const labelSemana = ref('')
 const arbitros = ref([])
 const cargando = ref(false)
 const semanaAtras = ref(0)
+const hayPosteriores = ref(false)
 let contadorUid = 0
 
 
@@ -1126,6 +1169,17 @@ const avisosPartido = (p) => {
   const grupos = p.id ? avisosMap.value[p.id] : null
   if (!grupos) return 0
   return grupos.reduce((total, g) => total + g.avisos.length, 0)
+}
+
+// Color de la barra de alerta: se toma el más grave entre los grupos
+// de avisos del partido (rojo > naranja > amarillo > verde).
+const PRIORIDAD_ETIQUETA = { rojo: 4, naranja: 3, amarillo: 2, verde: 1 }
+const etiquetaPartido = (p) => {
+  const grupos = (p.id ? avisosMap.value[p.id] : null) || []
+  return grupos.reduce((peor, g) => {
+    const prioridad = PRIORIDAD_ETIQUETA[g.etiqueta] || 0
+    return prioridad > (PRIORIDAD_ETIQUETA[peor] || 0) ? g.etiqueta : peor
+  }, 'amarillo')
 }
 
 // Texto del modal: por cada árbitro con problemas, su nombre y
@@ -1629,6 +1683,7 @@ const cargarDesignaciones = async () => {
     if ((res.ok || res.success) && res.payload) {
       designaciones.value = res.payload.designaciones.map(normalizarPartido)
       labelSemana.value = res.payload.labelSemana
+      hayPosteriores.value = !!res.payload.hayPosteriores
     }
   } catch (err) {
     console.error('Error al cargar designaciones:', err)
@@ -1645,7 +1700,7 @@ const semanaAnterior = async () => {
 }
 
 const semanaSiguiente = async () => {
-  if (semanaAtras.value === 0) return
+  if (semanaAtras.value <= 0 && !hayPosteriores.value) return
   semanaAtras.value--
   await cargarDesignaciones()
   await cargarAvisos()
@@ -2321,6 +2376,33 @@ const publicarDesignaciones = async () => {
 
 const descargandoArchivo = ref(false)
 
+// Modal para elegir qué estados de designación incluir en la descarga
+const mostrarModalDescarga = ref(false)
+const formatoDescarga = ref('pdf')
+const opcionesEstadoDescarga = [
+  { valor: 'a_designar', etiqueta: 'Sin designar' },
+  { valor: 'designado', etiqueta: 'Designado' },
+  { valor: 'publicado', etiqueta: 'Publicado' }
+]
+const estadosDescarga = ref(opcionesEstadoDescarga.map(e => e.valor))
+
+const toggleEstadoDescarga = (estado) => {
+  const i = estadosDescarga.value.indexOf(estado)
+  if (i === -1) estadosDescarga.value.push(estado)
+  else estadosDescarga.value.splice(i, 1)
+}
+
+const abrirModalDescarga = (formato) => {
+  formatoDescarga.value = formato
+  mostrarModalDescarga.value = true
+}
+
+const confirmarDescarga = async () => {
+  if (estadosDescarga.value.length === 0) return
+  await descargarDesignaciones(formatoDescarga.value)
+  mostrarModalDescarga.value = false
+}
+
 const descargarDesignaciones = async (formato = 'pdf') => {
   const esExcel = formato === 'excel'
   descargandoArchivo.value = true
@@ -2330,6 +2412,7 @@ const descargarDesignaciones = async (formato = 'pdf') => {
       action: 'descargarDesignaciones',
       payload: {
         semanaAtras: semanaAtras.value,
+        estados: estadosDescarga.value,
         ...(esExcel ? { formato: 'excel' } : {})
       }
     }, esExcel ? 'designaciones.xlsx' : 'designaciones.pdf')
@@ -2515,12 +2598,32 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-/* Ícono de alerta cuando el partido tiene un conflicto de designación */
-.alerta-partido {
-  font-size: 18px;
+/* Barra de alerta cuando el partido tiene un conflicto de designación.
+   El color indica la gravedad (etiqueta que devuelve el backend). */
+.aviso-barra {
+  display: inline-block;
+  width: 10px;
+  height: 18px;
+  border-radius: 2px;
   cursor: pointer;
   vertical-align: middle;
   margin-right: 2px;
+}
+
+.aviso-verde {
+  background-color: #22c55e;
+}
+
+.aviso-amarillo {
+  background-color: #eab308;
+}
+
+.aviso-naranja {
+  background-color: #f97316;
+}
+
+.aviso-rojo {
+  background-color: #ef4444;
 }
 
 /* Ícono para borrar un partido sin designar */
