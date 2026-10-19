@@ -69,30 +69,34 @@
               <table class="table table-hover align-middle mb-0" style="font-size: 0.8rem;">
                 <thead class="table-light">
                   <tr>
+                    <th class="py-3 ps-3 text-center text-uppercase text-muted" style="width: 1px;">Acciones</th>
                     <th class="py-3 text-uppercase text-muted">Árbitro</th>
                     <th class="py-3 text-center text-uppercase text-muted">Porcentaje</th>
                     <th class="py-3 text-uppercase text-muted">Motivo</th>
                     <th class="py-3 text-center text-uppercase text-muted">Desde</th>
                     <th class="py-3 text-center text-uppercase text-muted">Hasta</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Estado</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Acciones</th>
+                    <th class="py-3 pe-3 text-center text-uppercase text-muted">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="r in recargosPaginados" :key="r.id">
+                    <td class="ps-3 text-center">
+                      <div class="d-flex justify-content-center gap-1">
+                        <button @click="abrirModalEditar(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
+                          <span class="material-icons" style="font-size:16px;">edit</span>
+                        </button>
+                        <button v-if="estaActivo(r)" @click="confirmarFinalizar(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Finalizar">
+                          <span class="material-icons" style="font-size:16px;">block</span>
+                        </button>
+                      </div>
+                    </td>
                     <td class="fw-bold text-dark text-uppercase">{{ r.arbitro }}</td>
                     <td class="text-center fw-bold text-danger">{{ r.porcentaje }} %</td>
                     <td class="text-muted"><div class="text-truncate" style="max-width: 320px;" :title="r.motivo">{{ r.motivo }}</div></td>
                     <td class="text-center">{{ r.fecha_desde }}</td>
                     <td class="text-center">{{ r.fecha_hasta || '-' }}</td>
-                    <td class="text-center">
+                    <td class="pe-3 text-center">
                       <span :class="['badge-status-sm', estaActivo(r) ? 'activo' : 'finalizado']">{{ estaActivo(r) ? 'ACTIVO' : 'FINALIZADO' }}</span>
-                    </td>
-                    <td class="text-center">
-                      <button v-if="estaActivo(r)" @click="confirmarFinalizar(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Finalizar">
-                        <span class="material-icons" style="font-size:16px;">block</span>
-                      </button>
-                      <span v-else class="text-muted small">—</span>
                     </td>
                   </tr>
                   <tr v-if="recargosPaginados.length === 0">
@@ -119,9 +123,14 @@
                     <span class="small text-muted">Desde: <strong class="text-dark">{{ r.fecha_desde }}</strong></span>
                     <span class="small text-muted">Hasta: <strong class="text-dark">{{ r.fecha_hasta || '-' }}</strong></span>
                   </div>
-                  <button v-if="estaActivo(r)" @click="confirmarFinalizar(r)" class="btn btn-sm btn-outline-danger w-100 fw-bold">
-                    <span class="material-icons" style="font-size: 16px;">block</span> Finalizar
-                  </button>
+                  <div class="d-flex gap-2">
+                    <button @click="abrirModalEditar(r)" class="btn btn-sm btn-outline-primary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
+                      <span class="material-icons" style="font-size: 16px;">edit</span> Editar
+                    </button>
+                    <button v-if="estaActivo(r)" @click="confirmarFinalizar(r)" class="btn btn-sm btn-outline-danger flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
+                      <span class="material-icons" style="font-size: 16px;">block</span> Finalizar
+                    </button>
+                  </div>
                 </div>
               </div>
               <div v-if="recargosPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
@@ -143,16 +152,19 @@
       </div>
     </div>
 
-    <ModalBase :show="mostrarModal" @close="mostrarModal = false" icono="graph_up_arrow" colorIcono="bg-success-subtle text-success" maxWidth="550px">
+    <!-- MODAL NUEVO / EDITAR -->
+    <ModalBase :show="mostrarModal" @close="mostrarModal = false" :icono="modoModal === 'editar' ? 'edit' : 'graph_up_arrow'" :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" maxWidth="550px">
       <template #header>
-        <span class="fw-bold fs-5">Nuevo Recargo de Porcentaje</span>
+        <span class="fw-bold fs-5">{{ modoModal === 'editar' ? 'Editar Recargo de Porcentaje' : 'Nuevo Recargo de Porcentaje' }}</span>
       </template>
 
       <form id="formRecargo" @submit.prevent="confirmarGuardado" class="text-start">
         <div class="row g-3">
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Árbitro *</label>
-            <select v-model="form.id_arbitro" class="form-select shadow-none border-secondary-subtle" required>
+            <!-- En edición el árbitro no se cambia -->
+            <div v-if="modoModal === 'editar'" class="form-control bg-light border-secondary-subtle text-uppercase fw-bold">{{ recargoEnEdicion?.arbitro }}</div>
+            <select v-else v-model="form.id_arbitro" class="form-select shadow-none border-secondary-subtle" required>
               <option value="" disabled>Seleccione un árbitro...</option>
               <option v-for="a in arbitros" :key="a.id" :value="a.id">{{ a.apellido }}, {{ a.nombre }}</option>
             </select>
@@ -181,7 +193,7 @@
         <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formRecargo" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesando">
           <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
-          {{ procesando ? 'GUARDANDO...' : 'CREAR RECARGO' }}
+          {{ procesando ? 'GUARDANDO...' : (modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR RECARGO') }}
         </button>
       </template>
     </ModalBase>
@@ -211,6 +223,8 @@ const paginaActual = ref(1)
 const registrosPorPagina = 10
 
 const mostrarModal = ref(false)
+const modoModal = ref('nuevo')
+const recargoEnEdicion = ref(null)
 const formBase = () => ({ id_arbitro: '', porcentaje: null, motivo: '', fecha_desde: new Date().toISOString().slice(0, 10), fecha_hasta: '' })
 const form = reactive(formBase())
 
@@ -269,15 +283,40 @@ const cargarArbitros = async () => {
   }
 }
 
+// ====================================================
+//  MODAL NUEVO / EDITAR
+// ====================================================
 const abrirModalNuevo = () => {
+  modoModal.value = 'nuevo'
+  recargoEnEdicion.value = null
   Object.assign(form, formBase())
   mostrarModal.value = true
 }
 
+const abrirModalEditar = (r) => {
+  modoModal.value = 'editar'
+  recargoEnEdicion.value = r
+  Object.assign(form, {
+    id_arbitro: r.id_arbitro ?? '',
+    porcentaje: r.porcentaje !== null && r.porcentaje !== undefined ? Number(r.porcentaje) : null,
+    motivo: r.motivo || '',
+    fecha_desde: r.fecha_desde ? String(r.fecha_desde).slice(0, 10) : '',
+    fecha_hasta: r.fecha_hasta ? String(r.fecha_hasta).slice(0, 10) : '',
+  })
+  mostrarModal.value = true
+}
+
 const confirmarGuardado = () => {
+  if (form.fecha_desde && form.fecha_hasta && form.fecha_hasta < form.fecha_desde) {
+    toast({ titulo: 'Error', mensaje: 'La fecha "Hasta" no puede ser anterior a "Desde".', tipo: 'danger' })
+    return
+  }
+  const esEdicion = modoModal.value === 'editar'
   notificar({
-    titulo: 'Crear recargo?',
-    mensaje: 'Se aplicará un recargo de porcentaje sobre el aporte de este árbitro y se le notificará.',
+    titulo: esEdicion ? '¿Guardar cambios?' : '¿Crear recargo?',
+    mensaje: esEdicion
+      ? `Se actualizará el recargo de ${recargoEnEdicion.value?.arbitro}.`
+      : 'Se aplicará un recargo de porcentaje sobre el aporte de este árbitro y se le notificará.',
     tipo: 'success',
     alConfirmar: guardarRecargo
   })
@@ -285,22 +324,33 @@ const confirmarGuardado = () => {
 
 const guardarRecargo = async () => {
   procesando.value = true
+  const esEdicion = modoModal.value === 'editar'
   try {
+    const payload = {
+      porcentaje: form.porcentaje,
+      motivo: form.motivo,
+      fecha_desde: form.fecha_desde || undefined,
+      fecha_hasta: form.fecha_hasta || (esEdicion ? null : undefined)
+    }
+    if (esEdicion) {
+      payload.id = recargoEnEdicion.value.id
+    } else {
+      payload.id_arbitro = form.id_arbitro
+    }
+
     const res = await api.post({
       entity: 'tesoreria',
-      action: 'crearOverridePorcentaje',
-      payload: {
-        id_arbitro: form.id_arbitro,
-        porcentaje: form.porcentaje,
-        motivo: form.motivo,
-        fecha_desde: form.fecha_desde || undefined,
-        fecha_hasta: form.fecha_hasta || undefined
-      }
+      action: esEdicion ? 'editarOverridePorcentaje' : 'crearOverridePorcentaje',
+      payload
     })
     if (res.ok && res.payload?.success !== false) {
       mostrarModal.value = false
       await obtenerRecargos()
-      toast({ titulo: 'Éxito', mensaje: 'El recargo se creó y se notificó al árbitro.', tipo: 'success' })
+      toast({
+        titulo: 'Éxito',
+        mensaje: esEdicion ? 'El recargo se actualizó correctamente.' : 'El recargo se creó y se notificó al árbitro.',
+        tipo: 'success'
+      })
     } else {
       toast({ titulo: 'Error', mensaje: res.payload?.message || res.message || 'El servidor rechazó la solicitud.', tipo: 'danger' })
     }
@@ -311,9 +361,12 @@ const guardarRecargo = async () => {
   }
 }
 
+// ====================================================
+//  FINALIZAR
+// ====================================================
 const confirmarFinalizar = (r) => {
   notificar({
-    titulo: 'Finalizar recargo?',
+    titulo: '¿Finalizar recargo?',
     mensaje: `Se dará por finalizado el recargo de ${r.arbitro} a partir de hoy.`,
     tipo: 'danger',
     alConfirmar: () => finalizar(r.id)
