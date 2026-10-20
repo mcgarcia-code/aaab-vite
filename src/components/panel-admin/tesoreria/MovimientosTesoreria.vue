@@ -106,7 +106,6 @@
                     <th class="py-3 text-center text-uppercase text-muted">Tipo</th>
                     <th class="py-3 text-end text-uppercase text-muted">Monto</th>
                     <th class="py-3 text-center text-uppercase text-muted">Estado</th>
-                    <th class="py-3 text-uppercase text-muted">Descripción</th>
                     <th class="py-3 text-center text-uppercase text-muted">Acciones</th>
                   </tr>
                 </thead>
@@ -114,7 +113,14 @@
                   <tr v-for="m in movimientosPaginados" :key="m.id">
                     <td>{{ m.fecha_generacion }}</td>
                     <td class="fw-bold text-dark text-uppercase">{{ m.arbitro }}</td>
-                    <td>{{ etiquetaConcepto(m.concepto) }}</td>
+                    <td>
+                      <template v-if="tienePartido(m)">
+                        <div>{{ etiquetaPartido(m) }}</div>
+                        <span v-if="m.partido_categoria" class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start" style="font-size: 0.65rem;">{{ m.partido_categoria }}</span>
+                      </template>
+                      <template v-else>{{ etiquetaConcepto(m) }}</template>
+                      <div v-if="m.descripcion" class="text-muted small text-wrap" style="max-width: 260px;">{{ m.descripcion }}</div>
+                    </td>
                     <td class="text-center">
                       <span :class="['badge-status-sm', m.tipo === 'debito' ? 'debito' : 'credito']">{{ m.tipo === 'debito' ? 'DÉBITO' : 'CRÉDITO' }}</span>
                     </td>
@@ -122,7 +128,6 @@
                     <td class="text-center">
                       <span :class="['badge-status-sm', m.estado]">{{ m.estado.toUpperCase() }}</span>
                     </td>
-                    <td class="text-muted"><div class="text-truncate" style="max-width: 220px;" :title="m.descripcion">{{ m.descripcion || '-' }}</div></td>
                     <td class="text-center">
                       <button v-if="m.concepto === 'ajuste_manual' && m.estado === 'pendiente'" @click="confirmarAnular(m)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Anular">
                         <span class="material-icons" style="font-size:16px;">delete</span>
@@ -131,7 +136,7 @@
                     </td>
                   </tr>
                   <tr v-if="movimientosPaginados.length === 0">
-                    <td colspan="8" class="py-5 text-center text-muted border-0 bg-white">
+                    <td colspan="7"class="py-5 text-center text-muted border-0 bg-white">
                       <span class="material-icons d-block fs-1 mb-2">search_off</span>
                       <p class="m-0 fw-bold">No se encontraron movimientos.</p>
                     </td>
@@ -148,8 +153,15 @@
                 </div>
                 <div class="card-body pt-1 px-3 pb-3">
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="small text-muted">{{ etiquetaConcepto(m.concepto) }} · {{ m.fecha_generacion }}</span>
+                    <span class="small text-muted">
+                      <template v-if="tienePartido(m)">{{ etiquetaPartido(m) }}</template>
+                      <template v-else>{{ etiquetaConcepto(m) }}</template>
+                      · {{ m.fecha_generacion }}
+                    </span>
                     <span :class="['badge-status-sm', m.tipo === 'debito' ? 'debito' : 'credito']">{{ m.tipo === 'debito' ? 'DÉBITO' : 'CRÉDITO' }}</span>
+                  </div>
+                  <div v-if="tienePartido(m) && m.partido_categoria" class="mb-2">
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start" style="font-size: 0.65rem;">{{ m.partido_categoria }}</span>
                   </div>
                   <div class="fw-bold fs-6 mb-2">{{ formatearMonto(m.monto) }}</div>
                   <p v-if="m.descripcion" class="text-muted small mb-2">{{ m.descripcion }}</p>
@@ -257,7 +269,15 @@ const CONCEPTOS = {
   delegado: 'Delegado',
   ajuste_manual: 'Ajuste Manual'
 }
-const etiquetaConcepto = (c) => CONCEPTOS[c] || c
+const tienePartido = (m) => m.concepto === 'arbitraje' && m.partido_local && m.partido_visitante
+const etiquetaPartido = (m) => `${m.partido_local} vs. ${m.partido_visitante}`
+const etiquetaConcepto = (m) => {
+  if (tienePartido(m)) {
+    const categoria = m.partido_categoria ? ` (${m.partido_categoria})` : ''
+    return etiquetaPartido(m) + categoria
+  }
+  return CONCEPTOS[m.concepto] || m.concepto
+}
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') : ''
 const formatearMonto = (v) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(v)
@@ -401,7 +421,7 @@ const exportarExcel = async () => {
   const data = movimientosFiltrados.value.map(m => ({
     Fecha: m.fecha_generacion,
     Árbitro: m.arbitro,
-    Concepto: etiquetaConcepto(m.concepto),
+    Concepto: etiquetaConcepto(m),
     Tipo: m.tipo === 'debito' ? 'Débito' : 'Crédito',
     Monto: Number(m.monto),
     Estado: m.estado,

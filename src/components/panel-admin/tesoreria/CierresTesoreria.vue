@@ -27,6 +27,12 @@
               <label class="small fw-bold text-dark mb-1 d-block">Período a cerrar</label>
               <input type="month" v-model="periodoCerrar" class="form-control form-control-sm shadow-none">
             </div>
+            <div class="col-12 col-md-3">
+              <div class="form-check form-switch mb-1">
+                <input id="notificarArbitros" type="checkbox" v-model="notificarArbitros" class="form-check-input">
+                <label for="notificarArbitros" class="form-check-label small fw-bold text-dark">Notificar a los árbitros</label>
+              </div>
+            </div>
             <div class="col-4 col-md-3">
               <button @click="confirmarCierre" :disabled="!periodoCerrar || cerrando" class="btn btn-danger btn-sm w-100 fw-bold shadow-sm">
                 <span v-if="cerrando" class="spinner-border spinner-border-sm me-1"></span>
@@ -84,6 +90,7 @@ const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 const cargando = ref(false)
 const cerrando = ref(false)
 const cierres = ref([])
+const notificarArbitros = ref(true)
 const periodoCerrar = ref(new Date().toISOString().slice(0, 7))
 
 const cierresOrdenados = computed(() => [...cierres.value].sort((a, b) => b.periodo.localeCompare(a.periodo)))
@@ -101,7 +108,8 @@ const obtenerCierres = async () => {
 const confirmarCierre = () => {
   notificar({
     titulo: `Cerrar el período ${periodoCerrar.value}?`,
-    mensaje: 'Esta acción es irreversible: los movimientos pendientes del período se consolidarán en el saldo de cada árbitro y no podrán modificarse.',
+    mensaje: 'Esta acción es irreversible: los movimientos pendientes del período se consolidarán en el saldo de cada árbitro y no podrán modificarse. ' +
+      (notificarArbitros.value ? 'Se notificará a los árbitros por mail y en la web.' : 'No se notificará a los árbitros.'),
     tipo: 'danger',
     alConfirmar: cerrarPeriodo
   })
@@ -110,7 +118,7 @@ const confirmarCierre = () => {
 const cerrarPeriodo = async () => {
   cerrando.value = true
   try {
-    const res = await api.post({ entity: 'tesoreria', action: 'cerrarPeriodo', payload: { periodo: periodoCerrar.value } })
+    const res = await api.post({ entity: 'tesoreria', action: 'cerrarPeriodo', payload: { periodo: periodoCerrar.value, notificar: notificarArbitros.value } })
     if (res.ok && res.payload?.success !== false) {
       await obtenerCierres()
       toast({ titulo: 'Período cerrado', mensaje: `Árbitros procesados: ${res.payload.arbitros_procesados}`, tipo: 'success' })
