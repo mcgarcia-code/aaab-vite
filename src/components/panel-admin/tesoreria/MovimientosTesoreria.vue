@@ -136,7 +136,7 @@
                     </td>
                   </tr>
                   <tr v-if="movimientosPaginados.length === 0">
-                    <td colspan="7"class="py-5 text-center text-muted border-0 bg-white">
+                    <td colspan="7" class="py-5 text-center text-muted border-0 bg-white">
                       <span class="material-icons d-block fs-1 mb-2">search_off</span>
                       <p class="m-0 fw-bold">No se encontraron movimientos.</p>
                     </td>
