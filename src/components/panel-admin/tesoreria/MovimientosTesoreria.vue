@@ -194,6 +194,8 @@
 
       <form id="formManual" @submit.prevent="confirmarGuardarManual" class="text-start">
         <div class="row g-3">
+
+          <!-- 1. ÁRBITRO -->
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Árbitro *</label>
             <select v-model="formManual.id_arbitro" class="form-select shadow-none border-secondary-subtle" required>
@@ -201,21 +203,63 @@
               <option v-for="a in arbitros" :key="a.id" :value="a.id">{{ a.apellido }}, {{ a.nombre }}</option>
             </select>
           </div>
-          <div class="col-6">
-            <label class="small fw-bold text-dark mb-1">Tipo *</label>
-            <select v-model="formManual.tipo" class="form-select shadow-none border-secondary-subtle" required>
-              <option value="debito">Débito (deuda)</option>
-              <option value="credito">Crédito (a favor)</option>
+
+          <!-- 2. TIPO DE MOVIMIENTO: DÉBITO | CRÉDITO | ÍTEM (misma línea, también en celular) -->
+          <div class="col-12">
+            <label class="small fw-bold text-dark mb-1 d-block">Tipo de movimiento *</label>
+            <div class="btn-group btn-group-sm w-100" role="group" aria-label="Tipo de movimiento">
+              <button type="button" class="btn fw-bold"
+                      :class="formManual.opcion === 'debito' ? 'btn-danger' : 'btn-outline-secondary'"
+                      @click="elegirOpcion('debito')">
+                Débito
+              </button>
+              <button type="button" class="btn fw-bold"
+                      :class="formManual.opcion === 'credito' ? 'btn-success' : 'btn-outline-secondary'"
+                      @click="elegirOpcion('credito')">
+                Crédito
+              </button>
+              <button type="button" class="btn fw-bold"
+                      :class="formManual.opcion === 'item' ? 'btn-primary' : 'btn-outline-secondary'"
+                      @click="elegirOpcion('item')">
+                Ítem
+              </button>
+            </div>
+            <span class="d-block text-muted small mt-1">
+              <template v-if="formManual.opcion === 'debito'">Genera deuda al árbitro.</template>
+              <template v-else-if="formManual.opcion === 'credito'">Queda a favor del árbitro.</template>
+              <template v-else>Los ítems siempre van como <strong class="text-success">crédito</strong>.</template>
+            </span>
+          </div>
+
+          <!-- 3. ÍTEM: lista desplegable de otros conceptos -->
+          <div v-if="formManual.opcion === 'item'" class="col-12">
+            <label class="small fw-bold text-dark mb-1">Ítem *</label>
+            <select v-model="formManual.item" @change="alElegirItem" class="form-select shadow-none border-secondary-subtle" required>
+              <option value="" disabled>Seleccione un ítem...</option>
+              <optgroup v-for="g in itemsAgrupados" :key="g.grupo" :label="g.grupo">
+                <option v-for="i in g.items" :key="i.clave" :value="i.clave">
+                  {{ i.etiqueta }}{{ valorDeItem(i.clave) !== null ? ' — ' + formatearMonto(valorDeItem(i.clave)) : ' — sin definir' }}
+                </option>
+              </optgroup>
             </select>
+            <span v-if="cargandoValores" class="d-block text-muted small mt-1">Cargando valores vigentes...</span>
+            <span v-else-if="formManual.item && valorDeItem(formManual.item) === null" class="d-block text-warning-emphasis small mt-1">
+              Este ítem no tiene valor definido en Valores y Porcentaje de Aporte. Ingresá el monto a mano.
+            </span>
           </div>
-          <div class="col-6">
+
+          <!-- 4. MONTO Y FECHA -->
+          <div class="col-12 col-sm-6">
             <label class="small fw-bold text-dark mb-1">Monto ($) *</label>
-            <input v-model.number="formManual.monto" type="number" step="0.01" min="0.01" class="form-control shadow-none border-secondary-subtle" required>
+            <input v-model.number="formManual.monto" type="number" step="0.01" min="0.01" inputmode="decimal" class="form-control shadow-none border-secondary-subtle" required>
+            <span v-if="formManual.opcion === 'item'" class="d-block text-muted small mt-1">Se completa con el valor del ítem; podés modificarlo.</span>
           </div>
-          <div class="col-6">
+          <div class="col-12 col-sm-6">
             <label class="small fw-bold text-dark mb-1">Fecha</label>
             <input v-model="formManual.fecha" type="date" class="form-control shadow-none border-secondary-subtle">
           </div>
+
+          <!-- 5. DESCRIPCIÓN -->
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Descripción</label>
             <textarea v-model="formManual.descripcion" rows="2" class="form-control shadow-none border-secondary-subtle"></textarea>
@@ -242,7 +286,6 @@ import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 import { useRoute } from 'vue-router'
-
 useHead({ title: 'Movimientos de Tesorería | AAAB' })
 
 const route = useRoute()
@@ -269,6 +312,39 @@ const CONCEPTOS = {
   delegado: 'Delegado',
   ajuste_manual: 'Ajuste Manual'
 }
+// ----------------------------------------------------
+//  CONCEPTOS (tabla tesoreria_conceptos, vienen del back)
+// ----------------------------------------------------
+const conceptos = ref([])
+
+// Ítems del Ajuste Manual: los "otros conceptos" que llevan valor
+// (los que no tienen subconceptos), menos el Porcentaje de Aporte Global.
+const itemsAjusteManual = computed(() => {
+  const porOrden = (a, b) => (Number(a.orden) - Number(b.orden)) || (Number(a.id) - Number(b.id))
+  const todos = conceptos.value
+  const items = []
+  todos
+    .filter(c => !c.id_padre && c.tipo !== 'partido' && c.clave !== 'porcentaje_aporte')
+    .sort(porOrden)
+    .forEach(c => {
+      const hijos = todos.filter(h => Number(h.id_padre) === Number(c.id)).sort(porOrden)
+      if (hijos.length) hijos.forEach(h => items.push({ clave: h.clave, etiqueta: h.etiqueta, grupo: c.etiqueta }))
+      else items.push({ clave: c.clave, etiqueta: c.etiqueta, grupo: 'Otros conceptos' })
+    })
+  return items
+})
+
+const etiquetaItem = (clave) => conceptos.value.find(c => c.clave === clave)?.etiqueta || clave
+
+const cargarConceptos = async () => {
+  try {
+    const res = await api.get({ entity: 'tesoreria', action: 'obtenerConceptos', payload: {} })
+    if (res.ok) conceptos.value = Array.isArray(res.payload) ? res.payload : []
+  } catch (err) {
+    console.error('Error cargando conceptos:', err)
+  }
+}
+
 const tienePartido = (m) => m.concepto === 'arbitraje' && m.partido_local && m.partido_visitante
 const etiquetaPartido = (m) => `${m.partido_local} vs. ${m.partido_visitante}`
 const etiquetaConcepto = (m) => {
@@ -276,6 +352,7 @@ const etiquetaConcepto = (m) => {
     const categoria = m.partido_categoria ? ` (${m.partido_categoria})` : ''
     return etiquetaPartido(m) + categoria
   }
+  if (m.concepto === 'ajuste_manual' && m.item) return `Ajuste Manual · ${etiquetaItem(m.item)}`
   return CONCEPTOS[m.concepto] || m.concepto
 }
 
@@ -363,15 +440,72 @@ const generarAportes = async () => {
 }
 
 const mostrarModalManual = ref(false)
-const formManualBase = () => ({ id_arbitro: '', tipo: 'debito', monto: null, fecha: new Date().toISOString().slice(0, 10), descripcion: '' })
+// opcion: 'debito' | 'credito' | 'item' (el ítem siempre se guarda como crédito)
+const formManualBase = () => ({ id_arbitro: '', opcion: 'debito', item: '', monto: null, fecha: new Date().toISOString().slice(0, 10), descripcion: '' })
 const formManual = reactive(formManualBase())
+
+// ----------------------------------------------------
+//  ÍTEMS (otros conceptos, sin Porcentaje de Aporte)
+// ----------------------------------------------------
+const valoresVigentes = ref([])
+const cargandoValores = ref(false)
+
+const itemsAgrupados = computed(() => {
+  const grupos = []
+  itemsAjusteManual.value.forEach(i => {
+    let g = grupos.find(x => x.grupo === i.grupo)
+    if (!g) grupos.push(g = { grupo: i.grupo, items: [] })
+    g.items.push(i)
+  })
+  return grupos
+})
+
+const valorDeItem = (clave) => {
+  const registro = valoresVigentes.value.find(v => v.concepto === clave && Number(v.id_categoria || 0) === 0)
+  return registro ? Number(registro.valor) : null
+}
+
+const cargarValoresVigentes = async () => {
+  cargandoValores.value = true
+  try {
+    const res = await api.get({ entity: 'tesoreria', action: 'obtenerValoresVigentes', payload: {} })
+    if (res.ok) valoresVigentes.value = Array.isArray(res.payload) ? res.payload : []
+  } catch (err) {
+    console.error('Error cargando valores vigentes:', err)
+  } finally {
+    cargandoValores.value = false
+  }
+}
+
+const elegirOpcion = (opcion) => {
+  if (formManual.opcion === opcion) return
+  const veniaDeItem = formManual.opcion === 'item'
+  formManual.opcion = opcion
+  // Al entrar o salir de Ítem se limpia el ítem y su monto; entre Débito y Crédito el monto se mantiene
+  if (opcion === 'item' || veniaDeItem) {
+    formManual.item = ''
+    formManual.monto = null
+  }
+}
+
+const alElegirItem = () => {
+  const valor = valorDeItem(formManual.item)
+  formManual.monto = valor
+}
 
 const abrirModalManual = () => {
   Object.assign(formManual, formManualBase())
   mostrarModalManual.value = true
+  // siempre frescos, por si se creó un concepto o se editó algún valor
+  cargarConceptos()
+  cargarValoresVigentes()
 }
 
 const confirmarGuardarManual = () => {
+  if (formManual.opcion === 'item' && !formManual.item) {
+    toast({ titulo: 'Error', mensaje: 'Seleccioná un ítem.', tipo: 'danger' })
+    return
+  }
   notificar({
     titulo: 'Crear ajuste manual?',
     mensaje: 'Se registrará el movimiento y se notificará al árbitro.',
@@ -383,7 +517,16 @@ const confirmarGuardarManual = () => {
 const guardarManual = async () => {
   procesando.value = true
   try {
-    const res = await api.post({ entity: 'tesoreria', action: 'crearMovimientoManual', payload: { ...formManual } })
+    const esItem = formManual.opcion === 'item' && formManual.item
+    const payload = {
+      id_arbitro: formManual.id_arbitro,
+      tipo: esItem ? 'credito' : formManual.opcion,
+      monto: formManual.monto,
+      fecha: formManual.fecha,
+      descripcion: formManual.descripcion,
+      item: esItem ? formManual.item : null,
+    }
+    const res = await api.post({ entity: 'tesoreria', action: 'crearMovimientoManual', payload })
     if (res.ok && res.payload?.success !== false) {
       mostrarModalManual.value = false
       await obtenerMovimientos()
@@ -448,6 +591,7 @@ const exportarExcel = async () => {
 onMounted(() => {
   obtenerMovimientos()
   cargarArbitros()
+  cargarConceptos() // para mostrar el nombre del ítem en la tabla
 })
 </script>
 

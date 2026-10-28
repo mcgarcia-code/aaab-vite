@@ -33,6 +33,12 @@
               <span class="material-icons text-dark fs-6">filter_alt_off</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
+
+            <!-- Botón Nuevo Concepto -->
+            <button @click="abrirModalNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+              <span class="material-icons fs-6">add_circle</span>
+              <span class="fw-bold d-none d-md-inline small">Nuevo Concepto</span>
+            </button>
           </div>
         </div>
 
@@ -327,6 +333,98 @@
       </template>
     </ModalBase>
 
+    <!-- MODAL NUEVO CONCEPTO -->
+    <ModalBase :show="mostrarModalNuevo" @close="mostrarModalNuevo = false" icono="add_circle" colorIcono="bg-success-subtle text-success" maxWidth="600px">
+      <template #header>
+        <div class="text-center">
+          <span class="fw-bold fs-5">Nuevo Concepto</span>
+        </div>
+      </template>
+
+      <form id="formNuevoConcepto" @submit.prevent="confirmarNuevoConcepto" class="d-flex flex-column gap-4 text-start">
+
+        <!-- CONCEPTO -->
+        <div>
+          <label class="form-label fw-bold small text-uppercase text-muted mb-2">
+            Concepto <span class="text-danger">*</span>
+          </label>
+          <input v-model="formNuevo.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none" placeholder="Ej: Designaciones" required>
+        </div>
+
+        <!-- TIPO -->
+        <div>
+          <label class="form-label fw-bold small text-uppercase text-muted mb-2">Tipo</label>
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <button type="button" class="btn btn-sm flex-fill"
+                    :class="formNuevo.tipo === 'fijo' ? 'btn-danger text-white shadow-sm' : 'btn-light border'"
+                    @click="formNuevo.tipo = 'fijo'">
+              Otro concepto
+            </button>
+            <button type="button" class="btn btn-sm flex-fill"
+                    :class="formNuevo.tipo === 'partido' ? 'btn-danger text-white shadow-sm' : 'btn-light border'"
+                    @click="formNuevo.tipo = 'partido'">
+              Valor de partido
+            </button>
+          </div>
+        </div>
+
+        <!-- ¿TIENE SUBCONCEPTOS? -->
+        <div>
+          <div class="form-check border-bottom pb-2">
+            <input class="form-check-input shadow-none" type="checkbox" v-model="formNuevo.conSubconceptos" id="checkSubconceptos">
+            <label class="form-check-label small fw-bold text-danger" for="checkSubconceptos" style="cursor: pointer;">
+              Tiene subconceptos
+            </label>
+          </div>
+          <span class="text-muted" style="font-size: 0.75rem;">
+            Ej: "Designaciones" con "Designación Liga de Honor" y "Designadora General". Cada subconcepto lleva su propio valor.
+          </span>
+        </div>
+
+        <!-- SIN SUBCONCEPTOS: VALOR DEL CONCEPTO -->
+        <div v-if="!formNuevo.conSubconceptos">
+          <label class="form-label fw-bold small text-uppercase text-muted mb-2">Valor ($)</label>
+          <input v-model.number="formNuevo.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" placeholder="Opcional">
+          <span class="text-muted" style="font-size: 0.75rem;">Si lo dejás vacío, queda "Sin definir" y lo cargás después con Editar.</span>
+        </div>
+
+        <!-- CON SUBCONCEPTOS: LISTA -->
+        <div v-else>
+          <label class="form-label fw-bold small text-uppercase text-muted mb-2">
+            Subconceptos <span class="text-danger">*</span>
+          </label>
+
+          <div class="d-flex flex-column gap-2">
+            <div v-for="(sub, i) in formNuevo.subconceptos" :key="sub.uid" class="d-flex gap-2 align-items-start bg-light border rounded p-2">
+              <span class="material-icons text-muted mt-1" style="font-size:16px;">subdirectory_arrow_right</span>
+              <div class="flex-grow-1">
+                <input v-model="sub.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none mb-1" :placeholder="'Subconcepto ' + (i + 1)" required>
+                <input v-model.number="sub.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" placeholder="Valor ($) — opcional">
+              </div>
+              <button type="button" @click="quitarSubconcepto(i)" :disabled="formNuevo.subconceptos.length === 1"
+                      class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Quitar">
+                <span class="material-icons" style="font-size:16px;">delete</span>
+              </button>
+            </div>
+          </div>
+
+          <button type="button" @click="agregarSubconcepto" class="btn btn-sm btn-outline-danger fw-bold mt-2 d-flex align-items-center gap-1">
+            <span class="material-icons" style="font-size:16px;">add</span> Agregar subconcepto
+          </button>
+        </div>
+      </form>
+
+      <template #footer>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center w-100">
+          <button type="button" @click="mostrarModalNuevo = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
+          <button type="submit" form="formNuevoConcepto" :disabled="guardandoConcepto" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
+            <span v-if="guardandoConcepto" class="spinner-border spinner-border-sm"></span>
+            {{ guardandoConcepto ? 'GUARDANDO...' : 'CREAR CONCEPTO' }}
+          </button>
+        </div>
+      </template>
+    </ModalBase>
+
     <!-- MODAL HISTORIAL -->
     <ModalBase :show="mostrarModalHistorial" @close="mostrarModalHistorial = false" icono="history" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="600px">
       <template #header>
@@ -414,6 +512,7 @@ const cargandoHistorial = ref(false)
 
 const categorias = ref([])
 const valoresVigentes = ref([])
+const conceptos = ref([]) // tabla tesoreria_conceptos (viene del back)
 
 const mostrarFiltrosMobile = ref(false)
 const paginaActual = ref(1)
@@ -488,28 +587,25 @@ const calcularEstado = (valor, exento) => {
 // ====================================================
 //  COMPUTED
 // ====================================================
-const definicionConceptosFijos = [
-  {
-    clave: 'valor_observador',
-    etiqueta: 'Valor por Observación',
-    icono: 'bi bi-eye',
-    hijos: [
-      { clave: 'valor_observacion_liga_honor', etiqueta: 'Observación Liga de Honor' },
-      { clave: 'valor_observacion_coordinador', etiqueta: 'Observación Coordinador' },
-      { clave: 'valor_observacion_ayudante', etiqueta: 'Observación Ayudante' },
-    ]
-  },
-  {
-    clave: 'valor_mesa_arbitral',
-    etiqueta: 'Valor Mesa Arbitral',
-    icono: 'bi bi-clipboard-data',
-    hijos: [
-      { clave: 'valor_mesa_arbitral', etiqueta: 'Planillero y Cronometrista' },
-      { clave: 'valor_delegado', etiqueta: 'Delegado' },
-    ]
-  },
-  { clave: 'porcentaje_aporte', etiqueta: 'Porcentaje de Aporte Global', icono: 'bi bi-percent' },
-]
+// La tabla no guarda íconos: se eligen acá.
+// Concepto con subconceptos (grupo) -> carpeta; concepto suelto -> etiqueta; porcentaje -> %.
+const iconoConcepto = (c, tieneHijos) => {
+  if (c.clave === 'porcentaje_aporte') return 'bi bi-percent'
+  return tieneHijos ? 'bi bi-collection' : 'bi bi-tag'
+}
+
+// Conceptos de primer nivel (sin padre), cada uno con sus subconceptos, ordenados
+const arbolConceptos = computed(() => {
+  const porOrden = (a, b) => (Number(a.orden) - Number(b.orden)) || (Number(a.id) - Number(b.id))
+  const todos = conceptos.value
+  return todos
+    .filter(c => !c.id_padre)
+    .sort(porOrden)
+    .map(c => {
+      const hijos = todos.filter(h => Number(h.id_padre) === Number(c.id)).sort(porOrden)
+      return { ...c, hijos, icono: iconoConcepto(c, hijos.length > 0) }
+    })
+})
 
 // Fila de un concepto editable (fijo, ítem de grupo o valor de partido)
 const filaConcepto = ({ clave, etiqueta, icono, idCategoria = null, tipo = 'fijo', esHijo = false }) => {
@@ -548,14 +644,19 @@ const filaGrupo = ({ key, tipo, etiqueta, icono, hijos, subtipo, abiertoPorDefec
   }
 }
 
-const grupoConceptoFijo = (c) => filaGrupo({
-  key: 'grupo-' + c.clave,
-  tipo: 'fijo',
-  etiqueta: c.etiqueta,
-  icono: c.icono,
-  subtipo: c.etiqueta.replace(/^Valor (por )?/i, ''),
-  hijos: c.hijos.map(h => filaConcepto({ clave: h.clave, etiqueta: h.etiqueta, icono: c.icono, esHijo: true })),
-})
+// Concepto de la base -> fila suelta o grupo (si tiene subconceptos)
+const filaDesdeConcepto = (c) => {
+  const tipo = c.tipo === 'partido' ? 'partido' : 'fijo'
+  if (!c.hijos.length) return filaConcepto({ clave: c.clave, etiqueta: c.etiqueta, icono: c.icono, tipo })
+  return filaGrupo({
+    key: 'grupo-' + c.clave,
+    tipo,
+    etiqueta: c.etiqueta,
+    icono: c.icono,
+    subtipo: c.etiqueta.replace(/^Valor (por )?/i, ''),
+    hijos: c.hijos.map(h => filaConcepto({ clave: h.clave, etiqueta: h.etiqueta, icono: c.icono, tipo, esHijo: true })),
+  })
+}
 
 // Divisiones para agrupar los valores de partido (en orden de edad).
 // Se detectan por el nombre de la categoría; lo que no coincide va a "Otras".
@@ -575,9 +676,11 @@ const divisionDeCategoria = (cat) => {
   return div ? div.clave : 'otras'
 }
 
-// Lista unificada: primero los conceptos fijos, después los valores de partido agrupados por división
+// Lista unificada: primero los otros conceptos, después los valores de partido agrupados
+// por división y al final los conceptos nuevos de tipo partido
 const filas = computed(() => {
-  const fijos = definicionConceptosFijos.map(c => (c.hijos ? grupoConceptoFijo(c) : filaConcepto(c)))
+  const fijos = arbolConceptos.value.filter(c => c.tipo !== 'partido').map(filaDesdeConcepto)
+  const conceptosPartido = arbolConceptos.value.filter(c => c.tipo === 'partido').map(filaDesdeConcepto)
 
   const porDivision = {}
   categorias.value.forEach(cat => {
@@ -605,7 +708,7 @@ const filas = computed(() => {
       abiertoPorDefecto: false,
     }))
 
-  return [...fijos, ...partidos]
+  return [...fijos, ...partidos, ...conceptosPartido]
 })
 
 const cumpleFiltros = (f, fTexto, ignorarTexto = false) => {
@@ -669,10 +772,16 @@ const cargarValores = async () => {
   if (res.ok) valoresVigentes.value = Array.isArray(res.payload) ? res.payload : []
 }
 
+const cargarConceptos = async () => {
+  const res = await api.get({ entity: 'tesoreria', action: 'obtenerConceptos', payload: {} })
+  if (res.ok) conceptos.value = Array.isArray(res.payload) ? res.payload : []
+  else mostrarToast(res.message || 'No se pudieron cargar los conceptos', 'danger')
+}
+
 const cargarTodo = async () => {
   cargando.value = true
   try {
-    await Promise.all([cargarCategorias(), cargarValores()])
+    await Promise.all([cargarConceptos(), cargarCategorias(), cargarValores()])
   } catch (err) {
     console.error('Error al cargar valores:', err)
     mostrarToast('No se pudieron cargar los valores', 'danger')
@@ -731,6 +840,100 @@ const guardarValor = async () => {
     mostrarToast('Error al conectar con el servidor', 'danger')
   } finally {
     procesando.value = false
+  }
+}
+
+// ====================================================
+//  MODAL NUEVO CONCEPTO
+//  Crea un concepto, solo o con sus subconceptos (cada uno con su valor)
+// ====================================================
+const mostrarModalNuevo = ref(false)
+const guardandoConcepto = ref(false)
+
+let uidSub = 0
+const subVacio = () => ({ uid: ++uidSub, etiqueta: '', valor: null })
+const formNuevoBase = () => ({ etiqueta: '', tipo: 'fijo', conSubconceptos: false, valor: null, subconceptos: [subVacio()] })
+const formNuevo = reactive(formNuevoBase())
+
+const agregarSubconcepto = () => formNuevo.subconceptos.push(subVacio())
+const quitarSubconcepto = (i) => formNuevo.subconceptos.splice(i, 1)
+
+const abrirModalNuevo = () => {
+  Object.assign(formNuevo, formNuevoBase())
+  mostrarModalNuevo.value = true
+}
+
+const tieneValor = (v) => v !== null && v !== '' && !Number.isNaN(Number(v))
+
+const confirmarNuevoConcepto = () => {
+  const nombre = formNuevo.etiqueta.trim()
+  if (!nombre) return mostrarToast('Ingresá el nombre del concepto', 'danger')
+
+  const subs = formNuevo.conSubconceptos ? formNuevo.subconceptos.map(x => x.etiqueta.trim()) : []
+  if (formNuevo.conSubconceptos) {
+    if (subs.some(x => !x)) return mostrarToast('Completá el nombre de todos los subconceptos', 'danger')
+    const normalizados = subs.map(normalizarTexto)
+    if (new Set(normalizados).size !== normalizados.length) return mostrarToast('Hay subconceptos con el mismo nombre', 'danger')
+  }
+
+  const existentes = conceptos.value.map(c => normalizarTexto(c.etiqueta))
+  const repetido = [nombre, ...subs].find(n => existentes.includes(normalizarTexto(n)))
+  if (repetido) return mostrarToast(`Ya existe un concepto llamado "${repetido}"`, 'danger')
+
+  notificar({
+    titulo: '¿Crear concepto?',
+    mensaje: formNuevo.conSubconceptos
+      ? `Se creará "${nombre}" con ${subs.length} subconcepto${subs.length > 1 ? 's' : ''}: ${subs.join(', ')}.`
+      : `Se creará el concepto "${nombre}".`,
+    tipo: 'success',
+    alConfirmar: guardarNuevoConcepto
+  })
+}
+
+const guardarNuevoConcepto = async () => {
+  guardandoConcepto.value = true
+  try {
+    const conSubs = formNuevo.conSubconceptos
+    const res = await api.post({
+      entity: 'tesoreria',
+      action: 'crearConcepto',
+      payload: {
+        etiqueta: formNuevo.etiqueta.trim(),
+        tipo: formNuevo.tipo,
+        subconceptos: conSubs ? formNuevo.subconceptos.map(x => x.etiqueta.trim()) : [],
+      }
+    })
+    if (!res.ok || res.payload?.success === false || !res.payload?.clave) {
+      mostrarToast(res.payload?.message || res.message || 'No se pudo crear el concepto', 'danger')
+      return
+    }
+
+    // Valores: el back devuelve las claves creadas (los subconceptos en el mismo orden en que se mandaron)
+    const aGuardar = []
+    if (conSubs) {
+      const clavesSubs = Array.isArray(res.payload.subconceptos) ? res.payload.subconceptos : []
+      formNuevo.subconceptos.forEach((sub, i) => {
+        if (tieneValor(sub.valor) && clavesSubs[i]?.clave) aGuardar.push({ clave: clavesSubs[i].clave, valor: sub.valor })
+      })
+    } else if (tieneValor(formNuevo.valor)) {
+      aGuardar.push({ clave: res.payload.clave, valor: formNuevo.valor })
+    }
+
+    const resultados = await Promise.all(aGuardar.map(v => api.post({
+      entity: 'tesoreria',
+      action: 'actualizarValor',
+      payload: { concepto: v.clave, id_categoria: null, valor: v.valor, exento: 0 }
+    }).catch(() => ({ ok: false }))))
+    const fallaron = resultados.filter(r => !(r.ok && r.payload !== false)).length
+
+    mostrarModalNuevo.value = false
+    await Promise.all([cargarConceptos(), cargarValores()])
+    if (fallaron) mostrarToast(`El concepto se creó, pero no se pudieron guardar ${fallaron} valor(es). Cargalos con Editar.`, 'danger')
+    else mostrarToast('El concepto se creó correctamente')
+  } catch {
+    mostrarToast('Error al conectar con el servidor', 'danger')
+  } finally {
+    guardandoConcepto.value = false
   }
 }
 
@@ -800,6 +1003,18 @@ onMounted(cargarTodo)
 }
 
 .animate__animated { animation-duration: 0.5s; }
+
+/* ====================================================
+   UTILIDADES
+   ==================================================== */
+.btn-danger-subtle {
+  background: #fee2e2;
+  color: #dc3545;
+  border: 1px solid transparent;
+}
+.btn-danger-subtle:hover {
+  background: #fecaca;
+}
 
 /* ====================================================
    TABLA SIN LÍNEAS
