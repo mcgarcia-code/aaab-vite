@@ -165,7 +165,7 @@ const menuItems = [
   { to: '/panel-arbitro/mis-observaciones', title: 'Mis Observaciones', icon: 'bi bi-eye', desc: 'Visualizar observaciones de tus partidos', categoria: 'Actividad Arbitral' },
 
   { to: '/panel-arbitro/designaciones', title: 'Mis Designaciones', icon: 'bi bi-calendar4-week', desc: 'Mis Designaciones', categoria: 'Actividad Arbitral' },
-  { to: '/panel-arbitro/coordinadores', title: 'Coordinadores', icon: 'bi bi-check', desc: 'Cargar y visualizar exámenes', rolesPermitidos: [4], categoria: 'Actividad Arbitral' },
+  { to: '/panel-arbitro/coordinadores', title: 'Coordinadores', icon: 'bi bi-check', desc: 'Gestión de exámenes y reuniones', rolesPermitidos: [4], categoria: 'Actividad Arbitral' },
   { to: '/panel-arbitro/observaciones', title: 'Observaciones', icon: 'bi bi-eye', desc: 'Cargar y visualizar observaciones realizadas por vos', rolesPermitidos: [2, 4], categoria: 'Actividad Arbitral' },
   { to: '/panel-arbitro/examen-asamblea', title: 'Exámenes Asambleas y Reuniones', icon: 'bi bi-journal-check', desc: 'Rendí el examen teórico online', categoria: 'Actividad Arbitral' },
 

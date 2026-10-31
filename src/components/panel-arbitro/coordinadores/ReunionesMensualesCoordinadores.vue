@@ -34,14 +34,25 @@
               </option>
             </select>
 
-            <template v-if="modoReunion">
+            <!-- Modificar: solo reuniones futuras dirigidas únicamente a grupos del coordinador -->
+            <button
+              v-if="modoReunion && puedeModificarReunion"
+              class="btn btn-outline-primary fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
+              :disabled="cargandoArbitros"
+              @click="abrirModalEditarReunion"
+              title="Modificar esta reunión"
+            >
+              <i class="bi bi-pencil-square"></i>
+              <span>Modificar</span>
+            </button>
+
+            <!-- Examen: solo para reuniones de hoy o futuras -->
+            <template v-if="modoReunion && !reunionEsPasada">
               <button
                 class="btn btn-danger fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
-                :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || reunionActual?.examen_habilitado || reunionEsPasada"
+                :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || reunionActual?.examen_habilitado"
                 @click="habilitarExamenReunion"
-                :title="reunionEsPasada
-                  ? 'No se puede habilitar el examen: la reunión ya pasó'
-                  : (idsGruposExamenReunion.length ? 'Habilitar el examen para el grupo de esta reunión' : 'Esta reunión no tiene grupos asociados')"
+                :title="idsGruposExamenReunion.length ? 'Habilitar el examen para el grupo de esta reunión' : 'Esta reunión no tiene grupos asociados'"
               >
                 <span v-if="habilitandoExamen" class="spinner-border spinner-border-sm"></span>
                 <i v-else class="bi bi-shield-check"></i>
@@ -82,6 +93,11 @@
             <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 flex-shrink-0" aria-label="Limpiar filtros">
               <span class="material-icons text-dark fs-6">filter_alt_off</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
+            </button>
+            <!-- Botón Nueva reunión (mismo que "Nuevo" de Gestión de Eventos) -->
+            <button @click="abrirModalNuevaReunion" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger flex-shrink-0" aria-label="Nueva reunión">
+              <span class="material-icons fs-6">add_alert</span>
+              <span class="fw-bold d-none d-md-inline small">Nuevo</span>
             </button>
           </div>
         </div>
@@ -344,6 +360,84 @@
       </div>
     </div>
 
+    <!-- MODAL NUEVA REUNIÓN (mismo formulario que "Nuevo Evento" de Gestión de Eventos) -->
+    <ModalBase
+      :show="mostrarModalNueva"
+      @close="mostrarModalNueva = false"
+      :icono="modoEdicionReunion ? 'edit' : 'notification_add'"
+      :colorIcono="modoEdicionReunion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      maxWidth="600px"
+    >
+      <template #header>
+        <span class="fw-bold fs-5">{{ modoEdicionReunion ? 'Modificar Reunión' : 'Nueva Reunión' }}</span>
+      </template>
+
+      <p class="text-muted small mb-4">Completá los datos para enviar el aviso a los árbitros de tu grupo.</p>
+
+      <form id="formNuevaReunion" @submit.prevent="confirmarGuardadoReunion" class="text-start">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="small fw-bold text-dark mb-1">Tema de la Reunión *</label>
+            <input v-model="formReunion.titulo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Reunión mensual..." required>
+          </div>
+
+          <div class="col-12">
+            <label class="small fw-bold text-dark mb-1">Lugar *</label>
+            <textarea v-model="formReunion.descripcion" class="form-control shadow-none border-secondary-subtle" rows="2" placeholder="Ej: Casa del Handball..." required></textarea>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="small fw-bold text-dark mb-1">Fecha de la Reunión *</label>
+            <input v-model="formReunion.fecha_evento" type="date" :min="modoEdicionReunion ? manianaStr() : hoyStr()" class="form-control shadow-none border-secondary-subtle" required>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="small fw-bold text-dark mb-1">Categoría</label>
+            <div class="form-control bg-light border-secondary-subtle fw-bold text-dark">Reunión</div>
+          </div>
+
+          <div class="col-12">
+            <hr class="my-2 border-secondary-subtle opacity-25">
+          </div>
+
+          <div class="col-12">
+            <label class="small fw-bold text-danger mb-2">Grupo destinatario *</label>
+            <div class="bg-light border border-danger-subtle rounded p-3">
+              <div v-if="cargandoMisGrupos" class="text-center py-2">
+                <span class="spinner-border spinner-border-sm text-danger"></span>
+                <span class="text-muted small ms-2">Cargando tus grupos...</span>
+              </div>
+              <div v-else-if="misGrupos.length" class="d-flex flex-wrap gap-3">
+                <div v-for="g in misGrupos" :key="g.id" class="form-check m-0">
+                  <input
+                    :id="`reunion-grupo-${g.id}`"
+                    class="form-check-input shadow-none border-secondary-subtle"
+                    type="checkbox"
+                    :value="Number(g.id)"
+                    v-model="gruposReunion"
+                    :disabled="misGrupos.length === 1"
+                  >
+                  <label class="form-check-label small fw-bold mt-1" :for="`reunion-grupo-${g.id}`">
+                    {{ g.nombre }} {{ g.subgrupo }}
+                  </label>
+                </div>
+              </div>
+              <p v-else class="text-muted small mb-0">No tenés grupos a cargo asignados.</p>
+              <span v-if="misGrupos.length > 1" class="d-block text-muted mt-2" style="font-size: 0.75rem;">Solo podés convocar a los grupos que coordinás.</span>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <template #footer>
+        <button type="button" @click="mostrarModalNueva = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button type="submit" form="formNuevaReunion" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesandoReunion || !misGrupos.length">
+          <span v-if="procesandoReunion" class="spinner-border spinner-border-sm me-1"></span>
+          {{ procesandoReunion ? 'GUARDANDO...' : (modoEdicionReunion ? 'GUARDAR CAMBIOS' : 'PUBLICAR REUNIÓN') }}
+        </button>
+      </template>
+    </ModalBase>
+
     <ModalBase :show="mostrarModalDetalle" @close="mostrarModalDetalle = false" icono="person_search" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="800px">
       <template #header>
         <div class="text-center w-100">
@@ -475,6 +569,21 @@ const esFechaPasada = (fechaEvento) => {
   return d < hoy
 }
 
+// Fecha (YYYY-MM-DD o DD/MM/YYYY, con o sin hora) -> "YYYY-MM-DD"
+const aISO = (fecha) => {
+  const soloFecha = String(fecha || '').split(' ')[0]
+  if (soloFecha.includes('/')) {
+    const [dia, mes, anio] = soloFecha.split('/')
+    return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`
+  }
+  return soloFecha.substring(0, 10)
+}
+const isoLocal = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const hoyStr = () => isoLocal(new Date())
+const manianaStr = () => { const d = new Date(); d.setDate(d.getDate() + 1); return isoLocal(d) }
+// True si la fecha es posterior a hoy (mañana en adelante)
+const esFechaFutura = (fechaEvento) => !!fechaEvento && aISO(fechaEvento) > hoyStr()
+
 // Nombre legible de un grupo a partir de su id (usa la lista cargada de grupos).
 const nombreGrupo = (idGrupo) => {
   const g = grupos.value.find(x => Number(x.id) === Number(idGrupo))
@@ -531,6 +640,7 @@ const AsistenciaBadge = defineComponent({
 
 // ─── Inyectado ───────────────────────────────────────────────────
 const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
+const notificar = inject('notificar')
 
 // ─── Estado ──────────────────────────────────────────────────────
 const arrReuniones        = ref([])
@@ -623,6 +733,17 @@ const idsGruposExamenReunion = computed(() => opcionSeleccionada.value?.idsGrupo
 const reunionEsPasada = computed(() =>
   reunionActual.value ? esFechaPasada(reunionActual.value.fecha_evento) : false
 )
+
+// El coordinador puede modificar una reunión si es futura, es de categoría "reunion"
+// y está dirigida solo a grupos que él coordina (no "todos los grupos" ni grupos ajenos).
+const puedeModificarReunion = computed(() => {
+  const r = reunionActual.value
+  if (!r || r.categoria !== 'reunion' || r.todosLosGrupos) return false
+  if (!esFechaFutura(r.fecha_evento)) return false
+  const propios = misGrupos.value.map(g => Number(g.id))
+  const idsReunion = (r.idsGrupos || []).map(Number)
+  return idsReunion.length > 0 && idsReunion.every(id => propios.includes(id))
+})
 
 async function habilitarExamenReunion() {
   const r = reunionActual.value
@@ -927,6 +1048,114 @@ const recargar = async () => {
   }
 }
 
+// ─── Nueva reunión (reutiliza eventos/guardarEvento de Gestión de Eventos) ─
+const mostrarModalNueva  = ref(false)
+const modoEdicionReunion = ref(false)
+const idReunionEditada   = ref(null)
+const procesandoReunion  = ref(false)
+const cargandoMisGrupos  = ref(false)
+const misGrupos          = ref([]) // grupos que coordina el usuario
+const gruposReunion      = ref([]) // ids de grupos destinatarios elegidos
+
+const formReunionBase = () => ({ titulo: '', descripcion: '', fecha_evento: '' })
+const formReunion = reactive(formReunionBase())
+
+const cargarMisGrupos = async () => {
+  cargandoMisGrupos.value = true
+  try {
+    const res = await api.get({ entity: 'reuniones', action: 'obtenerGruposCoordinados' })
+    if ((res.ok || res.success) && Array.isArray(res.payload)) misGrupos.value = res.payload
+  } catch (e) {
+    console.error('cargarMisGrupos:', e)
+  } finally {
+    cargandoMisGrupos.value = false
+  }
+}
+
+const abrirModalEditarReunion = () => {
+  const r = reunionActual.value
+  if (!r) return
+  modoEdicionReunion.value = true
+  idReunionEditada.value = r.id
+  Object.assign(formReunion, {
+    titulo: r.titulo || '',
+    descripcion: r.descripcion || '',
+    fecha_evento: aISO(r.fecha_evento),
+  })
+  gruposReunion.value = (r.idsGrupos || []).map(Number)
+  mostrarModalNueva.value = true
+}
+
+const abrirModalNuevaReunion = async () => {
+  modoEdicionReunion.value = false
+  idReunionEditada.value = null
+  Object.assign(formReunion, formReunionBase())
+  mostrarModalNueva.value = true
+  if (!misGrupos.value.length) await cargarMisGrupos()
+  // Por defecto, todos los grupos a cargo quedan marcados
+  gruposReunion.value = misGrupos.value.map(g => Number(g.id))
+}
+
+const confirmarGuardadoReunion = () => {
+  if (!gruposReunion.value.length) {
+    toast({ titulo: 'Faltan grupos', mensaje: 'Seleccioná al menos un grupo destinatario.', tipo: 'danger' })
+    return
+  }
+  if (modoEdicionReunion.value && formReunion.fecha_evento <= hoyStr()) {
+    toast({ titulo: 'Fecha inválida', mensaje: 'La reunión modificada tiene que seguir siendo futura.', tipo: 'danger' })
+    return
+  }
+  notificar({
+    titulo: modoEdicionReunion.value ? '¿Guardar cambios?' : '¿Publicar?',
+    mensaje: modoEdicionReunion.value
+      ? 'Se modificarán los datos de la reunión.'
+      : 'Se enviará el aviso de la reunión a los árbitros del grupo.',
+    tipo: 'success',
+    alConfirmar: guardarReunion
+  })
+}
+
+const guardarReunion = async () => {
+  procesandoReunion.value = true
+  try {
+    const esEdicion = modoEdicionReunion.value
+    const res = await api.post({
+      entity: 'eventos',
+      action: esEdicion ? 'editarEvento' : 'guardarEvento',
+      payload: {
+        id: esEdicion ? idReunionEditada.value : null,
+        titulo: formReunion.titulo,
+        descripcion: formReunion.descripcion,
+        fecha_evento: formReunion.fecha_evento,
+        categoria: 'reunion',
+        todosLosGrupos: false,
+        nombresGrupos: [],
+        idsGrupos: gruposReunion.value,
+      }
+    })
+    if (res.ok) {
+      mostrarModalNueva.value = false
+      await obtenerReuniones()
+      // Si al modificar cambió el grupo, la opción elegida puede haber desaparecido del select
+      if (reunionSeleccionada.value && !opcionSeleccionada.value) {
+        reunionSeleccionada.value = ''
+        await onReunionSeleccionada()
+      }
+      toast({
+        titulo: 'Éxito',
+        mensaje: esEdicion ? 'La reunión se modificó correctamente.' : 'La reunión se publicó correctamente.',
+        tipo: 'success'
+      })
+    } else {
+      toast({ titulo: 'Error', mensaje: res.message || 'El servidor rechazó la solicitud.', tipo: 'danger' })
+    }
+  } catch {
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
+  } finally {
+    procesandoReunion.value = false
+  }
+}
+
 // ─── Misc ────────────────────────────────────────────────────────
 const limpiarFiltros = () => Object.keys(filtros).forEach(k => (filtros[k] = ''))
 
@@ -954,7 +1183,7 @@ watch(soloActivos, async () => {
 })
 
 onMounted(async () => {
-  await Promise.all([obtenerReuniones(), cargarArbitros(), obtenerGrupos()])
+  await Promise.all([obtenerReuniones(), cargarArbitros(), obtenerGrupos(), cargarMisGrupos()])
   await cargarAsistenciasGlobales()
   cargandoInicial.value = false
 })
@@ -984,4 +1213,6 @@ onMounted(async () => {
 .estado-indicator { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; }
 .toggle-asist { cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; user-select: none; font-size: 0.85rem; }
 .toggle-asist:active { opacity: 0.82; }
+.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
+.btn-danger-subtle:hover { background: #fecaca; }
 </style>
