@@ -129,9 +129,14 @@
                       <span :class="['badge-status-sm', m.estado]">{{ m.estado.toUpperCase() }}</span>
                     </td>
                     <td class="text-center">
-                      <button v-if="m.concepto === 'ajuste_manual' && m.estado === 'pendiente'" @click="confirmarAnular(m)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Anular">
-                        <span class="material-icons" style="font-size:16px;">delete</span>
-                      </button>
+                      <div v-if="m.concepto === 'ajuste_manual' && m.estado === 'pendiente'" class="d-flex justify-content-center gap-1">
+                        <button @click="abrirModalEditarManual(m)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
+                          <span class="material-icons" style="font-size:16px;">edit</span>
+                        </button>
+                        <button @click="confirmarAnular(m)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Anular">
+                          <span class="material-icons" style="font-size:16px;">delete</span>
+                        </button>
+                      </div>
                       <span v-else class="text-muted small">—</span>
                     </td>
                   </tr>
@@ -165,9 +170,14 @@
                   </div>
                   <div class="fw-bold fs-6 mb-2">{{ formatearMonto(m.monto) }}</div>
                   <p v-if="m.descripcion" class="text-muted small mb-2">{{ m.descripcion }}</p>
-                  <button v-if="m.concepto === 'ajuste_manual' && m.estado === 'pendiente'" @click="confirmarAnular(m)" class="btn btn-sm btn-outline-danger w-100 fw-bold">
-                    Anular
-                  </button>
+                  <div v-if="m.concepto === 'ajuste_manual' && m.estado === 'pendiente'" class="d-flex gap-2">
+                    <button @click="abrirModalEditarManual(m)" class="btn btn-sm btn-outline-primary flex-fill fw-bold">
+                      Editar
+                    </button>
+                    <button @click="confirmarAnular(m)" class="btn btn-sm btn-outline-danger flex-fill fw-bold">
+                      Anular
+                    </button>
+                  </div>
                 </div>
               </div>
               <div v-if="movimientosPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
@@ -188,6 +198,64 @@
         </div>
       </div>
     </div>
+
+    <ModalBase :show="mostrarModalEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-info-subtle text-info" maxWidth="500px">
+      <template #header>
+        <div class="text-center">
+          <span class="fw-bold fs-5">Editar Ajuste Manual</span>
+          <div class="text-muted small text-uppercase">{{ formEditar.arbitro }}</div>
+        </div>
+      </template>
+
+      <form id="formEditarManual" @submit.prevent="confirmarEditarManual" class="d-flex flex-column gap-3 text-start">
+        <div>
+          <label class="small fw-bold text-dark mb-1 d-block">Tipo de movimiento</label>
+          <div class="btn-group btn-group-sm w-100" role="group" aria-label="Tipo de movimiento">
+            <button type="button" class="btn fw-bold" :class="formEditar.opcion === 'debito' ? 'btn-danger' : 'btn-outline-secondary bg-white'" @click="elegirOpcionEditar('debito')">Débito</button>
+            <button type="button" class="btn fw-bold" :class="formEditar.opcion === 'credito' ? 'btn-success' : 'btn-outline-secondary bg-white'" @click="elegirOpcionEditar('credito')">Crédito</button>
+            <button type="button" class="btn fw-bold" :class="formEditar.opcion === 'item' ? 'btn-primary' : 'btn-outline-secondary bg-white'" @click="elegirOpcionEditar('item')">Ítem</button>
+          </div>
+          <span v-if="formEditar.opcion === 'item'" class="d-block text-muted small mt-1">Los ítems siempre van como <strong class="text-success">crédito</strong>.</span>
+        </div>
+
+        <div v-if="formEditar.opcion === 'item'">
+          <select v-model="formEditar.item" @change="formEditar.monto = valorDeItem(formEditar.item)" class="form-select form-select-sm shadow-none border-secondary-subtle">
+            <option value="" disabled>Seleccione un ítem...</option>
+            <optgroup v-for="g in itemsAgrupados" :key="g.grupo" :label="g.grupo">
+              <option v-for="i in g.items" :key="i.clave" :value="i.clave">
+                {{ i.etiqueta }}{{ valorDeItem(i.clave) !== null ? ' — ' + formatearMonto(valorDeItem(i.clave)) : ' — sin definir' }}
+              </option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="row g-2">
+          <div class="col-12 col-sm-6">
+            <label class="small fw-bold text-dark mb-1">Monto ($)</label>
+            <input v-model.number="formEditar.monto" type="number" step="0.01" min="0.01" inputmode="decimal" class="form-control form-control-sm shadow-none border-secondary-subtle" required>
+          </div>
+          <div class="col-12 col-sm-6">
+            <label class="small fw-bold text-dark mb-1">Fecha</label>
+            <input v-model="formEditar.fecha" type="date" class="form-control form-control-sm shadow-none border-secondary-subtle" required>
+          </div>
+        </div>
+
+        <div>
+          <label class="small fw-bold text-dark mb-1">Descripción</label>
+          <input v-model="formEditar.descripcion" type="text" maxlength="255" class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Opcional">
+        </div>
+      </form>
+
+      <template #footer>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center w-100">
+          <button type="button" @click="mostrarModalEditar = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
+          <button type="submit" form="formEditarManual" :disabled="procesando" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
+            <span v-if="procesando" class="spinner-border spinner-border-sm"></span>
+            {{ procesando ? 'GUARDANDO...' : 'GUARDAR CAMBIOS' }}
+          </button>
+        </div>
+      </template>
+    </ModalBase>
 
     <ModalBase :show="mostrarModalManual" @close="mostrarModalManual = false" icono="add_circle" colorIcono="bg-success-subtle text-success" maxWidth="600px">
       <template #header><span class="fw-bold fs-5">Nuevo Ajuste Manual</span></template>
@@ -586,6 +654,78 @@ const abrirModalManual = () => {
   // siempre frescos, por si se creó un concepto o se editó algún valor
   cargarConceptos()
   cargarValoresVigentes()
+}
+
+const mostrarModalEditar = ref(false)
+const formEditar = reactive({ id: null, arbitro: '', opcion: 'debito', item: '', monto: null, fecha: '', descripcion: '' })
+
+const abrirModalEditarManual = (m) => {
+  Object.assign(formEditar, {
+    id: m.id,
+    arbitro: m.arbitro,
+    opcion: m.item ? 'item' : m.tipo,
+    item: m.item || '',
+    monto: Number(m.monto),
+    fecha: String(m.fecha_generacion).slice(0, 10),
+    descripcion: m.descripcion || '',
+  })
+  mostrarModalEditar.value = true
+  cargarConceptos()
+  cargarValoresVigentes()
+}
+
+const elegirOpcionEditar = (opcion) => {
+  if (formEditar.opcion === opcion) return
+  const veniaDeItem = formEditar.opcion === 'item'
+  formEditar.opcion = opcion
+  if (opcion === 'item' || veniaDeItem) formEditar.item = ''
+}
+
+const confirmarEditarManual = () => {
+  if (formEditar.opcion === 'item' && !formEditar.item) {
+    toast({ titulo: 'Falta completar', mensaje: 'Seleccioná un ítem.', tipo: 'danger' })
+    return
+  }
+  if (!(Number(formEditar.monto) > 0)) {
+    toast({ titulo: 'Falta completar', mensaje: 'Ingresá un monto mayor a 0.', tipo: 'danger' })
+    return
+  }
+  notificar({
+    titulo: '¿Guardar cambios?',
+    mensaje: `Se actualizará el ajuste manual de ${formEditar.arbitro}.`,
+    tipo: 'success',
+    alConfirmar: guardarEdicionManual
+  })
+}
+
+const guardarEdicionManual = async () => {
+  procesando.value = true
+  try {
+    const esItem = formEditar.opcion === 'item'
+    const res = await api.post({
+      entity: 'tesoreria',
+      action: 'editarMovimientoManual',
+      payload: {
+        id: formEditar.id,
+        tipo: esItem ? 'credito' : formEditar.opcion,
+        item: esItem ? formEditar.item : null,
+        monto: Number(formEditar.monto),
+        fecha: formEditar.fecha,
+        descripcion: formEditar.descripcion.trim() || null,
+      }
+    })
+    if (res.ok && res.payload?.success !== false) {
+      mostrarModalEditar.value = false
+      await obtenerMovimientos()
+      toast({ titulo: 'Éxito', mensaje: 'El ajuste manual se actualizó correctamente.', tipo: 'success' })
+    } else {
+      toast({ titulo: 'Error', mensaje: res.payload?.message || res.message || 'El servidor rechazó la solicitud.', tipo: 'danger' })
+    }
+  } catch {
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
+  } finally {
+    procesando.value = false
+  }
 }
 
 const confirmarGuardarManual = () => {
