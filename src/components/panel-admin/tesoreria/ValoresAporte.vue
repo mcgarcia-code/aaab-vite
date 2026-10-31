@@ -113,6 +113,12 @@
                         <button @click="abrirModalHistorial(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Historial">
                           <span class="material-icons" style="font-size:16px;">history</span>
                         </button>
+                        <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
+                          <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
+                        </button>
+                        <button v-if="f.editable" @click.stop="confirmarEliminarConcepto(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
+                          <span class="material-icons" style="font-size:16px;">delete</span>
+                        </button>
                       </div>
                     </td>
                     <td class="text-dark fw-bold">
@@ -137,9 +143,17 @@
                   <template v-else>
                     <tr class="fila-grupo" @click="toggleGrupo(f)" style="cursor: pointer;">
                       <td class="ps-3 text-center">
-                        <button type="button" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" :title="estaExpandido(f) ? 'Contraer' : 'Desplegar'">
-                          <span class="material-icons" style="font-size:16px;">{{ estaExpandido(f) ? 'expand_less' : 'expand_more' }}</span>
+                        <div class="d-flex justify-content-center gap-1">
+                          <button type="button" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" :title="estaExpandido(f) ? 'Contraer' : 'Desplegar'">
+                            <span class="material-icons" style="font-size:16px;">{{ estaExpandido(f) ? 'expand_less' : 'expand_more' }}</span>
+                          </button>
+                          <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
+                          <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
                         </button>
+                        <button v-if="f.editable" @click.stop="confirmarEliminarConcepto(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
+                          <span class="material-icons" style="font-size:16px;">delete</span>
+                        </button>
+                        </div>
                       </td>
                       <td class="text-dark fw-bold">
                         <div class="d-flex align-items-center gap-2">
@@ -166,6 +180,12 @@
                             <button @click="abrirModalHistorial(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Historial">
                               <span class="material-icons" style="font-size:16px;">history</span>
                             </button>
+                            <button v-if="h.editable" @click.stop="abrirModalRenombrar(h)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
+                          <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
+                        </button>
+                        <button v-if="h.editable" @click.stop="confirmarEliminarConcepto(h)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
+                          <span class="material-icons" style="font-size:16px;">delete</span>
+                        </button>
                           </div>
                         </td>
                         <td class="text-dark">
@@ -224,6 +244,12 @@
                     <button @click="abrirModalHistorial(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
                       <span class="material-icons" style="font-size:16px;">history</span> Historial
                     </button>
+                    <button v-if="f.editable" @click="abrirModalRenombrar(f)" class="btn btn-sm btn-outline-primary px-2" aria-label="Renombrar">
+                      <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
+                    </button>
+                    <button v-if="f.editable" @click="confirmarEliminarConcepto(f)" class="btn btn-sm btn-outline-danger px-2" aria-label="Eliminar">
+                      <span class="material-icons" style="font-size:16px;">delete</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -239,6 +265,12 @@
                     </div>
                   </div>
                   <div class="d-flex align-items-center gap-1">
+                    <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-sm btn-light border p-1 text-primary" aria-label="Renombrar">
+                      <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
+                    </button>
+                    <button v-if="f.editable" @click.stop="confirmarEliminarConcepto(f)" class="btn btn-sm btn-light border p-1 text-danger" aria-label="Eliminar">
+                      <span class="material-icons" style="font-size:16px;">delete</span>
+                    </button>
                     <span class="badge" :class="claseEstado(f.estado)">{{ f.definidos }}/{{ f.hijos.length }}</span>
                     <span class="material-icons text-muted" style="font-size:20px;">{{ estaExpandido(f) ? 'expand_less' : 'expand_more' }}</span>
                   </div>
@@ -258,6 +290,12 @@
                       </button>
                       <button @click="abrirModalHistorial(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
                         <span class="material-icons" style="font-size:16px;">history</span> Historial
+                      </button>
+                      <button v-if="h.editable" @click="abrirModalRenombrar(h)" class="btn btn-sm btn-outline-primary px-2" aria-label="Renombrar">
+                        <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
+                      </button>
+                      <button v-if="h.editable" @click="confirmarEliminarConcepto(h)" class="btn btn-sm btn-outline-danger px-2" aria-label="Eliminar">
+                        <span class="material-icons" style="font-size:16px;">delete</span>
                       </button>
                     </div>
                   </div>
@@ -420,6 +458,32 @@
           <button type="submit" form="formNuevoConcepto" :disabled="guardandoConcepto" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
             <span v-if="guardandoConcepto" class="spinner-border spinner-border-sm"></span>
             {{ guardandoConcepto ? 'GUARDANDO...' : 'CREAR CONCEPTO' }}
+          </button>
+        </div>
+      </template>
+    </ModalBase>
+
+    <!-- MODAL RENOMBRAR CONCEPTO -->
+    <ModalBase :show="mostrarModalRenombrar" @close="mostrarModalRenombrar = false" icono="drive_file_rename_outline" colorIcono="bg-info-subtle text-info" maxWidth="500px">
+      <template #header>
+        <div class="text-center">
+          <span class="fw-bold fs-5">Renombrar Concepto</span>
+        </div>
+      </template>
+
+      <form id="formRenombrar" @submit.prevent="guardarRenombrado" class="d-flex flex-column gap-2 text-start">
+        <label class="form-label fw-bold small text-uppercase text-muted mb-0">
+          Nombre <span class="text-danger">*</span>
+        </label>
+        <input v-model="formRenombrar.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none" required>
+      </form>
+
+      <template #footer>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center w-100">
+          <button type="button" @click="mostrarModalRenombrar = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
+          <button type="submit" form="formRenombrar" :disabled="procesando" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
+            <span v-if="procesando" class="spinner-border spinner-border-sm"></span>
+            {{ procesando ? 'GUARDANDO...' : 'GUARDAR NOMBRE' }}
           </button>
         </div>
       </template>
@@ -608,7 +672,7 @@ const arbolConceptos = computed(() => {
 })
 
 // Fila de un concepto editable (fijo, ítem de grupo o valor de partido)
-const filaConcepto = ({ clave, etiqueta, icono, idCategoria = null, tipo = 'fijo', esHijo = false }) => {
+const filaConcepto = ({ clave, etiqueta, icono, idCategoria = null, tipo = 'fijo', esHijo = false, idConcepto = null, sistema = false }) => {
   const registro = buscarRegistro(clave, idCategoria)
   const valor = registro ? Number(registro.valor) : null
   const exento = clave === 'valor_partido' && registro ? Number(registro.exento) === 1 : false
@@ -623,12 +687,14 @@ const filaConcepto = ({ clave, etiqueta, icono, idCategoria = null, tipo = 'fijo
     exento,
     esHijo,
     esGrupo: false,
+    idConcepto,
+    editable: !!idConcepto && !sistema,
     estado: calcularEstado(valor, exento),
   }
 }
 
 // Fila agrupadora que contiene ítems editables (ya construidos con filaConcepto)
-const filaGrupo = ({ key, tipo, etiqueta, icono, hijos, subtipo, abiertoPorDefecto = false }) => {
+const filaGrupo = ({ key, tipo, etiqueta, icono, hijos, subtipo, abiertoPorDefecto = false, idConcepto = null, sistema = false }) => {
   const definidos = hijos.filter(h => h.estado !== 'sin_definir').length
   return {
     key,
@@ -640,6 +706,8 @@ const filaGrupo = ({ key, tipo, etiqueta, icono, hijos, subtipo, abiertoPorDefec
     subtipo,
     definidos,
     abiertoPorDefecto,
+    idConcepto,
+    editable: !!idConcepto && !sistema,
     estado: definidos === hijos.length ? 'definido' : 'sin_definir',
   }
 }
@@ -647,14 +715,17 @@ const filaGrupo = ({ key, tipo, etiqueta, icono, hijos, subtipo, abiertoPorDefec
 // Concepto de la base -> fila suelta o grupo (si tiene subconceptos)
 const filaDesdeConcepto = (c) => {
   const tipo = c.tipo === 'partido' ? 'partido' : 'fijo'
-  if (!c.hijos.length) return filaConcepto({ clave: c.clave, etiqueta: c.etiqueta, icono: c.icono, tipo })
+  const sistema = Number(c.sistema) === 1
+  if (!c.hijos.length) return filaConcepto({ clave: c.clave, etiqueta: c.etiqueta, icono: c.icono, tipo, idConcepto: c.id, sistema })
   return filaGrupo({
     key: 'grupo-' + c.clave,
     tipo,
     etiqueta: c.etiqueta,
     icono: c.icono,
     subtipo: c.etiqueta.replace(/^Valor (por )?/i, ''),
-    hijos: c.hijos.map(h => filaConcepto({ clave: h.clave, etiqueta: h.etiqueta, icono: c.icono, tipo, esHijo: true })),
+    idConcepto: c.id,
+    sistema,
+    hijos: c.hijos.map(h => filaConcepto({ clave: h.clave, etiqueta: h.etiqueta, icono: c.icono, tipo, esHijo: true, idConcepto: h.id, sistema: Number(h.sistema) === 1 })),
   })
 }
 
@@ -934,6 +1005,78 @@ const guardarNuevoConcepto = async () => {
     mostrarToast('Error al conectar con el servidor', 'danger')
   } finally {
     guardandoConcepto.value = false
+  }
+}
+
+// ====================================================
+//  RENOMBRAR Y ELIMINAR CONCEPTO
+// ====================================================
+const mostrarModalRenombrar = ref(false)
+const formRenombrar = reactive({ id: null, etiqueta: '' })
+
+const abrirModalRenombrar = (f) => {
+  formRenombrar.id = f.idConcepto
+  formRenombrar.etiqueta = f.etiqueta
+  mostrarModalRenombrar.value = true
+}
+
+const guardarRenombrado = async () => {
+  const nombre = formRenombrar.etiqueta.trim()
+  if (!nombre) return mostrarToast('Ingresá el nombre del concepto', 'danger')
+  const repetido = conceptos.value.some(c => Number(c.id) !== Number(formRenombrar.id) && normalizarTexto(c.etiqueta) === normalizarTexto(nombre))
+  if (repetido) return mostrarToast(`Ya existe un concepto llamado "${nombre}"`, 'danger')
+
+  procesando.value = true
+  try {
+    const res = await api.post({
+      entity: 'tesoreria',
+      action: 'editarConcepto',
+      payload: { id: formRenombrar.id, etiqueta: nombre }
+    })
+    if (res.ok && res.payload?.success !== false) {
+      mostrarModalRenombrar.value = false
+      await cargarConceptos()
+      mostrarToast('El concepto se renombró correctamente')
+    } else {
+      mostrarToast(res.message || 'No se pudo renombrar el concepto', 'danger')
+    }
+  } catch {
+    mostrarToast('Error al conectar con el servidor', 'danger')
+  } finally {
+    procesando.value = false
+  }
+}
+
+const confirmarEliminarConcepto = (f) => {
+  const cantHijos = f.esGrupo ? f.hijos.length : 0
+  notificar({
+    titulo: '¿Eliminar concepto?',
+    mensaje: cantHijos
+      ? `Se eliminará "${f.etiqueta}" junto con sus ${cantHijos} subconcepto${cantHijos > 1 ? 's' : ''}. Sus valores vigentes quedarán cerrados.`
+      : `Se eliminará "${f.etiqueta}". Su valor vigente quedará cerrado.`,
+    tipo: 'danger',
+    alConfirmar: () => eliminarConcepto(f)
+  })
+}
+
+const eliminarConcepto = async (f) => {
+  procesando.value = true
+  try {
+    const res = await api.post({
+      entity: 'tesoreria',
+      action: 'eliminarConcepto',
+      payload: { id: f.idConcepto }
+    })
+    if (res.ok && res.payload?.success !== false) {
+      await Promise.all([cargarConceptos(), cargarValores()])
+      mostrarToast('El concepto se eliminó correctamente')
+    } else {
+      mostrarToast(res.message || 'No se pudo eliminar el concepto', 'danger')
+    }
+  } catch {
+    mostrarToast('Error al conectar con el servidor', 'danger')
+  } finally {
+    procesando.value = false
   }
 }
 
