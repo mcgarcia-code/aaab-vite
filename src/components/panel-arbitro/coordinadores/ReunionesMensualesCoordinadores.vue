@@ -148,7 +148,8 @@
                   <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
                   <th class="py-3 text-center text-uppercase text-muted">Subgrupo</th>
                   <th v-if="!modoReunion" class="py-3 text-center text-uppercase text-muted">Reuniones</th>
-                  <th v-else class="py-3 text-uppercase text-muted" style="min-width: 270px;">
+                  <th v-if="modoReunion" class="py-3 text-center text-uppercase text-muted">Teórico</th>
+                  <th v-if="modoReunion" class="py-3 text-uppercase text-muted" style="min-width: 270px;">
                     Asistencia
                     <span class="fw-normal fst-italic text-muted ms-1" style="font-size: 0.7rem;">(guardado automático)</span>
                   </th>
@@ -181,7 +182,8 @@
                   <td class="p-2 border-bottom border-2 text-center" v-if="!modoReunion">
                     <span class="text-muted small fst-italic">← Seleccioná una reunión</span>
                   </td>
-                  <td v-else class="p-2 border-bottom border-2">
+                  <td v-if="modoReunion" class="p-2 border-bottom border-2"></td>
+                  <td v-if="modoReunion" class="p-2 border-bottom border-2">
                     <select v-model="filtros.asistencia" class="form-select form-select-sm shadow-none">
                       <option value="">Todas</option>
                       <option value="presente">Solo Presentes</option>
@@ -194,13 +196,13 @@
 
               <tbody>
                 <tr v-if="cargandoInicial || cargandoArbitros">
-                  <td colspan="7" class="text-center py-5">
+                  <td :colspan="modoReunion ? 8 : 7" class="text-center py-5">
                     <div class="spinner-border text-danger spinner-border-sm" role="status"></div>
                     <span class="ms-2 fw-bold text-muted">Cargando datos...</span>
                   </td>
                 </tr>
                 <tr v-else-if="!arbitrosPaginados.length">
-                  <td colspan="7" class="text-center py-4 text-muted">
+                  <td :colspan="modoReunion ? 8 : 7" class="text-center py-4 text-muted">
                     <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">search_off</span>
                     <span class="fw-bold">No se encontraron árbitros.</span>
                   </td>
@@ -233,7 +235,26 @@
                     </div>
                   </td>
 
-                  <td v-else>
+                  <td v-if="modoReunion" class="text-center">
+                    <div v-if="examenes[a.id]" class="d-flex align-items-center justify-content-center gap-2">
+                      <span class="fw-bold" :class="examenes[a.id].aprobado ? 'text-success' : 'text-danger'">
+                        {{ examenes[a.id].calificacion.toFixed(2) }} %
+                      </span>
+                      <button
+                        @click="descargarPdfTeorico(a)"
+                        :disabled="!!descargandoPdf[a.id]"
+                        class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary"
+                        title="Descargar teórico"
+                        aria-label="Descargar teórico"
+                      >
+                        <span v-if="descargandoPdf[a.id]" class="spinner-border spinner-border-sm"></span>
+                        <i v-else class="bi bi-eye"></i>
+                      </button>
+                    </div>
+                    <span v-else class="text-muted">-</span>
+                  </td>
+
+                  <td v-if="modoReunion">
                     <div class="d-flex align-items-center gap-3">
                       <div class="form-check form-check-inline mb-0">
                         <input
@@ -302,6 +323,22 @@
                       <template v-if="a.subgrupo"> / {{ a.subgrupo }}</template>
                     </span>
                     <span class="small"><strong>Reuniones:</strong> {{ resumenAsistencia(a.id).total }}</span>
+                  </div>
+
+                  <div v-if="modoReunion && examenes[a.id]" class="d-flex justify-content-between align-items-center text-dark mb-2 border-bottom border-secondary-subtle pb-2">
+                    <span class="small">
+                      <strong>Teórico:</strong>
+                      <span class="fw-bold ms-1" :class="examenes[a.id].aprobado ? 'text-success' : 'text-danger'">{{ examenes[a.id].calificacion.toFixed(2) }} %</span>
+                    </span>
+                    <button
+                      @click="descargarPdfTeorico(a)"
+                      :disabled="!!descargandoPdf[a.id]"
+                      class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary"
+                      aria-label="Descargar teórico"
+                    >
+                      <span v-if="descargandoPdf[a.id]" class="spinner-border spinner-border-sm"></span>
+                      <i v-else class="bi bi-eye"></i>
+                    </button>
                   </div>
 
                   <div v-if="!modoReunion" class="d-flex gap-2">
@@ -646,6 +683,8 @@ const notificar = inject('notificar')
 const arrReuniones        = ref([])
 const arbitros            = ref([])
 const arbitrosReunion     = ref([])
+const examenes            = ref({})
+const descargandoPdf      = reactive({})
 const grupos              = ref([])
 const habilitandoExamen   = ref(false)
 const deshabilitandoExamen = ref(false)
@@ -954,8 +993,10 @@ const limpiarEstadoReunion = () => {
   Object.keys(asistencias).forEach(k => delete asistencias[k])
   Object.keys(guardando).forEach(k => delete guardando[k])
   Object.keys(guardadoOk).forEach(k => delete guardadoOk[k])
+  Object.keys(descargandoPdf).forEach(k => delete descargandoPdf[k])
   registrosExistentes.value = {}
   arbitrosReunion.value = []
+  examenes.value = {}
 }
 
 const onReunionSeleccionada = async () => {
@@ -983,11 +1024,40 @@ const onReunionSeleccionada = async () => {
         if (asistencia) asistencias[a.id] = asistencia
       })
     }
+    await cargarExamenes()
   } catch (e) {
     console.error('onReunionSeleccionada:', e)
     toast({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la reunión.', tipo: 'danger' })
   } finally {
     cargandoArbitros.value = false
+  }
+}
+
+const cargarExamenes = async () => {
+  const resExamenes = await api.get({
+    entity: 'examen_online',
+    action: 'obtenerExamenesReunion',
+    payload: { idEvento: Number(idEventoSeleccionado.value) }
+  })
+  const mapa = {}
+  if (resExamenes.ok && Array.isArray(resExamenes.payload)) {
+    resExamenes.payload.forEach(e => { mapa[e.id_arbitro] = e })
+  }
+  examenes.value = mapa
+}
+
+const descargarPdfTeorico = async (a) => {
+  descargandoPdf[a.id] = true
+  try {
+    await api.getFile({
+      entity: 'examen_online',
+      action: 'descargarPdfExamen',
+      payload: { idEvento: Number(idEventoSeleccionado.value), idArbitro: a.id }
+    }, `teorico_${a.apellido}_${a.nombre}.pdf`)
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e?.message || 'No se pudo descargar el PDF', tipo: 'danger' })
+  } finally {
+    delete descargandoPdf[a.id]
   }
 }
 
@@ -1063,7 +1133,7 @@ const formReunion = reactive(formReunionBase())
 const cargarMisGrupos = async () => {
   cargandoMisGrupos.value = true
   try {
-    const res = await api.get({ entity: 'reuniones', action: 'obtenerGruposCoordinados' })
+    const res = await api.get({ entity: 'coordinadores', action: 'obtenerGruposCoordinados' })
     if ((res.ok || res.success) && Array.isArray(res.payload)) misGrupos.value = res.payload
   } catch (e) {
     console.error('cargarMisGrupos:', e)
