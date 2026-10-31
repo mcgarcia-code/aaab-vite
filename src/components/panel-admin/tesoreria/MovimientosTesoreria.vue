@@ -189,80 +189,123 @@
       </div>
     </div>
 
-    <ModalBase :show="mostrarModalManual" @close="mostrarModalManual = false" icono="add_circle" colorIcono="bg-success-subtle text-success" maxWidth="550px">
+    <ModalBase :show="mostrarModalManual" @close="mostrarModalManual = false" icono="add_circle" colorIcono="bg-success-subtle text-success" maxWidth="600px">
       <template #header><span class="fw-bold fs-5">Nuevo Ajuste Manual</span></template>
 
       <form id="formManual" @submit.prevent="confirmarGuardarManual" class="text-start">
         <div class="row g-3">
 
-          <!-- 1. ÁRBITRO -->
-          <div class="col-12">
+          <!-- 1. ÁRBITRO Y FECHA (valen para todos los movimientos de la lista) -->
+          <div class="col-12 col-sm-7">
             <label class="small fw-bold text-dark mb-1">Árbitro *</label>
             <select v-model="formManual.id_arbitro" class="form-select shadow-none border-secondary-subtle" required>
               <option value="" disabled>Seleccione un árbitro...</option>
               <option v-for="a in arbitros" :key="a.id" :value="a.id">{{ a.apellido }}, {{ a.nombre }}</option>
             </select>
           </div>
-
-          <!-- 2. TIPO DE MOVIMIENTO: DÉBITO | CRÉDITO | ÍTEM (misma línea, también en celular) -->
-          <div class="col-12">
-            <label class="small fw-bold text-dark mb-1 d-block">Tipo de movimiento *</label>
-            <div class="btn-group btn-group-sm w-100" role="group" aria-label="Tipo de movimiento">
-              <button type="button" class="btn fw-bold"
-                      :class="formManual.opcion === 'debito' ? 'btn-danger' : 'btn-outline-secondary'"
-                      @click="elegirOpcion('debito')">
-                Débito
-              </button>
-              <button type="button" class="btn fw-bold"
-                      :class="formManual.opcion === 'credito' ? 'btn-success' : 'btn-outline-secondary'"
-                      @click="elegirOpcion('credito')">
-                Crédito
-              </button>
-              <button type="button" class="btn fw-bold"
-                      :class="formManual.opcion === 'item' ? 'btn-primary' : 'btn-outline-secondary'"
-                      @click="elegirOpcion('item')">
-                Ítem
-              </button>
-            </div>
-            <span class="d-block text-muted small mt-1">
-              <template v-if="formManual.opcion === 'debito'">Genera deuda al árbitro.</template>
-              <template v-else-if="formManual.opcion === 'credito'">Queda a favor del árbitro.</template>
-              <template v-else>Los ítems siempre van como <strong class="text-success">crédito</strong>.</template>
-            </span>
-          </div>
-
-          <!-- 3. ÍTEM: lista desplegable de otros conceptos -->
-          <div v-if="formManual.opcion === 'item'" class="col-12">
-            <label class="small fw-bold text-dark mb-1">Ítem *</label>
-            <select v-model="formManual.item" @change="alElegirItem" class="form-select shadow-none border-secondary-subtle" required>
-              <option value="" disabled>Seleccione un ítem...</option>
-              <optgroup v-for="g in itemsAgrupados" :key="g.grupo" :label="g.grupo">
-                <option v-for="i in g.items" :key="i.clave" :value="i.clave">
-                  {{ i.etiqueta }}{{ valorDeItem(i.clave) !== null ? ' — ' + formatearMonto(valorDeItem(i.clave)) : ' — sin definir' }}
-                </option>
-              </optgroup>
-            </select>
-            <span v-if="cargandoValores" class="d-block text-muted small mt-1">Cargando valores vigentes...</span>
-            <span v-else-if="formManual.item && valorDeItem(formManual.item) === null" class="d-block text-warning-emphasis small mt-1">
-              Este ítem no tiene valor definido en Valores y Porcentaje de Aporte. Ingresá el monto a mano.
-            </span>
-          </div>
-
-          <!-- 4. MONTO Y FECHA -->
-          <div class="col-12 col-sm-6">
-            <label class="small fw-bold text-dark mb-1">Monto ($) *</label>
-            <input v-model.number="formManual.monto" type="number" step="0.01" min="0.01" inputmode="decimal" class="form-control shadow-none border-secondary-subtle" required>
-            <span v-if="formManual.opcion === 'item'" class="d-block text-muted small mt-1">Se completa con el valor del ítem; podés modificarlo.</span>
-          </div>
-          <div class="col-12 col-sm-6">
+          <div class="col-12 col-sm-5">
             <label class="small fw-bold text-dark mb-1">Fecha</label>
             <input v-model="formManual.fecha" type="date" class="form-control shadow-none border-secondary-subtle">
           </div>
 
-          <!-- 5. DESCRIPCIÓN -->
+          <!-- 2. ARMAR UN MOVIMIENTO -->
           <div class="col-12">
-            <label class="small fw-bold text-dark mb-1">Descripción</label>
-            <textarea v-model="formManual.descripcion" rows="2" class="form-control shadow-none border-secondary-subtle"></textarea>
+            <div class="border rounded p-3 bg-light">
+              <label class="small fw-bold text-dark mb-1 d-block">Tipo de movimiento</label>
+              <div class="btn-group btn-group-sm w-100" role="group" aria-label="Tipo de movimiento">
+                <button type="button" class="btn fw-bold"
+                        :class="linea.opcion === 'debito' ? 'btn-danger' : 'btn-outline-secondary bg-white'"
+                        @click="elegirOpcion('debito')">
+                  Débito
+                </button>
+                <button type="button" class="btn fw-bold"
+                        :class="linea.opcion === 'credito' ? 'btn-success' : 'btn-outline-secondary bg-white'"
+                        @click="elegirOpcion('credito')">
+                  Crédito
+                </button>
+                <button type="button" class="btn fw-bold"
+                        :class="linea.opcion === 'item' ? 'btn-primary' : 'btn-outline-secondary bg-white'"
+                        @click="elegirOpcion('item')">
+                  Ítem
+                </button>
+              </div>
+              <span class="d-block text-muted small mt-1 mb-2">
+                <template v-if="linea.opcion === 'debito'">Genera deuda al árbitro.</template>
+                <template v-else-if="linea.opcion === 'credito'">Queda a favor del árbitro.</template>
+                <template v-else>Los ítems siempre van como <strong class="text-success">crédito</strong>.</template>
+              </span>
+
+              <div class="row g-2">
+                <!-- Ítem -->
+                <div v-if="linea.opcion === 'item'" class="col-12">
+                  <select v-model="linea.item" @change="alElegirItem" class="form-select form-select-sm shadow-none border-secondary-subtle">
+                    <option value="" disabled>Seleccione un ítem...</option>
+                    <optgroup v-for="g in itemsAgrupados" :key="g.grupo" :label="g.grupo">
+                      <option v-for="i in g.items" :key="i.clave" :value="i.clave">
+                        {{ i.etiqueta }}{{ valorDeItem(i.clave) !== null ? ' — ' + formatearMonto(valorDeItem(i.clave)) : ' — sin definir' }}
+                      </option>
+                    </optgroup>
+                  </select>
+                  <span v-if="cargandoValores" class="d-block text-muted small mt-1">Cargando valores vigentes...</span>
+                  <span v-else-if="linea.item && valorDeItem(linea.item) === null" class="d-block text-warning-emphasis small mt-1">
+                    Este ítem no tiene valor definido. Ingresá el monto a mano.
+                  </span>
+                </div>
+
+                <!-- Monto -->
+                <div class="col-12 col-sm-5">
+                  <input v-model.number="linea.monto" type="number" step="0.01" min="0.01" inputmode="decimal"
+                         class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Monto ($)">
+                </div>
+
+                <!-- Descripción -->
+                <div class="col-12 col-sm-7">
+                  <input v-model="linea.descripcion" type="text" maxlength="255"
+                         class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Descripción (opcional)">
+                </div>
+
+                <div class="col-12">
+                  <button type="button" @click="agregarLinea" class="btn btn-sm btn-outline-danger fw-bold w-100 d-flex align-items-center justify-content-center gap-1">
+                    <span class="material-icons" style="font-size:16px;">add</span> Agregar a la lista
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. LISTA DE MOVIMIENTOS A GUARDAR -->
+          <div class="col-12">
+            <label class="small fw-bold text-dark mb-1 d-block">
+              Movimientos a guardar <span class="badge bg-dark ms-1">{{ lineas.length }}</span>
+            </label>
+
+            <div v-if="!lineas.length" class="text-muted small border rounded p-3 text-center">
+              Todavía no agregaste movimientos. Armá uno arriba y tocá <strong>Agregar a la lista</strong>.
+            </div>
+
+            <div v-else class="border rounded">
+              <div v-for="(l, i) in lineas" :key="l.uid"
+                   class="d-flex align-items-center gap-2 p-2" :class="{ 'border-bottom': i < lineas.length - 1 }">
+                <span :class="['badge-status-sm', l.tipo === 'debito' ? 'debito' : 'credito']">{{ l.tipo === 'debito' ? 'DÉB' : 'CRÉD' }}</span>
+                <div class="flex-grow-1 small text-truncate">
+                  <span class="fw-bold text-dark">{{ l.item ? etiquetaItem(l.item) : (l.tipo === 'debito' ? 'Débito' : 'Crédito') }}</span>
+                  <span v-if="l.descripcion" class="text-muted"> · {{ l.descripcion }}</span>
+                </div>
+                <span class="fw-bold small text-nowrap" :class="l.tipo === 'debito' ? 'text-danger' : 'text-success'">
+                  {{ l.tipo === 'debito' ? '-' : '+' }} {{ formatearMonto(l.monto) }}
+                </span>
+                <button type="button" @click="quitarLinea(i)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Quitar">
+                  <span class="material-icons" style="font-size:16px;">delete</span>
+                </button>
+              </div>
+
+              <!-- Totales -->
+              <div class="bg-light border-top p-2 small d-flex flex-wrap justify-content-between gap-2">
+                <span>Débitos: <strong class="text-danger">{{ formatearMonto(totales.debitos) }}</strong></span>
+                <span>Créditos: <strong class="text-success">{{ formatearMonto(totales.creditos) }}</strong></span>
+                <span>Neto: <strong :class="totales.neto > 0 ? 'text-danger' : 'text-success'">{{ formatearMonto(Math.abs(totales.neto)) }} {{ totales.neto > 0 ? 'a pagar' : 'a favor' }}</strong></span>
+              </div>
+            </div>
           </div>
         </div>
       </form>
@@ -271,7 +314,7 @@
         <button type="button" @click="mostrarModalManual = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formManual" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesando">
           <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
-          {{ procesando ? 'GUARDANDO...' : 'CREAR AJUSTE' }}
+          {{ procesando ? 'GUARDANDO...' : (lineas.length > 1 ? `GUARDAR ${lineas.length} MOVIMIENTOS` : 'CREAR AJUSTE') }}
         </button>
       </template>
     </ModalBase>
@@ -440,9 +483,52 @@ const generarAportes = async () => {
 }
 
 const mostrarModalManual = ref(false)
-// opcion: 'debito' | 'credito' | 'item' (el ítem siempre se guarda como crédito)
-const formManualBase = () => ({ id_arbitro: '', opcion: 'debito', item: '', monto: null, fecha: new Date().toISOString().slice(0, 10), descripcion: '' })
+// Árbitro y fecha: valen para todos los movimientos de la lista
+const formManualBase = () => ({ id_arbitro: '', fecha: new Date().toISOString().slice(0, 10) })
 const formManual = reactive(formManualBase())
+
+// Movimiento que se está armando. opcion: 'debito' | 'credito' | 'item' (el ítem siempre va como crédito)
+const lineaBase = () => ({ opcion: 'debito', item: '', monto: null, descripcion: '' })
+const linea = reactive(lineaBase())
+
+// Movimientos agregados a la lista, listos para guardar
+const lineas = ref([])
+let uidLinea = 0
+
+const totales = computed(() => {
+  const debitos = lineas.value.filter(l => l.tipo === 'debito').reduce((t, l) => t + Number(l.monto), 0)
+  const creditos = lineas.value.filter(l => l.tipo === 'credito').reduce((t, l) => t + Number(l.monto), 0)
+  return { debitos, creditos, neto: debitos - creditos }
+})
+
+// Valida la línea en armado; devuelve un mensaje de error o null
+const errorLinea = () => {
+  if (linea.opcion === 'item' && !linea.item) return 'Seleccioná un ítem.'
+  if (!(Number(linea.monto) > 0)) return 'Ingresá un monto mayor a 0.'
+  return null
+}
+const lineaVacia = () => !linea.item && !linea.monto && !linea.descripcion.trim()
+
+const agregarLinea = () => {
+  const error = errorLinea()
+  if (error) {
+    toast({ titulo: 'Falta completar', mensaje: error, tipo: 'danger' })
+    return false
+  }
+  const esItem = linea.opcion === 'item'
+  lineas.value.push({
+    uid: ++uidLinea,
+    tipo: esItem ? 'credito' : linea.opcion,
+    item: esItem ? linea.item : null,
+    monto: Number(linea.monto),
+    descripcion: linea.descripcion.trim(),
+  })
+  // Deja el mismo tipo elegido para cargar el siguiente más rápido
+  Object.assign(linea, { ...lineaBase(), opcion: linea.opcion })
+  return true
+}
+
+const quitarLinea = (i) => lineas.value.splice(i, 1)
 
 // ----------------------------------------------------
 //  ÍTEMS (otros conceptos, sin Porcentaje de Aporte)
@@ -478,23 +564,24 @@ const cargarValoresVigentes = async () => {
 }
 
 const elegirOpcion = (opcion) => {
-  if (formManual.opcion === opcion) return
-  const veniaDeItem = formManual.opcion === 'item'
-  formManual.opcion = opcion
+  if (linea.opcion === opcion) return
+  const veniaDeItem = linea.opcion === 'item'
+  linea.opcion = opcion
   // Al entrar o salir de Ítem se limpia el ítem y su monto; entre Débito y Crédito el monto se mantiene
   if (opcion === 'item' || veniaDeItem) {
-    formManual.item = ''
-    formManual.monto = null
+    linea.item = ''
+    linea.monto = null
   }
 }
 
 const alElegirItem = () => {
-  const valor = valorDeItem(formManual.item)
-  formManual.monto = valor
+  linea.monto = valorDeItem(linea.item)
 }
 
 const abrirModalManual = () => {
   Object.assign(formManual, formManualBase())
+  Object.assign(linea, lineaBase())
+  lineas.value = []
   mostrarModalManual.value = true
   // siempre frescos, por si se creó un concepto o se editó algún valor
   cargarConceptos()
@@ -502,13 +589,20 @@ const abrirModalManual = () => {
 }
 
 const confirmarGuardarManual = () => {
-  if (formManual.opcion === 'item' && !formManual.item) {
-    toast({ titulo: 'Error', mensaje: 'Seleccioná un ítem.', tipo: 'danger' })
+  if (!formManual.id_arbitro) {
+    toast({ titulo: 'Falta completar', mensaje: 'Seleccioná un árbitro.', tipo: 'danger' })
     return
   }
+  // Si quedó un movimiento armado sin agregar, se suma a la lista
+  if (!lineaVacia() && !agregarLinea()) return
+  if (!lineas.value.length) {
+    toast({ titulo: 'Lista vacía', mensaje: 'Agregá al menos un movimiento.', tipo: 'danger' })
+    return
+  }
+  const cant = lineas.value.length
   notificar({
-    titulo: 'Crear ajuste manual?',
-    mensaje: 'Se registrará el movimiento y se notificará al árbitro.',
+    titulo: cant > 1 ? `¿Guardar ${cant} movimientos?` : '¿Crear ajuste manual?',
+    mensaje: `Se registrará${cant > 1 ? 'n los movimientos' : ' el movimiento'} y se notificará al árbitro.`,
     tipo: 'success',
     alConfirmar: guardarManual
   })
@@ -517,20 +611,26 @@ const confirmarGuardarManual = () => {
 const guardarManual = async () => {
   procesando.value = true
   try {
-    const esItem = formManual.opcion === 'item' && formManual.item
     const payload = {
       id_arbitro: formManual.id_arbitro,
-      tipo: esItem ? 'credito' : formManual.opcion,
-      monto: formManual.monto,
       fecha: formManual.fecha,
-      descripcion: formManual.descripcion,
-      item: esItem ? formManual.item : null,
+      movimientos: lineas.value.map(l => ({
+        tipo: l.tipo,
+        monto: l.monto,
+        descripcion: l.descripcion || null,
+        item: l.item,
+      })),
     }
-    const res = await api.post({ entity: 'tesoreria', action: 'crearMovimientoManual', payload })
+    const cant = lineas.value.length
+    const res = await api.post({ entity: 'tesoreria', action: 'crearMovimientosManuales', payload })
     if (res.ok && res.payload?.success !== false) {
       mostrarModalManual.value = false
       await obtenerMovimientos()
-      toast({ titulo: 'Éxito', mensaje: 'El ajuste manual se creó correctamente.', tipo: 'success' })
+      toast({
+        titulo: 'Éxito',
+        mensaje: cant > 1 ? `Se guardaron ${cant} movimientos.` : 'El ajuste manual se creó correctamente.',
+        tipo: 'success'
+      })
     } else {
       toast({ titulo: 'Error', mensaje: res.payload?.message || res.message || 'El servidor rechazó la solicitud.', tipo: 'danger' })
     }

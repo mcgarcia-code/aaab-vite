@@ -64,18 +64,19 @@
         <div>
           <strong class="d-block mb-1">Tenés un recargo aplicado sobre tu porcentaje de aporte</strong>
           <div v-for="r in recargosActivos" :key="r.id" class="small">
-            <strong>{{ r.porcentaje }}%</strong> desde el {{ r.fecha_desde }}{{ r.fecha_hasta ? ` hasta el ${r.fecha_hasta}` : '' }} — {{ r.motivo }}
+            <strong>{{ r.porcentaje }}%</strong> desde el {{ formatearFecha(r.fecha_desde) }}{{ r.fecha_hasta ? ` hasta el ${formatearFecha(r.fecha_hasta)}` : '' }} — {{ r.motivo }}
           </div>
         </div>
       </div>
     </div>
 
     <!-- MOVIMIENTOS PENDIENTES -->
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
-      <div class="card-header bg-white py-3 border-bottom">
+    <div ref="cardMovimientos" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+      <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center gap-2">
         <h5 class="fw-bold m-0 text-dark d-flex align-items-center gap-2">
           <i class="bi bi-list-check"></i> Movimientos del Período Actual
         </h5>
+        <span v-if="movimientosPendientes.length" class="badge bg-light text-dark border">{{ movimientosPendientes.length }}</span>
       </div>
       <div class="card-body p-0">
         <div v-if="!cargando && movimientosPendientes.length === 0" class="text-center p-4 bg-light">
@@ -83,15 +84,26 @@
         </div>
 
         <div v-else class="d-flex flex-column">
-          <div v-for="m in movimientosPendientes" :key="m.id" class="border-bottom item-movimiento bg-white p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div v-for="m in movimientosPaginados" :key="m.id" class="border-bottom item-movimiento bg-white p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
               <span class="fw-bold text-dark d-block">{{ tienePartido(m) ? etiquetaPartido(m) : etiquetaConcepto(m.concepto) }}</span>
               <span v-if="tienePartido(m) && m.partido_categoria" class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start me-1" style="font-size: 0.65rem;">{{ m.partido_categoria }}</span>
-              <span class="text-muted small">{{ m.fecha_generacion }}{{ m.descripcion ? ' · ' + m.descripcion : '' }}</span>
+              <span class="text-muted small">{{ formatearFecha(m.fecha_generacion) }}{{ m.descripcion ? ' · ' + m.descripcion : '' }}</span>
             </div>
             <span class="fw-bold" :class="m.tipo === 'debito' ? 'text-danger' : 'text-success'">
               {{ m.tipo === 'debito' ? '-' : '+' }} {{ formatearMonto(m.monto) }}
             </span>
+          </div>
+
+          <!-- PAGINACIÓN -->
+          <div v-if="totalPaginas > 1" class="d-flex justify-content-center align-items-center gap-3 py-3 bg-white">
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+              <i class="bi bi-chevron-left"></i> Ant
+            </button>
+            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+              Sig <i class="bi bi-chevron-right"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -142,7 +154,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useHead } from '@vueuse/head';
 import { api } from '@/api/api';
 
@@ -171,11 +183,35 @@ const etiquetaConcepto = (c) => CONCEPTOS[c] || c;
 const tienePartido = (m) => m.concepto === 'arbitraje' && m.partido_local && m.partido_visitante
 const etiquetaPartido = (m) => `${m.partido_local} vs. ${m.partido_visitante}`
 
+// "2026-09-01" (o "2026-09-01 10:00:00") -> "01-09-2026"
+const formatearFecha = (f) => {
+  if (!f) return '';
+  const [anio, mes, dia] = String(f).substring(0, 10).split('-');
+  return dia && mes && anio ? `${dia}-${mes}-${anio}` : f;
+};
+
 const formatearMonto = (v) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(Number(v) || 0);
 
 const esDeuda = computed(() => estadoCuenta.value && Number(estadoCuenta.value.saldo_estimado_actual) > 0);
 const movimientosPendientes = computed(() => estadoCuenta.value?.movimientos_pendientes || []);
 const historialCierres = computed(() => estadoCuenta.value?.historial_cierres || []);
+
+// Paginación de movimientos del período actual
+const registrosPorPagina = 10;
+const paginaActual = ref(1);
+const cardMovimientos = ref(null);
+const totalPaginas = computed(() => Math.ceil(movimientosPendientes.value.length / registrosPorPagina) || 1);
+const movimientosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina;
+  return movimientosPendientes.value.slice(inicio, inicio + registrosPorPagina);
+});
+watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n; });
+
+const cambiarPagina = (delta) => {
+  paginaActual.value += delta;
+  // Vuelve al inicio de la lista de movimientos (no al inicio de la página)
+  setTimeout(() => cardMovimientos.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+};
 
 const recargosActivos = computed(() => {
   const hoy = new Date().toISOString().slice(0, 10);
@@ -194,6 +230,7 @@ const cargarRecargos = async () => {
 
 const cargarTodo = async () => {
   cargando.value = true;
+  paginaActual.value = 1;
   try {
     await Promise.all([cargarEstadoCuenta(), cargarRecargos()]);
   } finally {
