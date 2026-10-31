@@ -352,7 +352,7 @@ const etiquetaConcepto = (m) => {
     const categoria = m.partido_categoria ? ` (${m.partido_categoria})` : ''
     return etiquetaPartido(m) + categoria
   }
-  if (m.concepto === 'ajuste_manual' && m.item) return `Ajuste Manual · ${etiquetaItem(m.item)}`
+  if (m.concepto === 'ajuste_manual' && m.item) return etiquetaItem(m.item)
   return CONCEPTOS[m.concepto] || m.concepto
 }
 
@@ -416,7 +416,7 @@ const cargarArbitros = async () => {
 const confirmarGenerar = () => {
   notificar({
     titulo: 'Generar aportes del período?',
-    mensaje: `Se generarán los movimientos correspondientes a las designaciones publicadas de ${periodoGenerar.value}. Puede ejecutarse varias veces sin duplicar.`,
+    mensaje: `Se generarán los movimientos de las designaciones publicadas de ${periodoGenerar.value} y se recalcularán los que sigan pendientes (por ejemplo, si cambió el porcentaje de un árbitro). Los movimientos ya cerrados no se modifican. Puede ejecutarse varias veces sin duplicar.`,
     tipo: 'success',
     alConfirmar: generarAportes
   })
@@ -428,7 +428,7 @@ const generarAportes = async () => {
     const res = await api.post({ entity: 'tesoreria', action: 'generarAportesPeriodo', payload: { periodo: periodoGenerar.value } })
     if (res.ok) {
       await obtenerMovimientos()
-      toast({ titulo: 'Aportes generados', mensaje: `Generados: ${res.payload.generados} · Exentos: ${res.payload.exentos ?? 0} · Omitidos: ${res.payload.omitidos}`, tipo: 'success' })
+      toast({ titulo: 'Aportes calculados', mensaje: `Generados: ${res.payload.generados} · Actualizados: ${res.payload.actualizados ?? 0} · Anulados por suspensión: ${res.payload.anulados ?? 0} · Exentos: ${res.payload.exentos ?? 0} · Sin cambios u omitidos: ${res.payload.omitidos}`, tipo: 'success' })
     } else {
       toast({ titulo: 'Error', mensaje: res.message || 'El servidor rechazó la solicitud.', tipo: 'danger' })
     }
