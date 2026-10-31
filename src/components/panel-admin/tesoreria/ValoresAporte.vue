@@ -113,6 +113,9 @@
                         <button @click="abrirModalHistorial(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Historial">
                           <span class="material-icons" style="font-size:16px;">history</span>
                         </button>
+                        <button v-if="f.admiteSubconceptos" @click.stop="abrirModalSub(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-success" title="Agregar subconcepto">
+                          <span class="material-icons" style="font-size:16px;">playlist_add</span>
+                        </button>
                         <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
                           <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
                         </button>
@@ -147,7 +150,10 @@
                           <button type="button" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" :title="estaExpandido(f) ? 'Contraer' : 'Desplegar'">
                             <span class="material-icons" style="font-size:16px;">{{ estaExpandido(f) ? 'expand_less' : 'expand_more' }}</span>
                           </button>
-                          <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
+                          <button v-if="f.admiteSubconceptos" @click.stop="abrirModalSub(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-success" title="Agregar subconcepto">
+                          <span class="material-icons" style="font-size:16px;">playlist_add</span>
+                        </button>
+                        <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
                           <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
                         </button>
                         <button v-if="f.editable" @click.stop="confirmarEliminarConcepto(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
@@ -244,6 +250,9 @@
                     <button @click="abrirModalHistorial(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
                       <span class="material-icons" style="font-size:16px;">history</span> Historial
                     </button>
+                    <button v-if="f.admiteSubconceptos" @click="abrirModalSub(f)" class="btn btn-sm btn-outline-success px-2" aria-label="Agregar subconcepto">
+                      <span class="material-icons" style="font-size:16px;">playlist_add</span>
+                    </button>
                     <button v-if="f.editable" @click="abrirModalRenombrar(f)" class="btn btn-sm btn-outline-primary px-2" aria-label="Renombrar">
                       <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
                     </button>
@@ -265,6 +274,9 @@
                     </div>
                   </div>
                   <div class="d-flex align-items-center gap-1">
+                    <button v-if="f.admiteSubconceptos" @click.stop="abrirModalSub(f)" class="btn btn-sm btn-light border p-1 text-success" aria-label="Agregar subconcepto">
+                      <span class="material-icons" style="font-size:16px;">playlist_add</span>
+                    </button>
                     <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-sm btn-light border p-1 text-primary" aria-label="Renombrar">
                       <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
                     </button>
@@ -458,6 +470,53 @@
           <button type="submit" form="formNuevoConcepto" :disabled="guardandoConcepto" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
             <span v-if="guardandoConcepto" class="spinner-border spinner-border-sm"></span>
             {{ guardandoConcepto ? 'GUARDANDO...' : 'CREAR CONCEPTO' }}
+          </button>
+        </div>
+      </template>
+    </ModalBase>
+
+    <!-- MODAL AGREGAR SUBCONCEPTOS -->
+    <ModalBase :show="mostrarModalSub" @close="mostrarModalSub = false" icono="playlist_add" colorIcono="bg-success-subtle text-success" maxWidth="600px">
+      <template #header>
+        <div class="text-center">
+          <span class="fw-bold fs-5">Agregar Subconceptos</span>
+          <div class="text-muted small">{{ formSub.etiqueta }}</div>
+        </div>
+      </template>
+
+      <form id="formSubconceptos" @submit.prevent="confirmarAgregarSub" class="d-flex flex-column gap-2 text-start">
+        <label class="form-label fw-bold small text-uppercase text-muted mb-0">
+          Subconceptos <span class="text-danger">*</span>
+        </label>
+        <div v-if="formSub.cierraValor" class="alert alert-warning py-2 small mb-1">
+          Este concepto tiene un valor definido. Al pasar a tener subconceptos, su valor vigente queda cerrado y cada subconcepto lleva el suyo.
+        </div>
+
+        <div class="d-flex flex-column gap-2">
+          <div v-for="(sub, i) in formSub.subconceptos" :key="sub.uid" class="d-flex gap-2 align-items-start bg-light border rounded p-2">
+            <span class="material-icons text-muted mt-1" style="font-size:16px;">subdirectory_arrow_right</span>
+            <div class="flex-grow-1">
+              <input v-model="sub.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none mb-1" :placeholder="'Subconcepto ' + (i + 1)" required>
+              <input v-model.number="sub.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" placeholder="Valor ($) — opcional">
+            </div>
+            <button type="button" @click="formSub.subconceptos.splice(i, 1)" :disabled="formSub.subconceptos.length === 1"
+                    class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Quitar">
+              <span class="material-icons" style="font-size:16px;">delete</span>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" @click="formSub.subconceptos.push(subVacio())" class="btn btn-sm btn-outline-danger fw-bold mt-1 align-self-start d-flex align-items-center gap-1">
+          <span class="material-icons" style="font-size:16px;">add</span> Agregar subconcepto
+        </button>
+      </form>
+
+      <template #footer>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center w-100">
+          <button type="button" @click="mostrarModalSub = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
+          <button type="submit" form="formSubconceptos" :disabled="procesando" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
+            <span v-if="procesando" class="spinner-border spinner-border-sm"></span>
+            {{ procesando ? 'GUARDANDO...' : 'AGREGAR' }}
           </button>
         </div>
       </template>
@@ -689,6 +748,7 @@ const filaConcepto = ({ clave, etiqueta, icono, idCategoria = null, tipo = 'fijo
     esGrupo: false,
     idConcepto,
     editable: !!idConcepto && !sistema,
+    admiteSubconceptos: !!idConcepto && !sistema && !esHijo,
     estado: calcularEstado(valor, exento),
   }
 }
@@ -708,6 +768,7 @@ const filaGrupo = ({ key, tipo, etiqueta, icono, hijos, subtipo, abiertoPorDefec
     abiertoPorDefecto,
     idConcepto,
     editable: !!idConcepto && !sistema,
+    admiteSubconceptos: !!idConcepto && !sistema,
     estado: definidos === hijos.length ? 'definido' : 'sin_definir',
   }
 }
@@ -1040,6 +1101,70 @@ const guardarRenombrado = async () => {
     } else {
       mostrarToast(res.message || 'No se pudo renombrar el concepto', 'danger')
     }
+  } catch {
+    mostrarToast('Error al conectar con el servidor', 'danger')
+  } finally {
+    procesando.value = false
+  }
+}
+
+const mostrarModalSub = ref(false)
+const formSub = reactive({ idPadre: null, etiqueta: '', cierraValor: false, subconceptos: [] })
+
+const abrirModalSub = (f) => {
+  formSub.idPadre = f.idConcepto
+  formSub.etiqueta = f.etiqueta
+  formSub.cierraValor = !f.esGrupo && f.estado === 'definido'
+  formSub.subconceptos = [subVacio()]
+  mostrarModalSub.value = true
+}
+
+const confirmarAgregarSub = () => {
+  const subs = formSub.subconceptos.map(x => x.etiqueta.trim())
+  if (subs.some(x => !x)) return mostrarToast('Completá el nombre de todos los subconceptos', 'danger')
+  const normalizados = subs.map(normalizarTexto)
+  if (new Set(normalizados).size !== normalizados.length) return mostrarToast('Hay subconceptos con el mismo nombre', 'danger')
+  const existentes = conceptos.value.map(c => normalizarTexto(c.etiqueta))
+  const repetido = subs.find(n => existentes.includes(normalizarTexto(n)))
+  if (repetido) return mostrarToast(`Ya existe un concepto llamado "${repetido}"`, 'danger')
+
+  notificar({
+    titulo: '¿Agregar subconceptos?',
+    mensaje: `Se agregarán a "${formSub.etiqueta}": ${subs.join(', ')}.`,
+    tipo: 'success',
+    alConfirmar: guardarSubconceptos
+  })
+}
+
+const guardarSubconceptos = async () => {
+  procesando.value = true
+  try {
+    const res = await api.post({
+      entity: 'tesoreria',
+      action: 'agregarSubconceptos',
+      payload: { idPadre: formSub.idPadre, subconceptos: formSub.subconceptos.map(x => x.etiqueta.trim()) }
+    })
+    if (!res.ok || res.payload?.success === false || !Array.isArray(res.payload?.subconceptos)) {
+      mostrarToast(res.message || 'No se pudieron agregar los subconceptos', 'danger')
+      return
+    }
+
+    const claves = res.payload.subconceptos
+    const aGuardar = []
+    formSub.subconceptos.forEach((sub, i) => {
+      if (tieneValor(sub.valor) && claves[i]?.clave) aGuardar.push({ clave: claves[i].clave, valor: sub.valor })
+    })
+    const resultados = await Promise.all(aGuardar.map(v => api.post({
+      entity: 'tesoreria',
+      action: 'actualizarValor',
+      payload: { concepto: v.clave, id_categoria: null, valor: v.valor, exento: 0 }
+    }).catch(() => ({ ok: false }))))
+    const fallaron = resultados.filter(r => !(r.ok && r.payload !== false)).length
+
+    mostrarModalSub.value = false
+    await Promise.all([cargarConceptos(), cargarValores()])
+    if (fallaron) mostrarToast(`Los subconceptos se agregaron, pero no se pudieron guardar ${fallaron} valor(es). Cargalos con Editar.`, 'danger')
+    else mostrarToast('Los subconceptos se agregaron correctamente')
   } catch {
     mostrarToast('Error al conectar con el servidor', 'danger')
   } finally {
