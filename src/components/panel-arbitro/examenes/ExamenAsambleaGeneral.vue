@@ -95,7 +95,7 @@
             <div class="flex-grow-1 min-w-0">
               <!-- Fecha posicionada dentro de la Card -->
               <div class="text-secondary small fw-medium mb-1 d-flex align-items-center gap-1">
-                <i class="bi bi-calendar-event"></i> {{ formatoFecha(ex.fecha) }}
+                <i class="bi bi-calendar-event"></i> {{ ex.fecha }}
               </div>
 
               <!-- Título del examen -->
