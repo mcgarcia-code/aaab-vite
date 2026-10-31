@@ -41,7 +41,7 @@
                     <div>
                       <span class="badge text-uppercase mb-2" :class="badgeCategoria(ev.categoria)">{{ ev.categoria }}</span>
                       <h5 class="fw-bold text-dark mb-1 fs-5">{{ ev.titulo }}</h5>
-                      <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ formatoFecha(ev.fecha_evento) }}</small>
+                      <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ ev.fecha_formateada }}</small>
                     </div>
                     <button class="btn btn-danger btn-sm rounded-pill px-3 fw-bold align-self-start align-self-sm-auto mt-1 mt-sm-0 flex-shrink-0" @click="abrirModal(ev.id)">
                       <i class="bi bi-pencil-square me-1"></i>Habilitar
@@ -511,13 +511,6 @@ async function guardar() {
   } finally {
     guardando.value = false
   }
-}
-
-function formatoFecha(f) {
-  if (!f) return ''
-  const d = new Date(f)
-  if (isNaN(d)) return f
-  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 onMounted(async () => {

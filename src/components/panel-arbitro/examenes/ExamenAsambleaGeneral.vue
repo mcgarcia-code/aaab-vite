@@ -1,93 +1,3 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import { api } from '@/api/api'
-import ExamenAsambleaRunner from './ExamenAsambleaRunner.vue'
-
-// Estado de la habilitación actual:
-// 'cargando' | 'sin-permiso' | 'habilitado' | 'finalizado' | 'rindiendo'
-const estado = ref('cargando')
-const evento = ref(null)
-
-// Historial de exámenes finalizados
-const historial = ref([])
-const cargandoHistorial = ref(true)
-
-// Descargas de PDF (una por id_evento en curso)
-const descargando = ref({})   // { [idEvento]: true }
-const errorPdf = ref('')
-
-async function cargarHabilitacion() {
-  try {
-    const res = await api.get({ entity: 'examenes_habilitaciones', action: 'miExamenHabilitado' })
-    const data = res?.payload ?? res
-    if (data && data.id_evento) {
-      evento.value = data
-      estado.value = data.ya_finalizado ? 'finalizado' : 'habilitado'
-    } else {
-      estado.value = 'sin-permiso'
-    }
-  } catch {
-    estado.value = 'sin-permiso'
-  }
-}
-
-async function cargarHistorial() {
-  cargandoHistorial.value = true
-  try {
-    const res = await api.get({ entity: 'examen_online', action: 'misExamenesOnline' })
-    historial.value = res?.payload ?? res ?? []
-  } catch {
-    historial.value = []
-  } finally {
-    cargandoHistorial.value = false
-  }
-}
-
-async function recargar() {
-  await Promise.all([cargarHabilitacion(), cargarHistorial()])
-}
-
-function comenzar() { estado.value = 'rindiendo' }
-
-// El examen terminó, pero seguimos mostrando el resultado DENTRO del runner.
-// No recargamos ni cambiamos de estado acá: si lo hiciéramos, el v-if="estado === 'rindiendo'"
-// dejaría de cumplirse y el runner se desmontaría, ocultando la pantalla de resultado.
-function alTerminar() { /* intencionalmente vacío */ }
-
-// Recién al salir (botón "Volver a mi panel") recargamos y volvemos al panel con el historial actualizado.
-function volverAlPanel() {
-  estado.value = 'cargando'
-  recargar()
-}
-
-async function descargarPdf(idEvento) {
-  descargando.value = { ...descargando.value, [idEvento]: true }
-  errorPdf.value = ''
-  try {
-    await api.getFile({
-      entity: 'examen_online',
-      action: 'descargarPdfExamen',
-      payload: { idEvento }
-    }, 'examen_asamblea.pdf')
-  } catch (e) {
-    errorPdf.value = e?.message || 'No se pudo descargar el PDF'
-  } finally {
-    const copia = { ...descargando.value }
-    delete copia[idEvento]
-    descargando.value = copia
-  }
-}
-
-function formatoFecha(f) {
-  if (!f) return ''
-  const d = new Date(f)
-  if (isNaN(d)) return f
-  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
-
-onMounted(recargar)
-</script>
-
 <template>
   <!-- Modo examen a pantalla completa -->
   <ExamenAsambleaRunner
@@ -113,7 +23,7 @@ onMounted(recargar)
 
         <div v-if="estado === 'habilitado' && evento" class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-end w-100 w-md-auto">
           <span class="badge bg-danger px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
-            <i class="bi bi-calendar-event-fill"></i> {{ formatoFecha(evento.fecha) }}
+            <i class="bi bi-calendar-event-fill"></i> {{ evento.fecha }}
           </span>
         </div>
       </div>
@@ -224,7 +134,88 @@ onMounted(recargar)
     </div>
   </div>
 </template>
+<script setup>
+import { ref, onMounted } from 'vue'
+import { api } from '@/api/api'
+import ExamenAsambleaRunner from './ExamenAsambleaRunner.vue'
 
+// Estado de la habilitación actual:
+// 'cargando' | 'sin-permiso' | 'habilitado' | 'finalizado' | 'rindiendo'
+const estado = ref('cargando')
+const evento = ref(null)
+
+// Historial de exámenes finalizados
+const historial = ref([])
+const cargandoHistorial = ref(true)
+
+// Descargas de PDF (una por id_evento en curso)
+const descargando = ref({})   // { [idEvento]: true }
+const errorPdf = ref('')
+
+async function cargarHabilitacion() {
+  try {
+    const res = await api.get({ entity: 'examenes_habilitaciones', action: 'miExamenHabilitado' })
+    const data = res?.payload ?? res
+    if (data && data.id_evento) {
+      evento.value = data
+      estado.value = data.ya_finalizado ? 'finalizado' : 'habilitado'
+    } else {
+      estado.value = 'sin-permiso'
+    }
+  } catch {
+    estado.value = 'sin-permiso'
+  }
+}
+
+async function cargarHistorial() {
+  cargandoHistorial.value = true
+  try {
+    const res = await api.get({ entity: 'examen_online', action: 'misExamenesOnline' })
+    historial.value = res?.payload ?? res ?? []
+  } catch {
+    historial.value = []
+  } finally {
+    cargandoHistorial.value = false
+  }
+}
+
+async function recargar() {
+  await Promise.all([cargarHabilitacion(), cargarHistorial()])
+}
+
+function comenzar() { estado.value = 'rindiendo' }
+
+// El examen terminó, pero seguimos mostrando el resultado DENTRO del runner.
+// No recargamos ni cambiamos de estado acá: si lo hiciéramos, el v-if="estado === 'rindiendo'"
+// dejaría de cumplirse y el runner se desmontaría, ocultando la pantalla de resultado.
+function alTerminar() { /* intencionalmente vacío */ }
+
+// Recién al salir (botón "Volver a mi panel") recargamos y volvemos al panel con el historial actualizado.
+function volverAlPanel() {
+  estado.value = 'cargando'
+  recargar()
+}
+
+async function descargarPdf(idEvento) {
+  descargando.value = { ...descargando.value, [idEvento]: true }
+  errorPdf.value = ''
+  try {
+    await api.getFile({
+      entity: 'examen_online',
+      action: 'descargarPdfExamen',
+      payload: { idEvento }
+    }, 'examen_asamblea.pdf')
+  } catch (e) {
+    errorPdf.value = e?.message || 'No se pudo descargar el PDF'
+  } finally {
+    const copia = { ...descargando.value }
+    delete copia[idEvento]
+    descargando.value = copia
+  }
+}
+
+onMounted(recargar)
+</script>
 <style scoped>
 /* ====================================================
    VISTA HISTORIAL (Cards apiladas)
