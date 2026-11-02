@@ -84,6 +84,7 @@
                     <span :class="badgeEstado(obs.estado)">
                       {{ etiquetaEstado(obs.estado) }}
                     </span>
+                    <i v-if="obs.comentario_estado" class="bi bi-chat-left-text-fill text-primary ms-1" title="Tiene comentarios de la revisión"></i>
                   </td>
                   <td class="text-center pe-3">
                     <div class="d-flex justify-content-center gap-1">
@@ -118,9 +119,12 @@
                     <div>{{ obs.arb1 }}</div>
                     <div v-if="obs.arb2 && obs.ref2_id">{{ obs.arb2 }}</div>
                   </div>
-                  <span :class="badgeEstado(obs.estado)">
-                    {{ etiquetaEstado(obs.estado) }}
-                  </span>
+                  <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                    <i v-if="obs.comentario_estado" class="bi bi-chat-left-text-fill text-primary" title="Tiene comentarios de la revisión"></i>
+                    <span :class="badgeEstado(obs.estado)">
+                      {{ etiquetaEstado(obs.estado) }}
+                    </span>
+                  </div>
                 </div>
                 <div class="text-muted fw-bold mb-2" style="font-size: 0.8rem;">
                   {{ formatearFecha(obs.fecha_partido) }} <span class="mx-1">•</span> {{ obs.categoria || obs.categoria_edad || '-' }}
@@ -184,8 +188,10 @@
           <p class="m-0 small text-dark mt-1" v-if="detalle.puntaje_final != null"><strong class="text-muted">Puntaje final:</strong> <span class="fw-bold text-danger">{{ detalle.puntaje_final }}</span></p>
         </div>
 
-        <div v-if="(detalle.estado === 'anulada' || detalle.estado === 'rechazada') && detalle.comentario_estado" class="alert alert-danger py-2 px-3 small mb-3">
-          <i class="bi bi-info-circle me-1"></i><strong>{{ detalle.estado === 'anulada' ? 'Motivo de anulación' : 'Motivo de rechazo' }}:</strong> {{ detalle.comentario_estado }}
+        <!-- Comentario de la revisión: motivo (anulada/rechazada) o comentarios adicionales (pendiente/aprobada) -->
+        <div v-if="detalle.comentario_estado" class="alert py-2 px-3 small mb-3" :class="avisoComentario(detalle.estado).clase">
+          <div class="fw-bold mb-1"><i class="bi me-1" :class="avisoComentario(detalle.estado).icono"></i>{{ avisoComentario(detalle.estado).titulo }}</div>
+          <div style="white-space: pre-line;">{{ detalle.comentario_estado }}</div>
         </div>
 
         <!-- Tabs: Score sheet (puntajes) / Comment sheet (comentarios) -->
@@ -371,6 +377,16 @@ const badgeEstado = (estado) => {
   if (e === 'rechazada') return 'estado-pill estado-rechazada'
   if (e === 'anulada') return 'estado-pill estado-anulada'
   return 'estado-pill estado-pendiente'
+}
+
+// Cómo se muestra el comentario de la revisión según el estado:
+// anulada/rechazada -> motivo; pendiente/aprobada -> comentarios adicionales para el observador.
+const avisoComentario = (estado) => {
+  const e = (estado || 'pendiente').toLowerCase()
+  if (e === 'anulada')   return { titulo: 'Motivo de anulación', clase: 'alert-secondary', icono: 'bi-slash-circle' }
+  if (e === 'rechazada') return { titulo: 'Motivo de rechazo', clase: 'alert-danger', icono: 'bi-x-circle' }
+  if (e === 'aprobada')  return { titulo: 'Comentarios adicionales', clase: 'alert-success', icono: 'bi-chat-left-text' }
+  return { titulo: 'Comentarios adicionales', clase: 'alert-warning', icono: 'bi-chat-left-text' }
 }
 
 const esPendiente = (obs) => (obs.estado || 'pendiente').toLowerCase() === 'pendiente'

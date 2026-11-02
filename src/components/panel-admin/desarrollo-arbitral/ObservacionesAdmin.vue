@@ -262,8 +262,12 @@
           <i class="bi bi-info-circle me-1"></i>Una observación aprobada o rechazada no puede anularse.
         </p>
         <div class="mt-3">
-          <label class="small fw-bold mb-1 text-dark">Comentarios Adicionales (Opcional)</label>
-          <textarea v-model="comentariosRevision" class="form-control shadow-none border-secondary-subtle" rows="2" placeholder="Motivo de anulación, correcciones, etc..."></textarea>
+          <label class="small fw-bold mb-1 text-dark">
+            {{ esMotivo ? (nuevoEstado === 'anulada' ? 'Motivo de anulación' : 'Motivo de rechazo') : 'Comentarios adicionales' }} (Opcional)
+          </label>
+          <textarea v-model="comentariosRevision" class="form-control shadow-none border-secondary-subtle" rows="3"
+                    :placeholder="esMotivo ? 'Por qué se ' + (nuevoEstado === 'anulada' ? 'anula' : 'rechaza') + ' la observación...' : 'Sugerencias para que el observador mejore...'"></textarea>
+          <span class="text-muted d-block mt-1" style="font-size: 0.75rem;">El observador lo ve en el detalle de la observación, en Mis Observaciones.</span>
         </div>
       </div>
       <template #footer>
@@ -551,8 +555,10 @@
           <p class="m-0 small text-dark mt-1" v-if="detalle.puntaje_final != null"><strong class="text-muted">Puntaje final:</strong> <span class="fw-bold text-danger">{{ detalle.puntaje_final }}</span></p>
         </div>
 
-        <div v-if="(detalle.estado === 'anulada' || detalle.estado === 'rechazada') && detalle.comentario_estado" class="alert alert-danger py-2 px-3 small mb-3">
-          <i class="bi bi-info-circle me-1"></i><strong>{{ detalle.estado === 'anulada' ? 'Motivo de anulación' : 'Motivo de rechazo' }}:</strong> {{ detalle.comentario_estado }}
+        <!-- Comentario de la revisión: motivo (anulada/rechazada) o comentarios adicionales (pendiente/aprobada) -->
+        <div v-if="detalle.comentario_estado" class="alert py-2 px-3 small mb-3" :class="avisoComentario(detalle.estado).clase">
+          <div class="fw-bold mb-1"><i class="bi me-1" :class="avisoComentario(detalle.estado).icono"></i>{{ avisoComentario(detalle.estado).titulo }}</div>
+          <div style="white-space: pre-line;">{{ detalle.comentario_estado }}</div>
         </div>
 
         <!-- Tabs: Score sheet (puntajes) / Comment sheet (comentarios) -->
@@ -718,6 +724,16 @@ const badgeEstado = (estado) => {
   return 'estado-pill estado-pendiente';
 };
 
+// Cómo se muestra el comentario de la revisión según el estado:
+// anulada/rechazada -> motivo; pendiente/aprobada -> comentarios adicionales para el observador.
+const avisoComentario = (estado) => {
+  const e = (estado || 'pendiente').toLowerCase()
+  if (e === 'anulada')   return { titulo: 'Motivo de anulación', clase: 'alert-secondary', icono: 'bi-slash-circle' };
+  if (e === 'rechazada') return { titulo: 'Motivo de rechazo', clase: 'alert-danger', icono: 'bi-x-circle' };
+  if (e === 'aprobada')  return { titulo: 'Comentarios adicionales', clase: 'alert-success', icono: 'bi-chat-left-text' }
+  return { titulo: 'Comentarios adicionales', clase: 'alert-warning', icono: 'bi-chat-left-text' }
+}
+
 const aniosDisponibles = computed(() => {
   const anios = new Set()
   observaciones.value.forEach(o => {
@@ -787,10 +803,14 @@ const torneoEditado = ref('');
 // La opción "anular" en el modal sólo se habilita si la observación sigue pendiente.
 const gestionEsPendiente = computed(() => (observacionActual.value.estado || 'pendiente').toLowerCase() === 'pendiente');
 
+// Anulada / rechazada: el comentario es el motivo. Pendiente / aprobada: comentarios adicionales.
+const esMotivo = computed(() => ['anulada', 'rechazada'].includes(nuevoEstado.value));
+
 const abrirModalGestion = (obs) => {
   observacionActual.value = { ...obs };
   nuevoEstado.value = (obs.estado || 'pendiente').toLowerCase();
-  comentariosRevision.value = '';
+  // Se precarga el comentario actual: al guardar, el back reemplaza comentario_estado con lo que haya acá
+  comentariosRevision.value = obs.comentario_estado || '';
   torneoEditado.value = obs.id_torneo || '';
   mostrarModal.value = true;
 };
