@@ -143,6 +143,7 @@
                     </td>
                     <td class="text-center">
                       <span :class="badgeEstado(o.estado)">{{ etiquetaEstado(o.estado) }}</span>
+                      <i v-if="o.comentario_estado" class="bi bi-chat-left-text-fill text-primary ms-1" title="Tiene comentarios de la revisión"></i>
                     </td>
                     <td class="text-center pe-3 text-muted">{{ formatearFechaHora(o.creado_en) }}</td>
                   </tr>
@@ -168,7 +169,8 @@
                   <div class="small text-muted fw-bold text-end">
                     #{{ o.id }}<br>
                     {{ formatearFecha(o.fecha_partido) }}
-                    <div class="mt-1">
+                    <div class="mt-1 d-flex align-items-center justify-content-end gap-1">
+                      <i v-if="o.comentario_estado" class="bi bi-chat-left-text-fill text-primary" title="Tiene comentarios de la revisión"></i>
                       <span :class="badgeEstado(o.estado)">{{ etiquetaEstado(o.estado) }}</span>
                     </div>
                   </div>
@@ -495,7 +497,10 @@
               </td>
               <td class="py-3 text-dark">{{ nombreTorneo(h) }}</td>
               <td class="py-3 text-dark">{{ nombresArbitros(h) }}</td>
-              <td class="py-3 pe-3 text-center"><span :class="badgeEstado(h.estado)">{{ etiquetaEstado(h.estado) }}</span></td>
+              <td class="py-3 pe-3 text-center text-nowrap">
+                <span :class="badgeEstado(h.estado)">{{ etiquetaEstado(h.estado) }}</span>
+                <i v-if="h.comentario_estado" class="bi bi-chat-left-text-fill text-primary ms-1" title="Tiene comentarios de la revisión"></i>
+              </td>
             </tr>
             <tr v-if="historialSeleccionado.length === 0">
               <td colspan="6" class="text-center py-4 text-muted">No hay registros previos en el historial.</td>
@@ -526,7 +531,10 @@
           </div>
           <div class="d-flex justify-content-between align-items-center small">
             <span class="fw-bold text-dark">Estado:</span>
-            <span :class="badgeEstado(h.estado)">{{ etiquetaEstado(h.estado) }}</span>
+            <span class="d-flex align-items-center gap-1">
+              <i v-if="h.comentario_estado" class="bi bi-chat-left-text-fill text-primary" title="Tiene comentarios de la revisión"></i>
+              <span :class="badgeEstado(h.estado)">{{ etiquetaEstado(h.estado) }}</span>
+            </span>
           </div>
         </div>
       </div>
