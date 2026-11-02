@@ -320,14 +320,34 @@
                   </span>
                 </div>
 
-                <!-- Monto -->
-                <div class="col-12 col-sm-5">
+                <!-- Ítem: cantidad x valor unitario -->
+                <template v-if="linea.opcion === 'item'">
+                  <div class="col-4 col-sm-3">
+                    <label class="small text-muted mb-1">Cantidad</label>
+                    <input v-model.number="linea.cantidad" type="number" min="1" max="999" step="1" inputmode="numeric"
+                           class="form-control form-control-sm shadow-none border-secondary-subtle text-center">
+                  </div>
+                  <div class="col-8 col-sm-4">
+                    <label class="small text-muted mb-1">Valor unitario ($)</label>
+                    <input v-model.number="linea.monto" type="number" step="0.01" min="0.01" inputmode="decimal"
+                           class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Valor ($)">
+                  </div>
+                  <div class="col-12 col-sm-5 d-flex align-items-end">
+                    <div class="w-100 bg-white border rounded px-2 py-1 small d-flex justify-content-between align-items-center" style="min-height: 31px;">
+                      <span class="text-muted">Total</span>
+                      <strong class="text-success">{{ formatearMonto(totalLinea) }}</strong>
+                    </div>
+                  </div>
+                </template>
+
+                <!-- Débito / Crédito: monto libre -->
+                <div v-else class="col-12 col-sm-5">
                   <input v-model.number="linea.monto" type="number" step="0.01" min="0.01" inputmode="decimal"
                          class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Monto ($)">
                 </div>
 
                 <!-- Descripción -->
-                <div class="col-12 col-sm-7">
+                <div class="col-12" :class="{ 'col-sm-7': linea.opcion !== 'item' }">
                   <input v-model="linea.descripcion" type="text" maxlength="255"
                          class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Descripción (opcional)">
                 </div>
@@ -357,6 +377,7 @@
                 <span :class="['badge-status-sm', l.tipo === 'debito' ? 'debito' : 'credito']">{{ l.tipo === 'debito' ? 'DÉB' : 'CRÉD' }}</span>
                 <div class="flex-grow-1 small text-truncate">
                   <span class="fw-bold text-dark">{{ l.item ? etiquetaItem(l.item) : (l.tipo === 'debito' ? 'Débito' : 'Crédito') }}</span>
+                  <span v-if="l.cantidad > 1" class="text-muted"> × {{ l.cantidad }} ({{ formatearMonto(l.unitario) }} c/u)</span>
                   <span v-if="l.descripcion" class="text-muted"> · {{ l.descripcion }}</span>
                 </div>
                 <span class="fw-bold small text-nowrap" :class="l.tipo === 'debito' ? 'text-danger' : 'text-success'">
@@ -556,7 +577,8 @@ const formManualBase = () => ({ id_arbitro: '', fecha: new Date().toISOString().
 const formManual = reactive(formManualBase())
 
 // Movimiento que se está armando. opcion: 'debito' | 'credito' | 'item' (el ítem siempre va como crédito)
-const lineaBase = () => ({ opcion: 'debito', item: '', monto: null, descripcion: '' })
+// En ítems, monto es el valor unitario y cantidad cuántas veces se carga (ej: 6 viáticos)
+const lineaBase = () => ({ opcion: 'debito', item: '', cantidad: 1, monto: null, descripcion: '' })
 const linea = reactive(lineaBase())
 
 // Movimientos agregados a la lista, listos para guardar
@@ -569,9 +591,20 @@ const totales = computed(() => {
   return { debitos, creditos, neto: debitos - creditos }
 })
 
+// Cantidad válida (entero de 1 a 999); solo aplica a ítems
+const cantidadLinea = computed(() => (linea.opcion === 'item' ? Number(linea.cantidad) : 1))
+const totalLinea = computed(() => {
+  const total = Number(linea.monto) * cantidadLinea.value
+  return Number.isFinite(total) && total > 0 ? Math.round(total * 100) / 100 : 0
+})
+
 // Valida la línea en armado; devuelve un mensaje de error o null
 const errorLinea = () => {
   if (linea.opcion === 'item' && !linea.item) return 'Seleccioná un ítem.'
+  if (linea.opcion === 'item') {
+    const cant = Number(linea.cantidad)
+    if (!Number.isInteger(cant) || cant < 1 || cant > 999) return 'La cantidad tiene que ser un número entero entre 1 y 999.'
+  }
   if (!(Number(linea.monto) > 0)) return 'Ingresá un monto mayor a 0.'
   return null
 }
@@ -584,11 +617,14 @@ const agregarLinea = () => {
     return false
   }
   const esItem = linea.opcion === 'item'
+  const cantidad = esItem ? Number(linea.cantidad) : 1
   lineas.value.push({
     uid: ++uidLinea,
     tipo: esItem ? 'credito' : linea.opcion,
     item: esItem ? linea.item : null,
-    monto: Number(linea.monto),
+    cantidad,
+    unitario: Number(linea.monto),
+    monto: totalLinea.value,          // total = cantidad x valor unitario
     descripcion: linea.descripcion.trim(),
   })
   // Deja el mismo tipo elegido para cargar el siguiente más rápido
@@ -635,9 +671,10 @@ const elegirOpcion = (opcion) => {
   if (linea.opcion === opcion) return
   const veniaDeItem = linea.opcion === 'item'
   linea.opcion = opcion
-  // Al entrar o salir de Ítem se limpia el ítem y su monto; entre Débito y Crédito el monto se mantiene
+  // Al entrar o salir de Ítem se limpia el ítem, la cantidad y el monto; entre Débito y Crédito el monto se mantiene
   if (opcion === 'item' || veniaDeItem) {
     linea.item = ''
+    linea.cantidad = 1
     linea.monto = null
   }
 }
@@ -748,6 +785,14 @@ const confirmarGuardarManual = () => {
   })
 }
 
+// Si se cargó más de una unidad, el detalle queda en la descripción: "6 x $ 15.000,00 · texto"
+const descripcionConCantidad = (l) => {
+  const partes = []
+  if (l.cantidad > 1) partes.push(`${l.cantidad} x ${formatearMonto(l.unitario)}`)
+  if (l.descripcion) partes.push(l.descripcion)
+  return partes.length ? partes.join(' · ').slice(0, 255) : null
+}
+
 const guardarManual = async () => {
   procesando.value = true
   try {
@@ -757,7 +802,7 @@ const guardarManual = async () => {
       movimientos: lineas.value.map(l => ({
         tipo: l.tipo,
         monto: l.monto,
-        descripcion: l.descripcion || null,
+        descripcion: descripcionConCantidad(l),
         item: l.item,
       })),
     }
