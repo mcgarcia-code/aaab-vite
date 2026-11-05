@@ -401,8 +401,8 @@ const obtenerTextoLicencia = (a) => {
     return cadena
       .split(',')
       .map(f => f.trim())
-      .sort((a, b) => new Date(a) - new Date(b))
-      .map(f => mostrarFechaArg(f))
+      .sort((a, b) => new Date(a.split(' al ')[0]) - new Date(b.split(' al ')[0]))
+      .map(f => f.split(' al ').map(x => mostrarFechaArg(x.trim())).join(' al '))
       .join(', ')
   }
 

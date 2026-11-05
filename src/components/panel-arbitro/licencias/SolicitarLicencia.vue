@@ -62,10 +62,7 @@
               >
             </div>
             <div v-if="cantidadDias > 1" class="col-12">
-              <small class="text-muted"><i class="bi bi-calendar-range me-1"></i>Se van a solicitar {{ cantidadDias }} días, cada uno como una licencia individual.</small>
-            </div>
-            <div v-if="cantidadDias > MAX_DIAS" class="col-12">
-              <small class="text-danger fw-semibold">Se pueden solicitar hasta {{ MAX_DIAS }} días por vez.</small>
+              <small class="text-muted"><i class="bi bi-calendar-range me-1"></i>Licencia de {{ cantidadDias }} días.</small>
             </div>
           </div>
 
@@ -205,7 +202,6 @@ const notificar = inject('notificar');
 const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const fechaDesde = ref('');
 const fechaHasta = ref('');
-const MAX_DIAS = 90;
 const aISOlocal = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const hoyISO = aISOlocal(new Date());
 const cantidadDias = computed(() => {
@@ -214,7 +210,7 @@ const cantidadDias = computed(() => {
   const [y2, m2, d2] = fechaHasta.value.split('-').map(Number);
   return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000) + 1;
 });
-const puedeEnviar = computed(() => tiempoIndeterminado.value || (cantidadDias.value >= 1 && cantidadDias.value <= MAX_DIAS));
+const puedeEnviar = computed(() => tiempoIndeterminado.value || cantidadDias.value >= 1);
 watch(fechaDesde, (desde) => {
   if (desde && (!fechaHasta.value || fechaHasta.value < desde)) fechaHasta.value = desde;
 });
@@ -262,7 +258,12 @@ const formatearFecha = (fechaStr) => {
   return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fechaStr;
 };
 
-const formatearFechaAusencia = (lic) => (lic.tiempo_indeterminado == 1 ? 'Tiempo indeterminado' : formatearFecha(lic.fecha_licencia));
+const formatearFechaAusencia = (lic) => {
+  if (lic.tiempo_indeterminado == 1) return 'Tiempo indeterminado';
+  const desde = formatearFecha(lic.fecha_licencia);
+  const hasta = formatearFecha(lic.fecha_hasta);
+  return hasta && hasta !== desde ? `${desde} al ${hasta}` : desde;
+};
 
 const etiquetaMotivo = (motivo, corto = false) => {
   if (motivo === 'lesion_enfermedad') return corto ? 'Lesión/Enf.' : 'Lesión/Enfermedad';
@@ -334,20 +335,6 @@ const solicitarLicencia = async () => {
           mensajeNotificacion = 'Recordá enviar el certificado médico dentro de las 72 hs.';
         }
         tipoNotificacion = 'warning';
-      } else if (estadoServidor === 'mixto') {
-        const creadas = res.payload.creadas || [];
-        const cuenta = (e) => creadas.filter(c => c.estado === e).length;
-        const partes = [['aprobada', 'aprobados'], ['pendiente', 'pendientes'], ['rechazada', 'rechazados']]
-          .filter(([e]) => cuenta(e) > 0)
-          .map(([e, texto]) => `${cuenta(e)} ${cuenta(e) === 1 ? texto.slice(0, -1) : texto}`);
-        tituloNotificacion = 'Licencia procesada';
-        mensajeNotificacion = `Días ${partes.join(', ')}. Los días con menos de 7 días de anticipación se rechazan. Revisá el detalle en tu historial.`;
-        tipoNotificacion = 'warning';
-      }
-
-      const omitidas = res.payload.omitidas || [];
-      if (omitidas.length) {
-        mensajeNotificacion += ` ${omitidas.length === 1 ? 'Un día ya tenía licencia y no se volvió a cargar.' : `${omitidas.length} días ya tenían licencia y no se volvieron a cargar.`}`;
       }
 
       // Disparamos la notificación con los textos exactos

@@ -260,24 +260,17 @@
             <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none border-secondary-subtle" required :disabled="formModal.tiempo_indeterminado && modoModal === 'nuevo'">
           </div>
 
-          <div class="col-12 col-md-6" v-if="modoModal === 'editar'">
-            <label class="small fw-bold text-dark mb-1">Fecha Ausencia {{ formModal.tiempo_indeterminado ? '' : '*' }}</label>
-            <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-secondary-subtle" :required="!formModal.tiempo_indeterminado" :disabled="formModal.tiempo_indeterminado" :placeholder="formModal.tiempo_indeterminado ? 'Tiempo indeterminado' : ''">
+          <div class="col-6 col-md-3">
+            <label class="small fw-bold text-dark mb-1" for="licAdminDesde">Desde {{ formModal.tiempo_indeterminado ? '' : '*' }}</label>
+            <input id="licAdminDesde" v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-secondary-subtle" :required="!formModal.tiempo_indeterminado" :disabled="formModal.tiempo_indeterminado">
           </div>
-
-          <template v-else>
-            <div class="col-6 col-md-3">
-              <label class="small fw-bold text-dark mb-1" for="licAdminDesde">Desde {{ formModal.tiempo_indeterminado ? '' : '*' }}</label>
-              <input id="licAdminDesde" v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-secondary-subtle" :required="!formModal.tiempo_indeterminado" :disabled="formModal.tiempo_indeterminado">
-            </div>
-            <div class="col-6 col-md-3">
-              <label class="small fw-bold text-dark mb-1" for="licAdminHasta">Hasta {{ formModal.tiempo_indeterminado ? '' : '*' }}</label>
-              <input id="licAdminHasta" v-model="formModal.fecha_hasta" type="date" :min="formModal.fecha_licencia || undefined" class="form-control shadow-none border-secondary-subtle" :required="!formModal.tiempo_indeterminado" :disabled="formModal.tiempo_indeterminado || !formModal.fecha_licencia">
-            </div>
-            <div v-if="diasAlta > 1" class="col-12">
-              <small class="text-muted"><i class="bi bi-calendar-range me-1"></i>Se van a crear {{ diasAlta }} licencias individuales, una por día.</small>
-            </div>
-          </template>
+          <div class="col-6 col-md-3">
+            <label class="small fw-bold text-dark mb-1" for="licAdminHasta">Hasta {{ formModal.tiempo_indeterminado ? '' : '*' }}</label>
+            <input id="licAdminHasta" v-model="formModal.fecha_hasta" type="date" :min="formModal.fecha_licencia || undefined" class="form-control shadow-none border-secondary-subtle" :required="!formModal.tiempo_indeterminado" :disabled="formModal.tiempo_indeterminado || !formModal.fecha_licencia">
+          </div>
+          <div v-if="diasAlta > 1" class="col-12">
+            <small class="text-muted"><i class="bi bi-calendar-range me-1"></i>Licencia de {{ diasAlta }} días.</small>
+          </div>
 
           <div class="col-12">
             <div class="form-check">
@@ -412,7 +405,12 @@ const historialLicencia = ref([])
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : '';
-const formatearFechaAusencia = (lic) => (lic.tiempo_indeterminado == 1 ? 'Tiempo indeterminado' : formatearFechaVista(lic.fecha_licencia));
+const formatearFechaAusencia = (lic) => {
+  if (lic.tiempo_indeterminado == 1) return 'Tiempo indeterminado';
+  const desde = formatearFechaVista(lic.fecha_licencia);
+  const hasta = formatearFechaVista(lic.fecha_hasta);
+  return hasta && hasta !== desde ? `${desde} al ${hasta}` : desde;
+};
 
 // Extrae el año (AAAA) de una fecha en formato 'AAAA-MM-DD ...'. Devuelve '' si no hay fecha.
 const anioDeFecha = (f) => (f ? String(f).split(' ')[0].split('-')[0] : '');
@@ -507,6 +505,8 @@ const editarLicencia = (lic) => {
   // y normalizar tiempo_indeterminado (1/0) a booleano para el checkbox.
   formModal.value = {
     ...lic,
+    fecha_licencia: (lic.fecha_licencia || '').slice(0, 10),
+    fecha_hasta: (lic.fecha_hasta || lic.fecha_licencia || '').slice(0, 10),
     motivo: lic.motivo || 'particular',
     tiempo_indeterminado: lic.tiempo_indeterminado == 1
   }
@@ -542,7 +542,7 @@ const diasAlta = computed(() => {
 });
 
 watch(() => formModal.value.fecha_licencia, (desde) => {
-  if (modoModal.value !== 'nuevo' || !desde) return;
+  if (!desde) return;
   if (!formModal.value.fecha_hasta || formModal.value.fecha_hasta < desde) formModal.value.fecha_hasta = desde;
 });
 
@@ -564,11 +564,7 @@ const confirmarAlta = async () => {
   if (res.ok) {
     mostrarModal.value = false;
     obtenerLicencias();
-    const creadas = (res.payload?.creadas || []).length;
-    const omitidas = (res.payload?.omitidas || []).length;
-    let mensaje = creadas > 1 ? `Se registraron ${creadas} licencias, una por día.` : 'Licencia registrada correctamente.';
-    if (omitidas) mensaje += ` ${omitidas === 1 ? 'Un día ya tenía licencia y se omitió.' : `${omitidas} días ya tenían licencia y se omitieron.`}`;
-    toast({ titulo: 'Éxito', mensaje, tipo: 'success' });
+    toast({ titulo: 'Éxito', mensaje: 'Licencia registrada correctamente.', tipo: 'success' });
   } else {
     toast({ titulo: 'Error', mensaje: res.message || 'No se pudo registrar la licencia.', tipo: 'danger' });
   }
@@ -582,7 +578,8 @@ const confirmarEdicion = async () => {
     payload: {
       id: formModal.value.id,
       estado: formModal.value.estado,
-      fecha_licencia: formModal.value.fecha_licencia,
+      fecha_licencia: formModal.value.tiempo_indeterminado ? null : formModal.value.fecha_licencia,
+      fecha_hasta: formModal.value.tiempo_indeterminado ? null : (formModal.value.fecha_hasta || formModal.value.fecha_licencia),
       fecha_solicitud: formModal.value.fecha_solicitud,
       motivo: formModal.value.motivo,
       tiempo_indeterminado: formModal.value.tiempo_indeterminado ? 1 : 0
@@ -595,7 +592,7 @@ const confirmarEdicion = async () => {
     obtenerLicencias();
     toast({ titulo: 'Guardado', mensaje: 'Licencia actualizada correctamente.', tipo: 'success' });
   } else {
-    toast({ titulo: 'Error', mensaje: 'No se pudieron guardar los cambios.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: res.message || 'No se pudieron guardar los cambios.', tipo: 'danger' });
   }
 };
 
