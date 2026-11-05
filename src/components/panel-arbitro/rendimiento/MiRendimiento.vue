@@ -383,9 +383,9 @@ const mapearFilasExamenes = (filas) => {
   return Object.values(map)
 }
 
-// Suma a las notas las asambleas y recuperatorios ya realizados del grupo del
-// árbitro, igual que la Planilla General. Una ausencia general se ve como
-// AUSENTE en los tipos sin evaluación propia; el resto queda vacío.
+// Suma a las notas las asambleas ya realizadas del grupo del árbitro, aunque
+// estén vacías. Los recuperatorios solo aparecen si tienen nota o ausencia.
+// Una ausencia general se ve como AUSENTE en los tipos sin evaluación propia.
 const completarExamenes = (lista, eventos, ausencias, idGrupo) => {
   const porEvento = new Map(lista.map(ex => [String(ex.id_evento), ex]))
   eventos.forEach(ev => {
@@ -395,7 +395,7 @@ const completarExamenes = (lista, eventos, ausencias, idGrupo) => {
     const aplica = Number(ev.todos_grupos) === 1 ||
       String(ev.id_grupos ?? '').split(',').map(s => s.trim()).includes(String(idGrupo))
     if (!porEvento.has(clave)) {
-      if (!ausente && (!aplica || ts > Date.now())) return
+      if (!ausente && (ev.categoria === 'recuperatorio' || !aplica || ts > Date.now())) return
       porEvento.set(clave, {
         id:           ev.id,
         id_evento:    ev.id,
