@@ -23,11 +23,11 @@
             </div>
 
             <div class="col-12 col-xl">
-              <div class="d-flex flex-column flex-md-row gap-2 align-items-stretch align-items-md-center">
+              <div class="d-flex flex-column flex-md-row gap-2 align-items-stretch align-items-md-center justify-content-md-between">
                 <select
                   v-model="reunionSeleccionada"
                   @change="onReunionSeleccionada"
-                  class="form-select form-select-sm shadow-sm border-secondary-subtle fw-semibold flex-md-grow-1 min-w-0"
+                  class="form-select form-select-sm shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion"
                   :disabled="cargandoInicial || cargandoArbitros"
                   aria-label="Elegir reunión"
                 >
@@ -1577,6 +1577,13 @@ onMounted(async () => {
 .admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
 .animate__animated { animation-duration: 0.4s; }
 .min-w-0 { min-width: 0; }
+.select-reunion { width: 100%; min-width: 0; }
+@media (min-width: 768px) {
+  .select-reunion { flex: 0 1 300px; max-width: 300px; }
+}
+@media (min-width: 1400px) {
+  .select-reunion { flex-basis: 380px; max-width: 380px; }
+}
 .tabla-container { overflow-x: auto; }
 .tabla-fija { border-collapse: separate; border-spacing: 0; }
 .tabla-fija th, .tabla-fija td { border-left: none !important; border-right: none !important; }
