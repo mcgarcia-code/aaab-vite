@@ -117,6 +117,7 @@
         </h5>
       </div>
       <div class="card-body p-0">
+        <div v-if="errorPdf" class="alert alert-danger small m-3 py-2">{{ errorPdf }}</div>
         <div v-if="!cargando && historialCierres.length === 0" class="text-center p-4 bg-light">
           <p class="text-muted m-0 small">Todavía no tenés cierres registrados.</p>
         </div>
@@ -126,14 +127,21 @@
               <tr>
                 <th class="py-2 ps-3 text-uppercase text-muted">Período</th>
                 <th class="py-2 text-end text-uppercase text-muted">Saldo del Mes</th>
-                <th class="py-2 text-end pe-3 text-uppercase text-muted">Saldo Acumulado</th>
+                <th class="py-2 text-end text-uppercase text-muted">Saldo Acumulado</th>
+                <th class="py-2 text-center pe-3 text-uppercase text-muted">PDF</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="h in historialCierres" :key="h.periodo">
                 <td class="ps-3 fw-bold text-dark">{{ h.periodo }}</td>
                 <td class="text-end" :class="Number(h.saldo_mes) > 0 ? 'text-danger' : 'text-success'">{{ formatearMonto(h.saldo_mes) }}</td>
-                <td class="text-end pe-3 fw-bold" :class="Number(h.saldo_acumulado) > 0 ? 'text-danger' : 'text-success'">{{ formatearMonto(h.saldo_acumulado) }}</td>
+                <td class="text-end fw-bold" :class="Number(h.saldo_acumulado) > 0 ? 'text-danger' : 'text-success'">{{ formatearMonto(h.saldo_acumulado) }}</td>
+                <td class="text-center pe-3">
+                  <button @click="descargarPdf(h.periodo)" :disabled="!!descargando[h.periodo]" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Descargar detalle del cierre" aria-label="Descargar detalle del cierre">
+                    <span v-if="descargando[h.periodo]" class="spinner-border spinner-border-sm"></span>
+                    <i v-else class="bi bi-file-earmark-pdf fs-6"></i>
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -154,7 +162,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useHead } from '@vueuse/head';
 import { api } from '@/api/api';
 
@@ -169,6 +177,8 @@ useHead({
 });
 
 const cargando = ref(false);
+const descargando = reactive({});
+const errorPdf = ref('');
 const estadoCuenta = ref(null);
 const recargos = ref([]);
 
@@ -235,6 +245,18 @@ const cargarTodo = async () => {
     await Promise.all([cargarEstadoCuenta(), cargarRecargos()]);
   } finally {
     cargando.value = false;
+  }
+};
+
+const descargarPdf = async (periodo) => {
+  descargando[periodo] = true;
+  errorPdf.value = '';
+  try {
+    await api.getFile({ entity: 'tesoreria', action: 'descargarPdfMiCierre', payload: { periodo } }, `mis_aportes_${periodo}.pdf`);
+  } catch (e) {
+    errorPdf.value = e?.message || 'No se pudo descargar el PDF';
+  } finally {
+    delete descargando[periodo];
   }
 };
 

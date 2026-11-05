@@ -60,6 +60,7 @@
                   <th class="py-3 text-uppercase text-muted">Período</th>
                   <th class="py-3 text-uppercase text-muted">Fecha de Cierre</th>
                   <th class="py-3 text-uppercase text-muted">Cerrado por</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Detalle</th>
                 </tr>
               </thead>
               <tbody>
@@ -67,6 +68,28 @@
                   <td class="fw-bold text-dark">{{ c.periodo }}</td>
                   <td>{{ c.fecha_cierre }}</td>
                   <td>{{ c.cerrado_por || '-' }}</td>
+                  <td class="text-center">
+                    <div class="dropdown">
+                      <button class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" :disabled="!!descargando[c.periodo]" title="Descargar detalle" aria-label="Descargar detalle">
+                        <span v-if="descargando[c.periodo]" class="spinner-border spinner-border-sm"></span>
+                        <span v-else class="material-icons align-middle" style="font-size:16px;">download</span>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li>
+                          <button class="dropdown-item d-flex align-items-center gap-2" @click="descargar(c, 'pdf')">
+                            <span class="material-icons fs-6 text-danger">picture_as_pdf</span>
+                            <span class="small fw-bold">PDF</span>
+                          </button>
+                        </li>
+                        <li>
+                          <button class="dropdown-item d-flex align-items-center gap-2" @click="descargar(c, 'excel')">
+                            <span class="material-icons fs-6 text-success">table_view</span>
+                            <span class="small fw-bold">Excel</span>
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -78,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, reactive, computed, onMounted, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 
@@ -89,6 +112,7 @@ const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 const cargando = ref(false)
 const cerrando = ref(false)
+const descargando = reactive({})
 const cierres = ref([])
 const notificarArbitros = ref(true)
 const periodoCerrar = ref(new Date().toISOString().slice(0, 7))
@@ -129,6 +153,22 @@ const cerrarPeriodo = async () => {
     toast({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
   } finally {
     cerrando.value = false
+  }
+}
+
+const descargar = async (c, formato) => {
+  const esExcel = formato === 'excel'
+  descargando[c.periodo] = true
+  try {
+    await api.getFile({
+      entity: 'tesoreria',
+      action: 'descargarCierre',
+      payload: { periodo: c.periodo, ...(esExcel ? { formato: 'excel' } : {}) }
+    }, `cierre_${c.periodo}.${esExcel ? 'xlsx' : 'pdf'}`)
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e?.message || 'No se pudo descargar el archivo', tipo: 'danger' })
+  } finally {
+    delete descargando[c.periodo]
   }
 }
 
