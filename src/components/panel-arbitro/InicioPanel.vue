@@ -91,7 +91,7 @@
                     <strong :class="{ 'text-danger': ev.categoria === 'urgente' }">{{ ev.titulo }}</strong>
                     <p class="mb-0">{{ ev.descripcion || 'Lugar a confirmar' }}</p>
                     <span v-if="ev.grupos_coordinados" class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle mt-1 text-wrap text-start">
-                      <i class="bi bi-person-badge me-1"></i>Coordinás · {{ ev.grupos_coordinados }}
+                      <i class="bi bi-person-badge me-1"></i>Coordinás · Grupo {{ ev.grupos_coordinados }}
                     </span>
                   </div>
                 </div>
