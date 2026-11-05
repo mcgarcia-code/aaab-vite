@@ -293,7 +293,7 @@
                           <button
                             @click="abrirSelectorArbitro(p, 1)"
                             class="celda-arbitro"
-                            :class="[colorClase(p, 1), { 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.arbitro_1 }]"
+                            :class="[colorClase(p, 1), { 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'sin-arbitro': esSinArbitro(p, 1), 'vacio': !p.arbitro_1 }]"
                             :title="tituloCelda(p, 1)"
                           >
                             {{ p.arbitro_1 || '— Asignar —' }}
@@ -314,7 +314,7 @@
                           <button
                             @click="abrirSelectorArbitro(p, 2)"
                             class="celda-arbitro"
-                            :class="[colorClase(p, 2), { 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.arbitro_2 }]"
+                            :class="[colorClase(p, 2), { 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'sin-arbitro': esSinArbitro(p, 2), 'vacio': !p.arbitro_2 }]"
                             :title="tituloCelda(p, 2)"
                           >
                             {{ p.arbitro_2 || '— Asignar —' }}
@@ -502,7 +502,7 @@
                         <button
                           @click="abrirSelectorArbitro(p, 1)"
                           class="celda-arbitro-mobile w-100 text-start"
-                          :class="[colorClase(p, 1), { 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'vacio': !p.arbitro_1 }]"
+                          :class="[colorClase(p, 1), { 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'sin-arbitro': esSinArbitro(p, 1), 'vacio': !p.arbitro_1 }]"
                         >
                           {{ p.arbitro_1 || '— Asignar —' }}
                         </button>
@@ -512,7 +512,7 @@
                         <button
                           @click="abrirSelectorArbitro(p, 2)"
                           class="celda-arbitro-mobile w-100 text-start"
-                          :class="[colorClase(p, 2), { 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'vacio': !p.arbitro_2 }]"
+                          :class="[colorClase(p, 2), { 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'sin-arbitro': esSinArbitro(p, 2), 'vacio': !p.arbitro_2 }]"
                         >
                           {{ p.arbitro_2 || '— Asignar —' }}
                         </button>
@@ -664,6 +664,15 @@
       <div class="lista-arbitros border rounded">
         <button @click="asignarArbitro(null)" class="opcion-arbitro text-danger fw-bold">
           — Sin asignar —
+        </button>
+
+        <button
+          v-if="seleccionArbitro && (seleccionArbitro.numero === 1 || seleccionArbitro.numero === 2)"
+          @click="asignarSinArbitro"
+          class="opcion-arbitro text-secondary fw-bold d-flex align-items-center gap-2"
+        >
+          <span class="material-icons" style="font-size: 16px;">person_off</span>
+          {{ SIN_ARBITRO }}
         </button>
 
         <button
@@ -1931,6 +1940,21 @@ const asignarArbitro = async (arbitro) => {
   await consultarDesignacion(p, sel.numero, arbitro.id)
 }
 
+const SIN_ARBITRO = 'Sin Árbitro'
+
+const asignarSinArbitro = () => {
+  const sel = seleccionArbitro.value
+  if (!sel || (sel.numero !== 1 && sel.numero !== 2)) return
+  const p = sel.partido
+  cerrarSelectorArbitro()
+
+  if (sel.numero === 1) { p.arbitro_1 = SIN_ARBITRO; p.id_arb1 = null; p._ext1 = false; p._estado1 = '' }
+  else { p.arbitro_2 = SIN_ARBITRO; p.id_arb2 = null; p._ext2 = false; p._estado2 = '' }
+
+  p.estado = (p.arbitro_1 || p.arbitro_2) ? 'designado' : 'a_designar'
+  marcar(p)
+}
+
 // Asigna un árbitro que no está en el padrón (ej: viene del interior).
 // Queda como texto libre, sin id_arb, y por eso no le aparece en su panel.
 // Al no tener id no hay contra qué calcular avisos: se guarda directo.
@@ -2087,18 +2111,24 @@ const asignarObservadorDelegado = async (arbitro, tipo, p) => {
 }
 
 // Helpers de estado de la celda de árbitro
+const esSinArbitro = (p, numero) => {
+  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
+  const id = numero === 1 ? p.id_arb1 : p.id_arb2
+  return !id && normalizarTexto(nombre).trim() === normalizarTexto(SIN_ARBITRO)
+}
+
 const esExterno = (p, numero) => {
   const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
   const id = numero === 1 ? p.id_arb1 : p.id_arb2
   const ext = numero === 1 ? p._ext1 : p._ext2
-  return !!nombre && !id && !!ext
+  return !!nombre && !id && !!ext && !esSinArbitro(p, numero)
 }
 
 const esSinMatch = (p, numero) => {
   const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
   const id = numero === 1 ? p.id_arb1 : p.id_arb2
   const ext = numero === 1 ? p._ext1 : p._ext2
-  return !!nombre && !id && !ext
+  return !!nombre && !id && !ext && !esSinArbitro(p, numero)
 }
 
 // Un partido "tiene sin coincidencia" si alguno de sus arbitros esta sin match
@@ -2199,6 +2229,7 @@ const irAPartido = (p) => {
 const tituloCelda = (p, numero) => {
   const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
   if (!nombre) return 'Asignar árbitro'
+  if (esSinArbitro(p, numero)) return 'El partido se juega sin árbitro en este puesto'
   if (esExterno(p, numero)) return 'Árbitro externo (fuera del padrón): ' + nombre
   if (esSinMatch(p, numero)) return 'Sin match en el padrón: ' + nombre
   return nombre
@@ -2591,6 +2622,15 @@ onMounted(async () => {
   font-weight: 700;
 }
 
+.celda-arbitro.sin-arbitro {
+  background-color: #f1f3f5;
+  border-color: #adb5bd;
+  border-style: dashed;
+  color: #495057;
+  font-style: italic;
+  font-weight: 600;
+}
+
 /* Árbitro externo puesto a mano (intencional, fuera del padrón) */
 .celda-arbitro.externo {
   background-color: #dbeafe;
@@ -2889,6 +2929,15 @@ onMounted(async () => {
 
 .celda-arbitro-mobile.vacio {
   color: #adb5bd;
+}
+
+.celda-arbitro-mobile.sin-arbitro {
+  background-color: #f1f3f5;
+  border-color: #adb5bd;
+  border-style: dashed;
+  color: #495057;
+  font-style: italic;
+  font-weight: 600;
 }
 
 /* Árbitro externo puesto a mano (intencional) */
