@@ -924,7 +924,8 @@ const cargarProgramacionExamen = async () => {
       action: 'obtenerProgramacion',
       payload: { idEvento: Number(idEventoSeleccionado.value), idsGrupos: idsGruposExamenReunion.value }
     })
-    const p = res?.payload
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo obtener la programación del examen')
+    const p = res.payload
     if (!p) return
     examenHabilitado.value = !!p.habilitado
     formExamen.cantidadPreguntas = p.cantidadPreguntas
@@ -943,6 +944,7 @@ async function abrirModalExamen() {
   cargandoReglas.value = true
   try {
     const res = await api.get({ entity: 'examenes_habilitaciones', action: 'obtenerReglasExamen' })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar las reglas')
     reglasDisponibles.value = (res?.payload?.reglas || []).map(r => ({ codigo: Number(r.codigo), cantidad: Number(r.cantidad) }))
     const codigos = reglasDisponibles.value.map(r => r.codigo)
     formExamen.reglas = formExamen.reglas.filter(c => codigos.includes(c))
@@ -963,7 +965,7 @@ async function habilitarExamenReunion() {
   }
   habilitandoExamen.value = true
   try {
-    await api.post({
+    const res = await api.post({
       entity: 'examenes_habilitaciones',
       action: 'guardarHabilitacion',
       payload: {
@@ -978,6 +980,7 @@ async function habilitarExamenReunion() {
         }
       }
     })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo habilitar el examen')
     toast({ tipo: 'success', mensaje: 'Examen habilitado para los árbitros presentes' })
     examenHabilitado.value = true
     mostrarModalExamen.value = false
@@ -994,7 +997,7 @@ async function deshabilitarExamenReunion() {
   if (!r || !idsGruposExamenReunion.value.length) return
   deshabilitandoExamen.value = true
   try {
-    await api.post({
+    const res = await api.post({
       entity: 'examenes_habilitaciones',
       action: 'deshabilitarHabilitacion',
       payload: {
@@ -1002,11 +1005,12 @@ async function deshabilitarExamenReunion() {
         idsGrupos: idsGruposExamenReunion.value
       }
     })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo deshabilitar el examen')
     toast({ tipo: 'success', mensaje: 'Examen deshabilitado para la reunión' })
     examenHabilitado.value = false
   } catch (e) {
     console.error('deshabilitarExamenReunion:', e)
-    toast({ tipo: 'danger', mensaje: 'No se pudo deshabilitar el examen' })
+    toast({ tipo: 'danger', mensaje: e?.message || 'No se pudo deshabilitar el examen' })
   } finally {
     deshabilitandoExamen.value = false
   }

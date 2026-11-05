@@ -236,8 +236,9 @@ async function irAPregunta(i) {
 }
 
 async function guardarAvance() {
+  let res
   try {
-    await api.post({
+    res = await api.post({
       entity: 'examen_online',
       action: 'guardarAvance',
       payload: {
@@ -247,7 +248,13 @@ async function guardarAvance() {
         tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
       }
     })
-  } catch{ /* silencioso: es respaldo */ }
+  } catch { return }
+  if (res?.ok === false) {
+    detenerReloj()
+    detenerTrackingVisibilidad()
+    mensajeError.value = res.message || 'No podés continuar con este examen'
+    fase.value = 'error'
+  }
 }
 
 async function anterior() {
@@ -265,6 +272,7 @@ async function iniciar() {
       action: 'iniciarOReanudar',
       payload: { idEvento: props.idEvento }
     })
+    if (res?.ok === false) throw new Error(res.message || 'No se pudo iniciar el examen')
     const data = res?.payload ?? res
     preguntas.value = data.preguntas || []
     opciones.value = data.opciones || {}
@@ -304,6 +312,7 @@ async function finalizar() {
         tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
       }
     })
+    if (res?.ok === false) throw new Error(res.message || 'No se pudo finalizar el examen')
     resultado.value = res?.payload ?? res
     fase.value = 'resultado'
     emit('terminar')

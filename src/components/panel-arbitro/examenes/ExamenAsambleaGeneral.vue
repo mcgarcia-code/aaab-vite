@@ -1,7 +1,7 @@
 <template>
   <!-- Modo examen a pantalla completa -->
   <ExamenAsambleaRunner
-    v-if="estado === 'rindiendo'"
+    v-if="estado === 'rindiendo' && evento?.id_evento"
     :id-evento="evento.id_evento"
     :titulo="evento.titulo"
     @terminar="alTerminar"
@@ -60,6 +60,12 @@
           <span class="material-icons opacity-50 d-block mb-2 text-success" style="font-size: 40px;">check_circle</span>
           <p class="m-0 fw-bold">Ya rendiste el examen habilitado.</p>
           <p class="small m-0 mt-1">Podés ver el resultado en tu historial más abajo.</p>
+        </div>
+
+        <div v-else-if="estado === 'ausente'" class="text-center py-4 px-3 text-muted bg-light rounded-3 mb-4">
+          <span class="material-icons opacity-50 d-block mb-2 text-danger" style="font-size: 40px;">event_busy</span>
+          <p class="m-0 fw-bold">Figurás como ausente en la reunión, no podés realizar este examen.</p>
+          <p v-if="evento?.titulo" class="small m-0 mt-1">{{ evento.titulo }}<span v-if="evento.fecha"> · {{ evento.fecha }}</span></p>
         </div>
 
         <!-- Estado: Sin permiso -->
@@ -155,14 +161,20 @@ const errorPdf = ref('')
 async function cargarHabilitacion() {
   try {
     const res = await api.get({ entity: 'examenes_habilitaciones', action: 'miExamenHabilitado' })
-    const data = res?.payload ?? res
-    if (data && data.id_evento) {
+    if (res?.ok === false) throw new Error(res.message)
+    const data = res?.payload ?? null
+    if (data?.ausente) {
+      evento.value = data
+      estado.value = 'ausente'
+    } else if (data?.id_evento) {
       evento.value = data
       estado.value = data.ya_finalizado ? 'finalizado' : 'habilitado'
     } else {
+      evento.value = null
       estado.value = 'sin-permiso'
     }
   } catch {
+    evento.value = null
     estado.value = 'sin-permiso'
   }
 }
@@ -183,7 +195,12 @@ async function recargar() {
   await Promise.all([cargarHabilitacion(), cargarHistorial()])
 }
 
-function comenzar() { estado.value = 'rindiendo' }
+async function comenzar() {
+  if (estado.value !== 'habilitado') return
+  estado.value = 'cargando'
+  await cargarHabilitacion()
+  if (estado.value === 'habilitado' && evento.value?.id_evento) estado.value = 'rindiendo'
+}
 
 // El examen terminó, pero seguimos mostrando el resultado DENTRO del runner.
 // No recargamos ni cambiamos de estado acá: si lo hiciéramos, el v-if="estado === 'rindiendo'"
