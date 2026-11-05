@@ -440,9 +440,6 @@
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Fecha de la Reunión *</label>
             <input v-model="formReunion.fecha_evento" type="date" :min="modoEdicionReunion ? manianaStr() : hoyStr()" class="form-control shadow-none border-secondary-subtle" required>
-            <small v-if="fechaReunionEsMartes" class="d-block text-warning-emphasis fw-semibold mt-1">
-              <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ AVISO_MARTES }}
-            </small>
             <small v-if="eventosMismoDia.length" class="d-block text-danger fw-semibold mt-1">
               <i class="bi bi-exclamation-circle-fill me-1"></i>Ese día ya hay {{ eventosMismoDia.length === 1 ? 'otro evento' : `${eventosMismoDia.length} eventos` }}: {{ eventosMismoDia.map(e => e.titulo).join(', ') }}
             </small>
@@ -1333,13 +1330,7 @@ const gruposReunion      = ref([]) // ids de grupos destinatarios elegidos
 const formReunionBase = () => ({ titulo: '', descripcion: '', fecha_evento: '' })
 const formReunion = reactive(formReunionBase())
 
-const AVISO_MARTES = 'Los días martes hay curso de árbitros, solo se puede programar una reunión en el Dickens.'
 const eventosAgenda = ref([])
-const fechaReunionEsMartes = computed(() => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(formReunion.fecha_evento || '')) return false
-  const [y, m, d] = formReunion.fecha_evento.split('-').map(Number)
-  return new Date(y, m - 1, d).getDay() === 2
-})
 const eventosMismoDia = computed(() => eventosAgenda.value.filter(e =>
   e.fecha_evento === formReunion.fecha_evento &&
   e.categoria !== 'recordatorio' &&

@@ -21,7 +21,7 @@
     <div v-if="error" class="alert alert-danger py-2 px-3 small">{{ error }}</div>
 
     <div class="cal-grid position-relative">
-      <div v-for="d in DIAS_SEMANA" :key="d" class="cal-head" :class="{ 'cal-head-martes': d === 'Mar' }">{{ d }}</div>
+      <div v-for="d in DIAS_SEMANA" :key="d" class="cal-head">{{ d }}</div>
 
       <button
         v-for="dia in dias"
@@ -31,7 +31,6 @@
         :class="{
           'fuera-mes': !dia.delMes,
           'es-hoy': dia.fecha === hoy,
-          'es-martes': dia.esMartes,
           'activo': dia.fecha === diaActivo,
           'elegido': dia.fecha === fechaSeleccionada,
           'bloqueado': esBloqueado(dia.fecha)
@@ -42,20 +41,15 @@
           <span class="num">{{ dia.numero }}</span>
           <i v-if="dia.superpuestos" class="bi bi-exclamation-circle-fill text-danger" :title="`${dia.eventos.length} eventos este día`"></i>
         </div>
-        <span v-if="dia.esMartes && dia.delMes" class="tag-martes d-none d-md-inline">Curso</span>
-
-        <div class="d-none d-md-flex flex-column gap-1 mt-1 w-100">
+        <div class="d-flex flex-column gap-1 mt-1 w-100">
           <span
-            v-for="ev in dia.eventos.slice(0, 3)"
-            :key="ev.id"
+            v-for="c in dia.chips.slice(0, 3)"
+            :key="c.clave"
             class="chip"
-            :style="{ background: colorEvento(ev) }"
-            :title="`${ev.titulo} · ${nombresGrupos(ev)}`"
-          >{{ ev.titulo }}</span>
-          <span v-if="dia.eventos.length > 3" class="mas">+{{ dia.eventos.length - 3 }} más</span>
-        </div>
-        <div class="d-flex d-md-none flex-wrap gap-1 mt-1">
-          <span v-for="ev in dia.eventos" :key="ev.id" class="punto" :style="{ background: colorEvento(ev) }"></span>
+            :style="{ background: c.color }"
+            :title="`${c.grupo} · ${c.titulo} (${c.categoria})`"
+          >{{ c.grupo }}</span>
+          <span v-if="dia.chips.length > 3" class="mas">+{{ dia.chips.length - 3 }}</span>
         </div>
       </button>
 
@@ -90,10 +84,6 @@
         >
           <i class="bi bi-plus-lg me-1"></i>Nuevo evento
         </button>
-      </div>
-
-      <div v-if="esMartes(diaActivo)" class="small text-warning-emphasis fw-semibold mb-2">
-        <i class="bi bi-info-circle-fill me-1"></i>{{ AVISO_MARTES }}
       </div>
 
       <p v-if="!eventosDiaActivo.length" class="text-muted small m-0">No hay eventos este día.</p>
@@ -131,6 +121,7 @@ const props = defineProps({
   fechaSeleccionada: { type: String, default: '' },
   fechaMinima: { type: String, default: '' },
   gruposDestacados: { type: Array, default: () => [] },
+  filtro: { type: Function, default: null },
 })
 const emit = defineEmits(['update:fechaSeleccionada', 'editar', 'eliminar', 'nuevo', 'cargado'])
 
@@ -171,7 +162,6 @@ const nombres = computed(() => Object.fromEntries(grupos.value.map(g => [g.id, g
 
 const colorGrupo = (id) => colores.value[id] || '#6c757d'
 const nombreGrupo = (id) => nombres.value[id] || `Grupo ${id}`
-const nombresGrupos = (ev) => ev.todosLosGrupos ? 'Todos los grupos' : ev.idsGrupos.map(nombreGrupo).join(', ')
 const colorEvento = (ev) => {
   if (ev.todosLosGrupos) return COLOR_TODOS
   const visible = ev.idsGrupos.find(id => !gruposOcultos.value.includes(id))
@@ -184,6 +174,7 @@ const leyenda = computed(() => [
 ])
 
 const eventoVisible = (ev) => {
+  if (props.filtro && !props.filtro(ev)) return false
   if (ev.todosLosGrupos) return !gruposOcultos.value.includes(0)
   if (!ev.idsGrupos.length) return true
   return ev.idsGrupos.some(id => !gruposOcultos.value.includes(id))
@@ -197,7 +188,15 @@ const eventosPorDia = computed(() => {
   return mapa
 })
 
-const esMartes = (fecha) => desdeISO(fecha).getDay() === 2
+const chipsDe = (evs) => evs.flatMap(ev => {
+  const base = { titulo: ev.titulo, categoria: ev.categoria }
+  if (ev.todosLosGrupos || !ev.idsGrupos.length) {
+    return [{ ...base, clave: `${ev.id}-t`, grupo: 'Todos', color: COLOR_TODOS }]
+  }
+  return ev.idsGrupos
+    .filter(id => !gruposOcultos.value.includes(id))
+    .map(id => ({ ...base, clave: `${ev.id}-${id}`, grupo: nombreGrupo(id), color: colorGrupo(id) }))
+})
 
 const dias = computed(() => {
   const lista = []
@@ -210,8 +209,8 @@ const dias = computed(() => {
       fecha,
       numero: d.getDate(),
       delMes: d.getMonth() === mesVisible.value.getMonth(),
-      esMartes: d.getDay() === 2,
       eventos: evs,
+      chips: chipsDe(evs),
       superpuestos: evs.filter(e => !CATEGORIAS_SIN_SUPERPOSICION.includes(e.categoria)).length > 1,
     })
   }
@@ -233,6 +232,12 @@ const clickDia = (dia) => {
 const moverMes = (delta) => {
   const m = mesVisible.value
   mesVisible.value = new Date(m.getFullYear(), m.getMonth() + delta, 1)
+}
+const irAFecha = (fecha) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha || '')) return
+  const d = desdeISO(fecha)
+  mesVisible.value = new Date(d.getFullYear(), d.getMonth(), 1)
+  diaActivo.value = fecha
 }
 const irAHoy = () => {
   const d = new Date()
@@ -282,7 +287,7 @@ watch(() => props.fechaSeleccionada, (f) => {
 watch(mesVisible, recargar)
 onMounted(recargar)
 
-defineExpose({ recargar, AVISO_MARTES, esMartes })
+defineExpose({ recargar, irAFecha })
 </script>
 
 <style scoped>
@@ -299,7 +304,6 @@ defineExpose({ recargar, AVISO_MARTES, esMartes })
   color: #6c757d;
   padding: 4px 0;
 }
-.cal-head-martes { color: #b45309; }
 .cal-dia {
   display: flex;
   flex-direction: column;
@@ -315,21 +319,19 @@ defineExpose({ recargar, AVISO_MARTES, esMartes })
 }
 .cal-dia:hover { border-color: #adb5bd; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); }
 .cal-dia.fuera-mes { opacity: 0.45; }
-.cal-dia.es-martes { background: #fffbeb; }
 .cal-dia.es-hoy .num { background: #dc3545; color: #fff; border-radius: 999px; padding: 0 6px; }
 .cal-dia.activo { border-color: #212529; box-shadow: 0 0 0 1px #212529; }
 .cal-dia.elegido { border-color: #dc3545; box-shadow: 0 0 0 2px #dc3545; }
 .cal-dia.bloqueado { cursor: not-allowed; background: #f8f9fa; }
 .cal-dia.bloqueado .num { color: #adb5bd; }
 .num { font-size: 0.8rem; font-weight: 700; color: #212529; }
-.tag-martes { font-size: 0.6rem; font-weight: 700; color: #b45309; text-transform: uppercase; }
 .chip {
   display: block;
   color: #fff;
-  font-size: 0.68rem;
-  font-weight: 600;
+  font-size: 0.55rem;
+  font-weight: 700;
   line-height: 1.3;
-  padding: 1px 5px;
+  padding: 1px 3px;
   border-radius: 4px;
   white-space: nowrap;
   overflow: hidden;
@@ -362,5 +364,6 @@ defineExpose({ recargar, AVISO_MARTES, esMartes })
 .min-w-0 { min-width: 0; }
 @media (min-width: 768px) {
   .cal-dia { min-height: 96px; padding: 6px; }
+  .chip { font-size: 0.68rem; padding: 1px 5px; }
 }
 </style>

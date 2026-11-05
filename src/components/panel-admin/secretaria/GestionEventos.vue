@@ -18,10 +18,66 @@
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
 
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+              <span class="material-icons fs-6">filter_alt</span>
+            </button>
+
+            <button @click="limpiarFiltrosTabla" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
+            </button>
+
             <button @click="abrirModalNuevo()" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
               <span class="material-icons fs-6">add_alert</span>
               <span class="fw-bold d-none d-md-inline small">Nuevo</span>
             </button>
+          </div>
+        </div>
+
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
+          <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Eventos</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-12 col-md-2">
+              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar tema o descripcion...">
+            </div>
+            <div class="col-6 col-md-2">
+              <input type="date" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center">
+            </div>
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.categoria" class="form-select form-select-sm shadow-none">
+                <option value="">TODAS LAS CATEGORIAS</option>
+                <option value="reunion">REUNION</option>
+                <option value="recordatorio">RECORDATORIO</option>
+                <option value="urgente">URGENTE</option>
+                <option value="asamblea">ASAMBLEA GENERAL</option>
+                <option value="recuperatorio">RECUPERATORIO</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
+                <option value="">GRUPO (TODOS)</option>
+                <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
+                <option value="">SUBGRUPO (TODOS)</option>
+                <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+                <option value="">AÑO (TODOS)</option>
+                <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
+              </select>
+            </div>
+            <div class="col-12 d-md-none mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+            </div>
           </div>
         </div>
 
@@ -32,7 +88,8 @@
             @nuevo="abrirModalNuevo"
             @editar="cargarDatosEdicion"
             @eliminar="ev => confirmarEliminacion(ev.id)"
-            @cargado="evs => cantidadEventos = evs.length"
+            :filtro="filtroEventos"
+            @cargado="evs => eventosVista = evs"
           />
         </div>
       </div>
@@ -65,11 +122,7 @@
 
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Fecha del Evento *</label>
-            <input v-model="form.fecha_evento" type="date" class="form-control shadow-none border-secondary-subtle" required>
-            <small v-if="fechaEsMartes" class="d-block text-warning-emphasis fw-semibold mt-1">
-              <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ AVISO_MARTES }}
-            </small>
-          </div>
+            <input v-model="form.fecha_evento" type="date" class="form-control shadow-none border-secondary-subtle" required>          </div>
 
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Categoria *</label>
@@ -133,7 +186,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, inject, computed } from 'vue'
+import { ref, reactive, onMounted, inject, computed, watch } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
@@ -148,7 +201,6 @@ const notificar = inject('notificar')
 const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 const calendario = ref(null)
-const cantidadEventos = ref(0)
 const procesando = ref(false)
 const grupos = ref([])
 const gruposSeleccionados = ref([])
@@ -168,12 +220,76 @@ const form = reactive({ ...formBase })
 const mostrarModal = ref(false)
 const modoEdicion = ref(false)
 
-const AVISO_MARTES = 'Los días martes hay curso de árbitros, solo se puede programar una reunión en el Dickens.'
-const fechaEsMartes = computed(() => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(form.fecha_evento || '')) return false
-  const [y, m, d] = form.fecha_evento.split('-').map(Number)
-  return new Date(y, m - 1, d).getDay() === 2
+const mostrarFiltrosMobile = ref(false)
+const eventosVista = ref([])
+const filtros = reactive({
+  busqueda: '',
+  anio: '',
+  fecha: '',
+  categoria: '',
+  grupo: '',
+  subgrupo: ''
 })
+
+const normalizarTexto = (texto) => String(texto || '')
+  .normalize('NFD')
+  .replace(/[̀-ͯ]/g, '')
+  .toLowerCase()
+  .trim()
+
+const opcionesGrupo = computed(() => {
+  const vistos = []
+  for (const g of grupos.value) {
+    const nombre = String(g.nombre || '').trim()
+    if (nombre && !vistos.includes(nombre)) vistos.push(nombre)
+  }
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'))
+})
+
+const opcionesSubgrupo = computed(() => {
+  const vistos = []
+  for (const g of grupos.value) {
+    const sub = String(g.subgrupo || '').trim()
+    if (sub && !vistos.includes(sub)) vistos.push(sub)
+  }
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'))
+})
+
+const anioActual = new Date().getFullYear()
+const aniosDisponibles = [anioActual + 1, anioActual, anioActual - 1, anioActual - 2].map(String)
+
+const filtroEventos = (ev) => {
+  if (filtros.busqueda) {
+    const q = normalizarTexto(filtros.busqueda)
+    if (!normalizarTexto(ev.titulo).includes(q) && !normalizarTexto(ev.descripcion).includes(q)) return false
+  }
+  if (filtros.categoria && ev.categoria !== filtros.categoria) return false
+  if (filtros.fecha && ev.fecha_evento !== filtros.fecha) return false
+  if (filtros.anio && !String(ev.fecha_evento).startsWith(filtros.anio)) return false
+  if (filtros.grupo || filtros.subgrupo) {
+    if (ev.todosLosGrupos) return false
+    const gFiltro = normalizarTexto(filtros.grupo)
+    const sFiltro = normalizarTexto(filtros.subgrupo)
+    return (ev.idsGrupos || []).some(id => {
+      const g = grupos.value.find(x => Number(x.id) === Number(id))
+      if (!g) return false
+      return (!gFiltro || normalizarTexto(g.nombre) === gFiltro) && (!sFiltro || normalizarTexto(g.subgrupo) === sFiltro)
+    })
+  }
+  return true
+}
+
+const cantidadEventos = computed(() => eventosVista.value.filter(filtroEventos).length)
+
+watch(() => filtros.fecha, (f) => { if (f) calendario.value?.irAFecha(f) })
+watch(() => filtros.anio, (a) => {
+  if (!a) return
+  calendario.value?.irAFecha(Number(a) === anioActual ? [new Date().getFullYear(), String(new Date().getMonth() + 1).padStart(2, "0"), String(new Date().getDate()).padStart(2, "0")].join("-") : `${a}-01-01`)
+})
+
+const limpiarFiltrosTabla = () => {
+  Object.assign(filtros, { busqueda: '', anio: '', fecha: '', categoria: '', grupo: '', subgrupo: '' })
+}
 
 const obtenerGrupos = async () => {
   const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos', payload: {} })
