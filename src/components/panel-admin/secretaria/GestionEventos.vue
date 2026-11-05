@@ -117,6 +117,7 @@
             ref="calendario"
             editable
             :puede-aprobar="esAprobador"
+            :puede-eliminar="esAprobador"
             @nuevo="abrirModalNuevo"
             @editar="cargarDatosEdicion"
             @eliminar="ev => confirmarEliminacion(ev.id)"
@@ -449,6 +450,8 @@ const eliminar = async (id) => {
   if (res.ok) {
     await Promise.all([calendario.value?.recargar(), cargarPendientes()])
     toast({ titulo: 'Eliminado', mensaje: 'El evento fue borrado.', tipo: 'success' })
+  } else {
+    toast({ titulo: 'Error', mensaje: res.message || 'No se pudo eliminar el evento.', tipo: 'danger' })
   }
 }
 

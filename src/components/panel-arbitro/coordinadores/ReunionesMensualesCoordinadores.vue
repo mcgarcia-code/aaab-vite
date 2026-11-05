@@ -46,6 +46,18 @@
               <span>Modificar</span>
             </button>
 
+            <button
+              v-if="modoReunion && puedeEliminarReunion"
+              class="btn btn-outline-danger fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
+              :disabled="cargandoArbitros || eliminandoReunion"
+              @click="confirmarEliminarReunion"
+              title="Eliminar esta reunión"
+            >
+              <span v-if="eliminandoReunion" class="spinner-border spinner-border-sm"></span>
+              <i v-else class="bi bi-trash3"></i>
+              <span>Eliminar</span>
+            </button>
+
             <!-- Examen: solo para reuniones de hoy o futuras -->
             <template v-if="modoReunion && !reunionEsPasada">
               <button
@@ -917,6 +929,45 @@ const puedeModificarReunion = computed(() => {
   const idsReunion = (r.idsGrupos || []).map(Number)
   return idsReunion.length > 0 && idsReunion.every(id => propios.includes(id))
 })
+
+const puedeEliminarReunion = computed(() => {
+  const r = reunionActual.value
+  if (!r || r.categoria !== 'reunion' || r.todosLosGrupos) return false
+  const propios = misGrupos.value.map(g => Number(g.id))
+  const idsReunion = (r.idsGrupos || []).map(Number)
+  return idsReunion.length > 0 && idsReunion.every(id => propios.includes(id))
+})
+
+const eliminandoReunion = ref(false)
+
+const confirmarEliminarReunion = () => {
+  const r = reunionActual.value
+  if (!r) return
+  notificar({
+    titulo: '¿Eliminar reunión?',
+    mensaje: `${r.fecha_formateada} · ${r.titulo}. Los árbitros del grupo dejarán de verla. Esta acción no se puede deshacer.`,
+    tipo: 'danger',
+    alConfirmar: eliminarReunion
+  })
+}
+
+const eliminarReunion = async () => {
+  const r = reunionActual.value
+  if (!r) return
+  eliminandoReunion.value = true
+  try {
+    const res = await api.post({ entity: 'eventos', action: 'eliminarEvento', payload: { id: r.id } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo eliminar la reunión')
+    reunionSeleccionada.value = ''
+    await obtenerReuniones()
+    await onReunionSeleccionada()
+    toast({ titulo: 'Eliminada', mensaje: 'La reunión fue eliminada.', tipo: 'success' })
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e?.message || 'No se pudo eliminar la reunión', tipo: 'danger' })
+  } finally {
+    eliminandoReunion.value = false
+  }
+}
 
 const asistenciaGrupoExamen = computed(() => {
   const ids = idsGruposExamenReunion.value.map(Number)

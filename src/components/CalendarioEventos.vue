@@ -112,7 +112,7 @@
             <button type="button" class="btn btn-light btn-sm border p-1 text-primary" title="Editar" @click="emit('editar', ev)">
               <span class="material-icons" style="font-size:16px;">edit</span>
             </button>
-            <button type="button" class="btn btn-light btn-sm border p-1 text-danger" title="Eliminar" @click="emit('eliminar', ev)">
+            <button v-if="puedeEliminar" type="button" class="btn btn-light btn-sm border p-1 text-danger" title="Eliminar" @click="emit('eliminar', ev)">
               <span class="material-icons" style="font-size:16px;">delete</span>
             </button>
           </div>
@@ -133,6 +133,7 @@ const props = defineProps({
   gruposDestacados: { type: Array, default: () => [] },
   filtro: { type: Function, default: null },
   puedeAprobar: { type: Boolean, default: false },
+  puedeEliminar: { type: Boolean, default: true },
 })
 const emit = defineEmits(['update:fechaSeleccionada', 'editar', 'eliminar', 'nuevo', 'cargado', 'aprobar', 'rechazar'])
 
