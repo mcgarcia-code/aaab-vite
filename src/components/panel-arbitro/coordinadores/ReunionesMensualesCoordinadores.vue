@@ -38,7 +38,7 @@
                 </select>
 
                 <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between justify-content-md-end flex-shrink-0">
-                  <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-1 shadow-sm bg-white">
+                  <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white flex-shrink-0">
                     <input
                       class="form-check-input"
                       type="checkbox"
@@ -52,16 +52,16 @@
                     </label>
                   </div>
                   <div class="d-flex gap-2">
-                    <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-sm btn-primary d-md-none d-flex align-items-center shadow-sm" aria-label="Mostrar filtros">
+                    <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2 flex-shrink-0" aria-label="Mostrar filtros">
                       <span class="material-icons fs-6">filter_alt</span>
                     </button>
-                    <button @click="limpiarFiltros" class="btn btn-sm btn-light border shadow-sm d-flex align-items-center gap-1" aria-label="Limpiar filtros">
+                    <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 flex-shrink-0" aria-label="Limpiar filtros">
                       <span class="material-icons text-dark fs-6">filter_alt_off</span>
-                      <span class="fw-bold text-dark d-none d-lg-inline small">Limpiar</span>
+                      <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
                     </button>
-                    <button @click="abrirModalNuevaReunion" class="btn btn-sm btn-danger-subtle border-danger-subtle shadow-sm d-flex align-items-center gap-1 text-danger" aria-label="Nueva reunión">
+                    <button @click="abrirModalNuevaReunion" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger flex-shrink-0" aria-label="Nueva reunión">
                       <span class="material-icons fs-6">add_alert</span>
-                      <span class="fw-bold small">Nuevo</span>
+                      <span class="fw-bold d-none d-md-inline small">Nuevo</span>
                     </button>
                   </div>
                 </div>
