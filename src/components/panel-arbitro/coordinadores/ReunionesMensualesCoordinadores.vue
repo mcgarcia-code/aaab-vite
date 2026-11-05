@@ -50,9 +50,9 @@
             <template v-if="modoReunion && !reunionEsPasada">
               <button
                 class="btn btn-danger fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
-                :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || reunionActual?.examen_habilitado"
-                @click="habilitarExamenReunion"
-                :title="idsGruposExamenReunion.length ? 'Habilitar el examen para el grupo de esta reunión' : 'Esta reunión no tiene grupos asociados'"
+                :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || examenHabilitado || !asistenciaGrupoExamen.presentes"
+                @click="abrirModalExamen"
+                :title="tituloBotonHabilitar"
               >
                 <span v-if="habilitandoExamen" class="spinner-border spinner-border-sm"></span>
                 <i v-else class="bi bi-shield-check"></i>
@@ -61,7 +61,7 @@
 
               <button
                 class="btn btn-outline-danger fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
-                :disabled="deshabilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || !reunionActual?.examen_habilitado"
+                :disabled="deshabilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || !examenHabilitado"
                 @click="deshabilitarExamenReunion"
                 title="Deshabilitar el examen de esta reunión"
               >
@@ -475,6 +475,94 @@
       </template>
     </ModalBase>
 
+    <ModalBase
+      :show="mostrarModalExamen"
+      @close="mostrarModalExamen = false"
+      icono="quiz"
+      colorIcono="bg-danger-subtle text-danger"
+      maxWidth="640px"
+    >
+      <template #header>
+        <span class="fw-bold fs-5">Programar examen</span>
+      </template>
+
+      <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
+        <span class="badge bg-success px-3 py-2"><i class="bi bi-person-check-fill me-1"></i>{{ asistenciaGrupoExamen.presentes }} presentes</span>
+        <span class="badge bg-secondary px-3 py-2"><i class="bi bi-person-dash-fill me-1"></i>{{ asistenciaGrupoExamen.ausentes }} ausentes</span>
+        <span v-if="asistenciaGrupoExamen.sinRegistro" class="badge bg-light text-muted border px-3 py-2">{{ asistenciaGrupoExamen.sinRegistro }} sin registro</span>
+      </div>
+      <p class="text-muted small text-center mb-4">Solo los árbitros presentes van a poder rendir el examen desde su panel.</p>
+
+      <div v-if="cargandoReglas" class="text-center py-4">
+        <span class="spinner-border spinner-border-sm text-danger"></span>
+        <span class="text-muted small ms-2">Cargando reglas...</span>
+      </div>
+
+      <form v-else id="formProgramarExamen" @submit.prevent="habilitarExamenReunion" class="text-start">
+        <div class="row g-3">
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="small fw-bold text-danger m-0">Reglas a evaluar *</label>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" @click="seleccionarTodasLasReglas(true)">Todas</button>
+                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-muted" @click="seleccionarTodasLasReglas(false)">Ninguna</button>
+              </div>
+            </div>
+            <div class="bg-light border border-danger-subtle rounded p-3">
+              <div v-if="reglasDisponibles.length" class="d-flex flex-wrap gap-3">
+                <div v-for="r in reglasDisponibles" :key="r.codigo" class="form-check m-0" style="min-width: 110px;">
+                  <input
+                    :id="`examen-regla-${r.codigo}`"
+                    class="form-check-input shadow-none border-secondary-subtle"
+                    type="checkbox"
+                    :value="r.codigo"
+                    v-model="formExamen.reglas"
+                  >
+                  <label class="form-check-label small fw-bold mt-1" :for="`examen-regla-${r.codigo}`">
+                    Regla {{ r.codigo }} <span class="text-muted fw-normal">({{ r.cantidad }})</span>
+                  </label>
+                </div>
+              </div>
+              <p v-else class="text-muted small mb-0">No hay preguntas cargadas.</p>
+            </div>
+            <span class="d-block text-muted mt-1" style="font-size: 0.75rem;">{{ preguntasDisponiblesExamen }} preguntas disponibles con las reglas elegidas.</span>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="small fw-bold text-dark mb-1">Cantidad de preguntas *</label>
+            <input
+              v-model.number="formExamen.cantidadPreguntas"
+              type="number"
+              min="1"
+              :max="Math.min(100, preguntasDisponiblesExamen) || 1"
+              class="form-control shadow-none border-secondary-subtle"
+              required
+            >
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="small fw-bold text-dark mb-1">Tiempo (minutos) *</label>
+            <input
+              v-model.number="formExamen.tiempoLimiteMin"
+              type="number"
+              min="1"
+              max="180"
+              class="form-control shadow-none border-secondary-subtle"
+              required
+            >
+          </div>
+        </div>
+      </form>
+
+      <template #footer>
+        <button type="button" @click="mostrarModalExamen = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button type="submit" form="formProgramarExamen" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="habilitandoExamen || cargandoReglas || !programacionValida">
+          <span v-if="habilitandoExamen" class="spinner-border spinner-border-sm me-1"></span>
+          {{ habilitandoExamen ? 'HABILITANDO...' : 'HABILITAR EXAMEN' }}
+        </button>
+      </template>
+    </ModalBase>
+
     <ModalBase :show="mostrarModalDetalle" @close="mostrarModalDetalle = false" icono="person_search" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="800px">
       <template #header>
         <div class="text-center w-100">
@@ -688,6 +776,11 @@ const descargandoPdf      = reactive({})
 const grupos              = ref([])
 const habilitandoExamen   = ref(false)
 const deshabilitandoExamen = ref(false)
+const examenHabilitado    = ref(false)
+const mostrarModalExamen  = ref(false)
+const cargandoReglas      = ref(false)
+const reglasDisponibles   = ref([])
+const formExamen          = reactive({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [] })
 
 const reunionSeleccionada = ref('')
 const soloActivos         = ref(false)
@@ -784,9 +877,86 @@ const puedeModificarReunion = computed(() => {
   return idsReunion.length > 0 && idsReunion.every(id => propios.includes(id))
 })
 
+const asistenciaGrupoExamen = computed(() => {
+  const ids = idsGruposExamenReunion.value.map(Number)
+  const r = { presentes: 0, ausentes: 0, sinRegistro: 0 }
+  for (const a of arbitrosReunion.value) {
+    if (ids.length && !ids.includes(Number(a.id_grupo))) continue
+    const v = asistencias[a.id]
+    if      (v === 'presente') r.presentes++
+    else if (v === 'ausente')  r.ausentes++
+    else                       r.sinRegistro++
+  }
+  return r
+})
+
+const tituloBotonHabilitar = computed(() => {
+  if (!idsGruposExamenReunion.value.length) return 'Esta reunión no tiene grupos asociados'
+  if (examenHabilitado.value) return 'El examen ya está habilitado'
+  if (!asistenciaGrupoExamen.value.presentes) return 'Marcá presentes y ausentes antes de habilitar el examen'
+  return 'Programar y habilitar el examen para los presentes'
+})
+
+const preguntasDisponiblesExamen = computed(() =>
+  reglasDisponibles.value
+    .filter(r => formExamen.reglas.includes(r.codigo))
+    .reduce((total, r) => total + r.cantidad, 0)
+)
+
+const programacionValida = computed(() =>
+  formExamen.reglas.length > 0 &&
+  formExamen.cantidadPreguntas >= 1 &&
+  formExamen.cantidadPreguntas <= Math.min(100, preguntasDisponiblesExamen.value) &&
+  formExamen.tiempoLimiteMin >= 1 &&
+  formExamen.tiempoLimiteMin <= 180
+)
+
+const seleccionarTodasLasReglas = (todas) => {
+  formExamen.reglas = todas ? reglasDisponibles.value.map(r => r.codigo) : []
+}
+
+const cargarProgramacionExamen = async () => {
+  examenHabilitado.value = false
+  if (!idEventoSeleccionado.value || !idsGruposExamenReunion.value.length) return
+  try {
+    const res = await api.get({
+      entity: 'examenes_habilitaciones',
+      action: 'obtenerProgramacion',
+      payload: { idEvento: Number(idEventoSeleccionado.value), idsGrupos: idsGruposExamenReunion.value }
+    })
+    const p = res?.payload
+    if (!p) return
+    examenHabilitado.value = !!p.habilitado
+    formExamen.cantidadPreguntas = p.cantidadPreguntas
+    formExamen.tiempoLimiteMin = p.tiempoLimiteMin
+    formExamen.reglas = (p.reglas || []).map(Number)
+  } catch (e) { console.error('cargarProgramacionExamen:', e) }
+}
+
+async function abrirModalExamen() {
+  if (!asistenciaGrupoExamen.value.presentes) {
+    toast({ tipo: 'danger', mensaje: 'Marcá presentes y ausentes antes de habilitar el examen' })
+    return
+  }
+  mostrarModalExamen.value = true
+  if (reglasDisponibles.value.length) return
+  cargandoReglas.value = true
+  try {
+    const res = await api.get({ entity: 'examenes_habilitaciones', action: 'obtenerReglasExamen' })
+    reglasDisponibles.value = (res?.payload?.reglas || []).map(r => ({ codigo: Number(r.codigo), cantidad: Number(r.cantidad) }))
+    const codigos = reglasDisponibles.value.map(r => r.codigo)
+    formExamen.reglas = formExamen.reglas.filter(c => codigos.includes(c))
+  } catch (e) {
+    console.error('obtenerReglasExamen:', e)
+    toast({ tipo: 'danger', mensaje: e?.message || 'No se pudieron cargar las reglas' })
+  } finally {
+    cargandoReglas.value = false
+  }
+}
+
 async function habilitarExamenReunion() {
   const r = reunionActual.value
-  if (!r || !idsGruposExamenReunion.value.length) return
+  if (!r || !idsGruposExamenReunion.value.length || !programacionValida.value) return
   if (reunionEsPasada.value) {
     toast({ tipo: 'danger', mensaje: 'No se puede habilitar el examen: la reunión ya pasó' })
     return
@@ -800,14 +970,20 @@ async function habilitarExamenReunion() {
         idEvento: r.id,
         idsGrupos: idsGruposExamenReunion.value,
         arrArbitros: [],
-        sumar: true
+        sumar: true,
+        programacion: {
+          cantidadPreguntas: formExamen.cantidadPreguntas,
+          tiempoLimiteMin: formExamen.tiempoLimiteMin,
+          reglas: formExamen.reglas
+        }
       }
     })
-    toast({ tipo: 'success', mensaje: 'Examen habilitado para la reunión' })
-    r.examen_habilitado = true
+    toast({ tipo: 'success', mensaje: 'Examen habilitado para los árbitros presentes' })
+    examenHabilitado.value = true
+    mostrarModalExamen.value = false
   } catch (e) {
     console.error('habilitarExamenReunion:', e)
-    toast({ tipo: 'danger', mensaje: 'No se pudo habilitar el examen' })
+    toast({ tipo: 'danger', mensaje: e?.message || 'No se pudo habilitar el examen' })
   } finally {
     habilitandoExamen.value = false
   }
@@ -827,7 +1003,7 @@ async function deshabilitarExamenReunion() {
       }
     })
     toast({ tipo: 'success', mensaje: 'Examen deshabilitado para la reunión' })
-    r.examen_habilitado = false
+    examenHabilitado.value = false
   } catch (e) {
     console.error('deshabilitarExamenReunion:', e)
     toast({ tipo: 'danger', mensaje: 'No se pudo deshabilitar el examen' })
@@ -997,6 +1173,8 @@ const limpiarEstadoReunion = () => {
   registrosExistentes.value = {}
   arbitrosReunion.value = []
   examenes.value = {}
+  examenHabilitado.value = false
+  mostrarModalExamen.value = false
 }
 
 const onReunionSeleccionada = async () => {
@@ -1024,7 +1202,7 @@ const onReunionSeleccionada = async () => {
         if (asistencia) asistencias[a.id] = asistencia
       })
     }
-    await cargarExamenes()
+    await Promise.all([cargarExamenes(), cargarProgramacionExamen()])
   } catch (e) {
     console.error('onReunionSeleccionada:', e)
     toast({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la reunión.', tipo: 'danger' })
