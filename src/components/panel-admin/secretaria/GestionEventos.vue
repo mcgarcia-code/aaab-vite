@@ -82,12 +82,46 @@
         </div>
 
         <div class="card-body p-2 p-md-3 bg-white">
+          <div v-if="esAprobador && pendientes.length" class="border border-warning rounded-3 mb-3 overflow-hidden">
+            <div class="bg-warning-subtle px-3 py-2 fw-bold text-warning-emphasis d-flex align-items-center gap-2">
+              <i class="bi bi-hourglass-split"></i>
+              {{ pendientes.length }} {{ pendientes.length === 1 ? 'reunión para aprobar' : 'reuniones para aprobar' }}
+            </div>
+            <div class="d-flex flex-column">
+              <div v-for="r in pendientes" :key="r.id" class="d-flex flex-column flex-md-row align-items-md-center gap-2 px-3 py-2 border-top">
+                <div class="flex-grow-1 min-w-0">
+                  <div class="fw-bold text-dark text-break">
+                    {{ formatearFecha(r.fecha_evento) }} · {{ r.titulo }}
+                    <span v-if="r.fue_revisada" class="badge text-bg-info ms-1">MODIFICADA</span>
+                  </div>
+                  <div class="small text-muted text-break">
+                    {{ r.grupos || 'Sin grupo' }} · {{ r.descripcion || 'Lugar a confirmar' }}<span v-if="r.creador"> · Cargada por {{ r.creador }}</span>
+                  </div>
+                </div>
+                <div class="d-flex gap-2 flex-shrink-0">
+                  <button type="button" class="btn btn-light border btn-sm fw-bold" @click="calendario?.irAFecha(r.fecha_evento)">
+                    <i class="bi bi-calendar3"></i>
+                  </button>
+                  <button type="button" class="btn btn-success btn-sm fw-bold flex-grow-1" :disabled="resolviendo === r.id" @click="confirmarAprobacion(r)">
+                    <i class="bi bi-check-lg me-1"></i>APROBAR
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-sm fw-bold flex-grow-1" :disabled="resolviendo === r.id" @click="abrirRechazo(r)">
+                    <i class="bi bi-x-lg me-1"></i>RECHAZAR
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <CalendarioEventos
             ref="calendario"
             editable
+            :puede-aprobar="esAprobador"
             @nuevo="abrirModalNuevo"
             @editar="cargarDatosEdicion"
             @eliminar="ev => confirmarEliminacion(ev.id)"
+            @aprobar="confirmarAprobacion"
+            @rechazar="abrirRechazo"
             :filtro="filtroEventos"
             @cargado="evs => eventosVista = evs"
           />
@@ -182,6 +216,33 @@
         </button>
       </template>
     </ModalBase>
+
+    <ModalBase
+      :show="!!reunionRechazo"
+      @close="reunionRechazo = null"
+      icono="block"
+      colorIcono="bg-danger-subtle text-danger"
+      maxWidth="520px"
+    >
+      <template #header>
+        <span class="fw-bold fs-5">Rechazar reunión</span>
+      </template>
+      <div v-if="reunionRechazo" class="text-start">
+        <p class="small text-muted mb-3">
+          {{ formatearFecha(reunionRechazo.fecha_evento) }} · {{ reunionRechazo.titulo }}<span v-if="reunionRechazo.grupos"> · {{ reunionRechazo.grupos }}</span>
+        </p>
+        <label class="small fw-bold text-dark mb-1">Motivo del rechazo *</label>
+        <textarea v-model="motivoRechazo" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Ej: Ese día ya hay otra reunión en el Dickens..."></textarea>
+        <small class="text-muted d-block mt-1">Se le envía por email al coordinador del grupo para que reprograme la reunión.</small>
+      </div>
+      <template #footer>
+        <button type="button" @click="reunionRechazo = null" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button type="button" @click="rechazar" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="motivoRechazo.trim().length < 5 || !!resolviendo">
+          <span v-if="resolviendo" class="spinner-border spinner-border-sm me-1"></span>
+          RECHAZAR
+        </button>
+      </template>
+    </ModalBase>
   </div>
 </template>
 
@@ -191,6 +252,7 @@ import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 import CalendarioEventos from '@/components/CalendarioEventos.vue'
+import { auth } from '@/api/auth'
 
 useHead({
   title: 'Gestion de Eventos | AAAB',
@@ -348,10 +410,13 @@ const guardarEvento = async () => {
     if (res.ok) {
       gruposSeleccionados.value = []
       mostrarModal.value = false
-      await calendario.value?.recargar()
+      await Promise.all([calendario.value?.recargar(), cargarPendientes()])
+      const pendiente = res.payload?.aprobacion === 'pendiente'
       toast({
         titulo: 'Exito',
-        mensaje: `El evento se ${modoEdicion.value ? 'actualizo' : 'publico'} correctamente.`,
+        mensaje: pendiente
+          ? 'La reunión quedó pendiente de aprobación.'
+          : `El evento se ${modoEdicion.value ? 'actualizo' : 'publico'} correctamente.`,
         tipo: 'success'
       })
     } else {
@@ -382,12 +447,73 @@ const confirmarEliminacion = (id) => {
 const eliminar = async (id) => {
   const res = await api.post({ entity: 'eventos', action: 'eliminarEvento', payload: { id } })
   if (res.ok) {
-    await calendario.value?.recargar()
+    await Promise.all([calendario.value?.recargar(), cargarPendientes()])
     toast({ titulo: 'Eliminado', mensaje: 'El evento fue borrado.', tipo: 'success' })
   }
 }
 
-onMounted(obtenerGrupos)
+const usuario = auth.getUser()
+const esAprobador = ['admin', 'secretario', 'coordinador general'].includes(usuario?.rol)
+const pendientes = ref([])
+const resolviendo = ref(null)
+const reunionRechazo = ref(null)
+const motivoRechazo = ref('')
+
+const formatearFecha = (f) => f ? String(f).substring(0, 10).split('-').reverse().join('/') : ''
+
+const cargarPendientes = async () => {
+  if (!esAprobador) return
+  try {
+    const res = await api.get({ entity: 'eventos', action: 'obtenerReunionesPendientes' })
+    if (res?.ok) pendientes.value = res.payload || []
+  } catch (e) {
+    console.error('obtenerReunionesPendientes:', e)
+  }
+}
+
+const resolverReunion = async (action, payload, mensajeOk) => {
+  resolviendo.value = payload.id
+  try {
+    const res = await api.post({ entity: 'eventos', action, payload })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo procesar la reunión')
+    toast({ titulo: 'Listo', mensaje: mensajeOk, tipo: 'success' })
+    reunionRechazo.value = null
+    await Promise.all([calendario.value?.recargar(), cargarPendientes()])
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e?.message || 'No se pudo procesar la reunión', tipo: 'danger' })
+  } finally {
+    resolviendo.value = null
+  }
+}
+
+const confirmarAprobacion = (r) => {
+  notificar({
+    titulo: '¿Aprobar reunión?',
+    mensaje: `${formatearFecha(r.fecha_evento)} · ${r.titulo}. Se le avisará por email al coordinador y la reunión quedará visible para los árbitros.`,
+    tipo: 'success',
+    alConfirmar: () => resolverReunion('aprobarReunion', { id: r.id }, 'Reunión aprobada. Se notificó al coordinador.')
+  })
+}
+
+const abrirRechazo = (r) => {
+  const grupos = r.grupos ?? pendientes.value.find(p => p.id === r.id)?.grupos ?? ''
+  reunionRechazo.value = { ...r, grupos }
+  motivoRechazo.value = ''
+}
+
+const rechazar = () => {
+  if (!reunionRechazo.value) return
+  resolverReunion(
+    'rechazarReunion',
+    { id: reunionRechazo.value.id, motivo: motivoRechazo.value.trim() },
+    'Reunión rechazada. Se notificó al coordinador con el motivo.'
+  )
+}
+
+onMounted(() => {
+  obtenerGrupos()
+  cargarPendientes()
+})
 </script>
 
 <style scoped>
@@ -427,4 +553,5 @@ onMounted(obtenerGrupos)
 .btn-danger-subtle:hover { background: #fecaca; }
 
 .animate__animated { animation-duration: 0.5s; }
+.min-w-0 { min-width: 0; }
 </style>

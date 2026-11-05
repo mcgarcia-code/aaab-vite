@@ -22,6 +22,7 @@
             <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center position-relative">
               <!-- Dot rojo de notificación (solo Designaciones Rechazadas con pendientes) -->
               <span v-if="item.badgeRechazos && rechazosPendientes > 0" class="dot-notif"></span>
+              <span v-if="item.badgeReuniones && reunionesPendientes > 0" class="dot-notif"></span>
               <i :class="item.icon"></i>
             </div>
 
@@ -30,6 +31,9 @@
                   {{ item.title }}
                   <span v-if="item.badgeRechazos && rechazosPendientes > 0" class="badge-nuevos rounded-pill">
                     {{ rechazosPendientes }} {{ rechazosPendientes === 1 ? 'NUEVO' : 'NUEVOS' }}
+                  </span>
+                  <span v-if="item.badgeReuniones && reunionesPendientes > 0" class="badge-nuevos rounded-pill">
+                    {{ reunionesPendientes }} {{ reunionesPendientes === 1 ? 'reunión para aprobar' : 'reuniones para aprobar' }}
                   </span>
                 </h5>
                 <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">{{ item.desc }}</p>
@@ -79,6 +83,19 @@ const cargarRechazosPendientes = async () => {
   }
 }
 
+const reunionesPendientes = ref(0)
+const ROLES_APROBADORES = ['admin', 'secretario', 'coordinador general']
+
+const cargarReunionesPendientes = async () => {
+  if (!ROLES_APROBADORES.includes(userRole)) return
+  try {
+    const res = await api.get({ entity: 'eventos', action: 'contarReunionesPendientes' })
+    if (res?.ok) reunionesPendientes.value = Number(res.payload) || 0
+  } catch (err) {
+    console.error('Error al contar reuniones pendientes:', err)
+  }
+}
+
 // ====================================================
 // CATEGORIAS (cada una con sus roles y sub-tarjetas)
 // ====================================================
@@ -90,7 +107,7 @@ const categorias = [
     items: [
       { to: '/panel-admin/secretaria/modificacion-datos', title: 'Legajos', icon: 'bi bi-people', desc: 'Actualizar información personal y disponibilidad de los árbitros.' },
       { to: '/panel-admin/secretaria/licencias', title: 'Licencias', icon: 'bi bi-calendar-date-fill', desc: 'Gestionar las licencias y permisos de inasistencia.' },
-      { to: '/panel-admin/secretaria/eventos-notificaciones', title: 'Eventos', icon: 'bi bi-bell', desc: 'Gestionar avisos, reuniones y noticias para los árbitros.' },
+      { to: '/panel-admin/secretaria/eventos-notificaciones', title: 'Eventos', icon: 'bi bi-bell', desc: 'Gestionar avisos, reuniones y noticias para los árbitros.', badgeReuniones: true },
       { to: '/panel-admin/secretaria/grupos', title: 'Grupos', icon: 'bi bi-people-fill', desc: 'Administrar grupos de árbitros' },
       { to: '/panel-admin/secretaria/solicitudes-institucionales', title: 'Solicitudes Institucionales', icon: 'bi bi-envelope-paper', desc: 'Gestionar solicitudes de coordinadores.' },
     ]
@@ -164,7 +181,10 @@ const gruposConItems = computed(() => {
   })
 })
 
-onMounted(cargarRechazosPendientes)
+onMounted(() => {
+  cargarRechazosPendientes()
+  cargarReunionesPendientes()
+})
 </script>
 
 <style scoped>

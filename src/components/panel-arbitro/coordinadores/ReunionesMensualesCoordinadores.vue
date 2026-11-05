@@ -50,7 +50,7 @@
             <template v-if="modoReunion && !reunionEsPasada">
               <button
                 class="btn btn-danger fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
-                :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || examenHabilitado || !asistenciaGrupoExamen.presentes"
+                :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || examenHabilitado || !asistenciaGrupoExamen.presentes || !reunionAprobada"
                 @click="abrirModalExamen"
                 :title="tituloBotonHabilitar"
               >
@@ -100,6 +100,21 @@
               <span class="fw-bold d-none d-md-inline small">Nuevo</span>
             </button>
           </div>
+        </div>
+
+        <div v-if="modoReunion && reunionActual?.categoria === 'reunion' && reunionActual?.aprobacion === 'pendiente'" class="alert alert-warning rounded-0 border-0 border-bottom mb-0 py-2 px-3 small d-flex align-items-center gap-2">
+          <i class="bi bi-hourglass-split flex-shrink-0"></i>
+          <span><strong>Pendiente de aprobación.</strong> Los árbitros la van a ver, y vas a poder tomar asistencia y habilitar el examen, cuando la administración la apruebe.</span>
+        </div>
+        <div v-else-if="modoReunion && reunionActual?.categoria === 'reunion' && reunionActual?.aprobacion === 'rechazada'" class="alert alert-danger rounded-0 border-0 border-bottom mb-0 py-2 px-3 small d-flex flex-column flex-md-row align-items-md-center gap-2">
+          <div class="flex-grow-1">
+            <strong><i class="bi bi-x-octagon-fill me-1"></i>Reunión rechazada.</strong>
+            <span v-if="reunionActual.motivo_rechazo"> Motivo: {{ reunionActual.motivo_rechazo }}.</span>
+            Reprogramala para que vuelva a revisión.
+          </div>
+          <button v-if="puedeModificarReunion" type="button" class="btn btn-danger btn-sm fw-bold flex-shrink-0" @click="abrirModalEditarReunion">
+            <i class="bi bi-calendar-plus me-1"></i>REPROGRAMAR
+          </button>
         </div>
 
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none']">
@@ -837,7 +852,10 @@ const modoReunion = computed(() => !!reunionSeleccionada.value)
 const opcionesReunion = computed(() => {
   const ops = []
   for (const r of arrReuniones.value) {
-    const base = `${r.fecha_formateada}  —  ${r.titulo}`
+    const estado = r.categoria === 'reunion' && r.aprobacion === 'pendiente'
+      ? ' · PENDIENTE'
+      : (r.categoria === 'reunion' && r.aprobacion === 'rechazada' ? ' · RECHAZADA' : '')
+    const base = `${r.fecha_formateada}  —  ${r.titulo}${estado}`
 
     let ids = []
     let nombres = []
@@ -886,10 +904,15 @@ const reunionEsPasada = computed(() =>
 
 // El coordinador puede modificar una reunión si es futura, es de categoría "reunion"
 // y está dirigida solo a grupos que él coordina (no "todos los grupos" ni grupos ajenos).
+const reunionAprobada = computed(() => {
+  const r = reunionActual.value
+  return !r || r.categoria !== 'reunion' || !r.aprobacion || r.aprobacion === 'aprobada'
+})
+
 const puedeModificarReunion = computed(() => {
   const r = reunionActual.value
   if (!r || r.categoria !== 'reunion' || r.todosLosGrupos) return false
-  if (!esFechaFutura(r.fecha_evento)) return false
+  if (r.aprobacion !== 'rechazada' && !esFechaFutura(r.fecha_evento)) return false
   const propios = misGrupos.value.map(g => Number(g.id))
   const idsReunion = (r.idsGrupos || []).map(Number)
   return idsReunion.length > 0 && idsReunion.every(id => propios.includes(id))
@@ -1264,6 +1287,11 @@ const descargarPdfTeorico = async (a) => {
 const guardarAsistencia = async (a) => {
   const estado = asistencias[a.id]
   if (!estado) return
+  if (!reunionAprobada.value) {
+    delete asistencias[a.id]
+    toast({ titulo: 'Reunión no aprobada', mensaje: 'La reunión todavía no fue aprobada: no se puede tomar asistencia.', tipo: 'danger' })
+    return
+  }
   guardando[a.id] = true
   delete guardadoOk[a.id]
   try {
@@ -1385,8 +1413,8 @@ const confirmarGuardadoReunion = () => {
   notificar({
     titulo: modoEdicionReunion.value ? '¿Guardar cambios?' : '¿Publicar?',
     mensaje: modoEdicionReunion.value
-      ? 'Se modificarán los datos de la reunión.'
-      : 'Se enviará el aviso de la reunión a los árbitros del grupo.',
+      ? 'Se modificarán los datos de la reunión y quedará pendiente de aprobación hasta que la revise la administración.'
+      : 'La reunión quedará pendiente de aprobación. Cuando la administración la apruebe, los árbitros del grupo la van a ver.',
     tipo: 'success',
     alConfirmar: guardarReunion
   })
@@ -1418,9 +1446,12 @@ const guardarReunion = async () => {
         reunionSeleccionada.value = ''
         await onReunionSeleccionada()
       }
+      const pendiente = res.payload?.aprobacion === 'pendiente'
       toast({
         titulo: 'Éxito',
-        mensaje: esEdicion ? 'La reunión se modificó correctamente.' : 'La reunión se publicó correctamente.',
+        mensaje: pendiente
+          ? (esEdicion ? 'Los cambios quedaron pendientes de aprobación.' : 'La reunión quedó pendiente de aprobación.')
+          : (esEdicion ? 'La reunión se modificó correctamente.' : 'La reunión se publicó correctamente.'),
         tipo: 'success'
       })
     } else {

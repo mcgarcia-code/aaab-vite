@@ -46,9 +46,10 @@
             v-for="c in dia.chips.slice(0, 3)"
             :key="c.clave"
             class="chip"
+            :class="{ pendiente: c.pendiente }"
             :style="{ background: c.color }"
-            :title="`${c.grupo} · ${c.titulo} (${c.categoria})`"
-          >{{ c.grupo }}</span>
+            :title="`${c.grupo} · ${c.titulo} (${c.categoria})${c.pendiente ? ' · pendiente de aprobación' : ''}`"
+          ><i v-if="c.pendiente" class="bi bi-hourglass-split me-1"></i>{{ c.grupo }}</span>
           <span v-if="dia.chips.length > 3" class="mas">+{{ dia.chips.length - 3 }}</span>
         </div>
       </button>
@@ -94,11 +95,20 @@
             <div class="small text-muted text-break">{{ ev.descripcion || 'Lugar a confirmar' }}</div>
             <div class="d-flex flex-wrap gap-1 mt-1">
               <span class="badge text-bg-light border text-uppercase">{{ ev.categoria }}</span>
+              <span v-if="ev.aprobacion === 'pendiente'" class="badge text-bg-warning"><i class="bi bi-hourglass-split me-1"></i>PENDIENTE DE APROBACIÓN</span>
               <span v-if="ev.todosLosGrupos" class="badge" :style="{ background: COLOR_TODOS }">TODOS</span>
               <span v-for="id in ev.idsGrupos" :key="id" class="badge" :style="{ background: colorGrupo(id) }">{{ nombreGrupo(id) }}</span>
             </div>
           </div>
           <div v-if="editable" class="d-flex flex-column gap-1 flex-shrink-0">
+            <template v-if="puedeAprobar && ev.aprobacion === 'pendiente'">
+              <button type="button" class="btn btn-success btn-sm p-1" title="Aprobar" @click="emit('aprobar', ev)">
+                <span class="material-icons" style="font-size:16px;">check</span>
+              </button>
+              <button type="button" class="btn btn-outline-danger btn-sm p-1" title="Rechazar" @click="emit('rechazar', ev)">
+                <span class="material-icons" style="font-size:16px;">block</span>
+              </button>
+            </template>
             <button type="button" class="btn btn-light btn-sm border p-1 text-primary" title="Editar" @click="emit('editar', ev)">
               <span class="material-icons" style="font-size:16px;">edit</span>
             </button>
@@ -122,8 +132,9 @@ const props = defineProps({
   fechaMinima: { type: String, default: '' },
   gruposDestacados: { type: Array, default: () => [] },
   filtro: { type: Function, default: null },
+  puedeAprobar: { type: Boolean, default: false },
 })
-const emit = defineEmits(['update:fechaSeleccionada', 'editar', 'eliminar', 'nuevo', 'cargado'])
+const emit = defineEmits(['update:fechaSeleccionada', 'editar', 'eliminar', 'nuevo', 'cargado', 'aprobar', 'rechazar'])
 
 const AVISO_MARTES = 'Los días martes hay curso de árbitros, solo se puede programar una reunión en el Dickens.'
 const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
@@ -189,7 +200,7 @@ const eventosPorDia = computed(() => {
 })
 
 const chipsDe = (evs) => evs.flatMap(ev => {
-  const base = { titulo: ev.titulo, categoria: ev.categoria }
+  const base = { titulo: ev.titulo, categoria: ev.categoria, pendiente: ev.aprobacion === 'pendiente' }
   if (ev.todosLosGrupos || !ev.idsGrupos.length) {
     return [{ ...base, clave: `${ev.id}-t`, grupo: 'Todos', color: COLOR_TODOS }]
   }
@@ -336,6 +347,12 @@ defineExpose({ recargar, irAFecha })
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.chip.pendiente {
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.28) 0 4px, transparent 4px 8px) !important;
+  opacity: 0.8;
+  outline: 1px dashed rgba(0, 0, 0, 0.45);
+  outline-offset: -1px;
 }
 .mas { font-size: 0.65rem; color: #6c757d; font-weight: 600; }
 .punto { display: inline-block; width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
