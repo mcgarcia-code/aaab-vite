@@ -108,7 +108,7 @@
               </div>
 
               <div v-else class="row g-3">
-                <div v-for="ex in examenesFiltrados" :key="ex.id" class="col-12 col-xl-6">
+                <div v-for="ex in examenesFiltrados" :key="ex.id_evento" class="col-12 col-xl-6">
                   <div class="card h-100 shadow-sm border-light-subtle">
                     <div class="card-body p-3">
                       <!-- Cabecera de la tarjeta del examen -->
@@ -124,13 +124,8 @@
                         <span class="badge flex-shrink-0" :class="badgeTipo(ex.tipo)">{{ ex.tipo.toUpperCase() }}</span>
                       </div>
 
-                      <!-- Si faltó a todo el evento -->
-                      <div v-if="esAusenteTotal(ex)" class="text-center p-3 bg-secondary bg-opacity-10 rounded">
-                        <span class="badge bg-secondary px-3 py-2">AUSENTE A LA JORNADA</span>
-                      </div>
-
                       <!-- Detalle Teórico / Físico -->
-                      <div v-else class="row g-2">
+                      <div class="row g-2">
                         <!-- Teórico -->
                         <div class="col-6">
                           <div class="p-2 h-100 rounded text-center border" :class="fondoTarjetaExamen(getDetalle(ex, 'teorico'), 'teorico')">
@@ -143,7 +138,6 @@
                                 Nota: {{ getNota(getDetalle(ex, 'teorico')) }}
                               </div>
                             </div>
-                            <span v-else class="text-muted small">—</span>
                           </div>
                         </div>
 
@@ -156,7 +150,6 @@
                                 {{ formatEstadoExamen(getDetalle(ex, 'fisico'), 'fisico') }}
                               </span>
                             </div>
-                            <span v-else class="text-muted small">—</span>
                           </div>
                         </div>
                       </div>
@@ -256,11 +249,6 @@ const badgeTipo = (t) => TIPO_BADGE_MAP[t] ?? 'bg-dark text-white'
 // Extraer el detalle específico (teórico o físico) de un examen
 const getDetalle = (ex, tipo) => {
   return ex.detalles.find(d => d.tipo.toLowerCase() === tipo.toLowerCase()) || null
-}
-
-const esAusenteTotal = (examen) => {
-  return examen.detalles.length === 1 &&
-         (examen.detalles[0].estado === 'ausente' || examen.detalles[0].tipo === 'ausente')
 }
 
 // Nota numérica (acepta "80", "80%", "72,5") — igual que la planilla admin
@@ -395,7 +383,55 @@ const mapearFilasExamenes = (filas) => {
   return Object.values(map)
 }
 
+// Suma a las notas las asambleas y recuperatorios ya realizados del grupo del
+// árbitro, igual que la Planilla General. Una ausencia general se ve como
+// AUSENTE en los tipos sin evaluación propia; el resto queda vacío.
+const completarExamenes = (lista, eventos, ausencias, idGrupo) => {
+  const porEvento = new Map(lista.map(ex => [String(ex.id_evento), ex]))
+  eventos.forEach(ev => {
+    const clave = String(ev.id)
+    const ausente = ausencias.has(clave)
+    const ts = parseFecha(ev.fecha_formato)
+    const aplica = Number(ev.todos_grupos) === 1 ||
+      String(ev.id_grupos ?? '').split(',').map(s => s.trim()).includes(String(idGrupo))
+    if (!porEvento.has(clave)) {
+      if (!ausente && (!aplica || ts > Date.now())) return
+      porEvento.set(clave, {
+        id:           ev.id,
+        id_evento:    ev.id,
+        tipo:         ev.categoria,
+        fecha_examen: ev.fecha_formato,
+        titulo:       ev.titulo ?? '',
+        _ts:          ts,
+        detalles:     [],
+      })
+    }
+    if (ausente) {
+      const examen = porEvento.get(clave)
+      for (const tipo of ['teorico', 'fisico']) {
+        if (!getDetalle(examen, tipo)) examen.detalles.push({ tipo, calificacion: '', estado: 'ausente' })
+      }
+    }
+  })
+  return [...porEvento.values()]
+}
+
 // ═══════════ CARGA ═══════════
+const cargarEventosExamen = async () => {
+  const [res, resAusencias] = await Promise.all([
+    api.get({ entity: 'eventos', action: 'obtenerEventosParaExamen' }),
+    api.get({ entity: 'reuniones', action: 'obtenerMisAusenciasExamen' }),
+  ])
+  if (!(res.ok || res.success) || !Array.isArray(res.payload)) return
+  const eventos = res.payload.filter(ev => TIPOS_EXAMEN.includes(ev.categoria))
+  const ausencias = new Set(
+    (resAusencias.ok || resAusencias.success) && Array.isArray(resAusencias.payload)
+      ? resAusencias.payload.map(String)
+      : []
+  )
+  examenes.value = sortPorFecha(completarExamenes(examenes.value, eventos, ausencias, auth.getUser()?.id_grupo))
+}
+
 const cargarDatos = async () => {
   const idArbitro = datosArbitro.value.id
   if (!idArbitro) return
@@ -409,6 +445,7 @@ const cargarDatos = async () => {
       reuniones.value = sortPorFecha(mapearFilasReuniones(resReuniones.payload))
     if ((resExamenes.ok || resExamenes.success) && resExamenes.payload)
       examenes.value = sortPorFecha(mapearFilasExamenes(resExamenes.payload))
+    await cargarEventosExamen()
   } catch (e) {
     console.error('cargarDatos:', e)
   } finally {
@@ -455,16 +492,12 @@ const statsGlobales = computed(() => {
 
   // Exámenes (el teórico respeta el umbral 75, igual que el badge)
   for (const ex of examenesFiltrados.value) {
-    if (esAusenteTotal(ex)) {
-      r.ausentesExamen++
-    } else {
-      for (const det of ex.detalles) {
-        const est = estadoEfectivo(det, det.tipo)
-        if      (est === 'aprobado')    r.aprobadosExamen++
-        else if (est === 'desaprobado') r.desaprobadosExamen++
-        else if (est === 'no lo hizo')  r.noHizoExamen++
-        else if (est === 'ausente')     r.ausentesExamen++
-      }
+    for (const det of ex.detalles) {
+      const est = estadoEfectivo(det, det.tipo)
+      if      (est === 'aprobado')    r.aprobadosExamen++
+      else if (est === 'desaprobado') r.desaprobadosExamen++
+      else if (est === 'no lo hizo')  r.noHizoExamen++
+      else if (est === 'ausente')     r.ausentesExamen++
     }
   }
   return r
@@ -482,7 +515,7 @@ const porcentajeExamenes = computed(() => {
 
 // Frases motivadoras exclusivas de Handball
 const fraseMotivadora = computed(() => {
-  if (reunionesFiltradas.value.length === 0 && examenesFiltrados.value.length === 0)
+  if (reunionesFiltradas.value.length === 0 && !examenesFiltrados.value.some(ex => ex.detalles.length))
     return 'Todo listo para dar el saque de centro.'
 
   const promedio = (porcentajeAsistencia.value + porcentajeExamenes.value) / 2
