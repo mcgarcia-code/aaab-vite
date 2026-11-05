@@ -1229,8 +1229,14 @@ const arbitrosPaginados = computed(() => {
 const obtenerReuniones = async () => {
   try {
     const res = await api.get({ entity: 'reuniones', action: 'obtenerReuniones' })
-    if ((res.ok || res.success) && res.payload)
-      arrReuniones.value = res.payload.filter(r => r.categoria === 'reunion')
+    if ((res.ok || res.success) && res.payload) {
+      const vistos = new Set()
+      arrReuniones.value = res.payload.filter(r => {
+        if (r.categoria !== 'reunion' || vistos.has(String(r.id))) return false
+        vistos.add(String(r.id))
+        return true
+      })
+    }
   } catch (e) { console.error('obtenerReuniones:', e) }
 }
 
