@@ -280,8 +280,8 @@ const cargarReuniones = async () => {
 // Notas de TODOS los árbitros: una fila por evaluación (teorico/fisico).
 // Usa la acción obtenerNotasPlanilla (hay que agregarla en examenes.php).
 // Los registros viejos guardan el estado como número: 1 aprobado,
-// 2 desaprobado, 3 no lo hizo, 4 borrado. Los nuevos usan texto.
-const MAPA_ESTADOS_NUMERICOS = { '1': 'aprobado', '2': 'desaprobado', '3': 'no lo hizo' }
+// 2 desaprobado, 3 no lo hizo, 4 borrado, 5 ausente. Los nuevos usan texto.
+const MAPA_ESTADOS_NUMERICOS = { '1': 'aprobado', '2': 'desaprobado', '3': 'no lo hizo', '5': 'ausente' }
 
 const cargarNotas = async () => {
   try {
@@ -492,6 +492,7 @@ const textoCeldaExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
     if (nota.estado === 'no lo hizo') return 'No lo hizo'
+    if (nota.estado === 'ausente') return 'AUS'
     // El físico nunca lleva nota: solo aprobado/desaprobado
     if (tipo === 'fisico') {
       if (nota.estado === 'aprobado') return 'APROB.'
@@ -513,6 +514,7 @@ const claseCeldaExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
     if (nota.estado === 'no lo hizo') return 'celda-gris'
+    if (nota.estado === 'ausente') return 'celda-roja'
     // Umbral SOLO para el teórico: verde con 75 o más, rojo con 74 o menos.
     // El físico se colorea siempre por su estado.
     if (tipo === 'teorico') {
@@ -587,6 +589,33 @@ const alTipearNota = () => {
   if (!Number.isNaN(num)) e.estado = num >= 75 ? 'aprobado' : 'desaprobado'
 }
 
+// Guarda la ausencia de UN solo tipo (teórico o físico) en examenes_panel
+const guardarAusenteTipo = async (idEvento, idArbitro, tipo) => {
+  const res = await api.post({
+    entity: 'examenes',
+    action: 'guardarExamen',
+    payload: { idEvento, idArbitro, detalles: [{ tipo, calificacion: '', estado: 'ausente' }] }
+  })
+  const ok = !!(res.ok || res.success)
+  if (ok) {
+    notasExamenes.value = {
+      ...notasExamenes.value,
+      [`${idEvento}|${idArbitro}|${tipo}`]: { calificacion: '', estado: 'ausente' }
+    }
+  }
+  return ok
+}
+
+// Una ausencia general del evento (eventos_asistencia) se ve como AUS en las dos
+// celdas. Antes de modificarla, se guarda como propia la del otro tipo si no
+// tiene contenido, para que el cambio no la afecte.
+const conservarAusenciaOtroTipo = async (e) => {
+  if (asistencias.value[`${e.idEvento}|${e.idArbitro}`] !== 'ausente') return true
+  const otroTipo = e.tipo === 'teorico' ? 'fisico' : 'teorico'
+  if (notasExamenes.value[`${e.idEvento}|${e.idArbitro}|${otroTipo}`]) return true
+  return guardarAusenteTipo(e.idEvento, e.idArbitro, otroTipo)
+}
+
 const guardarEditor = async () => {
   const e = editor.value
   if (!e || e.guardando) return
@@ -596,28 +625,10 @@ const guardarEditor = async () => {
   const claveAsis = `${e.idEvento}|${e.idArbitro}`
 
   try {
-    // Caso AUSENTE: no es una nota. Se registra la ausencia en
-    // eventos_asistencia y se borra cualquier nota que hubiera en examenes_panel.
+    // Caso AUSENTE: se guarda solo para este tipo y reemplaza la nota que hubiera.
+    // El otro tipo y la asistencia general del evento no se tocan.
     if (e.estado === 'ausente') {
-      const res = await api.post({
-        entity: 'reuniones',
-        action: 'registrarAsistenciaArbitro',
-        payload: { idArbitro: e.idArbitro, idEvento: e.idEvento, tipo: 'ausente' }
-      })
-
-      if (res.ok || res.success) {
-        // Borrar la nota de este tipo si existía (ausente no lleva nota)
-        if (notasExamenes.value[claveNota]) {
-          api.post({
-            entity: 'examenes',
-            action: 'borrarExamenPlanilla',
-            payload: { idEvento: e.idEvento, idArbitro: e.idArbitro, tipo: e.tipo }
-          }).catch(err => console.error('borrarExamenPlanilla:', err))
-          const copia = { ...notasExamenes.value }
-          delete copia[claveNota]
-          notasExamenes.value = copia
-        }
-        asistencias.value = { ...asistencias.value, [claveAsis]: 'ausente' }
+      if (await guardarAusenteTipo(e.idEvento, e.idArbitro, e.tipo)) {
         cerrarEditor()
       } else {
         toast({ titulo: 'Error', mensaje: 'No se pudo registrar la ausencia.', tipo: 'danger' })
@@ -650,7 +661,7 @@ const guardarEditor = async () => {
 
       // Tener una evaluación implica presente: registrar la asistencia
       // (igual que hace Exámenes Generales al guardar un examen)
-      if (asistencias.value[claveAsis] !== 'presente') {
+      if (asistencias.value[claveAsis] !== 'presente' && await conservarAusenciaOtroTipo(e)) {
         asistencias.value = { ...asistencias.value, [claveAsis]: 'presente' }
         api.post({
           entity: 'reuniones',
@@ -672,28 +683,56 @@ const guardarEditor = async () => {
   }
 }
 
-// Borra el contenido de la celda (marca la evaluación como borrada en el
-// backend con borrarExamenPlanilla). No toca la asistencia.
+// Borra el contenido de una sola celda: nota o AUS del tipo con
+// borrarExamenPlanilla. Si además hay una ausencia general del evento, también
+// se quita, conservando antes el AUS de la otra celda.
 const borrarCelda = async () => {
   const e = editor.value
   if (!e || e.guardando) return
 
   const clave = `${e.idEvento}|${e.idArbitro}|${e.tipo}`
+  const claveAsis = `${e.idEvento}|${e.idArbitro}`
+  const hayNota = !!notasExamenes.value[clave]
+  const ausenciaGeneral = asistencias.value[claveAsis] === 'ausente'
   // Si no hay nada cargado, solo cerrar
-  if (!notasExamenes.value[clave]) { cerrarEditor(); return }
+  if (!hayNota && !ausenciaGeneral) { cerrarEditor(); return }
 
   e.guardando = true
   try {
-    const res = await api.post({
-      entity: 'examenes',
-      action: 'borrarExamenPlanilla',
-      payload: { idEvento: e.idEvento, idArbitro: e.idArbitro, tipo: e.tipo }
-    })
+    let res = { ok: true }
+
+    if (ausenciaGeneral) {
+      if (!await conservarAusenciaOtroTipo(e)) {
+        toast({ titulo: 'Error', mensaje: 'No se pudo conservar la otra evaluación.', tipo: 'danger' })
+        e.guardando = false
+        return
+      }
+      res = await api.post({
+        entity: 'reuniones',
+        action: 'borrarAsistenciaPlanilla',
+        payload: { idEvento: e.idEvento, idArbitro: e.idArbitro }
+      })
+      if (res.ok || res.success) {
+        const copia = { ...asistencias.value }
+        delete copia[claveAsis]
+        asistencias.value = copia
+      }
+    }
+
+    if (hayNota && (res.ok || res.success)) {
+      res = await api.post({
+        entity: 'examenes',
+        action: 'borrarExamenPlanilla',
+        payload: { idEvento: e.idEvento, idArbitro: e.idArbitro, tipo: e.tipo }
+      })
+      if (res.ok || res.success) {
+        const copia = { ...notasExamenes.value }
+        delete copia[clave]
+        notasExamenes.value = copia
+      }
+    }
 
     if (res.ok || res.success) {
-      const copia = { ...notasExamenes.value }
-      delete copia[clave]
-      notasExamenes.value = copia
       cerrarEditor()
     } else {
       const mensaje = (res.payload && res.payload.mensaje) ? res.payload.mensaje : 'No se pudo borrar.'
@@ -714,6 +753,7 @@ const textoExcelExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
     if (nota.estado === 'no lo hizo') return 'NO LO HIZO'
+    if (nota.estado === 'ausente') return 'AUSENTE'
     if (tipo === 'fisico') {
       if (nota.estado === 'aprobado') return 'APROBADO'
       if (nota.estado === 'desaprobado') return 'DESAPROBADO'

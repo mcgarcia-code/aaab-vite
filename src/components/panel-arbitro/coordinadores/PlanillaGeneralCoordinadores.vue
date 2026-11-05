@@ -252,8 +252,8 @@ const cargarReuniones = async () => {
 // Notas de TODOS los árbitros: una fila por evaluación (teorico/fisico).
 // Usa la acción obtenerNotasPlanilla (hay que agregarla en examenes.php).
 // Los registros viejos guardan el estado como número: 1 aprobado,
-// 2 desaprobado, 3 no lo hizo, 4 borrado. Los nuevos usan texto.
-const MAPA_ESTADOS_NUMERICOS = { '1': 'aprobado', '2': 'desaprobado', '3': 'no lo hizo' }
+// 2 desaprobado, 3 no lo hizo, 4 borrado, 5 ausente. Los nuevos usan texto.
+const MAPA_ESTADOS_NUMERICOS = { '1': 'aprobado', '2': 'desaprobado', '3': 'no lo hizo', '5': 'ausente' }
 
 const cargarNotas = async () => {
   try {
@@ -490,6 +490,7 @@ const textoCeldaExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
     if (nota.estado === 'no lo hizo') return 'No lo hizo'
+    if (nota.estado === 'ausente') return 'AUS'
     // El físico nunca lleva nota: solo aprobado/desaprobado
     if (tipo === 'fisico') {
       if (nota.estado === 'aprobado') return 'APROB.'
@@ -511,6 +512,7 @@ const claseCeldaExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
     if (nota.estado === 'no lo hizo') return 'celda-gris'
+    if (nota.estado === 'ausente') return 'celda-roja'
     // Umbral SOLO para el teórico: verde con 75 o más, rojo con 74 o menos.
     // El físico se colorea siempre por su estado.
     if (tipo === 'teorico') {
@@ -546,6 +548,7 @@ const textoExcelExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
     if (nota.estado === 'no lo hizo') return 'NO LO HIZO'
+    if (nota.estado === 'ausente') return 'AUSENTE'
     if (tipo === 'fisico') {
       if (nota.estado === 'aprobado') return 'APROBADO'
       if (nota.estado === 'desaprobado') return 'DESAPROBADO'
