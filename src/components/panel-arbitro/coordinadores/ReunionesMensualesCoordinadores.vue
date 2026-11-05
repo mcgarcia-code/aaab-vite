@@ -403,13 +403,27 @@
       @close="mostrarModalNueva = false"
       :icono="modoEdicionReunion ? 'edit' : 'notification_add'"
       :colorIcono="modoEdicionReunion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
-      maxWidth="600px"
+      maxWidth="900px"
     >
       <template #header>
         <span class="fw-bold fs-5">{{ modoEdicionReunion ? 'Modificar Reunión' : 'Nueva Reunión' }}</span>
       </template>
 
-      <p class="text-muted small mb-4">Completá los datos para enviar el aviso a los árbitros de tu grupo.</p>
+      <p class="text-muted small mb-3">Completá los datos para enviar el aviso a los árbitros de tu grupo.</p>
+
+      <div class="text-start mb-4">
+        <label class="small fw-bold text-dark mb-2 d-block">
+          <i class="bi bi-calendar3 me-1 text-danger"></i>Agenda de reuniones de todos los grupos
+          <span class="fw-normal text-muted">· tocá un día para elegir la fecha</span>
+        </label>
+        <CalendarioEventos
+          v-if="mostrarModalNueva"
+          v-model:fecha-seleccionada="formReunion.fecha_evento"
+          :fecha-minima="modoEdicionReunion ? manianaStr() : hoyStr()"
+          :grupos-destacados="misGrupos.map(g => Number(g.id))"
+          @cargado="evs => eventosAgenda = evs"
+        />
+      </div>
 
       <form id="formNuevaReunion" @submit.prevent="confirmarGuardadoReunion" class="text-start">
         <div class="row g-3">
@@ -426,6 +440,12 @@
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Fecha de la Reunión *</label>
             <input v-model="formReunion.fecha_evento" type="date" :min="modoEdicionReunion ? manianaStr() : hoyStr()" class="form-control shadow-none border-secondary-subtle" required>
+            <small v-if="fechaReunionEsMartes" class="d-block text-warning-emphasis fw-semibold mt-1">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ AVISO_MARTES }}
+            </small>
+            <small v-if="eventosMismoDia.length" class="d-block text-danger fw-semibold mt-1">
+              <i class="bi bi-exclamation-circle-fill me-1"></i>Ese día ya hay {{ eventosMismoDia.length === 1 ? 'otro evento' : `${eventosMismoDia.length} eventos` }}: {{ eventosMismoDia.map(e => e.titulo).join(', ') }}
+            </small>
           </div>
 
           <div class="col-12 col-md-6">
@@ -656,6 +676,7 @@ import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h }
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import CalendarioEventos from '@/components/CalendarioEventos.vue'
 
 useHead({
   title: 'Reuniones | Coordinador',
@@ -1311,6 +1332,19 @@ const gruposReunion      = ref([]) // ids de grupos destinatarios elegidos
 
 const formReunionBase = () => ({ titulo: '', descripcion: '', fecha_evento: '' })
 const formReunion = reactive(formReunionBase())
+
+const AVISO_MARTES = 'Los días martes hay curso de árbitros, solo se puede programar una reunión en el Dickens.'
+const eventosAgenda = ref([])
+const fechaReunionEsMartes = computed(() => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(formReunion.fecha_evento || '')) return false
+  const [y, m, d] = formReunion.fecha_evento.split('-').map(Number)
+  return new Date(y, m - 1, d).getDay() === 2
+})
+const eventosMismoDia = computed(() => eventosAgenda.value.filter(e =>
+  e.fecha_evento === formReunion.fecha_evento &&
+  e.categoria !== 'recordatorio' &&
+  Number(e.id) !== Number(idReunionEditada.value)
+))
 
 const cargarMisGrupos = async () => {
   cargandoMisGrupos.value = true

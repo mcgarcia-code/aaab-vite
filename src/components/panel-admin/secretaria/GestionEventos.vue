@@ -4,198 +4,36 @@
 
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-megaphone me-1"></i> Gestion de Eventos
+              <i class="bi bi-calendar3 me-1"></i> Agenda de Eventos
             </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ eventosFiltrados.length }} eventos</span>
+            <span class="text-muted small d-block mt-1">{{ cantidadEventos }} eventos en la vista</span>
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <button @click="obtenerEventos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
+            <button @click="calendario?.recargar()" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
 
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
-
-            <button @click="limpiarFiltrosTabla" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
-
-            <button @click="abrirModalNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+            <button @click="abrirModalNuevo()" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
               <span class="material-icons fs-6">add_alert</span>
               <span class="fw-bold d-none d-md-inline small">Nuevo</span>
             </button>
           </div>
         </div>
 
-        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
-          <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
-            <span class="small fw-bold text-dark text-uppercase">Filtrar Eventos</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
-          </div>
-
-          <div class="row g-2">
-            <div class="col-12 col-md-2">
-              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar tema o descripcion...">
-            </div>
-            <div class="col-6 col-md-2">
-              <input type="date" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center">
-            </div>
-            <div class="col-6 col-md-2">
-              <select v-model="filtros.categoria" class="form-select form-select-sm shadow-none">
-                <option value="">TODAS LAS CATEGORIAS</option>
-                <option value="reunion">REUNION</option>
-                <option value="recordatorio">RECORDATORIO</option>
-                <option value="urgente">URGENTE</option>
-                <option value="asamblea">ASAMBLEA GENERAL</option>
-                <option value="recuperatorio">RECUPERATORIO</option>
-              </select>
-            </div>
-            <div class="col-6 col-md-2">
-              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
-                <option value="">GRUPO (TODOS)</option>
-                <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
-              </select>
-            </div>
-            <div class="col-6 col-md-2">
-              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
-                <option value="">SUBGRUPO (TODOS)</option>
-                <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
-              </select>
-            </div>
-            <div class="col-6 col-md-2">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
-                <option value="">AÑO (TODOS)</option>
-                <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
-              </select>
-            </div>
-            <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-body p-0 p-md-3 bg-white">
-
-          <!-- SPINNER DE CARGA -->
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando eventos...</p>
-          </div>
-
-          <template v-else>
-            <div class="d-none d-md-block table-responsive border rounded shadow-sm">
-              <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem; table-layout: fixed;">
-                <thead class="table-light">
-                  <tr>
-                    <th class="py-3 ps-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 110px;">Fecha</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 100px;">Acciones</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 25%;">Tema del Evento</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 35%;">Lugar / Descripcion</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 130px;">Categoria</th>
-                    <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 150px;">Alcance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="evento in eventosPaginados" :key="evento.id">
-                    <td class="ps-3 text-center text-muted fw-bold">{{ formatearFecha(evento.fecha_evento) }}</td>
-                    <td class="text-center">
-                      <div class="d-flex justify-content-center gap-1">
-                        <button @click="cargarDatosEdicion(evento)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar Evento">
-                          <span class="material-icons" style="font-size:16px;">edit</span>
-                        </button>
-                        <button @click="confirmarEliminacion(evento.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar Evento">
-                          <span class="material-icons" style="font-size:16px;">delete</span>
-                        </button>
-                      </div>
-                    </td>
-                    <td class="fw-bold text-dark text-truncate" :title="evento.titulo">{{ evento.titulo }}</td>
-                    <td class="text-muted small text-truncate" :title="evento.descripcion">
-                      {{ evento.descripcion || '-' }}
-                      <div v-if="esLink(evento.descripcion)" class="mt-1">
-                        <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none" style="font-size: 0.75rem;">
-                          <i class="bi bi-link-45deg"></i> ABRIR ENLACE
-                        </a>
-                      </div>
-                    </td>
-                    <td class="text-center">
-                      <span class="badge-category" :class="badgeCategoria(evento.categoria)">{{ evento.categoria.toUpperCase() }}</span>
-                    </td>
-                    <td class="text-center pe-3">
-                      <span v-for="(nombre,k) in evento.nombresGrupos" :key="k" class="badge-status-sm bg-dark text-white">
-                        {{ nombre }}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="d-md-none p-3 bg-light">
-              <div v-for="evento in eventosPaginados" :key="'mob-'+evento.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
-                <div class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 d-flex flex-column gap-1">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <span class="small text-primary fw-bold font-monospace">{{ formatearFecha(evento.fecha_evento) }}</span>
-                    <span class="badge-category" :class="badgeCategoria(evento.categoria)">{{ evento.categoria.toUpperCase() }}</span>
-                  </div>
-                  <div class="fw-bold text-dark fs-6 mt-1 lh-sm">
-                    {{ evento.titulo }}
-                  </div>
-                </div>
-
-                <div class="card-body pt-0 px-3 pb-3">
-                  <div class="bg-light p-2 rounded border small mb-3">
-                    <p class="text-muted m-0" style="white-space: pre-line;">{{ evento.descripcion || 'Sin descripcion' }}</p>
-                    <div v-if="esLink(evento.descripcion)" class="mt-2">
-                      <a :href="evento.descripcion" target="_blank" class="text-primary fw-bold text-decoration-none">
-                        <span class="material-icons align-middle" style="font-size: 16px;">link</span> Abrir Enlace
-                      </a>
-                    </div>
-                  </div>
-
-                  <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted small">Alcance:</span>
-                    <span v-for="(nombre,k) in evento.nombresGrupos" :key="k" class="badge-status-sm bg-dark text-white">
-                      {{ nombre }}
-                    </span>
-                  </div>
-
-                  <div class="d-flex gap-2">
-                    <button @click="cargarDatosEdicion(evento)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
-                    </button>
-                    <button @click="confirmarEliminacion(evento.id)" class="btn btn-sm btn-outline-danger flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <span class="material-icons" style="font-size: 16px;">delete</span> ELIMINAR
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="eventosPaginados.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-3">
-              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">event_busy</span>
-              <p class="text-muted m-0 fw-bold">No se encontraron eventos.</p>
-            </div>
-
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-dark small">Pagina {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
-          </template>
-
+        <div class="card-body p-2 p-md-3 bg-white">
+          <CalendarioEventos
+            ref="calendario"
+            editable
+            @nuevo="abrirModalNuevo"
+            @editar="cargarDatosEdicion"
+            @eliminar="ev => confirmarEliminacion(ev.id)"
+            @cargado="evs => cantidadEventos = evs.length"
+          />
         </div>
       </div>
     </div>
@@ -228,6 +66,9 @@
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Fecha del Evento *</label>
             <input v-model="form.fecha_evento" type="date" class="form-control shadow-none border-secondary-subtle" required>
+            <small v-if="fechaEsMartes" class="d-block text-warning-emphasis fw-semibold mt-1">
+              <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ AVISO_MARTES }}
+            </small>
           </div>
 
           <div class="col-md-6">
@@ -292,10 +133,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, inject, computed, watch } from 'vue'
+import { ref, reactive, onMounted, inject, computed } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import CalendarioEventos from '@/components/CalendarioEventos.vue'
 
 useHead({
   title: 'Gestion de Eventos | AAAB',
@@ -304,10 +146,13 @@ useHead({
 
 const notificar = inject('notificar')
 const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+
+const calendario = ref(null)
+const cantidadEventos = ref(0)
 const procesando = ref(false)
-const listaEventos = ref([])
 const grupos = ref([])
 const gruposSeleccionados = ref([])
+
 const formBase = {
   id: null,
   titulo: '',
@@ -319,202 +164,16 @@ const formBase = {
   categoria: 'reunion'
 }
 
-const cargando = ref(false)
-
 const form = reactive({ ...formBase })
-
 const mostrarModal = ref(false)
 const modoEdicion = ref(false)
-const mostrarFiltrosMobile = ref(false)
 
-const filtros = reactive({
-  busqueda: '',
-  anio: '',
-  fecha: '',
-  categoria: '',
-  grupo: '',
-  subgrupo: ''
+const AVISO_MARTES = 'Los días martes hay curso de árbitros, solo se puede programar una reunión en el Dickens.'
+const fechaEsMartes = computed(() => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(form.fecha_evento || '')) return false
+  const [y, m, d] = form.fecha_evento.split('-').map(Number)
+  return new Date(y, m - 1, d).getDay() === 2
 })
-
-const paginaActual = ref(1)
-const registrosPorPagina = 8
-
-const normalizarTexto = (texto) => {
-  return String(texto || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-}
-
-// Opciones de filtro derivadas de los grupos reales (misma fuente que
-// GruposAdmin), separadas en grupo y subgrupo como en los demas paneles.
-const opcionesGrupo = computed(() => {
-  const vistos = []
-  for (const g of grupos.value) {
-    const nombre = String(g.nombre || '').trim()
-    if (nombre && !vistos.includes(nombre)) vistos.push(nombre)
-  }
-  return vistos.sort((a, b) => a.localeCompare(b, 'es'))
-})
-
-const opcionesSubgrupo = computed(() => {
-  const vistos = []
-  for (const g of grupos.value) {
-    const sub = String(g.subgrupo || '').trim()
-    if (sub && !vistos.includes(sub)) vistos.push(sub)
-  }
-  return vistos.sort((a, b) => a.localeCompare(b, 'es'))
-})
-
-// Descompone los destinatarios de un evento (nombresGrupos) en pares
-// { nombre, subgrupo } cotejando contra los grupos reales, asi el filtro
-// de grupo y el de subgrupo pueden evaluarse por separado.
-const destinatariosDescompuestos = (evento) => {
-  const nombres = Array.isArray(evento.nombresGrupos) ? evento.nombresGrupos : []
-  return nombres.map(n => {
-    const normal = normalizarTexto(n)
-    const match = grupos.value.find(g => {
-      const nombre = String(g.nombre || '').trim()
-      const sub = String(g.subgrupo || '').trim()
-      const completo = sub ? `${nombre} ${sub}` : nombre
-      return normalizarTexto(completo) === normal
-    })
-    if (match) {
-      return {
-        nombre: normalizarTexto(match.nombre),
-        subgrupo: normalizarTexto(match.subgrupo)
-      }
-    }
-    // Fallback si el destinatario no matchea un grupo actual
-    return { nombre: normal, subgrupo: '' }
-  })
-}
-
-// Años presentes en los eventos, ordenados de mayor a menor
-const aniosDisponibles = computed(() => {
-  const anios = new Set()
-  listaEventos.value.forEach(e => {
-    const anio = (e.fecha_evento || '').substring(0, 4)
-    if (anio) anios.add(anio)
-  })
-  return [...anios].sort((a, b) => b.localeCompare(a))
-})
-
-const eventosFiltrados = computed(() => {
-  let resultado = listaEventos.value
-
-  resultado = resultado.filter(e => {
-    let matchBusqueda = true
-    if (filtros.busqueda) {
-      const search = normalizarTexto(filtros.busqueda)
-      matchBusqueda = normalizarTexto(e.titulo).includes(search) || normalizarTexto(e.descripcion).includes(search)
-    }
-
-    let matchAnio = true
-    if (filtros.anio) {
-      matchAnio = (e.fecha_evento || '').substring(0, 4) === filtros.anio
-    }
-
-    let matchFecha = true
-    if (filtros.fecha) {
-      matchFecha = (e.fecha_evento || '').startsWith(filtros.fecha)
-    }
-
-    let matchCategoria = true
-    if (filtros.categoria) {
-      matchCategoria = e.categoria === filtros.categoria
-    }
-
-    let matchGrupo = true
-    if (filtros.grupo || filtros.subgrupo) {
-      const gFiltro = normalizarTexto(filtros.grupo)
-      const sFiltro = normalizarTexto(filtros.subgrupo)
-      const destinatarios = destinatariosDescompuestos(e)
-      // El evento pasa si algun destinatario cumple ambos filtros activos.
-      matchGrupo = destinatarios.some(d => {
-        const okGrupo = !gFiltro || d.nombre === gFiltro
-        const okSubgrupo = !sFiltro || d.subgrupo === sFiltro
-        return okGrupo && okSubgrupo
-      })
-    }
-
-    return matchBusqueda && matchAnio && matchFecha && matchCategoria && matchGrupo
-  })
-
-  const fechaActual = new Date()
-  const anio = fechaActual.getFullYear()
-  const mes = String(fechaActual.getMonth() + 1).padStart(2, '0')
-  const dia = String(fechaActual.getDate()).padStart(2, '0')
-  const hoyStr = `${anio}-${mes}-${dia}`
-
-  return [...resultado].sort((a, b) => {
-    const fechaA = (a.fecha_evento || '').substring(0, 10)
-    const fechaB = (b.fecha_evento || '').substring(0, 10)
-
-    const esPasadoA = fechaA < hoyStr
-    const esPasadoB = fechaB < hoyStr
-
-    if (esPasadoA && !esPasadoB) return 1
-    if (!esPasadoA && esPasadoB) return -1
-
-    if (!esPasadoA && !esPasadoB) {
-      return fechaA.localeCompare(fechaB)
-    }
-
-    return fechaB.localeCompare(fechaA)
-  })
-})
-
-const totalPaginas = computed(() => Math.ceil(eventosFiltrados.value.length / registrosPorPagina) || 1)
-
-const eventosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return eventosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
-})
-
-watch(filtros, () => {
-  paginaActual.value = 1
-}, { deep: true })
-
-watch(totalPaginas, (nuevoTotal) => {
-  if (paginaActual.value > nuevoTotal) {
-    paginaActual.value = nuevoTotal
-  }
-})
-
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, 50)
-}
-
-const esLink = (texto) => {
-  return texto && (texto.startsWith('http') || texto.includes('zoom.us') || texto.includes('meet.google'))
-}
-
-const limpiarFiltrosTabla = () => {
-  filtros.busqueda = ''
-  filtros.anio = ''
-  filtros.fecha = ''
-  filtros.categoria = ''
-  filtros.grupo = ''
-  filtros.subgrupo = ''
-}
-
-const obtenerEventos = async () => {
-  cargando.value = true
-  try {
-    const res = await api.get({ entity: 'eventos', action: 'obtenerTodosLosEventos' })
-    if (res.ok) {
-      listaEventos.value = res.payload ?? []
-    }
-  } finally {
-    cargando.value = false
-  }
-}
 
 const obtenerGrupos = async () => {
   const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos', payload: {} })
@@ -523,43 +182,38 @@ const obtenerGrupos = async () => {
   }
 }
 
-const abrirModalNuevo = () => {
+const abrirModalNuevo = (fecha = '') => {
   gruposSeleccionados.value = []
-  Object.assign(form, { ...formBase })
+  Object.assign(form, { ...formBase, fecha_evento: typeof fecha === 'string' ? fecha : '' })
   modoEdicion.value = false
   mostrarModal.value = true
 }
 
-const cargarDatosEdicion = async (evento) => {
+const cargarDatosEdicion = (evento) => {
   modoEdicion.value = true
   Object.assign(form, {
     id: evento.id,
     titulo: evento.titulo,
     descripcion: evento.descripcion,
     fecha_evento: (evento.fecha_evento || '').substring(0, 10),
-    idsGrupos: evento.idsGrupos,
-    todosLosGrupos: evento.todosLosGrupos,
+    idsGrupos: [...(evento.idsGrupos || [])],
+    todosLosGrupos: !!evento.todosLosGrupos,
     categoria: evento.categoria || 'reunion'
   })
-  gruposSeleccionados.value = evento.idsGrupos
+  gruposSeleccionados.value = [...(evento.idsGrupos || [])]
   mostrarModal.value = true
 }
 
 const toggleGrupoSeleccionado = (id, estaChequeado) => {
   if (!estaChequeado) {
-    const indice = gruposSeleccionados.value.indexOf(id);
-    if (indice !== -1) {
-      gruposSeleccionados.value.splice(indice, 1);
-    }
-  }
-  else {
-    if (!gruposSeleccionados.value.includes(id)) {
-      gruposSeleccionados.value.push(id)
-    }
+    gruposSeleccionados.value = gruposSeleccionados.value.filter(g => g !== id)
+  } else if (!gruposSeleccionados.value.includes(id)) {
+    gruposSeleccionados.value.push(id)
   }
 }
+
 const guardarEvento = async () => {
-  if (!form.todosLosGrupos && gruposSeleccionados.value.length==0) {
+  if (!form.todosLosGrupos && gruposSeleccionados.value.length == 0) {
     toast({ titulo: 'Faltan grupos', mensaje: 'Selecciona al menos un grupo destinatario.', tipo: 'danger' })
     return
   }
@@ -578,7 +232,7 @@ const guardarEvento = async () => {
     if (res.ok) {
       gruposSeleccionados.value = []
       mostrarModal.value = false
-      await obtenerEventos()
+      await calendario.value?.recargar()
       toast({
         titulo: 'Exito',
         mensaje: `El evento se ${modoEdicion.value ? 'actualizo' : 'publico'} correctamente.`,
@@ -612,29 +266,12 @@ const confirmarEliminacion = (id) => {
 const eliminar = async (id) => {
   const res = await api.post({ entity: 'eventos', action: 'eliminarEvento', payload: { id } })
   if (res.ok) {
-    obtenerEventos()
+    await calendario.value?.recargar()
     toast({ titulo: 'Eliminado', mensaje: 'El evento fue borrado.', tipo: 'success' })
   }
 }
 
-const formatearFecha = (f) => f ? f.substring(0, 10).split('-').reverse().join('/') : ''
-
-const CAT_BADGE_MAP = {
-  reunion:       'bg-primary text-white',
-  recordatorio:  'bg-warning-subtle text-dark',
-  urgente:       'bg-danger text-white',
-  asamblea:      'bg-dark text-white',
-  recuperatorio: 'bg-warning text-dark',
-}
-
-function badgeCategoria(categoria) {
-  return CAT_BADGE_MAP[String(categoria || '').toLowerCase()] || 'bg-secondary text-white'
-}
-
-onMounted(() => {
-  obtenerEventos()
-  obtenerGrupos()
-})
+onMounted(obtenerGrupos)
 </script>
 
 <style scoped>
