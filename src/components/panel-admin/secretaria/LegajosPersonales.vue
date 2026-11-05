@@ -383,9 +383,18 @@
           <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Nombre *</label><input v-model="formModal.nombre" class="form-control shadow-none border-secondary-subtle" required></div>
           <div class="col-md-4"><label class="small fw-bold text-dark mb-1">DNI</label><input v-model="formModal.dni" class="form-control shadow-none border-secondary-subtle"></div>
           <div class="col-md-6"><label class="small fw-bold text-dark mb-1">Email (Usuario) *</label><input v-model="formModal.email" type="email" class="form-control shadow-none border-secondary-subtle" required></div>
-          <div class="col-md-6">
-            <label class="small fw-bold text-dark mb-1">{{ modoModal === 'nuevo' ? 'Password *' : 'Password (vacío no cambia)' }}</label>
-            <input v-model="formModal.password" type="text" class="form-control shadow-none border-secondary-subtle" :placeholder="modoModal === 'editar' ? '••••••••' : ''" :required="modoModal === 'nuevo'">
+          <div class="col-md-6" v-if="modoModal !== 'editar'">
+            <label class="small fw-bold text-dark mb-1">Password *</label>
+            <input v-model="formModal.password" type="text" class="form-control shadow-none border-secondary-subtle" required>
+          </div>
+          <div class="col-md-6" v-else>
+            <label class="small fw-bold text-dark mb-1">Contraseña</label>
+            <button type="button" @click="confirmarGenerarPassword" :disabled="generandoPassword || !formModal.id" class="btn btn-outline-danger w-100 fw-bold d-flex align-items-center justify-content-center gap-2">
+              <span v-if="generandoPassword" class="spinner-border spinner-border-sm"></span>
+              <i v-else class="bi bi-key-fill"></i>
+              GENERAR CONTRASEÑA (DNI)
+            </button>
+            <small class="text-muted d-block mt-1">La contraseña pasa a ser el DNI registrado, solo números.</small>
           </div>
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Género</label>
@@ -745,6 +754,36 @@ const generoIconos = {
 
 const mostrarToastExito = (mensaje) => {
   toast({ mensaje, tipo: 'success' })
+}
+
+const generandoPassword = ref(false)
+
+const confirmarGenerarPassword = () => {
+  const { id, apellido, nombre } = formModal.value
+  if (!id) return
+  notificar({
+    titulo: '¿Generar contraseña?',
+    mensaje: `La contraseña de ${apellido}, ${nombre} pasará a ser su DNI registrado. La contraseña actual dejará de funcionar.`,
+    tipo: 'danger',
+    alConfirmar: generarPasswordDni
+  })
+}
+
+const generarPasswordDni = async () => {
+  generandoPassword.value = true
+  try {
+    const res = await api.post({
+      entity: 'arbitros',
+      action: 'generarPasswordDni',
+      payload: { idArbitro: formModal.value.id }
+    })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo generar la contraseña')
+    mostrarToastExito(`Contraseña generada: ${res.payload.dni}`)
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e?.message || 'No se pudo generar la contraseña', tipo: 'danger' })
+  } finally {
+    generandoPassword.value = false
+  }
 }
 
 const formModalVacio = () => ({
