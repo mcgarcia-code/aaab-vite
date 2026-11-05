@@ -36,15 +36,37 @@
             Tu licencia quedará <strong>Pendiente</strong> hasta que sea autorizada por la Comisión Directiva.
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-bold small text-dark">Fecha de la Licencia</label>
-            <input
-              type="date"
-              v-model="fechaSeleccionada"
-              class="form-control form-control-lg custom-input-date shadow-none"
-              onkeydown="return false"
-              :disabled="cargando || tiempoIndeterminado"
-            >
+          <div class="row g-2 mb-3">
+            <div class="col-12 col-sm-6 col-lg-12 col-xl-6">
+              <label class="form-label fw-bold small text-dark" for="licenciaDesde">Desde</label>
+              <input
+                id="licenciaDesde"
+                type="date"
+                v-model="fechaDesde"
+                :min="hoyISO"
+                class="form-control form-control-lg custom-input-date shadow-none"
+                onkeydown="return false"
+                :disabled="cargando || tiempoIndeterminado"
+              >
+            </div>
+            <div class="col-12 col-sm-6 col-lg-12 col-xl-6">
+              <label class="form-label fw-bold small text-dark" for="licenciaHasta">Hasta</label>
+              <input
+                id="licenciaHasta"
+                type="date"
+                v-model="fechaHasta"
+                :min="fechaDesde || hoyISO"
+                class="form-control form-control-lg custom-input-date shadow-none"
+                onkeydown="return false"
+                :disabled="cargando || tiempoIndeterminado || !fechaDesde"
+              >
+            </div>
+            <div v-if="cantidadDias > 1" class="col-12">
+              <small class="text-muted"><i class="bi bi-calendar-range me-1"></i>Se van a solicitar {{ cantidadDias }} días, cada uno como una licencia individual.</small>
+            </div>
+            <div v-if="cantidadDias > MAX_DIAS" class="col-12">
+              <small class="text-danger fw-semibold">Se pueden solicitar hasta {{ MAX_DIAS }} días por vez.</small>
+            </div>
           </div>
 
           <div class="mb-4">
@@ -63,7 +85,7 @@
           <div class="mt-auto">
             <button
               @click="solicitarLicencia"
-              :disabled="(!fechaSeleccionada && !tiempoIndeterminado) || cargando"
+              :disabled="!puedeEnviar || cargando"
               class="btn btn-primary w-100 fw-bold py-3 py-md-2 shadow-sm"
             >
               <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
@@ -168,7 +190,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, computed } from 'vue';
+import { ref, onMounted, inject, computed, watch } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 
@@ -181,7 +203,21 @@ useHead({
 
 const notificar = inject('notificar');
 const toast = inject('toast', ({ mensaje }) => alert(mensaje));
-const fechaSeleccionada = ref('');
+const fechaDesde = ref('');
+const fechaHasta = ref('');
+const MAX_DIAS = 90;
+const aISOlocal = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const hoyISO = aISOlocal(new Date());
+const cantidadDias = computed(() => {
+  if (!fechaDesde.value || !fechaHasta.value || fechaHasta.value < fechaDesde.value) return 0;
+  const [y1, m1, d1] = fechaDesde.value.split('-').map(Number);
+  const [y2, m2, d2] = fechaHasta.value.split('-').map(Number);
+  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000) + 1;
+});
+const puedeEnviar = computed(() => tiempoIndeterminado.value || (cantidadDias.value >= 1 && cantidadDias.value <= MAX_DIAS));
+watch(fechaDesde, (desde) => {
+  if (desde && (!fechaHasta.value || fechaHasta.value < desde)) fechaHasta.value = desde;
+});
 const motivoSeleccionado = ref('particular');
 const tiempoIndeterminado = ref(false);
 const cargando = ref(false);
@@ -189,7 +225,8 @@ const licencias = ref([]);
 
 const onToggleTiempoIndeterminado = () => {
   if (tiempoIndeterminado.value) {
-    fechaSeleccionada.value = '';
+    fechaDesde.value = '';
+    fechaHasta.value = '';
     // Las indeterminadas solo admiten particular o lesión/enfermedad.
     if (motivoSeleccionado.value === 'designacion_torneo_nacional') {
       motivoSeleccionado.value = 'particular';
@@ -255,7 +292,7 @@ const obtenerLicencias = async () => {
 };
 
 const solicitarLicencia = async () => {
-  if (!fechaSeleccionada.value && !tiempoIndeterminado.value) return;
+  if (!puedeEnviar.value) return;
 
   cargando.value = true;
 
@@ -264,7 +301,8 @@ const solicitarLicencia = async () => {
       entity: 'licencias',
       action: 'crearLicencia',
       payload: {
-        fecha_licencia: fechaSeleccionada.value,
+        fecha_desde: tiempoIndeterminado.value ? null : fechaDesde.value,
+        fecha_hasta: tiempoIndeterminado.value ? null : fechaHasta.value,
         motivo: motivoSeleccionado.value,
         tiempo_indeterminado: tiempoIndeterminado.value
       }
@@ -296,6 +334,20 @@ const solicitarLicencia = async () => {
           mensajeNotificacion = 'Recordá enviar el certificado médico dentro de las 72 hs.';
         }
         tipoNotificacion = 'warning';
+      } else if (estadoServidor === 'mixto') {
+        const creadas = res.payload.creadas || [];
+        const cuenta = (e) => creadas.filter(c => c.estado === e).length;
+        const partes = [['aprobada', 'aprobados'], ['pendiente', 'pendientes'], ['rechazada', 'rechazados']]
+          .filter(([e]) => cuenta(e) > 0)
+          .map(([e, texto]) => `${cuenta(e)} ${cuenta(e) === 1 ? texto.slice(0, -1) : texto}`);
+        tituloNotificacion = 'Licencia procesada';
+        mensajeNotificacion = `Días ${partes.join(', ')}. Los días con menos de 7 días de anticipación se rechazan. Revisá el detalle en tu historial.`;
+        tipoNotificacion = 'warning';
+      }
+
+      const omitidas = res.payload.omitidas || [];
+      if (omitidas.length) {
+        mensajeNotificacion += ` ${omitidas.length === 1 ? 'Un día ya tenía licencia y no se volvió a cargar.' : `${omitidas.length} días ya tenían licencia y no se volvieron a cargar.`}`;
       }
 
       // Disparamos la notificación con los textos exactos
@@ -306,7 +358,8 @@ const solicitarLicencia = async () => {
       });
 
       // Limpiamos el formulario y recargamos la tabla
-      fechaSeleccionada.value = '';
+      fechaDesde.value = '';
+      fechaHasta.value = '';
       motivoSeleccionado.value = 'particular';
       tiempoIndeterminado.value = false;
       await obtenerLicencias();

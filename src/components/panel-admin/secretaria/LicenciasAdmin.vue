@@ -260,10 +260,24 @@
             <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none border-secondary-subtle" required :disabled="formModal.tiempo_indeterminado && modoModal === 'nuevo'">
           </div>
 
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-6" v-if="modoModal === 'editar'">
             <label class="small fw-bold text-dark mb-1">Fecha Ausencia {{ formModal.tiempo_indeterminado ? '' : '*' }}</label>
             <input v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-secondary-subtle" :required="!formModal.tiempo_indeterminado" :disabled="formModal.tiempo_indeterminado" :placeholder="formModal.tiempo_indeterminado ? 'Tiempo indeterminado' : ''">
           </div>
+
+          <template v-else>
+            <div class="col-6 col-md-3">
+              <label class="small fw-bold text-dark mb-1" for="licAdminDesde">Desde {{ formModal.tiempo_indeterminado ? '' : '*' }}</label>
+              <input id="licAdminDesde" v-model="formModal.fecha_licencia" type="date" class="form-control shadow-none border-secondary-subtle" :required="!formModal.tiempo_indeterminado" :disabled="formModal.tiempo_indeterminado">
+            </div>
+            <div class="col-6 col-md-3">
+              <label class="small fw-bold text-dark mb-1" for="licAdminHasta">Hasta {{ formModal.tiempo_indeterminado ? '' : '*' }}</label>
+              <input id="licAdminHasta" v-model="formModal.fecha_hasta" type="date" :min="formModal.fecha_licencia || undefined" class="form-control shadow-none border-secondary-subtle" :required="!formModal.tiempo_indeterminado" :disabled="formModal.tiempo_indeterminado || !formModal.fecha_licencia">
+            </div>
+            <div v-if="diasAlta > 1" class="col-12">
+              <small class="text-muted"><i class="bi bi-calendar-range me-1"></i>Se van a crear {{ diasAlta }} licencias individuales, una por día.</small>
+            </div>
+          </template>
 
           <div class="col-12">
             <div class="form-check">
@@ -483,7 +497,7 @@ const obtenerArbitros = async () => {
 const abrirModalNuevo = () => {
   const hoy = new Date().toISOString().split('T')[0];
   // MODIFICADO: Reiniciar motivo a particular por defecto
-  formModal.value = { id: null, id_arbitro: '', fecha_solicitud: hoy, fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '', motivo: 'particular', tiempo_indeterminado: false };
+  formModal.value = { id: null, id_arbitro: '', fecha_solicitud: hoy, fecha_licencia: '', fecha_hasta: '', estado: 'aprobada', apellido: '', nombre: '', motivo: 'particular', tiempo_indeterminado: false };
   modoModal.value = 'nuevo';
   mostrarModal.value = true;
 };
@@ -506,6 +520,7 @@ const onToggleTiempoIndeterminado = () => {
       formModal.value.fecha_solicitud = new Date().toISOString().split('T')[0];
     }
     formModal.value.fecha_licencia = '';
+    formModal.value.fecha_hasta = '';
     // Las indeterminadas solo admiten lesión/enfermedad o particular.
     if (formModal.value.motivo !== 'lesion_enfermedad') {
       formModal.value.motivo = 'particular';
@@ -517,21 +532,45 @@ const cerrarModal = () => {
   mostrarModal.value = false;
 };
 
+const diasAlta = computed(() => {
+  const desde = formModal.value.fecha_licencia;
+  const hasta = formModal.value.fecha_hasta || desde;
+  if (!desde || hasta < desde) return 0;
+  const [y1, m1, d1] = desde.split('-').map(Number);
+  const [y2, m2, d2] = hasta.split('-').map(Number);
+  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000) + 1;
+});
+
+watch(() => formModal.value.fecha_licencia, (desde) => {
+  if (modoModal.value !== 'nuevo' || !desde) return;
+  if (!formModal.value.fecha_hasta || formModal.value.fecha_hasta < desde) formModal.value.fecha_hasta = desde;
+});
+
 const confirmarAlta = async () => {
   cargando.value = true;
+  const { fecha_licencia, fecha_hasta, ...resto } = formModal.value;
   const res = await api.post({
     entity: 'licencias',
     action: 'crearLicencia',
-    payload: { ...formModal.value, es_admin: true }
+    payload: {
+      ...resto,
+      fecha_desde: resto.tiempo_indeterminado ? null : fecha_licencia,
+      fecha_hasta: resto.tiempo_indeterminado ? null : (fecha_hasta || fecha_licencia),
+      es_admin: true
+    }
   });
   cargando.value = false;
 
   if (res.ok) {
     mostrarModal.value = false;
     obtenerLicencias();
-    toast({ titulo: 'Éxito', mensaje: 'Licencia registrada correctamente.', tipo: 'success' });
+    const creadas = (res.payload?.creadas || []).length;
+    const omitidas = (res.payload?.omitidas || []).length;
+    let mensaje = creadas > 1 ? `Se registraron ${creadas} licencias, una por día.` : 'Licencia registrada correctamente.';
+    if (omitidas) mensaje += ` ${omitidas === 1 ? 'Un día ya tenía licencia y se omitió.' : `${omitidas} días ya tenían licencia y se omitieron.`}`;
+    toast({ titulo: 'Éxito', mensaje, tipo: 'success' });
   } else {
-    toast({ titulo: 'Error', mensaje: 'No se pudo registrar la licencia.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: res.message || 'No se pudo registrar la licencia.', tipo: 'danger' });
   }
 };
 
