@@ -1669,6 +1669,8 @@ const normalizarPartido = (p) => ({
   suspendido: p.suspendido === true || p.suspendido === 1 || p.suspendido === '1',
   _estado1: p.etiqueta_arb1 || '',
   _estado2: p.etiqueta_arb2 || '',
+  _ext1: Number(p.externo_arb1) === 1 && !p.id_arb1,
+  _ext2: Number(p.externo_arb2) === 1 && !p.id_arb2,
   observador: p.observador || '',
   id_observador: p.id_observador || null,
   delegado: p.delegado || '',
@@ -2262,7 +2264,9 @@ const limpiarPartidoParaEnviar = (p) => ({
   arbitro_1: p.arbitro_1,
   arbitro_2: p.arbitro_2,
   id_arb1: p.id_arb1,
-  id_arb2: p.id_arb2
+  id_arb2: p.id_arb2,
+  externo_arb1: !!p._ext1 && !p.id_arb1,
+  externo_arb2: !!p._ext2 && !p.id_arb2
 })
 
 const ejecutarGuardado = async () => {
