@@ -359,6 +359,8 @@ const mapearFilasReuniones = (filas) => {
 const mapearFilasExamenes = (filas) => {
   const map = {}
   filas.forEach(row => {
+    // Hay filas viejas con tipo 'ausente': la Planilla General tampoco las muestra
+    if (!['teorico', 'fisico'].includes(String(row.tipo ?? '').trim().toLowerCase())) return
     const key = `${row.id_evento}_${row.id_arbitro}`
     if (!map[key]) {
       map[key] = {
