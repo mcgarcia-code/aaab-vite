@@ -3,114 +3,124 @@
     <div class="admin-panel animate__animated animate__fadeIn">
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-              <i class="bi bi-people-fill me-1"></i> Gestión de Reuniones
-            </h4>
-            <span class="text-muted small d-block mt-1">
-              <template v-if="modoReunion && !cargandoArbitros">
-                {{ reunionActual?.titulo }} — {{ arbitrosReunion.length }} árbitros
-                <span v-if="resumenReunionActual.presentes"   class="ms-1 badge rounded-pill bg-success">✓ {{ resumenReunionActual.presentes }}</span>
-                <span v-if="resumenReunionActual.ausentes"    class="ms-1 badge rounded-pill bg-secondary">✗ {{ resumenReunionActual.ausentes }}</span>
-                <span v-if="resumenReunionActual.sinRegistro" class="ms-1 badge rounded-pill bg-light text-muted border">— {{ resumenReunionActual.sinRegistro }}</span>
-              </template>
-              <template v-else>Reuniones Mensuales — Mi grupo · {{ totalFiltrados }} árbitros</template>
-            </span>
-          </div>
-
-          <!-- Select y botones de examen agrupados -->
-          <div class="d-flex flex-wrap flex-md-nowrap gap-2 align-items-center mt-2 mt-md-0">
-            <select
-              v-model="reunionSeleccionada"
-              @change="onReunionSeleccionada"
-              class="form-select shadow-sm border-secondary-subtle fw-semibold flex-grow-1 flex-md-grow-0"
-              style="min-width: 220px; max-width: 420px;"
-              :disabled="cargandoInicial || cargandoArbitros"
-            >
-              <option value="">— Ver listado general —</option>
-              <option v-for="op in opcionesReunion" :key="op.key" :value="op.key">
-                {{ op.label }}
-              </option>
-            </select>
-
-            <!-- Modificar: solo reuniones futuras dirigidas únicamente a grupos del coordinador -->
-            <button
-              v-if="modoReunion && puedeModificarReunion"
-              class="btn btn-outline-primary fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
-              :disabled="cargandoArbitros"
-              @click="abrirModalEditarReunion"
-              title="Modificar esta reunión"
-            >
-              <i class="bi bi-pencil-square"></i>
-              <span>Modificar</span>
-            </button>
-
-            <button
-              v-if="modoReunion && puedeEliminarReunion"
-              class="btn btn-outline-danger fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
-              :disabled="cargandoArbitros || eliminandoReunion"
-              @click="confirmarEliminarReunion"
-              title="Eliminar esta reunión"
-            >
-              <span v-if="eliminandoReunion" class="spinner-border spinner-border-sm"></span>
-              <i v-else class="bi bi-trash3"></i>
-              <span>Eliminar</span>
-            </button>
-
-            <!-- Examen: solo para reuniones de hoy o futuras -->
-            <template v-if="modoReunion && !reunionEsPasada">
-              <button
-                class="btn btn-danger fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
-                :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || examenHabilitado || !asistenciaGrupoExamen.presentes || !reunionAprobada"
-                @click="abrirModalExamen"
-                :title="tituloBotonHabilitar"
-              >
-                <span v-if="habilitandoExamen" class="spinner-border spinner-border-sm"></span>
-                <i v-else class="bi bi-shield-check"></i>
-                <span>Habilitar examen</span>
-              </button>
-
-              <button
-                class="btn btn-outline-danger fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0"
-                :disabled="deshabilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || !examenHabilitado"
-                @click="deshabilitarExamenReunion"
-                title="Deshabilitar el examen de esta reunión"
-              >
-                <span v-if="deshabilitandoExamen" class="spinner-border spinner-border-sm"></span>
-                <i v-else class="bi bi-shield-slash"></i>
-                <span>Deshabilitar examen</span>
-              </button>
-            </template>
-          </div>
-
-          <!-- Solo activos / filtros / limpiar -->
-          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white flex-shrink-0">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                id="toggleSoloActivos"
-                v-model="soloActivos"
-                role="switch"
-                :disabled="cargandoInicial || cargandoArbitros"
-              >
-              <label class="form-check-label small fw-bold text-dark m-0" for="toggleSoloActivos">
-                Solo activos
-              </label>
+        <div class="card-header bg-white py-3 border-bottom">
+          <div class="row g-3 align-items-center">
+            <div class="col-12 col-xl-auto">
+              <div class="border-start border-danger border-5 ps-3">
+                <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+                  <i class="bi bi-people-fill me-1"></i> Gestión de Reuniones
+                </h4>
+                <span class="text-muted small d-block mt-1">
+                  <template v-if="modoReunion && !cargandoArbitros">
+                    {{ reunionActual?.titulo }} — {{ arbitrosReunion.length }} árbitros
+                    <span v-if="resumenReunionActual.presentes"   class="ms-1 badge rounded-pill bg-success">✓ {{ resumenReunionActual.presentes }}</span>
+                    <span v-if="resumenReunionActual.ausentes"    class="ms-1 badge rounded-pill bg-secondary">✗ {{ resumenReunionActual.ausentes }}</span>
+                    <span v-if="resumenReunionActual.sinRegistro" class="ms-1 badge rounded-pill bg-light text-muted border">— {{ resumenReunionActual.sinRegistro }}</span>
+                  </template>
+                  <template v-else>Reuniones Mensuales — Mi grupo · {{ totalFiltrados }} árbitros</template>
+                </span>
+              </div>
             </div>
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2 flex-shrink-0" aria-label="Mostrar filtros">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 flex-shrink-0" aria-label="Limpiar filtros">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
-            <!-- Botón Nueva reunión (mismo que "Nuevo" de Gestión de Eventos) -->
-            <button @click="abrirModalNuevaReunion" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger flex-shrink-0" aria-label="Nueva reunión">
-              <span class="material-icons fs-6">add_alert</span>
-              <span class="fw-bold d-none d-md-inline small">Nuevo</span>
-            </button>
+
+            <div class="col-12 col-xl">
+              <div class="d-flex flex-column flex-md-row gap-2 align-items-stretch align-items-md-center">
+                <select
+                  v-model="reunionSeleccionada"
+                  @change="onReunionSeleccionada"
+                  class="form-select form-select-sm shadow-sm border-secondary-subtle fw-semibold flex-md-grow-1 min-w-0"
+                  :disabled="cargandoInicial || cargandoArbitros"
+                  aria-label="Elegir reunión"
+                >
+                  <option value="">— Ver listado general —</option>
+                  <option v-for="op in opcionesReunion" :key="op.key" :value="op.key">
+                    {{ op.label }}
+                  </option>
+                </select>
+
+                <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between justify-content-md-end flex-shrink-0">
+                  <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-1 shadow-sm bg-white">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="toggleSoloActivos"
+                      v-model="soloActivos"
+                      role="switch"
+                      :disabled="cargandoInicial || cargandoArbitros"
+                    >
+                    <label class="form-check-label small fw-bold text-dark m-0" for="toggleSoloActivos">
+                      Solo activos
+                    </label>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-sm btn-primary d-md-none d-flex align-items-center shadow-sm" aria-label="Mostrar filtros">
+                      <span class="material-icons fs-6">filter_alt</span>
+                    </button>
+                    <button @click="limpiarFiltros" class="btn btn-sm btn-light border shadow-sm d-flex align-items-center gap-1" aria-label="Limpiar filtros">
+                      <span class="material-icons text-dark fs-6">filter_alt_off</span>
+                      <span class="fw-bold text-dark d-none d-lg-inline small">Limpiar</span>
+                    </button>
+                    <button @click="abrirModalNuevaReunion" class="btn btn-sm btn-danger-subtle border-danger-subtle shadow-sm d-flex align-items-center gap-1 text-danger" aria-label="Nueva reunión">
+                      <span class="material-icons fs-6">add_alert</span>
+                      <span class="fw-bold small">Nuevo</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="modoReunion" class="d-flex flex-wrap gap-2 mt-2">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary fw-bold d-flex align-items-center justify-content-center gap-1 flex-fill flex-sm-grow-0"
+                  :disabled="cargandoArbitros || !!motivoNoGestionable"
+                  @click="abrirModalEditarReunion"
+                  :title="motivoNoGestionable || 'Modificar esta reunión'"
+                >
+                  <i class="bi bi-pencil-square"></i>
+                  <span>Modificar</span>
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger fw-bold d-flex align-items-center justify-content-center gap-1 flex-fill flex-sm-grow-0"
+                  :disabled="cargandoArbitros || eliminandoReunion || !puedeEliminarReunion"
+                  @click="confirmarEliminarReunion"
+                  :title="puedeEliminarReunion ? 'Eliminar esta reunión' : motivoNoEliminable"
+                >
+                  <span v-if="eliminandoReunion" class="spinner-border spinner-border-sm"></span>
+                  <i v-else class="bi bi-trash3"></i>
+                  <span>Eliminar</span>
+                </button>
+
+                <template v-if="!reunionEsPasada">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-danger fw-bold d-flex align-items-center justify-content-center gap-1 flex-fill flex-sm-grow-0"
+                    :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || examenHabilitado || !asistenciaGrupoExamen.presentes || !reunionAprobada"
+                    @click="abrirModalExamen"
+                    :title="tituloBotonHabilitar"
+                  >
+                    <span v-if="habilitandoExamen" class="spinner-border spinner-border-sm"></span>
+                    <i v-else class="bi bi-shield-check"></i>
+                    <span>Habilitar examen</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger fw-bold d-flex align-items-center justify-content-center gap-1 flex-fill flex-sm-grow-0"
+                    :disabled="deshabilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || !examenHabilitado"
+                    @click="deshabilitarExamenReunion"
+                    title="Deshabilitar el examen de esta reunión"
+                  >
+                    <span v-if="deshabilitandoExamen" class="spinner-border spinner-border-sm"></span>
+                    <i v-else class="bi bi-shield-slash"></i>
+                    <span>Deshabilitar examen</span>
+                  </button>
+                </template>
+              </div>
+              <small v-if="modoReunion && motivoNoGestionable" class="d-block text-muted mt-1">
+                <i class="bi bi-info-circle me-1"></i>{{ motivoNoGestionable }}
+              </small>
+            </div>
           </div>
         </div>
 
@@ -921,22 +931,30 @@ const reunionAprobada = computed(() => {
   return !r || r.categoria !== 'reunion' || !r.aprobacion || r.aprobacion === 'aprobada'
 })
 
-const puedeModificarReunion = computed(() => {
+const motivoNoEliminable = computed(() => {
   const r = reunionActual.value
-  if (!r || r.categoria !== 'reunion' || r.todosLosGrupos) return false
-  if (r.aprobacion !== 'rechazada' && !esFechaFutura(r.fecha_evento)) return false
+  if (!r) return 'Elegí una reunión'
+  if (r.categoria !== 'reunion') return 'Solo se pueden gestionar reuniones'
+  if (r.todosLosGrupos) return 'Es una reunión para todos los grupos: solo la puede gestionar la administración'
   const propios = misGrupos.value.map(g => Number(g.id))
   const idsReunion = (r.idsGrupos || []).map(Number)
-  return idsReunion.length > 0 && idsReunion.every(id => propios.includes(id))
+  if (!idsReunion.length) return 'La reunión no tiene grupos asignados'
+  const ajenos = idsReunion.filter(id => !propios.includes(id))
+  if (ajenos.length) {
+    return `La reunión incluye grupos que no coordinás (${ajenos.map(nombreGrupo).join(', ')}): solo la puede gestionar la administración`
+  }
+  return ''
 })
 
-const puedeEliminarReunion = computed(() => {
+const motivoNoGestionable = computed(() => {
+  if (motivoNoEliminable.value) return motivoNoEliminable.value
   const r = reunionActual.value
-  if (!r || r.categoria !== 'reunion' || r.todosLosGrupos) return false
-  const propios = misGrupos.value.map(g => Number(g.id))
-  const idsReunion = (r.idsGrupos || []).map(Number)
-  return idsReunion.length > 0 && idsReunion.every(id => propios.includes(id))
+  if (r.aprobacion !== 'rechazada' && !esFechaFutura(r.fecha_evento)) return 'Solo se pueden modificar reuniones futuras'
+  return ''
 })
+
+const puedeModificarReunion = computed(() => !motivoNoGestionable.value)
+const puedeEliminarReunion = computed(() => !motivoNoEliminable.value)
 
 const eliminandoReunion = ref(false)
 
@@ -1552,6 +1570,7 @@ onMounted(async () => {
 .full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
 .admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
 .animate__animated { animation-duration: 0.4s; }
+.min-w-0 { min-width: 0; }
 .tabla-container { overflow-x: auto; }
 .tabla-fija { border-collapse: separate; border-spacing: 0; }
 .tabla-fija th, .tabla-fija td { border-left: none !important; border-right: none !important; }
