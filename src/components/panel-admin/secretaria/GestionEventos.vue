@@ -205,6 +205,9 @@
               </div>
               <p v-else class="text-muted small mb-0">No hay grupos disponibles para seleccionar.</p>
             </div>
+            <small v-if="seSeparaPorGrupo" class="d-block text-primary fw-semibold mt-2">
+              <i class="bi bi-diagram-3-fill me-1"></i>Se va a crear una reunión separada para cada grupo ({{ gruposSeleccionados.length }}), así cada coordinador puede gestionar la suya.
+            </small>
           </div>
         </div>
       </form>
@@ -267,6 +270,9 @@ const calendario = ref(null)
 const procesando = ref(false)
 const grupos = ref([])
 const gruposSeleccionados = ref([])
+const seSeparaPorGrupo = computed(() =>
+  form.categoria === 'reunion' && !form.todosLosGrupos && gruposSeleccionados.value.length > 1
+)
 
 const formBase = {
   id: null,
@@ -413,11 +419,13 @@ const guardarEvento = async () => {
       mostrarModal.value = false
       await Promise.all([calendario.value?.recargar(), cargarPendientes()])
       const pendiente = res.payload?.aprobacion === 'pendiente'
+      const cantidad = (res.payload?.ids || []).length
+      const base = cantidad > 1
+        ? `Se ${modoEdicion.value ? 'guardaron' : 'crearon'} ${cantidad} reuniones, una por grupo.`
+        : `El evento se ${modoEdicion.value ? 'actualizo' : 'publico'} correctamente.`
       toast({
         titulo: 'Exito',
-        mensaje: pendiente
-          ? 'La reunión quedó pendiente de aprobación.'
-          : `El evento se ${modoEdicion.value ? 'actualizo' : 'publico'} correctamente.`,
+        mensaje: pendiente ? `${base} Quedan pendientes de aprobación.` : base,
         tipo: 'success'
       })
     } else {
