@@ -1,100 +1,510 @@
 <template>
-  <div class="container-fluid py-0 animate__animated animate__fadeIn">
+  <div class="full-screen-wrapper px-3 px-md-4">
+    <div class="admin-panel animate__animated animate__fadeIn">
 
-    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4 w-100 bg-white border-start border-danger border-5">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-      <div class="card-header bg-white py-3 border-bottom border-light-subtle">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-          <div>
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-              <i class="bi bi-tools"></i> Sección en Construcción
+        <!-- HEADER RESPONSIVO -->
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div class="border-start border-danger border-5 ps-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+              <i class="bi bi-mortarboard-fill me-1"></i> Legajos del Curso
             </h4>
-            <p class="text-muted small m-0 mt-1">Estamos trabajando para brindarte nuevas herramientas de gestión.</p>
+            <span class="text-muted small d-block mt-1">
+              Total: {{ legajosFiltrados.length }} inscriptos
+              <span class="badge rounded-pill bg-success ms-1">{{ resumenEstados.regular }} regulares</span>
+              <span class="badge rounded-pill bg-danger ms-1">{{ resumenEstados.baja }} bajas</span>
+            </span>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2" aria-label="Mostrar filtros">
+              <span class="material-icons fs-6">filter_alt</span>
+            </button>
+            <button @click="cargarDatos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
+            </button>
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
+            </button>
+            <button @click="abrirNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+              <span class="material-icons fs-6">person_add</span>
+              <span class="fw-bold d-none d-md-inline small">Nuevo</span>
+            </button>
+            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0" :disabled="!legajosFiltrados.length">
+              <span class="material-icons fs-6">download</span>
+              <span class="fw-bold d-none d-md-inline small">Excel</span>
+            </button>
           </div>
         </div>
-      </div>
 
-      <div class="card-body p-5">
-        <div class="text-center py-4">
-          <div class="mb-4">
-            <i class="bi bi-cone-striped text-danger opacity-25 display-1"></i>
+        <!-- FILTROS (Solo Móvil) -->
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none']">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Inscriptos</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm" aria-label="Cerrar filtros"></button>
+          </div>
+          <div class="row g-2">
+            <div class="col-6"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
+            <div class="col-6"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
+            <div class="col-6"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI..."></div>
+            <div class="col-6">
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ESTADO</option><option value="regular">REGULAR</option><option value="baja">BAJA</option>
+              </select>
+            </div>
+            <div class="col-12 mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0 p-md-3 bg-white">
+          <div v-if="cargando" class="text-center p-5 bg-white">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando inscriptos...</p>
           </div>
 
-          <h2 class="fw-bold text-dark mb-3">¡Próximamente!</h2>
-          <p class="text-muted mx-auto mb-4" style="max-width: 500px;">
-            Este módulo se encuentra actualmente en **desarrollo técnico**. Muy pronto podrás acceder a nuevas funcionalidades diseñadas para mejorar tu experiencia en la plataforma.
-          </p>
+          <template v-else>
+            <!-- TABLA (Escritorio) -->
+            <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id">ID</th>
+                    <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones">Acciones</th>
+                    <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
+                    <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
+                    <th v-for="c in COLUMNAS" :key="c.id" class="py-3 text-uppercase text-muted" :class="{ 'text-center': c.centro }">{{ c.label }}</th>
+                  </tr>
+                  <tr class="bg-light">
+                    <td class="p-2 border-bottom border-2 col-fija col-id"></td>
+                    <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
+                    <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
+                    <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
+                    <td v-for="c in COLUMNAS" :key="'f-' + c.id" class="p-2 border-bottom border-2">
+                      <select v-if="c.opciones" v-model="filtros[c.id]" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                        <option value="">TODOS</option>
+                        <option v-for="o in c.opciones" :key="o.valor" :value="o.valor">{{ o.etiqueta }}</option>
+                      </select>
+                      <input v-else-if="c.filtro !== false" v-model="filtros[c.id]" class="form-control form-control-sm shadow-none">
+                    </td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="l in legajosPaginados" :key="l.id" :class="{ 'fila-baja': l.estado === 'baja' }">
+                    <td class="ps-3 text-muted fw-bold font-monospace col-fija col-id">{{ l.id }}</td>
+                    <td class="text-center col-fija col-acciones">
+                      <div class="d-flex justify-content-center gap-1">
+                        <button @click="abrirEditar(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar" aria-label="Editar">
+                          <span class="material-icons" style="font-size:16px;">edit</span>
+                        </button>
+                        <button
+                          @click="abrirEstado(l)"
+                          class="btn btn-light btn-sm border shadow-sm rounded p-1"
+                          :class="l.estado === 'baja' ? 'text-success' : 'text-danger'"
+                          :title="l.estado === 'baja' ? 'Reactivar (regular)' : 'Dar de baja'"
+                          :aria-label="l.estado === 'baja' ? 'Reactivar' : 'Dar de baja'"
+                        >
+                          <span class="material-icons" style="font-size:16px;">{{ l.estado === 'baja' ? 'person_add_alt' : 'person_off' }}</span>
+                        </button>
+                      </div>
+                    </td>
+                    <td class="text-dark fw-bold text-uppercase col-fija col-apellido">{{ l.apellido }}</td>
+                    <td class="text-dark fw-bold text-uppercase col-fija col-nombre">{{ l.nombre }}</td>
+                    <td v-for="c in COLUMNAS" :key="c.id" class="text-dark" :class="{ 'text-center': c.centro }">
+                      <span v-if="c.id === 'estado'" class="badge" :class="ESTADOS_CURSO[l.estado]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[l.estado]?.etiqueta || l.estado }}</span>
+                      <span v-else-if="c.largo" class="d-inline-block text-truncate" style="max-width: 220px; cursor: help;" :title="valorColumna(l, c.id)">{{ valorColumna(l, c.id) }}</span>
+                      <template v-else>{{ valorColumna(l, c.id) }}</template>
+                    </td>
+                  </tr>
+                  <tr v-if="!legajosPaginados.length">
+                    <td :colspan="COLUMNAS.length + 4" class="text-center py-5 text-muted bg-white border-0">
+                      <span class="material-icons d-block fs-1 mb-2 opacity-50">search_off</span>
+                      <span class="fw-bold">No se encontraron inscriptos.</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-          <div class="d-flex justify-content-center gap-2 align-items-center">
-            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2">
-              <i class="bi bi-cpu me-1"></i> Sistema v3.0
-            </span>
-            <span class="badge rounded-pill bg-dark text-white px-3 py-2">
-              <i class="bi bi-clock-history me-1"></i> En Proceso
-            </span>
-          </div>
+            <!-- TARJETAS (Móvil) -->
+            <div class="d-md-none p-3 bg-light">
+              <div v-for="l in legajosPaginados" :key="'m-' + l.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'border-danger border-2': l.estado === 'baja' }">
+                <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
+                  <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">{{ l.apellido }}, {{ l.nombre }}</div>
+                  <span class="badge" :class="ESTADOS_CURSO[l.estado]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[l.estado]?.etiqueta || l.estado }}</span>
+                </div>
+                <div class="card-body pt-0 px-3 pb-3 small text-dark">
+                  <div><strong>DNI:</strong> {{ l.dni }} · <strong>Cel:</strong> {{ l.celular }}</div>
+                  <div class="text-truncate"><strong>Email:</strong> {{ l.email }}</div>
+                  <div v-if="l.es_jugador === 'SI'"><strong>Juega:</strong> {{ l.club_jugador }} ({{ textoCategorias(l.categorias_jugador) }})</div>
+                  <div v-if="l.es_dt === 'SI'"><strong>DT:</strong> {{ l.club_dt }} ({{ textoCategorias(l.categorias_dt) }})</div>
+                  <div v-if="l.estado === 'baja'" class="text-danger"><strong>Motivo baja:</strong> {{ l.motivo_baja }}</div>
+                  <div class="d-flex gap-2 mt-3">
+                    <button @click="abrirEditar(l)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
+                    <button @click="abrirEstado(l)" class="btn btn-sm flex-fill fw-bold" :class="l.estado === 'baja' ? 'btn-outline-success' : 'btn-outline-danger'">
+                      <i class="bi me-1" :class="l.estado === 'baja' ? 'bi-person-check' : 'bi-person-x'"></i>
+                      {{ l.estado === 'baja' ? 'Reactivar' : 'Dar de baja' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div v-if="!legajosPaginados.length" class="text-center p-4 bg-white rounded-3 shadow-sm border">
+                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
+                <p class="text-muted m-0 fw-bold">No se encontraron inscriptos.</p>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+                <i class="bi bi-chevron-left"></i> Ant
+              </button>
+              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+                Sig <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </template>
         </div>
       </div>
     </div>
 
-    <div class="alert bg-light border border-light-subtle rounded-4 shadow-sm p-4 mx-auto w-100">
-      <div class="d-flex align-items-center">
-        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center me-3" style="min-width: 50px; height: 50px;">
-          <i class="bi bi-info-circle-fill text-danger fs-4"></i>
-        </div>
-        <div class="text-dark small lh-sm">
-          <strong>¿Necesitás información urgente?</strong><br>
-          Si buscabas datos específicos que no están disponibles actualmente, comunicate con la
-          <a href="mailto:soporte@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none">Coordinación Técnica</a> de la AAAB.
-        </div>
-      </div>
-    </div>
+    <!-- MODAL NUEVO / EDITAR -->
+    <ModalBase
+      :show="mostrarModal"
+      @close="mostrarModal = false"
+      :icono="form.id ? 'edit' : 'person_add'"
+      :colorIcono="form.id ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      maxWidth="900px"
+    >
+      <template #header>
+        <span class="fw-bold fs-5">{{ form.id ? 'Editar inscripto' : 'Nuevo inscripto' }}</span>
+      </template>
+      <form id="formLegajoCurso" class="text-start" novalidate @submit.prevent="guardar">
+        <FormularioCursoArbitro
+          v-model="form"
+          :errores="errores"
+          :mostrar-errores="intentoGuardar"
+          :provincias="provincias"
+          :localidades="localidades"
+          prefijo="leg-curso"
+          @error="mensaje => notificar({ titulo: 'Error', mensaje, tipo: 'danger' })"
+        />
+      </form>
+      <template #footer>
+        <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button type="submit" form="formLegajoCurso" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
+          <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
+          {{ guardando ? 'GUARDANDO...' : 'GUARDAR' }}
+        </button>
+      </template>
+    </ModalBase>
 
+    <!-- MODAL ESTADO (BAJA / REACTIVAR) -->
+    <ModalBase
+      :show="mostrarModalEstado"
+      @close="mostrarModalEstado = false"
+      :icono="legajoEstado?.estado === 'baja' ? 'person_add_alt' : 'person_off'"
+      :colorIcono="legajoEstado?.estado === 'baja' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
+      maxWidth="520px"
+    >
+      <template #header>
+        <span class="fw-bold fs-5">{{ legajoEstado?.estado === 'baja' ? 'Reactivar inscripto' : 'Dar de baja' }}</span>
+      </template>
+      <div v-if="legajoEstado" class="text-start">
+        <p class="mb-3 text-dark">
+          <strong class="text-uppercase">{{ legajoEstado.apellido }}, {{ legajoEstado.nombre }}</strong>
+          <span class="text-muted"> · DNI {{ legajoEstado.dni }}</span>
+        </p>
+        <template v-if="legajoEstado.estado === 'baja'">
+          <div class="alert alert-light border small mb-0">
+            <div><strong>Motivo de la baja:</strong> {{ legajoEstado.motivo_baja || '-' }}</div>
+            <div v-if="legajoEstado.fecha_baja"><strong>Fecha:</strong> {{ mostrarFechaArg(legajoEstado.fecha_baja) }}</div>
+            <div class="mt-2">Va a volver a quedar como <strong>regular</strong>.</div>
+          </div>
+        </template>
+        <template v-else>
+          <label for="motivo-baja" class="form-label small fw-bold text-dark">Motivo de la baja *</label>
+          <textarea id="motivo-baja" v-model.trim="motivoBaja" rows="3" maxlength="500" class="form-control" :class="{ 'is-invalid': intentoEstado && motivoBaja.length < 3 }" placeholder="Ej: dejó de asistir, motivos personales, se mudó..."></textarea>
+          <div class="invalid-feedback">Indicá el motivo de la baja.</div>
+        </template>
+      </div>
+      <template #footer>
+        <button type="button" @click="mostrarModalEstado = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button
+          type="button"
+          @click="confirmarEstado"
+          class="btn rounded-pill px-4 fw-bold shadow-sm w-100"
+          :class="legajoEstado?.estado === 'baja' ? 'btn-success' : 'btn-danger'"
+          :disabled="guardandoEstado"
+        >
+          <span v-if="guardandoEstado" class="spinner-border spinner-border-sm me-1"></span>
+          {{ legajoEstado?.estado === 'baja' ? 'REACTIVAR' : 'DAR DE BAJA' }}
+        </button>
+      </template>
+    </ModalBase>
   </div>
 </template>
 
 <script setup>
-import { useHead } from '@vueuse/head';
+import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
+import { useHead } from '@vueuse/head'
+import ExcelJS from 'exceljs'
+import { api } from '@/api/api'
+import ModalBase from '@/components/ModalBase.vue'
+import FormularioCursoArbitro from '@/components/FormularioCursoArbitro.vue'
+import {
+  ESTADOS_CURSO, GENEROS_CURSO, formularioCursoVacio, formularioDesdeLegajo, validarFormularioCurso, payloadCurso,
+} from '@/composables/useCursoArbitro'
 
-// SEO e Identidad de la página
-useHead({
-  title: 'Sección en Construcción | AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Módulo en desarrollo del sistema de gestión AAAB.',
-    },
-    {
-      property: 'og:title',
-      content: 'En Construcción | AAAB',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png',
-    }
-  ],
-});
+useHead({ title: 'Legajos del Curso | AAAB' })
+
+const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const toast = inject('toast', (m) => notificar(m))
+
+// ─── Columnas (después de ID / Acciones / Apellido / Nombre, que son fijas) ──
+const SI_NO = [{ valor: 'SI', etiqueta: 'SÍ' }, { valor: 'NO', etiqueta: 'NO' }]
+const COLUMNAS = [
+  { id: 'estado', label: 'Estado', centro: true, opciones: [{ valor: 'regular', etiqueta: 'REGULAR' }, { valor: 'baja', etiqueta: 'BAJA' }] },
+  { id: 'dni', label: 'DNI', centro: true },
+  { id: 'genero', label: 'Género', centro: true, opciones: GENEROS_CURSO.map(g => ({ valor: g.valor, etiqueta: g.etiqueta.toUpperCase() })) },
+  { id: 'email', label: 'Email' },
+  { id: 'celular', label: 'Celular' },
+  { id: 'fecha_nacimiento', label: 'F. Nacimiento' },
+  { id: 'nombre_provincia', label: 'Provincia' },
+  { id: 'nombre_localidad', label: 'Localidad' },
+  { id: 'zona', label: 'Zona' },
+  { id: 'direccion', label: 'Dirección', largo: true },
+  { id: 'telefonocontacto', label: 'Tel. Contacto' },
+  { id: 'parentescocontacto', label: 'Parentesco' },
+  { id: 'es_jugador', label: 'Jugador', centro: true, opciones: SI_NO },
+  { id: 'club_jugador', label: 'Club Jugador' },
+  { id: 'categorias_jugador', label: 'Cat. Jugador', largo: true },
+  { id: 'es_dt', label: 'DT', centro: true, opciones: SI_NO },
+  { id: 'club_dt', label: 'Club DT' },
+  { id: 'categorias_dt', label: 'Cat. DT', largo: true },
+  { id: 'motivo_baja', label: 'Motivo Baja', largo: true },
+  { id: 'fecha_baja', label: 'F. Baja' },
+  { id: 'fecha_registro', label: 'F. Inscripción' },
+  { id: 'observaciones', label: 'Observaciones', largo: true },
+]
+const CAMPOS_EXACTOS = ['estado', 'genero', 'es_jugador', 'es_dt']
+
+// ─── Estado ──────────────────────────────────────────────────────
+const legajos = ref([])
+const provincias = ref([])
+const localidades = ref([])
+const cargando = ref(false)
+const mostrarFiltrosMobile = ref(false)
+const paginaActual = ref(1)
+const registrosPorPagina = 10
+
+const filtrosVacios = () => Object.fromEntries(['apellido', 'nombre', ...COLUMNAS.map(c => c.id)].map(k => [k, '']))
+const filtros = reactive(filtrosVacios())
+
+// ─── Helpers ─────────────────────────────────────────────────────
+const normalizar = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+const mostrarFechaArg = (fecha) => {
+  if (!fecha) return ''
+  const [soloFecha, hora] = String(fecha).split(' ')
+  const partes = soloFecha.split('-')
+  const f = partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : soloFecha
+  return hora ? `${f} ${hora}` : f
+}
+const textoCategorias = (texto) => String(texto || '').split('|').map(c => c.trim()).filter(Boolean).join('; ')
+const etiquetaGenero = (g) => GENEROS_CURSO.find(x => x.valor === g)?.etiqueta || ''
+
+const valorColumna = (l, id) => {
+  if (id === 'fecha_nacimiento' || id === 'fecha_baja' || id === 'fecha_registro') return mostrarFechaArg(l[id])
+  if (id === 'genero') return etiquetaGenero(l.genero)
+  if (id === 'categorias_jugador' || id === 'categorias_dt') return textoCategorias(l[id])
+  return l[id] ?? ''
+}
+
+// ─── Filtrado y paginación ───────────────────────────────────────
+const legajosFiltrados = computed(() => {
+  const activos = Object.entries(filtros).filter(([, v]) => v !== '' && v !== null)
+  return legajos.value.filter(l => activos.every(([campo, valor]) => {
+    if (CAMPOS_EXACTOS.includes(campo)) return String(l[campo] ?? '') === String(valor)
+    return normalizar(valorColumna(l, campo)).includes(normalizar(valor))
+  }))
+})
+
+const resumenEstados = computed(() => ({
+  regular: legajosFiltrados.value.filter(l => l.estado === 'regular').length,
+  baja: legajosFiltrados.value.filter(l => l.estado === 'baja').length,
+}))
+
+const totalPaginas = computed(() => Math.ceil(legajosFiltrados.value.length / registrosPorPagina) || 1)
+const legajosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return legajosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
+})
+
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
+watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
+
+const cambiarPagina = (delta) => {
+  paginaActual.value += delta
+  if (window.innerWidth <= 768) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
+}
+
+const limpiarFiltros = () => Object.assign(filtros, filtrosVacios())
+
+// ─── Cargas ──────────────────────────────────────────────────────
+const cargarDatos = async () => {
+  cargando.value = true
+  try {
+    const res = await api.get({ entity: 'legajos_curso_arbitro', action: 'obtenerLegajosCurso', payload: {} })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los legajos')
+    legajos.value = res.payload || []
+  } catch (e) {
+    console.error('cargarDatos:', e)
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    cargando.value = false
+  }
+}
+
+const cargarUbicaciones = async () => {
+  try {
+    const res = await api.get({ entity: 'localidades', action: 'obtenerProvinciasLocalidades', payload: {} })
+    provincias.value = res?.payload?.provincias ?? []
+    localidades.value = res?.payload?.localidades ?? []
+  } catch (e) {
+    console.error('cargarUbicaciones:', e)
+  }
+}
+
+// ─── Nuevo / Editar ──────────────────────────────────────────────
+const mostrarModal = ref(false)
+const form = ref(formularioCursoVacio())
+const errores = ref({})
+const intentoGuardar = ref(false)
+const guardando = ref(false)
+
+watch(form, () => { if (intentoGuardar.value) errores.value = validarFormularioCurso(form.value) }, { deep: true })
+
+const abrirModalCon = (datos) => {
+  form.value = datos
+  errores.value = {}
+  intentoGuardar.value = false
+  mostrarModal.value = true
+}
+const abrirNuevo = () => abrirModalCon(formularioCursoVacio())
+const abrirEditar = (l) => abrirModalCon(formularioDesdeLegajo(l))
+
+const guardar = async () => {
+  intentoGuardar.value = true
+  errores.value = validarFormularioCurso(form.value)
+  if (Object.keys(errores.value).length) {
+    notificar({ titulo: 'Faltan datos', mensaje: Object.values(errores.value)[0], tipo: 'danger' })
+    return
+  }
+  guardando.value = true
+  try {
+    const res = await api.post({ entity: 'legajos_curso_arbitro', action: 'guardarLegajoCurso', payload: payloadCurso(form.value) })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el legajo')
+    toast({ titulo: 'Guardado', mensaje: form.value.id ? 'El legajo se actualizó.' : 'El inscripto se creó.', tipo: 'success' })
+    mostrarModal.value = false
+    await cargarDatos()
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    guardando.value = false
+  }
+}
+
+// ─── Baja / Reactivar ────────────────────────────────────────────
+const mostrarModalEstado = ref(false)
+const legajoEstado = ref(null)
+const motivoBaja = ref('')
+const intentoEstado = ref(false)
+const guardandoEstado = ref(false)
+
+const abrirEstado = (l) => {
+  legajoEstado.value = l
+  motivoBaja.value = ''
+  intentoEstado.value = false
+  mostrarModalEstado.value = true
+}
+
+const confirmarEstado = async () => {
+  const l = legajoEstado.value
+  if (!l) return
+  const nuevoEstado = l.estado === 'baja' ? 'regular' : 'baja'
+  intentoEstado.value = true
+  if (nuevoEstado === 'baja' && motivoBaja.value.length < 3) return
+  guardandoEstado.value = true
+  try {
+    const res = await api.post({
+      entity: 'legajos_curso_arbitro',
+      action: 'cambiarEstadoCurso',
+      payload: { id: l.id, estado: nuevoEstado, motivo: motivoBaja.value },
+    })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo cambiar el estado')
+    toast({ titulo: 'Listo', mensaje: nuevoEstado === 'baja' ? 'Se dio de baja al inscripto.' : 'El inscripto volvió a estar regular.', tipo: 'success' })
+    mostrarModalEstado.value = false
+    await cargarDatos()
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    guardandoEstado.value = false
+  }
+}
+
+// ─── Excel ───────────────────────────────────────────────────────
+const exportarExcel = async () => {
+  const columnas = [
+    { id: 'id', label: 'ID' }, { id: 'apellido', label: 'Apellido' }, { id: 'nombre', label: 'Nombre' },
+    ...COLUMNAS,
+  ]
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Legajos Curso')
+  ws.columns = columnas.map(c => ({ header: c.label, key: c.id, width: 18 }))
+  legajosFiltrados.value.forEach(l => {
+    const fila = {}
+    for (const c of columnas) fila[c.id] = c.id === 'estado' ? (ESTADOS_CURSO[l.estado]?.etiqueta || l.estado) : valorColumna(l, c.id)
+    ws.addRow(fila)
+  })
+  ws.getRow(1).font = { bold: true }
+  const buffer = await wb.xlsx.writeBuffer()
+  const url = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Legajos_Curso_AAAB.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+onMounted(() => {
+  cargarDatos()
+  cargarUbicaciones()
+})
 </script>
 
 <style scoped>
-/* Transiciones suaves */
-.animate__animated {
-  animation-duration: 0.7s;
-}
+.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
+.admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
+.animate__animated { animation-duration: 0.5s; }
+.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
+.btn-danger-subtle:hover { background: #fecaca; }
 
-/* Ajustes para el ícono gigante */
-.display-1 {
-  font-size: 6rem;
-  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.05));
-}
+.tabla-container { overflow-x: auto; }
+.tabla-fija { border-collapse: separate; border-spacing: 0; }
+.tabla-fija th, .tabla-fija td { border-left: none !important; border-right: none !important; }
+.col-fija { position: sticky; background-color: inherit; z-index: 10; }
+.tabla-fija thead .col-fija { background-color: #f8f9fa; z-index: 12; }
+.tabla-fija tbody .col-fija { background-color: #ffffff; }
+.col-id { left: 0; min-width: 60px; }
+.col-acciones { left: 60px; min-width: 100px; }
+.col-apellido { left: 160px; min-width: 150px; }
+.col-nombre { left: 310px; min-width: 150px; }
+.col-nombre::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 1px; background: linear-gradient(to right, rgba(0,0,0,0.1), transparent); }
 
-/* Responsivo */
-@media (max-width: 768px) {
-  .display-1 {
-    font-size: 4rem;
-  }
-  h2 {
-    font-size: 1.5rem;
-  }
-}
+.fila-baja td, .tabla-fija tbody .fila-baja .col-fija { background-color: #fef2f2 !important; }
 </style>

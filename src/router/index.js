@@ -16,6 +16,7 @@ const routes = [
   { path: '/contactos-celulares', name: 'ContactosCelulares', component: () => import('../views/public/ContactosCelularesView.vue') },
   { path: '/coordinadores-base', name: 'CoordinadoresBase', component: () => import('../views/public/CoordinadoresDatosView.vue') },
   { path: '/registro-arbitro', name: 'RegistroArbitro', component: () => import('../views/public/RegistroArbitro.vue') },
+  { path: '/registro-curso-arbitro', name: 'RegistroArbitroCurso', component: () => import('../views/public/RegistroArbitroCurso.vue') },
 
   // --- LOGIN & RECUPERACIÓN DE CLAVE ---
   {
