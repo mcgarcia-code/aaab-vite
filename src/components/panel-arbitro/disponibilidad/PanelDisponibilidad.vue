@@ -369,7 +369,8 @@ const guardarCambios = async () => {
                 arbitro: arbitro.value
             }
         })
-        if (res.success) {
+        // El api devuelve { ok, payload }: el resultado real del PHP viene en res.payload
+        if (res?.ok && res.payload?.success) {
             toast({
               titulo: '¡Perfil Actualizado!',
               mensaje: 'Tus datos se guardaron correctamente en el legajo.',
@@ -379,7 +380,7 @@ const guardarCambios = async () => {
         } else {
             toast({
               titulo: 'Error',
-              mensaje: res.data.message || 'No se pudieron actualizar los datos.',
+              mensaje: res?.payload?.message || res?.message || 'No se pudieron actualizar los datos.',
               tipo: 'danger'
             });
         }
