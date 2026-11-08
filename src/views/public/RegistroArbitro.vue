@@ -185,14 +185,19 @@
               <div class="invalid-feedback">{{ errores.idClub }}</div>
             </div>
             <div class="col-12 col-md-4">
-              <label for="reg-categoria" class="form-label small fw-bold text-dark">Categoría *</label>
-              <select id="reg-categoria" v-model="form.idCategoria" class="form-select" :class="claseCampo('idCategoria')" :disabled="!form.idClub">
-                <option value="" disabled>{{ form.idClub ? 'Seleccionar categoría...' : 'Elegí primero el club' }}</option>
-                <optgroup v-for="grupo in categoriasPorRama" :key="grupo.rama" :label="grupo.etiqueta">
-                  <option v-for="c in grupo.categorias" :key="c.id" :value="c.id">{{ c.nombre }}</option>
-                </optgroup>
-              </select>
-              <div class="invalid-feedback">{{ errores.idCategoria }}</div>
+              <span class="form-label small fw-bold text-dark d-block">Categorías * <span class="fw-normal text-muted">(podés elegir más de una)</span></span>
+              <div v-if="!form.idClub" class="small text-muted fst-italic p-2 bg-light rounded border">Elegí primero el club</div>
+              <div v-else-if="!categoriasPorRama.length" class="small text-muted fst-italic p-2 bg-light rounded border">El club no tiene categorías activas</div>
+              <div v-else class="lista-categorias border rounded p-2" :class="{ 'border-danger': intentoEnviar && errores.idsCategorias }">
+                <div v-for="grupo in categoriasPorRama" :key="grupo.rama" class="mb-1">
+                  <div class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
+                  <div v-for="c in grupo.categorias" :key="c.id" class="form-check mb-0">
+                    <input :id="`reg-cat-${c.id}`" v-model="form.idsCategorias" class="form-check-input" type="checkbox" :value="c.id">
+                    <label class="form-check-label small" :for="`reg-cat-${c.id}`">{{ c.nombre }}</label>
+                  </div>
+                </div>
+              </div>
+              <div v-if="intentoEnviar && errores.idsCategorias" class="text-danger small mt-1">{{ errores.idsCategorias }}</div>
             </div>
           </template>
         </div>
@@ -263,7 +268,7 @@ const formularioVacio = () => ({
   movilidad: [],
   disponibilidadSabado: 'NO', sabadoDesde: '', sabadoHasta: '',
   disponibilidadDomingo: 'NO', domingoDesde: '', domingoHasta: '',
-  juegaHandball: 'no', idClub: '', idCategoria: '',
+  juegaHandball: 'no', idClub: '', idsCategorias: [],
   observaciones: '',
   sitioWeb: '',
 })
@@ -347,7 +352,7 @@ const validarFormulario = () => {
 
   if (form.juegaHandball === 'si') {
     if (!form.idClub) e.idClub = 'Seleccioná tu club.'
-    if (!form.idCategoria) e.idCategoria = 'Seleccioná tu categoría.'
+    if (!form.idsCategorias.length) e.idsCategorias = 'Seleccioná al menos una categoría.'
   }
 
   Object.keys(errores).forEach(k => delete errores[k])
@@ -362,11 +367,11 @@ watch(form, () => { if (intentoEnviar.value) validarFormulario() }, { deep: true
 
 // Limpiezas dependientes
 watch(() => form.provincia, () => { form.localidad = '' })
-watch(() => form.idClub, () => { form.idCategoria = '' })
+watch(() => form.idClub, () => { form.idsCategorias = [] })
 watch(() => form.juegaHandball, (valor) => {
   if (valor !== 'si') {
     form.idClub = ''
-    form.idCategoria = ''
+    form.idsCategorias = []
   }
 })
 for (const dia of DIAS) {
@@ -470,6 +475,11 @@ onMounted(cargarDatos)
 .form-control.is-invalid,
 .form-select.is-invalid {
   border-color: #dc3545;
+}
+.lista-categorias {
+  max-height: 220px;
+  overflow-y: auto;
+  background-color: #f8fafc;
 }
 .campo-trampa {
   position: absolute;

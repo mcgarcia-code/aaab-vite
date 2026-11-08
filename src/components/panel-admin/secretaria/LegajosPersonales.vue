@@ -519,13 +519,21 @@
               </select>
             </div>
             <div class="col-md-4">
-              <label for="modal-categoria" class="small fw-bold text-dark mb-1">Categoría *</label>
-              <select id="modal-categoria" v-model="formModal.categoria_handball" class="form-select shadow-none border-secondary-subtle" :disabled="handball.cargando.value || !formModal.donde_juega">
-                <option value="" disabled>{{ formModal.donde_juega ? 'Seleccionar categoría...' : 'Elegí primero el club' }}</option>
-                <optgroup v-for="grupo in handball.categoriasPorRama.value" :key="grupo.etiqueta" :label="grupo.etiqueta">
-                  <option v-for="c in grupo.categorias" :key="c" :value="c">{{ c }}</option>
-                </optgroup>
-              </select>
+              <span class="small fw-bold text-dark mb-1 d-block">Categorías * <span class="fw-normal text-muted">(una o más)</span></span>
+              <div v-if="handball.cargando.value" class="small text-muted p-2">
+                <span class="spinner-border spinner-border-sm me-1"></span> Cargando categorías...
+              </div>
+              <div v-else-if="!formModal.donde_juega" class="small text-muted fst-italic p-2 bg-light rounded border">Elegí primero el club</div>
+              <div v-else-if="!handball.categoriasPorRama.value.length" class="small text-muted fst-italic p-2 bg-light rounded border">El club no tiene categorías activas</div>
+              <div v-else class="lista-categorias border border-secondary-subtle rounded p-2">
+                <div v-for="grupo in handball.categoriasPorRama.value" :key="grupo.etiqueta" class="mb-1">
+                  <div class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
+                  <div v-for="c in grupo.categorias" :key="grupo.etiqueta + c" class="form-check mb-0">
+                    <input :id="`modal-cat-${grupo.etiqueta}-${c}`" v-model="categoriasModal" class="form-check-input" type="checkbox" :value="c">
+                    <label class="form-check-label small" :for="`modal-cat-${grupo.etiqueta}-${c}`">{{ c }}</label>
+                  </div>
+                </div>
+              </div>
             </div>
           </template>
 
@@ -693,7 +701,7 @@ import { useHead } from '@vueuse/head'
 import selLocalidad from '@/components/select/selLocalidad.vue'
 import selProvincia from '@/components/select/selProvincia.vue'
 import ModalBase from '@/components/ModalBase.vue'
-import { useOpcionesHandball } from '@/composables/useOpcionesHandball'
+import { useOpcionesHandball, separarCategorias, unirCategorias, MAX_LARGO_CATEGORIAS } from '@/composables/useOpcionesHandball'
 
 useHead({
   title: 'Legajos | AAAB',
@@ -836,11 +844,23 @@ const cambioJuegaHandball = () => {
   }
 }
 
+// Checkboxes de categorías <-> texto separado por coma en categoria_handball
+const categoriasModal = computed({
+  get: () => separarCategorias(formModal.value.categoria_handball),
+  set: (lista) => { formModal.value.categoria_handball = unirCategorias(lista) },
+})
+
 const validarHandballModal = () => {
   if (formModal.value.juega_handball !== 'SI') return true
-  if (formModal.value.donde_juega && formModal.value.categoria_handball) return true
-  notificar({ titulo: 'Faltan datos', mensaje: 'Si juega al handball, seleccioná el club y la categoría.', tipo: 'danger' })
-  return false
+  if (!formModal.value.donde_juega || !categoriasModal.value.length) {
+    notificar({ titulo: 'Faltan datos', mensaje: 'Si juega al handball, seleccioná el club y al menos una categoría.', tipo: 'danger' })
+    return false
+  }
+  if (formModal.value.categoria_handball.length > MAX_LARGO_CATEGORIAS) {
+    notificar({ titulo: 'Demasiadas categorías', mensaje: 'Hay demasiadas categorías elegidas. Dejá solo en las que juega actualmente.', tipo: 'danger' })
+    return false
+  }
+  return true
 }
 
 watch(() => handball.error.value, (mensaje) => {
@@ -1419,6 +1439,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.lista-categorias { max-height: 220px; overflow-y: auto; background: #fff; }
 /* ====================================================
    ESTILOS GENERALES
    ==================================================== */

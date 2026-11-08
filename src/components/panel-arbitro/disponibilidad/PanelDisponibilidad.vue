@@ -108,13 +108,23 @@
             <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.donde_juega || '-' }}</div>
           </div>
           <div v-if="arbitro.juega_handball === 'si'" class="col-12 col-md-4">
-            <label for="disp-categoria" class="form-label small fw-bold text-muted">Categoría</label>
-            <select v-if="edicionAbierta" id="disp-categoria" v-model="arbitro.categoria_handball" class="form-select form-select-sm" :disabled="cargandoOpcionesHandball || !arbitro.donde_juega">
-              <option :value="null" disabled>{{ cargandoOpcionesHandball ? 'Cargando categorías...' : (arbitro.donde_juega ? 'Seleccionar categoría...' : 'Elegí primero el club') }}</option>
-              <optgroup v-for="grupo in categoriasPorRama" :key="grupo.etiqueta" :label="grupo.etiqueta">
-                <option v-for="c in grupo.categorias" :key="c" :value="c">{{ c }}</option>
-              </optgroup>
-            </select>
+            <span class="form-label small fw-bold text-muted d-block">Categorías <span class="fw-normal">(podés elegir más de una)</span></span>
+            <template v-if="edicionAbierta">
+              <div v-if="cargandoOpcionesHandball" class="small text-muted p-2">
+                <span class="spinner-border spinner-border-sm me-1"></span> Cargando categorías...
+              </div>
+              <div v-else-if="!arbitro.donde_juega" class="small text-muted fst-italic p-2 bg-light rounded">Elegí primero el club</div>
+              <div v-else-if="!categoriasPorRama.length" class="small text-muted fst-italic p-2 bg-light rounded">El club no tiene categorías activas</div>
+              <div v-else class="lista-categorias border rounded p-2">
+                <div v-for="grupo in categoriasPorRama" :key="grupo.etiqueta" class="mb-1">
+                  <div class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
+                  <div v-for="c in grupo.categorias" :key="grupo.etiqueta + c" class="form-check mb-0">
+                    <input :id="`disp-cat-${grupo.etiqueta}-${c}`" v-model="categoriasElegidas" class="form-check-input" type="checkbox" :value="c">
+                    <label class="form-check-label small" :for="`disp-cat-${grupo.etiqueta}-${c}`">{{ c }}</label>
+                  </div>
+                </div>
+              </div>
+            </template>
             <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.categoria_handball || '-' }}</div>
           </div>
           <div class="col-12">
@@ -213,11 +223,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, inject } from 'vue';
+import { ref, computed, onMounted, watch, inject } from 'vue';
 import { auth } from '../../../api/auth';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head'
-import { useOpcionesHandball } from '@/composables/useOpcionesHandball'
+import { useOpcionesHandball, separarCategorias, unirCategorias, MAX_LARGO_CATEGORIAS } from '@/composables/useOpcionesHandball'
 
 useHead({
   title: 'Disponibilidad Horaria | AAAB',
@@ -257,10 +267,20 @@ watch(errorOpcionesHandball, (mensaje) => {
   if (mensaje) toast({ titulo: 'Error', mensaje, tipo: 'danger' })
 })
 
+// Checkboxes de categorías <-> texto separado por coma en categoria_handball
+const categoriasElegidas = computed({
+  get: () => separarCategorias(arbitro.value.categoria_handball),
+  set: (lista) => { arbitro.value.categoria_handball = unirCategorias(lista) || null },
+})
+
 const validarActividadDeportiva = () => {
   if (arbitro.value.juega_handball !== 'si') return true
-  if (!arbitro.value.donde_juega || !arbitro.value.categoria_handball) {
-    toast({ titulo: 'Faltan datos', mensaje: 'Si jugás al handball, seleccioná tu club y tu categoría.', tipo: 'danger' })
+  if (!arbitro.value.donde_juega || !categoriasElegidas.value.length) {
+    toast({ titulo: 'Faltan datos', mensaje: 'Si jugás al handball, seleccioná tu club y al menos una categoría.', tipo: 'danger' })
+    return false
+  }
+  if (String(arbitro.value.categoria_handball).length > MAX_LARGO_CATEGORIAS) {
+    toast({ titulo: 'Demasiadas categorías', mensaje: 'Elegiste demasiadas categorías. Dejá solo en las que jugás actualmente.', tipo: 'danger' })
     return false
   }
   return true
@@ -442,5 +462,7 @@ const enviarSolicitudRectificacion = async () => {
 }
 
 .animate__animated { animation-duration: 0.5s; }
+
+.lista-categorias { max-height: 220px; overflow-y: auto; background: #fff; }
 
 </style>
