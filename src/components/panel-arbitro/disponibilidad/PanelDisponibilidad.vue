@@ -100,13 +100,21 @@
             <div v-else class="p-2 bg-light rounded fw-bold text-uppercase text-dark">{{ arbitro.juega_handball }}</div>
           </div>
           <div v-if="arbitro.juega_handball === 'si'" class="col-12 col-md-4">
-            <label class="form-label small fw-bold text-muted">Club</label>
-            <input v-if="edicionAbierta" v-model="arbitro.donde_juega" type="text" class="form-control form-control-sm">
+            <label for="disp-club" class="form-label small fw-bold text-muted">Club</label>
+            <select v-if="edicionAbierta" id="disp-club" v-model="arbitro.donde_juega" class="form-select form-select-sm" :disabled="cargandoOpcionesHandball">
+              <option :value="null" disabled>{{ cargandoOpcionesHandball ? 'Cargando clubes...' : 'Seleccionar club...' }}</option>
+              <option v-for="c in opcionesClubes" :key="c" :value="c">{{ c }}</option>
+            </select>
             <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.donde_juega || '-' }}</div>
           </div>
           <div v-if="arbitro.juega_handball === 'si'" class="col-12 col-md-4">
-            <label class="form-label small fw-bold text-muted">Categoría</label>
-            <input v-if="edicionAbierta" v-model="arbitro.categoria_handball" type="text" class="form-control form-control-sm">
+            <label for="disp-categoria" class="form-label small fw-bold text-muted">Categoría</label>
+            <select v-if="edicionAbierta" id="disp-categoria" v-model="arbitro.categoria_handball" class="form-select form-select-sm" :disabled="cargandoOpcionesHandball">
+              <option :value="null" disabled>{{ cargandoOpcionesHandball ? 'Cargando categorías...' : 'Seleccionar categoría...' }}</option>
+              <optgroup v-for="grupo in categoriasPorRama" :key="grupo.etiqueta" :label="grupo.etiqueta">
+                <option v-for="c in grupo.categorias" :key="c" :value="c">{{ c }}</option>
+              </optgroup>
+            </select>
             <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.categoria_handball || '-' }}</div>
           </div>
           <div class="col-12">
@@ -205,7 +213,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, inject } from 'vue';
+import { ref, computed, onMounted, watch, inject } from 'vue';
 import { auth } from '../../../api/auth';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head'
@@ -225,6 +233,66 @@ const historialRectificaciones = ref([]);
 const cargando = ref(false);
 const movilidadSeleccionada = ref([]);
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
+
+// La columna juega_handball es enum('SI','NO'): la base la devuelve en mayúscula
+// y el formulario trabaja con 'si' / 'no'.
+arbitro.value.juega_handball = String(arbitro.value.juega_handball || 'no').toLowerCase() === 'si' ? 'si' : 'no'
+arbitro.value.donde_juega = arbitro.value.donde_juega || null
+arbitro.value.categoria_handball = arbitro.value.categoria_handball || null
+
+// ─── Clubes y categorías (mismo origen que el registro de árbitros) ──
+const RAMAS = { M: 'Masculino', F: 'Femenino' }
+const clubes = ref([])
+const categorias = ref([])
+const cargandoOpcionesHandball = ref(false)
+
+// Si el valor guardado no está en la lista (dato viejo cargado a mano),
+// se agrega igual para no perderlo al abrir el select.
+const opcionesClubes = computed(() => {
+  const nombres = clubes.value.map(c => c.nombre)
+  const actual = arbitro.value.donde_juega
+  return actual && !nombres.includes(actual) ? [actual, ...nombres] : nombres
+})
+
+const categoriasPorRama = computed(() => {
+  const grupos = {}
+  for (const c of categorias.value) {
+    const etiqueta = RAMAS[c.rama] || 'Otras'
+    if (!grupos[etiqueta]) grupos[etiqueta] = { etiqueta, categorias: [] }
+    grupos[etiqueta].categorias.push(c.nombre)
+  }
+  const lista = Object.values(grupos)
+  const actual = arbitro.value.categoria_handball
+  if (actual && !categorias.value.some(c => c.nombre === actual)) {
+    lista.unshift({ etiqueta: 'Valor actual', categorias: [actual] })
+  }
+  return lista
+})
+
+const cargarOpcionesHandball = async () => {
+  if (clubes.value.length || cargandoOpcionesHandball.value) return
+  cargandoOpcionesHandball.value = true
+  try {
+    const res = await api.get({ entity: 'registro', action: 'obtenerDatosRegistro', payload: {} })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los clubes')
+    clubes.value = res.payload?.clubes ?? []
+    categorias.value = res.payload?.categorias ?? []
+  } catch (e) {
+    console.error('cargarOpcionesHandball:', e)
+    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar los clubes y categorías.', tipo: 'danger' })
+  } finally {
+    cargandoOpcionesHandball.value = false
+  }
+}
+
+const validarActividadDeportiva = () => {
+  if (arbitro.value.juega_handball !== 'si') return true
+  if (!arbitro.value.donde_juega || !arbitro.value.categoria_handball) {
+    toast({ titulo: 'Faltan datos', mensaje: 'Si jugás al handball, seleccioná tu club y tu categoría.', tipo: 'danger' })
+    return false
+  }
+  return true
+}
 
 const obtenerHistorialRectificaciones = async () => {
     try {
@@ -272,7 +340,15 @@ watch(() => arbitro.value.juega_handball, (nuevoValor) => {
   }
 });
 
+// Las opciones se piden solo si hacen falta: edición abierta y juega al handball
+watch(
+  () => edicionAbierta.value && arbitro.value.juega_handball === 'si',
+  (necesita) => { if (necesita) cargarOpcionesHandball() },
+  { immediate: true }
+)
+
 const guardarCambios = async () => {
+    if (!validarActividadDeportiva()) return
     cargando.value = true;
     try {
         const res = await api.post({
