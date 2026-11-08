@@ -109,8 +109,8 @@
           </div>
           <div v-if="arbitro.juega_handball === 'si'" class="col-12 col-md-4">
             <label for="disp-categoria" class="form-label small fw-bold text-muted">Categoría</label>
-            <select v-if="edicionAbierta" id="disp-categoria" v-model="arbitro.categoria_handball" class="form-select form-select-sm" :disabled="cargandoOpcionesHandball">
-              <option :value="null" disabled>{{ cargandoOpcionesHandball ? 'Cargando categorías...' : 'Seleccionar categoría...' }}</option>
+            <select v-if="edicionAbierta" id="disp-categoria" v-model="arbitro.categoria_handball" class="form-select form-select-sm" :disabled="cargandoOpcionesHandball || !arbitro.donde_juega">
+              <option :value="null" disabled>{{ cargandoOpcionesHandball ? 'Cargando categorías...' : (arbitro.donde_juega ? 'Seleccionar categoría...' : 'Elegí primero el club') }}</option>
               <optgroup v-for="grupo in categoriasPorRama" :key="grupo.etiqueta" :label="grupo.etiqueta">
                 <option v-for="c in grupo.categorias" :key="c" :value="c">{{ c }}</option>
               </optgroup>
@@ -254,16 +254,22 @@ const opcionesClubes = computed(() => {
   return actual && !nombres.includes(actual) ? [actual, ...nombres] : nombres
 })
 
+// Solo las categorías de los equipos activos del club elegido (equipos_larry).
+// El club se guarda por nombre, así que se busca su id para filtrar.
+const idClubElegido = computed(() =>
+  clubes.value.find(c => c.nombre === arbitro.value.donde_juega)?.id ?? null
+)
+
 const categoriasPorRama = computed(() => {
   const grupos = {}
-  for (const c of categorias.value) {
+  for (const c of categorias.value.filter(c => c.idClub === idClubElegido.value)) {
     const etiqueta = RAMAS[c.rama] || 'Otras'
     if (!grupos[etiqueta]) grupos[etiqueta] = { etiqueta, categorias: [] }
     grupos[etiqueta].categorias.push(c.nombre)
   }
   const lista = Object.values(grupos)
   const actual = arbitro.value.categoria_handball
-  if (actual && !categorias.value.some(c => c.nombre === actual)) {
+  if (actual && !lista.some(g => g.categorias.includes(actual))) {
     lista.unshift({ etiqueta: 'Valor actual', categorias: [actual] })
   }
   return lista
@@ -339,6 +345,11 @@ watch(() => arbitro.value.juega_handball, (nuevoValor) => {
     arbitro.value.categoria_handball = null;
   }
 });
+
+// Al cambiar de club, la categoría anterior deja de ser válida
+watch(() => arbitro.value.donde_juega, (nuevo, anterior) => {
+  if (anterior !== undefined && nuevo !== anterior) arbitro.value.categoria_handball = null
+})
 
 // Las opciones se piden solo si hacen falta: edición abierta y juega al handball
 watch(

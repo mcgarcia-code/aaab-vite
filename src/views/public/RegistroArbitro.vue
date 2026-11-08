@@ -186,8 +186,8 @@
             </div>
             <div class="col-12 col-md-4">
               <label for="reg-categoria" class="form-label small fw-bold text-dark">Categoría *</label>
-              <select id="reg-categoria" v-model="form.idCategoria" class="form-select" :class="claseCampo('idCategoria')">
-                <option value="" disabled>Seleccionar categoría...</option>
+              <select id="reg-categoria" v-model="form.idCategoria" class="form-select" :class="claseCampo('idCategoria')" :disabled="!form.idClub">
+                <option value="" disabled>{{ form.idClub ? 'Seleccionar categoría...' : 'Elegí primero el club' }}</option>
                 <optgroup v-for="grupo in categoriasPorRama" :key="grupo.rama" :label="grupo.etiqueta">
                   <option v-for="c in grupo.categorias" :key="c.id" :value="c.id">{{ c.nombre }}</option>
                 </optgroup>
@@ -286,9 +286,10 @@ const localidadesFiltradas = computed(() =>
   localidades.value.filter(l => Number(l.provincia_id) === Number(form.provincia))
 )
 
+// Solo las categorías de los equipos activos del club elegido (equipos_larry)
 const categoriasPorRama = computed(() => {
   const grupos = {}
-  for (const c of categorias.value) {
+  for (const c of categorias.value.filter(c => c.idClub === form.idClub)) {
     const rama = c.rama || 'otras'
     if (!grupos[rama]) grupos[rama] = { rama, etiqueta: RAMAS[rama] || 'Otras', categorias: [] }
     grupos[rama].categorias.push(c)
@@ -361,6 +362,7 @@ watch(form, () => { if (intentoEnviar.value) validarFormulario() }, { deep: true
 
 // Limpiezas dependientes
 watch(() => form.provincia, () => { form.localidad = '' })
+watch(() => form.idClub, () => { form.idCategoria = '' })
 watch(() => form.juegaHandball, (valor) => {
   if (valor !== 'si') {
     form.idClub = ''
