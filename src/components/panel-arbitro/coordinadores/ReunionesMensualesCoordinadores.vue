@@ -30,7 +30,7 @@
                 <select
                   v-model="reunionSeleccionada"
                   @change="onReunionSeleccionada"
-                  class="form-select form-select-sm shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion"
+                  class="form-select py-2 small shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion"
                   :disabled="cargandoInicial || cargandoArbitros"
                   aria-label="Elegir reunión"
                 >

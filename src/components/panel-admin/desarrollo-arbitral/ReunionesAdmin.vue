@@ -28,7 +28,7 @@
           <select
             v-model="reunionSeleccionada"
             @change="onReunionSeleccionada"
-            class="form-select form-select-sm shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion mt-2 mt-md-0"
+            class="form-select py-2 small shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion mt-2 mt-md-0"
             :disabled="cargandoInicial || cargandoArbitros"
             aria-label="Elegir reunión"
           >
