@@ -5,9 +5,11 @@
       <!-- COLUMNA IZQUIERDA: FORMULARIO -->
       <div class="col-12 col-lg-4">
         <div class="card shadow p-3 p-md-4 border-0 h-100" style="border-radius: 15px;">
-          <h4 class="text-danger fw-bold mb-3 d-flex align-items-center">
-            <i class="bi bi-calendar me-2"></i> Solicitar Licencia
-          </h4>
+          <div class="border-start border-danger border-5 ps-3 mb-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+              <i class="bi bi-calendar me-1"></i> Solicitar Licencia
+            </h4>
+          </div>
           <p class="text-muted small mb-4">
             Las licencias particulares deben solicitarse con un mínimo de <strong>10 días</strong> de antelación. Las mismas son por día completo, no hay licencias parciales.
           </p>

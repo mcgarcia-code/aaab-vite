@@ -7,7 +7,7 @@
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
               <i class="bi bi-clipboard-data-fill me-1"></i> Mis Informes
             </h4>
             <span class="text-muted small d-block mt-1">Total: {{ informesFiltrados.length }} registros</span>

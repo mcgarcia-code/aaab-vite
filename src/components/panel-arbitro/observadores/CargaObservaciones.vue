@@ -6,7 +6,7 @@
         <!-- ── Header ── -->
         <div class="card-header bg-white py-3 border-bottom">
           <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
               <i class="bi bi-eye me-1"></i> Observación Arbitral
             </h4>
             <span class="text-muted small d-block mt-1">

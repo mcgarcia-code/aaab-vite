@@ -2,15 +2,12 @@
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
     <!-- Cambiamos mb-5 por mb-4 mb-md-5 para que achique automáticamente en celular -->
-    <div class="dashboard-header mb-4 mb-md-5 text-center text-md-start">
-      <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
-        <div class="main-icon-container">
-          <i class="bi bi-bag-fill text-danger"></i>
-        </div>
-        <div>
-          <h4 class="fw-bold text-white m-0">Mi Indumentaria</h4>
-          <p class="small text-white opacity-75 m-0">Gestioná tu equipamiento oficial de la asociación</p>
-        </div>
+    <div class="dashboard-header mb-4 mb-md-5">
+      <div class="border-start border-danger border-5 ps-3">
+        <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+          <i class="bi bi-bag-fill me-1"></i> Mi Indumentaria
+        </h4>
+        <span class="text-white-50 small d-block mt-1">Gestioná tu equipamiento oficial de la asociación</span>
       </div>
     </div>
 
@@ -71,13 +68,6 @@ useHead({
 /* ====================================================
    1. ESTILOS BASE Y COMPONENTES
    ==================================================== */
-.main-icon-container {
-  width: 60px; height: 60px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem; border: 1px solid rgba(255, 255, 255, 0.1);
-}
 
 .modern-menu-card {
   background: white;

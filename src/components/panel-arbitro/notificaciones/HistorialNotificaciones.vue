@@ -4,11 +4,12 @@
     <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
 
       <div class="card-header bg-white py-3 border-bottom">
-        <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-          <span class="material-icons">history</span>
-          Historial de Notificaciones
-        </h4>
-        <p class="text-muted small m-0 mt-1">Revisá todos tus avisos y alertas pasadas.</p>
+        <div class="border-start border-danger border-5 ps-3">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <i class="bi bi-clock-history me-1"></i> Historial de Notificaciones
+          </h4>
+          <span class="text-muted small d-block mt-1">Revisá todos tus avisos y alertas pasadas.</span>
+        </div>
       </div>
 
       <div class="card-body bg-white p-3 p-md-4">

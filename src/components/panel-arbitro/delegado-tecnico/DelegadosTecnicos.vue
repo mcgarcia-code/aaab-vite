@@ -4,11 +4,11 @@
 
       <!-- HEADER -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-        <div>
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-            <i class="bi bi-stopwatch-fill me-2"></i> Planilla Digital
+        <div class="border-start border-danger border-5 ps-3">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <i class="bi bi-stopwatch-fill me-1"></i> Planilla Digital
           </h4>
-          <p class="text-muted small m-0 mt-1">Control de tiempo, anotaciones y eventos del partido.</p>
+          <span class="text-muted small d-block mt-1">Control de tiempo, anotaciones y eventos del partido.</span>
         </div>
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
           <button

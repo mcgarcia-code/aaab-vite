@@ -3,15 +3,11 @@
 
     <!-- Manejo de margen inferior responsivo con mb-4 y mb-md-5 -->
     <div class="dashboard-header mb-4 mb-md-5 mt-4 text-start">
-      <div class="d-flex align-items-center justify-content-start gap-3">
-        <div class="main-icon-container flex-shrink-0">
-          <i class="bi bi-graph-up-arrow text-danger"></i>
-        </div>
-        <div>
-          <!-- Tipografía adaptativa para el título -->
-          <h4 class="fw-bold text-white m-0 fs-5 fs-md-4">Coordinadores</h4>
-          <p class="text-white opacity-75 m-0" style="font-size: 0.85rem;">Gestión de coordinadores</p>
-        </div>
+      <div class="border-start border-danger border-5 ps-3">
+        <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+          <i class="bi bi-graph-up-arrow me-1"></i> Coordinadores
+        </h4>
+        <span class="text-white-50 small d-block mt-1">Gestión de coordinadores</span>
       </div>
     </div>
 
@@ -95,17 +91,6 @@ const opcionesCoordinadores = [
 /* ====================================================
    ESTILOS DE LA CABECERA
    ==================================================== */
-.main-icon-container {
-  width: 60px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
 
 /* ====================================================
    TARJETAS DE NAVEGACIÓN

@@ -3,11 +3,11 @@
 
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-        <div>
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-            <i class="bi bi-clock me-2"></i> Disponibilidad Horaria
+        <div class="border-start border-danger border-5 ps-3">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <i class="bi bi-clock me-1"></i> Disponibilidad Horaria
           </h4>
-          <p class="text-muted small m-0 mt-1">Gestioná tus horarios y actividad deportiva.</p>
+          <span class="text-muted small d-block mt-1">Gestioná tus horarios y actividad deportiva.</span>
         </div>
 
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">

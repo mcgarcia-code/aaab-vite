@@ -13,12 +13,12 @@
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
 
       <!-- Card Header -->
-      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-center border-bottom gap-3 text-center text-md-start">
-        <div class="w-100 w-md-auto">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center justify-content-center justify-content-md-start gap-2 fs-5 fs-md-4">
-            <i class="bi bi-journal-check me-1 me-md-2"></i> Examen Asamblea General - Reunión Mensual
+      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-center border-bottom gap-3">
+        <div class="w-100 w-md-auto border-start border-danger border-5 ps-3">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <i class="bi bi-journal-check me-1"></i> Examen Asamblea General - Reunión Mensual
           </h4>
-          <p class="text-muted small m-0 mt-1">Consultá tus habilitaciones y exámenes teóricos</p>
+          <span class="text-muted small d-block mt-1">Consultá tus habilitaciones y exámenes teóricos</span>
         </div>
 
         <div v-if="estado === 'habilitado' && evento" class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-end w-100 w-md-auto">

@@ -4,11 +4,11 @@
     <!-- RESUMEN DE SALDO -->
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
-        <div>
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-            <i class="bi bi-cash-coin me-2"></i> Mis Aportes
+        <div class="border-start border-danger border-5 ps-3">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <i class="bi bi-cash-coin me-1"></i> Mis Aportes
           </h4>
-          <p class="text-muted small m-0 mt-1">Consultá el estado de tus aportes a la asociación</p>
+          <span class="text-muted small d-block mt-1">Consultá el estado de tus aportes a la asociación</span>
         </div>
         <button @click="cargarTodo" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 align-self-start align-self-md-center">
           <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>

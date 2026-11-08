@@ -5,11 +5,11 @@
 
       <!-- ================= HEADER ================= -->
       <div class="card-header bg-white p-0 border-bottom">
-        <div class="px-3 py-3">
+        <div class="mx-3 my-3 border-start border-danger border-5 ps-3">
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-calendar-week"></i> Mis Designaciones
+            <i class="bi bi-calendar-week me-1"></i> Mis Designaciones
           </h4>
-          <p class="text-muted small m-0 mt-1">Tus partidos designados, próximos y anteriores</p>
+          <span class="text-muted small d-block mt-1">Tus partidos designados, próximos y anteriores</span>
         </div>
 
         <div
