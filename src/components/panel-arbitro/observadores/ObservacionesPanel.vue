@@ -3,7 +3,7 @@
 
     <!-- Cambiamos mb-5 por mb-4 mb-md-5 para que achique en celular -->
     <div class="dashboard-header mb-4 mb-md-5">
-      <div class="border-start border-white border-5 ps-3">
+      <div class="border-start border-danger border-5 ps-3">
         <h4 class="text-white fw-bold m-0 d-flex align-items-center gap-2 fs-5">
           <i class="bi bi-eye me-1"></i> Observaciones
         </h4>
