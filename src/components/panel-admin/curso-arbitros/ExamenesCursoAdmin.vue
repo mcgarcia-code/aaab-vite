@@ -47,6 +47,7 @@
                   <span class="badge flex-shrink-0" :class="TIPOS_EXAMEN[e.tipo]?.clase">{{ TIPOS_EXAMEN[e.tipo]?.etiqueta }}</span>
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
+                  <span v-if="e.idExamenOriginal" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio</span>
                   <span class="badge" :class="claseCurso(e.curso)">{{ etiquetaCurso(e.curso) }}</span>
                   <span v-if="e.online" class="badge" :class="e.habilitado ? 'bg-primary' : 'bg-secondary'"><i class="bi bi-laptop me-1"></i>Online{{ e.habilitado ? ' · habilitado' : ' · cerrado' }}</span>
                   <span v-if="e.tipo === 'teorico'" class="badge bg-light text-dark border">Nota máx. {{ formatoNota(e.notaMaxima) }} · aprueba con {{ formatoNota(e.porcentajeAprobacion) }}%</span>
@@ -57,9 +58,12 @@
                   <span class="text-dark fw-bold">{{ e.cargadas }}</span> notas cargadas ·
                   <span class="text-success fw-bold">{{ e.aprobados }}</span> aprobados ·
                   <span class="text-secondary fw-bold">{{ e.ausentes }}</span> ausentes
+                  <template v-if="e.recuperatorios"> · <span class="text-warning-emphasis fw-bold">{{ e.recuperatorios }}</span> recuperatorio(s)</template>
                 </div>
                 <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
                   <button @click="abrirNotas(e)" class="btn btn-sm btn-success flex-fill fw-bold"><i class="bi bi-pencil-square me-1"></i> {{ e.tipo === 'teorico' ? 'Cargar notas' : 'Cargar resultados' }}</button>
+                  <button v-if="!e.idExamenOriginal && e.desaprobados" @click="abrirRecuperatorio(e)" class="btn btn-sm btn-warning fw-bold flex-fill"><i class="bi bi-arrow-repeat me-1"></i> Recuperatorio</button>
+                  <button v-if="e.idExamenOriginal && e.online" @click="abrirConfigRecuperatorio(e)" class="btn btn-sm btn-outline-dark fw-bold" title="Configurar examen online" aria-label="Configurar examen online"><i class="bi bi-sliders"></i></button>
                   <button @click="abrirEditar(e)" class="btn btn-sm btn-outline-primary fw-bold" title="Editar examen" aria-label="Editar examen"><i class="bi bi-pencil"></i></button>
                   <button @click="confirmarEliminar(e)" class="btn btn-sm btn-outline-danger fw-bold" title="Borrar examen" aria-label="Borrar examen"><i class="bi bi-trash3"></i></button>
                 </div>
@@ -187,6 +191,36 @@
       </template>
     </ModalBase>
 
+    <!-- MODAL RECUPERATORIO -->
+    <ModalBase :show="!!recuperatorio" @close="recuperatorio = null" icono="restart_alt" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="680px">
+      <template #header>
+        <div v-if="recuperatorio" class="text-center w-100">
+          <span class="fw-bold fs-5">{{ recuperatorio.idExamen ? 'Configurar recuperatorio' : 'Programar recuperatorio' }}</span>
+          <div class="text-muted small mt-1">{{ recuperatorio.titulo }}</div>
+        </div>
+      </template>
+      <form v-if="recuperatorio" id="formRecuperatorio" class="text-start" novalidate @submit.prevent="guardarRecuperatorio">
+        <p v-if="!recuperatorio.idExamen" class="small text-muted">
+          Solo lo pueden rendir los <strong>{{ recuperatorio.desaprobados }}</strong> aspirante(s) que desaprobaron o estuvieron ausentes en el examen original. Les llega una notificación.
+        </p>
+        <div v-if="!recuperatorio.idExamen" class="mb-3">
+          <label for="recup-fecha" class="form-label small fw-bold text-dark">Fecha del recuperatorio *</label>
+          <input id="recup-fecha" v-model="recuperatorio.fecha" type="date" class="form-control" :class="{ 'is-invalid': intentoRecuperatorio && !recuperatorio.fecha }">
+        </div>
+        <ConfigExamenOnline v-if="recuperatorio.online" ref="configRef" v-model="recuperatorio.config" prefijo="recup" :intento="intentoRecuperatorio" />
+        <div v-else class="alert alert-light border small py-2 mb-0">
+          <i class="bi bi-info-circle me-1"></i> Después cargás el resultado desde "{{ recuperatorio.tipo === 'teorico' ? 'Cargar notas' : 'Cargar resultados' }}" del recuperatorio.
+        </div>
+      </form>
+      <template #footer>
+        <button type="button" @click="recuperatorio = null" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button type="submit" form="formRecuperatorio" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoRecuperatorio">
+          <span v-if="guardandoRecuperatorio" class="spinner-border spinner-border-sm me-1"></span>
+          GUARDAR
+        </button>
+      </template>
+    </ModalBase>
+
     <!-- MODAL NOTAS -->
     <ModalBase :show="mostrarNotas" @close="mostrarNotas = false" icono="grading" colorIcono="bg-success-subtle text-success" maxWidth="900px">
       <template #header>
@@ -278,6 +312,7 @@ import { ref, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
+import ConfigExamenOnline from '@/components/ConfigExamenOnline.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
@@ -357,7 +392,12 @@ const indiceNotas = computed(() => {
 })
 
 const celda = (e, a) => indiceNotas.value[`${e.id}-${a.id}`] || null
-const correspondeExamen = (e, a) => e.curso === 'ambos' || e.curso === a.modalidadCurso
+const correspondeExamen = (e, a) => {
+  if (e.curso !== 'ambos' && e.curso !== a.modalidadCurso) return false
+  if (!e.idExamenOriginal) return true
+  const original = celda({ id: e.idExamenOriginal }, a)
+  return Boolean(original && (original.aprobado === false || original.ausente))
+}
 
 const aprobadoCelda = (e, a) => {
   const n = celda(e, a)
@@ -514,6 +554,56 @@ const descargarPdf = async (n) => {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
   } finally {
     descargandoPdf.value = null
+  }
+}
+
+// ─── Recuperatorios ──────────────────────────────────────────────
+const recuperatorio = ref(null)
+const intentoRecuperatorio = ref(false)
+const guardandoRecuperatorio = ref(false)
+const configRef = ref(null)
+const configVacia = () => ({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true })
+
+const abrirRecuperatorio = (e) => {
+  intentoRecuperatorio.value = false
+  recuperatorio.value = {
+    idExamen: null, idExamenOriginal: e.id, titulo: e.titulo, tipo: e.tipo, online: e.online,
+    desaprobados: e.desaprobados, fecha: '', config: configVacia(),
+  }
+}
+
+const abrirConfigRecuperatorio = async (e) => {
+  try {
+    const res = await api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerConfigOnlineExamenCurso', payload: { idExamen: e.id } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar la configuración')
+    intentoRecuperatorio.value = false
+    recuperatorio.value = { idExamen: e.id, titulo: e.titulo, tipo: e.tipo, online: true, config: res.payload }
+  } catch (err) {
+    notificar({ titulo: 'Error', mensaje: err.message, tipo: 'danger' })
+  }
+}
+
+const guardarRecuperatorio = async () => {
+  intentoRecuperatorio.value = true
+  const r = recuperatorio.value
+  const errorConfig = r.online ? configRef.value?.validar() : ''
+  if ((!r.idExamen && !r.fecha) || errorConfig) {
+    notificar({ titulo: 'Faltan datos', mensaje: errorConfig || 'Elegí la fecha del recuperatorio.', tipo: 'danger' })
+    return
+  }
+  guardandoRecuperatorio.value = true
+  try {
+    const res = r.idExamen
+      ? await api.post({ entity: 'examen_online_curso_arbitro', action: 'actualizarRecuperatorioOnlineCurso', payload: { idExamen: r.idExamen, ...r.config } })
+      : await api.post({ entity: 'examen_online_curso_arbitro', action: 'programarRecuperatorioCurso', payload: { idExamenOriginal: r.idExamenOriginal, fecha: r.fecha, ...r.config } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el recuperatorio')
+    toast({ titulo: 'Guardado', mensaje: r.idExamen ? 'El recuperatorio se actualizó.' : 'El recuperatorio se programó y se avisó a los aspirantes.', tipo: 'success' })
+    recuperatorio.value = null
+    await cargarExamenes()
+  } catch (err) {
+    notificar({ titulo: 'Error', mensaje: err.message, tipo: 'danger' })
+  } finally {
+    guardandoRecuperatorio.value = false
   }
 }
 

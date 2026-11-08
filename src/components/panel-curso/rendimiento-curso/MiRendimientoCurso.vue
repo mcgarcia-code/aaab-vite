@@ -6,7 +6,7 @@
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
             <i class="bi bi-graph-up-arrow me-1"></i> Mi Rendimiento
           </h4>
-          <span class="text-muted small d-block mt-1">Asistencia a clases y notas de exámenes · Curso {{ datos.anio }}</span>
+          <span class="text-muted small d-block mt-1">Asistencia a clases<template v-if="datos.modalidad === 'anual'">, encuentros de mini</template> y notas de exámenes · Curso {{ datos.anio }}</span>
         </div>
       </div>
 
@@ -60,6 +60,30 @@
           </div>
         </div>
 
+        <!-- ENCUENTROS DE MINI (solo curso anual) -->
+        <template v-if="datos.modalidad === 'anual'">
+          <h6 class="titulo-seccion"><i class="bi bi-people me-1"></i> Encuentros de mini</h6>
+          <div v-if="!datos.mini?.length" class="text-muted small fst-italic mb-4">Todavía no fuiste convocado/a a encuentros de mini.</div>
+          <template v-else>
+            <div class="d-flex flex-wrap gap-1 mb-2">
+              <span class="badge bg-success">{{ datos.mini.filter(m => m.asistencia === 'presente').length }} presentes</span>
+              <span class="badge bg-secondary">{{ datos.mini.filter(m => m.asistencia === 'ausente').length }} ausentes</span>
+              <span class="badge bg-light text-dark border">{{ datos.mini.length }} convocatorias</span>
+            </div>
+            <div class="d-flex flex-column gap-2 mb-4">
+              <div v-for="m in datos.mini" :key="'mini-' + m.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
+                <div class="min-w-0">
+                  <div class="fw-bold text-dark small text-truncate">{{ m.titulo }}</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">
+                    {{ fechaLargaClase(m.fecha) }}<template v-if="m.hora"> · {{ m.hora }} hs</template><template v-if="m.lugar"> · {{ m.lugar }}</template>
+                  </div>
+                </div>
+                <span class="badge flex-shrink-0" :class="claseAsistencia(m.asistencia)">{{ textoAsistencia(m.asistencia) }}</span>
+              </div>
+            </div>
+          </template>
+        </template>
+
         <!-- EXÁMENES -->
         <h6 class="titulo-seccion"><i class="bi bi-journal-text me-1"></i> Exámenes</h6>
         <div v-if="!datos.examenes.length" class="text-muted small fst-italic">Todavía no tenés notas cargadas.</div>
@@ -92,7 +116,7 @@ useHead({ title: 'Mi Rendimiento | Curso AAAB' })
 
 const toast = inject('toast', (m) => alert(m.mensaje || m))
 
-const datos = ref({ anio: new Date().getFullYear(), clases: [], examenes: [] })
+const datos = ref({ anio: new Date().getFullYear(), modalidad: '', clases: [], mini: [], examenes: [] })
 const cargando = ref(true)
 
 const resumen = computed(() => {
