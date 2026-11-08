@@ -50,8 +50,27 @@
           <span class="fw-bold">Todavía no tenés exámenes cargados.</span>
         </div>
         <div v-else class="card-body p-3 p-md-4">
-          <div class="row g-3">
-            <div v-for="e in examenes" :key="e.id" class="col-12 col-md-6">
+          <ul class="nav nav-pills nav-fill gap-1 mb-3 pestanas" role="tablist">
+            <li v-for="tipo in TIPOS" :key="tipo" class="nav-item" role="presentation">
+              <button type="button" class="nav-link fw-bold w-100" :class="{ active: pestana === tipo }" role="tab" :aria-selected="pestana === tipo" @click="pestana = tipo">
+                <i :class="['bi', ICONOS_TIPO[tipo], 'd-none d-sm-inline me-1']"></i>{{ ETIQUETAS_TIPO[tipo] }}
+                <span class="badge rounded-pill ms-1" :class="pestana === tipo ? 'bg-white text-danger' : 'bg-secondary'">{{ porTipo[tipo].length }}</span>
+              </button>
+            </li>
+          </ul>
+
+          <div v-if="porTipo[pestana].length" class="d-flex flex-wrap gap-1 mb-3 small">
+            <span class="badge bg-success">{{ resumenPestana.aprobados }} aprobados</span>
+            <span class="badge bg-danger">{{ resumenPestana.desaprobados }} desaprobados</span>
+            <span v-if="resumenPestana.pendientes" class="badge bg-light text-muted border">{{ resumenPestana.pendientes }} pendientes</span>
+          </div>
+
+          <div v-if="!porTipo[pestana].length" class="text-center py-4 text-muted">
+            <i :class="['bi', ICONOS_TIPO[pestana], 'fs-1 d-block mb-2 opacity-50']"></i>
+            <span class="fw-bold small">{{ VACIO_TIPO[pestana] }}</span>
+          </div>
+          <div v-else class="row g-3">
+            <div v-for="e in porTipo[pestana]" :key="e.id" class="col-12 col-md-6">
               <div class="examen-card h-100 d-flex flex-column">
                 <div class="d-flex justify-content-between align-items-start gap-2">
                   <div class="min-w-0">
@@ -65,7 +84,6 @@
                   </div>
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
-                  <span class="badge bg-light text-dark border">{{ ETIQUETAS_TIPO[e.tipo] || 'Teórico' }}</span>
                   <span v-if="e.online" class="badge bg-light text-dark border"><i class="bi bi-laptop me-1"></i>Online</span>
                   <span v-if="e.ausente" class="badge bg-secondary">Ausente</span>
                   <span v-else-if="estaAprobado(e) !== null" class="badge" :class="estaAprobado(e) ? 'bg-success' : 'bg-danger'">
@@ -105,7 +123,31 @@ const cargando = ref(true)
 const examenEnCurso = ref(null)
 const descargando = ref(null)
 
+const TIPOS = ['teorico', 'practico', 'fisico']
 const ETIQUETAS_TIPO = { teorico: 'Teórico', practico: 'Práctico', fisico: 'Físico' }
+const ICONOS_TIPO = { teorico: 'bi-journal-text', practico: 'bi-flag', fisico: 'bi-stopwatch' }
+const VACIO_TIPO = {
+  teorico: 'Todavía no hay exámenes teóricos.',
+  practico: 'Todavía no tenés prácticos evaluados.',
+  fisico: 'Todavía no tenés exámenes físicos evaluados.',
+}
+
+const pestana = ref('teorico')
+
+// Práctico y físico se cargan por aspirante: se muestran solo los que ya tienen resultado
+const porTipo = computed(() => Object.fromEntries(TIPOS.map(tipo => [
+  tipo,
+  examenes.value.filter(e => (e.tipo || 'teorico') === tipo && (tipo === 'teorico' || e.nota !== null || e.ausente)),
+])))
+
+const resumenPestana = computed(() => {
+  const lista = porTipo.value[pestana.value]
+  return {
+    aprobados: lista.filter(e => !e.ausente && estaAprobado(e) === true).length,
+    desaprobados: lista.filter(e => e.ausente || estaAprobado(e) === false).length,
+    pendientes: lista.filter(e => !e.ausente && estaAprobado(e) === null).length,
+  }
+})
 
 const pendientes = computed(() => online.value.filter(x => x.estado !== 'finalizado'))
 
@@ -166,4 +208,6 @@ onMounted(async () => {
 .nota { font-size: 1.6rem; font-weight: 800; line-height: 1; }
 .comentario { white-space: pre-wrap; background: #f8fafc; border-radius: 8px; padding: 8px 10px; }
 .min-w-0 { min-width: 0; }
+.pestanas .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; padding: 0.5rem 0.25rem; }
+.pestanas .nav-link.active { background: #dc3545; color: #fff; }
 </style>
