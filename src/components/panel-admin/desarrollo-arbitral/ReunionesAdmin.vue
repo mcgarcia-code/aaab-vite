@@ -347,11 +347,11 @@
             </select>
             <button
               @click="exportarExcelDisertantes"
-              class="btn btn-success btn-sm shadow-sm py-2 px-3 d-flex align-items-center justify-content-center gap-2 text-white border-0 flex-shrink-0"
+              class="btn btn-success shadow-sm py-2 d-flex align-items-center justify-content-center gap-2 text-white border-0 flex-shrink-0"
               :disabled="cargandoDisertantes || !filasDisertantesFiltradas.length"
             >
-              <i class="bi bi-file-earmark-excel"></i>
-              <span class="fw-bold small">Exportar Excel</span>
+              <span class="material-icons fs-6">download</span>
+              <span class="fw-bold d-none d-md-inline small">Excel</span>
             </button>
           </div>
         </div>
