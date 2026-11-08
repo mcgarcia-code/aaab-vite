@@ -35,7 +35,7 @@
               v-model="busqueda"
               type="text"
               class="form-control border-0 py-2 py-md-3 bg-light shadow-none input-filtro-custom"
-              placeholder="Buscar por prenda o estado..."
+              placeholder="BUSCAR POR PRENDA O ESTADO..."
             >
           </div>
         </div>

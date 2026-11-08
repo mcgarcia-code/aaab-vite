@@ -658,7 +658,7 @@
         v-model="busquedaArbitro"
         type="text"
         class="form-control shadow-none border-secondary-subtle mb-3"
-        placeholder="Buscar por apellido o nombre..."
+        placeholder="BUSCAR POR APELLIDO O NOMBRE..."
       >
 
       <div class="lista-arbitros border rounded">

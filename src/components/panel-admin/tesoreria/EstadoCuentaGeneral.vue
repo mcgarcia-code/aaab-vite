@@ -26,7 +26,7 @@
         </div>
 
         <div class="bg-light p-3 border-bottom">
-          <input v-model="busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar árbitro...">
+          <input v-model="busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO...">
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">

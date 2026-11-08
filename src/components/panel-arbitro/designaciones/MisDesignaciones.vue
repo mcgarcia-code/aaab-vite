@@ -188,7 +188,7 @@
 
               <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
                 <span class="small fw-bold text-muted text-uppercase">Filtrar por año:</span>
-                <select v-model="anioSeleccionado" class="form-select form-select-sm shadow-none w-auto fw-bold">
+                <select v-model="anioSeleccionado" class="form-select form-select-sm shadow-none w-auto fw-bold text-uppercase text-dark">
                   <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
                 </select>
               </div>
@@ -547,7 +547,7 @@
 </template>
 
 <script setup>
-import { anioActual, conAnioActual } from '@/composables/useAnioActual'
+import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '../../../api/auth'

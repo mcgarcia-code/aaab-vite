@@ -49,7 +49,7 @@
             <div class="col-12 col-md-6">
               <div class="input-group input-group-sm shadow-sm">
                 <span class="input-group-text bg-white border-end-0 text-muted ps-3"><i class="bi bi-search"></i></span>
-                <input v-model="filtros.modelo" type="text" class="form-control border-start-0 py-2" placeholder="Buscar por nombre de modelo...">
+                <input v-model="filtros.modelo" type="text" class="form-control border-start-0 py-2" placeholder="BUSCAR POR NOMBRE DE MODELO...">
               </div>
             </div>
             <div class="col-12 col-md-auto d-md-none mt-2">

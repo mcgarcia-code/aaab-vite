@@ -43,16 +43,16 @@
 
           <div class="row g-2">
             <div class="col-12 col-md-3">
-              <input v-model="filtros.club" class="form-control form-control-sm shadow-none py-2" placeholder="Filtrar por club o institución...">
+              <input v-model="filtros.club" class="form-control form-control-sm shadow-none py-2" placeholder="FILTRAR POR CLUB O INSTITUCIÓN...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.forma_de_pago" class="form-control form-control-sm shadow-none py-2" placeholder="Forma de pago...">
+              <input v-model="filtros.forma_de_pago" class="form-control form-control-sm shadow-none py-2" placeholder="FORMA DE PAGO...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.cuit" class="form-control form-control-sm shadow-none py-2" placeholder="Filtrar por CUIT...">
+              <input v-model="filtros.cuit" class="form-control form-control-sm shadow-none py-2" placeholder="FILTRAR POR CUIT...">
             </div>
             <div class="col-12 col-md-3">
-              <input v-model="filtros.condicion" class="form-control form-control-sm shadow-none py-2" placeholder="Filtrar por Condición IVA...">
+              <input v-model="filtros.condicion" class="form-control form-control-sm shadow-none py-2" placeholder="FILTRAR POR CONDICIÓN IVA...">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">

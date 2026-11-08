@@ -52,25 +52,25 @@
           <div class="row g-2">
             <!-- Concepto / Categoría -->
             <div class="col-12 col-md-4">
-              <input v-model="filtros.texto" type="text" class="form-control form-control-sm shadow-none" placeholder="Concepto o categoría...">
+              <input v-model="filtros.texto" type="text" class="form-control form-control-sm shadow-none" placeholder="CONCEPTO O CATEGORÍA...">
             </div>
 
             <!-- Tipo -->
             <div class="col-6 col-md-3">
-              <select v-model="filtros.tipo" class="form-select form-select-sm shadow-none">
-                <option value="">TIPO (TODOS)</option>
-                <option value="fijo">Otros conceptos</option>
-                <option value="partido">Valor de partido</option>
+              <select v-model="filtros.tipo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">TIPO</option>
+                <option value="fijo">OTROS CONCEPTOS</option>
+                <option value="partido">VALOR DE PARTIDO</option>
               </select>
             </div>
 
             <!-- Estado -->
             <div class="col-6 col-md-3">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
-                <option value="">ESTADO (TODOS)</option>
-                <option value="definido">Definido</option>
-                <option value="sin_definir">Sin definir</option>
-                <option value="exenta">Exenta</option>
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ESTADO</option>
+                <option value="definido">DEFINIDO</option>
+                <option value="sin_definir">SIN DEFINIR</option>
+                <option value="exenta">EXENTA</option>
               </select>
             </div>
 

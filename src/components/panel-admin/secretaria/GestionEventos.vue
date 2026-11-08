@@ -42,14 +42,14 @@
 
           <div class="row g-2">
             <div class="col-12 col-md-2">
-              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar tema o descripcion...">
+              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR TEMA O DESCRIPCION...">
             </div>
             <div class="col-6 col-md-2">
               <input type="date" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.categoria" class="form-select form-select-sm shadow-none">
-                <option value="">TODAS LAS CATEGORIAS</option>
+              <select v-model="filtros.categoria" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">CATEGORÍA</option>
                 <option value="reunion">REUNION</option>
                 <option value="recordatorio">RECORDATORIO</option>
                 <option value="urgente">URGENTE</option>
@@ -58,20 +58,20 @@
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
-                <option value="">GRUPO (TODOS)</option>
+              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">GRUPO</option>
                 <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
-                <option value="">SUBGRUPO (TODOS)</option>
+              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">SUBGRUPO</option>
                 <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
-                <option value="">AÑO (TODOS)</option>
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">AÑO</option>
                 <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
               </select>
             </div>
@@ -251,7 +251,7 @@
 </template>
 
 <script setup>
-import { conAnioActual } from '@/composables/useAnioActual'
+import { conAnioActual } from '@/utils/anios'
 import { ref, reactive, onMounted, inject, computed, watch } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'

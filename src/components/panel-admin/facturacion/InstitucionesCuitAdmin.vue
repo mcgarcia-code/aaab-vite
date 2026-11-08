@@ -52,26 +52,26 @@
 
           <div class="row g-2">
             <div class="col-12 col-md-3">
-              <input v-model="filtros.club" class="form-control form-control-sm shadow-none" placeholder="Buscar club...">
+              <input v-model="filtros.club" class="form-control form-control-sm shadow-none" placeholder="BUSCAR CLUB...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.forma_de_pago" class="form-control form-control-sm shadow-none" placeholder="Forma de pago...">
+              <input v-model="filtros.forma_de_pago" class="form-control form-control-sm shadow-none" placeholder="FORMA DE PAGO...">
             </div>
             <div class="col-6 col-md-2">
               <input v-model="filtros.cuit" class="form-control form-control-sm shadow-none" placeholder="CUIT...">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.condicion" class="form-select form-select-sm shadow-none">
-                <option value="">Condición IVA (Todas)</option>
-                <option value="Consumidor Final">Consumidor Final</option>
-                <option value="Exento">Exento</option>
-                <option value="Responsable Inscripto">Resp. Inscripto</option>
-                <option value="Inscripto">Inscripto</option>
-                <option value="Monotributo">Monotributo</option>
+              <select v-model="filtros.condicion" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">CONDICIÓN IVA</option>
+                <option value="Consumidor Final">CONSUMIDOR FINAL</option>
+                <option value="Exento">EXENTO</option>
+                <option value="Responsable Inscripto">RESP. INSCRIPTO</option>
+                <option value="Inscripto">INSCRIPTO</option>
+                <option value="Monotributo">MONOTRIBUTO</option>
               </select>
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.email" class="form-control form-control-sm shadow-none" placeholder="Email...">
+              <input v-model="filtros.email" class="form-control form-control-sm shadow-none" placeholder="EMAIL...">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">

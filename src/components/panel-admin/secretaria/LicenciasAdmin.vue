@@ -52,14 +52,14 @@
 
           <div class="row g-2">
             <div class="col-6 col-md-2">
-              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido...">
+              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre...">
+              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
-                <option value="">ESTADO (TODOS)</option>
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ESTADO</option>
                 <option value="pendiente">PENDIENTE</option>
                 <option value="aprobada">APROBADA</option>
                 <option value="rechazada">RECHAZADA</option>
@@ -68,16 +68,16 @@
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
-                <option value="">AÑO (TODOS)</option>
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">AÑO</option>
                 <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <input type="text" v-model="filtros.fecha_solicitud" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. Solicitud">
+              <input type="text" v-model="filtros.fecha_solicitud" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. SOLICITUD">
             </div>
             <div class="col-6 col-md-2">
-              <input type="text" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. Ausencia o indeterminada">
+              <input type="text" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. AUSENCIA O INDETERMINADA">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
@@ -366,7 +366,7 @@
 </template>
 
 <script setup>
-import { anioActual, conAnioActual } from '@/composables/useAnioActual'
+import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'
@@ -386,7 +386,7 @@ const arbitrosLista = ref([])
 const cargando = ref(false)
 
 const filtros = reactive({
-  apellido: '', nombre: '', estado: '', fecha: '', fecha_solicitud: '', anio: ''
+  apellido: '', nombre: '', estado: '', fecha: '', fecha_solicitud: '', anio: anioActual()
 })
 
 const mostrarFiltrosMobile = ref(false)

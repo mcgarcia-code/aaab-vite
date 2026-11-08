@@ -42,13 +42,13 @@
           </div>
           <div class="row g-2">
             <div class="col-6 col-md-4">
-              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar árbitro o motivo...">
+              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO O MOTIVO...">
             </div>
             <div class="col-6 col-md-3">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
-                <option value="">Estado (Todos)</option>
-                <option value="activo">Activo</option>
-                <option value="finalizado">Finalizado</option>
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ESTADO</option>
+                <option value="activo">ACTIVO</option>
+                <option value="finalizado">FINALIZADO</option>
               </select>
             </div>
             <div class="col-12 d-md-none mt-2">

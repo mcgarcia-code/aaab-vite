@@ -15,8 +15,8 @@
         <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
           <div class="d-flex align-items-center gap-1">
             <label class="text-muted small text-nowrap mb-0">Año:</label>
-            <select v-model="filtroAnio" class="form-select form-select-sm shadow-none" style="min-width: 110px;">
-              <option value="">Todos</option>
+            <select v-model="filtroAnio" class="form-select form-select-sm shadow-none text-uppercase text-dark" style="min-width: 110px;">
+              <option value="">TODOS</option>
               <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
             </select>
           </div>
@@ -149,7 +149,7 @@
 </template>
 
 <script setup>
-import { anioActual, conAnioActual } from '@/composables/useAnioActual'
+import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, computed, onMounted, inject } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'

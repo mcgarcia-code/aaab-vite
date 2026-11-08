@@ -37,44 +37,44 @@
 
           <div class="row g-2">
             <div class="col-6">
-              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido...">
+              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
             </div>
             <div class="col-6">
-              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre...">
+              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
             </div>
             <div class="col-6">
-              <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none">
-                <option value="">Activo (Todos)</option>
-                <option value="1">Sólo Activos</option>
-                <option value="0">Sólo Inactivos</option>
+              <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ACTIVO</option>
+                <option value="1">SÓLO ACTIVOS</option>
+                <option value="0">SÓLO INACTIVOS</option>
               </select>
             </div>
             <div class="col-6">
-              <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none">
-                <option value="">Apto (Todos)</option>
-                <option value="1">Sólo Aptos</option>
-                <option value="0">No Aptos</option>
+              <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">APTO</option>
+                <option value="1">SÓLO APTOS</option>
+                <option value="0">NO APTOS</option>
               </select>
             </div>
             <div class="col-12">
-              <select v-model="filtros.licencia" class="form-select form-select-sm shadow-none">
-                <option value="">Licencia/Sanción (Todas)</option>
-                <option value="sin_licencia">Sin Licencia</option>
-                <option value="aprobada">Aprobada</option>
-                <option value="rechazada">Rechazada</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="sancion_vigente">Sanción Vigente</option>
-                <option value="sancion_proceso">Sanción en Proceso</option>
+              <select v-model="filtros.licencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">LICENCIA/SANCIÓN</option>
+                <option value="sin_licencia">SIN LICENCIA</option>
+                <option value="aprobada">APROBADA</option>
+                <option value="rechazada">RECHAZADA</option>
+                <option value="pendiente">PENDIENTE</option>
+                <option value="sancion_vigente">SANCIÓN VIGENTE</option>
+                <option value="sancion_proceso">SANCIÓN EN PROCESO</option>
               </select>
             </div>
             <div class="col-6">
-              <input v-model="filtros.grupo" class="form-control form-control-sm shadow-none" placeholder="Grupo">
+              <input v-model="filtros.grupo" class="form-control form-control-sm shadow-none" placeholder="GRUPO">
             </div>
             <div class="col-6">
-              <input v-model="filtros.subgrupo" class="form-control form-control-sm shadow-none" placeholder="Sub-grupo">
+              <input v-model="filtros.subgrupo" class="form-control form-control-sm shadow-none" placeholder="SUB-GRUPO">
             </div>
             <div class="col-12">
-              <input v-model="filtros.zona" class="form-control form-control-sm shadow-none" placeholder="Zona...">
+              <input v-model="filtros.zona" class="form-control form-control-sm shadow-none" placeholder="ZONA...">
             </div>
             <div class="col-12 mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
@@ -111,31 +111,31 @@
                   <th class="py-3 text-center text-uppercase text-muted">Observaciones</th>
                 </tr>
                 <tr class="bg-light">
-                  <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
-                  <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
+                  <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
+                  <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
                   <td class="p-2 border-bottom border-2 col-fija col-licencia">
-                    <select v-model="filtros.licencia" class="form-select form-select-sm shadow-none">
-                      <option value="">Todas</option>
-                      <option value="sin_licencia">Sin Lic.</option>
-                      <option value="aprobada">Aprobada</option>
-                      <option value="rechazada">Rechazada</option>
-                      <option value="pendiente">Pendiente</option>
-                      <option value="sancion_vigente">Sanción Vig.</option>
-                      <option value="sancion_proceso">Sanc. Proc.</option>
+                    <select v-model="filtros.licencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <option value="">TODAS</option>
+                      <option value="sin_licencia">SIN LIC.</option>
+                      <option value="aprobada">APROBADA</option>
+                      <option value="rechazada">RECHAZADA</option>
+                      <option value="pendiente">PENDIENTE</option>
+                      <option value="sancion_vigente">SANCIÓN VIG.</option>
+                      <option value="sancion_proceso">SANC. PROC.</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2"></td>
                   <td class="p-2 border-bottom border-2"></td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none">
-                      <option value="">Todos</option>
+                    <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <option value="">TODOS</option>
                       <option value="1">SÍ</option>
                       <option value="0">NO</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none">
-                      <option value="">Todos</option>
+                    <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <option value="">TODOS</option>
                       <option value="1">SÍ</option>
                       <option value="0">NO</option>
                     </select>

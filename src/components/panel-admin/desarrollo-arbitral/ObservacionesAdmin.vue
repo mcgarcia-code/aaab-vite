@@ -52,34 +52,34 @@
 
           <div class="row g-2 flex-md-nowrap">
             <div class="col-6 col-md-2">
-              <input v-model="filtros.nombre_observador" class="form-control form-control-sm shadow-none" placeholder="Observador...">
+              <input v-model="filtros.nombre_observador" class="form-control form-control-sm shadow-none" placeholder="OBSERVADOR...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.arbitros" class="form-control form-control-sm shadow-none" placeholder="Árbitros observados...">
+              <input v-model="filtros.arbitros" class="form-control form-control-sm shadow-none" placeholder="ÁRBITROS OBSERVADOS...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.competencia" class="form-control form-control-sm shadow-none" placeholder="Competencia...">
+              <input v-model="filtros.competencia" class="form-control form-control-sm shadow-none" placeholder="COMPETENCIA...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="Categoría...">
+              <input v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="CATEGORÍA...">
             </div>
             <div class="col-12 col-md-1">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.estado }">
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="aprobada">Aprobada</option>
-                <option value="rechazada">Rechazada</option>
-                <option value="anulada">Anulada</option>
+                <option value="pendiente">PENDIENTE</option>
+                <option value="aprobada">APROBADA</option>
+                <option value="rechazada">RECHAZADA</option>
+                <option value="anulada">ANULADA</option>
               </select>
             </div>
             <div class="col-6 col-md-1">
-              <select v-model="filtros.mes" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.mes }" aria-label="Filtrar por mes">
+              <select v-model="filtros.mes" class="form-select form-select-sm shadow-none text-uppercase text-dark" aria-label="Filtrar por mes">
                 <option value="">MES</option>
                 <option v-for="m in MESES" :key="m.valor" :value="m.valor">{{ m.nombre }}</option>
               </select>
             </div>
             <div class="col-6 col-md-1">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">AÑO</option>
                 <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
               </select>
@@ -661,7 +661,7 @@
 </template>
 
 <script setup>
-import { anioActual, conAnioActual } from '@/composables/useAnioActual'
+import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
 import { api } from '@/api/api';
 import ExcelJS from 'exceljs'

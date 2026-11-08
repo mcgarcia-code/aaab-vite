@@ -15,7 +15,7 @@
             <input
               v-model="filtro"
               class="form-control form-control-lg buscador-publico shadow-lg"
-              placeholder="🔍 Buscar por árbitro o motivo..."
+              placeholder="🔍 BUSCAR POR ÁRBITRO O MOTIVO..."
             >
           </div>
 

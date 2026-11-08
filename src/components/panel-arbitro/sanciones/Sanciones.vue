@@ -35,25 +35,25 @@
 
         <div class="row g-2">
           <div class="col-12 col-md-2">
-            <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
-              <option value="">Estado (Todos)</option>
-              <option value="vigente">Vigente</option>
-              <option value="cumplida">Cumplida</option>
-              <option value="en_proceso">En Proceso</option>
-              <option value="anulada">Anulada</option>
+            <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <option value="">ESTADO</option>
+              <option value="vigente">VIGENTE</option>
+              <option value="cumplida">CUMPLIDA</option>
+              <option value="en_proceso">EN PROCESO</option>
+              <option value="anulada">ANULADA</option>
             </select>
           </div>
           <div class="col-12 col-md-3">
-            <input v-model="filtros.sancion" class="form-control form-control-sm shadow-none" placeholder="Buscar Sanción...">
+            <input v-model="filtros.sancion" class="form-control form-control-sm shadow-none" placeholder="BUSCAR SANCIÓN...">
           </div>
           <div class="col-12 col-md-3">
-            <input v-model="filtros.motivo_articulo" class="form-control form-control-sm shadow-none" placeholder="Motivo / Art...">
+            <input v-model="filtros.motivo_articulo" class="form-control form-control-sm shadow-none" placeholder="MOTIVO / ART...">
           </div>
           <div class="col-6 col-md-2">
-            <input type="text" v-model="filtros.desde" class="form-control form-control-sm shadow-none" placeholder="Desde (DD/MM/AAAA)">
+            <input type="text" v-model="filtros.desde" class="form-control form-control-sm shadow-none" placeholder="DESDE (DD/MM/AAAA)">
           </div>
           <div class="col-6 col-md-2">
-            <input type="text" v-model="filtros.hasta" class="form-control form-control-sm shadow-none" placeholder="Hasta (DD/MM/AAAA)">
+            <input type="text" v-model="filtros.hasta" class="form-control form-control-sm shadow-none" placeholder="HASTA (DD/MM/AAAA)">
           </div>
           <div class="col-12 d-md-none mt-2">
             <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold">Aplicar Filtros</button>

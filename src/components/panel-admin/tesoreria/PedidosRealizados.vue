@@ -50,17 +50,17 @@
 
           <div class="row g-2">
             <div class="col-6 col-md-3">
-              <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="Buscar árbitro...">
+              <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.prenda" class="form-control form-control-sm shadow-none" placeholder="Buscar prenda...">
+              <input v-model="filtros.prenda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR PRENDA...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="Fecha (DD/MM/YY)">
+              <input v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="FECHA (DD/MM/YY)">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
-                <option value="">ESTADO (TODOS)</option>
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ESTADO</option>
                 <option value="creado">CREADO</option>
                 <option value="en proceso">EN PROCESO</option>
                 <option value="aceptado">ACEPTADO</option>
@@ -70,7 +70,7 @@
               </select>
             </div>
             <div class="col-6 col-md-1">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">AÑO</option>
                 <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
               </select>
@@ -321,7 +321,7 @@
 </template>
 
 <script setup>
-import { anioActual, conAnioActual } from '@/composables/useAnioActual'
+import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
 import { api } from '@/api/api';
 import ExcelJS from 'exceljs'

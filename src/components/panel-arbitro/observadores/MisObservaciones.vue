@@ -50,7 +50,7 @@
                 v-model="busqueda"
                 type="text"
                 class="form-control border-0 py-2 shadow-none"
-                placeholder="Buscar por árbitro, categoría o partido..."
+                placeholder="BUSCAR POR ÁRBITRO, CATEGORÍA O PARTIDO..."
               >
             </div>
           </div>

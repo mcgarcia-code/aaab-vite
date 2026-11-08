@@ -67,20 +67,20 @@
 
           <div class="row g-2">
             <div class="col-6">
-              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido...">
+              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
             </div>
             <div class="col-6">
-              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre...">
+              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
             </div>
             <div class="col-6">
               <input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI...">
             </div>
             <div class="col-6">
-              <select v-model="filtros.rol" class="form-select form-select-sm shadow-none">
-                <option value="">Rol (Todos)</option>
-                <option :value="1">Árbitro</option>
-                <option :value="2">Observador</option>
-                <option :value="4">Coordinador</option>
+              <select v-model="filtros.rol" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ROL</option>
+                <option :value="1">ÁRBITRO</option>
+                <option :value="2">OBSERVADOR</option>
+                <option :value="4">COORDINADOR</option>
               </select>
             </div>
             <div class="col-12 mt-2">
@@ -141,39 +141,39 @@
                   <tr class="bg-light">
                     <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id"></td>
                     <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
-                    <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
-                    <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar.."></td>
+                    <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
+                    <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none">
-                        <option value="">Todos</option><option value="NO">No</option><option value="SI">Sí</option>
+                      <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                        <option value="">TODOS</option><option value="NO">NO</option><option value="SI">SÍ</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.rol" class="form-select form-select-sm shadow-none">
-                        <option value="">Todos</option><option :value="0">Ninguno</option><option :value="1">Árbitro</option><option :value="2">Observador</option><option :value="4">Coordinador</option>
+                      <select v-model="filtros.rol" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                        <option value="">TODOS</option><option :value="0">NINGUNO</option><option :value="1">ÁRBITRO</option><option :value="2">OBSERVADOR</option><option :value="4">COORDINADOR</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none">
-                        <option value="">Todos</option><option value="SI">Sí</option><option value="NO">No</option>
+                      <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                        <option value="">TODOS</option><option value="SI">SÍ</option><option value="NO">NO</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
-                        <option value="">Todos</option>
+                      <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                        <option value="">TODOS</option>
                         <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
-                        <option value="">Todos</option>
+                      <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                        <option value="">TODOS</option>
                         <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none text-center"></td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.genero" class="form-select form-select-sm shadow-none">
-                        <option value="">Todos</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="x">X</option><option value="otro">Otro</option>
+                      <select v-model="filtros.genero" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                        <option value="">TODOS</option><option value="masculino">MASCULINO</option><option value="femenino">FEMENINO</option><option value="x">X</option><option value="otro">OTRO</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.fecha_ingreso" class="form-control form-control-sm shadow-none"></td>

@@ -50,51 +50,51 @@
           <div class="row g-2">
             <!-- Árbitro/s -->
             <div class="col-6 col-md-2">
-              <input v-model="filtros.arbitro" type="text" class="form-control form-control-sm shadow-none" placeholder="Árbitro...">
+              <input v-model="filtros.arbitro" type="text" class="form-control form-control-sm shadow-none" placeholder="ÁRBITRO...">
             </div>
 
             <!-- Solicitud (tipo) -->
             <div class="col-6 col-md-2">
-              <select v-model="filtros.tipo" class="form-select form-select-sm shadow-none">
-                <option value="">SOLICITUD (TODAS)</option>
-                <option value="no_designar">No ser designado a club</option>
-                <option value="no_designar_arbitro">No ser designado con árbitro</option>
+              <select v-model="filtros.tipo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">SOLICITUD</option>
+                <option value="no_designar">NO SER DESIGNADO A CLUB</option>
+                <option value="no_designar_arbitro">NO SER DESIGNADO CON ÁRBITRO</option>
               </select>
             </div>
 
             <!-- Árbitro a evitar -->
             <div class="col-6 col-md-2">
-              <input v-model="filtros.arbitroPar" type="text" class="form-control form-control-sm shadow-none" placeholder="No designado con...">
+              <input v-model="filtros.arbitroPar" type="text" class="form-control form-control-sm shadow-none" placeholder="NO DESIGNADO CON...">
             </div>
 
             <!-- Club -->
             <div class="col-6 col-md-2">
-              <input v-model="filtros.club" type="text" class="form-control form-control-sm shadow-none" placeholder="Club...">
+              <input v-model="filtros.club" type="text" class="form-control form-control-sm shadow-none" placeholder="CLUB...">
             </div>
 
             <!-- Rama -->
             <div class="col-6 col-md-1">
-              <select v-model="filtros.rama" class="form-select form-select-sm shadow-none">
+              <select v-model="filtros.rama" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">RAMA</option>
-                <option value="F">Femenina</option>
-                <option value="M">Masculina</option>
+                <option value="F">FEMENINA</option>
+                <option value="M">MASCULINA</option>
               </select>
             </div>
 
             <!-- Estado -->
             <div class="col-6 col-md-2">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
-                <option value="">ESTADO (TODOS)</option>
-                <option value="creado">Creado</option>
-                <option value="vigente">Vigente</option>
-                <option value="cumplida">Cumplida</option>
-                <option value="borrado">Borrado</option>
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ESTADO</option>
+                <option value="creado">CREADO</option>
+                <option value="vigente">VIGENTE</option>
+                <option value="cumplida">CUMPLIDA</option>
+                <option value="borrado">BORRADO</option>
               </select>
             </div>
 
             <!-- Año -->
             <div class="col-6 col-md-1">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">AÑO</option>
                 <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
               </select>
@@ -271,7 +271,7 @@
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">
             Árbitro/s <span class="text-danger">*</span>
           </label>
-          <input v-model="filtroArbitro" class="form-control form-control-sm shadow-none mb-2" placeholder="Buscar árbitro por apellido o nombre...">
+          <input v-model="filtroArbitro" class="form-control form-control-sm shadow-none mb-2" placeholder="BUSCAR ÁRBITRO POR APELLIDO O NOMBRE...">
           <div class="border rounded p-2 bg-light" style="max-height: 200px; overflow-y: auto;">
             <div v-for="a in arbitrosFiltrados" :key="a.id" class="form-check">
               <input class="form-check-input shadow-none" type="checkbox" :id="'arb-'+a.id" :value="a.id" v-model="form.arbitros">
@@ -304,7 +304,7 @@
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">
             Árbitro con el que no ser designado <span class="text-danger">*</span>
           </label>
-          <input v-model="filtroArbitroPar" class="form-control form-control-sm shadow-none mb-2" placeholder="Buscar árbitro por apellido o nombre...">
+          <input v-model="filtroArbitroPar" class="form-control form-control-sm shadow-none mb-2" placeholder="BUSCAR ÁRBITRO POR APELLIDO O NOMBRE...">
           <div class="border rounded p-2 bg-light" style="max-height: 200px; overflow-y: auto;">
             <div v-for="a in arbitrosParFiltrados" :key="'par-'+a.id" class="form-check">
               <input class="form-check-input shadow-none" type="radio" :id="'arbpar-'+a.id" :value="a.id" v-model="form.id_arbitro_par">
@@ -408,7 +408,7 @@
 </template>
 
 <script setup>
-import { anioActual, conAnioActual } from '@/composables/useAnioActual'
+import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'

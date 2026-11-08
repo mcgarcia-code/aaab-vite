@@ -36,16 +36,16 @@
 
           <div class="row g-2">
             <div class="col-6 col-md-3">
-              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido...">
+              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre...">
+              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.grupo" class="form-control form-control-sm shadow-none" placeholder="Grupo...">
+              <input v-model="filtros.grupo" class="form-control form-control-sm shadow-none" placeholder="GRUPO...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.subgrupo" class="form-control form-control-sm shadow-none" placeholder="Subgrupo...">
+              <input v-model="filtros.subgrupo" class="form-control form-control-sm shadow-none" placeholder="SUBGRUPO...">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>

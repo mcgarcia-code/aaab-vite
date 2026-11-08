@@ -60,27 +60,27 @@
           </div>
           <div class="row g-2">
             <div class="col-6 col-md-3">
-              <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="Buscar árbitro...">
+              <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO...">
             </div>
             <div class="col-6 col-md-2">
               <input type="month" v-model="filtros.periodo" class="form-control form-control-sm shadow-none">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.concepto" class="form-select form-select-sm shadow-none">
-                <option value="">Concepto (Todos)</option>
-                <option value="arbitraje">Arbitraje</option>
-                <option value="observador">Observador</option>
-                <option value="mesa_arbitral">Mesa Arbitral</option>
-                <option value="delegado">Delegado</option>
-                <option value="ajuste_manual">Ajuste Manual</option>
+              <select v-model="filtros.concepto" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">CONCEPTO</option>
+                <option value="arbitraje">ARBITRAJE</option>
+                <option value="observador">OBSERVADOR</option>
+                <option value="mesa_arbitral">MESA ARBITRAL</option>
+                <option value="delegado">DELEGADO</option>
+                <option value="ajuste_manual">AJUSTE MANUAL</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
-                <option value="">Estado (Todos)</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="cerrado">Cerrado</option>
-                <option value="anulado">Anulado</option>
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ESTADO</option>
+                <option value="pendiente">PENDIENTE</option>
+                <option value="cerrado">CERRADO</option>
+                <option value="anulado">ANULADO</option>
               </select>
             </div>
             <div class="col-12 d-md-none mt-2">

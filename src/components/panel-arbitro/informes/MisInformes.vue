@@ -43,32 +43,32 @@
               <input v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="DD/MM/AAAA">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.encuentro" class="form-control form-control-sm shadow-none" placeholder="Encuentro...">
+              <input v-model="filtros.encuentro" class="form-control form-control-sm shadow-none" placeholder="ENCUENTRO...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.implicado" class="form-control form-control-sm shadow-none" placeholder="Implicado...">
+              <input v-model="filtros.implicado" class="form-control form-control-sm shadow-none" placeholder="IMPLICADO...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="Categoría...">
+              <input v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="CATEGORÍA...">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.torneo" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.torneo }">
+              <select v-model="filtros.torneo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">TORNEO</option>
                 <option v-for="t in opcionesTorneo" :key="t.valor" :value="t.valor">{{ t.etiqueta }}</option>
               </select>
             </div>
             <div class="col-6 col-md-1">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.estado }">
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
-                <option value="creado">Creado</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="aprobado">Aprobado</option>
-                <option value="anulado">Anulado</option>
-                <option value="desestimado">Desestimado</option>
+                <option value="creado">CREADO</option>
+                <option value="pendiente">PENDIENTE</option>
+                <option value="aprobado">APROBADO</option>
+                <option value="anulado">ANULADO</option>
+                <option value="desestimado">DESESTIMADO</option>
               </select>
             </div>
             <div class="col-6 col-md-1">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">AÑO</option>
                 <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
               </select>
@@ -486,7 +486,7 @@
 </template>
 
 <script setup>
-import { anioActual, conAnioActual } from '@/composables/useAnioActual'
+import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue';
 import { api } from '@/api/api';
 import html2pdf from 'html2pdf.js';

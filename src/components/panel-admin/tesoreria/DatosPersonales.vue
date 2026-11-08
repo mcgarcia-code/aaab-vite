@@ -42,33 +42,33 @@
 
           <div class="row g-2">
             <div class="col-6 col-md">
-              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido...">
+              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
             </div>
             <div class="col-6 col-md">
-              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Nombre...">
+              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
             </div>
             <div class="col-6 col-md">
               <input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI...">
             </div>
             <div class="col-6 col-md">
-              <input v-model="filtros.celular" class="form-control form-control-sm shadow-none" placeholder="Celular...">
+              <input v-model="filtros.celular" class="form-control form-control-sm shadow-none" placeholder="CELULAR...">
             </div>
             <div class="col-6 col-md">
-              <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none">
-                <option value="">Estado (Todos)</option>
-                <option value="si">Activo</option>
-                <option value="no">Inactivo</option>
+              <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ESTADO</option>
+                <option value="si">ACTIVO</option>
+                <option value="no">INACTIVO</option>
               </select>
             </div>
             <div class="col-6 col-md">
-              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
-                <option value="">Grupo (Todos)</option>
+              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">GRUPO</option>
                 <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
               </select>
             </div>
             <div class="col-6 col-md">
-              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
-                <option value="">Subgrupo (Todos)</option>
+              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">SUBGRUPO</option>
                 <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
               </select>
             </div>

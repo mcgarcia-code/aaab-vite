@@ -52,17 +52,17 @@
 
           <div class="row g-2">
             <div class="col-6 col-md-3">
-              <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="Árbitro (apellido o nombre)...">
+              <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="ÁRBITRO (APELLIDO O NOMBRE)...">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none">
-                <option value="">AÑO (TODOS)</option>
+              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">AÑO</option>
                 <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
-                <option value="">ESTADO (TODOS)</option>
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ESTADO</option>
                 <option value="creado">CREADO</option>
                 <option value="justificado">JUSTIFICADO</option>
                 <option value="injustificado">INJUSTIFICADO</option>
@@ -70,8 +70,8 @@
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.funcion" class="form-select form-select-sm shadow-none">
-                <option value="">FUNCIÓN (TODAS)</option>
+              <select v-model="filtros.funcion" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">FUNCIÓN</option>
                 <option value="arbitro">ÁRBITRO</option>
                 <option value="delegado">DELEGADO TÉCNICO</option>
               </select>
@@ -363,7 +363,7 @@
 </template>
 
 <script setup>
-import { anioActual, conAnioActual } from '@/composables/useAnioActual'
+import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'

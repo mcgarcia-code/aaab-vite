@@ -42,7 +42,7 @@
                 v-model="busqueda"
                 type="text"
                 class="form-control border-0 py-2 py-md-3 bg-light shadow-none input-filtro-custom"
-                placeholder="Buscar prenda o modelo..."
+                placeholder="BUSCAR PRENDA O MODELO..."
               >
             </div>
           </div>

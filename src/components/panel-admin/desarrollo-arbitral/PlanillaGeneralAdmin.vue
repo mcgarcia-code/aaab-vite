@@ -36,7 +36,7 @@
                 <input
                   v-model="busqueda"
                   class="form-control form-control-sm shadow-none"
-                  placeholder="Buscar árbitro..."
+                  placeholder="BUSCAR ÁRBITRO..."
                 >
                 <button
                   v-if="busqueda"

@@ -107,7 +107,7 @@
           <span class="text-secondary fw-normal">({{ arrArbitrosSeleccionados.length }} seleccionados)</span>
         </p>
         <input v-model="busquedaArbitro" type="search" class="form-control form-control-sm buscador-arbitro"
-               placeholder="Buscar por apellido...">
+               placeholder="BUSCAR POR APELLIDO...">
       </div>
       <div class="arbitros-tabla-wrap mb-2">
         <table class="table table-sm align-middle mb-0">

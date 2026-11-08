@@ -148,26 +148,26 @@
             <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm" aria-label="Cerrar filtros"></button>
           </div>
           <div class="row g-2">
-            <div class="col-6"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Apellido..."></div>
-            <div class="col-6"><input v-model="filtros.nombre"   class="form-control form-control-sm shadow-none" placeholder="Nombre..."></div>
+            <div class="col-6"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
+            <div class="col-6"><input v-model="filtros.nombre"   class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
             <div class="col-6">
-              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
-                <option value="">Todos los grupos</option>
+              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">GRUPO</option>
                 <option v-for="g in GRUPOS" :key="g" :value="g">{{ g }}</option>
               </select>
             </div>
             <div class="col-6">
-              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
-                <option value="">Todos los subgrupos</option>
+              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">SUBGRUPO</option>
                 <option v-for="sg in SUBGRUPOS" :key="sg" :value="sg">{{ sg }}</option>
               </select>
             </div>
             <div class="col-12" v-if="modoReunion">
-              <select v-model="filtros.asistencia" class="form-select form-select-sm shadow-none">
-                <option value="">Todas las asistencias</option>
-                <option value="presente">Solo Presentes</option>
-                <option value="ausente">Solo Ausentes</option>
-                <option value="sin_registro">Sin Registro</option>
+              <select v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ASISTENCIA</option>
+                <option value="presente">SOLO PRESENTES</option>
+                <option value="ausente">SOLO AUSENTES</option>
+                <option value="sin_registro">SIN REGISTRO</option>
               </select>
             </div>
             <div class="col-12 mt-2">
@@ -202,20 +202,20 @@
                   </td>
                   <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
                   <td class="p-2 border-bottom border-2 col-fija col-apellido">
-                    <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="Filtrar..">
+                    <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
                   </td>
                   <td class="p-2 border-bottom border-2 col-fija col-nombre">
-                    <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="Filtrar..">
+                    <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
                   </td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none">
-                      <option value="">Todos</option>
+                    <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <option value="">TODOS</option>
                       <option v-for="g in GRUPOS" :key="g" :value="g">{{ g }}</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none">
-                      <option value="">Todos</option>
+                    <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <option value="">TODOS</option>
                       <option v-for="sg in SUBGRUPOS" :key="sg" :value="sg">{{ sg }}</option>
                     </select>
                   </td>
@@ -224,11 +224,11 @@
                   </td>
                   <td v-if="modoReunion" class="p-2 border-bottom border-2"></td>
                   <td v-if="modoReunion" class="p-2 border-bottom border-2">
-                    <select v-model="filtros.asistencia" class="form-select form-select-sm shadow-none">
-                      <option value="">Todas</option>
-                      <option value="presente">Solo Presentes</option>
-                      <option value="ausente">Solo Ausentes</option>
-                      <option value="sin_registro">Sin Registro</option>
+                    <select v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <option value="">TODAS</option>
+                      <option value="presente">SOLO PRESENTES</option>
+                      <option value="ausente">SOLO AUSENTES</option>
+                      <option value="sin_registro">SIN REGISTRO</option>
                     </select>
                   </td>
                 </tr>
@@ -642,8 +642,8 @@
         <div class="d-flex justify-content-end mb-3" v-if="añosDetalleArbitro.length">
           <div class="d-flex align-items-center gap-2">
             <label class="small fw-bold text-dark text-uppercase m-0">Año:</label>
-            <select v-model="filtroAñoDetalle" class="form-select form-select-sm shadow-sm border-secondary-subtle" style="min-width: 140px;">
-              <option value="">Todos los años</option>
+            <select v-model="filtroAñoDetalle" class="form-select form-select-sm shadow-sm border-secondary-subtle text-uppercase text-dark" style="min-width: 140px;">
+              <option value="">AÑO</option>
               <option v-for="año in añosDetalleArbitro" :key="año" :value="año">{{ año }}</option>
             </select>
           </div>
@@ -709,7 +709,7 @@
 </template>
 
 <script setup>
-import { anioActual, conAnioActual } from '@/composables/useAnioActual'
+import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'

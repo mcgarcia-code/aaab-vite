@@ -44,7 +44,7 @@
 
           <div class="row g-2">
             <div class="col-12">
-              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar por nombre, grupo o subgrupo...">
+              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR POR NOMBRE, GRUPO O SUBGRUPO...">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>

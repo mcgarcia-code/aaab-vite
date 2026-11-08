@@ -17,11 +17,11 @@
             <label class="small fw-bold text-dark text-uppercase m-0 text-nowrap">Año:</label>
             <select
               v-model="filtroAño"
-              class="form-select shadow-sm border-secondary-subtle fw-semibold flex-grow-1"
+              class="form-select shadow-sm border-secondary-subtle fw-semibold flex-grow-1 text-uppercase text-dark"
               style="min-width: 0;"
               :disabled="cargando"
             >
-              <option value="">Todos los años</option>
+              <option value="">AÑO</option>
               <option v-for="a in añosDisponibles" :key="a" :value="a">{{ a }}</option>
             </select>
           </div>
@@ -210,7 +210,7 @@
 </template>
 
 <script setup>
-import { anioActual, conAnioActual } from '@/composables/useAnioActual'
+import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, defineComponent, h } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '../../../api/auth'
