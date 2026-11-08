@@ -1,7 +1,6 @@
-// Seguimiento de los alumnos regulares del curso: asistencia, mini y resultado por tipo de examen.
+// Seguimiento de los alumnos regulares del curso: asistencia, mini, parcialitos, teórico final, práctico y físico.
 // Lo usa AlumnosRegularesCursoAdmin.vue con los datos de seguimiento_curso_arbitro/obtenerSeguimientoCurso.
 
-export const TIPOS_EXAMEN_CURSO = ['teorico', 'practico', 'fisico']
 export const ETIQUETAS_TIPO_EXAMEN = { teorico: 'Teórico', practico: 'Práctico', fisico: 'Físico' }
 
 export const RESULTADOS = {
@@ -23,32 +22,30 @@ const corresponde = (curso, alumno) => curso === 'ambos' || curso === alumno.mod
 
 const desaprobo = (nota) => Boolean(nota && (nota.aprobado === false || nota.ausente))
 
-// Un examen original queda aprobado si lo aprobó o si aprobó alguno de sus recuperatorios
+// Un examen queda aprobado si lo aprobó o si aprobó alguno de sus recuperatorios
 const resultadoExamen = (examen, recuperatorios, notaDe) => {
   const nota = notaDe(examen)
   if (nota?.aprobado === true) return 'aprobado'
   if (recuperatorios.some(r => notaDe(r)?.aprobado === true)) return 'aprobado'
-  if (!nota) return null
   if (!desaprobo(nota)) return null
-  const pendienteRecuperatorio = recuperatorios.some(r => !notaDe(r))
-  return pendienteRecuperatorio ? 'recuperando' : 'desaprobado'
+  return recuperatorios.some(r => !notaDe(r)) ? 'recuperando' : 'desaprobado'
 }
 
-// Teórico: tienen que estar aprobados todos los del curso.
-// Práctico y físico: se toman solo los que rindió (se cargan por aspirante).
-const resultadoTipo = (tipo, resultados) => {
-  const lista = tipo === 'teorico' ? resultados : resultados.filter(r => r !== null)
+// Resultado de un grupo de exámenes: con uno desaprobado (sin recuperar) queda desaprobado
+const resultadoGrupo = (resultados, soloRendidos) => {
+  const lista = soloRendidos ? resultados.filter(r => r !== null) : resultados
   if (!lista.length) return 'pendiente'
   if (lista.includes('desaprobado')) return 'desaprobado'
-  if (lista.every(r => r === 'aprobado')) return 'aprobado'
-  return 'pendiente'
+  return lista.every(r => r === 'aprobado') ? 'aprobado' : 'pendiente'
 }
 
-export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas, mini }) => {
+export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas, mini, practicos = [] }) => {
   const asis = {}
   asistencias.forEach(a => { asis[`${a.idClase}-${a.idAlumno}`] = a })
   const nts = {}
   notas.forEach(n => { nts[`${n.idExamen}-${n.idAlumno}`] = n })
+  const practicoManual = {}
+  practicos.forEach(p => { practicoManual[p.idAlumno] = p.practico })
 
   return alumnos.map(alumno => {
     const notaDe = (examen) => nts[`${examen.id}-${alumno.id}`] || null
@@ -61,12 +58,14 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
 
     const delCurso = examenes.filter(e => corresponde(e.curso, alumno))
     const originales = delCurso.filter(e => !e.idExamenOriginal)
-    const recuperatoriosDe = (examen) => delCurso.filter(r => r.idExamenOriginal === examen.id && desaprobo(notaDe(examen)))
+    const resultadoDe = (e) => resultadoExamen(e, delCurso.filter(r => r.idExamenOriginal === e.id && desaprobo(notaDe(e))), notaDe)
 
-    const resultados = Object.fromEntries(TIPOS_EXAMEN_CURSO.map(tipo => {
-      const lista = originales.filter(e => e.tipo === tipo).map(e => resultadoExamen(e, recuperatoriosDe(e), notaDe))
-      return [tipo, resultadoTipo(tipo, lista)]
-    }))
+    const parcialitos = originales.filter(e => e.tipo === 'teorico' && !e.esFinal).map(resultadoDe)
+    const finales = originales.filter(e => e.tipo === 'teorico' && e.esFinal).map(resultadoDe)
+    const practicosRendidos = originales.filter(e => e.tipo === 'practico').map(resultadoDe)
+    const fisicos = originales.filter(e => e.tipo === 'fisico').map(resultadoDe)
+
+    const manual = practicoManual[alumno.id] || null
 
     const detalleExamenes = delCurso
       .filter(e => !e.idExamenOriginal || desaprobo(nts[`${e.idExamenOriginal}-${alumno.id}`]))
@@ -83,7 +82,15 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
         ausentes: detalleMini.filter(m => m.asistencia === 'ausente').length,
         total: detalleMini.length,
       },
-      resultados,
+      parcialitos: {
+        aprobados: parcialitos.filter(r => r === 'aprobado').length,
+        desaprobados: parcialitos.filter(r => r === 'desaprobado').length,
+        total: parcialitos.length,
+      },
+      final: resultadoGrupo(finales, false),
+      practico: manual || resultadoGrupo(practicosRendidos, true),
+      practicoManual: manual,
+      fisico: resultadoGrupo(fisicos, true),
       detalleClases: [...detalleClases].reverse(),
       detalleExamenes,
       detalleMini: [...detalleMini].reverse(),

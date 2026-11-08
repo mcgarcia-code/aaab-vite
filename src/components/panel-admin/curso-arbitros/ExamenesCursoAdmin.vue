@@ -47,6 +47,7 @@
                   <span class="badge flex-shrink-0" :class="TIPOS_EXAMEN[e.tipo]?.clase">{{ TIPOS_EXAMEN[e.tipo]?.etiqueta }}</span>
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
+                  <span v-if="e.tipo === 'teorico'" class="badge" :class="e.esFinal ? 'bg-danger' : 'bg-light text-dark border'">{{ e.esFinal ? 'Teórico final' : 'Parcialito' }}</span>
                   <span v-if="e.idExamenOriginal" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio</span>
                   <span class="badge" :class="claseCurso(e.curso)">{{ etiquetaCurso(e.curso) }}</span>
                   <span v-if="e.online" class="badge" :class="e.habilitado ? 'bg-primary' : 'bg-secondary'"><i class="bi bi-laptop me-1"></i>Online{{ e.habilitado ? ' · habilitado' : ' · cerrado' }}</span>
@@ -95,7 +96,7 @@
                   <th class="py-2 text-center text-uppercase text-muted">Curso</th>
                   <th v-for="e in columnasPlanilla" :key="'th-' + e.id" class="py-2 text-center text-muted col-examen" :title="e.clase ? e.titulo + ' · ' + e.clase : e.titulo">
                     <div class="fw-bold text-dark text-truncate">{{ e.titulo }}</div>
-                    <div class="fw-normal" style="font-size: 0.68rem;">{{ TIPOS_EXAMEN[e.tipo]?.etiqueta }} · {{ fechaDMA(e.fecha) }}</div>
+                    <div class="fw-normal" style="font-size: 0.68rem;">{{ e.tipo === 'teorico' ? (e.esFinal ? 'Final' : 'Parcialito') : TIPOS_EXAMEN[e.tipo]?.etiqueta }} · {{ fechaDMA(e.fecha) }}</div>
                   </th>
                   <th class="py-2 text-center text-uppercase text-muted">Aprobados</th>
                 </tr>

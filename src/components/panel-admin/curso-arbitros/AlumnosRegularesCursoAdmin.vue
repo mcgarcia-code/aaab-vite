@@ -8,7 +8,7 @@
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
               <i class="bi bi-person-check-fill me-1"></i> Alumnos Regulares {{ anio }}
             </h4>
-            <span class="text-muted small d-block mt-1">{{ filas.length }} alumnos · resultado por examen y nota final del curso</span>
+            <span class="text-muted small d-block mt-1">{{ filas.length }} alumnos · parcialitos, teórico final, práctico, físico y nota final</span>
           </div>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
             <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 110px;" aria-label="Año">
@@ -62,7 +62,10 @@
                     <th class="py-3 text-center text-uppercase text-muted">Curso</th>
                     <th class="py-3 text-center text-uppercase text-muted">Clases</th>
                     <th class="py-3 text-center text-uppercase text-muted">Mini</th>
-                    <th v-for="tipo in TIPOS_EXAMEN_CURSO" :key="'th-' + tipo" class="py-3 text-center text-uppercase text-muted">{{ ETIQUETAS_TIPO_EXAMEN[tipo] }}</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Parcialitos</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Teórico final</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Práctico</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Físico</th>
                     <th class="py-3 text-center text-uppercase text-muted">Nota final</th>
                     <th class="py-3 text-center text-uppercase text-muted">Acciones</th>
                   </tr>
@@ -82,9 +85,22 @@
                       <span v-if="f.alumno.modalidadCurso !== 'anual'" class="text-muted">—</span>
                       <span v-else class="fw-bold text-dark">{{ f.mini.presentes }}/{{ f.mini.total }}</span>
                     </td>
-                    <td v-for="tipo in TIPOS_EXAMEN_CURSO" :key="'td-' + tipo" class="text-center">
-                      <span class="badge" :class="RESULTADOS[f.resultados[tipo]].clase">{{ RESULTADOS[f.resultados[tipo]].etiqueta }}</span>
+                    <td class="text-center">
+                      <span v-if="!f.parcialitos.total" class="text-muted">—</span>
+                      <template v-else>
+                        <span class="fw-bold text-success">{{ f.parcialitos.aprobados }}</span><span class="text-muted">/{{ f.parcialitos.total }}</span>
+                        <span v-if="f.parcialitos.desaprobados" class="text-danger ms-1">({{ f.parcialitos.desaprobados }} desap.)</span>
+                      </template>
                     </td>
+                    <td class="text-center"><span class="badge" :class="RESULTADOS[f.final].clase">{{ RESULTADOS[f.final].etiqueta }}</span></td>
+                    <td class="text-center" style="min-width: 150px;">
+                      <select :id="'prac-' + f.alumno.id" class="form-select form-select-sm fw-bold select-resultado" :class="'res-' + f.practico" :value="f.practicoManual || ''" :disabled="guardandoPractico === f.alumno.id" :aria-label="'Práctico de ' + f.alumno.apellido" @change="guardarPractico(f, $event.target.value)">
+                        <option value="">{{ f.practicoManual ? 'Pendiente' : RESULTADOS[f.practico].etiqueta + (f.practico === 'pendiente' ? '' : ' (exámenes)') }}</option>
+                        <option value="aprobado">Aprobado</option>
+                        <option value="desaprobado">Desaprobado</option>
+                      </select>
+                    </td>
+                    <td class="text-center"><span class="badge" :class="RESULTADOS[f.fisico].clase">{{ RESULTADOS[f.fisico].etiqueta }}</span></td>
                     <td class="text-center"><span class="badge" :class="NOTA_FINAL[f.notaFinal].clase">{{ NOTA_FINAL[f.notaFinal].etiqueta }}</span></td>
                     <td class="text-center">
                       <div class="d-flex justify-content-center gap-1">
@@ -98,7 +114,7 @@
                     </td>
                   </tr>
                   <tr v-if="!filas.length">
-                    <td colspan="9" class="text-center py-5 text-muted border-0">
+                    <td colspan="10" class="text-center py-5 text-muted border-0">
                       <span class="material-icons d-block fs-1 mb-2 opacity-50">search_off</span>
                       <span class="fw-bold">No hay alumnos para mostrar.</span>
                     </td>
@@ -127,9 +143,25 @@
                       <div class="dato-etiqueta">Mini</div>
                       <span class="fw-bold">{{ f.mini.presentes }}/{{ f.mini.total }}</span>
                     </div>
-                    <div v-for="tipo in TIPOS_EXAMEN_CURSO" :key="'mt-' + tipo" class="col-4">
-                      <div class="dato-etiqueta">{{ ETIQUETAS_TIPO_EXAMEN[tipo] }}</div>
-                      <span class="badge" :class="RESULTADOS[f.resultados[tipo]].clase">{{ RESULTADOS[f.resultados[tipo]].etiqueta }}</span>
+                    <div class="col-6">
+                      <div class="dato-etiqueta">Parcialitos</div>
+                      <span class="fw-bold text-success">{{ f.parcialitos.aprobados }}</span><span class="text-muted">/{{ f.parcialitos.total }} aprobados</span>
+                    </div>
+                    <div class="col-6">
+                      <div class="dato-etiqueta">Teórico final</div>
+                      <span class="badge" :class="RESULTADOS[f.final].clase">{{ RESULTADOS[f.final].etiqueta }}</span>
+                    </div>
+                    <div class="col-6">
+                      <div class="dato-etiqueta">Físico</div>
+                      <span class="badge" :class="RESULTADOS[f.fisico].clase">{{ RESULTADOS[f.fisico].etiqueta }}</span>
+                    </div>
+                    <div class="col-12">
+                      <label class="dato-etiqueta d-block" :for="'mprac-' + f.alumno.id">Práctico</label>
+                      <select :id="'mprac-' + f.alumno.id" class="form-select form-select-sm fw-bold select-resultado" :class="'res-' + f.practico" :value="f.practicoManual || ''" :disabled="guardandoPractico === f.alumno.id" :aria-label="'Práctico de ' + f.alumno.apellido" @change="guardarPractico(f, $event.target.value)">
+                        <option value="">{{ f.practicoManual ? 'Pendiente' : RESULTADOS[f.practico].etiqueta + (f.practico === 'pendiente' ? '' : ' (exámenes)') }}</option>
+                        <option value="aprobado">Aprobado</option>
+                        <option value="desaprobado">Desaprobado</option>
+                      </select>
                     </div>
                     <div class="col-12">
                       <div class="dato-etiqueta">Nota final</div>
@@ -159,9 +191,10 @@
       </template>
       <div v-if="notaFinal" class="text-start">
         <div class="d-flex flex-wrap gap-1 mb-3">
-          <span v-for="tipo in TIPOS_EXAMEN_CURSO" :key="'nf-' + tipo" class="badge" :class="RESULTADOS[notaFinal.fila.resultados[tipo]].clase">
-            {{ ETIQUETAS_TIPO_EXAMEN[tipo] }}: {{ RESULTADOS[notaFinal.fila.resultados[tipo]].etiqueta }}
-          </span>
+          <span class="badge bg-light text-dark border">Parcialitos: {{ notaFinal.fila.parcialitos.aprobados }}/{{ notaFinal.fila.parcialitos.total }}</span>
+          <span class="badge" :class="RESULTADOS[notaFinal.fila.final].clase">Teórico final: {{ RESULTADOS[notaFinal.fila.final].etiqueta }}</span>
+          <span class="badge" :class="RESULTADOS[notaFinal.fila.practico].clase">Práctico: {{ RESULTADOS[notaFinal.fila.practico].etiqueta }}</span>
+          <span class="badge" :class="RESULTADOS[notaFinal.fila.fisico].clase">Físico: {{ RESULTADOS[notaFinal.fila.fisico].etiqueta }}</span>
         </div>
         <div class="d-flex flex-column gap-2 mb-3" role="radiogroup" aria-label="Nota final">
           <label v-for="(op, clave) in NOTA_FINAL" :key="clave" class="opcion-final d-flex align-items-center gap-2" :class="{ activa: notaFinal.valor === clave }">
@@ -198,7 +231,7 @@
             <div class="d-flex justify-content-between align-items-start gap-2">
               <div class="min-w-0 small">
                 <div class="fw-bold text-dark">{{ d.examen.titulo }}</div>
-                <div class="text-muted">{{ fechaDMA(d.examen.fecha) }} · {{ ETIQUETAS_TIPO_EXAMEN[d.examen.tipo] }}<template v-if="d.examen.clase"> · {{ d.examen.clase }}</template></div>
+                <div class="text-muted">{{ fechaDMA(d.examen.fecha) }} · {{ etiquetaExamen(d.examen) }}<template v-if="d.examen.clase"> · {{ d.examen.clase }}</template></div>
               </div>
               <div class="text-end flex-shrink-0">
                 <div class="fw-bold small">{{ textoNota(d) }}</div>
@@ -246,7 +279,7 @@ import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { textoNotaExamen } from '@/composables/useExamenesCurso'
-import { TIPOS_EXAMEN_CURSO, ETIQUETAS_TIPO_EXAMEN, RESULTADOS, NOTA_FINAL, armarSeguimiento } from '@/composables/useSeguimientoCurso'
+import { ETIQUETAS_TIPO_EXAMEN, RESULTADOS, NOTA_FINAL, armarSeguimiento } from '@/composables/useSeguimientoCurso'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 
@@ -284,6 +317,7 @@ const clasePorcentaje = (p) => {
 }
 const textoAsistencia = (a) => (a === 'presente' ? 'Presente' : a === 'ausente' ? 'Ausente' : 'Sin marcar')
 const claseAsistencia = (a) => (a === 'presente' ? 'bg-success' : a === 'ausente' ? 'bg-secondary' : 'bg-light text-muted border')
+const etiquetaExamen = (e) => (e.tipo === 'teorico' ? (e.esFinal ? 'Teórico final' : 'Parcialito') : ETIQUETAS_TIPO_EXAMEN[e.tipo])
 const textoNota = (d) => (d.nota ? textoNotaExamen({ ...d.examen, ...d.nota }) : '—')
 
 const cargar = async () => {
@@ -300,6 +334,28 @@ const cargar = async () => {
 }
 
 watch(anio, cargar)
+
+// ─── Práctico (se carga a mano desde esta sección) ───────────────
+const guardandoPractico = ref(null)
+
+const guardarPractico = async (f, resultado) => {
+  guardandoPractico.value = f.alumno.id
+  try {
+    const res = await api.post({ entity: 'seguimiento_curso_arbitro', action: 'guardarPracticoCurso', payload: { idAlumno: f.alumno.id, resultado } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el práctico')
+    const actual = datos.value.practicos || []
+    datos.value = {
+      ...datos.value,
+      practicos: [...actual.filter(p => p.idAlumno !== f.alumno.id), ...(resultado ? [{ idAlumno: f.alumno.id, practico: resultado }] : [])],
+    }
+    toast({ titulo: 'Guardado', mensaje: `Práctico de ${f.alumno.apellido}: ${resultado ? RESULTADOS[resultado].etiqueta : 'Pendiente'}.`, tipo: 'success' })
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+    await cargar()
+  } finally {
+    guardandoPractico.value = null
+  }
+}
 
 // ─── Nota final (cambia el estado del legajo) ────────────────────
 const notaFinal = ref(null)
@@ -341,7 +397,8 @@ const exportarExcel = async () => {
     { header: 'DNI', key: 'dni', width: 14 }, { header: 'Curso', key: 'curso', width: 16 },
     { header: 'Clases presentes', key: 'presentes', width: 16 }, { header: 'Clases dictadas', key: 'clases', width: 16 }, { header: '% asistencia', key: 'porcentaje', width: 13 },
     { header: 'Mini presentes', key: 'miniPresentes', width: 15 }, { header: 'Mini convocado', key: 'miniTotal', width: 15 },
-    ...TIPOS_EXAMEN_CURSO.map(t => ({ header: ETIQUETAS_TIPO_EXAMEN[t], key: t, width: 14 })),
+    { header: 'Parcialitos aprobados', key: 'parcAprob', width: 20 }, { header: 'Parcialitos', key: 'parcTotal', width: 12 },
+    { header: 'Teórico final', key: 'final', width: 14 }, { header: 'Práctico', key: 'practico', width: 14 }, { header: 'Físico', key: 'fisico', width: 14 },
     { header: 'Nota final', key: 'notaFinal', width: 20 },
   ]
   filas.value.forEach(f => ws.addRow({
@@ -349,7 +406,8 @@ const exportarExcel = async () => {
     curso: MODALIDADES_CURSO[f.alumno.modalidadCurso]?.etiqueta || '',
     presentes: f.asistencia.presentes, clases: f.asistencia.total, porcentaje: f.asistencia.porcentaje ?? '',
     miniPresentes: f.alumno.modalidadCurso === 'anual' ? f.mini.presentes : '', miniTotal: f.alumno.modalidadCurso === 'anual' ? f.mini.total : '',
-    ...Object.fromEntries(TIPOS_EXAMEN_CURSO.map(t => [t, RESULTADOS[f.resultados[t]].etiqueta])),
+    parcAprob: f.parcialitos.aprobados, parcTotal: f.parcialitos.total,
+    final: RESULTADOS[f.final].etiqueta, practico: RESULTADOS[f.practico].etiqueta, fisico: RESULTADOS[f.fisico].etiqueta,
     notaFinal: NOTA_FINAL[f.notaFinal].etiqueta,
   }))
   ws.getRow(1).font = { bold: true }
@@ -384,4 +442,6 @@ onMounted(cargar)
 .opcion-final { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
 .opcion-final.activa { border-color: #dc3545; background: #fef2f2; }
 .min-w-0 { min-width: 0; }
+.select-resultado.res-aprobado { border-color: #198754; color: #198754; }
+.select-resultado.res-desaprobado { border-color: #dc3545; color: #dc3545; }
 </style>

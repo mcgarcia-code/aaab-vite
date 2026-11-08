@@ -222,6 +222,11 @@
               <input id="ex-habilitado" v-model="formExamen.habilitado" class="form-check-input" type="checkbox" role="switch">
               <label class="form-check-label fw-bold small" for="ex-habilitado">Habilitado para rendir</label>
             </div>
+            <div class="form-check mt-2 p-2 ps-5 border rounded-3" :class="formExamen.esFinal ? 'border-danger bg-danger-subtle' : ''">
+              <input id="ex-final" v-model="formExamen.esFinal" class="form-check-input" type="checkbox">
+              <label class="form-check-label fw-bold small" for="ex-final">Es el examen teórico final</label>
+              <div class="form-text mt-0">Si no lo tildás, cuenta como parcialito.</div>
+            </div>
           </div>
         </div>
       </form>
@@ -404,7 +409,7 @@ const guardandoExamen = ref(false)
 const intentoExamen = ref(false)
 const reglasDisponibles = ref([])
 const configDefecto = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [] })
-const formExamen = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true })
+const formExamen = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true, esFinal: false })
 
 const preguntasDisponibles = computed(() =>
   reglasDisponibles.value.filter(r => formExamen.value.reglas.includes(r.codigo)).reduce((t, r) => t + r.cantidad, 0)
@@ -447,6 +452,7 @@ const abrirExamen = async (c) => {
       tiempoLimiteMin: base.tiempoLimiteMin,
       reglas: (base.reglas || []).filter(r => codigos.includes(r)),
       habilitado: base.habilitado,
+      esFinal: Boolean(base.esFinal),
     }
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
