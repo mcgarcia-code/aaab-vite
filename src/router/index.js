@@ -15,6 +15,7 @@ const routes = [
   { path: '/glosario', name: 'glosario', component: () => import('../views/public/GlosarioView.vue') },
   { path: '/contactos-celulares', name: 'ContactosCelulares', component: () => import('../views/public/ContactosCelularesView.vue') },
   { path: '/coordinadores-base', name: 'CoordinadoresBase', component: () => import('../views/public/CoordinadoresDatosView.vue') },
+  { path: '/registro-arbitro', name: 'RegistroArbitro', component: () => import('../views/public/RegistroArbitro.vue') },
 
   // --- LOGIN & RECUPERACIÓN DE CLAVE ---
   {
