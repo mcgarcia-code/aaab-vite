@@ -3,62 +3,72 @@
     <div class="admin-panel animate__animated animate__fadeIn">
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-              <i class="bi bi-people-fill me-1"></i> Gestión de Reuniones
-            </h4>
-            <span class="text-muted small d-block mt-1">
-              <template v-if="modoReunion && !cargandoArbitros">
-                {{ reunionActual?.titulo }}
-                <span v-if="reunionActual?.nombreGrupo" class="fst-italic"> · {{ reunionActual.nombreGrupo }}</span>
-                — {{ arbitrosReunion.length }} árbitros
-                <span v-if="resumenReunionActual.presentes"   class="ms-1 badge rounded-pill bg-success">✓ {{ resumenReunionActual.presentes }}</span>
-                <span v-if="resumenReunionActual.ausentes"    class="ms-1 badge rounded-pill bg-secondary">✗ {{ resumenReunionActual.ausentes }}</span>
-                <span v-if="resumenReunionActual.sinRegistro" class="ms-1 badge rounded-pill bg-light text-muted border">— {{ resumenReunionActual.sinRegistro }}</span>
-              </template>
-              <template v-else>Reuniones Mensuales — Todos los grupos · {{ totalFiltrados }} árbitros</template>
-            </span>
-            <span v-if="modoReunion && reunionActual?.reunion" class="text-muted d-block mt-1 texto-creacion">
-              <i class="bi bi-person-badge me-1"></i>{{ textoCreacionReunion(reunionActual.reunion) }}
-            </span>
-          </div>
-
-          <!-- Select de reunión (desglosado por grupo) -->
-          <select
-            v-model="reunionSeleccionada"
-            @change="onReunionSeleccionada"
-            class="form-select small shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion control-encabezado mt-2 mt-md-0"
-            :disabled="cargandoInicial || cargandoArbitros"
-            aria-label="Elegir reunión"
-          >
-            <option value="">— Ver listado general —</option>
-            <option v-for="op in opcionesReunion" :key="op.key" :value="op.key">
-              {{ op.label }}
-            </option>
-          </select>
-
-          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white flex-shrink-0 control-encabezado">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                id="toggleSoloActivos"
-                v-model="soloActivos"
-                role="switch"
-                :disabled="cargandoInicial || cargandoArbitros"
-              >
-              <label class="form-check-label small fw-bold text-dark m-0" for="toggleSoloActivos">
-                Solo activos
-              </label>
+        <div class="card-header bg-white py-3 border-bottom">
+          <div class="row g-3 align-items-center">
+            <div class="col-12 col-xl-auto">
+              <div class="border-start border-danger border-5 ps-3">
+                <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
+                  <i class="bi bi-people-fill me-1"></i> Gestión de Reuniones
+                </h4>
+                <span class="text-muted small d-block mt-1">
+                  <template v-if="modoReunion && !cargandoArbitros">
+                    {{ reunionActual?.titulo }}
+                    <span v-if="reunionActual?.nombreGrupo" class="fst-italic"> · {{ reunionActual.nombreGrupo }}</span>
+                    — {{ arbitrosReunion.length }} árbitros
+                    <span v-if="resumenReunionActual.presentes"   class="ms-1 badge rounded-pill bg-success">✓ {{ resumenReunionActual.presentes }}</span>
+                    <span v-if="resumenReunionActual.ausentes"    class="ms-1 badge rounded-pill bg-secondary">✗ {{ resumenReunionActual.ausentes }}</span>
+                    <span v-if="resumenReunionActual.sinRegistro" class="ms-1 badge rounded-pill bg-light text-muted border">— {{ resumenReunionActual.sinRegistro }}</span>
+                  </template>
+                  <template v-else>Reuniones Mensuales — Todos los grupos · {{ totalFiltrados }} árbitros</template>
+                </span>
+                <span v-if="modoReunion && reunionActual?.reunion" class="text-muted d-block mt-1 texto-creacion">
+                  <i class="bi bi-person-badge me-1"></i>{{ textoCreacionReunion(reunionActual.reunion) }}
+                </span>
+              </div>
             </div>
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2 flex-shrink-0 control-encabezado" aria-label="Mostrar filtros">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 flex-shrink-0 control-encabezado" aria-label="Limpiar filtros">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
+
+            <div class="col-12 col-xl">
+              <div class="d-flex flex-column flex-md-row gap-2 align-items-stretch align-items-md-center justify-content-md-between">
+                <!-- Select de reunión (desglosado por grupo) -->
+                <select
+                  v-model="reunionSeleccionada"
+                  @change="onReunionSeleccionada"
+                  class="form-select shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion control-encabezado"
+                  :disabled="cargandoInicial || cargandoArbitros"
+                  aria-label="Elegir reunión"
+                >
+                  <option value="">— Ver listado general —</option>
+                  <option v-for="op in opcionesReunion" :key="op.key" :value="op.key">
+                    {{ op.label }}
+                  </option>
+                </select>
+
+                <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between justify-content-md-end flex-shrink-0">
+                  <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white flex-shrink-0 control-encabezado">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="toggleSoloActivos"
+                      v-model="soloActivos"
+                      role="switch"
+                      :disabled="cargandoInicial || cargandoArbitros"
+                    >
+                    <label class="form-check-label small fw-bold text-dark m-0" for="toggleSoloActivos">
+                      Solo activos
+                    </label>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2 flex-shrink-0 control-encabezado" aria-label="Mostrar filtros">
+                      <span class="material-icons fs-6">filter_alt</span>
+                    </button>
+                    <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 flex-shrink-0 control-encabezado" aria-label="Limpiar filtros">
+                      <span class="material-icons text-dark fs-6">filter_alt_off</span>
+                      <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1175,16 +1185,16 @@ onMounted(async () => {
 .fila-ausente  .col-fija { background-color: #f9fafb !important; }
 .texto-creacion { font-size: 0.75rem; }
 .control-encabezado { height: 40px; }
-.select-reunion { width: 100%; min-width: 0; }
+.select-reunion { width: 100%; min-width: 0; font-size: 1rem; }
 @media (min-width: 768px) {
-  .select-reunion { flex: 0 1 300px; max-width: 300px; }
+  .select-reunion { flex: 0 1 300px; max-width: 300px; font-size: 0.875rem; }
 }
 @media (min-width: 1400px) {
   .select-reunion { flex-basis: 380px; max-width: 380px; }
 }
-.select-mes { flex: 1 1 auto; min-width: 0; font-size: 0.875rem; }
+.select-mes { flex: 1 1 auto; min-width: 0; font-size: 1rem; }
 @media (min-width: 576px) {
-  .select-mes { flex: 0 0 200px; }
+  .select-mes { flex: 0 0 200px; font-size: 0.875rem; }
 }
 .select-disertante { width: 190px; max-width: 190px; font-size: 0.75rem; }
 .radio-presente { accent-color: #198754; }

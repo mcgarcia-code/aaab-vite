@@ -30,7 +30,7 @@
                 <select
                   v-model="reunionSeleccionada"
                   @change="onReunionSeleccionada"
-                  class="form-select small shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion control-encabezado"
+                  class="form-select shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion control-encabezado"
                   :disabled="cargandoInicial || cargandoArbitros"
                   aria-label="Elegir reunión"
                 >
@@ -1581,9 +1581,9 @@ onMounted(async () => {
 .admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
 .animate__animated { animation-duration: 0.4s; }
 .min-w-0 { min-width: 0; }
-.select-reunion { width: 100%; min-width: 0; }
+.select-reunion { width: 100%; min-width: 0; font-size: 1rem; }
 @media (min-width: 768px) {
-  .select-reunion { flex: 0 1 300px; max-width: 300px; }
+  .select-reunion { flex: 0 1 300px; max-width: 300px; font-size: 0.875rem; }
 }
 @media (min-width: 1400px) {
   .select-reunion { flex-basis: 380px; max-width: 380px; }
