@@ -283,7 +283,7 @@ watch(errorOpcionesHandball, (mensaje) => {
   if (mensaje) toast({ titulo: 'Error', mensaje, tipo: 'danger' })
 })
 
-// Checkboxes de categorías <-> texto separado por coma en categoria_handball
+// Checkboxes de categorías <-> texto separado por " | " en categoria_handball
 const categoriasElegidas = computed({
   get: () => separarCategorias(arbitro.value.categoria_handball),
   set: (lista) => { arbitro.value.categoria_handball = unirCategorias(lista) || null },

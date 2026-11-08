@@ -6,13 +6,16 @@ const RAMAS = { M: 'Masculino', F: 'Femenino' }
 // Largo máximo de registro_arbitro.categoria_handball
 export const MAX_LARGO_CATEGORIAS = 255
 
-// categoria_handball guarda una o más categorías separadas por coma
-// ("Juveniles A, Mayores B"): un jugador puede estar en más de una.
+// categoria_handball guarda una o más categorías separadas por " | "
+// ("Juveniles A | Junior Fem, C"): un jugador puede estar en más de una.
+// No se usa la coma porque hay categorías que la llevan en el nombre ("Junior Fem, C").
+export const SEPARADOR_CATEGORIAS = ' | '
+
 export const separarCategorias = (texto) =>
-  String(texto || '').split(',').map(c => c.trim()).filter(Boolean)
+  String(texto || '').split('|').map(c => c.trim()).filter(Boolean)
 
 export const unirCategorias = (lista) =>
-  [...new Set(lista.map(c => String(c).trim()).filter(Boolean))].join(', ')
+  [...new Set(lista.map(c => String(c).trim()).filter(Boolean))].join(SEPARADOR_CATEGORIAS)
 
 export const RAMAS_HANDBALL = RAMAS
 

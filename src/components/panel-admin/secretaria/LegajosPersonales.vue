@@ -135,6 +135,8 @@
                     <th class="py-3 text-center text-uppercase text-muted">Juega</th>
                     <th class="py-3 text-uppercase text-muted">Club</th>
                     <th class="py-3 text-uppercase text-muted">Cat. Juega</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Familiares</th>
+                    <th class="py-3 text-uppercase text-muted">Detalle Familiares</th>
                     <th class="py-3 text-uppercase text-muted">Observaciones</th>
                   </tr>
                   <!-- Filtros Desktop -->
@@ -196,6 +198,12 @@
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.juega_handball" class="form-control form-control-sm shadow-none"></td>
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.donde_juega" class="form-control form-control-sm shadow-none"></td>
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.categoria_handball" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2">
+                      <select v-model="filtros.tiene_familiares" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                        <option value="">TODOS</option><option value="SI">SÍ</option><option value="NO">NO</option>
+                      </select>
+                    </td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.familiares_texto" class="form-control form-control-sm shadow-none"></td>
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.observaciones" class="form-control form-control-sm shadow-none"></td>
                   </tr>
                 </thead>
@@ -254,6 +262,10 @@
                     <td class="text-center text-dark">{{ a.juega_handball }}</td>
                     <td class="text-dark">{{ a.donde_juega }}</td>
                     <td class="text-dark">{{ a.categoria_handball }}</td>
+                    <td class="text-center text-dark">{{ a.tiene_familiares }}</td>
+                    <td class="text-dark">
+                      <span class="d-inline-block text-truncate" style="max-width: 260px; cursor: help;" :title="a.familiares_texto">{{ a.familiares_texto }}</span>
+                    </td>
                     <td class="text-dark">
                         <span
                           class="d-inline-block text-truncate"
@@ -717,7 +729,7 @@ import selLocalidad from '@/components/select/selLocalidad.vue'
 import selProvincia from '@/components/select/selProvincia.vue'
 import ModalBase from '@/components/ModalBase.vue'
 import { useOpcionesHandball, separarCategorias, unirCategorias, MAX_LARGO_CATEGORIAS } from '@/composables/useOpcionesHandball'
-import { validarFamiliares, familiaresParaEnviar, familiaresDesdeServidor } from '@/composables/useFamiliares'
+import { validarFamiliares, familiaresParaEnviar, familiaresDesdeServidor, textoFamiliares } from '@/composables/useFamiliares'
 import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
 
 useHead({
@@ -747,6 +759,7 @@ const CAMPOS_TEXTO_FILTRO = [
   'localidad', 'provincia', 'movilidad', 'fecha_nacimiento', 'fecha_ingreso', 'genero',
   'telefonocontacto', 'parentescocontacto', 'donde_juega', 'categoria_handball',
   'observaciones', 'juega_handball', 'grupo', 'subgrupo',
+  'tiene_familiares', 'familiares_texto',
   'disponibilidad_sabado', 'disponibilidad_sabado_desde', 'disponibilidad_sabado_hasta',
   'disponibilidad_domingo', 'disponibilidad_domingo_desde', 'disponibilidad_domingo_hasta',
 ]
@@ -862,7 +875,7 @@ const cambioJuegaHandball = () => {
   }
 }
 
-// Checkboxes de categorías <-> texto separado por coma en categoria_handball
+// Checkboxes de categorías <-> texto separado por " | " en categoria_handball
 const categoriasModal = computed({
   get: () => separarCategorias(formModal.value.categoria_handball),
   set: (lista) => { formModal.value.categoria_handball = unirCategorias(lista) },
@@ -1215,6 +1228,17 @@ const actualizarArbitroLocal = (datosForm) => {
     nombre_localidad: localidadObj ? localidadObj.nombre : arbitros.value[idx].nombre_localidad,
   }
 
+  if (familiaresCargados.value) {
+    const lista = datosForm.tieneFamiliares === 'si' ? (datosForm.familiares || []) : []
+    actualizado.tiene_familiares = lista.length ? 'SI' : 'NO'
+    actualizado.familiares_texto = textoFamiliares(lista)
+  } else {
+    actualizado.tiene_familiares = arbitros.value[idx].tiene_familiares
+    actualizado.familiares_texto = arbitros.value[idx].familiares_texto
+  }
+  delete actualizado.tieneFamiliares
+  delete actualizado.familiares
+
   // No guardamos el password en la fila de la tabla
   delete actualizado.password
 
@@ -1258,7 +1282,9 @@ const columnasExcel = ref([
   { id: 'telefonocontacto', label: 'Tel. Contacto', visible: false }, { id: 'parentescocontacto', label: 'Parentesco', visible: false }, { id: 'movilidad', label: 'Movilidad', visible: false },
   { id: 'disponibilidad_sabado', label: 'Sáb. Disp.', visible: false }, { id: 'disponibilidad_sabado_desde', label: 'Sáb. Desde', visible: false }, { id: 'disponibilidad_sabado_hasta', label: 'Sáb. Hasta.', visible: false },
   { id: 'disponibilidad_domingo', label: 'Dom. Disp.', visible: false }, { id: 'disponibilidad_domingo_desde', label: 'Dom. Desde', visible: false }, { id: 'disponibilidad_domingo_hasta', label: 'Dom. Hasta', visible: false },
-  { id: 'juega_handball', label: 'Juega', visible: false }, { id: 'donde_juega', label: 'Club', visible: false }, { id: 'categoria_handball', label: 'Cat. Juega', visible: false }, { id: 'observaciones', label: 'Observaciones', visible: false },
+  { id: 'juega_handball', label: 'Juega', visible: false }, { id: 'donde_juega', label: 'Club', visible: false }, { id: 'categoria_handball', label: 'Cat. Juega', visible: false },
+  { id: 'tiene_familiares', label: 'Familiares', visible: false }, { id: 'familiares_texto', label: 'Detalle Familiares', visible: false },
+  { id: 'observaciones', label: 'Observaciones', visible: false },
 ])
 
 const ejecutarDescargaExcel = async () => {
@@ -1311,13 +1337,23 @@ const ejecutarDescargaExcel = async () => {
 const cargarDatos = async () => {
   cargandoTabla.value = true
   try {
-    const { payload } = await api.get({ entity: 'arbitros', action: 'getArbitros' })
+    const [{ payload }, resFamiliares] = await Promise.all([
+      api.get({ entity: 'arbitros', action: 'getArbitros' }),
+      api.get({ entity: 'familiares', action: 'obtenerFamiliaresTodos', payload: {} }).catch(() => null),
+    ])
+    const familiaresPorArbitro = {}
+    if (resFamiliares?.ok) {
+      for (const f of resFamiliares.payload || []) familiaresPorArbitro[f.idArbitro] = f.familiares
+    }
     if (payload) {
       arbitros.value = payload.map(a => {
+        const familiares = familiaresPorArbitro[a.id] || []
         const base = {
           ...a,
           apto_medico: a.apto_medico == 1,
           rol: a.rol !== null ? parseInt(a.rol) : 0,
+          tiene_familiares: familiares.length ? 'SI' : 'NO',
+          familiares_texto: textoFamiliares(familiares),
         }
         // Pre-normalizamos una sola vez los campos de texto buscables.
         // Así el filtrado no tiene que normalizar en cada tecla.
@@ -1401,7 +1437,7 @@ const arbitrosFiltrados = computed(() => {
           if (key === 'apto_medico') { if ((val === 'SI') !== !!a.apto_medico) return false; continue }
           // Grupo y subgrupo salen de un select: comparacion exacta para que
           // "1" no matchee "10" ni "A" matchee dentro de otro texto.
-          if (key === 'grupo' || key === 'subgrupo') {
+          if (key === 'grupo' || key === 'subgrupo' || key === 'tiene_familiares') {
             const campoExacto = a._buscar ? a._buscar[key] : normalizarTexto(a[key])
             if (campoExacto !== val) return false
             continue

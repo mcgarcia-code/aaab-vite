@@ -24,7 +24,7 @@
         <div v-for="(f, i) in familiares" :key="i" class="p-2 bg-light rounded small text-dark">
           <strong>{{ nombreClub(f.idClub) || f.club || '-' }}</strong>
           <span class="text-muted"> · {{ f.parentesco }}</span>
-          <div>{{ (f.categorias || []).join(', ') }}</div>
+          <div>{{ (f.categorias || []).join('; ') }}</div>
         </div>
         <div v-if="!familiares.length" class="small text-muted fst-italic">Sin familiares cargados</div>
       </div>
@@ -61,7 +61,7 @@
                 <select
                   :id="`${prefijo}-club-${i}`"
                   :value="f.idClub"
-                  @change="actualizarFila(i, { idClub: $event.target.value, categorias: [] })"
+                  @change="actualizarFila(i, { idClub: $event.target.value, club: nombreClub($event.target.value), categorias: [] })"
                   class="form-select"
                   :class="{ 'form-select-sm': chico }"
                 >

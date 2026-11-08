@@ -5,7 +5,7 @@
 
 export const MAX_FAMILIARES = 10
 
-export const filaFamiliarVacia = () => ({ idClub: '', categorias: [], parentesco: '' })
+export const filaFamiliarVacia = () => ({ idClub: '', club: '', categorias: [], parentesco: '' })
 
 export const errorFilaFamiliar = (f) => {
   if (!f.idClub) return 'Seleccioná el club.'
@@ -30,6 +30,13 @@ export const familiaresParaEnviar = (tiene, familiares) =>
   tiene === 'si'
     ? familiares.map(f => ({ idClub: f.idClub, categorias: f.categorias, parentesco: String(f.parentesco || '').trim() }))
     : []
+
+// Texto de una línea para tablas y Excel:
+// "Club A: Menores A; Junior Fem, C (Hijo) | Club B: Mini (Hija)"
+export const textoFamiliares = (lista) =>
+  (lista || [])
+    .map(f => `${f.club || 'Club'}: ${(f.categorias || []).join('; ')}${f.parentesco ? ` (${f.parentesco})` : ''}`)
+    .join(' | ')
 
 // Lo que devuelve el backend -> estado del formulario
 export const familiaresDesdeServidor = (lista) => {
