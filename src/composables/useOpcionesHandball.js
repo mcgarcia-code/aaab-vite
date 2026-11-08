@@ -14,6 +14,27 @@ export const separarCategorias = (texto) =>
 export const unirCategorias = (lista) =>
   [...new Set(lista.map(c => String(c).trim()).filter(Boolean))].join(', ')
 
+export const RAMAS_HANDBALL = RAMAS
+
+// Un único pedido compartido (y cacheado) de clubes y categorías para toda la app:
+// { clubes, categorias } = solo Juveniles/Junior/Mayores (donde juega el árbitro)
+// { clubesFamiliares, categoriasFamiliares } = todas las categorías (familiares)
+let promesaDatosClubes = null
+export const obtenerDatosClubes = () => {
+  if (!promesaDatosClubes) {
+    promesaDatosClubes = api.get({ entity: 'registro', action: 'obtenerDatosRegistro', payload: {} })
+      .then(res => {
+        if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los clubes')
+        return res.payload ?? {}
+      })
+      .catch(e => {
+        promesaDatosClubes = null
+        throw e
+      })
+  }
+  return promesaDatosClubes
+}
+
 // Clubes y categorías para los campos "donde_juega" / "categoria_handball".
 // Las categorías salen de los equipos activos de cada club (equipos_larry),
 // vía registro/obtenerDatosRegistro. Ambos campos se guardan por NOMBRE.
@@ -32,10 +53,9 @@ export function useOpcionesHandball(obtenerClub, obtenerCategorias) {
     cargando.value = true
     error.value = ''
     try {
-      const res = await api.get({ entity: 'registro', action: 'obtenerDatosRegistro', payload: {} })
-      if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los clubes')
-      clubes.value = res.payload?.clubes ?? []
-      categorias.value = res.payload?.categorias ?? []
+      const datos = await obtenerDatosClubes()
+      clubes.value = datos.clubes ?? []
+      categorias.value = datos.categorias ?? []
     } catch (e) {
       console.error('useOpcionesHandball:', e)
       error.value = 'No se pudieron cargar los clubes y categorías.'

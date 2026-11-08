@@ -537,6 +537,21 @@
             </div>
           </template>
 
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Familiares en clubes</div>
+          <div class="col-12">
+            <div v-if="!familiaresCargados" class="small text-muted">
+              <span class="spinner-border spinner-border-sm me-1"></span> Cargando familiares...
+            </div>
+            <SeccionFamiliares
+              v-else
+              v-model:tiene="formModal.tieneFamiliares"
+              v-model:familiares="formModal.familiares"
+              :mostrar-errores="intentoGuardarModal"
+              prefijo="modal-fam"
+              @error="mensaje => notificar({ titulo: 'Error', mensaje, tipo: 'danger' })"
+            />
+          </div>
+
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Observaciones</div>
           <div class="col-12">
             <textarea v-model="formModal.observaciones" class="form-control shadow-none border-secondary-subtle" rows="3"></textarea>
@@ -702,6 +717,8 @@ import selLocalidad from '@/components/select/selLocalidad.vue'
 import selProvincia from '@/components/select/selProvincia.vue'
 import ModalBase from '@/components/ModalBase.vue'
 import { useOpcionesHandball, separarCategorias, unirCategorias, MAX_LARGO_CATEGORIAS } from '@/composables/useOpcionesHandball'
+import { validarFamiliares, familiaresParaEnviar, familiaresDesdeServidor } from '@/composables/useFamiliares'
+import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
 
 useHead({
   title: 'Legajos | AAAB',
@@ -824,6 +841,7 @@ const formModalVacio = () => ({
   disponibilidad_sabado: 'FT', disponibilidad_sabado_desde: '', disponibilidad_sabado_hasta: '',
   disponibilidad_domingo: 'FT', disponibilidad_domingo_desde: '', disponibilidad_domingo_hasta: '',
   juega_handball: 'NO', donde_juega: '', categoria_handball: '',
+  tieneFamiliares: 'no', familiares: [],
   observaciones: '',
 })
 
@@ -997,7 +1015,39 @@ const verHistorialArbitro = async (arbitro) => {
   }
 }
 
+// ─── Familiares en clubes ─────────────────────────────────────────
+// Si no se pudieron cargar, al guardar NO se mandan (si no, el backend
+// interpretaría "no tiene" y borraría los que ya estaban cargados).
+const familiaresCargados = ref(true)
+const intentoGuardarModal = ref(false)
+
+const cargarFamiliaresModal = async (idArbitro) => {
+  familiaresCargados.value = false
+  try {
+    const res = await api.get({ entity: 'familiares', action: 'obtenerFamiliaresArbitro', payload: { idArbitro } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los familiares')
+    const datos = familiaresDesdeServidor(res.payload)
+    formModal.value.tieneFamiliares = datos.tiene
+    formModal.value.familiares = datos.familiares
+    familiaresCargados.value = true
+  } catch (e) {
+    console.error('cargarFamiliaresModal:', e)
+    notificar({ titulo: 'Atención', mensaje: 'No se pudieron cargar los familiares de este árbitro. Si guardás, no se van a modificar.', tipo: 'danger' })
+  }
+}
+
+const validarFamiliaresModal = () => {
+  intentoGuardarModal.value = true
+  if (!familiaresCargados.value) return true
+  const error = validarFamiliares(formModal.value.tieneFamiliares, formModal.value.familiares)
+  if (!error) return true
+  notificar({ titulo: 'Revisá familiares', mensaje: error, tipo: 'danger' })
+  return false
+}
+
 const crearNuevo = () => {
+  familiaresCargados.value = true
+  intentoGuardarModal.value = false
   formModal.value = formModalVacio()
   movilidadArray.value = []
   mensajeSolicitudActiva.value = ''
@@ -1052,6 +1102,8 @@ const editarArbitro = async (arbitro) => {
     grupos: gruposCoordinados
   }
   if (formModal.value.juega_handball === 'SI') handball.cargar()
+  intentoGuardarModal.value = false
+  cargarFamiliaresModal(arbitro.id)
   movilidadArray.value = []
   let movilidades = arbitro.movilidad ? arbitro.movilidad.split(',') : []
   movilidades.forEach(v => {
@@ -1072,6 +1124,7 @@ const confirmarAlta = async () => {
     return
   }
   if (!validarHandballModal()) return
+  if (!validarFamiliaresModal()) return
   cargando.value = true
   try {
     const res = await api.post({
@@ -1097,6 +1150,7 @@ const confirmarEdicion = async () => {
     return
   }
   if (!validarHandballModal()) return
+  if (!validarFamiliaresModal()) return
   cargando.value = true
   try {
     const res = await api.post({
@@ -1132,6 +1186,12 @@ const prepararPayload = (a) => {
   if (!clon.password) delete clon.password
   clon.apto_medico = clon.apto_medico ? 1 : 0
   clon.rol = parseInt(clon.rol)
+  if (familiaresCargados.value) {
+    clon.familiares = familiaresParaEnviar(clon.tieneFamiliares, clon.familiares || [])
+  } else {
+    delete clon.tieneFamiliares
+    delete clon.familiares
+  }
   return clon
 }
 

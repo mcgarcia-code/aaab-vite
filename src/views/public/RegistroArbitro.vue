@@ -202,6 +202,19 @@
           </template>
         </div>
 
+        <!-- FAMILIARES -->
+        <h6 class="titulo-seccion"><i class="bi bi-people me-1"></i> Familiares en clubes</h6>
+        <div class="mb-4">
+          <SeccionFamiliares
+            v-model:tiene="form.tieneFamiliares"
+            v-model:familiares="form.familiares"
+            :mostrar-errores="intentoEnviar"
+            prefijo="reg-fam"
+            @error="mensaje => toast({ titulo: 'Error', mensaje, tipo: 'danger' })"
+          />
+          <div v-if="intentoEnviar && errores.familiares" class="text-danger small mt-2">{{ errores.familiares }}</div>
+        </div>
+
         <!-- OBSERVACIONES -->
         <h6 class="titulo-seccion"><i class="bi bi-chat-left-text me-1"></i> Observaciones</h6>
         <div class="mb-4">
@@ -225,6 +238,9 @@
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
+import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
+import { obtenerDatosClubes } from '@/composables/useOpcionesHandball'
+import { validarFamiliares, familiaresParaEnviar } from '@/composables/useFamiliares'
 
 useHead({
   title: 'Registro de Árbitros | AAAB',
@@ -269,6 +285,7 @@ const formularioVacio = () => ({
   disponibilidadSabado: 'NO', sabadoDesde: '', sabadoHasta: '',
   disponibilidadDomingo: 'NO', domingoDesde: '', domingoHasta: '',
   juegaHandball: 'no', idClub: '', idsCategorias: [],
+  tieneFamiliares: 'no', familiares: [],
   observaciones: '',
   sitioWeb: '',
 })
@@ -355,6 +372,9 @@ const validarFormulario = () => {
     if (!form.idsCategorias.length) e.idsCategorias = 'Seleccioná al menos una categoría.'
   }
 
+  const errorFamiliares = validarFamiliares(form.tieneFamiliares, form.familiares)
+  if (errorFamiliares) e.familiares = errorFamiliares
+
   Object.keys(errores).forEach(k => delete errores[k])
   Object.assign(errores, e)
   return Object.keys(e).length === 0
@@ -387,15 +407,15 @@ for (const dia of DIAS) {
 const cargarDatos = async () => {
   cargandoDatos.value = true
   try {
-    const [resUbicacion, resRegistro] = await Promise.all([
+    const [resUbicacion, datosClubes] = await Promise.all([
       api.get({ entity: 'localidades', action: 'obtenerProvinciasLocalidades', payload: {} }),
-      api.get({ entity: 'registro', action: 'obtenerDatosRegistro', payload: {} }),
+      obtenerDatosClubes(),
     ])
-    if (!resUbicacion?.ok || !resRegistro?.ok) throw new Error(resRegistro?.message || resUbicacion?.message || 'No se pudo cargar el formulario')
+    if (!resUbicacion?.ok) throw new Error(resUbicacion?.message || 'No se pudo cargar el formulario')
     provincias.value = resUbicacion.payload?.provincias ?? []
     localidades.value = resUbicacion.payload?.localidades ?? []
-    clubes.value = resRegistro.payload?.clubes ?? []
-    categorias.value = resRegistro.payload?.categorias ?? []
+    clubes.value = datosClubes.clubes ?? []
+    categorias.value = datosClubes.categorias ?? []
   } catch (e) {
     console.error('cargarDatos:', e)
     toast({ titulo: 'Error', mensaje: 'No se pudo cargar el formulario. Recargá la página.', tipo: 'danger' })
@@ -419,7 +439,11 @@ const enviarRegistro = async () => {
     const res = await api.post({
       entity: 'registro',
       action: 'registrarArbitro',
-      payload: { ...form, dni: String(form.dni).replace(/\D/g, '') },
+      payload: {
+        ...form,
+        dni: String(form.dni).replace(/\D/g, ''),
+        familiares: familiaresParaEnviar(form.tieneFamiliares, form.familiares),
+      },
     })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo completar el registro')
     registrado.value = true

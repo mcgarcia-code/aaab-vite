@@ -134,6 +134,20 @@
           </div>
         </div>
 
+        <h6 class="text-danger fw-bold text-uppercase mb-3 small border-top pt-4" style="letter-spacing: 1px;">Familiares en clubes</h6>
+        <div class="mb-4">
+          <SeccionFamiliares
+            v-model:tiene="tieneFamiliares"
+            v-model:familiares="familiares"
+            :editable="edicionAbierta"
+            :mostrar-errores="intentoGuardar"
+            prefijo="disp-fam"
+            clase-etiqueta="text-muted"
+            chico
+            @error="mensaje => toast({ titulo: 'Error', mensaje, tipo: 'danger' })"
+          />
+        </div>
+
         <button v-if="edicionAbierta" @click="guardarCambios" class="btn btn-success w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
           ACTUALIZAR DISPONIBILIDAD
@@ -228,6 +242,8 @@ import { auth } from '../../../api/auth';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head'
 import { useOpcionesHandball, separarCategorias, unirCategorias, MAX_LARGO_CATEGORIAS } from '@/composables/useOpcionesHandball'
+import { validarFamiliares, familiaresParaEnviar, familiaresDesdeServidor } from '@/composables/useFamiliares'
+import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
 
 useHead({
   title: 'Disponibilidad Horaria | AAAB',
@@ -302,6 +318,7 @@ const obtenerHistorialRectificaciones = async () => {
 
 onMounted(() => {
   obtenerHistorialRectificaciones();
+  cargarFamiliares()
   if (arbitro.value.movilidad) {
     movilidadSeleccionada.value = arbitro.value.movilidad.split(',');
   }
@@ -344,8 +361,43 @@ watch(
   { immediate: true }
 )
 
+// ─── Familiares en clubes (tabla arbitros_familiares) ──────────────
+const tieneFamiliares = ref('no')
+const familiares = ref([])
+const intentoGuardar = ref(false)
+
+const cargarFamiliares = async () => {
+  try {
+    const res = await api.get({ entity: 'familiares', action: 'obtenerMisFamiliares', payload: {} })
+    if (!res?.ok) throw new Error(res?.message)
+    const datos = familiaresDesdeServidor(res.payload)
+    tieneFamiliares.value = datos.tiene
+    familiares.value = datos.familiares
+  } catch (e) {
+    console.error('cargarFamiliares:', e)
+  }
+}
+
+const guardarFamiliares = async () => {
+  const res = await api.post({
+    entity: 'familiares',
+    action: 'guardarMisFamiliares',
+    payload: {
+      tieneFamiliares: tieneFamiliares.value,
+      familiares: familiaresParaEnviar(tieneFamiliares.value, familiares.value),
+    },
+  })
+  if (!res?.ok) throw new Error(res?.message || 'No se pudieron guardar los familiares.')
+}
+
 const guardarCambios = async () => {
+    intentoGuardar.value = true
     if (!validarActividadDeportiva()) return
+    const errorFamiliares = validarFamiliares(tieneFamiliares.value, familiares.value)
+    if (errorFamiliares) {
+      toast({ titulo: 'Revisá familiares', mensaje: errorFamiliares, tipo: 'danger' })
+      return
+    }
     cargando.value = true;
     try {
         const res = await api.post({
@@ -357,12 +409,19 @@ const guardarCambios = async () => {
         })
         // El api devuelve { ok, payload }: el resultado real del PHP viene en res.payload
         if (res?.ok && res.payload?.success) {
+            auth.updateUser(arbitro.value);
+            try {
+              await guardarFamiliares()
+            } catch (e) {
+              toast({ titulo: 'Atención', mensaje: `Se guardó tu disponibilidad, pero no los familiares: ${e.message}`, tipo: 'danger' })
+              return
+            }
+            intentoGuardar.value = false
             toast({
               titulo: '¡Perfil Actualizado!',
               mensaje: 'Tus datos se guardaron correctamente en el legajo.',
               tipo: 'success'
             });
-            auth.updateUser(arbitro.value);
         } else {
             toast({
               titulo: 'Error',
