@@ -251,6 +251,7 @@
 </template>
 
 <script setup>
+import { conAnioActual } from '@/composables/useAnioActual'
 import { ref, reactive, onMounted, inject, computed, watch } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
@@ -325,7 +326,7 @@ const opcionesSubgrupo = computed(() => {
 })
 
 const anioActual = new Date().getFullYear()
-const aniosDisponibles = [anioActual + 1, anioActual, anioActual - 1, anioActual - 2].map(String)
+const aniosDisponibles = conAnioActual([String(anioActual + 1)])
 
 const filtroEventos = (ev) => {
   if (filtros.busqueda) {

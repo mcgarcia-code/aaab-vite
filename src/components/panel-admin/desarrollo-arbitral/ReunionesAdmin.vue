@@ -1002,10 +1002,7 @@ const NOMBRES_MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'J
 const MESES_DISERTANTES = NOMBRES_MESES.map((nombre, i) => ({ valor: String(i + 1).padStart(2, '0'), nombre }))
 const mesDeFecha = (fechaEvento) => String(fechaEvento || '').substring(5, 7)
 const nombreMes = (mes) => NOMBRES_MESES[Number(mes) - 1] ?? ''
-const aniosDisertantes = computed(() => {
-  const actual = Number(anioActual())
-  return conAnioActual([0, 1, 2, 3].map(n => String(actual - n)))
-})
+const aniosDisertantes = computed(() => conAnioActual())
 const claveDisertante = (idEvento, idGrupo) => `${idEvento}|${idGrupo}`
 
 const filasDisertantes = computed(() => {
