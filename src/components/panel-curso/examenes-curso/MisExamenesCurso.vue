@@ -1,5 +1,46 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
+    <ExamenCursoRunner
+      v-if="examenEnCurso"
+      :id-examen="examenEnCurso.id"
+      :titulo="examenEnCurso.titulo"
+      @terminar="recargar"
+      @salir="examenEnCurso = null"
+    />
+
+    <template v-else>
+    <div v-if="online.length" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+      <div class="card-header bg-white py-3 border-bottom">
+        <div class="border-start border-danger border-5 ps-3">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <i class="bi bi-laptop me-1"></i> Exámenes online
+          </h4>
+          <span class="text-muted small d-block mt-1">Exámenes de las clases a las que asististe</span>
+        </div>
+      </div>
+      <div class="card-body p-3 p-md-4 d-flex flex-column gap-2">
+        <div v-for="x in online" :key="'on-' + x.id" class="examen-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+          <div class="min-w-0">
+            <div class="fw-bold text-dark">{{ x.titulo }}</div>
+            <div class="small text-muted">{{ fechaLargaClase(x.fecha) }} · {{ x.cantidadPreguntas }} preguntas · {{ x.tiempoLimiteMin }} min</div>
+          </div>
+          <div class="d-flex flex-wrap gap-2 align-items-center flex-shrink-0">
+            <template v-if="x.estado === 'finalizado'">
+              <span class="badge" :class="x.aprobado ? 'bg-success' : 'bg-danger'">{{ x.aprobado ? 'Aprobado' : 'Desaprobado' }} · {{ formatoNota(x.calificacion) }}%</span>
+              <button type="button" class="btn btn-sm btn-outline-danger fw-bold" :disabled="descargando === x.id" @click="descargarPdf(x)">
+                <span v-if="descargando === x.id" class="spinner-border spinner-border-sm me-1"></span>
+                <i v-else class="bi bi-file-earmark-pdf me-1"></i> PDF
+              </button>
+            </template>
+            <span v-else-if="!x.presente" class="badge bg-light text-muted border">Solo para presentes en la clase</span>
+            <button v-else type="button" class="btn btn-sm btn-danger fw-bold" @click="examenEnCurso = x">
+              <i class="bi bi-play-fill me-1"></i> {{ x.estado === 'en_curso' ? 'Continuar' : 'Rendir' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 border-bottom">
         <div class="border-start border-danger border-5 ps-3">
@@ -43,6 +84,7 @@
         </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
@@ -52,6 +94,7 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
 import { formatoNota, claseNota, estaAprobado } from '@/composables/useExamenesCurso'
+import ExamenCursoRunner from '@/components/panel-curso/examenes-curso/ExamenCursoRunner.vue'
 
 useHead({ title: 'Mis Exámenes | Curso AAAB' })
 
@@ -60,11 +103,42 @@ const toast = inject('toast', (m) => alert(m.mensaje || m))
 const examenes = ref([])
 const cargando = ref(true)
 
+const online = ref([])
+const examenEnCurso = ref(null)
+const descargando = ref(null)
+
+const cargarTodo = async () => {
+  const [res, resOnline] = await Promise.all([
+    api.get({ entity: 'perfil_curso_arbitro', action: 'obtenerMisExamenesCurso', payload: {} }),
+    api.get({ entity: 'examen_online_curso_arbitro', action: 'misExamenesOnlineCurso', payload: {} }),
+  ])
+  if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar tus exámenes')
+  examenes.value = res.payload || []
+  online.value = resOnline?.ok ? resOnline.payload || [] : []
+}
+
+const recargar = async () => {
+  try {
+    await cargarTodo()
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  }
+}
+
+const descargarPdf = async (x) => {
+  descargando.value = x.id
+  try {
+    await api.getFile({ entity: 'examen_online_curso_arbitro', action: 'descargarPdfExamenCurso', payload: { idExamen: x.id } }, 'examen_curso.pdf')
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    descargando.value = null
+  }
+}
+
 onMounted(async () => {
   try {
-    const res = await api.get({ entity: 'perfil_curso_arbitro', action: 'obtenerMisExamenesCurso', payload: {} })
-    if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar tus exámenes')
-    examenes.value = res.payload || []
+    await cargarTodo()
   } catch (e) {
     toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
   } finally {

@@ -48,6 +48,7 @@
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
                   <span class="badge" :class="claseCurso(e.curso)">{{ etiquetaCurso(e.curso) }}</span>
+                  <span v-if="e.online" class="badge" :class="e.habilitado ? 'bg-primary' : 'bg-secondary'"><i class="bi bi-laptop me-1"></i>Online{{ e.habilitado ? ' · habilitado' : ' · cerrado' }}</span>
                   <span class="badge bg-light text-dark border">Nota máx. {{ formatoNota(e.notaMaxima) }} · aprueba con {{ formatoNota(e.porcentajeAprobacion) }}%</span>
                 </div>
                 <div class="small mt-2">
@@ -163,9 +164,13 @@
                   <label :for="`com-${n.id}`" class="visually-hidden">Comentario</label>
                   <input :id="`com-${n.id}`" v-model.trim="n.comentarios" type="text" maxlength="1000" class="form-control form-control-sm" placeholder="Comentario (opcional)">
                 </div>
-                <div class="col-3 col-md-1 text-end">
+                <div class="col-3 col-md-1 text-end d-flex justify-content-end align-items-center gap-1">
                   <span v-if="resultado(n) === true" class="badge bg-success">✓</span>
                   <span v-else-if="resultado(n) === false" class="badge bg-danger">✗</span>
+                  <button v-if="n.rendidoOnline" type="button" class="btn btn-sm btn-outline-danger p-0 px-1" :disabled="descargandoPdf === n.id" title="Descargar PDF del examen" :aria-label="'PDF de ' + n.apellido" @click="descargarPdf(n)">
+                    <span v-if="descargandoPdf === n.id" class="spinner-border spinner-border-sm"></span>
+                    <i v-else class="bi bi-file-earmark-pdf"></i>
+                  </button>
                 </div>
               </div>
             </div>
@@ -320,6 +325,23 @@ const resumenNotas = computed(() => ({
   ausentes: notas.value.filter(n => n.ausente).length,
   sin: notas.value.filter(n => !n.ausente && notaNumero(n) === null).length,
 }))
+
+const descargandoPdf = ref(null)
+
+const descargarPdf = async (n) => {
+  descargandoPdf.value = n.id
+  try {
+    await api.getFile({
+      entity: 'examen_online_curso_arbitro',
+      action: 'descargarPdfExamenCurso',
+      payload: { idExamen: examenNotas.value.id, idAlumno: n.id },
+    }, `examen_curso_${n.apellido}_${n.dni}.pdf`)
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    descargandoPdf.value = null
+  }
+}
 
 const abrirNotas = async (e) => {
   examenNotas.value = { ...e }

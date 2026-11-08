@@ -6,7 +6,7 @@
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-calendar3-week me-1"></i> Cronograma Anual del Curso
+              <i class="bi bi-calendar3-week me-1"></i> Clases y Asistencia
             </h4>
             <span class="text-muted small d-block mt-1">{{ clasesVisibles.length }} clases en {{ anio }} · cada alumno ve las de su curso</span>
           </div>
@@ -64,6 +64,7 @@
                     </a>
                     <div class="d-flex flex-wrap gap-2 mt-3">
                       <button @click="abrirAsistencia(c)" class="btn btn-sm btn-outline-success flex-fill fw-bold"><i class="bi bi-person-check me-1"></i> Asistencia</button>
+                      <button @click="abrirExamen(c)" class="btn btn-sm btn-outline-dark flex-fill fw-bold"><i class="bi bi-journal-check me-1"></i> Examen</button>
                       <button @click="abrirEditar(c)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
                       <button @click="confirmarEliminar(c)" class="btn btn-sm btn-outline-danger flex-fill fw-bold"><i class="bi bi-trash3 me-1"></i> Borrar</button>
                     </div>
@@ -177,6 +178,61 @@
         </button>
       </template>
     </ModalBase>
+    <ModalBase :show="mostrarExamen" @close="mostrarExamen = false" icono="quiz" colorIcono="bg-dark-subtle text-dark" maxWidth="680px">
+      <template #header>
+        <div class="text-center w-100">
+          <span class="fw-bold fs-5">Programar examen online</span>
+          <div v-if="claseExamen" class="text-muted small mt-1">{{ fechaLargaClase(claseExamen.fecha) }} · {{ claseExamen.titulo }}</div>
+        </div>
+      </template>
+      <div v-if="cargandoExamen" class="text-center py-4"><span class="spinner-border text-dark"></span></div>
+      <form v-else id="formExamenClase" class="text-start" novalidate @submit.prevent="guardarExamen">
+        <div v-if="examenExistente" class="alert alert-light border small py-2">
+          <i class="bi bi-info-circle me-1"></i> Ya hay un examen programado para esta clase. Lo rindieron {{ examenExistente.rendidos }} aspirante(s).
+        </div>
+        <p class="small text-muted">Solo pueden rendirlo los aspirantes marcados como <strong>presentes</strong> en la clase. La nota y el PDF quedan en <strong>Exámenes</strong> con el nombre de la clase. Se aprueba con el {{ PORCENTAJE_APROBACION_DEFECTO }}%.</p>
+        <div class="row g-3">
+          <div class="col-6">
+            <label for="ex-cantidad" class="form-label small fw-bold text-dark">Cantidad de preguntas *</label>
+            <input id="ex-cantidad" v-model.number="formExamen.cantidadPreguntas" type="number" min="1" max="100" class="form-control" :class="{ 'is-invalid': intentoExamen && errorCantidad }">
+            <div class="invalid-feedback">{{ errorCantidad }}</div>
+          </div>
+          <div class="col-6">
+            <label for="ex-tiempo" class="form-label small fw-bold text-dark">Tiempo (minutos) *</label>
+            <input id="ex-tiempo" v-model.number="formExamen.tiempoLimiteMin" type="number" min="1" max="180" class="form-control" :class="{ 'is-invalid': intentoExamen && errorTiempo }">
+            <div class="invalid-feedback">{{ errorTiempo }}</div>
+          </div>
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="form-label small fw-bold text-dark m-0">Reglas * <span class="text-muted fw-normal">({{ preguntasDisponibles }} preguntas disponibles)</span></span>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-link btn-sm p-0 fw-bold" @click="formExamen.reglas = reglasDisponibles.map(r => r.codigo)">Todas</button>
+                <button type="button" class="btn btn-link btn-sm p-0 fw-bold text-secondary" @click="formExamen.reglas = []">Ninguna</button>
+              </div>
+            </div>
+            <div class="d-flex flex-wrap gap-3 border rounded-3 p-3" :class="{ 'border-danger': intentoExamen && !formExamen.reglas.length }">
+              <div v-for="r in reglasDisponibles" :key="r.codigo" class="form-check m-0" style="min-width: 110px;">
+                <input :id="'ex-regla-' + r.codigo" v-model="formExamen.reglas" class="form-check-input" type="checkbox" :value="r.codigo">
+                <label class="form-check-label small fw-bold" :for="'ex-regla-' + r.codigo">Regla {{ r.codigo }} <span class="text-muted fw-normal">({{ r.cantidad }})</span></label>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input id="ex-habilitado" v-model="formExamen.habilitado" class="form-check-input" type="checkbox" role="switch">
+              <label class="form-check-label fw-bold small" for="ex-habilitado">Habilitado para rendir</label>
+            </div>
+          </div>
+        </div>
+      </form>
+      <template #footer>
+        <button type="button" @click="mostrarExamen = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button type="submit" form="formExamenClase" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoExamen || cargandoExamen">
+          <span v-if="guardandoExamen" class="spinner-border spinner-border-sm me-1"></span>
+          GUARDAR EXAMEN
+        </button>
+      </template>
+    </ModalBase>
   </div>
 </template>
 
@@ -187,9 +243,10 @@ import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
+import { PORCENTAJE_APROBACION_DEFECTO } from '@/composables/useExamenesCurso'
 import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada } from '@/composables/useCronogramaCurso'
 
-useHead({ title: 'Cronograma del Curso | AAAB' })
+useHead({ title: 'Clases y Asistencia | AAAB' })
 
 const notificar = inject('notificar', (m) => alert(m.mensaje || m))
 const toast = inject('toast', (m) => notificar(m))
@@ -335,6 +392,90 @@ const guardarAsistencia = async () => {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
   } finally {
     guardandoAsistencia.value = false
+  }
+}
+
+// ─── Examen online por clase ─────────────────────────────────────
+const mostrarExamen = ref(false)
+const claseExamen = ref(null)
+const examenExistente = ref(null)
+const cargandoExamen = ref(false)
+const guardandoExamen = ref(false)
+const intentoExamen = ref(false)
+const reglasDisponibles = ref([])
+const configDefecto = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [] })
+const formExamen = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true })
+
+const preguntasDisponibles = computed(() =>
+  reglasDisponibles.value.filter(r => formExamen.value.reglas.includes(r.codigo)).reduce((t, r) => t + r.cantidad, 0)
+)
+const errorCantidad = computed(() => {
+  const n = Number(formExamen.value.cantidadPreguntas)
+  if (!Number.isInteger(n) || n < 1 || n > 100) return 'Entre 1 y 100.'
+  if (formExamen.value.reglas.length && n > preguntasDisponibles.value) return `Hay solo ${preguntasDisponibles.value} preguntas.`
+  return ''
+})
+const errorTiempo = computed(() => {
+  const n = Number(formExamen.value.tiempoLimiteMin)
+  return Number.isInteger(n) && n >= 1 && n <= 180 ? '' : 'Entre 1 y 180.'
+})
+
+const cargarReglas = async () => {
+  if (reglasDisponibles.value.length) return
+  const res = await api.get({ entity: 'examenes_habilitaciones', action: 'obtenerReglasExamen', payload: {} })
+  if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar las reglas')
+  reglasDisponibles.value = (res.payload?.reglas || []).map(r => ({ codigo: Number(r.codigo), cantidad: Number(r.cantidad) }))
+  const d = res.payload?.defecto || {}
+  configDefecto.value = { cantidadPreguntas: Number(d.cantidadPreguntas) || 20, tiempoLimiteMin: Number(d.tiempoLimiteMin) || 25, reglas: (d.reglas || []).map(Number) }
+}
+
+const abrirExamen = async (c) => {
+  claseExamen.value = c
+  examenExistente.value = null
+  intentoExamen.value = false
+  mostrarExamen.value = true
+  cargandoExamen.value = true
+  try {
+    await cargarReglas()
+    const res = await api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerExamenOnlineClaseCurso', payload: { idClase: c.id } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar el examen de la clase')
+    examenExistente.value = res.payload
+    const codigos = reglasDisponibles.value.map(r => r.codigo)
+    const base = res.payload || { ...configDefecto.value, habilitado: true }
+    formExamen.value = {
+      cantidadPreguntas: base.cantidadPreguntas,
+      tiempoLimiteMin: base.tiempoLimiteMin,
+      reglas: (base.reglas || []).filter(r => codigos.includes(r)),
+      habilitado: base.habilitado,
+    }
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+    mostrarExamen.value = false
+  } finally {
+    cargandoExamen.value = false
+  }
+}
+
+const guardarExamen = async () => {
+  intentoExamen.value = true
+  if (errorCantidad.value || errorTiempo.value || !formExamen.value.reglas.length) {
+    notificar({ titulo: 'Faltan datos', mensaje: 'Revisá la cantidad, el tiempo y elegí al menos una regla.', tipo: 'danger' })
+    return
+  }
+  guardandoExamen.value = true
+  try {
+    const res = await api.post({
+      entity: 'examen_online_curso_arbitro',
+      action: 'programarExamenClaseCurso',
+      payload: { idClase: claseExamen.value.id, ...formExamen.value },
+    })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo programar el examen')
+    toast({ titulo: 'Examen programado', mensaje: formExamen.value.habilitado ? 'Los presentes ya pueden rendirlo desde Mis Exámenes.' : 'El examen quedó guardado sin habilitar.', tipo: 'success' })
+    mostrarExamen.value = false
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    guardandoExamen.value = false
   }
 }
 

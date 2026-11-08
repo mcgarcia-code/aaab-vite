@@ -160,7 +160,7 @@ const categorias = [
     items: [
       { to: '/panel-admin/curso-arbitros/legajos-curso', title: 'Legajos', icon: 'bi bi-person-lines-fill', desc: 'Consultar y gestionar información de los miembros.' },
       { to: '/panel-admin/curso-arbitros/alumnos-regulares', title: 'Alumnos Regulares', icon: 'bi bi-person-check-fill', desc: 'Alumnos regulares y reinscriptos del curso de este año.' },
-      { to: '/panel-admin/curso-arbitros/cronograma', title: 'Cronograma Anual', icon: 'bi bi-calendar3-week', desc: 'Cargar las clases del curso que ven los alumnos.' },
+      { to: '/panel-admin/curso-arbitros/cronograma', title: 'Clases y Asistencia', icon: 'bi bi-calendar3-week', desc: 'Clases del curso, asistencia y exámenes online por clase.' },
       { to: '/panel-admin/curso-arbitros/observaciones-curso', title: 'Observaciones Realizadas', icon: 'bi bi-clipboard-data-fill', desc: 'Registro y seguimiento de las observaciones arbitrales.' },
       { to: '/panel-admin/curso-arbitros/examenes-curso', title: 'Exámenes', icon: 'bi bi-journal-check', desc: 'Gestionar exámenes y resultados del curso.' }
     ]

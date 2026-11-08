@@ -18,26 +18,10 @@
       </div>
 
       <div v-else-if="perfil" class="card-body p-3 p-md-4">
-        <!-- FOTO -->
-        <div class="d-flex flex-column flex-sm-row align-items-center gap-3 mb-4 pb-4 border-bottom">
-          <img :src="urlFoto" @error="(e) => e.target.src = FOTO_POR_DEFECTO" class="foto-perfil shadow-sm" alt="Tu foto de perfil">
-          <div class="text-center text-sm-start">
-            <div class="fw-bold text-dark text-uppercase">{{ perfil.apellido }}, {{ perfil.nombre }}</div>
-            <div class="small text-muted">{{ perfil.usuario }}</div>
-            <div class="d-flex flex-wrap gap-1 justify-content-center justify-content-sm-start mt-1">
-              <span v-if="MODALIDADES_CURSO[perfil.modalidad_curso]" class="badge" :class="MODALIDADES_CURSO[perfil.modalidad_curso].clase">{{ MODALIDADES_CURSO[perfil.modalidad_curso].etiqueta }} {{ perfil.anio_curso }}</span>
-              <span v-if="ESTADOS_CURSO[perfil.estado]" class="badge" :class="ESTADOS_CURSO[perfil.estado].clase">{{ ESTADOS_CURSO[perfil.estado].etiqueta }}</span>
-            </div>
-            <div class="mt-2">
-              <label class="btn btn-sm btn-danger fw-bold mb-0" :class="{ disabled: subiendoFoto }">
-                <span v-if="subiendoFoto" class="spinner-border spinner-border-sm me-1"></span>
-                <i v-else class="bi bi-camera-fill me-1"></i>
-                {{ subiendoFoto ? 'Subiendo...' : 'Cambiar foto' }}
-                <input type="file" accept="image/jpeg,image/png,image/webp" class="d-none" @change="subirFoto" :disabled="subiendoFoto">
-              </label>
-              <div class="form-text">JPG, PNG o WEBP de hasta 5 MB. Se recorta cuadrada.</div>
-            </div>
-          </div>
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-4 pb-3 border-bottom">
+          <span class="fw-bold text-dark text-uppercase me-1">{{ perfil.apellido }}, {{ perfil.nombre }}</span>
+          <span v-if="MODALIDADES_CURSO[perfil.modalidad_curso]" class="badge" :class="MODALIDADES_CURSO[perfil.modalidad_curso].clase">{{ MODALIDADES_CURSO[perfil.modalidad_curso].etiqueta }} {{ perfil.anio_curso }}</span>
+          <span v-if="ESTADOS_CURSO[perfil.estado]" class="badge" :class="ESTADOS_CURSO[perfil.estado].clase">{{ ESTADOS_CURSO[perfil.estado].etiqueta }}</span>
         </div>
 
         <!-- DATOS QUE NO SE EDITAN -->
@@ -126,20 +110,16 @@
         <!-- CONTRASEÑA -->
         <h6 class="titulo-seccion"><i class="bi bi-key me-1"></i> Contraseña</h6>
         <form class="row g-3" novalidate @submit.prevent="cambiarPassword">
-          <div class="col-12 col-md-4">
-            <label for="mdc-pass-actual" class="form-label small fw-bold text-dark">Contraseña actual</label>
-            <input id="mdc-pass-actual" v-model="pass.actual" type="password" autocomplete="current-password" class="form-control">
-          </div>
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-md-6">
             <label for="mdc-pass-nueva" class="form-label small fw-bold text-dark">Nueva contraseña</label>
             <input id="mdc-pass-nueva" v-model="pass.nueva" type="password" autocomplete="new-password" maxlength="72" class="form-control" placeholder="Mínimo 8 caracteres">
           </div>
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-md-6">
             <label for="mdc-pass-confirmacion" class="form-label small fw-bold text-dark">Repetir nueva contraseña</label>
             <input id="mdc-pass-confirmacion" v-model="pass.confirmacion" type="password" autocomplete="new-password" maxlength="72" class="form-control">
           </div>
           <div class="col-12 d-flex justify-content-end">
-            <button type="submit" class="btn btn-dark fw-bold px-4" :disabled="cambiandoPass || !pass.actual || !pass.nueva">
+            <button type="submit" class="btn btn-dark fw-bold px-4" :disabled="cambiandoPass || !pass.nueva">
               <span v-if="cambiandoPass" class="spinner-border spinner-border-sm me-1"></span>
               CAMBIAR CONTRASEÑA
             </button>
@@ -154,7 +134,7 @@
 import { ref, reactive, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
-import { ESTADOS_CURSO, GENEROS_CURSO, MODALIDADES_CURSO, DOMINIO_USUARIO_CURSO, urlFotoCurso, FOTO_POR_DEFECTO, textoDtClubes } from '@/composables/useCursoArbitro'
+import { ESTADOS_CURSO, GENEROS_CURSO, MODALIDADES_CURSO, DOMINIO_USUARIO_CURSO, textoDtClubes } from '@/composables/useCursoArbitro'
 import { fechaDMA } from '@/utils/fechas'
 
 useHead({ title: 'Datos Personales | Curso AAAB' })
@@ -165,11 +145,9 @@ const perfil = ref(null)
 const provincias = ref([])
 const localidades = ref([])
 const cargando = ref(true)
-const versionFoto = ref(Date.now())
 
 // ─── Helpers de vista ────────────────────────────────────────────
 const fechaArg = (f) => fechaDMA(f)
-const urlFoto = computed(() => urlFotoCurso(perfil.value?.dni, versionFoto.value))
 
 const datosFijos = computed(() => [
   { etiqueta: 'Apellido', valor: perfil.value.apellido },
@@ -279,60 +257,8 @@ const guardar = async () => {
   }
 }
 
-// ─── Foto (recorte cuadrado y achicado antes de subir) ────────────
-const subiendoFoto = ref(false)
-const LADO_FOTO = 600
-
-const recortarCuadrado = (archivo) => new Promise((resolve, reject) => {
-  const img = new Image()
-  const url = URL.createObjectURL(archivo)
-  img.onload = () => {
-    const lado = Math.min(img.width, img.height)
-    const canvas = document.createElement('canvas')
-    canvas.width = Math.min(lado, LADO_FOTO)
-    canvas.height = canvas.width
-    canvas.getContext('2d').drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, canvas.width, canvas.height)
-    URL.revokeObjectURL(url)
-    canvas.toBlob(b => (b ? resolve(b) : reject(new Error('No se pudo procesar la imagen'))), 'image/jpeg', 0.9)
-  }
-  img.onerror = () => {
-    URL.revokeObjectURL(url)
-    reject(new Error('El archivo no es una imagen válida'))
-  }
-  img.src = url
-})
-
-const subirFoto = async (evento) => {
-  const archivo = evento.target.files?.[0]
-  evento.target.value = ''
-  if (!archivo) return
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(archivo.type)) {
-    toast({ titulo: 'Formato no permitido', mensaje: 'Usá una imagen JPG, PNG o WEBP.', tipo: 'danger' })
-    return
-  }
-  if (archivo.size > 5 * 1024 * 1024) {
-    toast({ titulo: 'Imagen muy pesada', mensaje: 'La imagen no puede superar los 5 MB.', tipo: 'danger' })
-    return
-  }
-  subiendoFoto.value = true
-  try {
-    const blob = await recortarCuadrado(archivo)
-    const formData = new FormData()
-    formData.append('fotos', new File([blob], 'perfil.jpg', { type: 'image/jpeg' }))
-    const res = await api.postFile({ entity: 'perfil_curso_arbitro', action: 'actualizarFotoCurso', payload: formData })
-    if (!res?.ok) throw new Error(res?.message || 'No se pudo subir la foto')
-    versionFoto.value = Date.now()
-    window.dispatchEvent(new Event('foto-curso-actualizada'))
-    toast({ titulo: 'Foto actualizada', mensaje: 'Tu foto de perfil se guardó correctamente.', tipo: 'success' })
-  } catch (e) {
-    toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
-  } finally {
-    subiendoFoto.value = false
-  }
-}
-
 // ─── Contraseña ──────────────────────────────────────────────────
-const pass = reactive({ actual: '', nueva: '', confirmacion: '' })
+const pass = reactive({ nueva: '', confirmacion: '' })
 const cambiandoPass = ref(false)
 
 const cambiarPassword = async () => {
@@ -348,7 +274,7 @@ const cambiarPassword = async () => {
   try {
     const res = await api.post({ entity: 'perfil_curso_arbitro', action: 'cambiarMiPasswordCurso', payload: { ...pass } })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo cambiar la contraseña')
-    Object.assign(pass, { actual: '', nueva: '', confirmacion: '' })
+    Object.assign(pass, { nueva: '', confirmacion: '' })
     toast({ titulo: 'Contraseña actualizada', mensaje: 'Usala la próxima vez que inicies sesión.', tipo: 'success' })
   } catch (e) {
     toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
@@ -359,14 +285,6 @@ const cambiarPassword = async () => {
 </script>
 
 <style scoped>
-.foto-perfil {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #dc2626;
-  flex-shrink: 0;
-}
 .titulo-seccion {
   color: #dc3545;
   font-weight: 700;

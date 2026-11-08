@@ -1,100 +1,136 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-
-    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4 w-100 bg-white border-start border-danger border-5">
-
-      <div class="card-header bg-white py-3 border-bottom border-light-subtle">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-tools me-1"></i> Sección en Construcción
-            </h4>
-            <span class="text-muted small d-block mt-1">Estamos trabajando para brindarte nuevas herramientas de gestión.</span>
-          </div>
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+        <div class="border-start border-danger border-5 ps-3">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <i class="bi bi-mortarboard-fill me-1"></i> Observaciones del Curso
+          </h4>
+          <span class="text-muted small d-block mt-1">Observaciones que hiciste a aspirantes del curso de árbitros en {{ anio }}</span>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <select v-model="anio" class="form-select form-select-sm shadow-sm fw-semibold text-uppercase text-dark" style="width: 100px;" aria-label="Año">
+            <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
+          </select>
+          <button @click="abrirNueva" class="btn btn-danger btn-sm fw-bold shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> Nueva observación
+          </button>
         </div>
       </div>
 
-      <div class="card-body p-5">
-        <div class="text-center py-4">
-          <div class="mb-4">
-            <i class="bi bi-cone-striped text-danger opacity-25 display-1"></i>
+      <div v-if="cargando" class="card-body text-center py-5"><span class="spinner-border text-danger"></span></div>
+      <div v-else-if="!observaciones.length" class="card-body text-center py-5 text-muted">
+        <i class="bi bi-clipboard-x fs-1 d-block mb-2 opacity-50"></i>
+        <span class="fw-bold">Todavía no cargaste observaciones este año.</span>
+      </div>
+      <div v-else class="card-body p-3 p-md-4 d-flex flex-column gap-3">
+        <div v-for="o in observaciones" :key="o.id" class="obs-card p-3">
+          <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+            <div class="min-w-0">
+              <div class="fw-bold text-dark text-uppercase">{{ o.apellido }}, {{ o.nombre }}</div>
+              <div class="small text-muted">
+                {{ fechaDMA(o.fecha_partido) }} · {{ o.encuentro }}<template v-if="o.categoria"> · {{ o.categoria }}</template>
+              </div>
+              <span class="badge mt-1" :class="MODALIDADES_CURSO[o.modalidad_curso]?.clase">{{ MODALIDADES_CURSO[o.modalidad_curso]?.etiqueta }}</span>
+            </div>
+            <div class="d-flex gap-1">
+              <button @click="abrirEditar(o)" class="btn btn-sm btn-outline-primary fw-bold" aria-label="Editar"><i class="bi bi-pencil"></i></button>
+              <button @click="confirmarEliminar(o)" class="btn btn-sm btn-outline-danger fw-bold" aria-label="Borrar"><i class="bi bi-trash3"></i></button>
+            </div>
           </div>
-
-          <h2 class="fw-bold text-dark mb-3">¡Próximamente!</h2>
-          <p class="text-muted mx-auto mb-4" style="max-width: 500px;">
-            Este módulo se encuentra actualmente en **desarrollo técnico**. Muy pronto podrás acceder a nuevas funcionalidades diseñadas para mejorar tu experiencia en la plataforma.
-          </p>
-
-          <div class="d-flex justify-content-center gap-2 align-items-center">
-            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2">
-              <i class="bi bi-cpu me-1"></i> Sistema v3.0
-            </span>
-            <span class="badge rounded-pill bg-dark text-white px-3 py-2">
-              <i class="bi bi-clock-history me-1"></i> En Proceso
-            </span>
+          <div class="row g-2 mt-2">
+            <template v-for="c in CAMPOS_OBSERVACION_CURSO" :key="c.clave">
+              <div v-if="o[c.columna]" class="col-12 col-md-6">
+                <div class="detalle-titulo"><i :class="['bi', c.icono, 'me-1']"></i>{{ c.etiqueta }}</div>
+                <div class="detalle-texto">{{ o[c.columna] }}</div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="alert bg-light border border-light-subtle rounded-4 shadow-sm p-4 mx-auto w-100">
-      <div class="d-flex align-items-center">
-        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center me-3" style="min-width: 50px; height: 50px;">
-          <i class="bi bi-info-circle-fill text-danger fs-4"></i>
-        </div>
-        <div class="text-dark small lh-sm">
-          <strong>¿Necesitás información urgente?</strong><br>
-          Si buscabas datos específicos que no están disponibles actualmente, comunicate con la
-          <a href="mailto:soporte@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none">Coordinación Técnica</a> de la AAAB.
-        </div>
-      </div>
-    </div>
-
+    <ModalObservacionCurso v-model:show="mostrarModal" :observacion="seleccionada" es-observador @guardado="alGuardar" />
   </div>
 </template>
 
 <script setup>
-import { useHead } from '@vueuse/head';
+import { ref, computed, watch, onMounted, inject } from 'vue'
+import { useHead } from '@vueuse/head'
+import { api } from '@/api/api'
+import ModalObservacionCurso from '@/components/ModalObservacionCurso.vue'
+import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
+import { CAMPOS_OBSERVACION_CURSO } from '@/composables/useObservacionesCurso'
+import { conAnioActual, anioActual } from '@/utils/anios'
+import { fechaDMA } from '@/utils/fechas'
 
-// SEO e Identidad de la página
-useHead({
-  title: 'Sección en Construcción | AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Módulo en desarrollo del sistema de gestión AAAB.',
+useHead({ title: 'Observaciones del Curso | AAAB' })
+
+const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const toast = inject('toast', (m) => notificar(m))
+
+const anio = ref(Number(anioActual()))
+const anios = computed(() => conAnioActual().map(Number))
+const observaciones = ref([])
+const cargando = ref(false)
+const mostrarModal = ref(false)
+const seleccionada = ref(null)
+
+const cargar = async () => {
+  cargando.value = true
+  try {
+    const res = await api.get({ entity: 'observaciones_curso_arbitro', action: 'obtenerMisObservacionesRealizadasCurso', payload: { anio: anio.value } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar tus observaciones')
+    observaciones.value = res.payload || []
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    cargando.value = false
+  }
+}
+
+watch(anio, cargar)
+
+const abrirNueva = () => {
+  seleccionada.value = null
+  mostrarModal.value = true
+}
+
+const abrirEditar = (o) => {
+  seleccionada.value = o
+  mostrarModal.value = true
+}
+
+const alGuardar = async (f) => {
+  const anioObs = Number(String(f.fechaPartido).substring(0, 4))
+  if (anioObs !== anio.value) anio.value = anioObs
+  else await cargar()
+}
+
+const confirmarEliminar = (o) => {
+  notificar({
+    titulo: '¿Borrar observación?',
+    mensaje: `${o.apellido}, ${o.nombre} · ${o.encuentro} (${fechaDMA(o.fecha_partido)}).`,
+    tipo: 'danger',
+    alConfirmar: async () => {
+      try {
+        const res = await api.post({ entity: 'observaciones_curso_arbitro', action: 'eliminarObservacionCurso', payload: { id: o.id } })
+        if (!res?.ok) throw new Error(res?.message || 'No se pudo borrar la observación')
+        toast({ titulo: 'Borrada', mensaje: 'La observación se borró.', tipo: 'success' })
+        await cargar()
+      } catch (e) {
+        toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+      }
     },
-    {
-      property: 'og:title',
-      content: 'En Construcción | AAAB',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png',
-    }
-  ],
-});
+  })
+}
+
+onMounted(cargar)
 </script>
 
 <style scoped>
-/* Transiciones suaves */
-.animate__animated {
-  animation-duration: 0.7s;
-}
-
-/* Ajustes para el ícono gigante */
-.display-1 {
-  font-size: 6rem;
-  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.05));
-}
-
-/* Responsivo */
-@media (max-width: 768px) {
-  .display-1 {
-    font-size: 4rem;
-  }
-  h2 {
-    font-size: 1.5rem;
-  }
-}
+.obs-card { border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; }
+.detalle-titulo { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: #dc3545; margin-bottom: 2px; }
+.detalle-texto { white-space: pre-wrap; font-size: 0.88rem; color: #1e293b; }
+.min-w-0 { min-width: 0; }
 </style>

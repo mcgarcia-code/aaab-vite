@@ -21,31 +21,24 @@
         <div v-for="o in observaciones" :key="o.id" class="obs-card">
           <button type="button" class="obs-encabezado" @click="abierta = abierta === o.id ? null : o.id" :aria-expanded="abierta === o.id">
             <div class="min-w-0 text-start">
-              <div class="fw-bold text-dark">{{ o.local }} vs {{ o.visitante }}</div>
+              <div class="fw-bold text-dark">{{ o.encuentro }}</div>
               <div class="small text-muted">
                 {{ fechaLargaClase(o.fecha_partido) }}<template v-if="o.categoria"> · {{ o.categoria }}</template>
               </div>
               <div v-if="o.observador" class="small text-muted">Observador/a: {{ o.observador }}</div>
             </div>
             <div class="d-flex align-items-center gap-2 flex-shrink-0">
-              <span v-if="o.calificacion !== null" class="calificacion">{{ formatoNota(o.calificacion) }}</span>
               <i class="bi" :class="abierta === o.id ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
             </div>
           </button>
           <div v-show="abierta === o.id" class="obs-detalle">
-            <div v-if="o.fortalezas" class="mb-3">
-              <div class="detalle-titulo text-success"><i class="bi bi-hand-thumbs-up me-1"></i> Fortalezas</div>
-              <div class="detalle-texto">{{ o.fortalezas }}</div>
-            </div>
-            <div v-if="o.aspectos_a_mejorar" class="mb-3">
-              <div class="detalle-titulo text-danger"><i class="bi bi-arrow-up-circle me-1"></i> Aspectos a mejorar</div>
-              <div class="detalle-texto">{{ o.aspectos_a_mejorar }}</div>
-            </div>
-            <div v-if="o.comentarios">
-              <div class="detalle-titulo text-dark"><i class="bi bi-chat-left-text me-1"></i> Comentarios</div>
-              <div class="detalle-texto">{{ o.comentarios }}</div>
-            </div>
-            <div v-if="!o.fortalezas && !o.aspectos_a_mejorar && !o.comentarios" class="small text-muted fst-italic">Sin comentarios.</div>
+            <template v-for="c in CAMPOS_OBSERVACION_CURSO" :key="c.clave">
+              <div v-if="o[c.columna]" class="mb-3">
+                <div class="detalle-titulo" :class="c.clave === 'aspectosAMejorar' ? 'text-danger' : 'text-dark'"><i :class="['bi', c.icono, 'me-1']"></i> {{ c.etiqueta }}</div>
+                <div class="detalle-texto">{{ o[c.columna] }}</div>
+              </div>
+            </template>
+            <div v-if="!CAMPOS_OBSERVACION_CURSO.some(c => o[c.columna])" class="small text-muted fst-italic">Sin comentarios.</div>
           </div>
         </div>
       </div>
@@ -58,7 +51,7 @@ import { ref, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
-import { formatoNota } from '@/composables/useExamenesCurso'
+import { CAMPOS_OBSERVACION_CURSO } from '@/composables/useObservacionesCurso'
 
 useHead({ title: 'Mis Observaciones | Curso AAAB' })
 
@@ -95,13 +88,6 @@ onMounted(async () => {
   gap: 12px;
 }
 .obs-encabezado:hover { background: #f8fafc; }
-.calificacion {
-  background: #fee2e2;
-  color: #b91c1c;
-  font-weight: 800;
-  border-radius: 8px;
-  padding: 4px 10px;
-}
 .obs-detalle { border-top: 1px solid #f1f5f9; padding: 14px; }
 .detalle-titulo { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
 .detalle-texto { white-space: pre-wrap; font-size: 0.9rem; color: #1e293b; }
