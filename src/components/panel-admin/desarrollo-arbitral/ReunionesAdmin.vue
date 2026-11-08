@@ -845,26 +845,20 @@ const cargarArbitros = async () => {
   } catch (e) { console.error('cargarArbitros:', e) }
 }
 
+// Un solo request con los totales de presentes/ausentes por árbitro
+// (antes se pedía obtenerArbitrosReunion una vez por cada reunión).
 const cargarAsistenciasGlobales = async () => {
-  if (!arrReuniones.value.length || !arbitros.value.length) return
+  if (!arbitros.value.length) return
   const mapa = {}
   arbitros.value.forEach(a => { mapa[a.id] = { presentes: 0, ausentes: 0, total: 0 } })
   try {
-    const promesas = arrReuniones.value.map(r =>
-      api.get({ entity: 'reuniones', action: 'obtenerArbitrosReunion', payload: { idEvento: r.id } })
-    )
-    const resultados = await Promise.all(promesas)
-    resultados.forEach(res => {
-      if ((res.ok || res.success) && res.payload) {
-        res.payload.forEach(a => {
-          if (!mapa[a.id]) mapa[a.id] = { presentes: 0, ausentes: 0, total: 0 }
-          const asis = normalizarAsistencia(a.asistencia)
-          if      (asis === 'presente') mapa[a.id].presentes++
-          else if (asis === 'ausente')  mapa[a.id].ausentes++
-          if (asis === 'presente' || asis === 'ausente') mapa[a.id].total++
-        })
-      }
-    })
+    const res = await api.get({ entity: 'reuniones', action: 'obtenerResumenAsistenciasReuniones', payload: {} })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo obtener el resumen de asistencias')
+    for (const r of (res.payload || [])) {
+      const presentes = Number(r.presentes) || 0
+      const ausentes  = Number(r.ausentes) || 0
+      mapa[r.id_arbitro] = { presentes, ausentes, total: presentes + ausentes }
+    }
     asistenciasGlobales.value = mapa
   } catch (e) { console.error('Error cargando asistencias globales:', e) }
 }
