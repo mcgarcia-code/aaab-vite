@@ -3,8 +3,8 @@
 
     <!-- Cambiamos mb-5 por mb-4 mb-md-5 para que achique automáticamente en celular -->
     <div class="dashboard-header mb-4 mb-md-5">
-      <div class="border-start border-danger border-5 ps-3">
-        <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+      <div class="border-start border-white border-5 ps-3">
+        <h4 class="text-white fw-bold m-0 d-flex align-items-center gap-2 fs-5">
           <i class="bi bi-bag-fill me-1"></i> Mi Indumentaria
         </h4>
         <span class="text-white-50 small d-block mt-1">Gestioná tu equipamiento oficial de la asociación</span>
