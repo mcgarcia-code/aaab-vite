@@ -34,24 +34,20 @@
       <!-- Resultado -->
       <div v-else-if="fase === 'resultado'" class="resultado-wrap">
         <div class="text-center mb-4">
-          <div class="text-muted fw-bold small text-uppercase mb-2" style="letter-spacing: 1px;">{{ props.titulo }}</div>
-          <div class="resultado-final mx-auto mb-3" :class="resultado.aprobado ? 'aprobado' : 'desaprobado'">
-            <div class="porcentaje-final">{{ Number(resultado.calificacion).toFixed(2) }}%</div>
-            <div class="estado-final">
-              <i class="bi me-1" :class="resultado.aprobado ? 'bi-trophy-fill' : 'bi-x-octagon-fill'"></i>
-              {{ resultado.aprobado ? 'APROBADO' : 'DESAPROBADO' }}
-            </div>
-          </div>
+          <h2 class="fw-bold mb-3 fs-2 fs-md-1" :class="resultado.aprobado ? 'text-success' : 'text-danger'">
+            <i class="bi me-1 me-md-2" :class="resultado.aprobado ? 'bi-trophy-fill' : 'bi-exclamation-triangle-fill'"></i>
+            {{ resultado.aprobado ? 'Aprobado' : 'Desaprobado' }}
+          </h2>
           <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 gap-sm-3 mb-3">
             <span class="badge bg-light text-dark border fs-6 py-2 px-3 w-100 w-sm-auto">
               <i class="bi bi-bullseye text-primary me-2"></i>Puntaje: {{ resultado.puntaje }} / {{ resultado.posible }}
             </span>
             <span class="badge bg-light text-dark border fs-6 py-2 px-3 w-100 w-sm-auto">
-              <i class="bi bi-flag me-2"></i>Se aprueba con {{ PORCENTAJE_APROBACION_DEFECTO }}%
+              <i class="bi bi-percent text-info me-2"></i>Nota: {{ Number(resultado.calificacion).toFixed(2) }}%
             </span>
           </div>
-          <div class="alert alert-light border py-2 px-3 small d-inline-block text-start text-sm-center">
-            <i class="bi bi-check-circle-fill text-success me-1"></i>Tu nota quedó registrada en Mis Exámenes, donde podés descargar el PDF.
+          <div class="alert alert-success py-2 px-3 small d-inline-block text-start text-sm-center">
+            <i class="bi bi-check-circle-fill me-1"></i>Tu nota quedó registrada en la planilla general.
           </div>
         </div>
 
@@ -173,7 +169,6 @@
 import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
-import { PORCENTAJE_APROBACION_DEFECTO } from '@/composables/useExamenesCurso'
 
 useHead({
   title: 'Examen Online | Curso AAAB',
@@ -390,17 +385,6 @@ onBeforeUnmount(() => {
   justify-content: center;
   align-items: flex-start;
 }
-
-.resultado-final {
-  max-width: 320px;
-  border-radius: 1rem;
-  padding: 18px 16px;
-  color: #fff;
-}
-.resultado-final.aprobado { background: #16a34a; }
-.resultado-final.desaprobado { background: #dc2626; }
-.porcentaje-final { font-size: clamp(2.6rem, 10vw, 3.4rem); font-weight: 900; line-height: 1; }
-.estado-final { font-weight: 800; letter-spacing: 2px; margin-top: 8px; }
 
 .examen-box {
   border-radius: 1rem;

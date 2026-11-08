@@ -72,7 +72,7 @@
               </div>
             </div>
             <span class="nota flex-shrink-0" :class="claseNota(e)">
-              {{ e.ausente ? 'Ausente' : e.nota !== null ? `${formatoNota(e.nota)} / ${formatoNota(e.notaMaxima)}` : 'Pendiente' }}
+              {{ textoNotaExamen(e) }}
             </span>
           </div>
         </div>
@@ -86,7 +86,7 @@ import { ref, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
-import { formatoNota, claseNota } from '@/composables/useExamenesCurso'
+import { formatoNota, claseNota, textoNotaExamen } from '@/composables/useExamenesCurso'
 
 useHead({ title: 'Mi Rendimiento | Curso AAAB' })
 
@@ -99,7 +99,7 @@ const resumen = computed(() => {
   const presentes = datos.value.clases.filter(c => c.asistencia === 'presente').length
   const ausentes = datos.value.clases.filter(c => c.asistencia === 'ausente').length
   const registradas = presentes + ausentes
-  const conNota = datos.value.examenes.filter(e => e.nota !== null)
+  const conNota = datos.value.examenes.filter(e => e.nota !== null && (e.tipo || 'teorico') === 'teorico')
   const promedio = conNota.length
     ? `${formatoNota(Math.round(conNota.reduce((s, e) => s + (e.nota / (e.notaMaxima || 100)) * 100, 0) / conNota.length))}%`
     : null

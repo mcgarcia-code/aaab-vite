@@ -68,7 +68,7 @@
       </div>
       <div class="col-6 col-md-4">
         <label :for="`${prefijo}-nacimiento`" class="form-label small fw-bold text-dark">Fecha de nacimiento *</label>
-        <input :id="`${prefijo}-nacimiento`" v-model="form.fechaNacimiento" type="date" :max="hoy" class="form-control" :class="clase('fechaNacimiento')">
+        <InputFechaDMA :id="`${prefijo}-nacimiento`" v-model="form.fechaNacimiento" :class="clase('fechaNacimiento')" />
         <div class="invalid-feedback">{{ errores.fechaNacimiento }}</div>
       </div>
       <div class="col-6 col-md-4">
@@ -204,6 +204,7 @@
 <script setup>
 import { computed } from 'vue'
 import SelectorClubCategorias from '@/components/SelectorClubCategorias.vue'
+import InputFechaDMA from '@/components/InputFechaDMA.vue'
 import { GENEROS_CURSO, DOMINIO_USUARIO_CURSO, MAX_CLUBES_DT, MODALIDADES_CURSO, filaDtVacia } from '@/composables/useCursoArbitro'
 
 // Campos del formulario del curso (inscripción pública y modal del admin).
@@ -222,7 +223,6 @@ const props = defineProps({
 
 const emit = defineEmits(['error'])
 
-const hoy = new Date().toISOString().substring(0, 10)
 
 const localidadesFiltradas = computed(() =>
   props.localidades.filter(l => Number(l.provincia_id) === Number(form.value.provincia))

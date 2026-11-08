@@ -209,7 +209,7 @@
     </ModalBase>
 
     <!-- MODAL HISTORIAL -->
-    <ModalBase :show="mostrarHistorial" @close="mostrarHistorial = false" icono="history" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="720px">
+    <ModalBase :show="mostrarHistorial" @close="mostrarHistorial = false" icono="history" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="820px">
       <template #header>
         <div class="text-center w-100">
           <span class="fw-bold fs-5">Historial en el curso</span>
@@ -225,6 +225,45 @@
           <div class="col-6 col-md-3"><div class="resumen-historial"><div class="valor" :class="historial.resumen.aprobado ? 'text-success' : 'text-muted'">{{ historial.resumen.aprobado ? 'Sí' : 'No' }}</div><div class="etiqueta">Aprobó</div></div></div>
         </div>
         <div v-if="historial.resumen.anios.length" class="small text-muted mb-3">Años en el curso: <strong class="text-dark">{{ historial.resumen.anios.join(', ') }}</strong></div>
+
+        <h6 class="titulo-historial"><i class="bi bi-journal-check me-1"></i> Exámenes rendidos</h6>
+        <div v-if="!historial.examenes?.length" class="text-muted small fst-italic mb-3">No rindió exámenes.</div>
+        <div v-else class="table-responsive mb-3">
+          <table class="table table-sm align-middle small mb-0">
+            <thead class="table-light">
+              <tr><th>Año</th><th>Fecha</th><th>Tipo</th><th>Examen</th><th class="text-center">Nota</th><th class="text-center">Resultado</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="e in historial.examenes" :key="'hx-' + e.id">
+                <td>{{ e.anio }}</td>
+                <td class="text-nowrap">{{ fechaHoraDMA(e.fecha) }}</td>
+                <td>{{ TIPOS_EXAMEN_HISTORIAL[e.tipo] || e.tipo }}</td>
+                <td>{{ e.titulo }}<div v-if="e.clase" class="text-muted" style="font-size: 0.7rem;">{{ e.clase }}</div></td>
+                <td class="text-center fw-bold">{{ notaHistorial(e) }}</td>
+                <td class="text-center">
+                  <span v-if="e.ausente" class="badge bg-secondary">Ausente</span>
+                  <span v-else-if="e.aprobado === true" class="badge bg-success">Aprobado</span>
+                  <span v-else-if="e.aprobado === false" class="badge bg-danger">Desaprobado</span>
+                  <span v-else class="badge bg-light text-muted border">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="small text-muted mt-1">
+            Aprobados: <strong class="text-success">{{ historial.examenes.filter(e => e.aprobado === true).length }}</strong> de {{ historial.examenes.length }}
+          </div>
+        </div>
+
+        <template v-if="historial.asistencia?.length">
+          <h6 class="titulo-historial"><i class="bi bi-calendar-check me-1"></i> Asistencia a clases</h6>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <span v-for="a in historial.asistencia" :key="'ha-' + a.anio" class="badge bg-light text-dark border">
+              {{ a.anio }}: {{ a.presentes }} presentes · {{ a.ausentes }} ausentes
+            </span>
+          </div>
+        </template>
+
+        <h6 class="titulo-historial"><i class="bi bi-clock-history me-1"></i> Movimientos</h6>
         <div v-if="!historial.eventos.length" class="text-muted small fst-italic">Sin movimientos registrados.</div>
         <ul v-else class="linea-tiempo list-unstyled mb-0">
           <li v-for="h in historial.eventos" :key="h.id" class="mb-3">
@@ -507,6 +546,14 @@ const confirmarEstado = async () => {
 }
 
 // ─── Historial ───────────────────────────────────────────────────
+const TIPOS_EXAMEN_HISTORIAL = { teorico: 'Teórico', practico: 'Práctico', fisico: 'Físico' }
+
+const notaHistorial = (e) => {
+  if (e.ausente || e.nota === null) return '—'
+  if (e.tipo === 'practico') return e.nota >= 1 ? 'Aprob.' : 'Desap.'
+  if (e.online) return `${Number((e.nota / (e.notaMaxima || 100) * 100).toFixed(2))}%`
+  return String(Number(e.nota))
+}
 const EVENTOS_HISTORIAL = {
   inscripcion: 'Inscripción',
   reinscripcion: 'Reinscripción por formulario',
@@ -586,6 +633,16 @@ onMounted(() => {
 .resumen-historial { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; text-align: center; height: 100%; }
 .resumen-historial .valor { font-size: 1.3rem; font-weight: 800; line-height: 1.1; }
 .resumen-historial .etiqueta { font-size: 0.68rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
+.titulo-historial {
+  color: #dc3545;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.6rem;
+}
 .linea-tiempo li { border-left: 3px solid #fde68a; padding-left: 12px; }
 .fila-baja td, .tabla-fija tbody .fila-baja .col-fija { background-color: #fef2f2 !important; }
 </style>

@@ -203,6 +203,7 @@ const routes = [
       { path: 'curso-arbitros/legajos-curso', name: 'LegajosCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/LegajosCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
       { path: 'curso-arbitros/observaciones-curso', name: 'ObservacionesCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/ObservacionesCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
       { path: 'curso-arbitros/alumnos-regulares', name: 'AlumnosRegularesCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/AlumnosRegularesCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
+      { path: 'curso-arbitros/encuentros-mini', name: 'EncuentrosMiniCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/EncuentrosMiniCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
       { path: 'curso-arbitros/cronograma', name: 'CronogramaCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/CronogramaCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
       { path: 'curso-arbitros/examenes-curso', name: 'ExamenesCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/ExamenesCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
 

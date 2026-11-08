@@ -60,11 +60,12 @@
                   </div>
                   <div class="text-end flex-shrink-0">
                     <div class="nota" :class="claseNota(e)">{{ textoNota(e) }}</div>
-                    <div v-if="!e.online" class="small text-muted">de {{ formatoNota(e.notaMaxima) }}</div>
+                    <div v-if="e.tipo === 'teorico' && !e.online" class="small text-muted">de {{ formatoNota(e.notaMaxima) }}</div>
+                    <div v-else-if="e.tipo === 'fisico'" class="small text-muted">nivel</div>
                   </div>
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
-                  <span class="badge bg-light text-dark border">{{ e.tipo === 'practico' ? 'Práctico' : 'Teórico' }}</span>
+                  <span class="badge bg-light text-dark border">{{ ETIQUETAS_TIPO[e.tipo] || 'Teórico' }}</span>
                   <span v-if="e.online" class="badge bg-light text-dark border"><i class="bi bi-laptop me-1"></i>Online</span>
                   <span v-if="e.ausente" class="badge bg-secondary">Ausente</span>
                   <span v-else-if="estaAprobado(e) !== null" class="badge" :class="estaAprobado(e) ? 'bg-success' : 'bg-danger'">
@@ -104,11 +105,14 @@ const cargando = ref(true)
 const examenEnCurso = ref(null)
 const descargando = ref(null)
 
+const ETIQUETAS_TIPO = { teorico: 'Teórico', practico: 'Práctico', fisico: 'Físico' }
+
 const pendientes = computed(() => online.value.filter(x => x.estado !== 'finalizado'))
 
 // En los exámenes online la nota es el porcentaje obtenido
 const textoNota = (e) => {
   if (e.nota === null) return '—'
+  if (e.tipo === 'practico') return e.nota >= 1 ? 'Aprob.' : 'Desap.'
   return e.online ? `${formatoNota(e.nota / (e.notaMaxima || 100) * 100)}%` : formatoNota(e.nota)
 }
 

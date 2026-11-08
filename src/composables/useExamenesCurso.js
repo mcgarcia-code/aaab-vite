@@ -23,3 +23,13 @@ export const claseNota = (e) => {
   if (aprobado === null) return 'text-muted'
   return aprobado ? 'text-success' : 'text-danger'
 }
+
+// Texto de la nota según el tipo: práctico (aprobado/desaprobado), físico (nivel), online (%) o teórico (nota / máxima)
+export const textoNotaExamen = (e) => {
+  if (e.ausente) return 'Ausente'
+  if (e.nota === null || e.nota === undefined) return 'Pendiente'
+  if (e.tipo === 'practico') return e.nota >= 1 ? 'Aprobado' : 'Desaprobado'
+  if (e.tipo === 'fisico') return `Nivel ${formatoNota(e.nota)}`
+  if (e.online) return `${formatoNota(e.nota / (e.notaMaxima || 100) * 100)}%`
+  return `${formatoNota(e.nota)} / ${formatoNota(e.notaMaxima)}`
+}

@@ -8,7 +8,7 @@
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
               <i class="bi bi-journal-check me-1"></i> Exámenes del Curso
             </h4>
-            <span class="text-muted small d-block mt-1">{{ examenesFiltrados.length }} exámenes en {{ anio }} · se aprueba con el porcentaje indicado en cada uno (por defecto 75%)</span>
+            <span class="text-muted small d-block mt-1">{{ examenesFiltrados.length }} exámenes en {{ anio }} · los teóricos se programan desde Clases y Asistencia</span>
           </div>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
             <select v-model="filtroCurso" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 150px;" aria-label="Curso">
@@ -25,7 +25,7 @@
             </button>
             <button @click="abrirNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
               <span class="material-icons fs-6">post_add</span>
-              <span class="fw-bold d-none d-md-inline small">Nuevo examen</span>
+              <span class="fw-bold d-none d-md-inline small">Nuevo práctico / físico</span>
             </button>
           </div>
         </div>
@@ -44,12 +44,14 @@
                     <div class="fw-bold text-dark">{{ e.titulo }}</div>
                     <div class="small text-muted">{{ fechaDMA(e.fecha) }}<template v-if="e.clase"> · {{ e.clase }}</template></div>
                   </div>
-                  <span class="badge flex-shrink-0" :class="e.tipo === 'teorico' ? 'bg-danger' : 'bg-dark'">{{ e.tipo === 'teorico' ? 'Teórico' : 'Práctico' }}</span>
+                  <span class="badge flex-shrink-0" :class="TIPOS_EXAMEN[e.tipo]?.clase">{{ TIPOS_EXAMEN[e.tipo]?.etiqueta }}</span>
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
                   <span class="badge" :class="claseCurso(e.curso)">{{ etiquetaCurso(e.curso) }}</span>
                   <span v-if="e.online" class="badge" :class="e.habilitado ? 'bg-primary' : 'bg-secondary'"><i class="bi bi-laptop me-1"></i>Online{{ e.habilitado ? ' · habilitado' : ' · cerrado' }}</span>
-                  <span class="badge bg-light text-dark border">Nota máx. {{ formatoNota(e.notaMaxima) }} · aprueba con {{ formatoNota(e.porcentajeAprobacion) }}%</span>
+                  <span v-if="e.tipo === 'teorico'" class="badge bg-light text-dark border">Nota máx. {{ formatoNota(e.notaMaxima) }} · aprueba con {{ formatoNota(e.porcentajeAprobacion) }}%</span>
+                  <span v-else-if="e.tipo === 'fisico'" class="badge bg-light text-dark border">{{ TEXTO_UMBRALES_FISICO }}</span>
+                  <span v-else class="badge bg-light text-dark border">Aprobado / Desaprobado</span>
                 </div>
                 <div class="small mt-2">
                   <span class="text-dark fw-bold">{{ e.cargadas }}</span> notas cargadas ·
@@ -57,7 +59,7 @@
                   <span class="text-secondary fw-bold">{{ e.ausentes }}</span> ausentes
                 </div>
                 <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
-                  <button @click="abrirNotas(e)" class="btn btn-sm btn-success flex-fill fw-bold"><i class="bi bi-pencil-square me-1"></i> Cargar notas</button>
+                  <button @click="abrirNotas(e)" class="btn btn-sm btn-success flex-fill fw-bold"><i class="bi bi-pencil-square me-1"></i> {{ e.tipo === 'teorico' ? 'Cargar notas' : 'Cargar resultados' }}</button>
                   <button @click="abrirEditar(e)" class="btn btn-sm btn-outline-primary fw-bold" title="Editar examen" aria-label="Editar examen"><i class="bi bi-pencil"></i></button>
                   <button @click="confirmarEliminar(e)" class="btn btn-sm btn-outline-danger fw-bold" title="Borrar examen" aria-label="Borrar examen"><i class="bi bi-trash3"></i></button>
                 </div>
@@ -89,7 +91,7 @@
                   <th class="py-2 text-center text-uppercase text-muted">Curso</th>
                   <th v-for="e in columnasPlanilla" :key="'th-' + e.id" class="py-2 text-center text-muted col-examen" :title="e.clase ? e.titulo + ' · ' + e.clase : e.titulo">
                     <div class="fw-bold text-dark text-truncate">{{ e.titulo }}</div>
-                    <div class="fw-normal" style="font-size: 0.68rem;">{{ fechaDMA(e.fecha) }}<template v-if="e.online"> · online</template></div>
+                    <div class="fw-normal" style="font-size: 0.68rem;">{{ TIPOS_EXAMEN[e.tipo]?.etiqueta }} · {{ fechaDMA(e.fecha) }}</div>
                   </th>
                   <th class="py-2 text-center text-uppercase text-muted">Aprobados</th>
                 </tr>
@@ -126,19 +128,20 @@
     <!-- MODAL EXAMEN -->
     <ModalBase :show="mostrarModal" @close="mostrarModal = false" :icono="form.id ? 'edit_note' : 'post_add'" colorIcono="bg-danger-subtle text-danger" maxWidth="620px">
       <template #header>
-        <span class="fw-bold fs-5">{{ form.id ? 'Editar examen' : 'Nuevo examen' }}</span>
+        <span class="fw-bold fs-5">{{ form.id ? 'Editar examen' : 'Nuevo examen práctico o físico' }}</span>
       </template>
       <form id="formExamenCurso" class="text-start" novalidate @submit.prevent="guardarExamen">
         <div class="row g-3">
           <div class="col-12">
             <label for="ex-titulo" class="form-label small fw-bold text-dark">Título *</label>
-            <input id="ex-titulo" v-model.trim="form.titulo" type="text" maxlength="150" class="form-control" :class="{ 'is-invalid': intento && !form.titulo }" placeholder="Ej: Teórico Reglas 1 a 8">
+            <input id="ex-titulo" v-model.trim="form.titulo" type="text" maxlength="150" class="form-control" :class="{ 'is-invalid': intento && !form.titulo }" :placeholder="form.tipo === 'fisico' ? 'Ej: Test físico 1' : 'Ej: Práctico en partido de mini'">
           </div>
           <div class="col-6 col-md-4">
             <label for="ex-tipo" class="form-label small fw-bold text-dark">Tipo</label>
-            <select id="ex-tipo" v-model="form.tipo" class="form-select">
-              <option value="teorico">Teórico</option>
+            <select id="ex-tipo" v-model="form.tipo" class="form-select" :disabled="form.tipo === 'teorico'">
+              <option v-if="form.tipo === 'teorico'" value="teorico">Teórico</option>
               <option value="practico">Práctico</option>
+              <option value="fisico">Físico</option>
             </select>
           </div>
           <div class="col-6 col-md-4">
@@ -152,18 +155,24 @@
               <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.etiqueta }}</option>
             </select>
           </div>
-          <div class="col-12">
+          <div v-if="form.tipo === 'fisico'" class="col-12">
+            <div class="alert alert-light border small py-2 mb-0"><i class="bi bi-info-circle me-1"></i> Se carga el nivel alcanzado. {{ TEXTO_UMBRALES_FISICO }}.</div>
+          </div>
+          <div v-if="form.tipo === 'practico'" class="col-12">
+            <div class="alert alert-light border small py-2 mb-0"><i class="bi bi-info-circle me-1"></i> A cada aspirante se le carga Aprobado o Desaprobado.</div>
+          </div>
+          <div v-if="form.tipo === 'teorico'" class="col-12">
             <label for="ex-clase" class="form-label small fw-bold text-dark">Clase del cronograma (opcional)</label>
             <select id="ex-clase" v-model="form.idClase" class="form-select">
               <option :value="null">— Sin clase asociada —</option>
               <option v-for="c in clasesDelAnio" :key="c.id" :value="c.id">{{ fechaDMA(c.fecha) }} · {{ c.titulo }}</option>
             </select>
           </div>
-          <div class="col-6">
+          <div v-if="form.tipo === 'teorico'" class="col-6">
             <label for="ex-maxima" class="form-label small fw-bold text-dark">Nota máxima *</label>
             <input id="ex-maxima" v-model.number="form.notaMaxima" type="number" min="1" step="0.01" class="form-control" :class="{ 'is-invalid': intento && !(form.notaMaxima > 0) }">
           </div>
-          <div class="col-6">
+          <div v-if="form.tipo === 'teorico'" class="col-6">
             <label for="ex-porcentaje" class="form-label small fw-bold text-dark">Aprueba con (%) *</label>
             <input id="ex-porcentaje" v-model.number="form.porcentajeAprobacion" type="number" min="1" max="100" step="0.01" class="form-control" :class="{ 'is-invalid': intento && !(form.porcentajeAprobacion > 0 && form.porcentajeAprobacion <= 100) }">
           </div>
@@ -182,9 +191,11 @@
     <ModalBase :show="mostrarNotas" @close="mostrarNotas = false" icono="grading" colorIcono="bg-success-subtle text-success" maxWidth="900px">
       <template #header>
         <div class="text-center w-100">
-          <span class="fw-bold fs-5">Notas</span>
+          <span class="fw-bold fs-5">{{ esPorAspirante ? 'Resultados' : 'Notas' }}</span>
           <div v-if="examenNotas" class="text-muted small mt-1">
-            {{ examenNotas.titulo }} · {{ fechaDMA(examenNotas.fecha) }} · nota máx. {{ formatoNota(examenNotas.notaMaxima) }} · aprueba con {{ formatoNota(examenNotas.porcentajeAprobacion) }}%
+            {{ TIPOS_EXAMEN[examenNotas.tipo]?.etiqueta }} · {{ examenNotas.titulo }} · {{ fechaDMA(examenNotas.fecha) }}
+            <template v-if="examenNotas.tipo === 'teorico'"> · nota máx. {{ formatoNota(examenNotas.notaMaxima) }} · aprueba con {{ formatoNota(examenNotas.porcentajeAprobacion) }}%</template>
+            <template v-else-if="examenNotas.tipo === 'fisico'"> · {{ TEXTO_UMBRALES_FISICO }}</template>
           </div>
         </div>
       </template>
@@ -192,6 +203,13 @@
       <div v-else class="text-start">
         <div v-if="!notas.length" class="text-muted small fst-italic">No hay alumnos regulares de este curso para el año del examen.</div>
         <template v-else>
+          <div v-if="esPorAspirante" class="mb-3">
+            <label for="agregar-aspirante" class="form-label small fw-bold text-dark">Agregar aspirante</label>
+            <select id="agregar-aspirante" class="form-select" :value="''" @change="agregarAspirante($event)">
+              <option value="" disabled>{{ disponiblesParaAgregar.length ? 'Seleccionar aspirante regular...' : 'Ya están todos agregados' }}</option>
+              <option v-for="a in disponiblesParaAgregar" :key="a.id" :value="a.id">{{ a.apellido }}, {{ a.nombre }} · {{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</option>
+            </select>
+          </div>
           <div class="small mb-3">
             <span class="badge bg-success me-1">{{ resumenNotas.aprobados }} aprobados</span>
             <span class="badge bg-danger me-1">{{ resumenNotas.desaprobados }} desaprobados</span>
@@ -199,15 +217,24 @@
             <span class="badge bg-light text-muted border">{{ resumenNotas.sin }} sin nota</span>
           </div>
           <div class="d-flex flex-column gap-2">
-            <div v-for="n in notas" :key="n.id" class="fila-nota">
+            <div v-if="esPorAspirante && !filasVisibles.length" class="text-muted small fst-italic">Todavía no agregaste aspirantes.</div>
+            <div v-for="n in filasVisibles" :key="n.id" class="fila-nota">
               <div class="row g-2 align-items-center">
                 <div class="col-12 col-md-4 min-w-0">
                   <div class="fw-bold text-dark small text-uppercase text-truncate">{{ n.apellido }}, {{ n.nombre }}</div>
-                  <div class="text-muted" style="font-size: 0.72rem;">DNI {{ n.dni }} · {{ MODALIDADES_CURSO[n.modalidadCurso]?.corta }}</div>
+                  <div class="text-muted" style="font-size: 0.72rem;">
+                    DNI {{ n.dni }} · {{ MODALIDADES_CURSO[n.modalidadCurso]?.corta }}<template v-if="examenNotas.tipo === 'fisico'"> · aprueba con {{ formatoNota(n.umbralFisico) }}</template>
+                  </div>
                 </div>
-                <div class="col-5 col-md-2">
+                <div v-if="examenNotas.tipo === 'practico'" class="col-12 col-md-3">
+                  <div class="btn-group btn-group-sm w-100" role="group" :aria-label="'Resultado de ' + n.apellido">
+                    <button type="button" class="btn fw-bold" :class="String(n.nota) === '1' ? 'btn-success' : 'btn-outline-success'" :disabled="n.ausente" @click="n.nota = '1'">Aprobado</button>
+                    <button type="button" class="btn fw-bold" :class="String(n.nota) === '0' ? 'btn-danger' : 'btn-outline-danger'" :disabled="n.ausente" @click="n.nota = '0'">Desaprobado</button>
+                  </div>
+                </div>
+                <div v-else class="col-5 col-md-2">
                   <label :for="`nota-${n.id}`" class="visually-hidden">Nota de {{ n.apellido }}</label>
-                  <input :id="`nota-${n.id}`" v-model="n.nota" type="number" min="0" :max="examenNotas.notaMaxima" step="0.01" class="form-control form-control-sm" :class="{ 'is-invalid': notaInvalida(n) }" :disabled="n.ausente" placeholder="Nota">
+                  <input :id="`nota-${n.id}`" v-model="n.nota" type="number" min="0" :max="examenNotas.notaMaxima" :step="examenNotas.tipo === 'fisico' ? 0.1 : 0.01" class="form-control form-control-sm" :class="{ 'is-invalid': notaInvalida(n) }" :disabled="n.ausente" :placeholder="examenNotas.tipo === 'fisico' ? 'Nivel' : 'Nota'">
                 </div>
                 <div class="col-7 col-md-2">
                   <div class="form-check mb-0">
@@ -215,7 +242,7 @@
                     <label :for="`aus-${n.id}`" class="form-check-label small">Ausente</label>
                   </div>
                 </div>
-                <div class="col-9 col-md-3">
+                <div class="col-9" :class="examenNotas.tipo === 'practico' ? 'col-md-2' : 'col-md-3'">
                   <label :for="`com-${n.id}`" class="visually-hidden">Comentario</label>
                   <input :id="`com-${n.id}`" v-model.trim="n.comentarios" type="text" maxlength="1000" class="form-control form-control-sm" placeholder="Comentario (opcional)">
                 </div>
@@ -225,6 +252,9 @@
                   <button v-if="n.rendidoOnline" type="button" class="btn btn-sm btn-outline-danger p-0 px-1" :disabled="descargandoPdf === n.id" title="Descargar PDF del examen" :aria-label="'PDF de ' + n.apellido" @click="descargarPdf(n)">
                     <span v-if="descargandoPdf === n.id" class="spinner-border spinner-border-sm"></span>
                     <i v-else class="bi bi-file-earmark-pdf"></i>
+                  </button>
+                  <button v-if="esPorAspirante" type="button" class="btn btn-sm btn-outline-secondary p-0 px-1" title="Quitar" :aria-label="'Quitar a ' + n.apellido" @click="quitarAspirante(n)">
+                    <i class="bi bi-x-lg"></i>
                   </button>
                 </div>
               </div>
@@ -260,6 +290,13 @@ const notificar = inject('notificar', (m) => alert(m.mensaje || m))
 const toast = inject('toast', (m) => notificar(m))
 
 const PORCENTAJE_DEFECTO = 75
+
+const TIPOS_EXAMEN = {
+  teorico: { etiqueta: 'Teórico', clase: 'bg-danger' },
+  practico: { etiqueta: 'Práctico', clase: 'bg-dark' },
+  fisico: { etiqueta: 'Físico', clase: 'bg-primary' },
+}
+const TEXTO_UMBRALES_FISICO = 'Aprueba con 8.5 (femenino y masculino de 45 años o más) o 9.5 (masculino menor de 45)'
 
 const anio = ref(Number(anioActual()))
 const anios = computed(() => conAnioActual([String(Number(anioActual()) + 1)]).map(Number))
@@ -325,11 +362,13 @@ const correspondeExamen = (e, a) => e.curso === 'ambos' || e.curso === a.modalid
 const aprobadoCelda = (e, a) => {
   const n = celda(e, a)
   if (!n || n.ausente || n.nota === null) return false
+  if (n.aprobado !== null && n.aprobado !== undefined) return n.aprobado
   return (n.nota / (e.notaMaxima || 100)) * 100 >= e.porcentajeAprobacion
 }
 
 const textoCelda = (e, a) => {
   const n = celda(e, a)
+  if (e.tipo === 'practico') return n.nota >= 1 ? 'APROB.' : 'DESAP.'
   return e.online ? `${formatoNota(n.nota / (e.notaMaxima || 100) * 100)}%` : formatoNota(n.nota)
 }
 
@@ -356,7 +395,7 @@ watch(anio, () => {
 })
 
 // ─── Alta / edición del examen ───────────────────────────────────
-const examenVacio = () => ({ id: null, titulo: '', tipo: 'teorico', fecha: '', curso: 'ambos', idClase: null, notaMaxima: 100, porcentajeAprobacion: PORCENTAJE_DEFECTO })
+const examenVacio = () => ({ id: null, titulo: '', tipo: 'practico', fecha: '', curso: 'ambos', idClase: null, notaMaxima: 100, porcentajeAprobacion: PORCENTAJE_DEFECTO })
 const form = ref(examenVacio())
 const mostrarModal = ref(false)
 const intento = ref(false)
@@ -377,13 +416,15 @@ const abrirEditar = (e) => {
 const guardarExamen = async () => {
   intento.value = true
   const f = form.value
-  if (!f.titulo || !f.fecha || !(f.notaMaxima > 0) || !(f.porcentajeAprobacion > 0 && f.porcentajeAprobacion <= 100)) {
+  const teoricoInvalido = f.tipo === 'teorico' && (!(f.notaMaxima > 0) || !(f.porcentajeAprobacion > 0 && f.porcentajeAprobacion <= 100))
+  if (!f.titulo || !f.fecha || teoricoInvalido) {
     notificar({ titulo: 'Faltan datos', mensaje: 'Revisá los campos marcados.', tipo: 'danger' })
     return
   }
   guardando.value = true
   try {
-    const res = await api.post({ entity: 'examenes_curso_arbitro', action: 'guardarExamenCurso', payload: f })
+    const payload = f.tipo === 'teorico' ? f : { ...f, idClase: null }
+    const res = await api.post({ entity: 'examenes_curso_arbitro', action: 'guardarExamenCurso', payload })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el examen')
     toast({ titulo: 'Guardado', mensaje: 'El examen se guardó.', tipo: 'success' })
     mostrarModal.value = false
@@ -433,13 +474,30 @@ const notaInvalida = (n) => {
 const resultado = (n) => {
   const v = notaNumero(n)
   if (n.ausente || v === null || notaInvalida(n)) return null
+  if (examenNotas.value.tipo === 'practico') return v >= 1
+  if (examenNotas.value.tipo === 'fisico') return v >= n.umbralFisico
   return (v / examenNotas.value.notaMaxima) * 100 >= examenNotas.value.porcentajeAprobacion
 }
+
+// En práctico y físico se agregan los aspirantes que rindieron con un select
+const esPorAspirante = computed(() => ['practico', 'fisico'].includes(examenNotas.value?.tipo))
+const filasVisibles = computed(() => (esPorAspirante.value ? notas.value.filter(n => n.agregado) : notas.value))
+const disponiblesParaAgregar = computed(() => notas.value.filter(n => !n.agregado))
+
+const agregarAspirante = (evento) => {
+  const fila = notas.value.find(n => n.id === Number(evento.target.value))
+  if (fila) fila.agregado = true
+  evento.target.value = ''
+}
+
+const quitarAspirante = (n) => {
+  Object.assign(n, { agregado: false, nota: '', ausente: false, comentarios: '' })
+}
 const resumenNotas = computed(() => ({
-  aprobados: notas.value.filter(n => resultado(n) === true).length,
-  desaprobados: notas.value.filter(n => resultado(n) === false).length,
-  ausentes: notas.value.filter(n => n.ausente).length,
-  sin: notas.value.filter(n => !n.ausente && notaNumero(n) === null).length,
+  aprobados: filasVisibles.value.filter(n => resultado(n) === true).length,
+  desaprobados: filasVisibles.value.filter(n => resultado(n) === false).length,
+  ausentes: filasVisibles.value.filter(n => n.ausente).length,
+  sin: filasVisibles.value.filter(n => !n.ausente && notaNumero(n) === null).length,
 }))
 
 const descargandoPdf = ref(null)
@@ -468,7 +526,12 @@ const abrirNotas = async (e) => {
     const res = await api.get({ entity: 'examenes_curso_arbitro', action: 'obtenerNotasExamenCurso', payload: { idExamen: e.id } })
     if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar las notas')
     examenNotas.value = res.payload.examen
-    notas.value = (res.payload.alumnos || []).map(a => ({ ...a, nota: a.nota ?? '', comentarios: a.comentarios || '' }))
+    notas.value = (res.payload.alumnos || []).map(a => ({
+      ...a,
+      nota: a.nota ?? '',
+      comentarios: a.comentarios || '',
+      agregado: a.nota !== null || a.ausente || Boolean(a.comentarios),
+    }))
   } catch (err) {
     notificar({ titulo: 'Error', mensaje: err.message, tipo: 'danger' })
     mostrarNotas.value = false
@@ -478,6 +541,10 @@ const abrirNotas = async (e) => {
 }
 
 const guardarNotas = async () => {
+  if (esPorAspirante.value && notas.value.some(n => n.agregado && !n.ausente && notaNumero(n) === null)) {
+    notificar({ titulo: 'Faltan resultados', mensaje: 'Completá el resultado de cada aspirante agregado o marcalo ausente.', tipo: 'danger' })
+    return
+  }
   if (notas.value.some(notaInvalida)) {
     notificar({ titulo: 'Notas inválidas', mensaje: `Las notas tienen que estar entre 0 y ${formatoNota(examenNotas.value.notaMaxima)}.`, tipo: 'danger' })
     return
@@ -493,7 +560,7 @@ const guardarNotas = async () => {
       },
     })
     if (!res?.ok) throw new Error(res?.message || 'No se pudieron guardar las notas')
-    toast({ titulo: 'Guardado', mensaje: 'Las notas se guardaron. Los alumnos ya pueden verlas.', tipo: 'success' })
+    toast({ titulo: 'Guardado', mensaje: 'Los resultados se guardaron. Los aspirantes ya pueden verlos.', tipo: 'success' })
     mostrarNotas.value = false
     await cargarExamenes()
   } catch (err) {
