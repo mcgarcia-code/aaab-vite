@@ -25,20 +25,18 @@
           </div>
 
           <!-- Select de reunión (desglosado por grupo) -->
-          <div class="w-100 mt-2 mt-md-0" style="max-width: 460px;">
-            <select
-              v-model="reunionSeleccionada"
-              @change="onReunionSeleccionada"
-              class="form-select shadow-sm border-secondary-subtle fw-semibold w-100"
-              style="min-width: 260px;"
-              :disabled="cargandoInicial || cargandoArbitros"
-            >
-              <option value="">— Ver listado general —</option>
-              <option v-for="op in opcionesReunion" :key="op.key" :value="op.key">
-                {{ op.label }}
-              </option>
-            </select>
-          </div>
+          <select
+            v-model="reunionSeleccionada"
+            @change="onReunionSeleccionada"
+            class="form-select form-select-sm shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion mt-2 mt-md-0"
+            :disabled="cargandoInicial || cargandoArbitros"
+            aria-label="Elegir reunión"
+          >
+            <option value="">— Ver listado general —</option>
+            <option v-for="op in opcionesReunion" :key="op.key" :value="op.key">
+              {{ op.label }}
+            </option>
+          </select>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white flex-shrink-0">
@@ -334,11 +332,10 @@
             </span>
           </div>
 
-          <div class="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center">
+          <div class="d-flex gap-2 align-items-stretch">
             <select
               v-model="mesDisertantes"
-              class="form-select form-select-sm shadow-sm border-secondary-subtle fw-semibold"
-              style="min-width: 180px;"
+              class="form-select shadow-sm border-secondary-subtle fw-semibold select-mes"
               :disabled="cargandoInicial || cargandoDisertantes"
               aria-label="Filtrar por mes"
             >
@@ -1177,6 +1174,17 @@ onMounted(async () => {
 .fila-ausente            { background-color: #f9fafb !important; }
 .fila-ausente  .col-fija { background-color: #f9fafb !important; }
 .texto-creacion { font-size: 0.75rem; }
+.select-reunion { width: 100%; min-width: 0; }
+@media (min-width: 768px) {
+  .select-reunion { flex: 0 1 300px; max-width: 300px; }
+}
+@media (min-width: 1400px) {
+  .select-reunion { flex-basis: 380px; max-width: 380px; }
+}
+.select-mes { flex: 1 1 auto; min-width: 0; font-size: 0.875rem; }
+@media (min-width: 576px) {
+  .select-mes { flex: 0 0 200px; }
+}
 .select-disertante { width: 190px; max-width: 190px; font-size: 0.75rem; }
 .radio-presente { accent-color: #198754; }
 .radio-ausente  { accent-color: #6c757d; }
