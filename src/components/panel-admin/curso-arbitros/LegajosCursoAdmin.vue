@@ -12,8 +12,9 @@
             </h4>
             <span class="text-muted small d-block mt-1">
               Total: {{ legajosFiltrados.length }} inscriptos
-              <span class="badge rounded-pill bg-success ms-1">{{ resumenEstados.regular }} regulares</span>
-              <span class="badge rounded-pill bg-danger ms-1">{{ resumenEstados.baja }} bajas</span>
+              <template v-for="(cantidad, estado) in resumenEstados" :key="estado">
+                <span v-if="cantidad" class="badge rounded-pill ms-1" :class="ESTADOS_CURSO[estado].clase">{{ cantidad }} {{ ESTADOS_CURSO[estado].etiqueta.toLowerCase() }}</span>
+              </template>
             </span>
           </div>
 
@@ -53,7 +54,8 @@
             <div class="col-6"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI..."></div>
             <div class="col-6">
               <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
-                <option value="">ESTADO</option><option value="regular">REGULAR</option><option value="baja">BAJA</option>
+                <option value="">ESTADO</option>
+                <option v-for="(e, clave) in ESTADOS_CURSO" :key="clave" :value="clave">{{ e.etiqueta.toUpperCase() }}</option>
               </select>
             </div>
             <div class="col-12 mt-2">
@@ -102,14 +104,8 @@
                         <button @click="abrirEditar(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar" aria-label="Editar">
                           <span class="material-icons" style="font-size:16px;">edit</span>
                         </button>
-                        <button
-                          @click="abrirEstado(l)"
-                          class="btn btn-light btn-sm border shadow-sm rounded p-1"
-                          :class="l.estado === 'baja' ? 'text-success' : 'text-danger'"
-                          :title="l.estado === 'baja' ? 'Reactivar (regular)' : 'Dar de baja'"
-                          :aria-label="l.estado === 'baja' ? 'Reactivar' : 'Dar de baja'"
-                        >
-                          <span class="material-icons" style="font-size:16px;">{{ l.estado === 'baja' ? 'person_add_alt' : 'person_off' }}</span>
+                        <button @click="abrirEstado(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Cambiar estado" aria-label="Cambiar estado">
+                          <span class="material-icons" style="font-size:16px;">swap_horiz</span>
                         </button>
                       </div>
                     </td>
@@ -142,13 +138,13 @@
                   <div><strong>DNI:</strong> {{ l.dni }} · <strong>Cel:</strong> {{ l.celular }}</div>
                   <div class="text-truncate"><strong>Email:</strong> {{ l.email }}</div>
                   <div v-if="l.es_jugador === 'SI'"><strong>Juega:</strong> {{ l.club_jugador }} ({{ textoCategorias(l.categorias_jugador) }})</div>
-                  <div v-if="l.es_dt === 'SI'"><strong>DT:</strong> {{ l.club_dt }} ({{ textoCategorias(l.categorias_dt) }})</div>
-                  <div v-if="l.estado === 'baja'" class="text-danger"><strong>Motivo baja:</strong> {{ l.motivo_baja }}</div>
+                  <div v-if="l.es_dt === 'SI'"><strong>DT:</strong> {{ textoDtClubes(l.dt_clubes) }}</div>
+                  <div class="text-truncate"><strong>Usuario:</strong> {{ l.usuario }}</div>
+                  <div v-if="l.motivo_estado" :class="{ 'text-danger': l.estado === 'baja' }"><strong>Motivo:</strong> {{ l.motivo_estado }}</div>
                   <div class="d-flex gap-2 mt-3">
                     <button @click="abrirEditar(l)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
-                    <button @click="abrirEstado(l)" class="btn btn-sm flex-fill fw-bold" :class="l.estado === 'baja' ? 'btn-outline-success' : 'btn-outline-danger'">
-                      <i class="bi me-1" :class="l.estado === 'baja' ? 'bi-person-check' : 'bi-person-x'"></i>
-                      {{ l.estado === 'baja' ? 'Reactivar' : 'Dar de baja' }}
+                    <button @click="abrirEstado(l)" class="btn btn-sm btn-outline-danger flex-fill fw-bold">
+                      <i class="bi bi-arrow-left-right me-1"></i> Estado
                     </button>
                   </div>
                 </div>
@@ -192,6 +188,8 @@
           :provincias="provincias"
           :localidades="localidades"
           prefijo="leg-curso"
+          :password-obligatoria="false"
+          :ayuda-password="form.id ? 'Dejala vacía para mantener la contraseña actual.' : 'Si la dejás vacía, la contraseña inicial es el DNI.'"
           @error="mensaje => notificar({ titulo: 'Error', mensaje, tipo: 'danger' })"
         />
       </form>
@@ -204,46 +202,46 @@
       </template>
     </ModalBase>
 
-    <!-- MODAL ESTADO (BAJA / REACTIVAR) -->
+    <!-- MODAL CAMBIO DE ESTADO -->
     <ModalBase
       :show="mostrarModalEstado"
       @close="mostrarModalEstado = false"
-      :icono="legajoEstado?.estado === 'baja' ? 'person_add_alt' : 'person_off'"
-      :colorIcono="legajoEstado?.estado === 'baja' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'"
-      maxWidth="520px"
+      icono="swap_horiz"
+      colorIcono="bg-danger-subtle text-danger"
+      maxWidth="540px"
     >
       <template #header>
-        <span class="fw-bold fs-5">{{ legajoEstado?.estado === 'baja' ? 'Reactivar inscripto' : 'Dar de baja' }}</span>
+        <span class="fw-bold fs-5">Cambiar estado</span>
       </template>
       <div v-if="legajoEstado" class="text-start">
         <p class="mb-3 text-dark">
           <strong class="text-uppercase">{{ legajoEstado.apellido }}, {{ legajoEstado.nombre }}</strong>
           <span class="text-muted"> · DNI {{ legajoEstado.dni }}</span>
         </p>
-        <template v-if="legajoEstado.estado === 'baja'">
-          <div class="alert alert-light border small mb-0">
-            <div><strong>Motivo de la baja:</strong> {{ legajoEstado.motivo_baja || '-' }}</div>
-            <div v-if="legajoEstado.fecha_baja"><strong>Fecha:</strong> {{ mostrarFechaArg(legajoEstado.fecha_baja) }}</div>
-            <div class="mt-2">Va a volver a quedar como <strong>regular</strong>.</div>
-          </div>
-        </template>
-        <template v-else>
-          <label for="motivo-baja" class="form-label small fw-bold text-dark">Motivo de la baja *</label>
-          <textarea id="motivo-baja" v-model.trim="motivoBaja" rows="3" maxlength="500" class="form-control" :class="{ 'is-invalid': intentoEstado && motivoBaja.length < 3 }" placeholder="Ej: dejó de asistir, motivos personales, se mudó..."></textarea>
-          <div class="invalid-feedback">Indicá el motivo de la baja.</div>
-        </template>
+        <p class="small mb-3">
+          Estado actual:
+          <span class="badge" :class="ESTADOS_CURSO[legajoEstado.estado]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[legajoEstado.estado]?.etiqueta || legajoEstado.estado }}</span>
+          <span v-if="legajoEstado.motivo_estado" class="text-muted"> · {{ legajoEstado.motivo_estado }}</span>
+        </p>
+        <label for="nuevo-estado" class="form-label small fw-bold text-dark">Nuevo estado *</label>
+        <select id="nuevo-estado" v-model="nuevoEstado" class="form-select mb-3">
+          <option v-for="(e, clave) in ESTADOS_CURSO" :key="clave" :value="clave">{{ e.etiqueta }}</option>
+        </select>
+        <div v-if="nuevoEstado === 'aprobado'" class="alert alert-info small py-2">
+          Al pasar a <strong>árbitro aprobado</strong> va a ver en su panel el acceso para completar el registro de árbitros con su email personal.
+        </div>
+        <div v-if="nuevoEstado === 'reinscripcion'" class="alert alert-info small py-2">
+          La reinscripción lo pasa al curso de este año ({{ anioActual }}).
+        </div>
+        <label for="motivo-estado" class="form-label small fw-bold text-dark">Motivo {{ nuevoEstado === 'baja' ? '*' : '(opcional)' }}</label>
+        <textarea id="motivo-estado" v-model.trim="motivoEstado" rows="3" maxlength="500" class="form-control" :class="{ 'is-invalid': intentoEstado && nuevoEstado === 'baja' && motivoEstado.length < 3 }" :placeholder="nuevoEstado === 'baja' ? 'Ej: dejó de asistir, motivos personales...' : ''"></textarea>
+        <div class="invalid-feedback">Indicá el motivo de la baja.</div>
       </div>
       <template #footer>
         <button type="button" @click="mostrarModalEstado = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button
-          type="button"
-          @click="confirmarEstado"
-          class="btn rounded-pill px-4 fw-bold shadow-sm w-100"
-          :class="legajoEstado?.estado === 'baja' ? 'btn-success' : 'btn-danger'"
-          :disabled="guardandoEstado"
-        >
+        <button type="button" @click="confirmarEstado" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoEstado">
           <span v-if="guardandoEstado" class="spinner-border spinner-border-sm me-1"></span>
-          {{ legajoEstado?.estado === 'baja' ? 'REACTIVAR' : 'DAR DE BAJA' }}
+          GUARDAR ESTADO
         </button>
       </template>
     </ModalBase>
@@ -258,7 +256,7 @@ import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import FormularioCursoArbitro from '@/components/FormularioCursoArbitro.vue'
 import {
-  ESTADOS_CURSO, GENEROS_CURSO, formularioCursoVacio, formularioDesdeLegajo, validarFormularioCurso, payloadCurso,
+  ESTADOS_CURSO, GENEROS_CURSO, formularioCursoVacio, formularioDesdeLegajo, validarFormularioCurso, payloadCurso, textoDtClubes,
 } from '@/composables/useCursoArbitro'
 
 useHead({ title: 'Legajos del Curso | AAAB' })
@@ -269,8 +267,10 @@ const toast = inject('toast', (m) => notificar(m))
 // ─── Columnas (después de ID / Acciones / Apellido / Nombre, que son fijas) ──
 const SI_NO = [{ valor: 'SI', etiqueta: 'SÍ' }, { valor: 'NO', etiqueta: 'NO' }]
 const COLUMNAS = [
-  { id: 'estado', label: 'Estado', centro: true, opciones: [{ valor: 'regular', etiqueta: 'REGULAR' }, { valor: 'baja', etiqueta: 'BAJA' }] },
+  { id: 'estado', label: 'Estado', centro: true, opciones: Object.entries(ESTADOS_CURSO).map(([valor, e]) => ({ valor, etiqueta: e.etiqueta.toUpperCase() })) },
+  { id: 'anio_curso', label: 'Año', centro: true },
   { id: 'dni', label: 'DNI', centro: true },
+  { id: 'usuario', label: 'Usuario' },
   { id: 'genero', label: 'Género', centro: true, opciones: GENEROS_CURSO.map(g => ({ valor: g.valor, etiqueta: g.etiqueta.toUpperCase() })) },
   { id: 'email', label: 'Email' },
   { id: 'celular', label: 'Celular' },
@@ -285,14 +285,14 @@ const COLUMNAS = [
   { id: 'club_jugador', label: 'Club Jugador' },
   { id: 'categorias_jugador', label: 'Cat. Jugador', largo: true },
   { id: 'es_dt', label: 'DT', centro: true, opciones: SI_NO },
-  { id: 'club_dt', label: 'Club DT' },
-  { id: 'categorias_dt', label: 'Cat. DT', largo: true },
-  { id: 'motivo_baja', label: 'Motivo Baja', largo: true },
-  { id: 'fecha_baja', label: 'F. Baja' },
+  { id: 'dt_detalle', label: 'Clubes y Cat. DT', largo: true },
+  { id: 'motivo_estado', label: 'Motivo Estado', largo: true },
+  { id: 'fecha_estado', label: 'F. Estado' },
   { id: 'fecha_registro', label: 'F. Inscripción' },
   { id: 'observaciones', label: 'Observaciones', largo: true },
 ]
-const CAMPOS_EXACTOS = ['estado', 'genero', 'es_jugador', 'es_dt']
+const CAMPOS_EXACTOS = ['estado', 'genero', 'es_jugador', 'es_dt', 'anio_curso']
+const anioActual = new Date().getFullYear()
 
 // ─── Estado ──────────────────────────────────────────────────────
 const legajos = ref([])
@@ -319,9 +319,10 @@ const textoCategorias = (texto) => String(texto || '').split('|').map(c => c.tri
 const etiquetaGenero = (g) => GENEROS_CURSO.find(x => x.valor === g)?.etiqueta || ''
 
 const valorColumna = (l, id) => {
-  if (id === 'fecha_nacimiento' || id === 'fecha_baja' || id === 'fecha_registro') return mostrarFechaArg(l[id])
+  if (id === 'fecha_nacimiento' || id === 'fecha_estado' || id === 'fecha_registro') return mostrarFechaArg(l[id])
+  if (id === 'dt_detalle') return textoDtClubes(l.dt_clubes)
   if (id === 'genero') return etiquetaGenero(l.genero)
-  if (id === 'categorias_jugador' || id === 'categorias_dt') return textoCategorias(l[id])
+  if (id === 'categorias_jugador') return textoCategorias(l[id])
   return l[id] ?? ''
 }
 
@@ -334,10 +335,11 @@ const legajosFiltrados = computed(() => {
   }))
 })
 
-const resumenEstados = computed(() => ({
-  regular: legajosFiltrados.value.filter(l => l.estado === 'regular').length,
-  baja: legajosFiltrados.value.filter(l => l.estado === 'baja').length,
-}))
+const resumenEstados = computed(() => {
+  const r = Object.fromEntries(Object.keys(ESTADOS_CURSO).map(e => [e, 0]))
+  for (const l of legajosFiltrados.value) if (r[l.estado] !== undefined) r[l.estado]++
+  return r
+})
 
 const totalPaginas = computed(() => Math.ceil(legajosFiltrados.value.length / registrosPorPagina) || 1)
 const legajosPaginados = computed(() => {
@@ -387,7 +389,8 @@ const errores = ref({})
 const intentoGuardar = ref(false)
 const guardando = ref(false)
 
-watch(form, () => { if (intentoGuardar.value) errores.value = validarFormularioCurso(form.value) }, { deep: true })
+const validar = () => validarFormularioCurso(form.value, { passwordObligatoria: false })
+watch(form, () => { if (intentoGuardar.value) errores.value = validar() }, { deep: true })
 
 const abrirModalCon = (datos) => {
   form.value = datos
@@ -400,7 +403,7 @@ const abrirEditar = (l) => abrirModalCon(formularioDesdeLegajo(l))
 
 const guardar = async () => {
   intentoGuardar.value = true
-  errores.value = validarFormularioCurso(form.value)
+  errores.value = validar()
   if (Object.keys(errores.value).length) {
     notificar({ titulo: 'Faltan datos', mensaje: Object.values(errores.value)[0], tipo: 'danger' })
     return
@@ -419,16 +422,18 @@ const guardar = async () => {
   }
 }
 
-// ─── Baja / Reactivar ────────────────────────────────────────────
+// ─── Cambio de estado ────────────────────────────────────────────
 const mostrarModalEstado = ref(false)
 const legajoEstado = ref(null)
-const motivoBaja = ref('')
+const nuevoEstado = ref('regular')
+const motivoEstado = ref('')
 const intentoEstado = ref(false)
 const guardandoEstado = ref(false)
 
 const abrirEstado = (l) => {
   legajoEstado.value = l
-  motivoBaja.value = ''
+  nuevoEstado.value = l.estado
+  motivoEstado.value = l.motivo_estado || ''
   intentoEstado.value = false
   mostrarModalEstado.value = true
 }
@@ -436,18 +441,17 @@ const abrirEstado = (l) => {
 const confirmarEstado = async () => {
   const l = legajoEstado.value
   if (!l) return
-  const nuevoEstado = l.estado === 'baja' ? 'regular' : 'baja'
   intentoEstado.value = true
-  if (nuevoEstado === 'baja' && motivoBaja.value.length < 3) return
+  if (nuevoEstado.value === 'baja' && motivoEstado.value.length < 3) return
   guardandoEstado.value = true
   try {
     const res = await api.post({
       entity: 'legajos_curso_arbitro',
       action: 'cambiarEstadoCurso',
-      payload: { id: l.id, estado: nuevoEstado, motivo: motivoBaja.value },
+      payload: { id: l.id, estado: nuevoEstado.value, motivo: motivoEstado.value },
     })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo cambiar el estado')
-    toast({ titulo: 'Listo', mensaje: nuevoEstado === 'baja' ? 'Se dio de baja al inscripto.' : 'El inscripto volvió a estar regular.', tipo: 'success' })
+    toast({ titulo: 'Listo', mensaje: `Estado actualizado: ${ESTADOS_CURSO[nuevoEstado.value].etiqueta}.`, tipo: 'success' })
     mostrarModalEstado.value = false
     await cargarDatos()
   } catch (e) {

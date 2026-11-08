@@ -1,5 +1,40 @@
 <template>
   <div>
+    <!-- USUARIO DEL CURSO -->
+    <h6 class="titulo-seccion"><i class="bi bi-person-lock me-1"></i> Usuario para iniciar sesión</h6>
+    <div class="row g-3 mb-4">
+      <div class="col-12">
+        <label :for="`${prefijo}-usuario`" class="form-label small fw-bold text-dark">Nombre de usuario *</label>
+        <div class="input-group" :class="{ 'has-validation': mostrarErrores && errores.usuario }">
+          <input
+            :id="`${prefijo}-usuario`"
+            :value="form.usuario"
+            @input="form.usuario = $event.target.value.toLowerCase().replace(/\s/g, '')"
+            type="text"
+            maxlength="40"
+            autocomplete="username"
+            placeholder="ej: juan.perez"
+            class="form-control"
+            :class="clase('usuario')"
+          >
+          <span class="input-group-text fw-bold text-muted">@{{ DOMINIO_USUARIO_CURSO }}</span>
+          <div class="invalid-feedback">{{ errores.usuario }}</div>
+        </div>
+        <div class="form-text">Con este usuario vas a iniciar sesión en el panel del curso.</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <label :for="`${prefijo}-password`" class="form-label small fw-bold text-dark">Contraseña {{ passwordObligatoria ? '*' : '' }}</label>
+        <input :id="`${prefijo}-password`" v-model="form.password" type="password" maxlength="72" autocomplete="new-password" class="form-control" :class="clase('password')" :placeholder="passwordObligatoria ? 'Mínimo 8 caracteres' : 'Dejar vacío para no cambiarla'">
+        <div class="invalid-feedback">{{ errores.password }}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <label :for="`${prefijo}-password2`" class="form-label small fw-bold text-dark">Repetir contraseña {{ passwordObligatoria ? '*' : '' }}</label>
+        <input :id="`${prefijo}-password2`" v-model="form.passwordConfirmacion" type="password" maxlength="72" autocomplete="new-password" class="form-control" :class="clase('passwordConfirmacion')">
+        <div class="invalid-feedback">{{ errores.passwordConfirmacion }}</div>
+      </div>
+      <div v-if="ayudaPassword" class="col-12"><div class="form-text mt-0">{{ ayudaPassword }}</div></div>
+    </div>
+
     <!-- DATOS PERSONALES -->
     <h6 class="titulo-seccion"><i class="bi bi-person-vcard me-1"></i> Datos personales</h6>
     <div class="row g-3 mb-4">
@@ -32,9 +67,10 @@
         <div class="invalid-feedback">{{ errores.genero }}</div>
       </div>
       <div class="col-12 col-md-6">
-        <label :for="`${prefijo}-email`" class="form-label small fw-bold text-dark">Email *</label>
+        <label :for="`${prefijo}-email`" class="form-label small fw-bold text-dark">Email personal *</label>
         <input :id="`${prefijo}-email`" v-model.trim="form.email" type="email" maxlength="100" class="form-control" :class="clase('email')" autocomplete="email">
         <div class="invalid-feedback">{{ errores.email }}</div>
+        <div class="form-text">Para recuperar la contraseña y recibir las notificaciones del curso.</div>
       </div>
       <div class="col-12 col-md-6">
         <label :for="`${prefijo}-celular`" class="form-label small fw-bold text-dark">Celular *</label>
@@ -114,22 +150,33 @@
     <div class="mb-4">
       <div class="col-12 col-md-4 mb-3">
         <label :for="`${prefijo}-es-dt`" class="form-label small fw-bold text-dark">¿Sos DT (director/a técnico/a)? *</label>
-        <select :id="`${prefijo}-es-dt`" v-model="form.esDt" @change="limpiarSiNo('esDt', 'idClubDt', 'categoriasDt')" class="form-select">
+        <select :id="`${prefijo}-es-dt`" v-model="form.esDt" @change="cambiarEsDt" class="form-select">
           <option value="no">No</option>
           <option value="si">Sí</option>
         </select>
       </div>
-      <div v-if="form.esDt === 'si'" class="bloque-deportivo border rounded-3 p-3">
-        <SelectorClubCategorias
-          v-model:id-club="form.idClubDt"
-          v-model:categorias="form.categoriasDt"
-          modo="todas"
-          :prefijo="`${prefijo}-dt`"
-          :invalido="mostrarErrores && !!errores.dt"
-          @error="m => emit('error', m)"
-        />
+      <template v-if="form.esDt === 'si'">
+        <div v-for="(d, i) in form.dtClubes" :key="i" class="bloque-deportivo border rounded-3 p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small fw-bold text-danger text-uppercase">Club {{ i + 1 }} como DT</span>
+            <button v-if="form.dtClubes.length > 1" type="button" class="btn btn-sm btn-outline-danger py-0 px-2" @click="form.dtClubes.splice(i, 1)" :aria-label="`Quitar club ${i + 1}`">
+              <i class="bi bi-trash3"></i> Quitar
+            </button>
+          </div>
+          <SelectorClubCategorias
+            v-model:id-club="d.idClub"
+            v-model:categorias="d.categorias"
+            modo="todas"
+            :prefijo="`${prefijo}-dt-${i}`"
+            :invalido="mostrarErrores && !!errores.dt && (!d.idClub || !d.categorias.length)"
+            @error="m => emit('error', m)"
+          />
+        </div>
+        <button v-if="form.dtClubes.length < MAX_CLUBES_DT" type="button" class="btn btn-outline-secondary btn-sm fw-bold" @click="form.dtClubes.push(filaDtVacia())">
+          <i class="bi bi-plus-circle me-1"></i> Agregar otro club
+        </button>
         <div v-if="mostrarErrores && errores.dt" class="text-danger small mt-2">{{ errores.dt }}</div>
-      </div>
+      </template>
     </div>
 
     <!-- OBSERVACIONES -->
@@ -144,7 +191,7 @@
 <script setup>
 import { computed } from 'vue'
 import SelectorClubCategorias from '@/components/SelectorClubCategorias.vue'
-import { GENEROS_CURSO } from '@/composables/useCursoArbitro'
+import { GENEROS_CURSO, DOMINIO_USUARIO_CURSO, MAX_CLUBES_DT, filaDtVacia } from '@/composables/useCursoArbitro'
 
 // Campos del formulario del curso (inscripción pública y modal del admin).
 // v-model = objeto del formulario (formularioCursoVacio en useCursoArbitro.js)
@@ -156,6 +203,8 @@ const props = defineProps({
   provincias: { type: Array, default: () => [] },
   localidades: { type: Array, default: () => [] },
   prefijo: { type: String, default: 'curso' },
+  passwordObligatoria: { type: Boolean, default: true },
+  ayudaPassword: { type: String, default: '' },
 })
 
 const emit = defineEmits(['error'])
@@ -167,6 +216,10 @@ const localidadesFiltradas = computed(() =>
 )
 
 const clase = (campo) => (props.mostrarErrores && props.errores[campo] ? 'is-invalid' : '')
+
+const cambiarEsDt = () => {
+  form.value.dtClubes = form.value.esDt === 'si' ? [filaDtVacia()] : []
+}
 
 const limpiarSiNo = (campoSiNo, campoClub, campoCategorias) => {
   if (form.value[campoSiNo] === 'si') return

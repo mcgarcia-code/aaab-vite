@@ -27,6 +27,7 @@ const routes = [
       if (auth.isLoggedIn()) {
         const user = auth.getUser();
         const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso', 'informes', 'indumentaria'];
+        if (user?.rol === 'alumno_curso') return next('/panel-curso');
         rolesStaff.includes(user?.rol) ? next('/panel-admin') : next('/panel-arbitro');
       } else {
         next();
@@ -127,13 +128,14 @@ const routes = [
   {
     path: '/panel-curso',
     component: () => import('../components/panel-curso/PanelCurso.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, roles: ['alumno_curso'] },
     children: [
       { path: '', name: 'PanelInicioCurso', component: () => import('../components/panel-curso/InicioPanelCurso.vue') },
       { path: 'datos-curso', name: 'PanelDatosCurso', component: () => import('../components/panel-curso/datos-personales-curso/MisDatosCurso.vue') },
       { path: 'credencial-curso', name: 'PanelCredencialCurso', component: () => import('../components/panel-curso/credencial-curso/CredencialDigitalCurso.vue') },
       { path: 'rendimiento-curso', name: 'PanelRendimientoCurso', component: () => import('../components/panel-curso/rendimiento-curso/MiRendimientoCurso.vue') },
       { path: 'cuota-curso', name: 'CuotaCurso', component: () => import('../components/panel-curso/tesoreria/CuotaCurso.vue') },
+      { path: 'cronograma-curso', name: 'CronogramaCurso', component: () => import('../components/panel-curso/cronograma-curso/CronogramaCurso.vue') },
       { path: 'historial-notificaciones', name: 'HistorialNotificacionesCurso', component: () => import('../components/panel-curso/notificaciones-curso/HistorialNotificacionesCurso.vue') },
 
     ]
@@ -198,6 +200,8 @@ const routes = [
 
       { path: 'curso-arbitros/legajos-curso', name: 'LegajosCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/LegajosCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
       { path: 'curso-arbitros/observaciones-curso', name: 'ObservacionesCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/ObservacionesCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
+      { path: 'curso-arbitros/alumnos-regulares', name: 'AlumnosRegularesCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/AlumnosRegularesCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
+      { path: 'curso-arbitros/cronograma', name: 'CronogramaCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/CronogramaCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
       { path: 'curso-arbitros/examenes-curso', name: 'ExamenesCursoAdmin', component: () => import('../components/panel-admin/curso-arbitros/ExamenesCursoAdmin.vue'), meta: { roles: ['admin', 'secretario', 'curso'] }},
 
 
@@ -223,6 +227,11 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!estaLogueado) {
       return next('/login-arbitro');
+    }
+
+    // Los alumnos del curso solo usan su panel
+    if (userRole === 'alumno_curso' && !to.path.startsWith('/panel-curso')) {
+      return next('/panel-curso');
     }
 
     if (to.path.startsWith('/panel-arbitro') && rolesStaff.includes(userRole)) {

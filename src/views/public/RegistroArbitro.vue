@@ -11,6 +11,9 @@
               <i class="bi bi-person-plus-fill me-1"></i> Registro de Árbitros
             </h4>
             <span class="text-muted small d-block mt-1">Completá tus datos para darte de alta en la asociación</span>
+            <span v-if="desdeCurso" class="badge bg-success-subtle text-success border border-success-subtle mt-2">
+              <i class="bi bi-patch-check-fill me-1"></i> Datos precargados del curso · revisalos y usá tu email personal
+            </span>
           </div>
         </div>
       </div>
@@ -235,12 +238,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
+import { ref, reactive, computed, watch, onMounted, inject, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
 import { obtenerDatosClubes, ramasSegunGenero } from '@/composables/useOpcionesHandball'
 import { validarFamiliares, familiaresParaEnviar } from '@/composables/useFamiliares'
+import { CLAVE_PRECARGA_REGISTRO } from '@/composables/useCursoArbitro'
 
 useHead({
   title: 'Registro de Árbitros | AAAB',
@@ -465,7 +470,30 @@ const enviarRegistro = async () => {
   }
 }
 
-onMounted(cargarDatos)
+// Alumno del curso aprobado: llega desde su panel con los datos precargados.
+// La localidad se asigna después de la provincia porque al cambiar la
+// provincia un watch la limpia.
+const route = useRoute()
+const desdeCurso = ref(false)
+const aplicarPrecargaCurso = async () => {
+  if (!route.query.desdeCurso) return
+  try {
+    const precarga = JSON.parse(sessionStorage.getItem(CLAVE_PRECARGA_REGISTRO) || 'null')
+    if (!precarga) return
+    const { localidad, ...resto } = precarga
+    Object.assign(form, resto)
+    await nextTick()
+    form.localidad = localidad
+    desdeCurso.value = true
+  } catch (e) {
+    console.error('precarga curso:', e)
+  }
+}
+
+onMounted(async () => {
+  await cargarDatos()
+  await aplicarPrecargaCurso()
+})
 </script>
 
 <style scoped>

@@ -19,12 +19,15 @@
       <div v-if="inscripto" class="card-body p-4 p-md-5 text-center">
         <i class="bi bi-check-circle-fill text-success d-block mb-3" style="font-size: 3.5rem;"></i>
         <h5 class="fw-bold text-dark mb-2">¡Inscripción enviada!</h5>
-        <p class="text-muted mb-4">
-          Recibimos tus datos. La coordinación del curso se va a comunicar con vos al email
-          <strong class="text-dark">{{ form.email }}</strong> o al celular que cargaste.
+        <p class="text-muted mb-2">
+          Ya podés iniciar sesión en el panel del curso con tu usuario
+          <strong class="text-dark">{{ usuarioCreado }}</strong> y la contraseña que elegiste.
         </p>
-        <router-link to="/" class="btn btn-danger fw-bold px-4 py-2 rounded-3">
-          <i class="bi bi-house-door me-1"></i> VOLVER AL INICIO
+        <p class="text-muted small mb-4">
+          Las novedades del curso te van a llegar a <strong class="text-dark">{{ form.email }}</strong>.
+        </p>
+        <router-link to="/login-arbitro" class="btn btn-danger fw-bold px-4 py-2 rounded-3">
+          <i class="bi bi-box-arrow-in-right me-1"></i> IR A INICIAR SESIÓN
         </router-link>
       </div>
 
@@ -84,6 +87,7 @@ const localidades = ref([])
 const cargandoDatos = ref(true)
 const enviando = ref(false)
 const inscripto = ref(false)
+const usuarioCreado = ref('')
 
 // Después del primer intento, se revalida en vivo
 watch(form, () => { if (intentoEnviar.value) errores.value = validarFormularioCurso(form.value) }, { deep: true })
@@ -120,6 +124,9 @@ const enviarInscripcion = async () => {
       payload: payloadCurso(form.value),
     })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo completar la inscripción')
+    usuarioCreado.value = res.payload?.usuario || ''
+    form.value.password = ''
+    form.value.passwordConfirmacion = ''
     inscripto.value = true
     window.scrollTo({ top: 0, behavior: 'smooth' })
   } catch (e) {

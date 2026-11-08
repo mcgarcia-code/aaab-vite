@@ -136,6 +136,7 @@ import { ref, reactive, onMounted, computed } from 'vue';
 import { useHead } from '@vueuse/head';
 import { api } from '@/api/api';
 import { auth } from '../../api/auth';
+import { CLAVE_PRECARGA_REGISTRO, precargaRegistroArbitro } from '@/composables/useCursoArbitro'
 
 useHead({ title: 'Inicio Curso | AAAB' })
 
@@ -155,13 +156,31 @@ const menuItems = [
   { to: '/panel-curso/datos-curso', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Ver tu legajo y perfil.' },
   { to: '/panel-curso/credencial-curso', title: 'Credencial Digital', icon: 'bi bi-person-badge', desc: 'Carnet de aspirante 2026.' },
   { to: '/panel-curso/rendimiento-curso', title: 'Mi Rendimiento', icon: 'bi bi-graph-up-arrow', desc: 'Asistencia y exámenes.' },
-  { to: '/panel-curso/cuota-curso', title: 'Cuota del Curso', icon: 'bi bi-cash-coin', desc: 'Gestión de pagos.' }
+  { to: '/panel-curso/cuota-curso', title: 'Cuota del Curso', icon: 'bi bi-cash-coin', desc: 'Gestión de pagos.' },
+  { to: '/panel-curso/cronograma-curso', title: 'Cronograma Anual', icon: 'bi bi-calendar3-week', desc: 'Clases del curso de este año.' }
 ];
+
+// Alumno aprobado: acceso al registro como árbitro con sus datos precargados
+const inscripcion = ref(null)
+const ITEM_REGISTRO_ARBITRO = { to: { path: '/registro-arbitro', query: { desdeCurso: 1 } }, title: 'Registrarme como árbitro', icon: 'bi bi-patch-check-fill', desc: '¡Aprobaste el curso! Completá tu registro con tu email personal.' }
+
+const cargarInscripcion = async () => {
+  try {
+    const res = await api.get({ entity: 'registro_curso_arbitro', action: 'obtenerMiInscripcionCurso', payload: {} })
+    if (!res?.ok) return
+    inscripcion.value = res.payload
+    if (res.payload.estado === 'aprobado') {
+      sessionStorage.setItem(CLAVE_PRECARGA_REGISTRO, JSON.stringify(precargaRegistroArbitro(res.payload)))
+    }
+  } catch (e) {
+    console.error('cargarInscripcion:', e)
+  }
+}
 
 const menuItemsFiltrados = computed(() => {
   const sesion = auth.getUser();
   if (!sesion) return [];
-  let itemsDinamicos = [...menuItems];
+  let itemsDinamicos = inscripcion.value?.estado === 'aprobado' ? [ITEM_REGISTRO_ARBITRO, ...menuItems] : [...menuItems];
   return itemsDinamicos.filter((item) => !item.rolesPermitidos || item.rolesPermitidos.includes(sesion.rol));
 });
 
@@ -195,7 +214,10 @@ const esHoy = (diaMes) => {
   return diaMes === hoy;
 };
 
-onMounted(cargarAvisos);
+onMounted(() => {
+  cargarAvisos()
+  cargarInscripcion()
+})
 </script>
 
 <style scoped>

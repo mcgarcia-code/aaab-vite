@@ -14,8 +14,8 @@
 
       <form @submit.prevent="iniciarSesion">
         <div class="mb-3">
-          <label class="form-label small fw-bold text-dark">Email</label>
-          <input v-model="email" type="email" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="ejemplo@mail.com" required :disabled="cargando">
+          <label class="form-label small fw-bold text-dark">Email o usuario del curso</label>
+          <input v-model="email" type="email" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="ejemplo@mail.com o usuario@cursoaaab.com.ar" required :disabled="cargando">
         </div>
 
         <div class="mb-4">
@@ -101,6 +101,8 @@ const iniciarSesion = async () => {
 
       if (res.payload.admin) {
         router.push('/panel-admin');
+      } else if (res.payload.curso) {
+        router.push('/panel-curso');
       } else {
         router.push('/panel-arbitro');
       }
