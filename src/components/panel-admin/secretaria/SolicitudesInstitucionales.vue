@@ -408,6 +408,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
@@ -462,7 +463,7 @@ const filtros = reactive({
   club: '',
   rama: '',
   estado: '',
-  anio: '',
+  anio: anioActual(),
 })
 
 const limpiarFiltros = () => {
@@ -472,7 +473,7 @@ const limpiarFiltros = () => {
   filtros.club = ''
   filtros.rama = ''
   filtros.estado = ''
-  filtros.anio = ''
+  filtros.anio = anioActual()
 }
 
 const hayFiltrosActivos = computed(() =>
@@ -542,7 +543,7 @@ const aniosDisponibles = computed(() => {
     if (aDesde) set.add(aDesde)
     if (aHasta) set.add(aHasta)
   })
-  return [...set].sort((a, b) => b.localeCompare(a))
+  return conAnioActual(set)
 })
 
 // ====================================================

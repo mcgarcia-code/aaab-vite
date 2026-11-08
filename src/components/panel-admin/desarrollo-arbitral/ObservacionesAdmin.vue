@@ -661,6 +661,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
 import { api } from '@/api/api';
 import ExcelJS from 'exceljs'
@@ -682,7 +683,7 @@ const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const observaciones = ref([]);
 const cargando = ref(false);
 
-const filtros = reactive({ mes: '', anio: '', estado: '', nombre_observador: '', arbitros: '', competencia: '', categoria: '' })
+const filtros = reactive({ mes: '', anio: anioActual(), estado: '', nombre_observador: '', arbitros: '', competencia: '', categoria: '' })
 
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
   .map((nombre, i) => ({ valor: String(i + 1).padStart(2, '0'), nombre }))
@@ -751,7 +752,7 @@ const aniosDisponibles = computed(() => {
     const anio = (o.fecha_partido || '').substring(0, 4)
     if (anio) anios.add(anio)
   })
-  return [...anios].sort((a, b) => b.localeCompare(a))
+  return conAnioActual(anios)
 });
 
 const observacionesFiltradas = computed(() => {
@@ -1156,7 +1157,7 @@ const verHistorial = (obs) => {
 /* ====================================================
    UTILIDADES COMPARTIDAS
    ==================================================== */
-const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); };
+const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); filtros.anio = anioActual() };
 
 const exportarExcel = async () => {
   if (observacionesFiltradas.value.length === 0) {

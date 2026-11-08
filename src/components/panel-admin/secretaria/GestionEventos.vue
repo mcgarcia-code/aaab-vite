@@ -293,7 +293,7 @@ const mostrarFiltrosMobile = ref(false)
 const eventosVista = ref([])
 const filtros = reactive({
   busqueda: '',
-  anio: '',
+  anio: String(new Date().getFullYear()),
   fecha: '',
   categoria: '',
   grupo: '',
@@ -357,7 +357,7 @@ watch(() => filtros.anio, (a) => {
 })
 
 const limpiarFiltrosTabla = () => {
-  Object.assign(filtros, { busqueda: '', anio: '', fecha: '', categoria: '', grupo: '', subgrupo: '' })
+  Object.assign(filtros, { busqueda: '', anio: String(new Date().getFullYear()), fecha: '', categoria: '', grupo: '', subgrupo: '' })
 }
 
 const obtenerGrupos = async () => {

@@ -363,6 +363,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'
@@ -399,7 +400,7 @@ const etiquetaFuncion = (valor) => (valor === 'delegado' ? 'DELEGADO TÉCNICO' :
 const rechazos = ref([])
 const cargando = ref(false)
 
-const filtros = reactive({ arbitro: '', estado: '', funcion: '', anio: '' })
+const filtros = reactive({ arbitro: '', estado: '', funcion: '', anio: anioActual() })
 const mostrarFiltrosMobile = ref(false)
 
 const paginaActual = ref(1)
@@ -422,7 +423,7 @@ const aniosDisponibles = computed(() => {
     const a = anioDeFecha(r.fecha)
     if (a) set.add(a)
   })
-  return [...set].sort((a, b) => b.localeCompare(a))
+  return conAnioActual(set)
 })
 
 const rechazosFiltrados = computed(() => {
@@ -621,7 +622,7 @@ const exportarExcel = async () => {
 }
 
 const limpiarFiltros = () => {
-  filtros.arbitro = ''; filtros.estado = ''; filtros.funcion = ''; filtros.anio = ''
+  filtros.arbitro = ''; filtros.estado = ''; filtros.funcion = ''; filtros.anio = anioActual()
 }
 
 onMounted(obtenerRechazos)

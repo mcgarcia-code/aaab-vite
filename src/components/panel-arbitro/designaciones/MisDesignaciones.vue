@@ -547,6 +547,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, onMounted, computed, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '../../../api/auth'
@@ -626,7 +627,7 @@ const partidos = ref([])
 const cargando = ref(false)
 const vistaActiva = ref('proximas')
 
-const anioSeleccionado = ref('')
+const anioSeleccionado = ref(anioActual())
 const mesesAbiertos = ref([])
 const diasAbiertos = ref([])
 
@@ -792,7 +793,7 @@ const aniosDisponibles = computed(() => {
     const f = fechaLimpia(p.fecha)
     if (f) anios.add(f.slice(0, 4))
   })
-  return [...anios].sort((a, b) => b.localeCompare(a))
+  return conAnioActual(anios)
 })
 
 watch(aniosDisponibles, (anios) => {

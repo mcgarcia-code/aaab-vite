@@ -366,6 +366,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'
@@ -430,7 +431,7 @@ const aniosDisponibles = computed(() => {
     if (aAus) set.add(aAus);
     if (aSol) set.add(aSol);
   });
-  return [...set].sort((a, b) => b.localeCompare(a));
+  return conAnioActual(set);
 });
 
 const licenciasFiltradas = computed(() => {
@@ -668,7 +669,7 @@ const exportarExcel = async () => {
 };
 
 const limpiarFiltros = () => {
-  filtros.nombre = ''; filtros.apellido = ''; filtros.estado = ''; filtros.fecha = ''; filtros.fecha_solicitud = ''; filtros.anio = '';
+  filtros.nombre = ''; filtros.apellido = ''; filtros.estado = ''; filtros.fecha = ''; filtros.fecha_solicitud = ''; filtros.anio = anioActual();
 };
 
 onMounted(() => {

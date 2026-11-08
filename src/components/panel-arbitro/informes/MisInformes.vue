@@ -486,6 +486,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue';
 import { api } from '@/api/api';
 import html2pdf from 'html2pdf.js';
@@ -568,7 +569,7 @@ const informes = ref([]);
 const cargando = ref(false);
 const procesando = ref(false);
 
-const filtros = reactive({ fecha: '', anio: '', estado: '', encuentro: '', implicado: '', categoria: '', torneo: '' });
+const filtros = reactive({ fecha: '', anio: anioActual(), estado: '', encuentro: '', implicado: '', categoria: '', torneo: '' });
 const mostrarFiltrosMobile = ref(false);
 
 const paginaActual = ref(1);
@@ -601,7 +602,7 @@ const aniosDisponibles = computed(() => {
     const anio = (inf.fecha_partido || '').substring(0, 4);
     if (anio) anios.add(anio);
   });
-  return [...anios].sort((a, b) => b.localeCompare(a));
+  return conAnioActual(anios);
 });
 
 const informesFiltrados = computed(() => {
@@ -631,7 +632,7 @@ const cambiarPagina = (delta) => {
   }
 };
 
-const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); };
+const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); filtros.anio = anioActual() };
 
 watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
 watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo; });

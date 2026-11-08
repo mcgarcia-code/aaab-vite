@@ -467,6 +467,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '../../../api/auth'
@@ -485,7 +486,7 @@ const cargando = ref(false)
 const cargandoProceso = ref(false)
 
 const filtros = reactive({
-  arbitro: '', busqueda: '', desde: '', hasta: '', anio: '', estado: '', conNuevos: false
+  arbitro: '', busqueda: '', desde: '', hasta: '', anio: anioActual(), estado: '', conNuevos: false
 })
 
 const mostrarFiltrosMobile = ref(false)
@@ -570,7 +571,7 @@ const aniosDisponibles = computed(() => {
     const anio = extraerAnio(s.desde)
     if (anio) anios.add(anio)
   })
-  return [...anios].sort((a, b) => b.localeCompare(a))
+  return conAnioActual(anios)
 })
 
 const sancionesFiltradas = computed(() => {
@@ -845,7 +846,7 @@ const exportarExcel = async () => {
 }
 
 const limpiarFiltros = () => {
-  filtros.arbitro = ''; filtros.busqueda = ''; filtros.desde = ''; filtros.hasta = ''; filtros.anio = ''; filtros.estado = ''; filtros.conNuevos = false;
+  filtros.arbitro = ''; filtros.busqueda = ''; filtros.desde = ''; filtros.hasta = ''; filtros.anio = anioActual(); filtros.estado = ''; filtros.conNuevos = false;
 }
 
 onMounted(fetchSanciones)

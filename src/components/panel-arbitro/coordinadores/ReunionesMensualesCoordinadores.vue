@@ -709,6 +709,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
@@ -856,7 +857,7 @@ const registrosPorPagina   = 10
 const mostrarFiltrosMobile = ref(false)
 const mostrarModalDetalle  = ref(false)
 const arbitroSeleccionado  = ref({ id: null, apellido: '', nombre: '' })
-const filtroAñoDetalle     = ref('')
+const filtroAñoDetalle     = ref(anioActual())
 
 const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '', asistencia: '' })
 
@@ -1174,7 +1175,7 @@ const añosDetalleArbitro = computed(() => {
     const año = añoDeFecha(ex.fecha_reunion)
     if (año) set.add(año)
   }
-  return [...set].sort((a, b) => Number(b) - Number(a))
+  return conAnioActual(set)
 })
 
 const reunionesFiltradosDetalle = computed(() =>
@@ -1392,7 +1393,7 @@ const guardarAsistencia = async (a) => {
 // ─── Acciones ────────────────────────────────────────────────────
 const verDetalleArbitro = async (a) => {
   arbitroSeleccionado.value = { id: a.id, apellido: a.apellido, nombre: a.nombre }
-  filtroAñoDetalle.value = ''
+  filtroAñoDetalle.value = anioActual()
   mostrarModalDetalle.value = true
   reunionesArbitroSeleccionado.value = []
   cargandoHistorial.value = true

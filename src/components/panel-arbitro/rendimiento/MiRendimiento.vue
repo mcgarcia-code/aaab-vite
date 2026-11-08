@@ -210,6 +210,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, onMounted, computed, defineComponent, h } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '../../../api/auth'
@@ -333,7 +334,7 @@ const datosArbitro = ref({ id: null, nombre: '', apellido: '' })
 const reuniones    = ref([])
 const examenes     = ref([])
 const cargando     = ref(true)
-const filtroAño    = ref('')
+const filtroAño    = ref(anioActual())
 
 // ═══════════ MAPPERS ═══════════
 const mapearFilasReuniones = (filas) => {
@@ -466,7 +467,7 @@ const añosDisponibles = computed(() => {
     const a = añoDeFecha(ex.fecha_examen)
     if (a) set.add(a)
   }
-  return [...set].sort((a, b) => Number(b) - Number(a))
+  return conAnioActual(set)
 })
 
 const reunionesFiltradas = computed(() =>

@@ -321,6 +321,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
 import { api } from '@/api/api';
 import ExcelJS from 'exceljs'
@@ -337,7 +338,7 @@ const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const pedidos = ref([]);
 const cargando = ref(false);
 
-const filtros = reactive({ arbitro: '', prenda: '', estado: '', fecha: '', anio: '' });
+const filtros = reactive({ arbitro: '', prenda: '', estado: '', fecha: '', anio: anioActual() });
 const mostrarFiltrosMobile = ref(false);
 
 const paginaActual = ref(1);
@@ -373,7 +374,7 @@ const aniosDisponibles = computed(() => {
     const anio = extraerAnio(p.fecha_creacion)
     if (anio) anios.add(anio)
   })
-  return [...anios].sort((a, b) => b.localeCompare(a))
+  return conAnioActual(anios)
 });
 
 const pedidosFiltrados = computed(() => {
@@ -471,7 +472,7 @@ const limpiarFiltros = () => {
   filtros.prenda = '';
   filtros.estado = '';
   filtros.fecha = '';
-  filtros.anio = '';
+  filtros.anio = anioActual();
 };
 
 const obtenerClaseEstado = (estado) => {

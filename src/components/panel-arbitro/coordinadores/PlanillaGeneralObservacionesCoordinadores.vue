@@ -240,6 +240,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'
@@ -259,7 +260,7 @@ const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
 const cargando = ref(true)
 const soloActivos = ref(false)
 const busqueda = ref('')
-const filtroAnio = ref('')
+const filtroAnio = ref(anioActual())
 
 const arbitros = ref([])
 const grupos = ref([])
@@ -443,7 +444,7 @@ const aniosDisponibles = computed(() => {
     const anio = (o.fecha_partido || '').substring(0, 4)
     if (anio) set.add(anio)
   })
-  return [...set].sort((a, b) => b.localeCompare(a))
+  return conAnioActual(set)
 })
 
 const observacionesPorArbitro = computed(() => {

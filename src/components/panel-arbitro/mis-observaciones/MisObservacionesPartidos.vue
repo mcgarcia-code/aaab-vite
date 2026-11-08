@@ -149,6 +149,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, computed, onMounted, inject } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
@@ -164,7 +165,7 @@ useHead({
 
 const observaciones = ref([])
 const cargando = ref(false)
-const filtroAnio = ref('')
+const filtroAnio = ref(anioActual())
 
 // Torneos: se resuelve id -> nombre (reemplaza la competencia que venía del Excel)
 const torneos = ref([])
@@ -201,7 +202,7 @@ const aniosDisponibles = computed(() => {
     const anio = (o.fecha_partido || '').substring(0, 4)
     if (anio) set.add(anio)
   })
-  return [...set].sort((a, b) => b.localeCompare(a))
+  return conAnioActual(set)
 })
 
 // El backend (obtenerRendimientoArbitro) ya devuelve SOLO las observaciones aprobadas

@@ -337,7 +337,7 @@
               <i class="bi bi-person-video3 me-1"></i> ¿Quién dio la reunión?
             </h5>
             <span class="text-muted small d-block mt-1">
-              {{ mesDisertantes ? etiquetaMes(mesDisertantes) : 'Todos los meses' }} · {{ filasDisertantesFiltradas.length }} reuniones
+              {{ mesDisertantes ? nombreMes(mesDisertantes) : 'Todos los meses' }} {{ anioDisertantes }} · {{ filasDisertantesFiltradas.length }} reuniones
               <span v-if="sinAsignarDisertantes" class="ms-1 badge rounded-pill bg-warning text-dark">{{ sinAsignarDisertantes }} sin asignar</span>
             </span>
           </div>
@@ -350,7 +350,15 @@
               aria-label="Filtrar por mes"
             >
               <option value="">Todos los meses</option>
-              <option v-for="m in mesesDisertantes" :key="m" :value="m">{{ etiquetaMes(m) }}</option>
+              <option v-for="m in MESES_DISERTANTES" :key="m.valor" :value="m.valor">{{ m.nombre }}</option>
+            </select>
+            <select
+              v-model="anioDisertantes"
+              class="form-select shadow-sm border-secondary-subtle fw-semibold select-anio"
+              :disabled="cargandoInicial || cargandoDisertantes"
+              aria-label="Filtrar por año"
+            >
+              <option v-for="a in aniosDisertantes" :key="a" :value="a">{{ a }}</option>
             </select>
             <button
               @click="exportarExcelDisertantes"
@@ -541,6 +549,7 @@
 </template>
 
 <script setup>
+import { anioActual, conAnioActual } from '@/composables/useAnioActual'
 import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
@@ -636,7 +645,7 @@ const registrosPorPagina   = 10
 const mostrarFiltrosMobile = ref(false)
 const mostrarModalDetalle  = ref(false)
 const arbitroSeleccionado  = ref({ id: null, apellido: '', nombre: '' })
-const filtroAñoDetalle     = ref('')
+const filtroAñoDetalle     = ref(anioActual())
 
 const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '', asistencia: '' })
 
@@ -759,7 +768,7 @@ const añosDetalleArbitro = computed(() => {
     const año = añoDeFecha(ex.fecha_reunion)
     if (año) set.add(año)
   }
-  return [...set].sort((a, b) => Number(b) - Number(a))
+  return conAnioActual(set)
 })
 
 const reunionesFiltradosDetalle = computed(() =>
@@ -947,7 +956,7 @@ const guardarAsistencia = async (a) => {
 // ─── Acciones ────────────────────────────────────────────────────
 const verDetalleArbitro = async (a) => {
   arbitroSeleccionado.value = { id: a.id, apellido: a.apellido, nombre: a.nombre }
-  filtroAñoDetalle.value = ''
+  filtroAñoDetalle.value = anioActual()
   mostrarModalDetalle.value = true
   reunionesArbitroSeleccionado.value = []
   cargandoHistorial.value = true
@@ -976,10 +985,13 @@ const recargar = async () => {
 }
 
 // ─── ¿Quién dio la reunión? ───────────────────────────────────────
-// Lista por mes las reuniones aprobadas de todos los grupos, una fila por
+// Lista por mes y año las reuniones aprobadas de todos los grupos, una fila por
 // reunión + grupo (las de "todos los grupos" van en una sola fila, grupo 0),
-// para asignar el árbitro que la dio y exportarlo a liquidación.
-const mesDisertantes          = ref(`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`)
+// para asignar el árbitro que la dio y exportarlo a liquidación. Tiene su propio
+// listado de reuniones porque puede consultar años anteriores.
+const anioDisertantes         = ref(anioActual())
+const mesDisertantes          = ref(String(new Date().getMonth() + 1).padStart(2, '0'))
+const reunionesDisertantes    = ref([])
 const cargandoDisertantes     = ref(false)
 const arbitrosDisertantesBase = ref([])
 const disertantes             = reactive({})
@@ -987,16 +999,18 @@ const guardandoDisertante     = reactive({})
 const disertanteGuardadoOk    = reactive({})
 
 const NOMBRES_MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-const claveMes = (fechaEvento) => String(fechaEvento || '').substring(0, 7)
-const etiquetaMes = (clave) => {
-  const [anio, mes] = String(clave).split('-')
-  return `${NOMBRES_MESES[Number(mes) - 1] ?? mes} ${anio}`
-}
+const MESES_DISERTANTES = NOMBRES_MESES.map((nombre, i) => ({ valor: String(i + 1).padStart(2, '0'), nombre }))
+const mesDeFecha = (fechaEvento) => String(fechaEvento || '').substring(5, 7)
+const nombreMes = (mes) => NOMBRES_MESES[Number(mes) - 1] ?? ''
+const aniosDisertantes = computed(() => {
+  const actual = Number(anioActual())
+  return conAnioActual([0, 1, 2, 3].map(n => String(actual - n)))
+})
 const claveDisertante = (idEvento, idGrupo) => `${idEvento}|${idGrupo}`
 
 const filasDisertantes = computed(() => {
   const filas = []
-  const aprobadas = arrReuniones.value.filter(r => !r.aprobacion || r.aprobacion === 'aprobada')
+  const aprobadas = reunionesDisertantes.value.filter(r => !r.aprobacion || r.aprobacion === 'aprobada')
   for (const r of aprobadas) {
     const idsGrupos = r.todosLosGrupos ? [0] : (r.idsGrupos || []).map(Number)
     for (const idGrupo of idsGrupos) {
@@ -1014,16 +1028,10 @@ const filasDisertantes = computed(() => {
   )
 })
 
-const mesesDisertantes = computed(() => {
-  const claves = new Set(filasDisertantes.value.map(f => claveMes(f.reunion.fecha_evento)).filter(Boolean))
-  if (mesDisertantes.value) claves.add(mesDisertantes.value)
-  return [...claves].sort((a, b) => b.localeCompare(a))
-})
-
 const filasDisertantesFiltradas = computed(() =>
   !mesDisertantes.value
     ? filasDisertantes.value
-    : filasDisertantes.value.filter(f => claveMes(f.reunion.fecha_evento) === mesDisertantes.value)
+    : filasDisertantes.value.filter(f => mesDeFecha(f.reunion.fecha_evento) === mesDisertantes.value)
 )
 
 const sinAsignarDisertantes = computed(() =>
@@ -1043,16 +1051,21 @@ const nombreArbitroDisertante = (idArbitro) =>
   opcionesArbitrosDisertantes.value.find(a => a.id === Number(idArbitro))?.etiqueta ?? ''
 
 const cargarDisertantes = async () => {
+  const anio = Number(anioDisertantes.value)
   cargandoDisertantes.value = true
   try {
-    const [resDis, resArb] = await Promise.all([
-      api.get({ entity: 'reuniones', action: 'obtenerDisertantesReuniones' }),
+    const [resReu, resDis, resArb] = await Promise.all([
+      api.get({ entity: 'reuniones', action: 'obtenerReuniones', payload: { anio } }),
+      api.get({ entity: 'reuniones', action: 'obtenerDisertantesReuniones', payload: { anio } }),
       arbitrosDisertantesBase.value.length
         ? Promise.resolve(null)
         : api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: false } }),
     ])
     if (resArb && (resArb.ok || resArb.success) && Array.isArray(resArb.payload)) arbitrosDisertantesBase.value = resArb.payload
+    if (Number(anioDisertantes.value) !== anio) return
+    if (!resReu?.ok) throw new Error(resReu?.message || 'No se pudieron cargar las reuniones')
     if (!resDis?.ok) throw new Error(resDis?.message || 'No se pudieron cargar los árbitros asignados')
+    reunionesDisertantes.value = (resReu.payload || []).filter(r => r.categoria === 'reunion')
     Object.keys(disertantes).forEach(k => delete disertantes[k])
     for (const d of (resDis.payload || [])) disertantes[claveDisertante(d.id_evento, d.id_grupo)] = Number(d.id_arbitro)
   } catch (e) {
@@ -1119,10 +1132,12 @@ const exportarExcelDisertantes = async () => {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `Reuniones_disertantes_${mesDisertantes.value || 'todos_los_meses'}.xlsx`
+  link.download = `Reuniones_disertantes_${anioDisertantes.value}${mesDisertantes.value ? '-' + mesDisertantes.value : ''}.xlsx`
   link.click()
   URL.revokeObjectURL(url)
 }
+
+watch(anioDisertantes, () => cargarDisertantes())
 
 // ─── Misc ────────────────────────────────────────────────────────
 const limpiarFiltros = () => Object.keys(filtros).forEach(k => (filtros[k] = ''))
@@ -1187,8 +1202,10 @@ onMounted(async () => {
   .select-reunion { flex-basis: 380px; max-width: 380px; }
 }
 .select-mes { flex: 1 1 auto; min-width: 0; font-size: 1rem; }
+.select-anio { flex: 0 0 100px; font-size: 1rem; }
 @media (min-width: 576px) {
-  .select-mes { flex: 0 0 200px; font-size: 0.875rem; }
+  .select-mes { flex: 0 0 170px; font-size: 0.875rem; }
+  .select-anio { font-size: 0.875rem; }
 }
 .select-disertante { width: 190px; max-width: 190px; font-size: 0.75rem; }
 .radio-presente { accent-color: #198754; }
