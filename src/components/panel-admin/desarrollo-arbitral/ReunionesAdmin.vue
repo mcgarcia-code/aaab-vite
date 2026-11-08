@@ -28,7 +28,7 @@
           <select
             v-model="reunionSeleccionada"
             @change="onReunionSeleccionada"
-            class="form-select py-2 small shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion mt-2 mt-md-0"
+            class="form-select small shadow-sm border-secondary-subtle fw-semibold text-truncate select-reunion control-encabezado mt-2 mt-md-0"
             :disabled="cargandoInicial || cargandoArbitros"
             aria-label="Elegir reunión"
           >
@@ -39,7 +39,7 @@
           </select>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white flex-shrink-0">
+            <div class="form-check form-switch d-flex align-items-center gap-2 m-0 border rounded px-3 py-2 shadow-sm bg-white flex-shrink-0 control-encabezado">
               <input
                 class="form-check-input"
                 type="checkbox"
@@ -52,10 +52,10 @@
                 Solo activos
               </label>
             </div>
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2 flex-shrink-0" aria-label="Mostrar filtros">
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2 flex-shrink-0 control-encabezado" aria-label="Mostrar filtros">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 flex-shrink-0" aria-label="Limpiar filtros">
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 flex-shrink-0 control-encabezado" aria-label="Limpiar filtros">
               <span class="material-icons text-dark fs-6">filter_alt_off</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
             </button>
@@ -1174,6 +1174,7 @@ onMounted(async () => {
 .fila-ausente            { background-color: #f9fafb !important; }
 .fila-ausente  .col-fija { background-color: #f9fafb !important; }
 .texto-creacion { font-size: 0.75rem; }
+.control-encabezado { height: 40px; }
 .select-reunion { width: 100%; min-width: 0; }
 @media (min-width: 768px) {
   .select-reunion { flex: 0 1 300px; max-width: 300px; }
