@@ -361,7 +361,7 @@ watch(
   { immediate: true }
 )
 
-// ─── Familiares en clubes (tabla arbitros_familiares) ──────────────
+// ─── Familiares en clubes (registro_arbitro.familiares) ────────────
 const tieneFamiliares = ref('no')
 const familiares = ref([])
 const intentoGuardar = ref(false)

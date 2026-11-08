@@ -1,4 +1,5 @@
-// Familiares del árbitro que juegan en algún club (tabla arbitros_familiares).
+// Familiares del árbitro que juegan en algún club. Se guardan en registro_arbitro:
+// tiene_familiares (SI/NO) y familiares (JSON con la lista de abajo).
 // Cada fila: { idClub, categorias: ['Menores A', ...], parentesco }
 // Se usa en SeccionFamiliares.vue, RegistroArbitro, PanelDisponibilidad y Legajos.
 
