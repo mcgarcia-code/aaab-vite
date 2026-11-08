@@ -66,6 +66,61 @@
           </div>
         </div>
       </div>
+
+      <!-- PLANILLA DE NOTAS -->
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
+          <div class="border-start border-danger border-5 ps-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+              <i class="bi bi-table me-1"></i> Planilla de notas
+            </h4>
+            <span class="text-muted small d-block mt-1">{{ alumnosPlanilla.length }} alumnos regulares en {{ anio }} · {{ columnasPlanilla.length }} exámenes</span>
+          </div>
+          <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none" style="max-width: 260px;" placeholder="BUSCAR ALUMNO O DNI..." aria-label="Buscar alumno">
+        </div>
+        <div class="card-body p-0 p-md-3">
+          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span></div>
+          <div v-else-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
+          <div v-else class="table-responsive border rounded shadow-sm">
+            <table class="table table-hover table-bordered align-middle mb-0 text-nowrap planilla" style="font-size: 0.78rem;">
+              <thead class="table-light">
+                <tr>
+                  <th class="py-2 ps-3 text-uppercase text-muted col-alumno">Alumno</th>
+                  <th class="py-2 text-center text-uppercase text-muted">Curso</th>
+                  <th v-for="e in columnasPlanilla" :key="'th-' + e.id" class="py-2 text-center text-muted col-examen" :title="e.clase ? e.titulo + ' · ' + e.clase : e.titulo">
+                    <div class="fw-bold text-dark text-truncate">{{ e.titulo }}</div>
+                    <div class="fw-normal" style="font-size: 0.68rem;">{{ fechaDMA(e.fecha) }}<template v-if="e.online"> · online</template></div>
+                  </th>
+                  <th class="py-2 text-center text-uppercase text-muted">Aprobados</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="a in alumnosPlanilla" :key="'pl-' + a.id">
+                  <td class="ps-3 col-alumno">
+                    <div class="fw-bold text-dark text-uppercase">{{ a.apellido }}, {{ a.nombre }}</div>
+                    <div class="text-muted" style="font-size: 0.68rem;">DNI {{ a.dni }}</div>
+                  </td>
+                  <td class="text-center"><span class="badge" :class="MODALIDADES_CURSO[a.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</span></td>
+                  <td v-for="e in columnasPlanilla" :key="'c-' + a.id + '-' + e.id" class="text-center">
+                    <span v-if="!correspondeExamen(e, a)" class="text-muted opacity-50" title="No corresponde a su curso">·</span>
+                    <template v-else-if="celda(e, a)">
+                      <span v-if="celda(e, a).ausente" class="badge bg-secondary">AUS</span>
+                      <span v-else-if="celda(e, a).nota !== null" class="fw-bold" :class="aprobadoCelda(e, a) ? 'text-success' : 'text-danger'">
+                        {{ textoCelda(e, a) }}
+                      </span>
+                      <button v-if="celda(e, a).rendidoOnline" type="button" class="btn btn-link btn-sm p-0 ms-1 text-danger align-baseline" :disabled="descargandoPlanilla === a.id + '-' + e.id" title="Descargar PDF" :aria-label="'PDF de ' + a.apellido" @click="descargarPdfPlanilla(e, a)">
+                        <i class="bi bi-file-earmark-pdf"></i>
+                      </button>
+                    </template>
+                    <span v-else class="text-muted">—</span>
+                  </td>
+                  <td class="text-center fw-bold text-dark">{{ aprobadosAlumno(a) }} / {{ columnasPlanilla.filter(e => correspondeExamen(e, a)).length }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- MODAL EXAMEN -->
@@ -224,13 +279,74 @@ const examenesFiltrados = computed(() =>
 const cargarExamenes = async () => {
   cargando.value = true
   try {
-    const res = await api.get({ entity: 'examenes_curso_arbitro', action: 'obtenerExamenesCurso', payload: { anio: anio.value } })
+    const [res, resPlanilla] = await Promise.all([
+      api.get({ entity: 'examenes_curso_arbitro', action: 'obtenerExamenesCurso', payload: { anio: anio.value } }),
+      api.get({ entity: 'examenes_curso_arbitro', action: 'obtenerPlanillaNotasCurso', payload: { anio: anio.value } }),
+    ])
     if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los exámenes')
+    if (!resPlanilla?.ok) throw new Error(resPlanilla?.message || 'No se pudo cargar la planilla de notas')
     examenes.value = res.payload || []
+    planilla.value = resPlanilla.payload || { alumnos: [], notas: [] }
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
   } finally {
     cargando.value = false
+  }
+}
+
+// ─── Planilla de notas (alumnos x exámenes) ──────────────────────
+const planilla = ref({ alumnos: [], notas: [] })
+const filtroAlumno = ref('')
+const descargandoPlanilla = ref(null)
+
+const normalizarTexto = (v) => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+
+const columnasPlanilla = computed(() =>
+  [...examenesFiltrados.value].sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || a.id - b.id)
+)
+
+const alumnosPlanilla = computed(() => {
+  const texto = normalizarTexto(filtroAlumno.value)
+  return planilla.value.alumnos.filter(a =>
+    (!filtroCurso.value || a.modalidadCurso === filtroCurso.value) &&
+    (!texto || normalizarTexto(`${a.apellido} ${a.nombre} ${a.dni}`).includes(texto))
+  )
+})
+
+const indiceNotas = computed(() => {
+  const mapa = {}
+  planilla.value.notas.forEach(n => { mapa[`${n.idExamen}-${n.idAlumno}`] = n })
+  return mapa
+})
+
+const celda = (e, a) => indiceNotas.value[`${e.id}-${a.id}`] || null
+const correspondeExamen = (e, a) => e.curso === 'ambos' || e.curso === a.modalidadCurso
+
+const aprobadoCelda = (e, a) => {
+  const n = celda(e, a)
+  if (!n || n.ausente || n.nota === null) return false
+  return (n.nota / (e.notaMaxima || 100)) * 100 >= e.porcentajeAprobacion
+}
+
+const textoCelda = (e, a) => {
+  const n = celda(e, a)
+  return e.online ? `${formatoNota(n.nota / (e.notaMaxima || 100) * 100)}%` : formatoNota(n.nota)
+}
+
+const aprobadosAlumno = (a) => columnasPlanilla.value.filter(e => correspondeExamen(e, a) && aprobadoCelda(e, a)).length
+
+const descargarPdfPlanilla = async (e, a) => {
+  descargandoPlanilla.value = `${a.id}-${e.id}`
+  try {
+    await api.getFile({
+      entity: 'examen_online_curso_arbitro',
+      action: 'descargarPdfExamenCurso',
+      payload: { idExamen: e.id, idAlumno: a.id },
+    }, `examen_curso_${a.apellido}_${a.dni}.pdf`)
+  } catch (err) {
+    notificar({ titulo: 'Error', mensaje: err.message, tipo: 'danger' })
+  } finally {
+    descargandoPlanilla.value = null
   }
 }
 
@@ -402,4 +518,7 @@ onMounted(() => {
 .tarjeta-examen { background: #fff; }
 .fila-nota { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
 .min-w-0 { min-width: 0; }
+.planilla .col-alumno { position: sticky; left: 0; background: #fff; z-index: 1; min-width: 200px; }
+.planilla thead .col-alumno { background: #f8f9fa; }
+.planilla .col-examen { max-width: 160px; min-width: 110px; }
 </style>
