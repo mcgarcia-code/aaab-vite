@@ -187,7 +187,7 @@
             <div class="col-12 col-md-4">
               <span class="form-label small fw-bold text-dark d-block">Categorías * <span class="fw-normal text-muted">(podés elegir más de una)</span></span>
               <div v-if="!form.idClub" class="small text-muted fst-italic p-2 bg-light rounded border">Elegí primero el club</div>
-              <div v-else-if="!categoriasPorRama.length" class="small text-muted fst-italic p-2 bg-light rounded border">El club no tiene categorías activas</div>
+              <div v-else-if="!categoriasPorRama.length" class="small text-muted fst-italic p-2 bg-light rounded border">{{ form.genero ? 'El club no tiene categorías activas para tu rama' : 'El club no tiene categorías activas' }}</div>
               <div v-else class="lista-categorias border rounded p-2" :class="{ 'border-danger': intentoEnviar && errores.idsCategorias }">
                 <div v-for="grupo in categoriasPorRama" :key="grupo.rama" class="mb-1">
                   <div class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
@@ -239,7 +239,7 @@ import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
-import { obtenerDatosClubes } from '@/composables/useOpcionesHandball'
+import { obtenerDatosClubes, ramasSegunGenero } from '@/composables/useOpcionesHandball'
 import { validarFamiliares, familiaresParaEnviar } from '@/composables/useFamiliares'
 
 useHead({
@@ -311,7 +311,9 @@ const localidadesFiltradas = computed(() =>
 // Solo las categorías de los equipos activos del club elegido (equipos_larry)
 const categoriasPorRama = computed(() => {
   const grupos = {}
-  for (const c of categorias.value.filter(c => c.idClub === form.idClub)) {
+  // Solo la rama del género declarado (X / otro / sin elegir: ambas)
+  const ramas = ramasSegunGenero(form.genero)
+  for (const c of categorias.value.filter(c => c.idClub === form.idClub && ramas.includes(c.rama))) {
     const rama = c.rama || 'otras'
     if (!grupos[rama]) grupos[rama] = { rama, etiqueta: RAMAS[rama] || 'Otras', categorias: [] }
     grupos[rama].categorias.push(c)
@@ -388,6 +390,12 @@ watch(form, () => { if (intentoEnviar.value) validarFormulario() }, { deep: true
 // Limpiezas dependientes
 watch(() => form.provincia, () => { form.localidad = '' })
 watch(() => form.idClub, () => { form.idsCategorias = [] })
+// Si cambia el género, se destildan las categorías de la rama que ya no corresponde
+watch(() => form.genero, (genero) => {
+  const ramas = ramasSegunGenero(genero)
+  const permitidas = categorias.value.filter(c => ramas.includes(c.rama)).map(c => c.id)
+  form.idsCategorias = form.idsCategorias.filter(id => permitidas.includes(id))
+})
 watch(() => form.juegaHandball, (valor) => {
   if (valor !== 'si') {
     form.idClub = ''

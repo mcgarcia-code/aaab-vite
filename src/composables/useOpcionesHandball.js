@@ -19,6 +19,15 @@ export const unirCategorias = (lista) =>
 
 export const RAMAS_HANDBALL = RAMAS
 
+// Ramas que puede jugar el árbitro según el género declarado:
+// masculino -> M, femenino -> F, X / otro / sin declarar -> ambas.
+export const ramasSegunGenero = (genero) => {
+  const g = String(genero || '').toLowerCase()
+  if (g === 'masculino') return ['M']
+  if (g === 'femenino') return ['F']
+  return ['M', 'F']
+}
+
 // Un único pedido compartido (y cacheado) de clubes y categorías para toda la app:
 // { clubes, categorias } = solo Juveniles/Junior/Mayores (donde juega el árbitro)
 // { clubesFamiliares, categoriasFamiliares } = todas las categorías (familiares)
@@ -42,10 +51,10 @@ export const obtenerDatosClubes = () => {
 // Las categorías salen de los equipos activos de cada club (equipos_larry),
 // vía registro/obtenerDatosRegistro. Ambos campos se guardan por NOMBRE.
 //
-// obtenerClub / obtenerCategorias: funciones que devuelven el valor actual del
-// formulario (el club y el texto de categorías), para filtrar por club y para
-// no perder valores viejos cargados a mano que no estén en la lista.
-export function useOpcionesHandball(obtenerClub, obtenerCategorias) {
+// obtenerClub / obtenerCategorias / obtenerGenero: funciones que devuelven el
+// valor actual del formulario (club, texto de categorías y género), para filtrar
+// por club y rama, y para no perder valores viejos que no estén en la lista.
+export function useOpcionesHandball(obtenerClub, obtenerCategorias, obtenerGenero = () => '') {
   const clubes = ref([])
   const categorias = ref([])
   const cargando = ref(false)
@@ -80,7 +89,8 @@ export function useOpcionesHandball(obtenerClub, obtenerCategorias) {
   // [{ etiqueta: 'Masculino', categorias: ['Juveniles A', ...] }, ...]
   const categoriasPorRama = computed(() => {
     const grupos = {}
-    for (const c of categorias.value.filter(c => c.idClub === idClubElegido.value)) {
+    const ramas = ramasSegunGenero(obtenerGenero())
+    for (const c of categorias.value.filter(c => c.idClub === idClubElegido.value && ramas.includes(c.rama))) {
       const etiqueta = RAMAS[c.rama] || 'Otras'
       if (!grupos[etiqueta]) grupos[etiqueta] = { etiqueta, categorias: [] }
       grupos[etiqueta].categorias.push(c.nombre)

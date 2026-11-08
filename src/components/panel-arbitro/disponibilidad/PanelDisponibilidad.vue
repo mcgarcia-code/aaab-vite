@@ -277,6 +277,7 @@ const {
 } = useOpcionesHandball(
   () => arbitro.value.donde_juega,
   () => arbitro.value.categoria_handball,
+  () => arbitro.value.genero,
 )
 
 watch(errorOpcionesHandball, (mensaje) => {

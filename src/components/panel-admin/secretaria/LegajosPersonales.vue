@@ -864,6 +864,7 @@ const formModal = ref(formModalVacio())
 const handball = useOpcionesHandball(
   () => formModal.value.donde_juega,
   () => formModal.value.categoria_handball,
+  () => formModal.value.genero,
 )
 
 const cambioJuegaHandball = () => {
