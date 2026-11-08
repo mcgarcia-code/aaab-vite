@@ -110,6 +110,8 @@
                   <th class="py-3 text-center text-uppercase text-muted">Juega</th>
                   <th class="py-3 text-center text-uppercase text-muted">Club</th>
                   <th class="py-3 text-center text-uppercase text-muted">Cat</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Familiares / DT</th>
+                  <th class="py-3 text-center text-uppercase text-muted">Detalle Familiares / DT</th>
                   <th class="py-3 text-center text-uppercase text-muted">Observaciones</th>
                 </tr>
                 <tr class="bg-light">
@@ -164,6 +166,12 @@
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.juega_handball" class="form-control form-control-sm shadow-none"></td>
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.donde_juega" class="form-control form-control-sm shadow-none"></td>
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.categoria_handball" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2">
+                    <select v-model="filtros.tiene_familiares" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <option value="">TODOS</option><option value="SI">SÍ</option><option value="NO">NO</option>
+                    </select>
+                  </td>
+                  <td class="p-2 border-bottom border-2"><input v-model="filtros.familiares_texto" class="form-control form-control-sm shadow-none"></td>
                   <td class="p-2 border-bottom border-2"><input v-model="filtros.observaciones" class="form-control form-control-sm shadow-none"></td>
                 </tr>
               </thead>
@@ -205,6 +213,10 @@
                   <td class="text-center text-dark">{{ a.juega_handball }}</td>
                   <td class="text-dark">{{ a.donde_juega }}</td>
                   <td class="text-dark">{{ a.categoria_handball }}</td>
+                  <td class="text-center text-dark">{{ a.tiene_familiares }}</td>
+                  <td class="text-dark">
+                    <span class="d-inline-block text-truncate" style="max-width: 260px; cursor: help;" :title="a.familiares_texto">{{ a.familiares_texto || '-' }}</span>
+                  </td>
 
                   <td class="text-dark position-relative">
                     <span class="d-inline-block text-truncate observacion-texto" style="max-width: 300px;">
@@ -215,7 +227,7 @@
                 </tr>
 
                 <tr v-if="arbitrosPaginados.length === 0">
-                  <td colspan="22" class="text-center py-5 text-muted bg-white border-0">
+                  <td colspan="24" class="text-center py-5 text-muted bg-white border-0">
                     <span class="material-icons d-block mb-2 fs-1 opacity-50">search_off</span>
                     <p class="m-0 fw-bold">No se encontraron registros.</p>
                   </td>
@@ -312,6 +324,7 @@ import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
 import { api } from '@/api/api';
 import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
+import { textoFamiliares } from '@/composables/useFamiliares'
 
 useHead({
   title: 'Designaciones de Árbitros| AAAB',
@@ -337,6 +350,7 @@ const filtros = reactive({
   grupo: '', subgrupo: '', zona: '', movilidad: '',
   disponibilidad_sabado: '', disponibilidad_domingo: '',
   juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: '',
+  tiene_familiares: '', familiares_texto: '',
   designado_sabado: '',
   designado_domingo: '',
 });
@@ -393,10 +407,15 @@ const registrosPorPagina = 8;
 const cargarDatos = async () => {
   cargando.value = true;
   try {
-    const {payload} = await api.get({
-      entity: "arbitros",
-      action:"getArbitros"
-    });
+    const [{ payload }, resFamiliares] = await Promise.all([
+      api.get({ entity: "arbitros", action: "getArbitros" }),
+      // Familiares / DT: endpoint aparte, solo para roles de administración
+      api.get({ entity: "familiares", action: "obtenerFamiliaresTodos", payload: {} }).catch(() => null),
+    ]);
+    const familiaresPorArbitro = {};
+    if (resFamiliares?.ok) {
+      for (const f of resFamiliares.payload || []) familiaresPorArbitro[f.idArbitro] = f.familiares;
+    }
 
     let sancionesPayload = [];
     try {
@@ -428,7 +447,9 @@ const cargarDatos = async () => {
             sancion_vigente: sancion && sancion.estado_dinamico === 1,
             sancion_proceso: sancion && sancion.estado_dinamico === 3,
             sancion_hasta: sancion ? sancion.hasta_formateada : null,
-            sancion_indefinida: sancion ? sancion.es_indefinido == 1 : false
+            sancion_indefinida: sancion ? sancion.es_indefinido == 1 : false,
+            tiene_familiares: (familiaresPorArbitro[a.id] || []).length ? 'SI' : 'NO',
+            familiares_texto: textoFamiliares(familiaresPorArbitro[a.id] || []),
           };
         })
       : [];
@@ -585,7 +606,7 @@ const arbitrosFiltrados = computed(() => {
       if (!filtros[key] || key === 'licencia' || key === 'apto_medico' || key === 'designado_sabado' || key === 'designado_domingo') return true;
       if (key === 'es_activo') return String(a[key]) === filtros[key];
       // Grupo y subgrupo salen de un select: comparacion exacta.
-      if (key === 'grupo' || key === 'subgrupo') return normalizarTexto(a[key]) === normalizarTexto(filtros[key]);
+      if (key === 'grupo' || key === 'subgrupo' || key === 'tiene_familiares') return normalizarTexto(a[key]) === normalizarTexto(filtros[key]);
       return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
     });
 
@@ -660,6 +681,9 @@ const exportarExcel = async () => {
     DOM_HORA: `${a.disponibilidad_domingo_desde} a ${a.disponibilidad_domingo_hasta}`,
     JUEGA: a.juega_handball,
     CLUB: a.donde_juega,
+    CATEGORIA: a.categoria_handball,
+    FAMILIARES_DT: a.tiene_familiares,
+    DETALLE_FAMILIARES_DT: a.familiares_texto,
     OBS: a.observaciones
   }))
 
