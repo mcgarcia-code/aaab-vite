@@ -31,6 +31,12 @@
           <div class="row g-2">
             <div class="col-12 col-md-4"><input v-model="filtros.texto" class="form-control form-control-sm shadow-none" placeholder="BUSCAR APELLIDO, NOMBRE, DNI O USUARIO..."></div>
             <div class="col-6 col-md-2">
+              <select v-model="filtros.modalidad" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">CURSO</option>
+                <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.corta.toUpperCase() }}</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
               <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="regular">REGULAR</option>
@@ -51,6 +57,7 @@
                   <tr>
                     <th class="py-3 ps-3 text-uppercase text-muted">#</th>
                     <th class="py-3 text-uppercase text-muted">Apellido y nombre</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Curso</th>
                     <th class="py-3 text-center text-uppercase text-muted">Estado</th>
                     <th class="py-3 text-center text-uppercase text-muted">DNI</th>
                     <th class="py-3 text-uppercase text-muted">Usuario</th>
@@ -65,6 +72,7 @@
                   <tr v-for="(a, i) in alumnosFiltrados" :key="a.id">
                     <td class="ps-3 text-muted fw-bold">{{ i + 1 }}</td>
                     <td class="fw-bold text-dark text-uppercase">{{ a.apellido }}, {{ a.nombre }}</td>
+                    <td class="text-center"><span class="badge" :class="MODALIDADES_CURSO[a.modalidad_curso]?.clase">{{ MODALIDADES_CURSO[a.modalidad_curso]?.corta }}</span></td>
                     <td class="text-center"><span class="badge" :class="ESTADOS_CURSO[a.estado]?.clase">{{ ESTADOS_CURSO[a.estado]?.etiqueta }}</span></td>
                     <td class="text-center text-dark">{{ a.dni }}</td>
                     <td class="text-dark">{{ a.usuario }}</td>
@@ -75,7 +83,7 @@
                     <td class="text-dark"><span class="d-inline-block text-truncate" style="max-width: 200px;" :title="textoDtClubes(a.dt_clubes)">{{ textoDtClubes(a.dt_clubes) || '-' }}</span></td>
                   </tr>
                   <tr v-if="!alumnosFiltrados.length">
-                    <td colspan="10" class="text-center py-5 text-muted border-0">
+                    <td colspan="11" class="text-center py-5 text-muted border-0">
                       <span class="material-icons d-block fs-1 mb-2 opacity-50">search_off</span>
                       <span class="fw-bold">No hay alumnos regulares para mostrar.</span>
                     </td>
@@ -89,7 +97,10 @@
                 <div class="card-body p-3 small text-dark">
                   <div class="d-flex justify-content-between align-items-start mb-1">
                     <span class="fw-bold text-uppercase" style="font-size: 1rem;">{{ a.apellido }}, {{ a.nombre }}</span>
-                    <span class="badge" :class="ESTADOS_CURSO[a.estado]?.clase">{{ ESTADOS_CURSO[a.estado]?.etiqueta }}</span>
+                    <span class="d-flex gap-1 flex-shrink-0">
+                      <span class="badge" :class="MODALIDADES_CURSO[a.modalidad_curso]?.clase">{{ MODALIDADES_CURSO[a.modalidad_curso]?.corta }}</span>
+                      <span class="badge" :class="ESTADOS_CURSO[a.estado]?.clase">{{ ESTADOS_CURSO[a.estado]?.etiqueta }}</span>
+                    </span>
                   </div>
                   <div><strong>DNI:</strong> {{ a.dni }} · <strong>Cel:</strong> {{ a.celular }}</div>
                   <div class="text-truncate"><strong>Email:</strong> {{ a.email }}</div>
@@ -113,7 +124,7 @@ import { ref, reactive, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import ExcelJS from 'exceljs'
 import { api } from '@/api/api'
-import { ESTADOS_CURSO, textoDtClubes } from '@/composables/useCursoArbitro'
+import { ESTADOS_CURSO, MODALIDADES_CURSO, textoDtClubes } from '@/composables/useCursoArbitro'
 
 useHead({ title: 'Alumnos Regulares | AAAB' })
 
@@ -122,7 +133,7 @@ const notificar = inject('notificar', (m) => alert(m.mensaje || m))
 const anioActual = new Date().getFullYear()
 const alumnos = ref([])
 const cargando = ref(false)
-const filtros = reactive({ texto: '', estado: '' })
+const filtros = reactive({ texto: '', estado: '', modalidad: '' })
 
 const normalizar = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 const textoJugador = (a) => (a.es_jugador === 'SI'
@@ -133,11 +144,12 @@ const alumnosFiltrados = computed(() => {
   const texto = normalizar(filtros.texto)
   return alumnos.value.filter(a =>
     (!filtros.estado || a.estado === filtros.estado) &&
+    (!filtros.modalidad || a.modalidad_curso === filtros.modalidad) &&
     (!texto || normalizar(`${a.apellido} ${a.nombre} ${a.dni} ${a.usuario}`).includes(texto))
   )
 })
 
-const limpiarFiltros = () => Object.assign(filtros, { texto: '', estado: '' })
+const limpiarFiltros = () => Object.assign(filtros, { texto: '', estado: '', modalidad: '' })
 
 const cargarDatos = async () => {
   cargando.value = true
@@ -157,13 +169,13 @@ const exportarExcel = async () => {
   const ws = wb.addWorksheet(`Regulares ${anioActual}`)
   ws.columns = [
     { header: 'Apellido', key: 'apellido', width: 18 }, { header: 'Nombre', key: 'nombre', width: 18 },
-    { header: 'Estado', key: 'estado', width: 16 }, { header: 'DNI', key: 'dni', width: 14 },
+    { header: 'Curso', key: 'curso', width: 14 }, { header: 'Estado', key: 'estado', width: 16 }, { header: 'DNI', key: 'dni', width: 14 },
     { header: 'Usuario', key: 'usuario', width: 28 }, { header: 'Email', key: 'email', width: 28 },
     { header: 'Celular', key: 'celular', width: 16 }, { header: 'Localidad', key: 'localidad', width: 18 },
     { header: 'Juega en', key: 'juega', width: 30 }, { header: 'DT en', key: 'dt', width: 30 },
   ]
   alumnosFiltrados.value.forEach(a => ws.addRow({
-    apellido: a.apellido, nombre: a.nombre, estado: ESTADOS_CURSO[a.estado]?.etiqueta || a.estado, dni: a.dni,
+    apellido: a.apellido, nombre: a.nombre, curso: MODALIDADES_CURSO[a.modalidad_curso]?.etiqueta || '', estado: ESTADOS_CURSO[a.estado]?.etiqueta || a.estado, dni: a.dni,
     usuario: a.usuario, email: a.email, celular: a.celular, localidad: a.nombre_localidad,
     juega: textoJugador(a), dt: textoDtClubes(a.dt_clubes),
   }))

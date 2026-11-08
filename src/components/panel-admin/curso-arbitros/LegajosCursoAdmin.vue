@@ -107,6 +107,9 @@
                         <button @click="abrirEstado(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Cambiar estado" aria-label="Cambiar estado">
                           <span class="material-icons" style="font-size:16px;">swap_horiz</span>
                         </button>
+                        <button @click="abrirHistorial(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial" aria-label="Historial">
+                          <span class="material-icons" style="font-size:16px;">history</span>
+                        </button>
                       </div>
                     </td>
                     <td class="text-dark fw-bold text-uppercase col-fija col-apellido">{{ l.apellido }}</td>
@@ -145,6 +148,9 @@
                     <button @click="abrirEditar(l)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
                     <button @click="abrirEstado(l)" class="btn btn-sm btn-outline-danger flex-fill fw-bold">
                       <i class="bi bi-arrow-left-right me-1"></i> Estado
+                    </button>
+                    <button @click="abrirHistorial(l)" class="btn btn-sm btn-outline-warning flex-fill fw-bold">
+                      <i class="bi bi-clock-history me-1"></i> Historial
                     </button>
                   </div>
                 </div>
@@ -200,6 +206,45 @@
           {{ guardando ? 'GUARDANDO...' : 'GUARDAR' }}
         </button>
       </template>
+    </ModalBase>
+
+    <!-- MODAL HISTORIAL -->
+    <ModalBase :show="mostrarHistorial" @close="mostrarHistorial = false" icono="history" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="720px">
+      <template #header>
+        <div class="text-center w-100">
+          <span class="fw-bold fs-5">Historial en el curso</span>
+          <div v-if="legajoHistorial" class="text-muted small mt-1 text-uppercase">{{ legajoHistorial.apellido }}, {{ legajoHistorial.nombre }} · DNI {{ legajoHistorial.dni }}</div>
+        </div>
+      </template>
+      <div v-if="cargandoHistorial" class="text-center py-4"><span class="spinner-border text-warning"></span></div>
+      <div v-else-if="historial" class="text-start">
+        <div class="row g-2 mb-3">
+          <div class="col-6 col-md-3"><div class="resumen-historial"><div class="valor">{{ historial.resumen.inscripciones }}</div><div class="etiqueta">Inscripciones</div></div></div>
+          <div class="col-6 col-md-3"><div class="resumen-historial"><div class="valor text-danger">{{ historial.resumen.bajas }}</div><div class="etiqueta">Bajas / abandonos</div></div></div>
+          <div class="col-6 col-md-3"><div class="resumen-historial"><div class="valor text-warning">{{ historial.resumen.desaprobados }}</div><div class="etiqueta">Desaprobado</div></div></div>
+          <div class="col-6 col-md-3"><div class="resumen-historial"><div class="valor" :class="historial.resumen.aprobado ? 'text-success' : 'text-muted'">{{ historial.resumen.aprobado ? 'Sí' : 'No' }}</div><div class="etiqueta">Aprobó</div></div></div>
+        </div>
+        <div v-if="historial.resumen.anios.length" class="small text-muted mb-3">Años en el curso: <strong class="text-dark">{{ historial.resumen.anios.join(', ') }}</strong></div>
+        <div v-if="!historial.eventos.length" class="text-muted small fst-italic">Sin movimientos registrados.</div>
+        <ul v-else class="linea-tiempo list-unstyled mb-0">
+          <li v-for="h in historial.eventos" :key="h.id" class="mb-3">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <span class="fw-bold text-dark small">{{ fechaHoraDMA(h.fecha) }}</span>
+              <span class="badge bg-light text-dark border">{{ EVENTOS_HISTORIAL[h.evento] || h.evento }}</span>
+              <span v-if="h.anio_curso" class="small text-muted">{{ MODALIDADES_CURSO[h.modalidad_curso]?.etiqueta || 'Curso' }} {{ h.anio_curso }}</span>
+            </div>
+            <div class="small mt-1">
+              <template v-if="h.estado_anterior">
+                <span class="badge" :class="ESTADOS_CURSO[h.estado_anterior]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[h.estado_anterior]?.etiqueta || h.estado_anterior }}</span>
+                <i class="bi bi-arrow-right mx-1"></i>
+              </template>
+              <span v-if="h.estado_nuevo" class="badge" :class="ESTADOS_CURSO[h.estado_nuevo]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[h.estado_nuevo]?.etiqueta || h.estado_nuevo }}</span>
+            </div>
+            <div v-if="h.motivo" class="small text-dark mt-1"><strong>Motivo:</strong> {{ h.motivo }}</div>
+            <div class="small text-muted">Por: {{ h.responsable }}</div>
+          </li>
+        </ul>
+      </div>
     </ModalBase>
 
     <!-- MODAL CAMBIO DE ESTADO -->
@@ -259,8 +304,9 @@ import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import FormularioCursoArbitro from '@/components/FormularioCursoArbitro.vue'
 import {
-  ESTADOS_CURSO, GENEROS_CURSO, formularioCursoVacio, formularioDesdeLegajo, validarFormularioCurso, payloadCurso, textoDtClubes,
+  ESTADOS_CURSO, GENEROS_CURSO, MODALIDADES_CURSO, formularioCursoVacio, formularioDesdeLegajo, validarFormularioCurso, payloadCurso, textoDtClubes,
 } from '@/composables/useCursoArbitro'
+import { fechaHoraDMA } from '@/utils/fechas'
 
 useHead({ title: 'Legajos del Curso | AAAB' })
 
@@ -271,6 +317,7 @@ const toast = inject('toast', (m) => notificar(m))
 const SI_NO = [{ valor: 'SI', etiqueta: 'SÍ' }, { valor: 'NO', etiqueta: 'NO' }]
 const COLUMNAS = [
   { id: 'estado', label: 'Estado', centro: true, opciones: Object.entries(ESTADOS_CURSO).map(([valor, e]) => ({ valor, etiqueta: e.etiqueta.toUpperCase() })) },
+  { id: 'modalidad_curso', label: 'Curso', centro: true, opciones: Object.entries(MODALIDADES_CURSO).map(([valor, m]) => ({ valor, etiqueta: m.corta.toUpperCase() })) },
   { id: 'anio_curso', label: 'Año', centro: true },
   { id: 'dni', label: 'DNI', centro: true },
   { id: 'usuario', label: 'Usuario' },
@@ -294,7 +341,7 @@ const COLUMNAS = [
   { id: 'fecha_registro', label: 'F. Inscripción' },
   { id: 'observaciones', label: 'Observaciones', largo: true },
 ]
-const CAMPOS_EXACTOS = ['estado', 'genero', 'es_jugador', 'es_dt', 'anio_curso']
+const CAMPOS_EXACTOS = ['estado', 'genero', 'es_jugador', 'es_dt', 'anio_curso', 'modalidad_curso']
 const anioActual = new Date().getFullYear()
 
 // ─── Estado ──────────────────────────────────────────────────────
@@ -311,13 +358,7 @@ const filtros = reactive(filtrosVacios())
 
 // ─── Helpers ─────────────────────────────────────────────────────
 const normalizar = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
-const mostrarFechaArg = (fecha) => {
-  if (!fecha) return ''
-  const [soloFecha, hora] = String(fecha).split(' ')
-  const partes = soloFecha.split('-')
-  const f = partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : soloFecha
-  return hora ? `${f} ${hora}` : f
-}
+const mostrarFechaArg = (fecha) => fechaHoraDMA(fecha)
 const textoCategorias = (texto) => String(texto || '').split('|').map(c => c.trim()).filter(Boolean).join('; ')
 const etiquetaGenero = (g) => GENEROS_CURSO.find(x => x.valor === g)?.etiqueta || ''
 
@@ -325,6 +366,7 @@ const valorColumna = (l, id) => {
   if (id === 'fecha_nacimiento' || id === 'fecha_estado' || id === 'fecha_registro') return mostrarFechaArg(l[id])
   if (id === 'dt_detalle') return textoDtClubes(l.dt_clubes)
   if (id === 'genero') return etiquetaGenero(l.genero)
+  if (id === 'modalidad_curso') return MODALIDADES_CURSO[l.modalidad_curso]?.corta || ''
   if (id === 'categorias_jugador') return textoCategorias(l[id])
   return l[id] ?? ''
 }
@@ -464,6 +506,34 @@ const confirmarEstado = async () => {
   }
 }
 
+// ─── Historial ───────────────────────────────────────────────────
+const EVENTOS_HISTORIAL = {
+  inscripcion: 'Inscripción',
+  reinscripcion: 'Reinscripción por formulario',
+  cambio_estado: 'Cambio de estado',
+}
+const mostrarHistorial = ref(false)
+const legajoHistorial = ref(null)
+const historial = ref(null)
+const cargandoHistorial = ref(false)
+
+const abrirHistorial = async (l) => {
+  legajoHistorial.value = l
+  historial.value = null
+  mostrarHistorial.value = true
+  cargandoHistorial.value = true
+  try {
+    const res = await api.get({ entity: 'legajos_curso_arbitro', action: 'obtenerHistorialCurso', payload: { idAlumno: l.id } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar el historial')
+    historial.value = res.payload
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+    mostrarHistorial.value = false
+  } finally {
+    cargandoHistorial.value = false
+  }
+}
+
 // ─── Excel ───────────────────────────────────────────────────────
 const exportarExcel = async () => {
   const columnas = [
@@ -508,10 +578,14 @@ onMounted(() => {
 .tabla-fija thead .col-fija { background-color: #f8f9fa; z-index: 12; }
 .tabla-fija tbody .col-fija { background-color: #ffffff; }
 .col-id { left: 0; min-width: 60px; }
-.col-acciones { left: 60px; min-width: 100px; }
-.col-apellido { left: 160px; min-width: 150px; }
-.col-nombre { left: 310px; min-width: 150px; }
+.col-acciones { left: 60px; min-width: 120px; }
+.col-apellido { left: 180px; min-width: 150px; }
+.col-nombre { left: 330px; min-width: 150px; }
 .col-nombre::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 1px; background: linear-gradient(to right, rgba(0,0,0,0.1), transparent); }
 
+.resumen-historial { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; text-align: center; height: 100%; }
+.resumen-historial .valor { font-size: 1.3rem; font-weight: 800; line-height: 1.1; }
+.resumen-historial .etiqueta { font-size: 0.68rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
+.linea-tiempo li { border-left: 3px solid #fde68a; padding-left: 12px; }
 .fila-baja td, .tabla-fija tbody .fila-baja .col-fija { background-color: #fef2f2 !important; }
 </style>

@@ -1,100 +1,72 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-
-    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4 w-100 bg-white border-start border-danger border-5">
-
-      <div class="card-header bg-white py-3 border-bottom border-light-subtle">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-          <div>
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-              <i class="bi bi-tools"></i> Sección en Construcción
-            </h4>
-            <p class="text-muted small m-0 mt-1">Estamos trabajando para brindarte nuevas herramientas de gestión.</p>
-          </div>
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+        <div class="border-start border-danger border-5 ps-3">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <i class="bi bi-bell-fill me-1"></i> Notificaciones
+          </h4>
+          <span class="text-muted small d-block mt-1">Avisos del curso: cambios de estado, notas y observaciones</span>
         </div>
+        <button v-if="noLeidas.length" @click="marcarLeidas" class="btn btn-outline-secondary btn-sm fw-bold align-self-start align-self-md-center">
+          <i class="bi bi-check2-all me-1"></i> Marcar todas como leídas
+        </button>
       </div>
 
-      <div class="card-body p-5">
-        <div class="text-center py-4">
-          <div class="mb-4">
-            <i class="bi bi-cone-striped text-danger opacity-25 display-1"></i>
+      <div v-if="cargando" class="card-body text-center py-5">
+        <span class="spinner-border text-danger"></span>
+      </div>
+      <div v-else-if="!notificaciones.length" class="card-body text-center py-5 text-muted">
+        <i class="bi bi-bell-slash fs-1 d-block mb-2 opacity-50"></i>
+        <span class="fw-bold">No tenés notificaciones.</span>
+      </div>
+      <div v-else class="card-body p-3 p-md-4 d-flex flex-column gap-2">
+        <div v-for="n in notificaciones" :key="n.id" class="notif-item d-flex gap-3 align-items-start" :class="{ nueva: !n.leida }">
+          <div class="icono-notif flex-shrink-0" :class="ICONOS_NOTIFICACION[n.tipo]?.bg || 'bg-secondary'">
+            <i :class="['bi', ICONOS_NOTIFICACION[n.tipo]?.icono || 'bi-bell', 'text-white']"></i>
           </div>
-
-          <h2 class="fw-bold text-dark mb-3">¡Próximamente!</h2>
-          <p class="text-muted mx-auto mb-4" style="max-width: 500px;">
-            Este módulo se encuentra actualmente en **desarrollo técnico**. Muy pronto podrás acceder a nuevas funcionalidades diseñadas para mejorar tu experiencia en la plataforma.
-          </p>
-
-          <div class="d-flex justify-content-center gap-2 align-items-center">
-            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2">
-              <i class="bi bi-cpu me-1"></i> Sistema v3.0
-            </span>
-            <span class="badge rounded-pill bg-dark text-white px-3 py-2">
-              <i class="bi bi-clock-history me-1"></i> En Proceso
-            </span>
+          <div class="min-w-0 flex-grow-1">
+            <div class="d-flex flex-wrap justify-content-between gap-2">
+              <span class="fw-bold text-dark">{{ n.titulo }}</span>
+              <span class="small text-muted fw-bold">{{ fechaHoraDMA(n.fecha) }}</span>
+            </div>
+            <div class="small text-dark texto-notif mt-1">{{ n.mensaje }}</div>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="alert bg-light border border-light-subtle rounded-4 shadow-sm p-4 mx-auto w-100">
-      <div class="d-flex align-items-center">
-        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center me-3" style="min-width: 50px; height: 50px;">
-          <i class="bi bi-info-circle-fill text-danger fs-4"></i>
-        </div>
-        <div class="text-dark small lh-sm">
-          <strong>¿Necesitás información urgente?</strong><br>
-          Si buscabas datos específicos que no están disponibles actualmente, comunicate con la
-          <a href="mailto:soporte@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none">Coordinación Técnica</a> de la AAAB.
-        </div>
-      </div>
-    </div>
-
   </div>
 </template>
 
 <script setup>
-import { useHead } from '@vueuse/head';
+import { onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
+import { useNotificacionesCurso, ICONOS_NOTIFICACION } from '@/composables/useNotificacionesCurso'
+import { fechaHoraDMA } from '@/utils/fechas'
 
-// SEO e Identidad de la página
-useHead({
-  title: 'Sección en Construcción | AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Módulo en desarrollo del sistema de gestión AAAB.',
-    },
-    {
-      property: 'og:title',
-      content: 'En Construcción | AAAB',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png',
-    }
-  ],
-});
+useHead({ title: 'Notificaciones | Curso AAAB' })
+
+const { notificaciones, noLeidas, cargando, cargar, marcarLeidas } = useNotificacionesCurso()
+
+onMounted(cargar)
 </script>
 
 <style scoped>
-/* Transiciones suaves */
-.animate__animated {
-  animation-duration: 0.7s;
+.notif-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
 }
-
-/* Ajustes para el ícono gigante */
-.display-1 {
-  font-size: 6rem;
-  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.05));
+.notif-item.nueva { border-left: 4px solid #dc2626; background: #fef2f2; }
+.icono-notif {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-/* Responsivo */
-@media (max-width: 768px) {
-  .display-1 {
-    font-size: 4rem;
-  }
-  h2 {
-    font-size: 1.5rem;
-  }
-}
+.texto-notif { white-space: pre-line; }
+.min-w-0 { min-width: 0; }
 </style>

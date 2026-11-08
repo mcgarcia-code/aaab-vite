@@ -72,7 +72,7 @@
               </div>
             </div>
             <span class="nota flex-shrink-0" :class="claseNota(e)">
-              {{ e.nota !== null ? `${formatoNota(e.nota)} / ${formatoNota(e.notaMaxima)}` : 'Pendiente' }}
+              {{ e.ausente ? 'Ausente' : e.nota !== null ? `${formatoNota(e.nota)} / ${formatoNota(e.notaMaxima)}` : 'Pendiente' }}
             </span>
           </div>
         </div>
@@ -101,7 +101,7 @@ const resumen = computed(() => {
   const registradas = presentes + ausentes
   const conNota = datos.value.examenes.filter(e => e.nota !== null)
   const promedio = conNota.length
-    ? formatoNota(conNota.reduce((s, e) => s + (e.nota / (e.notaMaxima || 10)) * 10, 0) / conNota.length)
+    ? `${formatoNota(Math.round(conNota.reduce((s, e) => s + (e.nota / (e.notaMaxima || 100)) * 100, 0) / conNota.length))}%`
     : null
   return {
     presentes,

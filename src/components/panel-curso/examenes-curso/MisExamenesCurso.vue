@@ -28,10 +28,12 @@
                 </div>
                 <div class="text-end flex-shrink-0">
                   <div class="nota" :class="claseNota(e)">{{ e.nota !== null ? formatoNota(e.nota) : '—' }}</div>
-                  <div class="small text-muted">de {{ formatoNota(e.notaMaxima) }}</div>
+                  <div class="small text-muted">de {{ formatoNota(e.notaMaxima) }} · aprueba con {{ formatoNota(e.porcentajeAprobacion) }}%</div>
                 </div>
               </div>
-              <span v-if="estaAprobado(e) !== null" class="badge mt-2" :class="estaAprobado(e) ? 'bg-success' : 'bg-danger'">
+              <span class="badge bg-light text-dark border mt-2 me-1">{{ e.tipo === 'practico' ? 'Práctico' : 'Teórico' }}</span>
+              <span v-if="e.ausente" class="badge bg-secondary mt-2">Ausente</span>
+              <span v-else-if="estaAprobado(e) !== null" class="badge mt-2" :class="estaAprobado(e) ? 'bg-success' : 'bg-danger'">
                 {{ estaAprobado(e) ? 'Aprobado' : 'Desaprobado' }}
               </span>
               <span v-else class="badge bg-light text-muted border mt-2">Nota pendiente</span>

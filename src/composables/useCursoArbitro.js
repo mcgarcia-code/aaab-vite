@@ -11,6 +11,12 @@ export const GENEROS_CURSO = [
   { valor: 'otro', etiqueta: 'Otro' },
 ]
 
+// Curso al que se anota: anual o intensivo
+export const MODALIDADES_CURSO = {
+  anual: { etiqueta: 'Curso anual', corta: 'Anual', clase: 'bg-primary-subtle text-primary-emphasis border border-primary-subtle' },
+  intensivo: { etiqueta: 'Curso intensivo', corta: 'Intensivo', clase: 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' },
+}
+
 export const ESTADOS_CURSO = {
   inscripto: { etiqueta: 'Inscripto', clase: 'bg-secondary' },
   alta: { etiqueta: 'Alta', clase: 'bg-dark' },
@@ -38,6 +44,7 @@ export const filaDtVacia = () => ({ idClub: '', categorias: [] })
 
 export const formularioCursoVacio = () => ({
   id: null,
+  modalidadCurso: '',
   usuario: '', password: '', passwordConfirmacion: '',
   apellido: '', nombre: '', dni: '', fechaNacimiento: '', genero: '', email: '', celular: '',
   provincia: '', localidad: '', direccion: '', zona: '',
@@ -52,6 +59,7 @@ export const formularioCursoVacio = () => ({
 export const formularioDesdeLegajo = (r) => ({
   ...formularioCursoVacio(),
   id: r.id,
+  modalidadCurso: r.modalidad_curso || '',
   usuario: usuarioSinDominio(r.usuario),
   apellido: r.apellido || '',
   nombre: r.nombre || '',
@@ -114,6 +122,7 @@ export const validarFormularioCurso = (f, { passwordObligatoria = true } = {}) =
     else if (f.password !== f.passwordConfirmacion) e.passwordConfirmacion = 'Las contraseñas no coinciden.'
   }
 
+  if (!MODALIDADES_CURSO[f.modalidadCurso]) e.modalidadCurso = 'Elegí si te anotás al curso anual o al intensivo.'
   obligatorio('apellido', 'Ingresá el apellido.')
   obligatorio('nombre', 'Ingresá el nombre.')
   const dni = String(f.dni).replace(/\D/g, '')

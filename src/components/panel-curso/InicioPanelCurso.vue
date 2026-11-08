@@ -131,7 +131,9 @@ const categorias = computed(() => [
     items: [
       ...(estado.value === 'aprobado' ? [ITEM_REGISTRO_ARBITRO] : []),
       { to: '/panel-curso/datos-curso', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Tus datos, foto y contraseña.' },
-      { to: '/panel-curso/cronograma-curso', title: 'Cronograma Anual', icon: 'bi bi-calendar3-week', desc: 'Clases del curso de este año.' },
+      { to: '/panel-curso/credencial-curso', title: 'Credencial Digital', icon: 'bi bi-person-badge', desc: 'Tu credencial de aspirante.' },
+      { to: '/panel-curso/cronograma-curso', title: 'Cronograma', icon: 'bi bi-calendar3-week', desc: 'Clases de tu curso.' },
+      { to: '/panel-curso/historial-notificaciones', title: 'Notificaciones', icon: 'bi bi-bell', desc: 'Avisos del curso.' },
     ],
   },
   {

@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { api } from '@/api/api'
+import { fechaDMA } from '@/utils/fechas'
 
 // Cronograma anual del curso (tabla cronograma_curso_arbitro).
 // Lo usan CronogramaCursoAdmin.vue (carga) y CronogramaCurso.vue (alumnos).
@@ -15,7 +16,7 @@ const hoyIso = () => {
 export const fechaLargaClase = (fecha) => {
   const d = new Date(`${fecha}T00:00:00`)
   if (isNaN(d)) return fecha
-  return `${DIAS[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()].toLowerCase()}`
+  return `${DIAS[d.getDay()]} ${fechaDMA(fecha)}`
 }
 
 export const horarioClase = (c) => {
@@ -30,6 +31,11 @@ export function useCronogramaCurso() {
   const clases = ref([])
   const cargando = ref(false)
   const error = ref('')
+  // Filtro por curso (solo lo usa el admin): '', 'anual' o 'intensivo'
+  const filtroCurso = ref('')
+  const clasesVisibles = computed(() =>
+    filtroCurso.value ? clases.value.filter(c => c.curso === filtroCurso.value || c.curso === 'ambos') : clases.value
+  )
 
   const cargar = async (anio) => {
     cargando.value = true
@@ -49,7 +55,7 @@ export function useCronogramaCurso() {
   // [{ mes: 'Marzo', clases: [...] }, ...] en orden cronológico
   const clasesPorMes = computed(() => {
     const grupos = []
-    for (const c of clases.value) {
+    for (const c of clasesVisibles.value) {
       const mes = MESES[Number(c.fecha.substring(5, 7)) - 1]
       const ultimo = grupos[grupos.length - 1]
       if (ultimo && ultimo.mes === mes) ultimo.clases.push(c)
@@ -58,7 +64,7 @@ export function useCronogramaCurso() {
     return grupos
   })
 
-  const proximaClase = computed(() => clases.value.find(c => !esClasePasada(c)) || null)
+  const proximaClase = computed(() => clasesVisibles.value.find(c => !esClasePasada(c)) || null)
 
-  return { clases, cargando, error, cargar, clasesPorMes, proximaClase }
+  return { clases, clasesVisibles, filtroCurso, cargando, error, cargar, clasesPorMes, proximaClase }
 }

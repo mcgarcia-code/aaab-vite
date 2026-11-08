@@ -24,7 +24,10 @@
           <div class="text-center text-sm-start">
             <div class="fw-bold text-dark text-uppercase">{{ perfil.apellido }}, {{ perfil.nombre }}</div>
             <div class="small text-muted">{{ perfil.usuario }}</div>
-            <span v-if="ESTADOS_CURSO[perfil.estado]" class="badge mt-1" :class="ESTADOS_CURSO[perfil.estado].clase">{{ ESTADOS_CURSO[perfil.estado].etiqueta }} · {{ perfil.anio_curso }}</span>
+            <div class="d-flex flex-wrap gap-1 justify-content-center justify-content-sm-start mt-1">
+              <span v-if="MODALIDADES_CURSO[perfil.modalidad_curso]" class="badge" :class="MODALIDADES_CURSO[perfil.modalidad_curso].clase">{{ MODALIDADES_CURSO[perfil.modalidad_curso].etiqueta }} {{ perfil.anio_curso }}</span>
+              <span v-if="ESTADOS_CURSO[perfil.estado]" class="badge" :class="ESTADOS_CURSO[perfil.estado].clase">{{ ESTADOS_CURSO[perfil.estado].etiqueta }}</span>
+            </div>
             <div class="mt-2">
               <label class="btn btn-sm btn-danger fw-bold mb-0" :class="{ disabled: subiendoFoto }">
                 <span v-if="subiendoFoto" class="spinner-border spinner-border-sm me-1"></span>
@@ -151,7 +154,8 @@
 import { ref, reactive, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
-import { ESTADOS_CURSO, GENEROS_CURSO, DOMINIO_USUARIO_CURSO, urlFotoCurso, FOTO_POR_DEFECTO, textoDtClubes } from '@/composables/useCursoArbitro'
+import { ESTADOS_CURSO, GENEROS_CURSO, MODALIDADES_CURSO, DOMINIO_USUARIO_CURSO, urlFotoCurso, FOTO_POR_DEFECTO, textoDtClubes } from '@/composables/useCursoArbitro'
+import { fechaDMA } from '@/utils/fechas'
 
 useHead({ title: 'Datos Personales | Curso AAAB' })
 
@@ -164,7 +168,7 @@ const cargando = ref(true)
 const versionFoto = ref(Date.now())
 
 // ─── Helpers de vista ────────────────────────────────────────────
-const fechaArg = (f) => (f ? String(f).substring(0, 10).split('-').reverse().join('/') : '')
+const fechaArg = (f) => fechaDMA(f)
 const urlFoto = computed(() => urlFotoCurso(perfil.value?.dni, versionFoto.value))
 
 const datosFijos = computed(() => [

@@ -1,5 +1,18 @@
 <template>
   <div>
+    <!-- CURSO AL QUE SE ANOTA -->
+    <h6 class="titulo-seccion"><i class="bi bi-mortarboard me-1"></i> Curso al que te anotás *</h6>
+    <div class="row g-2 mb-1">
+      <div v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" class="col-12 col-sm-6">
+        <input :id="`${prefijo}-modalidad-${clave}`" v-model="form.modalidadCurso" type="radio" class="btn-check" :value="clave" autocomplete="off">
+        <label :for="`${prefijo}-modalidad-${clave}`" class="btn w-100 fw-bold py-3 opcion-curso" :class="mostrarErrores && errores.modalidadCurso ? 'btn-outline-danger' : 'btn-outline-dark'">
+          <i class="bi me-1" :class="clave === 'anual' ? 'bi-calendar3' : 'bi-lightning-charge-fill'"></i> {{ m.etiqueta }}
+        </label>
+      </div>
+    </div>
+    <div v-if="mostrarErrores && errores.modalidadCurso" class="text-danger small mb-3">{{ errores.modalidadCurso }}</div>
+    <div v-else class="mb-4"></div>
+
     <!-- USUARIO DEL CURSO -->
     <h6 class="titulo-seccion"><i class="bi bi-person-lock me-1"></i> Usuario para iniciar sesión</h6>
     <div class="row g-3 mb-4">
@@ -191,7 +204,7 @@
 <script setup>
 import { computed } from 'vue'
 import SelectorClubCategorias from '@/components/SelectorClubCategorias.vue'
-import { GENEROS_CURSO, DOMINIO_USUARIO_CURSO, MAX_CLUBES_DT, filaDtVacia } from '@/composables/useCursoArbitro'
+import { GENEROS_CURSO, DOMINIO_USUARIO_CURSO, MAX_CLUBES_DT, MODALIDADES_CURSO, filaDtVacia } from '@/composables/useCursoArbitro'
 
 // Campos del formulario del curso (inscripción pública y modal del admin).
 // v-model = objeto del formulario (formularioCursoVacio en useCursoArbitro.js)

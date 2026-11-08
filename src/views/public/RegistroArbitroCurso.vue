@@ -20,7 +20,7 @@
         <i class="bi bi-check-circle-fill text-success d-block mb-3" style="font-size: 3.5rem;"></i>
         <h5 class="fw-bold text-dark mb-2">¡Inscripción enviada!</h5>
         <p class="text-muted mb-2">
-          Vamos a <strong class="text-dark">verificar tus datos</strong> y, cuando te demos de alta, te avisamos por email a
+          Te anotaste al <strong class="text-dark">{{ MODALIDADES_CURSO[form.modalidadCurso]?.etiqueta?.toLowerCase() }}</strong>. Vamos a <strong class="text-dark">verificar tus datos</strong> y, cuando te demos de alta, te avisamos por email a
           <strong class="text-dark">{{ form.email }}</strong>.
         </p>
         <p class="text-muted small mb-4">
@@ -70,7 +70,7 @@ import { ref, watch, onMounted, inject, nextTick } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import FormularioCursoArbitro from '@/components/FormularioCursoArbitro.vue'
-import { formularioCursoVacio, validarFormularioCurso, payloadCurso } from '@/composables/useCursoArbitro'
+import { formularioCursoVacio, validarFormularioCurso, payloadCurso, MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 
 useHead({
   title: 'Inscripción al Curso de Árbitros | AAAB',
