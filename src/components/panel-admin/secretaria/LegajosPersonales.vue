@@ -506,12 +506,28 @@
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Handball</div>
           <div class="col-md-4">
             <label class="small fw-bold text-dark mb-1">Juega handball</label>
-            <select v-model="formModal.juega_handball" class="form-select shadow-none border-secondary-subtle">
+            <select v-model="formModal.juega_handball" @change="cambioJuegaHandball" class="form-select shadow-none border-secondary-subtle">
               <option value="SI">SI</option><option value="NO">NO</option>
             </select>
           </div>
-          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Club</label><input v-model="formModal.donde_juega" class="form-control shadow-none border-secondary-subtle" :disabled="formModal.juega_handball !== 'SI'"></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Categoría</label><input v-model="formModal.categoria_handball" class="form-control shadow-none border-secondary-subtle" :disabled="formModal.juega_handball !== 'SI'"></div>
+          <template v-if="formModal.juega_handball === 'SI'">
+            <div class="col-md-4">
+              <label for="modal-club" class="small fw-bold text-dark mb-1">Club *</label>
+              <select id="modal-club" v-model="formModal.donde_juega" @change="formModal.categoria_handball = ''" class="form-select shadow-none border-secondary-subtle" :disabled="handball.cargando.value">
+                <option value="" disabled>{{ handball.cargando.value ? 'Cargando clubes...' : 'Seleccionar club...' }}</option>
+                <option v-for="c in handball.opcionesClubes.value" :key="c" :value="c">{{ c }}</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="modal-categoria" class="small fw-bold text-dark mb-1">Categoría *</label>
+              <select id="modal-categoria" v-model="formModal.categoria_handball" class="form-select shadow-none border-secondary-subtle" :disabled="handball.cargando.value || !formModal.donde_juega">
+                <option value="" disabled>{{ formModal.donde_juega ? 'Seleccionar categoría...' : 'Elegí primero el club' }}</option>
+                <optgroup v-for="grupo in handball.categoriasPorRama.value" :key="grupo.etiqueta" :label="grupo.etiqueta">
+                  <option v-for="c in grupo.categorias" :key="c" :value="c">{{ c }}</option>
+                </optgroup>
+              </select>
+            </div>
+          </template>
 
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Observaciones</div>
           <div class="col-12">
@@ -677,6 +693,7 @@ import { useHead } from '@vueuse/head'
 import selLocalidad from '@/components/select/selLocalidad.vue'
 import selProvincia from '@/components/select/selProvincia.vue'
 import ModalBase from '@/components/ModalBase.vue'
+import { useOpcionesHandball } from '@/composables/useOpcionesHandball'
 
 useHead({
   title: 'Legajos | AAAB',
@@ -803,6 +820,32 @@ const formModalVacio = () => ({
 })
 
 const formModal = ref(formModalVacio())
+
+// ─── Handball: club y categoría según los equipos del club ──────────
+const handball = useOpcionesHandball(
+  () => formModal.value.donde_juega,
+  () => formModal.value.categoria_handball,
+)
+
+const cambioJuegaHandball = () => {
+  if (formModal.value.juega_handball === 'SI') {
+    handball.cargar()
+  } else {
+    formModal.value.donde_juega = ''
+    formModal.value.categoria_handball = ''
+  }
+}
+
+const validarHandballModal = () => {
+  if (formModal.value.juega_handball !== 'SI') return true
+  if (formModal.value.donde_juega && formModal.value.categoria_handball) return true
+  notificar({ titulo: 'Faltan datos', mensaje: 'Si juega al handball, seleccioná el club y la categoría.', tipo: 'danger' })
+  return false
+}
+
+watch(() => handball.error.value, (mensaje) => {
+  if (mensaje) notificar({ titulo: 'Error', mensaje, tipo: 'danger' })
+})
 
 const urlFotoModal = computed(() => {
   if (!formModal.value.dni) {
@@ -982,8 +1025,13 @@ const editarArbitro = async (arbitro) => {
   formModal.value = {
     ...formModalVacio(),
     ...arbitro,
+    // enum('SI','NO') en la base: se normaliza por si viene vacío o en minúscula
+    juega_handball: String(arbitro.juega_handball || '').toUpperCase() === 'SI' ? 'SI' : 'NO',
+    donde_juega: arbitro.donde_juega || '',
+    categoria_handball: arbitro.categoria_handball || '',
     grupos: gruposCoordinados
   }
+  if (formModal.value.juega_handball === 'SI') handball.cargar()
   movilidadArray.value = []
   let movilidades = arbitro.movilidad ? arbitro.movilidad.split(',') : []
   movilidades.forEach(v => {
@@ -1003,6 +1051,7 @@ const confirmarAlta = async () => {
     notificar({ titulo: 'Faltan datos', mensaje: 'Apellido, Nombre, Email y Password son requeridos.', tipo: 'danger' })
     return
   }
+  if (!validarHandballModal()) return
   cargando.value = true
   try {
     const res = await api.post({
@@ -1027,6 +1076,7 @@ const confirmarEdicion = async () => {
     notificar({ titulo: 'Faltan datos', mensaje: 'Apellido, Nombre y Email son requeridos.', tipo: 'danger' })
     return
   }
+  if (!validarHandballModal()) return
   cargando.value = true
   try {
     const res = await api.post({

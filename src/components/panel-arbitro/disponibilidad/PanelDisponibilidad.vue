@@ -213,10 +213,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, inject } from 'vue';
+import { ref, onMounted, watch, inject } from 'vue';
 import { auth } from '../../../api/auth';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head'
+import { useOpcionesHandball } from '@/composables/useOpcionesHandball'
 
 useHead({
   title: 'Disponibilidad Horaria | AAAB',
@@ -241,55 +242,20 @@ arbitro.value.donde_juega = arbitro.value.donde_juega || null
 arbitro.value.categoria_handball = arbitro.value.categoria_handball || null
 
 // ─── Clubes y categorías (mismo origen que el registro de árbitros) ──
-const RAMAS = { M: 'Masculino', F: 'Femenino' }
-const clubes = ref([])
-const categorias = ref([])
-const cargandoOpcionesHandball = ref(false)
-
-// Si el valor guardado no está en la lista (dato viejo cargado a mano),
-// se agrega igual para no perderlo al abrir el select.
-const opcionesClubes = computed(() => {
-  const nombres = clubes.value.map(c => c.nombre)
-  const actual = arbitro.value.donde_juega
-  return actual && !nombres.includes(actual) ? [actual, ...nombres] : nombres
-})
-
-// Solo las categorías de los equipos activos del club elegido (equipos_larry).
-// El club se guarda por nombre, así que se busca su id para filtrar.
-const idClubElegido = computed(() =>
-  clubes.value.find(c => c.nombre === arbitro.value.donde_juega)?.id ?? null
+const {
+  cargando: cargandoOpcionesHandball,
+  error: errorOpcionesHandball,
+  cargar: cargarOpcionesHandball,
+  opcionesClubes,
+  categoriasPorRama,
+} = useOpcionesHandball(
+  () => arbitro.value.donde_juega,
+  () => arbitro.value.categoria_handball,
 )
 
-const categoriasPorRama = computed(() => {
-  const grupos = {}
-  for (const c of categorias.value.filter(c => c.idClub === idClubElegido.value)) {
-    const etiqueta = RAMAS[c.rama] || 'Otras'
-    if (!grupos[etiqueta]) grupos[etiqueta] = { etiqueta, categorias: [] }
-    grupos[etiqueta].categorias.push(c.nombre)
-  }
-  const lista = Object.values(grupos)
-  const actual = arbitro.value.categoria_handball
-  if (actual && !lista.some(g => g.categorias.includes(actual))) {
-    lista.unshift({ etiqueta: 'Valor actual', categorias: [actual] })
-  }
-  return lista
+watch(errorOpcionesHandball, (mensaje) => {
+  if (mensaje) toast({ titulo: 'Error', mensaje, tipo: 'danger' })
 })
-
-const cargarOpcionesHandball = async () => {
-  if (clubes.value.length || cargandoOpcionesHandball.value) return
-  cargandoOpcionesHandball.value = true
-  try {
-    const res = await api.get({ entity: 'registro', action: 'obtenerDatosRegistro', payload: {} })
-    if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los clubes')
-    clubes.value = res.payload?.clubes ?? []
-    categorias.value = res.payload?.categorias ?? []
-  } catch (e) {
-    console.error('cargarOpcionesHandball:', e)
-    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar los clubes y categorías.', tipo: 'danger' })
-  } finally {
-    cargandoOpcionesHandball.value = false
-  }
-}
 
 const validarActividadDeportiva = () => {
   if (arbitro.value.juega_handball !== 'si') return true
