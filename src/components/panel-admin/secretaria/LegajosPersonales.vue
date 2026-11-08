@@ -538,11 +538,11 @@
               <div v-else-if="!formModal.donde_juega" class="small text-muted fst-italic p-2 bg-light rounded border">Elegí primero el club</div>
               <div v-else-if="!handball.categoriasPorRama.value.length" class="small text-muted fst-italic p-2 bg-light rounded border">El club no tiene categorías activas</div>
               <div v-else class="lista-categorias border border-secondary-subtle rounded p-2">
-                <div v-for="grupo in handball.categoriasPorRama.value" :key="grupo.etiqueta" class="mb-1">
+                <div v-for="(grupo, g) in handball.categoriasPorRama.value" :key="grupo.etiqueta" class="mb-1">
                   <div class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
-                  <div v-for="c in grupo.categorias" :key="grupo.etiqueta + c" class="form-check mb-0">
-                    <input :id="`modal-cat-${grupo.etiqueta}-${c}`" v-model="categoriasModal" class="form-check-input" type="checkbox" :value="c">
-                    <label class="form-check-label small" :for="`modal-cat-${grupo.etiqueta}-${c}`">{{ c }}</label>
+                  <div v-for="(c, k) in grupo.categorias" :key="grupo.etiqueta + c" class="form-check mb-0">
+                    <input :id="`modal-cat-${g}-${k}`" v-model="categoriasModal" class="form-check-input" type="checkbox" :value="c">
+                    <label class="form-check-label small" :for="`modal-cat-${g}-${k}`">{{ c }}</label>
                   </div>
                 </div>
               </div>

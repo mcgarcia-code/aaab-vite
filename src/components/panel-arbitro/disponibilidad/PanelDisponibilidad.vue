@@ -116,11 +116,11 @@
               <div v-else-if="!arbitro.donde_juega" class="small text-muted fst-italic p-2 bg-light rounded">Elegí primero el club</div>
               <div v-else-if="!categoriasPorRama.length" class="small text-muted fst-italic p-2 bg-light rounded">El club no tiene categorías activas</div>
               <div v-else class="lista-categorias border rounded p-2">
-                <div v-for="grupo in categoriasPorRama" :key="grupo.etiqueta" class="mb-1">
+                <div v-for="(grupo, g) in categoriasPorRama" :key="grupo.etiqueta" class="mb-1">
                   <div class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
-                  <div v-for="c in grupo.categorias" :key="grupo.etiqueta + c" class="form-check mb-0">
-                    <input :id="`disp-cat-${grupo.etiqueta}-${c}`" v-model="categoriasElegidas" class="form-check-input" type="checkbox" :value="c">
-                    <label class="form-check-label small" :for="`disp-cat-${grupo.etiqueta}-${c}`">{{ c }}</label>
+                  <div v-for="(c, k) in grupo.categorias" :key="grupo.etiqueta + c" class="form-check mb-0">
+                    <input :id="`disp-cat-${g}-${k}`" v-model="categoriasElegidas" class="form-check-input" type="checkbox" :value="c">
+                    <label class="form-check-label small" :for="`disp-cat-${g}-${k}`">{{ c }}</label>
                   </div>
                 </div>
               </div>

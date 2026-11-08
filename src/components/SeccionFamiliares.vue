@@ -87,19 +87,19 @@
                 <span class="form-label small fw-bold d-block" :class="claseEtiqueta">Categorías * <span class="fw-normal text-muted">(una o más)</span></span>
                 <div v-if="!f.idClub" class="small text-muted fst-italic p-2 bg-light rounded border">Elegí primero el club</div>
                 <div v-else class="lista-categorias border rounded p-2">
-                  <div v-for="grupo in categoriasPorRama(f.idClub)" :key="grupo.etiqueta" class="mb-2">
+                  <div v-for="(grupo, g) in categoriasPorRama(f.idClub)" :key="grupo.etiqueta" class="mb-2">
                     <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
                     <div class="row row-cols-2 row-cols-md-3 g-1">
-                      <div v-for="c in grupo.categorias" :key="c" class="col">
+                      <div v-for="(c, k) in grupo.categorias" :key="c" class="col">
                         <div class="form-check mb-0">
                           <input
-                            :id="`${prefijo}-cat-${i}-${grupo.etiqueta}-${c}`"
+                            :id="`${prefijo}-cat-${i}-${g}-${k}`"
                             class="form-check-input"
                             type="checkbox"
                             :checked="f.categorias.includes(c)"
                             @change="alternarCategoria(i, c, $event.target.checked)"
                           >
-                          <label class="form-check-label small" :for="`${prefijo}-cat-${i}-${grupo.etiqueta}-${c}`">{{ c }}</label>
+                          <label class="form-check-label small" :for="`${prefijo}-cat-${i}-${g}-${k}`">{{ c }}</label>
                         </div>
                       </div>
                     </div>
