@@ -61,7 +61,7 @@ const routes = [
       { path: 'disponibilidad', name: 'PanelDisponibilidad', component: () => import('../components/panel-arbitro/disponibilidad/PanelDisponibilidad.vue') },
 
       // --- SANCIONES ---
-      { path: 'sanciones', name: 'PanelSanciones', component: () => import('../components/panel-arbitro/sanciones/Sanciones.vue') },
+      { path: 'sanciones', name: 'PanelSanciones', component: () => import('../components/panel-arbitro/sanciones/MisSanciones.vue') },
 
       // --- CREDENCIAL DIGITAL ---
       { path: 'credencial', name: 'PanelCredencial', component: () => import('../components/panel-arbitro/credencial/CredencialDigital.vue') },
@@ -102,6 +102,9 @@ const routes = [
 
       // --- HISTORIAL DE NOTIFICACIONES ---
       { path: 'historial-notificaciones', name: 'HistorialNotificacionesArbitro', component: () => import('../components/panel-arbitro/notificaciones/HistorialNotificaciones.vue') },
+
+      // --- CONTACTOS CELULARES (misma vista que la pública /contactos-celulares) ---
+      { path: 'contactos-celulares', name: 'PanelContactosCelulares', component: () => import('../views/public/ContactosCelularesView.vue') },
 
       // --- DELEGADO TÉCNICO ---
       { path: 'delegado-tecnico', name: 'DelegadoTecnico', component: () => import('../components/panel-arbitro/delegado-tecnico/DelegadosTecnicos.vue') },

@@ -181,6 +181,7 @@ const menuItems = [
   { to: '/panel-arbitro/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Consultá los datos fiscales de los Clubes', categoria: 'Herramientas' },
   { href: 'https://refflix.com.ar', title: 'Ref-Flix', icon: 'bi bi-cast', desc: 'Plataforma de videos', categoria: 'Herramientas' },
   { to: '/panel-arbitro/delegado-tecnico', title: 'Delegado Técnico', icon: 'bi bi-person-bounding-box', desc: 'Planilla Digital para Delegados Técnicos', categoria: 'Herramientas' },
+  { to: '/panel-arbitro/contactos-celulares', title: 'Contactos', icon: 'bi bi-telephone-fill', desc: 'Agenda de celulares de árbitros', categoria: 'Herramientas' },
 
   { to: '/panel-arbitro/informes', title: 'Mis Informes', icon: 'bi bi-file-earmark-text', desc: 'Visualizar y editar informes realizados por vos', categoria: 'Administración' }
 ]
