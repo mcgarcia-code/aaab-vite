@@ -19,6 +19,9 @@
               </template>
               <template v-else>Reuniones Mensuales — Todos los grupos · {{ totalFiltrados }} árbitros</template>
             </span>
+            <span v-if="modoReunion && reunionActual?.reunion" class="text-muted d-block mt-1 texto-creacion">
+              <i class="bi bi-person-badge me-1"></i>{{ textoCreacionReunion(reunionActual.reunion) }}
+            </span>
           </div>
 
           <!-- Select de reunión (desglosado por grupo) -->
@@ -317,6 +320,129 @@
           </div>
         </div>
       </div>
+
+      <!-- ¿Quién dio la reunión? -->
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-header bg-white py-3 d-flex flex-column flex-lg-row justify-content-between align-items-lg-center border-bottom gap-3">
+          <div class="border-start border-danger border-5 ps-3">
+            <h5 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
+              <i class="bi bi-person-video3 me-1"></i> ¿Quién dio la reunión?
+            </h5>
+            <span class="text-muted small d-block mt-1">
+              {{ mesDisertantes ? etiquetaMes(mesDisertantes) : 'Todos los meses' }} · {{ filasDisertantesFiltradas.length }} reuniones
+              <span v-if="sinAsignarDisertantes" class="ms-1 badge rounded-pill bg-warning text-dark">{{ sinAsignarDisertantes }} sin asignar</span>
+            </span>
+          </div>
+
+          <div class="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center">
+            <select
+              v-model="mesDisertantes"
+              class="form-select form-select-sm shadow-sm border-secondary-subtle fw-semibold"
+              style="min-width: 180px;"
+              :disabled="cargandoInicial || cargandoDisertantes"
+              aria-label="Filtrar por mes"
+            >
+              <option value="">Todos los meses</option>
+              <option v-for="m in mesesDisertantes" :key="m" :value="m">{{ etiquetaMes(m) }}</option>
+            </select>
+            <button
+              @click="exportarExcelDisertantes"
+              class="btn btn-success btn-sm shadow-sm py-2 px-3 d-flex align-items-center justify-content-center gap-2 text-white border-0 flex-shrink-0"
+              :disabled="cargandoDisertantes || !filasDisertantesFiltradas.length"
+            >
+              <i class="bi bi-file-earmark-excel"></i>
+              <span class="fw-bold small">Exportar Excel</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body p-0 p-md-3 bg-white">
+          <div v-if="cargandoInicial || cargandoDisertantes" class="text-center py-5">
+            <div class="spinner-border text-danger spinner-border-sm" role="status"></div>
+            <span class="ms-2 fw-bold text-muted">Cargando reuniones...</span>
+          </div>
+
+          <div v-else-if="!filasDisertantesFiltradas.length" class="text-center py-5 text-muted">
+            <span class="material-icons opacity-50 d-block mb-2" style="font-size: 36px;">event_busy</span>
+            <span class="fw-bold small">No hay reuniones{{ mesDisertantes ? ' en el mes elegido' : '' }}.</span>
+          </div>
+
+          <template v-else>
+            <div class="d-none d-md-block table-responsive border rounded shadow-sm">
+              <table class="table table-hover align-middle mb-0" style="font-size: 0.78rem;">
+                <thead class="table-light">
+                  <tr>
+                    <th class="py-3 ps-3 text-uppercase text-muted text-nowrap">Fecha</th>
+                    <th class="py-3 text-uppercase text-muted text-nowrap">Grupo</th>
+                    <th class="py-3 text-uppercase text-muted">Tema</th>
+                    <th class="py-3 text-uppercase text-muted">Lugar</th>
+                    <th class="py-3 text-uppercase text-muted text-nowrap">Fecha de creación</th>
+                    <th class="py-3 text-uppercase text-muted text-nowrap">Creada por</th>
+                    <th class="py-3 text-uppercase text-muted text-nowrap">Árbitro que la dio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="f in filasDisertantesFiltradas" :key="'dis-' + f.clave">
+                    <td class="ps-3 fw-bold text-dark text-nowrap">{{ f.reunion.fecha_formateada }}</td>
+                    <td class="text-nowrap"><span class="badge bg-light text-dark border">{{ f.nombreGrupo }}</span></td>
+                    <td class="text-dark fw-semibold">{{ f.reunion.titulo }}</td>
+                    <td class="text-muted">{{ f.reunion.descripcion || '-' }}</td>
+                    <td class="text-muted text-nowrap">{{ f.reunion.fecha_creacion_formateada || '-' }}</td>
+                    <td class="text-muted">{{ etiquetaCreadorReunion(f.reunion) }}</td>
+                    <td>
+                      <div class="d-flex align-items-center gap-1">
+                        <select
+                          :value="disertantes[f.clave] ?? ''"
+                          @change="guardarDisertante(f, $event.target.value)"
+                          class="form-select form-select-sm shadow-none select-disertante"
+                          :disabled="!!guardandoDisertante[f.clave]"
+                          :aria-label="`Árbitro que dio la reunión del ${f.reunion.fecha_formateada} (${f.nombreGrupo})`"
+                        >
+                          <option value="">— Sin asignar —</option>
+                          <option v-for="a in opcionesArbitrosDisertantes" :key="a.id" :value="a.id">{{ a.etiqueta }}</option>
+                        </select>
+                        <span class="estado-indicator">
+                          <span v-if="guardandoDisertante[f.clave]" class="spinner-border spinner-border-sm text-danger" role="status"></span>
+                          <i v-else-if="disertanteGuardadoOk[f.clave]" class="bi bi-check-circle-fill text-success"></i>
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="d-md-none p-3 bg-light">
+              <div v-for="f in filasDisertantesFiltradas" :key="'dis-mob-' + f.clave" class="card shadow-sm mb-3 border-light-subtle rounded-3">
+                <div class="card-body p-3">
+                  <div class="d-flex justify-content-between align-items-start mb-1 gap-2">
+                    <span class="fw-bold text-dark"><i class="bi bi-calendar3 me-1 text-muted"></i>{{ f.reunion.fecha_formateada }}</span>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="badge bg-light text-dark border">{{ f.nombreGrupo }}</span>
+                      <span v-if="guardandoDisertante[f.clave]" class="spinner-border spinner-border-sm text-danger"></span>
+                      <i v-else-if="disertanteGuardadoOk[f.clave]" class="bi bi-check-circle-fill text-success"></i>
+                    </div>
+                  </div>
+                  <div class="text-dark fw-semibold small">{{ f.reunion.titulo }}</div>
+                  <div v-if="f.reunion.descripcion" class="text-muted small">{{ f.reunion.descripcion }}</div>
+                  <div class="text-muted fst-italic mt-1 texto-creacion">{{ textoCreacionReunion(f.reunion) }}</div>
+                  <label class="small fw-bold text-dark mt-2 mb-1 d-block" :for="`dis-mob-sel-${f.clave}`">Árbitro que la dio</label>
+                  <select
+                    :id="`dis-mob-sel-${f.clave}`"
+                    :value="disertantes[f.clave] ?? ''"
+                    @change="guardarDisertante(f, $event.target.value)"
+                    class="form-select form-select-sm shadow-none"
+                    :disabled="!!guardandoDisertante[f.clave]"
+                  >
+                    <option value="">— Sin asignar —</option>
+                    <option v-for="a in opcionesArbitrosDisertantes" :key="a.id" :value="a.id">{{ a.etiqueta }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
 
     <ModalBase :show="mostrarModalDetalle" @close="mostrarModalDetalle = false" icono="person_search" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="800px">
@@ -412,6 +538,8 @@ import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h }
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import ExcelJS from 'exceljs'
+import { etiquetaCreadorReunion, textoCreacionReunion } from '@/composables/useCreadorReunion'
 
 useHead({
   title: 'Reuniones | AAAB',
@@ -548,6 +676,7 @@ const opcionesReunion = computed(() => {
       ops.push({
         key: `${r.id}|all`,
         idEvento: r.id,
+        reunion: r,
         titulo: r.titulo,
         nombreGrupo: 'Todos los grupos',
         idGrupo: null,
@@ -559,6 +688,7 @@ const opcionesReunion = computed(() => {
         ops.push({
           key: `${r.id}|${idGrupo}`,
           idEvento: r.id,
+          reunion: r,
           titulo: r.titulo,
           nombreGrupo: nombreGrupo(idGrupo),
           idGrupo,
@@ -838,9 +968,159 @@ const recargar = async () => {
   } else {
     cargandoInicial.value = true
     await Promise.all([obtenerReuniones(), cargarArbitros()])
+    cargarDisertantes()
     await cargarAsistenciasGlobales()
     cargandoInicial.value = false
   }
+}
+
+// ─── ¿Quién dio la reunión? ───────────────────────────────────────
+// Lista por mes las reuniones aprobadas de todos los grupos, una fila por
+// reunión + grupo (las de "todos los grupos" van en una sola fila, grupo 0),
+// para asignar el árbitro que la dio y exportarlo a liquidación.
+const mesDisertantes          = ref(`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`)
+const cargandoDisertantes     = ref(false)
+const arbitrosDisertantesBase = ref([])
+const disertantes             = reactive({})
+const guardandoDisertante     = reactive({})
+const disertanteGuardadoOk    = reactive({})
+
+const NOMBRES_MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const claveMes = (fechaEvento) => String(fechaEvento || '').substring(0, 7)
+const etiquetaMes = (clave) => {
+  const [anio, mes] = String(clave).split('-')
+  return `${NOMBRES_MESES[Number(mes) - 1] ?? mes} ${anio}`
+}
+const claveDisertante = (idEvento, idGrupo) => `${idEvento}|${idGrupo}`
+
+const filasDisertantes = computed(() => {
+  const filas = []
+  const aprobadas = arrReuniones.value.filter(r => !r.aprobacion || r.aprobacion === 'aprobada')
+  for (const r of aprobadas) {
+    const idsGrupos = r.todosLosGrupos ? [0] : (r.idsGrupos || []).map(Number)
+    for (const idGrupo of idsGrupos) {
+      filas.push({
+        clave: claveDisertante(r.id, idGrupo),
+        idGrupo,
+        nombreGrupo: idGrupo ? nombreGrupo(idGrupo) : 'Todos los grupos',
+        reunion: r,
+      })
+    }
+  }
+  return filas.sort((a, b) =>
+    String(a.reunion.fecha_evento).localeCompare(String(b.reunion.fecha_evento)) ||
+    collator.compare(a.nombreGrupo, b.nombreGrupo)
+  )
+})
+
+const mesesDisertantes = computed(() => {
+  const claves = new Set(filasDisertantes.value.map(f => claveMes(f.reunion.fecha_evento)).filter(Boolean))
+  if (mesDisertantes.value) claves.add(mesDisertantes.value)
+  return [...claves].sort((a, b) => b.localeCompare(a))
+})
+
+const filasDisertantesFiltradas = computed(() =>
+  !mesDisertantes.value
+    ? filasDisertantes.value
+    : filasDisertantes.value.filter(f => claveMes(f.reunion.fecha_evento) === mesDisertantes.value)
+)
+
+const sinAsignarDisertantes = computed(() =>
+  filasDisertantesFiltradas.value.filter(f => !disertantes[f.clave]).length
+)
+
+const opcionesArbitrosDisertantes = computed(() =>
+  [...arbitrosDisertantesBase.value]
+    .sort((a, b) =>
+      normalizarTexto(a.apellido).localeCompare(normalizarTexto(b.apellido), 'es') ||
+      normalizarTexto(a.nombre).localeCompare(normalizarTexto(b.nombre), 'es')
+    )
+    .map(a => ({ id: Number(a.id), etiqueta: `${String(a.apellido || '').toUpperCase()}, ${a.nombre || ''}` }))
+)
+
+const nombreArbitroDisertante = (idArbitro) =>
+  opcionesArbitrosDisertantes.value.find(a => a.id === Number(idArbitro))?.etiqueta ?? ''
+
+const cargarDisertantes = async () => {
+  cargandoDisertantes.value = true
+  try {
+    const [resDis, resArb] = await Promise.all([
+      api.get({ entity: 'reuniones', action: 'obtenerDisertantesReuniones' }),
+      arbitrosDisertantesBase.value.length
+        ? Promise.resolve(null)
+        : api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: false } }),
+    ])
+    if (resArb && (resArb.ok || resArb.success) && Array.isArray(resArb.payload)) arbitrosDisertantesBase.value = resArb.payload
+    if (!resDis?.ok) throw new Error(resDis?.message || 'No se pudieron cargar los árbitros asignados')
+    Object.keys(disertantes).forEach(k => delete disertantes[k])
+    for (const d of (resDis.payload || [])) disertantes[claveDisertante(d.id_evento, d.id_grupo)] = Number(d.id_arbitro)
+  } catch (e) {
+    console.error('cargarDisertantes:', e)
+    toast({ titulo: 'Error', mensaje: e?.message || 'No se pudieron cargar los árbitros asignados.', tipo: 'danger' })
+  } finally {
+    cargandoDisertantes.value = false
+  }
+}
+
+const guardarDisertante = async (fila, valor) => {
+  const anterior = disertantes[fila.clave] ?? ''
+  const idArbitro = valor ? Number(valor) : null
+  disertantes[fila.clave] = idArbitro ?? ''
+  guardandoDisertante[fila.clave] = true
+  delete disertanteGuardadoOk[fila.clave]
+  try {
+    const res = await api.post({
+      entity: 'reuniones',
+      action: 'guardarDisertanteReunion',
+      payload: { idEvento: Number(fila.reunion.id), idGrupo: fila.idGrupo, idArbitro },
+    })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el árbitro')
+    disertanteGuardadoOk[fila.clave] = true
+    setTimeout(() => { delete disertanteGuardadoOk[fila.clave] }, 2500)
+  } catch (e) {
+    disertantes[fila.clave] = anterior
+    toast({ titulo: 'Error', mensaje: e?.message || 'No se pudo guardar el árbitro.', tipo: 'danger' })
+  } finally {
+    guardandoDisertante[fila.clave] = false
+  }
+}
+
+const exportarExcelDisertantes = async () => {
+  const lista = filasDisertantesFiltradas.value
+  if (!lista.length) {
+    toast({ titulo: 'Tabla vacía', mensaje: 'No hay reuniones para exportar.', tipo: 'warning' })
+    return
+  }
+  const wb = new ExcelJS.Workbook()
+  const ws = wb.addWorksheet('Reuniones')
+  ws.columns = [
+    { header: 'Fecha',             key: 'fecha',      width: 12 },
+    { header: 'Grupo',             key: 'grupo',      width: 18 },
+    { header: 'Tema',              key: 'tema',       width: 36 },
+    { header: 'Lugar',             key: 'lugar',      width: 30 },
+    { header: 'Árbitro que la dio', key: 'disertante', width: 32 },
+    { header: 'Fecha de creación', key: 'creada',     width: 18 },
+    { header: 'Creada por',        key: 'creador',    width: 30 },
+  ]
+  lista.forEach(f => ws.addRow({
+    fecha:      f.reunion.fecha_formateada,
+    grupo:      f.nombreGrupo,
+    tema:       f.reunion.titulo,
+    lugar:      f.reunion.descripcion || '',
+    disertante: nombreArbitroDisertante(disertantes[f.clave]) || 'Sin asignar',
+    creada:     f.reunion.fecha_creacion_formateada || '',
+    creador:    etiquetaCreadorReunion(f.reunion),
+  }))
+  ws.getRow(1).font = { bold: true }
+
+  const buffer = await wb.xlsx.writeBuffer()
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `Reuniones_disertantes_${mesDisertantes.value || 'todos_los_meses'}.xlsx`
+  link.click()
+  URL.revokeObjectURL(url)
 }
 
 // ─── Misc ────────────────────────────────────────────────────────
@@ -871,6 +1151,7 @@ watch(soloActivos, async () => {
 
 onMounted(async () => {
   await Promise.all([obtenerReuniones(), cargarArbitros(), obtenerGrupos()])
+  cargarDisertantes()
   await cargarAsistenciasGlobales()
   cargandoInicial.value = false
 })
@@ -895,6 +1176,8 @@ onMounted(async () => {
 .fila-presente .col-fija { background-color: #f0fdf4 !important; }
 .fila-ausente            { background-color: #f9fafb !important; }
 .fila-ausente  .col-fija { background-color: #f9fafb !important; }
+.texto-creacion { font-size: 0.75rem; }
+.select-disertante { width: 190px; max-width: 190px; font-size: 0.75rem; }
 .radio-presente { accent-color: #198754; }
 .radio-ausente  { accent-color: #6c757d; }
 .estado-indicator { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; }

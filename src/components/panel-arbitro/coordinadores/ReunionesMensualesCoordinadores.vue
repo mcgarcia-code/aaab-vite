@@ -19,6 +19,9 @@
                   </template>
                   <template v-else>Reuniones Mensuales — Mi grupo · {{ totalFiltrados }} árbitros</template>
                 </span>
+                <span v-if="modoReunion && reunionActual" class="text-muted d-block mt-1 texto-creacion">
+                  <i class="bi bi-person-badge me-1"></i>{{ textoCreacionReunion(reunionActual) }}
+                </span>
               </div>
             </div>
 
@@ -711,6 +714,7 @@ import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 import CalendarioEventos from '@/components/CalendarioEventos.vue'
+import { textoCreacionReunion } from '@/composables/useCreadorReunion'
 
 useHead({
   title: 'Reuniones | Coordinador',
@@ -1604,6 +1608,7 @@ onMounted(async () => {
 .estado-indicator { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; }
 .toggle-asist { cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; user-select: none; font-size: 0.85rem; }
 .toggle-asist:active { opacity: 0.82; }
+.texto-creacion { font-size: 0.75rem; }
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
 </style>
