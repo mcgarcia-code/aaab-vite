@@ -134,7 +134,7 @@
           </div>
         </div>
 
-        <h6 class="text-danger fw-bold text-uppercase mb-3 small border-top pt-4" style="letter-spacing: 1px;">Familiares en clubes</h6>
+        <h6 class="text-danger fw-bold text-uppercase mb-3 small border-top pt-4" style="letter-spacing: 1px;">Familiares o DT en clubes</h6>
         <div class="mb-4">
           <SeccionFamiliares
             v-model:tiene="tieneFamiliares"
@@ -395,7 +395,7 @@ const guardarCambios = async () => {
     if (!validarActividadDeportiva()) return
     const errorFamiliares = validarFamiliares(tieneFamiliares.value, familiares.value)
     if (errorFamiliares) {
-      toast({ titulo: 'Revisá familiares', mensaje: errorFamiliares, tipo: 'danger' })
+      toast({ titulo: 'Revisá familiares / DT', mensaje: errorFamiliares, tipo: 'danger' })
       return
     }
     cargando.value = true;
@@ -413,7 +413,7 @@ const guardarCambios = async () => {
             try {
               await guardarFamiliares()
             } catch (e) {
-              toast({ titulo: 'Atención', mensaje: `Se guardó tu disponibilidad, pero no los familiares: ${e.message}`, tipo: 'danger' })
+              toast({ titulo: 'Atención', mensaje: `Se guardó tu disponibilidad, pero no los familiares / DT: ${e.message}`, tipo: 'danger' })
               return
             }
             intentoGuardar.value = false

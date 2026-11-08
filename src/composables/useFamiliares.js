@@ -1,4 +1,4 @@
-// Familiares del árbitro que juegan en algún club. Se guardan en registro_arbitro:
+// Familiares del árbitro que juegan en algún club, o clubes donde es DT. Se guardan en registro_arbitro:
 // tiene_familiares (SI/NO) y familiares (JSON con la lista de abajo).
 // Cada fila: { idClub, categorias: ['Menores A', ...], parentesco }
 // Se usa en SeccionFamiliares.vue, RegistroArbitro, PanelDisponibilidad y Legajos.
@@ -10,17 +10,17 @@ export const filaFamiliarVacia = () => ({ idClub: '', club: '', categorias: [], 
 export const errorFilaFamiliar = (f) => {
   if (!f.idClub) return 'Seleccioná el club.'
   if (!f.categorias?.length) return 'Seleccioná al menos una categoría.'
-  if (!String(f.parentesco || '').trim()) return 'Indicá el parentesco.'
+  if (!String(f.parentesco || '').trim()) return 'Indicá el parentesco o rol (por ejemplo DT).'
   return ''
 }
 
 // Devuelve '' si está todo bien, o el mensaje del primer error
 export const validarFamiliares = (tiene, familiares) => {
   if (tiene !== 'si') return ''
-  if (!familiares.length) return 'Si tenés familiares en algún club, cargá al menos uno.'
+  if (!familiares.length) return 'Si tenés familiares o sos DT en algún club, cargá al menos uno.'
   for (const [i, fila] of familiares.entries()) {
     const error = errorFilaFamiliar(fila)
-    if (error) return `Familiar ${i + 1}: ${error}`
+    if (error) return `Club ${i + 1}: ${error}`
   }
   return ''
 }

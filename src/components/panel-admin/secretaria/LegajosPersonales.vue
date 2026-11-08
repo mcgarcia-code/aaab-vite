@@ -135,8 +135,8 @@
                     <th class="py-3 text-center text-uppercase text-muted">Juega</th>
                     <th class="py-3 text-uppercase text-muted">Club</th>
                     <th class="py-3 text-uppercase text-muted">Cat. Juega</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Familiares</th>
-                    <th class="py-3 text-uppercase text-muted">Detalle Familiares</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Familiares / DT</th>
+                    <th class="py-3 text-uppercase text-muted">Detalle Familiares / DT</th>
                     <th class="py-3 text-uppercase text-muted">Observaciones</th>
                   </tr>
                   <!-- Filtros Desktop -->
@@ -549,7 +549,7 @@
             </div>
           </template>
 
-          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Familiares en clubes</div>
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Familiares o DT en clubes</div>
           <div class="col-12">
             <div v-if="!familiaresCargados" class="small text-muted">
               <span class="spinner-border spinner-border-sm me-1"></span> Cargando familiares...
@@ -1045,7 +1045,7 @@ const cargarFamiliaresModal = async (idArbitro) => {
     familiaresCargados.value = true
   } catch (e) {
     console.error('cargarFamiliaresModal:', e)
-    notificar({ titulo: 'Atención', mensaje: 'No se pudieron cargar los familiares de este árbitro. Si guardás, no se van a modificar.', tipo: 'danger' })
+    notificar({ titulo: 'Atención', mensaje: 'No se pudieron cargar los familiares / DT de este árbitro. Si guardás, no se van a modificar.', tipo: 'danger' })
   }
 }
 
@@ -1054,7 +1054,7 @@ const validarFamiliaresModal = () => {
   if (!familiaresCargados.value) return true
   const error = validarFamiliares(formModal.value.tieneFamiliares, formModal.value.familiares)
   if (!error) return true
-  notificar({ titulo: 'Revisá familiares', mensaje: error, tipo: 'danger' })
+  notificar({ titulo: 'Revisá familiares / DT', mensaje: error, tipo: 'danger' })
   return false
 }
 
@@ -1283,7 +1283,7 @@ const columnasExcel = ref([
   { id: 'disponibilidad_sabado', label: 'Sáb. Disp.', visible: false }, { id: 'disponibilidad_sabado_desde', label: 'Sáb. Desde', visible: false }, { id: 'disponibilidad_sabado_hasta', label: 'Sáb. Hasta.', visible: false },
   { id: 'disponibilidad_domingo', label: 'Dom. Disp.', visible: false }, { id: 'disponibilidad_domingo_desde', label: 'Dom. Desde', visible: false }, { id: 'disponibilidad_domingo_hasta', label: 'Dom. Hasta', visible: false },
   { id: 'juega_handball', label: 'Juega', visible: false }, { id: 'donde_juega', label: 'Club', visible: false }, { id: 'categoria_handball', label: 'Cat. Juega', visible: false },
-  { id: 'tiene_familiares', label: 'Familiares', visible: false }, { id: 'familiares_texto', label: 'Detalle Familiares', visible: false },
+  { id: 'tiene_familiares', label: 'Familiares / DT', visible: false }, { id: 'familiares_texto', label: 'Detalle Familiares / DT', visible: false },
   { id: 'observaciones', label: 'Observaciones', visible: false },
 ])
 

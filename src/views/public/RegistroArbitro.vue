@@ -203,7 +203,7 @@
         </div>
 
         <!-- FAMILIARES -->
-        <h6 class="titulo-seccion"><i class="bi bi-people me-1"></i> Familiares en clubes</h6>
+        <h6 class="titulo-seccion"><i class="bi bi-people me-1"></i> Familiares o DT en clubes</h6>
         <div class="mb-4">
           <SeccionFamiliares
             v-model:tiene="form.tieneFamiliares"

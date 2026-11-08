@@ -2,7 +2,7 @@
   <div class="seccion-familiares">
     <div class="row g-3">
       <div class="col-12 col-md-6">
-        <label :for="`${prefijo}-tiene`" class="form-label small fw-bold" :class="claseEtiqueta">¿Tenés familiares que jueguen en algún club? *</label>
+        <label :for="`${prefijo}-tiene`" class="form-label small fw-bold" :class="claseEtiqueta">¿Tenés familiares o sos DT en algún club? *</label>
         <select
           v-if="editable"
           :id="`${prefijo}-tiene`"
@@ -26,7 +26,7 @@
           <span class="text-muted"> · {{ f.parentesco }}</span>
           <div>{{ (f.categorias || []).join('; ') }}</div>
         </div>
-        <div v-if="!familiares.length" class="small text-muted fst-italic">Sin familiares cargados</div>
+        <div v-if="!familiares.length" class="small text-muted fst-italic">Sin datos cargados</div>
       </div>
 
       <!-- EDICIÓN -->
@@ -43,13 +43,13 @@
             :class="{ 'border-danger': mostrarErrores && errorFila(f) }"
           >
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="small fw-bold text-danger text-uppercase">Familiar {{ i + 1 }}</span>
+              <span class="small fw-bold text-danger text-uppercase">Club {{ i + 1 }}</span>
               <button
                 v-if="familiares.length > 1"
                 type="button"
                 class="btn btn-sm btn-outline-danger py-0 px-2"
                 @click="quitarFila(i)"
-                :aria-label="`Quitar familiar ${i + 1}`"
+                :aria-label="`Quitar club ${i + 1}`"
               >
                 <i class="bi bi-trash3"></i> Quitar
               </button>
@@ -70,7 +70,7 @@
                 </select>
               </div>
               <div class="col-12 col-md-6">
-                <label :for="`${prefijo}-parentesco-${i}`" class="form-label small fw-bold" :class="claseEtiqueta">Parentesco *</label>
+                <label :for="`${prefijo}-parentesco-${i}`" class="form-label small fw-bold" :class="claseEtiqueta">Parentesco / Rol *</label>
                 <input
                   :id="`${prefijo}-parentesco-${i}`"
                   :value="f.parentesco"
@@ -78,7 +78,7 @@
                   type="text"
                   maxlength="100"
                   :list="`${prefijo}-parentescos`"
-                  placeholder="Ej: Hijo, hermana, sobrino"
+                  placeholder="Ej: Hijo, hermana, DT"
                   class="form-control"
                   :class="{ 'form-control-sm': chico }"
                 >
@@ -145,7 +145,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:tiene', 'update:familiares', 'error'])
 
-const PARENTESCOS = ['Hijo', 'Hija', 'Hermano', 'Hermana', 'Padre', 'Madre', 'Sobrino', 'Sobrina', 'Primo', 'Prima', 'Pareja']
+const PARENTESCOS = ['DT', 'Ayudante de campo', 'Preparador físico', 'Hijo', 'Hija', 'Hermano', 'Hermana', 'Padre', 'Madre', 'Sobrino', 'Sobrina', 'Primo', 'Prima', 'Pareja']
 
 const clubes = ref([])
 const categorias = ref([])
