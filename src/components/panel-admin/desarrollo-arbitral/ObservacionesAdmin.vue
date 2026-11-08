@@ -51,13 +51,10 @@
           </div>
 
           <div class="row g-2 flex-md-nowrap">
-            <div class="col-6 col-md-1">
-              <input v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="DD/MM/AAAA">
-            </div>
             <div class="col-6 col-md-2">
               <input v-model="filtros.nombre_observador" class="form-control form-control-sm shadow-none" placeholder="Observador...">
             </div>
-            <div class="col-6 col-md-2">
+            <div class="col-6 col-md-3">
               <input v-model="filtros.arbitros" class="form-control form-control-sm shadow-none" placeholder="Árbitros observados...">
             </div>
             <div class="col-6 col-md-2">
@@ -66,16 +63,19 @@
             <div class="col-6 col-md-2">
               <input v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="Categoría...">
             </div>
-            <div class="col-6 col-md-1">
-              <input v-model="filtros.partido" class="form-control form-control-sm shadow-none" placeholder="Partido...">
-            </div>
-            <div class="col-6 col-md-1">
+            <div class="col-12 col-md-1">
               <select v-model="filtros.estado" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.estado }">
                 <option value="">ESTADO</option>
                 <option value="pendiente">Pendiente</option>
                 <option value="aprobada">Aprobada</option>
                 <option value="rechazada">Rechazada</option>
                 <option value="anulada">Anulada</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-1">
+              <select v-model="filtros.mes" class="form-select form-select-sm shadow-none" :class="{ 'text-muted': !filtros.mes }" aria-label="Filtrar por mes">
+                <option value="">MES</option>
+                <option v-for="m in MESES" :key="m.valor" :value="m.valor">{{ m.nombre }}</option>
               </select>
             </div>
             <div class="col-6 col-md-1">
@@ -682,7 +682,10 @@ const toast = inject('toast', ({ mensaje }) => alert(mensaje));
 const observaciones = ref([]);
 const cargando = ref(false);
 
-const filtros = reactive({ fecha: '', anio: '', estado: '', nombre_observador: '', arbitros: '', competencia: '', categoria: '', partido: '' });
+const filtros = reactive({ mes: '', anio: '', estado: '', nombre_observador: '', arbitros: '', competencia: '', categoria: '' })
+
+const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+  .map((nombre, i) => ({ valor: String(i + 1).padStart(2, '0'), nombre }))
 const mostrarFiltrosMobile = ref(false);
 
 const paginaActual = ref(1);
@@ -753,16 +756,15 @@ const aniosDisponibles = computed(() => {
 
 const observacionesFiltradas = computed(() => {
   return observaciones.value.filter(o => {
-    const matchFec = formatearFecha(o.fecha_partido).includes(filtros.fecha);
+    const matchMes = !filtros.mes || (o.fecha_partido || '').substring(5, 7) === filtros.mes
     const matchAnio = !filtros.anio || (o.fecha_partido || '').substring(0, 4) === filtros.anio;
     const matchEstado = !filtros.estado || (o.estado || 'pendiente').toLowerCase() === filtros.estado;
     const matchObs = normalizar(o.nombre_observador).includes(normalizar(filtros.nombre_observador));
     const matchArb = normalizar(nombresArbitros(o)).includes(normalizar(filtros.arbitros));
     const matchComp = normalizar(nombreTorneo(o)).includes(normalizar(filtros.competencia));
     const matchCat = normalizar(categoriaObs(o)).includes(normalizar(filtros.categoria));
-    const matchPar = normalizar(`${o.equipo_local} ${o.equipo_visitante}`).includes(normalizar(filtros.partido));
 
-    return matchFec && matchAnio && matchEstado && matchObs && matchArb && matchComp && matchCat && matchPar;
+    return matchMes && matchAnio && matchEstado && matchObs && matchArb && matchComp && matchCat
   });
 });
 
