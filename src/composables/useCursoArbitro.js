@@ -12,12 +12,22 @@ export const GENEROS_CURSO = [
 ]
 
 export const ESTADOS_CURSO = {
+  inscripto: { etiqueta: 'Inscripto', clase: 'bg-secondary' },
+  alta: { etiqueta: 'Alta', clase: 'bg-dark' },
   regular: { etiqueta: 'Regular', clase: 'bg-success' },
   reinscripcion: { etiqueta: 'Reinscripción', clase: 'bg-info text-dark' },
   aprobado: { etiqueta: 'Árbitro aprobado', clase: 'bg-primary' },
   desaprobado: { etiqueta: 'Desaprobado', clase: 'bg-warning text-dark' },
   baja: { etiqueta: 'Baja', clase: 'bg-danger' },
 }
+
+// Fotos de los alumnos: carpeta propia, separada de las de los árbitros
+export const urlFotoCurso = (dni, version = '') => {
+  const limpio = String(dni || '').replace(/\D/g, '')
+  if (!limpio) return 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'
+  return `https://arbitroshandball.com.ar/uploads/carnet-curso/${limpio}.webp${version ? `?v=${version}` : ''}`
+}
+export const FOTO_POR_DEFECTO = 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'
 
 const separar = (texto) => String(texto || '').split('|').map(c => c.trim()).filter(Boolean)
 

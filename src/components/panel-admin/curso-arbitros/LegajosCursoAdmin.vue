@@ -233,6 +233,9 @@
         <div v-if="nuevoEstado === 'reinscripcion'" class="alert alert-info small py-2">
           La reinscripción lo pasa al curso de este año ({{ anioActual }}).
         </div>
+        <div v-if="nuevoEstado !== legajoEstado.estado" class="small text-muted mb-2">
+          <i class="bi bi-envelope me-1"></i> Se le va a avisar por email a {{ legajoEstado.email }}.
+        </div>
         <label for="motivo-estado" class="form-label small fw-bold text-dark">Motivo {{ nuevoEstado === 'baja' ? '*' : '(opcional)' }}</label>
         <textarea id="motivo-estado" v-model.trim="motivoEstado" rows="3" maxlength="500" class="form-control" :class="{ 'is-invalid': intentoEstado && nuevoEstado === 'baja' && motivoEstado.length < 3 }" :placeholder="nuevoEstado === 'baja' ? 'Ej: dejó de asistir, motivos personales...' : ''"></textarea>
         <div class="invalid-feedback">Indicá el motivo de la baja.</div>

@@ -1,100 +1,158 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-
-    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4 w-100 bg-white border-start border-danger border-5">
-
-      <div class="card-header bg-white py-3 border-bottom border-light-subtle">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-          <div>
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-              <i class="bi bi-tools"></i> Sección en Construcción
-            </h4>
-            <p class="text-muted small m-0 mt-1">Estamos trabajando para brindarte nuevas herramientas de gestión.</p>
-          </div>
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+      <div class="card-header bg-white py-3 border-bottom">
+        <div class="border-start border-danger border-5 ps-3">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <i class="bi bi-graph-up-arrow me-1"></i> Mi Rendimiento
+          </h4>
+          <span class="text-muted small d-block mt-1">Asistencia a clases y notas de exámenes · Curso {{ datos.anio }}</span>
         </div>
       </div>
 
-      <div class="card-body p-5">
-        <div class="text-center py-4">
-          <div class="mb-4">
-            <i class="bi bi-cone-striped text-danger opacity-25 display-1"></i>
+      <div v-if="cargando" class="card-body text-center py-5">
+        <span class="spinner-border text-danger"></span>
+      </div>
+
+      <div v-else class="card-body p-3 p-md-4">
+        <!-- RESUMEN -->
+        <div class="row g-2 g-md-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="resumen-card bg-success text-white">
+              <i class="bi bi-person-check-fill"></i>
+              <div class="valor">{{ resumen.presentes }}</div>
+              <div class="etiqueta">Presentes</div>
+            </div>
           </div>
+          <div class="col-6 col-md-3">
+            <div class="resumen-card bg-secondary text-white">
+              <i class="bi bi-person-dash-fill"></i>
+              <div class="valor">{{ resumen.ausentes }}</div>
+              <div class="etiqueta">Ausentes</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="resumen-card bg-dark text-white">
+              <i class="bi bi-percent"></i>
+              <div class="valor">{{ resumen.porcentaje !== null ? `${resumen.porcentaje}%` : '-' }}</div>
+              <div class="etiqueta">Asistencia</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="resumen-card bg-danger text-white">
+              <i class="bi bi-journal-check"></i>
+              <div class="valor">{{ resumen.promedio !== null ? resumen.promedio : '-' }}</div>
+              <div class="etiqueta">Promedio exámenes</div>
+            </div>
+          </div>
+        </div>
 
-          <h2 class="fw-bold text-dark mb-3">¡Próximamente!</h2>
-          <p class="text-muted mx-auto mb-4" style="max-width: 500px;">
-            Este módulo se encuentra actualmente en **desarrollo técnico**. Muy pronto podrás acceder a nuevas funcionalidades diseñadas para mejorar tu experiencia en la plataforma.
-          </p>
+        <!-- ASISTENCIA -->
+        <h6 class="titulo-seccion"><i class="bi bi-calendar-check me-1"></i> Asistencia a clases</h6>
+        <div v-if="!datos.clases.length" class="text-muted small fst-italic mb-4">Todavía no hubo clases.</div>
+        <div v-else class="d-flex flex-column gap-2 mb-4">
+          <div v-for="c in datos.clases" :key="c.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
+            <div class="min-w-0">
+              <div class="fw-bold text-dark small text-truncate">{{ c.titulo }}</div>
+              <div class="text-muted" style="font-size: 0.75rem;">{{ fechaLargaClase(c.fecha) }}</div>
+            </div>
+            <span class="badge flex-shrink-0" :class="claseAsistencia(c.asistencia)">{{ textoAsistencia(c.asistencia) }}</span>
+          </div>
+        </div>
 
-          <div class="d-flex justify-content-center gap-2 align-items-center">
-            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2">
-              <i class="bi bi-cpu me-1"></i> Sistema v3.0
-            </span>
-            <span class="badge rounded-pill bg-dark text-white px-3 py-2">
-              <i class="bi bi-clock-history me-1"></i> En Proceso
+        <!-- EXÁMENES -->
+        <h6 class="titulo-seccion"><i class="bi bi-journal-text me-1"></i> Exámenes</h6>
+        <div v-if="!datos.examenes.length" class="text-muted small fst-italic">Todavía no tenés notas cargadas.</div>
+        <div v-else class="d-flex flex-column gap-2">
+          <div v-for="e in datos.examenes" :key="e.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
+            <div class="min-w-0">
+              <div class="fw-bold text-dark small text-truncate">{{ e.titulo }}</div>
+              <div class="text-muted" style="font-size: 0.75rem;">
+                {{ fechaLargaClase(e.fecha) }}<template v-if="e.clase"> · {{ e.clase }}</template>
+              </div>
+            </div>
+            <span class="nota flex-shrink-0" :class="claseNota(e)">
+              {{ e.nota !== null ? `${formatoNota(e.nota)} / ${formatoNota(e.notaMaxima)}` : 'Pendiente' }}
             </span>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="alert bg-light border border-light-subtle rounded-4 shadow-sm p-4 mx-auto w-100">
-      <div class="d-flex align-items-center">
-        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center me-3" style="min-width: 50px; height: 50px;">
-          <i class="bi bi-info-circle-fill text-danger fs-4"></i>
-        </div>
-        <div class="text-dark small lh-sm">
-          <strong>¿Necesitás información urgente?</strong><br>
-          Si buscabas datos específicos que no están disponibles actualmente, comunicate con la
-          <a href="mailto:soporte@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none">Coordinación Técnica</a> de la AAAB.
-        </div>
-      </div>
-    </div>
-
   </div>
 </template>
 
 <script setup>
-import { useHead } from '@vueuse/head';
+import { ref, computed, onMounted, inject } from 'vue'
+import { useHead } from '@vueuse/head'
+import { api } from '@/api/api'
+import { fechaLargaClase } from '@/composables/useCronogramaCurso'
+import { formatoNota, claseNota } from '@/composables/useExamenesCurso'
 
-// SEO e Identidad de la página
-useHead({
-  title: 'Sección en Construcción | AAAB',
-  meta: [
-    {
-      name: 'description',
-      content: 'Módulo en desarrollo del sistema de gestión AAAB.',
-    },
-    {
-      property: 'og:title',
-      content: 'En Construcción | AAAB',
-    },
-    {
-      property: 'og:image',
-      content: 'https://arbitroshandball.com.ar/logo.png',
-    }
-  ],
-});
+useHead({ title: 'Mi Rendimiento | Curso AAAB' })
+
+const toast = inject('toast', (m) => alert(m.mensaje || m))
+
+const datos = ref({ anio: new Date().getFullYear(), clases: [], examenes: [] })
+const cargando = ref(true)
+
+const resumen = computed(() => {
+  const presentes = datos.value.clases.filter(c => c.asistencia === 'presente').length
+  const ausentes = datos.value.clases.filter(c => c.asistencia === 'ausente').length
+  const registradas = presentes + ausentes
+  const conNota = datos.value.examenes.filter(e => e.nota !== null)
+  const promedio = conNota.length
+    ? formatoNota(conNota.reduce((s, e) => s + (e.nota / (e.notaMaxima || 10)) * 10, 0) / conNota.length)
+    : null
+  return {
+    presentes,
+    ausentes,
+    porcentaje: registradas ? Math.round((presentes / registradas) * 100) : null,
+    promedio,
+  }
+})
+
+const textoAsistencia = (a) => (a === 'presente' ? 'Presente' : a === 'ausente' ? 'Ausente' : 'Sin registro')
+const claseAsistencia = (a) => (a === 'presente' ? 'bg-success' : a === 'ausente' ? 'bg-secondary' : 'bg-light text-muted border')
+
+onMounted(async () => {
+  try {
+    const res = await api.get({ entity: 'perfil_curso_arbitro', action: 'obtenerMiRendimientoCurso', payload: {} })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar tu rendimiento')
+    datos.value = res.payload
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    cargando.value = false
+  }
+})
 </script>
 
 <style scoped>
-/* Transiciones suaves */
-.animate__animated {
-  animation-duration: 0.7s;
+.resumen-card {
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  height: 100%;
 }
-
-/* Ajustes para el ícono gigante */
-.display-1 {
-  font-size: 6rem;
-  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.05));
+.resumen-card i { font-size: 1.2rem; }
+.resumen-card .valor { font-size: 1.4rem; font-weight: 800; line-height: 1.1; margin-top: 4px; }
+.resumen-card .etiqueta { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
+.titulo-seccion {
+  color: #dc3545;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
-
-/* Responsivo */
-@media (max-width: 768px) {
-  .display-1 {
-    font-size: 4rem;
-  }
-  h2 {
-    font-size: 1.5rem;
-  }
+.fila-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fff;
 }
+.min-w-0 { min-width: 0; }
+.nota { font-weight: 800; font-size: 0.9rem; }
 </style>

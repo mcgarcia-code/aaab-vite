@@ -1,468 +1,396 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-
-   <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-        <div>
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-            <i class="bi bi-person me-2"></i> Legajo Personal
+        <div class="border-start border-danger border-5 ps-3">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <i class="bi bi-person-lines-fill me-1"></i> Datos Personales
           </h4>
-          <p class="text-muted small m-0 mt-1">Modificá tus datos personales</p>
+          <span class="text-muted small d-block mt-1">Tu legajo del curso de árbitros</span>
         </div>
-
-        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-            <span v-if="arbitro.apto_medico == 1" class="badge bg-success px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
-                <i class="bi bi-heart-pulse-fill"></i> APTO MÉDICO: SÍ
-            </span>
-            <span v-else class="badge bg-danger px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2 animate__animated animate__pulse animate__infinite">
-                <i class="bi bi-exclamation-triangle-fill"></i> APTO MÉDICO: NO
-            </span>
-
-            <span v-if="edicionAbierta" class="badge bg-primary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
-                <i class="bi bi-pencil-square me-1"></i> Edición Abierta
-            </span>
-            <span v-else class="badge bg-secondary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
-                <i class="bi bi-lock-fill me-1"></i> Edición Cerrada
-            </span>
-        </div>
+        <button v-if="!editando && perfil" @click="empezarEdicion" class="btn btn-outline-primary btn-sm fw-bold px-3 align-self-start align-self-md-center">
+          <i class="bi bi-pencil-square me-1"></i> Editar mis datos
+        </button>
       </div>
 
-      <div class="card-body p-3 p-md-4">
-        <div class="row g-4 mb-4 border-bottom pb-4">
-            <div class="col-12 col-md-4">
-                <label class="d-block small text-muted mb-1 text-uppercase fw-bold">Nombre y Apellido</label>
-                <span class="fs-5 fw-bold text-dark">{{ arbitro.nombre }} {{ arbitro.apellido }}</span>
-            </div>
-            <div class="col-12 col-md-2">
-                <label class="d-block small text-muted mb-1 text-uppercase fw-bold">DNI</label>
-                <span class="fs-5 fw-bold text-dark">{{ arbitro.dni }}</span>
-            </div>
-            <div class="col-12 col-md-6 text-md-end">
-                <label class="d-block small text-muted mb-1 text-uppercase fw-bold text-md-end">Grupo Arbitral y Estado</label>
-                <div class="d-flex flex-wrap justify-content-md-end gap-2 align-items-center mt-1">
-                    <span class="badge bg-dark fs-6 rounded-pill px-3 py-2 shadow-sm">
-                        {{ arbitro.grupo }} {{ arbitro.subgrupo ? '- ' + arbitro.subgrupo : '' }}
-                    </span>
-                    <!-- Reemplazamos status-pill custom por utilidades de Bootstrap -->
-                    <span v-if="arbitro.es_activo == 1" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-1" style="font-size: 0.85rem;">
-                        <i class="bi bi-check-circle-fill"></i> En actividad
-                    </span>
-                    <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-1" style="font-size: 0.85rem;">
-                        <i class="bi bi-x-circle-fill"></i> Inactivo
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <h6 class="text-danger fw-bold text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Información de contacto</h6>
-        <div class="row g-3 mb-5">
-            <div class="col-12 col-md-3">
-                <label class="small text-muted mb-1 d-block">Fecha de Nacimiento</label>
-                <div v-if="edicionAbierta" class="date-custom-wrapper" :data-date="arbitro.fecha_nacimiento ? mostrarFechaArg(arbitro.fecha_nacimiento) : 'Seleccionar fecha'">
-                    <input type="date" v-model="arbitro.fecha_nacimiento" class="form-control form-control-sm input-fecha-nativa">
-                </div>
-                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">
-                    {{ mostrarFechaArg(arbitro.fecha_nacimiento) }}
-                </span>
-            </div>
-            <div class="col-12 col-md-5">
-                <label class="small text-muted mb-1 d-block">Email</label>
-                <input v-if="edicionAbierta" v-model="arbitro.email" type="email" class="form-control form-control-sm">
-                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded text-break">{{ arbitro.email }}</span>
-            </div>
-            <div class="col-12 col-md-4">
-                <label class="small text-muted mb-1 d-block">Celular</label>
-                <input v-if="edicionAbierta" v-model="arbitro.celular" type="text" class="form-control form-control-sm">
-                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.celular }}</span>
-            </div>
-            <div class="col-12">
-                <label class="small text-muted mb-1 d-block">Dirección Residencial</label>
-                <input v-if="edicionAbierta" v-model="arbitro.direccion" type="text" class="form-control form-control-sm">
-                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.direccion }}</span>
-            </div>
-            <div class="col-12 col-md-6">
-                <label class="small text-muted mb-1 d-block">Provincia</label>
-                <select v-if="edicionAbierta" v-model="arbitro.provincia" class="form-select form-select-sm">
-                    <option v-for="p in opciones.provincias" :key="p.id" :value="p.id">{{ p.nombre }}</option>
-                </select>
-                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.nombre_provincia }}</span>
-            </div>
-            <div class="col-12 col-md-6">
-                <label class="small text-muted mb-1 d-block">Localidad</label>
-                <select v-if="edicionAbierta" v-model="arbitro.localidad" class="form-select form-select-sm">
-                    <option v-for="l in localidadesFiltradas" :key="l.id" :value="l.id">{{ l.nombre }}</option>
-                </select>
-                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.nombre_localidad }}</span>
-            </div>
-        </div>
-
-        <h6 class="text-danger fw-bold text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Contacto de Emergencia</h6>
-        <div class="row g-3 border-bottom pb-5">
-            <div class="col-12 col-md-6">
-                <label class="small text-muted mb-1 d-block">Tel. de Emergencia</label>
-                <input v-if="edicionAbierta" v-model="arbitro.telefonocontacto" type="text" class="form-control form-control-sm">
-                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.telefonocontacto }}</span>
-            </div>
-            <div class="col-12 col-md-6">
-                <label class="small text-muted mb-1 d-block">Parentesco</label>
-                <input v-if="edicionAbierta" v-model="arbitro.parentescocontacto" type="text" class="form-control form-control-sm">
-                <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.parentescocontacto }}</span>
-            </div>
-        </div>
-
-        <h6 class="text-danger fw-bold text-uppercase mb-3 mt-4" style="font-size: 0.8rem; letter-spacing: 1px;">Seguridad</h6>
-        <div class="row g-3 align-items-end">
-            <div class="col-12 col-md-8">
-                <label class="small text-muted mb-1 d-block">Nueva Contraseña</label>
-                <input v-model="nuevaPassword" type="password" class="form-control form-control-sm py-2" placeholder="Escribí tu nueva clave aquí">
-            </div>
-            <div class="col-12 col-md-4">
-                <button @click="cambiarPassword" class="btn btn-dark btn-sm w-100 fw-bold py-2 shadow-sm" :disabled="cargando || !nuevaPassword">
-                    <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
-                    ACTUALIZAR CLAVE
-                </button>
-            </div>
-        </div>
-
-        <div v-if="edicionAbierta" class="mt-4 pt-4 border-top">
-            <button @click="guardarCambios" class="btn btn-success w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
-                <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
-                GUARDAR CAMBIOS EN LEGAJO
-            </button>
-        </div>
+      <div v-if="cargando" class="card-body text-center py-5">
+        <span class="spinner-border text-danger"></span>
       </div>
-    </div>
 
-    <div class="card border-0 shadow mx-auto mb-4 overflow-hidden w-100" style="border-radius: 15px;">
-        <div class="card-header bg-white py-3 ps-3 border-bottom">
-            <h6 class="m-0 fw-bold text-dark small text-uppercase">Historial de Rectificaciones</h6>
-        </div>
-        <div class="card-body p-0 bg-white">
-            <!-- LISTA UNIFICADA (Reemplaza la tabla rígida) -->
-            <div v-if="historialRectificaciones.length > 0" class="d-flex flex-column">
-
-                <!-- Encabezado de Columnas (Solo Escritorio) -->
-                <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.70rem;">
-                    <div class="col-md-2 ps-3">Fecha</div>
-                    <div class="col-md-7">Mensaje de Solicitud</div>
-                    <div class="col-md-3 text-center pe-3">Estado</div>
-                </div>
-
-                <!-- Filas de Datos -->
-                <div v-for="(h, i) in historialRectificaciones" :key="i" class="row g-0 align-items-center p-3 p-md-2 border-bottom bg-white item-historial">
-
-                    <!-- HEADER MOBILE: Fecha y Estado -->
-                    <div class="col-12 d-md-none mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
-                        <span class="small fw-bold text-dark">{{ h.fecha }}</span>
-                        <span :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem;">
-                            {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
-                        </span>
-                    </div>
-
-                    <!-- COL 1: FECHA (Escritorio) -->
-                    <div class="col-md-2 d-none d-md-block ps-3 small fw-bold text-dark">
-                        {{ h.fecha }}
-                    </div>
-
-                    <!-- COL 2: MENSAJE (Ambos) -->
-                    <div class="col-12 col-md-7 small text-dark lh-sm">
-                        {{ h.mensaje }}
-                    </div>
-
-                    <!-- COL 3: ESTADO (Escritorio) -->
-                    <div class="col-md-3 d-none d-md-flex justify-content-center pe-3">
-                        <span :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem; letter-spacing: 0.5px;">
-                            {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
-                        </span>
-                    </div>
-
-                </div>
+      <div v-else-if="perfil" class="card-body p-3 p-md-4">
+        <!-- FOTO -->
+        <div class="d-flex flex-column flex-sm-row align-items-center gap-3 mb-4 pb-4 border-bottom">
+          <img :src="urlFoto" @error="(e) => e.target.src = FOTO_POR_DEFECTO" class="foto-perfil shadow-sm" alt="Tu foto de perfil">
+          <div class="text-center text-sm-start">
+            <div class="fw-bold text-dark text-uppercase">{{ perfil.apellido }}, {{ perfil.nombre }}</div>
+            <div class="small text-muted">{{ perfil.usuario }}</div>
+            <span v-if="ESTADOS_CURSO[perfil.estado]" class="badge mt-1" :class="ESTADOS_CURSO[perfil.estado].clase">{{ ESTADOS_CURSO[perfil.estado].etiqueta }} · {{ perfil.anio_curso }}</span>
+            <div class="mt-2">
+              <label class="btn btn-sm btn-danger fw-bold mb-0" :class="{ disabled: subiendoFoto }">
+                <span v-if="subiendoFoto" class="spinner-border spinner-border-sm me-1"></span>
+                <i v-else class="bi bi-camera-fill me-1"></i>
+                {{ subiendoFoto ? 'Subiendo...' : 'Cambiar foto' }}
+                <input type="file" accept="image/jpeg,image/png,image/webp" class="d-none" @change="subirFoto" :disabled="subiendoFoto">
+              </label>
+              <div class="form-text">JPG, PNG o WEBP de hasta 5 MB. Se recorta cuadrada.</div>
             </div>
-
-            <div v-else class="text-center py-5 text-muted small bg-light">
-                <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">history_toggle_off</span>
-                Sin solicitudes de rectificación previas.
-            </div>
-        </div>
-    </div>
-
-    <div v-if="!edicionAbierta" class="manual-section p-0 mx-auto mt-4 w-100" style="background: transparent; box-shadow: none;">
-        <div class="text-center text-white-50 mb-3 small">
-            <i class="bi bi-info-circle-fill me-1"></i>
-            La edición directa está cerrada. Podés enviar una solicitud formal aquí.
+          </div>
         </div>
 
-        <div class="p-3 p-md-4 rounded-4 shadow-lg" style="background: #0c1624; border: 1px dashed rgba(255,255,255,0.2);">
-            <h6 class="text-white fw-bold small mb-2 text-uppercase">Solicitar Rectificación</h6>
-            <p class="small text-white-50 mb-3" style="font-size: 0.8rem;">
-                Si necesitás corregir datos personales (DNI, Fecha de Nac., etc.), detallalo a continuación.
-            </p>
+        <!-- DATOS QUE NO SE EDITAN -->
+        <h6 class="titulo-seccion"><i class="bi bi-person-vcard me-1"></i> Datos personales</h6>
+        <div class="row g-3 mb-4">
+          <div v-for="d in datosFijos" :key="d.etiqueta" class="col-6 col-md-4">
+            <span class="dato-etiqueta">{{ d.etiqueta }}</span>
+            <div class="dato-valor">{{ d.valor || '-' }}</div>
+          </div>
+        </div>
 
-            <textarea
-                v-model="solicitudCambio"
-                class="form-control mb-3 custom-textarea p-3"
-                rows="3"
-                placeholder="Ej: Hola, necesito corregir mi DNI, el correcto es..."
-            ></textarea>
-
-            <button
-                @click="enviarSolicitudRectificacion"
-                class="btn btn-danger w-100 fw-bold py-3 py-md-2 shadow"
-                :disabled="cargando || !solicitudCambio"
-            >
-                ENVIAR SOLICITUD DE CAMBIO
+        <!-- CONTACTO Y DOMICILIO -->
+        <h6 class="titulo-seccion"><i class="bi bi-house-door me-1"></i> Contacto y domicilio</h6>
+        <div v-if="!editando" class="row g-3 mb-4">
+          <div v-for="d in datosContacto" :key="d.etiqueta" class="col-12 col-sm-6 col-md-4">
+            <span class="dato-etiqueta">{{ d.etiqueta }}</span>
+            <div class="dato-valor">{{ d.valor || '-' }}</div>
+          </div>
+        </div>
+        <form v-else class="row g-3 mb-4" novalidate @submit.prevent="guardar">
+          <div class="col-12 col-md-6">
+            <label for="mdc-email" class="form-label small fw-bold text-dark">Email personal *</label>
+            <input id="mdc-email" v-model.trim="form.email" type="email" maxlength="100" class="form-control" :class="clase('email')">
+            <div class="invalid-feedback">{{ errores.email }}</div>
+          </div>
+          <div class="col-12 col-md-6">
+            <label for="mdc-celular" class="form-label small fw-bold text-dark">Celular *</label>
+            <input id="mdc-celular" v-model.trim="form.celular" type="tel" maxlength="30" class="form-control" :class="clase('celular')">
+            <div class="invalid-feedback">{{ errores.celular }}</div>
+          </div>
+          <div class="col-12 col-md-6">
+            <label for="mdc-provincia" class="form-label small fw-bold text-dark">Provincia *</label>
+            <select id="mdc-provincia" v-model="form.provincia" @change="form.localidad = ''" class="form-select" :class="clase('provincia')">
+              <option value="" disabled>Seleccionar...</option>
+              <option v-for="p in provincias" :key="p.id" :value="Number(p.id)">{{ p.nombre }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label for="mdc-localidad" class="form-label small fw-bold text-dark">Localidad *</label>
+            <select id="mdc-localidad" v-model="form.localidad" class="form-select" :class="clase('localidad')" :disabled="!form.provincia">
+              <option value="" disabled>Seleccionar...</option>
+              <option v-for="l in localidadesFiltradas" :key="l.id" :value="Number(l.id)">{{ l.nombre }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-8">
+            <label for="mdc-direccion" class="form-label small fw-bold text-dark">Dirección *</label>
+            <input id="mdc-direccion" v-model.trim="form.direccion" type="text" maxlength="255" class="form-control" :class="clase('direccion')">
+          </div>
+          <div class="col-12 col-md-4">
+            <label for="mdc-zona" class="form-label small fw-bold text-dark">Zona / Barrio</label>
+            <input id="mdc-zona" v-model.trim="form.zona" type="text" maxlength="100" class="form-control">
+          </div>
+          <div class="col-12 col-md-6">
+            <label for="mdc-tel" class="form-label small fw-bold text-dark">Teléfono de emergencia *</label>
+            <input id="mdc-tel" v-model.trim="form.telefonoContacto" type="tel" maxlength="50" class="form-control" :class="clase('telefonoContacto')">
+          </div>
+          <div class="col-12 col-md-6">
+            <label for="mdc-parentesco" class="form-label small fw-bold text-dark">Parentesco del contacto *</label>
+            <input id="mdc-parentesco" v-model.trim="form.parentescoContacto" type="text" maxlength="100" class="form-control" :class="clase('parentescoContacto')">
+          </div>
+          <div class="col-12 d-flex flex-column flex-sm-row gap-2 justify-content-end">
+            <button type="button" @click="editando = false" class="btn btn-light border fw-bold px-4">CANCELAR</button>
+            <button type="submit" class="btn btn-success fw-bold px-4" :disabled="guardando">
+              <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
+              GUARDAR CAMBIOS
             </button>
+          </div>
+        </form>
+
+        <!-- ACTIVIDAD DEPORTIVA -->
+        <h6 class="titulo-seccion"><i class="bi bi-dribbble me-1"></i> Actividad deportiva</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-md-6">
+            <span class="dato-etiqueta">Jugador/a</span>
+            <div class="dato-valor">{{ textoJugador || 'No' }}</div>
+          </div>
+          <div class="col-12 col-md-6">
+            <span class="dato-etiqueta">DT</span>
+            <div class="dato-valor">{{ textoDtClubes(perfil.dt_clubes) || 'No' }}</div>
+          </div>
+          <div class="col-12">
+            <div class="form-text mt-0">Si necesitás cambiar estos datos, pedíselo a la coordinación del curso.</div>
+          </div>
         </div>
+
+        <!-- CONTRASEÑA -->
+        <h6 class="titulo-seccion"><i class="bi bi-key me-1"></i> Contraseña</h6>
+        <form class="row g-3" novalidate @submit.prevent="cambiarPassword">
+          <div class="col-12 col-md-4">
+            <label for="mdc-pass-actual" class="form-label small fw-bold text-dark">Contraseña actual</label>
+            <input id="mdc-pass-actual" v-model="pass.actual" type="password" autocomplete="current-password" class="form-control">
+          </div>
+          <div class="col-12 col-md-4">
+            <label for="mdc-pass-nueva" class="form-label small fw-bold text-dark">Nueva contraseña</label>
+            <input id="mdc-pass-nueva" v-model="pass.nueva" type="password" autocomplete="new-password" maxlength="72" class="form-control" placeholder="Mínimo 8 caracteres">
+          </div>
+          <div class="col-12 col-md-4">
+            <label for="mdc-pass-confirmacion" class="form-label small fw-bold text-dark">Repetir nueva contraseña</label>
+            <input id="mdc-pass-confirmacion" v-model="pass.confirmacion" type="password" autocomplete="new-password" maxlength="72" class="form-control">
+          </div>
+          <div class="col-12 d-flex justify-content-end">
+            <button type="submit" class="btn btn-dark fw-bold px-4" :disabled="cambiandoPass || !pass.actual || !pass.nueva">
+              <span v-if="cambiandoPass" class="spinner-border spinner-border-sm me-1"></span>
+              CAMBIAR CONTRASEÑA
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, inject } from 'vue';
-import { api } from '@/api/api';
-import { auth } from '../../../api/auth';
-import { useHead } from '@vueuse/head';
+import { ref, reactive, computed, onMounted, inject } from 'vue'
+import { useHead } from '@vueuse/head'
+import { api } from '@/api/api'
+import { ESTADOS_CURSO, GENEROS_CURSO, DOMINIO_USUARIO_CURSO, urlFotoCurso, FOTO_POR_DEFECTO, textoDtClubes } from '@/composables/useCursoArbitro'
 
-useHead({
-  title: 'Mis Datos | AAAB',
-  meta: [
-    { name: 'description', content: 'Mis datos personales y de contacto.' },
-    { property: 'og:title', content: 'Mis Datos | AAAB' },
-    { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' }
-  ],
-});
+useHead({ title: 'Datos Personales | Curso AAAB' })
 
-// Inyectamos el notificador global
-const notificar = inject('notificar');
-const arbitro = ref(auth.getUser() || {});
-const opciones = ref({ provincias: [], localidades: [] });
-const localidadesFiltradas = ref([]);
-const cargando = ref(false);
-const solicitudCambio = ref('');
-const historialRectificaciones = ref([]);
-const nuevaPassword = ref('');
-const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
+const toast = inject('toast', (m) => alert(m.mensaje || m))
 
-const mostrarFechaArg = (fecha) => {
-    if (!fecha) return '';
-    const partes = fecha.split('-');
-    if (partes.length !== 3) return fecha;
-    return `${partes[2]}-${partes[1]}-${partes[0]}`;
-};
+const perfil = ref(null)
+const provincias = ref([])
+const localidades = ref([])
+const cargando = ref(true)
+const versionFoto = ref(Date.now())
 
-const obtenerHistorialRectificaciones = async () => {
-    try {
-        const res = await api.get({
-            entity: 'datos_personales',
-            action: 'obtenerHistorial',
-            payload: { tipo: "datos_personales" }
-        });
-        historialRectificaciones.value = res.payload || [];
-    } catch (error) {
-        console.error("Error al cargar el historial de rectificaciones", error);
-    }
-};
+// ─── Helpers de vista ────────────────────────────────────────────
+const fechaArg = (f) => (f ? String(f).substring(0, 10).split('-').reverse().join('/') : '')
+const urlFoto = computed(() => urlFotoCurso(perfil.value?.dni, versionFoto.value))
+
+const datosFijos = computed(() => [
+  { etiqueta: 'Apellido', valor: perfil.value.apellido },
+  { etiqueta: 'Nombre', valor: perfil.value.nombre },
+  { etiqueta: 'DNI', valor: perfil.value.dni },
+  { etiqueta: 'Fecha de nacimiento', valor: fechaArg(perfil.value.fecha_nacimiento) },
+  { etiqueta: 'Género', valor: GENEROS_CURSO.find(g => g.valor === perfil.value.genero)?.etiqueta },
+  { etiqueta: 'Inscripción', valor: fechaArg(perfil.value.fecha_registro) },
+])
+
+const datosContacto = computed(() => [
+  { etiqueta: 'Email personal', valor: perfil.value.email },
+  { etiqueta: 'Celular', valor: perfil.value.celular },
+  { etiqueta: 'Provincia', valor: perfil.value.nombre_provincia },
+  { etiqueta: 'Localidad', valor: perfil.value.nombre_localidad },
+  { etiqueta: 'Dirección', valor: perfil.value.direccion },
+  { etiqueta: 'Zona / Barrio', valor: perfil.value.zona },
+  { etiqueta: 'Teléfono de emergencia', valor: perfil.value.telefonocontacto },
+  { etiqueta: 'Parentesco', valor: perfil.value.parentescocontacto },
+])
+
+const textoJugador = computed(() => {
+  if (perfil.value?.es_jugador !== 'SI') return ''
+  const categorias = String(perfil.value.categorias_jugador || '').split('|').map(c => c.trim()).filter(Boolean).join('; ')
+  return `${perfil.value.club_jugador}: ${categorias}`
+})
+
+// ─── Carga ───────────────────────────────────────────────────────
+const cargarPerfil = async () => {
+  const res = await api.get({ entity: 'perfil_curso_arbitro', action: 'obtenerMiPerfilCurso', payload: {} })
+  if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar tus datos')
+  perfil.value = res.payload
+}
 
 onMounted(async () => {
-    obtenerHistorialRectificaciones();
+  try {
+    const [, resUbicacion] = await Promise.all([
+      cargarPerfil(),
+      api.get({ entity: 'localidades', action: 'obtenerProvinciasLocalidades', payload: {} }),
+    ])
+    provincias.value = resUbicacion?.payload?.provincias ?? []
+    localidades.value = resUbicacion?.payload?.localidades ?? []
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    cargando.value = false
+  }
+})
 
-    if (edicionAbierta.value) {
-        try {
-            const { payload } = await api.get({
-                entity: 'localidades',
-                action: 'obtenerProvinciasLocalidades'
-            });
+// ─── Edición de contacto ─────────────────────────────────────────
+const editando = ref(false)
+const guardando = ref(false)
+const intento = ref(false)
+const form = reactive({})
+const errores = ref({})
 
-            opciones.value = payload;
+const localidadesFiltradas = computed(() =>
+  localidades.value.filter(l => Number(l.provincia_id) === Number(form.provincia))
+)
 
-            if (arbitro.value.provincia) {
-                filtrarLocalidades(arbitro.value.provincia);
-            }
-        } catch (error) {
-            console.error("Error al cargar provincias/localidades", error);
-        }
-    }
-});
+const empezarEdicion = () => {
+  Object.assign(form, {
+    email: perfil.value.email || '',
+    celular: perfil.value.celular || '',
+    provincia: perfil.value.provincia ? Number(perfil.value.provincia) : '',
+    localidad: perfil.value.localidad ? Number(perfil.value.localidad) : '',
+    direccion: perfil.value.direccion || '',
+    zona: perfil.value.zona || '',
+    telefonoContacto: perfil.value.telefonocontacto || '',
+    parentescoContacto: perfil.value.parentescocontacto || '',
+  })
+  intento.value = false
+  errores.value = {}
+  editando.value = true
+}
 
-const filtrarLocalidades = (provId) => {
-    if (!opciones.value.localidades || !edicionAbierta.value) return;
+const validar = () => {
+  const e = {}
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Ingresá un email válido.'
+  else if (form.email.toLowerCase().endsWith(`@${DOMINIO_USUARIO_CURSO}`)) e.email = 'Usá tu email personal, no el del curso.'
+  for (const campo of ['celular', 'provincia', 'localidad', 'direccion', 'telefonoContacto', 'parentescoContacto']) {
+    if (!String(form[campo] ?? '').trim()) e[campo] = 'Obligatorio.'
+  }
+  return e
+}
 
-    localidadesFiltradas.value = opciones.value.localidades.filter(
-        l => l.provincia_id == provId
-    );
-};
+const clase = (campo) => (intento.value && errores.value[campo] ? 'is-invalid' : '')
 
-watch(() => arbitro.value.provincia, (nuevoId) => {
-    if (edicionAbierta.value) {
-        filtrarLocalidades(nuevoId);
-    }
-});
+const guardar = async () => {
+  intento.value = true
+  errores.value = validar()
+  if (Object.keys(errores.value).length) {
+    toast({ titulo: 'Revisá los datos', mensaje: 'Hay campos incompletos o con errores.', tipo: 'danger' })
+    return
+  }
+  guardando.value = true
+  try {
+    const res = await api.post({ entity: 'perfil_curso_arbitro', action: 'actualizarMiPerfilCurso', payload: { ...form } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudieron guardar los cambios')
+    await cargarPerfil()
+    editando.value = false
+    toast({ titulo: 'Datos actualizados', mensaje: 'Tus datos se guardaron correctamente.', tipo: 'success' })
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    guardando.value = false
+  }
+}
 
-const guardarCambios = async () => {
-    cargando.value = true;
-    try {
-        const res = await api.post({
-            entity: 'datos_personales',
-            action: 'actualizarDatos',
-            payload: {
-                arbitro: arbitro.value
-            }
-        })
-        // El api devuelve { ok, payload }: el resultado real del PHP viene en res.payload
-        if (res?.ok && res.payload?.success) {
-            notificar({
-              titulo: '¡Perfil Actualizado!',
-              mensaje: 'Tus datos se guardaron correctamente en el legajo.',
-              tipo: 'success'
-            });
-            auth.updateUser(arbitro.value);
-        } else {
-            notificar({
-              titulo: 'Error',
-              mensaje: res?.payload?.message || res?.message || 'No se pudieron actualizar los datos.',
-              tipo: 'danger'
-            });
-        }
-    } catch {
-        notificar({
-          titulo: 'Error de Conexión',
-          mensaje: 'No pudimos conectar con el servidor para guardar los cambios.',
-          tipo: 'danger'
-        });
-    } finally {
-        cargando.value = false;
-    }
-};
+// ─── Foto (recorte cuadrado y achicado antes de subir) ────────────
+const subiendoFoto = ref(false)
+const LADO_FOTO = 600
+
+const recortarCuadrado = (archivo) => new Promise((resolve, reject) => {
+  const img = new Image()
+  const url = URL.createObjectURL(archivo)
+  img.onload = () => {
+    const lado = Math.min(img.width, img.height)
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.min(lado, LADO_FOTO)
+    canvas.height = canvas.width
+    canvas.getContext('2d').drawImage(img, (img.width - lado) / 2, (img.height - lado) / 2, lado, lado, 0, 0, canvas.width, canvas.height)
+    URL.revokeObjectURL(url)
+    canvas.toBlob(b => (b ? resolve(b) : reject(new Error('No se pudo procesar la imagen'))), 'image/jpeg', 0.9)
+  }
+  img.onerror = () => {
+    URL.revokeObjectURL(url)
+    reject(new Error('El archivo no es una imagen válida'))
+  }
+  img.src = url
+})
+
+const subirFoto = async (evento) => {
+  const archivo = evento.target.files?.[0]
+  evento.target.value = ''
+  if (!archivo) return
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(archivo.type)) {
+    toast({ titulo: 'Formato no permitido', mensaje: 'Usá una imagen JPG, PNG o WEBP.', tipo: 'danger' })
+    return
+  }
+  if (archivo.size > 5 * 1024 * 1024) {
+    toast({ titulo: 'Imagen muy pesada', mensaje: 'La imagen no puede superar los 5 MB.', tipo: 'danger' })
+    return
+  }
+  subiendoFoto.value = true
+  try {
+    const blob = await recortarCuadrado(archivo)
+    const formData = new FormData()
+    formData.append('fotos', new File([blob], 'perfil.jpg', { type: 'image/jpeg' }))
+    const res = await api.postFile({ entity: 'perfil_curso_arbitro', action: 'actualizarFotoCurso', payload: formData })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo subir la foto')
+    versionFoto.value = Date.now()
+    window.dispatchEvent(new Event('foto-curso-actualizada'))
+    toast({ titulo: 'Foto actualizada', mensaje: 'Tu foto de perfil se guardó correctamente.', tipo: 'success' })
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    subiendoFoto.value = false
+  }
+}
+
+// ─── Contraseña ──────────────────────────────────────────────────
+const pass = reactive({ actual: '', nueva: '', confirmacion: '' })
+const cambiandoPass = ref(false)
 
 const cambiarPassword = async () => {
-    if (nuevaPassword.value.length < 6) {
-        notificar({
-          titulo: 'Clave demasiado corta',
-          mensaje: 'La contraseña debe tener al menos 6 caracteres.',
-          tipo: 'danger'
-        });
-        return;
-    }
-
-    cargando.value = true;
-    try {
-        const res = await api.post({
-            entity: 'arbitros',
-            action: 'actualizarPassword',
-            payload: {
-                password: nuevaPassword.value
-            }
-        });
-        if (res.ok) {
-            notificar({
-              titulo: '¡Clave Actualizada!',
-              mensaje: 'Tu nueva contraseña ha sido guardada con éxito.',
-              tipo: 'success'
-            });
-            nuevaPassword.value = '';
-        } else {
-            notificar({
-              titulo: 'Error',
-              mensaje: res.data.message || 'No se pudo cambiar la contraseña.',
-              tipo: 'danger'
-            });
-        }
-    } catch {
-        notificar({
-          titulo: 'Error',
-          mensaje: 'Hubo un problema al intentar actualizar tu contraseña.',
-          tipo: 'danger'
-        });
-    } finally {
-        cargando.value = false;
-    }
-};
-
-const enviarSolicitudRectificacion = async () => {
-    if (!solicitudCambio.value.trim()) return;
-    cargando.value = true;
-    try {
-        const res = await api.post({
-            entity: 'datos_personales',
-            action: 'rectificarDatos',
-            payload: {
-                tipo: "datos_personales",
-                mensaje: "RECTIFICACIÓN: " + solicitudCambio.value
-            }
-        });
-
-        if (res.ok || res.success) {
-            notificar({
-                titulo: 'Solicitud Enviada',
-                mensaje: 'Tu pedido de rectificación fue enviado a la asociación.',
-                tipo: 'success'
-            });
-            solicitudCambio.value = '';
-            await obtenerHistorialRectificaciones();
-        } else {
-            throw new Error();
-        }
-    } catch {
-        notificar({
-            titulo: 'Error',
-            mensaje: 'No se pudo enviar la solicitud.',
-            tipo: 'danger'
-        });
-    } finally {
-        cargando.value = false;
-    }
-};
+  if (pass.nueva.length < 8) {
+    toast({ titulo: 'Contraseña corta', mensaje: 'La nueva contraseña tiene que tener al menos 8 caracteres.', tipo: 'danger' })
+    return
+  }
+  if (pass.nueva !== pass.confirmacion) {
+    toast({ titulo: 'No coinciden', mensaje: 'Las contraseñas nuevas no coinciden.', tipo: 'danger' })
+    return
+  }
+  cambiandoPass.value = true
+  try {
+    const res = await api.post({ entity: 'perfil_curso_arbitro', action: 'cambiarMiPasswordCurso', payload: { ...pass } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo cambiar la contraseña')
+    Object.assign(pass, { actual: '', nueva: '', confirmacion: '' })
+    toast({ titulo: 'Contraseña actualizada', mensaje: 'Usala la próxima vez que inicies sesión.', tipo: 'success' })
+  } catch (e) {
+    toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    cambiandoPass.value = false
+  }
+}
 </script>
 
 <style scoped>
-/* ====================================================
-   ESTILOS BASE Y COMPONENTES
-   ==================================================== */
-.form-control-sm, .form-select-sm {
+.foto-perfil {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #dc2626;
+  flex-shrink: 0;
+}
+.titulo-seccion {
+  color: #dc3545;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+.dato-etiqueta {
+  display: block;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.dato-valor {
+  background: #f8fafc;
   border-radius: 8px;
-  padding: 0.5rem;
+  padding: 8px 10px;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.9rem;
+  word-break: break-word;
 }
-
-.manual-section {
-  background-color: #0c1624;
-  border-radius: 1rem;
+.form-control, .form-select { font-size: 1rem; }
+@media (min-width: 768px) {
+  .form-control, .form-select { font-size: 0.9rem; }
 }
-
-.btn-danger {
-  background-color: #dc2626 !important;
-  border: none;
-}
-
-.text-white-50 {
-  color: rgba(255, 255, 255, 0.5) !important;
-}
-
-.custom-textarea {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  border: none;
-  border-radius: 8px;
-}
-
-.custom-textarea::placeholder {
-  color: #6c757d;
-}
-
-.badge {
-  letter-spacing: 1px;
-}
-
-/* ====================================================
-   EFECTO HOVER DE LA LISTA HISTORIAL
-   ==================================================== */
-.item-historial {
-  transition: background-color 0.2s ease;
-}
-
-.item-historial:hover {
-  background-color: #f8fafc !important;
-}
-
-.animate__animated { animation-duration: 0.5s; }
-
 </style>

@@ -20,14 +20,15 @@
         <i class="bi bi-check-circle-fill text-success d-block mb-3" style="font-size: 3.5rem;"></i>
         <h5 class="fw-bold text-dark mb-2">¡Inscripción enviada!</h5>
         <p class="text-muted mb-2">
-          Ya podés iniciar sesión en el panel del curso con tu usuario
-          <strong class="text-dark">{{ usuarioCreado }}</strong> y la contraseña que elegiste.
+          Vamos a <strong class="text-dark">verificar tus datos</strong> y, cuando te demos de alta, te avisamos por email a
+          <strong class="text-dark">{{ form.email }}</strong>.
         </p>
         <p class="text-muted small mb-4">
-          Las novedades del curso te van a llegar a <strong class="text-dark">{{ form.email }}</strong>.
+          A partir del alta vas a poder iniciar sesión con tu usuario <strong class="text-dark">{{ usuarioCreado }}</strong>
+          y la contraseña que elegiste.
         </p>
-        <router-link to="/login-arbitro" class="btn btn-danger fw-bold px-4 py-2 rounded-3">
-          <i class="bi bi-box-arrow-in-right me-1"></i> IR A INICIAR SESIÓN
+        <router-link to="/" class="btn btn-danger fw-bold px-4 py-2 rounded-3">
+          <i class="bi bi-house-door me-1"></i> VOLVER AL INICIO
         </router-link>
       </div>
 
