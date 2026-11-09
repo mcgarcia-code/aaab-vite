@@ -57,7 +57,7 @@
 
             <div v-else class="row g-3">
               <div v-for="g in grupos[pestana]" :key="g.examen.id" class="col-12 col-md-6 col-xxl-4">
-                <article class="examen-card h-100 d-flex flex-column" :class="'borde-' + g.examen.tipo">
+                <article class="examen-card h-100 d-flex flex-column" :class="['borde-' + g.examen.tipo, { 'es-recuperatorio': g.original }]">
                   <header class="d-flex gap-3 p-3 pb-2">
                     <div class="fecha-bloque flex-shrink-0 text-center">
                       <div class="dia">{{ diaDe(g.examen.fecha) }}</div>
@@ -66,7 +66,9 @@
                     <div class="min-w-0 flex-grow-1">
                       <h6 class="fw-bold text-dark mb-1 text-break">{{ g.examen.titulo }}</h6>
                       <div v-if="g.examen.clase" class="small text-muted text-break"><i class="bi bi-easel me-1"></i>{{ g.examen.clase }}</div>
+                      <div v-if="g.original" class="small text-warning-emphasis text-break"><i class="bi bi-arrow-repeat me-1"></i>Recupera: {{ g.original.titulo }} ({{ fechaDMA(g.original.fecha) }})</div>
                       <div class="d-flex flex-wrap gap-1 mt-2 etiquetas-examen">
+                        <span v-if="g.original" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio</span>
                         <span v-if="g.examen.esRecuperatorioParcialitos" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio de parcialitos</span>
                         <span v-if="g.examen.tipo === 'fisico'" class="badge" :class="g.examen.esFinal ? 'bg-primary' : 'bg-light text-dark border'">{{ g.examen.esFinal ? 'Físico final' : 'Simulacro' }}</span>
                         <span class="badge" :class="claseCurso(g.examen.curso)">{{ etiquetaCurso(g.examen.curso) }}</span>
@@ -94,23 +96,6 @@
                     </div>
                     <div class="small text-muted mt-2">
                       <i class="bi bi-info-circle me-1"></i>{{ criterio(g.examen) }}
-                    </div>
-                  </div>
-
-                  <!-- RECUPERATORIOS -->
-                  <div v-if="g.recuperatorios.length" class="mx-3 mt-3 recuperatorios">
-                    <div class="small fw-bold text-warning-emphasis mb-1"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorios</div>
-                    <div v-for="r in g.recuperatorios" :key="r.id" class="recuperatorio d-flex flex-wrap align-items-center justify-content-between gap-2">
-                      <div class="small min-w-0">
-                        <strong>{{ fechaDMA(r.fecha) }}</strong>
-                        <span class="text-success fw-bold ms-2">{{ r.aprobados }} aprob.</span>
-                        <span class="text-danger fw-bold ms-1">{{ desaprobadosSinAusentes(r) }} desap.</span>
-                        <span v-if="r.online" class="badge ms-1" :class="r.habilitado ? 'bg-primary' : 'bg-secondary'">{{ r.habilitado ? 'Online' : 'Cerrado' }}</span>
-                      </div>
-                      <div class="btn-group btn-group-sm flex-shrink-0">
-                        <button @click="abrirNotas(r)" class="btn btn-outline-success fw-bold" :aria-label="'Cargar resultados del recuperatorio del ' + fechaDMA(r.fecha)"><i class="bi bi-pencil-square"></i></button>
-                        <button @click="confirmarEliminar(r)" class="btn btn-outline-danger" title="Borrar" aria-label="Borrar recuperatorio"><i class="bi bi-trash3"></i></button>
-                      </div>
                     </div>
                   </div>
 
@@ -163,7 +148,7 @@
                         </template>
                         <span v-else class="text-muted">—</span>
                       </td>
-                      <td class="text-center fw-bold text-dark">{{ aprobadosAlumno(a) }} / {{ columnasPlanilla.filter(e => correspondeExamen(e, a)).length }}</td>
+                      <td class="text-center fw-bold text-dark">{{ aprobadosAlumno(a) }} / {{ totalAlumno(a) }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -176,7 +161,7 @@
                       <div class="min-w-0">
                         <div class="fw-bold text-dark text-uppercase">{{ a.apellido }}, {{ a.nombre }}</div>
                       </div>
-                      <span class="badge bg-dark flex-shrink-0">{{ aprobadosAlumno(a) }} / {{ columnasPlanilla.filter(e => correspondeExamen(e, a)).length }} aprob.</span>
+                      <span class="badge bg-dark flex-shrink-0">{{ aprobadosAlumno(a) }} / {{ totalAlumno(a) }} aprob.</span>
                     </div>
                     <div v-for="e in columnasPlanilla.filter(e => correspondeExamen(e, a))" :key="'plme-' + a.id + '-' + e.id" class="fila-planilla d-flex justify-content-between align-items-center gap-2">
                       <div class="min-w-0">
@@ -426,14 +411,22 @@ const pestana = ref('parcialito')
 const pestanaDe = (e) => (e.tipo === 'teorico' ? (e.esFinal ? 'final' : 'parcialito') : e.tipo)
 
 // Los recuperatorios se muestran dentro de su examen original
+// Cada recuperatorio se muestra como tarjeta propia, justo después de su examen original
 const grupos = computed(() => {
   const resultado = { parcialito: [], final: [], practico: [], fisico: [], planilla: [] }
-  examenesFiltrados.value.filter(e => !e.idExamenOriginal).forEach(examen => {
-    resultado[pestanaDe(examen)]?.push({
-      examen,
-      recuperatorios: examenesFiltrados.value.filter(r => r.idExamenOriginal === examen.id),
-    })
+  const originales = examenesFiltrados.value.filter(e => !e.idExamenOriginal)
+  originales.forEach(examen => {
+    const lista = resultado[pestanaDe(examen)]
+    if (!lista) return
+    lista.push({ examen, original: null })
+    examenesFiltrados.value
+      .filter(r => r.idExamenOriginal === examen.id)
+      .forEach(r => lista.push({ examen: r, original: examen }))
   })
+  // Recuperatorios cuyo original no está en el listado (por ejemplo, filtrado por curso)
+  examenesFiltrados.value
+    .filter(r => r.idExamenOriginal && !originales.some(o => o.id === r.idExamenOriginal))
+    .forEach(r => resultado[pestanaDe(r)]?.push({ examen: r, original: null }))
   return resultado
 })
 
@@ -457,7 +450,7 @@ const etiquetaColumna = (e) => {
 }
 
 // ─── Planilla de notas (alumnos x exámenes) ──────────────────────
-const planilla = ref({ alumnos: [], notas: [] })
+const planilla = ref({ alumnos: [], notas: [], recuperados: [] })
 const filtroAlumno = ref('')
 const descargandoPlanilla = ref(null)
 
@@ -503,7 +496,17 @@ const textoCelda = (e, a) => {
   return e.online ? `${formatoNota(n.nota / (e.notaMaxima || 100) * 100)}%` : formatoNota(n.nota)
 }
 
-const aprobadosAlumno = (a) => columnasPlanilla.value.filter(e => correspondeExamen(e, a) && aprobadoCelda(e, a)).length
+// Cuentan los exámenes originales (sin recuperatorios ni simulacros). Si aprobó el recuperatorio, el original cuenta como aprobado.
+const cuentaParaAprobados = (e) => !e.idExamenOriginal && !e.esRecuperatorioParcialitos && !(e.tipo === 'fisico' && !e.esFinal)
+const examenesQueCuentan = (a) => columnasPlanilla.value.filter(e => cuentaParaAprobados(e) && correspondeExamen(e, a))
+const aproboConRecuperatorio = (e, a) => {
+  const porRecuperatorio = examenesFiltrados.value.some(r => r.idExamenOriginal === e.id && aprobadoCelda(r, a))
+  const porParcialitos = (planilla.value.recuperados || [])
+    .some(x => x.idAlumno === a.id && x.idParcialito === e.id && aprobadoCelda({ id: x.idExamen }, a))
+  return porRecuperatorio || porParcialitos
+}
+const aprobadosAlumno = (a) => examenesQueCuentan(a).filter(e => aprobadoCelda(e, a) || aproboConRecuperatorio(e, a)).length
+const totalAlumno = (a) => examenesQueCuentan(a).length
 
 const descargarPdfPlanilla = async (e, a) => {
   descargandoPlanilla.value = `${a.id}-${e.id}`
@@ -736,8 +739,7 @@ onMounted(() => {
 .stat-ok { background: #f0fdf4; color: #15803d; }
 .stat-mal { background: #fef2f2; color: #b91c1c; }
 .stat-aus { background: #f1f5f9; color: #475569; }
-.recuperatorios { border-top: 1px dashed #fcd34d; padding-top: 8px; }
-.recuperatorio { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 6px 8px; margin-bottom: 6px; }
+.examen-card.es-recuperatorio { background: #fffbeb; border-color: #fde68a; }
 .fila-planilla { border-top: 1px solid #f1f5f9; padding: 6px 0; }
 .opcion-fisico { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
 .opcion-fisico.activa { border-color: #0d6efd; background: #eff6ff; }
