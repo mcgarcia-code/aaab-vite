@@ -29,3 +29,10 @@ export const observacionCursoDesdeFila = (o) => ({
   observador: o.observador || '',
   ...Object.fromEntries(CAMPOS_OBSERVACION_CURSO.map(c => [c.clave, o[c.columna] || ''])),
 })
+
+// Revisión: se carga pendiente; recién aprobada la ve el aspirante. El observador solo edita las pendientes.
+export const ESTADOS_REVISION_OBSERVACION = {
+  pendiente: { etiqueta: 'Pendiente', clase: 'bg-warning text-dark', icono: 'bi-hourglass-split' },
+  aprobada: { etiqueta: 'Aprobada', clase: 'bg-success', icono: 'bi-check-circle-fill' },
+  rechazada: { etiqueta: 'Rechazada', clase: 'bg-danger', icono: 'bi-x-circle-fill' },
+}

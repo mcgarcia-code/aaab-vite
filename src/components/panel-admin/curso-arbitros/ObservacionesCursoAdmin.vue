@@ -39,6 +39,12 @@
                 <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.corta.toUpperCase() }}</option>
               </select>
             </div>
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark" aria-label="Estado">
+                <option value="">ESTADO</option>
+                <option v-for="(e, clave) in ESTADOS_REVISION_OBSERVACION" :key="clave" :value="clave">{{ e.etiqueta.toUpperCase() }}</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -56,13 +62,14 @@
                     <th class="py-3 text-uppercase text-muted">Encuentro</th>
                     <th class="py-3 text-uppercase text-muted">Categoría</th>
                     <th class="py-3 text-uppercase text-muted">Observador</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="o in observacionesFiltradas" :key="o.id">
                     <td class="ps-3 text-center">
                       <div class="d-flex justify-content-center gap-1">
-                        <button @click="verObservacion = o" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-success" title="Ver comentarios" aria-label="Ver comentarios">
+                        <button @click="abrirVer(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-success" title="Ver y revisar" aria-label="Ver y revisar">
                           <span class="material-icons" style="font-size:16px;">visibility</span>
                         </button>
                         <button @click="abrirEditar(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar" aria-label="Editar">
@@ -79,9 +86,10 @@
                     <td class="text-dark">{{ o.encuentro }}</td>
                     <td class="text-dark">{{ o.categoria || '-' }}</td>
                     <td class="text-dark">{{ o.observador || '-' }}</td>
+                    <td class="text-center"><span class="badge" :class="estadoDe(o).clase"><i :class="['bi', estadoDe(o).icono, 'me-1']"></i>{{ estadoDe(o).etiqueta }}</span></td>
                   </tr>
                   <tr v-if="!observacionesFiltradas.length">
-                    <td colspan="7" class="text-center py-5 text-muted border-0">
+                    <td colspan="8" class="text-center py-5 text-muted border-0">
                       <span class="material-icons d-block fs-1 mb-2 opacity-50">search_off</span>
                       <span class="fw-bold">No hay observaciones para mostrar.</span>
                     </td>
@@ -95,12 +103,13 @@
                 <div class="card-body p-3 small text-dark">
                   <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
                     <span class="fw-bold text-uppercase">{{ o.apellido }}, {{ o.nombre }}</span>
+                    <span class="badge flex-shrink-0" :class="estadoDe(o).clase">{{ estadoDe(o).etiqueta }}</span>
                   </div>
                   <div>{{ fechaDMA(o.fecha_partido) }} · {{ o.encuentro }}</div>
                   <div v-if="o.observador" class="text-muted">Observador/a: {{ o.observador }}</div>
                   <div v-if="o.categoria" class="text-muted">{{ o.categoria }}</div>
                   <div class="d-flex gap-2 mt-3">
-                    <button @click="verObservacion = o" class="btn btn-sm btn-outline-success flex-fill fw-bold"><i class="bi bi-eye me-1"></i> Ver</button>
+                    <button @click="abrirVer(o)" class="btn btn-sm btn-outline-success flex-fill fw-bold"><i class="bi bi-eye me-1"></i> Ver y revisar</button>
                     <button @click="abrirEditar(o)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
                     <button @click="confirmarEliminar(o)" class="btn btn-sm btn-outline-danger fw-bold" aria-label="Borrar"><i class="bi bi-trash3"></i></button>
                   </div>
@@ -143,6 +152,12 @@
             <div class="fw-bold text-dark text-break">{{ verObservacion.observador || '-' }}</div>
           </div>
         </div>
+        <div class="alert small py-2 mb-3 d-flex flex-wrap align-items-center gap-2" :class="'alert-' + (estadoDe(verObservacion).clase.includes('success') ? 'success' : estadoDe(verObservacion).clase.includes('danger') ? 'danger' : 'warning')">
+          <span class="badge" :class="estadoDe(verObservacion).clase"><i :class="['bi', estadoDe(verObservacion).icono, 'me-1']"></i>{{ estadoDe(verObservacion).etiqueta }}</span>
+          <span v-if="verObservacion.revisado_por">por {{ verObservacion.revisado_por }} · {{ fechaHoraDMA(verObservacion.fecha_revision) }}</span>
+          <span v-else-if="estadoDe(verObservacion).etiqueta === 'Pendiente'">El aspirante todavía no la ve.</span>
+          <div v-if="verObservacion.motivo_revision" class="w-100"><strong>Motivo:</strong> {{ verObservacion.motivo_revision }}</div>
+        </div>
         <div class="d-flex flex-column gap-2">
           <template v-for="c in CAMPOS_OBSERVACION_CURSO" :key="c.clave">
             <div v-if="verObservacion[c.columna]" class="bloque-comentario">
@@ -151,6 +166,29 @@
             </div>
           </template>
           <div v-if="!CAMPOS_OBSERVACION_CURSO.some(c => verObservacion[c.columna])" class="small text-muted fst-italic">Sin comentarios.</div>
+        </div>
+
+        <!-- REVISIÓN -->
+        <div class="revision mt-3 p-3">
+          <div class="dato-etiqueta mb-2">Revisión</div>
+          <div class="d-flex flex-column flex-sm-row gap-2">
+            <button type="button" class="btn btn-success fw-bold flex-fill" :disabled="revisando || verObservacion.estado_revision === 'aprobada'" @click="revisar('aprobada')">
+              <i class="bi bi-check-lg me-1"></i> Aprobar
+            </button>
+            <button type="button" class="btn btn-outline-danger fw-bold flex-fill" :disabled="revisando || verObservacion.estado_revision === 'rechazada'" @click="mostrarMotivoRechazo = !mostrarMotivoRechazo">
+              <i class="bi bi-x-lg me-1"></i> Rechazar
+            </button>
+            <button v-if="verObservacion.estado_revision !== 'pendiente'" type="button" class="btn btn-outline-secondary fw-bold flex-fill" :disabled="revisando" @click="revisar('pendiente')">
+              <i class="bi bi-arrow-counterclockwise me-1"></i> Volver a pendiente
+            </button>
+          </div>
+          <div v-if="mostrarMotivoRechazo" class="mt-2">
+            <label for="motivo-rechazo" class="form-label small fw-bold text-dark">Motivo del rechazo *</label>
+            <textarea id="motivo-rechazo" v-model.trim="motivoRechazo" rows="2" maxlength="500" class="form-control" placeholder="El observador lo va a ver en su panel"></textarea>
+            <button type="button" class="btn btn-danger btn-sm fw-bold mt-2" :disabled="revisando || motivoRechazo.length < 3" @click="revisar('rechazada')">
+              <span v-if="revisando" class="spinner-border spinner-border-sm me-1"></span> Confirmar rechazo
+            </button>
+          </div>
         </div>
       </div>
       <template #footer>
@@ -167,9 +205,9 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import ModalObservacionCurso from '@/components/ModalObservacionCurso.vue'
-import { CAMPOS_OBSERVACION_CURSO } from '@/composables/useObservacionesCurso'
+import { CAMPOS_OBSERVACION_CURSO, ESTADOS_REVISION_OBSERVACION } from '@/composables/useObservacionesCurso'
 import { conAnioActual, anioActual } from '@/utils/anios'
-import { fechaDMA } from '@/utils/fechas'
+import { fechaDMA, fechaHoraDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 
 useHead({ title: 'Observaciones del Curso | AAAB' })
@@ -181,7 +219,7 @@ const anio = ref(Number(anioActual()))
 const anios = computed(() => conAnioActual().map(Number))
 const observaciones = ref([])
 const cargando = ref(false)
-const filtros = reactive({ texto: '', modalidad: '' })
+const filtros = reactive({ texto: '', modalidad: '', estado: '' })
 
 const normalizar = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
@@ -189,11 +227,13 @@ const observacionesFiltradas = computed(() => {
   const texto = normalizar(filtros.texto)
   return observaciones.value.filter(o =>
     (!filtros.modalidad || o.modalidad_curso === filtros.modalidad) &&
+    (!filtros.estado || (o.estado_revision || 'pendiente') === filtros.estado) &&
     (!texto || normalizar(`${o.apellido} ${o.nombre} ${o.encuentro} ${o.observador}`).includes(texto))
   )
 })
 
-const limpiarFiltros = () => Object.assign(filtros, { texto: '', modalidad: '' })
+const limpiarFiltros = () => Object.assign(filtros, { texto: '', modalidad: '', estado: '' })
+const estadoDe = (o) => ESTADOS_REVISION_OBSERVACION[o?.estado_revision] || ESTADOS_REVISION_OBSERVACION.pendiente
 
 const cargarObservaciones = async () => {
   cargando.value = true
@@ -213,6 +253,40 @@ watch(anio, cargarObservaciones)
 // ─── Alta / edición ──────────────────────────────────────────────
 const mostrarModal = ref(false)
 const verObservacion = ref(null)
+const revisando = ref(false)
+const mostrarMotivoRechazo = ref(false)
+const motivoRechazo = ref('')
+
+const abrirVer = (o) => {
+  verObservacion.value = o
+  mostrarMotivoRechazo.value = false
+  motivoRechazo.value = ''
+}
+
+const revisar = async (estado) => {
+  const o = verObservacion.value
+  revisando.value = true
+  try {
+    const res = await api.post({
+      entity: 'observaciones_curso_arbitro',
+      action: 'revisarObservacionCurso',
+      payload: { id: o.id, estado, motivo: estado === 'rechazada' ? motivoRechazo.value : '' },
+    })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar la revisión')
+    const mensajes = {
+      aprobada: 'La observación quedó aprobada y el aspirante ya la ve.',
+      rechazada: 'La observación quedó rechazada.',
+      pendiente: 'La observación volvió a pendiente.',
+    }
+    toast({ titulo: 'Revisión guardada', mensaje: mensajes[estado], tipo: 'success' })
+    verObservacion.value = null
+    await cargarObservaciones()
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    revisando.value = false
+  }
+}
 
 const editarDesdeVer = () => {
   const o = verObservacion.value
@@ -265,6 +339,7 @@ onMounted(cargarObservaciones)
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
 .dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
+.revision { border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
 .bloque-comentario { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; }
 .detalle-titulo { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
 .detalle-texto { white-space: pre-wrap; font-size: 0.9rem; color: #1e293b; overflow-wrap: anywhere; }

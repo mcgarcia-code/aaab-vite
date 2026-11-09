@@ -125,7 +125,7 @@ const guardar = async () => {
   try {
     const res = await api.post({ entity: 'observaciones_curso_arbitro', action: 'guardarObservacionCurso', payload: { ...f } })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar la observación')
-    avisar({ titulo: 'Guardado', mensaje: f.id ? 'La observación se actualizó.' : 'La observación se cargó y se avisó al aspirante.', tipo: 'success' })
+    avisar({ titulo: 'Guardado', mensaje: f.id ? 'La observación se actualizó.' : 'La observación se cargó y queda pendiente de aprobación.', tipo: 'success' })
     mostrar.value = false
     emit('guardado', { ...f })
   } catch (e) {

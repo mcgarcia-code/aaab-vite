@@ -31,12 +31,19 @@
               <div class="small text-muted">
                 {{ fechaDMA(o.fecha_partido) }} · {{ o.encuentro }}<template v-if="o.categoria"> · {{ o.categoria }}</template>
               </div>
-              <span class="badge mt-1" :class="MODALIDADES_CURSO[o.modalidad_curso]?.clase">{{ MODALIDADES_CURSO[o.modalidad_curso]?.etiqueta }}</span>
+              <div class="d-flex flex-wrap gap-1 mt-1">
+                <span class="badge" :class="MODALIDADES_CURSO[o.modalidad_curso]?.clase">{{ MODALIDADES_CURSO[o.modalidad_curso]?.etiqueta }}</span>
+                <span class="badge" :class="estadoDe(o).clase"><i :class="['bi', estadoDe(o).icono, 'me-1']"></i>{{ estadoDe(o).etiqueta }}</span>
+              </div>
             </div>
-            <div class="d-flex gap-1">
+            <div v-if="esPendiente(o)" class="d-flex gap-1">
               <button @click="abrirEditar(o)" class="btn btn-sm btn-outline-primary fw-bold" aria-label="Editar"><i class="bi bi-pencil"></i></button>
               <button @click="confirmarEliminar(o)" class="btn btn-sm btn-outline-danger fw-bold" aria-label="Borrar"><i class="bi bi-trash3"></i></button>
             </div>
+            <span v-else class="small text-muted fst-italic"><i class="bi bi-lock me-1"></i>Ya revisada</span>
+          </div>
+          <div v-if="o.estado_revision === 'rechazada' && o.motivo_revision" class="alert alert-danger small py-2 mt-2 mb-0">
+            <strong>Motivo del rechazo:</strong> {{ o.motivo_revision }}
           </div>
           <div class="row g-2 mt-2">
             <template v-for="c in CAMPOS_OBSERVACION_CURSO" :key="c.clave">
@@ -60,7 +67,7 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalObservacionCurso from '@/components/ModalObservacionCurso.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
-import { CAMPOS_OBSERVACION_CURSO } from '@/composables/useObservacionesCurso'
+import { CAMPOS_OBSERVACION_CURSO, ESTADOS_REVISION_OBSERVACION } from '@/composables/useObservacionesCurso'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 
@@ -74,6 +81,10 @@ const anios = computed(() => conAnioActual().map(Number))
 const observaciones = ref([])
 const cargando = ref(false)
 const mostrarModal = ref(false)
+
+// Solo se pueden editar o borrar mientras están pendientes de revisión
+const estadoDe = (o) => ESTADOS_REVISION_OBSERVACION[o.estado_revision] || ESTADOS_REVISION_OBSERVACION.pendiente
+const esPendiente = (o) => (o.estado_revision || 'pendiente') === 'pendiente'
 const seleccionada = ref(null)
 
 const cargar = async () => {

@@ -47,27 +47,41 @@
             </div>
           </div>
 
-          <!-- ANTERIORES -->
+          <!-- ANTERIORES: acordeón por mes -->
           <template v-if="anteriores.length">
-            <button type="button" class="btn btn-light border w-100 text-start fw-bold small d-flex justify-content-between align-items-center" :aria-expanded="verAnteriores" @click="verAnteriores = !verAnteriores">
-              <span><i class="bi bi-clock-history me-1"></i> Encuentros anteriores ({{ anteriores.length }})</span>
-              <i class="bi" :class="verAnteriores ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-            </button>
-            <div v-show="verAnteriores" class="d-flex flex-column gap-2 mt-2">
-              <div v-for="e in anteriores" :key="'a-' + e.id" class="designacion pasada d-flex gap-3">
-                <div class="cal-box text-center flex-shrink-0">
-                  <div class="dia">{{ Number(e.fecha.substring(8, 10)) }}</div>
-                  <div class="mes">{{ mesCorto(e.fecha) }}</div>
-                </div>
-                <div class="min-w-0 flex-grow-1">
-                  <div class="d-flex justify-content-between align-items-start gap-2">
-                    <div class="fw-bold text-dark text-break">{{ e.titulo }}</div>
-                    <span class="badge flex-shrink-0" :class="claseAsistencia(e.asistencia)">{{ textoAsistencia(e.asistencia) }}</span>
+            <h6 class="titulo-seccion"><i class="bi bi-clock-history me-1"></i> Encuentros anteriores</h6>
+            <div v-for="mes in mesesAnteriores" :key="mes.clave" class="card border shadow-sm mb-2 rounded-3 overflow-hidden">
+              <button
+                type="button"
+                class="acordeon-mes d-flex justify-content-between align-items-center w-100 px-3 py-2 gap-2"
+                :aria-expanded="mesesAbiertos.includes(mes.clave)"
+                @click="alternarMes(mes.clave)"
+              >
+                <span class="fw-bold text-dark d-flex align-items-center gap-2 text-truncate">
+                  <i class="bi text-secondary flex-shrink-0" :class="mesesAbiertos.includes(mes.clave) ? 'bi-folder2-open' : 'bi-folder2'"></i>
+                  <span class="text-truncate">{{ mes.etiqueta }}</span>
+                </span>
+                <span class="d-flex align-items-center gap-2 flex-shrink-0">
+                  <span class="badge bg-secondary rounded-pill">{{ mes.encuentros.length }}</span>
+                  <i class="bi text-muted" :class="mesesAbiertos.includes(mes.clave) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                </span>
+              </button>
+              <div v-show="mesesAbiertos.includes(mes.clave)" class="p-2 p-sm-3 bg-light border-top d-flex flex-column gap-2">
+                <div v-for="e in mes.encuentros" :key="'a-' + e.id" class="designacion pasada d-flex gap-3">
+                  <div class="cal-box text-center flex-shrink-0">
+                    <div class="dia">{{ Number(e.fecha.substring(8, 10)) }}</div>
+                    <div class="mes">{{ mesCorto(e.fecha) }}</div>
                   </div>
-                  <div class="small text-muted">
-                    {{ fechaLargaClase(e.fecha) }}<template v-if="e.hora"> · {{ e.hora }} hs</template>
+                  <div class="min-w-0 flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                      <div class="fw-bold text-dark text-break">{{ e.titulo }}</div>
+                      <span class="badge flex-shrink-0" :class="claseAsistencia(e.asistencia)">{{ textoAsistencia(e.asistencia) }}</span>
+                    </div>
+                    <div class="small text-muted">
+                      {{ fechaLargaClase(e.fecha) }}<template v-if="e.hora"> · {{ e.hora }} hs</template>
+                    </div>
+                    <div v-if="e.comentarios" class="comentarios small mt-2">{{ e.comentarios }}</div>
                   </div>
-                  <div v-if="e.comentarios" class="comentarios small mt-2">{{ e.comentarios }}</div>
                 </div>
               </div>
             </div>
@@ -91,7 +105,7 @@ const toast = inject('toast', (m) => alert(m.mensaje || m))
 const encuentros = ref([])
 const modalidad = ref('')
 const cargando = ref(true)
-const verAnteriores = ref(false)
+const mesesAbiertos = ref([])
 
 const hoy = new Date().toLocaleDateString('sv-SE')
 const MESES_CORTOS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
@@ -100,6 +114,30 @@ const mesCorto = (fecha) => MESES_CORTOS[Number(fecha.substring(5, 7)) - 1]
 // Próximas de la más cercana a la más lejana; anteriores de la más reciente a la más vieja
 const proximas = computed(() => encuentros.value.filter(e => e.fecha >= hoy).sort((a, b) => `${a.fecha} ${a.hora}`.localeCompare(`${b.fecha} ${b.hora}`)))
 const anteriores = computed(() => encuentros.value.filter(e => e.fecha < hoy))
+
+// Anteriores agrupados por mes (del más reciente al más viejo); todos arrancan contraídos
+const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const mesesAnteriores = computed(() => {
+  const mapa = {}
+  anteriores.value.forEach(e => {
+    const clave = e.fecha.substring(0, 7)
+    if (!mapa[clave]) mapa[clave] = []
+    mapa[clave].push(e)
+  })
+  return Object.keys(mapa)
+    .sort((a, b) => b.localeCompare(a))
+    .map(clave => ({
+      clave,
+      etiqueta: `${MESES[Number(clave.substring(5, 7)) - 1]} ${clave.substring(0, 4)}`,
+      encuentros: mapa[clave],
+    }))
+})
+
+const alternarMes = (clave) => {
+  const i = mesesAbiertos.value.indexOf(clave)
+  if (i === -1) mesesAbiertos.value.push(clave)
+  else mesesAbiertos.value.splice(i, 1)
+}
 
 const textoAsistencia = (a) => (a === 'presente' ? 'Presente' : a === 'ausente' ? 'Ausente' : 'Sin registro')
 const claseAsistencia = (a) => (a === 'presente' ? 'bg-success' : a === 'ausente' ? 'bg-secondary' : 'bg-light text-muted border')
@@ -138,4 +176,6 @@ onMounted(async () => {
 .cal-box .mes { font-size: 0.62rem; font-weight: 700; margin-top: 2px; }
 .comentarios { white-space: pre-wrap; background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 6px 10px; color: #1e293b; }
 .min-w-0 { min-width: 0; }
+.acordeon-mes { background: #fff; border: none; cursor: pointer; transition: background-color 0.15s ease; }
+.acordeon-mes:hover { background: #f8fafc; }
 </style>
