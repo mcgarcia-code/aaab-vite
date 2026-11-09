@@ -8,7 +8,7 @@
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
               <i class="bi bi-journal-check me-1"></i> Exámenes del Curso
             </h4>
-            <span class="text-muted small d-block mt-1">{{ examenesFiltrados.length }} exámenes en {{ anio }} · los teóricos se programan desde Clases y Asistencia</span>
+            <span class="text-muted small d-block mt-1">{{ anio }} · los teóricos se programan desde Clases y Asistencia</span>
           </div>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
             <select v-model="filtroCurso" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 150px;" aria-label="Curso">
@@ -23,109 +23,184 @@
               <span v-else class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
-            <button @click="abrirNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
-              <span class="material-icons fs-6">post_add</span>
-              <span class="fw-bold d-none d-md-inline small">Nuevo práctico / físico</span>
-            </button>
           </div>
+        </div>
+
+        <!-- PESTAÑAS -->
+        <div class="px-3 pt-3 bg-white">
+          <ul class="nav nav-pills flex-nowrap overflow-auto gap-2 pb-2 pestanas-examenes" role="tablist">
+            <li v-for="p in PESTANAS" :key="p.clave" class="nav-item flex-shrink-0" role="presentation">
+              <button type="button" class="nav-link fw-bold d-flex align-items-center gap-2" :class="{ active: pestana === p.clave }" role="tab" :aria-selected="pestana === p.clave" @click="pestana = p.clave">
+                <i :class="['bi', p.icono]"></i> {{ p.etiqueta }}
+                <span v-if="p.clave !== 'planilla'" class="badge rounded-pill" :class="pestana === p.clave ? 'bg-white text-danger' : 'bg-secondary'">{{ grupos[p.clave].length }}</span>
+              </button>
+            </li>
+          </ul>
         </div>
 
         <div class="card-body p-3 bg-white">
           <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span></div>
-          <div v-else-if="!examenesFiltrados.length" class="text-center py-5 text-muted">
-            <span class="material-icons d-block fs-1 mb-2 opacity-50">assignment</span>
-            <span class="fw-bold">No hay exámenes cargados para {{ anio }}.</span>
-          </div>
-          <div v-else class="row g-3">
-            <div v-for="e in examenesFiltrados" :key="e.id" class="col-12 col-md-6 col-xl-4">
-              <div class="tarjeta-examen border rounded-3 p-3 h-100 d-flex flex-column">
-                <div class="d-flex justify-content-between align-items-start gap-2">
-                  <div class="min-w-0">
-                    <div class="fw-bold text-dark text-break">{{ e.titulo }}</div>
-                    <div class="small text-muted text-break">{{ fechaDMA(e.fecha) }}<template v-if="e.clase"> · {{ e.clase }}</template></div>
+
+          <!-- EXÁMENES DE LA PESTAÑA -->
+          <template v-else-if="pestana !== 'planilla'">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+              <p class="small text-muted mb-0">{{ AYUDA_PESTANA[pestana] }}</p>
+              <button v-if="pestana === 'practico' || pestana === 'fisico'" @click="abrirNuevo(pestana)" class="btn btn-danger btn-sm fw-bold shadow-sm flex-shrink-0">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo {{ pestana === 'practico' ? 'práctico' : 'físico' }}
+              </button>
+            </div>
+
+            <div v-if="!grupos[pestana].length" class="estado-vacio text-center py-5 text-muted">
+              <i :class="['bi', PESTANAS.find(p => p.clave === pestana).icono, 'fs-1 d-block mb-2 opacity-50']"></i>
+              <span class="fw-bold">{{ VACIO_PESTANA[pestana] }}</span>
+            </div>
+
+            <div v-else class="row g-3">
+              <div v-for="g in grupos[pestana]" :key="g.examen.id" class="col-12 col-md-6 col-xxl-4">
+                <article class="examen-card h-100 d-flex flex-column" :class="'borde-' + g.examen.tipo">
+                  <header class="d-flex gap-3 p-3 pb-2">
+                    <div class="fecha-bloque flex-shrink-0 text-center">
+                      <div class="dia">{{ diaDe(g.examen.fecha) }}</div>
+                      <div class="mes">{{ mesDe(g.examen.fecha) }}</div>
+                    </div>
+                    <div class="min-w-0 flex-grow-1">
+                      <h6 class="fw-bold text-dark mb-1 text-break">{{ g.examen.titulo }}</h6>
+                      <div v-if="g.examen.clase" class="small text-muted text-break"><i class="bi bi-easel me-1"></i>{{ g.examen.clase }}</div>
+                      <div class="d-flex flex-wrap gap-1 mt-2 etiquetas-examen">
+                        <span class="badge" :class="claseCurso(g.examen.curso)">{{ etiquetaCurso(g.examen.curso) }}</span>
+                        <span v-if="g.examen.online" class="badge" :class="g.examen.habilitado ? 'bg-primary' : 'bg-secondary'">
+                          <i class="bi bi-laptop me-1"></i>{{ g.examen.habilitado ? 'Online habilitado' : 'Online cerrado' }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="d-flex flex-column gap-1 flex-shrink-0">
+                      <button @click="abrirEditar(g.examen)" class="btn btn-light btn-sm border p-1 lh-1" title="Editar examen" aria-label="Editar examen"><i class="bi bi-pencil text-primary"></i></button>
+                      <button @click="confirmarEliminar(g.examen)" class="btn btn-light btn-sm border p-1 lh-1" title="Borrar examen" aria-label="Borrar examen"><i class="bi bi-trash3 text-danger"></i></button>
+                    </div>
+                  </header>
+
+                  <div class="px-3">
+                    <div class="row g-2 text-center">
+                      <div class="col-4"><div class="stat stat-ok"><div class="valor">{{ g.examen.aprobados }}</div><div class="etiqueta">Aprobados</div></div></div>
+                      <div class="col-4"><div class="stat stat-mal"><div class="valor">{{ desaprobadosSinAusentes(g.examen) }}</div><div class="etiqueta">Desaprob.</div></div></div>
+                      <div class="col-4"><div class="stat stat-aus"><div class="valor">{{ g.examen.ausentes }}</div><div class="etiqueta">Ausentes</div></div></div>
+                    </div>
+                    <div v-if="g.examen.cargadas" class="progress mt-2" style="height: 6px;" role="img" :aria-label="`${g.examen.aprobados} aprobados de ${g.examen.cargadas}`">
+                      <div class="progress-bar bg-success" :style="{ width: porcentaje(g.examen.aprobados, g.examen.cargadas) + '%' }"></div>
+                      <div class="progress-bar bg-danger" :style="{ width: porcentaje(desaprobadosSinAusentes(g.examen), g.examen.cargadas) + '%' }"></div>
+                      <div class="progress-bar bg-secondary" :style="{ width: porcentaje(g.examen.ausentes, g.examen.cargadas) + '%' }"></div>
+                    </div>
+                    <div class="small text-muted mt-2">
+                      <i class="bi bi-info-circle me-1"></i>{{ criterio(g.examen) }}
+                    </div>
                   </div>
-                  <span class="badge flex-shrink-0" :class="TIPOS_EXAMEN[e.tipo]?.clase">{{ TIPOS_EXAMEN[e.tipo]?.etiqueta }}</span>
-                </div>
-                <div class="d-flex flex-wrap gap-1 mt-2 etiquetas-examen">
-                  <span v-if="e.tipo === 'teorico'" class="badge" :class="e.esFinal ? 'bg-danger' : 'bg-light text-dark border'">{{ e.esFinal ? 'Teórico final' : 'Parcialito' }}</span>
-                  <span v-if="e.idExamenOriginal" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio</span>
-                  <span class="badge" :class="claseCurso(e.curso)">{{ etiquetaCurso(e.curso) }}</span>
-                  <span v-if="e.online" class="badge" :class="e.habilitado ? 'bg-primary' : 'bg-secondary'"><i class="bi bi-laptop me-1"></i>Online{{ e.habilitado ? ' · habilitado' : ' · cerrado' }}</span>
-                  <span v-if="e.tipo === 'teorico'" class="badge bg-light text-dark border">Nota máx. {{ formatoNota(e.notaMaxima) }} · aprueba con {{ formatoNota(e.porcentajeAprobacion) }}%</span>
-                  <span v-else-if="e.tipo === 'practico'" class="badge bg-light text-dark border">Aprobado / Desaprobado</span>
-                </div>
-                <div v-if="e.tipo === 'fisico'" class="small text-muted mt-2">{{ TEXTO_UMBRALES_FISICO }}</div>
-                <div class="small mt-2 text-break">
-                  <span class="text-dark fw-bold">{{ e.cargadas }}</span> {{ e.tipo === 'teorico' ? 'notas cargadas' : 'resultados' }} ·
-                  <span class="text-success fw-bold">{{ e.aprobados }}</span> aprobados ·
-                  <span class="text-secondary fw-bold">{{ e.ausentes }}</span> ausentes
-                  <template v-if="e.recuperatorios"> · <span class="text-warning-emphasis fw-bold">{{ e.recuperatorios }}</span> recuperatorio(s)</template>
-                </div>
-                <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
-                  <button @click="abrirNotas(e)" class="btn btn-sm btn-success flex-fill fw-bold text-nowrap"><i class="bi bi-pencil-square me-1"></i> {{ e.tipo === 'teorico' ? 'Cargar notas' : 'Cargar resultados' }}</button>
-                  <button v-if="!e.idExamenOriginal && e.desaprobados" @click="abrirRecuperatorio(e)" class="btn btn-sm btn-warning fw-bold flex-fill text-nowrap"><i class="bi bi-arrow-repeat me-1"></i> Recuperatorio</button>
-                  <button v-if="e.idExamenOriginal && e.online" @click="abrirConfigRecuperatorio(e)" class="btn btn-sm btn-outline-dark fw-bold" title="Configurar examen online" aria-label="Configurar examen online"><i class="bi bi-sliders"></i></button>
-                  <button @click="abrirEditar(e)" class="btn btn-sm btn-outline-primary fw-bold" title="Editar examen" aria-label="Editar examen"><i class="bi bi-pencil"></i></button>
-                  <button @click="confirmarEliminar(e)" class="btn btn-sm btn-outline-danger fw-bold" title="Borrar examen" aria-label="Borrar examen"><i class="bi bi-trash3"></i></button>
-                </div>
+
+                  <!-- RECUPERATORIOS -->
+                  <div v-if="g.recuperatorios.length" class="mx-3 mt-3 recuperatorios">
+                    <div class="small fw-bold text-warning-emphasis mb-1"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorios</div>
+                    <div v-for="r in g.recuperatorios" :key="r.id" class="recuperatorio d-flex flex-wrap align-items-center justify-content-between gap-2">
+                      <div class="small min-w-0">
+                        <strong>{{ fechaDMA(r.fecha) }}</strong>
+                        <span class="text-success fw-bold ms-2">{{ r.aprobados }} aprob.</span>
+                        <span class="text-danger fw-bold ms-1">{{ desaprobadosSinAusentes(r) }} desap.</span>
+                        <span v-if="r.online" class="badge ms-1" :class="r.habilitado ? 'bg-primary' : 'bg-secondary'">{{ r.habilitado ? 'Online' : 'Cerrado' }}</span>
+                      </div>
+                      <div class="btn-group btn-group-sm flex-shrink-0">
+                        <button @click="abrirNotas(r)" class="btn btn-outline-success fw-bold" :aria-label="'Cargar resultados del recuperatorio del ' + fechaDMA(r.fecha)"><i class="bi bi-pencil-square"></i></button>
+                        <button v-if="r.online" @click="abrirConfigRecuperatorio(r)" class="btn btn-outline-dark" title="Configurar" aria-label="Configurar recuperatorio online"><i class="bi bi-sliders"></i></button>
+                        <button @click="confirmarEliminar(r)" class="btn btn-outline-danger" title="Borrar" aria-label="Borrar recuperatorio"><i class="bi bi-trash3"></i></button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <footer class="d-flex flex-wrap gap-2 p-3 mt-auto">
+                    <button @click="abrirNotas(g.examen)" class="btn btn-success btn-sm fw-bold flex-fill text-nowrap">
+                      <i class="bi bi-pencil-square me-1"></i> {{ g.examen.tipo === 'teorico' ? 'Notas' : 'Resultados' }}
+                      <span class="badge bg-white text-success ms-1">{{ g.examen.cargadas }}</span>
+                    </button>
+                    <button v-if="g.examen.desaprobados" @click="abrirRecuperatorio(g.examen)" class="btn btn-warning btn-sm fw-bold flex-fill text-nowrap">
+                      <i class="bi bi-arrow-repeat me-1"></i> Recuperatorio
+                    </button>
+                  </footer>
+                </article>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </template>
 
-      <!-- PLANILLA DE NOTAS -->
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
-        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-table me-1"></i> Planilla de notas
-            </h4>
-            <span class="text-muted small d-block mt-1">{{ alumnosPlanilla.length }} alumnos regulares en {{ anio }} · {{ columnasPlanilla.length }} exámenes</span>
-          </div>
-          <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none" style="max-width: 260px;" placeholder="BUSCAR ALUMNO O DNI..." aria-label="Buscar alumno">
-        </div>
-        <div class="card-body p-0 p-md-3">
-          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span></div>
-          <div v-else-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
-          <div v-else class="table-responsive border rounded shadow-sm">
-            <table class="table table-hover table-bordered align-middle mb-0 text-nowrap planilla" style="font-size: 0.78rem;">
-              <thead class="table-light">
-                <tr>
-                  <th class="py-2 ps-3 text-uppercase text-muted col-alumno">Alumno</th>
-                  <th class="py-2 text-center text-uppercase text-muted">Curso</th>
-                  <th v-for="e in columnasPlanilla" :key="'th-' + e.id" class="py-2 text-center text-muted col-examen" :title="e.clase ? e.titulo + ' · ' + e.clase : e.titulo">
-                    <div class="fw-bold text-dark text-truncate">{{ e.titulo }}</div>
-                    <div class="fw-normal" style="font-size: 0.68rem;">{{ e.tipo === 'teorico' ? (e.esFinal ? 'Final' : 'Parcialito') : TIPOS_EXAMEN[e.tipo]?.etiqueta }} · {{ fechaDMA(e.fecha) }}</div>
-                  </th>
-                  <th class="py-2 text-center text-uppercase text-muted">Aprobados</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="a in alumnosPlanilla" :key="'pl-' + a.id">
-                  <td class="ps-3 col-alumno">
-                    <div class="fw-bold text-dark text-uppercase">{{ a.apellido }}, {{ a.nombre }}</div>
-                    <div class="text-muted" style="font-size: 0.68rem;">DNI {{ a.dni }}</div>
-                  </td>
-                  <td class="text-center"><span class="badge" :class="MODALIDADES_CURSO[a.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</span></td>
-                  <td v-for="e in columnasPlanilla" :key="'c-' + a.id + '-' + e.id" class="text-center">
-                    <span v-if="!correspondeExamen(e, a)" class="text-muted opacity-50" title="No corresponde a su curso">·</span>
-                    <template v-else-if="celda(e, a)">
-                      <span v-if="celda(e, a).ausente" class="badge bg-secondary">AUS</span>
-                      <span v-else-if="celda(e, a).nota !== null" class="fw-bold" :class="aprobadoCelda(e, a) ? 'text-success' : 'text-danger'">
-                        {{ textoCelda(e, a) }}
-                      </span>
-                      <button v-if="celda(e, a).rendidoOnline" type="button" class="btn btn-link btn-sm p-0 ms-1 text-danger align-baseline" :disabled="descargandoPlanilla === a.id + '-' + e.id" title="Descargar PDF" :aria-label="'PDF de ' + a.apellido" @click="descargarPdfPlanilla(e, a)">
-                        <i class="bi bi-file-earmark-pdf"></i>
-                      </button>
-                    </template>
-                    <span v-else class="text-muted">—</span>
-                  </td>
-                  <td class="text-center fw-bold text-dark">{{ aprobadosAlumno(a) }} / {{ columnasPlanilla.filter(e => correspondeExamen(e, a)).length }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <!-- PLANILLA -->
+          <template v-else>
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+              <p class="small text-muted mb-0">{{ alumnosPlanilla.length }} alumnos regulares · {{ columnasPlanilla.length }} exámenes</p>
+              <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none" style="max-width: 260px;" placeholder="BUSCAR ALUMNO O DNI..." aria-label="Buscar alumno">
+            </div>
+            <div v-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
+            <template v-else>
+              <div class="d-none d-lg-block table-responsive border rounded shadow-sm">
+                <table class="table table-hover table-bordered align-middle mb-0 text-nowrap planilla" style="font-size: 0.78rem;">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="py-2 ps-3 text-uppercase text-muted col-alumno">Alumno</th>
+                      <th class="py-2 text-center text-uppercase text-muted">Curso</th>
+                      <th v-for="e in columnasPlanilla" :key="'th-' + e.id" class="py-2 text-center text-muted col-examen" :title="e.clase ? e.titulo + ' · ' + e.clase : e.titulo">
+                        <div class="fw-bold text-dark text-truncate">{{ e.titulo }}</div>
+                        <div class="fw-normal" style="font-size: 0.68rem;">{{ etiquetaColumna(e) }} · {{ fechaDMA(e.fecha) }}</div>
+                      </th>
+                      <th class="py-2 text-center text-uppercase text-muted">Aprobados</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="a in alumnosPlanilla" :key="'pl-' + a.id">
+                      <td class="ps-3 col-alumno">
+                        <div class="fw-bold text-dark text-uppercase">{{ a.apellido }}, {{ a.nombre }}</div>
+                        <div class="text-muted" style="font-size: 0.68rem;">DNI {{ a.dni }}</div>
+                      </td>
+                      <td class="text-center"><span class="badge" :class="MODALIDADES_CURSO[a.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</span></td>
+                      <td v-for="e in columnasPlanilla" :key="'c-' + a.id + '-' + e.id" class="text-center">
+                        <span v-if="!correspondeExamen(e, a)" class="text-muted opacity-50" title="No le corresponde">·</span>
+                        <template v-else-if="celda(e, a)">
+                          <span v-if="celda(e, a).ausente" class="badge bg-secondary">AUS</span>
+                          <span v-else-if="celda(e, a).nota !== null" class="fw-bold" :class="aprobadoCelda(e, a) ? 'text-success' : 'text-danger'">{{ textoCelda(e, a) }}</span>
+                          <button v-if="celda(e, a).rendidoOnline" type="button" class="btn btn-link btn-sm p-0 ms-1 text-danger align-baseline" :disabled="descargandoPlanilla === a.id + '-' + e.id" title="Descargar PDF" :aria-label="'PDF de ' + a.apellido" @click="descargarPdfPlanilla(e, a)">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                          </button>
+                        </template>
+                        <span v-else class="text-muted">—</span>
+                      </td>
+                      <td class="text-center fw-bold text-dark">{{ aprobadosAlumno(a) }} / {{ columnasPlanilla.filter(e => correspondeExamen(e, a)).length }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="d-lg-none d-flex flex-column gap-3">
+                <div v-for="a in alumnosPlanilla" :key="'plm-' + a.id" class="card border-light-subtle shadow-sm rounded-3">
+                  <div class="card-body p-3 small">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                      <div class="min-w-0">
+                        <div class="fw-bold text-dark text-uppercase">{{ a.apellido }}, {{ a.nombre }}</div>
+                        <div class="text-muted" style="font-size: 0.7rem;">DNI {{ a.dni }}</div>
+                      </div>
+                      <span class="badge bg-dark flex-shrink-0">{{ aprobadosAlumno(a) }} / {{ columnasPlanilla.filter(e => correspondeExamen(e, a)).length }} aprob.</span>
+                    </div>
+                    <div v-for="e in columnasPlanilla.filter(e => correspondeExamen(e, a))" :key="'plme-' + a.id + '-' + e.id" class="fila-planilla d-flex justify-content-between align-items-center gap-2">
+                      <div class="min-w-0">
+                        <div class="text-dark text-break">{{ e.titulo }}</div>
+                        <div class="text-muted" style="font-size: 0.68rem;">{{ etiquetaColumna(e) }} · {{ fechaDMA(e.fecha) }}</div>
+                      </div>
+                      <div class="flex-shrink-0 text-end">
+                        <template v-if="celda(e, a)">
+                          <span v-if="celda(e, a).ausente" class="badge bg-secondary">Ausente</span>
+                          <span v-else-if="celda(e, a).nota !== null" class="fw-bold" :class="aprobadoCelda(e, a) ? 'text-success' : 'text-danger'">{{ textoCelda(e, a) }}</span>
+                          <button v-if="celda(e, a).rendidoOnline" type="button" class="btn btn-link btn-sm p-0 ms-1 text-danger" :aria-label="'PDF de ' + a.apellido" @click="descargarPdfPlanilla(e, a)"><i class="bi bi-file-earmark-pdf"></i></button>
+                        </template>
+                        <span v-else class="text-muted">—</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </template>
         </div>
       </div>
     </div>
@@ -372,6 +447,57 @@ const cargarExamenes = async () => {
   }
 }
 
+// ─── Pestañas ─────────────────────────────────────────────────────
+const PESTANAS = [
+  { clave: 'parcialito', etiqueta: 'Parcialitos', icono: 'bi-journal-text' },
+  { clave: 'final', etiqueta: 'Teórico final', icono: 'bi-mortarboard' },
+  { clave: 'practico', etiqueta: 'Prácticos', icono: 'bi-flag' },
+  { clave: 'fisico', etiqueta: 'Físicos', icono: 'bi-stopwatch' },
+  { clave: 'planilla', etiqueta: 'Planilla', icono: 'bi-table' },
+]
+const AYUDA_PESTANA = {
+  parcialito: 'Teóricos de cada clase. Se programan desde Clases y Asistencia.',
+  final: 'Se programa desde Clases y Asistencia tildando "Es el examen teórico final".',
+  practico: 'A cada aspirante se le carga Aprobado o Desaprobado.',
+  fisico: 'Se carga el nivel alcanzado; el resultado depende del género y la edad.',
+}
+const VACIO_PESTANA = {
+  parcialito: 'Todavía no hay parcialitos programados.',
+  final: 'Todavía no programaste el teórico final.',
+  practico: 'Todavía no cargaste exámenes prácticos.',
+  fisico: 'Todavía no cargaste exámenes físicos.',
+}
+const pestana = ref('parcialito')
+
+const pestanaDe = (e) => (e.tipo === 'teorico' ? (e.esFinal ? 'final' : 'parcialito') : e.tipo)
+
+// Los recuperatorios se muestran dentro de su examen original
+const grupos = computed(() => {
+  const resultado = { parcialito: [], final: [], practico: [], fisico: [], planilla: [] }
+  examenesFiltrados.value.filter(e => !e.idExamenOriginal).forEach(examen => {
+    resultado[pestanaDe(examen)]?.push({
+      examen,
+      recuperatorios: examenesFiltrados.value.filter(r => r.idExamenOriginal === examen.id),
+    })
+  })
+  return resultado
+})
+
+const MESES_CORTOS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+const diaDe = (fecha) => String(fecha || '').substring(8, 10)
+const mesDe = (fecha) => MESES_CORTOS[Number(String(fecha || '').substring(5, 7)) - 1] || ''
+const porcentaje = (parte, total) => (total ? Math.round(parte / total * 100) : 0)
+const desaprobadosSinAusentes = (e) => Math.max(0, (e.desaprobados || 0) - (e.ausentes || 0))
+const criterio = (e) => {
+  if (e.tipo === 'fisico') return TEXTO_UMBRALES_FISICO
+  if (e.tipo === 'practico') return 'Resultado: aprobado o desaprobado.'
+  return `Nota máxima ${formatoNota(e.notaMaxima)} · aprueba con ${formatoNota(e.porcentajeAprobacion)}%`
+}
+const etiquetaColumna = (e) => {
+  const base = e.tipo === 'teorico' ? (e.esFinal ? 'Final' : 'Parcialito') : TIPOS_EXAMEN[e.tipo]?.etiqueta
+  return e.idExamenOriginal ? `Recup. ${base.toLowerCase()}` : base
+}
+
 // ─── Planilla de notas (alumnos x exámenes) ──────────────────────
 const planilla = ref({ alumnos: [], notas: [] })
 const filtroAlumno = ref('')
@@ -447,8 +573,8 @@ const mostrarModal = ref(false)
 const intento = ref(false)
 const guardando = ref(false)
 
-const abrirNuevo = () => {
-  form.value = examenVacio()
+const abrirNuevo = (tipo = 'practico') => {
+  form.value = { ...examenVacio(), tipo }
   intento.value = false
   mostrarModal.value = true
 }
@@ -471,6 +597,7 @@ const guardarExamen = async () => {
   try {
     const payload = f.tipo === 'teorico' ? f : { ...f, idClase: null }
     const res = await api.post({ entity: 'examenes_curso_arbitro', action: 'guardarExamenCurso', payload })
+    if (!f.id && f.tipo !== 'teorico') pestana.value = f.tipo
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el examen')
     toast({ titulo: 'Guardado', mensaje: 'El examen se guardó.', tipo: 'success' })
     mostrarModal.value = false
@@ -678,7 +805,26 @@ onMounted(() => {
 .animate__animated { animation-duration: 0.5s; }
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
-.tarjeta-examen { background: #fff; min-width: 0; overflow-wrap: anywhere; }
+.pestanas-examenes { scrollbar-width: thin; }
+.pestanas-examenes .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; white-space: nowrap; }
+.pestanas-examenes .nav-link.active { background: #dc3545; color: #fff; }
+.examen-card { background: #fff; border: 1px solid #e2e8f0; border-top: 4px solid #94a3b8; border-radius: 12px; min-width: 0; overflow-wrap: anywhere; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06); }
+.examen-card.borde-teorico { border-top-color: #dc3545; }
+.examen-card.borde-practico { border-top-color: #0f172a; }
+.examen-card.borde-fisico { border-top-color: #0d6efd; }
+.fecha-bloque { width: 52px; border-radius: 10px; background: #f1f5f9; padding: 6px 0; line-height: 1; }
+.fecha-bloque .dia { font-size: 1.3rem; font-weight: 900; color: #0f172a; }
+.fecha-bloque .mes { font-size: 0.65rem; font-weight: 800; color: #dc3545; letter-spacing: 1px; margin-top: 3px; }
+.stat { border-radius: 10px; padding: 6px 4px; }
+.stat .valor { font-size: 1.25rem; font-weight: 900; line-height: 1.1; }
+.stat .etiqueta { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; }
+.stat-ok { background: #f0fdf4; color: #15803d; }
+.stat-mal { background: #fef2f2; color: #b91c1c; }
+.stat-aus { background: #f1f5f9; color: #475569; }
+.recuperatorios { border-top: 1px dashed #fcd34d; padding-top: 8px; }
+.recuperatorio { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 6px 8px; margin-bottom: 6px; }
+.fila-planilla { border-top: 1px solid #f1f5f9; padding: 6px 0; }
+.estado-vacio { border: 2px dashed #e2e8f0; border-radius: 12px; }
 .etiquetas-examen .badge { white-space: normal; text-align: left; line-height: 1.3; }
 .fila-nota { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
 .min-w-0 { min-width: 0; }
