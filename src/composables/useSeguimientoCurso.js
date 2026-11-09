@@ -61,7 +61,8 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
     const parcialitos = originales.filter(e => e.tipo === 'teorico' && !e.esFinal).map(resultadoDe)
     const finales = originales.filter(e => e.tipo === 'teorico' && e.esFinal).map(resultadoDe)
     const practicosRendidos = originales.filter(e => e.tipo === 'practico').map(resultadoDe)
-    const fisicos = originales.filter(e => e.tipo === 'fisico').map(resultadoDe)
+    // Los simulacros físicos no cuentan: solo el examen físico final
+    const fisicos = originales.filter(e => e.tipo === 'fisico' && e.esFinal).map(resultadoDe)
 
     const detalleExamenes = delCurso
       .filter(e => !e.idExamenOriginal || desaprobo(nts[`${e.idExamenOriginal}-${alumno.id}`]))

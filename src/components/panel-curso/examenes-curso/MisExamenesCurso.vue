@@ -91,6 +91,7 @@
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
                   <span v-if="(e.tipo || 'teorico') === 'teorico'" class="badge" :class="e.esFinal ? 'bg-danger' : 'bg-light text-dark border'">{{ e.esFinal ? 'Teórico final' : 'Parcialito' }}</span>
+                  <span v-if="e.tipo === 'fisico'" class="badge" :class="e.esFinal ? 'bg-primary' : 'bg-light text-dark border'">{{ e.esFinal ? 'Físico final' : 'Simulacro' }}</span>
                   <span v-if="e.online" class="badge bg-light text-dark border"><i class="bi bi-laptop me-1"></i>Online</span>
                   <span v-if="e.ausente" class="badge bg-secondary">Ausente</span>
                   <span v-else-if="estaAprobado(e) !== null" class="badge" :class="estaAprobado(e) ? 'bg-success' : 'bg-danger'">

@@ -67,6 +67,7 @@
                       <h6 class="fw-bold text-dark mb-1 text-break">{{ g.examen.titulo }}</h6>
                       <div v-if="g.examen.clase" class="small text-muted text-break"><i class="bi bi-easel me-1"></i>{{ g.examen.clase }}</div>
                       <div class="d-flex flex-wrap gap-1 mt-2 etiquetas-examen">
+                        <span v-if="g.examen.tipo === 'fisico'" class="badge" :class="g.examen.esFinal ? 'bg-primary' : 'bg-light text-dark border'">{{ g.examen.esFinal ? 'Físico final' : 'Simulacro' }}</span>
                         <span class="badge" :class="claseCurso(g.examen.curso)">{{ etiquetaCurso(g.examen.curso) }}</span>
                         <span v-if="g.examen.online" class="badge" :class="g.examen.habilitado ? 'bg-primary' : 'bg-secondary'">
                           <i class="bi bi-laptop me-1"></i>{{ g.examen.habilitado ? 'Online habilitado' : 'Online cerrado' }}
@@ -118,7 +119,7 @@
                       <i class="bi bi-pencil-square me-1"></i> {{ g.examen.tipo === 'teorico' ? 'Notas' : 'Resultados' }}
                       <span class="badge bg-white text-success ms-1">{{ g.examen.cargadas }}</span>
                     </button>
-                    <button v-if="g.examen.desaprobados" @click="abrirRecuperatorio(g.examen)" class="btn btn-warning btn-sm fw-bold flex-fill text-nowrap">
+                    <button v-if="g.examen.desaprobados && admiteRecuperatorio(g.examen)" @click="abrirRecuperatorio(g.examen)" class="btn btn-warning btn-sm fw-bold flex-fill text-nowrap">
                       <i class="bi bi-arrow-repeat me-1"></i> Recuperatorio
                     </button>
                   </footer>
@@ -208,7 +209,7 @@
     <!-- MODAL EXAMEN -->
     <ModalBase :show="mostrarModal" @close="mostrarModal = false" :icono="form.id ? 'edit_note' : 'post_add'" colorIcono="bg-danger-subtle text-danger" maxWidth="620px">
       <template #header>
-        <span class="fw-bold fs-5">{{ form.id ? 'Editar examen' : 'Nuevo examen práctico o físico' }}</span>
+        <span class="fw-bold fs-5">{{ tituloModal }}</span>
       </template>
       <form id="formExamenCurso" class="text-start" novalidate @submit.prevent="guardarExamen">
         <div class="row g-3">
@@ -216,28 +217,36 @@
             <label for="ex-titulo" class="form-label small fw-bold text-dark">Título *</label>
             <input id="ex-titulo" v-model.trim="form.titulo" type="text" maxlength="150" class="form-control" :class="{ 'is-invalid': intento && !form.titulo }" :placeholder="form.tipo === 'fisico' ? 'Ej: Test físico 1' : 'Ej: Práctico en partido de mini'">
           </div>
-          <div class="col-6 col-md-4">
-            <label for="ex-tipo" class="form-label small fw-bold text-dark">Tipo</label>
-            <select id="ex-tipo" v-model="form.tipo" class="form-select" :disabled="form.tipo === 'teorico'">
-              <option v-if="form.tipo === 'teorico'" value="teorico">Teórico</option>
-              <option value="practico">Práctico</option>
-              <option value="fisico">Físico</option>
-            </select>
-          </div>
-          <div class="col-6 col-md-4">
+          <div class="col-6">
             <label for="ex-fecha" class="form-label small fw-bold text-dark">Fecha *</label>
             <input id="ex-fecha" v-model="form.fecha" type="date" class="form-control" :class="{ 'is-invalid': intento && !form.fecha }">
           </div>
-          <div class="col-12 col-md-4">
+          <div class="col-6">
             <label for="ex-curso" class="form-label small fw-bold text-dark">Curso</label>
             <select id="ex-curso" v-model="form.curso" class="form-select">
               <option value="ambos">Ambos</option>
               <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.etiqueta }}</option>
             </select>
           </div>
-          <div v-if="form.tipo === 'fisico'" class="col-12">
-            <div class="alert alert-light border small py-2 mb-0"><i class="bi bi-info-circle me-1"></i> Se carga el nivel alcanzado. {{ TEXTO_UMBRALES_FISICO }}.</div>
-          </div>
+          <template v-if="form.tipo === 'fisico'">
+            <div class="col-12">
+              <div class="d-flex flex-column flex-sm-row gap-2" role="radiogroup" aria-label="Tipo de examen físico">
+                <label class="opcion-fisico flex-fill" :class="{ activa: !form.esFinal }">
+                  <input v-model="form.esFinal" class="form-check-input me-2" type="radio" :value="false">
+                  <span class="fw-bold">Simulacro</span>
+                  <span class="d-block small text-muted">Para ver cómo están físicamente. No cuenta para el curso ni tiene recuperatorio.</span>
+                </label>
+                <label class="opcion-fisico flex-fill" :class="{ activa: form.esFinal }">
+                  <input v-model="form.esFinal" class="form-check-input me-2" type="radio" :value="true">
+                  <span class="fw-bold">Examen físico final</span>
+                  <span class="d-block small text-muted">Define el resultado del físico y permite programar recuperatorio.</span>
+                </label>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="alert alert-light border small py-2 mb-0"><i class="bi bi-info-circle me-1"></i> Se carga el nivel alcanzado. {{ TEXTO_UMBRALES_FISICO }}.</div>
+            </div>
+          </template>
           <div v-if="form.tipo === 'practico'" class="col-12">
             <div class="alert alert-light border small py-2 mb-0"><i class="bi bi-info-circle me-1"></i> A cada aspirante se le carga Aprobado o Desaprobado.</div>
           </div>
@@ -459,7 +468,7 @@ const AYUDA_PESTANA = {
   parcialito: 'Teóricos de cada clase. Se programan desde Clases y Asistencia.',
   final: 'Se programa desde Clases y Asistencia tildando "Es el examen teórico final".',
   practico: 'A cada aspirante se le carga Aprobado o Desaprobado.',
-  fisico: 'Se carga el nivel alcanzado; el resultado depende del género y la edad.',
+  fisico: 'Simulacros para ver cómo están y el examen físico final, que es el que cuenta y tiene recuperatorio.',
 }
 const VACIO_PESTANA = {
   parcialito: 'Todavía no hay parcialitos programados.',
@@ -487,6 +496,7 @@ const MESES_CORTOS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'S
 const diaDe = (fecha) => String(fecha || '').substring(8, 10)
 const mesDe = (fecha) => MESES_CORTOS[Number(String(fecha || '').substring(5, 7)) - 1] || ''
 const porcentaje = (parte, total) => (total ? Math.round(parte / total * 100) : 0)
+const admiteRecuperatorio = (e) => e.tipo !== 'fisico' || e.esFinal
 const desaprobadosSinAusentes = (e) => Math.max(0, (e.desaprobados || 0) - (e.ausentes || 0))
 const criterio = (e) => {
   if (e.tipo === 'fisico') return TEXTO_UMBRALES_FISICO
@@ -494,7 +504,9 @@ const criterio = (e) => {
   return `Nota máxima ${formatoNota(e.notaMaxima)} · aprueba con ${formatoNota(e.porcentajeAprobacion)}%`
 }
 const etiquetaColumna = (e) => {
-  const base = e.tipo === 'teorico' ? (e.esFinal ? 'Final' : 'Parcialito') : TIPOS_EXAMEN[e.tipo]?.etiqueta
+  const base = e.tipo === 'teorico'
+    ? (e.esFinal ? 'Final' : 'Parcialito')
+    : e.tipo === 'fisico' ? (e.esFinal ? 'Físico final' : 'Simulacro') : TIPOS_EXAMEN[e.tipo]?.etiqueta
   return e.idExamenOriginal ? `Recup. ${base.toLowerCase()}` : base
 }
 
@@ -567,7 +579,7 @@ watch(anio, () => {
 })
 
 // ─── Alta / edición del examen ───────────────────────────────────
-const examenVacio = () => ({ id: null, titulo: '', tipo: 'practico', fecha: '', curso: 'ambos', idClase: null, notaMaxima: 100, porcentajeAprobacion: PORCENTAJE_DEFECTO })
+const examenVacio = () => ({ id: null, titulo: '', tipo: 'practico', fecha: '', curso: 'ambos', idClase: null, notaMaxima: 100, porcentajeAprobacion: PORCENTAJE_DEFECTO, esFinal: false })
 const form = ref(examenVacio())
 const mostrarModal = ref(false)
 const intento = ref(false)
@@ -579,8 +591,14 @@ const abrirNuevo = (tipo = 'practico') => {
   mostrarModal.value = true
 }
 
+const NOMBRES_TIPO = { teorico: 'examen teórico', practico: 'examen práctico', fisico: 'examen físico' }
+const tituloModal = computed(() => {
+  const nombre = NOMBRES_TIPO[form.value.tipo] || 'examen'
+  return form.value.id ? `Editar ${nombre}` : `Nuevo ${nombre}`
+})
+
 const abrirEditar = (e) => {
-  form.value = { id: e.id, titulo: e.titulo, tipo: e.tipo, fecha: e.fecha, curso: e.curso, idClase: e.idClase, notaMaxima: e.notaMaxima, porcentajeAprobacion: e.porcentajeAprobacion }
+  form.value = { id: e.id, titulo: e.titulo, tipo: e.tipo, fecha: e.fecha, curso: e.curso, idClase: e.idClase, notaMaxima: e.notaMaxima, porcentajeAprobacion: e.porcentajeAprobacion, esFinal: Boolean(e.esFinal) }
   intento.value = false
   mostrarModal.value = true
 }
@@ -824,6 +842,8 @@ onMounted(() => {
 .recuperatorios { border-top: 1px dashed #fcd34d; padding-top: 8px; }
 .recuperatorio { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 6px 8px; margin-bottom: 6px; }
 .fila-planilla { border-top: 1px solid #f1f5f9; padding: 6px 0; }
+.opcion-fisico { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+.opcion-fisico.activa { border-color: #0d6efd; background: #eff6ff; }
 .estado-vacio { border: 2px dashed #e2e8f0; border-radius: 12px; }
 .etiquetas-examen .badge { white-space: normal; text-align: left; line-height: 1.3; }
 .fila-nota { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
