@@ -388,7 +388,7 @@ const eliminar = async (c) => {
 const confirmarEliminar = (c) => {
   notificar({
     titulo: '¿Borrar clase?',
-    mensaje: `${fechaLargaClase(c.fecha)} · ${c.titulo}. Los alumnos dejarán de verla.`,
+    mensaje: `${fechaLargaClase(c.fecha)} · ${c.titulo}. Los alumnos dejarán de verla y se borra el examen que tenga programado (con sus notas y recuperatorios).`,
     tipo: 'danger',
     alConfirmar: () => eliminar(c),
   })
