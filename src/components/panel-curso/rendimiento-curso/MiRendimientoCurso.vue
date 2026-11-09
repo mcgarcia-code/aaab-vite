@@ -47,57 +47,88 @@
           </div>
         </div>
 
-        <!-- ASISTENCIA -->
-        <h6 class="titulo-seccion"><i class="bi bi-calendar-check me-1"></i> Asistencia a clases</h6>
-        <div v-if="!datos.clases.length" class="text-muted small fst-italic mb-4">Todavía no hubo clases.</div>
-        <div v-else class="d-flex flex-column gap-2 mb-4">
-          <div v-for="c in datos.clases" :key="c.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
-            <div class="min-w-0">
-              <div class="fw-bold text-dark small text-truncate">{{ c.titulo }}</div>
-              <div class="text-muted" style="font-size: 0.75rem;">{{ fechaLargaClase(c.fecha) }}</div>
-            </div>
-            <span class="badge flex-shrink-0" :class="claseAsistencia(c.asistencia)">{{ textoAsistencia(c.asistencia) }}</span>
-          </div>
-        </div>
-
-        <!-- ENCUENTROS DE MINI (solo curso anual) -->
-        <template v-if="datos.modalidad === 'anual'">
-          <h6 class="titulo-seccion"><i class="bi bi-people me-1"></i> Encuentros de mini</h6>
-          <div v-if="!datos.mini?.length" class="text-muted small fst-italic mb-4">Todavía no fuiste convocado/a a encuentros de mini.</div>
-          <template v-else>
-            <div class="d-flex flex-wrap gap-1 mb-2">
-              <span class="badge bg-success">{{ datos.mini.filter(m => m.asistencia === 'presente').length }} presentes</span>
-              <span class="badge bg-secondary">{{ datos.mini.filter(m => m.asistencia === 'ausente').length }} ausentes</span>
-              <span class="badge bg-light text-dark border">{{ datos.mini.length }} convocatorias</span>
-            </div>
-            <div class="d-flex flex-column gap-2 mb-4">
-              <div v-for="m in datos.mini" :key="'mini-' + m.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
-                <div class="min-w-0">
-                  <div class="fw-bold text-dark small text-truncate">{{ m.titulo }}</div>
-                  <div class="text-muted" style="font-size: 0.75rem;">
-                    {{ fechaLargaClase(m.fecha) }}<template v-if="m.hora"> · {{ m.hora }} hs</template><template v-if="m.lugar"> · {{ m.lugar }}</template>
+        <div class="accordion" id="acordeonRendimiento">
+          <!-- ASISTENCIA -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.clases }" :aria-expanded="abiertas.clases" aria-controls="seccion-clases" @click="abiertas.clases = !abiertas.clases">
+                <i class="bi bi-calendar-check me-2"></i>
+                <span class="me-2">Asistencia a clases</span>
+                <span class="badge bg-success me-1">{{ resumen.presentes }} P</span>
+                <span class="badge bg-secondary">{{ resumen.ausentes }} A</span>
+              </button>
+            </h2>
+            <div v-show="abiertas.clases" id="seccion-clases" class="accordion-collapse">
+              <div class="accordion-body p-2 p-md-3">
+                <div v-if="!datos.clases.length" class="text-muted small fst-italic">Todavía no hubo clases.</div>
+                <div v-else class="d-flex flex-column gap-2">
+                  <div v-for="c in datos.clases" :key="c.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
+                    <div class="min-w-0">
+                      <div class="fw-bold text-dark small text-break">{{ c.titulo }}</div>
+                      <div class="text-muted" style="font-size: 0.75rem;">{{ fechaLargaClase(c.fecha) }}</div>
+                    </div>
+                    <span class="badge flex-shrink-0" :class="claseAsistencia(c.asistencia)">{{ textoAsistencia(c.asistencia) }}</span>
                   </div>
                 </div>
-                <span class="badge flex-shrink-0" :class="claseAsistencia(m.asistencia)">{{ textoAsistencia(m.asistencia) }}</span>
               </div>
             </div>
-          </template>
-        </template>
+          </div>
 
-        <!-- EXÁMENES -->
-        <h6 class="titulo-seccion"><i class="bi bi-journal-text me-1"></i> Exámenes</h6>
-        <div v-if="!datos.examenes.length" class="text-muted small fst-italic">Todavía no tenés notas cargadas.</div>
-        <div v-else class="d-flex flex-column gap-2">
-          <div v-for="e in datos.examenes" :key="e.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
-            <div class="min-w-0">
-              <div class="fw-bold text-dark small text-truncate">{{ e.titulo }}</div>
-              <div class="text-muted" style="font-size: 0.75rem;">
-                {{ fechaLargaClase(e.fecha) }}<template v-if="e.clase"> · {{ e.clase }}</template>
+          <!-- ENCUENTROS DE MINI (solo curso anual) -->
+          <div v-if="datos.modalidad === 'anual'" class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.mini }" :aria-expanded="abiertas.mini" aria-controls="seccion-mini" @click="abiertas.mini = !abiertas.mini">
+                <i class="bi bi-people me-2"></i>
+                <span class="me-2">Encuentros de mini</span>
+                <span class="badge bg-success me-1">{{ resumenMini.presentes }} P</span>
+                <span class="badge bg-secondary">{{ resumenMini.ausentes }} A</span>
+              </button>
+            </h2>
+            <div v-show="abiertas.mini" id="seccion-mini" class="accordion-collapse">
+              <div class="accordion-body p-2 p-md-3">
+                <div v-if="!datos.mini?.length" class="text-muted small fst-italic">Todavía no fuiste convocado/a a encuentros de mini.</div>
+                <div v-else class="d-flex flex-column gap-2">
+                  <div v-for="m in datos.mini" :key="'mini-' + m.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
+                    <div class="min-w-0">
+                      <div class="fw-bold text-dark small text-break">{{ m.titulo }}</div>
+                      <div class="text-muted" style="font-size: 0.75rem;">
+                        {{ fechaLargaClase(m.fecha) }}<template v-if="m.hora"> · {{ m.hora }} hs</template><template v-if="m.lugar"> · {{ m.lugar }}</template>
+                      </div>
+                    </div>
+                    <span class="badge flex-shrink-0" :class="claseAsistencia(m.asistencia)">{{ textoAsistencia(m.asistencia) }}</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <span class="nota flex-shrink-0" :class="claseNota(e)">
-              {{ textoNotaExamen(e) }}
-            </span>
+          </div>
+
+          <!-- EXÁMENES -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.examenes }" :aria-expanded="abiertas.examenes" aria-controls="seccion-examenes" @click="abiertas.examenes = !abiertas.examenes">
+                <i class="bi bi-journal-text me-2"></i>
+                <span class="me-2">Exámenes</span>
+                <span class="badge bg-light text-dark border">{{ datos.examenes.length }}</span>
+              </button>
+            </h2>
+            <div v-show="abiertas.examenes" id="seccion-examenes" class="accordion-collapse">
+              <div class="accordion-body p-2 p-md-3">
+                <div v-if="!datos.examenes.length" class="text-muted small fst-italic">Todavía no tenés notas cargadas.</div>
+                <div v-else class="d-flex flex-column gap-2">
+                  <div v-for="e in datos.examenes" :key="e.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
+                    <div class="min-w-0">
+                      <div class="fw-bold text-dark small text-break">{{ e.titulo }}</div>
+                      <div class="text-muted" style="font-size: 0.75rem;">
+                        {{ fechaLargaClase(e.fecha) }}<template v-if="e.clase"> · {{ e.clase }}</template>
+                      </div>
+                    </div>
+                    <span class="nota flex-shrink-0 text-end" :class="claseNota(e)">
+                      {{ textoNotaExamen(e) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -106,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, reactive, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
@@ -118,6 +149,14 @@ const toast = inject('toast', (m) => alert(m.mensaje || m))
 
 const datos = ref({ anio: new Date().getFullYear(), modalidad: '', clases: [], mini: [], examenes: [] })
 const cargando = ref(true)
+
+// Secciones del acordeón: arrancan contraídas y se despliegan al tocarlas
+const abiertas = reactive({ clases: false, mini: false, examenes: false })
+
+const resumenMini = computed(() => ({
+  presentes: (datos.value.mini || []).filter(m => m.asistencia === 'presente').length,
+  ausentes: (datos.value.mini || []).filter(m => m.asistencia === 'ausente').length,
+}))
 
 const resumen = computed(() => {
   const presentes = datos.value.clases.filter(c => c.asistencia === 'presente').length
@@ -161,16 +200,10 @@ onMounted(async () => {
 .resumen-card i { font-size: 1.2rem; }
 .resumen-card .valor { font-size: 1.4rem; font-weight: 800; line-height: 1.1; margin-top: 4px; }
 .resumen-card .etiqueta { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
-.titulo-seccion {
-  color: #dc3545;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
-}
+.accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
+.accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
+.accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
+.accordion-button:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2); }
 .fila-item {
   border: 1px solid #e2e8f0;
   border-radius: 10px;
