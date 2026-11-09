@@ -115,7 +115,20 @@
           <template v-else>
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
               <p class="small text-muted mb-0">{{ alumnosPlanilla.length }} alumnos regulares · {{ columnasPlanilla.length }} exámenes</p>
-              <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none" style="max-width: 260px;" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
+              <div class="d-flex gap-2 align-items-center">
+                <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none flex-grow-1" style="max-width: 260px;" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
+                <button
+                  type="button"
+                  @click="descargarExcelPlanilla"
+                  class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1 flex-shrink-0"
+                  :disabled="!alumnosPlanilla.length || generandoExcel"
+                  title="Descargar la planilla en Excel"
+                >
+                  <span v-if="generandoExcel" class="spinner-border spinner-border-sm"></span>
+                  <i v-else class="bi bi-file-earmark-excel-fill"></i>
+                  <span class="d-none d-sm-inline">Excel</span>
+                </button>
+              </div>
             </div>
             <div v-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
             <template v-else>
@@ -511,6 +524,85 @@ const aproboConRecuperatorio = (e, a) => {
 }
 const aprobadosAlumno = (a) => examenesQueCuentan(a).filter(e => aprobadoCelda(e, a) || aproboConRecuperatorio(e, a)).length
 const totalAlumno = (a) => examenesQueCuentan(a).length
+
+// ─── Excel de la planilla (mismos colores que la Planilla General) ──
+const generandoExcel = ref(false)
+
+const RELLENO_EXCEL = { verde: 'FFD1E7DD', roja: 'FFF8D7DA', gris: 'FFE9ECEF', cabecera: 'FFF1F3F5' }
+const FUENTE_EXCEL = { verde: 'FF0F5132', roja: 'FF842029', gris: 'FF6C757D' }
+
+const pintarCeldaExcel = (c, color, opciones = {}) => {
+  const borde = { style: 'thin', color: { argb: 'FFD4D4D8' } }
+  c.border = { top: borde, left: borde, bottom: borde, right: borde }
+  c.alignment = { horizontal: opciones.izquierda ? 'left' : 'center', vertical: 'middle', wrapText: !!opciones.ajustar }
+  if (RELLENO_EXCEL[color]) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: RELLENO_EXCEL[color] } }
+  c.font = { bold: !!opciones.negrita, size: opciones.tamanio || 11, color: { argb: FUENTE_EXCEL[color] || 'FF212529' } }
+}
+
+// Texto y color de una celda del Excel, con la misma lógica que la vista
+const celdaExcel = (e, a) => {
+  if (!correspondeExamen(e, a)) return { texto: '', color: 'gris' }
+  const n = celda(e, a)
+  if (!n) return { texto: '', color: '' }
+  if (n.ausente) return { texto: 'AUSENTE', color: 'roja' }
+  if (n.nota === null) return { texto: '', color: '' }
+  const texto = e.tipo === 'practico' ? (n.nota >= 1 ? 'APROBADO' : 'DESAPROBADO') : textoCelda(e, a)
+  return { texto, color: aprobadoCelda(e, a) ? 'verde' : 'roja' }
+}
+
+const descargarExcelPlanilla = async () => {
+  generandoExcel.value = true
+  try {
+    const { default: ExcelJS } = await import('exceljs')
+    const wb = new ExcelJS.Workbook()
+    const ws = wb.addWorksheet(`Planilla ${anio.value}`, { views: [{ state: 'frozen', xSplit: 1, ySplit: 1 }] })
+    const columnas = columnasPlanilla.value
+
+    ws.addRow([
+      'ALUMNO',
+      'CURSO',
+      ...columnas.map(e => `${e.titulo}\n${etiquetaColumna(e)} · ${fechaDMA(e.fecha)}`),
+      'APROBADOS'
+    ])
+    alumnosPlanilla.value.forEach(a => {
+      ws.addRow([
+        `${a.apellido}, ${a.nombre}`.toUpperCase(),
+        MODALIDADES_CURSO[a.modalidadCurso]?.corta || '',
+        ...columnas.map(e => celdaExcel(e, a).texto),
+        `${aprobadosAlumno(a)} / ${totalAlumno(a)}`
+      ])
+    })
+
+    ws.getRow(1).eachCell({ includeEmpty: true }, c => pintarCeldaExcel(c, 'cabecera', { negrita: true, ajustar: true, tamanio: 10 }))
+    ws.getRow(1).height = 45
+    alumnosPlanilla.value.forEach((a, i) => {
+      const fila = ws.getRow(i + 2)
+      pintarCeldaExcel(fila.getCell(1), '', { izquierda: true, negrita: true })
+      pintarCeldaExcel(fila.getCell(2), '')
+      columnas.forEach((e, j) => pintarCeldaExcel(fila.getCell(j + 3), celdaExcel(e, a).color, { negrita: true }))
+      pintarCeldaExcel(fila.getCell(columnas.length + 3), '', { negrita: true })
+    })
+
+    ws.getColumn(1).width = 30
+    ws.getColumn(2).width = 10
+    columnas.forEach((_, j) => { ws.getColumn(j + 3).width = 16 })
+    ws.getColumn(columnas.length + 3).width = 12
+
+    const buffer = await wb.xlsx.writeBuffer()
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const url = URL.createObjectURL(blob)
+    const enlace = document.createElement('a')
+    enlace.href = url
+    enlace.download = `planilla_examenes_curso_${anio.value}.xlsx`
+    enlace.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error('descargarExcelPlanilla:', err)
+    notificar({ titulo: 'Error', mensaje: 'No se pudo generar el Excel.', tipo: 'danger' })
+  } finally {
+    generandoExcel.value = false
+  }
+}
 
 const descargarPdfPlanilla = async (e, a) => {
   descargandoPlanilla.value = `${a.id}-${e.id}`

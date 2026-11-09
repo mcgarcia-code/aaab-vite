@@ -28,6 +28,9 @@
 
             <!-- Barra de herramientas: filtro + solo activos + descargar, en una fila -->
             <div class="d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
+              <select v-model="anioFiltro" class="form-select form-select-sm shadow-none fw-semibold" style="width: 100px;" aria-label="Año">
+                <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
+              </select>
               <div class="form-check form-switch mb-0">
                 <input v-model="soloActivos" class="form-check-input" type="checkbox" id="chkSoloActivos">
                 <label class="form-check-label text-muted" for="chkSoloActivos">Solo activos</label>
@@ -185,7 +188,8 @@
 import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'
-import { useHead } from '@vueuse/head';
+import { useHead } from '@vueuse/head'
+import { conAnioActual, anioActual } from '@/utils/anios'
 
 // Actualización de Meta Tags
 useHead({
@@ -435,13 +439,30 @@ const reunionAplicaAlGrupo = (r, g) => {
 
 const fechaDeEvento = (ev) => ev.fecha_examen || ev.fecha_formateada || ev.fecha_evento || ev.fecha || ''
 
+/* ====================================================
+   FILTRO DE AÑO (por defecto, el año en curso)
+   ==================================================== */
+const anioFiltro = ref(anioActual())
+
+const anioDeEvento = (ev) => {
+  const ts = parseFechaFlexible(fechaDeEvento(ev))
+  return ts ? String(new Date(ts).getFullYear()) : ''
+}
+
+const aniosDisponibles = computed(() =>
+  conAnioActual([...eventosExamen.value, ...reuniones.value].map(anioDeEvento).filter(Boolean))
+)
+
+const examenesDelAnio = computed(() => eventosExamen.value.filter(ev => anioDeEvento(ev) === anioFiltro.value))
+const reunionesDelAnio = computed(() => reuniones.value.filter(r => anioDeEvento(r) === anioFiltro.value))
+
 const columnasGrupo = computed(() => {
   if (!grupoActivo.value) return []
   const g = grupoActivo.value
 
   // Primero todos los exámenes (asambleas y recuperatorios) por fecha,
   // después todas las reuniones por fecha: bloques contiguos.
-  const examenes = eventosExamen.value
+  const examenes = examenesDelAnio.value
     .filter(ev => examenAplicaAlGrupo(ev, g))
     .map(ev => ({
       clave: `ex-${ev.id}`,
@@ -454,7 +475,7 @@ const columnasGrupo = computed(() => {
     }))
     .sort((a, b) => a._ts - b._ts)
 
-  const reunionesCols = reuniones.value
+  const reunionesCols = reunionesDelAnio.value
     .filter(r => reunionAplicaAlGrupo(r, g))
     .map(r => ({
       clave: `re-${r.id}`,
@@ -854,13 +875,13 @@ const descargarExcel = async () => {
 
     // Columnas de este grupo (misma lógica que la vista: exámenes primero, reuniones después)
     const columnas = [
-      ...eventosExamen.value.filter(ev => examenAplicaAlGrupo(ev, g)).map(ev => ({
+      ...examenesDelAnio.value.filter(ev => examenAplicaAlGrupo(ev, g)).map(ev => ({
         esExamen: true, id: ev.id,
         titulo: ev.titulo || (ev.categoria === 'recuperatorio' ? 'Recuperatorio' : 'Asamblea'),
         fechaCorta: fechaCortaDe(fechaDeEvento(ev)),
         _ts: parseFechaFlexible(fechaDeEvento(ev))
       })).sort((a, b) => a._ts - b._ts),
-      ...reuniones.value.filter(r => reunionAplicaAlGrupo(r, g)).map(r => ({
+      ...reunionesDelAnio.value.filter(r => reunionAplicaAlGrupo(r, g)).map(r => ({
         esExamen: false, id: r.id,
         titulo: 'Reunión',
         fechaCorta: fechaCortaDe(fechaDeEvento(r)),
@@ -954,7 +975,7 @@ const descargarExcel = async () => {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'resumen_por_grupos.xlsx'
+  a.download = `resumen_por_grupos_${anioFiltro.value}.xlsx`
   a.click()
   URL.revokeObjectURL(url)
 }
