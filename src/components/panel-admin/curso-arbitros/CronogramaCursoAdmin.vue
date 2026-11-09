@@ -38,9 +38,24 @@
             <span class="material-icons d-block fs-1 mb-2 opacity-50">event_busy</span>
             <span class="fw-bold">Todavía no hay clases cargadas para {{ anio }}.</span>
           </div>
-          <template v-else>
-            <div v-for="grupo in clasesPorMes" :key="grupo.mes" class="mb-4">
-              <h6 class="text-danger fw-bold text-uppercase small border-bottom pb-2 mb-3" style="letter-spacing: 1px;">{{ grupo.mes }}</h6>
+          <div v-else class="accordion">
+            <div v-for="grupo in mesesAcordeon" :key="grupo.mes" class="accordion-item">
+              <h2 class="accordion-header">
+                <button
+                  type="button"
+                  class="accordion-button fw-bold"
+                  :class="{ collapsed: !mesesAbiertos[grupo.mes] }"
+                  :aria-expanded="Boolean(mesesAbiertos[grupo.mes])"
+                  :aria-controls="'mes-admin-' + grupo.clave"
+                  @click="mesesAbiertos[grupo.mes] = !mesesAbiertos[grupo.mes]"
+                >
+                  <span class="text-uppercase me-2">{{ grupo.mes }}</span>
+                  <span class="badge rounded-pill me-1" :class="grupo.proximas ? 'bg-danger' : 'bg-secondary'">{{ grupo.clases.length }} {{ grupo.clases.length === 1 ? 'clase' : 'clases' }}</span>
+                  <span v-if="grupo.dictadas" class="badge bg-light text-muted border">{{ grupo.proximas ? grupo.dictadas + ' dictadas' : 'Dictadas' }}</span>
+                </button>
+              </h2>
+              <div v-show="mesesAbiertos[grupo.mes]" :id="'mes-admin-' + grupo.clave" class="accordion-collapse">
+                <div class="accordion-body p-2 p-md-3">
               <div class="row g-3">
                 <div v-for="c in grupo.clases" :key="c.id" class="col-12 col-md-6 col-xl-4">
                   <div class="tarjeta-clase border rounded-3 p-3 h-100" :class="{ pasada: esClasePasada(c), proxima: proximaClase?.id === c.id }">
@@ -71,8 +86,10 @@
                   </div>
                 </div>
               </div>
+                </div>
+              </div>
             </div>
-          </template>
+          </div>
         </div>
       </div>
     </div>
@@ -242,7 +259,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, inject } from 'vue'
+import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
@@ -265,6 +282,21 @@ const anio = ref(Number(anioActual()))
 const anios = computed(() => conAnioActual([String(Number(anioActual()) + 1)]).map(Number))
 
 watch(anio, (a) => cargar(a))
+
+// Acordeón por mes: abiertos los meses con clases por dictar, contraídos los ya dictados
+const mesesAcordeon = computed(() => clasesPorMes.value.map((g, i) => ({
+  ...g,
+  clave: i,
+  dictadas: g.clases.filter(esClasePasada).length,
+  proximas: g.clases.filter(c => !esClasePasada(c)).length,
+})))
+const mesesAbiertos = reactive({})
+watch(mesesAcordeon, (lista) => {
+  lista.forEach(g => {
+    if (!(g.mes in mesesAbiertos)) mesesAbiertos[g.mes] = g.proximas > 0
+  })
+}, { immediate: true })
+watch(anio, () => Object.keys(mesesAbiertos).forEach(k => delete mesesAbiertos[k]))
 watch(error, (m) => { if (m) notificar({ titulo: 'Error', mensaje: m, tipo: 'danger' }) })
 
 // ─── Nueva / Editar ──────────────────────────────────────────────
@@ -498,6 +530,10 @@ onMounted(() => cargar(anio.value))
 .animate__animated { animation-duration: 0.5s; }
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
+.accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
+.accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
+.accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
+.accordion-button:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2); }
 .tarjeta-clase { background-color: #fff; }
 .tarjeta-clase.pasada { background-color: #f8fafc; opacity: 0.75; }
 .tarjeta-clase.proxima { border-color: #dc3545 !important; box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15); }
