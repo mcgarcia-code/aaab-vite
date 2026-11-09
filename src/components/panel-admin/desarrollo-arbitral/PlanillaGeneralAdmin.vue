@@ -134,7 +134,7 @@
                               class="editor-input"
                               :placeholder="tipoDet === 'fisico' ? 'Nivel' : 'Nota'"
                               :inputmode="tipoDet === 'fisico' ? 'decimal' : 'text'"
-                              :title="tipoDet === 'fisico' ? 'Nivel alcanzado: aprobado o desaprobado se calcula según género y edad' : 'Nota'"
+                              :title="tipoDet === 'fisico' ? 'Nivel alcanzado (opcional): si lo cargás, aprobado o desaprobado se calcula según género y edad' : 'Nota'"
                               ref="editorInputRef"
                             >
                             <select v-model="editor.estado" class="editor-select" @keyup.enter="guardarEditor">
@@ -638,13 +638,6 @@ const guardarEditor = async () => {
       return
     }
 
-    // Físico: el nivel es obligatorio (el resultado lo calcula el servidor)
-    if (e.tipo === 'fisico' && e.estado !== 'no lo hizo' && String(e.calificacion ?? '').trim() === '') {
-      toast({ titulo: 'Falta el nivel', mensaje: 'Ingresá el nivel que hizo en el físico.', tipo: 'warning' })
-      e.guardando = false
-      return
-    }
-
     // Caso con NOTA (aprobado / desaprobado / no lo hizo)
     const res = await api.post({
       entity: 'examenes',
@@ -667,7 +660,8 @@ const guardarEditor = async () => {
           estado: guardado.estado || e.estado
         }
       }
-      if (e.tipo === 'fisico' && e.estado !== 'no lo hizo' && guardado.calculado === false) {
+      // Solo se avisa si se cargó un nivel y no se pudo calcular el resultado
+      if (e.tipo === 'fisico' && e.estado !== 'no lo hizo' && String(e.calificacion ?? '').trim() !== '' && guardado.calculado === false) {
         toast({ titulo: 'Revisá el resultado', mensaje: 'El árbitro no tiene cargado el género o la fecha de nacimiento: se guardó el estado elegido a mano.', tipo: 'warning' })
       }
 
