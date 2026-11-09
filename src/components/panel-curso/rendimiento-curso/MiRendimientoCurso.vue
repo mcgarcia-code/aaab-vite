@@ -54,46 +54,85 @@
           </div>
         </div>
 
-        <!-- Secciones y meses en acordeón (mismo formato que Mis Designaciones del panel de árbitros) -->
-        <div v-for="sec in secciones" :key="sec.clave" class="card border shadow-sm mb-3 rounded-3 overflow-hidden">
-          <button type="button" class="acordeon-mes d-flex justify-content-between align-items-center w-100 px-3 py-2 gap-2" :aria-expanded="abierto(sec.clave)" @click="alternar(sec.clave)">
-            <span class="fw-bold text-dark d-flex align-items-center gap-2 text-truncate">
-              <i class="bi text-secondary flex-shrink-0" :class="abierto(sec.clave) ? 'bi-folder2-open' : 'bi-folder2'"></i>
-              <span class="text-truncate">{{ sec.titulo }}</span>
-            </span>
-            <span class="d-flex align-items-center gap-1 flex-shrink-0">
-              <template v-if="sec.clave !== 'examenes'">
-                <span class="badge bg-success rounded-pill">{{ sec.presentes }} P</span>
-                <span class="badge bg-secondary rounded-pill">{{ sec.ausentes }} A</span>
-              </template>
-              <span v-else class="badge bg-secondary rounded-pill">{{ sec.items.length }}</span>
-              <i class="bi text-muted ms-1" :class="abierto(sec.clave) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-            </span>
-          </button>
-
-          <div v-show="abierto(sec.clave)" class="p-2 p-sm-3 bg-light border-top">
-            <div v-if="!sec.items.length" class="text-muted small fst-italic px-1">{{ sec.vacio }}</div>
-            <div v-for="mes in sec.meses" :key="sec.clave + mes.clave" class="card border shadow-sm mb-2 rounded-3 overflow-hidden">
-              <button type="button" class="acordeon-mes d-flex justify-content-between align-items-center w-100 px-3 py-2 gap-2" :aria-expanded="abierto(sec.clave + mes.clave)" @click="alternar(sec.clave + mes.clave)">
-                <span class="fw-bold text-dark d-flex align-items-center gap-2 text-truncate">
-                  <i class="bi text-secondary flex-shrink-0" :class="abierto(sec.clave + mes.clave) ? 'bi-folder2-open' : 'bi-folder2'"></i>
-                  <span class="text-truncate">{{ mes.etiqueta }}</span>
-                </span>
-                <span class="d-flex align-items-center gap-2 flex-shrink-0">
-                  <span class="badge bg-secondary rounded-pill">{{ mes.items.length }}</span>
-                  <i class="bi text-muted" :class="abierto(sec.clave + mes.clave) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                </span>
+        <div class="accordion" id="acordeonRendimiento">
+          <!-- ASISTENCIA -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.clases }" :aria-expanded="abiertas.clases" aria-controls="seccion-clases" @click="abiertas.clases = !abiertas.clases">
+                <i class="bi bi-calendar-check me-2"></i>
+                <span class="me-2">Asistencia a clases</span>
+                <span class="badge bg-success me-1">{{ resumen.presentes }} P</span>
+                <span class="badge bg-secondary">{{ resumen.ausentes }} A</span>
               </button>
-              <div v-show="abierto(sec.clave + mes.clave)" class="p-2 p-sm-3 border-top bg-white d-flex flex-column gap-2">
-                <div v-for="item in mes.items" :key="sec.clave + '-' + item.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
-                  <div class="min-w-0">
-                    <div class="fw-bold text-dark small text-break">{{ item.titulo }}</div>
-                    <div class="text-muted" style="font-size: 0.75rem;">
-                      {{ fechaLargaClase(item.fecha) }}<template v-if="item.hora"> · {{ item.hora }} hs</template><template v-if="item.clase"> · {{ item.clase }}</template>
+            </h2>
+            <div v-show="abiertas.clases" id="seccion-clases" class="accordion-collapse">
+              <div class="accordion-body p-2 p-md-3">
+                <div v-if="!datos.clases.length" class="text-muted small fst-italic">Todavía no hubo clases.</div>
+                <div v-else class="d-flex flex-column gap-2">
+                  <div v-for="c in datos.clases" :key="c.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
+                    <div class="min-w-0">
+                      <div class="fw-bold text-dark small text-break">{{ c.titulo }}</div>
+                      <div class="text-muted" style="font-size: 0.75rem;">{{ fechaLargaClase(c.fecha) }}</div>
                     </div>
+                    <span class="badge flex-shrink-0" :class="claseAsistencia(c.asistencia)">{{ textoAsistencia(c.asistencia) }}</span>
                   </div>
-                  <span v-if="sec.clave === 'examenes'" class="nota flex-shrink-0 text-end" :class="claseNota(item)">{{ textoNotaExamen(item) }}</span>
-                  <span v-else class="badge flex-shrink-0" :class="claseAsistencia(item.asistencia)">{{ textoAsistencia(item.asistencia) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ENCUENTROS DE MINI (solo curso anual) -->
+          <div v-if="datos.modalidad === 'anual'" class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.mini }" :aria-expanded="abiertas.mini" aria-controls="seccion-mini" @click="abiertas.mini = !abiertas.mini">
+                <i class="bi bi-people me-2"></i>
+                <span class="me-2">Encuentros de mini</span>
+                <span class="badge bg-success me-1">{{ resumenMini.presentes }} P</span>
+                <span class="badge bg-secondary">{{ resumenMini.ausentes }} A</span>
+              </button>
+            </h2>
+            <div v-show="abiertas.mini" id="seccion-mini" class="accordion-collapse">
+              <div class="accordion-body p-2 p-md-3">
+                <div v-if="!datos.mini?.length" class="text-muted small fst-italic">Todavía no fuiste convocado/a a encuentros de mini.</div>
+                <div v-else class="d-flex flex-column gap-2">
+                  <div v-for="m in datos.mini" :key="'mini-' + m.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
+                    <div class="min-w-0">
+                      <div class="fw-bold text-dark small text-break">{{ m.titulo }}</div>
+                      <div class="text-muted" style="font-size: 0.75rem;">
+                        {{ fechaLargaClase(m.fecha) }}<template v-if="m.hora"> · {{ m.hora }} hs</template><template v-if="m.lugar"> · {{ m.lugar }}</template>
+                      </div>
+                    </div>
+                    <span class="badge flex-shrink-0" :class="claseAsistencia(m.asistencia)">{{ textoAsistencia(m.asistencia) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- EXÁMENES -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.examenes }" :aria-expanded="abiertas.examenes" aria-controls="seccion-examenes" @click="abiertas.examenes = !abiertas.examenes">
+                <i class="bi bi-journal-text me-2"></i>
+                <span class="me-2">Exámenes</span>
+                <span class="badge bg-light text-dark border">{{ datos.examenes.length }}</span>
+              </button>
+            </h2>
+            <div v-show="abiertas.examenes" id="seccion-examenes" class="accordion-collapse">
+              <div class="accordion-body p-2 p-md-3">
+                <div v-if="!datos.examenes.length" class="text-muted small fst-italic">Todavía no tenés notas cargadas.</div>
+                <div v-else class="d-flex flex-column gap-2">
+                  <div v-for="e in datos.examenes" :key="e.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
+                    <div class="min-w-0">
+                      <div class="fw-bold text-dark small text-break">{{ e.titulo }}</div>
+                      <div class="text-muted" style="font-size: 0.75rem;">
+                        {{ fechaLargaClase(e.fecha) }}<template v-if="e.clase"> · {{ e.clase }}</template>
+                      </div>
+                    </div>
+                    <span class="nota flex-shrink-0 text-end" :class="claseNota(e)">
+                      {{ textoNotaExamen(e) }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -105,7 +144,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, reactive, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
@@ -118,50 +157,8 @@ const toast = inject('toast', (m) => alert(m.mensaje || m))
 const datos = ref({ anio: new Date().getFullYear(), modalidad: '', clases: [], mini: [], examenes: [] })
 const cargando = ref(true)
 
-// Secciones y meses del acordeón: siempre arrancan contraídos y se despliegan al tocarlos
-const abiertos = ref([])
-const abierto = (clave) => abiertos.value.includes(clave)
-const alternar = (clave) => {
-  const i = abiertos.value.indexOf(clave)
-  if (i === -1) abiertos.value.push(clave)
-  else abiertos.value.splice(i, 1)
-}
-
-const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-const porMes = (items) => {
-  const mapa = {}
-  items.forEach(it => {
-    const clave = String(it.fecha || '').substring(0, 7)
-    if (!mapa[clave]) mapa[clave] = []
-    mapa[clave].push(it)
-  })
-  return Object.keys(mapa)
-    .sort((a, b) => b.localeCompare(a))
-    .map(clave => ({ clave, etiqueta: `${MESES[Number(clave.substring(5, 7)) - 1] || ''} ${clave.substring(0, 4)}`, items: mapa[clave] }))
-}
-
-const secciones = computed(() => {
-  const lista = [{
-    clave: 'clases',
-    titulo: 'Asistencia a clases',
-    items: datos.value.clases,
-    presentes: resumen.value.presentes,
-    ausentes: resumen.value.ausentes,
-    vacio: 'Todavía no hubo clases.',
-  }]
-  if (esAnual.value) {
-    lista.push({
-      clave: 'mini',
-      titulo: 'Encuentros de mini',
-      items: datos.value.mini || [],
-      presentes: resumenMini.value.presentes,
-      ausentes: resumenMini.value.ausentes,
-      vacio: 'Todavía no fuiste convocado/a a encuentros de mini.',
-    })
-  }
-  lista.push({ clave: 'examenes', titulo: 'Exámenes', items: datos.value.examenes, vacio: 'Todavía no tenés notas cargadas.' })
-  return lista.map(sec => ({ ...sec, meses: porMes(sec.items) }))
-})
+// Secciones del acordeón: arrancan contraídas y se despliegan al tocarlas
+const abiertas = reactive({ clases: false, mini: false, examenes: false })
 
 const esAnual = computed(() => datos.value.modalidad === 'anual')
 
@@ -215,8 +212,10 @@ onMounted(async () => {
 .resumen-card i { font-size: 1.2rem; }
 .resumen-card .valor { font-size: 1.4rem; font-weight: 800; line-height: 1.1; margin-top: 4px; }
 .resumen-card .etiqueta { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
-.acordeon-mes { background: #fff; border: none; cursor: pointer; transition: background-color 0.15s ease; }
-.acordeon-mes:hover { background: #f8fafc; }
+.accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
+.accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
+.accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
+.accordion-button:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2); }
 .fila-item {
   border: 1px solid #e2e8f0;
   border-radius: 10px;
