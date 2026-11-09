@@ -86,8 +86,8 @@
         <div v-else class="d-flex flex-column">
           <div v-for="m in movimientosPaginados" :key="m.id" class="border-bottom item-movimiento bg-white p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
-              <span class="fw-bold text-dark d-block">{{ tienePartido(m) ? etiquetaPartido(m) : etiquetaConcepto(m.concepto) }}</span>
-              <span v-if="tienePartido(m) && m.partido_categoria" class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start me-1" style="font-size: 0.65rem;">{{ m.partido_categoria }}</span>
+              <span class="fw-bold text-dark d-block">{{ m.concepto_etiqueta }}</span>
+              <span v-if="m.partido_categoria" class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start me-1" style="font-size: 0.65rem;">{{ m.partido_categoria }}</span>
               <span class="text-muted small">{{ formatearFecha(m.fecha_generacion) }}{{ m.descripcion ? ' · ' + m.descripcion : '' }}</span>
             </div>
             <span class="fw-bold" :class="m.tipo === 'debito' ? 'text-danger' : 'text-success'">
@@ -182,16 +182,6 @@ const errorPdf = ref('');
 const estadoCuenta = ref(null);
 const recargos = ref([]);
 
-const CONCEPTOS = {
-  arbitraje: 'Arbitraje',
-  observador: 'Observador',
-  mesa_arbitral: 'Mesa Arbitral',
-  delegado: 'Delegado',
-  ajuste_manual: 'Ajuste Manual'
-};
-const etiquetaConcepto = (c) => CONCEPTOS[c] || c;
-const tienePartido = (m) => m.concepto === 'arbitraje' && m.partido_local && m.partido_visitante
-const etiquetaPartido = (m) => `${m.partido_local} vs. ${m.partido_visitante}`
 
 // "2026-09-01" (o "2026-09-01 10:00:00") -> "01-09-2026"
 const formatearFecha = (f) => {

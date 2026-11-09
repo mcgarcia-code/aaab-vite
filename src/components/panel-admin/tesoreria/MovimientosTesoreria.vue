@@ -68,11 +68,7 @@
             <div class="col-6 col-md-2">
               <select v-model="filtros.concepto" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">CONCEPTO</option>
-                <option value="arbitraje">ARBITRAJE</option>
-                <option value="observador">OBSERVADOR</option>
-                <option value="mesa_arbitral">MESA ARBITRAL</option>
-                <option value="delegado">DELEGADO</option>
-                <option value="ajuste_manual">AJUSTE MANUAL</option>
+                <option v-for="t in tiposMovimiento" :key="t.clave" :value="t.clave">{{ t.etiqueta }}</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
@@ -114,11 +110,8 @@
                     <td>{{ m.fecha_generacion }}</td>
                     <td class="fw-bold text-dark text-uppercase">{{ m.arbitro }}</td>
                     <td>
-                      <template v-if="tienePartido(m)">
-                        <div>{{ etiquetaPartido(m) }}</div>
-                        <span v-if="m.partido_categoria" class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start" style="font-size: 0.65rem;">{{ m.partido_categoria }}</span>
-                      </template>
-                      <template v-else>{{ etiquetaConcepto(m) }}</template>
+                      <div>{{ m.concepto_etiqueta }}</div>
+                      <span v-if="m.partido_categoria" class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start" style="font-size: 0.65rem;">{{ m.partido_categoria }}</span>
                       <div v-if="m.descripcion" class="text-muted small text-wrap" style="max-width: 260px;">{{ m.descripcion }}</div>
                     </td>
                     <td class="text-center">
@@ -159,13 +152,12 @@
                 <div class="card-body pt-1 px-3 pb-3">
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="small text-muted">
-                      <template v-if="tienePartido(m)">{{ etiquetaPartido(m) }}</template>
-                      <template v-else>{{ etiquetaConcepto(m) }}</template>
+                      {{ m.concepto_etiqueta }}
                       · {{ m.fecha_generacion }}
                     </span>
                     <span :class="['badge-status-sm', m.tipo === 'debito' ? 'debito' : 'credito']">{{ m.tipo === 'debito' ? 'DÉBITO' : 'CRÉDITO' }}</span>
                   </div>
-                  <div v-if="tienePartido(m) && m.partido_categoria" class="mb-2">
+                  <div v-if="m.partido_categoria" class="mb-2">
                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start" style="font-size: 0.65rem;">{{ m.partido_categoria }}</span>
                   </div>
                   <div class="fw-bold fs-6 mb-2">{{ formatearMonto(m.monto) }}</div>
@@ -437,13 +429,6 @@ const filtros = reactive({ arbitro: '', periodo: '', concepto: '', estado: '' })
 const paginaActual = ref(1)
 const registrosPorPagina = 10
 
-const CONCEPTOS = {
-  arbitraje: 'Arbitraje',
-  observador: 'Observador',
-  mesa_arbitral: 'Mesa Arbitral',
-  delegado: 'Delegado',
-  ajuste_manual: 'Ajuste Manual'
-}
 // ----------------------------------------------------
 //  CONCEPTOS (tabla tesoreria_conceptos, vienen del back)
 // ----------------------------------------------------
@@ -468,6 +453,17 @@ const itemsAjusteManual = computed(() => {
 
 const etiquetaItem = (clave) => conceptos.value.find(c => c.clave === clave)?.etiqueta || clave
 
+const tiposMovimiento = ref([])
+
+const cargarTiposMovimiento = async () => {
+  try {
+    const res = await api.get({ entity: 'tesoreria', action: 'obtenerTiposMovimiento', payload: {} })
+    if (res.ok) tiposMovimiento.value = Array.isArray(res.payload) ? res.payload : []
+  } catch (err) {
+    console.error('Error cargando tipos de movimiento:', err)
+  }
+}
+
 const cargarConceptos = async () => {
   try {
     const res = await api.get({ entity: 'tesoreria', action: 'obtenerConceptos', payload: {} })
@@ -477,16 +473,6 @@ const cargarConceptos = async () => {
   }
 }
 
-const tienePartido = (m) => m.concepto === 'arbitraje' && m.partido_local && m.partido_visitante
-const etiquetaPartido = (m) => `${m.partido_local} vs. ${m.partido_visitante}`
-const etiquetaConcepto = (m) => {
-  if (tienePartido(m)) {
-    const categoria = m.partido_categoria ? ` (${m.partido_categoria})` : ''
-    return etiquetaPartido(m) + categoria
-  }
-  if (m.concepto === 'ajuste_manual' && m.item) return etiquetaItem(m.item)
-  return CONCEPTOS[m.concepto] || m.concepto
-}
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') : ''
 const formatearMonto = (v) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(v)
@@ -849,7 +835,7 @@ const exportarExcel = async () => {
   const data = movimientosFiltrados.value.map(m => ({
     Fecha: m.fecha_generacion,
     Árbitro: m.arbitro,
-    Concepto: etiquetaConcepto(m),
+    Concepto: m.concepto_etiqueta + (m.partido_categoria ? ` (${m.partido_categoria})` : ''),
     Tipo: m.tipo === 'debito' ? 'Débito' : 'Crédito',
     Monto: Number(m.monto),
     Estado: m.estado,
@@ -877,6 +863,7 @@ onMounted(() => {
   obtenerMovimientos()
   cargarArbitros()
   cargarConceptos() // para mostrar el nombre del ítem en la tabla
+  cargarTiposMovimiento()
 })
 </script>
 
