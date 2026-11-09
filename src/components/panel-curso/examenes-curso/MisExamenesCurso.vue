@@ -79,8 +79,8 @@
           <span class="fw-bold">Todavía no tenés exámenes cargados.</span>
         </div>
         <div v-else class="card-body p-3 p-md-4">
-          <ul class="nav nav-pills nav-fill gap-1 mb-3 pestanas" role="tablist">
-            <li v-for="tipo in TIPOS" :key="tipo" class="nav-item" role="presentation">
+          <ul class="nav nav-pills flex-nowrap overflow-auto gap-1 mb-3 pb-1 pestanas" role="tablist">
+            <li v-for="tipo in TIPOS" :key="tipo" class="nav-item flex-shrink-0" role="presentation">
               <button type="button" class="nav-link fw-bold w-100" :class="{ active: pestana === tipo }" role="tab" :aria-selected="pestana === tipo" @click="pestana = tipo">
                 <i :class="['bi', ICONOS_TIPO[tipo], 'd-none d-sm-inline me-1']"></i>{{ ETIQUETAS_TIPO[tipo] }}
                 <span class="badge rounded-pill ms-1" :class="pestana === tipo ? 'bg-white text-danger' : 'bg-secondary'">{{ porTipo[tipo].length }}</span>
@@ -100,10 +100,10 @@
           </div>
           <div v-else class="row g-3">
             <div v-for="e in porTipo[pestana]" :key="e.id" class="col-12 col-md-6">
-              <div class="examen-card h-100 d-flex flex-column">
+              <div class="examen-card h-100 d-flex flex-column" :class="{ recuperatorio: esRecuperatorio(e) }">
                 <div class="d-flex justify-content-between align-items-start gap-2">
                   <div class="min-w-0">
-                    <div class="fw-bold text-dark">{{ e.titulo }}</div>
+                    <div class="fw-bold text-dark text-break">{{ e.titulo }}</div>
                     <div class="small text-muted">{{ fechaLargaClase(e.fecha) }}<template v-if="e.clase"> · {{ e.clase }}</template></div>
                   </div>
                   <div class="text-end flex-shrink-0">
@@ -113,9 +113,9 @@
                   </div>
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
-                  <span v-if="e.esRecuperatorioParcialitos" class="badge bg-warning text-dark">Recuperatorio de parcialitos</span>
-                  <span v-else-if="(e.tipo || 'teorico') === 'teorico'" class="badge" :class="e.esFinal ? 'bg-danger' : 'bg-light text-dark border'">{{ e.esFinal ? 'Teórico final' : 'Parcialito' }}</span>
-                  <span v-if="e.tipo === 'fisico'" class="badge" :class="e.esFinal ? 'bg-primary' : 'bg-light text-dark border'">{{ e.esFinal ? 'Físico final' : 'Simulacro' }}</span>
+                  <span class="badge" :class="esRecuperatorio(e) ? 'bg-warning text-dark' : e.esFinal ? (e.tipo === 'fisico' ? 'bg-primary' : 'bg-danger') : 'bg-light text-dark border'">
+                    <i v-if="esRecuperatorio(e)" class="bi bi-arrow-repeat me-1"></i>{{ etiquetaExamen(e) }}
+                  </span>
                   <span v-if="e.online" class="badge bg-light text-dark border"><i class="bi bi-laptop me-1"></i>Online</span>
                   <span v-if="e.ausente" class="badge bg-secondary">Ausente</span>
                   <span v-else-if="estaAprobado(e) !== null" class="badge" :class="estaAprobado(e) ? 'bg-success' : 'bg-danger'">
@@ -155,22 +155,51 @@ const cargando = ref(true)
 const examenEnCurso = ref(null)
 const descargando = ref(null)
 
-const TIPOS = ['teorico', 'practico', 'fisico']
-const ETIQUETAS_TIPO = { teorico: 'Teórico', practico: 'Práctico', fisico: 'Físico' }
-const ICONOS_TIPO = { teorico: 'bi-journal-text', practico: 'bi-flag', fisico: 'bi-stopwatch' }
+// Mismas pestañas que Exámenes del admin: parcialitos (con sus recuperatorios), teórico final (con sus recuperatorios), prácticos y físicos
+const TIPOS = ['parcialito', 'final', 'practico', 'fisico']
+const ETIQUETAS_TIPO = { parcialito: 'Parcialitos', final: 'Teórico final', practico: 'Prácticos', fisico: 'Físicos' }
+const ICONOS_TIPO = { parcialito: 'bi-journal-text', final: 'bi-mortarboard', practico: 'bi-flag', fisico: 'bi-stopwatch' }
 const VACIO_TIPO = {
-  teorico: 'Todavía no hay exámenes teóricos.',
+  parcialito: 'Todavía no hay parcialitos.',
+  final: 'Todavía no hay teórico final.',
   practico: 'Todavía no tenés prácticos evaluados.',
   fisico: 'Todavía no tenés exámenes físicos evaluados.',
 }
 
-const pestana = ref('teorico')
+const pestanaDe = (e) => {
+  const tipo = e.tipo || 'teorico'
+  if (tipo === 'teorico') return e.esFinal ? 'final' : 'parcialito'
+  return tipo
+}
 
+// Cada recuperatorio va justo después de su examen original
+const ordenarConRecuperatorios = (lista) => {
+  const originales = lista.filter(e => !e.idExamenOriginal)
+  const resultado = []
+  originales.forEach(o => {
+    resultado.push(o)
+    lista.filter(r => r.idExamenOriginal === o.id).forEach(r => resultado.push(r))
+  })
+  lista.filter(r => r.idExamenOriginal && !originales.some(o => o.id === r.idExamenOriginal)).forEach(r => resultado.push(r))
+  return resultado
+}
+
+const pestana = ref('parcialito')
 // Práctico y físico se cargan por aspirante: se muestran solo los que ya tienen resultado
 const porTipo = computed(() => Object.fromEntries(TIPOS.map(tipo => [
   tipo,
-  examenes.value.filter(e => (e.tipo || 'teorico') === tipo && (tipo === 'teorico' || e.nota !== null || e.ausente)),
+  ordenarConRecuperatorios(examenes.value.filter(e =>
+    pestanaDe(e) === tipo && (['parcialito', 'final'].includes(tipo) || e.nota !== null || e.ausente)
+  )),
 ])))
+
+const esRecuperatorio = (e) => Boolean(e.idExamenOriginal) || e.esRecuperatorioParcialitos
+const etiquetaExamen = (e) => {
+  if (e.esRecuperatorioParcialitos) return 'Recuperatorio de parcialitos'
+  if (e.tipo === 'fisico') return e.idExamenOriginal ? 'Recuperatorio físico final' : (e.esFinal ? 'Físico final' : 'Simulacro')
+  if ((e.tipo || 'teorico') === 'teorico') return e.idExamenOriginal ? 'Recuperatorio teórico final' : (e.esFinal ? 'Teórico final' : 'Parcialito')
+  return e.idExamenOriginal ? 'Recuperatorio' : 'Práctico'
+}
 
 const resumenPestana = computed(() => {
   const lista = porTipo.value[pestana.value]
@@ -270,6 +299,7 @@ onMounted(async () => {
 .nota { font-size: 1.6rem; font-weight: 800; line-height: 1; }
 .comentario { white-space: pre-wrap; background: #f8fafc; border-radius: 8px; padding: 8px 10px; }
 .min-w-0 { min-width: 0; }
+.examen-card.recuperatorio { background: #fffbeb; border-color: #fde68a; }
 .card-recuperatorio .card-header { background: #fffbeb; }
 .adeudado { border: 1px solid #fde68a; background: #fffbeb; border-radius: 10px; padding: 8px 12px; }
 .mensaje-estado { border-radius: 15px; padding: 24px 16px; color: #fff; }
@@ -277,6 +307,6 @@ onMounted(async () => {
 .estado-aprobado { background: linear-gradient(135deg, #15803d, #22c55e); }
 .estado-desaprobado { background: linear-gradient(135deg, #991b1b, #dc2626); }
 .estado-baja { background: linear-gradient(135deg, #334155, #64748b); }
-.pestanas .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; padding: 0.5rem 0.25rem; }
+.pestanas .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; padding: 0.5rem 0.75rem; white-space: nowrap; }
 .pestanas .nav-link.active { background: #dc3545; color: #fff; }
 </style>
