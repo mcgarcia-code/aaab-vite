@@ -60,8 +60,8 @@
               </button>
               <span class="ms-auto d-flex flex-wrap gap-3">
                 <span><span class="cuadrito bg-success-subtle border-success-subtle"></span> Aprobado / Teórico ≥ 75 / Presente</span>
-                <span><span class="cuadrito bg-danger-subtle border-danger-subtle"></span> Desaprobado / Teórico ≤ 74 / Ausente</span>
-                <span><span class="cuadrito bg-secondary-subtle border-secondary-subtle"></span> No lo hizo</span>
+                <span><span class="cuadrito bg-danger-subtle border-danger-subtle"></span> Desaprobado / Teórico ≤ 74 / Ausente a reunión</span>
+                <span><span class="cuadrito bg-secondary-subtle border-secondary-subtle"></span> No lo hizo / Ausente (AUS)</span>
               </span>
             </div>
 
@@ -537,7 +537,7 @@ const claseCeldaExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
     if (nota.estado === 'no lo hizo') return 'celda-gris'
-    if (nota.estado === 'ausente') return 'celda-roja'
+    if (nota.estado === 'ausente') return 'celda-gris'
     // Umbral SOLO para el teórico: verde con 75 o más, rojo con 74 o menos.
     // El físico se colorea siempre por su estado.
     if (tipo === 'teorico') {
@@ -548,7 +548,7 @@ const claseCeldaExamen = (a, col, tipo) => {
     if (nota.estado === 'desaprobado') return 'celda-roja'
     return ''
   }
-  if (asistenciaDe(a, col) === 'ausente') return 'celda-roja'
+  if (asistenciaDe(a, col) === 'ausente') return 'celda-gris'
   return ''
 }
 
@@ -780,7 +780,7 @@ const textoExcelExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
   if (nota) {
     if (nota.estado === 'no lo hizo') return 'NO LO HIZO'
-    if (nota.estado === 'ausente') return 'AUSENTE'
+    if (nota.estado === 'ausente') return 'AUS'
     if (tipo === 'fisico') {
       const nivel = String(nota.calificacion ?? '').trim()
       const resultado = nota.estado === 'aprobado' ? 'APROBADO' : nota.estado === 'desaprobado' ? 'DESAPROBADO' : (nota.estado || '').toUpperCase()
@@ -792,7 +792,7 @@ const textoExcelExamen = (a, col, tipo) => {
     if (nota.estado === 'desaprobado') return 'DESAPROBADO'
     return nota.estado ? nota.estado.toUpperCase() : ''
   }
-  if (asistenciaDe(a, col) === 'ausente') return 'AUSENTE'
+  if (asistenciaDe(a, col) === 'ausente') return 'AUS'
   return ''
 }
 

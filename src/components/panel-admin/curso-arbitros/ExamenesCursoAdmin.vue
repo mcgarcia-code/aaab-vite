@@ -154,7 +154,7 @@
                       <td v-for="e in columnasPlanilla" :key="'c-' + a.id + '-' + e.id" class="text-center">
                         <span v-if="!correspondeExamen(e, a)" class="text-muted opacity-50" title="No le corresponde">·</span>
                         <template v-else-if="celda(e, a)">
-                          <span v-if="celda(e, a).ausente" class="badge bg-secondary">AUS</span>
+                          <span v-if="celda(e, a).ausente" class="badge badge-aus">AUS</span>
                           <span v-else-if="celda(e, a).nota !== null" class="fw-bold" :class="aprobadoCelda(e, a) ? 'text-success' : 'text-danger'">{{ textoCelda(e, a) }}</span>
                           <button v-if="celda(e, a).rendidoOnline" type="button" class="btn btn-link btn-sm p-0 ms-1 text-danger align-baseline" :disabled="descargandoPlanilla === a.id + '-' + e.id" title="Descargar PDF" :aria-label="'PDF de ' + a.apellido" @click="descargarPdfPlanilla(e, a)">
                             <i class="bi bi-file-earmark-pdf"></i>
@@ -184,7 +184,7 @@
                       </div>
                       <div class="flex-shrink-0 text-end">
                         <template v-if="celda(e, a)">
-                          <span v-if="celda(e, a).ausente" class="badge bg-secondary">Ausente</span>
+                          <span v-if="celda(e, a).ausente" class="badge badge-aus">AUS</span>
                           <span v-else-if="celda(e, a).nota !== null" class="fw-bold" :class="aprobadoCelda(e, a) ? 'text-success' : 'text-danger'">{{ textoCelda(e, a) }}</span>
                           <button v-if="celda(e, a).rendidoOnline" type="button" class="btn btn-link btn-sm p-0 ms-1 text-danger" :aria-label="'PDF de ' + a.apellido" @click="descargarPdfPlanilla(e, a)"><i class="bi bi-file-earmark-pdf"></i></button>
                         </template>
@@ -544,7 +544,7 @@ const celdaExcel = (e, a) => {
   if (!correspondeExamen(e, a)) return { texto: '', color: 'gris' }
   const n = celda(e, a)
   if (!n) return { texto: '', color: '' }
-  if (n.ausente) return { texto: 'AUSENTE', color: 'roja' }
+  if (n.ausente) return { texto: 'AUS', color: 'gris' }
   if (n.nota === null) return { texto: '', color: '' }
   const texto = e.tipo === 'practico' ? (n.nota >= 1 ? 'APROBADO' : 'DESAPROBADO') : textoCelda(e, a)
   return { texto, color: aprobadoCelda(e, a) ? 'verde' : 'roja' }
@@ -836,6 +836,7 @@ onMounted(() => {
 .stat-mal { background: #fef2f2; color: #b91c1c; }
 .stat-aus { background: #f1f5f9; color: #475569; }
 .examen-card.es-recuperatorio { background: #fffbeb; border-color: #fde68a; }
+.badge-aus { background-color: #e9ecef; color: #6c757d; font-weight: 700; }
 .fila-planilla { border-top: 1px solid #f1f5f9; padding: 6px 0; }
 .opcion-fisico { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
 .opcion-fisico.activa { border-color: #0d6efd; background: #eff6ff; }
