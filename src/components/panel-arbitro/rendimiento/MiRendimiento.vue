@@ -131,8 +131,8 @@
         </div>
 
         <!-- ── Aviso de soporte ── -->
-        <div class="alert alert-light border text-dark d-flex align-items-start gap-2 mt-3 mb-0 rounded-3 small">
-          <i class="bi bi-info-circle-fill text-secondary mt-1 flex-shrink-0"></i>
+        <div class="alert alert-warning border-warning-subtle text-dark d-flex align-items-start gap-2 mt-3 mb-0 rounded-3 small">
+          <i class="bi bi-info-circle-fill text-dark mt-1 flex-shrink-0"></i>
           <span>
             Si alguna evaluación o asistencia no figura correctamente, comunicate con tu <strong>coordinador de grupo</strong> para que la revise.
           </span>
