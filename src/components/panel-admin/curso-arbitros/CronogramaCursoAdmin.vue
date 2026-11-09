@@ -205,7 +205,7 @@
       <div v-if="cargandoExamen" class="text-center py-4"><span class="spinner-border text-dark"></span></div>
       <form v-else id="formExamenClase" class="text-start" novalidate @submit.prevent="guardarExamen">
         <div v-if="examenExistente" class="alert alert-light border small py-2">
-          <i class="bi bi-info-circle me-1"></i> Ya hay un examen programado para esta clase. Tiene {{ examenExistente.rendidos }} resultado(s) cargado(s).
+          <i class="bi bi-info-circle me-1"></i> Esta clase ya tiene un examen {{ esFisico ? 'físico' : 'teórico' }}: <strong>{{ examenExistente.titulo }}</strong> ({{ examenExistente.rendidos }} resultado(s) cargado(s)).
         </div>
         <div class="btn-group w-100 mb-3" role="group" aria-label="Tipo de examen">
           <button type="button" class="btn fw-bold" :class="formExamen.tipo === 'teorico' ? 'btn-danger' : 'btn-outline-danger'" @click="formExamen.tipo = 'teorico'">
@@ -260,6 +260,11 @@
           <div v-if="esRecuperatorioParcialitos" class="col-12">
             <div class="alert alert-warning small py-2 mb-0">
               <i class="bi bi-magic me-1"></i> Las reglas se toman <strong>automáticamente</strong> de los parcialitos que cada aspirante desaprobó o no rindió.
+            </div>
+          </div>
+          <div v-else-if="esTeoricoFinal" class="col-12">
+            <div class="alert alert-light border small py-2 mb-0">
+              <i class="bi bi-journal-check me-1"></i> El teórico final es de las <strong>reglas 1 a 18</strong> ({{ preguntasDisponibles }} preguntas disponibles).
             </div>
           </div>
           <div v-else class="col-12">
@@ -479,7 +484,6 @@ const guardarAsistencia = async () => {
 // ─── Examen online por clase ─────────────────────────────────────
 const mostrarExamen = ref(false)
 const claseExamen = ref(null)
-const examenExistente = ref(null)
 const cargandoExamen = ref(false)
 const guardandoExamen = ref(false)
 const intentoExamen = ref(false)
@@ -502,6 +506,26 @@ const esFisico = computed(() => formExamen.value.tipo === 'fisico')
 const modosExamen = computed(() => (esFisico.value ? MODOS_FISICO : MODOS_TEORICO))
 const esRecuperatorioParcialitos = computed(() => formExamen.value.modo === 'recuperatorio')
 const esRecuperatorioFinal = computed(() => formExamen.value.modo === 'recuperatorio_final')
+const REGLAS_FINAL = Array.from({ length: 18 }, (_, i) => i + 1)
+const esTeoricoFinal = computed(() => !esFisico.value && ['final', 'recuperatorio_final'].includes(formExamen.value.modo))
+// La clase puede tener un examen teórico y uno físico a la vez (por ejemplo, los dos recuperatorios finales)
+const examenesClase = ref({ teorico: null, fisico: null })
+const examenExistente = computed(() => examenesClase.value[formExamen.value.tipo] || null)
+
+const formularioDesde = (tipo, guardado) => {
+  const codigos = reglasDisponibles.value.map(r => r.codigo)
+  const base = guardado || { ...configDefecto.value, habilitado: true }
+  return {
+    tipo,
+    cantidadPreguntas: base.cantidadPreguntas,
+    tiempoLimiteMin: base.tiempoLimiteMin,
+    reglas: (base.reglas || []).filter(r => codigos.includes(r)),
+    habilitado: base.habilitado,
+    modo: base.modo || (tipo === 'fisico' ? 'simulacro' : 'parcialito'),
+    idExamenFinal: base.idExamenFinal || null,
+  }
+}
+
 const finales = ref({ teorico: [], fisico: [] })
 const finalesDisponibles = computed(() => finales.value[formExamen.value.tipo] || [])
 
@@ -510,26 +534,22 @@ const finalesDisponibles = computed(() => finales.value[formExamen.value.tipo] |
 let aplicandoExamenGuardado = false
 watch(() => formExamen.value.tipo, (tipo) => {
   if (aplicandoExamenGuardado) return
-  formExamen.value.modo = tipo === 'fisico' ? 'simulacro' : 'parcialito'
-  formExamen.value.idExamenFinal = null
+  aplicandoExamenGuardado = true
+  formExamen.value = formularioDesde(tipo, examenesClase.value[tipo])
+  aplicandoExamenGuardado = false
 }, { flush: 'sync' })
 watch(() => formExamen.value.modo, (modo) => {
   if (aplicandoExamenGuardado || modo !== 'recuperatorio_final' || formExamen.value.idExamenFinal) return
   if (finalesDisponibles.value.length === 1) formExamen.value.idExamenFinal = finalesDisponibles.value[0].id
 }, { flush: 'sync' })
-watch(() => formExamen.value.idExamenFinal, (idFinal) => {
-  if (aplicandoExamenGuardado || !idFinal || esFisico.value) return
-  const final = finalesDisponibles.value.find(x => x.id === idFinal)
-  if (final?.reglas.length) formExamen.value.reglas = [...final.reglas]
-}, { flush: 'sync' })
-
+const reglasEnUso = computed(() => (esTeoricoFinal.value ? REGLAS_FINAL : formExamen.value.reglas))
 const preguntasDisponibles = computed(() =>
-  reglasDisponibles.value.filter(r => formExamen.value.reglas.includes(r.codigo)).reduce((t, r) => t + r.cantidad, 0)
+  reglasDisponibles.value.filter(r => reglasEnUso.value.includes(r.codigo)).reduce((t, r) => t + r.cantidad, 0)
 )
 const errorCantidad = computed(() => {
   const n = Number(formExamen.value.cantidadPreguntas)
   if (!Number.isInteger(n) || n < 1 || n > 100) return 'Entre 1 y 100.'
-  if (!esRecuperatorioParcialitos.value && formExamen.value.reglas.length && n > preguntasDisponibles.value) return `Hay solo ${preguntasDisponibles.value} preguntas.`
+  if (!esRecuperatorioParcialitos.value && reglasEnUso.value.length && n > preguntasDisponibles.value) return `Hay solo ${preguntasDisponibles.value} preguntas.`
   return ''
 })
 const errorTiempo = computed(() => {
@@ -548,7 +568,7 @@ const cargarReglas = async () => {
 
 const abrirExamen = async (c) => {
   claseExamen.value = c
-  examenExistente.value = null
+  examenesClase.value = { teorico: null, fisico: null }
   intentoExamen.value = false
   mostrarExamen.value = true
   cargandoExamen.value = true
@@ -564,19 +584,11 @@ const abrirExamen = async (c) => {
       fisico: resFisico?.ok ? resFisico.payload || [] : [],
     }
     if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar el examen de la clase')
-    examenExistente.value = res.payload
-    const codigos = reglasDisponibles.value.map(r => r.codigo)
-    const base = res.payload || { ...configDefecto.value, habilitado: true }
+    examenesClase.value = { teorico: res.payload?.teorico || null, fisico: res.payload?.fisico || null }
+    // Arranca en Teórico salvo que la clase solo tenga un examen físico
+    const tipoInicial = !examenesClase.value.teorico && examenesClase.value.fisico ? 'fisico' : 'teorico'
     aplicandoExamenGuardado = true
-    formExamen.value = {
-      tipo: base.tipo === 'fisico' ? 'fisico' : 'teorico',
-      cantidadPreguntas: base.cantidadPreguntas,
-      tiempoLimiteMin: base.tiempoLimiteMin,
-      reglas: (base.reglas || []).filter(r => codigos.includes(r)),
-      habilitado: base.habilitado,
-      modo: base.modo || (base.esFinal ? 'final' : 'parcialito'),
-      idExamenFinal: base.idExamenFinal || null,
-    }
+    formExamen.value = formularioDesde(tipoInicial, examenesClase.value[tipoInicial])
     aplicandoExamenGuardado = false
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
@@ -592,7 +604,7 @@ const guardarExamen = async () => {
     notificar({ titulo: 'Faltan datos', mensaje: `Elegí el ${esFisico.value ? 'físico' : 'teórico'} final que se recupera.`, tipo: 'danger' })
     return
   }
-  if (!esFisico.value && (errorCantidad.value || errorTiempo.value || (!esRecuperatorioParcialitos.value && !formExamen.value.reglas.length))) {
+  if (!esFisico.value && (errorCantidad.value || errorTiempo.value || (!esRecuperatorioParcialitos.value && !esTeoricoFinal.value && !formExamen.value.reglas.length))) {
     notificar({ titulo: 'Faltan datos', mensaje: 'Revisá la cantidad, el tiempo y elegí al menos una regla.', tipo: 'danger' })
     return
   }

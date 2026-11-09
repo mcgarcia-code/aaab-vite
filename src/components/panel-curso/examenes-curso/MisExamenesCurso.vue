@@ -26,19 +26,12 @@
           </div>
         </div>
         <div class="card-body p-3 p-md-4">
-          <p class="small text-dark mb-2">Tenés que recuperar estos parcialitos. Las preguntas salen de sus reglas:</p>
-          <div class="d-flex flex-column gap-2 mb-3">
-            <div v-for="p in r.parcialitos" :key="'adeuda-' + p.id" class="adeudado d-flex flex-wrap justify-content-between align-items-center gap-2">
-              <div class="min-w-0 small">
-                <div class="fw-bold text-dark text-break">{{ p.titulo }}</div>
-                <div class="text-muted">{{ fechaLargaClase(p.fecha) }}<template v-if="p.clase"> · {{ p.clase }}</template></div>
-              </div>
-              <span class="badge flex-shrink-0" :class="p.ausente ? 'bg-secondary' : 'bg-danger'">{{ p.ausente ? 'Ausente' : 'Desaprobado' }}</span>
-            </div>
-          </div>
-          <div v-if="reglasDe(r).length" class="d-flex flex-wrap gap-1 mb-3">
-            <span v-for="regla in reglasDe(r)" :key="'rg-' + r.id + '-' + regla" class="badge bg-light text-dark border">Regla {{ regla }}</span>
-          </div>
+          <p class="small text-dark mb-2">Tenés que recuperar:</p>
+          <ul class="list-unstyled d-flex flex-column gap-2 mb-3">
+            <li v-for="p in r.parcialitos" :key="'adeuda-' + p.id" class="adeudado fw-bold text-dark small text-break">
+              <i class="bi bi-journal-x text-danger me-1"></i>{{ p.titulo }}
+            </li>
+          </ul>
           <button type="button" class="btn btn-warning fw-bold w-100 w-sm-auto" @click="examenEnCurso = r">
             <i class="bi bi-play-fill me-1"></i> {{ r.estado === 'en_curso' ? 'Continuar recuperatorio' : 'Rendir recuperatorio' }}
           </button>
@@ -216,7 +209,6 @@ const cursoCerrado = computed(() => Boolean(mensajeEstado.value))
 
 const pendientes = computed(() => online.value.filter(x => x.estado !== 'finalizado' && !x.esRecuperatorioParcialitos))
 const recuperatoriosParcialitos = computed(() => online.value.filter(x => x.esRecuperatorioParcialitos && x.estado !== 'finalizado'))
-const reglasDe = (r) => [...new Set((r.parcialitos || []).flatMap(p => p.reglas || []))].sort((a, b) => a - b)
 
 // En los exámenes online la nota es el porcentaje obtenido
 const textoNota = (e) => {
