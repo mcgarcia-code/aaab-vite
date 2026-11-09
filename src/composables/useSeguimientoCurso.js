@@ -39,7 +39,7 @@ const resultadoGrupo = (resultados, soloRendidos) => {
   return lista.every(r => r === 'aprobado') ? 'aprobado' : 'pendiente'
 }
 
-export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas, mini }) => {
+export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas, mini, recuperados = [] }) => {
   const asis = {}
   asistencias.forEach(a => { asis[`${a.idClase}-${a.idAlumno}`] = a })
   const nts = {}
@@ -47,6 +47,10 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
 
   return alumnos.map(alumno => {
     const notaDe = (examen) => nts[`${examen.id}-${alumno.id}`] || null
+    // Recuperatorios de parcialitos que incluyeron a cada parcialito de este alumno
+    const recuperatoriosParcialito = (idParcialito) => recuperados
+      .filter(r => r.idAlumno === alumno.id && r.idParcialito === idParcialito)
+      .map(r => ({ id: r.idExamen }))
 
     const detalleClases = clases.filter(c => corresponde(c.curso, alumno)).map(clase => {
       const a = asis[`${clase.id}-${alumno.id}`]
@@ -55,8 +59,11 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
     const presentes = detalleClases.filter(d => d.asistencia === 'presente').length
 
     const delCurso = examenes.filter(e => corresponde(e.curso, alumno))
-    const originales = delCurso.filter(e => !e.idExamenOriginal)
-    const resultadoDe = (e) => resultadoExamen(e, delCurso.filter(r => r.idExamenOriginal === e.id && desaprobo(notaDe(e))), notaDe)
+    const originales = delCurso.filter(e => !e.idExamenOriginal && !e.esRecuperatorioParcialitos)
+    const resultadoDe = (e) => resultadoExamen(e, [
+      ...delCurso.filter(r => r.idExamenOriginal === e.id && desaprobo(notaDe(e))),
+      ...recuperatoriosParcialito(e.id),
+    ], notaDe)
 
     const parcialitos = originales.filter(e => e.tipo === 'teorico' && !e.esFinal).map(resultadoDe)
     const finales = originales.filter(e => e.tipo === 'teorico' && e.esFinal).map(resultadoDe)
@@ -65,7 +72,7 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
     const fisicos = originales.filter(e => e.tipo === 'fisico' && e.esFinal).map(resultadoDe)
 
     const detalleExamenes = delCurso
-      .filter(e => !e.idExamenOriginal || desaprobo(nts[`${e.idExamenOriginal}-${alumno.id}`]))
+      .filter(e => (e.esRecuperatorioParcialitos ? Boolean(notaDe(e)) : !e.idExamenOriginal || desaprobo(nts[`${e.idExamenOriginal}-${alumno.id}`])))
       .map(examen => ({ examen, nota: notaDe(examen) }))
       .reverse()
 

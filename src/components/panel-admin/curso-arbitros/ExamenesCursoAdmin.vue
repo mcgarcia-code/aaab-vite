@@ -67,6 +67,7 @@
                       <h6 class="fw-bold text-dark mb-1 text-break">{{ g.examen.titulo }}</h6>
                       <div v-if="g.examen.clase" class="small text-muted text-break"><i class="bi bi-easel me-1"></i>{{ g.examen.clase }}</div>
                       <div class="d-flex flex-wrap gap-1 mt-2 etiquetas-examen">
+                        <span v-if="g.examen.esRecuperatorioParcialitos" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio de parcialitos</span>
                         <span v-if="g.examen.tipo === 'fisico'" class="badge" :class="g.examen.esFinal ? 'bg-primary' : 'bg-light text-dark border'">{{ g.examen.esFinal ? 'Físico final' : 'Simulacro' }}</span>
                         <span class="badge" :class="claseCurso(g.examen.curso)">{{ etiquetaCurso(g.examen.curso) }}</span>
                         <span v-if="g.examen.online" class="badge" :class="g.examen.habilitado ? 'bg-primary' : 'bg-secondary'">
@@ -465,7 +466,7 @@ const PESTANAS = [
   { clave: 'planilla', etiqueta: 'Planilla', icono: 'bi-table' },
 ]
 const AYUDA_PESTANA = {
-  parcialito: 'Teóricos de cada clase. Se programan desde Clases y Asistencia.',
+  parcialito: 'Teóricos de cada clase y recuperatorios de parcialitos. Se programan desde Clases y Asistencia.',
   final: 'Se programa desde Clases y Asistencia tildando "Es el examen teórico final".',
   practico: 'A cada aspirante se le carga Aprobado o Desaprobado.',
   fisico: 'Simulacros para ver cómo están y el examen físico final, que es el que cuenta y tiene recuperatorio.',
@@ -496,9 +497,14 @@ const MESES_CORTOS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'S
 const diaDe = (fecha) => String(fecha || '').substring(8, 10)
 const mesDe = (fecha) => MESES_CORTOS[Number(String(fecha || '').substring(5, 7)) - 1] || ''
 const porcentaje = (parte, total) => (total ? Math.round(parte / total * 100) : 0)
-const admiteRecuperatorio = (e) => e.tipo !== 'fisico' || e.esFinal
+// Los parcialitos se recuperan con el "Recuperatorio de parcialitos" que se programa desde una clase
+const admiteRecuperatorio = (e) => {
+  if (e.tipo === 'teorico') return e.esFinal
+  return e.tipo !== 'fisico' || e.esFinal
+}
 const desaprobadosSinAusentes = (e) => Math.max(0, (e.desaprobados || 0) - (e.ausentes || 0))
 const criterio = (e) => {
+  if (e.esRecuperatorioParcialitos) return 'Cada aspirante rinde las reglas de los parcialitos que debe · aprueba con ' + formatoNota(e.porcentajeAprobacion) + '%'
   if (e.tipo === 'fisico') return TEXTO_UMBRALES_FISICO
   if (e.tipo === 'practico') return 'Resultado: aprobado o desaprobado.'
   return `Nota máxima ${formatoNota(e.notaMaxima)} · aprueba con ${formatoNota(e.porcentajeAprobacion)}%`
@@ -507,6 +513,7 @@ const etiquetaColumna = (e) => {
   const base = e.tipo === 'teorico'
     ? (e.esFinal ? 'Final' : 'Parcialito')
     : e.tipo === 'fisico' ? (e.esFinal ? 'Físico final' : 'Simulacro') : TIPOS_EXAMEN[e.tipo]?.etiqueta
+  if (e.esRecuperatorioParcialitos) return 'Recup. parcialitos'
   return e.idExamenOriginal ? `Recup. ${base.toLowerCase()}` : base
 }
 
@@ -538,6 +545,7 @@ const indiceNotas = computed(() => {
 const celda = (e, a) => indiceNotas.value[`${e.id}-${a.id}`] || null
 const correspondeExamen = (e, a) => {
   if (e.curso !== 'ambos' && e.curso !== a.modalidadCurso) return false
+  if (e.esRecuperatorioParcialitos) return Boolean(celda(e, a))
   if (!e.idExamenOriginal) return true
   const original = celda({ id: e.idExamenOriginal }, a)
   return Boolean(original && (original.aprobado === false || original.ausente))

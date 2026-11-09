@@ -15,6 +15,36 @@
         <p class="mb-0 small">{{ mensajeEstado.texto }}</p>
       </div>
 
+      <!-- RECUPERATORIO DE PARCIALITOS -->
+      <div v-for="r in recuperatoriosParcialitos" v-show="!cursoCerrado" :key="'rp-' + r.id" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 card-recuperatorio" style="border-radius: 15px;">
+        <div class="card-header py-3 border-bottom">
+          <div class="border-start border-warning border-5 ps-3">
+            <h4 class="fw-bold m-0 d-flex align-items-center gap-2 fs-5 text-warning-emphasis">
+              <i class="bi bi-arrow-repeat me-1"></i> Recuperatorio de parcialitos
+            </h4>
+            <span class="text-muted small d-block mt-1">{{ fechaLargaClase(r.fecha) }} · {{ r.cantidadPreguntas }} preguntas · {{ r.tiempoLimiteMin }} min</span>
+          </div>
+        </div>
+        <div class="card-body p-3 p-md-4">
+          <p class="small text-dark mb-2">Tenés que recuperar estos parcialitos. Las preguntas salen de sus reglas:</p>
+          <div class="d-flex flex-column gap-2 mb-3">
+            <div v-for="p in r.parcialitos" :key="'adeuda-' + p.id" class="adeudado d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <div class="min-w-0 small">
+                <div class="fw-bold text-dark text-break">{{ p.titulo }}</div>
+                <div class="text-muted">{{ fechaLargaClase(p.fecha) }}<template v-if="p.clase"> · {{ p.clase }}</template></div>
+              </div>
+              <span class="badge flex-shrink-0" :class="p.ausente ? 'bg-secondary' : 'bg-danger'">{{ p.ausente ? 'Ausente' : 'Desaprobado' }}</span>
+            </div>
+          </div>
+          <div v-if="reglasDe(r).length" class="d-flex flex-wrap gap-1 mb-3">
+            <span v-for="regla in reglasDe(r)" :key="'rg-' + r.id + '-' + regla" class="badge bg-light text-dark border">Regla {{ regla }}</span>
+          </div>
+          <button type="button" class="btn btn-warning fw-bold w-100 w-sm-auto" @click="examenEnCurso = r">
+            <i class="bi bi-play-fill me-1"></i> {{ r.estado === 'en_curso' ? 'Continuar recuperatorio' : 'Rendir recuperatorio' }}
+          </button>
+        </div>
+      </div>
+
       <div v-if="pendientes.length && !cursoCerrado" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
         <div class="card-header bg-white py-3 border-bottom">
           <div class="border-start border-danger border-5 ps-3">
@@ -90,7 +120,8 @@
                   </div>
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
-                  <span v-if="(e.tipo || 'teorico') === 'teorico'" class="badge" :class="e.esFinal ? 'bg-danger' : 'bg-light text-dark border'">{{ e.esFinal ? 'Teórico final' : 'Parcialito' }}</span>
+                  <span v-if="e.esRecuperatorioParcialitos" class="badge bg-warning text-dark">Recuperatorio de parcialitos</span>
+                  <span v-else-if="(e.tipo || 'teorico') === 'teorico'" class="badge" :class="e.esFinal ? 'bg-danger' : 'bg-light text-dark border'">{{ e.esFinal ? 'Teórico final' : 'Parcialito' }}</span>
                   <span v-if="e.tipo === 'fisico'" class="badge" :class="e.esFinal ? 'bg-primary' : 'bg-light text-dark border'">{{ e.esFinal ? 'Físico final' : 'Simulacro' }}</span>
                   <span v-if="e.online" class="badge bg-light text-dark border"><i class="bi bi-laptop me-1"></i>Online</span>
                   <span v-if="e.ausente" class="badge bg-secondary">Ausente</span>
@@ -183,7 +214,9 @@ const MENSAJES_ESTADO = {
 const mensajeEstado = computed(() => MENSAJES_ESTADO[estado.value] || null)
 const cursoCerrado = computed(() => Boolean(mensajeEstado.value))
 
-const pendientes = computed(() => online.value.filter(x => x.estado !== 'finalizado'))
+const pendientes = computed(() => online.value.filter(x => x.estado !== 'finalizado' && !x.esRecuperatorioParcialitos))
+const recuperatoriosParcialitos = computed(() => online.value.filter(x => x.esRecuperatorioParcialitos && x.estado !== 'finalizado'))
+const reglasDe = (r) => [...new Set((r.parcialitos || []).flatMap(p => p.reglas || []))].sort((a, b) => a - b)
 
 // En los exámenes online la nota es el porcentaje obtenido
 const textoNota = (e) => {
@@ -244,6 +277,8 @@ onMounted(async () => {
 .nota { font-size: 1.6rem; font-weight: 800; line-height: 1; }
 .comentario { white-space: pre-wrap; background: #f8fafc; border-radius: 8px; padding: 8px 10px; }
 .min-w-0 { min-width: 0; }
+.card-recuperatorio .card-header { background: #fffbeb; }
+.adeudado { border: 1px solid #fde68a; background: #fffbeb; border-radius: 10px; padding: 8px 12px; }
 .mensaje-estado { border-radius: 15px; padding: 24px 16px; color: #fff; }
 .mensaje-estado .icono-estado { font-size: 2.6rem; display: block; margin-bottom: 6px; }
 .estado-aprobado { background: linear-gradient(135deg, #15803d, #22c55e); }

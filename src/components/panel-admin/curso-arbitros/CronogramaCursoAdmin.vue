@@ -207,7 +207,18 @@
         <div v-if="examenExistente" class="alert alert-light border small py-2">
           <i class="bi bi-info-circle me-1"></i> Ya hay un examen programado para esta clase. Lo rindieron {{ examenExistente.rendidos }} aspirante(s).
         </div>
-        <p class="small text-muted">Solo pueden rendirlo los aspirantes marcados como <strong>presentes</strong> en la clase. La nota y el PDF quedan en <strong>Exámenes</strong> con el nombre de la clase. Se aprueba con el {{ PORCENTAJE_APROBACION_DEFECTO }}%.</p>
+        <div class="d-flex flex-column gap-2 mb-3" role="radiogroup" aria-label="Tipo de examen">
+          <label v-for="m in MODOS_EXAMEN" :key="m.valor" class="opcion-modo" :class="{ activa: formExamen.modo === m.valor }">
+            <input v-model="formExamen.modo" class="form-check-input me-2" type="radio" :value="m.valor">
+            <span class="fw-bold">{{ m.etiqueta }}</span>
+            <span class="d-block small text-muted">{{ m.ayuda }}</span>
+          </label>
+        </div>
+        <p class="small text-muted">
+          <template v-if="esRecuperatorioParcialitos">Lo ven solo los aspirantes que tienen parcialitos desaprobados o ausentes, aunque no hayan venido a esta clase.</template>
+          <template v-else>Solo pueden rendirlo los aspirantes marcados como <strong>presentes</strong> en la clase.</template>
+          La nota y el PDF quedan en <strong>Exámenes</strong>. Se aprueba con el {{ PORCENTAJE_APROBACION_DEFECTO }}%.
+        </p>
         <div class="row g-3">
           <div class="col-6">
             <label for="ex-cantidad" class="form-label small fw-bold text-dark">Cantidad de preguntas *</label>
@@ -219,7 +230,12 @@
             <input id="ex-tiempo" v-model.number="formExamen.tiempoLimiteMin" type="number" min="1" max="180" class="form-control" :class="{ 'is-invalid': intentoExamen && errorTiempo }">
             <div class="invalid-feedback">{{ errorTiempo }}</div>
           </div>
-          <div class="col-12">
+          <div v-if="esRecuperatorioParcialitos" class="col-12">
+            <div class="alert alert-warning small py-2 mb-0">
+              <i class="bi bi-magic me-1"></i> Las reglas se toman <strong>automáticamente</strong> de los parcialitos que cada aspirante desaprobó o no rindió.
+            </div>
+          </div>
+          <div v-else class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="form-label small fw-bold text-dark m-0">Reglas * <span class="text-muted fw-normal">({{ preguntasDisponibles }} preguntas disponibles)</span></span>
               <div class="d-flex gap-2">
@@ -238,11 +254,6 @@
             <div class="form-check form-switch">
               <input id="ex-habilitado" v-model="formExamen.habilitado" class="form-check-input" type="checkbox" role="switch">
               <label class="form-check-label fw-bold small" for="ex-habilitado">Habilitado para rendir</label>
-            </div>
-            <div class="form-check mt-2 p-2 ps-5 border rounded-3" :class="formExamen.esFinal ? 'border-danger bg-danger-subtle' : ''">
-              <input id="ex-final" v-model="formExamen.esFinal" class="form-check-input" type="checkbox">
-              <label class="form-check-label fw-bold small" for="ex-final">Es el examen teórico final</label>
-              <div class="form-text mt-0">Si no lo tildás, cuenta como parcialito.</div>
             </div>
           </div>
         </div>
@@ -445,7 +456,13 @@ const guardandoExamen = ref(false)
 const intentoExamen = ref(false)
 const reglasDisponibles = ref([])
 const configDefecto = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [] })
-const formExamen = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true, esFinal: false })
+const MODOS_EXAMEN = [
+  { valor: 'parcialito', etiqueta: 'Parcialito', ayuda: 'Examen de la clase sobre las reglas que elijas.' },
+  { valor: 'recuperatorio', etiqueta: 'Recuperatorio de parcialitos', ayuda: 'Cada aspirante rinde las reglas de los parcialitos que debe.' },
+  { valor: 'final', etiqueta: 'Teórico final', ayuda: 'Define el teórico del curso y admite recuperatorio.' },
+]
+const formExamen = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true, modo: 'parcialito' })
+const esRecuperatorioParcialitos = computed(() => formExamen.value.modo === 'recuperatorio')
 
 const preguntasDisponibles = computed(() =>
   reglasDisponibles.value.filter(r => formExamen.value.reglas.includes(r.codigo)).reduce((t, r) => t + r.cantidad, 0)
@@ -453,7 +470,7 @@ const preguntasDisponibles = computed(() =>
 const errorCantidad = computed(() => {
   const n = Number(formExamen.value.cantidadPreguntas)
   if (!Number.isInteger(n) || n < 1 || n > 100) return 'Entre 1 y 100.'
-  if (formExamen.value.reglas.length && n > preguntasDisponibles.value) return `Hay solo ${preguntasDisponibles.value} preguntas.`
+  if (!esRecuperatorioParcialitos.value && formExamen.value.reglas.length && n > preguntasDisponibles.value) return `Hay solo ${preguntasDisponibles.value} preguntas.`
   return ''
 })
 const errorTiempo = computed(() => {
@@ -488,7 +505,7 @@ const abrirExamen = async (c) => {
       tiempoLimiteMin: base.tiempoLimiteMin,
       reglas: (base.reglas || []).filter(r => codigos.includes(r)),
       habilitado: base.habilitado,
-      esFinal: Boolean(base.esFinal),
+      modo: base.modo || (base.esFinal ? 'final' : 'parcialito'),
     }
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
@@ -500,7 +517,7 @@ const abrirExamen = async (c) => {
 
 const guardarExamen = async () => {
   intentoExamen.value = true
-  if (errorCantidad.value || errorTiempo.value || !formExamen.value.reglas.length) {
+  if (errorCantidad.value || errorTiempo.value || (!esRecuperatorioParcialitos.value && !formExamen.value.reglas.length)) {
     notificar({ titulo: 'Faltan datos', mensaje: 'Revisá la cantidad, el tiempo y elegí al menos una regla.', tipo: 'danger' })
     return
   }
@@ -512,7 +529,7 @@ const guardarExamen = async () => {
       payload: { idClase: claseExamen.value.id, ...formExamen.value },
     })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo programar el examen')
-    toast({ titulo: 'Examen programado', mensaje: formExamen.value.habilitado ? 'Los presentes ya pueden rendirlo desde Mis Exámenes.' : 'El examen quedó guardado sin habilitar.', tipo: 'success' })
+    toast({ titulo: 'Examen programado', mensaje: formExamen.value.habilitado ? (esRecuperatorioParcialitos.value ? 'Los aspirantes que deben parcialitos ya pueden rendirlo desde Mis Exámenes.' : 'Los presentes ya pueden rendirlo desde Mis Exámenes.') : 'El examen quedó guardado sin habilitar.', tipo: 'success' })
     mostrarExamen.value = false
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
@@ -538,6 +555,8 @@ onMounted(() => cargar(anio.value))
 .tarjeta-clase.pasada { background-color: #f8fafc; opacity: 0.75; }
 .tarjeta-clase.proxima { border-color: #dc3545 !important; box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15); }
 .texto-multilinea { white-space: pre-wrap; }
+.opcion-modo { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+.opcion-modo.activa { border-color: #dc3545; background: #fef2f2; }
 .fila-asistencia { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
 .min-w-0 { min-width: 0; }
 </style>
