@@ -37,7 +37,6 @@
               <div class="tarjeta border rounded-3 p-3 h-100 d-flex flex-column">
                 <div class="fw-bold text-dark small">{{ fechaLargaClase(e.fecha) }}<template v-if="e.hora"> · {{ e.hora }} hs</template></div>
                 <div class="fw-bold text-dark mt-1">{{ e.titulo }}</div>
-                <div v-if="e.lugar" class="small text-muted"><i class="bi bi-geo-alt"></i> {{ e.lugar }}</div>
                 <div v-if="e.observaciones" class="small text-dark mt-1 texto-multilinea">{{ e.observaciones }}</div>
                 <div class="small mt-2">
                   <span class="badge bg-light text-dark border me-1">{{ e.aspirantes.length }} convocados</span>
@@ -66,19 +65,15 @@
         <div class="row g-3">
           <div class="col-12">
             <label for="mini-titulo" class="form-label small fw-bold text-dark">Encuentro *</label>
-            <input id="mini-titulo" v-model.trim="form.titulo" type="text" maxlength="150" class="form-control" :class="{ 'is-invalid': intento && !form.titulo }" placeholder="Ej: Encuentro de mini en Club X">
+            <input id="mini-titulo" v-model.trim="form.titulo" type="text" maxlength="150" class="form-control" :class="{ 'is-invalid': intento && !form.titulo }" placeholder="Ej: Club Atlético Ejemplo">
           </div>
-          <div class="col-7 col-md-4">
+          <div class="col-7">
             <label for="mini-fecha" class="form-label small fw-bold text-dark">Fecha *</label>
             <input id="mini-fecha" v-model="form.fecha" type="date" class="form-control" :class="{ 'is-invalid': intento && !form.fecha }">
           </div>
-          <div class="col-5 col-md-3">
+          <div class="col-5">
             <label for="mini-hora" class="form-label small fw-bold text-dark">Hora</label>
             <input id="mini-hora" v-model="form.hora" type="time" class="form-control">
-          </div>
-          <div class="col-12 col-md-5">
-            <label for="mini-lugar" class="form-label small fw-bold text-dark">Lugar</label>
-            <input id="mini-lugar" v-model.trim="form.lugar" type="text" maxlength="255" class="form-control">
           </div>
           <div class="col-12">
             <label for="mini-obs" class="form-label small fw-bold text-dark">Observaciones</label>
@@ -97,7 +92,7 @@
             <div v-else class="lista-aspirantes border rounded-3 p-2" :class="{ 'border-danger': intento && !form.aspirantes.length }">
               <div v-for="a in aspirantesParaElegir" :key="a.id" class="form-check m-0 py-1">
                 <input :id="'mini-asp-' + a.id" v-model="form.aspirantes" class="form-check-input" type="checkbox" :value="a.id">
-                <label class="form-check-label small text-uppercase" :for="'mini-asp-' + a.id">{{ a.apellido }}, {{ a.nombre }} <span class="text-muted text-lowercase">· DNI {{ a.dni }}</span></label>
+                <label class="form-check-label small text-uppercase" :for="'mini-asp-' + a.id">{{ a.apellido }}, {{ a.nombre }}</label>
               </div>
             </div>
             <div class="form-text">A los nuevos convocados les llega una notificación en su panel.</div>
@@ -128,8 +123,7 @@
         <div class="d-flex flex-column gap-2">
           <div v-for="a in filasAsistencia" :key="a.id" class="fila-asistencia d-flex justify-content-between align-items-center gap-2">
             <div class="min-w-0">
-              <div class="fw-bold text-dark small text-uppercase text-truncate">{{ a.apellido }}, {{ a.nombre }}</div>
-              <div class="text-muted" style="font-size: 0.72rem;">DNI {{ a.dni }}</div>
+              <div class="fw-bold text-dark small text-uppercase text-break">{{ a.apellido }}, {{ a.nombre }}</div>
             </div>
             <div class="btn-group btn-group-sm flex-shrink-0" role="group" :aria-label="'Asistencia de ' + a.apellido">
               <button type="button" class="btn fw-bold" :class="a.asistencia === 'presente' ? 'btn-success' : 'btn-outline-success'" @click="a.asistencia = a.asistencia === 'presente' ? null : 'presente'">✓ Presente</button>
@@ -185,7 +179,9 @@ const cargar = async () => {
 watch(anio, cargar)
 
 // ─── Alta / edición ──────────────────────────────────────────────
-const encuentroVacio = () => ({ id: null, titulo: '', fecha: '', hora: '', lugar: '', observaciones: '', aspirantes: [] })
+// Los encuentros de mini son a las 10:30 salvo que se indique otra hora
+const HORA_MINI_DEFECTO = '10:30'
+const encuentroVacio = () => ({ id: null, titulo: '', fecha: '', hora: HORA_MINI_DEFECTO, lugar: '', observaciones: '', aspirantes: [] })
 const form = ref(encuentroVacio())
 const mostrarModal = ref(false)
 const intento = ref(false)
