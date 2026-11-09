@@ -152,7 +152,6 @@ const fechaArg = (f) => fechaDMA(f)
 const datosFijos = computed(() => [
   { etiqueta: 'Apellido', valor: perfil.value.apellido },
   { etiqueta: 'Nombre', valor: perfil.value.nombre },
-  { etiqueta: 'DNI', valor: perfil.value.dni },
   { etiqueta: 'Fecha de nacimiento', valor: fechaArg(perfil.value.fecha_nacimiento) },
   { etiqueta: 'Género', valor: GENEROS_CURSO.find(g => g.valor === perfil.value.genero)?.etiqueta },
   { etiqueta: 'Inscripción', valor: fechaArg(perfil.value.fecha_registro) },

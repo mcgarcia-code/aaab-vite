@@ -40,11 +40,6 @@
 
               <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start mt-2">
                 <div class="text-center text-md-start">
-                  <span class="text-secondary fw-bold d-block mb-1" style="font-size: 0.75rem;">DOCUMENTO</span>
-                  <span class="fw-bolder text-dark" style="font-size: 1.4rem;">{{ perfil.dni }}</span>
-                </div>
-                <div class="vr d-none d-md-block mx-4 text-secondary opacity-25"></div>
-                <div class="text-center text-md-start mt-3 mt-md-0">
                   <span class="text-secondary fw-bold d-block mb-1" style="font-size: 0.75rem;">CURSO</span>
                   <span class="fw-bolder text-danger" style="font-size: 1.4rem;">{{ textoCurso }}</span>
                 </div>
@@ -100,7 +95,7 @@ const urlFoto = computed(() => urlFotoCurso(perfil.value?.dni, versionFoto.value
 const activo = computed(() => ['regular', 'reinscripcion', 'alta'].includes(perfil.value?.estado))
 const anioCredencial = computed(() => perfil.value?.anio_curso || new Date().getFullYear())
 const textoCurso = computed(() => `${MODALIDADES_CURSO[perfil.value?.modalidad_curso]?.corta || ''} ${anioCredencial.value}`.trim())
-const textoQr = computed(() => `AAAB - Aspirante del Curso de Árbitros ${textoCurso.value} - DNI ${perfil.value?.dni}`)
+const textoQr = computed(() => `AAAB - Aspirante del Curso de Árbitros ${textoCurso.value} - ${perfil.value?.apellido}, ${perfil.value?.nombre}`)
 
 const refrescarFoto = () => { versionFoto.value = Date.now() }
 
@@ -110,7 +105,7 @@ const descargar = async () => {
   try {
     const canvas = await html2canvas(credencialRef.value, { useCORS: true, scale: 3, backgroundColor: '#ffffff' })
     const link = document.createElement('a')
-    link.download = `Credencial-Curso-${perfil.value.dni}.png`
+    link.download = `Credencial-Curso-${perfil.value.apellido}.png`
     link.href = canvas.toDataURL('image/png', 1.0)
     link.click()
   } catch {

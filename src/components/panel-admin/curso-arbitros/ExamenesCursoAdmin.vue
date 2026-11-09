@@ -45,8 +45,8 @@
           <template v-else-if="pestana !== 'planilla'">
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
               <p class="small text-muted mb-0">{{ AYUDA_PESTANA[pestana] }}</p>
-              <button v-if="pestana === 'practico' || pestana === 'fisico'" @click="abrirNuevo(pestana)" class="btn btn-danger btn-sm fw-bold shadow-sm flex-shrink-0">
-                <i class="bi bi-plus-lg me-1"></i> Nuevo {{ pestana === 'practico' ? 'práctico' : 'físico' }}
+              <button v-if="pestana === 'practico'" @click="abrirNuevo('practico')" class="btn btn-danger btn-sm fw-bold shadow-sm flex-shrink-0">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo práctico
               </button>
             </div>
 
@@ -76,7 +76,7 @@
                       </div>
                     </div>
                     <div class="d-flex flex-column gap-1 flex-shrink-0">
-                      <button @click="abrirEditar(g.examen)" class="btn btn-light btn-sm border p-1 lh-1" title="Editar examen" aria-label="Editar examen"><i class="bi bi-pencil text-primary"></i></button>
+                      <button v-if="!g.examen.idClase" @click="abrirEditar(g.examen)" class="btn btn-light btn-sm border p-1 lh-1" title="Editar examen" aria-label="Editar examen"><i class="bi bi-pencil text-primary"></i></button>
                       <button @click="confirmarEliminar(g.examen)" class="btn btn-light btn-sm border p-1 lh-1" title="Borrar examen" aria-label="Borrar examen"><i class="bi bi-trash3 text-danger"></i></button>
                     </div>
                   </header>
@@ -109,7 +109,6 @@
                       </div>
                       <div class="btn-group btn-group-sm flex-shrink-0">
                         <button @click="abrirNotas(r)" class="btn btn-outline-success fw-bold" :aria-label="'Cargar resultados del recuperatorio del ' + fechaDMA(r.fecha)"><i class="bi bi-pencil-square"></i></button>
-                        <button v-if="r.online" @click="abrirConfigRecuperatorio(r)" class="btn btn-outline-dark" title="Configurar" aria-label="Configurar recuperatorio online"><i class="bi bi-sliders"></i></button>
                         <button @click="confirmarEliminar(r)" class="btn btn-outline-danger" title="Borrar" aria-label="Borrar recuperatorio"><i class="bi bi-trash3"></i></button>
                       </div>
                     </div>
@@ -119,9 +118,6 @@
                     <button @click="abrirNotas(g.examen)" class="btn btn-success btn-sm fw-bold flex-fill text-nowrap">
                       <i class="bi bi-pencil-square me-1"></i> {{ g.examen.tipo === 'teorico' ? 'Notas' : 'Resultados' }}
                       <span class="badge bg-white text-success ms-1">{{ g.examen.cargadas }}</span>
-                    </button>
-                    <button v-if="g.examen.desaprobados && admiteRecuperatorio(g.examen)" @click="abrirRecuperatorio(g.examen)" class="btn btn-warning btn-sm fw-bold flex-fill text-nowrap">
-                      <i class="bi bi-arrow-repeat me-1"></i> Recuperatorio
                     </button>
                   </footer>
                 </article>
@@ -133,7 +129,7 @@
           <template v-else>
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
               <p class="small text-muted mb-0">{{ alumnosPlanilla.length }} alumnos regulares · {{ columnasPlanilla.length }} exámenes</p>
-              <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none" style="max-width: 260px;" placeholder="BUSCAR ALUMNO O DNI..." aria-label="Buscar alumno">
+              <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none" style="max-width: 260px;" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
             </div>
             <div v-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
             <template v-else>
@@ -154,7 +150,6 @@
                     <tr v-for="a in alumnosPlanilla" :key="'pl-' + a.id">
                       <td class="ps-3 col-alumno">
                         <div class="fw-bold text-dark text-uppercase">{{ a.apellido }}, {{ a.nombre }}</div>
-                        <div class="text-muted" style="font-size: 0.68rem;">DNI {{ a.dni }}</div>
                       </td>
                       <td class="text-center"><span class="badge" :class="MODALIDADES_CURSO[a.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</span></td>
                       <td v-for="e in columnasPlanilla" :key="'c-' + a.id + '-' + e.id" class="text-center">
@@ -180,7 +175,6 @@
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                       <div class="min-w-0">
                         <div class="fw-bold text-dark text-uppercase">{{ a.apellido }}, {{ a.nombre }}</div>
-                        <div class="text-muted" style="font-size: 0.7rem;">DNI {{ a.dni }}</div>
                       </div>
                       <span class="badge bg-dark flex-shrink-0">{{ aprobadosAlumno(a) }} / {{ columnasPlanilla.filter(e => correspondeExamen(e, a)).length }} aprob.</span>
                     </div>
@@ -229,25 +223,6 @@
               <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.etiqueta }}</option>
             </select>
           </div>
-          <template v-if="form.tipo === 'fisico'">
-            <div class="col-12">
-              <div class="d-flex flex-column flex-sm-row gap-2" role="radiogroup" aria-label="Tipo de examen físico">
-                <label class="opcion-fisico flex-fill" :class="{ activa: !form.esFinal }">
-                  <input v-model="form.esFinal" class="form-check-input me-2" type="radio" :value="false">
-                  <span class="fw-bold">Simulacro</span>
-                  <span class="d-block small text-muted">Para ver cómo están físicamente. No cuenta para el curso ni tiene recuperatorio.</span>
-                </label>
-                <label class="opcion-fisico flex-fill" :class="{ activa: form.esFinal }">
-                  <input v-model="form.esFinal" class="form-check-input me-2" type="radio" :value="true">
-                  <span class="fw-bold">Examen físico final</span>
-                  <span class="d-block small text-muted">Define el resultado del físico y permite programar recuperatorio.</span>
-                </label>
-              </div>
-            </div>
-            <div class="col-12">
-              <div class="alert alert-light border small py-2 mb-0"><i class="bi bi-info-circle me-1"></i> Se carga el nivel alcanzado. {{ TEXTO_UMBRALES_FISICO }}.</div>
-            </div>
-          </template>
           <div v-if="form.tipo === 'practico'" class="col-12">
             <div class="alert alert-light border small py-2 mb-0"><i class="bi bi-info-circle me-1"></i> A cada aspirante se le carga Aprobado o Desaprobado.</div>
           </div>
@@ -272,36 +247,6 @@
         <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formExamenCurso" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
           <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
-          GUARDAR
-        </button>
-      </template>
-    </ModalBase>
-
-    <!-- MODAL RECUPERATORIO -->
-    <ModalBase :show="!!recuperatorio" @close="recuperatorio = null" icono="restart_alt" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="680px">
-      <template #header>
-        <div v-if="recuperatorio" class="text-center w-100">
-          <span class="fw-bold fs-5">{{ recuperatorio.idExamen ? 'Configurar recuperatorio' : 'Programar recuperatorio' }}</span>
-          <div class="text-muted small mt-1">{{ recuperatorio.titulo }}</div>
-        </div>
-      </template>
-      <form v-if="recuperatorio" id="formRecuperatorio" class="text-start" novalidate @submit.prevent="guardarRecuperatorio">
-        <p v-if="!recuperatorio.idExamen" class="small text-muted">
-          Solo lo pueden rendir los <strong>{{ recuperatorio.desaprobados }}</strong> aspirante(s) que desaprobaron o estuvieron ausentes en el examen original. Les llega una notificación.
-        </p>
-        <div v-if="!recuperatorio.idExamen" class="mb-3">
-          <label for="recup-fecha" class="form-label small fw-bold text-dark">Fecha del recuperatorio *</label>
-          <input id="recup-fecha" v-model="recuperatorio.fecha" type="date" class="form-control" :class="{ 'is-invalid': intentoRecuperatorio && !recuperatorio.fecha }">
-        </div>
-        <ConfigExamenOnline v-if="recuperatorio.online" ref="configRef" v-model="recuperatorio.config" prefijo="recup" :intento="intentoRecuperatorio" />
-        <div v-else class="alert alert-light border small py-2 mb-0">
-          <i class="bi bi-info-circle me-1"></i> Después cargás el resultado desde "{{ recuperatorio.tipo === 'teorico' ? 'Cargar notas' : 'Cargar resultados' }}" del recuperatorio.
-        </div>
-      </form>
-      <template #footer>
-        <button type="button" @click="recuperatorio = null" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="submit" form="formRecuperatorio" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoRecuperatorio">
-          <span v-if="guardandoRecuperatorio" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR
         </button>
       </template>
@@ -343,7 +288,7 @@
                 <div class="col-12 min-w-0" :class="esPorAspirante ? 'col-md-5' : 'col-md-4'">
                   <div class="fw-bold text-dark small text-uppercase text-break">{{ n.apellido }}, {{ n.nombre }}</div>
                   <div class="text-muted" style="font-size: 0.72rem;">
-                    DNI {{ n.dni }} · {{ MODALIDADES_CURSO[n.modalidadCurso]?.corta }}<template v-if="examenNotas.tipo === 'fisico'"> · aprueba con {{ formatoNota(n.umbralFisico) }}</template>
+                    {{ MODALIDADES_CURSO[n.modalidadCurso]?.corta }}<template v-if="examenNotas.tipo === 'fisico'"> · aprueba con {{ formatoNota(n.umbralFisico) }}</template>
                   </div>
                 </div>
                 <div v-if="examenNotas.tipo === 'practico'" class="col-12 col-sm-7 col-md-4">
@@ -403,7 +348,6 @@ import { ref, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
-import ConfigExamenOnline from '@/components/ConfigExamenOnline.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
@@ -466,16 +410,16 @@ const PESTANAS = [
   { clave: 'planilla', etiqueta: 'Planilla', icono: 'bi-table' },
 ]
 const AYUDA_PESTANA = {
-  parcialito: 'Teóricos de cada clase y recuperatorios de parcialitos. Se programan desde Clases y Asistencia.',
-  final: 'Se programa desde Clases y Asistencia tildando "Es el examen teórico final".',
+  parcialito: 'Parcialitos de cada clase y recuperatorios de parcialitos. Se programan desde Clases y Asistencia.',
+  final: 'El teórico final y su recuperatorio se programan desde Clases y Asistencia.',
   practico: 'A cada aspirante se le carga Aprobado o Desaprobado.',
-  fisico: 'Simulacros para ver cómo están y el examen físico final, que es el que cuenta y tiene recuperatorio.',
+  fisico: 'Simulacros, físico final y su recuperatorio. Se programan desde Clases y Asistencia; acá se carga el nivel de cada aspirante.',
 }
 const VACIO_PESTANA = {
   parcialito: 'Todavía no hay parcialitos programados.',
   final: 'Todavía no programaste el teórico final.',
   practico: 'Todavía no cargaste exámenes prácticos.',
-  fisico: 'Todavía no cargaste exámenes físicos.',
+  fisico: 'Todavía no hay exámenes físicos. Se programan desde una clase en Clases y Asistencia.',
 }
 const pestana = ref('parcialito')
 
@@ -497,11 +441,6 @@ const MESES_CORTOS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'S
 const diaDe = (fecha) => String(fecha || '').substring(8, 10)
 const mesDe = (fecha) => MESES_CORTOS[Number(String(fecha || '').substring(5, 7)) - 1] || ''
 const porcentaje = (parte, total) => (total ? Math.round(parte / total * 100) : 0)
-// Los parcialitos se recuperan con el "Recuperatorio de parcialitos" que se programa desde una clase
-const admiteRecuperatorio = (e) => {
-  if (e.tipo === 'teorico') return e.esFinal
-  return e.tipo !== 'fisico' || e.esFinal
-}
 const desaprobadosSinAusentes = (e) => Math.max(0, (e.desaprobados || 0) - (e.ausentes || 0))
 const criterio = (e) => {
   if (e.esRecuperatorioParcialitos) return 'Cada aspirante rinde las reglas de los parcialitos que debe · aprueba con ' + formatoNota(e.porcentajeAprobacion) + '%'
@@ -532,7 +471,7 @@ const alumnosPlanilla = computed(() => {
   const texto = normalizarTexto(filtroAlumno.value)
   return planilla.value.alumnos.filter(a =>
     (!filtroCurso.value || a.modalidadCurso === filtroCurso.value) &&
-    (!texto || normalizarTexto(`${a.apellido} ${a.nombre} ${a.dni}`).includes(texto))
+    (!texto || normalizarTexto(`${a.apellido} ${a.nombre}`).includes(texto))
   )
 })
 
@@ -573,7 +512,7 @@ const descargarPdfPlanilla = async (e, a) => {
       entity: 'examen_online_curso_arbitro',
       action: 'descargarPdfExamenCurso',
       payload: { idExamen: e.id, idAlumno: a.id },
-    }, `examen_curso_${a.apellido}_${a.dni}.pdf`)
+    }, `examen_curso_${a.apellido}_${a.nombre}.pdf`)
   } catch (err) {
     notificar({ titulo: 'Error', mensaje: err.message, tipo: 'danger' })
   } finally {
@@ -708,61 +647,11 @@ const descargarPdf = async (n) => {
       entity: 'examen_online_curso_arbitro',
       action: 'descargarPdfExamenCurso',
       payload: { idExamen: examenNotas.value.id, idAlumno: n.id },
-    }, `examen_curso_${n.apellido}_${n.dni}.pdf`)
+    }, `examen_curso_${n.apellido}_${n.nombre}.pdf`)
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
   } finally {
     descargandoPdf.value = null
-  }
-}
-
-// ─── Recuperatorios ──────────────────────────────────────────────
-const recuperatorio = ref(null)
-const intentoRecuperatorio = ref(false)
-const guardandoRecuperatorio = ref(false)
-const configRef = ref(null)
-const configVacia = () => ({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true })
-
-const abrirRecuperatorio = (e) => {
-  intentoRecuperatorio.value = false
-  recuperatorio.value = {
-    idExamen: null, idExamenOriginal: e.id, titulo: e.titulo, tipo: e.tipo, online: e.online,
-    desaprobados: e.desaprobados, fecha: '', config: configVacia(),
-  }
-}
-
-const abrirConfigRecuperatorio = async (e) => {
-  try {
-    const res = await api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerConfigOnlineExamenCurso', payload: { idExamen: e.id } })
-    if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar la configuración')
-    intentoRecuperatorio.value = false
-    recuperatorio.value = { idExamen: e.id, titulo: e.titulo, tipo: e.tipo, online: true, config: res.payload }
-  } catch (err) {
-    notificar({ titulo: 'Error', mensaje: err.message, tipo: 'danger' })
-  }
-}
-
-const guardarRecuperatorio = async () => {
-  intentoRecuperatorio.value = true
-  const r = recuperatorio.value
-  const errorConfig = r.online ? configRef.value?.validar() : ''
-  if ((!r.idExamen && !r.fecha) || errorConfig) {
-    notificar({ titulo: 'Faltan datos', mensaje: errorConfig || 'Elegí la fecha del recuperatorio.', tipo: 'danger' })
-    return
-  }
-  guardandoRecuperatorio.value = true
-  try {
-    const res = r.idExamen
-      ? await api.post({ entity: 'examen_online_curso_arbitro', action: 'actualizarRecuperatorioOnlineCurso', payload: { idExamen: r.idExamen, ...r.config } })
-      : await api.post({ entity: 'examen_online_curso_arbitro', action: 'programarRecuperatorioCurso', payload: { idExamenOriginal: r.idExamenOriginal, fecha: r.fecha, ...r.config } })
-    if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el recuperatorio')
-    toast({ titulo: 'Guardado', mensaje: r.idExamen ? 'El recuperatorio se actualizó.' : 'El recuperatorio se programó y se avisó a los aspirantes.', tipo: 'success' })
-    recuperatorio.value = null
-    await cargarExamenes()
-  } catch (err) {
-    notificar({ titulo: 'Error', mensaje: err.message, tipo: 'danger' })
-  } finally {
-    guardandoRecuperatorio.value = false
   }
 }
 

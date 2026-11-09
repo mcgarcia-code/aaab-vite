@@ -177,7 +177,7 @@
             <div v-for="a in alumnosAsistencia" :key="a.id" class="fila-asistencia d-flex justify-content-between align-items-center gap-2">
               <div class="min-w-0">
                 <div class="fw-bold text-dark small text-uppercase text-truncate">{{ a.apellido }}, {{ a.nombre }}</div>
-                <div class="text-muted" style="font-size: 0.72rem;">DNI {{ a.dni }} · {{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</div>
+                <div class="text-muted" style="font-size: 0.72rem;">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</div>
               </div>
               <div class="btn-group btn-group-sm flex-shrink-0" role="group" :aria-label="`Asistencia de ${a.apellido}`">
                 <button type="button" class="btn fw-bold" :class="a.asistencia === 'presente' ? 'btn-success' : 'btn-outline-success'" @click="a.asistencia = a.asistencia === 'presente' ? null : 'presente'">✓ Presente</button>
@@ -198,17 +198,25 @@
     <ModalBase :show="mostrarExamen" @close="mostrarExamen = false" icono="quiz" colorIcono="bg-dark-subtle text-dark" maxWidth="680px">
       <template #header>
         <div class="text-center w-100">
-          <span class="fw-bold fs-5">Programar examen online</span>
+          <span class="fw-bold fs-5">Programar examen</span>
           <div v-if="claseExamen" class="text-muted small mt-1">{{ fechaLargaClase(claseExamen.fecha) }} · {{ claseExamen.titulo }}</div>
         </div>
       </template>
       <div v-if="cargandoExamen" class="text-center py-4"><span class="spinner-border text-dark"></span></div>
       <form v-else id="formExamenClase" class="text-start" novalidate @submit.prevent="guardarExamen">
         <div v-if="examenExistente" class="alert alert-light border small py-2">
-          <i class="bi bi-info-circle me-1"></i> Ya hay un examen programado para esta clase. Lo rindieron {{ examenExistente.rendidos }} aspirante(s).
+          <i class="bi bi-info-circle me-1"></i> Ya hay un examen programado para esta clase. Tiene {{ examenExistente.rendidos }} resultado(s) cargado(s).
         </div>
-        <div class="d-flex flex-column gap-2 mb-3" role="radiogroup" aria-label="Tipo de examen">
-          <label v-for="m in MODOS_EXAMEN" :key="m.valor" class="opcion-modo" :class="{ activa: formExamen.modo === m.valor }">
+        <div class="btn-group w-100 mb-3" role="group" aria-label="Tipo de examen">
+          <button type="button" class="btn fw-bold" :class="formExamen.tipo === 'teorico' ? 'btn-danger' : 'btn-outline-danger'" @click="formExamen.tipo = 'teorico'">
+            <i class="bi bi-journal-text me-1"></i> Teórico
+          </button>
+          <button type="button" class="btn fw-bold" :class="formExamen.tipo === 'fisico' ? 'btn-primary' : 'btn-outline-primary'" @click="formExamen.tipo = 'fisico'">
+            <i class="bi bi-stopwatch me-1"></i> Físico
+          </button>
+        </div>
+        <div class="d-flex flex-column gap-2 mb-3" role="radiogroup" :aria-label="esFisico ? 'Tipo de examen físico' : 'Tipo de examen teórico'">
+          <label v-for="m in modosExamen" :key="m.valor" class="opcion-modo" :class="{ activa: formExamen.modo === m.valor }">
             <input v-model="formExamen.modo" class="form-check-input me-2" type="radio" :value="m.valor">
             <span class="fw-bold">{{ m.etiqueta }}</span>
             <span class="d-block small text-muted">{{ m.ayuda }}</span>
@@ -216,16 +224,22 @@
         </div>
         <div v-if="esRecuperatorioFinal" class="mb-3">
           <div v-if="!finalesDisponibles.length" class="alert alert-danger small py-2 mb-0">
-            <i class="bi bi-exclamation-triangle me-1"></i> Todavía no hay un teórico final programado para recuperar.
+            <i class="bi bi-exclamation-triangle me-1"></i> Todavía no hay un {{ esFisico ? 'físico final' : 'teórico final' }} programado para recuperar.
           </div>
           <template v-else>
-            <label for="ex-final-original" class="form-label small fw-bold text-dark">Teórico final que se recupera *</label>
+            <label for="ex-final-original" class="form-label small fw-bold text-dark">{{ esFisico ? 'Físico final' : 'Teórico final' }} que se recupera *</label>
             <select id="ex-final-original" v-model="formExamen.idExamenFinal" class="form-select" :class="{ 'is-invalid': intentoExamen && !formExamen.idExamenFinal }">
               <option :value="null" disabled>Seleccionar...</option>
               <option v-for="fin in finalesDisponibles" :key="fin.id" :value="fin.id">{{ fechaDMA(fin.fecha) }} · {{ fin.titulo }} · {{ fin.desaprobados }} para recuperar</option>
             </select>
           </template>
         </div>
+        <div v-if="esFisico" class="alert alert-light border small py-2 mb-0">
+          <i class="bi bi-info-circle me-1"></i>
+          <template v-if="esRecuperatorioFinal">Lo rinden solo quienes desaprobaron o estuvieron ausentes en el físico final.</template>
+          El nivel de cada aspirante se carga desde <strong>Exámenes → Físicos</strong>. {{ TEXTO_FISICO }}
+        </div>
+        <template v-else>
         <p class="small text-muted">
           <template v-if="esRecuperatorioFinal">Lo ven solo los aspirantes que desaprobaron o estuvieron ausentes en el teórico final, aunque no hayan venido a esta clase.</template>
           <template v-else-if="esRecuperatorioParcialitos">Lo ven solo los aspirantes que tienen parcialitos desaprobados o ausentes, aunque no hayan venido a esta clase.</template>
@@ -270,6 +284,7 @@
             </div>
           </div>
         </div>
+        </template>
       </form>
       <template #footer>
         <button type="button" @click="mostrarExamen = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
@@ -470,26 +485,40 @@ const guardandoExamen = ref(false)
 const intentoExamen = ref(false)
 const reglasDisponibles = ref([])
 const configDefecto = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [] })
-const MODOS_EXAMEN = [
+const TEXTO_FISICO = 'Aprueba con 8.5 (femenino y masculino de 45 años o más) o 9.5 (masculino menor de 45).'
+const MODOS_FISICO = [
+  { valor: 'simulacro', etiqueta: 'Simulacro', ayuda: 'Para ver cómo están físicamente. No cuenta para el curso.' },
+  { valor: 'final', etiqueta: 'Físico final', ayuda: 'Define el resultado del físico del curso.' },
+  { valor: 'recuperatorio_final', etiqueta: 'Recuperatorio físico final', ayuda: 'Lo rinden quienes desaprobaron el físico final.' },
+]
+const MODOS_TEORICO = [
   { valor: 'parcialito', etiqueta: 'Parcialito', ayuda: 'Examen de la clase sobre las reglas que elijas.' },
   { valor: 'recuperatorio', etiqueta: 'Recuperatorio de parcialitos', ayuda: 'Cada aspirante rinde las reglas de los parcialitos que debe.' },
   { valor: 'final', etiqueta: 'Teórico final', ayuda: 'Define el teórico del curso.' },
   { valor: 'recuperatorio_final', etiqueta: 'Recuperatorio teórico final', ayuda: 'Lo rinden quienes desaprobaron el teórico final.' },
 ]
-const formExamen = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true, modo: 'parcialito', idExamenFinal: null })
+const formExamen = ref({ tipo: 'teorico', cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true, modo: 'parcialito', idExamenFinal: null })
+const esFisico = computed(() => formExamen.value.tipo === 'fisico')
+const modosExamen = computed(() => (esFisico.value ? MODOS_FISICO : MODOS_TEORICO))
 const esRecuperatorioParcialitos = computed(() => formExamen.value.modo === 'recuperatorio')
 const esRecuperatorioFinal = computed(() => formExamen.value.modo === 'recuperatorio_final')
-const finalesDisponibles = ref([])
+const finales = ref({ teorico: [], fisico: [] })
+const finalesDisponibles = computed(() => finales.value[formExamen.value.tipo] || [])
 
 // Al elegir el recuperatorio del final se propone el final (si hay uno solo) y sus mismas reglas.
 // Los watchers son síncronos para no pisar la configuración guardada al abrir un examen existente.
 let aplicandoExamenGuardado = false
+watch(() => formExamen.value.tipo, (tipo) => {
+  if (aplicandoExamenGuardado) return
+  formExamen.value.modo = tipo === 'fisico' ? 'simulacro' : 'parcialito'
+  formExamen.value.idExamenFinal = null
+}, { flush: 'sync' })
 watch(() => formExamen.value.modo, (modo) => {
   if (aplicandoExamenGuardado || modo !== 'recuperatorio_final' || formExamen.value.idExamenFinal) return
   if (finalesDisponibles.value.length === 1) formExamen.value.idExamenFinal = finalesDisponibles.value[0].id
 }, { flush: 'sync' })
 watch(() => formExamen.value.idExamenFinal, (idFinal) => {
-  if (aplicandoExamenGuardado || !idFinal) return
+  if (aplicandoExamenGuardado || !idFinal || esFisico.value) return
   const final = finalesDisponibles.value.find(x => x.id === idFinal)
   if (final?.reglas.length) formExamen.value.reglas = [...final.reglas]
 }, { flush: 'sync' })
@@ -525,17 +554,22 @@ const abrirExamen = async (c) => {
   cargandoExamen.value = true
   try {
     await cargarReglas()
-    const [res, resFinales] = await Promise.all([
+    const [res, resTeorico, resFisico] = await Promise.all([
       api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerExamenOnlineClaseCurso', payload: { idClase: c.id } }),
-      api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerFinalesParaRecuperatorioCurso', payload: { idClase: c.id } }),
+      api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerFinalesParaRecuperatorioCurso', payload: { idClase: c.id, tipo: 'teorico' } }),
+      api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerFinalesParaRecuperatorioCurso', payload: { idClase: c.id, tipo: 'fisico' } }),
     ])
-    finalesDisponibles.value = resFinales?.ok ? resFinales.payload || [] : []
+    finales.value = {
+      teorico: resTeorico?.ok ? resTeorico.payload || [] : [],
+      fisico: resFisico?.ok ? resFisico.payload || [] : [],
+    }
     if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar el examen de la clase')
     examenExistente.value = res.payload
     const codigos = reglasDisponibles.value.map(r => r.codigo)
     const base = res.payload || { ...configDefecto.value, habilitado: true }
     aplicandoExamenGuardado = true
     formExamen.value = {
+      tipo: base.tipo === 'fisico' ? 'fisico' : 'teorico',
       cantidadPreguntas: base.cantidadPreguntas,
       tiempoLimiteMin: base.tiempoLimiteMin,
       reglas: (base.reglas || []).filter(r => codigos.includes(r)),
@@ -555,10 +589,10 @@ const abrirExamen = async (c) => {
 const guardarExamen = async () => {
   intentoExamen.value = true
   if (esRecuperatorioFinal.value && !formExamen.value.idExamenFinal) {
-    notificar({ titulo: 'Faltan datos', mensaje: 'Elegí el teórico final que se recupera.', tipo: 'danger' })
+    notificar({ titulo: 'Faltan datos', mensaje: `Elegí el ${esFisico.value ? 'físico' : 'teórico'} final que se recupera.`, tipo: 'danger' })
     return
   }
-  if (errorCantidad.value || errorTiempo.value || (!esRecuperatorioParcialitos.value && !formExamen.value.reglas.length)) {
+  if (!esFisico.value && (errorCantidad.value || errorTiempo.value || (!esRecuperatorioParcialitos.value && !formExamen.value.reglas.length))) {
     notificar({ titulo: 'Faltan datos', mensaje: 'Revisá la cantidad, el tiempo y elegí al menos una regla.', tipo: 'danger' })
     return
   }
@@ -570,6 +604,11 @@ const guardarExamen = async () => {
       payload: { idClase: claseExamen.value.id, ...formExamen.value },
     })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo programar el examen')
+    if (esFisico.value) {
+      toast({ titulo: 'Examen físico guardado', mensaje: 'El nivel de cada aspirante se carga desde Exámenes → Físicos.', tipo: 'success' })
+      mostrarExamen.value = false
+      return
+    }
     toast({ titulo: 'Examen programado', mensaje: formExamen.value.habilitado ? (esRecuperatorioFinal.value ? 'Los que desaprobaron el teórico final ya pueden rendirlo desde Mis Exámenes.' : esRecuperatorioParcialitos.value ? 'Los aspirantes que deben parcialitos ya pueden rendirlo desde Mis Exámenes.' : 'Los presentes ya pueden rendirlo desde Mis Exámenes.') : 'El examen quedó guardado sin habilitar.', tipo: 'success' })
     mostrarExamen.value = false
   } catch (e) {

@@ -32,7 +32,7 @@
 
         <div class="bg-light p-3 border-bottom">
           <div class="row g-2">
-            <div class="col-12 col-md-4"><input v-model="filtros.texto" class="form-control form-control-sm shadow-none" placeholder="BUSCAR APELLIDO, NOMBRE O DNI..."></div>
+            <div class="col-12 col-md-4"><input v-model="filtros.texto" class="form-control form-control-sm shadow-none" placeholder="BUSCAR APELLIDO O NOMBRE..."></div>
             <div class="col-6 col-md-2">
               <select v-model="filtros.modalidad" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">CURSO</option>
@@ -74,7 +74,6 @@
                   <tr v-for="f in filas" :key="f.alumno.id">
                     <td class="ps-3">
                       <div class="fw-bold text-dark text-uppercase">{{ f.alumno.apellido }}, {{ f.alumno.nombre }}</div>
-                      <div class="text-muted" style="font-size: 0.68rem;">DNI {{ f.alumno.dni }}</div>
                     </td>
                     <td class="text-center"><span class="badge" :class="MODALIDADES_CURSO[f.alumno.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[f.alumno.modalidadCurso]?.corta }}</span></td>
                     <td class="text-center">
@@ -124,7 +123,6 @@
                   <div class="d-flex justify-content-between align-items-start gap-2">
                     <div class="min-w-0">
                       <div class="fw-bold text-uppercase">{{ f.alumno.apellido }}, {{ f.alumno.nombre }}</div>
-                      <div class="text-muted" style="font-size: 0.7rem;">DNI {{ f.alumno.dni }}</div>
                     </div>
                     <span class="badge flex-shrink-0" :class="MODALIDADES_CURSO[f.alumno.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[f.alumno.modalidadCurso]?.corta }}</span>
                   </div>
@@ -294,7 +292,7 @@ const filas = computed(() => {
   return seguimiento.value.filter(f =>
     (!filtros.modalidad || f.alumno.modalidadCurso === filtros.modalidad) &&
     (!filtros.notaFinal || f.notaFinal === filtros.notaFinal) &&
-    (!texto || normalizar(`${f.alumno.apellido} ${f.alumno.nombre} ${f.alumno.dni}`).includes(texto))
+    (!texto || normalizar(`${f.alumno.apellido} ${f.alumno.nombre}`).includes(texto))
   )
 })
 
@@ -362,7 +360,7 @@ const exportarExcel = async () => {
   const ws = wb.addWorksheet(`Regulares ${anio.value}`)
   ws.columns = [
     { header: 'Apellido', key: 'apellido', width: 18 }, { header: 'Nombre', key: 'nombre', width: 18 },
-    { header: 'DNI', key: 'dni', width: 14 }, { header: 'Curso', key: 'curso', width: 16 },
+    { header: 'Curso', key: 'curso', width: 16 },
     { header: 'Clases presentes', key: 'presentes', width: 16 }, { header: 'Clases dictadas', key: 'clases', width: 16 }, { header: '% asistencia', key: 'porcentaje', width: 13 },
     { header: 'Mini presentes', key: 'miniPresentes', width: 15 }, { header: 'Mini convocado', key: 'miniTotal', width: 15 },
     { header: 'Parcialitos aprobados', key: 'parcAprob', width: 20 }, { header: 'Parcialitos', key: 'parcTotal', width: 12 },
@@ -370,7 +368,7 @@ const exportarExcel = async () => {
     { header: 'Nota final', key: 'notaFinal', width: 20 },
   ]
   filas.value.forEach(f => ws.addRow({
-    apellido: f.alumno.apellido, nombre: f.alumno.nombre, dni: f.alumno.dni,
+    apellido: f.alumno.apellido, nombre: f.alumno.nombre,
     curso: MODALIDADES_CURSO[f.alumno.modalidadCurso]?.etiqueta || '',
     presentes: f.asistencia.presentes, clases: f.asistencia.total, porcentaje: f.asistencia.porcentaje ?? '',
     miniPresentes: f.alumno.modalidadCurso === 'anual' ? f.mini.presentes : '', miniTotal: f.alumno.modalidadCurso === 'anual' ? f.mini.total : '',

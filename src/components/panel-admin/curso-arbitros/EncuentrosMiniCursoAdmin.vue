@@ -231,7 +231,7 @@ const abrirEditar = (e) => {
     id: e.id, titulo: e.titulo, fecha: e.fecha, hora: e.hora || '', lugar: e.lugar || '', observaciones: e.observaciones || '',
     aspirantes: e.aspirantes.map(a => a.id),
   }
-  convocadosOriginales.value = e.aspirantes.map(({ id, apellido, nombre, dni }) => ({ id, apellido, nombre, dni }))
+  convocadosOriginales.value = e.aspirantes.map(({ id, apellido, nombre }) => ({ id, apellido, nombre }))
   intento.value = false
   mostrarModal.value = true
   cargarAspirantes(Number(e.fecha.substring(0, 4)))
