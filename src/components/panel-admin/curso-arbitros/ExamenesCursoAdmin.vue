@@ -57,7 +57,7 @@
 
             <div v-else class="row g-3">
               <div v-for="g in grupos[pestana]" :key="g.examen.id" class="col-12 col-md-6 col-xxl-4">
-                <article class="examen-card h-100 d-flex flex-column" :class="['borde-' + g.examen.tipo, { 'es-recuperatorio': g.original }]">
+                <article class="examen-card h-100 d-flex flex-column" :class="['borde-' + g.examen.tipo, { 'es-recuperatorio': g.esRecuperatorio }]">
                   <header class="d-flex gap-3 p-3 pb-2">
                     <div class="fecha-bloque flex-shrink-0 text-center">
                       <div class="dia">{{ diaDe(g.examen.fecha) }}</div>
@@ -67,8 +67,9 @@
                       <h6 class="fw-bold text-dark mb-1 text-break">{{ g.examen.titulo }}</h6>
                       <div v-if="g.examen.clase" class="small text-muted text-break"><i class="bi bi-easel me-1"></i>{{ g.examen.clase }}</div>
                       <div v-if="g.original" class="small text-warning-emphasis text-break"><i class="bi bi-arrow-repeat me-1"></i>Recupera: {{ g.original.titulo }} ({{ fechaDMA(g.original.fecha) }})</div>
+                      <div v-else-if="g.esRecuperatorio" class="small text-danger text-break"><i class="bi bi-exclamation-triangle me-1"></i>No está vinculado a un examen final activo. Volvé a guardarlo desde su clase eligiendo el final que recupera.</div>
                       <div class="d-flex flex-wrap gap-1 mt-2 etiquetas-examen">
-                        <span v-if="g.original" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio</span>
+                        <span v-if="g.esRecuperatorio" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio</span>
                         <span v-if="g.examen.esRecuperatorioParcialitos" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio de parcialitos</span>
                         <span v-if="g.examen.tipo === 'fisico'" class="badge" :class="g.examen.esFinal ? 'bg-primary' : 'bg-light text-dark border'">{{ g.examen.esFinal ? 'Físico final' : 'Simulacro' }}</span>
                         <span class="badge" :class="claseCurso(g.examen.curso)">{{ etiquetaCurso(g.examen.curso) }}</span>
@@ -411,6 +412,9 @@ const pestana = ref('parcialito')
 const pestanaDe = (e) => (e.tipo === 'teorico' ? (e.esFinal ? 'final' : 'parcialito') : e.tipo)
 
 // Los recuperatorios se muestran dentro de su examen original
+// Recuperatorio guardado sin vínculo con su final (datos viejos): se marca para poder corregirlo
+const pareceRecuperatorio = (e) => !e.esRecuperatorioParcialitos && /^recuperatorio/i.test(String(e.titulo || ''))
+
 // Cada recuperatorio se muestra como tarjeta propia, justo después de su examen original
 const grupos = computed(() => {
   const resultado = { parcialito: [], final: [], practico: [], fisico: [], planilla: [] }
@@ -418,15 +422,15 @@ const grupos = computed(() => {
   originales.forEach(examen => {
     const lista = resultado[pestanaDe(examen)]
     if (!lista) return
-    lista.push({ examen, original: null })
+    lista.push({ examen, original: null, esRecuperatorio: pareceRecuperatorio(examen) })
     examenesFiltrados.value
       .filter(r => r.idExamenOriginal === examen.id)
-      .forEach(r => lista.push({ examen: r, original: examen }))
+      .forEach(r => lista.push({ examen: r, original: examen, esRecuperatorio: true }))
   })
-  // Recuperatorios cuyo original no está en el listado (por ejemplo, filtrado por curso)
+  // Recuperatorios cuyo original no está activo (por ejemplo, se borró)
   examenesFiltrados.value
     .filter(r => r.idExamenOriginal && !originales.some(o => o.id === r.idExamenOriginal))
-    .forEach(r => resultado[pestanaDe(r)]?.push({ examen: r, original: null }))
+    .forEach(r => resultado[pestanaDe(r)]?.push({ examen: r, original: null, esRecuperatorio: true }))
   return resultado
 })
 
