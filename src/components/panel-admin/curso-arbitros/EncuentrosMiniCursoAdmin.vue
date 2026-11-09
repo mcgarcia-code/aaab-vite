@@ -37,7 +37,6 @@
               <div class="tarjeta border rounded-3 p-3 h-100 d-flex flex-column">
                 <div class="fw-bold text-dark small">{{ fechaLargaClase(e.fecha) }}<template v-if="e.hora"> · {{ e.hora }} hs</template></div>
                 <div class="fw-bold text-dark mt-1">{{ e.titulo }}</div>
-                <div v-if="e.observaciones" class="small text-dark mt-1 texto-multilinea">{{ e.observaciones }}</div>
                 <div class="small mt-2">
                   <span class="badge bg-light text-dark border me-1">{{ e.aspirantes.length }} convocados</span>
                   <span class="badge bg-success me-1">{{ contar(e, 'presente') }} presentes</span>

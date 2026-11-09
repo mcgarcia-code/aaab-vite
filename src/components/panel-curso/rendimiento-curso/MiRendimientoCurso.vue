@@ -17,28 +17,35 @@
       <div v-else class="card-body p-3 p-md-4">
         <!-- RESUMEN -->
         <div class="row g-2 g-md-3 mb-4">
-          <div class="col-6 col-md-3">
+          <div class="col-6" :class="esAnual ? 'col-md' : 'col-md-3'">
             <div class="resumen-card bg-success text-white">
               <i class="bi bi-person-check-fill"></i>
               <div class="valor">{{ resumen.presentes }}</div>
               <div class="etiqueta">Presentes</div>
             </div>
           </div>
-          <div class="col-6 col-md-3">
+          <div class="col-6" :class="esAnual ? 'col-md' : 'col-md-3'">
             <div class="resumen-card bg-secondary text-white">
               <i class="bi bi-person-dash-fill"></i>
               <div class="valor">{{ resumen.ausentes }}</div>
               <div class="etiqueta">Ausentes</div>
             </div>
           </div>
-          <div class="col-6 col-md-3">
+          <div class="col-6" :class="esAnual ? 'col-md' : 'col-md-3'">
             <div class="resumen-card bg-dark text-white">
               <i class="bi bi-percent"></i>
               <div class="valor">{{ resumen.porcentaje !== null ? `${resumen.porcentaje}%` : '-' }}</div>
-              <div class="etiqueta">Asistencia</div>
+              <div class="etiqueta">Asistencia a clases</div>
             </div>
           </div>
-          <div class="col-6 col-md-3">
+          <div v-if="esAnual" class="col-6 col-md">
+            <div class="resumen-card bg-primary text-white">
+              <i class="bi bi-people-fill"></i>
+              <div class="valor">{{ resumenMini.porcentaje !== null ? `${resumenMini.porcentaje}%` : '-' }}</div>
+              <div class="etiqueta">Asistencia a mini</div>
+            </div>
+          </div>
+          <div :class="esAnual ? 'col-12 col-md' : 'col-6 col-md-3'">
             <div class="resumen-card bg-danger text-white">
               <i class="bi bi-journal-check"></i>
               <div class="valor">{{ resumen.promedio !== null ? resumen.promedio : '-' }}</div>
@@ -153,10 +160,15 @@ const cargando = ref(true)
 // Secciones del acordeón: arrancan contraídas y se despliegan al tocarlas
 const abiertas = reactive({ clases: false, mini: false, examenes: false })
 
-const resumenMini = computed(() => ({
-  presentes: (datos.value.mini || []).filter(m => m.asistencia === 'presente').length,
-  ausentes: (datos.value.mini || []).filter(m => m.asistencia === 'ausente').length,
-}))
+const esAnual = computed(() => datos.value.modalidad === 'anual')
+
+// Porcentaje sobre los encuentros con asistencia registrada (presente o ausente)
+const resumenMini = computed(() => {
+  const presentes = (datos.value.mini || []).filter(m => m.asistencia === 'presente').length
+  const ausentes = (datos.value.mini || []).filter(m => m.asistencia === 'ausente').length
+  const registrados = presentes + ausentes
+  return { presentes, ausentes, porcentaje: registrados ? Math.round(presentes / registrados * 100) : null }
+})
 
 const resumen = computed(() => {
   const presentes = datos.value.clases.filter(c => c.asistencia === 'presente').length
