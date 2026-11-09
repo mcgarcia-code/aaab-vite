@@ -130,6 +130,7 @@
 import { ref, watch } from 'vue'
 import { obtenerDatosClubes, RAMAS_HANDBALL } from '@/composables/useOpcionesHandball'
 import { MAX_FAMILIARES, filaFamiliarVacia, errorFilaFamiliar } from '@/composables/useFamiliares'
+import BuscadorClub from '@/components/BuscadorClub.vue'
 
 const props = defineProps({
   tiene: { type: String, default: 'no' },
