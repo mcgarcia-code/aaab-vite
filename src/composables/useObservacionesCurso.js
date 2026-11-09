@@ -31,8 +31,9 @@ export const observacionCursoDesdeFila = (o) => ({
 })
 
 // Revisión: se carga pendiente; recién aprobada la ve el aspirante. El observador solo edita las pendientes.
+// Mismas píldoras que Observaciones del panel-admin (clases estado-pill, ver estilos en cada vista)
 export const ESTADOS_REVISION_OBSERVACION = {
-  pendiente: { etiqueta: 'Pendiente', clase: 'bg-warning text-dark', icono: 'bi-hourglass-split' },
-  aprobada: { etiqueta: 'Aprobada', clase: 'bg-success', icono: 'bi-check-circle-fill' },
-  rechazada: { etiqueta: 'Rechazada', clase: 'bg-danger', icono: 'bi-x-circle-fill' },
+  pendiente: { etiqueta: 'PENDIENTE', clase: 'estado-pill estado-pendiente', alerta: 'alert-warning' },
+  aprobada: { etiqueta: 'APROBADA', clase: 'estado-pill estado-aprobada', alerta: 'alert-success' },
+  rechazada: { etiqueta: 'RECHAZADA', clase: 'estado-pill estado-rechazada', alerta: 'alert-danger' },
 }

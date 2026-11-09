@@ -33,7 +33,7 @@
               </div>
               <div class="d-flex flex-wrap gap-1 mt-1">
                 <span class="badge" :class="MODALIDADES_CURSO[o.modalidad_curso]?.clase">{{ MODALIDADES_CURSO[o.modalidad_curso]?.etiqueta }}</span>
-                <span class="badge" :class="estadoDe(o).clase"><i :class="['bi', estadoDe(o).icono, 'me-1']"></i>{{ estadoDe(o).etiqueta }}</span>
+                <span :class="estadoDe(o).clase">{{ estadoDe(o).etiqueta }}</span>
               </div>
             </div>
             <div v-if="esPendiente(o)" class="d-flex gap-1">
@@ -144,4 +144,10 @@ onMounted(cargar)
 .detalle-titulo { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: #dc3545; margin-bottom: 2px; }
 .detalle-texto { white-space: pre-wrap; font-size: 0.88rem; color: #1e293b; }
 .min-w-0 { min-width: 0; }
+
+/* Píldoras de estado: mismo estilo que Observaciones del panel-admin */
+.estado-pill { border-radius: 999px; padding: 0.35em 0.85em; font-weight: 700; font-size: 0.7rem; letter-spacing: 0.02em; border: 1px solid transparent; display: inline-block; white-space: nowrap; }
+.estado-pendiente { background-color: #fdf3d3; color: #a6841f; border-color: #f2e2a5; }
+.estado-aprobada { background-color: #e3f5e6; color: #2f8a45; border-color: #bfe6c8; }
+.estado-rechazada { background-color: #fde7ea; color: #c0304a; border-color: #f5c2cb; }
 </style>

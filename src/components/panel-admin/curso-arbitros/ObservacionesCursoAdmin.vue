@@ -86,7 +86,7 @@
                     <td class="text-dark">{{ o.encuentro }}</td>
                     <td class="text-dark">{{ o.categoria || '-' }}</td>
                     <td class="text-dark">{{ o.observador || '-' }}</td>
-                    <td class="text-center"><span class="badge" :class="estadoDe(o).clase"><i :class="['bi', estadoDe(o).icono, 'me-1']"></i>{{ estadoDe(o).etiqueta }}</span></td>
+                    <td class="text-center"><span :class="estadoDe(o).clase">{{ estadoDe(o).etiqueta }}</span></td>
                   </tr>
                   <tr v-if="!observacionesFiltradas.length">
                     <td colspan="8" class="text-center py-5 text-muted border-0">
@@ -103,7 +103,7 @@
                 <div class="card-body p-3 small text-dark">
                   <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
                     <span class="fw-bold text-uppercase">{{ o.apellido }}, {{ o.nombre }}</span>
-                    <span class="badge flex-shrink-0" :class="estadoDe(o).clase">{{ estadoDe(o).etiqueta }}</span>
+                    <span class="flex-shrink-0" :class="estadoDe(o).clase">{{ estadoDe(o).etiqueta }}</span>
                   </div>
                   <div>{{ fechaDMA(o.fecha_partido) }} · {{ o.encuentro }}</div>
                   <div v-if="o.observador" class="text-muted">Observador/a: {{ o.observador }}</div>
@@ -152,10 +152,10 @@
             <div class="fw-bold text-dark text-break">{{ verObservacion.observador || '-' }}</div>
           </div>
         </div>
-        <div class="alert small py-2 mb-3 d-flex flex-wrap align-items-center gap-2" :class="'alert-' + (estadoDe(verObservacion).clase.includes('success') ? 'success' : estadoDe(verObservacion).clase.includes('danger') ? 'danger' : 'warning')">
-          <span class="badge" :class="estadoDe(verObservacion).clase"><i :class="['bi', estadoDe(verObservacion).icono, 'me-1']"></i>{{ estadoDe(verObservacion).etiqueta }}</span>
+        <div class="alert small py-2 mb-3 d-flex flex-wrap align-items-center gap-2" :class="estadoDe(verObservacion).alerta">
+          <span :class="estadoDe(verObservacion).clase">{{ estadoDe(verObservacion).etiqueta }}</span>
           <span v-if="verObservacion.revisado_por">por {{ verObservacion.revisado_por }} · {{ fechaHoraDMA(verObservacion.fecha_revision) }}</span>
-          <span v-else-if="estadoDe(verObservacion).etiqueta === 'Pendiente'">El aspirante todavía no la ve.</span>
+          <span v-else-if="(verObservacion.estado_revision || 'pendiente') === 'pendiente'">El aspirante todavía no la ve.</span>
           <div v-if="verObservacion.motivo_revision" class="w-100"><strong>Motivo:</strong> {{ verObservacion.motivo_revision }}</div>
         </div>
         <div class="d-flex flex-column gap-2">
@@ -343,4 +343,10 @@ onMounted(cargarObservaciones)
 .bloque-comentario { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; }
 .detalle-titulo { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
 .detalle-texto { white-space: pre-wrap; font-size: 0.9rem; color: #1e293b; overflow-wrap: anywhere; }
+
+/* Píldoras de estado: mismo estilo que Observaciones del panel-admin */
+.estado-pill { border-radius: 999px; padding: 0.35em 0.85em; font-weight: 700; font-size: 0.7rem; letter-spacing: 0.02em; border: 1px solid transparent; display: inline-block; white-space: nowrap; }
+.estado-pendiente { background-color: #fdf3d3; color: #a6841f; border-color: #f2e2a5; }
+.estado-aprobada { background-color: #e3f5e6; color: #2f8a45; border-color: #bfe6c8; }
+.estado-rechazada { background-color: #fde7ea; color: #c0304a; border-color: #f5c2cb; }
 </style>
