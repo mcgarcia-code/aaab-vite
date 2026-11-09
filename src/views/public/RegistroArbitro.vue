@@ -181,11 +181,8 @@
           <template v-if="form.juegaHandball === 'si'">
             <div class="col-12 col-md-4">
               <label for="reg-club" class="form-label small fw-bold text-dark">Club *</label>
-              <select id="reg-club" v-model="form.idClub" class="form-select" :class="claseCampo('idClub')">
-                <option value="" disabled>Seleccionar club...</option>
-                <option v-for="c in clubes" :key="c.id" :value="c.id">{{ c.nombre }}</option>
-              </select>
-              <div class="invalid-feedback">{{ errores.idClub }}</div>
+              <BuscadorClub id="reg-club" v-model="form.idClub" :opciones="clubes" :invalido="intentoEnviar && !!errores.idClub" />
+              <div v-if="intentoEnviar && errores.idClub" class="text-danger small mt-1">{{ errores.idClub }}</div>
             </div>
             <div class="col-12 col-md-4">
               <span class="form-label small fw-bold text-dark d-block">Categorías * <span class="fw-normal text-muted">(podés elegir más de una)</span></span>
@@ -218,6 +215,18 @@
           <div v-if="intentoEnviar && errores.familiares" class="text-danger small mt-2">{{ errores.familiares }}</div>
         </div>
 
+        <!-- EX-JUGADOR / CLUB CON EL QUE SE IDENTIFICA -->
+        <h6 class="titulo-seccion"><i class="bi bi-shield me-1"></i> Ex-jugador o club con el que te identificás</h6>
+        <div class="mb-4">
+          <SeccionClubesVinculados
+            v-model="form.vinculos"
+            :mostrar-errores="intentoEnviar"
+            prefijo="reg-vinc"
+            @error="mensaje => toast({ titulo: 'Error', mensaje, tipo: 'danger' })"
+          />
+          <div v-if="intentoEnviar && errores.vinculos" class="text-danger small mt-2">{{ errores.vinculos }}</div>
+        </div>
+
         <!-- OBSERVACIONES -->
         <h6 class="titulo-seccion"><i class="bi bi-chat-left-text me-1"></i> Observaciones</h6>
         <div class="mb-4">
@@ -243,6 +252,9 @@ import { useRoute } from 'vue-router'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
+import BuscadorClub from '@/components/BuscadorClub.vue'
+import SeccionClubesVinculados from '@/components/SeccionClubesVinculados.vue'
+import { clubesVinculadosVacios, validarClubesVinculados, clubesVinculadosParaEnviar } from '@/composables/useClubesVinculados'
 import { obtenerDatosClubes, ramasSegunGenero } from '@/composables/useOpcionesHandball'
 import { validarFamiliares, familiaresParaEnviar } from '@/composables/useFamiliares'
 import { CLAVE_PRECARGA_REGISTRO } from '@/composables/useCursoArbitro'
@@ -291,6 +303,7 @@ const formularioVacio = () => ({
   disponibilidadDomingo: 'NO', domingoDesde: '', domingoHasta: '',
   juegaHandball: 'no', idClub: '', idsCategorias: [],
   tieneFamiliares: 'no', familiares: [],
+  vinculos: clubesVinculadosVacios(),
   observaciones: '',
   sitioWeb: '',
 })
@@ -382,6 +395,9 @@ const validarFormulario = () => {
   const errorFamiliares = validarFamiliares(form.tieneFamiliares, form.familiares)
   if (errorFamiliares) e.familiares = errorFamiliares
 
+  const errorVinculos = validarClubesVinculados(form.vinculos)
+  if (errorVinculos) e.vinculos = errorVinculos
+
   Object.keys(errores).forEach(k => delete errores[k])
   Object.assign(errores, e)
   return Object.keys(e).length === 0
@@ -456,6 +472,7 @@ const enviarRegistro = async () => {
         ...form,
         dni: String(form.dni).replace(/\D/g, ''),
         familiares: familiaresParaEnviar(form.tieneFamiliares, form.familiares),
+        ...clubesVinculadosParaEnviar(form.vinculos),
       },
     })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo completar el registro')

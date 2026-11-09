@@ -525,10 +525,7 @@
           <template v-if="formModal.juega_handball === 'SI'">
             <div class="col-md-4">
               <label for="modal-club" class="small fw-bold text-dark mb-1">Club *</label>
-              <select id="modal-club" v-model="formModal.donde_juega" @change="formModal.categoria_handball = ''" class="form-select shadow-none border-secondary-subtle" :disabled="handball.cargando.value">
-                <option value="" disabled>{{ handball.cargando.value ? 'Cargando clubes...' : 'Seleccionar club...' }}</option>
-                <option v-for="c in handball.opcionesClubes.value" :key="c" :value="c">{{ c }}</option>
-              </select>
+              <BuscadorClub id="modal-club" v-model="formModal.donde_juega" :opciones="handball.opcionesClubes.value" :cargando="handball.cargando.value" @elegir="formModal.categoria_handball = ''" />
             </div>
             <div class="col-md-4">
               <span class="small fw-bold text-dark mb-1 d-block">Categorías * <span class="fw-normal text-muted">(una o más)</span></span>
@@ -560,6 +557,20 @@
               v-model:familiares="formModal.familiares"
               :mostrar-errores="intentoGuardarModal"
               prefijo="modal-fam"
+              @error="mensaje => notificar({ titulo: 'Error', mensaje, tipo: 'danger' })"
+            />
+          </div>
+
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Ex-jugador o club con el que se identifica</div>
+          <div class="col-12">
+            <div v-if="!vinculosCargados" class="small text-muted">
+              <span class="spinner-border spinner-border-sm me-1"></span> Cargando...
+            </div>
+            <SeccionClubesVinculados
+              v-else
+              v-model="formModal.vinculos"
+              :mostrar-errores="intentoGuardarModal"
+              prefijo="modal-vinc"
               @error="mensaje => notificar({ titulo: 'Error', mensaje, tipo: 'danger' })"
             />
           </div>
@@ -731,6 +742,9 @@ import ModalBase from '@/components/ModalBase.vue'
 import { useOpcionesHandball, separarCategorias, unirCategorias, MAX_LARGO_CATEGORIAS } from '@/composables/useOpcionesHandball'
 import { validarFamiliares, familiaresParaEnviar, familiaresDesdeServidor, textoFamiliares } from '@/composables/useFamiliares'
 import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
+import BuscadorClub from '@/components/BuscadorClub.vue'
+import SeccionClubesVinculados from '@/components/SeccionClubesVinculados.vue'
+import { clubesVinculadosVacios, validarClubesVinculados, clubesVinculadosParaEnviar, clubesVinculadosDesdeServidor } from '@/composables/useClubesVinculados'
 
 useHead({
   title: 'Legajos | AAAB',
@@ -855,6 +869,7 @@ const formModalVacio = () => ({
   disponibilidad_domingo: 'FT', disponibilidad_domingo_desde: '', disponibilidad_domingo_hasta: '',
   juega_handball: 'NO', donde_juega: '', categoria_handball: '',
   tieneFamiliares: 'no', familiares: [],
+  vinculos: clubesVinculadosVacios(),
   observaciones: '',
 })
 
@@ -1050,6 +1065,30 @@ const cargarFamiliaresModal = async (idArbitro) => {
   }
 }
 
+// Ex-jugador / club con el que se identifica: si no se pudo cargar, al guardar no se manda
+const vinculosCargados = ref(true)
+
+const cargarVinculosModal = async (idArbitro) => {
+  vinculosCargados.value = false
+  try {
+    const res = await api.get({ entity: 'clubes_vinculados', action: 'obtenerClubesVinculadosArbitro', payload: { idArbitro } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar el ex-jugador / club')
+    formModal.value.vinculos = clubesVinculadosDesdeServidor(res.payload)
+    vinculosCargados.value = true
+  } catch (e) {
+    console.error('cargarVinculosModal:', e)
+    notificar({ titulo: 'Atención', mensaje: 'No se pudo cargar el ex-jugador / club de este árbitro. Si guardás, no se va a modificar.', tipo: 'danger' })
+  }
+}
+
+const validarVinculosModal = () => {
+  if (!vinculosCargados.value) return true
+  const error = validarClubesVinculados(formModal.value.vinculos)
+  if (!error) return true
+  notificar({ titulo: 'Revisá ex-jugador / club', mensaje: error, tipo: 'danger' })
+  return false
+}
+
 const validarFamiliaresModal = () => {
   intentoGuardarModal.value = true
   if (!familiaresCargados.value) return true
@@ -1061,6 +1100,7 @@ const validarFamiliaresModal = () => {
 
 const crearNuevo = () => {
   familiaresCargados.value = true
+  vinculosCargados.value = true
   intentoGuardarModal.value = false
   formModal.value = formModalVacio()
   movilidadArray.value = []
@@ -1118,6 +1158,7 @@ const editarArbitro = async (arbitro) => {
   if (formModal.value.juega_handball === 'SI') handball.cargar()
   intentoGuardarModal.value = false
   cargarFamiliaresModal(arbitro.id)
+  cargarVinculosModal(arbitro.id)
   movilidadArray.value = []
   let movilidades = arbitro.movilidad ? arbitro.movilidad.split(',') : []
   movilidades.forEach(v => {
@@ -1139,6 +1180,7 @@ const confirmarAlta = async () => {
   }
   if (!validarHandballModal()) return
   if (!validarFamiliaresModal()) return
+  if (!validarVinculosModal()) return
   cargando.value = true
   try {
     const res = await api.post({
@@ -1165,6 +1207,7 @@ const confirmarEdicion = async () => {
   }
   if (!validarHandballModal()) return
   if (!validarFamiliaresModal()) return
+  if (!validarVinculosModal()) return
   cargando.value = true
   try {
     const res = await api.post({
@@ -1206,6 +1249,8 @@ const prepararPayload = (a) => {
     delete clon.tieneFamiliares
     delete clon.familiares
   }
+  if (vinculosCargados.value) Object.assign(clon, clubesVinculadosParaEnviar(clon.vinculos || clubesVinculadosVacios()))
+  delete clon.vinculos
   return clon
 }
 
@@ -1239,6 +1284,7 @@ const actualizarArbitroLocal = (datosForm) => {
   }
   delete actualizado.tieneFamiliares
   delete actualizado.familiares
+  delete actualizado.vinculos
 
   // No guardamos el password en la fila de la tabla
   delete actualizado.password
