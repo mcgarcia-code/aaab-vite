@@ -205,7 +205,13 @@
       <div v-if="cargandoExamen" class="text-center py-4"><span class="spinner-border text-dark"></span></div>
       <form v-else id="formExamenClase" class="text-start" novalidate @submit.prevent="guardarExamen">
         <div v-if="examenExistente" class="alert alert-light border small py-2">
-          <i class="bi bi-info-circle me-1"></i> Esta clase ya tiene un examen {{ esFisico ? 'físico' : 'teórico' }}: <strong>{{ examenExistente.titulo }}</strong> ({{ examenExistente.rendidos }} resultado(s) cargado(s)).
+          <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+            <span><i class="bi bi-info-circle me-1"></i> Esta clase ya tiene un examen {{ esFisico ? 'físico' : 'teórico' }}: <strong>{{ examenExistente.titulo }}</strong> ({{ examenExistente.rendidos }} resultado(s) cargado(s)).</span>
+            <button type="button" class="btn btn-outline-danger btn-sm fw-bold flex-shrink-0" :disabled="borrandoExamen" @click="confirmarBorrarExamen">
+              <span v-if="borrandoExamen" class="spinner-border spinner-border-sm me-1"></span>
+              <i v-else class="bi bi-trash3 me-1"></i> Borrar examen
+            </button>
+          </div>
         </div>
         <div class="btn-group w-100 mb-3" role="group" aria-label="Tipo de examen">
           <button type="button" class="btn fw-bold" :class="formExamen.tipo === 'teorico' ? 'btn-danger' : 'btn-outline-danger'" @click="formExamen.tipo = 'teorico'">
@@ -597,6 +603,40 @@ const abrirExamen = async (c) => {
   } finally {
     cargandoExamen.value = false
   }
+}
+
+// Borra solo el examen (y sus recuperatorios); la clase queda
+const borrandoExamen = ref(false)
+
+const borrarExamen = async () => {
+  const examen = examenExistente.value
+  if (!examen) return
+  borrandoExamen.value = true
+  try {
+    const res = await api.post({ entity: 'examenes_curso_arbitro', action: 'eliminarExamenCurso', payload: { id: examen.id } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo borrar el examen')
+    const tipo = formExamen.value.tipo
+    examenesClase.value = { ...examenesClase.value, [tipo]: null }
+    aplicandoExamenGuardado = true
+    formExamen.value = formularioDesde(tipo, null)
+    aplicandoExamenGuardado = false
+    toast({ titulo: 'Examen borrado', mensaje: 'Se borró el examen de la clase. La clase sigue en el cronograma.', tipo: 'success' })
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    borrandoExamen.value = false
+  }
+}
+
+const confirmarBorrarExamen = () => {
+  const examen = examenExistente.value
+  if (!examen) return
+  notificar({
+    titulo: '¿Borrar examen?',
+    mensaje: `${examen.titulo}. Se borran también sus notas y recuperatorios. La clase no se borra.`,
+    tipo: 'danger',
+    alConfirmar: borrarExamen,
+  })
 }
 
 const guardarExamen = async () => {
