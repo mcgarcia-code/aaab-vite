@@ -137,6 +137,10 @@
                     <th class="py-3 text-uppercase text-muted">Cat. Juega</th>
                     <th class="py-3 text-center text-uppercase text-muted">Familiares / DT</th>
                     <th class="py-3 text-uppercase text-muted">Detalle Familiares / DT</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Ex-jugador</th>
+                    <th class="py-3 text-uppercase text-muted">Último club (ex-jugador)</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Se identifica</th>
+                    <th class="py-3 text-uppercase text-muted">Clubes con los que se identifica</th>
                     <th class="py-3 text-uppercase text-muted">Observaciones</th>
                   </tr>
                   <!-- Filtros Desktop -->
@@ -204,6 +208,18 @@
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.familiares_texto" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2">
+                      <select v-model="filtros.ex_jugador" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                        <option value="">TODOS</option><option value="SI">SÍ</option><option value="NO">NO</option>
+                      </select>
+                    </td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.club_ex_jugador" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2">
+                      <select v-model="filtros.identifica_club" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                        <option value="">TODOS</option><option value="SI">SÍ</option><option value="NO">NO</option>
+                      </select>
+                    </td>
+                    <td class="p-2 border-bottom border-2"><input v-model="filtros.clubes_identifica_texto" class="form-control form-control-sm shadow-none"></td>
                     <td class="p-2 border-bottom border-2"><input v-model="filtros.observaciones" class="form-control form-control-sm shadow-none"></td>
                   </tr>
                 </thead>
@@ -265,6 +281,12 @@
                     <td class="text-center text-dark">{{ a.tiene_familiares }}</td>
                     <td class="text-dark">
                       <span class="d-inline-block text-truncate" style="max-width: 260px; cursor: help;" :title="a.familiares_texto">{{ a.familiares_texto }}</span>
+                    </td>
+                    <td class="text-center text-dark">{{ a.ex_jugador }}</td>
+                    <td class="text-dark">{{ a.club_ex_jugador }}</td>
+                    <td class="text-center text-dark">{{ a.identifica_club }}</td>
+                    <td class="text-dark">
+                      <span class="d-inline-block text-truncate" style="max-width: 260px; cursor: help;" :title="a.clubes_identifica_texto">{{ a.clubes_identifica_texto }}</span>
                     </td>
                     <td class="text-dark">
                         <span
@@ -525,10 +547,7 @@
           <template v-if="formModal.juega_handball === 'SI'">
             <div class="col-md-4">
               <label for="modal-club" class="small fw-bold text-dark mb-1">Club *</label>
-              <select id="modal-club" v-model="formModal.donde_juega" @change="formModal.categoria_handball = ''" class="form-select shadow-none border-secondary-subtle" :disabled="handball.cargando.value">
-                <option value="" disabled>{{ handball.cargando.value ? 'Cargando clubes...' : 'Seleccionar club...' }}</option>
-                <option v-for="c in handball.opcionesClubes.value" :key="c" :value="c">{{ c }}</option>
-              </select>
+              <BuscadorClub id="modal-club" v-model="formModal.donde_juega" :opciones="handball.opcionesClubes.value" :cargando="handball.cargando.value" @elegir="formModal.categoria_handball = ''" />
             </div>
             <div class="col-md-4">
               <span class="small fw-bold text-dark mb-1 d-block">Categorías * <span class="fw-normal text-muted">(una o más)</span></span>
@@ -560,6 +579,20 @@
               v-model:familiares="formModal.familiares"
               :mostrar-errores="intentoGuardarModal"
               prefijo="modal-fam"
+              @error="mensaje => notificar({ titulo: 'Error', mensaje, tipo: 'danger' })"
+            />
+          </div>
+
+          <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Ex-jugador o club con el que se identifica</div>
+          <div class="col-12">
+            <div v-if="!vinculosCargados" class="small text-muted">
+              <span class="spinner-border spinner-border-sm me-1"></span> Cargando...
+            </div>
+            <SeccionClubesVinculados
+              v-else
+              v-model="formModal.vinculos"
+              :mostrar-errores="intentoGuardarModal"
+              prefijo="modal-vinc"
               @error="mensaje => notificar({ titulo: 'Error', mensaje, tipo: 'danger' })"
             />
           </div>
@@ -731,6 +764,9 @@ import ModalBase from '@/components/ModalBase.vue'
 import { useOpcionesHandball, separarCategorias, unirCategorias, MAX_LARGO_CATEGORIAS } from '@/composables/useOpcionesHandball'
 import { validarFamiliares, familiaresParaEnviar, familiaresDesdeServidor, textoFamiliares } from '@/composables/useFamiliares'
 import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
+import BuscadorClub from '@/components/BuscadorClub.vue'
+import SeccionClubesVinculados from '@/components/SeccionClubesVinculados.vue'
+import { clubesVinculadosVacios, validarClubesVinculados, clubesVinculadosParaEnviar, clubesVinculadosDesdeServidor } from '@/composables/useClubesVinculados'
 
 useHead({
   title: 'Legajos | AAAB',
@@ -760,6 +796,7 @@ const CAMPOS_TEXTO_FILTRO = [
   'telefonocontacto', 'parentescocontacto', 'donde_juega', 'categoria_handball',
   'observaciones', 'juega_handball', 'grupo', 'subgrupo',
   'tiene_familiares', 'familiares_texto',
+  'ex_jugador', 'club_ex_jugador', 'identifica_club', 'clubes_identifica_texto',
   'disponibilidad_sabado', 'disponibilidad_sabado_desde', 'disponibilidad_sabado_hasta',
   'disponibilidad_domingo', 'disponibilidad_domingo_desde', 'disponibilidad_domingo_hasta',
 ]
@@ -855,6 +892,7 @@ const formModalVacio = () => ({
   disponibilidad_domingo: 'FT', disponibilidad_domingo_desde: '', disponibilidad_domingo_hasta: '',
   juega_handball: 'NO', donde_juega: '', categoria_handball: '',
   tieneFamiliares: 'no', familiares: [],
+  vinculos: clubesVinculadosVacios(),
   observaciones: '',
 })
 
@@ -1050,6 +1088,30 @@ const cargarFamiliaresModal = async (idArbitro) => {
   }
 }
 
+// Ex-jugador / club con el que se identifica: si no se pudo cargar, al guardar no se manda
+const vinculosCargados = ref(true)
+
+const cargarVinculosModal = async (idArbitro) => {
+  vinculosCargados.value = false
+  try {
+    const res = await api.get({ entity: 'clubes_vinculados', action: 'obtenerClubesVinculadosArbitro', payload: { idArbitro } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar el ex-jugador / club')
+    formModal.value.vinculos = clubesVinculadosDesdeServidor(res.payload)
+    vinculosCargados.value = true
+  } catch (e) {
+    console.error('cargarVinculosModal:', e)
+    notificar({ titulo: 'Atención', mensaje: 'No se pudo cargar el ex-jugador / club de este árbitro. Si guardás, no se va a modificar.', tipo: 'danger' })
+  }
+}
+
+const validarVinculosModal = () => {
+  if (!vinculosCargados.value) return true
+  const error = validarClubesVinculados(formModal.value.vinculos)
+  if (!error) return true
+  notificar({ titulo: 'Revisá ex-jugador / club', mensaje: error, tipo: 'danger' })
+  return false
+}
+
 const validarFamiliaresModal = () => {
   intentoGuardarModal.value = true
   if (!familiaresCargados.value) return true
@@ -1061,6 +1123,7 @@ const validarFamiliaresModal = () => {
 
 const crearNuevo = () => {
   familiaresCargados.value = true
+  vinculosCargados.value = true
   intentoGuardarModal.value = false
   formModal.value = formModalVacio()
   movilidadArray.value = []
@@ -1118,6 +1181,7 @@ const editarArbitro = async (arbitro) => {
   if (formModal.value.juega_handball === 'SI') handball.cargar()
   intentoGuardarModal.value = false
   cargarFamiliaresModal(arbitro.id)
+  cargarVinculosModal(arbitro.id)
   movilidadArray.value = []
   let movilidades = arbitro.movilidad ? arbitro.movilidad.split(',') : []
   movilidades.forEach(v => {
@@ -1139,6 +1203,7 @@ const confirmarAlta = async () => {
   }
   if (!validarHandballModal()) return
   if (!validarFamiliaresModal()) return
+  if (!validarVinculosModal()) return
   cargando.value = true
   try {
     const res = await api.post({
@@ -1165,6 +1230,7 @@ const confirmarEdicion = async () => {
   }
   if (!validarHandballModal()) return
   if (!validarFamiliaresModal()) return
+  if (!validarVinculosModal()) return
   cargando.value = true
   try {
     const res = await api.post({
@@ -1174,6 +1240,7 @@ const confirmarEdicion = async () => {
     })
     if (res.ok || res.success) {
       actualizarArbitroLocal(formModal.value)
+      if (vinculosCargados.value) refrescarVinculosFila(formModal.value.id)
       mostrarToastExito('Árbitro actualizado correctamente.')
       cerrarModal()
     } else {
@@ -1206,6 +1273,8 @@ const prepararPayload = (a) => {
     delete clon.tieneFamiliares
     delete clon.familiares
   }
+  if (vinculosCargados.value) Object.assign(clon, clubesVinculadosParaEnviar(clon.vinculos || clubesVinculadosVacios()))
+  delete clon.vinculos
   return clon
 }
 
@@ -1239,6 +1308,7 @@ const actualizarArbitroLocal = (datosForm) => {
   }
   delete actualizado.tieneFamiliares
   delete actualizado.familiares
+  delete actualizado.vinculos
 
   // No guardamos el password en la fila de la tabla
   delete actualizado.password
@@ -1285,6 +1355,8 @@ const columnasExcel = ref([
   { id: 'disponibilidad_domingo', label: 'Dom. Disp.', visible: false }, { id: 'disponibilidad_domingo_desde', label: 'Dom. Desde', visible: false }, { id: 'disponibilidad_domingo_hasta', label: 'Dom. Hasta', visible: false },
   { id: 'juega_handball', label: 'Juega', visible: false }, { id: 'donde_juega', label: 'Club', visible: false }, { id: 'categoria_handball', label: 'Cat. Juega', visible: false },
   { id: 'tiene_familiares', label: 'Familiares / DT', visible: false }, { id: 'familiares_texto', label: 'Detalle Familiares / DT', visible: false },
+  { id: 'ex_jugador', label: 'Ex-jugador', visible: false }, { id: 'club_ex_jugador', label: 'Último club (ex-jugador)', visible: false },
+  { id: 'identifica_club', label: 'Se identifica', visible: false }, { id: 'clubes_identifica_texto', label: 'Clubes con los que se identifica', visible: false },
   { id: 'observaciones', label: 'Observaciones', visible: false },
 ])
 
@@ -1335,13 +1407,51 @@ const ejecutarDescargaExcel = async () => {
   mostrarModalExcel.value = false
 }
 
+// Columnas de ex-jugador / clubes con los que se identifica
+const columnasVinculos = (v) => ({
+  ex_jugador: v?.exJugador || 'NO',
+  club_ex_jugador: v?.exJugador === 'SI' ? v.clubExJugador : '',
+  identifica_club: v?.identificaClub || 'NO',
+  clubes_identifica_texto: v?.identificaClub === 'SI' ? (v.clubesIdentifica || []).join(' · ') : '',
+})
+
+// Después de editar, se refrescan esas columnas de la fila con lo que quedó guardado
+const refrescarVinculosFila = async (idArbitro) => {
+  try {
+    const res = await api.get({ entity: 'clubes_vinculados', action: 'obtenerClubesVinculadosArbitro', payload: { idArbitro } })
+    if (!res?.ok) return
+    const idx = arbitros.value.findIndex(a => a.id == idArbitro)
+    if (idx === -1) return
+    const d = res.payload
+    const fila = {
+      ...arbitros.value[idx],
+      ...columnasVinculos({
+        exJugador: d.exJugador === 'si' ? 'SI' : 'NO',
+        clubExJugador: d.clubExJugador,
+        identificaClub: d.identificaClub === 'si' ? 'SI' : 'NO',
+        clubesIdentifica: (d.clubesIdentifica || []).map(c => c.club),
+      }),
+    }
+    fila._buscar = { ...fila._buscar }
+    for (const key of ['ex_jugador', 'club_ex_jugador', 'identifica_club', 'clubes_identifica_texto']) fila._buscar[key] = normalizarTexto(fila[key])
+    arbitros.value[idx] = fila
+  } catch (e) {
+    console.error('refrescarVinculosFila:', e)
+  }
+}
+
 const cargarDatos = async () => {
   cargandoTabla.value = true
   try {
-    const [{ payload }, resFamiliares] = await Promise.all([
+    const [{ payload }, resFamiliares, resVinculos] = await Promise.all([
       api.get({ entity: 'arbitros', action: 'getArbitros' }),
       api.get({ entity: 'familiares', action: 'obtenerFamiliaresTodos', payload: {} }).catch(() => null),
+      api.get({ entity: 'clubes_vinculados', action: 'obtenerClubesVinculadosTodos', payload: {} }).catch(() => null),
     ])
+    const vinculosPorArbitro = {}
+    if (resVinculos?.ok) {
+      for (const v of resVinculos.payload || []) vinculosPorArbitro[v.idArbitro] = v
+    }
     const familiaresPorArbitro = {}
     if (resFamiliares?.ok) {
       for (const f of resFamiliares.payload || []) familiaresPorArbitro[f.idArbitro] = f.familiares
@@ -1355,6 +1465,7 @@ const cargarDatos = async () => {
           rol: a.rol !== null ? parseInt(a.rol) : 0,
           tiene_familiares: familiares.length ? 'SI' : 'NO',
           familiares_texto: textoFamiliares(familiares),
+          ...columnasVinculos(vinculosPorArbitro[a.id]),
         }
         // Pre-normalizamos una sola vez los campos de texto buscables.
         // Así el filtrado no tiene que normalizar en cada tecla.
@@ -1438,7 +1549,7 @@ const arbitrosFiltrados = computed(() => {
           if (key === 'apto_medico') { if ((val === 'SI') !== !!a.apto_medico) return false; continue }
           // Grupo y subgrupo salen de un select: comparacion exacta para que
           // "1" no matchee "10" ni "A" matchee dentro de otro texto.
-          if (key === 'grupo' || key === 'subgrupo' || key === 'tiene_familiares') {
+          if (key === 'grupo' || key === 'subgrupo' || key === 'tiene_familiares' || key === 'ex_jugador' || key === 'identifica_club') {
             const campoExacto = a._buscar ? a._buscar[key] : normalizarTexto(a[key])
             if (campoExacto !== val) return false
             continue

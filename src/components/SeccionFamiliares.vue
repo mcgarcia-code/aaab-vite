@@ -58,16 +58,14 @@
             <div class="row g-3">
               <div class="col-12 col-md-6">
                 <label :for="`${prefijo}-club-${i}`" class="form-label small fw-bold" :class="claseEtiqueta">Club *</label>
-                <select
+                <BuscadorClub
                   :id="`${prefijo}-club-${i}`"
-                  :value="f.idClub"
-                  @change="actualizarFila(i, { idClub: $event.target.value, club: nombreClub($event.target.value), categorias: [] })"
-                  class="form-select"
-                  :class="{ 'form-select-sm': chico }"
-                >
-                  <option value="" disabled>Seleccionar club...</option>
-                  <option v-for="c in clubes" :key="c.id" :value="c.id">{{ c.nombre }}</option>
-                </select>
+                  :model-value="f.idClub"
+                  :opciones="clubes"
+                  :chico="chico"
+                  :invalido="mostrarErrores && !f.idClub"
+                  @update:model-value="id => actualizarFila(i, { idClub: id, club: nombreClub(id), categorias: [] })"
+                />
               </div>
               <div class="col-12 col-md-6">
                 <label :for="`${prefijo}-parentesco-${i}`" class="form-label small fw-bold" :class="claseEtiqueta">Parentesco / Rol *</label>
@@ -132,6 +130,7 @@
 import { ref, watch } from 'vue'
 import { obtenerDatosClubes, RAMAS_HANDBALL } from '@/composables/useOpcionesHandball'
 import { MAX_FAMILIARES, filaFamiliarVacia, errorFilaFamiliar } from '@/composables/useFamiliares'
+import BuscadorClub from '@/components/BuscadorClub.vue'
 
 const props = defineProps({
   tiene: { type: String, default: 'no' },

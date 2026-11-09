@@ -153,6 +153,7 @@ useHead({ title: 'Panel de Inicio | AAAB' })
 const CATEGORIAS = [
   { categoria: 'Mi Perfil', icono: 'bi bi-person-circle' },
   { categoria: 'Actividad Arbitral', icono: 'bi bi-person-raised-hand' },
+  { categoria: 'Exámenes', icono: 'bi bi-journal-check' },
   { categoria: 'Administración', icono: 'bi bi-folder2' },
   { categoria: 'Tesorería', icono: 'bi bi-cash-stack' },
   { categoria: 'Herramientas', icono: 'bi bi-tools' }
@@ -170,7 +171,7 @@ const menuItems = [
   { to: '/panel-arbitro/designaciones', title: 'Mis Designaciones', icon: 'bi bi-calendar4-week', desc: 'Mis Designaciones', categoria: 'Actividad Arbitral' },
   { to: '/panel-arbitro/coordinadores', title: 'Coordinadores', icon: 'bi bi-check', desc: 'Gestión de exámenes y reuniones', rolesPermitidos: [4], categoria: 'Actividad Arbitral' },
   { to: '/panel-arbitro/observaciones', title: 'Observaciones', icon: 'bi bi-eye', desc: 'Cargar y visualizar observaciones realizadas por vos', rolesPermitidos: [2, 4], categoria: 'Actividad Arbitral' },
-  { to: '/panel-arbitro/examen-asamblea', title: 'Exámenes Asambleas y Reuniones', icon: 'bi bi-journal-check', desc: 'Rendí el examen teórico online', categoria: 'Actividad Arbitral' },
+  { to: '/panel-arbitro/examen-asamblea', title: 'Mis Exámenes', icon: 'bi bi-journal-check', desc: 'Rendí los exámenes teóricos online', categoria: 'Exámenes' },
 
   { to: '/panel-arbitro/licencia', title: 'Solicitar Licencias', icon: 'bi bi-calendar-check', desc: 'Inasistencias con antelación.', categoria: 'Administración' },
   { to: '/panel-arbitro/sanciones', title: 'Tribunal de Ética', icon: 'bi bi-shield-exclamation', desc: 'Consultá tus sanciones.', categoria: 'Administración' },

@@ -2,17 +2,15 @@
   <div class="row g-3">
     <div class="col-12 col-md-5">
       <label :for="`${prefijo}-club`" class="form-label small fw-bold" :class="claseEtiqueta">Club *</label>
-      <select
+      <BuscadorClub
         :id="`${prefijo}-club`"
-        :value="idClub"
-        @change="cambiarClub($event.target.value)"
-        class="form-select"
-        :class="{ 'form-select-sm': chico, 'is-invalid': invalido && !idClub }"
-        :disabled="cargando"
-      >
-        <option value="" disabled>{{ cargando ? 'Cargando clubes...' : 'Seleccionar club...' }}</option>
-        <option v-for="c in clubes" :key="c.id" :value="c.id">{{ c.nombre }}</option>
-      </select>
+        :model-value="idClub"
+        :opciones="clubes"
+        :cargando="cargando"
+        :chico="chico"
+        :invalido="invalido"
+        @update:model-value="cambiarClub"
+      />
     </div>
     <div class="col-12 col-md-7">
       <span class="form-label small fw-bold d-block" :class="claseEtiqueta">Categorías * <span class="fw-normal text-muted">(una o más)</span></span>
@@ -44,6 +42,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { obtenerDatosClubes, ramasSegunGenero, RAMAS_HANDBALL } from '@/composables/useOpcionesHandball'
+import BuscadorClub from '@/components/BuscadorClub.vue'
 
 // Club + categorías de un club (los equipos activos en equipos_larry).
 // modo 'juego': solo Juveniles/Junior/Mayores y la rama del género declarado.

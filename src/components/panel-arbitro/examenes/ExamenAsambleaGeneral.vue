@@ -16,9 +16,9 @@
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-center border-bottom gap-3">
         <div class="w-100 w-md-auto border-start border-danger border-5 ps-3">
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-journal-check me-1"></i> Examen Asamblea General - Reunión Mensual
+            <i class="bi bi-journal-check me-1"></i> Mis Exámenes
           </h4>
-          <span class="text-muted small d-block mt-1">Consultá tus habilitaciones y exámenes teóricos</span>
+          <span class="text-muted small d-block mt-1">Rendí los exámenes teóricos online y consultá tus resultados</span>
         </div>
 
         <div v-if="estado === 'habilitado' && evento" class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-end w-100 w-md-auto">
@@ -78,30 +78,53 @@
         <hr class="my-4 text-muted opacity-25">
 
         <!-- Sección Historial -->
-        <h5 class="fw-bold text-dark mb-3 mb-md-4 d-flex align-items-center justify-content-center justify-content-md-start gap-2 fs-6 fs-md-5 text-center text-md-start">
-          <i class="bi bi-clock-history text-secondary"></i> Mis Exámenes Rendidos
-        </h5>
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+          <h5 class="fw-bold text-dark m-0 d-flex align-items-center gap-2 fs-6 fs-md-5">
+            <i class="bi bi-clock-history text-secondary"></i> Mis Exámenes Rendidos
+          </h5>
+          <div class="d-flex align-items-center gap-2">
+            <label for="mis-examenes-anio" class="small fw-bold text-muted text-uppercase mb-0">Año:</label>
+            <select id="mis-examenes-anio" v-model="anioSeleccionado" class="form-select form-select-sm shadow-none w-auto fw-bold text-uppercase text-dark">
+              <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Pestañas por tipo de examen -->
+        <ul class="nav nav-pills flex-nowrap overflow-auto gap-1 mb-3 pb-1 pestanas" role="tablist">
+          <li v-for="t in TIPOS" :key="t.clave" class="nav-item flex-shrink-0" role="presentation">
+            <button type="button" class="nav-link fw-bold" :class="{ active: pestana === t.clave }" role="tab" :aria-selected="pestana === t.clave" @click="pestana = t.clave">
+              <i :class="['bi', t.icono, 'd-none d-sm-inline me-1']"></i>{{ t.etiqueta }}
+              <span class="badge rounded-pill ms-1" :class="pestana === t.clave ? 'bg-white text-danger' : 'bg-secondary'">{{ porTipo[t.clave].length }}</span>
+            </button>
+          </li>
+        </ul>
+
+        <div v-if="!cargandoHistorial && porTipo[pestana].length" class="d-flex flex-wrap gap-1 mb-3 small">
+          <span class="badge bg-success">{{ porTipo[pestana].filter(x => x.aprobado).length }} aprobados</span>
+          <span class="badge bg-danger">{{ porTipo[pestana].filter(x => !x.aprobado).length }} desaprobados</span>
+        </div>
 
         <div v-if="cargandoHistorial" class="text-center py-4">
           <span class="spinner-border spinner-border-sm text-secondary"></span>
           <p class="text-muted mt-2 m-0 fw-bold small">Cargando historial...</p>
         </div>
 
-        <div v-else-if="!historial.length" class="text-center py-5 px-3 text-muted bg-light rounded-3">
+        <div v-else-if="!porTipo[pestana].length" class="text-center py-5 px-3 text-muted bg-light rounded-3">
           <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">history_toggle_off</span>
-          <p class="m-0 fw-bold">Todavía no rendiste ningún examen.</p>
+          <p class="m-0 fw-bold">No rendiste exámenes de {{ TIPOS.find(t => t.clave === pestana).etiqueta.toLowerCase() }} en {{ anioSeleccionado }}.</p>
         </div>
 
         <!-- Lista de historial apilada -->
         <div v-else class="d-flex flex-column gap-3">
-          <div v-for="ex in historial" :key="ex.id_evento"
+          <div v-for="ex in porTipo[pestana]" :key="ex.id_evento"
                class="historial-card shadow-sm d-flex flex-row justify-content-between align-items-center gap-2 p-3 w-100"
                :style="{ borderLeftColor: ex.aprobado ? '#198754' : '#dc3545' }">
 
             <div class="flex-grow-1 min-w-0">
               <!-- Fecha posicionada dentro de la Card -->
               <div class="text-secondary small fw-medium mb-1 d-flex align-items-center gap-1">
-                <i class="bi bi-calendar-event"></i> {{ ex.fecha }}
+                <i class="bi bi-calendar-event"></i> {{ fechaDMA(ex.fecha) }}
               </div>
 
               <!-- Título del examen -->
@@ -141,7 +164,9 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { anioActual, conAnioActual } from '@/utils/anios'
+import { fechaDMA } from '@/utils/fechas'
 import { api } from '@/api/api'
 import ExamenAsambleaRunner from './ExamenAsambleaRunner.vue'
 
@@ -153,6 +178,28 @@ const evento = ref(null)
 // Historial de exámenes finalizados
 const historial = ref([])
 const cargandoHistorial = ref(true)
+
+// Historial separado por tipo de evento y filtrado por año (arranca en el año en curso)
+const TIPOS = [
+  { clave: 'asamblea', etiqueta: 'Asamblea General', icono: 'bi-people-fill' },
+  { clave: 'recuperatorio', etiqueta: 'Recuperatorio', icono: 'bi-arrow-repeat' },
+  { clave: 'reunion', etiqueta: 'Reunión', icono: 'bi-chat-square-text' },
+]
+const pestana = ref('asamblea')
+const anioSeleccionado = ref(anioActual())
+const anioDe = (ex) => String(ex.fecha || '').substring(0, 4)
+const aniosDisponibles = computed(() => conAnioActual(historial.value.map(anioDe).filter(Boolean)))
+const porTipo = computed(() => Object.fromEntries(TIPOS.map(t => [
+  t.clave,
+  historial.value.filter(ex => anioDe(ex) === String(anioSeleccionado.value) && (ex.categoria || 'asamblea') === t.clave),
+])))
+
+// Al cambiar el año, se abre la primera pestaña que tenga exámenes
+watch([anioSeleccionado, historial], () => {
+  if (porTipo.value[pestana.value].length) return
+  const conDatos = TIPOS.find(t => porTipo.value[t.clave].length)
+  if (conDatos) pestana.value = conDatos.clave
+})
 
 // Descargas de PDF (una por id_evento en curso)
 const descargando = ref({})   // { [idEvento]: true }
@@ -237,6 +284,9 @@ onMounted(recargar)
 /* ====================================================
    VISTA HISTORIAL (Cards apiladas)
    ==================================================== */
+.pestanas .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; padding: 0.5rem 0.75rem; white-space: nowrap; }
+.pestanas .nav-link.active { background: #dc3545; color: #fff; }
+
 .historial-card {
   background: #fff;
   border: 1px solid #e5e7eb;

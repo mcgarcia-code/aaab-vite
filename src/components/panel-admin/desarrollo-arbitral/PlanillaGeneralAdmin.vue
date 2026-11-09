@@ -126,13 +126,15 @@
                         >
                           <div v-if="esCeldaEnEdicion(a, col, tipoDet)" class="editor-celda" @click.stop>
                             <input
-                              v-if="tipoDet === 'teorico' && editor.estado !== 'ausente' && editor.estado !== 'no lo hizo'"
+                              v-if="editor.estado !== 'ausente' && editor.estado !== 'no lo hizo'"
                               v-model="editor.calificacion"
                               @input="alTipearNota"
                               @keyup.enter="guardarEditor"
                               @keyup.esc="cerrarEditor"
                               class="editor-input"
-                              placeholder="Nota"
+                              :placeholder="tipoDet === 'fisico' ? 'Nivel' : 'Nota'"
+                              :inputmode="tipoDet === 'fisico' ? 'decimal' : 'text'"
+                              :title="tipoDet === 'fisico' ? 'Nivel alcanzado (opcional): si lo cargás, aprobado o desaprobado se calcula según género y edad' : 'Nota'"
                               ref="editorInputRef"
                             >
                             <select v-model="editor.estado" class="editor-select" @keyup.enter="guardarEditor">
@@ -493,11 +495,11 @@ const textoCeldaExamen = (a, col, tipo) => {
   if (nota) {
     if (nota.estado === 'no lo hizo') return 'No lo hizo'
     if (nota.estado === 'ausente') return 'AUS'
-    // El físico nunca lleva nota: solo aprobado/desaprobado
+    // Físico: nivel alcanzado + resultado (los cargados antes pueden no tener nivel)
     if (tipo === 'fisico') {
-      if (nota.estado === 'aprobado') return 'APROB.'
-      if (nota.estado === 'desaprobado') return 'DESAP.'
-      return nota.estado ? nota.estado.toUpperCase() : ''
+      const nivel = String(nota.calificacion ?? '').trim()
+      const resultado = nota.estado === 'aprobado' ? 'APROB.' : nota.estado === 'desaprobado' ? 'DESAP.' : (nota.estado || '').toUpperCase()
+      return nivel ? `${nivel} · ${resultado}` : resultado
     }
     const cal = String(nota.calificacion ?? '').trim()
     if (cal !== '') return cal
@@ -568,8 +570,7 @@ const abrirEditor = async (a, col, tipo) => {
     idArbitro: a.id,
     idEvento: col.id,
     tipo,
-    // El físico no lleva nota
-    calificacion: tipo === 'fisico' ? '' : (existente ? String(existente.calificacion ?? '') : ''),
+    calificacion: existente ? String(existente.calificacion ?? '') : '',
     estado: existente ? existente.estado : (estaAusente ? 'ausente' : 'aprobado'),
     guardando: false
   }
@@ -645,18 +646,23 @@ const guardarEditor = async () => {
         idEvento: e.idEvento,
         idArbitro: e.idArbitro,
         tipo: e.tipo,
-        calificacion: (e.tipo === 'fisico' || e.estado === 'no lo hizo') ? '' : String(e.calificacion ?? '').trim(),
+        calificacion: e.estado === 'no lo hizo' ? '' : String(e.calificacion ?? '').trim(),
         estado: e.estado
       }
     })
 
     if (res.ok || res.success) {
+      const guardado = res.payload && typeof res.payload === 'object' ? res.payload : {}
       notasExamenes.value = {
         ...notasExamenes.value,
         [claveNota]: {
-          calificacion: e.tipo === 'fisico' || e.estado === 'no lo hizo' ? '' : String(e.calificacion ?? '').trim(),
-          estado: e.estado
+          calificacion: guardado.calificacion ?? (e.estado === 'no lo hizo' ? '' : String(e.calificacion ?? '').trim()),
+          estado: guardado.estado || e.estado
         }
+      }
+      // Solo se avisa si se cargó un nivel y no se pudo calcular el resultado
+      if (e.tipo === 'fisico' && e.estado !== 'no lo hizo' && String(e.calificacion ?? '').trim() !== '' && guardado.calculado === false) {
+        toast({ titulo: 'Revisá el resultado', mensaje: 'El árbitro no tiene cargado el género o la fecha de nacimiento: se guardó el estado elegido a mano.', tipo: 'warning' })
       }
 
       // Tener una evaluación implica presente: registrar la asistencia
@@ -755,9 +761,9 @@ const textoExcelExamen = (a, col, tipo) => {
     if (nota.estado === 'no lo hizo') return 'NO LO HIZO'
     if (nota.estado === 'ausente') return 'AUSENTE'
     if (tipo === 'fisico') {
-      if (nota.estado === 'aprobado') return 'APROBADO'
-      if (nota.estado === 'desaprobado') return 'DESAPROBADO'
-      return nota.estado ? nota.estado.toUpperCase() : ''
+      const nivel = String(nota.calificacion ?? '').trim()
+      const resultado = nota.estado === 'aprobado' ? 'APROBADO' : nota.estado === 'desaprobado' ? 'DESAPROBADO' : (nota.estado || '').toUpperCase()
+      return nivel ? `${nivel} - ${resultado}` : resultado
     }
     const cal = String(nota.calificacion ?? '').trim()
     if (cal !== '') return cal

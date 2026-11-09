@@ -101,10 +101,7 @@
           </div>
           <div v-if="arbitro.juega_handball === 'si'" class="col-12 col-md-4">
             <label for="disp-club" class="form-label small fw-bold text-muted">Club</label>
-            <select v-if="edicionAbierta" id="disp-club" v-model="arbitro.donde_juega" class="form-select form-select-sm" :disabled="cargandoOpcionesHandball">
-              <option :value="null" disabled>{{ cargandoOpcionesHandball ? 'Cargando clubes...' : 'Seleccionar club...' }}</option>
-              <option v-for="c in opcionesClubes" :key="c" :value="c">{{ c }}</option>
-            </select>
+            <BuscadorClub v-if="edicionAbierta" id="disp-club" v-model="arbitro.donde_juega" :opciones="opcionesClubes" :cargando="cargandoOpcionesHandball" chico />
             <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.donde_juega || '-' }}</div>
           </div>
           <div v-if="arbitro.juega_handball === 'si'" class="col-12 col-md-4">
@@ -142,6 +139,21 @@
             :editable="edicionAbierta"
             :mostrar-errores="intentoGuardar"
             prefijo="disp-fam"
+            clase-etiqueta="text-muted"
+            chico
+            @error="mensaje => toast({ titulo: 'Error', mensaje, tipo: 'danger' })"
+          />
+        </div>
+
+        <h6 class="text-danger fw-bold text-uppercase mb-3 small border-top pt-4" style="letter-spacing: 1px;">Ex-jugador o club con el que te identificás</h6>
+        <div class="mb-4">
+          <div v-if="!vinculosCargados" class="small text-muted"><span class="spinner-border spinner-border-sm me-1"></span> Cargando...</div>
+          <SeccionClubesVinculados
+            v-else
+            v-model="vinculos"
+            :editable="edicionAbierta"
+            :mostrar-errores="intentoGuardar"
+            prefijo="disp-vinc"
             clase-etiqueta="text-muted"
             chico
             @error="mensaje => toast({ titulo: 'Error', mensaje, tipo: 'danger' })"
@@ -244,6 +256,9 @@ import { useHead } from '@vueuse/head'
 import { useOpcionesHandball, separarCategorias, unirCategorias, MAX_LARGO_CATEGORIAS } from '@/composables/useOpcionesHandball'
 import { validarFamiliares, familiaresParaEnviar, familiaresDesdeServidor } from '@/composables/useFamiliares'
 import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
+import BuscadorClub from '@/components/BuscadorClub.vue'
+import SeccionClubesVinculados from '@/components/SeccionClubesVinculados.vue'
+import { clubesVinculadosVacios, validarClubesVinculados, clubesVinculadosParaEnviar, clubesVinculadosDesdeServidor } from '@/composables/useClubesVinculados'
 
 useHead({
   title: 'Disponibilidad Horaria | AAAB',
@@ -320,6 +335,7 @@ const obtenerHistorialRectificaciones = async () => {
 onMounted(() => {
   obtenerHistorialRectificaciones();
   cargarFamiliares()
+  cargarVinculos()
   if (arbitro.value.movilidad) {
     movilidadSeleccionada.value = arbitro.value.movilidad.split(',');
   }
@@ -362,6 +378,32 @@ watch(
   { immediate: true }
 )
 
+// ─── Ex-jugador / club con el que se identifica ───────────────────
+// Si no se pudo cargar, al guardar no se manda (para no borrar lo que ya estaba)
+const vinculos = ref(clubesVinculadosVacios())
+const vinculosCargados = ref(false)
+
+const cargarVinculos = async () => {
+  try {
+    const res = await api.get({ entity: 'clubes_vinculados', action: 'obtenerMisClubesVinculados', payload: {} })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los clubes')
+    vinculos.value = clubesVinculadosDesdeServidor(res.payload)
+    vinculosCargados.value = true
+  } catch (e) {
+    console.error('cargarVinculos:', e)
+  }
+}
+
+const guardarVinculos = async () => {
+  if (!vinculosCargados.value) return
+  const res = await api.post({
+    entity: 'clubes_vinculados',
+    action: 'guardarMisClubesVinculados',
+    payload: clubesVinculadosParaEnviar(vinculos.value),
+  })
+  if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el ex-jugador / club con el que te identificás.')
+}
+
 // ─── Familiares en clubes (registro_arbitro.familiares) ────────────
 const tieneFamiliares = ref('no')
 const familiares = ref([])
@@ -399,6 +441,11 @@ const guardarCambios = async () => {
       toast({ titulo: 'Revisá familiares / DT', mensaje: errorFamiliares, tipo: 'danger' })
       return
     }
+    const errorVinculos = validarClubesVinculados(vinculos.value)
+    if (errorVinculos) {
+      toast({ titulo: 'Revisá ex-jugador / club', mensaje: errorVinculos, tipo: 'danger' })
+      return
+    }
     cargando.value = true;
     try {
         const res = await api.post({
@@ -415,6 +462,12 @@ const guardarCambios = async () => {
               await guardarFamiliares()
             } catch (e) {
               toast({ titulo: 'Atención', mensaje: `Se guardó tu disponibilidad, pero no los familiares / DT: ${e.message}`, tipo: 'danger' })
+              return
+            }
+            try {
+              await guardarVinculos()
+            } catch (e) {
+              toast({ titulo: 'Atención', mensaje: `Se guardó tu disponibilidad, pero no el ex-jugador / club: ${e.message}`, tipo: 'danger' })
               return
             }
             intentoGuardar.value = false
