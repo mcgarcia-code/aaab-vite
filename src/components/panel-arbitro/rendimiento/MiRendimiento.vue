@@ -1,208 +1,141 @@
 <template>
-  <div class="full-screen-wrapper px-3 px-md-4">
-    <div class="panel-personal animate__animated animate__fadeIn">
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+  <div class="container-fluid py-0 animate__animated animate__fadeIn">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
 
-        <!-- ── Header ── -->
-        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-graph-up-arrow me-1"></i> Mi Rendimiento
-            </h4>
-            <span class="text-muted small d-block mt-1">
-              {{ datosArbitro.apellido }}, {{ datosArbitro.nombre }} — Reuniones y Exámenes
-            </span>
+      <!-- ── Header ── -->
+      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+        <div class="border-start border-danger border-5 ps-3">
+          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
+            <i class="bi bi-graph-up-arrow me-1"></i> Mi Rendimiento
+          </h4>
+          <span class="text-muted small d-block mt-1">Asistencia a reuniones y exámenes</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <label for="rendimiento-anio" class="small fw-bold text-muted text-uppercase m-0 text-nowrap">Año:</label>
+          <select id="rendimiento-anio" v-model="filtroAño" class="form-select form-select-sm shadow-none w-auto fw-bold text-uppercase text-dark" :disabled="cargando">
+            <option value="">TODOS</option>
+            <option v-for="a in añosDisponibles" :key="a" :value="a">{{ a }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── Loading ── -->
+      <div v-if="cargando" class="card-body text-center py-5">
+        <span class="spinner-border text-danger"></span>
+        <p class="text-muted mt-3 mb-0 fw-bold">Cargando tu rendimiento...</p>
+      </div>
+
+      <!-- ── Sin usuario ── -->
+      <div v-else-if="!datosArbitro.id" class="card-body text-center py-5 text-muted">
+        <span class="material-icons d-block mb-2 opacity-50" style="font-size: 48px;">person_off</span>
+        <p class="fw-bold m-0">No se pudo identificar al árbitro.</p>
+      </div>
+
+      <div v-else class="card-body p-3 p-md-4">
+        <!-- RESUMEN -->
+        <div class="row g-2 g-md-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="resumen-card bg-success text-white">
+              <i class="bi bi-person-check-fill"></i>
+              <div class="valor">{{ statsGlobales.presentesReunion }}</div>
+              <div class="etiqueta">Presentes</div>
+            </div>
           </div>
-          <div class="d-flex align-items-center gap-2 mt-2 mt-md-0 w-100 w-md-auto">
-            <label class="small fw-bold text-dark text-uppercase m-0 text-nowrap">Año:</label>
-            <select
-              v-model="filtroAño"
-              class="form-select shadow-sm border-secondary-subtle fw-semibold flex-grow-1 text-uppercase text-dark"
-              style="min-width: 0;"
-              :disabled="cargando"
-            >
-              <option value="">AÑO</option>
-              <option v-for="a in añosDisponibles" :key="a" :value="a">{{ a }}</option>
-            </select>
+          <div class="col-6 col-md-3">
+            <div class="resumen-card bg-secondary text-white">
+              <i class="bi bi-person-dash-fill"></i>
+              <div class="valor">{{ statsGlobales.ausentesReunion }}</div>
+              <div class="etiqueta">Ausentes</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="resumen-card bg-dark text-white">
+              <i class="bi bi-people-fill"></i>
+              <div class="valor">{{ totalReuniones ? `${porcentajeAsistencia}%` : '-' }}</div>
+              <div class="etiqueta">Asistencia a reuniones</div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="resumen-card bg-danger text-white">
+              <i class="bi bi-journal-check"></i>
+              <div class="valor">{{ totalEvaluaciones ? `${porcentajeExamenes}%` : '-' }}</div>
+              <div class="etiqueta">Evaluaciones aprobadas</div>
+            </div>
           </div>
         </div>
 
-        <!-- ── Loading ── -->
-        <div v-if="cargando" class="text-center py-5">
-          <div class="spinner-border spinner-border-sm text-danger"></div>
-          <p class="mt-2 fw-bold text-muted small mb-0">Cargando tu historial...</p>
-        </div>
-
-        <!-- ── Sin usuario ── -->
-        <div v-else-if="!datosArbitro.id" class="text-center py-5 text-muted">
-          <span class="material-icons d-block mb-2" style="font-size: 48px; color: #cbd5e1;">person_off</span>
-          <p class="fw-bold m-0">No se pudo identificar al árbitro.</p>
-        </div>
-
-        <!-- ── Contenido principal ── -->
-        <div v-else class="card-body p-0 bg-white">
-
-          <!-- ══ SECCIÓN MOTIVACIONAL Y ESTADÍSTICAS ══ -->
-          <div class="p-3 p-md-4 bg-light border-bottom">
-            <h5 class="fw-bold text-dark mb-1">{{ fraseMotivadora }}</h5>
-            <p class="text-muted small mb-4">El entrenamiento invisible se nota en la cancha. Acá está el resumen de tu preparación.</p>
-
-            <div class="row g-4">
-              <!-- Progreso Asistencia -->
-              <div class="col-12 col-md-6">
-                <div class="d-flex justify-content-between align-items-end mb-1">
-                  <span class="fw-bold text-primary small text-uppercase"><i class="bi bi-people-fill me-1"></i> Asistencia a Reuniones</span>
-                  <span class="fw-bold fs-5 text-primary">{{ porcentajeAsistencia }}%</span>
-                </div>
-                <div class="progress shadow-sm" style="height: 12px; border-radius: 12px; background-color: #e2e8f0;">
-                  <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar"
-                       :style="{ width: porcentajeAsistencia + '%' }"></div>
-                </div>
-                <div class="d-flex justify-content-between mt-2 small fw-bold text-muted">
-                  <span><span class="text-success">{{ statsGlobales.presentesReunion }}</span> Presentes</span>
-                  <span><span class="text-danger">{{ statsGlobales.ausentesReunion }}</span> Ausentes</span>
-                </div>
-              </div>
-
-              <!-- Progreso Exámenes -->
-              <div class="col-12 col-md-6">
-                <div class="d-flex justify-content-between align-items-end mb-1">
-                  <span class="fw-bold text-danger small text-uppercase"><i class="bi bi-clipboard2-check-fill me-1"></i> Evaluaciones Aprobadas</span>
-                  <span class="fw-bold fs-5 text-danger">{{ porcentajeExamenes }}%</span>
-                </div>
-                <div class="progress shadow-sm" style="height: 12px; border-radius: 12px; background-color: #e2e8f0;">
-                  <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar"
-                       :style="{ width: porcentajeExamenes + '%' }"></div>
-                </div>
-                <!-- Desglose de exámenes en 4 estados -->
-                <div class="row row-cols-2 row-cols-sm-4 mt-2 small fw-bold text-muted g-2 text-center text-sm-start">
-                  <div class="col">
-                    <span class="text-success d-block d-sm-inline">{{ statsGlobales.aprobadosExamen }}</span> Aprobados
-                  </div>
-                  <div class="col">
-                    <span class="text-danger d-block d-sm-inline">{{ statsGlobales.desaprobadosExamen }}</span> Desaprobados
-                  </div>
-                  <div class="col">
-                    <span class="text-secondary d-block d-sm-inline">{{ statsGlobales.ausentesExamen }}</span> Ausentes
-                  </div>
-                  <div class="col">
-                    <span class="text-info d-block d-sm-inline">{{ statsGlobales.noHizoExamen }}</span> No lo hizo
+        <div class="accordion" id="acordeonRendimientoArbitro">
+          <!-- ASISTENCIA A REUNIONES -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.reuniones }" :aria-expanded="abiertas.reuniones" aria-controls="seccion-reuniones" @click="abiertas.reuniones = !abiertas.reuniones">
+                <i class="bi bi-calendar-check me-2"></i>
+                <span class="me-2">Asistencia a reuniones</span>
+                <span class="badge bg-success me-1">{{ statsGlobales.presentesReunion }} P</span>
+                <span class="badge bg-secondary">{{ statsGlobales.ausentesReunion }} A</span>
+              </button>
+            </h2>
+            <div v-show="abiertas.reuniones" id="seccion-reuniones" class="accordion-collapse">
+              <div class="accordion-body p-2 p-md-3">
+                <div v-if="!reunionesFiltradas.length" class="text-muted small fst-italic">Sin reuniones registradas en el período seleccionado.</div>
+                <div v-else class="d-flex flex-column gap-2">
+                  <div v-for="r in reunionesFiltradas" :key="r.id_evento" class="fila-item d-flex justify-content-between align-items-center gap-2">
+                    <div class="min-w-0">
+                      <div class="fw-bold text-dark small text-break">{{ r.titulo || 'Reunión General' }}</div>
+                      <div class="text-muted" style="font-size: 0.75rem;">{{ fechaGuiones(r.fecha_reunion) }}</div>
+                    </div>
+                    <span class="badge flex-shrink-0" :class="claseAsistencia(r.asistencia)">{{ textoAsistencia(r.asistencia) }}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="p-3 p-md-4">
-
-            <!-- ══ TARJETAS DE EXÁMENES ══ -->
-            <div class="mb-5">
-              <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-danger">
-                <i class="bi bi-clipboard2-check-fill text-danger me-2 fs-5"></i>
-                <h6 class="fw-bold m-0 text-dark text-uppercase">Historial de Exámenes</h6>
-                <span class="badge bg-danger rounded-pill px-2 ms-auto">{{ examenesFiltrados.length }}</span>
-              </div>
-
-              <div v-if="!examenesFiltrados.length" class="text-center py-4 bg-light rounded border border-light-subtle">
-                <p class="text-muted m-0 fw-bold small">Sin exámenes registrados en el período seleccionado.</p>
-              </div>
-
-              <div v-else class="row g-3">
-                <div v-for="ex in examenesFiltrados" :key="ex.id_evento" class="col-12 col-xl-6">
-                  <div class="card h-100 shadow-sm border-light-subtle">
-                    <div class="card-body p-3">
-                      <!-- Cabecera de la tarjeta del examen -->
-                      <div class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2 gap-2">
-                        <div class="flex-grow-1" style="min-width: 0;">
-                          <div class="text-dark fw-bold small mb-1">
-                            <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(ex.fecha_examen) }}
-                          </div>
-                          <div class="text-muted small text-truncate">
-                            {{ ex.titulo || 'Evaluación General' }}
-                          </div>
-                        </div>
-                        <span class="badge flex-shrink-0" :class="badgeTipo(ex.tipo)">{{ ex.tipo.toUpperCase() }}</span>
+          <!-- EXÁMENES -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.examenes }" :aria-expanded="abiertas.examenes" aria-controls="seccion-examenes" @click="abiertas.examenes = !abiertas.examenes">
+                <i class="bi bi-journal-text me-2"></i>
+                <span class="me-2">Exámenes</span>
+                <span class="badge bg-light text-dark border">{{ examenesFiltrados.length }}</span>
+              </button>
+            </h2>
+            <div v-show="abiertas.examenes" id="seccion-examenes" class="accordion-collapse">
+              <div class="accordion-body p-2 p-md-3">
+                <div v-if="!examenesFiltrados.length" class="text-muted small fst-italic">Sin exámenes registrados en el período seleccionado.</div>
+                <div v-else class="d-flex flex-column gap-2">
+                  <div v-for="ex in examenesFiltrados" :key="ex.id_evento" class="fila-item">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                      <div class="min-w-0">
+                        <div class="fw-bold text-dark small text-break">{{ ex.titulo || 'Evaluación General' }}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">{{ fechaGuiones(ex.fecha_examen) }}</div>
                       </div>
-
-                      <!-- Detalle Teórico / Físico -->
-                      <div class="row g-2">
-                        <!-- Teórico -->
-                        <div class="col-6">
-                          <div class="p-2 h-100 rounded text-center border" :class="fondoTarjetaExamen(getDetalle(ex, 'teorico'), 'teorico')">
-                            <span class="d-block small fw-bold text-uppercase text-muted mb-1">Teórico</span>
-                            <div v-if="getDetalle(ex, 'teorico')">
-                              <span class="badge w-100 py-2" :class="claseBadgeExamen(getDetalle(ex, 'teorico'), 'teorico')">
-                                {{ formatEstadoExamen(getDetalle(ex, 'teorico'), 'teorico') }}
-                              </span>
-                              <div v-if="getNota(getDetalle(ex, 'teorico'))" class="small fw-bold mt-1 text-dark">
-                                Nota: {{ getNota(getDetalle(ex, 'teorico')) }}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Físico -->
-                        <div class="col-6">
-                          <div class="p-2 h-100 rounded text-center border" :class="fondoTarjetaExamen(getDetalle(ex, 'fisico'), 'fisico')">
-                            <span class="d-block small fw-bold text-uppercase text-muted mb-1">Físico</span>
-                            <div v-if="getDetalle(ex, 'fisico')">
-                              <span class="badge w-100 py-2" :class="claseBadgeExamen(getDetalle(ex, 'fisico'), 'fisico')">
-                                {{ formatEstadoExamen(getDetalle(ex, 'fisico'), 'fisico') }}
-                              </span>
-                            </div>
-                          </div>
+                      <span class="badge flex-shrink-0" :class="badgeTipo(ex.tipo)">{{ ex.tipo === 'recuperatorio' ? 'Recuperatorio' : 'Asamblea General' }}</span>
+                    </div>
+                    <div class="row g-2 mt-1">
+                      <div v-for="tipo in ['teorico', 'fisico']" :key="tipo" class="col-6">
+                        <div class="resultado d-flex justify-content-between align-items-center gap-1">
+                          <span class="small fw-bold text-muted text-uppercase">{{ tipo === 'teorico' ? 'Teórico' : 'Físico' }}</span>
+                          <span v-if="getDetalle(ex, tipo)" class="nota text-end" :class="claseTextoExamen(getDetalle(ex, tipo), tipo)">
+                            {{ textoResultado(getDetalle(ex, tipo), tipo) }}
+                          </span>
+                          <span v-else class="small text-muted">—</span>
                         </div>
                       </div>
-
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
-            <!-- ══ TARJETAS DE REUNIONES ══ -->
-            <div>
-              <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-primary">
-                <i class="bi bi-people-fill text-primary me-2 fs-5"></i>
-                <h6 class="fw-bold m-0 text-dark text-uppercase">Historial de Reuniones</h6>
-                <span class="badge bg-primary rounded-pill px-2 ms-auto">{{ reunionesFiltradas.length }}</span>
-              </div>
-
-              <div v-if="!reunionesFiltradas.length" class="text-center py-4 bg-light rounded border border-light-subtle">
-                <p class="text-muted m-0 fw-bold small">Sin reuniones registradas en el período seleccionado.</p>
-              </div>
-
-              <div v-else class="row g-2">
-                <div v-for="r in reunionesFiltradas" :key="r.id_evento" class="col-12 col-md-6 col-lg-4">
-                  <div class="card shadow-sm h-100 bg-white"
-                       :class="r.asistencia === 'presente' ? 'border-success border-start border-4' : (r.asistencia === 'ausente' ? 'border-danger border-start border-4' : 'border-light-subtle')">
-                    <div class="card-body p-3 d-flex justify-content-between align-items-center gap-2">
-                      <div class="flex-grow-1" style="min-width: 0;">
-                        <div class="text-dark fw-bold small mb-1">
-                          <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(r.fecha_reunion) }}
-                        </div>
-                        <div class="text-muted small text-truncate">
-                          {{ r.titulo || 'Reunión General' }}
-                        </div>
-                      </div>
-                      <AsistenciaBadge :asistencia="r.asistencia" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
           </div>
+        </div>
 
-          <!-- ── Alerta de soporte ── -->
-          <div class="alert alert-warning border-warning-subtle text-dark d-flex align-items-start gap-2 m-3 m-md-4 rounded-3" style="font-size: 0.85rem;">
-            <i class="bi bi-info-circle-fill text-dark mt-1 flex-shrink-0"></i>
-            <span>
-              <strong>¿Detectaste algún dato erróneo?</strong>
-              Si alguna evaluación o asistencia no figura correctamente, por favor comunicate con tu <strong>coordinador de grupo</strong> para que pueda revisarlo.
-            </span>
-          </div>
-
+        <!-- ── Aviso de soporte ── -->
+        <div class="alert alert-light border text-dark d-flex align-items-start gap-2 mt-3 mb-0 rounded-3 small">
+          <i class="bi bi-info-circle-fill text-secondary mt-1 flex-shrink-0"></i>
+          <span>
+            Si alguna evaluación o asistencia no figura correctamente, comunicate con tu <strong>coordinador de grupo</strong> para que la revise.
+          </span>
         </div>
       </div>
     </div>
@@ -211,7 +144,7 @@
 
 <script setup>
 import { anioActual, conAnioActual } from '@/utils/anios'
-import { ref, onMounted, computed, defineComponent, h } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '../../../api/auth'
 import { useHead } from '@vueuse/head'
@@ -287,21 +220,31 @@ const getNota = (detalle) => {
   return detalle.calificacion
 }
 
-const fondoTarjetaExamen = (detalle, tipo) => {
-  const est = estadoEfectivo(detalle, tipo)
-  if (est === 'aprobado') return 'bg-success bg-opacity-10 border-success-subtle'
-  if (est === 'desaprobado') return 'bg-danger bg-opacity-10 border-danger-subtle'
-  if (est === 'ausente') return 'bg-secondary bg-opacity-10 border-secondary-subtle'
-  if (est === 'no lo hizo') return 'bg-info bg-opacity-10 border-info-subtle'
-  return 'bg-light border-light-subtle'
+// dd/mm/aaaa → dd-mm-aaaa
+const fechaGuiones = (f) => formatFecha(f).replace(/\//g, '-')
+
+const textoAsistencia = (a) => {
+  const estado = normalizarAsistencia(a)
+  return estado === 'presente' ? 'Presente' : estado === 'ausente' ? 'Ausente' : 'Sin registro'
+}
+const claseAsistencia = (a) => {
+  const estado = normalizarAsistencia(a)
+  return estado === 'presente' ? 'bg-success' : estado === 'ausente' ? 'bg-secondary' : 'bg-light text-muted border'
 }
 
-const claseBadgeExamen = (detalle, tipo) => {
+// Resultado de cada parte: estado + nota (teórico) o nivel (físico)
+const textoResultado = (detalle, tipo) => {
+  const estado = formatEstadoExamen(detalle, tipo)
+  const valor = getNota(detalle)
+  if (!valor) return estado
+  return tipo === 'fisico' ? `${estado} · Nivel ${valor}` : `${estado} · ${valor}`
+}
+const claseTextoExamen = (detalle, tipo) => {
   const est = estadoEfectivo(detalle, tipo)
-  if (est === 'aprobado') return 'bg-success'
-  if (est === 'desaprobado') return 'bg-danger'
-  if (est === 'no lo hizo') return 'bg-info text-dark' // Celeste para el SAF
-  return 'bg-secondary'
+  if (est === 'aprobado') return 'text-success'
+  if (est === 'desaprobado') return 'text-danger'
+  if (est === 'no lo hizo') return 'text-info'
+  return 'text-secondary'
 }
 
 const normalizarAsistencia = (valor) => {
@@ -312,29 +255,13 @@ const normalizarAsistencia = (valor) => {
   return ''
 }
 
-// ═══════════ COMPONENTES INTERNOS ═══════════
-const AsistenciaBadge = defineComponent({
-  props: { asistencia: String },
-  setup(props) {
-    return () => {
-      const estado = normalizarAsistencia(props.asistencia)
-      return h('span', {
-        class: estado === 'presente'
-          ? 'badge bg-success text-white px-2 py-1'
-          : estado === 'ausente'
-            ? 'badge bg-danger text-white px-2 py-1'
-            : 'badge bg-light text-muted border px-2 py-1',
-      }, estado === 'presente' ? 'PRESENTE' : estado === 'ausente' ? 'AUSENTE' : 'SIN INFO')
-    }
-  },
-})
-
 // ═══════════ ESTADO ═══════════
 const datosArbitro = ref({ id: null, nombre: '', apellido: '' })
 const reuniones    = ref([])
 const examenes     = ref([])
 const cargando     = ref(true)
 const filtroAño    = ref(anioActual())
+const abiertas     = reactive({ reuniones: false, examenes: false })
 
 // ═══════════ MAPPERS ═══════════
 const mapearFilasReuniones = (filas) => {
@@ -506,6 +433,9 @@ const statsGlobales = computed(() => {
   return r
 })
 
+const totalReuniones = computed(() => statsGlobales.value.presentesReunion + statsGlobales.value.ausentesReunion)
+const totalEvaluaciones = computed(() => statsGlobales.value.aprobadosExamen + statsGlobales.value.desaprobadosExamen)
+
 const porcentajeAsistencia = computed(() => {
   const totales = statsGlobales.value.presentesReunion + statsGlobales.value.ausentesReunion
   return totales === 0 ? 0 : Math.round((statsGlobales.value.presentesReunion / totales) * 100)
@@ -514,26 +444,6 @@ const porcentajeAsistencia = computed(() => {
 const porcentajeExamenes = computed(() => {
   const totales = statsGlobales.value.aprobadosExamen + statsGlobales.value.desaprobadosExamen
   return totales === 0 ? 0 : Math.round((statsGlobales.value.aprobadosExamen / totales) * 100)
-})
-
-// Frases motivadoras exclusivas de Handball
-const fraseMotivadora = computed(() => {
-  if (reunionesFiltradas.value.length === 0 && !examenesFiltrados.value.some(ex => ex.detalles.length))
-    return 'Todo listo para dar el saque de centro.'
-
-  const promedio = (porcentajeAsistencia.value + porcentajeExamenes.value) / 2
-  const nombre = datosArbitro.value.nombre
-
-  if (promedio >= 90)
-    return `¡Qué nivel, ${nombre}! Tu compromiso con el arbitraje está rindiendo sus frutos.`
-
-  if (promedio >= 75)
-    return `¡Vas por excelente camino, ${nombre}! Un último empujón de constancia y estás en tu mejor versión.`
-
-  if (promedio >= 50)
-    return `¡A no bajar los brazos, ${nombre}! Estás en carrera, seguí preparándote y hacé la diferencia.`
-
-  return `¡${nombre}, toca hacer autocrítica y volver más fuerte! El arbitraje no perdona la falta de preparación.`
 })
 
 // ═══════════ INIT ═══════════
@@ -553,29 +463,27 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.full-screen-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-  padding-bottom: 120px;
-}
-.panel-personal {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
+.animate__animated { animation-duration: 0.4s; }
+.resumen-card {
   border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  height: 100%;
 }
-.animate__animated {
-  animation-duration: 0.4s;
+.resumen-card i { font-size: 1.2rem; }
+.resumen-card .valor { font-size: 1.4rem; font-weight: 800; line-height: 1.1; margin-top: 4px; }
+.resumen-card .etiqueta { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
+.accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
+.accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
+.accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
+.accordion-button:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2); }
+.fila-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fff;
 }
-.w-fit-content {
-  width: fit-content;
-}
-@media (min-width: 768px) {
-  .w-md-auto {
-    width: auto !important;
-  }
-}
+.resultado { background: #f8fafc; border-radius: 8px; padding: 6px 8px; flex-wrap: wrap; }
+.min-w-0 { min-width: 0; }
+.nota { font-weight: 800; font-size: 0.8rem; }
 </style>
