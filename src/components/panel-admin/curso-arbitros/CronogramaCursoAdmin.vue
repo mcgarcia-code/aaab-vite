@@ -214,8 +214,21 @@
             <span class="d-block small text-muted">{{ m.ayuda }}</span>
           </label>
         </div>
+        <div v-if="esRecuperatorioFinal" class="mb-3">
+          <div v-if="!finalesDisponibles.length" class="alert alert-danger small py-2 mb-0">
+            <i class="bi bi-exclamation-triangle me-1"></i> Todavía no hay un teórico final programado para recuperar.
+          </div>
+          <template v-else>
+            <label for="ex-final-original" class="form-label small fw-bold text-dark">Teórico final que se recupera *</label>
+            <select id="ex-final-original" v-model="formExamen.idExamenFinal" class="form-select" :class="{ 'is-invalid': intentoExamen && !formExamen.idExamenFinal }">
+              <option :value="null" disabled>Seleccionar...</option>
+              <option v-for="fin in finalesDisponibles" :key="fin.id" :value="fin.id">{{ fechaDMA(fin.fecha) }} · {{ fin.titulo }} · {{ fin.desaprobados }} para recuperar</option>
+            </select>
+          </template>
+        </div>
         <p class="small text-muted">
-          <template v-if="esRecuperatorioParcialitos">Lo ven solo los aspirantes que tienen parcialitos desaprobados o ausentes, aunque no hayan venido a esta clase.</template>
+          <template v-if="esRecuperatorioFinal">Lo ven solo los aspirantes que desaprobaron o estuvieron ausentes en el teórico final, aunque no hayan venido a esta clase.</template>
+          <template v-else-if="esRecuperatorioParcialitos">Lo ven solo los aspirantes que tienen parcialitos desaprobados o ausentes, aunque no hayan venido a esta clase.</template>
           <template v-else>Solo pueden rendirlo los aspirantes marcados como <strong>presentes</strong> en la clase.</template>
           La nota y el PDF quedan en <strong>Exámenes</strong>. Se aprueba con el {{ PORCENTAJE_APROBACION_DEFECTO }}%.
         </p>
@@ -275,6 +288,7 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
+import { fechaDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { PORCENTAJE_APROBACION_DEFECTO } from '@/composables/useExamenesCurso'
 import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada } from '@/composables/useCronogramaCurso'
@@ -459,10 +473,26 @@ const configDefecto = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: 
 const MODOS_EXAMEN = [
   { valor: 'parcialito', etiqueta: 'Parcialito', ayuda: 'Examen de la clase sobre las reglas que elijas.' },
   { valor: 'recuperatorio', etiqueta: 'Recuperatorio de parcialitos', ayuda: 'Cada aspirante rinde las reglas de los parcialitos que debe.' },
-  { valor: 'final', etiqueta: 'Teórico final', ayuda: 'Define el teórico del curso y admite recuperatorio.' },
+  { valor: 'final', etiqueta: 'Teórico final', ayuda: 'Define el teórico del curso.' },
+  { valor: 'recuperatorio_final', etiqueta: 'Recuperatorio teórico final', ayuda: 'Lo rinden quienes desaprobaron el teórico final.' },
 ]
-const formExamen = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true, modo: 'parcialito' })
+const formExamen = ref({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true, modo: 'parcialito', idExamenFinal: null })
 const esRecuperatorioParcialitos = computed(() => formExamen.value.modo === 'recuperatorio')
+const esRecuperatorioFinal = computed(() => formExamen.value.modo === 'recuperatorio_final')
+const finalesDisponibles = ref([])
+
+// Al elegir el recuperatorio del final se propone el final (si hay uno solo) y sus mismas reglas.
+// Los watchers son síncronos para no pisar la configuración guardada al abrir un examen existente.
+let aplicandoExamenGuardado = false
+watch(() => formExamen.value.modo, (modo) => {
+  if (aplicandoExamenGuardado || modo !== 'recuperatorio_final' || formExamen.value.idExamenFinal) return
+  if (finalesDisponibles.value.length === 1) formExamen.value.idExamenFinal = finalesDisponibles.value[0].id
+}, { flush: 'sync' })
+watch(() => formExamen.value.idExamenFinal, (idFinal) => {
+  if (aplicandoExamenGuardado || !idFinal) return
+  const final = finalesDisponibles.value.find(x => x.id === idFinal)
+  if (final?.reglas.length) formExamen.value.reglas = [...final.reglas]
+}, { flush: 'sync' })
 
 const preguntasDisponibles = computed(() =>
   reglasDisponibles.value.filter(r => formExamen.value.reglas.includes(r.codigo)).reduce((t, r) => t + r.cantidad, 0)
@@ -495,18 +525,25 @@ const abrirExamen = async (c) => {
   cargandoExamen.value = true
   try {
     await cargarReglas()
-    const res = await api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerExamenOnlineClaseCurso', payload: { idClase: c.id } })
+    const [res, resFinales] = await Promise.all([
+      api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerExamenOnlineClaseCurso', payload: { idClase: c.id } }),
+      api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerFinalesParaRecuperatorioCurso', payload: { idClase: c.id } }),
+    ])
+    finalesDisponibles.value = resFinales?.ok ? resFinales.payload || [] : []
     if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar el examen de la clase')
     examenExistente.value = res.payload
     const codigos = reglasDisponibles.value.map(r => r.codigo)
     const base = res.payload || { ...configDefecto.value, habilitado: true }
+    aplicandoExamenGuardado = true
     formExamen.value = {
       cantidadPreguntas: base.cantidadPreguntas,
       tiempoLimiteMin: base.tiempoLimiteMin,
       reglas: (base.reglas || []).filter(r => codigos.includes(r)),
       habilitado: base.habilitado,
       modo: base.modo || (base.esFinal ? 'final' : 'parcialito'),
+      idExamenFinal: base.idExamenFinal || null,
     }
+    aplicandoExamenGuardado = false
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
     mostrarExamen.value = false
@@ -517,6 +554,10 @@ const abrirExamen = async (c) => {
 
 const guardarExamen = async () => {
   intentoExamen.value = true
+  if (esRecuperatorioFinal.value && !formExamen.value.idExamenFinal) {
+    notificar({ titulo: 'Faltan datos', mensaje: 'Elegí el teórico final que se recupera.', tipo: 'danger' })
+    return
+  }
   if (errorCantidad.value || errorTiempo.value || (!esRecuperatorioParcialitos.value && !formExamen.value.reglas.length)) {
     notificar({ titulo: 'Faltan datos', mensaje: 'Revisá la cantidad, el tiempo y elegí al menos una regla.', tipo: 'danger' })
     return
@@ -529,7 +570,7 @@ const guardarExamen = async () => {
       payload: { idClase: claseExamen.value.id, ...formExamen.value },
     })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo programar el examen')
-    toast({ titulo: 'Examen programado', mensaje: formExamen.value.habilitado ? (esRecuperatorioParcialitos.value ? 'Los aspirantes que deben parcialitos ya pueden rendirlo desde Mis Exámenes.' : 'Los presentes ya pueden rendirlo desde Mis Exámenes.') : 'El examen quedó guardado sin habilitar.', tipo: 'success' })
+    toast({ titulo: 'Examen programado', mensaje: formExamen.value.habilitado ? (esRecuperatorioFinal.value ? 'Los que desaprobaron el teórico final ya pueden rendirlo desde Mis Exámenes.' : esRecuperatorioParcialitos.value ? 'Los aspirantes que deben parcialitos ya pueden rendirlo desde Mis Exámenes.' : 'Los presentes ya pueden rendirlo desde Mis Exámenes.') : 'El examen quedó guardado sin habilitar.', tipo: 'success' })
     mostrarExamen.value = false
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
