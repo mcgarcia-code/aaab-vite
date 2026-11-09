@@ -236,63 +236,93 @@
         </div>
         <div v-if="historial.resumen.anios.length" class="small text-muted mb-3">Años en el curso: <strong class="text-dark">{{ historial.resumen.anios.join(', ') }}</strong></div>
 
-        <h6 class="titulo-historial"><i class="bi bi-journal-check me-1"></i> Exámenes rendidos</h6>
-        <div v-if="!historial.examenes?.length" class="text-muted small fst-italic mb-3">No rindió exámenes.</div>
-        <div v-else class="table-responsive mb-3">
-          <table class="table table-sm align-middle small mb-0">
-            <thead class="table-light">
-              <tr><th>Año</th><th>Fecha</th><th>Tipo</th><th>Examen</th><th class="text-center">Nota</th><th class="text-center">Resultado</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="e in historial.examenes" :key="'hx-' + e.id">
-                <td>{{ e.anio }}</td>
-                <td class="text-nowrap">{{ fechaHoraDMA(e.fecha) }}</td>
-                <td>{{ TIPOS_EXAMEN_HISTORIAL[e.tipo] || e.tipo }}</td>
-                <td>{{ e.titulo }}<div v-if="e.clase" class="text-muted" style="font-size: 0.7rem;">{{ e.clase }}</div></td>
-                <td class="text-center fw-bold">{{ notaHistorial(e) }}</td>
-                <td class="text-center">
-                  <span v-if="e.ausente" class="badge bg-secondary">Ausente</span>
-                  <span v-else-if="e.aprobado === true" class="badge bg-success">Aprobado</span>
-                  <span v-else-if="e.aprobado === false" class="badge bg-danger">Desaprobado</span>
-                  <span v-else class="badge bg-light text-muted border">—</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="small text-muted mt-1">
-            Aprobados: <strong class="text-success">{{ historial.examenes.filter(e => e.aprobado === true).length }}</strong> de {{ historial.examenes.length }}
+        <div class="accordion acordeon-seccion">
+          <!-- Exámenes rendidos -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button" :class="{ collapsed: !seccionesHistorial.examenes }" @click="seccionesHistorial.examenes = !seccionesHistorial.examenes">
+                <i class="bi bi-journal-check me-2"></i> Exámenes rendidos
+                <span class="badge bg-light text-dark border ms-2">{{ historial.examenes?.length || 0 }}</span>
+              </button>
+            </h2>
+            <div v-show="seccionesHistorial.examenes" class="accordion-body">
+              <div v-if="!historial.examenes?.length" class="text-muted small fst-italic">No rindió exámenes.</div>
+              <div v-else class="table-responsive">
+                <table class="table table-sm align-middle small mb-0">
+                  <thead class="table-light">
+                    <tr><th>Año</th><th>Fecha</th><th>Tipo</th><th>Examen</th><th class="text-center">Nota</th><th class="text-center">Resultado</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="e in historial.examenes" :key="'hx-' + e.id">
+                      <td>{{ e.anio }}</td>
+                      <td class="text-nowrap">{{ fechaHoraDMA(e.fecha) }}</td>
+                      <td>{{ TIPOS_EXAMEN_HISTORIAL[e.tipo] || e.tipo }}</td>
+                      <td>{{ e.titulo }}</td>
+                      <td class="text-center fw-bold">{{ notaHistorial(e) }}</td>
+                      <td class="text-center">
+                        <span v-if="e.ausente" class="badge bg-secondary">Ausente</span>
+                        <span v-else-if="e.aprobado === true" class="badge bg-success">Aprobado</span>
+                        <span v-else-if="e.aprobado === false" class="badge bg-danger">Desaprobado</span>
+                        <span v-else class="badge bg-light text-muted border">—</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="small text-muted mt-1">
+                  Aprobados: <strong class="text-success">{{ historial.examenes.filter(e => e.aprobado === true).length }}</strong> de {{ historial.examenes.length }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Asistencia a clases -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button" :class="{ collapsed: !seccionesHistorial.asistencia }" @click="seccionesHistorial.asistencia = !seccionesHistorial.asistencia">
+                <i class="bi bi-calendar-check me-2"></i> Asistencia a clases
+              </button>
+            </h2>
+            <div v-show="seccionesHistorial.asistencia" class="accordion-body">
+              <div v-if="!historial.asistencia?.length" class="text-muted small fst-italic">Sin asistencias registradas.</div>
+              <div v-else class="d-flex flex-wrap gap-2">
+                <span v-for="a in historial.asistencia" :key="'ha-' + a.anio" class="badge bg-light text-dark border">
+                  {{ a.anio }}: {{ a.presentes }} presentes · {{ a.ausentes }} ausentes
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Movimientos -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button" :class="{ collapsed: !seccionesHistorial.movimientos }" @click="seccionesHistorial.movimientos = !seccionesHistorial.movimientos">
+                <i class="bi bi-clock-history me-2"></i> Movimientos
+                <span class="badge bg-light text-dark border ms-2">{{ historial.eventos.length }}</span>
+              </button>
+            </h2>
+            <div v-show="seccionesHistorial.movimientos" class="accordion-body">
+              <div v-if="!historial.eventos.length" class="text-muted small fst-italic">Sin movimientos registrados.</div>
+              <ul v-else class="linea-tiempo list-unstyled mb-0">
+                <li v-for="h in historial.eventos" :key="h.id" class="mb-3">
+                  <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="fw-bold text-dark small">{{ fechaHoraDMA(h.fecha) }}</span>
+                    <span class="badge bg-light text-dark border">{{ EVENTOS_HISTORIAL[h.evento] || h.evento }}</span>
+                    <span v-if="h.anio_curso" class="small text-muted">{{ MODALIDADES_CURSO[h.modalidad_curso]?.etiqueta || 'Curso' }} {{ h.anio_curso }}</span>
+                  </div>
+                  <div class="small mt-1">
+                    <template v-if="h.estado_anterior">
+                      <span class="badge" :class="ESTADOS_CURSO[h.estado_anterior]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[h.estado_anterior]?.etiqueta || h.estado_anterior }}</span>
+                      <i class="bi bi-arrow-right mx-1"></i>
+                    </template>
+                    <span v-if="h.estado_nuevo" class="badge" :class="ESTADOS_CURSO[h.estado_nuevo]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[h.estado_nuevo]?.etiqueta || h.estado_nuevo }}</span>
+                  </div>
+                  <div v-if="h.motivo" class="small text-dark mt-1"><strong>Motivo:</strong> {{ h.motivo }}</div>
+                  <div class="small text-muted">Por: {{ h.responsable }}</div>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
-
-        <template v-if="historial.asistencia?.length">
-          <h6 class="titulo-historial"><i class="bi bi-calendar-check me-1"></i> Asistencia a clases</h6>
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            <span v-for="a in historial.asistencia" :key="'ha-' + a.anio" class="badge bg-light text-dark border">
-              {{ a.anio }}: {{ a.presentes }} presentes · {{ a.ausentes }} ausentes
-            </span>
-          </div>
-        </template>
-
-        <h6 class="titulo-historial"><i class="bi bi-clock-history me-1"></i> Movimientos</h6>
-        <div v-if="!historial.eventos.length" class="text-muted small fst-italic">Sin movimientos registrados.</div>
-        <ul v-else class="linea-tiempo list-unstyled mb-0">
-          <li v-for="h in historial.eventos" :key="h.id" class="mb-3">
-            <div class="d-flex flex-wrap align-items-center gap-2">
-              <span class="fw-bold text-dark small">{{ fechaHoraDMA(h.fecha) }}</span>
-              <span class="badge bg-light text-dark border">{{ EVENTOS_HISTORIAL[h.evento] || h.evento }}</span>
-              <span v-if="h.anio_curso" class="small text-muted">{{ MODALIDADES_CURSO[h.modalidad_curso]?.etiqueta || 'Curso' }} {{ h.anio_curso }}</span>
-            </div>
-            <div class="small mt-1">
-              <template v-if="h.estado_anterior">
-                <span class="badge" :class="ESTADOS_CURSO[h.estado_anterior]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[h.estado_anterior]?.etiqueta || h.estado_anterior }}</span>
-                <i class="bi bi-arrow-right mx-1"></i>
-              </template>
-              <span v-if="h.estado_nuevo" class="badge" :class="ESTADOS_CURSO[h.estado_nuevo]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[h.estado_nuevo]?.etiqueta || h.estado_nuevo }}</span>
-            </div>
-            <div v-if="h.motivo" class="small text-dark mt-1"><strong>Motivo:</strong> {{ h.motivo }}</div>
-            <div class="small text-muted">Por: {{ h.responsable }}</div>
-          </li>
-        </ul>
       </div>
     </ModalBase>
 
@@ -589,7 +619,11 @@ const legajoHistorial = ref(null)
 const historial = ref(null)
 const cargandoHistorial = ref(false)
 
+// Secciones abiertas del acordeón del historial (Exámenes abierto por defecto)
+const seccionesHistorial = reactive({ examenes: true, asistencia: false, movimientos: false })
+
 const abrirHistorial = async (l) => {
+  Object.assign(seccionesHistorial, { examenes: true, asistencia: false, movimientos: false })
   legajoHistorial.value = l
   historial.value = null
   mostrarHistorial.value = true
@@ -658,16 +692,9 @@ onMounted(() => {
 .resumen-historial { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; text-align: center; height: 100%; }
 .resumen-historial .valor { font-size: 1.3rem; font-weight: 800; line-height: 1.1; }
 .resumen-historial .etiqueta { font-size: 0.68rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
-.titulo-historial {
-  color: #dc3545;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.78rem;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 0.4rem;
-  margin-bottom: 0.6rem;
-}
+.acordeon-seccion .accordion-button { font-size: 0.85rem; font-weight: 700; padding: 0.75rem 1rem; box-shadow: none; }
+.acordeon-seccion .accordion-button:not(.collapsed) { color: #dc3545; background-color: #fef2f2; }
+.acordeon-seccion .accordion-body { padding: 0.75rem 1rem; }
 .linea-tiempo li { border-left: 3px solid #fde68a; padding-left: 12px; }
 .fila-baja td, .tabla-fija tbody .fila-baja .col-fija { background-color: #fef2f2 !important; }
 </style>

@@ -212,45 +212,75 @@
         </div>
       </template>
       <div v-if="seleccionado" class="text-start">
-        <h6 class="titulo-seccion"><i class="bi bi-journal-check me-1"></i> Exámenes</h6>
-        <div v-if="!seleccionado.detalleExamenes.length" class="small text-muted fst-italic mb-3">No hay exámenes de su curso en {{ anio }}.</div>
-        <div v-else class="d-flex flex-column gap-2 mb-4">
-          <div v-for="d in seleccionado.detalleExamenes" :key="'ex-' + d.examen.id" class="fila-detalle">
-            <div class="d-flex justify-content-between align-items-start gap-2">
-              <div class="min-w-0 small">
-                <div class="fw-bold text-dark">{{ d.examen.titulo }}</div>
-                <div class="text-muted">{{ fechaDMA(d.examen.fecha) }} · {{ etiquetaExamen(d.examen) }}<template v-if="d.examen.clase"> · {{ d.examen.clase }}</template></div>
+        <div class="accordion acordeon-seccion">
+          <!-- Exámenes rendidos -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button" :class="{ collapsed: !seccionesDetalle.examenes }" @click="seccionesDetalle.examenes = !seccionesDetalle.examenes">
+                <i class="bi bi-journal-check me-2"></i> Exámenes rendidos
+                <span class="badge bg-light text-dark border ms-2">{{ seleccionado.detalleExamenes.length }}</span>
+              </button>
+            </h2>
+            <div v-show="seccionesDetalle.examenes" class="accordion-body">
+              <div v-if="!seleccionado.detalleExamenes.length" class="small text-muted fst-italic">No hay exámenes de su curso en {{ anio }}.</div>
+              <div v-else class="d-flex flex-column gap-2">
+                <div v-for="d in seleccionado.detalleExamenes" :key="'ex-' + d.examen.id" class="fila-detalle">
+                  <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div class="min-w-0 small">
+                      <div class="fw-bold text-dark">{{ d.examen.titulo }}</div>
+                      <div class="text-muted">{{ fechaDMA(d.examen.fecha) }}</div>
+                    </div>
+                    <div class="text-end flex-shrink-0">
+                      <div class="fw-bold small">{{ textoNota(d) }}</div>
+                      <span v-if="!d.nota" class="badge bg-light text-muted border">No rindió</span>
+                      <span v-else-if="d.nota.ausente" class="badge bg-secondary">Ausente</span>
+                      <span v-else-if="d.nota.aprobado === true" class="badge bg-success">Aprobado</span>
+                      <span v-else-if="d.nota.aprobado === false" class="badge bg-danger">Desaprobado</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="text-end flex-shrink-0">
-                <div class="fw-bold small">{{ textoNota(d) }}</div>
-                <span v-if="!d.nota" class="badge bg-light text-muted border">No rindió</span>
-                <span v-else-if="d.nota.ausente" class="badge bg-secondary">Ausente</span>
-                <span v-else-if="d.nota.aprobado === true" class="badge bg-success">Aprobado</span>
-                <span v-else-if="d.nota.aprobado === false" class="badge bg-danger">Desaprobado</span>
+            </div>
+          </div>
+
+          <!-- Asistencia a clases -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button" :class="{ collapsed: !seccionesDetalle.asistencia }" @click="seccionesDetalle.asistencia = !seccionesDetalle.asistencia">
+                <i class="bi bi-calendar-check me-2"></i> Asistencia a clases
+                <span class="badge bg-light text-dark border ms-2">{{ seleccionado.detalleClases.length }}</span>
+              </button>
+            </h2>
+            <div v-show="seccionesDetalle.asistencia" class="accordion-body">
+              <div v-if="!seleccionado.detalleClases.length" class="small text-muted fst-italic">Todavía no hay clases dictadas.</div>
+              <div v-else class="d-flex flex-column gap-1">
+                <div v-for="d in seleccionado.detalleClases" :key="'cl-' + d.clase.id" class="fila-detalle d-flex justify-content-between align-items-center gap-2">
+                  <span class="small min-w-0"><strong>{{ fechaDMA(d.clase.fecha) }}</strong> · {{ d.clase.titulo }}</span>
+                  <span class="badge flex-shrink-0" :class="claseAsistencia(d.asistencia)">{{ textoAsistencia(d.asistencia) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Encuentros de mini (solo curso anual) -->
+          <div v-if="seleccionado.alumno.modalidadCurso === 'anual'" class="accordion-item">
+            <h2 class="accordion-header">
+              <button type="button" class="accordion-button" :class="{ collapsed: !seccionesDetalle.mini }" @click="seccionesDetalle.mini = !seccionesDetalle.mini">
+                <i class="bi bi-people me-2"></i> Encuentros de mini
+                <span class="badge bg-light text-dark border ms-2">{{ seleccionado.detalleMini.length }}</span>
+              </button>
+            </h2>
+            <div v-show="seccionesDetalle.mini" class="accordion-body">
+              <div v-if="!seleccionado.detalleMini.length" class="small text-muted fst-italic">No fue convocado/a a encuentros de mini.</div>
+              <div v-else class="d-flex flex-column gap-1">
+                <div v-for="m in seleccionado.detalleMini" :key="'mi-' + m.idEncuentro" class="fila-detalle d-flex justify-content-between align-items-center gap-2">
+                  <span class="small min-w-0"><strong>{{ fechaDMA(m.fecha) }}</strong> · {{ m.titulo }}</span>
+                  <span class="badge flex-shrink-0" :class="claseAsistencia(m.asistencia)">{{ textoAsistencia(m.asistencia) }}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-        <h6 class="titulo-seccion"><i class="bi bi-calendar-check me-1"></i> Asistencia a clases</h6>
-        <div v-if="!seleccionado.detalleClases.length" class="small text-muted fst-italic mb-3">Todavía no hay clases dictadas.</div>
-        <div v-else class="d-flex flex-column gap-1 mb-4">
-          <div v-for="d in seleccionado.detalleClases" :key="'cl-' + d.clase.id" class="fila-detalle d-flex justify-content-between align-items-center gap-2">
-            <span class="small min-w-0"><strong>{{ fechaDMA(d.clase.fecha) }}</strong> · {{ d.clase.titulo }}</span>
-            <span class="badge flex-shrink-0" :class="claseAsistencia(d.asistencia)">{{ textoAsistencia(d.asistencia) }}</span>
-          </div>
-        </div>
-
-        <template v-if="seleccionado.alumno.modalidadCurso === 'anual'">
-          <h6 class="titulo-seccion"><i class="bi bi-people me-1"></i> Encuentros de mini</h6>
-          <div v-if="!seleccionado.detalleMini.length" class="small text-muted fst-italic">No fue convocado/a a encuentros de mini.</div>
-          <div v-else class="d-flex flex-column gap-1">
-            <div v-for="m in seleccionado.detalleMini" :key="'mi-' + m.idEncuentro" class="fila-detalle d-flex justify-content-between align-items-center gap-2">
-              <span class="small min-w-0"><strong>{{ fechaDMA(m.fecha) }}</strong> · {{ m.titulo }}</span>
-              <span class="badge flex-shrink-0" :class="claseAsistencia(m.asistencia)">{{ textoAsistencia(m.asistencia) }}</span>
-            </div>
-          </div>
-        </template>
       </div>
       <template #footer>
         <button type="button" @click="seleccionado = null" class="btn btn-dark rounded-pill px-4 fw-bold w-100">CERRAR</button>
@@ -267,7 +297,7 @@ import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { textoNotaExamen } from '@/composables/useExamenesCurso'
-import { ETIQUETAS_TIPO_EXAMEN, RESULTADOS, NOTA_FINAL, armarSeguimiento } from '@/composables/useSeguimientoCurso'
+import { RESULTADOS, NOTA_FINAL, armarSeguimiento } from '@/composables/useSeguimientoCurso'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 
@@ -282,6 +312,12 @@ const datos = ref({ alumnos: [], clases: [], asistencias: [], examenes: [], nota
 const cargando = ref(false)
 const filtros = reactive({ texto: '', modalidad: '', notaFinal: '' })
 const seleccionado = ref(null)
+
+// Secciones abiertas del acordeón del detalle (Exámenes abierto por defecto)
+const seccionesDetalle = reactive({ examenes: true, asistencia: false, mini: false })
+watch(seleccionado, (nuevo) => {
+  if (nuevo) Object.assign(seccionesDetalle, { examenes: true, asistencia: false, mini: false })
+})
 
 const normalizar = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
@@ -305,7 +341,6 @@ const clasePorcentaje = (p) => {
 }
 const textoAsistencia = (a) => (a === 'presente' ? 'Presente' : a === 'ausente' ? 'Ausente' : 'Sin marcar')
 const claseAsistencia = (a) => (a === 'presente' ? 'bg-success' : a === 'ausente' ? 'bg-secondary' : 'bg-light text-muted border')
-const etiquetaExamen = (e) => (e.tipo === 'teorico' ? (e.esFinal ? 'Teórico final' : 'Parcialito') : ETIQUETAS_TIPO_EXAMEN[e.tipo])
 const textoNota = (d) => (d.nota ? textoNotaExamen({ ...d.examen, ...d.nota }) : '—')
 
 const cargar = async () => {
@@ -393,17 +428,10 @@ onMounted(cargar)
 .full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
 .admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
 .animate__animated { animation-duration: 0.5s; }
-.titulo-seccion {
-  color: #dc3545;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 0.5rem;
-  margin-bottom: 0.75rem;
-}
 .dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
+.acordeon-seccion .accordion-button { font-size: 0.85rem; font-weight: 700; padding: 0.75rem 1rem; box-shadow: none; }
+.acordeon-seccion .accordion-button:not(.collapsed) { color: #dc3545; background-color: #fef2f2; }
+.acordeon-seccion .accordion-body { padding: 0.75rem 1rem; }
 .fila-detalle { border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; }
 .opcion-final { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
 .opcion-final.activa { border-color: #dc3545; background: #fef2f2; }
