@@ -104,7 +104,7 @@
                 <div class="d-flex justify-content-between align-items-start gap-2">
                   <div class="min-w-0">
                     <div class="fw-bold text-dark text-break">{{ e.titulo }}</div>
-                    <div class="small text-muted">{{ fechaLargaClase(e.fecha) }}<template v-if="e.clase"> · {{ e.clase }}</template></div>
+                    <div class="small text-muted">{{ fechaLargaClase(e.fecha) }}</div>
                   </div>
                   <div class="text-end flex-shrink-0">
                     <div class="nota" :class="claseNota(e)">{{ textoNota(e) }}</div>
