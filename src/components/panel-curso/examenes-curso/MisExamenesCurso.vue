@@ -208,7 +208,8 @@ const mensajeEstado = computed(() => MENSAJES_ESTADO[estado.value] || null)
 const cursoCerrado = computed(() => Boolean(mensajeEstado.value))
 
 const pendientes = computed(() => online.value.filter(x => x.estado !== 'finalizado' && !x.esRecuperatorioParcialitos))
-const recuperatoriosParcialitos = computed(() => online.value.filter(x => x.esRecuperatorioParcialitos && x.estado !== 'finalizado'))
+// Solo para quienes estuvieron presentes en la clase del recuperatorio
+const recuperatoriosParcialitos = computed(() => online.value.filter(x => x.esRecuperatorioParcialitos && x.presente && x.estado !== 'finalizado'))
 
 // En los exámenes online la nota es el porcentaje obtenido
 const textoNota = (e) => {

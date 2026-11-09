@@ -242,7 +242,7 @@
         <template v-else>
         <p class="small text-muted">
           <template v-if="esRecuperatorioFinal">Lo ven solo los aspirantes que desaprobaron o estuvieron ausentes en el teórico final, aunque no hayan venido a esta clase.</template>
-          <template v-else-if="esRecuperatorioParcialitos">Lo ven solo los aspirantes que tienen parcialitos desaprobados o ausentes, aunque no hayan venido a esta clase.</template>
+          <template v-else-if="esRecuperatorioParcialitos">Lo rinden solo los aspirantes <strong>presentes</strong> en esta clase que tienen parcialitos desaprobados o ausentes.</template>
           <template v-else>Solo pueden rendirlo los aspirantes marcados como <strong>presentes</strong> en la clase.</template>
           La nota y el PDF quedan en <strong>Exámenes</strong>. Se aprueba con el {{ PORCENTAJE_APROBACION_DEFECTO }}%.
         </p>
@@ -260,11 +260,6 @@
           <div v-if="esRecuperatorioParcialitos" class="col-12">
             <div class="alert alert-warning small py-2 mb-0">
               <i class="bi bi-magic me-1"></i> Las reglas se toman <strong>automáticamente</strong> de los parcialitos que cada aspirante desaprobó o no rindió.
-            </div>
-          </div>
-          <div v-else-if="esTeoricoFinal" class="col-12">
-            <div class="alert alert-light border small py-2 mb-0">
-              <i class="bi bi-journal-check me-1"></i> El teórico final es de las <strong>reglas 1 a 18</strong> ({{ preguntasDisponibles }} preguntas disponibles).
             </div>
           </div>
           <div v-else class="col-12">
@@ -497,7 +492,7 @@ const MODOS_FISICO = [
 ]
 const MODOS_TEORICO = [
   { valor: 'parcialito', etiqueta: 'Parcialito', ayuda: 'Examen de la clase sobre las reglas que elijas.' },
-  { valor: 'recuperatorio', etiqueta: 'Recuperatorio de parcialitos', ayuda: 'Cada aspirante rinde las reglas de los parcialitos que debe.' },
+  { valor: 'recuperatorio', etiqueta: 'Recuperatorio de parcialitos', ayuda: 'Los presentes rinden las reglas de los parcialitos que deben.' },
   { valor: 'final', etiqueta: 'Teórico final', ayuda: 'Define el teórico del curso.' },
   { valor: 'recuperatorio_final', etiqueta: 'Recuperatorio teórico final', ayuda: 'Lo rinden quienes desaprobaron el teórico final.' },
 ]
@@ -507,7 +502,6 @@ const modosExamen = computed(() => (esFisico.value ? MODOS_FISICO : MODOS_TEORIC
 const esRecuperatorioParcialitos = computed(() => formExamen.value.modo === 'recuperatorio')
 const esRecuperatorioFinal = computed(() => formExamen.value.modo === 'recuperatorio_final')
 const REGLAS_FINAL = Array.from({ length: 18 }, (_, i) => i + 1)
-const esTeoricoFinal = computed(() => !esFisico.value && ['final', 'recuperatorio_final'].includes(formExamen.value.modo))
 // La clase puede tener un examen teórico y uno físico a la vez (por ejemplo, los dos recuperatorios finales)
 const examenesClase = ref({ teorico: null, fisico: null })
 const examenExistente = computed(() => examenesClase.value[formExamen.value.tipo] || null)
@@ -542,7 +536,14 @@ watch(() => formExamen.value.modo, (modo) => {
   if (aplicandoExamenGuardado || modo !== 'recuperatorio_final' || formExamen.value.idExamenFinal) return
   if (finalesDisponibles.value.length === 1) formExamen.value.idExamenFinal = finalesDisponibles.value[0].id
 }, { flush: 'sync' })
-const reglasEnUso = computed(() => (esTeoricoFinal.value ? REGLAS_FINAL : formExamen.value.reglas))
+const reglasEnUso = computed(() => formExamen.value.reglas)
+
+// Al elegir el teórico final (o su recuperatorio) se tildan las reglas 1 a 18
+watch(() => formExamen.value.modo, (modo) => {
+  if (aplicandoExamenGuardado || esFisico.value || !['final', 'recuperatorio_final'].includes(modo)) return
+  const conPreguntas = reglasDisponibles.value.map(r => r.codigo)
+  formExamen.value.reglas = REGLAS_FINAL.filter(r => conPreguntas.includes(r))
+}, { flush: 'sync' })
 const preguntasDisponibles = computed(() =>
   reglasDisponibles.value.filter(r => reglasEnUso.value.includes(r.codigo)).reduce((t, r) => t + r.cantidad, 0)
 )
@@ -604,7 +605,7 @@ const guardarExamen = async () => {
     notificar({ titulo: 'Faltan datos', mensaje: `Elegí el ${esFisico.value ? 'físico' : 'teórico'} final que se recupera.`, tipo: 'danger' })
     return
   }
-  if (!esFisico.value && (errorCantidad.value || errorTiempo.value || (!esRecuperatorioParcialitos.value && !esTeoricoFinal.value && !formExamen.value.reglas.length))) {
+  if (!esFisico.value && (errorCantidad.value || errorTiempo.value || (!esRecuperatorioParcialitos.value && !formExamen.value.reglas.length))) {
     notificar({ titulo: 'Faltan datos', mensaje: 'Revisá la cantidad, el tiempo y elegí al menos una regla.', tipo: 'danger' })
     return
   }
@@ -621,7 +622,7 @@ const guardarExamen = async () => {
       mostrarExamen.value = false
       return
     }
-    toast({ titulo: 'Examen programado', mensaje: formExamen.value.habilitado ? (esRecuperatorioFinal.value ? 'Los que desaprobaron el teórico final ya pueden rendirlo desde Mis Exámenes.' : esRecuperatorioParcialitos.value ? 'Los aspirantes que deben parcialitos ya pueden rendirlo desde Mis Exámenes.' : 'Los presentes ya pueden rendirlo desde Mis Exámenes.') : 'El examen quedó guardado sin habilitar.', tipo: 'success' })
+    toast({ titulo: 'Examen programado', mensaje: formExamen.value.habilitado ? (esRecuperatorioFinal.value ? 'Los que desaprobaron el teórico final ya pueden rendirlo desde Mis Exámenes.' : esRecuperatorioParcialitos.value ? 'Los presentes que deben parcialitos ya pueden rendirlo desde Mis Exámenes.' : 'Los presentes ya pueden rendirlo desde Mis Exámenes.') : 'El examen quedó guardado sin habilitar.', tipo: 'success' })
     mostrarExamen.value = false
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
