@@ -22,9 +22,10 @@ export const ESTADOS_CURSO = {
   alta: { etiqueta: 'Alta', clase: 'bg-dark' },
   regular: { etiqueta: 'Regular', clase: 'bg-success' },
   reinscripcion: { etiqueta: 'Reinscripción', clase: 'bg-info text-dark' },
-  aprobado: { etiqueta: 'Árbitro aprobado', clase: 'bg-primary' },
+  aprobado: { etiqueta: 'Aprobado', clase: 'bg-primary' },
   desaprobado: { etiqueta: 'Desaprobado', clase: 'bg-warning text-dark' },
   baja: { etiqueta: 'Baja', clase: 'bg-danger' },
+  rechazado: { etiqueta: 'Rechazado', clase: 'bg-danger-subtle text-danger-emphasis border border-danger-subtle' },
 }
 
 // Fotos de los alumnos: carpeta propia, separada de las de los árbitros

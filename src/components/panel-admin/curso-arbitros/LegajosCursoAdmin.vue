@@ -22,10 +22,6 @@
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2" aria-label="Mostrar filtros">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
-            <select v-model="filtros.anio_curso" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 110px;" aria-label="Año">
-              <option value="">AÑO</option>
-              <option v-for="a in aniosLegajos" :key="a" :value="String(a)">{{ a }}</option>
-            </select>
             <button @click="cargarDatos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
               <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
               <span v-else class="material-icons text-dark fs-6">refresh</span>
@@ -58,7 +54,7 @@
             <div class="col-6"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI..."></div>
             <div class="col-6">
               <select v-model="filtros.anio_curso" class="form-select form-select-sm shadow-none text-uppercase text-dark" aria-label="Año">
-                <option value="">AÑO</option>
+                <option value="">AÑO: TODOS</option>
                 <option v-for="a in aniosLegajos" :key="'m-' + a" :value="String(a)">{{ a }}</option>
               </select>
             </div>
@@ -98,7 +94,11 @@
                     <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
                     <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
                     <td v-for="c in COLUMNAS" :key="'f-' + c.id" class="p-2 border-bottom border-2">
-                      <select v-if="c.opciones" v-model="filtros[c.id]" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <select v-if="c.id === 'anio_curso'" v-model="filtros.anio_curso" class="form-select form-select-sm shadow-none text-uppercase text-dark" aria-label="Año">
+                        <option value="">TODOS</option>
+                        <option v-for="a in aniosLegajos" :key="'fa-' + a" :value="String(a)">{{ a }}</option>
+                      </select>
+                      <select v-else-if="c.opciones" v-model="filtros[c.id]" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                         <option value="">TODOS</option>
                         <option v-for="o in c.opciones" :key="o.valor" :value="o.valor">{{ o.etiqueta }}</option>
                       </select>
@@ -330,8 +330,8 @@
         <div v-if="nuevoEstado !== legajoEstado.estado" class="small text-muted mb-2">
           <i class="bi bi-envelope me-1"></i> Se le va a avisar por email a {{ legajoEstado.email }}.
         </div>
-        <label for="motivo-estado" class="form-label small fw-bold text-dark">Motivo {{ nuevoEstado === 'baja' ? '*' : '(opcional)' }}</label>
-        <textarea id="motivo-estado" v-model.trim="motivoEstado" rows="3" maxlength="500" class="form-control" :class="{ 'is-invalid': intentoEstado && nuevoEstado === 'baja' && motivoEstado.length < 3 }" :placeholder="nuevoEstado === 'baja' ? 'Ej: dejó de asistir, motivos personales...' : ''"></textarea>
+        <label for="motivo-estado" class="form-label small fw-bold text-dark">Motivo {{ requiereMotivo ? '*' : '(opcional)' }}</label>
+        <textarea id="motivo-estado" v-model.trim="motivoEstado" rows="3" maxlength="500" class="form-control" :class="{ 'is-invalid': intentoEstado && requiereMotivo && motivoEstado.length < 3 }" :placeholder="nuevoEstado === 'baja' ? 'Ej: dejó de asistir, motivos personales...' : nuevoEstado === 'rechazado' ? 'Ej: documentación incompleta, no cumple la edad mínima...' : ''"></textarea>
         <div class="invalid-feedback">Indicá el motivo de la baja.</div>
       </div>
       <template #footer>
@@ -447,9 +447,13 @@ const legajosPaginados = computed(() => {
 })
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
+// Al cambiar el año se vuelve a pedir al servidor solo ese año
+watch(() => filtros.anio_curso, () => cargarDatos())
 watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
 
-const aniosLegajos = computed(() => conAnioActual(legajos.value.map(l => l.anio_curso).filter(Boolean)))
+const aniosServidor = ref([])
+const aniosLegajos = computed(() => conAnioActual(aniosServidor.value))
+const requiereMotivo = computed(() => ['baja', 'rechazado'].includes(nuevoEstado.value))
 
 const cambiarPagina = (delta) => {
   paginaActual.value += delta
@@ -462,7 +466,11 @@ const limpiarFiltros = () => Object.assign(filtros, filtrosVacios())
 const cargarDatos = async () => {
   cargando.value = true
   try {
-    const res = await api.get({ entity: 'legajos_curso_arbitro', action: 'obtenerLegajosCurso', payload: {} })
+    const [res, resAnios] = await Promise.all([
+      api.get({ entity: 'legajos_curso_arbitro', action: 'obtenerLegajosCurso', payload: { anio: filtros.anio_curso || 0 } }),
+      api.get({ entity: 'legajos_curso_arbitro', action: 'obtenerAniosLegajosCurso', payload: {} }),
+    ])
+    if (resAnios?.ok) aniosServidor.value = resAnios.payload || []
     if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los legajos')
     legajos.value = res.payload || []
   } catch (e) {
@@ -543,7 +551,7 @@ const confirmarEstado = async () => {
   const l = legajoEstado.value
   if (!l) return
   intentoEstado.value = true
-  if (nuevoEstado.value === 'baja' && motivoEstado.value.length < 3) return
+  if (requiereMotivo.value && motivoEstado.value.length < 3) return
   guardandoEstado.value = true
   try {
     const res = await api.post({
