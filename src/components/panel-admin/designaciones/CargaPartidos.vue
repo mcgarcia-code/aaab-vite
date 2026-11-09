@@ -21,7 +21,7 @@
                 · <button type="button" @click="abrirModalPendientes('sin_cancha')" class="btn-contador text-danger fw-bold" title="Ver lista de partidos sin cancha"><i class="bi bi-geo-alt-fill"></i> {{ totalSinCancha }} sin cancha</button>
               </template>
               <template v-if="totalConflictos > 0">
-                · <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> {{ totalConflictos }} {{ totalConflictos === 1 ? 'conflicto' : 'conflictos' }}</span>
+                · <button type="button" @click="abrirModalPendientes('aviso_todos')" class="btn-contador text-danger fw-bold" title="Ver lista de partidos con avisos"><i class="bi bi-exclamation-triangle-fill"></i> {{ totalConflictos }} {{ totalConflictos === 1 ? 'conflicto' : 'conflictos' }}</button>
               </template>
             </span>
           </div>
@@ -187,7 +187,29 @@
               </div>
             </div>
 
-            <!-- Leyenda de estados de designación -->
+            <!-- Leyenda de avisos por color: cada chip abre la lista de partidos de ese tipo -->
+            <div
+              v-if="totalConflictos > 0"
+              class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 mb-3 px-3 py-2 bg-white border rounded shadow-sm"
+            >
+              <span class="text-muted small fw-bold text-uppercase flex-shrink-0" style="letter-spacing: 0.5px;">Avisos:</span>
+              <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
+                <button
+                  v-for="t in TIPOS_AVISO"
+                  :key="t.color"
+                  type="button"
+                  @click="abrirModalPendientes('aviso_' + t.color)"
+                  class="chip-estado"
+                  :class="{ 'opacity-50': cantidadAvisosPorColor[t.color] === 0 }"
+                  :disabled="cantidadAvisosPorColor[t.color] === 0"
+                  :title="t.descripcion"
+                >
+                  <span class="aviso-barra aviso-muestra" :class="'aviso-' + t.color"></span>
+                  {{ t.titulo }}
+                  <span class="badge bg-light text-dark border">{{ cantidadAvisosPorColor[t.color] }}</span>
+                </button>
+              </div>
+            </div>
 
             <div v-if="canchas.length === 0" class="text-center p-4 bg-white rounded shadow-sm border">
               <span class="material-icons text-muted opacity-50 d-block mb-2 fs-1">search_off</span>
@@ -1048,11 +1070,20 @@
       :show="mostrarModalPendientes"
       :titulo="tituloModalPendientes"
       :icono="iconoModalPendientes"
-      :colorIcono="tipoPendientes === 'sin_match' ? 'bg-warning text-dark' : 'bg-danger text-white'"
+      :colorIcono="colorIconoModalPendientes"
       maxWidth="640px"
       @close="mostrarModalPendientes = false"
     >
-      <p v-if="tipoPendientes === 'sin_match'" class="text-muted small mb-3">
+      <div v-if="esModalAvisos" class="small mb-3">
+        <p v-if="tipoAvisoModal" class="text-muted mb-2">
+          <span class="aviso-barra aviso-muestra me-1" :class="'aviso-' + tipoAvisoModal.color"></span>
+          <strong>{{ tipoAvisoModal.titulo }}:</strong> {{ tipoAvisoModal.descripcion }}
+        </p>
+        <p class="text-muted mb-0">
+          Se listan los partidos según su aviso más grave. Tocá uno para ir al partido.
+        </p>
+      </div>
+      <p v-else-if="tipoPendientes === 'sin_match'" class="text-muted small mb-3">
         Estos árbitros no coinciden con el padrón: los partidos <strong>no</strong> les aparecerán en su panel. Tocá un partido para ir a corregirlo.
       </p>
       <p v-else-if="tipoPendientes === 'sin_cancha'" class="text-muted small mb-3">
@@ -1082,7 +1113,12 @@
             type="button"
           >
             <div class="d-flex align-items-center gap-2">
-              <span class="punto-estado flex-shrink-0" :class="'punto-' + estadoDesignacion(p)"></span>
+              <span
+                v-if="esModalAvisos"
+                class="aviso-barra flex-shrink-0"
+                :class="'aviso-' + etiquetaPartido(p)"
+              ></span>
+              <span v-else class="punto-estado flex-shrink-0" :class="'punto-' + estadoDesignacion(p)"></span>
               <div class="flex-grow-1 overflow-hidden">
                 <div class="fw-bold text-truncate">
                   {{ p.local || '—' }} <span class="text-muted fw-normal">vs</span> {{ p.visitante || '—' }}
@@ -1097,6 +1133,15 @@
                 </div>
                 <div v-else-if="tipoPendientes === 'sin_cancha'" class="small text-danger fw-bold text-truncate">
                   <i class="bi bi-geo-alt me-1"></i>Sin cancha asignada
+                </div>
+                <div v-else-if="esModalAvisos" class="mt-1">
+                  <div v-for="g in gruposAvisosPartido(p)" :key="g.nombre" class="small mb-1">
+                    <span class="aviso-barra aviso-mini me-1" :class="'aviso-' + g.etiqueta"></span>
+                    <span class="fw-bold">{{ g.nombre }}</span>
+                    <ul class="mb-0 ps-3 text-body-secondary lista-avisos">
+                      <li v-for="(a, i) in g.avisos" :key="i">{{ a }}</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
               <span class="material-icons text-muted flex-shrink-0">chevron_right</span>
@@ -1202,6 +1247,46 @@ const textoAvisosPartido = (p) => {
 
 const totalConflictos = computed(() => {
   return designaciones.value.filter(p => avisosPartido(p) > 0).length
+})
+
+// Tipos de aviso según el color que asigna el backend (de más a menos grave)
+const TIPOS_AVISO = [
+  {
+    color: 'rojo',
+    titulo: 'Impedimento',
+    descripcion: 'No debería dirigir: inactivo, sanción, licencia aprobada o indeterminada, juega en el club o la categoría, vínculo en la categoría o solicitud institucional.'
+  },
+  {
+    color: 'naranja',
+    titulo: 'Conflicto',
+    descripcion: 'Sin disponibilidad ese día, licencia pendiente o ya designado en otra cancha el mismo día.'
+  },
+  {
+    color: 'amarillo',
+    titulo: 'Advertencia',
+    descripcion: 'Fuera de su horario declarado, licencia rechazada, ya dirigió al equipo en la categoría, o vínculo / ex-jugador / se identifica con el club.'
+  }
+]
+
+// Grupos de avisos de un partido que realmente tienen avisos
+const gruposAvisosPartido = (p) => {
+  const grupos = (p.id ? avisosMap.value[p.id] : null) || []
+  return grupos.filter(g => g.avisos && g.avisos.length > 0)
+}
+
+const partidosConAviso = computed(() =>
+  designaciones.value
+    .filter(p => avisosPartido(p) > 0)
+    .sort(ordenarPorFechaHorario)
+)
+
+const cantidadAvisosPorColor = computed(() => {
+  const conteo = { rojo: 0, naranja: 0, amarillo: 0 }
+  partidosConAviso.value.forEach(p => {
+    const color = etiquetaPartido(p)
+    if (conteo[color] !== undefined) conteo[color]++
+  })
+  return conteo
 })
 
 const mostrarAvisosPartido = (p) => {
@@ -2162,22 +2247,42 @@ const partidosSinCancha = computed(() =>
 )
 
 // Lista que se muestra en el modal segun el tipo abierto
+// Modal de avisos: tipoPendientes = 'aviso_todos' | 'aviso_rojo' | 'aviso_naranja' | 'aviso_amarillo'
+const esModalAvisos = computed(() => tipoPendientes.value.startsWith('aviso_'))
+const tipoAvisoModal = computed(() =>
+  TIPOS_AVISO.find(t => 'aviso_' + t.color === tipoPendientes.value) || null
+)
+
 const partidosPendientesModal = computed(() => {
   if (tipoPendientes.value === 'sin_match') return partidosSinCoincidencia.value
   if (tipoPendientes.value === 'sin_cancha') return partidosSinCancha.value
+  if (tipoPendientes.value === 'aviso_todos') return partidosConAviso.value
+  if (tipoAvisoModal.value) {
+    return partidosConAviso.value.filter(p => etiquetaPartido(p) === tipoAvisoModal.value.color)
+  }
   return partidosSinDesignar.value
 })
 
 const tituloModalPendientes = computed(() => {
   if (tipoPendientes.value === 'sin_match') return 'Árbitros sin coincidencia'
   if (tipoPendientes.value === 'sin_cancha') return 'Partidos sin cancha'
+  if (tipoPendientes.value === 'aviso_todos') return 'Partidos con avisos'
+  if (tipoAvisoModal.value) return 'Avisos: ' + tipoAvisoModal.value.titulo
   return 'Partidos sin designar'
 })
 
 const iconoModalPendientes = computed(() => {
   if (tipoPendientes.value === 'sin_match') return 'person_off'
   if (tipoPendientes.value === 'sin_cancha') return 'wrong_location'
+  if (esModalAvisos.value) return 'warning'
   return 'error_outline'
+})
+
+const colorIconoModalPendientes = computed(() => {
+  if (tipoPendientes.value === 'sin_match') return 'bg-warning text-dark'
+  if (tipoAvisoModal.value?.color === 'amarillo') return 'bg-warning text-dark'
+  if (tipoAvisoModal.value?.color === 'naranja') return 'bg-warning text-white'
+  return 'bg-danger text-white'
 })
 
 // Agrupa la lista del modal por fecha para mostrarla con encabezados
@@ -2668,6 +2773,23 @@ onMounted(async () => {
 
 .aviso-rojo {
   background-color: #ef4444;
+}
+
+/* Muestras de color en la leyenda y en el modal de avisos */
+.aviso-muestra {
+  width: 8px;
+  height: 14px;
+  cursor: inherit;
+}
+
+.aviso-mini {
+  width: 6px;
+  height: 11px;
+  cursor: inherit;
+}
+
+.lista-avisos {
+  white-space: normal;
 }
 
 /* Ícono para borrar un partido sin designar */
