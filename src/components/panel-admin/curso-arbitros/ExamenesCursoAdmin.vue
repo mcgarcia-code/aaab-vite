@@ -41,29 +41,29 @@
               <div class="tarjeta-examen border rounded-3 p-3 h-100 d-flex flex-column">
                 <div class="d-flex justify-content-between align-items-start gap-2">
                   <div class="min-w-0">
-                    <div class="fw-bold text-dark">{{ e.titulo }}</div>
-                    <div class="small text-muted">{{ fechaDMA(e.fecha) }}<template v-if="e.clase"> · {{ e.clase }}</template></div>
+                    <div class="fw-bold text-dark text-break">{{ e.titulo }}</div>
+                    <div class="small text-muted text-break">{{ fechaDMA(e.fecha) }}<template v-if="e.clase"> · {{ e.clase }}</template></div>
                   </div>
                   <span class="badge flex-shrink-0" :class="TIPOS_EXAMEN[e.tipo]?.clase">{{ TIPOS_EXAMEN[e.tipo]?.etiqueta }}</span>
                 </div>
-                <div class="d-flex flex-wrap gap-1 mt-2">
+                <div class="d-flex flex-wrap gap-1 mt-2 etiquetas-examen">
                   <span v-if="e.tipo === 'teorico'" class="badge" :class="e.esFinal ? 'bg-danger' : 'bg-light text-dark border'">{{ e.esFinal ? 'Teórico final' : 'Parcialito' }}</span>
                   <span v-if="e.idExamenOriginal" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio</span>
                   <span class="badge" :class="claseCurso(e.curso)">{{ etiquetaCurso(e.curso) }}</span>
                   <span v-if="e.online" class="badge" :class="e.habilitado ? 'bg-primary' : 'bg-secondary'"><i class="bi bi-laptop me-1"></i>Online{{ e.habilitado ? ' · habilitado' : ' · cerrado' }}</span>
                   <span v-if="e.tipo === 'teorico'" class="badge bg-light text-dark border">Nota máx. {{ formatoNota(e.notaMaxima) }} · aprueba con {{ formatoNota(e.porcentajeAprobacion) }}%</span>
-                  <span v-else-if="e.tipo === 'fisico'" class="badge bg-light text-dark border">{{ TEXTO_UMBRALES_FISICO }}</span>
-                  <span v-else class="badge bg-light text-dark border">Aprobado / Desaprobado</span>
+                  <span v-else-if="e.tipo === 'practico'" class="badge bg-light text-dark border">Aprobado / Desaprobado</span>
                 </div>
-                <div class="small mt-2">
-                  <span class="text-dark fw-bold">{{ e.cargadas }}</span> notas cargadas ·
+                <div v-if="e.tipo === 'fisico'" class="small text-muted mt-2">{{ TEXTO_UMBRALES_FISICO }}</div>
+                <div class="small mt-2 text-break">
+                  <span class="text-dark fw-bold">{{ e.cargadas }}</span> {{ e.tipo === 'teorico' ? 'notas cargadas' : 'resultados' }} ·
                   <span class="text-success fw-bold">{{ e.aprobados }}</span> aprobados ·
                   <span class="text-secondary fw-bold">{{ e.ausentes }}</span> ausentes
                   <template v-if="e.recuperatorios"> · <span class="text-warning-emphasis fw-bold">{{ e.recuperatorios }}</span> recuperatorio(s)</template>
                 </div>
                 <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
-                  <button @click="abrirNotas(e)" class="btn btn-sm btn-success flex-fill fw-bold"><i class="bi bi-pencil-square me-1"></i> {{ e.tipo === 'teorico' ? 'Cargar notas' : 'Cargar resultados' }}</button>
-                  <button v-if="!e.idExamenOriginal && e.desaprobados" @click="abrirRecuperatorio(e)" class="btn btn-sm btn-warning fw-bold flex-fill"><i class="bi bi-arrow-repeat me-1"></i> Recuperatorio</button>
+                  <button @click="abrirNotas(e)" class="btn btn-sm btn-success flex-fill fw-bold text-nowrap"><i class="bi bi-pencil-square me-1"></i> {{ e.tipo === 'teorico' ? 'Cargar notas' : 'Cargar resultados' }}</button>
+                  <button v-if="!e.idExamenOriginal && e.desaprobados" @click="abrirRecuperatorio(e)" class="btn btn-sm btn-warning fw-bold flex-fill text-nowrap"><i class="bi bi-arrow-repeat me-1"></i> Recuperatorio</button>
                   <button v-if="e.idExamenOriginal && e.online" @click="abrirConfigRecuperatorio(e)" class="btn btn-sm btn-outline-dark fw-bold" title="Configurar examen online" aria-label="Configurar examen online"><i class="bi bi-sliders"></i></button>
                   <button @click="abrirEditar(e)" class="btn btn-sm btn-outline-primary fw-bold" title="Editar examen" aria-label="Editar examen"><i class="bi bi-pencil"></i></button>
                   <button @click="confirmarEliminar(e)" class="btn btn-sm btn-outline-danger fw-bold" title="Borrar examen" aria-label="Borrar examen"><i class="bi bi-trash3"></i></button>
@@ -255,33 +255,33 @@
             <div v-if="esPorAspirante && !filasVisibles.length" class="text-muted small fst-italic">Todavía no agregaste aspirantes.</div>
             <div v-for="n in filasVisibles" :key="n.id" class="fila-nota">
               <div class="row g-2 align-items-center">
-                <div class="col-12 col-md-4 min-w-0">
-                  <div class="fw-bold text-dark small text-uppercase text-truncate">{{ n.apellido }}, {{ n.nombre }}</div>
+                <div class="col-12 min-w-0" :class="esPorAspirante ? 'col-md-5' : 'col-md-4'">
+                  <div class="fw-bold text-dark small text-uppercase text-break">{{ n.apellido }}, {{ n.nombre }}</div>
                   <div class="text-muted" style="font-size: 0.72rem;">
                     DNI {{ n.dni }} · {{ MODALIDADES_CURSO[n.modalidadCurso]?.corta }}<template v-if="examenNotas.tipo === 'fisico'"> · aprueba con {{ formatoNota(n.umbralFisico) }}</template>
                   </div>
                 </div>
-                <div v-if="examenNotas.tipo === 'practico'" class="col-12 col-md-3">
+                <div v-if="examenNotas.tipo === 'practico'" class="col-12 col-sm-7 col-md-4">
                   <div class="btn-group btn-group-sm w-100" role="group" :aria-label="'Resultado de ' + n.apellido">
                     <button type="button" class="btn fw-bold" :class="String(n.nota) === '1' ? 'btn-success' : 'btn-outline-success'" :disabled="n.ausente" @click="n.nota = '1'">Aprobado</button>
                     <button type="button" class="btn fw-bold" :class="String(n.nota) === '0' ? 'btn-danger' : 'btn-outline-danger'" :disabled="n.ausente" @click="n.nota = '0'">Desaprobado</button>
                   </div>
                 </div>
-                <div v-else class="col-5 col-md-2">
+                <div v-else class="col-5" :class="esPorAspirante ? 'col-sm-4 col-md-3' : 'col-md-2'">
                   <label :for="`nota-${n.id}`" class="visually-hidden">Nota de {{ n.apellido }}</label>
                   <input :id="`nota-${n.id}`" v-model="n.nota" type="number" min="0" :max="examenNotas.notaMaxima" :step="examenNotas.tipo === 'fisico' ? 0.1 : 0.01" class="form-control form-control-sm" :class="{ 'is-invalid': notaInvalida(n) }" :disabled="n.ausente" :placeholder="examenNotas.tipo === 'fisico' ? 'Nivel' : 'Nota'">
                 </div>
-                <div class="col-7 col-md-2">
+                <div :class="esPorAspirante ? 'col-7 col-sm-3 col-md-2' : 'col-7 col-md-2'">
                   <div class="form-check mb-0">
                     <input :id="`aus-${n.id}`" v-model="n.ausente" class="form-check-input" type="checkbox" @change="limpiarSiAusente(n)">
                     <label :for="`aus-${n.id}`" class="form-check-label small">Ausente</label>
                   </div>
                 </div>
-                <div class="col-9" :class="examenNotas.tipo === 'practico' ? 'col-md-2' : 'col-md-3'">
+                <div v-if="!esPorAspirante" class="col-9 col-md-3">
                   <label :for="`com-${n.id}`" class="visually-hidden">Comentario</label>
                   <input :id="`com-${n.id}`" v-model.trim="n.comentarios" type="text" maxlength="1000" class="form-control form-control-sm" placeholder="Comentario (opcional)">
                 </div>
-                <div class="col-3 col-md-1 text-end d-flex justify-content-end align-items-center gap-1">
+                <div class="text-end d-flex justify-content-end align-items-center gap-1" :class="esPorAspirante ? 'col-12 col-md-1' : 'col-3 col-md-1'">
                   <span v-if="resultado(n) === true" class="badge bg-success">✓</span>
                   <span v-else-if="resultado(n) === false" class="badge bg-danger">✗</span>
                   <button v-if="n.rendidoOnline" type="button" class="btn btn-sm btn-outline-danger p-0 px-1" :disabled="descargandoPdf === n.id" title="Descargar PDF del examen" :aria-label="'PDF de ' + n.apellido" @click="descargarPdf(n)">
@@ -291,6 +291,11 @@
                   <button v-if="esPorAspirante" type="button" class="btn btn-sm btn-outline-secondary p-0 px-1" title="Quitar" :aria-label="'Quitar a ' + n.apellido" @click="quitarAspirante(n)">
                     <i class="bi bi-x-lg"></i>
                   </button>
+                </div>
+                <div v-if="esPorAspirante" class="col-12">
+                  <label :for="`com-${n.id}`" class="form-label small fw-bold text-dark mb-1">Comentarios</label>
+                  <textarea :id="`com-${n.id}`" v-model.trim="n.comentarios" rows="3" maxlength="1000" class="form-control form-control-sm" placeholder="Devolución del examen (opcional)"></textarea>
+                  <div class="form-text text-end mt-0">{{ (n.comentarios || '').length }}/1000</div>
                 </div>
               </div>
             </div>
@@ -673,7 +678,8 @@ onMounted(() => {
 .animate__animated { animation-duration: 0.5s; }
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
-.tarjeta-examen { background: #fff; }
+.tarjeta-examen { background: #fff; min-width: 0; overflow-wrap: anywhere; }
+.etiquetas-examen .badge { white-space: normal; text-align: left; line-height: 1.3; }
 .fila-nota { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
 .min-w-0 { min-width: 0; }
 .planilla .col-alumno { position: sticky; left: 0; background: #fff; z-index: 1; min-width: 200px; }

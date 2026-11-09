@@ -93,13 +93,7 @@
                       </template>
                     </td>
                     <td class="text-center"><span class="badge" :class="RESULTADOS[f.final].clase">{{ RESULTADOS[f.final].etiqueta }}</span></td>
-                    <td class="text-center" style="min-width: 150px;">
-                      <select :id="'prac-' + f.alumno.id" class="form-select form-select-sm fw-bold select-resultado" :class="'res-' + f.practico" :value="f.practicoManual || ''" :disabled="guardandoPractico === f.alumno.id" :aria-label="'Práctico de ' + f.alumno.apellido" @change="guardarPractico(f, $event.target.value)">
-                        <option value="">{{ f.practicoManual ? 'Pendiente' : RESULTADOS[f.practico].etiqueta + (f.practico === 'pendiente' ? '' : ' (exámenes)') }}</option>
-                        <option value="aprobado">Aprobado</option>
-                        <option value="desaprobado">Desaprobado</option>
-                      </select>
-                    </td>
+                    <td class="text-center"><span class="badge" :class="RESULTADOS[f.practico].clase">{{ RESULTADOS[f.practico].etiqueta }}</span></td>
                     <td class="text-center"><span class="badge" :class="RESULTADOS[f.fisico].clase">{{ RESULTADOS[f.fisico].etiqueta }}</span></td>
                     <td class="text-center"><span class="badge" :class="NOTA_FINAL[f.notaFinal].clase">{{ NOTA_FINAL[f.notaFinal].etiqueta }}</span></td>
                     <td class="text-center">
@@ -152,16 +146,12 @@
                       <span class="badge" :class="RESULTADOS[f.final].clase">{{ RESULTADOS[f.final].etiqueta }}</span>
                     </div>
                     <div class="col-6">
+                      <div class="dato-etiqueta">Práctico</div>
+                      <span class="badge" :class="RESULTADOS[f.practico].clase">{{ RESULTADOS[f.practico].etiqueta }}</span>
+                    </div>
+                    <div class="col-6">
                       <div class="dato-etiqueta">Físico</div>
                       <span class="badge" :class="RESULTADOS[f.fisico].clase">{{ RESULTADOS[f.fisico].etiqueta }}</span>
-                    </div>
-                    <div class="col-12">
-                      <label class="dato-etiqueta d-block" :for="'mprac-' + f.alumno.id">Práctico</label>
-                      <select :id="'mprac-' + f.alumno.id" class="form-select form-select-sm fw-bold select-resultado" :class="'res-' + f.practico" :value="f.practicoManual || ''" :disabled="guardandoPractico === f.alumno.id" :aria-label="'Práctico de ' + f.alumno.apellido" @change="guardarPractico(f, $event.target.value)">
-                        <option value="">{{ f.practicoManual ? 'Pendiente' : RESULTADOS[f.practico].etiqueta + (f.practico === 'pendiente' ? '' : ' (exámenes)') }}</option>
-                        <option value="aprobado">Aprobado</option>
-                        <option value="desaprobado">Desaprobado</option>
-                      </select>
                     </div>
                     <div class="col-12">
                       <div class="dato-etiqueta">Nota final</div>
@@ -335,28 +325,6 @@ const cargar = async () => {
 
 watch(anio, cargar)
 
-// ─── Práctico (se carga a mano desde esta sección) ───────────────
-const guardandoPractico = ref(null)
-
-const guardarPractico = async (f, resultado) => {
-  guardandoPractico.value = f.alumno.id
-  try {
-    const res = await api.post({ entity: 'seguimiento_curso_arbitro', action: 'guardarPracticoCurso', payload: { idAlumno: f.alumno.id, resultado } })
-    if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el práctico')
-    const actual = datos.value.practicos || []
-    datos.value = {
-      ...datos.value,
-      practicos: [...actual.filter(p => p.idAlumno !== f.alumno.id), ...(resultado ? [{ idAlumno: f.alumno.id, practico: resultado }] : [])],
-    }
-    toast({ titulo: 'Guardado', mensaje: `Práctico de ${f.alumno.apellido}: ${resultado ? RESULTADOS[resultado].etiqueta : 'Pendiente'}.`, tipo: 'success' })
-  } catch (e) {
-    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
-    await cargar()
-  } finally {
-    guardandoPractico.value = null
-  }
-}
-
 // ─── Nota final (cambia el estado del legajo) ────────────────────
 const notaFinal = ref(null)
 const guardandoNotaFinal = ref(false)
@@ -442,6 +410,4 @@ onMounted(cargar)
 .opcion-final { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
 .opcion-final.activa { border-color: #dc3545; background: #fef2f2; }
 .min-w-0 { min-width: 0; }
-.select-resultado.res-aprobado { border-color: #198754; color: #198754; }
-.select-resultado.res-desaprobado { border-color: #dc3545; color: #dc3545; }
 </style>

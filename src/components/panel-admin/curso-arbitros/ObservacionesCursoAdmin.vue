@@ -62,7 +62,10 @@
                   <tr v-for="o in observacionesFiltradas" :key="o.id">
                     <td class="ps-3 text-center">
                       <div class="d-flex justify-content-center gap-1">
-                        <button @click="abrirEditar(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Ver / editar" aria-label="Ver o editar">
+                        <button @click="verObservacion = o" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-success" title="Ver comentarios" aria-label="Ver comentarios">
+                          <span class="material-icons" style="font-size:16px;">visibility</span>
+                        </button>
+                        <button @click="abrirEditar(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar" aria-label="Editar">
                           <span class="material-icons" style="font-size:16px;">edit</span>
                         </button>
                         <button @click="confirmarEliminar(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Borrar" aria-label="Borrar">
@@ -97,7 +100,8 @@
                   <div v-if="o.observador" class="text-muted">Observador/a: {{ o.observador }}</div>
                   <div v-if="o.categoria" class="text-muted">{{ o.categoria }}</div>
                   <div class="d-flex gap-2 mt-3">
-                    <button @click="abrirEditar(o)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Ver / editar</button>
+                    <button @click="verObservacion = o" class="btn btn-sm btn-outline-success flex-fill fw-bold"><i class="bi bi-eye me-1"></i> Ver</button>
+                    <button @click="abrirEditar(o)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
                     <button @click="confirmarEliminar(o)" class="btn btn-sm btn-outline-danger fw-bold" aria-label="Borrar"><i class="bi bi-trash3"></i></button>
                   </div>
                 </div>
@@ -112,6 +116,48 @@
     </div>
 
     <ModalObservacionCurso v-model:show="mostrarModal" :observacion="seleccionada" @guardado="alGuardar" />
+
+    <ModalBase :show="!!verObservacion" @close="verObservacion = null" icono="visibility" colorIcono="bg-success-subtle text-success" maxWidth="720px">
+      <template #header>
+        <div v-if="verObservacion" class="text-center w-100">
+          <span class="fw-bold fs-5 text-uppercase">{{ verObservacion.apellido }}, {{ verObservacion.nombre }}</span>
+          <div class="text-muted small mt-1">{{ MODALIDADES_CURSO[verObservacion.modalidad_curso]?.etiqueta }}</div>
+        </div>
+      </template>
+      <div v-if="verObservacion" class="text-start">
+        <div class="row g-2 mb-3 small">
+          <div class="col-6 col-md-3">
+            <div class="dato-etiqueta">Fecha</div>
+            <div class="fw-bold text-dark">{{ fechaDMA(verObservacion.fecha_partido) }}</div>
+          </div>
+          <div class="col-6 col-md-5">
+            <div class="dato-etiqueta">Encuentro</div>
+            <div class="fw-bold text-dark text-break">{{ verObservacion.encuentro }}</div>
+          </div>
+          <div class="col-6 col-md-4">
+            <div class="dato-etiqueta">Categoría</div>
+            <div class="fw-bold text-dark text-break">{{ verObservacion.categoria || '-' }}</div>
+          </div>
+          <div class="col-6 col-md-12">
+            <div class="dato-etiqueta">Observador/a</div>
+            <div class="fw-bold text-dark text-break">{{ verObservacion.observador || '-' }}</div>
+          </div>
+        </div>
+        <div class="d-flex flex-column gap-2">
+          <template v-for="c in CAMPOS_OBSERVACION_CURSO" :key="c.clave">
+            <div v-if="verObservacion[c.columna]" class="bloque-comentario">
+              <div class="detalle-titulo" :class="c.clave === 'aspectosAMejorar' ? 'text-danger' : 'text-dark'"><i :class="['bi', c.icono, 'me-1']"></i>{{ c.etiqueta }}</div>
+              <div class="detalle-texto">{{ verObservacion[c.columna] }}</div>
+            </div>
+          </template>
+          <div v-if="!CAMPOS_OBSERVACION_CURSO.some(c => verObservacion[c.columna])" class="small text-muted fst-italic">Sin comentarios.</div>
+        </div>
+      </div>
+      <template #footer>
+        <button type="button" @click="editarDesdeVer" class="btn btn-outline-primary rounded-pill px-4 fw-bold w-100 mb-2 mb-sm-0">EDITAR</button>
+        <button type="button" @click="verObservacion = null" class="btn btn-dark rounded-pill px-4 fw-bold w-100">CERRAR</button>
+      </template>
+    </ModalBase>
   </div>
 </template>
 
@@ -119,7 +165,9 @@
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
+import ModalBase from '@/components/ModalBase.vue'
 import ModalObservacionCurso from '@/components/ModalObservacionCurso.vue'
+import { CAMPOS_OBSERVACION_CURSO } from '@/composables/useObservacionesCurso'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
@@ -164,6 +212,13 @@ watch(anio, cargarObservaciones)
 
 // ─── Alta / edición ──────────────────────────────────────────────
 const mostrarModal = ref(false)
+const verObservacion = ref(null)
+
+const editarDesdeVer = () => {
+  const o = verObservacion.value
+  verObservacion.value = null
+  abrirEditar(o)
+}
 const seleccionada = ref(null)
 
 const abrirNueva = () => {
@@ -209,4 +264,8 @@ onMounted(cargarObservaciones)
 .animate__animated { animation-duration: 0.5s; }
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
+.dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
+.bloque-comentario { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; }
+.detalle-titulo { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
+.detalle-texto { white-space: pre-wrap; font-size: 0.9rem; color: #1e293b; overflow-wrap: anywhere; }
 </style>

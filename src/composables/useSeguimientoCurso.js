@@ -39,13 +39,11 @@ const resultadoGrupo = (resultados, soloRendidos) => {
   return lista.every(r => r === 'aprobado') ? 'aprobado' : 'pendiente'
 }
 
-export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas, mini, practicos = [] }) => {
+export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas, mini }) => {
   const asis = {}
   asistencias.forEach(a => { asis[`${a.idClase}-${a.idAlumno}`] = a })
   const nts = {}
   notas.forEach(n => { nts[`${n.idExamen}-${n.idAlumno}`] = n })
-  const practicoManual = {}
-  practicos.forEach(p => { practicoManual[p.idAlumno] = p.practico })
 
   return alumnos.map(alumno => {
     const notaDe = (examen) => nts[`${examen.id}-${alumno.id}`] || null
@@ -64,8 +62,6 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
     const finales = originales.filter(e => e.tipo === 'teorico' && e.esFinal).map(resultadoDe)
     const practicosRendidos = originales.filter(e => e.tipo === 'practico').map(resultadoDe)
     const fisicos = originales.filter(e => e.tipo === 'fisico').map(resultadoDe)
-
-    const manual = practicoManual[alumno.id] || null
 
     const detalleExamenes = delCurso
       .filter(e => !e.idExamenOriginal || desaprobo(nts[`${e.idExamenOriginal}-${alumno.id}`]))
@@ -88,8 +84,7 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
         total: parcialitos.length,
       },
       final: resultadoGrupo(finales, false),
-      practico: manual || resultadoGrupo(practicosRendidos, true),
-      practicoManual: manual,
+      practico: resultadoGrupo(practicosRendidos, true),
       fisico: resultadoGrupo(fisicos, true),
       detalleClases: [...detalleClases].reverse(),
       detalleExamenes,
