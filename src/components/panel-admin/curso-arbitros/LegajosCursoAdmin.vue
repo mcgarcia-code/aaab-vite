@@ -22,6 +22,10 @@
             <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2" aria-label="Mostrar filtros">
               <span class="material-icons fs-6">filter_alt</span>
             </button>
+            <select v-model="filtros.anio_curso" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 110px;" aria-label="Año">
+              <option value="">AÑO</option>
+              <option v-for="a in aniosLegajos" :key="a" :value="String(a)">{{ a }}</option>
+            </select>
             <button @click="cargarDatos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
               <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
               <span v-else class="material-icons text-dark fs-6">refresh</span>
@@ -52,6 +56,12 @@
             <div class="col-6"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
             <div class="col-6"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
             <div class="col-6"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI..."></div>
+            <div class="col-6">
+              <select v-model="filtros.anio_curso" class="form-select form-select-sm shadow-none text-uppercase text-dark" aria-label="Año">
+                <option value="">AÑO</option>
+                <option v-for="a in aniosLegajos" :key="'m-' + a" :value="String(a)">{{ a }}</option>
+              </select>
+            </div>
             <div class="col-6">
               <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
@@ -216,7 +226,7 @@
           <div v-if="legajoHistorial" class="text-muted small mt-1 text-uppercase">{{ legajoHistorial.apellido }}, {{ legajoHistorial.nombre }} · DNI {{ legajoHistorial.dni }}</div>
         </div>
       </template>
-      <div v-if="cargandoHistorial" class="text-center py-4"><span class="spinner-border text-warning"></span></div>
+      <div v-if="cargandoHistorial" class="text-center py-4"><span class="spinner-border text-warning"></span><p class="text-muted mt-2 mb-0 fw-bold small">Cargando historial...</p></div>
       <div v-else-if="historial" class="text-start">
         <div class="row g-2 mb-3">
           <div class="col-6 col-md-3"><div class="resumen-historial"><div class="valor">{{ historial.resumen.inscripciones }}</div><div class="etiqueta">Inscripciones</div></div></div>
@@ -346,6 +356,7 @@ import {
   ESTADOS_CURSO, GENEROS_CURSO, MODALIDADES_CURSO, formularioCursoVacio, formularioDesdeLegajo, validarFormularioCurso, payloadCurso, textoDtClubes,
 } from '@/composables/useCursoArbitro'
 import { fechaHoraDMA } from '@/utils/fechas'
+import { anioActual as anioEnCurso, conAnioActual } from '@/utils/anios'
 
 useHead({ title: 'Legajos del Curso | AAAB' })
 
@@ -392,7 +403,11 @@ const mostrarFiltrosMobile = ref(false)
 const paginaActual = ref(1)
 const registrosPorPagina = 10
 
-const filtrosVacios = () => Object.fromEntries(['apellido', 'nombre', ...COLUMNAS.map(c => c.id)].map(k => [k, '']))
+// El año arranca en el año en curso (como el resto de los filtros de año del sistema)
+const filtrosVacios = () => ({
+  ...Object.fromEntries(['apellido', 'nombre', ...COLUMNAS.map(c => c.id)].map(k => [k, ''])),
+  anio_curso: anioEnCurso(),
+})
 const filtros = reactive(filtrosVacios())
 
 // ─── Helpers ─────────────────────────────────────────────────────
@@ -433,6 +448,8 @@ const legajosPaginados = computed(() => {
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
+
+const aniosLegajos = computed(() => conAnioActual(legajos.value.map(l => l.anio_curso).filter(Boolean)))
 
 const cambiarPagina = (delta) => {
   paginaActual.value += delta

@@ -18,7 +18,7 @@
         </div>
       </div>
 
-      <div v-if="cargando" class="card-body text-center py-5"><span class="spinner-border text-danger"></span></div>
+      <div v-if="cargando" class="card-body text-center py-5"><span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando observaciones...</p></div>
       <div v-else-if="!observaciones.length" class="card-body text-center py-5 text-muted">
         <i class="bi bi-clipboard-x fs-1 d-block mb-2 opacity-50"></i>
         <span class="fw-bold">Todavía no cargaste observaciones este año.</span>

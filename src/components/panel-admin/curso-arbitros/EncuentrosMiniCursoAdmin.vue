@@ -27,7 +27,7 @@
         </div>
 
         <div class="card-body p-3 bg-white">
-          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span></div>
+          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando encuentros de mini...</p></div>
           <div v-else-if="!encuentros.length" class="text-center py-5 text-muted">
             <span class="material-icons d-block fs-1 mb-2 opacity-50">event_busy</span>
             <span class="fw-bold">Todavía no hay encuentros de mini en {{ anio }}.</span>

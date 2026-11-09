@@ -14,7 +14,7 @@
       </div>
 
       <div v-if="cargando" class="card-body text-center py-5">
-        <span class="spinner-border text-danger"></span>
+        <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando tus datos...</p>
       </div>
 
       <div v-else-if="perfil" class="card-body p-3 p-md-4">

@@ -12,7 +12,7 @@
 
       <div class="card-body p-3 p-md-4">
         <div v-if="cargando" class="text-center py-5">
-          <span class="spinner-border text-danger"></span>
+          <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando cronograma...</p>
         </div>
         <div v-else-if="error" class="alert alert-danger small mb-0">{{ error }}</div>
         <div v-else-if="!clases.length" class="text-center py-5 text-muted">
@@ -37,6 +37,9 @@
               <div class="small text-muted">
                 <i class="bi" :class="proximaClase.modalidad === 'virtual' ? 'bi-camera-video' : 'bi-geo-alt'"></i>
                 {{ proximaClase.modalidad === 'virtual' ? 'Virtual' : 'Presencial' }}<template v-if="proximaClase.lugar"> · {{ proximaClase.lugar }}</template>
+              </div>
+              <div v-if="proximaClase.docentes?.length" class="small text-dark">
+                <i class="bi bi-person-video3 me-1"></i><strong>Dictada por:</strong> {{ proximaClase.docentes.map(d => d.nombre).join(' · ') }}
               </div>
               <a v-if="proximaClase.enlace" :href="proximaClase.enlace" target="_blank" rel="noopener noreferrer" class="btn btn-danger btn-sm fw-bold mt-2">
                 <i class="bi bi-box-arrow-up-right me-1"></i> Entrar a la clase
@@ -151,6 +154,9 @@ const ClaseItem = defineComponent({
             virtual ? 'Virtual' : 'Presencial',
             c.lugar ? ` · ${c.lugar}` : '',
           ]),
+          c.docentes?.length
+            ? h('div', { class: 'small text-dark' }, [h('i', { class: 'bi bi-person-video3 me-1' }), h('strong', 'Dictada por: '), c.docentes.map(d => d.nombre).join(' · ')])
+            : null,
           c.descripcion && !props.pasada ? h('div', { class: 'small text-dark mt-1 texto-multilinea' }, c.descripcion) : null,
           c.enlace && !props.pasada
             ? h('a', { href: c.enlace, target: '_blank', rel: 'noopener noreferrer', class: 'small d-inline-block mt-1' }, [h('i', { class: 'bi bi-link-45deg' }), ' Enlace'])

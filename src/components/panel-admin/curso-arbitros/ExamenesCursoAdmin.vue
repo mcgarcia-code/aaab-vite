@@ -39,7 +39,7 @@
         </div>
 
         <div class="card-body p-3 bg-white">
-          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span></div>
+          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando exámenes...</p></div>
 
           <!-- EXÁMENES DE LA PESTAÑA -->
           <template v-else-if="pestana !== 'planilla'">
@@ -250,7 +250,7 @@
           </div>
         </div>
       </template>
-      <div v-if="cargandoNotas" class="text-center py-4"><span class="spinner-border text-success"></span></div>
+      <div v-if="cargandoNotas" class="text-center py-4"><span class="spinner-border text-success"></span><p class="text-muted mt-2 mb-0 fw-bold small">Cargando notas...</p></div>
       <div v-else class="text-start">
         <div v-if="!notas.length" class="text-muted small fst-italic">No hay alumnos regulares de este curso para el año del examen.</div>
         <template v-else>

@@ -11,7 +11,7 @@
       </div>
 
       <div v-if="cargando" class="card-body text-center py-5">
-        <span class="spinner-border text-danger"></span>
+        <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando tu rendimiento...</p>
       </div>
 
       <div v-else class="card-body p-3 p-md-4">
@@ -33,7 +33,7 @@
           </div>
           <div class="col-6" :class="esAnual ? 'col-md' : 'col-md-3'">
             <div class="resumen-card bg-dark text-white">
-              <i class="bi bi-percent"></i>
+              <i class="bi bi-people-fill"></i>
               <div class="valor">{{ resumen.porcentaje !== null ? `${resumen.porcentaje}%` : '-' }}</div>
               <div class="etiqueta">Asistencia a clases</div>
             </div>
@@ -126,7 +126,7 @@
                     <div class="min-w-0">
                       <div class="fw-bold text-dark small text-break">{{ e.titulo }}</div>
                       <div class="text-muted" style="font-size: 0.75rem;">
-                        {{ fechaLargaClase(e.fecha) }}<template v-if="e.clase"> · {{ e.clase }}</template>
+                        {{ fechaLargaClase(e.fecha) }}
                       </div>
                     </div>
                     <span class="nota flex-shrink-0 text-end" :class="claseNota(e)">

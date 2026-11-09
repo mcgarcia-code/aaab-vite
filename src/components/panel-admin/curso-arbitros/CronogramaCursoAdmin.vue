@@ -32,7 +32,7 @@
 
         <div class="card-body p-3 bg-white">
           <div v-if="cargando" class="text-center p-5">
-            <span class="spinner-border text-danger"></span>
+            <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando clases...</p>
           </div>
           <div v-else-if="!clasesVisibles.length" class="text-center py-5 text-muted">
             <span class="material-icons d-block fs-1 mb-2 opacity-50">event_busy</span>
@@ -73,6 +73,7 @@
                       <i class="bi" :class="c.modalidad === 'virtual' ? 'bi-camera-video' : 'bi-geo-alt'"></i>
                       {{ c.modalidad === 'virtual' ? 'Virtual' : 'Presencial' }}<template v-if="c.lugar"> · {{ c.lugar }}</template>
                     </div>
+                    <div v-if="c.docentes?.length" class="small text-dark mt-1"><i class="bi bi-person-video3 me-1"></i><strong>Dictada por:</strong> {{ c.docentes.map(d => d.nombre).join(' · ') }}</div>
                     <div v-if="c.descripcion" class="small text-dark mt-2 texto-multilinea">{{ c.descripcion }}</div>
                     <a v-if="c.enlace" :href="c.enlace" target="_blank" rel="noopener noreferrer" class="small d-inline-block mt-2">
                       <i class="bi bi-link-45deg"></i> Enlace
@@ -118,6 +119,10 @@
             <input id="clase-titulo" v-model.trim="form.titulo" type="text" maxlength="150" class="form-control" :class="{ 'is-invalid': intento && !form.titulo }" placeholder="Ej: Reglas 1 a 4 — El campo de juego">
           </div>
           <div class="col-12">
+            <label for="clase-docentes" class="form-label small fw-bold text-dark">Dictada por</label>
+            <SelectorArbitros id="clase-docentes" v-model="form.docentes" />
+          </div>
+          <div class="col-12">
             <label for="clase-curso" class="form-label small fw-bold text-dark">Curso *</label>
             <select id="clase-curso" v-model="form.curso" class="form-select">
               <option value="ambos">Ambos cursos (anual e intensivo)</option>
@@ -161,7 +166,7 @@
           <div v-if="claseAsistencia" class="text-muted small mt-1">{{ fechaLargaClase(claseAsistencia.fecha) }} · {{ claseAsistencia.titulo }}</div>
         </div>
       </template>
-      <div v-if="cargandoAsistencia" class="text-center py-4"><span class="spinner-border text-success"></span></div>
+      <div v-if="cargandoAsistencia" class="text-center py-4"><span class="spinner-border text-success"></span><p class="text-muted mt-2 mb-0 fw-bold small">Cargando asistencia...</p></div>
       <div v-else class="text-start">
         <div v-if="!alumnosAsistencia.length" class="text-muted small fst-italic">No hay alumnos regulares de este curso en {{ claseAsistencia?.fecha?.substring(0, 4) }}.</div>
         <template v-else>
@@ -202,7 +207,7 @@
           <div v-if="claseExamen" class="text-muted small mt-1">{{ fechaLargaClase(claseExamen.fecha) }} · {{ claseExamen.titulo }}</div>
         </div>
       </template>
-      <div v-if="cargandoExamen" class="text-center py-4"><span class="spinner-border text-dark"></span></div>
+      <div v-if="cargandoExamen" class="text-center py-4"><span class="spinner-border text-dark"></span><p class="text-muted mt-2 mb-0 fw-bold small">Cargando examen...</p></div>
       <form v-else id="formExamenClase" class="text-start" novalidate @submit.prevent="guardarExamen">
         <div v-if="examenExistente" class="alert alert-light border small py-2">
           <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
@@ -308,6 +313,7 @@ import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
+import SelectorArbitros from '@/components/SelectorArbitros.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
@@ -350,7 +356,7 @@ watch(error, (m) => { if (m) notificar({ titulo: 'Error', mensaje: m, tipo: 'dan
 const HORA_INICIO_DEFECTO = '19:30'
 const HORA_FIN_DEFECTO = '22:00'
 
-const claseVacia = () => ({ id: null, fecha: '', horaInicio: HORA_INICIO_DEFECTO, horaFin: HORA_FIN_DEFECTO, titulo: '', curso: 'ambos', modalidad: 'presencial', lugar: '', enlace: '', descripcion: '' })
+const claseVacia = () => ({ id: null, fecha: '', horaInicio: HORA_INICIO_DEFECTO, horaFin: HORA_FIN_DEFECTO, titulo: '', curso: 'ambos', modalidad: 'presencial', lugar: '', enlace: '', descripcion: '', docentes: [] })
 const form = ref(claseVacia())
 const mostrarModal = ref(false)
 const intento = ref(false)
@@ -381,6 +387,7 @@ const abrirEditar = (c) => {
   form.value = {
     id: c.id, fecha: c.fecha, horaInicio: c.hora_inicio || '', horaFin: c.hora_fin || '', titulo: c.titulo, curso: c.curso || 'ambos',
     modalidad: c.modalidad || 'presencial', lugar: c.lugar || '', enlace: c.enlace || '', descripcion: c.descripcion || '',
+    docentes: [...(c.docentes || [])],
   }
   intento.value = false
   mostrarModal.value = true
@@ -394,7 +401,7 @@ const guardar = async () => {
   }
   guardando.value = true
   try {
-    const res = await api.post({ entity: 'cronograma_curso_arbitro', action: 'guardarClaseCurso', payload: form.value })
+    const res = await api.post({ entity: 'cronograma_curso_arbitro', action: 'guardarClaseCurso', payload: { ...form.value, docentes: form.value.docentes.map(d => d.id) } })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar la clase')
     toast({ titulo: 'Guardado', mensaje: 'La clase se guardó en el cronograma.', tipo: 'success' })
     mostrarModal.value = false

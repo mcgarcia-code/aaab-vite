@@ -72,7 +72,7 @@
         </div>
 
         <div v-if="cargando" class="card-body text-center py-5">
-          <span class="spinner-border text-danger"></span>
+          <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando tus exámenes...</p>
         </div>
         <div v-else-if="!examenes.length" class="card-body text-center py-5 text-muted">
           <span class="material-icons d-block fs-1 mb-2 opacity-50">assignment</span>

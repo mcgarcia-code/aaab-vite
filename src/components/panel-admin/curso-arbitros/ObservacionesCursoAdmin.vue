@@ -49,7 +49,7 @@
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">
-          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span></div>
+          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando observaciones...</p></div>
           <template v-else>
             <div class="d-none d-md-block table-responsive border rounded shadow-sm">
               <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.78rem;">

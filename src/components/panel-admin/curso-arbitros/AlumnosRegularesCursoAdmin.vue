@@ -51,7 +51,7 @@
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">
-          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span></div>
+          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando alumnos regulares...</p></div>
           <template v-else>
             <!-- ESCRITORIO -->
             <div class="d-none d-lg-block table-responsive border rounded shadow-sm">

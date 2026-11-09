@@ -14,7 +14,7 @@
       </div>
 
       <div v-if="cargando" class="card-body text-center py-5">
-        <span class="spinner-border text-danger"></span>
+        <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando notificaciones...</p>
       </div>
       <div v-else-if="!notificaciones.length" class="card-body text-center py-5 text-muted">
         <i class="bi bi-bell-slash fs-1 d-block mb-2 opacity-50"></i>
