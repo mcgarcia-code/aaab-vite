@@ -84,6 +84,7 @@
               <div class="col-12">
                 <span class="form-label small fw-bold d-block" :class="claseEtiqueta">Categorías * <span class="fw-normal text-muted">(una o más)</span></span>
                 <div v-if="!f.idClub" class="small text-muted fst-italic p-2 bg-light rounded border">Elegí primero el club</div>
+                <div v-else-if="cargandoEquiposDeClub(f.idClub, false)" class="small text-muted p-2"><span class="spinner-border spinner-border-sm me-1"></span> Cargando categorías...</div>
                 <div v-else class="lista-categorias border rounded p-2">
                   <div v-for="(grupo, g) in categoriasPorRama(f.idClub)" :key="grupo.etiqueta" class="mb-2">
                     <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
@@ -128,7 +129,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { obtenerDatosClubes, RAMAS_HANDBALL } from '@/composables/useOpcionesHandball'
+import { obtenerClubes, cargarEquiposDeClub, equiposDeClub, cargandoEquiposDeClub, RAMAS_HANDBALL } from '@/composables/useOpcionesHandball'
 import { MAX_FAMILIARES, filaFamiliarVacia, errorFilaFamiliar } from '@/composables/useFamiliares'
 import BuscadorClub from '@/components/BuscadorClub.vue'
 
@@ -147,16 +148,13 @@ const emit = defineEmits(['update:tiene', 'update:familiares', 'error'])
 const PARENTESCOS = ['DT', 'Ayudante de campo', 'Preparador físico', 'Hijo', 'Hija', 'Hermano', 'Hermana', 'Padre', 'Madre', 'Sobrino', 'Sobrina', 'Primo', 'Prima', 'Pareja']
 
 const clubes = ref([])
-const categorias = ref([])
 const cargando = ref(false)
 
 const cargar = async () => {
   if (clubes.value.length || cargando.value) return
   cargando.value = true
   try {
-    const datos = await obtenerDatosClubes()
-    clubes.value = datos.clubesFamiliares ?? []
-    categorias.value = datos.categoriasFamiliares ?? []
+    clubes.value = await obtenerClubes()
   } catch (e) {
     console.error('SeccionFamiliares:', e)
     emit('error', 'No se pudieron cargar los clubes para familiares.')
@@ -167,11 +165,25 @@ const cargar = async () => {
 
 watch(() => props.editable && props.tiene === 'si', (necesita) => { if (necesita) cargar() }, { immediate: true })
 
+// Las categorías de cada club se piden al BE cuando se elige (todas las categorías, no solo las de juego)
+watch(
+  () => (props.editable ? props.familiares.map(f => f.idClub).filter(Boolean) : []),
+  (ids) => {
+    for (const id of new Set(ids)) {
+      cargarEquiposDeClub(id, false).catch((e) => {
+        console.error('SeccionFamiliares:', e)
+        emit('error', 'No se pudieron cargar las categorías del club.')
+      })
+    }
+  },
+  { immediate: true }
+)
+
 const nombreClub = (idClub) => clubes.value.find(c => c.id === idClub)?.nombre ?? ''
 
 const categoriasPorRama = (idClub) => {
   const grupos = {}
-  for (const c of categorias.value.filter(c => c.idClub === idClub)) {
+  for (const c of equiposDeClub(idClub, false)) {
     const etiqueta = RAMAS_HANDBALL[c.rama] || 'Otras'
     if (!grupos[etiqueta]) grupos[etiqueta] = { etiqueta, categorias: [] }
     if (!grupos[etiqueta].categorias.includes(c.nombre)) grupos[etiqueta].categorias.push(c.nombre)

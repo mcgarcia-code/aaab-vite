@@ -61,7 +61,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import BuscadorClub from '@/components/BuscadorClub.vue'
-import { obtenerDatosClubes } from '@/composables/useOpcionesHandball'
+import { obtenerClubes } from '@/composables/useOpcionesHandball'
 
 // v-model: { exJugador, idClubExJugador, identificaClub, idsClubesIdentifica }
 const props = defineProps({
@@ -83,9 +83,7 @@ const nombreClub = (id) => clubes.value.find(c => String(c.id) === String(id))?.
 
 onMounted(async () => {
   try {
-    const datos = await obtenerDatosClubes()
-    // Todos los clubes con equipos (no solo los de categorías de juego)
-    clubes.value = datos.clubesFamiliares ?? datos.clubes ?? []
+    clubes.value = await obtenerClubes()
   } catch (e) {
     console.error('SeccionClubesVinculados:', e)
     emit('error', 'No se pudieron cargar los clubes.')

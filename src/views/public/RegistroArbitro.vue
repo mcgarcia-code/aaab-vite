@@ -187,6 +187,7 @@
             <div class="col-12 col-md-4">
               <span class="form-label small fw-bold text-dark d-block">Categorías * <span class="fw-normal text-muted">(podés elegir más de una)</span></span>
               <div v-if="!form.idClub" class="small text-muted fst-italic p-2 bg-light rounded border">Elegí primero el club</div>
+              <div v-else-if="cargandoEquiposDeClub(form.idClub)" class="small text-muted p-2"><span class="spinner-border spinner-border-sm me-1"></span> Cargando categorías...</div>
               <div v-else-if="!categoriasPorRama.length" class="small text-muted fst-italic p-2 bg-light rounded border">{{ form.genero ? 'El club no tiene categorías activas para tu rama' : 'El club no tiene categorías activas' }}</div>
               <div v-else class="lista-categorias border rounded p-2" :class="{ 'border-danger': intentoEnviar && errores.idsCategorias }">
                 <div v-for="grupo in categoriasPorRama" :key="grupo.rama" class="mb-1">
@@ -255,7 +256,7 @@ import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
 import BuscadorClub from '@/components/BuscadorClub.vue'
 import SeccionClubesVinculados from '@/components/SeccionClubesVinculados.vue'
 import { clubesVinculadosVacios, validarClubesVinculados, clubesVinculadosParaEnviar } from '@/composables/useClubesVinculados'
-import { obtenerDatosClubes, ramasSegunGenero } from '@/composables/useOpcionesHandball'
+import { obtenerClubes, cargarEquiposDeClub, equiposDeClub, cargandoEquiposDeClub, ramasSegunGenero } from '@/composables/useOpcionesHandball'
 import { validarFamiliares, familiaresParaEnviar } from '@/composables/useFamiliares'
 import { CLAVE_PRECARGA_REGISTRO } from '@/composables/useCursoArbitro'
 
@@ -315,7 +316,6 @@ const intentoEnviar = ref(false)
 const provincias = ref([])
 const localidades = ref([])
 const clubes = ref([])
-const categorias = ref([])
 
 const cargandoDatos = ref(true)
 const enviando = ref(false)
@@ -331,7 +331,7 @@ const categoriasPorRama = computed(() => {
   const grupos = {}
   // Solo la rama del género declarado (X / otro / sin elegir: ambas)
   const ramas = ramasSegunGenero(form.genero)
-  for (const c of categorias.value.filter(c => c.idClub === form.idClub && ramas.includes(c.rama))) {
+  for (const c of equiposDeClub(form.idClub).filter(c => ramas.includes(c.rama))) {
     const rama = c.rama || 'otras'
     if (!grupos[rama]) grupos[rama] = { rama, etiqueta: RAMAS[rama] || 'Otras', categorias: [] }
     grupos[rama].categorias.push(c)
@@ -410,11 +410,20 @@ watch(form, () => { if (intentoEnviar.value) validarFormulario() }, { deep: true
 
 // Limpiezas dependientes
 watch(() => form.provincia, () => { form.localidad = '' })
-watch(() => form.idClub, () => { form.idsCategorias = [] })
+watch(() => form.idClub, async (id) => {
+  form.idsCategorias = []
+  if (!id) return
+  try {
+    await cargarEquiposDeClub(id)
+  } catch (e) {
+    console.error('RegistroArbitro:', e)
+    notificar?.({ titulo: 'Error', mensaje: 'No se pudieron cargar las categorías del club.', tipo: 'danger' })
+  }
+})
 // Si cambia el género, se destildan las categorías de la rama que ya no corresponde
 watch(() => form.genero, (genero) => {
   const ramas = ramasSegunGenero(genero)
-  const permitidas = categorias.value.filter(c => ramas.includes(c.rama)).map(c => c.id)
+  const permitidas = equiposDeClub(form.idClub).filter(c => ramas.includes(c.rama)).map(c => c.id)
   form.idsCategorias = form.idsCategorias.filter(id => permitidas.includes(id))
 })
 watch(() => form.juegaHandball, (valor) => {
@@ -438,13 +447,12 @@ const cargarDatos = async () => {
   try {
     const [resUbicacion, datosClubes] = await Promise.all([
       api.get({ entity: 'localidades', action: 'obtenerProvinciasLocalidades', payload: {} }),
-      obtenerDatosClubes(),
+      obtenerClubes(),
     ])
     if (!resUbicacion?.ok) throw new Error(resUbicacion?.message || 'No se pudo cargar el formulario')
     provincias.value = resUbicacion.payload?.provincias ?? []
     localidades.value = resUbicacion.payload?.localidades ?? []
-    clubes.value = datosClubes.clubes ?? []
-    categorias.value = datosClubes.categorias ?? []
+    clubes.value = datosClubes ?? []
   } catch (e) {
     console.error('cargarDatos:', e)
     toast({ titulo: 'Error', mensaje: 'No se pudo cargar el formulario. Recargá la página.', tipo: 'danger' })

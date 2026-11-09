@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { api } from '@/api/api'
 
 const RAMAS = { M: 'Masculino', F: 'Femenino' }
@@ -28,51 +28,100 @@ export const ramasSegunGenero = (genero) => {
   return ['M', 'F']
 }
 
-// Un único pedido compartido (y cacheado) de clubes y categorías para toda la app:
-// { clubes, categorias } = solo Juveniles/Junior/Mayores (donde juega el árbitro)
-// { clubesFamiliares, categoriasFamiliares } = todas las categorías (familiares)
-let promesaDatosClubes = null
-export const obtenerDatosClubes = () => {
-  if (!promesaDatosClubes) {
-    promesaDatosClubes = api.get({ entity: 'registro', action: 'obtenerDatosRegistro', payload: {} })
+// Listado de todos los clubes activos: [{ id, nombre }]. Un único pedido compartido y cacheado para toda la app.
+let promesaClubes = null
+export const obtenerClubes = () => {
+  if (!promesaClubes) {
+    promesaClubes = api.get({ entity: 'clubes', action: 'obtenerClubes', payload: {} })
       .then(res => {
         if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los clubes')
-        return res.payload ?? {}
+        return (res.payload ?? []).map(c => ({ id: String(c.club_id), nombre: c.club_nombre }))
       })
       .catch(e => {
-        promesaDatosClubes = null
+        promesaClubes = null
         throw e
       })
   }
-  return promesaDatosClubes
+  return promesaClubes
+}
+
+// Categorías de un club: se piden al BE (equipos/obtenerEquiposDeClub) recién cuando se elige el club
+// y quedan en un almacén compartido por club, así que no se vuelven a pedir.
+// soloJuego = true: solo Juveniles/Junior/Mayores · false: todas las categorías.
+// Cada categoría: { id (del equipo), idClub, rama, nombre }
+const claveEquipos = (idClub, soloJuego) => `${soloJuego ? 'juego' : 'todas'}:${idClub}`
+const equiposPorClub = reactive({})
+const cargandoPorClub = reactive({})
+const pedidosEquipos = {}
+
+export const equiposDeClub = (idClub, soloJuego = true) => equiposPorClub[claveEquipos(idClub, soloJuego)] ?? []
+
+export const cargandoEquiposDeClub = (idClub, soloJuego = true) => !!idClub && !!cargandoPorClub[claveEquipos(idClub, soloJuego)]
+
+export const cargarEquiposDeClub = (idClub, soloJuego = true) => {
+  if (!idClub) return Promise.resolve([])
+  const clave = claveEquipos(idClub, soloJuego)
+  if (equiposPorClub[clave]) return Promise.resolve(equiposPorClub[clave])
+  if (!pedidosEquipos[clave]) {
+    cargandoPorClub[clave] = true
+    pedidosEquipos[clave] = api.get({ entity: 'equipos', action: 'obtenerEquiposDeClub', payload: { idClub, soloJuego } })
+      .then(res => {
+        if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar las categorías del club')
+        equiposPorClub[clave] = res.payload ?? []
+        return equiposPorClub[clave]
+      })
+      .finally(() => {
+        delete pedidosEquipos[clave]
+        delete cargandoPorClub[clave]
+      })
+  }
+  return pedidosEquipos[clave]
+}
+
+// [{ rama, etiqueta, categorias: [{ id, nombre, rama }] }] de las categorías ya cargadas, filtradas por rama
+export const agruparPorRama = (equipos, ramas = ['M', 'F']) => {
+  const grupos = {}
+  for (const c of equipos.filter(c => ramas.includes(c.rama))) {
+    const rama = c.rama || 'otras'
+    if (!grupos[rama]) grupos[rama] = { rama, etiqueta: RAMAS[rama] || 'Otras', categorias: [] }
+    grupos[rama].categorias.push(c)
+  }
+  return Object.values(grupos)
 }
 
 // Clubes y categorías para los campos "donde_juega" / "categoria_handball".
-// Las categorías salen de los equipos activos de cada club (equipos_larry),
-// vía registro/obtenerDatosRegistro. Ambos campos se guardan por NOMBRE.
+// Los clubes se cargan al abrir (cargar) y las categorías se piden al BE cuando se elige el club.
 //
 // obtenerClub / obtenerCategorias / obtenerGenero: funciones que devuelven el
 // valor actual del formulario (club, texto de categorías y género), para filtrar
 // por club y rama, y para no perder valores viejos que no estén en la lista.
+// Con el club por NOMBRE (opcionesClubes, categoriasPorRama) o por ID (clubesPorId, equiposDelClub).
 export function useOpcionesHandball(obtenerClub, obtenerCategorias, obtenerGenero = () => '') {
   const clubes = ref([])
-  const categorias = ref([])
-  const cargando = ref(false)
+  const cargandoClubes = ref(false)
   const error = ref('')
 
   const cargar = async () => {
-    if (clubes.value.length || cargando.value) return
-    cargando.value = true
+    if (clubes.value.length || cargandoClubes.value) return
+    cargandoClubes.value = true
     error.value = ''
     try {
-      const datos = await obtenerDatosClubes()
-      clubes.value = datos.clubes ?? []
-      categorias.value = datos.categorias ?? []
+      clubes.value = await obtenerClubes()
     } catch (e) {
       console.error('useOpcionesHandball:', e)
-      error.value = 'No se pudieron cargar los clubes y categorías.'
+      error.value = 'No se pudieron cargar los clubes.'
     } finally {
-      cargando.value = false
+      cargandoClubes.value = false
+    }
+  }
+
+  // Pide las categorías del club elegido (por id) si todavía no están
+  const cargarEquipos = async (idClub) => {
+    try {
+      await cargarEquiposDeClub(idClub)
+    } catch (e) {
+      console.error('useOpcionesHandball:', e)
+      error.value = 'No se pudieron cargar las categorías del club.'
     }
   }
 
@@ -85,12 +134,16 @@ export function useOpcionesHandball(obtenerClub, obtenerCategorias, obtenerGener
   const idClubElegido = computed(() =>
     clubes.value.find(c => c.nombre === obtenerClub())?.id ?? null
   )
+  watch(idClubElegido, (id) => { if (id) cargarEquipos(id) }, { immediate: true })
+
+  // Cargando clubes, o las categorías del club elegido por nombre
+  const cargando = computed(() => cargandoClubes.value || cargandoEquiposDeClub(idClubElegido.value))
 
   // [{ etiqueta: 'Masculino', categorias: ['Juveniles A', ...] }, ...]
   const categoriasPorRama = computed(() => {
     const grupos = {}
     const ramas = ramasSegunGenero(obtenerGenero())
-    for (const c of categorias.value.filter(c => c.idClub === idClubElegido.value && ramas.includes(c.rama))) {
+    for (const c of equiposDeClub(idClubElegido.value).filter(c => ramas.includes(c.rama))) {
       const etiqueta = RAMAS[c.rama] || 'Otras'
       if (!grupos[etiqueta]) grupos[etiqueta] = { etiqueta, categorias: [] }
       grupos[etiqueta].categorias.push(c.nombre)
@@ -102,5 +155,13 @@ export function useOpcionesHandball(obtenerClub, obtenerCategorias, obtenerGener
     return lista
   })
 
-  return { cargando, error, cargar, opcionesClubes, categoriasPorRama }
+  // Versión por id (arbitro_equipos): el club y los equipos se identifican por su id, no por el nombre.
+  const clubesPorId = computed(() => clubes.value)
+  const equiposDelClubPorId = (idClub, genero = '') => agruparPorRama(equiposDeClub(idClub), ramasSegunGenero(genero))
+  const cargandoEquipos = (idClub) => cargandoEquiposDeClub(idClub)
+
+  return {
+    cargando, error, cargar, opcionesClubes, categoriasPorRama,
+    clubesPorId, equiposDelClub: equiposDelClubPorId, cargarEquipos, cargandoEquipos,
+  }
 }

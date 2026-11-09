@@ -547,21 +547,24 @@
           <template v-if="formModal.juega_handball === 'SI'">
             <div class="col-md-4">
               <label for="modal-club" class="small fw-bold text-dark mb-1">Club *</label>
-              <BuscadorClub id="modal-club" v-model="formModal.donde_juega" :opciones="handball.opcionesClubes.value" :cargando="handball.cargando.value" @elegir="formModal.categoria_handball = ''" />
+              <BuscadorClub id="modal-club" v-model="formModal.id_club_juega" :opciones="handball.clubesPorId.value" :cargando="handball.cargando.value" @elegir="formModal.ids_equipos_juega = []" />
+              <div v-if="hayHandballSinMigrar" class="form-text text-warning-emphasis">
+                Dato anterior: {{ formModal.donde_juega }} ({{ formModal.categoria_handball }}). Elegí el club y las categorías para actualizarlo.
+              </div>
             </div>
             <div class="col-md-4">
               <span class="small fw-bold text-dark mb-1 d-block">Categorías * <span class="fw-normal text-muted">(una o más)</span></span>
-              <div v-if="handball.cargando.value" class="small text-muted p-2">
+              <div v-if="handball.cargando.value || handball.cargandoEquipos(formModal.id_club_juega)" class="small text-muted p-2">
                 <span class="spinner-border spinner-border-sm me-1"></span> Cargando categorías...
               </div>
-              <div v-else-if="!formModal.donde_juega" class="small text-muted fst-italic p-2 bg-light rounded border">Elegí primero el club</div>
-              <div v-else-if="!handball.categoriasPorRama.value.length" class="small text-muted fst-italic p-2 bg-light rounded border">El club no tiene categorías activas</div>
+              <div v-else-if="!formModal.id_club_juega" class="small text-muted fst-italic p-2 bg-light rounded border">Elegí primero el club</div>
+              <div v-else-if="!equiposModal.length" class="small text-muted fst-italic p-2 bg-light rounded border">El club no tiene categorías activas</div>
               <div v-else class="lista-categorias border border-secondary-subtle rounded p-2">
-                <div v-for="(grupo, g) in handball.categoriasPorRama.value" :key="grupo.etiqueta" class="mb-1">
+                <div v-for="grupo in equiposModal" :key="grupo.rama" class="mb-1">
                   <div class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
-                  <div v-for="(c, k) in grupo.categorias" :key="grupo.etiqueta + c" class="form-check mb-0">
-                    <input :id="`modal-cat-${g}-${k}`" v-model="categoriasModal" class="form-check-input" type="checkbox" :value="c">
-                    <label class="form-check-label small" :for="`modal-cat-${g}-${k}`">{{ c }}</label>
+                  <div v-for="c in grupo.categorias" :key="c.id" class="form-check mb-0">
+                    <input :id="`modal-cat-${c.id}`" v-model="formModal.ids_equipos_juega" class="form-check-input" type="checkbox" :value="c.id">
+                    <label class="form-check-label small" :for="`modal-cat-${c.id}`">{{ c.nombre }}</label>
                   </div>
                 </div>
               </div>
@@ -761,7 +764,7 @@ import { useHead } from '@vueuse/head'
 import selLocalidad from '@/components/select/selLocalidad.vue'
 import selProvincia from '@/components/select/selProvincia.vue'
 import ModalBase from '@/components/ModalBase.vue'
-import { useOpcionesHandball, separarCategorias, unirCategorias, MAX_LARGO_CATEGORIAS } from '@/composables/useOpcionesHandball'
+import { useOpcionesHandball, unirCategorias } from '@/composables/useOpcionesHandball'
 import { validarFamiliares, familiaresParaEnviar, familiaresDesdeServidor, textoFamiliares } from '@/composables/useFamiliares'
 import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
 import BuscadorClub from '@/components/BuscadorClub.vue'
@@ -891,6 +894,7 @@ const formModalVacio = () => ({
   disponibilidad_sabado: 'FT', disponibilidad_sabado_desde: '', disponibilidad_sabado_hasta: '',
   disponibilidad_domingo: 'FT', disponibilidad_domingo_desde: '', disponibilidad_domingo_hasta: '',
   juega_handball: 'NO', donde_juega: '', categoria_handball: '',
+  id_club_juega: '', ids_equipos_juega: [],
   tieneFamiliares: 'no', familiares: [],
   vinculos: clubesVinculadosVacios(),
   observaciones: '',
@@ -911,23 +915,29 @@ const cambioJuegaHandball = () => {
   } else {
     formModal.value.donde_juega = ''
     formModal.value.categoria_handball = ''
+    formModal.value.id_club_juega = ''
+    formModal.value.ids_equipos_juega = []
   }
 }
 
-// Checkboxes de categorías <-> texto separado por " | " en categoria_handball
-const categoriasModal = computed({
-  get: () => separarCategorias(formModal.value.categoria_handball),
-  set: (lista) => { formModal.value.categoria_handball = unirCategorias(lista) },
-})
+// Las categorías del club se piden al BE al elegirlo (o al abrir un árbitro que ya tiene club)
+watch(() => formModal.value.id_club_juega, (id) => { if (id) handball.cargarEquipos(id) })
+
+// Equipos del club elegido, agrupados por rama (según el género del árbitro)
+const equiposModal = computed(() => handball.equiposDelClub(formModal.value.id_club_juega, formModal.value.genero))
+
+// Árbitro que ya tenía club y categorías cargados por nombre y todavía no se vincularon a un equipo
+const hayHandballSinMigrar = computed(() =>
+  !formModal.value.id_club_juega && !formModal.value.ids_equipos_juega.length
+  && !!formModal.value.donde_juega && !!formModal.value.categoria_handball
+)
 
 const validarHandballModal = () => {
   if (formModal.value.juega_handball !== 'SI') return true
-  if (!formModal.value.donde_juega || !categoriasModal.value.length) {
+  // Dato anterior sin tocar: se conserva tal cual
+  if (hayHandballSinMigrar.value) return true
+  if (!formModal.value.id_club_juega || !formModal.value.ids_equipos_juega.length) {
     notificar({ titulo: 'Faltan datos', mensaje: 'Si juega al handball, seleccioná el club y al menos una categoría.', tipo: 'danger' })
-    return false
-  }
-  if (formModal.value.categoria_handball.length > MAX_LARGO_CATEGORIAS) {
-    notificar({ titulo: 'Demasiadas categorías', mensaje: 'Hay demasiadas categorías elegidas. Dejá solo en las que juega actualmente.', tipo: 'danger' })
     return false
   }
   return true
@@ -1176,6 +1186,8 @@ const editarArbitro = async (arbitro) => {
     juega_handball: String(arbitro.juega_handball || '').toUpperCase() === 'SI' ? 'SI' : 'NO',
     donde_juega: arbitro.donde_juega || '',
     categoria_handball: arbitro.categoria_handball || '',
+    id_club_juega: arbitro.id_club_juega || '',
+    ids_equipos_juega: String(arbitro.ids_equipos_juega || '').split(',').filter(Boolean),
     grupos: gruposCoordinados
   }
   if (formModal.value.juega_handball === 'SI') handball.cargar()
@@ -1309,6 +1321,21 @@ const actualizarArbitroLocal = (datosForm) => {
   delete actualizado.tieneFamiliares
   delete actualizado.familiares
   delete actualizado.vinculos
+
+  // Club y categorías: el BE los deriva de los equipos elegidos, se refleja lo mismo en la fila
+  const idsEquipos = datosForm.ids_equipos_juega || []
+  if (datosForm.juega_handball !== 'SI') {
+    actualizado.donde_juega = ''
+    actualizado.categoria_handball = ''
+    actualizado.id_club_juega = ''
+    actualizado.ids_equipos_juega = ''
+  } else if (idsEquipos.length) {
+    const club = handball.clubesPorId.value.find(c => c.id === datosForm.id_club_juega)
+    const elegidas = handball.equiposDelClub(datosForm.id_club_juega).flatMap(g => g.categorias).filter(c => idsEquipos.includes(c.id))
+    actualizado.donde_juega = club?.nombre ?? actualizado.donde_juega
+    actualizado.categoria_handball = unirCategorias(elegidas.map(c => c.nombre))
+    actualizado.ids_equipos_juega = idsEquipos.join(',')
+  }
 
   // No guardamos el password en la fila de la tabla
   delete actualizado.password

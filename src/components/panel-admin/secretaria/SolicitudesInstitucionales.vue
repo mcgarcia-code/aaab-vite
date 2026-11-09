@@ -666,8 +666,8 @@ const cargarCategorias = async () => {
   try {
     const { payload } = await api.get({
       entity: 'equipos',
-      action: 'obtenerCategoriasPorClub',
-      payload: { idClub: form.club_id, rama: form.rama }
+      action: 'obtenerEquiposDeClub',
+      payload: { idClub: form.club_id, rama: form.rama, soloJuego: false }
     })
     categorias.value = payload || []
   } catch (err) {
