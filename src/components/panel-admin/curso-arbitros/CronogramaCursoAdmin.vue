@@ -268,7 +268,11 @@ watch(anio, (a) => cargar(a))
 watch(error, (m) => { if (m) notificar({ titulo: 'Error', mensaje: m, tipo: 'danger' }) })
 
 // ─── Nueva / Editar ──────────────────────────────────────────────
-const claseVacia = () => ({ id: null, fecha: '', horaInicio: '', horaFin: '', titulo: '', curso: 'ambos', modalidad: 'presencial', lugar: '', enlace: '', descripcion: '' })
+// Horario habitual de las clases del curso: 19:30 a 22:00
+const HORA_INICIO_DEFECTO = '19:30'
+const HORA_FIN_DEFECTO = '22:00'
+
+const claseVacia = () => ({ id: null, fecha: '', horaInicio: HORA_INICIO_DEFECTO, horaFin: HORA_FIN_DEFECTO, titulo: '', curso: 'ambos', modalidad: 'presencial', lugar: '', enlace: '', descripcion: '' })
 const form = ref(claseVacia())
 const mostrarModal = ref(false)
 const intento = ref(false)
