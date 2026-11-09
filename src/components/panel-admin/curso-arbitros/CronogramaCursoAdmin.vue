@@ -182,7 +182,12 @@
             <div v-for="a in alumnosAsistencia" :key="a.id" class="fila-asistencia d-flex justify-content-between align-items-center gap-2">
               <div class="min-w-0">
                 <div class="fw-bold text-dark small text-uppercase text-truncate">{{ a.apellido }}, {{ a.nombre }}</div>
-                <div class="text-muted" style="font-size: 0.72rem;">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</div>
+                <div class="text-muted" style="font-size: 0.72rem;">
+                  {{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}
+                  <span v-if="a.tieneExamen" class="badge bg-info-subtle text-info-emphasis ms-1" title="Ya rindió o tiene nota en el examen de esta clase">
+                    <i class="bi bi-journal-check"></i> Rindió
+                  </span>
+                </div>
               </div>
               <div class="btn-group btn-group-sm flex-shrink-0" role="group" :aria-label="`Asistencia de ${a.apellido}`">
                 <button type="button" class="btn fw-bold" :class="a.asistencia === 'presente' ? 'btn-success' : 'btn-outline-success'" @click="a.asistencia = a.asistencia === 'presente' ? null : 'presente'">✓ Presente</button>
@@ -459,7 +464,8 @@ const abrirAsistencia = async (c) => {
   try {
     const res = await api.get({ entity: 'cronograma_curso_arbitro', action: 'obtenerAsistenciaClaseCurso', payload: { idClase: c.id } })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar la asistencia')
-    alumnosAsistencia.value = res.payload.alumnos || []
+    // Se guarda la asistencia original para detectar quién pasa a ausente al guardar
+    alumnosAsistencia.value = (res.payload.alumnos || []).map(a => ({ ...a, asistenciaOriginal: a.asistencia }))
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
     mostrarAsistencia.value = false
@@ -468,7 +474,30 @@ const abrirAsistencia = async (c) => {
   }
 }
 
-const guardarAsistencia = async () => {
+// Alumnos que ya rindieron o tienen nota en el examen de la clase y ahora se marcan ausentes:
+// al guardar se borra su resultado, por eso se pide confirmación antes.
+const alumnosQuePierdenExamen = computed(() =>
+  alumnosAsistencia.value.filter(a => a.tieneExamen && a.asistencia === 'ausente' && a.asistenciaOriginal !== 'ausente')
+)
+
+const guardarAsistencia = () => {
+  const afectados = alumnosQuePierdenExamen.value
+  if (afectados.length === 0) {
+    enviarAsistencia()
+    return
+  }
+  const nombres = afectados.map(a => `${a.apellido}, ${a.nombre}`).join(' · ')
+  notificar({
+    titulo: '¿Marcar como ausente?',
+    mensaje: afectados.length === 1
+      ? `${nombres} ya rindió el examen de esta clase. Si lo marcás ausente se borra su resultado y deja de verlo en su panel. No se puede deshacer.`
+      : `Estos alumnos ya rindieron el examen de esta clase: ${nombres}. Si los marcás ausentes se borran sus resultados y dejan de verlos en su panel. No se puede deshacer.`,
+    tipo: 'danger',
+    alConfirmar: enviarAsistencia,
+  })
+}
+
+const enviarAsistencia = async () => {
   guardandoAsistencia.value = true
   try {
     const res = await api.post({
