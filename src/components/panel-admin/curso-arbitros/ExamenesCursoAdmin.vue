@@ -915,7 +915,7 @@ onMounted(() => {
 .min-w-0 { min-width: 0; }
 
 /* Planilla con el mismo estilo que la Planilla General (Desarrollo Arbitral) */
-.tabla-scroll { overflow-x: auto; }
+.tabla-scroll { overflow: auto; max-height: 70vh; }
 .tabla-excel { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 0.8rem; background: #fff; }
 .tabla-excel th,
 .tabla-excel td { border-right: 1px solid #d4d4d8; border-bottom: 1px solid #d4d4d8; padding: 4px 8px; white-space: nowrap; }
