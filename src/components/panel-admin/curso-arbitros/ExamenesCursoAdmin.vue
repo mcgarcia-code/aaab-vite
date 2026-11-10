@@ -132,37 +132,39 @@
             </div>
             <div v-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
             <template v-else>
-              <div class="d-none d-lg-block table-responsive border rounded shadow-sm">
-                <table class="table table-hover table-bordered align-middle mb-0 text-nowrap planilla" style="font-size: 0.78rem;">
-                  <thead class="table-light">
+              <div class="d-flex flex-wrap gap-3 small text-muted mb-2 leyenda-planilla">
+                <span><span class="cuadrito cuadrito-verde"></span> Aprobado</span>
+                <span><span class="cuadrito cuadrito-roja"></span> Desaprobado</span>
+                <span><span class="cuadrito cuadrito-gris"></span> Ausente (AUS)</span>
+                <span><span class="cuadrito cuadrito-na"></span> No le corresponde</span>
+              </div>
+              <div class="d-none d-lg-block tabla-scroll border rounded shadow-sm">
+                <table class="tabla-excel">
+                  <thead>
                     <tr>
-                      <th class="py-2 ps-3 text-uppercase text-muted col-alumno">Alumno</th>
-                      <th class="py-2 text-center text-uppercase text-muted">Curso</th>
-                      <th v-for="e in columnasPlanilla" :key="'th-' + e.id" class="py-2 text-center text-muted col-examen" :title="e.clase ? e.titulo + ' · ' + e.clase : e.titulo">
-                        <div class="fw-bold text-dark text-truncate">{{ e.titulo }}</div>
-                        <div class="fw-normal" style="font-size: 0.68rem;">{{ etiquetaColumna(e) }} · {{ fechaDMA(e.fecha) }}</div>
+                      <th class="col-alumno esquina">ALUMNO</th>
+                      <th class="th-curso">CURSO</th>
+                      <th v-for="e in columnasPlanilla" :key="'th-' + e.id" class="th-evento" :title="e.clase ? e.titulo + ' · ' + e.clase : e.titulo">
+                        <div class="fw-bold text-uppercase texto-recortado">{{ e.titulo }}</div>
+                        <div class="fecha-evento">{{ etiquetaColumna(e) }} · {{ fechaDMA(e.fecha) }}</div>
                       </th>
-                      <th class="py-2 text-center text-uppercase text-muted">Aprobados</th>
+                      <th class="th-total">APROBADOS</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="a in alumnosPlanilla" :key="'pl-' + a.id">
-                      <td class="ps-3 col-alumno">
-                        <div class="fw-bold text-dark text-uppercase">{{ a.apellido }}, {{ a.nombre }}</div>
-                      </td>
-                      <td class="text-center"><span class="badge" :class="MODALIDADES_CURSO[a.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</span></td>
-                      <td v-for="e in columnasPlanilla" :key="'c-' + a.id + '-' + e.id" class="text-center">
-                        <span v-if="!correspondeExamen(e, a)" class="text-muted opacity-50" title="No le corresponde">·</span>
-                        <template v-else-if="celda(e, a)">
-                          <span v-if="celda(e, a).ausente" class="badge badge-aus">AUS</span>
-                          <span v-else-if="celda(e, a).nota !== null" class="fw-bold" :class="aprobadoCelda(e, a) ? 'text-success' : 'text-danger'">{{ textoCelda(e, a) }}</span>
+                      <td class="col-alumno celda-nombre text-uppercase">{{ a.apellido }}, {{ a.nombre }}</td>
+                      <td class="celda"><span class="badge" :class="MODALIDADES_CURSO[a.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</span></td>
+                      <td v-for="e in columnasPlanilla" :key="'c-' + a.id + '-' + e.id" class="celda" :class="claseCeldaPlanilla(e, a)" :title="!correspondeExamen(e, a) ? 'No le corresponde' : undefined">
+                        <template v-if="correspondeExamen(e, a) && celda(e, a)">
+                          <template v-if="celda(e, a).ausente">AUS</template>
+                          <template v-else-if="celda(e, a).nota !== null">{{ textoCelda(e, a) }}</template>
                           <button v-if="celda(e, a).rendidoOnline" type="button" class="btn btn-link btn-sm p-0 ms-1 text-danger align-baseline" :disabled="descargandoPlanilla === a.id + '-' + e.id" title="Descargar PDF" :aria-label="'PDF de ' + a.apellido" @click="descargarPdfPlanilla(e, a)">
                             <i class="bi bi-file-earmark-pdf"></i>
                           </button>
                         </template>
-                        <span v-else class="text-muted">—</span>
                       </td>
-                      <td class="text-center fw-bold text-dark">{{ aprobadosAlumno(a) }} / {{ totalAlumno(a) }}</td>
+                      <td class="celda celda-total">{{ aprobadosAlumno(a) }} / {{ totalAlumno(a) }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -184,8 +186,8 @@
                       </div>
                       <div class="flex-shrink-0 text-end">
                         <template v-if="celda(e, a)">
-                          <span v-if="celda(e, a).ausente" class="badge badge-aus">AUS</span>
-                          <span v-else-if="celda(e, a).nota !== null" class="fw-bold" :class="aprobadoCelda(e, a) ? 'text-success' : 'text-danger'">{{ textoCelda(e, a) }}</span>
+                          <span v-if="celda(e, a).ausente" class="chip-nota celda-gris">AUS</span>
+                          <span v-else-if="celda(e, a).nota !== null" class="chip-nota" :class="aprobadoCelda(e, a) ? 'celda-verde' : 'celda-roja'">{{ textoCelda(e, a) }}</span>
                           <button v-if="celda(e, a).rendidoOnline" type="button" class="btn btn-link btn-sm p-0 ms-1 text-danger" :aria-label="'PDF de ' + a.apellido" @click="descargarPdfPlanilla(e, a)"><i class="bi bi-file-earmark-pdf"></i></button>
                         </template>
                         <span v-else class="text-muted">—</span>
@@ -541,6 +543,12 @@ const pintarCeldaExcel = (c, color, opciones = {}) => {
   c.font = { bold: !!opciones.negrita, size: opciones.tamanio || 11, color: { argb: FUENTE_EXCEL[color] || 'FF212529' } }
 }
 
+const claseCeldaPlanilla = (e, a) => {
+  if (!correspondeExamen(e, a)) return 'celda-na'
+  const { color } = celdaExcel(e, a)
+  return color ? `celda-${color}` : ''
+}
+
 // Texto y color de una celda del Excel, con la misma lógica que la vista
 const celdaExcel = (e, a) => {
   if (!correspondeExamen(e, a)) return { texto: '', color: 'gris' }
@@ -880,7 +888,6 @@ onMounted(() => {
 .stat-mal { background: #fef2f2; color: #b91c1c; }
 .stat-aus { background: #f1f5f9; color: #475569; }
 .examen-card.es-recuperatorio { background: #fffbeb; border-color: #fde68a; }
-.badge-aus { background-color: #e9ecef; color: #6c757d; font-weight: 700; }
 .fila-planilla { border-top: 1px solid #f1f5f9; padding: 6px 0; }
 .opcion-fisico { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
 .opcion-fisico.activa { border-color: #0d6efd; background: #eff6ff; }
@@ -888,7 +895,31 @@ onMounted(() => {
 .etiquetas-examen .badge { white-space: normal; text-align: left; line-height: 1.3; }
 .fila-nota { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
 .min-w-0 { min-width: 0; }
-.planilla .col-alumno { position: sticky; left: 0; background: #fff; z-index: 1; min-width: 200px; }
-.planilla thead .col-alumno { background: #f8f9fa; }
-.planilla .col-examen { max-width: 160px; min-width: 110px; }
+
+/* Planilla con el mismo estilo que la Planilla General (Desarrollo Arbitral) */
+.tabla-scroll { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
+.tabla-excel { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 0.8rem; background: #fff; }
+.tabla-excel th,
+.tabla-excel td { border-right: 1px solid #d4d4d8; border-bottom: 1px solid #d4d4d8; padding: 4px 8px; white-space: nowrap; }
+.tabla-excel thead th { background-color: #f1f3f5; color: #343a40; position: sticky; top: 0; z-index: 5; text-align: center; vertical-align: middle; font-size: 0.72rem; }
+.th-evento { min-width: 140px; }
+.th-curso, .th-total { min-width: 70px; }
+.fecha-evento { font-size: 0.68rem; color: #6c757d; font-weight: 500; }
+.texto-recortado { max-width: 180px; overflow: hidden; text-overflow: ellipsis; margin: 0 auto; }
+.col-alumno { position: sticky; left: 0; background-color: #fff; z-index: 6; min-width: 190px; text-align: left !important; }
+.tabla-excel thead .esquina { z-index: 8; background-color: #e9ecef; }
+.celda-nombre { font-weight: 600; color: #212529; border-right: 2px solid #adb5bd !important; }
+.celda { text-align: center; min-width: 44px; color: #212529; }
+.celda-total { font-weight: 700; border-left: 2px solid #adb5bd; }
+.celda-verde { background-color: #d1e7dd; color: #0f5132; font-weight: 600; }
+.celda-roja { background-color: #f8d7da; color: #842029; font-weight: 600; }
+.celda-gris { background-color: #e9ecef; color: #6c757d; font-weight: 600; }
+.celda-na { background-color: #f8f9fa; }
+.tabla-excel tbody tr:hover td:not(.celda-verde):not(.celda-roja):not(.celda-gris) { background-color: #f8fafc; }
+.chip-nota { display: inline-block; border-radius: 4px; padding: 1px 8px; font-size: 0.75rem; }
+.cuadrito { display: inline-block; width: 12px; height: 12px; border: 1px solid #ced4da; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.cuadrito-verde { background-color: #d1e7dd; }
+.cuadrito-roja { background-color: #f8d7da; }
+.cuadrito-gris { background-color: #e9ecef; }
+.cuadrito-na { background-color: #f8f9fa; }
 </style>
