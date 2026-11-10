@@ -151,6 +151,8 @@
                         <div class="fecha-evento">{{ etiquetaColumna(e) }} · {{ fechaDMA(e.fecha) }}</div>
                       </th>
                       <th class="th-total">APROBADOS</th>
+                      <th class="th-total" title="Presente sobre las clases ya dictadas del curso (mínimo 75%)">% ASIST.<br>CLASES</th>
+                      <th class="th-total" title="Presente sobre los encuentros a los que fue convocado (mínimo 75%)">% ENC.<br>MINI</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -167,6 +169,8 @@
                         </template>
                       </td>
                       <td class="celda celda-total">{{ aprobadosAlumno(a) }} / {{ totalAlumno(a) }}</td>
+                      <td class="celda" :class="claseAsistencia(asistenciaClases(a))" :title="`${a.clasesPresente} de ${a.clasesTotales} clases`">{{ textoAsistencia(asistenciaClases(a)) }}</td>
+                      <td class="celda" :class="claseAsistencia(asistenciaMini(a))" :title="a.modalidadCurso === 'anual' ? `${a.miniPresente} de ${a.miniConvocado} encuentros` : 'No le corresponde'">{{ textoAsistencia(asistenciaMini(a)) }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -180,6 +184,10 @@
                         <div class="fw-bold text-dark text-uppercase">{{ a.apellido }}, {{ a.nombre }}</div>
                       </div>
                       <span class="badge bg-dark flex-shrink-0">{{ aprobadosAlumno(a) }} / {{ totalAlumno(a) }} aprob.</span>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                      <span class="chip-nota" :class="claseAsistencia(asistenciaClases(a))">Clases: {{ textoAsistencia(asistenciaClases(a)) }}</span>
+                      <span v-if="a.modalidadCurso === 'anual'" class="chip-nota" :class="claseAsistencia(asistenciaMini(a))">Mini: {{ textoAsistencia(asistenciaMini(a)) }}</span>
                     </div>
                     <div v-for="e in columnasPlanilla.filter(e => correspondeExamen(e, a))" :key="'plme-' + a.id + '-' + e.id" class="fila-planilla d-flex justify-content-between align-items-center gap-2">
                       <div class="min-w-0">
@@ -547,6 +555,17 @@ const aproboConRecuperatorio = (e, a) => {
 const aprobadosAlumno = (a) => examenesQueCuentan(a).filter(e => aprobadoCelda(e, a) || aproboConRecuperatorio(e, a)).length
 const totalAlumno = (a) => examenesQueCuentan(a).length
 
+// ─── Asistencia (mínimo 75% para clases y para encuentros de mini) ──
+const ASISTENCIA_MINIMA = 75
+const porcentajeAsistencia = (presentes, total) => (total ? Math.round(presentes / total * 100) : null)
+// Clases: presente sobre todas las clases ya dictadas que le corresponden
+const asistenciaClases = (a) => porcentajeAsistencia(a.clasesPresente, a.clasesTotales)
+// Mini: presente sobre los encuentros a los que fue convocado (solo curso anual; undefined = no le corresponde)
+const asistenciaMini = (a) => (a.modalidadCurso === 'anual' ? porcentajeAsistencia(a.miniPresente, a.miniConvocado) : undefined)
+const colorAsistencia = (p) => (p === undefined ? 'gris' : p === null ? '' : p >= ASISTENCIA_MINIMA ? 'verde' : 'roja')
+const claseAsistencia = (p) => (p === undefined ? 'celda-na' : p === null ? '' : `celda-${colorAsistencia(p)}`)
+const textoAsistencia = (p) => (p === undefined ? '' : p === null ? '—' : `${p}%`)
+
 // ─── Excel de la planilla (mismos colores que la Planilla General) ──
 const generandoExcel = ref(false)
 
@@ -590,14 +609,18 @@ const descargarExcelPlanilla = async () => {
       'ALUMNO',
       'CURSO',
       ...columnas.map(e => `${e.titulo}\n${etiquetaColumna(e)} · ${fechaDMA(e.fecha)}`),
-      'APROBADOS'
+      'APROBADOS',
+      '% ASIST. CLASES',
+      '% ENC. MINI'
     ])
     alumnosPlanilla.value.forEach(a => {
       ws.addRow([
         `${a.apellido}, ${a.nombre}`.toUpperCase(),
         MODALIDADES_CURSO[a.modalidadCurso]?.corta || '',
         ...columnas.map(e => celdaExcel(e, a).texto),
-        `${aprobadosAlumno(a)} / ${totalAlumno(a)}`
+        `${aprobadosAlumno(a)} / ${totalAlumno(a)}`,
+        textoAsistencia(asistenciaClases(a)),
+        textoAsistencia(asistenciaMini(a))
       ])
     })
 
@@ -609,12 +632,16 @@ const descargarExcelPlanilla = async () => {
       pintarCeldaExcel(fila.getCell(2), '')
       columnas.forEach((e, j) => pintarCeldaExcel(fila.getCell(j + 3), celdaExcel(e, a).color, { negrita: true }))
       pintarCeldaExcel(fila.getCell(columnas.length + 3), '', { negrita: true })
+      pintarCeldaExcel(fila.getCell(columnas.length + 4), colorAsistencia(asistenciaClases(a)), { negrita: true })
+      pintarCeldaExcel(fila.getCell(columnas.length + 5), colorAsistencia(asistenciaMini(a)), { negrita: true })
     })
 
     ws.getColumn(1).width = 30
     ws.getColumn(2).width = 10
     columnas.forEach((_, j) => { ws.getColumn(j + 3).width = 16 })
     ws.getColumn(columnas.length + 3).width = 12
+    ws.getColumn(columnas.length + 4).width = 14
+    ws.getColumn(columnas.length + 5).width = 14
 
     const buffer = await wb.xlsx.writeBuffer()
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
