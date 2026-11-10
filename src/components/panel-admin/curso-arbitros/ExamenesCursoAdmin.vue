@@ -520,11 +520,27 @@ const textoCelda = (e, a) => {
 // Cuentan los exámenes originales (sin recuperatorios ni simulacros). Si aprobó el recuperatorio, el original cuenta como aprobado.
 const cuentaParaAprobados = (e) => !e.idExamenOriginal && !e.esRecuperatorioParcialitos && !(e.tipo === 'fisico' && !e.esFinal)
 const examenesQueCuentan = (a) => columnasPlanilla.value.filter(e => cuentaParaAprobados(e) && correspondeExamen(e, a))
+// Recuperatorios de parcialitos que el aspirante rindió online: tienen el detalle de qué parcialitos recupera
+const recuperatoriosConDetalle = computed(() =>
+  new Set((planilla.value.recuperados || []).map(x => `${x.idExamen}-${x.idAlumno}`))
+)
+
 const aproboConRecuperatorio = (e, a) => {
   const porRecuperatorio = examenesFiltrados.value.some(r => r.idExamenOriginal === e.id && aprobadoCelda(r, a))
+  if (porRecuperatorio) return true
+  // Rendido online: se sabe exactamente qué parcialitos recuperó
   const porParcialitos = (planilla.value.recuperados || [])
     .some(x => x.idAlumno === a.id && x.idParcialito === e.id && aprobadoCelda({ id: x.idExamen }, a))
-  return porRecuperatorio || porParcialitos
+  if (porParcialitos) return true
+  // Nota cargada a mano (sin detalle): un recuperatorio de parcialitos aprobado recupera los parcialitos
+  // desaprobados o ausentes anteriores a esa fecha. Es la misma regla que usa el backend.
+  if (e.tipo !== 'teorico' || e.esFinal || e.idExamenOriginal || e.esRecuperatorioParcialitos || !celda(e, a)) return false
+  return examenes.value.some(r =>
+    r.esRecuperatorioParcialitos &&
+    String(r.fecha) >= String(e.fecha) &&
+    !recuperatoriosConDetalle.value.has(`${r.id}-${a.id}`) &&
+    aprobadoCelda(r, a)
+  )
 }
 const aprobadosAlumno = (a) => examenesQueCuentan(a).filter(e => aprobadoCelda(e, a) || aproboConRecuperatorio(e, a)).length
 const totalAlumno = (a) => examenesQueCuentan(a).length
