@@ -216,9 +216,13 @@
       </template>
       <div v-if="cargandoExamen" class="text-center py-4"><span class="spinner-border text-dark"></span><p class="text-muted mt-2 mb-0 fw-bold small">Cargando examen...</p></div>
       <form v-else id="formExamenClase" class="text-start" novalidate @submit.prevent="guardarExamen">
+        <div v-if="otrosExamenesClase.length" class="small text-muted mb-2">
+          <i class="bi bi-collection me-1"></i> La clase también tiene:
+          <span v-for="o in otrosExamenesClase" :key="o.id" class="badge bg-light text-dark border fw-normal ms-1">{{ o.titulo }}</span>
+        </div>
         <div v-if="examenExistente" class="alert alert-light border small py-2">
           <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
-            <span><i class="bi bi-info-circle me-1"></i> Esta clase ya tiene un examen {{ esFisico ? 'físico' : 'teórico' }}: <strong>{{ examenExistente.titulo }}</strong> ({{ examenExistente.rendidos }} resultado(s) cargado(s)).</span>
+            <span><i class="bi bi-info-circle me-1"></i> Estás editando <strong>{{ examenExistente.titulo }}</strong> de esta clase ({{ examenExistente.rendidos }} resultado(s) cargado(s)).</span>
             <button type="button" class="btn btn-outline-danger btn-sm fw-bold flex-shrink-0" :disabled="borrandoExamen" @click="confirmarBorrarExamen">
               <span v-if="borrandoExamen" class="spinner-border spinner-border-sm me-1"></span>
               <i v-else class="bi bi-trash3 me-1"></i> Borrar examen
@@ -549,7 +553,7 @@ const MODOS_FISICO = [
 ]
 const MODOS_TEORICO = [
   { valor: 'parcialito', etiqueta: 'Parcialito', ayuda: 'Examen de la clase sobre las reglas que elijas.' },
-  { valor: 'recuperatorio', etiqueta: 'Recuperatorio de parcialitos', ayuda: 'Los presentes rinden las reglas de los parcialitos que deben.' },
+  { valor: 'recuperatorio', etiqueta: 'Recuperatorio de parcialitos', ayuda: 'Los presentes rinden las reglas de los parcialitos que deben, incluidos quienes desaprobaron o faltaron a un recuperatorio anterior. Se suma al parcialito de la clase, no lo reemplaza.' },
   { valor: 'final', etiqueta: 'Teórico final', ayuda: 'Define el teórico del curso.' },
   { valor: 'recuperatorio_final', etiqueta: 'Recuperatorio teórico final', ayuda: 'Lo rinden quienes desaprobaron el teórico final.' },
 ]
@@ -559,9 +563,17 @@ const modosExamen = computed(() => (esFisico.value ? MODOS_FISICO : MODOS_TEORIC
 const esRecuperatorioParcialitos = computed(() => formExamen.value.modo === 'recuperatorio')
 const esRecuperatorioFinal = computed(() => formExamen.value.modo === 'recuperatorio_final')
 const REGLAS_FINAL = Array.from({ length: 18 }, (_, i) => i + 1)
-// La clase puede tener un examen teórico y uno físico a la vez (por ejemplo, los dos recuperatorios finales)
-const examenesClase = ref({ teorico: null, fisico: null })
-const examenExistente = computed(() => examenesClase.value[formExamen.value.tipo] || null)
+// La clase puede tener a la vez un teórico, un recuperatorio de parcialitos y un físico
+// (por ejemplo, el parcialito de la clase y un segundo recuperatorio para quienes desaprobaron o faltaron al primero)
+const examenesClase = ref({ teorico: null, recuperatorio: null, fisico: null })
+const lugarDelExamen = (tipo, modo) => (tipo === 'fisico' ? 'fisico' : modo === 'recuperatorio' ? 'recuperatorio' : 'teorico')
+const lugarActual = computed(() => lugarDelExamen(formExamen.value.tipo, formExamen.value.modo))
+const examenExistente = computed(() => examenesClase.value[lugarActual.value] || null)
+const otrosExamenesClase = computed(() =>
+  ['teorico', 'recuperatorio', 'fisico']
+    .filter(l => l !== lugarActual.value && examenesClase.value[l])
+    .map(l => examenesClase.value[l])
+)
 
 const formularioDesde = (tipo, guardado) => {
   const codigos = reglasDisponibles.value.map(r => r.codigo)
@@ -587,6 +599,16 @@ watch(() => formExamen.value.tipo, (tipo) => {
   if (aplicandoExamenGuardado) return
   aplicandoExamenGuardado = true
   formExamen.value = formularioDesde(tipo, examenesClase.value[tipo])
+  aplicandoExamenGuardado = false
+}, { flush: 'sync' })
+// Pasar a (o salir de) "Recuperatorio de parcialitos" cambia de examen: se carga el que corresponde a ese lugar
+watch(() => formExamen.value.modo, (modo, modoAnterior) => {
+  if (aplicandoExamenGuardado || esFisico.value) return
+  const lugar = lugarDelExamen('teorico', modo)
+  if (lugar === lugarDelExamen('teorico', modoAnterior)) return
+  aplicandoExamenGuardado = true
+  const guardado = examenesClase.value[lugar]
+  formExamen.value = { ...formularioDesde('teorico', guardado), modo }
   aplicandoExamenGuardado = false
 }, { flush: 'sync' })
 watch(() => formExamen.value.modo, (modo) => {
@@ -626,7 +648,7 @@ const cargarReglas = async () => {
 
 const abrirExamen = async (c) => {
   claseExamen.value = c
-  examenesClase.value = { teorico: null, fisico: null }
+  examenesClase.value = { teorico: null, recuperatorio: null, fisico: null }
   intentoExamen.value = false
   mostrarExamen.value = true
   cargandoExamen.value = true
@@ -642,11 +664,16 @@ const abrirExamen = async (c) => {
       fisico: resFisico?.ok ? resFisico.payload || [] : [],
     }
     if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar el examen de la clase')
-    examenesClase.value = { teorico: res.payload?.teorico || null, fisico: res.payload?.fisico || null }
-    // Arranca en Teórico salvo que la clase solo tenga un examen físico
-    const tipoInicial = !examenesClase.value.teorico && examenesClase.value.fisico ? 'fisico' : 'teorico'
+    examenesClase.value = {
+      teorico: res.payload?.teorico || null,
+      recuperatorio: res.payload?.recuperatorio || null,
+      fisico: res.payload?.fisico || null,
+    }
+    // Arranca en el teórico; si no hay, en el recuperatorio de parcialitos; si solo hay físico, en el físico
+    const { teorico, recuperatorio, fisico } = examenesClase.value
+    const lugarInicial = teorico ? 'teorico' : recuperatorio ? 'recuperatorio' : fisico ? 'fisico' : 'teorico'
     aplicandoExamenGuardado = true
-    formExamen.value = formularioDesde(tipoInicial, examenesClase.value[tipoInicial])
+    formExamen.value = formularioDesde(lugarInicial === 'fisico' ? 'fisico' : 'teorico', examenesClase.value[lugarInicial])
     aplicandoExamenGuardado = false
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
@@ -666,10 +693,11 @@ const borrarExamen = async () => {
   try {
     const res = await api.post({ entity: 'examenes_curso_arbitro', action: 'eliminarExamenCurso', payload: { id: examen.id } })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo borrar el examen')
-    const tipo = formExamen.value.tipo
-    examenesClase.value = { ...examenesClase.value, [tipo]: null }
+    const { tipo, modo } = formExamen.value
+    const lugar = lugarActual.value
+    examenesClase.value = { ...examenesClase.value, [lugar]: null }
     aplicandoExamenGuardado = true
-    formExamen.value = formularioDesde(tipo, null)
+    formExamen.value = { ...formularioDesde(tipo, null), ...(lugar === 'recuperatorio' ? { modo } : {}) }
     aplicandoExamenGuardado = false
     toast({ titulo: 'Examen borrado', mensaje: 'Se borró el examen de la clase. La clase sigue en el cronograma.', tipo: 'success' })
   } catch (e) {
