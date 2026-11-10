@@ -768,6 +768,7 @@ const abrirNotas = async (e) => {
       nota: a.nota ?? '',
       comentarios: a.comentarios || '',
       agregado: a.nota !== null || a.ausente || Boolean(a.comentarios),
+      ausenteOriginal: a.ausente,
     }))
   } catch (err) {
     notificar({ titulo: 'Error', mensaje: err.message, tipo: 'danger' })
@@ -777,7 +778,13 @@ const abrirNotas = async (e) => {
   }
 }
 
-const guardarNotas = async () => {
+// Quienes ya rindieron online o tenían nota y ahora pasan a ausente: al guardar se borra su
+// intento y quedan ausentes también en la asistencia de la clase, por eso se confirma antes.
+const aspirantesQuePierdenResultado = computed(() =>
+  notas.value.filter(n => n.ausente && !n.ausenteOriginal && n.rendidoOnline)
+)
+
+const guardarNotas = () => {
   if (esPorAspirante.value && notas.value.some(n => n.agregado && !n.ausente && notaNumero(n) === null)) {
     notificar({ titulo: 'Faltan resultados', mensaje: 'Completá el resultado de cada aspirante agregado o marcalo ausente.', tipo: 'danger' })
     return
@@ -786,6 +793,23 @@ const guardarNotas = async () => {
     notificar({ titulo: 'Notas inválidas', mensaje: `Las notas tienen que estar entre 0 y ${formatoNota(examenNotas.value.notaMaxima)}.`, tipo: 'danger' })
     return
   }
+  const afectados = aspirantesQuePierdenResultado.value
+  if (afectados.length === 0) {
+    enviarNotas()
+    return
+  }
+  const nombres = afectados.map(n => `${n.apellido}, ${n.nombre}`).join(' · ')
+  notificar({
+    titulo: '¿Marcar como ausente?',
+    mensaje: afectados.length === 1
+      ? `${nombres} ya rindió este examen online. Si lo marcás ausente se borra su examen rendido y queda ausente también en la clase. No se puede deshacer.`
+      : `Estos aspirantes ya rindieron este examen online: ${nombres}. Si los marcás ausentes se borran sus exámenes rendidos y quedan ausentes también en la clase. No se puede deshacer.`,
+    tipo: 'danger',
+    alConfirmar: enviarNotas,
+  })
+}
+
+const enviarNotas = async () => {
   guardandoNotas.value = true
   try {
     const res = await api.post({
