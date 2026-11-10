@@ -1,0 +1,519 @@
+<template>
+  <div class="full-screen-wrapper px-3 px-md-4">
+    <div class="admin-panel animate__animated animate__fadeIn">
+
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+
+        <!-- HEADER -->
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
+          <div class="border-start border-danger border-5 ps-3">
+            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
+              <i class="bi bi-person-lock me-1"></i> Permisos
+            </h4>
+            <span class="text-muted small d-block mt-1">
+              {{ usuariosFiltrados.length }} usuarios · {{ cantidadActivos }} activos
+            </span>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
+            <button @click="obtenerUsuarios" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
+              <span v-else class="material-icons text-dark fs-6">refresh</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
+            </button>
+            <button @click="abrirModalNuevo" class="btn btn-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+              <span class="material-icons fs-6">person_add</span>
+              <span class="fw-bold small">Nuevo usuario</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- FILTROS -->
+        <div class="bg-light p-3 border-bottom">
+          <div class="row g-2">
+            <div class="col-12 col-md-6">
+              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar por nombre o email...">
+            </div>
+            <div class="col-6 col-md-3">
+              <select v-model="filtros.rol" class="form-select form-select-sm shadow-none">
+                <option value="">Todos los roles</option>
+                <option v-for="r in ROLES_ADMIN" :key="r.valor" :value="r.valor">{{ r.etiqueta }}</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-3">
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
+                <option value="">Todos</option>
+                <option value="1">Activos</option>
+                <option value="0">Desactivados</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-3 bg-white">
+
+          <div v-if="cargando" class="text-center p-5">
+            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
+            <p class="text-muted mt-3 fw-bold">Cargando usuarios...</p>
+          </div>
+
+          <template v-else>
+            <div v-if="usuariosFiltrados.length === 0" class="text-center p-4 p-md-5 border rounded">
+              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">person_off</span>
+              <p class="text-muted m-0 fw-bold">No se encontraron usuarios.</p>
+            </div>
+
+            <!-- MOBILE: CARDS -->
+            <div class="d-md-none d-flex flex-column gap-2">
+              <div v-for="u in usuariosFiltrados" :key="u.id" class="border rounded-3 p-3" :class="{ 'opacity-50': !esActivo(u) }">
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                  <div class="min-w-0">
+                    <div class="fw-bold text-dark text-truncate">
+                      {{ u.nombre || 'Sin nombre' }}
+                      <span v-if="esUsuarioActual(u)" class="badge bg-secondary-subtle text-secondary ms-1">Vos</span>
+                    </div>
+                    <div class="small text-muted text-truncate">{{ u.usuario }}</div>
+                  </div>
+                  <span class="badge rounded-pill flex-shrink-0" :class="esActivo(u) ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
+                    {{ esActivo(u) ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </div>
+                <div class="mt-2">
+                  <span class="badge bg-danger-subtle text-danger">{{ etiquetaRol(u.rol) }}</span>
+                </div>
+                <div class="d-flex flex-wrap gap-1 mt-2">
+                  <span v-for="c in categoriasDeRol(u.rol)" :key="c" class="badge bg-light text-dark border fw-normal">{{ c }}</span>
+                </div>
+                <div v-if="puedeGestionar(u)" class="d-flex gap-2 mt-3 border-top pt-2">
+                  <button @click="abrirModalEdicion(u)" class="btn btn-light btn-sm border flex-fill text-primary fw-bold">
+                    <i class="bi bi-pencil"></i> Editar
+                  </button>
+                  <button @click="abrirModalPassword(u)" class="btn btn-light btn-sm border flex-fill text-dark fw-bold">
+                    <i class="bi bi-key"></i> Clave
+                  </button>
+                  <button v-if="!esUsuarioActual(u)" @click="confirmarCambioEstado(u)" class="btn btn-light btn-sm border flex-fill fw-bold" :class="esActivo(u) ? 'text-danger' : 'text-success'">
+                    <i :class="esActivo(u) ? 'bi bi-person-dash' : 'bi bi-person-check'"></i>
+                    {{ esActivo(u) ? 'Baja' : 'Alta' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- DESKTOP: TABLA -->
+            <div v-if="usuariosFiltrados.length > 0" class="d-none d-md-block table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-uppercase">
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Categorías que ve</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-end">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="u in usuariosFiltrados" :key="u.id" :class="{ 'opacity-50': !esActivo(u) }">
+                    <td class="fw-bold text-dark">
+                      {{ u.nombre || 'Sin nombre' }}
+                      <span v-if="esUsuarioActual(u)" class="badge bg-secondary-subtle text-secondary ms-1">Vos</span>
+                    </td>
+                    <td class="small text-muted">{{ u.usuario }}</td>
+                    <td><span class="badge bg-danger-subtle text-danger">{{ etiquetaRol(u.rol) }}</span></td>
+                    <td>
+                      <div class="d-flex flex-wrap gap-1">
+                        <span v-for="c in categoriasDeRol(u.rol)" :key="c" class="badge bg-light text-dark border fw-normal">{{ c }}</span>
+                      </div>
+                    </td>
+                    <td class="text-center">
+                      <span class="badge rounded-pill" :class="esActivo(u) ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
+                        {{ esActivo(u) ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </td>
+                    <td class="text-end text-nowrap">
+                      <template v-if="puedeGestionar(u)">
+                        <button @click="abrirModalEdicion(u)" class="btn btn-light btn-sm border text-primary me-1" title="Editar">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button @click="abrirModalPassword(u)" class="btn btn-light btn-sm border text-dark me-1" title="Cambiar contraseña">
+                          <i class="bi bi-key"></i>
+                        </button>
+                        <button v-if="!esUsuarioActual(u)" @click="confirmarCambioEstado(u)" class="btn btn-light btn-sm border" :class="esActivo(u) ? 'text-danger' : 'text-success'" :title="esActivo(u) ? 'Desactivar' : 'Activar'">
+                          <i :class="esActivo(u) ? 'bi bi-person-dash' : 'bi bi-person-check'"></i>
+                        </button>
+                      </template>
+                      <span v-else class="small text-muted">Solo admin</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL ALTA / EDICION -->
+    <ModalBase
+      :show="mostrarModal"
+      @close="mostrarModal = false"
+      :icono="modoEdicion ? 'edit' : 'person_add'"
+      :colorIcono="modoEdicion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      maxWidth="600px"
+    >
+      <template #header>
+        <span class="fw-bold fs-5">{{ modoEdicion ? 'Editar usuario' : 'Nuevo usuario' }}</span>
+      </template>
+
+      <form id="formUsuarioAdmin" @submit.prevent="confirmarGuardado" class="text-start" novalidate>
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="small fw-bold text-dark mb-1">Nombre *</label>
+            <input v-model.trim="form.nombre" type="text" maxlength="100" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.nombre }" placeholder="Ej: Tesorería, Comisión de Ética...">
+            <div class="invalid-feedback">{{ errores.nombre }}</div>
+          </div>
+
+          <div class="col-12">
+            <label class="small fw-bold text-dark mb-1">Usuario (email) *</label>
+            <input v-model.trim="form.usuario" type="email" maxlength="100" autocomplete="off" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.usuario }" placeholder="nombre@aaab.com.ar">
+            <div class="invalid-feedback">{{ errores.usuario }}</div>
+            <span class="text-muted small">Tiene que terminar en @aaab.com.ar para que entre al panel de gestión.</span>
+          </div>
+
+          <div class="col-12">
+            <label class="small fw-bold text-dark mb-1">Rol *</label>
+            <select v-model="form.rol" class="form-select shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.rol }" :disabled="editandoseASiMismo">
+              <option value="" disabled>Elegí un rol</option>
+              <option v-for="r in rolesAsignables" :key="r.valor" :value="r.valor">{{ r.etiqueta }}</option>
+            </select>
+            <div class="invalid-feedback">{{ errores.rol }}</div>
+            <span v-if="editandoseASiMismo" class="text-muted small">No podés cambiar tu propio rol.</span>
+          </div>
+
+          <div v-if="form.rol" class="col-12">
+            <div class="bg-light border rounded-3 p-2">
+              <span class="small fw-bold text-dark d-block mb-1">Con este rol va a ver:</span>
+              <div class="d-flex flex-wrap gap-1">
+                <span v-for="c in categoriasDeRol(form.rol)" :key="c" class="badge bg-white text-dark border fw-normal">{{ c }}</span>
+              </div>
+            </div>
+          </div>
+
+          <template v-if="!modoEdicion">
+            <div class="col-12 col-sm-6">
+              <label class="small fw-bold text-dark mb-1">Contraseña *</label>
+              <input v-model="form.password" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.password }">
+              <div class="invalid-feedback">{{ errores.password }}</div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="small fw-bold text-dark mb-1">Repetir contraseña *</label>
+              <input v-model="form.confirmacion" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.confirmacion }">
+              <div class="invalid-feedback">{{ errores.confirmacion }}</div>
+            </div>
+          </template>
+        </div>
+      </form>
+
+      <template #footer>
+        <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button type="submit" form="formUsuarioAdmin" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesando">
+          <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
+          {{ procesando ? 'GUARDANDO...' : (modoEdicion ? 'GUARDAR CAMBIOS' : 'CREAR USUARIO') }}
+        </button>
+      </template>
+    </ModalBase>
+
+    <!-- MODAL CONTRASEÑA -->
+    <ModalBase
+      :show="mostrarModalPassword"
+      @close="mostrarModalPassword = false"
+      icono="key"
+      colorIcono="bg-warning-subtle text-warning"
+      maxWidth="480px"
+    >
+      <template #header>
+        <span class="fw-bold fs-5">Cambiar contraseña</span>
+      </template>
+
+      <p class="text-muted small mb-3">{{ formPassword.nombre }} · {{ formPassword.usuario }}</p>
+
+      <form id="formPasswordAdmin" @submit.prevent="guardarPassword" class="text-start" novalidate>
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="small fw-bold text-dark mb-1">Nueva contraseña *</label>
+            <input v-model="formPassword.password" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': erroresPassword.password }">
+            <div class="invalid-feedback">{{ erroresPassword.password }}</div>
+          </div>
+          <div class="col-12">
+            <label class="small fw-bold text-dark mb-1">Repetir contraseña *</label>
+            <input v-model="formPassword.confirmacion" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': erroresPassword.confirmacion }">
+            <div class="invalid-feedback">{{ erroresPassword.confirmacion }}</div>
+          </div>
+        </div>
+      </form>
+
+      <template #footer>
+        <button type="button" @click="mostrarModalPassword = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button type="submit" form="formPasswordAdmin" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesando">
+          <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
+          {{ procesando ? 'GUARDANDO...' : 'CAMBIAR CONTRASEÑA' }}
+        </button>
+      </template>
+    </ModalBase>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, computed, inject, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
+import { api } from '@/api/api'
+import { auth } from '@/api/auth'
+import ModalBase from '@/components/ModalBase.vue'
+import { CATEGORIAS_ADMIN, ROLES_ADMIN } from '@/config/categoriasAdmin'
+
+useHead({
+  title: 'Permisos | AAAB',
+  meta: [{ name: 'description', content: 'Usuarios del panel de gestión y sus roles.' }],
+})
+
+const notificar = inject('notificar')
+const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+
+const usuarioActual = auth.getUser()
+const soyAdmin = usuarioActual?.rol === 'admin'
+
+const LARGO_MINIMO_PASSWORD = 6
+const DOMINIO = '@aaab.com.ar'
+
+const listaUsuarios = ref([])
+const cargando = ref(false)
+const procesando = ref(false)
+
+const filtros = reactive({ busqueda: '', rol: '', estado: '1' })
+
+const mostrarModal = ref(false)
+const modoEdicion = ref(false)
+const formBase = { id: null, nombre: '', usuario: '', rol: '', password: '', confirmacion: '' }
+const form = reactive({ ...formBase })
+const errores = reactive({})
+
+const mostrarModalPassword = ref(false)
+const formPassword = reactive({ id: null, nombre: '', usuario: '', password: '', confirmacion: '' })
+const erroresPassword = reactive({})
+
+const rolesAsignables = computed(() => {
+  if (soyAdmin || form.rol === 'admin') return ROLES_ADMIN
+  return ROLES_ADMIN.filter(r => r.valor !== 'admin')
+})
+
+const editandoseASiMismo = computed(() => modoEdicion.value && Number(form.id) === Number(usuarioActual?.id))
+
+const normalizarTexto = (texto) => String(texto || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
+const esActivo = (u) => Number(u.activo) === 1
+const esUsuarioActual = (u) => Number(u.id) === Number(usuarioActual?.id)
+const puedeGestionar = (u) => soyAdmin || u.rol !== 'admin'
+
+const etiquetaRol = (rol) => ROLES_ADMIN.find(r => r.valor === rol)?.etiqueta || rol || 'Sin rol'
+
+const categoriasDeRol = (rol) => {
+  if (!rol) return []
+  const visible = (roles) => rol === 'admin' || !roles || roles.includes(rol)
+  return CATEGORIAS_ADMIN
+    .filter(cat => visible(cat.rolesPermitidos) && cat.items.some(item => visible(item.rolesPermitidos)))
+    .map(cat => cat.categoria)
+}
+
+const cantidadActivos = computed(() => listaUsuarios.value.filter(esActivo).length)
+
+const usuariosFiltrados = computed(() => {
+  const busqueda = normalizarTexto(filtros.busqueda)
+  return listaUsuarios.value.filter(u => {
+    if (busqueda && !normalizarTexto(`${u.nombre} ${u.usuario}`).includes(busqueda)) return false
+    if (filtros.rol && u.rol !== filtros.rol) return false
+    if (filtros.estado !== '' && String(Number(u.activo)) !== filtros.estado) return false
+    return true
+  })
+})
+
+const limpiarErrores = (obj) => Object.keys(obj).forEach(k => delete obj[k])
+
+const validarPassword = (password, confirmacion, destino) => {
+  if (!password || password.length < LARGO_MINIMO_PASSWORD) {
+    destino.password = `Mínimo ${LARGO_MINIMO_PASSWORD} caracteres.`
+  } else if (password.length > 72) {
+    destino.password = 'Máximo 72 caracteres.'
+  }
+  if (password !== confirmacion) destino.confirmacion = 'Las contraseñas no coinciden.'
+}
+
+const validarFormulario = () => {
+  limpiarErrores(errores)
+  const usuario = form.usuario.toLowerCase()
+  if (!form.nombre) errores.nombre = 'Ingresá un nombre.'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(usuario) || !usuario.endsWith(DOMINIO)) {
+    errores.usuario = `Ingresá un email que termine en ${DOMINIO}.`
+  } else if (listaUsuarios.value.some(u => u.usuario.toLowerCase() === usuario && Number(u.id) !== Number(form.id))) {
+    errores.usuario = 'Ya existe un usuario con ese email.'
+  }
+  if (!form.rol) errores.rol = 'Elegí un rol.'
+  if (!modoEdicion.value) validarPassword(form.password, form.confirmacion, errores)
+  return Object.keys(errores).length === 0
+}
+
+const obtenerUsuarios = async () => {
+  cargando.value = true
+  try {
+    const res = await api.get({ entity: 'usuarios_admin', action: 'listarUsuariosAdmin', payload: {} })
+    if (res.ok) {
+      listaUsuarios.value = Array.isArray(res.payload) ? res.payload : []
+    } else {
+      toast({ titulo: 'Error', mensaje: res.message || 'No se pudieron cargar los usuarios.', tipo: 'danger' })
+    }
+  } catch {
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
+  } finally {
+    cargando.value = false
+  }
+}
+
+const abrirModalNuevo = () => {
+  Object.assign(form, { ...formBase })
+  limpiarErrores(errores)
+  modoEdicion.value = false
+  mostrarModal.value = true
+}
+
+const abrirModalEdicion = (u) => {
+  Object.assign(form, { ...formBase, id: u.id, nombre: u.nombre || '', usuario: u.usuario, rol: u.rol || '' })
+  limpiarErrores(errores)
+  modoEdicion.value = true
+  mostrarModal.value = true
+}
+
+const confirmarGuardado = () => {
+  if (!validarFormulario()) return
+  notificar({
+    titulo: modoEdicion.value ? '¿Guardar cambios?' : '¿Crear usuario?',
+    mensaje: `${form.nombre} quedará con el rol ${etiquetaRol(form.rol)}.`,
+    tipo: 'success',
+    alConfirmar: guardarUsuario
+  })
+}
+
+const guardarUsuario = async () => {
+  procesando.value = true
+  try {
+    const payload = { nombre: form.nombre, usuario: form.usuario.toLowerCase(), rol: form.rol }
+    if (modoEdicion.value) payload.id = form.id
+    else payload.password = form.password
+
+    const res = await api.post({
+      entity: 'usuarios_admin',
+      action: modoEdicion.value ? 'editarUsuarioAdmin' : 'crearUsuarioAdmin',
+      payload
+    })
+    if (res.ok) {
+      mostrarModal.value = false
+      toast({ titulo: 'Listo', mensaje: `Usuario ${modoEdicion.value ? 'actualizado' : 'creado'}.`, tipo: 'success' })
+      await obtenerUsuarios()
+    } else {
+      toast({ titulo: 'Error', mensaje: res.message || 'El servidor rechazó la solicitud.', tipo: 'danger' })
+    }
+  } catch {
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
+  } finally {
+    procesando.value = false
+  }
+}
+
+const abrirModalPassword = (u) => {
+  Object.assign(formPassword, { id: u.id, nombre: u.nombre, usuario: u.usuario, password: '', confirmacion: '' })
+  limpiarErrores(erroresPassword)
+  mostrarModalPassword.value = true
+}
+
+const guardarPassword = async () => {
+  limpiarErrores(erroresPassword)
+  validarPassword(formPassword.password, formPassword.confirmacion, erroresPassword)
+  if (Object.keys(erroresPassword).length > 0) return
+
+  procesando.value = true
+  try {
+    const res = await api.post({
+      entity: 'usuarios_admin',
+      action: 'cambiarPasswordUsuarioAdmin',
+      payload: { id: formPassword.id, password: formPassword.password }
+    })
+    if (res.ok) {
+      mostrarModalPassword.value = false
+      toast({ titulo: 'Listo', mensaje: 'Contraseña actualizada.', tipo: 'success' })
+    } else {
+      toast({ titulo: 'Error', mensaje: res.message || 'No se pudo cambiar la contraseña.', tipo: 'danger' })
+    }
+  } catch {
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
+  } finally {
+    procesando.value = false
+  }
+}
+
+const confirmarCambioEstado = (u) => {
+  const activar = !esActivo(u)
+  notificar({
+    titulo: activar ? '¿Activar usuario?' : '¿Desactivar usuario?',
+    mensaje: activar
+      ? `${u.nombre} va a poder volver a ingresar al panel.`
+      : `${u.nombre} no va a poder ingresar al panel. Sus registros históricos se mantienen.`,
+    tipo: activar ? 'success' : 'danger',
+    alConfirmar: () => cambiarEstado(u, activar)
+  })
+}
+
+const cambiarEstado = async (u, activar) => {
+  try {
+    const res = await api.post({
+      entity: 'usuarios_admin',
+      action: 'cambiarEstadoUsuarioAdmin',
+      payload: { id: u.id, activo: activar ? 1 : 0 }
+    })
+    if (res.ok) {
+      toast({ titulo: 'Listo', mensaje: `Usuario ${activar ? 'activado' : 'desactivado'}.`, tipo: 'success' })
+      await obtenerUsuarios()
+    } else {
+      toast({ titulo: 'Error', mensaje: res.message || 'No se pudo cambiar el estado.', tipo: 'danger' })
+    }
+  } catch {
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
+  }
+}
+
+onMounted(() => {
+  obtenerUsuarios()
+})
+</script>
+
+<style scoped>
+.full-screen-wrapper {
+  position: relative;
+  width: 99vw;
+  min-height: 100vh;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  padding-bottom: 120px;
+}
+
+.admin-panel {
+  width: 100%;
+  background-color: #0f172a;
+  min-height: 100vh;
+  border-radius: 12px;
+}
+
+.min-w-0 { min-width: 0; }
+
+.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
+.btn-danger-subtle:hover { background: #fecaca; }
+
+.animate__animated { animation-duration: 0.5s; }
+</style>
