@@ -274,14 +274,16 @@
               <option v-for="a in disponiblesParaAgregar" :key="a.id" :value="a.id">{{ a.apellido }}, {{ a.nombre }} · {{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</option>
             </select>
           </div>
-          <div class="small mb-3">
-            <span class="badge bg-success me-1">{{ resumenNotas.aprobados }} aprobados</span>
-            <span class="badge bg-danger me-1">{{ resumenNotas.desaprobados }} desaprobados</span>
-            <span class="badge bg-secondary me-1">{{ resumenNotas.ausentes }} ausentes</span>
-            <span class="badge bg-light text-muted border">{{ resumenNotas.sin }} sin nota</span>
+          <div class="d-flex flex-wrap align-items-center gap-1 small mb-3">
+            <button type="button" class="badge border-0 filtro-badge bg-success" :class="{ activo: filtroNotas === 'aprobados', apagado: filtroNotas && filtroNotas !== 'aprobados' }" :aria-pressed="filtroNotas === 'aprobados'" @click="alternarFiltroNotas('aprobados')">{{ resumenNotas.aprobados }} aprobados</button>
+            <button type="button" class="badge border-0 filtro-badge bg-danger" :class="{ activo: filtroNotas === 'desaprobados', apagado: filtroNotas && filtroNotas !== 'desaprobados' }" :aria-pressed="filtroNotas === 'desaprobados'" @click="alternarFiltroNotas('desaprobados')">{{ resumenNotas.desaprobados }} desaprobados</button>
+            <button type="button" class="badge border-0 filtro-badge bg-secondary" :class="{ activo: filtroNotas === 'ausentes', apagado: filtroNotas && filtroNotas !== 'ausentes' }" :aria-pressed="filtroNotas === 'ausentes'" @click="alternarFiltroNotas('ausentes')">{{ resumenNotas.ausentes }} ausentes</button>
+            <button type="button" class="badge filtro-badge bg-light text-muted border" :class="{ activo: filtroNotas === 'sin', apagado: filtroNotas && filtroNotas !== 'sin' }" :aria-pressed="filtroNotas === 'sin'" @click="alternarFiltroNotas('sin')">{{ resumenNotas.sin }} sin nota</button>
+            <button v-if="filtroNotas" type="button" class="btn btn-link btn-sm p-0 ms-1 text-decoration-none small" @click="filtroNotas = null">Ver todos</button>
           </div>
           <div class="d-flex flex-column gap-2">
-            <div v-if="esPorAspirante && !filasVisibles.length" class="text-muted small fst-italic">Todavía no agregaste aspirantes.</div>
+            <div v-if="esPorAspirante && !filasBase.length" class="text-muted small fst-italic">Todavía no agregaste aspirantes.</div>
+            <div v-else-if="!filasVisibles.length" class="text-muted small fst-italic">No hay aspirantes en este filtro.</div>
             <div v-for="n in filasVisibles" :key="n.id" class="fila-nota">
               <div class="row g-2 align-items-center">
                 <div class="col-12 min-w-0" :class="esPorAspirante ? 'col-md-5' : 'col-md-4'">
@@ -716,9 +718,23 @@ const resultado = (n) => {
   return (v / examenNotas.value.notaMaxima) * 100 >= examenNotas.value.porcentajeAprobacion
 }
 
-// En práctico y físico se agregan los aspirantes que rindieron con un select
-const esPorAspirante = computed(() => ['practico', 'fisico'].includes(examenNotas.value?.tipo))
-const filasVisibles = computed(() => (esPorAspirante.value ? notas.value.filter(n => n.agregado) : notas.value))
+// En el práctico se agregan los aspirantes que rindieron con un select; en teórico y físico aparecen todos
+const esPorAspirante = computed(() => examenNotas.value?.tipo === 'practico')
+const filasBase = computed(() => (esPorAspirante.value ? notas.value.filter(n => n.agregado) : notas.value))
+
+const filtroNotas = ref(null)
+const alternarFiltroNotas = (valor) => {
+  filtroNotas.value = filtroNotas.value === valor ? null : valor
+}
+const categoriaNota = (n) => {
+  if (n.ausente) return 'ausentes'
+  if (notaNumero(n) === null) return 'sin'
+  const r = resultado(n)
+  if (r === true) return 'aprobados'
+  if (r === false) return 'desaprobados'
+  return null
+}
+const filasVisibles = computed(() => (filtroNotas.value ? filasBase.value.filter(n => categoriaNota(n) === filtroNotas.value) : filasBase.value))
 const disponiblesParaAgregar = computed(() => notas.value.filter(n => !n.agregado))
 
 const agregarAspirante = (evento) => {
@@ -731,10 +747,10 @@ const quitarAspirante = (n) => {
   Object.assign(n, { agregado: false, nota: '', ausente: false, comentarios: '' })
 }
 const resumenNotas = computed(() => ({
-  aprobados: filasVisibles.value.filter(n => resultado(n) === true).length,
-  desaprobados: filasVisibles.value.filter(n => resultado(n) === false).length,
-  ausentes: filasVisibles.value.filter(n => n.ausente).length,
-  sin: filasVisibles.value.filter(n => !n.ausente && notaNumero(n) === null).length,
+  aprobados: filasBase.value.filter(n => resultado(n) === true).length,
+  desaprobados: filasBase.value.filter(n => resultado(n) === false).length,
+  ausentes: filasBase.value.filter(n => n.ausente).length,
+  sin: filasBase.value.filter(n => !n.ausente && notaNumero(n) === null).length,
 }))
 
 const descargandoPdf = ref(null)
@@ -757,6 +773,7 @@ const descargarPdf = async (n) => {
 const abrirNotas = async (e) => {
   examenNotas.value = { ...e }
   notas.value = []
+  filtroNotas.value = null
   mostrarNotas.value = true
   cargandoNotas.value = true
   try {
@@ -843,6 +860,9 @@ onMounted(() => {
 .animate__animated { animation-duration: 0.5s; }
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
+.filtro-badge { cursor: pointer; font-size: 0.75rem; padding: 0.35em 0.65em; transition: opacity 0.15s ease, box-shadow 0.15s ease; }
+.filtro-badge.activo { box-shadow: 0 0 0 2px #0f172a; }
+.filtro-badge.apagado { opacity: 0.45; }
 .pestanas-examenes { scrollbar-width: thin; }
 .pestanas-examenes .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; white-space: nowrap; }
 .pestanas-examenes .nav-link.active { background: #dc3545; color: #fff; }

@@ -171,15 +171,17 @@
         <div v-if="!alumnosAsistencia.length" class="text-muted small fst-italic">No hay alumnos regulares de este curso en {{ claseAsistencia?.fecha?.substring(0, 4) }}.</div>
         <template v-else>
           <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-            <div class="small">
-              <span class="badge bg-success me-1">{{ conteoAsistencia.presente }} presentes</span>
-              <span class="badge bg-secondary me-1">{{ conteoAsistencia.ausente }} ausentes</span>
-              <span class="badge bg-light text-muted border">{{ conteoAsistencia.sin }} sin marcar</span>
+            <div class="d-flex flex-wrap gap-1 small">
+              <button type="button" class="badge border-0 filtro-badge bg-success" :class="{ activo: filtroAsistencia === 'presente', apagado: filtroAsistencia && filtroAsistencia !== 'presente' }" :aria-pressed="filtroAsistencia === 'presente'" @click="alternarFiltroAsistencia('presente')">{{ conteoAsistencia.presente }} presentes</button>
+              <button type="button" class="badge border-0 filtro-badge bg-secondary" :class="{ activo: filtroAsistencia === 'ausente', apagado: filtroAsistencia && filtroAsistencia !== 'ausente' }" :aria-pressed="filtroAsistencia === 'ausente'" @click="alternarFiltroAsistencia('ausente')">{{ conteoAsistencia.ausente }} ausentes</button>
+              <button type="button" class="badge filtro-badge bg-light text-muted border" :class="{ activo: filtroAsistencia === 'sin', apagado: filtroAsistencia && filtroAsistencia !== 'sin' }" :aria-pressed="filtroAsistencia === 'sin'" @click="alternarFiltroAsistencia('sin')">{{ conteoAsistencia.sin }} sin marcar</button>
+              <button v-if="filtroAsistencia" type="button" class="btn btn-link btn-sm p-0 ms-1 text-decoration-none small" @click="filtroAsistencia = null">Ver todos</button>
             </div>
             <button type="button" class="btn btn-sm btn-outline-success fw-bold" @click="marcarTodos('presente')">Todos presentes</button>
           </div>
           <div class="d-flex flex-column gap-2">
-            <div v-for="a in alumnosAsistencia" :key="a.id" class="fila-asistencia d-flex justify-content-between align-items-center gap-2">
+            <div v-if="!alumnosAsistenciaVisibles.length" class="text-muted small fst-italic">No hay alumnos en este filtro.</div>
+            <div v-for="a in alumnosAsistenciaVisibles" :key="a.id" class="fila-asistencia d-flex justify-content-between align-items-center gap-2">
               <div class="min-w-0">
                 <div class="fw-bold text-dark small text-uppercase text-truncate">{{ a.apellido }}, {{ a.nombre }}</div>
                 <div class="text-muted" style="font-size: 0.72rem;">
@@ -454,11 +456,24 @@ const conteoAsistencia = computed(() => ({
   sin: alumnosAsistencia.value.filter(a => !a.asistencia).length,
 }))
 
+const filtroAsistencia = ref(null)
+
+const alternarFiltroAsistencia = (valor) => {
+  filtroAsistencia.value = filtroAsistencia.value === valor ? null : valor
+}
+
+const alumnosAsistenciaVisibles = computed(() => {
+  if (!filtroAsistencia.value) return alumnosAsistencia.value
+  if (filtroAsistencia.value === 'sin') return alumnosAsistencia.value.filter(a => !a.asistencia)
+  return alumnosAsistencia.value.filter(a => a.asistencia === filtroAsistencia.value)
+})
+
 const marcarTodos = (valor) => alumnosAsistencia.value.forEach(a => { a.asistencia = valor })
 
 const abrirAsistencia = async (c) => {
   claseAsistencia.value = c
   alumnosAsistencia.value = []
+  filtroAsistencia.value = null
   mostrarAsistencia.value = true
   cargandoAsistencia.value = true
   try {
@@ -716,6 +731,9 @@ onMounted(() => cargar(anio.value))
 .animate__animated { animation-duration: 0.5s; }
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
+.filtro-badge { cursor: pointer; font-size: 0.75rem; padding: 0.35em 0.65em; transition: opacity 0.15s ease, box-shadow 0.15s ease; }
+.filtro-badge.activo { box-shadow: 0 0 0 2px #0f172a; }
+.filtro-badge.apagado { opacity: 0.45; }
 .accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
 .accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
 .accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
