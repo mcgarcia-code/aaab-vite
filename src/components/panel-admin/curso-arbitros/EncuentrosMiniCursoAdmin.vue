@@ -37,6 +37,7 @@
               <div class="tarjeta border rounded-3 p-3 h-100 d-flex flex-column">
                 <div class="fw-bold text-dark small">{{ fechaLargaClase(e.fecha) }}<template v-if="e.hora"> · {{ e.hora }} hs</template></div>
                 <div class="fw-bold text-dark mt-1">{{ e.titulo }}</div>
+                <div v-if="e.docentes?.length" class="small text-dark mt-1"><i class="bi bi-person-video3 me-1"></i><strong>Profesor a cargo:</strong> {{ e.docentes.map(d => d.nombre).join(' · ') }}</div>
                 <div class="small mt-2">
                   <span class="badge bg-light text-dark border me-1">{{ e.aspirantes.length }} convocados</span>
                   <span class="badge bg-success me-1">{{ contar(e, 'presente') }} presentes</span>
@@ -73,6 +74,10 @@
           <div class="col-5">
             <label for="mini-hora" class="form-label small fw-bold text-dark">Hora</label>
             <input id="mini-hora" v-model="form.hora" type="time" class="form-control">
+          </div>
+          <div class="col-12">
+            <label for="mini-docentes" class="form-label small fw-bold text-dark">Profesor a cargo</label>
+            <SelectorArbitros id="mini-docentes" v-model="form.docentes" />
           </div>
           <div class="col-12">
             <label for="mini-obs" class="form-label small fw-bold text-dark">Observaciones</label>
@@ -147,6 +152,7 @@ import { ref, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
+import SelectorArbitros from '@/components/SelectorArbitros.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
 
@@ -180,7 +186,7 @@ watch(anio, cargar)
 // ─── Alta / edición ──────────────────────────────────────────────
 // Los encuentros de mini son a las 10:30 salvo que se indique otra hora
 const HORA_MINI_DEFECTO = '10:30'
-const encuentroVacio = () => ({ id: null, titulo: '', fecha: '', hora: HORA_MINI_DEFECTO, lugar: '', observaciones: '', aspirantes: [] })
+const encuentroVacio = () => ({ id: null, titulo: '', fecha: '', hora: HORA_MINI_DEFECTO, lugar: '', observaciones: '', docentes: [], aspirantes: [] })
 const form = ref(encuentroVacio())
 const mostrarModal = ref(false)
 const intento = ref(false)
@@ -228,6 +234,7 @@ const abrirNuevo = () => {
 const abrirEditar = (e) => {
   form.value = {
     id: e.id, titulo: e.titulo, fecha: e.fecha, hora: e.hora || '', lugar: e.lugar || '', observaciones: e.observaciones || '',
+    docentes: [...(e.docentes || [])],
     aspirantes: e.aspirantes.map(a => a.id),
   }
   convocadosOriginales.value = e.aspirantes.map(({ id, apellido, nombre }) => ({ id, apellido, nombre }))
@@ -245,7 +252,7 @@ const guardar = async () => {
   }
   guardando.value = true
   try {
-    const res = await api.post({ entity: 'mini_curso_arbitro', action: 'guardarEncuentroMiniCurso', payload: f })
+    const res = await api.post({ entity: 'mini_curso_arbitro', action: 'guardarEncuentroMiniCurso', payload: { ...f, docentes: f.docentes.map(d => d.id) } })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el encuentro')
     toast({ titulo: 'Guardado', mensaje: 'El encuentro se guardó y se avisó a los convocados.', tipo: 'success' })
     mostrarModal.value = false

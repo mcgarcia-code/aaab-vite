@@ -86,6 +86,10 @@
                       <span class="material-icons flex-shrink-0" style="font-size: 15px;">schedule</span>
                       <span class="fw-bold text-dark">{{ formatearHora(e.hora) }} hs</span>
                     </div>
+                    <div v-if="e.docentes?.length" class="small text-dark d-flex align-items-start gap-1 mt-1">
+                      <i class="bi bi-person-video3 text-danger flex-shrink-0"></i>
+                      <span class="text-break"><strong>Profesor a cargo:</strong> {{ nombresDocentes(e) }}</span>
+                    </div>
                     <div v-if="e.comentarios" class="mt-2 pt-2 border-top small d-flex align-items-start gap-1 text-dark">
                       <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">chat</span>
                       <span class="text-break comentarios"><strong>Comentarios:</strong> {{ e.comentarios }}</span>
@@ -162,6 +166,10 @@
                               <span class="material-icons flex-shrink-0" style="font-size: 15px;">schedule</span>
                               <span class="fw-bold text-dark">{{ formatearHora(e.hora) }} hs</span>
                             </div>
+                            <div v-if="e.docentes?.length" class="small text-dark d-flex align-items-start gap-1 mt-1">
+                              <i class="bi bi-person-video3 text-secondary flex-shrink-0"></i>
+                              <span class="text-break"><strong>Profesor a cargo:</strong> {{ nombresDocentes(e) }}</span>
+                            </div>
                             <div v-if="e.comentarios" class="mt-2 pt-2 border-top small d-flex align-items-start gap-1 text-dark">
                               <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">chat</span>
                               <span class="text-break comentarios"><strong>Comentarios:</strong> {{ e.comentarios }}</span>
@@ -209,6 +217,7 @@ const etiquetaDia = (fecha) => {
   return `${DIAS[dia.getDay()]} ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${a}`
 }
 const formatearHora = (hora) => (hora ? String(hora).slice(0, 5) : '--:--')
+const nombresDocentes = (e) => e.docentes.map(d => d.nombre).join(' · ')
 
 const textoAsistencia = (a) => (a === 'presente' ? 'PRESENTE' : a === 'ausente' ? 'AUSENTE' : 'SIN REGISTRO')
 const claseAsistencia = (a) => (a === 'presente' ? 'bg-success' : a === 'ausente' ? 'bg-secondary' : 'bg-light text-muted border')
