@@ -21,7 +21,7 @@
             <h2 class="text-white fw-bold m-0 text-capitalize text-truncate fs-5 fs-md-3" style="line-height: 1.2;">
               Hola, {{ admin.nombre || 'Administrador' }} 👋
             </h2>
-            <span class="badge bg-danger mt-1 px-2 py-1 shadow-sm">Nivel: {{ admin.rol }}</span>
+            <span class="badge bg-danger mt-1 px-2 py-1 shadow-sm">Nivel: {{ etiquetaRol(admin.rol) }}</span>
           </div>
         </div>
 
@@ -43,6 +43,7 @@ import { ref, onMounted, computed } from 'vue';
 import { RouterView, useRoute, useRouter } from 'vue-router';
 import { auth } from '../../api/auth';
 import { useHead } from '@vueuse/head';
+import { etiquetaRol } from '@/config/modulosAdmin'
 
 const route = useRoute();
 const router = useRouter();

@@ -56,7 +56,8 @@ const logueado = ref(auth.isLoggedIn())
 // Propiedad computada para determinar a qué panel ir
 const rutaPanel = computed(() => {
   const user = auth.getUser();
-  return user?.rol === 'admin' ? '/panel-admin' : '/panel-arbitro';
+  if (user?.rol === 'alumno_curso') return '/panel-curso'
+  return user?.esAutoridad ? '/panel-admin' : '/panel-arbitro'
 })
 
 const actualizarEstado = () => {

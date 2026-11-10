@@ -27,9 +27,8 @@ const routes = [
     beforeEnter: (to, from, next) => {
       if (auth.isLoggedIn()) {
         const user = auth.getUser();
-        const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso', 'informes', 'indumentaria'];
         if (user?.rol === 'alumno_curso') return next('/panel-curso');
-        rolesStaff.includes(user?.rol) ? next('/panel-admin') : next('/panel-arbitro');
+        user?.esAutoridad ? next('/panel-admin') : next('/panel-arbitro');
       } else {
         next();
       }
@@ -149,7 +148,7 @@ const routes = [
   {
     path: '/panel-admin',
     component: () => import('../components/panel-admin/AdminPanel.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso', 'informes', 'indumentaria'] },
+    meta: { requiresAuth: true, soloAutoridad: true },
     children: [
       { path: '', name: 'AdminInicio', component: () => import('../components/panel-admin/AdminInicio.vue') },
 
@@ -227,8 +226,7 @@ router.beforeEach(async (to, from, next) => {
   const estaLogueado = auth.isLoggedIn();
   const user = auth.getUser();
   const userRole = user?.rol;
-
-  const rolesStaff = ['admin', 'secretario', 'etica', 'tesorero', 'designador', 'coordinador general', 'facturacion', 'curso', 'informes', 'indumentaria'];
+  const esAutoridad = !!user?.esAutoridad
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!estaLogueado) {
@@ -240,15 +238,19 @@ router.beforeEach(async (to, from, next) => {
       return next('/panel-curso');
     }
 
-    if (to.path.startsWith('/panel-arbitro') && rolesStaff.includes(userRole)) {
+    if (to.path.startsWith('/panel-arbitro') && esAutoridad) {
       return next('/panel-admin');
+    }
+
+    if (to.matched.some(record => record.meta.soloAutoridad) && !esAutoridad) {
+      return next('/panel-arbitro')
     }
 
     const matchedRecord = [...to.matched].reverse().find(record => record.meta.roles);
     const rolesPermitidos = matchedRecord ? matchedRecord.meta.roles : null;
 
     if (rolesPermitidos && !rolesPermitidos.includes(userRole)) {
-      return rolesStaff.includes(userRole) ? next('/panel-admin') : next('/panel-arbitro');
+      return esAutoridad ? next('/panel-admin') : next('/panel-arbitro');
     }
 
     const moduloRequerido = [...to.matched].reverse().find(record => record.meta.modulo)?.meta.modulo

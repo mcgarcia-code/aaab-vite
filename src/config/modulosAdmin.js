@@ -1,15 +1,24 @@
-export const ROLES_ADMIN = [
-  { valor: 'admin', etiqueta: 'Administrador' },
-  { valor: 'secretario', etiqueta: 'Secretaría' },
-  { valor: 'etica', etiqueta: 'Tribunal de Ética' },
-  { valor: 'designador', etiqueta: 'Designaciones' },
-  { valor: 'coordinador general', etiqueta: 'Coordinador General' },
-  { valor: 'tesorero', etiqueta: 'Tesorería' },
-  { valor: 'indumentaria', etiqueta: 'Indumentaria' },
-  { valor: 'curso', etiqueta: 'Curso de Árbitros' },
-  { valor: 'facturacion', etiqueta: 'Facturación' },
-  { valor: 'informes', etiqueta: 'Informes' },
-]
+export const ROL_ADMIN = 'admin'
+
+const ETIQUETAS_CARGO = {
+  'admin': 'Administrador',
+  'secretario': 'Secretaría',
+  'etica': 'Tribunal de Ética',
+  'designador': 'Designaciones',
+  'coordinador general': 'Coordinador General',
+  'tesorero': 'Tesorería',
+  'indumentaria': 'Indumentaria',
+  'curso': 'Curso de Árbitros',
+  'facturacion': 'Facturación',
+  'informes': 'Informes',
+}
+
+export const etiquetaRol = (rol) => {
+  const clave = String(rol || '').trim().toLowerCase()
+  if (!clave) return 'Sin cargo'
+  if (ETIQUETAS_CARGO[clave]) return ETIQUETAS_CARGO[clave]
+  return clave.replace(/(^|\s)\S/g, letra => letra.toUpperCase())
+}
 
 export const MODULOS_ADMIN = [
   { clave: 'secretaria', categoria: 'Secretaría General', etiqueta: 'Legajos, licencias, eventos, grupos y solicitudes' },

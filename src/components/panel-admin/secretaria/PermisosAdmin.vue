@@ -49,8 +49,8 @@
             </div>
             <div class="col-6 col-md-3">
               <select v-model="filtros.rol" class="form-select form-select-sm shadow-none text-uppercase text-dark">
-                <option value="">ROL</option>
-                <option v-for="r in ROLES_ADMIN" :key="r.valor" :value="r.valor">{{ r.etiqueta.toUpperCase() }}</option>
+                <option value="">CARGO</option>
+                <option v-for="r in rolesEnLista" :key="r" :value="r">{{ etiquetaRol(r).toUpperCase() }}</option>
               </select>
             </div>
             <div class="col-6 col-md-3">
@@ -84,7 +84,7 @@
                     <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
                     <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Nombre</th>
                     <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Usuario</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Rol</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Cargo</th>
                     <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
                     <th class="py-3 pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">Categorías que ve</th>
                   </tr>
@@ -143,7 +143,7 @@
 
                   <div class="bg-light p-2 rounded border small mb-3">
                     <div class="d-flex justify-content-between gap-2 mb-1">
-                      <span class="text-muted">Rol:</span>
+                      <span class="text-muted">Cargo:</span>
                       <span class="fw-bold text-dark text-end">{{ etiquetaRol(u.rol) }}</span>
                     </div>
                     <div class="d-flex justify-content-between gap-2">
@@ -217,30 +217,38 @@
             <span class="text-muted small">Tiene que terminar en @aaab.com.ar para que entre al panel de gestión.</span>
           </div>
 
-          <div class="col-12">
-            <label class="small fw-bold text-dark mb-1">Rol *</label>
-            <select v-model="form.rol" @change="aplicarModulosDelRol" class="form-select shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.rol }" :disabled="editandoseASiMismo">
-              <option value="" disabled>Elegí un rol</option>
-              <option v-for="r in rolesAsignables" :key="r.valor" :value="r.valor">{{ r.etiqueta }}</option>
-            </select>
-            <div class="invalid-feedback">{{ errores.rol }}</div>
-            <span v-if="editandoseASiMismo" class="text-muted small">No podés cambiar tu propio rol.</span>
+          <div v-if="soyAdmin" class="col-12">
+            <div class="form-check form-switch">
+              <input id="esAdminUsuario" v-model="form.esAdmin" @change="alCambiarAdmin" type="checkbox" class="form-check-input" :disabled="editandoseASiMismo">
+              <label for="esAdminUsuario" class="form-check-label small fw-bold text-dark">Administrador (ve todo y gestiona a otros administradores)</label>
+            </div>
           </div>
 
-          <div v-if="form.rol" class="col-12">
-            <div class="border rounded-3 p-2 p-sm-3" :class="errores.modulos ? 'border-danger' : ''">
-              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                <span class="small fw-bold text-dark">
-                  Permisos
-                  <span v-if="formPersonalizado" class="badge bg-warning-subtle text-warning-emphasis ms-1">Personalizado</span>
-                </span>
-                <button v-if="formPersonalizado && !modulosBloqueados" type="button" @click="aplicarModulosDelRol" class="btn btn-link btn-sm p-0 text-decoration-none">
-                  <i class="bi bi-arrow-counterclockwise"></i> Restablecer los del rol
-                </button>
-              </div>
+          <div v-if="!form.esAdmin" class="col-12">
+            <label class="small fw-bold text-dark mb-1">Cargo *</label>
+            <input v-model="form.rol" type="text" maxlength="40" list="cargosExistentes" autocomplete="off" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.rol }" :disabled="editandoseASiMismo" placeholder="Ej: Tesorero, Contador...">
+            <datalist id="cargosExistentes">
+              <option v-for="c in cargosExistentes" :key="c" :value="c">{{ etiquetaRol(c) }}</option>
+            </datalist>
+            <div class="invalid-feedback">{{ errores.rol }}</div>
+            <span v-if="editandoseASiMismo" class="text-muted small">No podés cambiar tu propio cargo.</span>
+            <span v-else class="text-muted small">Es solo el nombre que se muestra. Lo que puede hacer depende de los permisos de abajo.</span>
+          </div>
 
-              <p v-if="form.rol === 'admin'" class="small text-muted mb-2">El administrador ve todos los módulos.</p>
+          <div class="col-12">
+            <div class="border rounded-3 p-2 p-sm-3" :class="errores.modulos ? 'border-danger' : ''">
+              <span class="small fw-bold text-dark d-block mb-2">Permisos</span>
+
+              <p v-if="form.esAdmin" class="small text-muted mb-2">El administrador ve todos los módulos.</p>
               <p v-else-if="editandoseASiMismo" class="small text-muted mb-2">No podés cambiar tus propios permisos.</p>
+
+              <div v-if="!modulosBloqueados && usuariosParaCopiar.length" class="mb-3">
+                <label class="small text-muted mb-1">Copiar permisos de otro usuario (después podés ajustarlos a mano)</label>
+                <select v-model="copiarDe" @change="copiarPermisos" class="form-select form-select-sm shadow-none border-secondary-subtle">
+                  <option value="">Elegí un usuario...</option>
+                  <option v-for="u in usuariosParaCopiar" :key="u.id" :value="u.id">{{ u.nombre || u.usuario }} · {{ etiquetaRol(u.rol) }}</option>
+                </select>
+              </div>
 
               <div v-for="grupo in modulosPorCategoria" :key="grupo.categoria" class="mb-2">
                 <span class="small text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 0.7rem;">{{ grupo.categoria }}</span>
@@ -330,7 +338,7 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import ModalBase from '@/components/ModalBase.vue'
-import { MODULOS_ADMIN, ROLES_ADMIN } from '@/config/modulosAdmin'
+import { MODULOS_ADMIN, ROL_ADMIN, etiquetaRol } from '@/config/modulosAdmin'
 
 useHead({
   title: 'Permisos | AAAB',
@@ -341,7 +349,7 @@ const notificar = inject('notificar')
 const toast = inject('toast', ({ mensaje }) => alert(mensaje))
 
 const usuarioActual = auth.getUser()
-const soyAdmin = usuarioActual?.rol === 'admin'
+const soyAdmin = usuarioActual?.rol === ROL_ADMIN
 
 const LARGO_MINIMO_PASSWORD = 6
 const DOMINIO = '@aaab.com.ar'
@@ -354,9 +362,9 @@ const filtros = reactive({ busqueda: '', rol: '', estado: '1' })
 
 const mostrarModal = ref(false)
 const modoEdicion = ref(false)
-const crearFormBase = () => ({ id: null, nombre: '', usuario: '', rol: '', password: '', confirmacion: '', modulos: [] })
+const crearFormBase = () => ({ id: null, nombre: '', usuario: '', esAdmin: false, rol: '', password: '', confirmacion: '', modulos: [] })
 const form = reactive(crearFormBase())
-const modulosPorRol = ref({})
+const copiarDe = ref('')
 const tieneModuloPermisosOriginal = ref(false)
 const errores = reactive({})
 
@@ -364,10 +372,19 @@ const mostrarModalPassword = ref(false)
 const formPassword = reactive({ id: null, nombre: '', usuario: '', password: '', confirmacion: '' })
 const erroresPassword = reactive({})
 
-const rolesAsignables = computed(() => {
-  if (soyAdmin || form.rol === 'admin') return ROLES_ADMIN
-  return ROLES_ADMIN.filter(r => r.valor !== 'admin')
+const cargosExistentes = computed(() => {
+  const cargos = listaUsuarios.value.map(u => u.rol).filter(r => r && r !== ROL_ADMIN)
+  return [...new Set(cargos)].sort((a, b) => etiquetaRol(a).localeCompare(etiquetaRol(b)))
 })
+
+const rolesEnLista = computed(() => {
+  const roles = [...new Set(listaUsuarios.value.map(u => u.rol).filter(Boolean))]
+  return roles.sort((a, b) => etiquetaRol(a).localeCompare(etiquetaRol(b)))
+})
+
+const usuariosParaCopiar = computed(() => listaUsuarios.value.filter(u =>
+  Number(u.id) !== Number(form.id) && (u.modulos || []).length > 0
+))
 
 const editandoseASiMismo = computed(() => modoEdicion.value && Number(form.id) === Number(usuarioActual?.id))
 
@@ -375,14 +392,12 @@ const normalizarTexto = (texto) => String(texto || '').normalize('NFD').replace(
 
 const esActivo = (u) => Number(u.activo) === 1
 const esUsuarioActual = (u) => Number(u.id) === Number(usuarioActual?.id)
-const puedeGestionar = (u) => soyAdmin || u.rol !== 'admin'
-
-const etiquetaRol = (rol) => ROLES_ADMIN.find(r => r.valor === rol)?.etiqueta || rol || 'Sin rol'
+const puedeGestionar = (u) => soyAdmin || u.rol !== ROL_ADMIN
 
 const TODOS_LOS_MODULOS = MODULOS_ADMIN.map(m => m.clave)
 
 const categoriasDeUsuario = (u) => {
-  const modulos = u.rol === 'admin' ? TODOS_LOS_MODULOS : (u.modulos || [])
+  const modulos = u.rol === ROL_ADMIN ? TODOS_LOS_MODULOS : (u.modulos || [])
   return [...new Set(MODULOS_ADMIN.filter(m => modulos.includes(m.clave)).map(m => m.categoria))]
 }
 
@@ -399,27 +414,28 @@ const modulosPorCategoria = computed(() => {
   return grupos
 })
 
-const modulosPorDefectoDe = (rol) => rol === 'admin' ? [...TODOS_LOS_MODULOS] : [...(modulosPorRol.value[rol] || [])]
-
-const mismosModulos = (a, b) => a.length === b.length && a.every(m => b.includes(m))
-
-const modulosBloqueados = computed(() => form.rol === 'admin' || editandoseASiMismo.value)
-
-const formPersonalizado = computed(() => {
-  if (!form.rol || form.rol === 'admin') return false
-  return !mismosModulos(form.modulos, modulosPorDefectoDe(form.rol))
-})
+const modulosBloqueados = computed(() => form.esAdmin || editandoseASiMismo.value)
 
 const moduloDeshabilitado = (clave) => modulosBloqueados.value || (clave === 'permisos' && !soyAdmin)
 
-const aplicarModulosDelRol = () => {
-  const modulos = modulosPorDefectoDe(form.rol)
-  if (!soyAdmin && form.rol !== 'admin') {
-    const sinPermisos = modulos.filter(m => m !== 'permisos')
-    form.modulos = tieneModuloPermisosOriginal.value ? [...sinPermisos, 'permisos'] : sinPermisos
-    return
+const copiarPermisos = () => {
+  const origen = listaUsuarios.value.find(u => Number(u.id) === Number(copiarDe.value))
+  if (!origen) return
+  let modulos = [...(origen.modulos || [])]
+  if (!soyAdmin) {
+    modulos = modulos.filter(m => m !== 'permisos')
+    if (tieneModuloPermisosOriginal.value) modulos.push('permisos')
   }
   form.modulos = modulos
+  if (!form.rol && origen.rol !== ROL_ADMIN) form.rol = origen.rol
+  delete errores.modulos
+  copiarDe.value = ''
+  toast({ titulo: 'Permisos copiados', mensaje: `Se copiaron los permisos de ${origen.nombre || origen.usuario}. Podés ajustarlos marcando o desmarcando.`, tipo: 'success' })
+}
+
+const alCambiarAdmin = () => {
+  form.modulos = form.esAdmin ? [...TODOS_LOS_MODULOS] : []
+  delete errores.modulos
 }
 
 const cantidadActivos = computed(() => listaUsuarios.value.filter(esActivo).length)
@@ -482,8 +498,12 @@ const validarFormulario = () => {
   } else if (listaUsuarios.value.some(u => u.usuario.toLowerCase() === usuario && Number(u.id) !== Number(form.id))) {
     errores.usuario = 'Ya existe un usuario con ese email.'
   }
-  if (!form.rol) errores.rol = 'Elegí un rol.'
-  else if (!modulosBloqueados.value && form.modulos.length === 0) errores.modulos = 'Elegí al menos un módulo.'
+  if (!form.esAdmin) {
+    const cargo = cargoNormalizado()
+    if (cargo.length < 2 || cargo.length > 40) errores.rol = 'Ingresá un cargo de entre 2 y 40 caracteres.'
+    else if (cargo === ROL_ADMIN) errores.rol = soyAdmin ? 'Para un administrador usá la opción "Administrador".' : 'No podés asignar el cargo admin.'
+  }
+  if (!modulosBloqueados.value && form.modulos.length === 0) errores.modulos = 'Marcá al menos un módulo.'
   if (!modoEdicion.value) validarPassword(form.password, form.confirmacion, errores)
   return Object.keys(errores).length === 0
 }
@@ -493,8 +513,7 @@ const obtenerUsuarios = async () => {
   try {
     const res = await api.get({ entity: 'usuarios_admin', action: 'listarUsuariosAdmin', payload: {} })
     if (res.ok) {
-      listaUsuarios.value = Array.isArray(res.payload?.usuarios) ? res.payload.usuarios : []
-      modulosPorRol.value = res.payload?.modulosPorRol || {}
+      listaUsuarios.value = Array.isArray(res.payload) ? res.payload : []
     } else {
       toast({ titulo: 'Error', mensaje: res.message || 'No se pudieron cargar los usuarios.', tipo: 'danger' })
     }
@@ -505,8 +524,11 @@ const obtenerUsuarios = async () => {
   }
 }
 
+const cargoNormalizado = () => form.rol.trim().replace(/\s+/g, ' ').toLowerCase()
+
 const abrirModalNuevo = () => {
   Object.assign(form, crearFormBase())
+  copiarDe.value = ''
   tieneModuloPermisosOriginal.value = false
   limpiarErrores(errores)
   modoEdicion.value = false
@@ -514,8 +536,10 @@ const abrirModalNuevo = () => {
 }
 
 const abrirModalEdicion = (u) => {
-  const modulos = u.rol === 'admin' ? [...TODOS_LOS_MODULOS] : [...(u.modulos || [])]
-  Object.assign(form, { ...crearFormBase(), id: u.id, nombre: u.nombre || '', usuario: u.usuario, rol: u.rol || '', modulos })
+  const esAdmin = u.rol === ROL_ADMIN
+  const modulos = esAdmin ? [...TODOS_LOS_MODULOS] : [...(u.modulos || [])]
+  Object.assign(form, { ...crearFormBase(), id: u.id, nombre: u.nombre || '', usuario: u.usuario, esAdmin, rol: esAdmin ? '' : (u.rol || ''), modulos })
+  copiarDe.value = ''
   tieneModuloPermisosOriginal.value = modulos.includes('permisos')
   limpiarErrores(errores)
   modoEdicion.value = true
@@ -526,7 +550,9 @@ const confirmarGuardado = () => {
   if (!validarFormulario()) return
   notificar({
     titulo: modoEdicion.value ? '¿Guardar cambios?' : '¿Crear usuario?',
-    mensaje: `${form.nombre} quedará con el rol ${etiquetaRol(form.rol)}.`,
+    mensaje: form.esAdmin
+      ? `${form.nombre} quedará como administrador.`
+      : `${form.nombre} quedará con el cargo ${etiquetaRol(cargoNormalizado())} y ${form.modulos.length} ${form.modulos.length === 1 ? 'módulo' : 'módulos'}.`,
     tipo: 'success',
     alConfirmar: guardarUsuario
   })
@@ -535,7 +561,7 @@ const confirmarGuardado = () => {
 const guardarUsuario = async () => {
   procesando.value = true
   try {
-    const payload = { nombre: form.nombre, usuario: form.usuario.toLowerCase(), rol: form.rol }
+    const payload = { nombre: form.nombre, usuario: form.usuario.toLowerCase(), rol: form.esAdmin ? ROL_ADMIN : cargoNormalizado() }
     if (modoEdicion.value) payload.id = form.id
     else payload.password = form.password
     if (!editandoseASiMismo.value) payload.modulos = [...form.modulos]
