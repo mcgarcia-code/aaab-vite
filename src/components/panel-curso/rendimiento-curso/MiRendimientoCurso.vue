@@ -162,18 +162,28 @@ const abiertas = reactive({ clases: false, mini: false, examenes: false })
 
 const esAnual = computed(() => datos.value.modalidad === 'anual')
 
-// Porcentaje sobre los encuentros con asistencia registrada (presente o ausente)
+// Fecha de hoy (local) en formato AAAA-MM-DD para comparar con las fechas del backend
+const hoy = (() => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+})()
+const yaPaso = (x) => String(x.fecha) <= hoy
+const porcentajeDe = (presentes, total) => (total ? Math.round(presentes / total * 100) : null)
+
+// Mini: presentes sobre los encuentros ya realizados a los que fue convocado (mismo cálculo que la planilla del admin)
 const resumenMini = computed(() => {
-  const presentes = (datos.value.mini || []).filter(m => m.asistencia === 'presente').length
-  const ausentes = (datos.value.mini || []).filter(m => m.asistencia === 'ausente').length
-  const registrados = presentes + ausentes
-  return { presentes, ausentes, porcentaje: registrados ? Math.round(presentes / registrados * 100) : null }
+  const mini = datos.value.mini || []
+  const presentes = mini.filter(m => m.asistencia === 'presente').length
+  const ausentes = mini.filter(m => m.asistencia === 'ausente').length
+  const realizados = mini.filter(yaPaso)
+  return { presentes, ausentes, porcentaje: porcentajeDe(realizados.filter(m => m.asistencia === 'presente').length, realizados.length) }
 })
 
+// Clases: presentes sobre el total de clases ya dictadas del curso (mismo cálculo que la planilla del admin)
 const resumen = computed(() => {
   const presentes = datos.value.clases.filter(c => c.asistencia === 'presente').length
   const ausentes = datos.value.clases.filter(c => c.asistencia === 'ausente').length
-  const registradas = presentes + ausentes
+  const dictadas = datos.value.clases.filter(yaPaso)
   const conNota = datos.value.examenes.filter(e => e.nota !== null && (e.tipo || 'teorico') === 'teorico')
   const promedio = conNota.length
     ? `${formatoNota(Math.round(conNota.reduce((s, e) => s + (e.nota / (e.notaMaxima || 100)) * 100, 0) / conNota.length))}%`
@@ -181,7 +191,7 @@ const resumen = computed(() => {
   return {
     presentes,
     ausentes,
-    porcentaje: registradas ? Math.round((presentes / registradas) * 100) : null,
+    porcentaje: porcentajeDe(dictadas.filter(c => c.asistencia === 'presente').length, dictadas.length),
     promedio,
   }
 })
