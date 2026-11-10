@@ -117,10 +117,7 @@
                     <td class="text-center">
                       <span :class="['badge-status-sm', esActivo(u) ? 'activo' : 'inactivo']">{{ esActivo(u) ? 'ACTIVO' : 'INACTIVO' }}</span>
                     </td>
-                    <td class="pe-3 text-muted">
-                      {{ categoriasDeUsuario(u).join(' · ') }}
-                      <span v-if="u.personalizado" class="badge-status-sm personalizado ms-1">PERSONALIZADO</span>
-                    </td>
+                    <td class="pe-3 text-muted">{{ categoriasDeUsuario(u).join(' · ') }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -151,10 +148,7 @@
                     </div>
                     <div class="d-flex justify-content-between gap-2">
                       <span class="text-muted">Ve:</span>
-                      <span class="fw-bold text-dark text-end">
-                        {{ categoriasDeUsuario(u).join(' · ') }}
-                        <span v-if="u.personalizado" class="badge-status-sm personalizado ms-1">PERSONALIZADO</span>
-                      </span>
+                      <span class="fw-bold text-dark text-end">{{ categoriasDeUsuario(u).join(' · ') }}</span>
                     </div>
                   </div>
 
@@ -659,8 +653,6 @@ onMounted(() => {
 .activo { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 .inactivo { background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; }
 .rol { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-.personalizado { background: #fef3c7; color: #d97706; border: 1px solid #fde047; }
-.badge-status-sm.personalizado { padding: 2px 6px; font-size: 0.55rem; border-radius: 8px; vertical-align: middle; }
 .vos { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
 
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
