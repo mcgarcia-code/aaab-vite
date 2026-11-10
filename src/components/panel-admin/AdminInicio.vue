@@ -53,16 +53,12 @@
 </template>
 
 <script setup>
-import { auth } from '../../api/auth'
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import { CATEGORIAS_ADMIN } from '@/config/modulosAdmin'
 import { usePermisos } from '@/composables/usePermisos'
-
-const user = auth.getUser()
-const userRole = user ? user.rol : null
 
 useHead({
   title: 'Panel de Gestión | AAAB',
@@ -86,10 +82,9 @@ const cargarRechazosPendientes = async () => {
 }
 
 const reunionesPendientes = ref(0)
-const ROLES_APROBADORES = ['admin', 'secretario', 'coordinador general']
 
 const cargarReunionesPendientes = async () => {
-  if (!ROLES_APROBADORES.includes(userRole)) return
+  if (!tienePermiso('gestion_reuniones')) return
   try {
     const res = await api.get({ entity: 'eventos', action: 'contarReunionesPendientes' })
     if (res?.ok) reunionesPendientes.value = Number(res.payload) || 0
@@ -106,9 +101,9 @@ const gruposConItems = computed(() => {
     .filter(cat => cat.items.length > 0)
 })
 
-onMounted(() => {
-  cargarPermisos(true)
+onMounted(async () => {
   cargarRechazosPendientes()
+  await cargarPermisos(true)
   cargarReunionesPendientes()
 })
 </script>

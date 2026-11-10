@@ -257,7 +257,7 @@ import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 import CalendarioEventos from '@/components/CalendarioEventos.vue'
-import { auth } from '@/api/auth'
+import { usePermisos } from '@/composables/usePermisos'
 
 useHead({
   title: 'Gestion de Eventos | AAAB',
@@ -464,8 +464,8 @@ const eliminar = async (id) => {
   }
 }
 
-const usuario = auth.getUser()
-const esAprobador = ['admin', 'secretario', 'coordinador general'].includes(usuario?.rol)
+const { tienePermiso } = usePermisos()
+const esAprobador = computed(() => tienePermiso('gestion_reuniones'))
 const pendientes = ref([])
 const resolviendo = ref(null)
 const reunionRechazo = ref(null)
@@ -474,7 +474,7 @@ const motivoRechazo = ref('')
 const formatearFecha = (f) => f ? String(f).substring(0, 10).split('-').reverse().join('/') : ''
 
 const cargarPendientes = async () => {
-  if (!esAprobador) return
+  if (!esAprobador.value) return
   try {
     const res = await api.get({ entity: 'eventos', action: 'obtenerReunionesPendientes' })
     if (res?.ok) pendientes.value = res.payload || []

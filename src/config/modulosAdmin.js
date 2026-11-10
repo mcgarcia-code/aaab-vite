@@ -14,6 +14,7 @@ export const ROLES_ADMIN = [
 export const MODULOS_ADMIN = [
   { clave: 'secretaria', categoria: 'Secretaría General', etiqueta: 'Legajos, licencias, eventos, grupos y solicitudes' },
   { clave: 'permisos', categoria: 'Secretaría General', etiqueta: 'Permisos (usuarios del panel)' },
+  { clave: 'gestion_reuniones', categoria: 'Secretaría General', etiqueta: 'Aprobar reuniones, asignar disertantes y ver la asistencia de todos los grupos' },
   { clave: 'etica', categoria: 'Tribunal de Ética', etiqueta: 'Sanciones' },
   { clave: 'designaciones', categoria: 'Designaciones Arbitrales', etiqueta: 'Disponibilidad, partidos y rechazos' },
   { clave: 'datos_personales', categoria: 'Tesorería', etiqueta: 'Datos personales' },

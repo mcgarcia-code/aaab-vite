@@ -4,153 +4,190 @@
 
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
-        <!-- HEADER -->
+        <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
               <i class="bi bi-person-lock me-1"></i> Permisos
             </h4>
-            <span class="text-muted small d-block mt-1">
-              {{ usuariosFiltrados.length }} usuarios · {{ cantidadActivos }} activos
-            </span>
+            <span class="text-muted small d-block mt-1">Total: {{ usuariosFiltrados.length }} usuarios · {{ cantidadActivos }} activos</span>
           </div>
 
-          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <button @click="obtenerUsuarios" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
               <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
               <span v-else class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
-            <button @click="abrirModalNuevo" class="btn btn-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+
+            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
+              <span class="material-icons fs-6">filter_alt</span>
+            </button>
+
+            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
+              <span class="material-icons text-dark fs-6">filter_alt_off</span>
+              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
+            </button>
+
+            <button @click="abrirModalNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
               <span class="material-icons fs-6">person_add</span>
-              <span class="fw-bold small">Nuevo usuario</span>
+              <span class="fw-bold d-none d-md-inline small">Nuevo</span>
             </button>
           </div>
         </div>
 
-        <!-- FILTROS -->
-        <div class="bg-light p-3 border-bottom">
+        <!-- PANEL DE FILTROS -->
+        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
+          <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
+            <span class="small fw-bold text-dark text-uppercase">Filtrar Usuarios</span>
+            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+          </div>
+
           <div class="row g-2">
             <div class="col-12 col-md-6">
-              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="Buscar por nombre o email...">
+              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="NOMBRE O EMAIL...">
             </div>
             <div class="col-6 col-md-3">
-              <select v-model="filtros.rol" class="form-select form-select-sm shadow-none">
-                <option value="">Todos los roles</option>
-                <option v-for="r in ROLES_ADMIN" :key="r.valor" :value="r.valor">{{ r.etiqueta }}</option>
+              <select v-model="filtros.rol" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ROL</option>
+                <option v-for="r in ROLES_ADMIN" :key="r.valor" :value="r.valor">{{ r.etiqueta.toUpperCase() }}</option>
               </select>
             </div>
             <div class="col-6 col-md-3">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none">
-                <option value="">Todos</option>
-                <option value="1">Activos</option>
-                <option value="0">Desactivados</option>
+              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                <option value="">ESTADO</option>
+                <option value="1">ACTIVOS</option>
+                <option value="0">DESACTIVADOS</option>
               </select>
+            </div>
+            <div class="col-12 d-md-none mt-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
 
-        <div class="card-body p-3 bg-white">
+        <div class="card-body p-0 p-md-3 bg-white">
 
-          <div v-if="cargando" class="text-center p-5">
+          <!-- SPINNER DE CARGA -->
+          <div v-if="cargando" class="text-center p-5 bg-white">
             <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
             <p class="text-muted mt-3 fw-bold">Cargando usuarios...</p>
           </div>
 
           <template v-else>
-            <div v-if="usuariosFiltrados.length === 0" class="text-center p-4 p-md-5 border rounded">
-              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">person_off</span>
-              <p class="text-muted m-0 fw-bold">No se encontraron usuarios.</p>
-            </div>
-
-            <!-- MOBILE: CARDS -->
-            <div class="d-md-none d-flex flex-column gap-2">
-              <div v-for="u in usuariosFiltrados" :key="u.id" class="border rounded-3 p-3" :class="{ 'opacity-50': !esActivo(u) }">
-                <div class="d-flex justify-content-between align-items-start gap-2">
-                  <div class="min-w-0">
-                    <div class="fw-bold text-dark text-truncate">
-                      {{ u.nombre || 'Sin nombre' }}
-                      <span v-if="esUsuarioActual(u)" class="badge bg-secondary-subtle text-secondary ms-1">Vos</span>
-                    </div>
-                    <div class="small text-muted text-truncate">{{ u.usuario }}</div>
-                  </div>
-                  <span class="badge rounded-pill flex-shrink-0" :class="esActivo(u) ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
-                    {{ esActivo(u) ? 'Activo' : 'Inactivo' }}
-                  </span>
-                </div>
-                <div class="mt-2 d-flex flex-wrap gap-1">
-                  <span class="badge bg-danger-subtle text-danger">{{ etiquetaRol(u.rol) }}</span>
-                  <span v-if="u.personalizado" class="badge bg-warning-subtle text-warning-emphasis">Personalizado</span>
-                </div>
-                <div class="d-flex flex-wrap gap-1 mt-2">
-                  <span v-for="c in categoriasDeUsuario(u)" :key="c" class="badge bg-light text-dark border fw-normal">{{ c }}</span>
-                </div>
-                <div v-if="puedeGestionar(u)" class="d-flex gap-2 mt-3 border-top pt-2">
-                  <button @click="abrirModalEdicion(u)" class="btn btn-light btn-sm border flex-fill text-primary fw-bold">
-                    <i class="bi bi-pencil"></i> Editar
-                  </button>
-                  <button @click="abrirModalPassword(u)" class="btn btn-light btn-sm border flex-fill text-dark fw-bold">
-                    <i class="bi bi-key"></i> Clave
-                  </button>
-                  <button v-if="!esUsuarioActual(u)" @click="confirmarCambioEstado(u)" class="btn btn-light btn-sm border flex-fill fw-bold" :class="esActivo(u) ? 'text-danger' : 'text-success'">
-                    <i :class="esActivo(u) ? 'bi bi-person-dash' : 'bi bi-person-check'"></i>
-                    {{ esActivo(u) ? 'Baja' : 'Alta' }}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- DESKTOP: TABLA -->
-            <div v-if="usuariosFiltrados.length > 0" class="d-none d-md-block table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-light small text-uppercase">
+            <!-- TABLA (Solo Escritorio) -->
+            <div class="d-none d-md-block table-responsive border rounded shadow-sm">
+              <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem;">
+                <thead class="table-light">
                   <tr>
-                    <th>Nombre</th>
-                    <th>Usuario</th>
-                    <th>Rol</th>
-                    <th>Categorías que ve</th>
-                    <th class="text-center">Estado</th>
-                    <th class="text-end">Acciones</th>
+                    <th class="py-3 ps-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 1px;">ID</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Nombre</th>
+                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Usuario</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Rol</th>
+                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
+                    <th class="py-3 pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">Categorías que ve</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="u in usuariosFiltrados" :key="u.id" :class="{ 'opacity-50': !esActivo(u) }">
-                    <td class="fw-bold text-dark">
-                      {{ u.nombre || 'Sin nombre' }}
-                      <span v-if="esUsuarioActual(u)" class="badge bg-secondary-subtle text-secondary ms-1">Vos</span>
-                    </td>
-                    <td class="small text-muted">{{ u.usuario }}</td>
-                    <td>
-                      <span class="badge bg-danger-subtle text-danger">{{ etiquetaRol(u.rol) }}</span>
-                      <span v-if="u.personalizado" class="badge bg-warning-subtle text-warning-emphasis ms-1">Personalizado</span>
-                    </td>
-                    <td>
-                      <div class="d-flex flex-wrap gap-1">
-                        <span v-for="c in categoriasDeUsuario(u)" :key="c" class="badge bg-light text-dark border fw-normal">{{ c }}</span>
+                  <tr v-for="u in usuariosPaginados" :key="u.id" :class="{ 'opacity-50': !esActivo(u) }">
+                    <td class="ps-3 text-muted fw-bold font-monospace">{{ u.id }}</td>
+                    <td class="text-center">
+                      <div v-if="puedeGestionar(u)" class="d-flex justify-content-center gap-1">
+                        <button @click="abrirModalEdicion(u)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar Usuario">
+                          <span class="material-icons" style="font-size:16px;">edit</span>
+                        </button>
+                        <button @click="abrirModalPassword(u)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Cambiar Contraseña">
+                          <span class="material-icons" style="font-size:16px;">key</span>
+                        </button>
+                        <button v-if="!esUsuarioActual(u)" @click="confirmarCambioEstado(u)" :class="['btn btn-light btn-sm border shadow-sm rounded p-1', esActivo(u) ? 'text-danger' : 'text-success']" :title="esActivo(u) ? 'Desactivar' : 'Activar'">
+                          <span class="material-icons" style="font-size:16px;">{{ esActivo(u) ? 'person_off' : 'person_add_alt' }}</span>
+                        </button>
                       </div>
+                      <span v-else class="text-muted small fw-bold">SOLO ADMIN</span>
+                    </td>
+                    <td class="fw-bold text-uppercase text-dark">
+                      {{ u.nombre || 'Sin nombre' }}
+                      <span v-if="esUsuarioActual(u)" class="badge-status-sm vos ms-1">VOS</span>
+                    </td>
+                    <td class="text-muted">{{ u.usuario }}</td>
+                    <td class="text-center">
+                      <span class="badge-status-sm rol">{{ etiquetaRol(u.rol).toUpperCase() }}</span>
+                      <span v-if="u.personalizado" class="badge-status-sm personalizado ms-1">PERSONALIZADO</span>
                     </td>
                     <td class="text-center">
-                      <span class="badge rounded-pill" :class="esActivo(u) ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'">
-                        {{ esActivo(u) ? 'Activo' : 'Inactivo' }}
-                      </span>
+                      <span :class="['badge-status-sm', esActivo(u) ? 'activo' : 'inactivo']">{{ esActivo(u) ? 'ACTIVO' : 'INACTIVO' }}</span>
                     </td>
-                    <td class="text-end text-nowrap">
-                      <template v-if="puedeGestionar(u)">
-                        <button @click="abrirModalEdicion(u)" class="btn btn-light btn-sm border text-primary me-1" title="Editar">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button @click="abrirModalPassword(u)" class="btn btn-light btn-sm border text-dark me-1" title="Cambiar contraseña">
-                          <i class="bi bi-key"></i>
-                        </button>
-                        <button v-if="!esUsuarioActual(u)" @click="confirmarCambioEstado(u)" class="btn btn-light btn-sm border" :class="esActivo(u) ? 'text-danger' : 'text-success'" :title="esActivo(u) ? 'Desactivar' : 'Activar'">
-                          <i :class="esActivo(u) ? 'bi bi-person-dash' : 'bi bi-person-check'"></i>
-                        </button>
-                      </template>
-                      <span v-else class="small text-muted">Solo admin</span>
-                    </td>
+                    <td class="pe-3 text-muted">{{ categoriasDeUsuario(u).join(' · ') }}</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- CARDS (Solo Celular) -->
+            <div class="d-md-none p-3 bg-light">
+              <div v-for="u in usuariosPaginados" :key="'mob-' + u.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'opacity-50': !esActivo(u) }">
+
+                <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start gap-2">
+                  <div class="text-uppercase text-dark fw-bold text-break" style="font-size: 1.05rem;">
+                    {{ u.nombre || 'Sin nombre' }}
+                    <span v-if="esUsuarioActual(u)" class="badge-status-sm vos ms-1">VOS</span>
+                  </div>
+                  <div class="small text-muted fw-bold font-monospace">#{{ u.id }}</div>
+                </div>
+
+                <div class="card-body pt-0 px-3 pb-3">
+                  <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+                    <span class="text-muted small text-break">{{ u.usuario }}</span>
+                    <span :class="['badge-status-sm', esActivo(u) ? 'activo' : 'inactivo']" style="font-size: 0.7rem; padding: 3px 10px;">{{ esActivo(u) ? 'ACTIVO' : 'INACTIVO' }}</span>
+                  </div>
+
+                  <div class="bg-light p-2 rounded border small mb-3">
+                    <div class="d-flex justify-content-between gap-2 mb-1">
+                      <span class="text-muted">Rol:</span>
+                      <span class="fw-bold text-dark text-end">
+                        {{ etiquetaRol(u.rol) }}
+                        <span v-if="u.personalizado" class="badge-status-sm personalizado ms-1">PERSONALIZADO</span>
+                      </span>
+                    </div>
+                    <div class="d-flex justify-content-between gap-2">
+                      <span class="text-muted">Ve:</span>
+                      <span class="fw-bold text-dark text-end">{{ categoriasDeUsuario(u).join(' · ') }}</span>
+                    </div>
+                  </div>
+
+                  <div v-if="puedeGestionar(u)" class="d-flex gap-2">
+                    <button @click="abrirModalEdicion(u)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                      <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
+                    </button>
+                    <button @click="abrirModalPassword(u)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center" title="Cambiar Contraseña">
+                      <span class="material-icons" style="font-size: 18px;">key</span>
+                    </button>
+                    <button v-if="!esUsuarioActual(u)" @click="confirmarCambioEstado(u)" :class="['btn btn-sm shadow-sm px-3 d-flex justify-content-center align-items-center', esActivo(u) ? 'btn-outline-danger' : 'btn-outline-success']" :title="esActivo(u) ? 'Desactivar' : 'Activar'">
+                      <span class="material-icons" style="font-size: 18px;">{{ esActivo(u) ? 'person_off' : 'person_add_alt' }}</span>
+                    </button>
+                  </div>
+                  <div v-else class="text-muted small fw-bold text-center">SOLO UN ADMIN PUEDE MODIFICARLO</div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div v-if="usuariosPaginados.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-3">
+              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">search_off</span>
+              <p class="text-muted m-0 fw-bold">No se encontraron usuarios.</p>
+            </div>
+
+            <!-- PAGINACIÓN -->
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
+                <i class="bi bi-chevron-left"></i> Ant
+              </button>
+              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
+                Sig <i class="bi bi-chevron-right"></i>
+              </button>
             </div>
           </template>
         </div>
@@ -292,7 +329,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, inject, onMounted } from 'vue'
+import { ref, reactive, computed, inject, onMounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
@@ -400,6 +437,34 @@ const usuariosFiltrados = computed(() => {
     return true
   })
 })
+
+const mostrarFiltrosMobile = ref(false)
+const paginaActual = ref(1)
+const registrosPorPagina = 15
+
+const totalPaginas = computed(() => Math.ceil(usuariosFiltrados.value.length / registrosPorPagina) || 1)
+
+const usuariosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return usuariosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
+})
+
+watch(filtros, () => {
+  paginaActual.value = 1
+}, { deep: true })
+
+watch(totalPaginas, (nuevoTotal) => {
+  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal
+})
+
+const cambiarPagina = (delta) => {
+  paginaActual.value += delta
+  if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const limpiarFiltros = () => {
+  Object.assign(filtros, { busqueda: '', rol: '', estado: '' })
+}
 
 const limpiarErrores = (obj) => Object.keys(obj).forEach(k => delete obj[k])
 
@@ -581,7 +646,19 @@ onMounted(() => {
   border-radius: 12px;
 }
 
-.min-w-0 { min-width: 0; }
+.badge-status-sm {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  white-space: nowrap;
+  display: inline-block;
+}
+.activo { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.inactivo { background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; }
+.rol { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.personalizado { background: #fef3c7; color: #d97706; border: 1px solid #fde047; }
+.vos { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
 
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
