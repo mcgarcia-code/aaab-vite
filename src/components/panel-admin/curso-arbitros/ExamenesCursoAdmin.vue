@@ -131,11 +131,24 @@
                 <i v-else class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
               </button>
               <span class="text-muted text-nowrap">{{ alumnosPlanilla.length }} alumnos · {{ columnasPlanilla.length }} exámenes</span>
+              <button
+                v-if="totalInconsistencias || soloInconsistencias"
+                type="button"
+                class="btn btn-sm fw-bold d-flex align-items-center gap-1"
+                :class="soloInconsistencias ? 'btn-warning' : 'btn-outline-warning text-dark'"
+                title="Nota del examen que no coincide con la asistencia de la clase"
+                @click="soloInconsistencias = !soloInconsistencias"
+              >
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                {{ totalInconsistencias }} inconsistencia{{ totalInconsistencias === 1 ? '' : 's' }}
+                <span v-if="soloInconsistencias">· ver todos</span>
+              </button>
               <span class="ms-auto d-flex flex-wrap gap-3">
                 <span><span class="cuadrito cuadrito-verde"></span> Aprobado</span>
                 <span><span class="cuadrito cuadrito-roja"></span> Desaprobado</span>
                 <span><span class="cuadrito cuadrito-gris"></span> Ausente (AUS)</span>
                 <span><span class="cuadrito cuadrito-na"></span> No le corresponde</span>
+                <span><i class="bi bi-exclamation-triangle-fill text-warning"></i> No coincide con la asistencia</span>
               </span>
             </div>
             <div v-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
@@ -148,7 +161,10 @@
                       <th class="th-curso">CURSO</th>
                       <th v-for="e in columnasPlanilla" :key="'th-' + e.id" class="th-evento" :title="e.clase ? e.titulo + ' · ' + e.clase : e.titulo">
                         <div class="fw-bold text-uppercase texto-recortado">{{ e.titulo }}</div>
-                        <div class="fecha-evento">{{ etiquetaColumna(e) }} · {{ fechaDMA(e.fecha) }}</div>
+                        <div class="fecha-evento">
+                          {{ etiquetaColumna(e) }} · {{ fechaDMA(e.fecha) }}
+                          <i v-if="!e.idClase" class="bi bi-link-45deg text-danger" title="Sin clase asociada: la asistencia no se sincroniza con este examen"></i>
+                        </div>
                       </th>
                       <th class="th-total">APROBADOS</th>
                       <th class="th-total" title="Presente sobre las clases ya dictadas del curso (mínimo 75%)">% ASIST.<br>CLASES</th>
@@ -159,7 +175,8 @@
                     <tr v-for="a in alumnosPlanilla" :key="'pl-' + a.id">
                       <td class="col-alumno celda-nombre text-uppercase">{{ a.apellido }}, {{ a.nombre }}</td>
                       <td class="celda"><span class="badge" :class="MODALIDADES_CURSO[a.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</span></td>
-                      <td v-for="e in columnasPlanilla" :key="'c-' + a.id + '-' + e.id" class="celda" :class="claseCeldaPlanilla(e, a)" :title="!correspondeExamen(e, a) ? 'No le corresponde' : undefined">
+                      <td v-for="e in columnasPlanilla" :key="'c-' + a.id + '-' + e.id" class="celda" :class="[claseCeldaPlanilla(e, a), { 'celda-inconsistente': inconsistencia(e, a) }]" :title="!correspondeExamen(e, a) ? 'No le corresponde' : inconsistencia(e, a) || undefined">
+                        <i v-if="inconsistencia(e, a)" class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
                         <template v-if="correspondeExamen(e, a) && celda(e, a)">
                           <template v-if="celda(e, a).ausente">AUS</template>
                           <template v-else-if="celda(e, a).nota !== null">{{ textoCelda(e, a) }}</template>
@@ -193,6 +210,9 @@
                       <div class="min-w-0">
                         <div class="text-dark text-break">{{ e.titulo }}</div>
                         <div class="text-muted" style="font-size: 0.68rem;">{{ etiquetaColumna(e) }} · {{ fechaDMA(e.fecha) }}</div>
+                        <div v-if="inconsistencia(e, a)" class="text-warning-emphasis fw-semibold" style="font-size: 0.68rem;">
+                          <i class="bi bi-exclamation-triangle-fill text-warning"></i> {{ inconsistencia(e, a) }}
+                        </div>
                       </div>
                       <div class="flex-shrink-0 text-end">
                         <template v-if="celda(e, a)">
@@ -491,13 +511,46 @@ const columnasPlanilla = computed(() =>
   [...examenesFiltrados.value].sort((a, b) => String(a.fecha).localeCompare(String(b.fecha)) || a.id - b.id)
 )
 
-const alumnosPlanilla = computed(() => {
+const alumnosFiltrados = computed(() => {
   const texto = normalizarTexto(filtroAlumno.value)
   return planilla.value.alumnos.filter(a =>
     (!filtroCurso.value || a.modalidadCurso === filtroCurso.value) &&
     (!texto || normalizarTexto(`${a.apellido} ${a.nombre}`).includes(texto))
   )
 })
+
+const alumnosPlanilla = computed(() =>
+  soloInconsistencias.value
+    ? alumnosFiltrados.value.filter(a => columnasPlanilla.value.some(e => inconsistencia(e, a)))
+    : alumnosFiltrados.value
+)
+
+// ─── Inconsistencias entre la nota del examen y la asistencia de su clase ──
+const soloInconsistencias = ref(false)
+
+const indiceAsistenciaClase = computed(() => {
+  const mapa = {}
+  for (const x of planilla.value.asistenciaClases || []) mapa[`${x.idClase}-${x.idAlumno}`] = x.presente
+  return mapa
+})
+
+// Rindió (con nota) otro examen de la misma clase: estuvo en la clase aunque haya faltado a este examen
+const rindioOtroDeLaClase = (e, a) =>
+  examenes.value.some(x => x.idClase === e.idClase && x.id !== e.id && celda(x, a) && !celda(x, a).ausente && celda(x, a).nota !== null)
+
+const inconsistencia = (e, a) => {
+  if (!e.idClase || !correspondeExamen(e, a)) return null
+  const n = celda(e, a)
+  if (!n) return null
+  const presente = indiceAsistenciaClase.value[`${e.idClase}-${a.id}`]
+  if (n.ausente && presente === true && !rindioOtroDeLaClase(e, a)) return 'AUS en el examen pero presente en la clase'
+  if (!n.ausente && n.nota !== null && presente === false) return 'Tiene nota pero figura ausente en la clase'
+  return null
+}
+
+const totalInconsistencias = computed(() =>
+  alumnosFiltrados.value.reduce((t, a) => t + columnasPlanilla.value.filter(e => inconsistencia(e, a)).length, 0)
+)
 
 const indiceNotas = computed(() => {
   const mapa = {}
@@ -960,6 +1013,7 @@ onMounted(() => {
 .celda-roja { background-color: #f8d7da; color: #842029; font-weight: 600; }
 .celda-gris { background-color: #e9ecef; color: #6c757d; font-weight: 600; }
 .celda-na { background-color: #f8f9fa; }
+.celda-inconsistente { box-shadow: inset 0 0 0 2px #ffc107; }
 .chip-nota { display: inline-block; border-radius: 4px; padding: 1px 8px; font-size: 0.75rem; }
 .cuadrito { display: inline-block; width: 12px; height: 12px; border: 1px solid #ced4da; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
 .cuadrito-verde { background-color: #d1e7dd; }
