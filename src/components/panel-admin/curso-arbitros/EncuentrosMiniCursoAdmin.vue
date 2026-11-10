@@ -19,7 +19,7 @@
               <span v-else class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
-            <button @click="abrirNuevo(null)" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+            <button @click="abrirModalFecha(null)" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
               <span class="material-icons fs-6">add_box</span>
               <span class="fw-bold d-none d-md-inline small">Nueva fecha</span>
             </button>
@@ -28,9 +28,10 @@
 
         <div class="card-body p-3 bg-white">
           <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando encuentros de mini...</p></div>
-          <div v-else-if="!encuentros.length" class="text-center py-5 text-muted">
+          <div v-else-if="!fechas.length" class="text-center py-5 text-muted">
             <span class="material-icons d-block fs-1 mb-2 opacity-50">event_busy</span>
-            <span class="fw-bold">Todavía no hay encuentros de mini en {{ anio }}.</span>
+            <span class="fw-bold d-block">Todavía no hay fechas de mini en {{ anio }}.</span>
+            <button type="button" class="btn btn-danger btn-sm fw-bold mt-3" @click="abrirModalFecha(null)"><i class="bi bi-calendar-plus me-1"></i> Programar una fecha</button>
           </div>
 
           <!-- FECHAS -->
@@ -44,14 +45,15 @@
                   </div>
                   <span class="badge bg-danger flex-shrink-0">{{ f.encuentros.length }} {{ f.encuentros.length === 1 ? 'sede' : 'sedes' }}</span>
                 </div>
-                <div class="small text-muted mt-2 text-truncate w-100">{{ f.encuentros.map(e => e.titulo).join(' · ') }}</div>
-                <div class="small mt-2">
+                <div v-if="!f.encuentros.length" class="small text-muted fst-italic mt-2">Sin sedes todavía</div>
+                <div v-else class="small text-muted mt-2 text-truncate w-100">{{ f.encuentros.map(e => e.titulo).join(' · ') }}</div>
+                <div v-if="f.encuentros.length" class="small mt-2">
                   <span class="badge bg-light text-dark border me-1">{{ f.convocados }} convocados</span>
                   <span class="badge bg-success me-1">{{ f.presentes }} presentes</span>
                   <span class="badge bg-secondary me-1">{{ f.ausentes }} ausentes</span>
                   <span v-if="f.sinMarcar" class="badge bg-light text-muted border">{{ f.sinMarcar }} sin marcar</span>
                 </div>
-                <div class="small fw-bold text-danger mt-auto pt-3">Ver sedes <i class="bi bi-chevron-right"></i></div>
+                <div class="small fw-bold text-danger mt-auto pt-3">{{ f.encuentros.length ? 'Ver sedes' : 'Agregar sedes' }} <i class="bi bi-chevron-right"></i></div>
               </button>
             </div>
           </div>
@@ -65,14 +67,26 @@
                 </button>
                 <div class="min-w-0">
                   <div class="fw-bold text-dark text-break">{{ fechaLargaClase(fechaActual.fecha) }}</div>
-                  <div class="small text-muted">{{ fechaActual.encuentros.length }} {{ fechaActual.encuentros.length === 1 ? 'sede' : 'sedes' }} ·{{ fechaActual.convocados }} convocados</div>
+                  <div class="small text-muted">{{ fechaActual.encuentros.length }} {{ fechaActual.encuentros.length === 1 ? 'sede' : 'sedes' }} · {{ fechaActual.convocados }} convocados</div>
                 </div>
               </div>
-              <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm flex-shrink-0" @click="abrirNuevo(fechaActual.fecha)">
-                <i class="bi bi-plus-lg me-1"></i> Agregar sede
-              </button>
+              <div class="d-flex flex-wrap gap-2 flex-shrink-0">
+                <button v-if="fechaActual.id" type="button" class="btn btn-light border btn-sm fw-bold" @click="abrirModalFecha(fechaActual)" title="Cambiar la fecha">
+                  <i class="bi bi-calendar-event me-1"></i> Cambiar fecha
+                </button>
+                <button v-if="fechaActual.id && !fechaActual.encuentros.length" type="button" class="btn btn-outline-danger btn-sm fw-bold" @click="confirmarEliminarFecha(fechaActual)" aria-label="Borrar fecha">
+                  <i class="bi bi-trash3"></i>
+                </button>
+                <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm" @click="abrirNuevo(fechaActual.fecha)">
+                  <i class="bi bi-plus-lg me-1"></i> Agregar sede
+                </button>
+              </div>
             </div>
-            <div class="row g-3">
+            <div v-if="!fechaActual.encuentros.length" class="text-center py-5 text-muted bg-light rounded-3">
+              <span class="material-icons d-block fs-1 mb-2 opacity-50">add_location_alt</span>
+              <span class="fw-bold">Esta fecha todavía no tiene sedes. Agregá la primera.</span>
+            </div>
+            <div v-else class="row g-3">
               <div v-for="e in fechaActual.encuentros" :key="e.id" class="col-12 col-md-6 col-xl-4">
                 <div class="tarjeta border rounded-3 p-3 h-100 d-flex flex-column">
                   <div class="fw-bold text-dark">{{ e.titulo }}</div>
@@ -97,6 +111,26 @@
       </div>
     </div>
 
+    <!-- FECHA -->
+    <ModalBase :show="mostrarModalFecha" @close="mostrarModalFecha = false" icono="calendar_month" colorIcono="bg-danger-subtle text-danger" maxWidth="420px">
+      <template #header>
+        <span class="fw-bold fs-5">{{ formFecha.id ? 'Cambiar fecha' : 'Nueva fecha de mini' }}</span>
+      </template>
+      <form id="formFechaMini" class="text-start" novalidate @submit.prevent="guardarFecha">
+        <label for="mini-nueva-fecha" class="form-label small fw-bold text-dark">Fecha *</label>
+        <input id="mini-nueva-fecha" v-model="formFecha.fecha" type="date" class="form-control" :class="{ 'is-invalid': intentoFecha && !formFecha.fecha }">
+        <div v-if="formFecha.id" class="form-text">Las sedes de esta fecha pasan a la nueva y se avisa a los convocados.</div>
+        <div v-else class="form-text">Después entrás a la fecha y agregás las sedes.</div>
+      </form>
+      <template #footer>
+        <button type="button" @click="mostrarModalFecha = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+        <button type="submit" form="formFechaMini" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoFecha">
+          <span v-if="guardandoFecha" class="spinner-border spinner-border-sm me-1"></span>
+          GUARDAR
+        </button>
+      </template>
+    </ModalBase>
+
     <!-- ALTA / EDICIÓN -->
     <ModalBase :show="mostrarModal" @close="mostrarModal = false" :icono="form.id ? 'edit_calendar' : 'event'" colorIcono="bg-danger-subtle text-danger" maxWidth="680px">
       <template #header>
@@ -109,8 +143,8 @@
             <input id="mini-titulo" v-model.trim="form.titulo" type="text" maxlength="150" class="form-control" :class="{ 'is-invalid': intento && !form.titulo }" placeholder="Ej: Club Atlético Ejemplo">
           </div>
           <div class="col-7">
-            <label for="mini-fecha" class="form-label small fw-bold text-dark">Fecha *</label>
-            <input id="mini-fecha" v-model="form.fecha" type="date" class="form-control" :class="{ 'is-invalid': intento && !form.fecha }">
+            <span class="form-label small fw-bold text-dark d-block">Fecha</span>
+            <div class="form-control bg-light text-dark">{{ form.fecha ? fechaLargaClase(form.fecha) : '—' }}</div>
           </div>
           <div class="col-5">
             <label for="mini-hora" class="form-label small fw-bold text-dark">Hora</label>
@@ -206,6 +240,7 @@ const toast = inject('toast', (m) => notificar(m))
 const anio = ref(Number(anioActual()))
 const anios = computed(() => conAnioActual([String(Number(anioActual()) + 1)]).map(Number))
 const encuentros = ref([])
+const fechasProgramadas = ref([])
 const cargando = ref(false)
 
 const contar = (e, valor) => e.aspirantes.filter(a => a.asistencia === valor).length
@@ -214,8 +249,14 @@ const contar = (e, valor) => e.aspirantes.filter(a => a.asistencia === valor).le
 const hoy = new Date().toLocaleDateString('sv-SE')
 const fechaSeleccionada = ref(null)
 
+// Fechas programadas (aunque no tengan sedes) con sus sedes
 const fechas = computed(() => {
   const mapa = {}
+  const ids = {}
+  fechasProgramadas.value.forEach(f => {
+    mapa[f.fecha] = []
+    ids[f.fecha] = f.id
+  })
   encuentros.value.forEach(e => {
     if (!mapa[e.fecha]) mapa[e.fecha] = []
     mapa[e.fecha].push(e)
@@ -226,6 +267,7 @@ const fechas = computed(() => {
       const sedes = mapa[fecha].sort((a, b) => `${a.hora || ''} ${a.titulo}`.localeCompare(`${b.hora || ''} ${b.titulo}`))
       const aspirantes = sedes.flatMap(e => e.aspirantes)
       return {
+        id: ids[fecha] || null,
         fecha,
         pasada: fecha < hoy,
         encuentros: sedes,
@@ -239,13 +281,21 @@ const fechas = computed(() => {
 
 const fechaActual = computed(() => fechas.value.find(f => f.fecha === fechaSeleccionada.value) || null)
 
-watch(anio, () => { fechaSeleccionada.value = null })
+// Al cambiar de año se vuelve a la lista, salvo que la fecha elegida sea de ese año
+watch(anio, (a) => {
+  if (String(fechaSeleccionada.value || '').substring(0, 4) !== String(a)) fechaSeleccionada.value = null
+})
 
 const cargar = async () => {
   cargando.value = true
   try {
-    const res = await api.get({ entity: 'mini_curso_arbitro', action: 'obtenerEncuentrosMiniCurso', payload: { anio: anio.value } })
+    const [resFechas, res] = await Promise.all([
+      api.get({ entity: 'mini_curso_arbitro', action: 'obtenerFechasMiniCurso', payload: { anio: anio.value } }),
+      api.get({ entity: 'mini_curso_arbitro', action: 'obtenerEncuentrosMiniCurso', payload: { anio: anio.value } }),
+    ])
+    if (!resFechas?.ok) throw new Error(resFechas?.message || 'No se pudieron cargar las fechas')
     if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los encuentros')
+    fechasProgramadas.value = resFechas.payload || []
     encuentros.value = res.payload || []
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
@@ -255,6 +305,65 @@ const cargar = async () => {
 }
 
 watch(anio, cargar)
+
+// ─── Fecha (primero se programa la fecha, después se agregan las sedes) ──
+const mostrarModalFecha = ref(false)
+const formFecha = ref({ id: null, fecha: '' })
+const intentoFecha = ref(false)
+const guardandoFecha = ref(false)
+
+const abrirModalFecha = (f) => {
+  formFecha.value = { id: f?.id || null, fecha: f?.fecha || '' }
+  intentoFecha.value = false
+  mostrarModalFecha.value = true
+}
+
+const guardarFecha = async () => {
+  intentoFecha.value = true
+  const { id, fecha } = formFecha.value
+  if (!fecha) {
+    notificar({ titulo: 'Falta la fecha', mensaje: 'Elegí la fecha del encuentro de mini.', tipo: 'danger' })
+    return
+  }
+  if (fechasProgramadas.value.some(f => f.fecha === fecha && f.id !== id)) {
+    notificar({ titulo: 'Fecha repetida', mensaje: `El ${fechaLargaClase(fecha)} ya está programado.`, tipo: 'danger' })
+    return
+  }
+  guardandoFecha.value = true
+  try {
+    const res = await api.post({ entity: 'mini_curso_arbitro', action: 'guardarFechaMiniCurso', payload: { id, fecha } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar la fecha')
+    toast({ titulo: 'Guardado', mensaje: id ? 'La fecha se cambió.' : 'La fecha se programó. Ahora agregá las sedes.', tipo: 'success' })
+    mostrarModalFecha.value = false
+    fechaSeleccionada.value = fecha
+    const anioFecha = Number(fecha.substring(0, 4))
+    if (anioFecha !== anio.value) anio.value = anioFecha
+    else await cargar()
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    guardandoFecha.value = false
+  }
+}
+
+const confirmarEliminarFecha = (f) => {
+  notificar({
+    titulo: '¿Borrar fecha?',
+    mensaje: `${fechaLargaClase(f.fecha)}. No tiene sedes cargadas.`,
+    tipo: 'danger',
+    alConfirmar: async () => {
+      try {
+        const res = await api.post({ entity: 'mini_curso_arbitro', action: 'eliminarFechaMiniCurso', payload: { id: f.id } })
+        if (!res?.ok) throw new Error(res?.message || 'No se pudo borrar la fecha')
+        toast({ titulo: 'Borrado', mensaje: 'La fecha se borró.', tipo: 'success' })
+        fechaSeleccionada.value = null
+        await cargar()
+      } catch (err) {
+        notificar({ titulo: 'Error', mensaje: err.message, tipo: 'danger' })
+      }
+    },
+  })
+}
 
 // ─── Alta / edición ──────────────────────────────────────────────
 // Los encuentros de mini son a las 10:30 salvo que se indique otra hora
@@ -304,11 +413,11 @@ const otrasSedesDeLaFecha = computed(() =>
 const otraSedeDe = (idAlumno) => otrasSedesDeLaFecha.value.find(e => e.aspirantes.some(a => a.id === idAlumno))?.titulo || ''
 
 const abrirNuevo = (fecha) => {
-  form.value = { ...encuentroVacio(), fecha: fecha || '' }
+  form.value = { ...encuentroVacio(), fecha }
   convocadosOriginales.value = []
   intento.value = false
   mostrarModal.value = true
-  cargarAspirantes(anio.value)
+  cargarAspirantes(Number(fecha.substring(0, 4)))
 }
 
 const abrirEditar = (e) => {
@@ -326,8 +435,8 @@ const abrirEditar = (e) => {
 const guardar = async () => {
   intento.value = true
   const f = form.value
-  if (!f.titulo || !f.fecha || !f.aspirantes.length) {
-    notificar({ titulo: 'Faltan datos', mensaje: 'Completá la sede, la fecha y elegí al menos un aspirante.', tipo: 'danger' })
+  if (!f.titulo || !f.aspirantes.length) {
+    notificar({ titulo: 'Faltan datos', mensaje: 'Completá la sede y elegí al menos un aspirante.', tipo: 'danger' })
     return
   }
   guardando.value = true
@@ -336,10 +445,7 @@ const guardar = async () => {
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el encuentro')
     toast({ titulo: 'Guardado', mensaje: 'La sede se guardó y se avisó a los convocados.', tipo: 'success' })
     mostrarModal.value = false
-    const anioEncuentro = Number(f.fecha.substring(0, 4))
-    if (anioEncuentro !== anio.value) anio.value = anioEncuentro
-    else await cargar()
-    fechaSeleccionada.value = f.fecha
+    await cargar()
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
   } finally {
