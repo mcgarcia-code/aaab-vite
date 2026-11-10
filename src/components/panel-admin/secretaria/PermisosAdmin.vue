@@ -78,11 +78,12 @@
                     {{ esActivo(u) ? 'Activo' : 'Inactivo' }}
                   </span>
                 </div>
-                <div class="mt-2">
+                <div class="mt-2 d-flex flex-wrap gap-1">
                   <span class="badge bg-danger-subtle text-danger">{{ etiquetaRol(u.rol) }}</span>
+                  <span v-if="u.personalizado" class="badge bg-warning-subtle text-warning-emphasis">Personalizado</span>
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
-                  <span v-for="c in categoriasDeRol(u.rol)" :key="c" class="badge bg-light text-dark border fw-normal">{{ c }}</span>
+                  <span v-for="c in categoriasDeUsuario(u)" :key="c" class="badge bg-light text-dark border fw-normal">{{ c }}</span>
                 </div>
                 <div v-if="puedeGestionar(u)" class="d-flex gap-2 mt-3 border-top pt-2">
                   <button @click="abrirModalEdicion(u)" class="btn btn-light btn-sm border flex-fill text-primary fw-bold">
@@ -119,10 +120,13 @@
                       <span v-if="esUsuarioActual(u)" class="badge bg-secondary-subtle text-secondary ms-1">Vos</span>
                     </td>
                     <td class="small text-muted">{{ u.usuario }}</td>
-                    <td><span class="badge bg-danger-subtle text-danger">{{ etiquetaRol(u.rol) }}</span></td>
+                    <td>
+                      <span class="badge bg-danger-subtle text-danger">{{ etiquetaRol(u.rol) }}</span>
+                      <span v-if="u.personalizado" class="badge bg-warning-subtle text-warning-emphasis ms-1">Personalizado</span>
+                    </td>
                     <td>
                       <div class="d-flex flex-wrap gap-1">
-                        <span v-for="c in categoriasDeRol(u.rol)" :key="c" class="badge bg-light text-dark border fw-normal">{{ c }}</span>
+                        <span v-for="c in categoriasDeUsuario(u)" :key="c" class="badge bg-light text-dark border fw-normal">{{ c }}</span>
                       </div>
                     </td>
                     <td class="text-center">
@@ -182,7 +186,7 @@
 
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Rol *</label>
-            <select v-model="form.rol" class="form-select shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.rol }" :disabled="editandoseASiMismo">
+            <select v-model="form.rol" @change="aplicarModulosDelRol" class="form-select shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.rol }" :disabled="editandoseASiMismo">
               <option value="" disabled>Elegí un rol</option>
               <option v-for="r in rolesAsignables" :key="r.valor" :value="r.valor">{{ r.etiqueta }}</option>
             </select>
@@ -191,11 +195,35 @@
           </div>
 
           <div v-if="form.rol" class="col-12">
-            <div class="bg-light border rounded-3 p-2">
-              <span class="small fw-bold text-dark d-block mb-1">Con este rol va a ver:</span>
-              <div class="d-flex flex-wrap gap-1">
-                <span v-for="c in categoriasDeRol(form.rol)" :key="c" class="badge bg-white text-dark border fw-normal">{{ c }}</span>
+            <div class="border rounded-3 p-2 p-sm-3" :class="errores.modulos ? 'border-danger' : ''">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                <span class="small fw-bold text-dark">
+                  Permisos
+                  <span v-if="formPersonalizado" class="badge bg-warning-subtle text-warning-emphasis ms-1">Personalizado</span>
+                </span>
+                <button v-if="formPersonalizado && !modulosBloqueados" type="button" @click="aplicarModulosDelRol" class="btn btn-link btn-sm p-0 text-decoration-none">
+                  <i class="bi bi-arrow-counterclockwise"></i> Restablecer los del rol
+                </button>
               </div>
+
+              <p v-if="form.rol === 'admin'" class="small text-muted mb-2">El administrador ve todos los módulos.</p>
+              <p v-else-if="editandoseASiMismo" class="small text-muted mb-2">No podés cambiar tus propios permisos.</p>
+
+              <div v-for="grupo in modulosPorCategoria" :key="grupo.categoria" class="mb-2">
+                <span class="small text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 0.7rem;">{{ grupo.categoria }}</span>
+                <div v-for="m in grupo.modulos" :key="m.clave" class="form-check">
+                  <input
+                    :id="`modulo-${m.clave}`"
+                    v-model="form.modulos"
+                    :value="m.clave"
+                    :disabled="moduloDeshabilitado(m.clave)"
+                    type="checkbox"
+                    class="form-check-input"
+                  >
+                  <label :for="`modulo-${m.clave}`" class="form-check-label small">{{ m.etiqueta }}</label>
+                </div>
+              </div>
+              <div v-if="errores.modulos" class="small text-danger">{{ errores.modulos }}</div>
             </div>
           </div>
 
@@ -269,7 +297,7 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import ModalBase from '@/components/ModalBase.vue'
-import { CATEGORIAS_ADMIN, ROLES_ADMIN } from '@/config/categoriasAdmin'
+import { MODULOS_ADMIN, ROLES_ADMIN } from '@/config/modulosAdmin'
 
 useHead({
   title: 'Permisos | AAAB',
@@ -293,8 +321,10 @@ const filtros = reactive({ busqueda: '', rol: '', estado: '1' })
 
 const mostrarModal = ref(false)
 const modoEdicion = ref(false)
-const formBase = { id: null, nombre: '', usuario: '', rol: '', password: '', confirmacion: '' }
-const form = reactive({ ...formBase })
+const crearFormBase = () => ({ id: null, nombre: '', usuario: '', rol: '', password: '', confirmacion: '', modulos: [] })
+const form = reactive(crearFormBase())
+const modulosPorRol = ref({})
+const tieneModuloPermisosOriginal = ref(false)
 const errores = reactive({})
 
 const mostrarModalPassword = ref(false)
@@ -316,12 +346,47 @@ const puedeGestionar = (u) => soyAdmin || u.rol !== 'admin'
 
 const etiquetaRol = (rol) => ROLES_ADMIN.find(r => r.valor === rol)?.etiqueta || rol || 'Sin rol'
 
-const categoriasDeRol = (rol) => {
-  if (!rol) return []
-  const visible = (roles) => rol === 'admin' || !roles || roles.includes(rol)
-  return CATEGORIAS_ADMIN
-    .filter(cat => visible(cat.rolesPermitidos) && cat.items.some(item => visible(item.rolesPermitidos)))
-    .map(cat => cat.categoria)
+const TODOS_LOS_MODULOS = MODULOS_ADMIN.map(m => m.clave)
+
+const categoriasDeUsuario = (u) => {
+  const modulos = u.rol === 'admin' ? TODOS_LOS_MODULOS : (u.modulos || [])
+  return [...new Set(MODULOS_ADMIN.filter(m => modulos.includes(m.clave)).map(m => m.categoria))]
+}
+
+const modulosPorCategoria = computed(() => {
+  const grupos = []
+  for (const m of MODULOS_ADMIN) {
+    let grupo = grupos.find(g => g.categoria === m.categoria)
+    if (!grupo) {
+      grupo = { categoria: m.categoria, modulos: [] }
+      grupos.push(grupo)
+    }
+    grupo.modulos.push(m)
+  }
+  return grupos
+})
+
+const modulosPorDefectoDe = (rol) => rol === 'admin' ? [...TODOS_LOS_MODULOS] : [...(modulosPorRol.value[rol] || [])]
+
+const mismosModulos = (a, b) => a.length === b.length && a.every(m => b.includes(m))
+
+const modulosBloqueados = computed(() => form.rol === 'admin' || editandoseASiMismo.value)
+
+const formPersonalizado = computed(() => {
+  if (!form.rol || form.rol === 'admin') return false
+  return !mismosModulos(form.modulos, modulosPorDefectoDe(form.rol))
+})
+
+const moduloDeshabilitado = (clave) => modulosBloqueados.value || (clave === 'permisos' && !soyAdmin)
+
+const aplicarModulosDelRol = () => {
+  const modulos = modulosPorDefectoDe(form.rol)
+  if (!soyAdmin && form.rol !== 'admin') {
+    const sinPermisos = modulos.filter(m => m !== 'permisos')
+    form.modulos = tieneModuloPermisosOriginal.value ? [...sinPermisos, 'permisos'] : sinPermisos
+    return
+  }
+  form.modulos = modulos
 }
 
 const cantidadActivos = computed(() => listaUsuarios.value.filter(esActivo).length)
@@ -357,6 +422,7 @@ const validarFormulario = () => {
     errores.usuario = 'Ya existe un usuario con ese email.'
   }
   if (!form.rol) errores.rol = 'Elegí un rol.'
+  else if (!modulosBloqueados.value && form.modulos.length === 0) errores.modulos = 'Elegí al menos un módulo.'
   if (!modoEdicion.value) validarPassword(form.password, form.confirmacion, errores)
   return Object.keys(errores).length === 0
 }
@@ -366,7 +432,8 @@ const obtenerUsuarios = async () => {
   try {
     const res = await api.get({ entity: 'usuarios_admin', action: 'listarUsuariosAdmin', payload: {} })
     if (res.ok) {
-      listaUsuarios.value = Array.isArray(res.payload) ? res.payload : []
+      listaUsuarios.value = Array.isArray(res.payload?.usuarios) ? res.payload.usuarios : []
+      modulosPorRol.value = res.payload?.modulosPorRol || {}
     } else {
       toast({ titulo: 'Error', mensaje: res.message || 'No se pudieron cargar los usuarios.', tipo: 'danger' })
     }
@@ -378,14 +445,17 @@ const obtenerUsuarios = async () => {
 }
 
 const abrirModalNuevo = () => {
-  Object.assign(form, { ...formBase })
+  Object.assign(form, crearFormBase())
+  tieneModuloPermisosOriginal.value = false
   limpiarErrores(errores)
   modoEdicion.value = false
   mostrarModal.value = true
 }
 
 const abrirModalEdicion = (u) => {
-  Object.assign(form, { ...formBase, id: u.id, nombre: u.nombre || '', usuario: u.usuario, rol: u.rol || '' })
+  const modulos = u.rol === 'admin' ? [...TODOS_LOS_MODULOS] : [...(u.modulos || [])]
+  Object.assign(form, { ...crearFormBase(), id: u.id, nombre: u.nombre || '', usuario: u.usuario, rol: u.rol || '', modulos })
+  tieneModuloPermisosOriginal.value = modulos.includes('permisos')
   limpiarErrores(errores)
   modoEdicion.value = true
   mostrarModal.value = true
@@ -407,6 +477,7 @@ const guardarUsuario = async () => {
     const payload = { nombre: form.nombre, usuario: form.usuario.toLowerCase(), rol: form.rol }
     if (modoEdicion.value) payload.id = form.id
     else payload.password = form.password
+    if (!editandoseASiMismo.value) payload.modulos = [...form.modulos]
 
     const res = await api.post({
       entity: 'usuarios_admin',

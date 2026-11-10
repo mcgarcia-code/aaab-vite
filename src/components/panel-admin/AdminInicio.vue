@@ -58,7 +58,8 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
-import { CATEGORIAS_ADMIN } from '@/config/categoriasAdmin'
+import { CATEGORIAS_ADMIN } from '@/config/modulosAdmin'
+import { usePermisos } from '@/composables/usePermisos'
 
 const user = auth.getUser()
 const userRole = user ? user.rol : null
@@ -97,19 +98,16 @@ const cargarReunionesPendientes = async () => {
   }
 }
 
-const puedeVer = (rolesPermitidos) => {
-  if (userRole === 'admin') return true
-  return !rolesPermitidos || rolesPermitidos.includes(userRole)
-}
+const { cargarPermisos, tienePermiso } = usePermisos()
 
 const gruposConItems = computed(() => {
   return CATEGORIAS_ADMIN
-    .filter(cat => puedeVer(cat.rolesPermitidos))
-    .map(cat => ({ ...cat, items: cat.items.filter(item => puedeVer(item.rolesPermitidos)) }))
+    .map(cat => ({ ...cat, items: cat.items.filter(item => tienePermiso(item.modulo)) }))
     .filter(cat => cat.items.length > 0)
 })
 
 onMounted(() => {
+  cargarPermisos(true)
   cargarRechazosPendientes()
   cargarReunionesPendientes()
 })
