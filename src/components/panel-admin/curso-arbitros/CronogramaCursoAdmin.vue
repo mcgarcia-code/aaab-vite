@@ -256,6 +256,20 @@
             </select>
           </template>
         </div>
+        <div v-if="esRecuperatorioParcialitos" class="mb-3">
+          <label for="ex-recup-anterior" class="form-label small fw-bold text-dark">¿Quiénes lo rinden?</label>
+          <select id="ex-recup-anterior" v-model="formExamen.idRecuperatorioAnterior" class="form-select">
+            <option :value="null">Todos los presentes que deben parcialitos</option>
+            <option v-for="r in recuperatoriosAnteriores" :key="r.id" :value="r.id">
+              Los que desaprobaron o faltaron al de {{ fechaDMA(r.fecha) }}{{ r.clase ? ' · ' + r.clase : '' }} ({{ r.desaprobados }})
+            </option>
+          </select>
+          <div class="form-text">
+            <template v-if="formExamen.idRecuperatorioAnterior">No hace falta que estén presentes en esta clase. Cada uno rinde las reglas de los parcialitos que todavía debe.</template>
+            <template v-else-if="recuperatoriosAnteriores.length">Elegí un recuperatorio anterior para que lo rindan solo quienes lo desaprobaron o faltaron.</template>
+            <template v-else>No hay recuperatorios de parcialitos en otras clases para vincular.</template>
+          </div>
+        </div>
         <div v-if="esFisico" class="alert alert-light border small py-2 mb-0">
           <i class="bi bi-info-circle me-1"></i>
           <template v-if="esRecuperatorioFinal">Lo rinden solo quienes desaprobaron o estuvieron ausentes en el físico final.</template>
@@ -264,6 +278,7 @@
         <template v-else>
         <p class="small text-muted">
           <template v-if="esRecuperatorioFinal">Lo ven solo los aspirantes que desaprobaron o estuvieron ausentes en el teórico final, aunque no hayan venido a esta clase.</template>
+          <template v-else-if="esRecuperatorioParcialitos && formExamen.idRecuperatorioAnterior">Lo ven solo quienes desaprobaron o estuvieron ausentes en el recuperatorio elegido.</template>
           <template v-else-if="esRecuperatorioParcialitos">Lo rinden solo los aspirantes <strong>presentes</strong> en esta clase que tienen parcialitos desaprobados o ausentes.</template>
           <template v-else>Solo pueden rendirlo los aspirantes marcados como <strong>presentes</strong> en la clase.</template>
           La nota y el PDF quedan en <strong>Exámenes</strong>. Se aprueba con el {{ PORCENTAJE_APROBACION_DEFECTO }}%.
@@ -557,7 +572,8 @@ const MODOS_TEORICO = [
   { valor: 'final', etiqueta: 'Teórico final', ayuda: 'Define el teórico del curso.' },
   { valor: 'recuperatorio_final', etiqueta: 'Recuperatorio teórico final', ayuda: 'Lo rinden quienes desaprobaron el teórico final.' },
 ]
-const formExamen = ref({ tipo: 'teorico', cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true, modo: 'parcialito', idExamenFinal: null })
+const formExamen = ref({ tipo: 'teorico', cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true, modo: 'parcialito', idExamenFinal: null, idRecuperatorioAnterior: null })
+const recuperatoriosAnteriores = ref([])
 const esFisico = computed(() => formExamen.value.tipo === 'fisico')
 const modosExamen = computed(() => (esFisico.value ? MODOS_FISICO : MODOS_TEORICO))
 const esRecuperatorioParcialitos = computed(() => formExamen.value.modo === 'recuperatorio')
@@ -585,7 +601,9 @@ const formularioDesde = (tipo, guardado) => {
     reglas: (base.reglas || []).filter(r => codigos.includes(r)),
     habilitado: base.habilitado,
     modo: base.modo || (tipo === 'fisico' ? 'simulacro' : 'parcialito'),
-    idExamenFinal: base.idExamenFinal || null,
+    // En el recuperatorio de parcialitos, el examen vinculado es el recuperatorio anterior
+    idExamenFinal: base.modo === 'recuperatorio' ? null : base.idExamenFinal || null,
+    idRecuperatorioAnterior: base.modo === 'recuperatorio' ? base.idExamenFinal || null : null,
   }
 }
 
@@ -654,11 +672,13 @@ const abrirExamen = async (c) => {
   cargandoExamen.value = true
   try {
     await cargarReglas()
-    const [res, resTeorico, resFisico] = await Promise.all([
+    const [res, resTeorico, resFisico, resRecuperatorios] = await Promise.all([
       api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerExamenOnlineClaseCurso', payload: { idClase: c.id } }),
       api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerFinalesParaRecuperatorioCurso', payload: { idClase: c.id, tipo: 'teorico' } }),
       api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerFinalesParaRecuperatorioCurso', payload: { idClase: c.id, tipo: 'fisico' } }),
+      api.get({ entity: 'examen_online_curso_arbitro', action: 'obtenerRecuperatoriosParcialitosAnterioresCurso', payload: { idClase: c.id } }),
     ])
+    recuperatoriosAnteriores.value = resRecuperatorios?.ok ? resRecuperatorios.payload || [] : []
     finales.value = {
       teorico: resTeorico?.ok ? resTeorico.payload || [] : [],
       fisico: resFisico?.ok ? resFisico.payload || [] : [],
@@ -741,7 +761,7 @@ const guardarExamen = async () => {
       mostrarExamen.value = false
       return
     }
-    toast({ titulo: 'Examen programado', mensaje: formExamen.value.habilitado ? (esRecuperatorioFinal.value ? 'Los que desaprobaron el teórico final ya pueden rendirlo desde Mis Exámenes.' : esRecuperatorioParcialitos.value ? 'Los presentes que deben parcialitos ya pueden rendirlo desde Mis Exámenes.' : 'Los presentes ya pueden rendirlo desde Mis Exámenes.') : 'El examen quedó guardado sin habilitar.', tipo: 'success' })
+    toast({ titulo: 'Examen programado', mensaje: formExamen.value.habilitado ? (esRecuperatorioFinal.value ? 'Los que desaprobaron el teórico final ya pueden rendirlo desde Mis Exámenes.' : esRecuperatorioParcialitos.value ? (formExamen.value.idRecuperatorioAnterior ? 'Los que desaprobaron o faltaron al recuperatorio anterior ya pueden rendirlo desde Mis Exámenes.' : 'Los presentes que deben parcialitos ya pueden rendirlo desde Mis Exámenes.') : 'Los presentes ya pueden rendirlo desde Mis Exámenes.') : 'El examen quedó guardado sin habilitar.', tipo: 'success' })
     mostrarExamen.value = false
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
