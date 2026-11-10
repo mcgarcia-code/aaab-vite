@@ -42,7 +42,7 @@
                     <div class="fw-bold text-dark">{{ fechaLargaClase(f.fecha) }}</div>
                     <div class="small text-muted">{{ f.pasada ? 'Fecha pasada' : 'Próxima' }}</div>
                   </div>
-                  <span class="badge bg-danger flex-shrink-0">{{ f.encuentros.length }} / {{ MAX_SEDES }} sedes</span>
+                  <span class="badge bg-danger flex-shrink-0">{{ f.encuentros.length }} {{ f.encuentros.length === 1 ? 'sede' : 'sedes' }}</span>
                 </div>
                 <div class="small text-muted mt-2 text-truncate w-100">{{ f.encuentros.map(e => e.titulo).join(' · ') }}</div>
                 <div class="small mt-2">
@@ -65,10 +65,10 @@
                 </button>
                 <div class="min-w-0">
                   <div class="fw-bold text-dark text-break">{{ fechaLargaClase(fechaActual.fecha) }}</div>
-                  <div class="small text-muted">{{ fechaActual.encuentros.length }} de {{ MAX_SEDES }} sedes · {{ fechaActual.convocados }} convocados</div>
+                  <div class="small text-muted">{{ fechaActual.encuentros.length }} {{ fechaActual.encuentros.length === 1 ? 'sede' : 'sedes' }} ·{{ fechaActual.convocados }} convocados</div>
                 </div>
               </div>
-              <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm flex-shrink-0" :disabled="fechaActual.encuentros.length >= MAX_SEDES" @click="abrirNuevo(fechaActual.fecha)">
+              <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm flex-shrink-0" @click="abrirNuevo(fechaActual.fecha)">
                 <i class="bi bi-plus-lg me-1"></i> Agregar sede
               </button>
             </div>
@@ -210,8 +210,7 @@ const cargando = ref(false)
 
 const contar = (e, valor) => e.aspirantes.filter(a => a.asistencia === valor).length
 
-// ─── Agrupado por fecha (hasta 10 sedes por fecha) ───────────────
-const MAX_SEDES = 10
+// ─── Agrupado por fecha ──────────────────────────────────────────
 const hoy = new Date().toLocaleDateString('sv-SE')
 const fechaSeleccionada = ref(null)
 
@@ -305,10 +304,6 @@ const otrasSedesDeLaFecha = computed(() =>
 const otraSedeDe = (idAlumno) => otrasSedesDeLaFecha.value.find(e => e.aspirantes.some(a => a.id === idAlumno))?.titulo || ''
 
 const abrirNuevo = (fecha) => {
-  if (fecha && encuentros.value.filter(e => e.fecha === fecha).length >= MAX_SEDES) {
-    notificar({ titulo: 'Fecha completa', mensaje: `Esta fecha ya tiene ${MAX_SEDES} sedes.`, tipo: 'danger' })
-    return
-  }
   form.value = { ...encuentroVacio(), fecha: fecha || '' }
   convocadosOriginales.value = []
   intento.value = false
@@ -333,10 +328,6 @@ const guardar = async () => {
   const f = form.value
   if (!f.titulo || !f.fecha || !f.aspirantes.length) {
     notificar({ titulo: 'Faltan datos', mensaje: 'Completá la sede, la fecha y elegí al menos un aspirante.', tipo: 'danger' })
-    return
-  }
-  if (otrasSedesDeLaFecha.value.length >= MAX_SEDES) {
-    notificar({ titulo: 'Fecha completa', mensaje: `El ${fechaLargaClase(f.fecha)} ya tiene ${MAX_SEDES} sedes. Elegí otra fecha.`, tipo: 'danger' })
     return
   }
   guardando.value = true
