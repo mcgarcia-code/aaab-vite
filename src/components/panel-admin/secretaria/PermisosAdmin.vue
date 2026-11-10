@@ -513,7 +513,8 @@ const obtenerUsuarios = async () => {
   try {
     const res = await api.get({ entity: 'usuarios_admin', action: 'listarUsuariosAdmin', payload: {} })
     if (res.ok) {
-      listaUsuarios.value = Array.isArray(res.payload) ? res.payload : []
+      const usuarios = Array.isArray(res.payload) ? res.payload : res.payload?.usuarios
+      listaUsuarios.value = Array.isArray(usuarios) ? usuarios : []
     } else {
       toast({ titulo: 'Error', mensaje: res.message || 'No se pudieron cargar los usuarios.', tipo: 'danger' })
     }
