@@ -8,7 +8,7 @@
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
               <i class="bi bi-people-fill me-1"></i> Encuentros de Mini
             </h4>
-            <span class="text-muted small d-block mt-1">{{ encuentros.length }} encuentros en {{ anio }} · solo para aspirantes del curso anual</span>
+            <span class="text-muted small d-block mt-1">{{ fechas.length }} {{ fechas.length === 1 ? 'fecha' : 'fechas' }} · {{ encuentros.length }} sedes en {{ anio }} · solo para aspirantes del curso anual</span>
           </div>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
             <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 110px;" aria-label="Año">
@@ -19,9 +19,9 @@
               <span v-else class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
-            <button @click="abrirNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
+            <button @click="abrirNuevo(null)" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
               <span class="material-icons fs-6">add_box</span>
-              <span class="fw-bold d-none d-md-inline small">Nuevo encuentro</span>
+              <span class="fw-bold d-none d-md-inline small">Nueva fecha</span>
             </button>
           </div>
         </div>
@@ -32,26 +32,67 @@
             <span class="material-icons d-block fs-1 mb-2 opacity-50">event_busy</span>
             <span class="fw-bold">Todavía no hay encuentros de mini en {{ anio }}.</span>
           </div>
-          <div v-else class="row g-3">
-            <div v-for="e in encuentros" :key="e.id" class="col-12 col-md-6 col-xl-4">
-              <div class="tarjeta border rounded-3 p-3 h-100 d-flex flex-column">
-                <div class="fw-bold text-dark small">{{ fechaLargaClase(e.fecha) }}<template v-if="e.hora"> · {{ e.hora }} hs</template></div>
-                <div class="fw-bold text-dark mt-1">{{ e.titulo }}</div>
-                <div v-if="e.docentes?.length" class="small text-dark mt-1"><i class="bi bi-person-video3 me-1"></i><strong>Profesor a cargo:</strong> {{ e.docentes.map(d => d.nombre).join(' · ') }}</div>
-                <div class="small mt-2">
-                  <span class="badge bg-light text-dark border me-1">{{ e.aspirantes.length }} convocados</span>
-                  <span class="badge bg-success me-1">{{ contar(e, 'presente') }} presentes</span>
-                  <span class="badge bg-secondary me-1">{{ contar(e, 'ausente') }} ausentes</span>
-                  <span v-if="contar(e, null)" class="badge bg-light text-muted border">{{ contar(e, null) }} sin marcar</span>
+
+          <!-- FECHAS -->
+          <div v-else-if="!fechaActual" class="row g-3">
+            <div v-for="f in fechas" :key="f.fecha" class="col-12 col-md-6 col-xl-4">
+              <button type="button" class="tarjeta tarjeta-fecha border rounded-3 p-3 h-100 w-100 text-start d-flex flex-column" :class="{ 'fecha-pasada': f.pasada }" @click="fechaSeleccionada = f.fecha">
+                <div class="d-flex justify-content-between align-items-start gap-2 w-100">
+                  <div class="min-w-0">
+                    <div class="fw-bold text-dark">{{ fechaLargaClase(f.fecha) }}</div>
+                    <div class="small text-muted">{{ f.pasada ? 'Fecha pasada' : 'Próxima' }}</div>
+                  </div>
+                  <span class="badge bg-danger flex-shrink-0">{{ f.encuentros.length }} / {{ MAX_SEDES }} sedes</span>
                 </div>
-                <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
-                  <button @click="abrirAsistencia(e)" class="btn btn-sm btn-outline-success flex-fill fw-bold"><i class="bi bi-person-check me-1"></i> Asistencia</button>
-                  <button @click="abrirEditar(e)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
-                  <button @click="confirmarEliminar(e)" class="btn btn-sm btn-outline-danger fw-bold" aria-label="Borrar encuentro"><i class="bi bi-trash3"></i></button>
+                <div class="small text-muted mt-2 text-truncate w-100">{{ f.encuentros.map(e => e.titulo).join(' · ') }}</div>
+                <div class="small mt-2">
+                  <span class="badge bg-light text-dark border me-1">{{ f.convocados }} convocados</span>
+                  <span class="badge bg-success me-1">{{ f.presentes }} presentes</span>
+                  <span class="badge bg-secondary me-1">{{ f.ausentes }} ausentes</span>
+                  <span v-if="f.sinMarcar" class="badge bg-light text-muted border">{{ f.sinMarcar }} sin marcar</span>
+                </div>
+                <div class="small fw-bold text-danger mt-auto pt-3">Ver sedes <i class="bi bi-chevron-right"></i></div>
+              </button>
+            </div>
+          </div>
+
+          <!-- SEDES DE LA FECHA -->
+          <template v-else>
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+              <div class="d-flex align-items-center gap-2 min-w-0">
+                <button type="button" class="btn btn-light border btn-sm fw-bold flex-shrink-0" @click="fechaSeleccionada = null" aria-label="Volver a las fechas">
+                  <i class="bi bi-chevron-left"></i> Fechas
+                </button>
+                <div class="min-w-0">
+                  <div class="fw-bold text-dark text-break">{{ fechaLargaClase(fechaActual.fecha) }}</div>
+                  <div class="small text-muted">{{ fechaActual.encuentros.length }} de {{ MAX_SEDES }} sedes · {{ fechaActual.convocados }} convocados</div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm flex-shrink-0" :disabled="fechaActual.encuentros.length >= MAX_SEDES" @click="abrirNuevo(fechaActual.fecha)">
+                <i class="bi bi-plus-lg me-1"></i> Agregar sede
+              </button>
+            </div>
+            <div class="row g-3">
+              <div v-for="e in fechaActual.encuentros" :key="e.id" class="col-12 col-md-6 col-xl-4">
+                <div class="tarjeta border rounded-3 p-3 h-100 d-flex flex-column">
+                  <div class="fw-bold text-dark">{{ e.titulo }}</div>
+                  <div v-if="e.hora" class="small text-muted"><i class="bi bi-clock me-1"></i>{{ e.hora }} hs</div>
+                  <div v-if="e.docentes?.length" class="small text-dark mt-1"><i class="bi bi-person-video3 me-1"></i><strong>Profesor a cargo:</strong> {{ e.docentes.map(d => d.nombre).join(' · ') }}</div>
+                  <div class="small mt-2">
+                    <span class="badge bg-light text-dark border me-1">{{ e.aspirantes.length }} convocados</span>
+                    <span class="badge bg-success me-1">{{ contar(e, 'presente') }} presentes</span>
+                    <span class="badge bg-secondary me-1">{{ contar(e, 'ausente') }} ausentes</span>
+                    <span v-if="contar(e, null)" class="badge bg-light text-muted border">{{ contar(e, null) }} sin marcar</span>
+                  </div>
+                  <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
+                    <button @click="abrirAsistencia(e)" class="btn btn-sm btn-outline-success flex-fill fw-bold"><i class="bi bi-person-check me-1"></i> Asistencia</button>
+                    <button @click="abrirEditar(e)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
+                    <button @click="confirmarEliminar(e)" class="btn btn-sm btn-outline-danger fw-bold" aria-label="Borrar encuentro"><i class="bi bi-trash3"></i></button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </template>
         </div>
       </div>
     </div>
@@ -59,12 +100,12 @@
     <!-- ALTA / EDICIÓN -->
     <ModalBase :show="mostrarModal" @close="mostrarModal = false" :icono="form.id ? 'edit_calendar' : 'event'" colorIcono="bg-danger-subtle text-danger" maxWidth="680px">
       <template #header>
-        <span class="fw-bold fs-5">{{ form.id ? 'Editar encuentro de mini' : 'Nuevo encuentro de mini' }}</span>
+        <span class="fw-bold fs-5">{{ form.id ? 'Editar sede de mini' : 'Nueva sede de mini' }}</span>
       </template>
       <form id="formEncuentroMini" class="text-start" novalidate @submit.prevent="guardar">
         <div class="row g-3">
           <div class="col-12">
-            <label for="mini-titulo" class="form-label small fw-bold text-dark">Encuentro *</label>
+            <label for="mini-titulo" class="form-label small fw-bold text-dark">Sede *</label>
             <input id="mini-titulo" v-model.trim="form.titulo" type="text" maxlength="150" class="form-control" :class="{ 'is-invalid': intento && !form.titulo }" placeholder="Ej: Club Atlético Ejemplo">
           </div>
           <div class="col-7">
@@ -97,6 +138,7 @@
               <div v-for="a in aspirantesParaElegir" :key="a.id" class="form-check m-0 py-1">
                 <input :id="'mini-asp-' + a.id" v-model="form.aspirantes" class="form-check-input" type="checkbox" :value="a.id">
                 <label class="form-check-label small text-uppercase" :for="'mini-asp-' + a.id">{{ a.apellido }}, {{ a.nombre }}</label>
+                <span v-if="otraSedeDe(a.id)" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1 text-wrap">Ya en {{ otraSedeDe(a.id) }}</span>
               </div>
             </div>
             <div class="form-text">A los nuevos convocados les llega una notificación en su panel.</div>
@@ -168,6 +210,38 @@ const cargando = ref(false)
 
 const contar = (e, valor) => e.aspirantes.filter(a => a.asistencia === valor).length
 
+// ─── Agrupado por fecha (hasta 10 sedes por fecha) ───────────────
+const MAX_SEDES = 10
+const hoy = new Date().toLocaleDateString('sv-SE')
+const fechaSeleccionada = ref(null)
+
+const fechas = computed(() => {
+  const mapa = {}
+  encuentros.value.forEach(e => {
+    if (!mapa[e.fecha]) mapa[e.fecha] = []
+    mapa[e.fecha].push(e)
+  })
+  return Object.keys(mapa)
+    .sort((a, b) => b.localeCompare(a))
+    .map(fecha => {
+      const sedes = mapa[fecha].sort((a, b) => `${a.hora || ''} ${a.titulo}`.localeCompare(`${b.hora || ''} ${b.titulo}`))
+      const aspirantes = sedes.flatMap(e => e.aspirantes)
+      return {
+        fecha,
+        pasada: fecha < hoy,
+        encuentros: sedes,
+        convocados: aspirantes.length,
+        presentes: aspirantes.filter(a => a.asistencia === 'presente').length,
+        ausentes: aspirantes.filter(a => a.asistencia === 'ausente').length,
+        sinMarcar: aspirantes.filter(a => a.asistencia === null).length,
+      }
+    })
+})
+
+const fechaActual = computed(() => fechas.value.find(f => f.fecha === fechaSeleccionada.value) || null)
+
+watch(anio, () => { fechaSeleccionada.value = null })
+
 const cargar = async () => {
   cargando.value = true
   try {
@@ -223,8 +297,19 @@ watch(anioFormulario, (a) => {
   if (mostrarModal.value) cargarAspirantes(a)
 })
 
-const abrirNuevo = () => {
-  form.value = encuentroVacio()
+// Sedes de la fecha del formulario, sin contar la que se está editando
+const otrasSedesDeLaFecha = computed(() =>
+  encuentros.value.filter(e => e.fecha === form.value.fecha && e.id !== form.value.id)
+)
+
+const otraSedeDe = (idAlumno) => otrasSedesDeLaFecha.value.find(e => e.aspirantes.some(a => a.id === idAlumno))?.titulo || ''
+
+const abrirNuevo = (fecha) => {
+  if (fecha && encuentros.value.filter(e => e.fecha === fecha).length >= MAX_SEDES) {
+    notificar({ titulo: 'Fecha completa', mensaje: `Esta fecha ya tiene ${MAX_SEDES} sedes.`, tipo: 'danger' })
+    return
+  }
+  form.value = { ...encuentroVacio(), fecha: fecha || '' }
   convocadosOriginales.value = []
   intento.value = false
   mostrarModal.value = true
@@ -247,18 +332,23 @@ const guardar = async () => {
   intento.value = true
   const f = form.value
   if (!f.titulo || !f.fecha || !f.aspirantes.length) {
-    notificar({ titulo: 'Faltan datos', mensaje: 'Completá el encuentro, la fecha y elegí al menos un aspirante.', tipo: 'danger' })
+    notificar({ titulo: 'Faltan datos', mensaje: 'Completá la sede, la fecha y elegí al menos un aspirante.', tipo: 'danger' })
+    return
+  }
+  if (otrasSedesDeLaFecha.value.length >= MAX_SEDES) {
+    notificar({ titulo: 'Fecha completa', mensaje: `El ${fechaLargaClase(f.fecha)} ya tiene ${MAX_SEDES} sedes. Elegí otra fecha.`, tipo: 'danger' })
     return
   }
   guardando.value = true
   try {
     const res = await api.post({ entity: 'mini_curso_arbitro', action: 'guardarEncuentroMiniCurso', payload: { ...f, docentes: f.docentes.map(d => d.id) } })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar el encuentro')
-    toast({ titulo: 'Guardado', mensaje: 'El encuentro se guardó y se avisó a los convocados.', tipo: 'success' })
+    toast({ titulo: 'Guardado', mensaje: 'La sede se guardó y se avisó a los convocados.', tipo: 'success' })
     mostrarModal.value = false
     const anioEncuentro = Number(f.fecha.substring(0, 4))
     if (anioEncuentro !== anio.value) anio.value = anioEncuentro
     else await cargar()
+    fechaSeleccionada.value = f.fecha
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
   } finally {
@@ -326,6 +416,9 @@ onMounted(cargar)
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
 .tarjeta { background: #fff; }
+.tarjeta-fecha { border-left: 4px solid #dc3545 !important; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.tarjeta-fecha:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1); }
+.tarjeta-fecha.fecha-pasada { border-left-color: #9ca3af !important; }
 .texto-multilinea { white-space: pre-wrap; }
 .lista-aspirantes { max-height: 280px; overflow-y: auto; }
 .fila-asistencia { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
