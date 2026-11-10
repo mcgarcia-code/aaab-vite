@@ -38,7 +38,7 @@
           </ul>
         </div>
 
-        <div class="card-body p-3 bg-white">
+        <div class="card-body bg-white" :class="pestana === 'planilla' && !cargando ? 'p-0 border-top' : 'p-3'">
           <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando exámenes...</p></div>
 
           <!-- EXÁMENES DE LA PESTAÑA -->
@@ -113,32 +113,34 @@
 
           <!-- PLANILLA -->
           <template v-else>
-            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
-              <p class="small text-muted mb-0">{{ alumnosPlanilla.length }} alumnos regulares · {{ columnasPlanilla.length }} exámenes</p>
-              <div class="d-flex gap-2 align-items-center">
-                <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none flex-grow-1" style="max-width: 260px;" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
-                <button
-                  type="button"
-                  @click="descargarExcelPlanilla"
-                  class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1 flex-shrink-0"
-                  :disabled="!alumnosPlanilla.length || generandoExcel"
-                  title="Descargar la planilla en Excel"
-                >
-                  <span v-if="generandoExcel" class="spinner-border spinner-border-sm"></span>
-                  <i v-else class="bi bi-file-earmark-excel-fill"></i>
-                  <span class="d-none d-sm-inline">Excel</span>
+            <!-- Barra de herramientas: búsqueda + descargar + leyenda, igual que la Planilla General -->
+            <div class="d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
+              <div class="busqueda-wrap">
+                <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
+                <button v-if="filtroAlumno" class="btn-limpiar-busqueda" @click="filtroAlumno = ''" title="Limpiar búsqueda" type="button">
+                  <i class="bi bi-x-lg"></i>
                 </button>
               </div>
-            </div>
-            <div v-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
-            <template v-else>
-              <div class="d-flex flex-wrap gap-3 small text-muted mb-2 leyenda-planilla">
+              <button
+                type="button"
+                @click="descargarExcelPlanilla"
+                class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1"
+                :disabled="!alumnosPlanilla.length || generandoExcel"
+              >
+                <span v-if="generandoExcel" class="spinner-border spinner-border-sm"></span>
+                <i v-else class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
+              </button>
+              <span class="text-muted text-nowrap">{{ alumnosPlanilla.length }} alumnos · {{ columnasPlanilla.length }} exámenes</span>
+              <span class="ms-auto d-flex flex-wrap gap-3">
                 <span><span class="cuadrito cuadrito-verde"></span> Aprobado</span>
                 <span><span class="cuadrito cuadrito-roja"></span> Desaprobado</span>
                 <span><span class="cuadrito cuadrito-gris"></span> Ausente (AUS)</span>
                 <span><span class="cuadrito cuadrito-na"></span> No le corresponde</span>
-              </div>
-              <div class="d-none d-lg-block tabla-scroll border rounded shadow-sm">
+              </span>
+            </div>
+            <div v-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
+            <template v-else>
+              <div class="d-none d-lg-block tabla-scroll">
                 <table class="tabla-excel">
                   <thead>
                     <tr>
@@ -170,7 +172,7 @@
                 </table>
               </div>
 
-              <div class="d-lg-none d-flex flex-column gap-3">
+              <div class="d-lg-none d-flex flex-column gap-3 p-3">
                 <div v-for="a in alumnosPlanilla" :key="'plm-' + a.id" class="card border-light-subtle shadow-sm rounded-3">
                   <div class="card-body p-3 small">
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
@@ -913,7 +915,7 @@ onMounted(() => {
 .min-w-0 { min-width: 0; }
 
 /* Planilla con el mismo estilo que la Planilla General (Desarrollo Arbitral) */
-.tabla-scroll { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
+.tabla-scroll { overflow-x: auto; }
 .tabla-excel { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 0.8rem; background: #fff; }
 .tabla-excel th,
 .tabla-excel td { border-right: 1px solid #d4d4d8; border-bottom: 1px solid #d4d4d8; padding: 4px 8px; white-space: nowrap; }
@@ -931,11 +933,14 @@ onMounted(() => {
 .celda-roja { background-color: #f8d7da; color: #842029; font-weight: 600; }
 .celda-gris { background-color: #e9ecef; color: #6c757d; font-weight: 600; }
 .celda-na { background-color: #f8f9fa; }
-.tabla-excel tbody tr:hover td:not(.celda-verde):not(.celda-roja):not(.celda-gris) { background-color: #f8fafc; }
 .chip-nota { display: inline-block; border-radius: 4px; padding: 1px 8px; font-size: 0.75rem; }
 .cuadrito { display: inline-block; width: 12px; height: 12px; border: 1px solid #ced4da; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
 .cuadrito-verde { background-color: #d1e7dd; }
 .cuadrito-roja { background-color: #f8d7da; }
 .cuadrito-gris { background-color: #e9ecef; }
 .cuadrito-na { background-color: #f8f9fa; }
+.busqueda-wrap { position: relative; max-width: 200px; flex: 0 0 auto; }
+.busqueda-wrap input { padding-right: 30px; }
+.btn-limpiar-busqueda { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); border: none; background: transparent; color: #adb5bd; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; line-height: 1; }
+.btn-limpiar-busqueda:hover { color: #dc3545; }
 </style>
