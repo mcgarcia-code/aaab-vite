@@ -757,13 +757,10 @@ onMounted(() => cargar(anio.value))
 </script>
 
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
+<style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
-.accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
-.accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
-.accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
-.accordion-button:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2); }
 .tarjeta-clase { background-color: #fff; }
 .tarjeta-clase.pasada { background-color: #f8fafc; opacity: 0.75; }
 .tarjeta-clase.proxima { border-color: #dc3545 !important; box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15); }

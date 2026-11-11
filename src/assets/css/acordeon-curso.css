@@ -1,0 +1,12 @@
+/* Acordeones del curso de árbitros */
+
+/* Desplegables por mes o por sección (Cronograma, Clases y Asistencia, Mi Rendimiento) */
+.accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
+.accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
+.accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
+.accordion-button:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2); }
+
+/* Secciones dentro de un modal de detalle (Alumnos Regulares y Legajos): más compactas */
+.acordeon-seccion .accordion-button { font-size: 0.85rem; font-weight: 700; padding: 0.75rem 1rem; box-shadow: none; }
+.acordeon-seccion .accordion-button:not(.collapsed) { color: #dc3545; background-color: #fef2f2; }
+.acordeon-seccion .accordion-body { padding: 0.75rem 1rem; }

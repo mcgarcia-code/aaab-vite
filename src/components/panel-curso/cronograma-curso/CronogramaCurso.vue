@@ -170,16 +170,13 @@ const ClaseItem = defineComponent({
 onMounted(() => cargar(anio))
 </script>
 
+<style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
 .proxima-destacada {
   background: #fef2f2;
   border: 1px solid #fecaca;
   border-left: 5px solid #dc2626;
 }
-.accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
-.accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
-.accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
-.accordion-button:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2); }
 :deep(.clase-item) { background: #fff; }
 :deep(.clase-item.pasada) { background: #f8fafc; opacity: 0.75; }
 :deep(.clase-item.destacada) { border-color: #dc2626 !important; box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12); }

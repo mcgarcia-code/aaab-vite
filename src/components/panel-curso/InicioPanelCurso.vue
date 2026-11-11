@@ -140,8 +140,8 @@ const categorias = computed(() => [
     icono: 'bi bi-person-raised-hand',
     items: [
       { to: '/panel-curso/designaciones-curso', title: 'Mis Designaciones', icon: 'bi bi-calendar2-check', desc: 'Encuentros de mini a los que fuiste convocado/a.' },
-      { to: '/panel-curso/rendimiento-curso', title: 'Mi Rendimiento', icon: 'bi bi-graph-up-arrow', desc: 'Asistencia a clases y encuentros de mini, y notas de exámenes.' },
-      { to: '/panel-curso/observaciones-curso', title: 'Mis Observaciones', icon: 'bi bi-eye', desc: 'Observaciones de los partidos que dirigiste.' },
+      { to: '/panel-curso/rendimiento-curso', title: 'Mi Rendimiento', icon: 'bi bi-graph-up-arrow', desc: 'Estado del curso, asistencia a clases y mini, y promedio de exámenes.' },
+      { to: '/panel-curso/observaciones-curso', title: 'Mis Observaciones', icon: 'bi bi-eye', desc: 'Observaciones de encuentros de mini y partidos amistosos.' },
     ],
   },
   {

@@ -488,11 +488,9 @@ onMounted(cargar)
 
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped src="@/assets/css/planilla-curso.css"></style>
+<style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
 .dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
-.acordeon-seccion .accordion-button { font-size: 0.85rem; font-weight: 700; padding: 0.75rem 1rem; box-shadow: none; }
-.acordeon-seccion .accordion-button:not(.collapsed) { color: #dc3545; background-color: #fef2f2; }
-.acordeon-seccion .accordion-body { padding: 0.75rem 1rem; }
 .fila-detalle { border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; }
 .opcion-final { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
 .opcion-final.activa { border-color: #dc3545; background: #fef2f2; }

@@ -182,6 +182,7 @@ onMounted(async () => {
 })
 </script>
 
+<style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
 .resumen-card {
   border-radius: 12px;
@@ -196,10 +197,6 @@ a.resumen-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(
 .resumen-card .etiqueta { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
 .resumen-card .detalle { font-size: 0.68rem; opacity: 0.8; margin-top: 2px; }
 .resumen-card .detalle i { font-size: 0.65rem; }
-.accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
-.accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
-.accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
-.accordion-button:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2); }
 .fila-item {
   border: 1px solid #e2e8f0;
   border-radius: 10px;

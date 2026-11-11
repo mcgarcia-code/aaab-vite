@@ -224,6 +224,7 @@ import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { CAMPOS_OBSERVACION_CURSO, ESTADOS_REVISION_OBSERVACION } from '@/composables/useObservacionesCurso'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
+import { normalizarTexto } from '@/utils/texto'
 
 useHead({ title: 'Observaciones del Curso | AAAB' })
 
@@ -243,12 +244,11 @@ const seleccionada = ref(null)
 const estadoDe = (o) => ESTADOS_REVISION_OBSERVACION[o?.estado_revision] || ESTADOS_REVISION_OBSERVACION.pendiente
 const esPendiente = (o) => (o?.estado_revision || 'pendiente') === 'pendiente'
 
-const normalizar = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 const observacionesFiltradas = computed(() => {
-  const texto = normalizar(busqueda.value)
+  const texto = normalizarTexto(busqueda.value)
   if (!texto) return observaciones.value
-  return observaciones.value.filter(o => normalizar(`${o.apellido} ${o.nombre} ${o.categoria} ${o.encuentro}`).includes(texto))
+  return observaciones.value.filter(o => normalizarTexto(`${o.apellido} ${o.nombre} ${o.categoria} ${o.encuentro}`).includes(texto))
 })
 
 // Paginación

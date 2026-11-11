@@ -38,6 +38,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { api } from '@/api/api'
+import { normalizarTexto } from '@/utils/texto'
 
 const props = defineProps({
   id: { type: String, default: 'selector-arbitros' },
@@ -52,13 +53,12 @@ const arbitros = ref([])
 const cargando = ref(false)
 const busqueda = ref('')
 
-const normalizar = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 const resultados = computed(() => {
-  const texto = normalizar(busqueda.value.trim())
+  const texto = normalizarTexto(busqueda.value.trim())
   if (texto.length < 2) return []
   return arbitros.value
-    .filter(a => normalizar(`${a.apellido} ${a.nombre} ${a.nombre} ${a.apellido}`).includes(texto))
+    .filter(a => normalizarTexto(`${a.apellido} ${a.nombre} ${a.nombre} ${a.apellido}`).includes(texto))
     .slice(0, 15)
 })
 

@@ -99,7 +99,7 @@
                     <span v-if="contar(e, null)" class="badge bg-light text-muted border">{{ contar(e, null) }} sin marcar</span>
                   </div>
                   <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
-                    <button @click="abrirAsistencia(e)" class="btn btn-sm btn-outline-success flex-fill fw-bold"><i class="bi bi-person-check me-1"></i> Asistencia</button>
+                    <button @click="abrirAsistencia(e)" :disabled="esEncuentroFuturo(e)" class="btn btn-sm btn-outline-success flex-fill fw-bold" :title="esEncuentroFuturo(e) ? 'La asistencia se toma desde el día del encuentro' : undefined"><i class="bi bi-person-check me-1"></i> Asistencia</button>
                     <button @click="abrirEditar(e)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
                     <button @click="confirmarEliminar(e)" class="btn btn-sm btn-outline-danger fw-bold" aria-label="Borrar encuentro"><i class="bi bi-trash3"></i></button>
                   </div>
@@ -209,7 +209,7 @@ import ModalBase from '@/components/ModalBase.vue'
 import SelectorArbitros from '@/components/SelectorArbitros.vue'
 import ModalAsistenciaCurso from '@/components/panel-admin/curso-arbitros/ModalAsistenciaCurso.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
-import { fechaLargaClase } from '@/composables/useCronogramaCurso'
+import { fechaLargaClase, hoyIso } from '@/composables/useCronogramaCurso'
 
 useHead({ title: 'Encuentros de Mini | AAAB' })
 
@@ -455,7 +455,11 @@ const encuentroAsistencia = ref(null)
 const filasAsistencia = ref([])
 const guardandoAsistencia = ref(false)
 
+// La asistencia se toma desde el día del encuentro (igual que en las clases)
+const esEncuentroFuturo = (e) => e.fecha > hoyIso()
+
 const abrirAsistencia = (e) => {
+  if (esEncuentroFuturo(e)) return
   encuentroAsistencia.value = e
   filasAsistencia.value = e.aspirantes.map(a => ({ ...a }))
 }

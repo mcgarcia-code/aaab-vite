@@ -664,6 +664,7 @@ onMounted(() => {
 </script>
 
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
+<style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
@@ -683,9 +684,6 @@ onMounted(() => {
 .resumen-historial { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px; text-align: center; height: 100%; }
 .resumen-historial .valor { font-size: 1.3rem; font-weight: 800; line-height: 1.1; }
 .resumen-historial .etiqueta { font-size: 0.68rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
-.acordeon-seccion .accordion-button { font-size: 0.85rem; font-weight: 700; padding: 0.75rem 1rem; box-shadow: none; }
-.acordeon-seccion .accordion-button:not(.collapsed) { color: #dc3545; background-color: #fef2f2; }
-.acordeon-seccion .accordion-body { padding: 0.75rem 1rem; }
 .linea-tiempo li { border-left: 3px solid #fde68a; padding-left: 12px; }
 .fila-baja td, .tabla-fija tbody .fila-baja .col-fija { background-color: #fef2f2 !important; }
 </style>
