@@ -7,26 +7,40 @@
       <div class="row g-3">
         <div class="col-12 col-md-4">
           <label for="obs-modalidad" class="form-label small fw-bold text-dark">Curso *</label>
-          <select id="obs-modalidad" v-model="form.modalidad" class="form-select" :class="{ 'is-invalid': intento && !form.modalidad }" @change="form.idAlumno = null">
+          <select id="obs-modalidad" v-model="form.modalidad" class="form-select" :class="{ 'is-invalid': intento && !form.modalidad }" @change="form.idAlumno = null; form.idEncuentro = null">
             <option value="" disabled>Seleccionar curso...</option>
             <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.etiqueta }}</option>
           </select>
         </div>
         <div class="col-12 col-md-8">
           <label for="obs-alumno" class="form-label small fw-bold text-dark">Aspirante *</label>
-          <select id="obs-alumno" v-model="form.idAlumno" class="form-select" :disabled="!form.modalidad || cargandoAspirantes" :class="{ 'is-invalid': intento && !form.idAlumno }">
+          <select id="obs-alumno" v-model="form.idAlumno" class="form-select" :disabled="!form.modalidad || cargandoAspirantes" :class="{ 'is-invalid': intento && !form.idAlumno }" @change="form.idEncuentro = null">
             <option :value="null" disabled>{{ cargandoAspirantes ? 'Cargando...' : (form.modalidad ? 'Seleccionar aspirante...' : 'Elegí primero el curso') }}</option>
             <option v-for="a in aspirantesParaSelect" :key="a.id" :value="a.id">{{ a.apellido }}, {{ a.nombre }}</option>
           </select>
-          <div v-if="form.modalidad && !cargandoAspirantes && !aspirantesParaSelect.length" class="form-text">No hay aspirantes regulares en este curso.</div>
+          <div v-if="form.modalidad && !cargandoAspirantes && !aspirantesParaSelect.length" class="form-text">
+            {{ esObservador ? 'No hay aspirantes de este curso presentes en encuentros de mini en los que fuiste profesor a cargo.' : 'No hay aspirantes regulares en este curso.' }}
+          </div>
         </div>
-        <div class="col-12 col-md-4">
-          <label for="obs-fecha" class="form-label small fw-bold text-dark">Fecha del partido *</label>
-          <input id="obs-fecha" v-model="form.fechaPartido" type="date" class="form-control" :class="{ 'is-invalid': intento && !form.fechaPartido }">
-        </div>
-        <div class="col-12 col-md-8">
-          <label for="obs-encuentro" class="form-label small fw-bold text-dark">Encuentro *</label>
-          <input id="obs-encuentro" v-model.trim="form.encuentro" type="text" maxlength="200" class="form-control" placeholder="Ej: Club A vs Club B" :class="{ 'is-invalid': intento && !form.encuentro }">
+
+        <!-- Encuentro de mini: solo los que el aspirante tiene presente (el observador, solo los suyos como profesor a cargo) -->
+        <div class="col-12">
+          <label for="obs-encuentro" class="form-label small fw-bold text-dark">Encuentro de mini *</label>
+          <select id="obs-encuentro" v-model="form.idEncuentro" class="form-select" :disabled="!form.idAlumno || cargandoEncuentros" :class="{ 'is-invalid': intento && !form.idEncuentro }">
+            <option :value="null" disabled>{{ cargandoEncuentros ? 'Cargando...' : (form.idAlumno ? 'Seleccionar encuentro...' : 'Elegí primero el aspirante') }}</option>
+            <option v-for="e in encuentros" :key="e.id" :value="e.id">{{ textoEncuentro(e) }}</option>
+          </select>
+          <div v-if="form.idAlumno && !cargandoEncuentros && !encuentros.length" class="form-text text-danger">
+            {{ esObservador ? 'El aspirante no tiene presente en encuentros de mini en los que fuiste profesor a cargo.' : 'El aspirante no tiene presente en ningún encuentro de mini.' }}
+          </div>
+          <div v-if="encuentroElegido" class="encuentro-elegido small mt-2">
+            <div class="fw-bold text-dark">{{ fechaLargaClase(encuentroElegido.fecha) }}<template v-if="encuentroElegido.hora"> · {{ encuentroElegido.hora }} hs</template></div>
+            <div class="text-muted">{{ encuentroElegido.titulo }}<template v-if="encuentroElegido.lugar"> · {{ encuentroElegido.lugar }}</template></div>
+            <div class="text-dark mt-1">
+              <i class="bi bi-person-video3 me-1"></i><strong>Profesor a cargo:</strong>
+              {{ encuentroElegido.docentes.length ? encuentroElegido.docentes.map(d => d.nombre).join(' · ') : 'Sin asignar' }}
+            </div>
+          </div>
         </div>
         <div class="col-12" :class="esObservador ? '' : 'col-md-6'">
           <label for="obs-categoria" class="form-label small fw-bold text-dark">Categoría</label>
@@ -61,6 +75,8 @@ import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { CAMPOS_OBSERVACION_CURSO, observacionCursoVacia, observacionCursoDesdeFila } from '@/composables/useObservacionesCurso'
+import { fechaLargaClase } from '@/composables/useCronogramaCurso'
+import { fechaDMA } from '@/utils/fechas'
 
 const props = defineProps({
   observacion: { type: Object, default: null },
@@ -108,6 +124,37 @@ const cargarAspirantes = async (modalidad) => {
 
 watch(() => form.value.modalidad, cargarAspirantes)
 
+// ─── Encuentros de mini del aspirante (con presente) ─────────────
+const encuentros = ref([])
+const cargandoEncuentros = ref(false)
+
+const encuentroElegido = computed(() => encuentros.value.find(e => e.id === form.value.idEncuentro) || null)
+
+const textoEncuentro = (e) => {
+  const profesores = e.docentes.length ? ` · Prof. ${e.docentes.map(d => d.nombre).join(', ')}` : ''
+  return `${fechaDMA(e.fecha)}${e.hora ? ' ' + e.hora : ''} · ${e.titulo}${e.lugar ? ' (' + e.lugar + ')' : ''}${profesores}`
+}
+
+const cargarEncuentros = async (idAlumno) => {
+  encuentros.value = []
+  if (!idAlumno) return
+  cargandoEncuentros.value = true
+  try {
+    const res = await api.get({ entity: 'observaciones_curso_arbitro', action: 'obtenerEncuentrosObservacionCurso', payload: { idAlumno } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los encuentros de mini')
+    if (form.value.idAlumno !== idAlumno) return
+    encuentros.value = res.payload || []
+    // Si hay uno solo, queda elegido
+    if (!form.value.idEncuentro && encuentros.value.length === 1) form.value.idEncuentro = encuentros.value[0].id
+  } catch (e) {
+    avisar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    cargandoEncuentros.value = false
+  }
+}
+
+watch(() => form.value.idAlumno, cargarEncuentros)
+
 watch(mostrar, (abierto) => {
   if (!abierto) return
   form.value = props.observacion ? observacionCursoDesdeFila(props.observacion) : observacionCursoVacia()
@@ -117,10 +164,13 @@ watch(mostrar, (abierto) => {
 const guardar = async () => {
   intento.value = true
   const f = form.value
-  if (!f.modalidad || !f.idAlumno || !f.fechaPartido || !f.encuentro || !hayTexto.value) {
+  if (!f.modalidad || !f.idAlumno || !encuentroElegido.value || !hayTexto.value) {
     avisar({ titulo: 'Faltan datos', mensaje: 'Revisá los campos marcados.', tipo: 'danger' })
     return
   }
+  // La fecha y el texto del encuentro salen del encuentro de mini elegido
+  f.fechaPartido = encuentroElegido.value.fecha
+  f.encuentro = encuentroElegido.value.titulo
   guardando.value = true
   try {
     const res = await api.post({ entity: 'observaciones_curso_arbitro', action: 'guardarObservacionCurso', payload: { ...f } })
@@ -135,3 +185,7 @@ const guardar = async () => {
   }
 }
 </script>
+
+<style scoped>
+.encuentro-elegido { border: 1px solid #e2e8f0; border-left: 4px solid #dc3545; border-radius: 8px; padding: 8px 12px; background: #f8fafc; }
+</style>
