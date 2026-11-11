@@ -21,15 +21,22 @@ export const notaFinalDeEstado = (estado) => (estado === 'aprobado' || estado ==
 
 const corresponde = (curso, alumno) => curso === 'ambos' || curso === alumno.modalidadCurso
 
-const desaprobo = (nota) => Boolean(nota && (nota.aprobado === false || nota.ausente))
+// Aprobado con la misma regla que la planilla de Exámenes: si la nota tiene aprobado/desaprobado se usa eso,
+// si no, el porcentaje de la nota tiene que llegar al % de aprobación del examen
+export const aproboNota = (examen, nota) => {
+  if (!nota || nota.ausente || nota.nota === null) return false
+  if (nota.aprobado !== null && nota.aprobado !== undefined) return nota.aprobado
+  return (nota.nota / (examen.notaMaxima || 100)) * 100 >= (examen.porcentajeAprobacion ?? 75)
+}
+const desaprobo = (examen, nota) => Boolean(nota && (nota.ausente || (nota.nota !== null && !aproboNota(examen, nota))))
 
 // Resultado de un examen: 'aprobado' (lo aprobó), 'recuperado' (lo aprobó con un recuperatorio),
 // 'recuperando' (tiene un recuperatorio sin nota), 'desaprobado' o null (todavía sin nota)
 const resultadoExamen = (examen, recuperatorios, notaDe) => {
   const nota = notaDe(examen)
-  if (nota?.aprobado === true) return 'aprobado'
-  if (recuperatorios.some(r => notaDe(r)?.aprobado === true)) return 'recuperado'
-  if (!desaprobo(nota)) return null
+  if (aproboNota(examen, nota)) return 'aprobado'
+  if (recuperatorios.some(r => aproboNota(r, notaDe(r)))) return 'recuperado'
+  if (!desaprobo(examen, nota)) return null
   return recuperatorios.some(r => !notaDe(r)) ? 'recuperando' : 'desaprobado'
 }
 
@@ -49,12 +56,18 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
   const nts = {}
   notas.forEach(n => { nts[`${n.idExamen}-${n.idAlumno}`] = n })
 
+  const examenPorId = {}
+  examenes.forEach(e => { examenPorId[e.id] = e })
+
   return alumnos.map(alumno => {
-    const notaDe = (examen) => nts[`${examen.id}-${alumno.id}`] || null
-    // Recuperatorios de parcialitos que incluyeron a cada parcialito de este alumno
-    const recuperatoriosParcialito = (idParcialito) => recuperados
-      .filter(r => r.idAlumno === alumno.id && r.idParcialito === idParcialito)
-      .map(r => ({ id: r.idExamen }))
+    const notaDe = (examen) => (examen ? nts[`${examen.id}-${alumno.id}`] || null : null)
+    const propios = recuperados.filter(r => r.idAlumno === alumno.id)
+    // Rendidos online: se sabe exactamente qué parcialitos recuperó cada recuperatorio
+    const recuperatoriosParcialito = (idParcialito) => propios
+      .filter(r => r.idParcialito === idParcialito)
+      .map(r => examenPorId[r.idExamen])
+      .filter(Boolean)
+    const conDetalle = new Set(propios.map(r => r.idExamen))
 
     const detalleClases = clases.filter(c => corresponde(c.curso, alumno)).map(clase => {
       const a = asis[`${clase.id}-${alumno.id}`]
@@ -63,9 +76,19 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
 
     const delCurso = examenes.filter(e => corresponde(e.curso, alumno))
     const originales = delCurso.filter(e => !e.idExamenOriginal && !e.esRecuperatorioParcialitos)
+    // Recuperatorios de parcialitos (1° y 2°) a los que se presentó o figura ausente, por fecha
+    const recuperatoriosRendidos = delCurso.filter(e => e.esRecuperatorioParcialitos && notaDe(e))
+
+    // Nota cargada a mano (sin detalle): un recuperatorio de parcialitos aprobado recupera los parcialitos
+    // desaprobados o ausentes de fechas anteriores. Es la misma regla que la planilla de Exámenes y el backend.
+    const recuperatoriosManuales = (e) => (e.tipo === 'teorico' && !e.esFinal && notaDe(e)
+      ? recuperatoriosRendidos.filter(r => String(r.fecha) >= String(e.fecha) && !conDetalle.has(r.id))
+      : [])
+
     const resultadoDe = (e) => resultadoExamen(e, [
-      ...delCurso.filter(r => r.idExamenOriginal === e.id && desaprobo(notaDe(e))),
+      ...delCurso.filter(r => r.idExamenOriginal === e.id && desaprobo(e, notaDe(e))),
       ...recuperatoriosParcialito(e.id),
+      ...recuperatoriosManuales(e),
     ], notaDe)
 
     const parcialitos = originales.filter(e => e.tipo === 'teorico' && !e.esFinal).map(resultadoDe)
@@ -75,7 +98,7 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
     const fisicos = originales.filter(e => e.tipo === 'fisico' && e.esFinal).map(resultadoDe)
 
     const detalleExamenes = delCurso
-      .filter(e => (e.esRecuperatorioParcialitos ? Boolean(notaDe(e)) : !e.idExamenOriginal || desaprobo(nts[`${e.idExamenOriginal}-${alumno.id}`])))
+      .filter(e => (e.esRecuperatorioParcialitos ? Boolean(notaDe(e)) : !e.idExamenOriginal || desaprobo(examenPorId[e.idExamenOriginal] || e, notaDe(examenPorId[e.idExamenOriginal]))))
       .map(examen => ({ examen, nota: notaDe(examen) }))
       .reverse()
 
@@ -94,6 +117,13 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
         desaprobados: parcialitos.filter(r => r === 'desaprobado').length,
         total: parcialitos.length,
       },
+      // 1° recuperatorio (sin recuperatorio anterior) y 2° (encadenado a un recuperatorio anterior)
+      recuperatorios: recuperatoriosRendidos.map(examen => ({
+        examen,
+        nota: notaDe(examen),
+        orden: examen.idExamenOriginal ? 2 : 1,
+        aprobado: aproboNota(examen, notaDe(examen)),
+      })),
       final: resultadoGrupo(finales, false),
       practico: resultadoGrupo(practicosRendidos, true),
       fisico: resultadoGrupo(fisicos, true),

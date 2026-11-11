@@ -73,6 +73,7 @@
                     <th class="th-media" :title="`Presente sobre las clases dictadas (mínimo ${ASISTENCIA_MINIMA}%)`">CLASES</th>
                     <th class="th-media" :title="`Presente sobre los encuentros convocados con presente o ausente cargado (mínimo ${ASISTENCIA_MINIMA}%)`">MINI</th>
                     <th class="th-media" title="Aprobados sobre el total: directos y con recuperatorio">PARCIALITOS</th>
+                    <th class="th-media" title="Nota del 1° y 2° recuperatorio de parcialitos">RECUPERATORIO</th>
                     <th class="th-media">TEÓRICO FINAL</th>
                     <th class="th-media">PRÁCTICO</th>
                     <th class="th-media">FÍSICO</th>
@@ -97,6 +98,11 @@
                         <span v-if="f.parcialitos.recuperados" class="detalle-parcialitos text-primary">· {{ f.parcialitos.recuperados }} con recup.</span>
                         <span v-if="f.parcialitos.recuperando" class="detalle-parcialitos text-warning-emphasis">· {{ f.parcialitos.recuperando }} recuperando</span>
                         <span v-if="f.parcialitos.desaprobados" class="detalle-parcialitos text-danger">· {{ f.parcialitos.desaprobados }} desap.</span>
+                      </template>
+                    </td>
+                    <td class="celda" :class="celdaRecuperatorio(f)" :title="textoRecuperatorios(f)">
+                      <template v-if="f.recuperatorios.length">
+                        <span v-for="(r, i) in f.recuperatorios" :key="r.examen.id" :class="r.aprobado ? 'text-success' : 'text-danger'"><template v-if="i"> · </template>{{ r.orden }}°: {{ notaRecuperatorio(r) }}</span>
                       </template>
                     </td>
                     <td class="celda" :class="CELDA_RESULTADO[f.final]">{{ TEXTO_RESULTADO[f.final] }}</td>
@@ -140,6 +146,10 @@
                     <div class="col-12">
                       <div class="dato-etiqueta">Parcialitos</div>
                       <span class="fw-bold">{{ textoParcialitos(f) || '—' }}</span>
+                    </div>
+                    <div v-if="f.recuperatorios.length" class="col-12">
+                      <div class="dato-etiqueta">Recuperatorio de parcialitos</div>
+                      <span class="fw-bold">{{ textoRecuperatorios(f) }}</span>
                     </div>
                     <div class="col-6">
                       <div class="dato-etiqueta">Teórico final</div>
@@ -297,7 +307,7 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
-import { textoNotaExamen } from '@/composables/useExamenesCurso'
+import { textoNotaExamen, formatoNota } from '@/composables/useExamenesCurso'
 import { RESULTADOS, NOTA_FINAL, armarSeguimiento } from '@/composables/useSeguimientoCurso'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
@@ -358,6 +368,21 @@ const textoParcialitos = (f) => {
   return partes.join(' ')
 }
 
+// Recuperatorio de parcialitos: nota del 1° y del 2° (con el color del resultado del último que rindió)
+const notaRecuperatorio = (r) => {
+  if (r.nota.ausente) return 'AUS'
+  if (r.nota.nota === null) return '—'
+  return r.examen.online ? `${formatoNota(r.nota.nota / (r.examen.notaMaxima || 100) * 100)}%` : formatoNota(r.nota.nota)
+}
+const celdaRecuperatorio = (f) => {
+  const ultimo = f.recuperatorios[f.recuperatorios.length - 1]
+  if (!ultimo) return ''
+  return ultimo.aprobado ? 'celda-verde' : 'celda-roja'
+}
+const textoRecuperatorios = (f) => f.recuperatorios
+  .map(r => `${r.orden}° recuperatorio: ${notaRecuperatorio(r)} (${r.aprobado ? 'aprobado' : 'desaprobado'})`)
+  .join(' · ')
+
 const textoAsistencia = (a) => (a === 'presente' ? 'Presente' : a === 'ausente' ? 'Ausente' : 'Sin marcar')
 const claseAsistencia = (a) => (a === 'presente' ? 'bg-success' : a === 'ausente' ? 'bg-secondary' : 'bg-light text-muted border')
 const textoNota = (d) => (d.nota ? textoNotaExamen({ ...d.examen, ...d.nota }) : '—')
@@ -416,7 +441,7 @@ const exportarExcel = async () => {
   generandoExcel.value = true
   try {
     const { libro, hoja } = await crearPlanillaExcel(`Regulares ${anio.value}`)
-    hoja.addRow(['ALUMNO', 'CURSO', 'CLASES', 'MINI', 'PARCIALITOS', 'TEÓRICO FINAL', 'PRÁCTICO', 'FÍSICO', 'NOTA FINAL'])
+    hoja.addRow(['ALUMNO', 'CURSO', 'CLASES', 'MINI', 'PARCIALITOS', 'RECUPERATORIO', 'TEÓRICO FINAL', 'PRÁCTICO', 'FÍSICO', 'NOTA FINAL'])
     const colores = []
     filas.value.forEach(f => {
       const esAnual = f.alumno.modalidadCurso === 'anual'
@@ -427,6 +452,7 @@ const exportarExcel = async () => {
         `${c.presentes}/${c.total}${c.porcentaje !== null ? ` · ${c.porcentaje}%` : ''}`,
         esAnual ? `${m.presentes}/${m.total}${m.porcentaje !== null ? ` · ${m.porcentaje}%` : ''}` : '',
         textoParcialitos(f),
+        f.recuperatorios.map(r => `${r.orden}°: ${notaRecuperatorio(r)}`).join(' · '),
         TEXTO_RESULTADO[f.final],
         TEXTO_RESULTADO[f.practico],
         TEXTO_RESULTADO[f.fisico],
@@ -437,6 +463,7 @@ const exportarExcel = async () => {
         celdaPorcentaje(c.porcentaje),
         esAnual ? celdaPorcentaje(m.porcentaje) : 'celda-na',
         celdaParcialitos(f),
+        celdaRecuperatorio(f),
         CELDA_RESULTADO[f.final], CELDA_RESULTADO[f.practico], CELDA_RESULTADO[f.fisico], CELDA_RESULTADO[f.notaFinal],
       ])
     })
@@ -445,7 +472,7 @@ const exportarExcel = async () => {
     colores.forEach((fila, i) => {
       fila.forEach((color, j) => pintarCeldaExcel(hoja.getRow(i + 2).getCell(j + 1), color, { izquierda: j === 0, negrita: j !== 1 }))
     })
-    anchosColumnasExcel(hoja, [32, 10, 16, 16, 44, 16, 16, 16, 22])
+    anchosColumnasExcel(hoja, [32, 10, 16, 16, 44, 22, 16, 16, 16, 22])
 
     await descargarLibroExcel(libro, `Alumnos_Regulares_${anio.value}.xlsx`)
   } catch (err) {
