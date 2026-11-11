@@ -51,6 +51,14 @@
               {{ encuentroElegido.docentes.length ? encuentroElegido.docentes.map(d => d.nombre).join(' · ') : 'Sin asignar' }}
             </div>
           </div>
+          <!-- Admin: con varios profesores a cargo se elige cuál hizo la observación (le aparece en su panel) -->
+          <div v-if="!esObservador && encuentroElegido && encuentroElegido.docentes.length > 1" class="mt-2">
+            <label for="obs-profesor" class="form-label small fw-bold text-dark">¿Qué profesor hizo la observación? *</label>
+            <select id="obs-profesor" v-model="idProfesorMini" class="form-select" :class="{ 'is-invalid': intento && !idProfesorMini }">
+              <option :value="null" disabled>Seleccionar profesor...</option>
+              <option v-for="d in encuentroElegido.docentes" :key="d.id" :value="d.id">{{ d.nombre }}</option>
+            </select>
+          </div>
         </div>
 
         <!-- PARTIDO AMISTOSO: fecha, partido, categoría y árbitro observador -->
@@ -122,6 +130,8 @@ const aspirantes = ref([])
 const cargandoAspirantes = ref(false)
 // Árbitro observador del partido amistoso: [{ id, nombre }] (SelectorArbitros en modo único)
 const observadorElegido = ref([])
+// Encuentro de mini cargado por el admin: profesor a cargo que hizo la observación (si hay más de uno)
+const idProfesorMini = ref(null)
 
 const esMini = computed(() => form.value.tipo === 'mini')
 const hayTexto = computed(() => CAMPOS_OBSERVACION_CURSO.some(c => String(form.value[c.clave] || '').trim()))
@@ -201,6 +211,11 @@ const cargarEncuentros = async (idAlumno) => {
 
 watch(() => form.value.idAlumno, (idAlumno) => { if (esMini.value) cargarEncuentros(idAlumno) })
 
+// Si el profesor elegido no está en el nuevo encuentro, se vuelve a elegir
+watch(encuentroElegido, (e) => {
+  if (e && idProfesorMini.value && !e.docentes.some(d => d.id === idProfesorMini.value)) idProfesorMini.value = null
+})
+
 watch(mostrar, (abierto) => {
   if (!abierto) return
   const o = props.observacion
@@ -208,13 +223,14 @@ watch(mostrar, (abierto) => {
   if (props.esObservador) form.value.tipo = 'mini'
   if (form.value.tipo === 'mini' && !form.value.modalidad) form.value.modalidad = 'anual'
   observadorElegido.value = o && o.tipo === 'amistoso' && o.id_observador ? [{ id: o.id_observador, nombre: o.observador }] : []
+  idProfesorMini.value = o && o.tipo !== 'amistoso' ? o.id_observador ?? null : null
   intento.value = false
 })
 
 const faltanDatos = () => {
   const f = form.value
   if (!f.modalidad || !f.idAlumno || !hayTexto.value) return true
-  if (esMini.value) return !encuentroElegido.value
+  if (esMini.value) return !encuentroElegido.value || (!props.esObservador && encuentroElegido.value.docentes.length > 1 && !idProfesorMini.value)
   return !f.fechaPartido || !f.encuentro || !f.categoria || !observadorElegido.value.length
 }
 
@@ -230,7 +246,8 @@ const guardar = async () => {
     f.fechaPartido = encuentroElegido.value.fecha
     f.encuentro = encuentroElegido.value.titulo
   }
-  const payload = { ...f, idObservador: esMini.value ? null : observadorElegido.value[0].id }
+  // Mini: el profesor a cargo (con uno solo lo completa el backend); amistoso: el árbitro elegido
+  const payload = { ...f, idObservador: esMini.value ? idProfesorMini.value : observadorElegido.value[0].id }
   guardando.value = true
   try {
     const res = await api.post({ entity: 'observaciones_curso_arbitro', action: 'guardarObservacionCurso', payload })
