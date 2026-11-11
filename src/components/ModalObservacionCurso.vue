@@ -42,14 +42,6 @@
             </div>
           </div>
         </div>
-        <div class="col-12" :class="esObservador ? '' : 'col-md-6'">
-          <label for="obs-categoria" class="form-label small fw-bold text-dark">Categoría</label>
-          <input id="obs-categoria" v-model.trim="form.categoria" type="text" maxlength="150" class="form-control">
-        </div>
-        <div v-if="!esObservador" class="col-12 col-md-6">
-          <label for="obs-observador" class="form-label small fw-bold text-dark">Observador/a</label>
-          <input id="obs-observador" v-model.trim="form.observador" type="text" maxlength="150" class="form-control">
-        </div>
         <div v-for="c in CAMPOS_OBSERVACION_CURSO" :key="c.clave" class="col-12">
           <label :for="'obs-' + c.clave" class="form-label small fw-bold text-dark">{{ c.etiqueta }}</label>
           <textarea :id="'obs-' + c.clave" v-model.trim="form[c.clave]" rows="2" maxlength="3000" class="form-control"></textarea>
