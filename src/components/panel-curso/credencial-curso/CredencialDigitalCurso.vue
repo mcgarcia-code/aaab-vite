@@ -14,10 +14,6 @@
             <div class="foto-wrap shadow-lg">
               <img class="w-100 h-100 object-fit-cover" style="border-radius: 10px;" :src="urlFoto" alt="Foto del aspirante" @error="(e) => e.target.src = FOTO_POR_DEFECTO">
             </div>
-            <div class="badge rounded-pill px-3 py-2 mt-4 d-inline-flex align-items-center gap-2 shadow-sm" :class="activo ? 'bg-success' : 'bg-danger'" style="font-size: 0.75rem; letter-spacing: 0.5px;">
-              <i :class="activo ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'"></i>
-              {{ activo ? 'REGULAR' : (ESTADOS_CURSO[perfil.estado]?.etiqueta || perfil.estado || '').toUpperCase() }}
-            </div>
           </div>
 
           <div class="col-12 col-md-8 bg-white d-flex flex-column p-4 p-md-5 text-center text-md-start">
@@ -82,22 +78,22 @@ import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import html2canvas from 'html2canvas'
 import QrcodeVue from 'qrcode.vue'
-import { api } from '@/api/api'
 import logo from '@/assets/fotos/logo.png'
-import { ESTADOS_CURSO, MODALIDADES_CURSO, urlFotoCurso, FOTO_POR_DEFECTO } from '@/composables/useCursoArbitro'
+import { usePerfilCurso } from '@/composables/usePerfilCurso'
+import { MODALIDADES_CURSO, urlFotoCurso, FOTO_POR_DEFECTO } from '@/composables/useCursoArbitro'
 
 useHead({ title: 'Credencial Digital | Curso AAAB' })
 
 const toast = inject('toast', (m) => alert(m.mensaje || m))
 
 const credencialRef = ref(null)
-const perfil = ref(null)
+// Perfil compartido del panel (lo carga PanelCurso)
+const { perfil, asegurar: asegurarPerfil } = usePerfilCurso()
 const cargando = ref(true)
 const procesando = ref(false)
 const versionFoto = ref(Date.now())
 
 const urlFoto = computed(() => urlFotoCurso(perfil.value?.dni, versionFoto.value))
-const activo = computed(() => ['regular', 'reinscripcion', 'alta'].includes(perfil.value?.estado))
 const anioCredencial = computed(() => perfil.value?.anio_curso || new Date().getFullYear())
 const textoCurso = computed(() => `${MODALIDADES_CURSO[perfil.value?.modalidad_curso]?.corta || ''} ${anioCredencial.value}`.trim())
 const textoQr = computed(() => `AAAB - Aspirante del Curso de Árbitros ${textoCurso.value} - DNI ${perfil.value?.dni}`)
@@ -123,9 +119,7 @@ const descargar = async () => {
 onMounted(async () => {
   window.addEventListener('foto-curso-actualizada', refrescarFoto)
   try {
-    const res = await api.get({ entity: 'perfil_curso_arbitro', action: 'obtenerMiPerfilCurso', payload: {} })
-    if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar tu credencial')
-    perfil.value = res.payload
+    await asegurarPerfil()
   } catch (e) {
     toast({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
   } finally {

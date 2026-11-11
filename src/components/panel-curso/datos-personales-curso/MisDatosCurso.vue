@@ -21,7 +21,6 @@
         <div class="d-flex flex-wrap align-items-center gap-2 mb-4 pb-3 border-bottom">
           <span class="fw-bold text-dark text-uppercase me-1">{{ perfil.apellido }}, {{ perfil.nombre }}</span>
           <span v-if="MODALIDADES_CURSO[perfil.modalidad_curso]" class="badge" :class="MODALIDADES_CURSO[perfil.modalidad_curso].clase">{{ MODALIDADES_CURSO[perfil.modalidad_curso].etiqueta }} {{ perfil.anio_curso }}</span>
-          <span v-if="ESTADOS_CURSO[perfil.estado]" class="badge" :class="ESTADOS_CURSO[perfil.estado].clase">{{ ESTADOS_CURSO[perfil.estado].etiqueta }}</span>
         </div>
 
         <!-- DATOS QUE NO SE EDITAN -->
@@ -134,14 +133,16 @@
 import { ref, reactive, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
-import { ESTADOS_CURSO, GENEROS_CURSO, MODALIDADES_CURSO, DOMINIO_USUARIO_CURSO, textoDtClubes } from '@/composables/useCursoArbitro'
+import { GENEROS_CURSO, MODALIDADES_CURSO, DOMINIO_USUARIO_CURSO, textoDtClubes } from '@/composables/useCursoArbitro'
 import { fechaDMA } from '@/utils/fechas'
+import { usePerfilCurso } from '@/composables/usePerfilCurso'
 
 useHead({ title: 'Datos Personales | Curso AAAB' })
 
 const toast = inject('toast', (m) => alert(m.mensaje || m))
 
-const perfil = ref(null)
+// Perfil compartido del panel (lo carga PanelCurso)
+const { perfil, cargar: cargarPerfil, asegurar: asegurarPerfil } = usePerfilCurso()
 const provincias = ref([])
 const localidades = ref([])
 const cargando = ref(true)
@@ -175,17 +176,10 @@ const textoJugador = computed(() => {
   return `${perfil.value.club_jugador}: ${categorias}`
 })
 
-// ─── Carga ───────────────────────────────────────────────────────
-const cargarPerfil = async () => {
-  const res = await api.get({ entity: 'perfil_curso_arbitro', action: 'obtenerMiPerfilCurso', payload: {} })
-  if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar tus datos')
-  perfil.value = res.payload
-}
-
 onMounted(async () => {
   try {
     const [, resUbicacion] = await Promise.all([
-      cargarPerfil(),
+      asegurarPerfil(),
       api.get({ entity: 'localidades', action: 'obtenerProvinciasLocalidades', payload: {} }),
     ])
     provincias.value = resUbicacion?.payload?.provincias ?? []

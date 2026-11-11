@@ -9,12 +9,6 @@
     />
 
     <template v-else>
-      <div v-if="mensajeEstado" class="mensaje-estado shadow mb-4 text-center" :class="mensajeEstado.clase" role="status">
-        <i :class="['bi', mensajeEstado.icono, 'icono-estado']"></i>
-        <h3 class="fw-bold mb-1 fs-4">{{ mensajeEstado.titulo }}</h3>
-        <p class="mb-0 small">{{ mensajeEstado.texto }}</p>
-      </div>
-
       <!-- RECUPERATORIO DE PARCIALITOS -->
       <div v-for="r in recuperatoriosParcialitos" v-show="!cursoCerrado" :key="'rp-' + r.id" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 card-recuperatorio" style="border-radius: 15px;">
         <div class="card-header py-3 border-bottom">
@@ -144,6 +138,7 @@ import { api } from '@/api/api'
 import ExamenCursoRunner from '@/components/panel-curso/examenes-curso/ExamenCursoRunner.vue'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
 import { formatoNota, claseNota, estaAprobado } from '@/composables/useExamenesCurso'
+import { usePerfilCurso } from '@/composables/usePerfilCurso'
 
 useHead({ title: 'Mis Exámenes | Curso AAAB' })
 
@@ -210,31 +205,10 @@ const resumenPestana = computed(() => {
   }
 })
 
-const estado = ref('')
-
-const MENSAJES_ESTADO = {
-  aprobado: {
-    titulo: '¡Felicitaciones! Aprobaste el curso de árbitro',
-    texto: 'Completaste el curso. Desde el inicio de tu panel podés registrarte como árbitro de la AAAB.',
-    icono: 'bi-trophy-fill',
-    clase: 'estado-aprobado',
-  },
-  desaprobado: {
-    titulo: 'Lamentablemente el curso está desaprobado',
-    texto: 'Podés consultar tus resultados abajo. Para volver a anotarte, comunicate con la coordinación del curso.',
-    icono: 'bi-emoji-frown-fill',
-    clase: 'estado-desaprobado',
-  },
-  baja: {
-    titulo: 'Fuiste dado/a de baja del curso',
-    texto: 'Si creés que es un error, comunicate con la coordinación del curso.',
-    icono: 'bi-person-x-fill',
-    clase: 'estado-baja',
-  },
-}
-
-const mensajeEstado = computed(() => MENSAJES_ESTADO[estado.value] || null)
-const cursoCerrado = computed(() => Boolean(mensajeEstado.value))
+// Perfil compartido del panel: con el curso cerrado (aprobado, desaprobado o baja) ya no se rinden exámenes.
+// El resultado final del curso se muestra en Mi Rendimiento.
+const { perfil, asegurar: asegurarPerfil } = usePerfilCurso()
+const cursoCerrado = computed(() => ['aprobado', 'desaprobado', 'baja'].includes(perfil.value?.estado))
 
 const pendientes = computed(() => online.value.filter(x => x.estado !== 'finalizado' && !x.esRecuperatorioParcialitos))
 // Solo para quienes estuvieron presentes en la clase del recuperatorio
@@ -248,12 +222,11 @@ const textoNota = (e) => {
 }
 
 const cargarTodo = async () => {
-  const [res, resOnline, resPerfil] = await Promise.all([
+  const [res, resOnline] = await Promise.all([
     api.get({ entity: 'perfil_curso_arbitro', action: 'obtenerMisExamenesCurso', payload: {} }),
     api.get({ entity: 'examen_online_curso_arbitro', action: 'misExamenesOnlineCurso', payload: {} }),
-    api.get({ entity: 'perfil_curso_arbitro', action: 'obtenerMiPerfilCurso', payload: {} }),
+    asegurarPerfil().catch(() => null),
   ])
-  estado.value = resPerfil?.ok ? resPerfil.payload?.estado || '' : ''
   if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar tus exámenes')
   examenes.value = res.payload || []
   online.value = resOnline?.ok ? resOnline.payload || [] : []
@@ -302,11 +275,6 @@ onMounted(async () => {
 .examen-card.recuperatorio { background: #fffbeb; border-color: #fde68a; }
 .card-recuperatorio .card-header { background: #fffbeb; }
 .adeudado { border: 1px solid #fde68a; background: #fffbeb; border-radius: 10px; padding: 8px 12px; }
-.mensaje-estado { border-radius: 15px; padding: 24px 16px; color: #fff; }
-.mensaje-estado .icono-estado { font-size: 2.6rem; display: block; margin-bottom: 6px; }
-.estado-aprobado { background: linear-gradient(135deg, #15803d, #22c55e); }
-.estado-desaprobado { background: linear-gradient(135deg, #991b1b, #dc2626); }
-.estado-baja { background: linear-gradient(135deg, #334155, #64748b); }
 .pestanas .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; padding: 0.5rem 0.75rem; white-space: nowrap; }
 .pestanas .nav-link.active { background: #dc3545; color: #fff; }
 </style>

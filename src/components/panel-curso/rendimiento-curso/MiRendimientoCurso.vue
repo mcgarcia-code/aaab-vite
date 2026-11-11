@@ -6,7 +6,7 @@
           <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
             <i class="bi bi-graph-up-arrow me-1"></i> Mi Rendimiento
           </h4>
-          <span class="text-muted small d-block mt-1">Asistencia a clases<template v-if="datos.modalidad === 'anual'">, encuentros de mini</template> y notas de exámenes · Curso {{ datos.anio }}</span>
+          <span class="text-muted small d-block mt-1">Estado del curso, asistencia<template v-if="esAnual"> a clases y a mini</template> y promedio de exámenes · Curso {{ datos.anio }}</span>
         </div>
       </div>
 
@@ -15,7 +15,7 @@
       </div>
 
       <div v-else class="card-body p-3 p-md-4">
-        <!-- ESTADO FINAL DEL CURSO -->
+        <!-- ESTADO FINAL DEL CURSO (único lugar donde se muestra el resultado) -->
         <div class="estado-final rounded-3 p-3 mb-4" :class="ESTADO_FINAL[resultado.estado].clase">
           <div class="d-flex align-items-center gap-3">
             <i class="bi fs-2 flex-shrink-0" :class="ESTADO_FINAL[resultado.estado].icono"></i>
@@ -23,13 +23,16 @@
               <div class="etiqueta-estado">Estado final del curso</div>
               <div class="fw-bold fs-5">{{ ESTADO_FINAL[resultado.estado].etiqueta }}</div>
               <div v-if="resultado.fecha" class="small opacity-75">{{ fechaLargaClase(resultado.fecha) }}</div>
-              <div v-else-if="resultado.estado === 'pendiente'" class="small opacity-75">Todavía no se cargó la nota final del curso.</div>
+              <div class="small mt-1">{{ ESTADO_FINAL[resultado.estado].texto }}</div>
             </div>
           </div>
           <div v-if="resultado.observacion" class="observacion-final mt-3">
             <div class="etiqueta-estado mb-1">Observación</div>
             <div class="texto-multilinea">{{ resultado.observacion }}</div>
           </div>
+          <RouterLink v-if="resultado.estado === 'aprobado'" to="/panel-curso" class="btn btn-success btn-sm fw-bold mt-3">
+            <i class="bi bi-patch-check-fill me-1"></i> Ir al inicio para registrarme como árbitro
+          </RouterLink>
         </div>
 
         <!-- RESUMEN -->
@@ -37,52 +40,55 @@
           <div class="col-6" :class="esAnual ? 'col-md' : 'col-md-3'">
             <div class="resumen-card bg-success text-white">
               <i class="bi bi-person-check-fill"></i>
-              <div class="valor">{{ resumen.presentes }}</div>
+              <div class="valor">{{ asistenciaClases.presentes }}</div>
               <div class="etiqueta">Presentes</div>
             </div>
           </div>
           <div class="col-6" :class="esAnual ? 'col-md' : 'col-md-3'">
             <div class="resumen-card bg-secondary text-white">
               <i class="bi bi-person-dash-fill"></i>
-              <div class="valor">{{ resumen.ausentes }}</div>
+              <div class="valor">{{ ausentesClases }}</div>
               <div class="etiqueta">Ausentes</div>
             </div>
           </div>
           <div class="col-6" :class="esAnual ? 'col-md' : 'col-md-3'">
             <div class="resumen-card bg-dark text-white">
               <i class="bi bi-people-fill"></i>
-              <div class="valor">{{ resumen.porcentaje !== null ? `${resumen.porcentaje}%` : '-' }}</div>
+              <div class="valor">{{ textoPorcentaje(asistenciaClases.porcentaje) }}</div>
               <div class="etiqueta">Asistencia a clases</div>
+              <div class="detalle">{{ asistenciaClases.presentes }} de {{ asistenciaClases.total }} · mínimo {{ ASISTENCIA_MINIMA }}%</div>
             </div>
           </div>
           <div v-if="esAnual" class="col-6 col-md">
-            <div class="resumen-card bg-primary text-white">
+            <RouterLink to="/panel-curso/designaciones-curso" class="resumen-card bg-primary text-white d-block text-decoration-none">
               <i class="bi bi-people-fill"></i>
-              <div class="valor">{{ resumenMini.porcentaje !== null ? `${resumenMini.porcentaje}%` : '-' }}</div>
+              <div class="valor">{{ textoPorcentaje(asistenciaMini.porcentaje) }}</div>
               <div class="etiqueta">Asistencia a mini</div>
-            </div>
+              <div class="detalle">{{ asistenciaMini.presentes }} de {{ asistenciaMini.total }} · ver encuentros <i class="bi bi-chevron-right"></i></div>
+            </RouterLink>
           </div>
           <div :class="esAnual ? 'col-12 col-md' : 'col-6 col-md-3'">
-            <div class="resumen-card bg-danger text-white">
+            <RouterLink to="/panel-curso/examenes-curso" class="resumen-card bg-danger text-white d-block text-decoration-none">
               <i class="bi bi-journal-check"></i>
-              <div class="valor">{{ resumen.promedio !== null ? resumen.promedio : '-' }}</div>
+              <div class="valor">{{ promedio ?? '-' }}</div>
               <div class="etiqueta">Promedio exámenes</div>
-            </div>
+              <div class="detalle">ver mis exámenes <i class="bi bi-chevron-right"></i></div>
+            </RouterLink>
           </div>
         </div>
 
+        <!-- ASISTENCIA A CLASES (el detalle de exámenes está en Mis Exámenes y el de mini en Mis Designaciones) -->
         <div class="accordion" id="acordeonRendimiento">
-          <!-- ASISTENCIA -->
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.clases }" :aria-expanded="abiertas.clases" aria-controls="seccion-clases" @click="abiertas.clases = !abiertas.clases">
+              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !clasesAbiertas }" :aria-expanded="clasesAbiertas" aria-controls="seccion-clases" @click="clasesAbiertas = !clasesAbiertas">
                 <i class="bi bi-calendar-check me-2"></i>
                 <span class="me-2">Asistencia a clases</span>
-                <span class="badge bg-success me-1">{{ resumen.presentes }} P</span>
-                <span class="badge bg-secondary">{{ resumen.ausentes }} A</span>
+                <span class="badge bg-success me-1">{{ asistenciaClases.presentes }} P</span>
+                <span class="badge bg-secondary">{{ ausentesClases }} A</span>
               </button>
             </h2>
-            <div v-show="abiertas.clases" id="seccion-clases" class="accordion-collapse">
+            <div v-show="clasesAbiertas" id="seccion-clases" class="accordion-collapse">
               <div class="accordion-body p-2 p-md-3">
                 <div v-if="!datos.clases.length" class="text-muted small fst-italic">Todavía no hubo clases.</div>
                 <div v-else class="d-flex flex-column gap-2">
@@ -97,63 +103,6 @@
               </div>
             </div>
           </div>
-
-          <!-- ENCUENTROS DE MINI (solo curso anual) -->
-          <div v-if="datos.modalidad === 'anual'" class="accordion-item">
-            <h2 class="accordion-header">
-              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.mini }" :aria-expanded="abiertas.mini" aria-controls="seccion-mini" @click="abiertas.mini = !abiertas.mini">
-                <i class="bi bi-people me-2"></i>
-                <span class="me-2">Encuentros de mini</span>
-                <span class="badge bg-success me-1">{{ resumenMini.presentes }} P</span>
-                <span class="badge bg-secondary">{{ resumenMini.ausentes }} A</span>
-              </button>
-            </h2>
-            <div v-show="abiertas.mini" id="seccion-mini" class="accordion-collapse">
-              <div class="accordion-body p-2 p-md-3">
-                <div v-if="!datos.mini?.length" class="text-muted small fst-italic">Todavía no fuiste convocado/a a encuentros de mini.</div>
-                <div v-else class="d-flex flex-column gap-2">
-                  <div v-for="m in datos.mini" :key="'mini-' + m.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
-                    <div class="min-w-0">
-                      <div class="fw-bold text-dark small text-break">{{ m.titulo }}</div>
-                      <div class="text-muted" style="font-size: 0.75rem;">
-                        {{ fechaLargaClase(m.fecha) }}<template v-if="m.hora"> · {{ m.hora }} hs</template><template v-if="m.lugar"> · {{ m.lugar }}</template>
-                      </div>
-                    </div>
-                    <span class="badge flex-shrink-0" :class="claseAsistencia(m.asistencia)">{{ textoAsistencia(m.asistencia) }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- EXÁMENES -->
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.examenes }" :aria-expanded="abiertas.examenes" aria-controls="seccion-examenes" @click="abiertas.examenes = !abiertas.examenes">
-                <i class="bi bi-journal-text me-2"></i>
-                <span class="me-2">Exámenes</span>
-                <span class="badge bg-light text-dark border">{{ datos.examenes.length }}</span>
-              </button>
-            </h2>
-            <div v-show="abiertas.examenes" id="seccion-examenes" class="accordion-collapse">
-              <div class="accordion-body p-2 p-md-3">
-                <div v-if="!datos.examenes.length" class="text-muted small fst-italic">Todavía no tenés notas cargadas.</div>
-                <div v-else class="d-flex flex-column gap-2">
-                  <div v-for="e in datos.examenes" :key="e.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
-                    <div class="min-w-0">
-                      <div class="fw-bold text-dark small text-break">{{ e.titulo }}</div>
-                      <div class="text-muted" style="font-size: 0.75rem;">
-                        {{ fechaLargaClase(e.fecha) }}
-                      </div>
-                    </div>
-                    <span class="nota flex-shrink-0 text-end" :class="claseNota(e)">
-                      {{ textoNotaExamen(e) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -161,11 +110,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, inject } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
-import { formatoNota, claseNota, textoNotaExamen } from '@/composables/useExamenesCurso'
+import { formatoNota } from '@/composables/useExamenesCurso'
+import { porcentajeAsistencia, ASISTENCIA_MINIMA } from '@/composables/useAsistenciaCurso'
 
 useHead({ title: 'Mi Rendimiento | Curso AAAB' })
 
@@ -173,55 +123,47 @@ const toast = inject('toast', (m) => alert(m.mensaje || m))
 
 const datos = ref({ anio: new Date().getFullYear(), modalidad: '', clases: [], mini: [], examenes: [] })
 const cargando = ref(true)
-
-// Secciones del acordeón: arrancan contraídas y se despliegan al tocarlas
-const abiertas = reactive({ clases: false, mini: false, examenes: false })
+const clasesAbiertas = ref(false)
 
 const esAnual = computed(() => datos.value.modalidad === 'anual')
 
 // Estado final del curso (lo carga la Escuela desde Alumnos Regulares)
 const ESTADO_FINAL = {
-  aprobado: { etiqueta: 'Aprobado', icono: 'bi-patch-check-fill', clase: 'estado-aprobado' },
-  desaprobado: { etiqueta: 'Desaprobado', icono: 'bi-x-octagon-fill', clase: 'estado-desaprobado' },
-  pendiente: { etiqueta: 'Pendiente', icono: 'bi-hourglass-split', clase: 'estado-pendiente' },
+  aprobado: {
+    etiqueta: '¡Aprobaste el curso!',
+    texto: 'Felicitaciones. Desde el inicio de tu panel podés registrarte como árbitro de la AAAB.',
+    icono: 'bi-trophy-fill',
+    clase: 'estado-aprobado',
+  },
+  desaprobado: {
+    etiqueta: 'Desaprobado',
+    texto: 'Para volver a anotarte, comunicate con la coordinación del curso.',
+    icono: 'bi-x-octagon-fill',
+    clase: 'estado-desaprobado',
+  },
+  pendiente: {
+    etiqueta: 'Pendiente',
+    texto: 'Todavía no se cargó la nota final del curso.',
+    icono: 'bi-hourglass-split',
+    clase: 'estado-pendiente',
+  },
 }
 const resultado = computed(() => {
   const r = datos.value.resultado
   return r && ESTADO_FINAL[r.estado] ? r : { estado: 'pendiente', observacion: null, fecha: null }
 })
 
-// Fecha de hoy (local) en formato AAAA-MM-DD para comparar con las fechas del backend
-const hoy = (() => {
-  const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-})()
-const yaPaso = (x) => String(x.fecha) <= hoy
-const porcentajeDe = (presentes, total) => (total ? Math.round(presentes / total * 100) : null)
+// Regla común de asistencia: clases sobre las dictadas, mini sobre los encuentros con presente o ausente cargado
+const asistenciaClases = computed(() => porcentajeAsistencia(datos.value.clases, 'clases'))
+const asistenciaMini = computed(() => porcentajeAsistencia(datos.value.mini || [], 'mini'))
+const ausentesClases = computed(() => datos.value.clases.filter(c => c.asistencia === 'ausente').length)
+const textoPorcentaje = (p) => (p === null ? '-' : `${p}%`)
 
-// Mini: presentes sobre los encuentros ya realizados a los que fue convocado (mismo cálculo que la planilla del admin)
-const resumenMini = computed(() => {
-  const mini = datos.value.mini || []
-  const presentes = mini.filter(m => m.asistencia === 'presente').length
-  const ausentes = mini.filter(m => m.asistencia === 'ausente').length
-  const realizados = mini.filter(yaPaso)
-  return { presentes, ausentes, porcentaje: porcentajeDe(realizados.filter(m => m.asistencia === 'presente').length, realizados.length) }
-})
-
-// Clases: presentes sobre el total de clases ya dictadas del curso (mismo cálculo que la planilla del admin)
-const resumen = computed(() => {
-  const presentes = datos.value.clases.filter(c => c.asistencia === 'presente').length
-  const ausentes = datos.value.clases.filter(c => c.asistencia === 'ausente').length
-  const dictadas = datos.value.clases.filter(yaPaso)
+// Promedio de los teóricos con nota (el detalle está en Mis Exámenes)
+const promedio = computed(() => {
   const conNota = datos.value.examenes.filter(e => e.nota !== null && (e.tipo || 'teorico') === 'teorico')
-  const promedio = conNota.length
-    ? `${formatoNota(Math.round(conNota.reduce((s, e) => s + (e.nota / (e.notaMaxima || 100)) * 100, 0) / conNota.length))}%`
-    : null
-  return {
-    presentes,
-    ausentes,
-    porcentaje: porcentajeDe(dictadas.filter(c => c.asistencia === 'presente').length, dictadas.length),
-    promedio,
-  }
+  if (!conNota.length) return null
+  return `${formatoNota(Math.round(conNota.reduce((s, e) => s + (e.nota / (e.notaMaxima || 100)) * 100, 0) / conNota.length))}%`
 })
 
 const textoAsistencia = (a) => (a === 'presente' ? 'Presente' : a === 'ausente' ? 'Ausente' : 'Sin registro')
@@ -247,9 +189,13 @@ onMounted(async () => {
   text-align: center;
   height: 100%;
 }
+a.resumen-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+a.resumen-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(15, 23, 42, 0.2); }
 .resumen-card i { font-size: 1.2rem; }
 .resumen-card .valor { font-size: 1.4rem; font-weight: 800; line-height: 1.1; margin-top: 4px; }
 .resumen-card .etiqueta { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
+.resumen-card .detalle { font-size: 0.68rem; opacity: 0.8; margin-top: 2px; }
+.resumen-card .detalle i { font-size: 0.65rem; }
 .accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
 .accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
 .accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
@@ -268,5 +214,4 @@ onMounted(async () => {
 .etiqueta-estado { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; opacity: 0.8; }
 .observacion-final { background: rgba(255, 255, 255, 0.6); border-radius: 8px; padding: 8px 12px; color: #212529; font-size: 0.9rem; }
 .texto-multilinea { white-space: pre-wrap; word-break: break-word; }
-.nota { font-weight: 800; font-size: 0.9rem; }
 </style>

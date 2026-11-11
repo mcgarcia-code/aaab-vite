@@ -27,8 +27,8 @@
                 <span v-if="MODALIDADES_CURSO[alumno.modalidad_curso]" class="badge px-2 py-1 shadow-sm" :class="MODALIDADES_CURSO[alumno.modalidad_curso].clase">
                   {{ MODALIDADES_CURSO[alumno.modalidad_curso].etiqueta }}
                 </span>
-                <span v-if="ESTADOS_CURSO[alumno.estado]" class="badge px-2 py-1 shadow-sm" :class="ESTADOS_CURSO[alumno.estado].clase">
-                  {{ ESTADOS_CURSO[alumno.estado].etiqueta }}
+                <span v-if="ESTADOS_CURSO[estadoAlumno]" class="badge px-2 py-1 shadow-sm" :class="ESTADOS_CURSO[estadoAlumno].clase">
+                  {{ ESTADOS_CURSO[estadoAlumno].etiqueta }}
                 </span>
               </div>
             </div>
@@ -131,6 +131,7 @@ import ToastNotificacion from '@/components/ToastNotificacion.vue'
 import { ESTADOS_CURSO, MODALIDADES_CURSO, urlFotoCurso, FOTO_POR_DEFECTO } from '@/composables/useCursoArbitro'
 import { useNotificacionesCurso, ICONOS_NOTIFICACION as ICONOS } from '@/composables/useNotificacionesCurso'
 import { fechaHoraDMA } from '@/utils/fechas'
+import { proveerPerfilCurso } from '@/composables/usePerfilCurso'
 
 useHead({
   title: 'Panel del Curso | AAAB',
@@ -144,10 +145,15 @@ const toastRef = ref(null)
 const toast = (m) => toastRef.value?.mostrar(m)
 provide('toast', toast)
 
+// Perfil compartido con todas las vistas del panel (se pide una sola vez)
+const { perfil, cargar: cargarPerfil } = proveerPerfilCurso()
+
 // La foto se versiona para que el navegador la vuelva a pedir después de cambiarla
 const alumno = ref(auth.getUser() || {})
 const versionFoto = ref(Date.now())
 const urlFoto = computed(() => urlFotoCurso(alumno.value.dni, versionFoto.value))
+// El estado sale del perfil (actualizado); mientras carga, del usuario de la sesión
+const estadoAlumno = computed(() => perfil.value?.estado || alumno.value.estado)
 const nombreFormateado = computed(() =>
   String(alumno.value.nombre || '').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
 )
@@ -243,6 +249,7 @@ const confirmarFoto = async () => {
 onMounted(() => {
   if (auth.isLoggedIn()) auth.startInactivityTimer()
   cargarNotificaciones()
+  cargarPerfil().catch(() => {})
   window.addEventListener('foto-curso-actualizada', refrescarFoto)
   window.addEventListener('storage', refrescarAlumno)
   document.addEventListener('click', cerrarAlClickearAfuera)
