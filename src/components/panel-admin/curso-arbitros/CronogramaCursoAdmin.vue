@@ -18,7 +18,7 @@
             <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 110px;" aria-label="Año">
               <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
             </select>
-            <button @click="cargar(anio)" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+            <button @click="cargar(anio); if (pestana === 'planilla') cargarPlanilla()" :disabled="cargando || cargandoPlanilla" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
               <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
               <span v-else class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
@@ -30,7 +30,100 @@
           </div>
         </div>
 
-        <div class="card-body p-3 bg-white">
+        <!-- PESTAÑAS -->
+        <div class="px-3 pt-3 bg-white">
+          <ul class="nav nav-pills flex-nowrap overflow-auto gap-2 pb-2 pestanas-cronograma" role="tablist">
+            <li v-for="p in PESTANAS" :key="p.clave" class="nav-item flex-shrink-0" role="presentation">
+              <button type="button" class="nav-link fw-bold d-flex align-items-center gap-2" :class="{ active: pestana === p.clave }" role="tab" :aria-selected="pestana === p.clave" @click="pestana = p.clave">
+                <i :class="['bi', p.icono]"></i> {{ p.etiqueta }}
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- PLANILLA DE ASISTENCIA -->
+        <div v-if="pestana === 'planilla'" class="card-body bg-white" :class="cargandoPlanilla || cargando ? 'p-3' : 'p-0 border-top'">
+          <div v-if="cargandoPlanilla || cargando" class="text-center p-5">
+            <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando planilla...</p>
+          </div>
+          <template v-else>
+            <div class="d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
+              <div class="busqueda-wrap">
+                <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
+                <button v-if="filtroAlumno" class="btn-limpiar-busqueda" @click="filtroAlumno = ''" title="Limpiar búsqueda" type="button">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <button
+                type="button"
+                @click="descargarExcelAsistencia"
+                class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1"
+                :disabled="!alumnosPlanilla.length || !clasesPlanilla.length || generandoExcel"
+              >
+                <span v-if="generandoExcel" class="spinner-border spinner-border-sm"></span>
+                <i v-else class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
+              </button>
+              <span class="text-muted text-nowrap">{{ alumnosPlanilla.length }} alumnos · {{ clasesPlanilla.length }} clases dictadas</span>
+              <span class="ms-auto d-flex flex-wrap gap-3">
+                <span><span class="cuadrito cuadrito-verde"></span> Presente (P)</span>
+                <span><span class="cuadrito cuadrito-roja"></span> Ausente (A)</span>
+                <span><span class="cuadrito"></span> Sin marcar</span>
+                <span><span class="cuadrito cuadrito-na"></span> No le corresponde</span>
+              </span>
+            </div>
+            <div v-if="!clasesPlanilla.length" class="text-center py-5 text-muted fw-bold">Todavía no hay clases dictadas en {{ anio }}.</div>
+            <div v-else-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
+            <template v-else>
+              <div class="d-none d-lg-block tabla-scroll">
+                <table class="tabla-excel">
+                  <thead>
+                    <tr>
+                      <th class="col-alumno esquina">ALUMNO</th>
+                      <th class="th-curso">CURSO</th>
+                      <th v-for="c in clasesPlanilla" :key="'th-' + c.id" class="th-clase" :title="`${c.titulo} · ${etiquetaCurso(c.curso)} · tocá para cargar la asistencia`" role="button" @click="abrirAsistencia(c)">
+                        <div class="fw-bold">{{ fechaDMA(c.fecha) }}</div>
+                        <div class="fecha-evento texto-recortado">{{ c.titulo }}</div>
+                      </th>
+                      <th class="th-total">PRESENTES</th>
+                      <th class="th-total" title="Presente sobre las clases ya dictadas (mínimo 75%)">% ASIST.</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="a in alumnosPlanilla" :key="'pa-' + a.id">
+                      <td class="col-alumno celda-nombre text-uppercase">{{ a.apellido }}, {{ a.nombre }}</td>
+                      <td class="celda"><span class="badge" :class="MODALIDADES_CURSO[a.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</span></td>
+                      <td v-for="c in clasesPlanilla" :key="'pa-' + a.id + '-' + c.id" class="celda" :class="claseCeldaAsistencia(c, a)" :title="tituloCeldaAsistencia(c, a)">{{ textoCeldaAsistencia(c, a) }}</td>
+                      <td class="celda celda-total">{{ resumenAlumno(a).presentes }} / {{ resumenAlumno(a).total }}</td>
+                      <td class="celda" :class="clasePorcentaje(resumenAlumno(a).porcentaje)">{{ resumenAlumno(a).porcentaje === null ? '—' : resumenAlumno(a).porcentaje + '%' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="d-lg-none d-flex flex-column gap-3 p-3">
+                <div v-for="a in alumnosPlanilla" :key="'pam-' + a.id" class="card border-light-subtle shadow-sm rounded-3">
+                  <div class="card-body p-3 small">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                      <div class="fw-bold text-dark text-uppercase min-w-0">{{ a.apellido }}, {{ a.nombre }}</div>
+                      <span class="chip-nota flex-shrink-0" :class="clasePorcentaje(resumenAlumno(a).porcentaje)">
+                        {{ resumenAlumno(a).presentes }} / {{ resumenAlumno(a).total }} · {{ resumenAlumno(a).porcentaje === null ? '—' : resumenAlumno(a).porcentaje + '%' }}
+                      </span>
+                    </div>
+                    <div v-for="c in clasesPlanilla.filter(c => correspondeClase(c, a))" :key="'pame-' + a.id + '-' + c.id" class="fila-planilla d-flex justify-content-between align-items-center gap-2">
+                      <div class="min-w-0">
+                        <div class="text-dark fw-semibold">{{ fechaDMA(c.fecha) }}</div>
+                        <div class="text-muted text-break" style="font-size: 0.68rem;">{{ c.titulo }}</div>
+                      </div>
+                      <span class="chip-nota flex-shrink-0" :class="claseCeldaAsistencia(c, a)">{{ textoCeldaAsistencia(c, a) || 'Sin marcar' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </template>
+        </div>
+
+        <div v-else class="card-body p-3 bg-white">
           <div v-if="cargando" class="text-center p-5">
             <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando clases...</p>
           </div>
@@ -344,7 +437,7 @@ import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { PORCENTAJE_APROBACION_DEFECTO } from '@/composables/useExamenesCurso'
-import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada } from '@/composables/useCronogramaCurso'
+import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada, hoyIso } from '@/composables/useCronogramaCurso'
 
 useHead({ title: 'Clases y Asistencia | AAAB' })
 
@@ -376,6 +469,153 @@ watch(mesesAcordeon, (lista) => {
 }, { immediate: true })
 watch(anio, () => Object.keys(mesesAbiertos).forEach(k => delete mesesAbiertos[k]))
 watch(error, (m) => { if (m) notificar({ titulo: 'Error', mensaje: m, tipo: 'danger' }) })
+
+// ─── Pestañas ────────────────────────────────────────────────────
+const PESTANAS = [
+  { clave: 'clases', etiqueta: 'Clases', icono: 'bi-calendar3-week' },
+  { clave: 'planilla', etiqueta: 'Planilla de asistencia', icono: 'bi-table' },
+]
+const pestana = ref('clases')
+
+// ─── Planilla de asistencia (mismo estilo que la planilla de Exámenes) ──
+const ASISTENCIA_MINIMA = 75
+const planilla = ref({ alumnos: [], asistencias: [] })
+const cargandoPlanilla = ref(false)
+const planillaCargadaDe = ref(null)
+const filtroAlumno = ref('')
+
+const cargarPlanilla = async () => {
+  cargandoPlanilla.value = true
+  try {
+    const res = await api.get({ entity: 'cronograma_curso_arbitro', action: 'obtenerPlanillaAsistenciaCurso', payload: { anio: anio.value } })
+    if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar la planilla de asistencia')
+    planilla.value = res.payload || { alumnos: [], asistencias: [] }
+    planillaCargadaDe.value = anio.value
+  } catch (e) {
+    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
+  } finally {
+    cargandoPlanilla.value = false
+  }
+}
+
+// Se carga al entrar a la pestaña y se recarga si cambia el año
+watch([pestana, anio], ([p, a]) => { if (p === 'planilla' && planillaCargadaDe.value !== a) cargarPlanilla() })
+
+const normalizarTexto = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
+// Columnas: clases ya dictadas (hasta hoy inclusive), de la más vieja a la más nueva
+const clasesPlanilla = computed(() =>
+  clasesVisibles.value.filter(c => c.fecha <= hoyIso()).sort((x, y) => x.fecha.localeCompare(y.fecha) || x.id - y.id)
+)
+
+const alumnosPlanilla = computed(() => {
+  const texto = normalizarTexto(filtroAlumno.value)
+  return planilla.value.alumnos.filter(a =>
+    (!filtroCurso.value || a.modalidadCurso === filtroCurso.value) &&
+    (!texto || normalizarTexto(`${a.apellido} ${a.nombre}`).includes(texto))
+  )
+})
+
+const indiceAsistencia = computed(() => {
+  const mapa = {}
+  for (const x of planilla.value.asistencias) mapa[`${x.idClase}-${x.idAlumno}`] = x.presente
+  return mapa
+})
+
+const correspondeClase = (c, a) => c.curso === 'ambos' || c.curso === a.modalidadCurso
+// true = presente, false = ausente, undefined = sin marcar
+const asistenciaDe = (c, a) => indiceAsistencia.value[`${c.id}-${a.id}`]
+
+const textoCeldaAsistencia = (c, a) => {
+  if (!correspondeClase(c, a)) return ''
+  const p = asistenciaDe(c, a)
+  return p === true ? 'P' : p === false ? 'A' : ''
+}
+const claseCeldaAsistencia = (c, a) => {
+  if (!correspondeClase(c, a)) return 'celda-na'
+  const p = asistenciaDe(c, a)
+  return p === true ? 'celda-verde' : p === false ? 'celda-roja' : ''
+}
+const tituloCeldaAsistencia = (c, a) => {
+  if (!correspondeClase(c, a)) return 'No le corresponde'
+  const p = asistenciaDe(c, a)
+  return `${fechaDMA(c.fecha)} · ${p === true ? 'Presente' : p === false ? 'Ausente' : 'Sin marcar'}`
+}
+
+// Presentes sobre todas las clases dictadas que le corresponden (mismo cálculo que Mi Rendimiento)
+const resumenAlumno = (a) => {
+  const suyas = clasesPlanilla.value.filter(c => correspondeClase(c, a))
+  const presentes = suyas.filter(c => asistenciaDe(c, a) === true).length
+  return { presentes, total: suyas.length, porcentaje: suyas.length ? Math.round(presentes / suyas.length * 100) : null }
+}
+const clasePorcentaje = (p) => (p === null ? '' : p >= ASISTENCIA_MINIMA ? 'celda-verde' : 'celda-roja')
+
+// ─── Excel de la planilla de asistencia ──
+const generandoExcel = ref(false)
+const RELLENO_EXCEL = { verde: 'FFD1E7DD', roja: 'FFF8D7DA', na: 'FFF8F9FA', cabecera: 'FFF1F3F5' }
+const FUENTE_EXCEL = { verde: 'FF0F5132', roja: 'FF842029' }
+
+const pintarCeldaExcel = (celdaExcel, color, opciones = {}) => {
+  const borde = { style: 'thin', color: { argb: 'FFD4D4D8' } }
+  celdaExcel.border = { top: borde, left: borde, bottom: borde, right: borde }
+  celdaExcel.alignment = { horizontal: opciones.izquierda ? 'left' : 'center', vertical: 'middle', wrapText: !!opciones.ajustar }
+  if (RELLENO_EXCEL[color]) celdaExcel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: RELLENO_EXCEL[color] } }
+  celdaExcel.font = { bold: !!opciones.negrita, size: opciones.tamanio || 11, color: { argb: FUENTE_EXCEL[color] || 'FF212529' } }
+}
+const colorExcel = (clase) => ({ 'celda-verde': 'verde', 'celda-roja': 'roja', 'celda-na': 'na' }[clase] || '')
+
+const descargarExcelAsistencia = async () => {
+  generandoExcel.value = true
+  try {
+    const { default: ExcelJS } = await import('exceljs')
+    const wb = new ExcelJS.Workbook()
+    const ws = wb.addWorksheet(`Asistencia ${anio.value}`, { views: [{ state: 'frozen', xSplit: 1, ySplit: 1 }] })
+    const clases = clasesPlanilla.value
+
+    ws.addRow(['ALUMNO', 'CURSO', ...clases.map(c => `${fechaDMA(c.fecha)}\n${c.titulo}`), 'PRESENTES', '% ASIST.'])
+    alumnosPlanilla.value.forEach(a => {
+      const r = resumenAlumno(a)
+      ws.addRow([
+        `${a.apellido}, ${a.nombre}`.toUpperCase(),
+        MODALIDADES_CURSO[a.modalidadCurso]?.corta || '',
+        ...clases.map(c => textoCeldaAsistencia(c, a)),
+        `${r.presentes} / ${r.total}`,
+        r.porcentaje === null ? '—' : `${r.porcentaje}%`,
+      ])
+    })
+
+    ws.getRow(1).eachCell({ includeEmpty: true }, c => pintarCeldaExcel(c, 'cabecera', { negrita: true, ajustar: true, tamanio: 10 }))
+    ws.getRow(1).height = 45
+    alumnosPlanilla.value.forEach((a, i) => {
+      const fila = ws.getRow(i + 2)
+      pintarCeldaExcel(fila.getCell(1), '', { izquierda: true, negrita: true })
+      pintarCeldaExcel(fila.getCell(2), '')
+      clases.forEach((c, j) => pintarCeldaExcel(fila.getCell(j + 3), colorExcel(claseCeldaAsistencia(c, a)), { negrita: true }))
+      pintarCeldaExcel(fila.getCell(clases.length + 3), '', { negrita: true })
+      pintarCeldaExcel(fila.getCell(clases.length + 4), colorExcel(clasePorcentaje(resumenAlumno(a).porcentaje)), { negrita: true })
+    })
+
+    ws.getColumn(1).width = 30
+    ws.getColumn(2).width = 10
+    clases.forEach((_, j) => { ws.getColumn(j + 3).width = 14 })
+    ws.getColumn(clases.length + 3).width = 12
+    ws.getColumn(clases.length + 4).width = 10
+
+    const buffer = await wb.xlsx.writeBuffer()
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const url = URL.createObjectURL(blob)
+    const enlace = document.createElement('a')
+    enlace.href = url
+    enlace.download = `asistencia_curso_${anio.value}.xlsx`
+    enlace.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error('descargarExcelAsistencia:', err)
+    notificar({ titulo: 'Error', mensaje: 'No se pudo generar el Excel.', tipo: 'danger' })
+  } finally {
+    generandoExcel.value = false
+  }
+}
 
 // ─── Nueva / Editar ──────────────────────────────────────────────
 // Horario habitual de las clases del curso: 19:30 a 22:00
@@ -545,6 +785,8 @@ const enviarAsistencia = async () => {
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar la asistencia')
     toast({ titulo: 'Guardado', mensaje: 'La asistencia se guardó.', tipo: 'success' })
     mostrarAsistencia.value = false
+    if (pestana.value === 'planilla') cargarPlanilla()
+    else planillaCargadaDe.value = null
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
   } finally {
@@ -794,4 +1036,39 @@ onMounted(() => cargar(anio.value))
 .opcion-modo.activa { border-color: #dc3545; background: #fef2f2; }
 .fila-asistencia { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
 .min-w-0 { min-width: 0; }
+
+/* Pestañas (igual que Exámenes del curso) */
+.pestanas-cronograma { scrollbar-width: thin; }
+.pestanas-cronograma .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; white-space: nowrap; }
+.pestanas-cronograma .nav-link.active { background: #dc3545; color: #fff; }
+
+/* Planilla con el mismo estilo que la planilla de Exámenes del curso */
+.tabla-scroll { overflow: auto; max-height: 70vh; }
+.tabla-excel { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 0.8rem; background: #fff; }
+.tabla-excel th,
+.tabla-excel td { border-right: 1px solid #d4d4d8; border-bottom: 1px solid #d4d4d8; padding: 4px 8px; white-space: nowrap; }
+.tabla-excel thead th { background-color: #f1f3f5; color: #343a40; position: sticky; top: 0; z-index: 5; text-align: center; vertical-align: middle; font-size: 0.72rem; }
+.th-clase { min-width: 90px; cursor: pointer; }
+.th-clase:hover { background-color: #e2e6ea !important; }
+.th-curso, .th-total { min-width: 70px; }
+.fecha-evento { font-size: 0.68rem; color: #6c757d; font-weight: 500; }
+.texto-recortado { max-width: 120px; overflow: hidden; text-overflow: ellipsis; margin: 0 auto; }
+.col-alumno { position: sticky; left: 0; background-color: #fff; z-index: 6; min-width: 190px; text-align: left !important; }
+.tabla-excel thead .esquina { z-index: 8; background-color: #e9ecef; }
+.celda-nombre { font-weight: 600; color: #212529; border-right: 2px solid #adb5bd !important; }
+.celda { text-align: center; min-width: 44px; color: #212529; }
+.celda-total { font-weight: 700; border-left: 2px solid #adb5bd; }
+.celda-verde { background-color: #d1e7dd; color: #0f5132; font-weight: 600; }
+.celda-roja { background-color: #f8d7da; color: #842029; font-weight: 600; }
+.celda-na { background-color: #f8f9fa; }
+.chip-nota { display: inline-block; border-radius: 4px; padding: 1px 8px; font-size: 0.75rem; border: 1px solid #e9ecef; }
+.fila-planilla { border-top: 1px solid #f1f5f9; padding: 6px 0; }
+.cuadrito { display: inline-block; width: 12px; height: 12px; border: 1px solid #ced4da; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.cuadrito-verde { background-color: #d1e7dd; }
+.cuadrito-roja { background-color: #f8d7da; }
+.cuadrito-na { background-color: #f8f9fa; }
+.busqueda-wrap { position: relative; max-width: 200px; flex: 0 0 auto; }
+.busqueda-wrap input { padding-right: 30px; }
+.btn-limpiar-busqueda { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); border: none; background: transparent; color: #adb5bd; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; line-height: 1; }
+.btn-limpiar-busqueda:hover { color: #dc3545; }
 </style>
