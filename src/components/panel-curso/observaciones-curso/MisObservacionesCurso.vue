@@ -62,15 +62,17 @@
                         <div class="text-dark fw-bold small mb-1">
                           <i class="bi bi-calendar3 me-1 text-muted"></i>{{ fechaDMA(obs.fecha_partido) }}
                         </div>
-                        <div class="text-muted small text-truncate">Curso de Árbitros</div>
+                        <div class="text-muted small text-truncate">{{ esAmistoso(obs) ? 'Partido amistoso' : 'Encuentro de mini' }}</div>
                       </div>
-                      <span v-if="obs.categoria" class="badge bg-secondary text-truncate" style="max-width: 50%;">{{ obs.categoria }}</span>
+                      <span class="badge flex-shrink-0" :class="esAmistoso(obs) ? 'bg-primary' : 'bg-dark'">
+                        <i :class="['bi', esAmistoso(obs) ? 'bi-flag' : 'bi-people', 'me-1']"></i>{{ esAmistoso(obs) ? 'Amistoso' : 'Mini' }}
+                      </span>
                     </div>
 
                     <div class="text-dark small mb-2 flex-grow-1">
                       <div class="fw-bold text-break">{{ obs.encuentro }}</div>
-                      <div class="text-muted mt-1"><i class="bi bi-tag me-1"></i>Categoría: {{ obs.categoria || '-' }}</div>
-                      <div class="text-muted mt-1"><i class="bi bi-person-badge me-1"></i>Observador: {{ obs.observador || '-' }}</div>
+                      <div v-if="esAmistoso(obs)" class="text-muted mt-1"><i class="bi bi-tag me-1"></i>Categoría: {{ obs.categoria || '-' }}</div>
+                      <div class="text-muted mt-1"><i class="bi bi-person-badge me-1"></i>{{ etiquetaObservador(obs) }}: {{ obs.observador || '-' }}</div>
                     </div>
 
                     <button class="btn btn-sm btn-outline-danger w-100 fw-bold d-flex align-items-center justify-content-center gap-1" @click="detalle = obs">
@@ -91,10 +93,11 @@
       <div v-if="detalle" class="text-start">
         <!-- Datos básicos -->
         <div class="bg-light p-3 rounded border mb-3 border-secondary-subtle">
-          <p class="m-0 small text-dark"><strong class="text-muted">Día:</strong> {{ fechaDMA(detalle.fecha_partido) }}</p>
-          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Encuentro:</strong> {{ detalle.encuentro }}</p>
-          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Categoría:</strong> {{ detalle.categoria || '-' }}</p>
-          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Observador:</strong> {{ detalle.observador || '-' }}</p>
+          <p class="m-0 small text-dark"><strong class="text-muted">Tipo:</strong> {{ esAmistoso(detalle) ? 'Partido amistoso' : 'Encuentro de mini' }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">Día:</strong> {{ fechaDMA(detalle.fecha_partido) }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">{{ esAmistoso(detalle) ? 'Partido' : 'Encuentro' }}:</strong> {{ detalle.encuentro }}</p>
+          <p v-if="esAmistoso(detalle)" class="m-0 small text-dark mt-1"><strong class="text-muted">Categoría:</strong> {{ detalle.categoria || '-' }}</p>
+          <p class="m-0 small text-dark mt-1"><strong class="text-muted">{{ etiquetaObservador(detalle) }}:</strong> {{ detalle.observador || '-' }}</p>
         </div>
 
         <!-- Comentarios del observador -->
@@ -142,6 +145,10 @@ const observaciones = ref([])
 const cargando = ref(false)
 const filtroAnio = ref(anioActual())
 const detalle = ref(null)
+
+// Tipo de observación: en mini el observador es el profesor a cargo; en amistosos, el árbitro que observó
+const esAmistoso = (o) => o.tipo === 'amistoso'
+const etiquetaObservador = (o) => (esAmistoso(o) ? 'Observador' : 'Profesor a cargo')
 
 const aniosDisponibles = computed(() => {
   const anios = new Set()
