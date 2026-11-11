@@ -45,6 +45,12 @@
                 <option v-for="(e, clave) in ESTADOS_REVISION_OBSERVACION" :key="clave" :value="clave">{{ e.etiqueta.toUpperCase() }}</option>
               </select>
             </div>
+            <div class="col-6 col-md-2">
+              <select v-model="filtros.tipo" class="form-select form-select-sm shadow-none text-uppercase text-dark" aria-label="Tipo">
+                <option value="">TIPO</option>
+                <option v-for="(t, clave) in TIPOS_OBSERVACION_CURSO" :key="clave" :value="clave">{{ t.etiqueta.toUpperCase() }}</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -59,6 +65,7 @@
                     <th class="py-3 text-uppercase text-muted">Fecha</th>
                     <th class="py-3 text-uppercase text-muted">Aspirante</th>
                     <th class="py-3 text-center text-uppercase text-muted">Curso</th>
+                    <th class="py-3 text-center text-uppercase text-muted">Tipo</th>
                     <th class="py-3 text-uppercase text-muted">Encuentro</th>
                     <th class="py-3 text-uppercase text-muted">Categoría</th>
                     <th class="py-3 text-uppercase text-muted">Observador</th>
@@ -83,13 +90,14 @@
                     <td class="fw-bold text-dark">{{ fechaDMA(o.fecha_partido) }}</td>
                     <td class="fw-bold text-dark text-uppercase">{{ o.apellido }}, {{ o.nombre }}</td>
                     <td class="text-center"><span class="badge" :class="MODALIDADES_CURSO[o.modalidad_curso]?.clase">{{ MODALIDADES_CURSO[o.modalidad_curso]?.corta }}</span></td>
+                    <td class="text-center"><span class="badge" :class="claseTipo(o)">{{ etiquetaTipo(o) }}</span></td>
                     <td class="text-dark">{{ o.encuentro }}</td>
                     <td class="text-dark">{{ o.categoria || '-' }}</td>
                     <td class="text-dark">{{ o.observador || '-' }}</td>
                     <td class="text-center"><span :class="estadoDe(o).clase">{{ estadoDe(o).etiqueta }}</span></td>
                   </tr>
                   <tr v-if="!observacionesFiltradas.length">
-                    <td colspan="8" class="text-center py-5 text-muted border-0">
+                    <td colspan="9" class="text-center py-5 text-muted border-0">
                       <span class="material-icons d-block fs-1 mb-2 opacity-50">search_off</span>
                       <span class="fw-bold">No hay observaciones para mostrar.</span>
                     </td>
@@ -105,7 +113,7 @@
                     <span class="fw-bold text-uppercase">{{ o.apellido }}, {{ o.nombre }}</span>
                     <span class="flex-shrink-0" :class="estadoDe(o).clase">{{ estadoDe(o).etiqueta }}</span>
                   </div>
-                  <div>{{ fechaDMA(o.fecha_partido) }} · {{ o.encuentro }}</div>
+                  <div><span class="badge me-1" :class="claseTipo(o)">{{ etiquetaTipo(o) }}</span>{{ fechaDMA(o.fecha_partido) }} · {{ o.encuentro }}</div>
                   <div v-if="o.observador" class="text-muted">Observador/a: {{ o.observador }}</div>
                   <div v-if="o.categoria" class="text-muted">{{ o.categoria }}</div>
                   <div class="d-flex gap-2 mt-3">
@@ -205,7 +213,7 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import ModalObservacionCurso from '@/components/ModalObservacionCurso.vue'
-import { CAMPOS_OBSERVACION_CURSO, ESTADOS_REVISION_OBSERVACION } from '@/composables/useObservacionesCurso'
+import { CAMPOS_OBSERVACION_CURSO, ESTADOS_REVISION_OBSERVACION, TIPOS_OBSERVACION_CURSO } from '@/composables/useObservacionesCurso'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA, fechaHoraDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
@@ -220,7 +228,11 @@ const anio = ref(Number(anioActual()))
 const anios = computed(() => conAnioActual().map(Number))
 const observaciones = ref([])
 const cargando = ref(false)
-const filtros = reactive({ texto: '', modalidad: '', estado: '' })
+const filtros = reactive({ texto: '', modalidad: '', estado: '', tipo: '' })
+
+// Tipo de observación: encuentro de mini o partido amistoso
+const etiquetaTipo = (o) => (o.tipo === 'amistoso' ? 'Amistoso' : 'Mini')
+const claseTipo = (o) => (o.tipo === 'amistoso' ? 'bg-primary' : 'bg-dark')
 
 
 const observacionesFiltradas = computed(() => {
@@ -228,11 +240,12 @@ const observacionesFiltradas = computed(() => {
   return observaciones.value.filter(o =>
     (!filtros.modalidad || o.modalidad_curso === filtros.modalidad) &&
     (!filtros.estado || (o.estado_revision || 'pendiente') === filtros.estado) &&
+    (!filtros.tipo || (o.tipo || 'mini') === filtros.tipo) &&
     (!texto || normalizarTexto(`${o.apellido} ${o.nombre} ${o.encuentro} ${o.observador}`).includes(texto))
   )
 })
 
-const limpiarFiltros = () => Object.assign(filtros, { texto: '', modalidad: '', estado: '' })
+const limpiarFiltros = () => Object.assign(filtros, { texto: '', modalidad: '', estado: '', tipo: '' })
 const estadoDe = (o) => ESTADOS_REVISION_OBSERVACION[o?.estado_revision] || ESTADOS_REVISION_OBSERVACION.pendiente
 
 const cargarObservaciones = async () => {

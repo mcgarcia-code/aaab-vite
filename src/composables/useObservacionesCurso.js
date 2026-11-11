@@ -8,8 +8,15 @@ export const CAMPOS_OBSERVACION_CURSO = [
   { clave: 'aspectosAMejorar', columna: 'aspectos_a_mejorar', etiqueta: 'Aspectos a mejorar', icono: 'bi-arrow-up-circle' },
 ]
 
+// Tipos de observación: encuentro de mini (curso anual) o partido amistoso (anual o intensivo)
+export const TIPOS_OBSERVACION_CURSO = {
+  mini: { etiqueta: 'Encuentro de mini', icono: 'bi-people', ayuda: 'Curso anual: se elige un encuentro de mini en el que el aspirante estuvo presente. El observador es el profesor a cargo.' },
+  amistoso: { etiqueta: 'Partido amistoso', icono: 'bi-flag', ayuda: 'Curso anual o intensivo: partido amistoso de otra categoría, con el árbitro que observó.' },
+}
+
 export const observacionCursoVacia = () => ({
   id: null,
+  tipo: 'mini',
   modalidad: '',
   idAlumno: null,
   idEncuentro: null,
@@ -22,6 +29,7 @@ export const observacionCursoVacia = () => ({
 
 export const observacionCursoDesdeFila = (o) => ({
   id: o.id,
+  tipo: o.tipo || 'mini',
   modalidad: o.modalidad_curso || '',
   idAlumno: o.id_alumno,
   idEncuentro: o.id_encuentro ?? null,

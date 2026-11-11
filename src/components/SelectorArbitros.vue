@@ -39,8 +39,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { api } from '@/api/api'
 
-defineProps({
+const props = defineProps({
   id: { type: String, default: 'selector-arbitros' },
+  // true: se elige un solo árbitro (al elegir otro, reemplaza al anterior)
+  unico: { type: Boolean, default: false },
 })
 
 // [{ id, nombre }]
@@ -64,7 +66,11 @@ const estaElegido = (id) => seleccionados.value.some(a => a.id === id)
 const quitar = (id) => { seleccionados.value = seleccionados.value.filter(a => a.id !== id) }
 const alternar = (a) => {
   if (estaElegido(a.id)) quitar(a.id)
-  else seleccionados.value = [...seleccionados.value, { id: a.id, nombre: `${a.apellido}, ${a.nombre}` }]
+  else {
+    const elegido = { id: a.id, nombre: `${a.apellido}, ${a.nombre}` }
+    seleccionados.value = props.unico ? [elegido] : [...seleccionados.value, elegido]
+    if (props.unico) busqueda.value = ''
+  }
 }
 
 onMounted(async () => {

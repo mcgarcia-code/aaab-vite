@@ -5,9 +5,19 @@
     </template>
     <form id="formObservacionCurso" class="text-start" novalidate @submit.prevent="guardar">
       <div class="row g-3">
+        <!-- Tipo: el árbitro desde su panel solo carga encuentros de mini; los amistosos los carga la coordinación -->
+        <div v-if="!esObservador" class="col-12">
+          <div class="btn-group w-100" role="group" aria-label="Tipo de observación">
+            <button v-for="(t, clave) in TIPOS_OBSERVACION_CURSO" :key="clave" type="button" class="btn fw-bold" :class="form.tipo === clave ? 'btn-danger' : 'btn-outline-danger'" :aria-pressed="form.tipo === clave" @click="cambiarTipo(clave)">
+              <i :class="['bi', t.icono, 'me-1']"></i> {{ t.etiqueta }}
+            </button>
+          </div>
+          <div class="form-text">{{ TIPOS_OBSERVACION_CURSO[form.tipo].ayuda }}</div>
+        </div>
+
         <div class="col-12 col-md-4">
           <label for="obs-modalidad" class="form-label small fw-bold text-dark">Curso *</label>
-          <select id="obs-modalidad" v-model="form.modalidad" class="form-select" :class="{ 'is-invalid': intento && !form.modalidad }" @change="form.idAlumno = null; form.idEncuentro = null">
+          <select id="obs-modalidad" v-model="form.modalidad" class="form-select" :disabled="esMini" :class="{ 'is-invalid': intento && !form.modalidad }" @change="form.idAlumno = null; form.idEncuentro = null">
             <option value="" disabled>Seleccionar curso...</option>
             <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.etiqueta }}</option>
           </select>
@@ -23,8 +33,8 @@
           </div>
         </div>
 
-        <!-- Encuentro de mini: solo los que el aspirante tiene presente (el observador, solo los suyos como profesor a cargo) -->
-        <div class="col-12">
+        <!-- ENCUENTRO DE MINI: solo los que el aspirante tiene presente (el observador, solo los suyos como profesor a cargo) -->
+        <div v-if="esMini" class="col-12">
           <label for="obs-encuentro" class="form-label small fw-bold text-dark">Encuentro de mini *</label>
           <select id="obs-encuentro" v-model="form.idEncuentro" class="form-select" :disabled="!form.idAlumno || cargandoEncuentros" :class="{ 'is-invalid': intento && !form.idEncuentro }">
             <option :value="null" disabled>{{ cargandoEncuentros ? 'Cargando...' : (form.idAlumno ? 'Seleccionar encuentro...' : 'Elegí primero el aspirante') }}</option>
@@ -42,6 +52,28 @@
             </div>
           </div>
         </div>
+
+        <!-- PARTIDO AMISTOSO: fecha, partido, categoría y árbitro observador -->
+        <template v-else>
+          <div class="col-12 col-md-4">
+            <label for="obs-fecha" class="form-label small fw-bold text-dark">Fecha del partido *</label>
+            <input id="obs-fecha" v-model="form.fechaPartido" type="date" class="form-control" :class="{ 'is-invalid': intento && !form.fechaPartido }">
+          </div>
+          <div class="col-12 col-md-8">
+            <label for="obs-partido" class="form-label small fw-bold text-dark">Partido *</label>
+            <input id="obs-partido" v-model.trim="form.encuentro" type="text" maxlength="200" class="form-control" placeholder="Ej: Club A vs Club B" :class="{ 'is-invalid': intento && !form.encuentro }">
+          </div>
+          <div class="col-12 col-md-5">
+            <label for="obs-categoria" class="form-label small fw-bold text-dark">Categoría *</label>
+            <input id="obs-categoria" v-model.trim="form.categoria" type="text" maxlength="150" class="form-control" placeholder="Ej: Primera B" :class="{ 'is-invalid': intento && !form.categoria }">
+          </div>
+          <div class="col-12 col-md-7">
+            <label for="obs-observador" class="form-label small fw-bold text-dark">Árbitro observador *</label>
+            <SelectorArbitros id="obs-observador" v-model="observadorElegido" unico />
+            <div v-if="intento && !observadorElegido.length" class="text-danger small mt-1">Elegí el árbitro observador.</div>
+          </div>
+        </template>
+
         <div v-for="c in CAMPOS_OBSERVACION_CURSO" :key="c.clave" class="col-12">
           <label :for="'obs-' + c.clave" class="form-label small fw-bold text-dark">{{ c.etiqueta }}</label>
           <textarea :id="'obs-' + c.clave" v-model.trim="form[c.clave]" rows="2" maxlength="3000" class="form-control"></textarea>
@@ -65,13 +97,15 @@
 import { ref, computed, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
+import SelectorArbitros from '@/components/SelectorArbitros.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
-import { CAMPOS_OBSERVACION_CURSO, observacionCursoVacia, observacionCursoDesdeFila } from '@/composables/useObservacionesCurso'
+import { CAMPOS_OBSERVACION_CURSO, TIPOS_OBSERVACION_CURSO, observacionCursoVacia, observacionCursoDesdeFila } from '@/composables/useObservacionesCurso'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
 import { fechaDMA } from '@/utils/fechas'
 
 const props = defineProps({
   observacion: { type: Object, default: null },
+  // Árbitro desde su panel: solo carga observaciones de encuentros de mini en los que fue profesor a cargo
   esObservador: { type: Boolean, default: false },
 })
 const emit = defineEmits(['guardado'])
@@ -86,8 +120,28 @@ const intento = ref(false)
 const guardando = ref(false)
 const aspirantes = ref([])
 const cargandoAspirantes = ref(false)
+// Árbitro observador del partido amistoso: [{ id, nombre }] (SelectorArbitros en modo único)
+const observadorElegido = ref([])
 
+const esMini = computed(() => form.value.tipo === 'mini')
 const hayTexto = computed(() => CAMPOS_OBSERVACION_CURSO.some(c => String(form.value[c.clave] || '').trim()))
+
+// Los encuentros de mini son solo del curso anual
+const cambiarTipo = (tipo) => {
+  if (form.value.tipo === tipo) return
+  form.value.tipo = tipo
+  form.value.idEncuentro = null
+  if (tipo === 'mini') {
+    if (form.value.modalidad !== 'anual') {
+      form.value.modalidad = 'anual'
+      form.value.idAlumno = null
+    }
+    cargarEncuentros(form.value.idAlumno)
+  } else {
+    form.value.fechaPartido = ''
+    form.value.encuentro = ''
+  }
+}
 
 // Al editar, el aspirante puede ya no ser regular: se agrega igual a la lista
 const aspirantesParaSelect = computed(() => {
@@ -145,27 +199,41 @@ const cargarEncuentros = async (idAlumno) => {
   }
 }
 
-watch(() => form.value.idAlumno, cargarEncuentros)
+watch(() => form.value.idAlumno, (idAlumno) => { if (esMini.value) cargarEncuentros(idAlumno) })
 
 watch(mostrar, (abierto) => {
   if (!abierto) return
-  form.value = props.observacion ? observacionCursoDesdeFila(props.observacion) : observacionCursoVacia()
+  const o = props.observacion
+  form.value = o ? observacionCursoDesdeFila(o) : observacionCursoVacia()
+  if (props.esObservador) form.value.tipo = 'mini'
+  if (form.value.tipo === 'mini' && !form.value.modalidad) form.value.modalidad = 'anual'
+  observadorElegido.value = o && o.tipo === 'amistoso' && o.id_observador ? [{ id: o.id_observador, nombre: o.observador }] : []
   intento.value = false
 })
 
+const faltanDatos = () => {
+  const f = form.value
+  if (!f.modalidad || !f.idAlumno || !hayTexto.value) return true
+  if (esMini.value) return !encuentroElegido.value
+  return !f.fechaPartido || !f.encuentro || !f.categoria || !observadorElegido.value.length
+}
+
 const guardar = async () => {
   intento.value = true
-  const f = form.value
-  if (!f.modalidad || !f.idAlumno || !encuentroElegido.value || !hayTexto.value) {
+  if (faltanDatos()) {
     avisar({ titulo: 'Faltan datos', mensaje: 'Revisá los campos marcados.', tipo: 'danger' })
     return
   }
-  // La fecha y el texto del encuentro salen del encuentro de mini elegido
-  f.fechaPartido = encuentroElegido.value.fecha
-  f.encuentro = encuentroElegido.value.titulo
+  const f = form.value
+  if (esMini.value) {
+    // La fecha y el texto del encuentro salen del encuentro de mini elegido
+    f.fechaPartido = encuentroElegido.value.fecha
+    f.encuentro = encuentroElegido.value.titulo
+  }
+  const payload = { ...f, idObservador: esMini.value ? null : observadorElegido.value[0].id }
   guardando.value = true
   try {
-    const res = await api.post({ entity: 'observaciones_curso_arbitro', action: 'guardarObservacionCurso', payload: { ...f } })
+    const res = await api.post({ entity: 'observaciones_curso_arbitro', action: 'guardarObservacionCurso', payload })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar la observación')
     avisar({ titulo: 'Guardado', mensaje: f.id ? 'La observación se actualizó.' : 'La observación se cargó y queda pendiente de aprobación.', tipo: 'success' })
     mostrar.value = false
