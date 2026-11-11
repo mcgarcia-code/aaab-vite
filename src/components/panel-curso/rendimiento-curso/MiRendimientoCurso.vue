@@ -15,6 +15,23 @@
       </div>
 
       <div v-else class="card-body p-3 p-md-4">
+        <!-- ESTADO FINAL DEL CURSO -->
+        <div class="estado-final rounded-3 p-3 mb-4" :class="ESTADO_FINAL[resultado.estado].clase">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi fs-2 flex-shrink-0" :class="ESTADO_FINAL[resultado.estado].icono"></i>
+            <div class="min-w-0">
+              <div class="etiqueta-estado">Estado final del curso</div>
+              <div class="fw-bold fs-5">{{ ESTADO_FINAL[resultado.estado].etiqueta }}</div>
+              <div v-if="resultado.fecha" class="small opacity-75">{{ fechaLargaClase(resultado.fecha) }}</div>
+              <div v-else-if="resultado.estado === 'pendiente'" class="small opacity-75">Todavía no se cargó la nota final del curso.</div>
+            </div>
+          </div>
+          <div v-if="resultado.observacion" class="observacion-final mt-3">
+            <div class="etiqueta-estado mb-1">Observación</div>
+            <div class="texto-multilinea">{{ resultado.observacion }}</div>
+          </div>
+        </div>
+
         <!-- RESUMEN -->
         <div class="row g-2 g-md-3 mb-4">
           <div class="col-6" :class="esAnual ? 'col-md' : 'col-md-3'">
@@ -162,6 +179,17 @@ const abiertas = reactive({ clases: false, mini: false, examenes: false })
 
 const esAnual = computed(() => datos.value.modalidad === 'anual')
 
+// Estado final del curso (lo carga la Escuela desde Alumnos Regulares)
+const ESTADO_FINAL = {
+  aprobado: { etiqueta: 'Aprobado', icono: 'bi-patch-check-fill', clase: 'estado-aprobado' },
+  desaprobado: { etiqueta: 'Desaprobado', icono: 'bi-x-octagon-fill', clase: 'estado-desaprobado' },
+  pendiente: { etiqueta: 'Pendiente', icono: 'bi-hourglass-split', clase: 'estado-pendiente' },
+}
+const resultado = computed(() => {
+  const r = datos.value.resultado
+  return r && ESTADO_FINAL[r.estado] ? r : { estado: 'pendiente', observacion: null, fecha: null }
+})
+
 // Fecha de hoy (local) en formato AAAA-MM-DD para comparar con las fechas del backend
 const hoy = (() => {
   const d = new Date()
@@ -233,5 +261,12 @@ onMounted(async () => {
   background: #fff;
 }
 .min-w-0 { min-width: 0; }
+.estado-final { border: 1px solid; }
+.estado-aprobado { background: #d1e7dd; border-color: #a3cfbb; color: #0f5132; }
+.estado-desaprobado { background: #f8d7da; border-color: #f1aeb5; color: #842029; }
+.estado-pendiente { background: #f8f9fa; border-color: #dee2e6; color: #495057; }
+.etiqueta-estado { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; opacity: 0.8; }
+.observacion-final { background: rgba(255, 255, 255, 0.6); border-radius: 8px; padding: 8px 12px; color: #212529; font-size: 0.9rem; }
+.texto-multilinea { white-space: pre-wrap; word-break: break-word; }
 .nota { font-weight: 800; font-size: 0.9rem; }
 </style>
