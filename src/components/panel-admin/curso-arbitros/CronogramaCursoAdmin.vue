@@ -18,7 +18,7 @@
             <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 110px;" aria-label="Año">
               <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
             </select>
-            <button @click="cargar(anio); if (pestana === 'planilla') cargarPlanilla()" :disabled="cargando || cargandoPlanilla" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
+            <button @click="cargar(anio); planillaRef?.recargar()" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
               <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
               <span v-else class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
@@ -42,85 +42,15 @@
         </div>
 
         <!-- PLANILLA DE ASISTENCIA -->
-        <div v-if="pestana === 'planilla'" class="card-body bg-white" :class="cargandoPlanilla || cargando ? 'p-3' : 'p-0 border-top'">
-          <div v-if="cargandoPlanilla || cargando" class="text-center p-5">
-            <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando planilla...</p>
-          </div>
-          <template v-else>
-            <div class="d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
-              <div class="busqueda-wrap">
-                <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
-                <button v-if="filtroAlumno" class="btn-limpiar-busqueda" @click="filtroAlumno = ''" title="Limpiar búsqueda" type="button">
-                  <i class="bi bi-x-lg"></i>
-                </button>
-              </div>
-              <button
-                type="button"
-                @click="descargarExcelAsistencia"
-                class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1"
-                :disabled="!alumnosPlanilla.length || !clasesPlanilla.length || generandoExcel"
-              >
-                <span v-if="generandoExcel" class="spinner-border spinner-border-sm"></span>
-                <i v-else class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-              </button>
-              <span class="text-muted text-nowrap">{{ alumnosPlanilla.length }} alumnos · {{ clasesPlanilla.length }} clases dictadas</span>
-              <span class="ms-auto d-flex flex-wrap gap-3">
-                <span><span class="cuadrito cuadrito-verde"></span> Presente (P)</span>
-                <span><span class="cuadrito cuadrito-roja"></span> Ausente (A)</span>
-                <span><span class="cuadrito"></span> Sin marcar</span>
-                <span><span class="cuadrito cuadrito-na"></span> No le corresponde</span>
-              </span>
-            </div>
-            <div v-if="!clasesPlanilla.length" class="text-center py-5 text-muted fw-bold">Todavía no hay clases dictadas en {{ anio }}.</div>
-            <div v-else-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
-            <template v-else>
-              <div class="d-none d-lg-block tabla-scroll">
-                <table class="tabla-excel">
-                  <thead>
-                    <tr>
-                      <th class="col-alumno esquina">ALUMNO</th>
-                      <th class="th-curso">CURSO</th>
-                      <th v-for="c in clasesPlanilla" :key="'th-' + c.id" class="th-clase" :title="`${c.titulo} · ${etiquetaCurso(c.curso)} · tocá para cargar la asistencia`" role="button" @click="abrirAsistencia(c)">
-                        <div class="fw-bold">{{ fechaDMA(c.fecha) }}</div>
-                        <div class="fecha-evento texto-recortado">{{ c.titulo }}</div>
-                      </th>
-                      <th class="th-total">PRESENTES</th>
-                      <th class="th-total" :title="`Presente sobre las clases ya dictadas (mínimo ${ASISTENCIA_MINIMA}%)`">% ASIST.</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="a in alumnosPlanilla" :key="'pa-' + a.id">
-                      <td class="col-alumno celda-nombre text-uppercase">{{ a.apellido }}, {{ a.nombre }}</td>
-                      <td class="celda"><span class="badge" :class="MODALIDADES_CURSO[a.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</span></td>
-                      <td v-for="c in clasesPlanilla" :key="'pa-' + a.id + '-' + c.id" class="celda" :class="claseCeldaAsistencia(c, a)" :title="tituloCeldaAsistencia(c, a)">{{ textoCeldaAsistencia(c, a) }}</td>
-                      <td class="celda celda-total">{{ resumenAlumno(a).presentes }} / {{ resumenAlumno(a).total }}</td>
-                      <td class="celda" :class="clasePorcentaje(resumenAlumno(a).porcentaje)">{{ resumenAlumno(a).porcentaje === null ? '—' : resumenAlumno(a).porcentaje + '%' }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div class="d-lg-none d-flex flex-column gap-3 p-3">
-                <div v-for="a in alumnosPlanilla" :key="'pam-' + a.id" class="card border-light-subtle shadow-sm rounded-3">
-                  <div class="card-body p-3 small">
-                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                      <div class="fw-bold text-dark text-uppercase min-w-0">{{ a.apellido }}, {{ a.nombre }}</div>
-                      <span class="chip-nota flex-shrink-0" :class="clasePorcentaje(resumenAlumno(a).porcentaje)">
-                        {{ resumenAlumno(a).presentes }} / {{ resumenAlumno(a).total }} · {{ resumenAlumno(a).porcentaje === null ? '—' : resumenAlumno(a).porcentaje + '%' }}
-                      </span>
-                    </div>
-                    <div v-for="c in clasesPlanilla.filter(c => correspondeClase(c, a))" :key="'pame-' + a.id + '-' + c.id" class="fila-planilla d-flex justify-content-between align-items-center gap-2">
-                      <div class="min-w-0">
-                        <div class="text-dark fw-semibold">{{ fechaDMA(c.fecha) }}</div>
-                        <div class="text-muted text-break" style="font-size: 0.68rem;">{{ c.titulo }}</div>
-                      </div>
-                      <span class="chip-nota flex-shrink-0" :class="claseCeldaAsistencia(c, a)">{{ textoCeldaAsistencia(c, a) || 'Sin marcar' }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </template>
-          </template>
+        <div v-if="pestana === 'planilla'" class="card-body bg-white p-0 border-top">
+          <PlanillaAsistenciaCurso
+            ref="planillaRef"
+            :clases="clasesVisibles"
+            :cargando-clases="cargando"
+            :filtro-curso="filtroCurso"
+            :anio="anio"
+            @abrir-asistencia="abrirAsistencia"
+          />
         </div>
 
         <div v-else class="card-body p-3 bg-white">
@@ -437,10 +367,8 @@ import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { PORCENTAJE_APROBACION_DEFECTO } from '@/composables/useExamenesCurso'
-import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada, hoyIso } from '@/composables/useCronogramaCurso'
-import { porcentajeAsistencia, colorAsistencia, ASISTENCIA_MINIMA } from '@/composables/useAsistenciaCurso'
-import { crearPlanillaExcel, pintarCeldaExcel, pintarCabeceraExcel, anchosColumnasExcel, descargarLibroExcel } from '@/composables/useExcelPlanilla'
-import { normalizarTexto } from '@/utils/texto'
+import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada } from '@/composables/useCronogramaCurso'
+import PlanillaAsistenciaCurso from '@/components/panel-admin/curso-arbitros/PlanillaAsistenciaCurso.vue'
 
 useHead({ title: 'Clases y Asistencia | AAAB' })
 
@@ -479,118 +407,7 @@ const PESTANAS = [
   { clave: 'planilla', etiqueta: 'Planilla de asistencia', icono: 'bi-table' },
 ]
 const pestana = ref('clases')
-
-// ─── Planilla de asistencia (mismo estilo que la planilla de Exámenes) ──
-const planilla = ref({ alumnos: [], asistencias: [] })
-const cargandoPlanilla = ref(false)
-const planillaCargadaDe = ref(null)
-const filtroAlumno = ref('')
-
-const cargarPlanilla = async () => {
-  cargandoPlanilla.value = true
-  try {
-    const res = await api.get({ entity: 'cronograma_curso_arbitro', action: 'obtenerPlanillaAsistenciaCurso', payload: { anio: anio.value } })
-    if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar la planilla de asistencia')
-    planilla.value = res.payload || { alumnos: [], asistencias: [] }
-    planillaCargadaDe.value = anio.value
-  } catch (e) {
-    notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
-  } finally {
-    cargandoPlanilla.value = false
-  }
-}
-
-// Se carga al entrar a la pestaña y se recarga si cambia el año
-watch([pestana, anio], ([p, a]) => { if (p === 'planilla' && planillaCargadaDe.value !== a) cargarPlanilla() })
-
-// Columnas: clases ya dictadas (hasta hoy inclusive), de la más vieja a la más nueva
-const clasesPlanilla = computed(() =>
-  clasesVisibles.value.filter(c => c.fecha <= hoyIso()).sort((x, y) => x.fecha.localeCompare(y.fecha) || x.id - y.id)
-)
-
-const alumnosPlanilla = computed(() => {
-  const texto = normalizarTexto(filtroAlumno.value)
-  return planilla.value.alumnos.filter(a =>
-    (!filtroCurso.value || a.modalidadCurso === filtroCurso.value) &&
-    (!texto || normalizarTexto(`${a.apellido} ${a.nombre}`).includes(texto))
-  )
-})
-
-const indiceAsistencia = computed(() => {
-  const mapa = {}
-  for (const x of planilla.value.asistencias) mapa[`${x.idClase}-${x.idAlumno}`] = x.presente
-  return mapa
-})
-
-const correspondeClase = (c, a) => c.curso === 'ambos' || c.curso === a.modalidadCurso
-// true = presente, false = ausente, undefined = sin marcar
-const asistenciaDe = (c, a) => indiceAsistencia.value[`${c.id}-${a.id}`]
-
-const textoCeldaAsistencia = (c, a) => {
-  if (!correspondeClase(c, a)) return ''
-  const p = asistenciaDe(c, a)
-  return p === true ? 'P' : p === false ? 'A' : ''
-}
-const claseCeldaAsistencia = (c, a) => {
-  if (!correspondeClase(c, a)) return 'celda-na'
-  const p = asistenciaDe(c, a)
-  return p === true ? 'celda-verde' : p === false ? 'celda-roja' : ''
-}
-const tituloCeldaAsistencia = (c, a) => {
-  if (!correspondeClase(c, a)) return 'No le corresponde'
-  const p = asistenciaDe(c, a)
-  return `${fechaDMA(c.fecha)} · ${p === true ? 'Presente' : p === false ? 'Ausente' : 'Sin marcar'}`
-}
-
-// Presentes sobre todas las clases dictadas que le corresponden (regla común en useAsistenciaCurso)
-const resumenAlumno = (a) => porcentajeAsistencia(
-  clasesPlanilla.value
-    .filter(c => correspondeClase(c, a))
-    .map(c => ({ fecha: c.fecha, asistencia: asistenciaDe(c, a) === true ? 'presente' : asistenciaDe(c, a) === false ? 'ausente' : null })),
-  'clases'
-)
-const clasePorcentaje = (p) => (colorAsistencia(p) ? `celda-${colorAsistencia(p)}` : '')
-
-// ─── Excel de la planilla de asistencia ──
-const generandoExcel = ref(false)
-
-const descargarExcelAsistencia = async () => {
-  generandoExcel.value = true
-  try {
-    const { libro, hoja } = await crearPlanillaExcel(`Asistencia ${anio.value}`)
-    const clases = clasesPlanilla.value
-
-    hoja.addRow(['ALUMNO', 'CURSO', ...clases.map(c => `${fechaDMA(c.fecha)}\n${c.titulo}`), 'PRESENTES', '% ASIST.'])
-    alumnosPlanilla.value.forEach(a => {
-      const r = resumenAlumno(a)
-      hoja.addRow([
-        `${a.apellido}, ${a.nombre}`.toUpperCase(),
-        MODALIDADES_CURSO[a.modalidadCurso]?.corta || '',
-        ...clases.map(c => textoCeldaAsistencia(c, a)),
-        `${r.presentes} / ${r.total}`,
-        r.porcentaje === null ? '—' : `${r.porcentaje}%`,
-      ])
-    })
-
-    pintarCabeceraExcel(hoja)
-    alumnosPlanilla.value.forEach((a, i) => {
-      const fila = hoja.getRow(i + 2)
-      pintarCeldaExcel(fila.getCell(1), '', { izquierda: true, negrita: true })
-      pintarCeldaExcel(fila.getCell(2), '')
-      clases.forEach((c, j) => pintarCeldaExcel(fila.getCell(j + 3), claseCeldaAsistencia(c, a), { negrita: true }))
-      pintarCeldaExcel(fila.getCell(clases.length + 3), '', { negrita: true })
-      pintarCeldaExcel(fila.getCell(clases.length + 4), colorAsistencia(resumenAlumno(a).porcentaje), { negrita: true })
-    })
-    anchosColumnasExcel(hoja, [30, 10, ...clases.map(() => 14), 12, 10])
-
-    await descargarLibroExcel(libro, `asistencia_curso_${anio.value}.xlsx`)
-  } catch (err) {
-    console.error('descargarExcelAsistencia:', err)
-    notificar({ titulo: 'Error', mensaje: 'No se pudo generar el Excel.', tipo: 'danger' })
-  } finally {
-    generandoExcel.value = false
-  }
-}
+const planillaRef = ref(null)
 
 // ─── Nueva / Editar ──────────────────────────────────────────────
 // Horario habitual de las clases del curso: 19:30 a 22:00
@@ -760,8 +577,7 @@ const enviarAsistencia = async () => {
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar la asistencia')
     toast({ titulo: 'Guardado', mensaje: 'La asistencia se guardó.', tipo: 'success' })
     mostrarAsistencia.value = false
-    if (pestana.value === 'planilla') cargarPlanilla()
-    else planillaCargadaDe.value = null
+    planillaRef.value?.recargar()
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
   } finally {
@@ -991,7 +807,6 @@ onMounted(() => cargar(anio.value))
 </script>
 
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
-<style scoped src="@/assets/css/planilla-curso.css"></style>
 <style scoped>
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
@@ -1015,9 +830,4 @@ onMounted(() => cargar(anio.value))
 .pestanas-cronograma .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; white-space: nowrap; }
 .pestanas-cronograma .nav-link.active { background: #dc3545; color: #fff; }
 
-/* Planilla de asistencia: lo propio (el resto está en planilla-curso.css) */
-.th-clase { min-width: 90px; cursor: pointer; }
-.th-clase:hover { background-color: #e2e6ea !important; }
-.texto-recortado { max-width: 120px; overflow: hidden; text-overflow: ellipsis; margin: 0 auto; }
-.chip-nota { border: 1px solid #e9ecef; }
 </style>
