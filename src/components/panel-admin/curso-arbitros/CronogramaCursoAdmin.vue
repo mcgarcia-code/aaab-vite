@@ -8,7 +8,7 @@
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
               <i class="bi bi-calendar3-week me-1"></i> Clases y Asistencia
             </h4>
-            <span class="text-muted small d-block mt-1">{{ clasesVisibles.length }} clases en {{ anio }} · cada alumno ve las de su curso</span>
+            <span class="text-muted small d-block mt-1">{{ clasesVisibles.length }} clases en {{ anio }} · cada alumno ve las de su curso<template v-if="clasesSinAsistencia.length"> · <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> {{ clasesSinAsistencia.length }} {{ clasesSinAsistencia.length === 1 ? 'clase dictada' : 'clases dictadas' }} sin asistencia</span></template></span>
           </div>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
             <select v-model="filtroCurso" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 150px;" aria-label="Curso">
@@ -75,13 +75,14 @@
                   <span class="text-uppercase me-2">{{ grupo.mes }}</span>
                   <span class="badge rounded-pill me-1" :class="grupo.proximas ? 'bg-danger' : 'bg-secondary'">{{ grupo.clases.length }} {{ grupo.clases.length === 1 ? 'clase' : 'clases' }}</span>
                   <span v-if="grupo.dictadas" class="badge bg-light text-muted border">{{ grupo.proximas ? grupo.dictadas + ' dictadas' : 'Dictadas' }}</span>
+                  <span v-if="grupo.clases.filter(faltaAsistencia).length" class="badge bg-warning text-dark ms-1"><i class="bi bi-exclamation-triangle-fill"></i> {{ grupo.clases.filter(faltaAsistencia).length }} sin asistencia</span>
                 </button>
               </h2>
               <div v-show="mesesAbiertos[grupo.mes]" :id="'mes-admin-' + grupo.clave" class="accordion-collapse">
                 <div class="accordion-body p-2 p-md-3">
               <div class="row g-3">
                 <div v-for="c in grupo.clases" :key="c.id" class="col-12 col-md-6 col-xl-4">
-                  <div class="tarjeta-clase border rounded-3 p-3 h-100" :class="{ pasada: esClasePasada(c), proxima: proximaClase?.id === c.id }">
+                  <div class="tarjeta-clase border rounded-3 p-3 h-100" :class="{ pasada: esClasePasada(c), proxima: proximaClase?.id === c.id, 'falta-asistencia': faltaAsistencia(c) }">
                     <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
                       <div>
                         <div class="fw-bold text-dark small">{{ fechaLargaClase(c.fecha) }}</div>
@@ -89,6 +90,9 @@
                       </div>
                       <span v-if="proximaClase?.id === c.id" class="badge bg-danger">Próxima</span>
                       <span v-else-if="esClasePasada(c)" class="badge bg-secondary">Dictada</span>
+                    </div>
+                    <div v-if="faltaAsistencia(c)" class="aviso-asistencia small fw-semibold mt-1">
+                      <i class="bi bi-exclamation-triangle-fill me-1"></i> Falta tomar asistencia: cuenta como ausente para todos
                     </div>
                     <span class="badge mt-2" :class="claseCurso(c.curso)">{{ etiquetaCurso(c.curso) }}</span>
                     <div class="fw-bold text-dark mt-2">{{ c.titulo }}</div>
@@ -102,7 +106,7 @@
                       <i class="bi bi-link-45deg"></i> Enlace
                     </a>
                     <div class="d-flex flex-wrap gap-2 mt-3">
-                      <button @click="abrirAsistencia(c)" class="btn btn-sm btn-outline-success flex-fill fw-bold"><i class="bi bi-person-check me-1"></i> Asistencia</button>
+                      <button @click="abrirAsistencia(c)" :disabled="esClaseFutura(c)" class="btn btn-sm btn-outline-success flex-fill fw-bold" :title="esClaseFutura(c) ? 'La asistencia se toma desde el día de la clase' : undefined"><i class="bi bi-person-check me-1"></i> Asistencia</button>
                       <button @click="abrirExamen(c)" class="btn btn-sm btn-outline-dark flex-fill fw-bold"><i class="bi bi-journal-check me-1"></i> Examen</button>
                       <button @click="abrirEditar(c)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
                       <button @click="confirmarEliminar(c)" class="btn btn-sm btn-outline-danger flex-fill fw-bold"><i class="bi bi-trash3 me-1"></i> Borrar</button>
@@ -182,54 +186,16 @@
         </button>
       </template>
     </ModalBase>
-    <ModalBase :show="mostrarAsistencia" @close="mostrarAsistencia = false" icono="how_to_reg" colorIcono="bg-success-subtle text-success" maxWidth="640px">
-      <template #header>
-        <div class="text-center w-100">
-          <span class="fw-bold fs-5">Asistencia</span>
-          <div v-if="claseAsistencia" class="text-muted small mt-1">{{ fechaLargaClase(claseAsistencia.fecha) }} · {{ claseAsistencia.titulo }}</div>
-        </div>
-      </template>
-      <div v-if="cargandoAsistencia" class="text-center py-4"><span class="spinner-border text-success"></span><p class="text-muted mt-2 mb-0 fw-bold small">Cargando asistencia...</p></div>
-      <div v-else class="text-start">
-        <div v-if="!alumnosAsistencia.length" class="text-muted small fst-italic">No hay alumnos regulares de este curso en {{ claseAsistencia?.fecha?.substring(0, 4) }}.</div>
-        <template v-else>
-          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-            <div class="d-flex flex-wrap gap-1 small">
-              <button type="button" class="badge border-0 filtro-badge bg-success" :class="{ activo: filtroAsistencia === 'presente', apagado: filtroAsistencia && filtroAsistencia !== 'presente' }" :aria-pressed="filtroAsistencia === 'presente'" @click="alternarFiltroAsistencia('presente')">{{ conteoAsistencia.presente }} presentes</button>
-              <button type="button" class="badge border-0 filtro-badge bg-secondary" :class="{ activo: filtroAsistencia === 'ausente', apagado: filtroAsistencia && filtroAsistencia !== 'ausente' }" :aria-pressed="filtroAsistencia === 'ausente'" @click="alternarFiltroAsistencia('ausente')">{{ conteoAsistencia.ausente }} ausentes</button>
-              <button type="button" class="badge filtro-badge bg-light text-muted border" :class="{ activo: filtroAsistencia === 'sin', apagado: filtroAsistencia && filtroAsistencia !== 'sin' }" :aria-pressed="filtroAsistencia === 'sin'" @click="alternarFiltroAsistencia('sin')">{{ conteoAsistencia.sin }} sin marcar</button>
-              <button v-if="filtroAsistencia" type="button" class="btn btn-link btn-sm p-0 ms-1 text-decoration-none small" @click="filtroAsistencia = null">Ver todos</button>
-            </div>
-            <button type="button" class="btn btn-sm btn-outline-success fw-bold" @click="marcarTodos('presente')">Todos presentes</button>
-          </div>
-          <div class="d-flex flex-column gap-2">
-            <div v-if="!alumnosAsistenciaVisibles.length" class="text-muted small fst-italic">No hay alumnos en este filtro.</div>
-            <div v-for="a in alumnosAsistenciaVisibles" :key="a.id" class="fila-asistencia d-flex justify-content-between align-items-center gap-2">
-              <div class="min-w-0">
-                <div class="fw-bold text-dark small text-uppercase text-truncate">{{ a.apellido }}, {{ a.nombre }}</div>
-                <div class="text-muted" style="font-size: 0.72rem;">
-                  {{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}
-                  <span v-if="a.tieneExamen" class="badge bg-info-subtle text-info-emphasis ms-1" title="Ya rindió o tiene nota en el examen de esta clase">
-                    <i class="bi bi-journal-check"></i> Rindió
-                  </span>
-                </div>
-              </div>
-              <div class="btn-group btn-group-sm flex-shrink-0" role="group" :aria-label="`Asistencia de ${a.apellido}`">
-                <button type="button" class="btn fw-bold" :class="a.asistencia === 'presente' ? 'btn-success' : 'btn-outline-success'" @click="a.asistencia = a.asistencia === 'presente' ? null : 'presente'">✓ Presente</button>
-                <button type="button" class="btn fw-bold" :class="a.asistencia === 'ausente' ? 'btn-secondary' : 'btn-outline-secondary'" @click="a.asistencia = a.asistencia === 'ausente' ? null : 'ausente'">✗ Ausente</button>
-              </div>
-            </div>
-          </div>
-        </template>
-      </div>
-      <template #footer>
-        <button type="button" @click="mostrarAsistencia = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="button" @click="guardarAsistencia" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoAsistencia || !alumnosAsistencia.length">
-          <span v-if="guardandoAsistencia" class="spinner-border spinner-border-sm me-1"></span>
-          GUARDAR ASISTENCIA
-        </button>
-      </template>
-    </ModalBase>
+    <ModalAsistenciaCurso
+      :show="mostrarAsistencia"
+      :subtitulo="claseAsistencia ? `${fechaLargaClase(claseAsistencia.fecha)} · ${claseAsistencia.titulo}` : ''"
+      :alumnos="alumnosAsistencia"
+      :cargando="cargandoAsistencia"
+      :guardando="guardandoAsistencia"
+      :mensaje-vacio="`No hay alumnos regulares de este curso en ${claseAsistencia?.fecha?.substring(0, 4) || ''}.`"
+      @close="mostrarAsistencia = false"
+      @guardar="guardarAsistencia"
+    />
     <ModalBase :show="mostrarExamen" @close="mostrarExamen = false" icono="quiz" colorIcono="bg-dark-subtle text-dark" maxWidth="680px">
       <template #header>
         <div class="text-center w-100">
@@ -363,11 +329,12 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import SelectorArbitros from '@/components/SelectorArbitros.vue'
+import ModalAsistenciaCurso from '@/components/panel-admin/curso-arbitros/ModalAsistenciaCurso.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { PORCENTAJE_APROBACION_DEFECTO } from '@/composables/useExamenesCurso'
-import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada } from '@/composables/useCronogramaCurso'
+import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada, hoyIso } from '@/composables/useCronogramaCurso'
 import PlanillaAsistenciaCurso from '@/components/panel-admin/curso-arbitros/PlanillaAsistenciaCurso.vue'
 
 useHead({ title: 'Clases y Asistencia | AAAB' })
@@ -494,44 +461,29 @@ const confirmarEliminar = (c) => {
   })
 }
 
-// ─── Asistencia ──────────────────────────────────────────────────
+// ─── Asistencia (la ventana es ModalAsistenciaCurso, compartida con Encuentros de Mini) ──
 const mostrarAsistencia = ref(false)
 const claseAsistencia = ref(null)
 const alumnosAsistencia = ref([])
 const cargandoAsistencia = ref(false)
 const guardandoAsistencia = ref(false)
 
-const conteoAsistencia = computed(() => ({
-  presente: alumnosAsistencia.value.filter(a => a.asistencia === 'presente').length,
-  ausente: alumnosAsistencia.value.filter(a => a.asistencia === 'ausente').length,
-  sin: alumnosAsistencia.value.filter(a => !a.asistencia).length,
-}))
-
-const filtroAsistencia = ref(null)
-
-const alternarFiltroAsistencia = (valor) => {
-  filtroAsistencia.value = filtroAsistencia.value === valor ? null : valor
-}
-
-const alumnosAsistenciaVisibles = computed(() => {
-  if (!filtroAsistencia.value) return alumnosAsistencia.value
-  if (filtroAsistencia.value === 'sin') return alumnosAsistencia.value.filter(a => !a.asistencia)
-  return alumnosAsistencia.value.filter(a => a.asistencia === filtroAsistencia.value)
-})
-
-const marcarTodos = (valor) => alumnosAsistencia.value.forEach(a => { a.asistencia = valor })
+// La asistencia se toma desde el día de la clase: las clases futuras tienen el botón deshabilitado
+const esClaseFutura = (c) => c.fecha > hoyIso()
+// Clase ya dictada (antes de hoy) sin ninguna marca: cuenta como ausente para todos en el % de asistencia
+const faltaAsistencia = (c) => esClasePasada(c) && !c.marcasAsistencia
+const clasesSinAsistencia = computed(() => clasesVisibles.value.filter(faltaAsistencia))
 
 const abrirAsistencia = async (c) => {
+  if (esClaseFutura(c)) return
   claseAsistencia.value = c
   alumnosAsistencia.value = []
-  filtroAsistencia.value = null
   mostrarAsistencia.value = true
   cargandoAsistencia.value = true
   try {
     const res = await api.get({ entity: 'cronograma_curso_arbitro', action: 'obtenerAsistenciaClaseCurso', payload: { idClase: c.id } })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar la asistencia')
-    // Se guarda la asistencia original para detectar quién pasa a ausente al guardar
-    alumnosAsistencia.value = (res.payload.alumnos || []).map(a => ({ ...a, asistenciaOriginal: a.asistencia }))
+    alumnosAsistencia.value = res.payload.alumnos || []
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
     mostrarAsistencia.value = false
@@ -542,14 +494,10 @@ const abrirAsistencia = async (c) => {
 
 // Alumnos que ya rindieron o tienen nota en el examen de la clase y ahora se marcan ausentes:
 // al guardar se borra su resultado, por eso se pide confirmación antes.
-const alumnosQuePierdenExamen = computed(() =>
-  alumnosAsistencia.value.filter(a => a.tieneExamen && a.asistencia === 'ausente' && a.asistenciaOriginal !== 'ausente')
-)
-
-const guardarAsistencia = () => {
-  const afectados = alumnosQuePierdenExamen.value
+const guardarAsistencia = (filas) => {
+  const afectados = filas.filter(a => a.tieneExamen && a.asistencia === 'ausente' && a.asistenciaOriginal !== 'ausente')
   if (afectados.length === 0) {
-    enviarAsistencia()
+    enviarAsistencia(filas)
     return
   }
   const nombres = afectados.map(a => `${a.apellido}, ${a.nombre}`).join(' · ')
@@ -559,11 +507,11 @@ const guardarAsistencia = () => {
       ? `${nombres} ya rindió el examen de esta clase. Si lo marcás ausente se borra su resultado y deja de verlo en su panel. No se puede deshacer.`
       : `Estos alumnos ya rindieron el examen de esta clase: ${nombres}. Si los marcás ausentes se borran sus resultados y dejan de verlos en su panel. No se puede deshacer.`,
     tipo: 'danger',
-    alConfirmar: enviarAsistencia,
+    alConfirmar: () => enviarAsistencia(filas),
   })
 }
 
-const enviarAsistencia = async () => {
+const enviarAsistencia = async (filas) => {
   guardandoAsistencia.value = true
   try {
     const res = await api.post({
@@ -571,13 +519,15 @@ const enviarAsistencia = async () => {
       action: 'guardarAsistenciaClaseCurso',
       payload: {
         idClase: claseAsistencia.value.id,
-        asistencias: alumnosAsistencia.value.map(a => ({ idAlumno: a.id, asistencia: a.asistencia })),
+        asistencias: filas.map(a => ({ idAlumno: a.id, asistencia: a.asistencia })),
       },
     })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar la asistencia')
     toast({ titulo: 'Guardado', mensaje: 'La asistencia se guardó.', tipo: 'success' })
     mostrarAsistencia.value = false
     planillaRef.value?.recargar()
+    // Se recargan las clases para actualizar el aviso de "Falta tomar asistencia"
+    cargar(anio.value)
   } catch (e) {
     notificar({ titulo: 'Error', mensaje: e.message, tipo: 'danger' })
   } finally {
@@ -810,9 +760,6 @@ onMounted(() => cargar(anio.value))
 <style scoped>
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
-.filtro-badge { cursor: pointer; font-size: 0.75rem; padding: 0.35em 0.65em; transition: opacity 0.15s ease, box-shadow 0.15s ease; }
-.filtro-badge.activo { box-shadow: 0 0 0 2px #0f172a; }
-.filtro-badge.apagado { opacity: 0.45; }
 .accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
 .accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
 .accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
@@ -820,10 +767,11 @@ onMounted(() => cargar(anio.value))
 .tarjeta-clase { background-color: #fff; }
 .tarjeta-clase.pasada { background-color: #f8fafc; opacity: 0.75; }
 .tarjeta-clase.proxima { border-color: #dc3545 !important; box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15); }
+.tarjeta-clase.falta-asistencia { opacity: 1; border-color: #ffc107 !important; box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.25); }
+.aviso-asistencia { color: #856404; background: #fff3cd; border-radius: 6px; padding: 4px 8px; }
 .texto-multilinea { white-space: pre-wrap; }
 .opcion-modo { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; cursor: pointer; }
 .opcion-modo.activa { border-color: #dc3545; background: #fef2f2; }
-.fila-asistencia { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
 
 /* Pestañas (igual que Exámenes del curso) */
 .pestanas-cronograma { scrollbar-width: thin; }

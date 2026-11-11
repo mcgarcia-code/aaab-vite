@@ -189,37 +189,15 @@
     </ModalBase>
 
     <!-- ASISTENCIA -->
-    <ModalBase :show="!!encuentroAsistencia" @close="encuentroAsistencia = null" icono="how_to_reg" colorIcono="bg-success-subtle text-success" maxWidth="640px">
-      <template #header>
-        <div v-if="encuentroAsistencia" class="text-center w-100">
-          <span class="fw-bold fs-5">Asistencia</span>
-          <div class="text-muted small mt-1">{{ fechaLargaClase(encuentroAsistencia.fecha) }} · {{ encuentroAsistencia.titulo }}</div>
-        </div>
-      </template>
-      <div v-if="encuentroAsistencia" class="text-start">
-        <div class="d-flex justify-content-end mb-3">
-          <button type="button" class="btn btn-sm btn-outline-success fw-bold" @click="filasAsistencia.forEach(a => { a.asistencia = 'presente' })">Todos presentes</button>
-        </div>
-        <div class="d-flex flex-column gap-2">
-          <div v-for="a in filasAsistencia" :key="a.id" class="fila-asistencia d-flex justify-content-between align-items-center gap-2">
-            <div class="min-w-0">
-              <div class="fw-bold text-dark small text-uppercase text-break">{{ a.apellido }}, {{ a.nombre }}</div>
-            </div>
-            <div class="btn-group btn-group-sm flex-shrink-0" role="group" :aria-label="'Asistencia de ' + a.apellido">
-              <button type="button" class="btn fw-bold" :class="a.asistencia === 'presente' ? 'btn-success' : 'btn-outline-success'" @click="a.asistencia = a.asistencia === 'presente' ? null : 'presente'">✓ Presente</button>
-              <button type="button" class="btn fw-bold" :class="a.asistencia === 'ausente' ? 'btn-secondary' : 'btn-outline-secondary'" @click="a.asistencia = a.asistencia === 'ausente' ? null : 'ausente'">✗ Ausente</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <template #footer>
-        <button type="button" @click="encuentroAsistencia = null" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="button" @click="guardarAsistencia" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoAsistencia">
-          <span v-if="guardandoAsistencia" class="spinner-border spinner-border-sm me-1"></span>
-          GUARDAR ASISTENCIA
-        </button>
-      </template>
-    </ModalBase>
+    <ModalAsistenciaCurso
+      :show="!!encuentroAsistencia"
+      :subtitulo="encuentroAsistencia ? `${fechaLargaClase(encuentroAsistencia.fecha)} · ${encuentroAsistencia.titulo}` : ''"
+      :alumnos="filasAsistencia"
+      :guardando="guardandoAsistencia"
+      mensaje-vacio="No hay aspirantes convocados a este encuentro."
+      @close="encuentroAsistencia = null"
+      @guardar="guardarAsistencia"
+    />
   </div>
 </template>
 
@@ -229,6 +207,7 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import SelectorArbitros from '@/components/SelectorArbitros.vue'
+import ModalAsistenciaCurso from '@/components/panel-admin/curso-arbitros/ModalAsistenciaCurso.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
 
@@ -481,7 +460,7 @@ const abrirAsistencia = (e) => {
   filasAsistencia.value = e.aspirantes.map(a => ({ ...a }))
 }
 
-const guardarAsistencia = async () => {
+const guardarAsistencia = async (filas) => {
   guardandoAsistencia.value = true
   try {
     const res = await api.post({
@@ -489,7 +468,7 @@ const guardarAsistencia = async () => {
       action: 'guardarAsistenciaMiniCurso',
       payload: {
         idEncuentro: encuentroAsistencia.value.id,
-        asistencias: filasAsistencia.value.map(a => ({ idAlumno: a.id, asistencia: a.asistencia })),
+        asistencias: filas.map(a => ({ idAlumno: a.id, asistencia: a.asistencia })),
       },
     })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo guardar la asistencia')
@@ -516,5 +495,4 @@ onMounted(cargar)
 .tarjeta-fecha.fecha-pasada { border-left-color: #9ca3af !important; }
 .texto-multilinea { white-space: pre-wrap; }
 .lista-aspirantes { max-height: 280px; overflow-y: auto; }
-.fila-asistencia { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
 </style>
