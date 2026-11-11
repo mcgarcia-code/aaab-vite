@@ -1,5 +1,6 @@
 // Seguimiento de los alumnos regulares del curso: asistencia, mini, parcialitos, teórico final, práctico y físico.
 // Lo usa AlumnosRegularesCursoAdmin.vue con los datos de seguimiento_curso_arbitro/obtenerSeguimientoCurso.
+import { porcentajeAsistencia } from '@/composables/useAsistenciaCurso'
 
 export const ETIQUETAS_TIPO_EXAMEN = { teorico: 'Teórico', practico: 'Práctico', fisico: 'Físico' }
 
@@ -22,21 +23,24 @@ const corresponde = (curso, alumno) => curso === 'ambos' || curso === alumno.mod
 
 const desaprobo = (nota) => Boolean(nota && (nota.aprobado === false || nota.ausente))
 
-// Un examen queda aprobado si lo aprobó o si aprobó alguno de sus recuperatorios
+// Resultado de un examen: 'aprobado' (lo aprobó), 'recuperado' (lo aprobó con un recuperatorio),
+// 'recuperando' (tiene un recuperatorio sin nota), 'desaprobado' o null (todavía sin nota)
 const resultadoExamen = (examen, recuperatorios, notaDe) => {
   const nota = notaDe(examen)
   if (nota?.aprobado === true) return 'aprobado'
-  if (recuperatorios.some(r => notaDe(r)?.aprobado === true)) return 'aprobado'
+  if (recuperatorios.some(r => notaDe(r)?.aprobado === true)) return 'recuperado'
   if (!desaprobo(nota)) return null
   return recuperatorios.some(r => !notaDe(r)) ? 'recuperando' : 'desaprobado'
 }
+
+const aprobo = (r) => r === 'aprobado' || r === 'recuperado'
 
 // Resultado de un grupo de exámenes: con uno desaprobado (sin recuperar) queda desaprobado
 const resultadoGrupo = (resultados, soloRendidos) => {
   const lista = soloRendidos ? resultados.filter(r => r !== null) : resultados
   if (!lista.length) return 'pendiente'
   if (lista.includes('desaprobado')) return 'desaprobado'
-  return lista.every(r => r === 'aprobado') ? 'aprobado' : 'pendiente'
+  return lista.every(aprobo) ? 'aprobado' : 'pendiente'
 }
 
 export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas, mini, recuperados = [] }) => {
@@ -56,7 +60,6 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
       const a = asis[`${clase.id}-${alumno.id}`]
       return { clase, asistencia: a ? (a.presente ? 'presente' : 'ausente') : null }
     })
-    const presentes = detalleClases.filter(d => d.asistencia === 'presente').length
 
     const delCurso = examenes.filter(e => corresponde(e.curso, alumno))
     const originales = delCurso.filter(e => !e.idExamenOriginal && !e.esRecuperatorioParcialitos)
@@ -80,14 +83,14 @@ export const armarSeguimiento = ({ alumnos, clases, asistencias, examenes, notas
     return {
       alumno,
       notaFinal: notaFinalDeEstado(alumno.estado),
-      asistencia: { presentes, total: detalleClases.length, porcentaje: detalleClases.length ? Math.round(presentes / detalleClases.length * 100) : null },
-      mini: {
-        presentes: detalleMini.filter(m => m.asistencia === 'presente').length,
-        ausentes: detalleMini.filter(m => m.asistencia === 'ausente').length,
-        total: detalleMini.length,
-      },
+      // Regla común de asistencia (useAsistenciaCurso): clases sobre las dictadas, mini sobre los encuentros con presente o ausente
+      asistencia: porcentajeAsistencia(detalleClases.map(d => ({ fecha: d.clase.fecha, asistencia: d.asistencia })), 'clases'),
+      mini: { ...porcentajeAsistencia(detalleMini, 'mini'), convocados: detalleMini.length },
       parcialitos: {
-        aprobados: parcialitos.filter(r => r === 'aprobado').length,
+        aprobados: parcialitos.filter(aprobo).length,
+        directos: parcialitos.filter(r => r === 'aprobado').length,
+        recuperados: parcialitos.filter(r => r === 'recuperado').length,
+        recuperando: parcialitos.filter(r => r === 'recuperando').length,
         desaprobados: parcialitos.filter(r => r === 'desaprobado').length,
         total: parcialitos.length,
       },

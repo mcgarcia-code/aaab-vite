@@ -1,0 +1,35 @@
+/* Planillas del curso (Exámenes, Planilla de asistencia y Alumnos Regulares):
+   mismo estilo que la Planilla General de Desarrollo Arbitral */
+
+/* Barra de herramientas: buscador con botón para limpiar + leyenda */
+.busqueda-wrap { position: relative; max-width: 200px; flex: 0 0 auto; }
+.busqueda-wrap input { padding-right: 30px; }
+.btn-limpiar-busqueda { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); border: none; background: transparent; color: #adb5bd; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; line-height: 1; }
+.btn-limpiar-busqueda:hover { color: #dc3545; }
+.cuadrito { display: inline-block; width: 12px; height: 12px; border: 1px solid #ced4da; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.cuadrito-verde { background-color: #d1e7dd; }
+.cuadrito-roja { background-color: #f8d7da; }
+.cuadrito-gris { background-color: #e9ecef; }
+.cuadrito-na { background-color: #f8f9fa; }
+
+/* Tabla tipo Excel con scroll interno, fila de títulos y columna del alumno fijas */
+.tabla-scroll { overflow: auto; max-height: 70vh; }
+.tabla-excel { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 0.8rem; background: #fff; }
+.tabla-excel th,
+.tabla-excel td { border-right: 1px solid #d4d4d8; border-bottom: 1px solid #d4d4d8; padding: 4px 8px; white-space: nowrap; }
+.tabla-excel thead th { background-color: #f1f3f5; color: #343a40; position: sticky; top: 0; z-index: 5; text-align: center; vertical-align: middle; font-size: 0.72rem; }
+.th-curso, .th-total { min-width: 70px; }
+.fecha-evento { font-size: 0.68rem; color: #6c757d; font-weight: 500; }
+.col-alumno { position: sticky; left: 0; background-color: #fff; z-index: 6; min-width: 190px; text-align: left !important; }
+.tabla-excel thead .esquina { z-index: 8; background-color: #e9ecef; }
+.celda-nombre { font-weight: 600; color: #212529; border-right: 2px solid #adb5bd !important; }
+.celda { text-align: center; min-width: 44px; color: #212529; }
+.celda-total { font-weight: 700; border-left: 2px solid #adb5bd; }
+.celda-verde { background-color: #d1e7dd; color: #0f5132; font-weight: 600; }
+.celda-roja { background-color: #f8d7da; color: #842029; font-weight: 600; }
+.celda-gris { background-color: #e9ecef; color: #6c757d; font-weight: 600; }
+.celda-na { background-color: #f8f9fa; }
+
+/* Celular: tarjetas por alumno */
+.chip-nota { display: inline-block; border-radius: 4px; padding: 1px 8px; font-size: 0.75rem; }
+.fila-planilla { border-top: 1px solid #f1f5f9; padding: 6px 0; }

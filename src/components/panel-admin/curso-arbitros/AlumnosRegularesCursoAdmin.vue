@@ -54,8 +54,8 @@
               </button>
               <span class="text-muted text-nowrap">{{ filas.length }} alumnos</span>
               <span class="ms-auto d-flex flex-wrap gap-3">
-                <span><span class="cuadrito cuadrito-verde"></span> Aprobado / 75% o más</span>
-                <span><span class="cuadrito cuadrito-roja"></span> Desaprobado / menos de 75%</span>
+                <span><span class="cuadrito cuadrito-verde"></span> Aprobado / {{ ASISTENCIA_MINIMA }}% o más</span>
+                <span><span class="cuadrito cuadrito-roja"></span> Desaprobado / menos de {{ ASISTENCIA_MINIMA }}%</span>
                 <span><span class="cuadrito"></span> Pendiente</span>
                 <span><span class="cuadrito cuadrito-na"></span> No le corresponde</span>
               </span>
@@ -70,9 +70,9 @@
                   <tr>
                     <th class="col-alumno esquina">ALUMNO</th>
                     <th class="th-corta">CURSO</th>
-                    <th class="th-media" title="Presente sobre las clases dictadas (mínimo 75%)">CLASES</th>
-                    <th class="th-media" title="Presente sobre los encuentros a los que fue convocado (mínimo 75%)">MINI</th>
-                    <th class="th-media">PARCIALITOS</th>
+                    <th class="th-media" :title="`Presente sobre las clases dictadas (mínimo ${ASISTENCIA_MINIMA}%)`">CLASES</th>
+                    <th class="th-media" :title="`Presente sobre los encuentros convocados con presente o ausente cargado (mínimo ${ASISTENCIA_MINIMA}%)`">MINI</th>
+                    <th class="th-media" title="Aprobados sobre el total: directos y con recuperatorio">PARCIALITOS</th>
                     <th class="th-media">TEÓRICO FINAL</th>
                     <th class="th-media">PRÁCTICO</th>
                     <th class="th-media">FÍSICO</th>
@@ -88,13 +88,15 @@
                       {{ f.asistencia.presentes }}/{{ f.asistencia.total }}<template v-if="f.asistencia.porcentaje !== null"> · {{ f.asistencia.porcentaje }}%</template>
                     </td>
                     <td v-if="f.alumno.modalidadCurso !== 'anual'" class="celda celda-na" title="No le corresponde"></td>
-                    <td v-else class="celda" :class="celdaPorcentaje(porcentajeMini(f))" :title="`${f.mini.presentes} de ${f.mini.total} encuentros`">
-                      {{ f.mini.presentes }}/{{ f.mini.total }}<template v-if="porcentajeMini(f) !== null"> · {{ porcentajeMini(f) }}%</template>
+                    <td v-else class="celda" :class="celdaPorcentaje(f.mini.porcentaje)" :title="`${f.mini.presentes} de ${f.mini.total} encuentros con asistencia (${f.mini.convocados} convocados)`">
+                      {{ f.mini.presentes }}/{{ f.mini.total }}<template v-if="f.mini.porcentaje !== null"> · {{ f.mini.porcentaje }}%</template>
                     </td>
-                    <td class="celda" :class="{ 'celda-na': !f.parcialitos.total }">
+                    <td class="celda" :class="celdaParcialitos(f)" :title="textoParcialitos(f)">
                       <template v-if="f.parcialitos.total">
                         {{ f.parcialitos.aprobados }}/{{ f.parcialitos.total }}
-                        <span v-if="f.parcialitos.desaprobados" class="text-danger fw-semibold ms-1">({{ f.parcialitos.desaprobados }} desap.)</span>
+                        <span v-if="f.parcialitos.recuperados" class="detalle-parcialitos text-primary">· {{ f.parcialitos.recuperados }} con recup.</span>
+                        <span v-if="f.parcialitos.recuperando" class="detalle-parcialitos text-warning-emphasis">· {{ f.parcialitos.recuperando }} recuperando</span>
+                        <span v-if="f.parcialitos.desaprobados" class="detalle-parcialitos text-danger">· {{ f.parcialitos.desaprobados }} desap.</span>
                       </template>
                     </td>
                     <td class="celda" :class="CELDA_RESULTADO[f.final]">{{ TEXTO_RESULTADO[f.final] }}</td>
@@ -133,11 +135,11 @@
                     </div>
                     <div v-if="f.alumno.modalidadCurso === 'anual'" class="col-6">
                       <div class="dato-etiqueta">Mini</div>
-                      <span class="fw-bold">{{ f.mini.presentes }}/{{ f.mini.total }}</span>
+                      <span class="fw-bold" :class="clasePorcentaje(f.mini.porcentaje)">{{ f.mini.presentes }}/{{ f.mini.total }}</span>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12">
                       <div class="dato-etiqueta">Parcialitos</div>
-                      <span class="fw-bold text-success">{{ f.parcialitos.aprobados }}</span><span class="text-muted">/{{ f.parcialitos.total }} aprobados</span>
+                      <span class="fw-bold">{{ textoParcialitos(f) || '—' }}</span>
                     </div>
                     <div class="col-6">
                       <div class="dato-etiqueta">Teórico final</div>
@@ -292,7 +294,6 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
-import ExcelJS from 'exceljs'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
@@ -300,6 +301,9 @@ import { textoNotaExamen } from '@/composables/useExamenesCurso'
 import { RESULTADOS, NOTA_FINAL, armarSeguimiento } from '@/composables/useSeguimientoCurso'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
+import { ASISTENCIA_MINIMA, colorAsistencia } from '@/composables/useAsistenciaCurso'
+import { crearPlanillaExcel, pintarCeldaExcel, pintarCabeceraExcel, anchosColumnasExcel, descargarLibroExcel } from '@/composables/useExcelPlanilla'
+import { normalizarTexto } from '@/utils/texto'
 
 useHead({ title: 'Alumnos Regulares del Curso | AAAB' })
 
@@ -319,32 +323,41 @@ watch(seleccionado, (nuevo) => {
   if (nuevo) Object.assign(seccionesDetalle, { examenes: true, asistencia: false, mini: false })
 })
 
-const normalizar = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
-
 const seguimiento = computed(() => armarSeguimiento(datos.value))
 
 const filas = computed(() => {
-  const texto = normalizar(filtros.texto)
+  const texto = normalizarTexto(filtros.texto)
   return seguimiento.value.filter(f =>
     (!filtros.modalidad || f.alumno.modalidadCurso === filtros.modalidad) &&
     (!filtros.notaFinal || f.notaFinal === filtros.notaFinal) &&
-    (!texto || normalizar(`${f.alumno.apellido} ${f.alumno.nombre}`).includes(texto))
+    (!texto || normalizarTexto(`${f.alumno.apellido} ${f.alumno.nombre}`).includes(texto))
   )
 })
 
 // ─── Planilla (mismos colores que la planilla de Exámenes) ───────
-const ASISTENCIA_MINIMA = 75
 const CELDA_RESULTADO = { aprobado: 'celda-verde', desaprobado: 'celda-roja', pendiente: '' }
 const TEXTO_RESULTADO = { aprobado: 'APROBADO', desaprobado: 'DESAPROBADO', pendiente: 'PENDIENTE' }
-const celdaPorcentaje = (p) => (p === null ? '' : p >= ASISTENCIA_MINIMA ? 'celda-verde' : 'celda-roja')
-// Mini: presentes sobre los encuentros a los que fue convocado
-const porcentajeMini = (f) => (f.mini.total ? Math.round(f.mini.presentes / f.mini.total * 100) : null)
+// Asistencia (clases y mini): verde si llega al mínimo común, rojo si no
+const celdaPorcentaje = (p) => (colorAsistencia(p) ? `celda-${colorAsistencia(p)}` : '')
+const clasePorcentaje = (p) => ({ verde: 'text-success', roja: 'text-danger' }[colorAsistencia(p)] || 'text-muted')
 
-const clasePorcentaje = (p) => {
-  if (p === null) return 'text-muted'
-  if (p >= 75) return 'text-success'
-  return p >= 50 ? 'text-warning' : 'text-danger'
+// Parcialitos: aprobados sobre el total, separando los aprobados directo de los aprobados con recuperatorio
+const celdaParcialitos = (f) => {
+  const p = f.parcialitos
+  if (!p.total) return 'celda-na'
+  if (p.desaprobados) return 'celda-roja'
+  return p.aprobados === p.total ? 'celda-verde' : ''
 }
+const textoParcialitos = (f) => {
+  const p = f.parcialitos
+  if (!p.total) return ''
+  const partes = [`${p.aprobados}/${p.total} aprobados`]
+  if (p.aprobados) partes.push(`(${p.directos} directo${p.directos === 1 ? '' : 's'}, ${p.recuperados} con recuperatorio)`)
+  if (p.recuperando) partes.push(`· ${p.recuperando} recuperando`)
+  if (p.desaprobados) partes.push(`· ${p.desaprobados} desaprobado${p.desaprobados === 1 ? '' : 's'}`)
+  return partes.join(' ')
+}
+
 const textoAsistencia = (a) => (a === 'presente' ? 'Presente' : a === 'ausente' ? 'Ausente' : 'Sin marcar')
 const claseAsistencia = (a) => (a === 'presente' ? 'bg-success' : a === 'ausente' ? 'bg-secondary' : 'bg-light text-muted border')
 const textoNota = (d) => (d.nota ? textoNotaExamen({ ...d.examen, ...d.nota }) : '—')
@@ -398,34 +411,22 @@ const guardarNotaFinal = async () => {
 
 // ─── Excel (mismo formato que la planilla de Exámenes) ───────────
 const generandoExcel = ref(false)
-const RELLENO_EXCEL = { 'celda-verde': 'FFD1E7DD', 'celda-roja': 'FFF8D7DA', 'celda-na': 'FFF8F9FA', cabecera: 'FFF1F3F5' }
-const FUENTE_EXCEL = { 'celda-verde': 'FF0F5132', 'celda-roja': 'FF842029' }
-
-const pintarCeldaExcel = (c, color, opciones = {}) => {
-  const borde = { style: 'thin', color: { argb: 'FFD4D4D8' } }
-  c.border = { top: borde, left: borde, bottom: borde, right: borde }
-  c.alignment = { horizontal: opciones.izquierda ? 'left' : 'center', vertical: 'middle', wrapText: !!opciones.ajustar }
-  if (RELLENO_EXCEL[color]) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: RELLENO_EXCEL[color] } }
-  c.font = { bold: !!opciones.negrita, size: opciones.tamanio || 11, color: { argb: FUENTE_EXCEL[color] || 'FF212529' } }
-}
 
 const exportarExcel = async () => {
   generandoExcel.value = true
   try {
-    const wb = new ExcelJS.Workbook()
-    const ws = wb.addWorksheet(`Regulares ${anio.value}`, { views: [{ state: 'frozen', xSplit: 1, ySplit: 1 }] })
-    ws.addRow(['ALUMNO', 'CURSO', 'CLASES', 'MINI', 'PARCIALITOS', 'TEÓRICO FINAL', 'PRÁCTICO', 'FÍSICO', 'NOTA FINAL'])
+    const { libro, hoja } = await crearPlanillaExcel(`Regulares ${anio.value}`)
+    hoja.addRow(['ALUMNO', 'CURSO', 'CLASES', 'MINI', 'PARCIALITOS', 'TEÓRICO FINAL', 'PRÁCTICO', 'FÍSICO', 'NOTA FINAL'])
     const colores = []
     filas.value.forEach(f => {
       const esAnual = f.alumno.modalidadCurso === 'anual'
-      const pClases = f.asistencia.porcentaje
-      const pMini = porcentajeMini(f)
-      ws.addRow([
+      const { asistencia: c, mini: m } = f
+      hoja.addRow([
         `${f.alumno.apellido}, ${f.alumno.nombre}`.toUpperCase(),
         MODALIDADES_CURSO[f.alumno.modalidadCurso]?.corta || '',
-        `${f.asistencia.presentes}/${f.asistencia.total}${pClases !== null ? ` · ${pClases}%` : ''}`,
-        esAnual ? `${f.mini.presentes}/${f.mini.total}${pMini !== null ? ` · ${pMini}%` : ''}` : '',
-        f.parcialitos.total ? `${f.parcialitos.aprobados}/${f.parcialitos.total}${f.parcialitos.desaprobados ? ` (${f.parcialitos.desaprobados} desap.)` : ''}` : '',
+        `${c.presentes}/${c.total}${c.porcentaje !== null ? ` · ${c.porcentaje}%` : ''}`,
+        esAnual ? `${m.presentes}/${m.total}${m.porcentaje !== null ? ` · ${m.porcentaje}%` : ''}` : '',
+        textoParcialitos(f),
         TEXTO_RESULTADO[f.final],
         TEXTO_RESULTADO[f.practico],
         TEXTO_RESULTADO[f.fisico],
@@ -433,28 +434,20 @@ const exportarExcel = async () => {
       ])
       colores.push([
         '', '',
-        celdaPorcentaje(pClases),
-        esAnual ? celdaPorcentaje(pMini) : 'celda-na',
-        f.parcialitos.total ? '' : 'celda-na',
+        celdaPorcentaje(c.porcentaje),
+        esAnual ? celdaPorcentaje(m.porcentaje) : 'celda-na',
+        celdaParcialitos(f),
         CELDA_RESULTADO[f.final], CELDA_RESULTADO[f.practico], CELDA_RESULTADO[f.fisico], CELDA_RESULTADO[f.notaFinal],
       ])
     })
 
-    ws.getRow(1).eachCell({ includeEmpty: true }, c => pintarCeldaExcel(c, 'cabecera', { negrita: true, ajustar: true, tamanio: 10 }))
-    ws.getRow(1).height = 30
+    pintarCabeceraExcel(hoja, 30)
     colores.forEach((fila, i) => {
-      fila.forEach((color, j) => pintarCeldaExcel(ws.getRow(i + 2).getCell(j + 1), color, { izquierda: j === 0, negrita: j !== 1 }))
+      fila.forEach((color, j) => pintarCeldaExcel(hoja.getRow(i + 2).getCell(j + 1), color, { izquierda: j === 0, negrita: j !== 1 }))
     })
-    const anchos = [32, 10, 16, 16, 20, 16, 16, 16, 22]
-    anchos.forEach((ancho, j) => { ws.getColumn(j + 1).width = ancho })
+    anchosColumnasExcel(hoja, [32, 10, 16, 16, 44, 16, 16, 16, 22])
 
-    const buffer = await wb.xlsx.writeBuffer()
-    const url = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }))
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `Alumnos_Regulares_${anio.value}.xlsx`
-    link.click()
-    URL.revokeObjectURL(url)
+    await descargarLibroExcel(libro, `Alumnos_Regulares_${anio.value}.xlsx`)
   } catch (err) {
     console.error('exportarExcel:', err)
     notificar({ titulo: 'Error', mensaje: 'No se pudo generar el Excel.', tipo: 'danger' })
@@ -466,10 +459,9 @@ const exportarExcel = async () => {
 onMounted(cargar)
 </script>
 
+<style scoped src="@/assets/css/panel-admin-curso.css"></style>
+<style scoped src="@/assets/css/planilla-curso.css"></style>
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
-.admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
-.animate__animated { animation-duration: 0.5s; }
 .dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
 .acordeon-seccion .accordion-button { font-size: 0.85rem; font-weight: 700; padding: 0.75rem 1rem; box-shadow: none; }
 .acordeon-seccion .accordion-button:not(.collapsed) { color: #dc3545; background-color: #fef2f2; }
@@ -477,31 +469,10 @@ onMounted(cargar)
 .fila-detalle { border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; }
 .opcion-final { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
 .opcion-final.activa { border-color: #dc3545; background: #fef2f2; }
-.min-w-0 { min-width: 0; }
 
-/* Planilla con el mismo estilo que la planilla de Exámenes del curso */
-.tabla-scroll { overflow: auto; max-height: 70vh; }
-.tabla-excel { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 0.8rem; background: #fff; }
-.tabla-excel th,
-.tabla-excel td { border-right: 1px solid #d4d4d8; border-bottom: 1px solid #d4d4d8; padding: 4px 8px; white-space: nowrap; }
-.tabla-excel thead th { background-color: #f1f3f5; color: #343a40; position: sticky; top: 0; z-index: 5; text-align: center; vertical-align: middle; font-size: 0.72rem; }
+/* Planilla: anchos de columna propios (el resto está en planilla-curso.css) */
 .th-corta { min-width: 70px; }
 .th-media { min-width: 110px; }
 .th-larga { min-width: 150px; }
-.col-alumno { position: sticky; left: 0; background-color: #fff; z-index: 6; min-width: 190px; text-align: left !important; }
-.tabla-excel thead .esquina { z-index: 8; background-color: #e9ecef; }
-.celda-nombre { font-weight: 600; color: #212529; border-right: 2px solid #adb5bd !important; }
-.celda { text-align: center; min-width: 44px; color: #212529; }
-.celda-total { font-weight: 700; border-left: 2px solid #adb5bd; }
-.celda-verde { background-color: #d1e7dd; color: #0f5132; font-weight: 600; }
-.celda-roja { background-color: #f8d7da; color: #842029; font-weight: 600; }
-.celda-na { background-color: #f8f9fa; }
-.cuadrito { display: inline-block; width: 12px; height: 12px; border: 1px solid #ced4da; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
-.cuadrito-verde { background-color: #d1e7dd; }
-.cuadrito-roja { background-color: #f8d7da; }
-.cuadrito-na { background-color: #f8f9fa; }
-.busqueda-wrap { position: relative; max-width: 200px; flex: 0 0 auto; }
-.busqueda-wrap input { padding-right: 30px; }
-.btn-limpiar-busqueda { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); border: none; background: transparent; color: #adb5bd; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; line-height: 1; }
-.btn-limpiar-busqueda:hover { color: #dc3545; }
+.detalle-parcialitos { font-size: 0.72rem; font-weight: 600; margin-left: 2px; }
 </style>

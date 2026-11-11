@@ -209,6 +209,7 @@ import { CAMPOS_OBSERVACION_CURSO, ESTADOS_REVISION_OBSERVACION } from '@/compos
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA, fechaHoraDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
+import { normalizarTexto } from '@/utils/texto'
 
 useHead({ title: 'Observaciones del Curso | AAAB' })
 
@@ -221,14 +222,13 @@ const observaciones = ref([])
 const cargando = ref(false)
 const filtros = reactive({ texto: '', modalidad: '', estado: '' })
 
-const normalizar = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 const observacionesFiltradas = computed(() => {
-  const texto = normalizar(filtros.texto)
+  const texto = normalizarTexto(filtros.texto)
   return observaciones.value.filter(o =>
     (!filtros.modalidad || o.modalidad_curso === filtros.modalidad) &&
     (!filtros.estado || (o.estado_revision || 'pendiente') === filtros.estado) &&
-    (!texto || normalizar(`${o.apellido} ${o.nombre} ${o.encuentro} ${o.observador}`).includes(texto))
+    (!texto || normalizarTexto(`${o.apellido} ${o.nombre} ${o.encuentro} ${o.observador}`).includes(texto))
   )
 })
 
@@ -332,10 +332,8 @@ const confirmarEliminar = (o) => {
 onMounted(cargarObservaciones)
 </script>
 
+<style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
-.admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
-.animate__animated { animation-duration: 0.5s; }
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
 .dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; }

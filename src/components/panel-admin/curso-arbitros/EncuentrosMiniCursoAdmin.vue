@@ -506,10 +506,8 @@ const guardarAsistencia = async () => {
 onMounted(cargar)
 </script>
 
+<style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
-.admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
-.animate__animated { animation-duration: 0.5s; }
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
 .tarjeta { background: #fff; }
@@ -519,5 +517,4 @@ onMounted(cargar)
 .texto-multilinea { white-space: pre-wrap; }
 .lista-aspirantes { max-height: 280px; overflow-y: auto; }
 .fila-asistencia { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
-.min-w-0 { min-width: 0; }
 </style>

@@ -378,7 +378,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
-import ExcelJS from 'exceljs'
+import { crearPlanillaExcel, pintarCabeceraExcel, descargarLibroExcel } from '@/composables/useExcelPlanilla'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import FormularioCursoArbitro from '@/components/FormularioCursoArbitro.vue'
@@ -387,6 +387,7 @@ import {
 } from '@/composables/useCursoArbitro'
 import { fechaHoraDMA } from '@/utils/fechas'
 import { anioActual as anioEnCurso, conAnioActual } from '@/utils/anios'
+import { normalizarTexto } from '@/utils/texto'
 
 useHead({ title: 'Legajos del Curso | AAAB' })
 
@@ -441,7 +442,6 @@ const filtrosVacios = () => ({
 const filtros = reactive(filtrosVacios())
 
 // ─── Helpers ─────────────────────────────────────────────────────
-const normalizar = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 const mostrarFechaArg = (fecha) => fechaHoraDMA(fecha)
 const textoCategorias = (texto) => String(texto || '').split('|').map(c => c.trim()).filter(Boolean).join('; ')
 const etiquetaGenero = (g) => GENEROS_CURSO.find(x => x.valor === g)?.etiqueta || ''
@@ -460,7 +460,7 @@ const legajosFiltrados = computed(() => {
   const activos = Object.entries(filtros).filter(([, v]) => v !== '' && v !== null)
   return legajos.value.filter(l => activos.every(([campo, valor]) => {
     if (CAMPOS_EXACTOS.includes(campo)) return String(l[campo] ?? '') === String(valor)
-    return normalizar(valorColumna(l, campo)).includes(normalizar(valor))
+    return normalizarTexto(valorColumna(l, campo)).includes(normalizarTexto(valor))
   }))
 })
 
@@ -646,22 +646,15 @@ const exportarExcel = async () => {
     { id: 'id', label: 'ID' }, { id: 'apellido', label: 'Apellido' }, { id: 'nombre', label: 'Nombre' },
     ...COLUMNAS,
   ]
-  const wb = new ExcelJS.Workbook()
-  const ws = wb.addWorksheet('Legajos Curso')
-  ws.columns = columnas.map(c => ({ header: c.label, key: c.id, width: 18 }))
+  const { libro, hoja } = await crearPlanillaExcel('Legajos Curso')
+  hoja.columns = columnas.map(c => ({ header: c.label, key: c.id, width: 18 }))
   legajosFiltrados.value.forEach(l => {
     const fila = {}
     for (const c of columnas) fila[c.id] = c.id === 'estado' ? (ESTADOS_CURSO[l.estado]?.etiqueta || l.estado) : valorColumna(l, c.id)
-    ws.addRow(fila)
+    hoja.addRow(fila)
   })
-  ws.getRow(1).font = { bold: true }
-  const buffer = await wb.xlsx.writeBuffer()
-  const url = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }))
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'Legajos_Curso_AAAB.xlsx'
-  link.click()
-  URL.revokeObjectURL(url)
+  pintarCabeceraExcel(hoja, 22)
+  await descargarLibroExcel(libro, 'Legajos_Curso_AAAB.xlsx')
 }
 
 onMounted(() => {
@@ -670,10 +663,8 @@ onMounted(() => {
 })
 </script>
 
+<style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
-.admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
-.animate__animated { animation-duration: 0.5s; }
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
 

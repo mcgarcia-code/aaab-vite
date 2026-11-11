@@ -85,7 +85,7 @@
                         <div class="fecha-evento texto-recortado">{{ c.titulo }}</div>
                       </th>
                       <th class="th-total">PRESENTES</th>
-                      <th class="th-total" title="Presente sobre las clases ya dictadas (mínimo 75%)">% ASIST.</th>
+                      <th class="th-total" :title="`Presente sobre las clases ya dictadas (mínimo ${ASISTENCIA_MINIMA}%)`">% ASIST.</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -438,6 +438,9 @@ import { fechaDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { PORCENTAJE_APROBACION_DEFECTO } from '@/composables/useExamenesCurso'
 import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada, hoyIso } from '@/composables/useCronogramaCurso'
+import { porcentajeAsistencia, colorAsistencia, ASISTENCIA_MINIMA } from '@/composables/useAsistenciaCurso'
+import { crearPlanillaExcel, pintarCeldaExcel, pintarCabeceraExcel, anchosColumnasExcel, descargarLibroExcel } from '@/composables/useExcelPlanilla'
+import { normalizarTexto } from '@/utils/texto'
 
 useHead({ title: 'Clases y Asistencia | AAAB' })
 
@@ -478,7 +481,6 @@ const PESTANAS = [
 const pestana = ref('clases')
 
 // ─── Planilla de asistencia (mismo estilo que la planilla de Exámenes) ──
-const ASISTENCIA_MINIMA = 75
 const planilla = ref({ alumnos: [], asistencias: [] })
 const cargandoPlanilla = ref(false)
 const planillaCargadaDe = ref(null)
@@ -500,8 +502,6 @@ const cargarPlanilla = async () => {
 
 // Se carga al entrar a la pestaña y se recarga si cambia el año
 watch([pestana, anio], ([p, a]) => { if (p === 'planilla' && planillaCargadaDe.value !== a) cargarPlanilla() })
-
-const normalizarTexto = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 // Columnas: clases ya dictadas (hasta hoy inclusive), de la más vieja a la más nueva
 const clasesPlanilla = computed(() =>
@@ -542,40 +542,28 @@ const tituloCeldaAsistencia = (c, a) => {
   return `${fechaDMA(c.fecha)} · ${p === true ? 'Presente' : p === false ? 'Ausente' : 'Sin marcar'}`
 }
 
-// Presentes sobre todas las clases dictadas que le corresponden (mismo cálculo que Mi Rendimiento)
-const resumenAlumno = (a) => {
-  const suyas = clasesPlanilla.value.filter(c => correspondeClase(c, a))
-  const presentes = suyas.filter(c => asistenciaDe(c, a) === true).length
-  return { presentes, total: suyas.length, porcentaje: suyas.length ? Math.round(presentes / suyas.length * 100) : null }
-}
-const clasePorcentaje = (p) => (p === null ? '' : p >= ASISTENCIA_MINIMA ? 'celda-verde' : 'celda-roja')
+// Presentes sobre todas las clases dictadas que le corresponden (regla común en useAsistenciaCurso)
+const resumenAlumno = (a) => porcentajeAsistencia(
+  clasesPlanilla.value
+    .filter(c => correspondeClase(c, a))
+    .map(c => ({ fecha: c.fecha, asistencia: asistenciaDe(c, a) === true ? 'presente' : asistenciaDe(c, a) === false ? 'ausente' : null })),
+  'clases'
+)
+const clasePorcentaje = (p) => (colorAsistencia(p) ? `celda-${colorAsistencia(p)}` : '')
 
 // ─── Excel de la planilla de asistencia ──
 const generandoExcel = ref(false)
-const RELLENO_EXCEL = { verde: 'FFD1E7DD', roja: 'FFF8D7DA', na: 'FFF8F9FA', cabecera: 'FFF1F3F5' }
-const FUENTE_EXCEL = { verde: 'FF0F5132', roja: 'FF842029' }
-
-const pintarCeldaExcel = (celdaExcel, color, opciones = {}) => {
-  const borde = { style: 'thin', color: { argb: 'FFD4D4D8' } }
-  celdaExcel.border = { top: borde, left: borde, bottom: borde, right: borde }
-  celdaExcel.alignment = { horizontal: opciones.izquierda ? 'left' : 'center', vertical: 'middle', wrapText: !!opciones.ajustar }
-  if (RELLENO_EXCEL[color]) celdaExcel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: RELLENO_EXCEL[color] } }
-  celdaExcel.font = { bold: !!opciones.negrita, size: opciones.tamanio || 11, color: { argb: FUENTE_EXCEL[color] || 'FF212529' } }
-}
-const colorExcel = (clase) => ({ 'celda-verde': 'verde', 'celda-roja': 'roja', 'celda-na': 'na' }[clase] || '')
 
 const descargarExcelAsistencia = async () => {
   generandoExcel.value = true
   try {
-    const { default: ExcelJS } = await import('exceljs')
-    const wb = new ExcelJS.Workbook()
-    const ws = wb.addWorksheet(`Asistencia ${anio.value}`, { views: [{ state: 'frozen', xSplit: 1, ySplit: 1 }] })
+    const { libro, hoja } = await crearPlanillaExcel(`Asistencia ${anio.value}`)
     const clases = clasesPlanilla.value
 
-    ws.addRow(['ALUMNO', 'CURSO', ...clases.map(c => `${fechaDMA(c.fecha)}\n${c.titulo}`), 'PRESENTES', '% ASIST.'])
+    hoja.addRow(['ALUMNO', 'CURSO', ...clases.map(c => `${fechaDMA(c.fecha)}\n${c.titulo}`), 'PRESENTES', '% ASIST.'])
     alumnosPlanilla.value.forEach(a => {
       const r = resumenAlumno(a)
-      ws.addRow([
+      hoja.addRow([
         `${a.apellido}, ${a.nombre}`.toUpperCase(),
         MODALIDADES_CURSO[a.modalidadCurso]?.corta || '',
         ...clases.map(c => textoCeldaAsistencia(c, a)),
@@ -584,31 +572,18 @@ const descargarExcelAsistencia = async () => {
       ])
     })
 
-    ws.getRow(1).eachCell({ includeEmpty: true }, c => pintarCeldaExcel(c, 'cabecera', { negrita: true, ajustar: true, tamanio: 10 }))
-    ws.getRow(1).height = 45
+    pintarCabeceraExcel(hoja)
     alumnosPlanilla.value.forEach((a, i) => {
-      const fila = ws.getRow(i + 2)
+      const fila = hoja.getRow(i + 2)
       pintarCeldaExcel(fila.getCell(1), '', { izquierda: true, negrita: true })
       pintarCeldaExcel(fila.getCell(2), '')
-      clases.forEach((c, j) => pintarCeldaExcel(fila.getCell(j + 3), colorExcel(claseCeldaAsistencia(c, a)), { negrita: true }))
+      clases.forEach((c, j) => pintarCeldaExcel(fila.getCell(j + 3), claseCeldaAsistencia(c, a), { negrita: true }))
       pintarCeldaExcel(fila.getCell(clases.length + 3), '', { negrita: true })
-      pintarCeldaExcel(fila.getCell(clases.length + 4), colorExcel(clasePorcentaje(resumenAlumno(a).porcentaje)), { negrita: true })
+      pintarCeldaExcel(fila.getCell(clases.length + 4), colorAsistencia(resumenAlumno(a).porcentaje), { negrita: true })
     })
+    anchosColumnasExcel(hoja, [30, 10, ...clases.map(() => 14), 12, 10])
 
-    ws.getColumn(1).width = 30
-    ws.getColumn(2).width = 10
-    clases.forEach((_, j) => { ws.getColumn(j + 3).width = 14 })
-    ws.getColumn(clases.length + 3).width = 12
-    ws.getColumn(clases.length + 4).width = 10
-
-    const buffer = await wb.xlsx.writeBuffer()
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-    const url = URL.createObjectURL(blob)
-    const enlace = document.createElement('a')
-    enlace.href = url
-    enlace.download = `asistencia_curso_${anio.value}.xlsx`
-    enlace.click()
-    URL.revokeObjectURL(url)
+    await descargarLibroExcel(libro, `asistencia_curso_${anio.value}.xlsx`)
   } catch (err) {
     console.error('descargarExcelAsistencia:', err)
     notificar({ titulo: 'Error', mensaje: 'No se pudo generar el Excel.', tipo: 'danger' })
@@ -1015,10 +990,9 @@ const guardarExamen = async () => {
 onMounted(() => cargar(anio.value))
 </script>
 
+<style scoped src="@/assets/css/panel-admin-curso.css"></style>
+<style scoped src="@/assets/css/planilla-curso.css"></style>
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
-.admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
-.animate__animated { animation-duration: 0.5s; }
 .btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
 .btn-danger-subtle:hover { background: #fecaca; }
 .filtro-badge { cursor: pointer; font-size: 0.75rem; padding: 0.35em 0.65em; transition: opacity 0.15s ease, box-shadow 0.15s ease; }
@@ -1035,40 +1009,15 @@ onMounted(() => cargar(anio.value))
 .opcion-modo { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; cursor: pointer; }
 .opcion-modo.activa { border-color: #dc3545; background: #fef2f2; }
 .fila-asistencia { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
-.min-w-0 { min-width: 0; }
 
 /* Pestañas (igual que Exámenes del curso) */
 .pestanas-cronograma { scrollbar-width: thin; }
 .pestanas-cronograma .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; white-space: nowrap; }
 .pestanas-cronograma .nav-link.active { background: #dc3545; color: #fff; }
 
-/* Planilla con el mismo estilo que la planilla de Exámenes del curso */
-.tabla-scroll { overflow: auto; max-height: 70vh; }
-.tabla-excel { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 0.8rem; background: #fff; }
-.tabla-excel th,
-.tabla-excel td { border-right: 1px solid #d4d4d8; border-bottom: 1px solid #d4d4d8; padding: 4px 8px; white-space: nowrap; }
-.tabla-excel thead th { background-color: #f1f3f5; color: #343a40; position: sticky; top: 0; z-index: 5; text-align: center; vertical-align: middle; font-size: 0.72rem; }
+/* Planilla de asistencia: lo propio (el resto está en planilla-curso.css) */
 .th-clase { min-width: 90px; cursor: pointer; }
 .th-clase:hover { background-color: #e2e6ea !important; }
-.th-curso, .th-total { min-width: 70px; }
-.fecha-evento { font-size: 0.68rem; color: #6c757d; font-weight: 500; }
 .texto-recortado { max-width: 120px; overflow: hidden; text-overflow: ellipsis; margin: 0 auto; }
-.col-alumno { position: sticky; left: 0; background-color: #fff; z-index: 6; min-width: 190px; text-align: left !important; }
-.tabla-excel thead .esquina { z-index: 8; background-color: #e9ecef; }
-.celda-nombre { font-weight: 600; color: #212529; border-right: 2px solid #adb5bd !important; }
-.celda { text-align: center; min-width: 44px; color: #212529; }
-.celda-total { font-weight: 700; border-left: 2px solid #adb5bd; }
-.celda-verde { background-color: #d1e7dd; color: #0f5132; font-weight: 600; }
-.celda-roja { background-color: #f8d7da; color: #842029; font-weight: 600; }
-.celda-na { background-color: #f8f9fa; }
-.chip-nota { display: inline-block; border-radius: 4px; padding: 1px 8px; font-size: 0.75rem; border: 1px solid #e9ecef; }
-.fila-planilla { border-top: 1px solid #f1f5f9; padding: 6px 0; }
-.cuadrito { display: inline-block; width: 12px; height: 12px; border: 1px solid #ced4da; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
-.cuadrito-verde { background-color: #d1e7dd; }
-.cuadrito-roja { background-color: #f8d7da; }
-.cuadrito-na { background-color: #f8f9fa; }
-.busqueda-wrap { position: relative; max-width: 200px; flex: 0 0 auto; }
-.busqueda-wrap input { padding-right: 30px; }
-.btn-limpiar-busqueda { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); border: none; background: transparent; color: #adb5bd; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; line-height: 1; }
-.btn-limpiar-busqueda:hover { color: #dc3545; }
+.chip-nota { border: 1px solid #e9ecef; }
 </style>
