@@ -11,6 +11,10 @@
             <span class="text-muted small d-block mt-1">{{ filas.length }} alumnos · parcialitos, teórico final, práctico, físico y nota final</span>
           </div>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
+            <select v-model="filtros.modalidad" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 150px;" aria-label="Curso">
+              <option value="">CURSO</option>
+              <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.corta.toUpperCase() }}</option>
+            </select>
             <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 110px;" aria-label="Año">
               <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
             </select>
@@ -19,97 +23,93 @@
               <span v-else class="material-icons text-dark fs-6">refresh</span>
               <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
             </button>
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
-            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0" :disabled="!filas.length">
-              <span class="material-icons fs-6">download</span>
-              <span class="fw-bold d-none d-md-inline small">Excel</span>
-            </button>
           </div>
         </div>
 
-        <div class="bg-light p-3 border-bottom">
-          <div class="row g-2">
-            <div class="col-12 col-md-4"><input v-model="filtros.texto" class="form-control form-control-sm shadow-none" placeholder="BUSCAR APELLIDO O NOMBRE..."></div>
-            <div class="col-6 col-md-2">
-              <select v-model="filtros.modalidad" class="form-select form-select-sm shadow-none text-uppercase text-dark">
-                <option value="">CURSO</option>
-                <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.corta.toUpperCase() }}</option>
-              </select>
-            </div>
-            <div class="col-6 col-md-2">
-              <select v-model="filtros.notaFinal" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+        <div class="card-body bg-white" :class="cargando ? 'p-3' : 'p-0 border-top'">
+          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando alumnos regulares...</p></div>
+          <template v-else>
+            <!-- Barra de herramientas: búsqueda + filtro + descargar + leyenda, igual que la planilla de Exámenes -->
+            <div class="d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
+              <div class="busqueda-wrap">
+                <input v-model="filtros.texto" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
+                <button v-if="filtros.texto" class="btn-limpiar-busqueda" @click="filtros.texto = ''" title="Limpiar búsqueda" type="button">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <select v-model="filtros.notaFinal" class="form-select form-select-sm shadow-none text-uppercase text-dark w-auto" aria-label="Nota final">
                 <option value="">NOTA FINAL</option>
                 <option value="pendiente">PENDIENTE</option>
                 <option value="aprobado">APROBÓ</option>
                 <option value="desaprobado">DESAPROBÓ</option>
               </select>
+              <button
+                type="button"
+                @click="exportarExcel"
+                class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1"
+                :disabled="!filas.length || generandoExcel"
+              >
+                <span v-if="generandoExcel" class="spinner-border spinner-border-sm"></span>
+                <i v-else class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
+              </button>
+              <span class="text-muted text-nowrap">{{ filas.length }} alumnos</span>
+              <span class="ms-auto d-flex flex-wrap gap-3">
+                <span><span class="cuadrito cuadrito-verde"></span> Aprobado / 75% o más</span>
+                <span><span class="cuadrito cuadrito-roja"></span> Desaprobado / menos de 75%</span>
+                <span><span class="cuadrito"></span> Pendiente</span>
+                <span><span class="cuadrito cuadrito-na"></span> No le corresponde</span>
+              </span>
             </div>
-          </div>
-        </div>
 
-        <div class="card-body p-0 p-md-3 bg-white">
-          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando alumnos regulares...</p></div>
-          <template v-else>
+            <div v-if="!filas.length" class="text-center py-5 text-muted fw-bold">No hay alumnos para mostrar.</div>
+            <template v-else>
             <!-- ESCRITORIO -->
-            <div class="d-none d-lg-block table-responsive border rounded shadow-sm">
-              <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.78rem;">
-                <thead class="table-light">
+            <div class="d-none d-lg-block tabla-scroll">
+              <table class="tabla-excel">
+                <thead>
                   <tr>
-                    <th class="py-3 ps-3 text-uppercase text-muted">Alumno</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Curso</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Clases</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Mini</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Parcialitos</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Teórico final</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Práctico</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Físico</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Nota final</th>
-                    <th class="py-3 text-center text-uppercase text-muted">Acciones</th>
+                    <th class="col-alumno esquina">ALUMNO</th>
+                    <th class="th-corta">CURSO</th>
+                    <th class="th-media" title="Presente sobre las clases dictadas (mínimo 75%)">CLASES</th>
+                    <th class="th-media" title="Presente sobre los encuentros a los que fue convocado (mínimo 75%)">MINI</th>
+                    <th class="th-media">PARCIALITOS</th>
+                    <th class="th-media">TEÓRICO FINAL</th>
+                    <th class="th-media">PRÁCTICO</th>
+                    <th class="th-media">FÍSICO</th>
+                    <th class="th-larga">NOTA FINAL</th>
+                    <th class="th-corta">ACCIONES</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="f in filas" :key="f.alumno.id">
-                    <td class="ps-3">
-                      <div class="fw-bold text-dark text-uppercase">{{ f.alumno.apellido }}, {{ f.alumno.nombre }}</div>
+                    <td class="col-alumno celda-nombre text-uppercase">{{ f.alumno.apellido }}, {{ f.alumno.nombre }}</td>
+                    <td class="celda"><span class="badge" :class="MODALIDADES_CURSO[f.alumno.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[f.alumno.modalidadCurso]?.corta }}</span></td>
+                    <td class="celda" :class="celdaPorcentaje(f.asistencia.porcentaje)" :title="`${f.asistencia.presentes} de ${f.asistencia.total} clases`">
+                      {{ f.asistencia.presentes }}/{{ f.asistencia.total }}<template v-if="f.asistencia.porcentaje !== null"> · {{ f.asistencia.porcentaje }}%</template>
                     </td>
-                    <td class="text-center"><span class="badge" :class="MODALIDADES_CURSO[f.alumno.modalidadCurso]?.clase">{{ MODALIDADES_CURSO[f.alumno.modalidadCurso]?.corta }}</span></td>
-                    <td class="text-center">
-                      <span class="fw-bold" :class="clasePorcentaje(f.asistencia.porcentaje)">{{ f.asistencia.presentes }}/{{ f.asistencia.total }}</span>
-                      <span v-if="f.asistencia.total" class="text-muted ms-1">{{ f.asistencia.porcentaje }}%</span>
+                    <td v-if="f.alumno.modalidadCurso !== 'anual'" class="celda celda-na" title="No le corresponde"></td>
+                    <td v-else class="celda" :class="celdaPorcentaje(porcentajeMini(f))" :title="`${f.mini.presentes} de ${f.mini.total} encuentros`">
+                      {{ f.mini.presentes }}/{{ f.mini.total }}<template v-if="porcentajeMini(f) !== null"> · {{ porcentajeMini(f) }}%</template>
                     </td>
-                    <td class="text-center">
-                      <span v-if="f.alumno.modalidadCurso !== 'anual'" class="text-muted">—</span>
-                      <span v-else class="fw-bold text-dark">{{ f.mini.presentes }}/{{ f.mini.total }}</span>
-                    </td>
-                    <td class="text-center">
-                      <span v-if="!f.parcialitos.total" class="text-muted">—</span>
-                      <template v-else>
-                        <span class="fw-bold text-success">{{ f.parcialitos.aprobados }}</span><span class="text-muted">/{{ f.parcialitos.total }}</span>
-                        <span v-if="f.parcialitos.desaprobados" class="text-danger ms-1">({{ f.parcialitos.desaprobados }} desap.)</span>
+                    <td class="celda" :class="{ 'celda-na': !f.parcialitos.total }">
+                      <template v-if="f.parcialitos.total">
+                        {{ f.parcialitos.aprobados }}/{{ f.parcialitos.total }}
+                        <span v-if="f.parcialitos.desaprobados" class="text-danger fw-semibold ms-1">({{ f.parcialitos.desaprobados }} desap.)</span>
                       </template>
                     </td>
-                    <td class="text-center"><span class="badge" :class="RESULTADOS[f.final].clase">{{ RESULTADOS[f.final].etiqueta }}</span></td>
-                    <td class="text-center"><span class="badge" :class="RESULTADOS[f.practico].clase">{{ RESULTADOS[f.practico].etiqueta }}</span></td>
-                    <td class="text-center"><span class="badge" :class="RESULTADOS[f.fisico].clase">{{ RESULTADOS[f.fisico].etiqueta }}</span></td>
-                    <td class="text-center"><span class="badge" :class="NOTA_FINAL[f.notaFinal].clase">{{ NOTA_FINAL[f.notaFinal].etiqueta }}</span></td>
-                    <td class="text-center">
+                    <td class="celda" :class="CELDA_RESULTADO[f.final]">{{ TEXTO_RESULTADO[f.final] }}</td>
+                    <td class="celda" :class="CELDA_RESULTADO[f.practico]">{{ TEXTO_RESULTADO[f.practico] }}</td>
+                    <td class="celda" :class="CELDA_RESULTADO[f.fisico]">{{ TEXTO_RESULTADO[f.fisico] }}</td>
+                    <td class="celda celda-total" :class="CELDA_RESULTADO[f.notaFinal]">{{ NOTA_FINAL[f.notaFinal].etiqueta.toUpperCase() }}</td>
+                    <td class="celda">
                       <div class="d-flex justify-content-center gap-1">
-                        <button @click="abrirNotaFinal(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Nota final" :aria-label="'Nota final de ' + f.alumno.apellido">
-                          <span class="material-icons" style="font-size:16px;">workspace_premium</span>
+                        <button @click="abrirNotaFinal(f)" class="btn btn-link btn-sm p-0 text-danger" title="Nota final" :aria-label="'Nota final de ' + f.alumno.apellido">
+                          <span class="material-icons" style="font-size:18px;">workspace_premium</span>
                         </button>
-                        <button @click="seleccionado = f" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Ver detalle" :aria-label="'Ver detalle de ' + f.alumno.apellido">
-                          <span class="material-icons" style="font-size:16px;">visibility</span>
+                        <button @click="seleccionado = f" class="btn btn-link btn-sm p-0 text-primary" title="Ver detalle" :aria-label="'Ver detalle de ' + f.alumno.apellido">
+                          <span class="material-icons" style="font-size:18px;">visibility</span>
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                  <tr v-if="!filas.length">
-                    <td colspan="10" class="text-center py-5 text-muted border-0">
-                      <span class="material-icons d-block fs-1 mb-2 opacity-50">search_off</span>
-                      <span class="fw-bold">No hay alumnos para mostrar.</span>
                     </td>
                   </tr>
                 </tbody>
@@ -117,7 +117,7 @@
             </div>
 
             <!-- CELULAR Y TABLET -->
-            <div class="d-lg-none p-3 bg-light">
+            <div class="d-lg-none p-3">
               <div v-for="f in filas" :key="'m-' + f.alumno.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
                 <div class="card-body p-3 small text-dark">
                   <div class="d-flex justify-content-between align-items-start gap-2">
@@ -162,8 +162,8 @@
                   </div>
                 </div>
               </div>
-              <div v-if="!filas.length" class="text-center p-4 bg-white rounded-3 shadow-sm border text-muted fw-bold">No hay alumnos para mostrar.</div>
             </div>
+            </template>
           </template>
         </div>
       </div>
@@ -332,7 +332,13 @@ const filas = computed(() => {
   )
 })
 
-const limpiarFiltros = () => Object.assign(filtros, { texto: '', modalidad: '', notaFinal: '' })
+// ─── Planilla (mismos colores que la planilla de Exámenes) ───────
+const ASISTENCIA_MINIMA = 75
+const CELDA_RESULTADO = { aprobado: 'celda-verde', desaprobado: 'celda-roja', pendiente: '' }
+const TEXTO_RESULTADO = { aprobado: 'APROBADO', desaprobado: 'DESAPROBADO', pendiente: 'PENDIENTE' }
+const celdaPorcentaje = (p) => (p === null ? '' : p >= ASISTENCIA_MINIMA ? 'celda-verde' : 'celda-roja')
+// Mini: presentes sobre los encuentros a los que fue convocado
+const porcentajeMini = (f) => (f.mini.total ? Math.round(f.mini.presentes / f.mini.total * 100) : null)
 
 const clasePorcentaje = (p) => {
   if (p === null) return 'text-muted'
@@ -390,35 +396,71 @@ const guardarNotaFinal = async () => {
   }
 }
 
+// ─── Excel (mismo formato que la planilla de Exámenes) ───────────
+const generandoExcel = ref(false)
+const RELLENO_EXCEL = { 'celda-verde': 'FFD1E7DD', 'celda-roja': 'FFF8D7DA', 'celda-na': 'FFF8F9FA', cabecera: 'FFF1F3F5' }
+const FUENTE_EXCEL = { 'celda-verde': 'FF0F5132', 'celda-roja': 'FF842029' }
+
+const pintarCeldaExcel = (c, color, opciones = {}) => {
+  const borde = { style: 'thin', color: { argb: 'FFD4D4D8' } }
+  c.border = { top: borde, left: borde, bottom: borde, right: borde }
+  c.alignment = { horizontal: opciones.izquierda ? 'left' : 'center', vertical: 'middle', wrapText: !!opciones.ajustar }
+  if (RELLENO_EXCEL[color]) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: RELLENO_EXCEL[color] } }
+  c.font = { bold: !!opciones.negrita, size: opciones.tamanio || 11, color: { argb: FUENTE_EXCEL[color] || 'FF212529' } }
+}
+
 const exportarExcel = async () => {
-  const wb = new ExcelJS.Workbook()
-  const ws = wb.addWorksheet(`Regulares ${anio.value}`)
-  ws.columns = [
-    { header: 'Apellido', key: 'apellido', width: 18 }, { header: 'Nombre', key: 'nombre', width: 18 },
-    { header: 'Curso', key: 'curso', width: 16 },
-    { header: 'Clases presentes', key: 'presentes', width: 16 }, { header: 'Clases dictadas', key: 'clases', width: 16 }, { header: '% asistencia', key: 'porcentaje', width: 13 },
-    { header: 'Mini presentes', key: 'miniPresentes', width: 15 }, { header: 'Mini convocado', key: 'miniTotal', width: 15 },
-    { header: 'Parcialitos aprobados', key: 'parcAprob', width: 20 }, { header: 'Parcialitos', key: 'parcTotal', width: 12 },
-    { header: 'Teórico final', key: 'final', width: 14 }, { header: 'Práctico', key: 'practico', width: 14 }, { header: 'Físico', key: 'fisico', width: 14 },
-    { header: 'Nota final', key: 'notaFinal', width: 20 },
-  ]
-  filas.value.forEach(f => ws.addRow({
-    apellido: f.alumno.apellido, nombre: f.alumno.nombre,
-    curso: MODALIDADES_CURSO[f.alumno.modalidadCurso]?.etiqueta || '',
-    presentes: f.asistencia.presentes, clases: f.asistencia.total, porcentaje: f.asistencia.porcentaje ?? '',
-    miniPresentes: f.alumno.modalidadCurso === 'anual' ? f.mini.presentes : '', miniTotal: f.alumno.modalidadCurso === 'anual' ? f.mini.total : '',
-    parcAprob: f.parcialitos.aprobados, parcTotal: f.parcialitos.total,
-    final: RESULTADOS[f.final].etiqueta, practico: RESULTADOS[f.practico].etiqueta, fisico: RESULTADOS[f.fisico].etiqueta,
-    notaFinal: NOTA_FINAL[f.notaFinal].etiqueta,
-  }))
-  ws.getRow(1).font = { bold: true }
-  const buffer = await wb.xlsx.writeBuffer()
-  const url = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }))
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `Alumnos_Regulares_${anio.value}.xlsx`
-  link.click()
-  URL.revokeObjectURL(url)
+  generandoExcel.value = true
+  try {
+    const wb = new ExcelJS.Workbook()
+    const ws = wb.addWorksheet(`Regulares ${anio.value}`, { views: [{ state: 'frozen', xSplit: 1, ySplit: 1 }] })
+    ws.addRow(['ALUMNO', 'CURSO', 'CLASES', 'MINI', 'PARCIALITOS', 'TEÓRICO FINAL', 'PRÁCTICO', 'FÍSICO', 'NOTA FINAL'])
+    const colores = []
+    filas.value.forEach(f => {
+      const esAnual = f.alumno.modalidadCurso === 'anual'
+      const pClases = f.asistencia.porcentaje
+      const pMini = porcentajeMini(f)
+      ws.addRow([
+        `${f.alumno.apellido}, ${f.alumno.nombre}`.toUpperCase(),
+        MODALIDADES_CURSO[f.alumno.modalidadCurso]?.corta || '',
+        `${f.asistencia.presentes}/${f.asistencia.total}${pClases !== null ? ` · ${pClases}%` : ''}`,
+        esAnual ? `${f.mini.presentes}/${f.mini.total}${pMini !== null ? ` · ${pMini}%` : ''}` : '',
+        f.parcialitos.total ? `${f.parcialitos.aprobados}/${f.parcialitos.total}${f.parcialitos.desaprobados ? ` (${f.parcialitos.desaprobados} desap.)` : ''}` : '',
+        TEXTO_RESULTADO[f.final],
+        TEXTO_RESULTADO[f.practico],
+        TEXTO_RESULTADO[f.fisico],
+        NOTA_FINAL[f.notaFinal].etiqueta.toUpperCase(),
+      ])
+      colores.push([
+        '', '',
+        celdaPorcentaje(pClases),
+        esAnual ? celdaPorcentaje(pMini) : 'celda-na',
+        f.parcialitos.total ? '' : 'celda-na',
+        CELDA_RESULTADO[f.final], CELDA_RESULTADO[f.practico], CELDA_RESULTADO[f.fisico], CELDA_RESULTADO[f.notaFinal],
+      ])
+    })
+
+    ws.getRow(1).eachCell({ includeEmpty: true }, c => pintarCeldaExcel(c, 'cabecera', { negrita: true, ajustar: true, tamanio: 10 }))
+    ws.getRow(1).height = 30
+    colores.forEach((fila, i) => {
+      fila.forEach((color, j) => pintarCeldaExcel(ws.getRow(i + 2).getCell(j + 1), color, { izquierda: j === 0, negrita: j !== 1 }))
+    })
+    const anchos = [32, 10, 16, 16, 20, 16, 16, 16, 22]
+    anchos.forEach((ancho, j) => { ws.getColumn(j + 1).width = ancho })
+
+    const buffer = await wb.xlsx.writeBuffer()
+    const url = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `Alumnos_Regulares_${anio.value}.xlsx`
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error('exportarExcel:', err)
+    notificar({ titulo: 'Error', mensaje: 'No se pudo generar el Excel.', tipo: 'danger' })
+  } finally {
+    generandoExcel.value = false
+  }
 }
 
 onMounted(cargar)
@@ -436,4 +478,30 @@ onMounted(cargar)
 .opcion-final { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
 .opcion-final.activa { border-color: #dc3545; background: #fef2f2; }
 .min-w-0 { min-width: 0; }
+
+/* Planilla con el mismo estilo que la planilla de Exámenes del curso */
+.tabla-scroll { overflow: auto; max-height: 70vh; }
+.tabla-excel { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 0.8rem; background: #fff; }
+.tabla-excel th,
+.tabla-excel td { border-right: 1px solid #d4d4d8; border-bottom: 1px solid #d4d4d8; padding: 4px 8px; white-space: nowrap; }
+.tabla-excel thead th { background-color: #f1f3f5; color: #343a40; position: sticky; top: 0; z-index: 5; text-align: center; vertical-align: middle; font-size: 0.72rem; }
+.th-corta { min-width: 70px; }
+.th-media { min-width: 110px; }
+.th-larga { min-width: 150px; }
+.col-alumno { position: sticky; left: 0; background-color: #fff; z-index: 6; min-width: 190px; text-align: left !important; }
+.tabla-excel thead .esquina { z-index: 8; background-color: #e9ecef; }
+.celda-nombre { font-weight: 600; color: #212529; border-right: 2px solid #adb5bd !important; }
+.celda { text-align: center; min-width: 44px; color: #212529; }
+.celda-total { font-weight: 700; border-left: 2px solid #adb5bd; }
+.celda-verde { background-color: #d1e7dd; color: #0f5132; font-weight: 600; }
+.celda-roja { background-color: #f8d7da; color: #842029; font-weight: 600; }
+.celda-na { background-color: #f8f9fa; }
+.cuadrito { display: inline-block; width: 12px; height: 12px; border: 1px solid #ced4da; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.cuadrito-verde { background-color: #d1e7dd; }
+.cuadrito-roja { background-color: #f8d7da; }
+.cuadrito-na { background-color: #f8f9fa; }
+.busqueda-wrap { position: relative; max-width: 200px; flex: 0 0 auto; }
+.busqueda-wrap input { padding-right: 30px; }
+.btn-limpiar-busqueda { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); border: none; background: transparent; color: #adb5bd; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; line-height: 1; }
+.btn-limpiar-busqueda:hover { color: #dc3545; }
 </style>
