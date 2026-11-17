@@ -186,6 +186,10 @@ onMounted(() => cargar(anio))
   background: #fee2e2;
   color: #b91c1c;
   padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 .cal-box-grande { width: 58px; background: #dc2626; color: #fff; }
 :deep(.cal-box .dia), .cal-box .dia { font-size: 1.2rem; font-weight: 800; line-height: 1; }
