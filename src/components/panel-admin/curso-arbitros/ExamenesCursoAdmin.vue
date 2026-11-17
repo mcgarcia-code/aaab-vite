@@ -494,7 +494,8 @@ const categoriaNota = (n) => {
   if (r === false) return 'desaprobados'
   return null
 }
-const filasVisibles = computed(() => (filtroNotas.value ? filasBase.value.filter(n => categoriaNota(n) === filtroNotas.value) : filasBase.value))
+const categoriaGuardada = (n) => categoriaNota({ ...n, nota: n.notaGuardada, ausente: n.ausenteOriginal })
+const filasVisibles = computed(() => (filtroNotas.value ? filasBase.value.filter(n => categoriaGuardada(n) === filtroNotas.value) : filasBase.value))
 const disponiblesParaAgregar = computed(() => notas.value.filter(n => !n.agregado))
 
 const agregarAspirante = (evento) => {
@@ -506,12 +507,10 @@ const agregarAspirante = (evento) => {
 const quitarAspirante = (n) => {
   Object.assign(n, { agregado: false, nota: '', ausente: false, comentarios: '' })
 }
-const resumenNotas = computed(() => ({
-  aprobados: filasBase.value.filter(n => resultado(n) === true).length,
-  desaprobados: filasBase.value.filter(n => resultado(n) === false).length,
-  ausentes: filasBase.value.filter(n => n.ausente).length,
-  sin: filasBase.value.filter(n => !n.ausente && notaNumero(n) === null).length,
-}))
+const resumenNotas = computed(() => {
+  const cuenta = (categoria) => filasBase.value.filter(n => categoriaGuardada(n) === categoria).length
+  return { aprobados: cuenta('aprobados'), desaprobados: cuenta('desaprobados'), ausentes: cuenta('ausentes'), sin: cuenta('sin') }
+})
 
 const descargandoPdf = ref(null)
 
@@ -543,6 +542,7 @@ const abrirNotas = async (e) => {
     notas.value = (res.payload.alumnos || []).map(a => ({
       ...a,
       nota: a.nota ?? '',
+      notaGuardada: a.nota ?? '',
       comentarios: a.comentarios || '',
       agregado: a.nota !== null || a.ausente || Boolean(a.comentarios),
       ausenteOriginal: a.ausente,
