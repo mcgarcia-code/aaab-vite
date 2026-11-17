@@ -42,7 +42,7 @@
                 <i class="bi bi-person-video3 me-1"></i><strong>Dictada por:</strong> {{ proximaClase.docentes.map(d => d.nombre).join(' · ') }}
               </div>
               <a v-if="proximaClase.enlace" :href="proximaClase.enlace" target="_blank" rel="noopener noreferrer" class="btn btn-danger btn-sm fw-bold mt-2">
-                <i class="bi bi-box-arrow-up-right me-1"></i> Entrar a la clase
+                <i class="bi bi-box-arrow-up-right me-1"></i> Material de estudio
               </a>
             </div>
           </div>
