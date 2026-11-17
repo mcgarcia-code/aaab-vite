@@ -1,5 +1,5 @@
 <template>
-  <ModalBase :show="show" @close="cerrar" titulo="Cargar informe" icono="note_add" colorIcono="bg-danger text-white" maxWidth="680px">
+  <ModalBase :show="show" :hay-cambios="hayCambios" @close="cerrar" titulo="Cargar informe" icono="note_add" colorIcono="bg-danger text-white" maxWidth="680px">
     <div class="text-start">
       <p class="text-muted small mb-3">
         Cargá un informe manualmente cuando el árbitro no lo hizo. Seleccioná el partido y completá los datos.
@@ -127,7 +127,7 @@
       </div>
     </div>
 
-    <template #footer>
+    <template #footer="{ cerrar: intentarCerrar }">
       <button
         @click="guardarInformeCarga"
         class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
@@ -136,7 +136,7 @@
         <span v-if="guardandoCarga" class="spinner-border spinner-border-sm"></span>
         <span v-else class="material-icons" style="font-size:18px;">save</span> Cargar informe
       </button>
-      <button @click="cerrar" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1" :disabled="guardandoCarga">CANCELAR</button>
+      <button @click="intentarCerrar" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1" :disabled="guardandoCarga">CANCELAR</button>
     </template>
   </ModalBase>
 </template>
@@ -145,6 +145,7 @@
 import { ref, reactive, computed, watch, inject } from 'vue';
 import { api } from '@/api/api';
 import ModalBase from '@/components/ModalBase.vue';
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
 
 const props = defineProps({
   show: { type: Boolean, default: false }
@@ -211,6 +212,11 @@ const reiniciarCarga = () => {
 };
 
 const cerrar = () => { emit('close'); };
+
+const { hayCambios } = useCambiosSinGuardar(
+  () => ({ carga, fecha: fechaPartidoCarga.value, partido: idPartidoCarga.value }),
+  () => props.show
+);
 
 // Al abrirse el modal, reiniciar el formulario
 watch(() => props.show, (visible) => {

@@ -210,6 +210,7 @@
     <!-- Modal Formulario -->
     <ModalBase
       :show="mostrarModal"
+      :hay-cambios="hayCambios"
       @close="cerrarModal"
       :icono="modoModal === 'editar' ? 'edit' : 'calendar_today'"
       :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
@@ -287,8 +288,8 @@
         </div>
       </form>
 
-      <template #footer>
-        <button type="button" @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formLicencia" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
           {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR LICENCIA' }}
@@ -372,6 +373,7 @@ import { api } from '@/api/api'
 import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 useHead({
   title: 'Gestión de Licencias | AAAB',
@@ -398,6 +400,7 @@ const mostrarModal = ref(false)
 const modoModal = ref('nuevo')
 // MODIFICADO: Agregué motivo al estado inicial del formModal
 const formModal = ref({ id: null, id_arbitro: '', fecha_solicitud: '', fecha_licencia: '', estado: 'aprobada', apellido: '', nombre: '', motivo: 'particular', tiempo_indeterminado: false })
+const { hayCambios } = useCambiosSinGuardar(formModal, mostrarModal)
 
 const mostrarModalHistorial = ref(false)
 const cargandoHistorial = ref(false)

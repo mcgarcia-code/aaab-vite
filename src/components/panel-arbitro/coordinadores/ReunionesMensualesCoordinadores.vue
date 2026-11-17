@@ -440,6 +440,7 @@
     <!-- MODAL NUEVA REUNIÓN (mismo formulario que "Nuevo Evento" de Gestión de Eventos) -->
     <ModalBase
       :show="mostrarModalNueva"
+      :hay-cambios="hayCambiosReunion"
       @close="mostrarModalNueva = false"
       :icono="modoEdicionReunion ? 'edit' : 'notification_add'"
       :colorIcono="modoEdicionReunion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
@@ -523,8 +524,8 @@
         </div>
       </form>
 
-      <template #footer>
-        <button type="button" @click="mostrarModalNueva = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formNuevaReunion" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesandoReunion || !misGrupos.length">
           <span v-if="procesandoReunion" class="spinner-border spinner-border-sm me-1"></span>
           {{ procesandoReunion ? 'GUARDANDO...' : (modoEdicionReunion ? 'GUARDAR CAMBIOS' : 'PUBLICAR REUNIÓN') }}
@@ -534,6 +535,7 @@
 
     <ModalBase
       :show="mostrarModalExamen"
+      :hay-cambios="hayCambiosExamen"
       @close="mostrarModalExamen = false"
       icono="quiz"
       colorIcono="bg-danger-subtle text-danger"
@@ -611,8 +613,8 @@
         </div>
       </form>
 
-      <template #footer>
-        <button type="button" @click="mostrarModalExamen = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formProgramarExamen" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="habilitandoExamen || cargandoReglas || !programacionValida">
           <span v-if="habilitandoExamen" class="spinner-border spinner-border-sm me-1"></span>
           {{ habilitandoExamen ? 'HABILITANDO...' : 'HABILITAR EXAMEN' }}
@@ -714,6 +716,7 @@ import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h }
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import CalendarioEventos from '@/components/CalendarioEventos.vue'
 import { textoCreacionReunion } from '@/composables/useCreadorReunion'
 
@@ -841,6 +844,10 @@ const mostrarModalExamen  = ref(false)
 const cargandoReglas      = ref(false)
 const reglasDisponibles   = ref([])
 const formExamen          = reactive({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [] })
+const { hayCambios: hayCambiosExamen } = useCambiosSinGuardar(
+  () => ({ ...formExamen, reglas: [...formExamen.reglas].sort((a, b) => a - b) }),
+  () => mostrarModalExamen.value && !cargandoReglas.value
+)
 
 const reunionSeleccionada = ref('')
 const soloActivos         = ref(false)
@@ -1431,6 +1438,10 @@ const gruposReunion      = ref([]) // ids de grupos destinatarios elegidos
 
 const formReunionBase = () => ({ titulo: '', descripcion: '', fecha_evento: '' })
 const formReunion = reactive(formReunionBase())
+const { hayCambios: hayCambiosReunion, tomarFoto: tomarFotoReunion } = useCambiosSinGuardar(
+  () => ({ ...formReunion, grupos: [...gruposReunion.value].sort((a, b) => a - b) }),
+  () => mostrarModalNueva.value && !cargandoMisGrupos.value
+)
 
 const eventosAgenda = ref([])
 const eventosMismoDia = computed(() => eventosAgenda.value.filter(e =>
@@ -1473,6 +1484,7 @@ const abrirModalNuevaReunion = async () => {
   if (!misGrupos.value.length) await cargarMisGrupos()
   // Por defecto, todos los grupos a cargo quedan marcados
   gruposReunion.value = misGrupos.value.map(g => Number(g.id))
+  tomarFotoReunion()
 }
 
 const confirmarGuardadoReunion = () => {

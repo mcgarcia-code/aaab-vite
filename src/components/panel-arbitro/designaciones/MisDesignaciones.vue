@@ -335,6 +335,7 @@
       icono="block"
       colorIcono="bg-danger text-white"
       maxWidth="520px"
+      :hay-cambios="hayCambiosRechazo"
       @close="cerrarModalRechazo"
     >
       <div v-if="partidoRechazo" class="alert alert-danger small py-2 px-3 d-flex align-items-start gap-2 mb-3">
@@ -388,9 +389,9 @@
         ></textarea>
       </template>
 
-      <template #footer>
+      <template #footer="{ cerrar }">
         <button
-          @click="cerrarModalRechazo"
+          @click="cerrar"
           class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
           :disabled="enviandoRechazo"
         >
@@ -414,6 +415,7 @@
       icono="description"
       colorIcono="bg-danger text-white"
       maxWidth="640px"
+      :hay-cambios="hayCambiosInforme"
       @close="cerrarModalInforme"
     >
       <div v-if="partidoInforme" class="informe-form">
@@ -524,9 +526,9 @@
         </div>
       </div>
 
-      <template #footer>
+      <template #footer="{ cerrar }">
         <button
-          @click="cerrarModalInforme"
+          @click="cerrar"
           class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
           :disabled="enviandoInforme"
         >
@@ -553,6 +555,7 @@ import { api } from '@/api/api'
 import { auth } from '../../../api/auth'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 useHead({
   title: 'Mis Designaciones | AAAB',
@@ -860,6 +863,7 @@ const partidoRechazo = ref(null)
 const motivoSeleccionado = ref('')
 const motivoOtro = ref('')
 const enviandoRechazo = ref(false)
+const { hayCambios: hayCambiosRechazo } = useCambiosSinGuardar(() => [motivoSeleccionado.value, motivoOtro.value], mostrarModalRechazo)
 
 // El delegado técnico rechaza con motivo de texto libre; el árbitro con lista de opciones.
 const esDelegadoRechazo = computed(() => partidoRechazo.value?.funcion == 'delegado')
@@ -962,6 +966,10 @@ const partidoInforme = ref(null)
 const enviandoInforme = ref(false)
 
 const inputArchivos = ref(null)
+const { hayCambios: hayCambiosInforme } = useCambiosSinGuardar(
+  () => ({ ...formInforme.value, archivos: formInforme.value.archivos.map(f => f.name) }),
+  mostrarModalInforme
+)
 
 const formInforme = ref({
   torneo: '',

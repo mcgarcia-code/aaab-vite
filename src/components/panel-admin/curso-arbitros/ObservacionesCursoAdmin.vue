@@ -134,7 +134,7 @@
 
     <ModalObservacionCurso v-model:show="mostrarModal" :observacion="seleccionada" @guardado="alGuardar" />
 
-    <ModalBase :show="!!verObservacion" @close="verObservacion = null" icono="visibility" colorIcono="bg-success-subtle text-success" maxWidth="720px">
+    <ModalBase :show="!!verObservacion" :hay-cambios="mostrarMotivoRechazo && !!motivoRechazo" mensaje-cambios="Escribiste un motivo de rechazo que todavía no guardaste. Si salís se pierde." @close="verObservacion = null" icono="visibility" colorIcono="bg-success-subtle text-success" maxWidth="720px">
       <template #header>
         <div v-if="verObservacion" class="text-center w-100">
           <span class="fw-bold fs-5 text-uppercase">{{ verObservacion.apellido }}, {{ verObservacion.nombre }}</span>
@@ -199,9 +199,9 @@
           </div>
         </div>
       </div>
-      <template #footer>
+      <template #footer="{ cerrar }">
         <button type="button" @click="editarDesdeVer" class="btn btn-outline-primary rounded-pill px-4 fw-bold w-100 mb-2 mb-sm-0">EDITAR</button>
-        <button type="button" @click="verObservacion = null" class="btn btn-dark rounded-pill px-4 fw-bold w-100">CERRAR</button>
+        <button type="button" @click="cerrar" class="btn btn-dark rounded-pill px-4 fw-bold w-100">CERRAR</button>
       </template>
     </ModalBase>
   </div>

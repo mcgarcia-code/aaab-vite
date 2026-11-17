@@ -387,7 +387,7 @@
     </ModalBase>
 
     <!-- 2. Modal Alta / Edición -->
-    <ModalBase :show="mostrarModal" @close="cerrarModal" :icono="modoModal !== 'editar' ? 'person_add' : ''" :colorIcono= "modoModal !== 'editar' ? 'bg-success-subtle text-success' : ''" maxWidth="900px">
+    <ModalBase :show="mostrarModal" :hay-cambios="hayCambiosLegajo" @close="cerrarModal" :icono="modoModal !== 'editar' ? 'person_add' : ''" :colorIcono= "modoModal !== 'editar' ? 'bg-success-subtle text-success' : ''" maxWidth="900px">
       <template #header>
         <div class="text-center">
           <img
@@ -608,8 +608,8 @@
         </div>
       </form>
 
-      <template #footer>
-        <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">CANCELAR</button>
         <button type="submit" form="formArbitro" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
           {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR ÁRBITRO' }}
@@ -764,6 +764,7 @@ import { useHead } from '@vueuse/head'
 import selLocalidad from '@/components/select/selLocalidad.vue'
 import selProvincia from '@/components/select/selProvincia.vue'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import { useOpcionesHandball, unirCategorias } from '@/composables/useOpcionesHandball'
 import { validarFamiliares, familiaresParaEnviar, familiaresDesdeServidor, textoFamiliares } from '@/composables/useFamiliares'
 import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
@@ -822,6 +823,7 @@ const grupos = ref([])
 const mostrarModal = ref(false)
 const modoModal = ref('nuevo')
 const movilidadArray = ref([])
+const cargasPendientesModal = ref(0)
 
 const mensajeSolicitudActiva = ref('')
 
@@ -901,6 +903,10 @@ const formModalVacio = () => ({
 })
 
 const formModal = ref(formModalVacio())
+const { hayCambios: hayCambiosLegajo } = useCambiosSinGuardar(
+  () => ({ form: formModal.value, movilidad: movilidadArray.value }),
+  () => mostrarModal.value && cargasPendientesModal.value === 0
+)
 
 // ─── Handball: club y categoría según los equipos del club ──────────
 const handball = useOpcionesHandball(
@@ -1085,6 +1091,7 @@ const intentoGuardarModal = ref(false)
 
 const cargarFamiliaresModal = async (idArbitro) => {
   familiaresCargados.value = false
+  cargasPendientesModal.value++
   try {
     const res = await api.get({ entity: 'familiares', action: 'obtenerFamiliaresArbitro', payload: { idArbitro } })
     if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar los familiares')
@@ -1095,6 +1102,8 @@ const cargarFamiliaresModal = async (idArbitro) => {
   } catch (e) {
     console.error('cargarFamiliaresModal:', e)
     notificar({ titulo: 'Atención', mensaje: 'No se pudieron cargar los familiares / DT de este árbitro. Si guardás, no se van a modificar.', tipo: 'danger' })
+  } finally {
+    cargasPendientesModal.value--
   }
 }
 
@@ -1103,6 +1112,7 @@ const vinculosCargados = ref(true)
 
 const cargarVinculosModal = async (idArbitro) => {
   vinculosCargados.value = false
+  cargasPendientesModal.value++
   try {
     const res = await api.get({ entity: 'clubes_vinculados', action: 'obtenerClubesVinculadosArbitro', payload: { idArbitro } })
     if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar el ex-jugador / club')
@@ -1111,6 +1121,8 @@ const cargarVinculosModal = async (idArbitro) => {
   } catch (e) {
     console.error('cargarVinculosModal:', e)
     notificar({ titulo: 'Atención', mensaje: 'No se pudo cargar el ex-jugador / club de este árbitro. Si guardás, no se va a modificar.', tipo: 'danger' })
+  } finally {
+    cargasPendientesModal.value--
   }
 }
 

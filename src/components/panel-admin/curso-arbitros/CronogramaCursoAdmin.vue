@@ -122,7 +122,7 @@
       </div>
     </div>
 
-    <ModalBase :show="mostrarModal" @close="mostrarModal = false" :icono="form.id ? 'edit_calendar' : 'event'" colorIcono="bg-danger-subtle text-danger" maxWidth="640px">
+    <ModalBase :show="mostrarModal" :hay-cambios="hayCambiosClase" @close="mostrarModal = false" :icono="form.id ? 'edit_calendar' : 'event'" colorIcono="bg-danger-subtle text-danger" maxWidth="640px">
       <template #header>
         <span class="fw-bold fs-5">{{ form.id ? 'Editar clase' : 'Nueva clase' }}</span>
       </template>
@@ -178,8 +178,8 @@
           </div>
         </div>
       </form>
-      <template #footer>
-        <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formClaseCurso" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
           <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
           {{ guardando ? 'GUARDANDO...' : 'GUARDAR' }}
@@ -196,7 +196,7 @@
       @close="mostrarAsistencia = false"
       @guardar="guardarAsistencia"
     />
-    <ModalBase :show="mostrarExamen" @close="mostrarExamen = false" icono="quiz" colorIcono="bg-dark-subtle text-dark" maxWidth="680px">
+    <ModalBase :show="mostrarExamen" :hay-cambios="hayCambiosExamen" @close="mostrarExamen = false" icono="quiz" colorIcono="bg-dark-subtle text-dark" maxWidth="680px">
       <template #header>
         <div class="text-center w-100">
           <span class="fw-bold fs-5">Programar examen</span>
@@ -312,8 +312,8 @@
         </div>
         </template>
       </form>
-      <template #footer>
-        <button type="button" @click="mostrarExamen = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formExamenClase" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoExamen || cargandoExamen">
           <span v-if="guardandoExamen" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR EXAMEN
@@ -328,6 +328,7 @@ import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import SelectorArbitros from '@/components/SelectorArbitros.vue'
 import ModalAsistenciaCurso from '@/components/panel-admin/curso-arbitros/ModalAsistenciaCurso.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
@@ -386,6 +387,7 @@ const form = ref(claseVacia())
 const mostrarModal = ref(false)
 const intento = ref(false)
 const guardando = ref(false)
+const { hayCambios: hayCambiosClase } = useCambiosSinGuardar(form, mostrarModal)
 
 const errorHorario = computed(() =>
   form.value.horaInicio && form.value.horaFin && form.value.horaFin <= form.value.horaInicio
@@ -557,6 +559,7 @@ const MODOS_TEORICO = [
 ]
 const formExamen = ref({ tipo: 'teorico', cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [], habilitado: true, modo: 'parcialito', idExamenFinal: null, idRecuperatorioAnterior: null })
 const recuperatoriosAnteriores = ref([])
+const { hayCambios: hayCambiosExamen } = useCambiosSinGuardar(formExamen, () => mostrarExamen.value && !cargandoExamen.value)
 const esFisico = computed(() => formExamen.value.tipo === 'fisico')
 const modosExamen = computed(() => (esFisico.value ? MODOS_FISICO : MODOS_TEORICO))
 const esRecuperatorioParcialitos = computed(() => formExamen.value.modo === 'recuperatorio')

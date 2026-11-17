@@ -50,12 +50,12 @@
 
         <!-- BODY: overflow-auto genera el scroll interno si el contenido es muy largo -->
         <div class="flex-grow-1 p-3 p-md-4 bg-white overflow-auto">
-          <slot></slot>
+          <slot :cerrar="cerrar"></slot>
         </div>
 
         <!-- FOOTER: flex-column en móvil, flex-sm-row desde tablet -->
         <div v-if="$slots.footer" class="flex-shrink-0 p-3 border-top bg-light d-flex flex-column flex-sm-row justify-content-center gap-2 gap-sm-3">
-          <slot name="footer"></slot>
+          <slot name="footer" :cerrar="cerrar"></slot>
         </div>
 
       </div>
@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, computed, ref, watch, nextTick } from 'vue';
+import { onMounted, onUnmounted, computed, ref, watch, nextTick, inject } from 'vue';
 
 const props = defineProps({
   show: Boolean,
@@ -72,13 +72,27 @@ const props = defineProps({
   icono: String,
   colorIcono: { type: String, default: 'bg-info text-white' },
   maxWidth: { type: String, default: '500px' },
-  zIndex: { type: [Number, String], default: 1040 }
+  zIndex: { type: [Number, String], default: 1040 },
+  hayCambios: Boolean,
+  mensajeCambios: { type: String, default: 'Cargaste datos que todavía no guardaste. Si salís se pierden esos cambios.' }
 });
 
 const emit = defineEmits(['close']);
 const modalRef = ref(null);
 const modalId = Symbol('modal')
-const cerrar = () => emit('close');
+const notificar = inject('notificar', null)
+const cerrar = () => {
+  if (!props.hayCambios || !notificar) {
+    emit('close')
+    return
+  }
+  notificar({
+    titulo: '¿Salir sin guardar?',
+    mensaje: props.mensajeCambios,
+    tipo: 'danger',
+    alConfirmar: () => emit('close'),
+  })
+};
 
 
 // ESC — solo cierra el modal que está más arriba en la pila

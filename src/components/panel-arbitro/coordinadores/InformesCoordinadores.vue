@@ -323,7 +323,7 @@
     <!-- ==========================================
          MODAL EDICIÓN
          ========================================== -->
-    <ModalBase :show="mostrarEdicion" @close="cerrarEdicion" titulo="Editar informe" icono="edit" colorIcono="bg-primary text-white" maxWidth="640px">
+    <ModalBase :show="mostrarEdicion" :hay-cambios="hayCambiosEdicion" @close="cerrarEdicion" titulo="Editar informe" icono="edit" colorIcono="bg-primary text-white" maxWidth="640px">
       <div v-if="informeEdit" class="text-start">
         <div class="mb-3">
           <label class="form-label small fw-bold text-dark mb-1">Torneo *</label>
@@ -422,8 +422,8 @@
         </div>
       </div>
 
-      <template #footer>
-        <button @click="cerrarEdicion" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1 border" :disabled="procesando">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1 border" :disabled="procesando">CANCELAR</button>
         <button @click="guardarEdicion" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="procesando || !edicionValida">
           <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span> GUARDAR
         </button>
@@ -440,6 +440,7 @@ import { api } from '@/api/api';
 import html2pdf from 'html2pdf.js';
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
 
 useHead({
   title: 'Informes de mi grupo | AAAB',
@@ -795,6 +796,11 @@ const abrirEdicion = (inf) => {
   mostrarEdicion.value = true;
 };
 const cerrarEdicion = () => { mostrarEdicion.value = false; informeEdit.value = null; };
+
+const { hayCambios: hayCambiosEdicion } = useCambiosSinGuardar(
+  () => ({ ...formEdit, archivos_nuevos: formEdit.archivos_nuevos.map(f => f.name), eliminar: [...archivosAEliminar.value].sort() }),
+  mostrarEdicion
+);
 
 const guardarEdicion = async () => {
   if (!edicionValida.value || !informeEdit.value) return;

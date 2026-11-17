@@ -182,7 +182,7 @@
     </div>
 
     <!-- NOTA FINAL -->
-    <ModalBase :show="!!notaFinal" @close="notaFinal = null" icono="workspace_premium" colorIcono="bg-danger-subtle text-danger" maxWidth="560px">
+    <ModalBase :show="!!notaFinal" :hay-cambios="hayCambiosNotaFinal" @close="notaFinal = null" icono="workspace_premium" colorIcono="bg-danger-subtle text-danger" maxWidth="560px">
       <template #header>
         <div v-if="notaFinal" class="text-center w-100">
           <span class="fw-bold fs-5">Nota final del curso</span>
@@ -206,8 +206,8 @@
         <textarea id="nf-motivo" v-model.trim="notaFinal.motivo" rows="2" maxlength="500" class="form-control"></textarea>
         <div class="form-text">Se actualiza el estado en Legajos del Curso, queda en el historial y se le avisa al aspirante por notificación y email.</div>
       </div>
-      <template #footer>
-        <button type="button" @click="notaFinal = null" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="button" @click="guardarNotaFinal" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoNotaFinal">
           <span v-if="guardandoNotaFinal" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR
@@ -306,6 +306,7 @@ import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { textoNotaExamen, formatoNota } from '@/composables/useExamenesCurso'
 import { RESULTADOS, NOTA_FINAL, armarSeguimiento } from '@/composables/useSeguimientoCurso'
@@ -405,6 +406,10 @@ watch(anio, cargar)
 // ─── Nota final (cambia el estado del legajo) ────────────────────
 const notaFinal = ref(null)
 const guardandoNotaFinal = ref(false)
+const { hayCambios: hayCambiosNotaFinal } = useCambiosSinGuardar(
+  () => notaFinal.value && { valor: notaFinal.value.valor, motivo: notaFinal.value.motivo },
+  () => !!notaFinal.value
+)
 
 const abrirNotaFinal = (f) => {
   notaFinal.value = { fila: f, valor: f.notaFinal, motivo: '' }

@@ -336,7 +336,7 @@
     </div>
 
     <!-- MODAL EDITAR -->
-    <ModalBase :show="mostrarModalEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-info-subtle text-info" maxWidth="500px">
+    <ModalBase :show="mostrarModalEditar" :hay-cambios="hayCambiosEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-info-subtle text-info" maxWidth="500px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Editar Valor</span>
@@ -372,9 +372,9 @@
         </div>
       </form>
 
-      <template #footer>
+      <template #footer="{ cerrar }">
         <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center w-100">
-          <button type="button" @click="mostrarModalEditar = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
+          <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
           <button type="submit" form="formValor" :disabled="procesando" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
             <span v-if="procesando" class="spinner-border spinner-border-sm"></span>
             {{ procesando ? 'GUARDANDO...' : 'GUARDAR VALOR' }}
@@ -384,7 +384,7 @@
     </ModalBase>
 
     <!-- MODAL NUEVO CONCEPTO -->
-    <ModalBase :show="mostrarModalNuevo" @close="mostrarModalNuevo = false" icono="add_circle" colorIcono="bg-success-subtle text-success" maxWidth="600px">
+    <ModalBase :show="mostrarModalNuevo" :hay-cambios="hayCambiosNuevo" @close="mostrarModalNuevo = false" icono="add_circle" colorIcono="bg-success-subtle text-success" maxWidth="600px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Nuevo Concepto</span>
@@ -464,9 +464,9 @@
         </div>
       </form>
 
-      <template #footer>
+      <template #footer="{ cerrar }">
         <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center w-100">
-          <button type="button" @click="mostrarModalNuevo = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
+          <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
           <button type="submit" form="formNuevoConcepto" :disabled="guardandoConcepto" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
             <span v-if="guardandoConcepto" class="spinner-border spinner-border-sm"></span>
             {{ guardandoConcepto ? 'GUARDANDO...' : 'CREAR CONCEPTO' }}
@@ -476,7 +476,7 @@
     </ModalBase>
 
     <!-- MODAL AGREGAR SUBCONCEPTOS -->
-    <ModalBase :show="mostrarModalSub" @close="mostrarModalSub = false" icono="playlist_add" colorIcono="bg-success-subtle text-success" maxWidth="600px">
+    <ModalBase :show="mostrarModalSub" :hay-cambios="hayCambiosSub" @close="mostrarModalSub = false" icono="playlist_add" colorIcono="bg-success-subtle text-success" maxWidth="600px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Agregar Subconceptos</span>
@@ -511,9 +511,9 @@
         </button>
       </form>
 
-      <template #footer>
+      <template #footer="{ cerrar }">
         <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center w-100">
-          <button type="button" @click="mostrarModalSub = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
+          <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
           <button type="submit" form="formSubconceptos" :disabled="procesando" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
             <span v-if="procesando" class="spinner-border spinner-border-sm"></span>
             {{ procesando ? 'GUARDANDO...' : 'AGREGAR' }}
@@ -608,6 +608,7 @@ import { ref, reactive, computed, onMounted, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 useHead({
   title: 'Valores y Porcentaje de Aporte | AAAB',
@@ -927,6 +928,7 @@ const cargarTodo = async () => {
 // ====================================================
 const mostrarModalEditar = ref(false)
 const formEdicion = reactive({ concepto: '', id_categoria: null, etiqueta: '', valor: null, exento: false })
+const { hayCambios: hayCambiosEditar } = useCambiosSinGuardar(formEdicion, mostrarModalEditar)
 
 const abrirModalEditar = (concepto, idCategoria, etiqueta) => {
   const registro = buscarRegistro(concepto, idCategoria)
@@ -986,6 +988,7 @@ let uidSub = 0
 const subVacio = () => ({ uid: ++uidSub, etiqueta: '', valor: null })
 const formNuevoBase = () => ({ etiqueta: '', tipo: 'fijo', conSubconceptos: false, valor: null, subconceptos: [subVacio()] })
 const formNuevo = reactive(formNuevoBase())
+const { hayCambios: hayCambiosNuevo } = useCambiosSinGuardar(formNuevo, mostrarModalNuevo)
 
 const agregarSubconcepto = () => formNuevo.subconceptos.push(subVacio())
 const quitarSubconcepto = (i) => formNuevo.subconceptos.splice(i, 1)
@@ -1110,6 +1113,7 @@ const guardarRenombrado = async () => {
 
 const mostrarModalSub = ref(false)
 const formSub = reactive({ idPadre: null, etiqueta: '', cierraValor: false, subconceptos: [] })
+const { hayCambios: hayCambiosSub } = useCambiosSinGuardar(formSub, mostrarModalSub)
 
 const abrirModalSub = (f) => {
   formSub.idPadre = f.idConcepto

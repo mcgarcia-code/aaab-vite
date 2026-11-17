@@ -188,6 +188,7 @@
     <!-- MODAL NUEVO / EDITAR -->
     <ModalBase
       :show="mostrarModal"
+      :hay-cambios="hayCambiosLegajo"
       @close="mostrarModal = false"
       :icono="form.id ? 'edit' : 'person_add'"
       :colorIcono="form.id ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
@@ -209,8 +210,8 @@
           @error="mensaje => notificar({ titulo: 'Error', mensaje, tipo: 'danger' })"
         />
       </form>
-      <template #footer>
-        <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formLegajoCurso" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
           <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
           {{ guardando ? 'GUARDANDO...' : 'GUARDAR' }}
@@ -329,6 +330,7 @@
     <!-- MODAL CAMBIO DE ESTADO -->
     <ModalBase
       :show="mostrarModalEstado"
+      :hay-cambios="hayCambiosEstado"
       @close="mostrarModalEstado = false"
       icono="swap_horiz"
       colorIcono="bg-danger-subtle text-danger"
@@ -364,8 +366,8 @@
         <textarea id="motivo-estado" v-model.trim="motivoEstado" rows="3" maxlength="500" class="form-control" :class="{ 'is-invalid': intentoEstado && requiereMotivo && motivoEstado.length < 3 }" :placeholder="nuevoEstado === 'baja' ? 'Ej: dejó de asistir, motivos personales...' : nuevoEstado === 'rechazado' ? 'Ej: documentación incompleta, no cumple la edad mínima...' : ''"></textarea>
         <div class="invalid-feedback">Indicá el motivo de la baja.</div>
       </div>
-      <template #footer>
-        <button type="button" @click="mostrarModalEstado = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="button" @click="confirmarEstado" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoEstado">
           <span v-if="guardandoEstado" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR ESTADO
@@ -381,6 +383,7 @@ import { useHead } from '@vueuse/head'
 import { crearPlanillaExcel, pintarCabeceraExcel, descargarLibroExcel } from '@/composables/useExcelPlanilla'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import FormularioCursoArbitro from '@/components/FormularioCursoArbitro.vue'
 import {
   ESTADOS_CURSO, GENEROS_CURSO, MODALIDADES_CURSO, formularioCursoVacio, formularioDesdeLegajo, validarFormularioCurso, payloadCurso, textoDtClubes,
@@ -527,6 +530,7 @@ const form = ref(formularioCursoVacio())
 const errores = ref({})
 const intentoGuardar = ref(false)
 const guardando = ref(false)
+const { hayCambios: hayCambiosLegajo } = useCambiosSinGuardar(form, mostrarModal)
 
 const validar = () => validarFormularioCurso(form.value, { passwordObligatoria: false })
 watch(form, () => { if (intentoGuardar.value) errores.value = validar() }, { deep: true })
@@ -568,6 +572,7 @@ const nuevoEstado = ref('regular')
 const motivoEstado = ref('')
 const intentoEstado = ref(false)
 const guardandoEstado = ref(false)
+const { hayCambios: hayCambiosEstado } = useCambiosSinGuardar(() => [nuevoEstado.value, motivoEstado.value], mostrarModalEstado)
 
 const abrirEstado = (l) => {
   legajoEstado.value = l

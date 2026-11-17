@@ -181,6 +181,8 @@
 
     <ModalBase
       :show="mostrarModalDescargo"
+      :hay-cambios="!!nuevoMensaje.trim() || adjuntosDescargo > 0"
+      mensaje-cambios="Escribiste un descargo o adjuntaste archivos que todavía no enviaste. Si salís se pierden."
       @close="mostrarModalDescargo = false; obtenerSancionesLocales()"
       icono="forum"
       maxWidth="600px"
@@ -228,7 +230,7 @@
             <textarea v-model="nuevoMensaje" class="form-control" rows="3" placeholder="Escribí tu descargo o respuesta aquí..."></textarea>
           </div>
           <div class="col-12">
-            <input type="file" ref="fileInput" multiple class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+            <input type="file" ref="fileInput" multiple @change="adjuntosDescargo = $event.target.files.length" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
             <small class="text-muted">Podés adjuntar múltiples archivos.</small>
           </div>
         </div>
@@ -316,6 +318,7 @@ const cargandoDescargos = ref(false);
 const nuevoMensaje = ref('');
 const enviandoDescargo = ref(false);
 const fileInput = ref(null);
+const adjuntosDescargo = ref(0);
 
 // Modal Apelar
 const mostrarModalApelar = ref(false);
@@ -399,6 +402,8 @@ const abrirApelar = (sancion) => {
 // --- Funciones de Descargo ---
 const abrirDescargo = async (sancion) => {
   sancionActiva.value = sancion;
+  nuevoMensaje.value = '';
+  adjuntosDescargo.value = 0;
   mostrarModalDescargo.value = true;
   await cargarDescargos(sancion.id);
 
@@ -459,6 +464,7 @@ const enviarDescargo = async () => {
     if (res?.success !== false) {
       nuevoMensaje.value = '';
       if (fileInput.value) fileInput.value.value = '';
+      adjuntosDescargo.value = 0;
       await cargarDescargos(sancionActiva.value.id);
     }
   } catch (error) {

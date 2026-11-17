@@ -452,6 +452,7 @@
       titulo="Configuración del Partido"
       icono="settings"
       colorIcono="bg-secondary text-white"
+      :hay-cambios="hayCambiosConfig"
       @close="modalConfig.visible = false"
     >
       <div class="p-3">
@@ -511,8 +512,8 @@
           Los cambios se aplican inmediatamente. La configuración se preserva al reiniciar el partido.
         </div>
       </div>
-      <template #footer>
-        <button class="btn btn-light fw-bold px-4 border" @click="modalConfig.visible = false">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button class="btn btn-light fw-bold px-4 border" @click="cerrar">CANCELAR</button>
         <button class="btn btn-dark fw-bold px-4 shadow-sm" @click="guardarConfig">GUARDAR</button>
       </template>
     </ModalBase>
@@ -571,6 +572,7 @@
 import { ref, reactive, computed, watch, onMounted, onUnmounted, inject } from 'vue';
 import { api } from '@/api/api';
 import ModalBase from '@/components/ModalBase.vue';
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
 import { useHead } from '@vueuse/head';
 
 useHead({
@@ -629,6 +631,10 @@ const modalJugador   = reactive({ visible: false, team: '', type: '', dorsal: ''
 const modalTiempo    = reactive({ visible: false, mm: 0, ss: 0 });
 const modalProrroga  = reactive({ visible: false, titulo: '' });
 const modalConfig    = reactive({ visible: false, halfMinutes: 30, otMinutes: 5, otRounds: 1 });
+const { hayCambios: hayCambiosConfig } = useCambiosSinGuardar(
+  () => [modalConfig.halfMinutes, modalConfig.otMinutes, modalConfig.otRounds],
+  () => modalConfig.visible
+);
 const modalPenalidad = reactive({ visible: false, penaltyId: null, mm: 0, ss: 0, label: '' });
 
 const mostrarNotificacion = (titulo, mensaje, tipo = 'success') =>

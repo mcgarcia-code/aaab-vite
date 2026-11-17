@@ -153,7 +153,7 @@
     </div>
 
     <!-- MODAL NUEVO / EDITAR -->
-    <ModalBase :show="mostrarModal" @close="mostrarModal = false" :icono="modoModal === 'editar' ? 'edit' : 'graph_up_arrow'" :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" maxWidth="550px">
+    <ModalBase :show="mostrarModal" :hay-cambios="hayCambios" @close="mostrarModal = false" :icono="modoModal === 'editar' ? 'edit' : 'graph_up_arrow'" :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" maxWidth="550px">
       <template #header>
         <span class="fw-bold fs-5">{{ modoModal === 'editar' ? 'Editar Recargo de Porcentaje' : 'Nuevo Recargo de Porcentaje' }}</span>
       </template>
@@ -189,8 +189,8 @@
         </div>
       </form>
 
-      <template #footer>
-        <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formRecargo" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesando">
           <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
           {{ procesando ? 'GUARDANDO...' : (modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR RECARGO') }}
@@ -206,6 +206,7 @@ import { ref, reactive, computed, onMounted, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 useHead({ title: 'Recargos de Porcentaje | AAAB' })
 
@@ -227,6 +228,7 @@ const modoModal = ref('nuevo')
 const recargoEnEdicion = ref(null)
 const formBase = () => ({ id_arbitro: '', porcentaje: null, motivo: '', fecha_desde: new Date().toISOString().slice(0, 10), fecha_hasta: '' })
 const form = reactive(formBase())
+const { hayCambios } = useCambiosSinGuardar(form, mostrarModal)
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') : ''
 

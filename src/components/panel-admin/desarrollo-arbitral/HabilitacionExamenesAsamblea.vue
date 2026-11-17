@@ -76,7 +76,7 @@
     </div>
 
     <!-- Modal Base -->
-    <ModalBase :show="modalAbierto" @close="cerrarModal">
+    <ModalBase :show="modalAbierto" :hay-cambios="hayCambiosHabilitacion" @close="cerrarModal">
       <template #header>
         <div class="d-flex align-items-center text-wrap text-break pe-2">
           <i class="bi bi-people-fill me-2 text-danger flex-shrink-0"></i>
@@ -138,9 +138,9 @@
         </table>
       </div>
 
-      <template #footer>
+      <template #footer="{ cerrar }">
         <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 w-100">
-          <button class="btn btn-outline-secondary rounded-pill px-4 w-100 w-sm-auto" @click="cerrarModal">Cancelar</button>
+          <button class="btn btn-outline-secondary rounded-pill px-4 w-100 w-sm-auto" @click="cerrar">Cancelar</button>
           <button class="btn btn-danger rounded-pill px-4 fw-bold w-100 w-sm-auto" :disabled="guardando" @click="guardar">
             <span v-if="guardando" class="spinner-border spinner-border-sm me-2"></span>Guardar
           </button>
@@ -210,6 +210,7 @@ import { ref, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 // Actualización de Meta Tags
 useHead({
@@ -234,6 +235,10 @@ const eventoSeleccionado = ref(null)
 const gruposElegidos = ref([])
 const arrArbitrosSeleccionados = ref([])
 const busquedaArbitro = ref('')
+const { hayCambios: hayCambiosHabilitacion } = useCambiosSinGuardar(
+  () => [[...gruposElegidos.value].sort(), [...arrArbitrosSeleccionados.value].sort()],
+  modalAbierto
+)
 
 const modalReunionAbierto = ref(false)
 const cargandoReuniones = ref(false)

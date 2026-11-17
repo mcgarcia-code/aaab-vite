@@ -229,7 +229,7 @@
     <!-- ==========================================
          MODAL 1: GESTIONAR OBSERVACIÓN (APROBAR/ANULAR)
          ========================================== -->
-    <ModalBase :show="mostrarModal" @close="cerrarModal" titulo="Gestionar Observación" icono="edit" colorIcono="bg-primary text-white" maxWidth="500px">
+    <ModalBase :show="mostrarModal" :hay-cambios="hayCambiosGestion" @close="cerrarModal" titulo="Gestionar Observación" icono="edit" colorIcono="bg-primary text-white" maxWidth="500px">
       <div class="text-center mb-3">
         <p class="text-muted small mt-1 mb-1">Observación #{{ observacionActual.id }} — {{ formatearFecha(observacionActual.fecha_partido) }}</p>
         <span :class="badgeEstado(observacionActual.estado)">Estado actual: {{ etiquetaEstado(observacionActual.estado) }}</span>
@@ -272,8 +272,8 @@
           <span class="text-muted d-block mt-1" style="font-size: 0.75rem;">El observador lo ve en el detalle de la observación, en Mis Observaciones.</span>
         </div>
       </div>
-      <template #footer>
-        <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1">CANCELAR</button>
         <button @click="guardarCambiosGestion" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span> GUARDAR
         </button>
@@ -283,7 +283,7 @@
     <!-- ==========================================
          MODAL 2: CARGAR NUEVA OBSERVACIÓN (FORMULARIO)
          ========================================== -->
-    <ModalBase :show="mostrarModalCarga" @close="cerrarModalCarga" titulo="Cargar Observación Manual" icono="add_box" colorIcono="bg-danger text-white" maxWidth="900px">
+    <ModalBase :show="mostrarModalCarga" :hay-cambios="hayCambiosCarga" @close="cerrarModalCarga" titulo="Cargar Observación Manual" icono="add_box" colorIcono="bg-danger text-white" maxWidth="900px" v-slot="{ cerrar }">
 
       <form @submit.prevent="cargarObservacionExcel" class="text-start pb-2">
         <!-- SECCIÓN 2: PARTIDO -->
@@ -453,7 +453,7 @@
 
         <!-- Botones de Acción Formulario -->
         <div class="d-flex gap-3 mt-2 px-3 px-md-4 pb-2">
-          <button type="button" @click="cerrarModalCarga" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1 border">CANCELAR</button>
+          <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1 border">CANCELAR</button>
           <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="procesandoCarga || !archivoObservacion || analizando || !previewValida">
             <span v-if="procesandoCarga" class="spinner-border spinner-border-sm me-2"></span>
             {{ procesandoCarga ? 'GUARDANDO...' : 'GUARDAR OBSERVACIÓN' }}
@@ -667,6 +667,7 @@ import { api } from '@/api/api';
 import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
 import VistaPreviaObservacion from '@/components/VistaPreviaObservacion.vue';
 import { useVistaPreviaObservacion } from '@/composables/useVistaPreviaObservacion';
 
@@ -828,6 +829,11 @@ const abrirModalGestion = (obs) => {
 
 const cerrarModal = () => { mostrarModal.value = false; };
 
+const { hayCambios: hayCambiosGestion } = useCambiosSinGuardar(
+  () => [nuevoEstado.value, comentariosRevision.value, torneoEditado.value],
+  mostrarModal
+);
+
 const guardarCambiosGestion = async () => {
   cargando.value = true;
   try {
@@ -914,6 +920,11 @@ const { analizando, preview, previewValida, errorLectura, analizarArchivo, limpi
 
 const abrirModalCarga = () => { mostrarModalCarga.value = true; cargarArbitrosObservadores(); };
 const cerrarModalCarga = () => { mostrarModalCarga.value = false; reiniciarFormularioCarga(); };
+
+const { hayCambios: hayCambiosCarga } = useCambiosSinGuardar(
+  () => ({ formulario, fecha: fechaPartido.value, partido: idPartido.value, archivo: archivoObservacion.value?.name ?? null }),
+  mostrarModalCarga
+);
 
 // Trae todos los árbitros para el select de observador.
 const cargarArbitrosObservadores = async () => {

@@ -266,7 +266,7 @@
     <!-- ==========================================
          MODAL DETALLE
          ========================================== -->
-    <ModalBase :show="mostrarDetalle" @close="cerrarDetalle" titulo="Detalle del informe" icono="description" colorIcono="bg-danger text-white" maxWidth="640px">
+    <ModalBase :show="mostrarDetalle" :hay-cambios="hayCambiosEdicion" @close="cerrarDetalle" titulo="Detalle del informe" icono="description" colorIcono="bg-danger text-white" maxWidth="640px">
       <div v-if="informeSel" class="text-start">
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
           <span class="fw-bold text-muted small">Informe #{{ informeSel.id }}</span>
@@ -410,6 +410,7 @@ import html2pdf from 'html2pdf.js';
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
 import ModalCargarInforme from '@/components/ModalCargarInforme.vue';
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
 
 useHead({
   title: 'Informes | AAAB',
@@ -600,6 +601,7 @@ const editarDesdeTabla = (inf) => {
 const modoEdicion = ref(false);
 const guardandoAdmin = ref(false);
 const formAdmin = reactive({ motivo_descripcion: '', estado: '' });
+const { hayCambios: hayCambiosEdicion } = useCambiosSinGuardar(formAdmin, () => mostrarDetalle.value && modoEdicion.value);
 
 const abrirEdicionAdmin = () => {
   if (!informeSel.value) return;

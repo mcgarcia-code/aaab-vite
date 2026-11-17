@@ -257,7 +257,7 @@
     </div>
 
     <!-- MODAL AGREGAR / EDITAR SOLICITUD -->
-    <ModalBase :show="mostrarModal" @close="cerrarModal" :icono="modoModal === 'editar' ? 'edit' : 'add_circle'" :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" maxWidth="700px">
+    <ModalBase :show="mostrarModal" :hay-cambios="hayCambios" @close="cerrarModal" :icono="modoModal === 'editar' ? 'edit' : 'add_circle'" :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" maxWidth="700px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">{{ modoModal === 'editar' ? 'Editar Solicitud' : 'Nueva Solicitud Institucional' }}</span>
@@ -393,9 +393,9 @@
         </div>
       </div>
 
-      <template #footer>
+      <template #footer="{ cerrar }">
         <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center w-100">
-          <button @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
+          <button @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
           <button @click="guardarSolicitud" :disabled="guardando" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
             <span v-if="guardando" class="spinner-border spinner-border-sm"></span>
             {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'GUARDAR SOLICITUD' }}
@@ -413,6 +413,7 @@ import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 useHead({
   title: 'Solicitudes Institucionales | AAAB',
@@ -495,6 +496,7 @@ const form = reactive(formVacio())
 
 // Cuando editamos, el watch de club/rama no debe pisar las categorías ya cargadas
 const cargandoDesdeEdicion = ref(false)
+const { hayCambios } = useCambiosSinGuardar(form, () => mostrarModal.value && !cargandoDesdeEdicion.value)
 
 // ====================================================
 //  HELPERS

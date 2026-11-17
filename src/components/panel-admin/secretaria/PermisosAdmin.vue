@@ -193,6 +193,7 @@
     <!-- MODAL ALTA / EDICION -->
     <ModalBase
       :show="mostrarModal"
+      :hay-cambios="hayCambios"
       @close="mostrarModal = false"
       :icono="modoEdicion ? 'edit' : 'person_add'"
       :colorIcono="modoEdicion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
@@ -283,8 +284,8 @@
         </div>
       </form>
 
-      <template #footer>
-        <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formUsuarioAdmin" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesando">
           <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
           {{ procesando ? 'GUARDANDO...' : (modoEdicion ? 'GUARDAR CAMBIOS' : 'CREAR USUARIO') }}
@@ -338,6 +339,7 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import { MODULOS_ADMIN, ROL_ADMIN, etiquetaRol } from '@/config/modulosAdmin'
 
 useHead({
@@ -364,6 +366,7 @@ const mostrarModal = ref(false)
 const modoEdicion = ref(false)
 const crearFormBase = () => ({ id: null, nombre: '', usuario: '', esAdmin: false, rol: '', password: '', confirmacion: '', modulos: [] })
 const form = reactive(crearFormBase())
+const { hayCambios } = useCambiosSinGuardar(form, mostrarModal)
 const copiarDe = ref('')
 const tieneModuloPermisosOriginal = ref(false)
 const errores = reactive({})

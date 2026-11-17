@@ -242,7 +242,7 @@
          ============================================== -->
 
     <!-- Modal Editar -->
-    <ModalBase :show="mostrarModalEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-info-subtle text-primary" maxWidth="500px">
+    <ModalBase :show="mostrarModalEditar" :hay-cambios="hayCambiosEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-info-subtle text-primary" maxWidth="500px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Editar Sanción</span>
@@ -286,8 +286,8 @@
           </div>
         </div>
       </div>
-      <template #footer>
-        <button @click="mostrarModalEditar = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">CANCELAR</button>
         <button @click="confirmarEdicion" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargandoProceso">
           <span v-if="cargandoProceso" class="spinner-border spinner-border-sm me-1"></span>
           {{ cargandoProceso ? 'GUARDANDO...' : 'GUARDAR CAMBIOS' }}
@@ -382,7 +382,7 @@
     </ModalBase>
 
     <!-- Modal Descargo (CHAT) -->
-    <ModalBase :show="mostrarModalDescargo" @close="mostrarModalDescargo = false; fetchSanciones()" icono="forum" colorIcono="bg-primary-subtle text-primary" maxWidth="900px">
+    <ModalBase :show="mostrarModalDescargo" :hay-cambios="!!nuevoMensaje.trim() || adjuntosDescargo > 0" mensaje-cambios="Escribiste una respuesta o adjuntaste archivos que todavía no enviaste. Si salís se pierden." @close="mostrarModalDescargo = false; fetchSanciones()" icono="forum" colorIcono="bg-primary-subtle text-primary" maxWidth="900px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Descargos: {{ sancionActiva?.arbitro }}</span>
@@ -436,7 +436,7 @@
             <textarea v-model="nuevoMensaje" class="form-control shadow-sm border-secondary-subtle" rows="3" placeholder="Escribir respuesta al árbitro..."></textarea>
           </div>
           <div class="col-12">
-            <input type="file" ref="fileInput" multiple class="form-control form-control-sm shadow-sm border-secondary-subtle bg-light" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+            <input type="file" ref="fileInput" multiple @change="adjuntosDescargo = $event.target.files.length" class="form-control form-control-sm shadow-sm border-secondary-subtle bg-light" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
           </div>
         </div>
       </template>
@@ -474,6 +474,7 @@ import { auth } from '../../../api/auth'
 import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 useHead({ title: 'Gestión de Sanciones | AAAB' })
 
@@ -500,6 +501,10 @@ const cantidadSancion = ref('')
 const formModal = ref({
   id: null, arbitro: '', motivo: '', articulo: '', sancion_dias: 0, desde: '', es_amonestacion: 0, es_indefinido: 0
 })
+const { hayCambios: hayCambiosEditar } = useCambiosSinGuardar(
+  () => ({ form: formModal.value, tipo: tipoSancion.value, cantidad: cantidadSancion.value }),
+  mostrarModalEditar
+)
 
 const mostrarModalHistorial = ref(false)
 const cargandoHistorial = ref(false)
@@ -514,6 +519,7 @@ const cargandoDescargos = ref(false)
 const nuevoMensaje = ref('')
 const enviandoDescargo = ref(false)
 const fileInput = ref(null)
+const adjuntosDescargo = ref(0)
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 const revertirFechaParaInput = (fecha) => {
@@ -747,6 +753,8 @@ const verHistorialArbitro = async (sancion) => {
 
 const gestionarDescargo = async (sancion) => {
   sancionActiva.value = sancion;
+  nuevoMensaje.value = '';
+  adjuntosDescargo.value = 0;
   mostrarModalDescargo.value = true;
   await cargarDescargos(sancion.id);
 
@@ -800,6 +808,7 @@ const enviarDescargoAdmin = async () => {
     if (res?.success !== false) {
       nuevoMensaje.value = '';
       if (fileInput.value) fileInput.value.value = '';
+      adjuntosDescargo.value = 0;
       await cargarDescargos(sancionActiva.value.id);
     }
   } catch {

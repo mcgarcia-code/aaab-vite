@@ -191,7 +191,7 @@
       </div>
     </div>
 
-    <ModalBase :show="mostrarModalEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-info-subtle text-info" maxWidth="500px">
+    <ModalBase :show="mostrarModalEditar" :hay-cambios="hayCambiosEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-info-subtle text-info" maxWidth="500px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Editar Ajuste Manual</span>
@@ -238,9 +238,9 @@
         </div>
       </form>
 
-      <template #footer>
+      <template #footer="{ cerrar }">
         <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center w-100">
-          <button type="button" @click="mostrarModalEditar = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
+          <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 w-sm-auto">CANCELAR</button>
           <button type="submit" form="formEditarManual" :disabled="procesando" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto d-flex align-items-center justify-content-center gap-2">
             <span v-if="procesando" class="spinner-border spinner-border-sm"></span>
             {{ procesando ? 'GUARDANDO...' : 'GUARDAR CAMBIOS' }}
@@ -249,7 +249,7 @@
       </template>
     </ModalBase>
 
-    <ModalBase :show="mostrarModalManual" @close="mostrarModalManual = false" icono="add_circle" colorIcono="bg-success-subtle text-success" maxWidth="600px">
+    <ModalBase :show="mostrarModalManual" :hay-cambios="hayCambiosManual" @close="mostrarModalManual = false" icono="add_circle" colorIcono="bg-success-subtle text-success" maxWidth="600px">
       <template #header><span class="fw-bold fs-5">Nuevo Ajuste Manual</span></template>
 
       <form id="formManual" @submit.prevent="confirmarGuardarManual" class="text-start">
@@ -391,8 +391,8 @@
         </div>
       </form>
 
-      <template #footer>
-        <button type="button" @click="mostrarModalManual = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formManual" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesando">
           <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
           {{ procesando ? 'GUARDANDO...' : (lineas.length > 1 ? `GUARDAR ${lineas.length} MOVIMIENTOS` : 'CREAR AJUSTE') }}
@@ -409,6 +409,7 @@ import { api } from '@/api/api'
 import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import { useRoute } from 'vue-router'
 useHead({ title: 'Movimientos de Tesorería | AAAB' })
 
@@ -570,6 +571,7 @@ const linea = reactive(lineaBase())
 // Movimientos agregados a la lista, listos para guardar
 const lineas = ref([])
 let uidLinea = 0
+const { hayCambios: hayCambiosManual } = useCambiosSinGuardar(() => ({ formManual, linea, lineas: lineas.value }), mostrarModalManual)
 
 const totales = computed(() => {
   const debitos = lineas.value.filter(l => l.tipo === 'debito').reduce((t, l) => t + Number(l.monto), 0)
@@ -681,6 +683,7 @@ const abrirModalManual = () => {
 
 const mostrarModalEditar = ref(false)
 const formEditar = reactive({ id: null, arbitro: '', opcion: 'debito', item: '', monto: null, fecha: '', descripcion: '' })
+const { hayCambios: hayCambiosEditar } = useCambiosSinGuardar(formEditar, mostrarModalEditar)
 
 const abrirModalEditarManual = (m) => {
   Object.assign(formEditar, {

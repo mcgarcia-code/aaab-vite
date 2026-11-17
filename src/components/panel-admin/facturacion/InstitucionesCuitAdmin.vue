@@ -209,6 +209,7 @@
 
     <ModalBase
       :show="mostrarModal"
+      :hay-cambios="hayCambios"
       @close="cerrarModal"
       :icono="modoModal === 'editar' ? 'domain' : 'domain_add'"
       :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-primary' : 'bg-success-subtle text-success'"
@@ -280,9 +281,9 @@
         </div>
       </form>
 
-      <template #footer>
+      <template #footer="{ cerrar }">
         <div class="w-100 d-flex justify-content-center gap-3">
-          <button type="button" @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border w-50">CANCELAR</button>
+          <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-50">CANCELAR</button>
 
           <button type="submit" form="formInstitucion" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-50" :disabled="cargando">
             <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
@@ -300,6 +301,7 @@ import { api } from '@/api/api'
 import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 useHead({
   title: 'Instituciones y Cuits | AAAB',
@@ -333,6 +335,10 @@ const formModalVacio = () => ({
 })
 
 const formModal = ref(formModalVacio())
+const { hayCambios } = useCambiosSinGuardar(
+  () => ({ form: formModal.value, tipoPago: tipoPagoSelect.value, otro: tipoPagoOtro.value }),
+  mostrarModal
+)
 
 const cargarDatos = async () => {
   cargando.value = true // Habilita el spinner al iniciar

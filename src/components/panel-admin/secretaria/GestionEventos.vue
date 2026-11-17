@@ -132,6 +132,7 @@
 
     <ModalBase
       :show="mostrarModal"
+      :hay-cambios="hayCambiosEvento"
       @close="mostrarModal = false"
       :icono="modoEdicion ? 'edit' : 'notification_add'"
       :colorIcono="modoEdicion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
@@ -212,8 +213,8 @@
         </div>
       </form>
 
-      <template #footer>
-        <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formEvento" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesando">
           <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
           {{ procesando ? 'GUARDANDO...' : (modoEdicion ? 'GUARDAR CAMBIOS' : 'PUBLICAR EVENTO') }}
@@ -223,6 +224,7 @@
 
     <ModalBase
       :show="!!reunionRechazo"
+      :hay-cambios="hayCambiosRechazo"
       @close="reunionRechazo = null"
       icono="block"
       colorIcono="bg-danger-subtle text-danger"
@@ -239,8 +241,8 @@
         <textarea v-model="motivoRechazo" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Ej: Ese día ya hay otra reunión en el Dickens..."></textarea>
         <small class="text-muted d-block mt-1">Se le envía por email al coordinador del grupo para que reprograme la reunión.</small>
       </div>
-      <template #footer>
-        <button type="button" @click="reunionRechazo = null" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="button" @click="rechazar" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="motivoRechazo.trim().length < 5 || !!resolviendo">
           <span v-if="resolviendo" class="spinner-border spinner-border-sm me-1"></span>
           RECHAZAR
@@ -256,6 +258,7 @@ import { ref, reactive, onMounted, inject, computed, watch } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import CalendarioEventos from '@/components/CalendarioEventos.vue'
 import { usePermisos } from '@/composables/usePermisos'
 
@@ -288,6 +291,7 @@ const formBase = {
 
 const form = reactive({ ...formBase })
 const mostrarModal = ref(false)
+const { hayCambios: hayCambiosEvento } = useCambiosSinGuardar(form, mostrarModal)
 const modoEdicion = ref(false)
 
 const mostrarFiltrosMobile = ref(false)
@@ -470,6 +474,7 @@ const pendientes = ref([])
 const resolviendo = ref(null)
 const reunionRechazo = ref(null)
 const motivoRechazo = ref('')
+const { hayCambios: hayCambiosRechazo } = useCambiosSinGuardar(motivoRechazo, () => !!reunionRechazo.value)
 
 const formatearFecha = (f) => f ? String(f).substring(0, 10).split('-').reverse().join('/') : ''
 

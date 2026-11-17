@@ -110,6 +110,7 @@
 
     <ModalBase
       :show="mostrarModal"
+      :hay-cambios="hayCambios"
       @close="mostrarModal = false"
       :icono="modoEdicion ? 'edit' : 'group_add'"
       :colorIcono="modoEdicion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
@@ -141,8 +142,8 @@
         </div>
       </form>
 
-      <template #footer>
-        <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formGrupo" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesando">
           <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
           {{ procesando ? 'GUARDANDO...' : (modoEdicion ? 'GUARDAR CAMBIOS' : 'CREAR GRUPO') }}
@@ -157,6 +158,7 @@ import { ref, reactive, onMounted, inject, computed, watch } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 useHead({
   title: 'Gestion de Grupos | AAAB',
@@ -181,6 +183,7 @@ const form = reactive({ ...formBase })
 
 const mostrarModal = ref(false)
 const modoEdicion = ref(false)
+const { hayCambios } = useCambiosSinGuardar(form, mostrarModal)
 const mostrarFiltrosMobile = ref(false)
 
 const filtros = reactive({

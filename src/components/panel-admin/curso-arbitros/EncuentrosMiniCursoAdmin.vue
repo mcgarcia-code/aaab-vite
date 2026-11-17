@@ -132,7 +132,7 @@
     </ModalBase>
 
     <!-- ALTA / EDICIÓN -->
-    <ModalBase :show="mostrarModal" @close="mostrarModal = false" :icono="form.id ? 'edit_calendar' : 'event'" colorIcono="bg-danger-subtle text-danger" maxWidth="680px">
+    <ModalBase :show="mostrarModal" :hay-cambios="hayCambios" @close="mostrarModal = false" :icono="form.id ? 'edit_calendar' : 'event'" colorIcono="bg-danger-subtle text-danger" maxWidth="680px">
       <template #header>
         <span class="fw-bold fs-5">{{ form.id ? 'Editar sede de mini' : 'Nueva sede de mini' }}</span>
       </template>
@@ -179,8 +179,8 @@
           </div>
         </div>
       </form>
-      <template #footer>
-        <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formEncuentroMini" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
           <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR
@@ -206,6 +206,7 @@ import { ref, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import SelectorArbitros from '@/components/SelectorArbitros.vue'
 import ModalAsistenciaCurso from '@/components/panel-admin/curso-arbitros/ModalAsistenciaCurso.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
@@ -355,6 +356,7 @@ const guardando = ref(false)
 const aspirantes = ref([])
 const cargandoAspirantes = ref(false)
 const convocadosOriginales = ref([])
+const { hayCambios } = useCambiosSinGuardar(form, mostrarModal)
 
 const anioFormulario = computed(() => Number(String(form.value.fecha || '').substring(0, 4)) || anio.value)
 

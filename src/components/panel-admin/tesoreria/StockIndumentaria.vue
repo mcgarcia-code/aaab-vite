@@ -144,6 +144,7 @@
     <!-- MODAL DE GESTIÓN (REUTILIZA TU LÓGICA) -->
     <ModalBase
       :show="mostrarModal"
+      :hay-cambios="hayCambios"
       @close="cerrarModal"
       :titulo="modoModal === 'editar' ? 'Gestionar Modelo' : 'Nuevo Modelo'"
       :icono="modoModal === 'editar' ? 'inventory' : 'add_circle'"
@@ -207,8 +208,8 @@
         </div>
       </div>
 
-      <template #footer>
-        <button @click="cerrarModal" class="btn btn-light border-0 px-4 fw-bold rounded-pill">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button @click="cerrar" class="btn btn-light border-0 px-4 fw-bold rounded-pill">CANCELAR</button>
         <button @click="guardarCambios" class="btn btn-danger px-4 fw-bold shadow-sm rounded-pill" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
           GUARDAR CAMBIOS
@@ -225,6 +226,7 @@ import { api } from '@/api/api';
 import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
 
 useHead({
   title: 'Inventario | AAAB',
@@ -257,6 +259,10 @@ const archivosSeleccionados = ref([]);
 const itemAEliminar = ref(null);
 
 const formModal = ref({ id_item: null, descripcion: '', precioGeneral: 0, admite_encargo: false, items: [] });
+const { hayCambios } = useCambiosSinGuardar(
+  () => ({ form: formModal.value, archivos: archivosSeleccionados.value.length }),
+  mostrarModal
+);
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 

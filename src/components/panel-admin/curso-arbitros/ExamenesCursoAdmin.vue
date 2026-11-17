@@ -118,7 +118,7 @@
     </div>
 
     <!-- MODAL EXAMEN -->
-    <ModalBase :show="mostrarModal" @close="mostrarModal = false" :icono="form.id ? 'edit_note' : 'post_add'" colorIcono="bg-danger-subtle text-danger" maxWidth="620px">
+    <ModalBase :show="mostrarModal" :hay-cambios="hayCambiosExamen" @close="mostrarModal = false" :icono="form.id ? 'edit_note' : 'post_add'" colorIcono="bg-danger-subtle text-danger" maxWidth="620px">
       <template #header>
         <span class="fw-bold fs-5">{{ tituloModal }}</span>
       </template>
@@ -159,8 +159,8 @@
           </div>
         </div>
       </form>
-      <template #footer>
-        <button type="button" @click="mostrarModal = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="submit" form="formExamenCurso" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
           <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR
@@ -169,7 +169,7 @@
     </ModalBase>
 
     <!-- MODAL NOTAS -->
-    <ModalBase :show="mostrarNotas" @close="mostrarNotas = false" icono="grading" colorIcono="bg-success-subtle text-success" maxWidth="900px">
+    <ModalBase :show="mostrarNotas" :hay-cambios="hayCambiosNotas" @close="mostrarNotas = false" icono="grading" colorIcono="bg-success-subtle text-success" maxWidth="900px">
       <template #header>
         <div class="text-center w-100">
           <span class="fw-bold fs-5">{{ esPorAspirante ? 'Resultados' : 'Notas' }}</span>
@@ -250,8 +250,8 @@
           </div>
         </template>
       </div>
-      <template #footer>
-        <button type="button" @click="mostrarNotas = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+      <template #footer="{ cerrar }">
+        <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
         <button type="button" @click="guardarNotas" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoNotas || !notas.length">
           <span v-if="guardandoNotas" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR NOTAS
@@ -266,6 +266,7 @@ import { ref, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
@@ -386,6 +387,7 @@ const form = ref(examenVacio())
 const mostrarModal = ref(false)
 const intento = ref(false)
 const guardando = ref(false)
+const { hayCambios: hayCambiosExamen } = useCambiosSinGuardar(form, mostrarModal)
 
 const abrirNuevo = (tipo = 'practico') => {
   form.value = { ...examenVacio(), tipo }
@@ -455,6 +457,10 @@ const examenNotas = ref(null)
 const notas = ref([])
 const cargandoNotas = ref(false)
 const guardandoNotas = ref(false)
+const { hayCambios: hayCambiosNotas } = useCambiosSinGuardar(
+  () => notas.value.map(n => ({ id: n.id, nota: n.nota, ausente: n.ausente, comentarios: n.comentarios, agregado: n.agregado })),
+  () => mostrarNotas.value && !cargandoNotas.value
+)
 
 const limpiarSiAusente = (n) => {
   if (n.ausente) n.nota = ''

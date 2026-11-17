@@ -1,5 +1,5 @@
 <template>
-  <ModalBase :show="mostrar" @close="mostrar = false" :icono="form.id ? 'edit' : 'add_box'" colorIcono="bg-danger-subtle text-danger" maxWidth="760px">
+  <ModalBase :show="mostrar" :hay-cambios="hayCambios" @close="mostrar = false" :icono="form.id ? 'edit' : 'add_box'" colorIcono="bg-danger-subtle text-danger" maxWidth="760px">
     <template #header>
       <span class="fw-bold fs-5">{{ form.id ? 'Editar observación' : 'Nueva observación' }}</span>
     </template>
@@ -91,8 +91,8 @@
         </div>
       </div>
     </form>
-    <template #footer>
-      <button type="button" @click="mostrar = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
+    <template #footer="{ cerrar }">
+      <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
       <button type="submit" form="formObservacionCurso" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
         <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
         GUARDAR
@@ -105,6 +105,7 @@
 import { ref, computed, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import SelectorArbitros from '@/components/SelectorArbitros.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { CAMPOS_OBSERVACION_CURSO, TIPOS_OBSERVACION_CURSO, observacionCursoVacia, observacionCursoDesdeFila } from '@/composables/useObservacionesCurso'
@@ -226,6 +227,11 @@ watch(mostrar, (abierto) => {
   idProfesorMini.value = o && o.tipo !== 'amistoso' ? o.id_observador ?? null : null
   intento.value = false
 })
+
+const { hayCambios } = useCambiosSinGuardar(
+  () => ({ form: form.value, observador: observadorElegido.value, profesor: idProfesorMini.value }),
+  mostrar
+)
 
 const faltanDatos = () => {
   const f = form.value

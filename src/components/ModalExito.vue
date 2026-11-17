@@ -89,6 +89,7 @@ const handleAccion = () => {
 
 const handleKeydown = (e) => {
   if (e.key === 'Escape' && props.visible) {
+    e.stopImmediatePropagation();
     cerrar();
   }
 };
@@ -118,11 +119,11 @@ watch(() => props.visible, async (val) => {
 });
 
 onMounted(() => {
-  window.addEventListener('keydown', handleKeydown);
+  window.addEventListener('keydown', handleKeydown, true);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown);
+  window.removeEventListener('keydown', handleKeydown, true);
 
   if (props.visible) {
     let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1;
