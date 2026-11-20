@@ -5,34 +5,14 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-list-check me-1"></i> Movimientos de Tesorería
-            </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ movimientosFiltrados.length }} movimientos</span>
-          </div>
+          <p class="seccion-descripcion">Aportes del período y ajustes · Total: {{ movimientosFiltrados.length }} movimientos</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <button @click="obtenerMovimientos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
-            <button @click="abrirModalManual" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
-              <span class="material-icons fs-6">add_circle</span>
-              <span class="fw-bold d-none d-md-inline small">Ajuste Manual</span>
-            </button>
-            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
-              <span class="material-icons fs-6">download</span>
-              <span class="fw-bold d-none d-md-inline small">Excel</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="obtenerMovimientos" />
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
+            <BotonHerramienta tipo="nuevo" texto="Ajuste manual" icono="bi-plus-circle" @click="abrirModalManual" />
+            <BotonHerramienta tipo="excel" @click="exportarExcel" />
           </div>
         </div>
 
@@ -44,7 +24,7 @@
               <input type="month" v-model="periodoGenerar" class="form-control form-control-sm shadow-none">
             </div>
             <div class="col-6 col-md-3">
-              <button @click="confirmarGenerar" :disabled="!periodoGenerar || generando" class="btn btn-dark btn-sm w-100 fw-bold shadow-sm">
+              <button @click="confirmarGenerar" :disabled="!periodoGenerar || generando" class="btn btn-danger btn-sm w-100 fw-bold shadow-sm">
                 <span v-if="generando" class="spinner-border spinner-border-sm me-1"></span>
                 Generar Aportes del Período
               </button>
@@ -80,16 +60,13 @@
               </select>
             </div>
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando movimientos...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando movimientos" />
 
           <template v-else>
             <div class="d-none d-md-block table-responsive border rounded shadow-sm">
@@ -124,10 +101,10 @@
                     <td class="text-center">
                       <div v-if="m.concepto === 'ajuste_manual' && m.estado === 'pendiente'" class="d-flex justify-content-center gap-1">
                         <button @click="abrirModalEditarManual(m)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
-                          <span class="material-icons" style="font-size:16px;">edit</span>
+                          <i class="bi bi-pencil" style="font-size:16px;"></i>
                         </button>
                         <button @click="confirmarAnular(m)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Anular">
-                          <span class="material-icons" style="font-size:16px;">delete</span>
+                          <i class="bi bi-trash" style="font-size:16px;"></i>
                         </button>
                       </div>
                       <span v-else class="text-muted small">—</span>
@@ -135,7 +112,7 @@
                   </tr>
                   <tr v-if="movimientosPaginados.length === 0">
                     <td colspan="7" class="py-5 text-center text-muted border-0 bg-white">
-                      <span class="material-icons d-block fs-1 mb-2">search_off</span>
+                      <i class="bi bi-search d-block fs-1 mb-2"></i>
                       <p class="m-0 fw-bold">No se encontraron movimientos.</p>
                     </td>
                   </tr>
@@ -346,7 +323,7 @@
 
                 <div class="col-12">
                   <button type="button" @click="agregarLinea" class="btn btn-sm btn-outline-danger fw-bold w-100 d-flex align-items-center justify-content-center gap-1">
-                    <span class="material-icons" style="font-size:16px;">add</span> Agregar a la lista
+                    <i class="bi bi-plus-lg" style="font-size:16px;"></i> Agregar a la lista
                   </button>
                 </div>
               </div>
@@ -376,7 +353,7 @@
                   {{ l.tipo === 'debito' ? '-' : '+' }} {{ formatearMonto(l.monto) }}
                 </span>
                 <button type="button" @click="quitarLinea(i)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Quitar">
-                  <span class="material-icons" style="font-size:16px;">delete</span>
+                  <i class="bi bi-trash" style="font-size:16px;"></i>
                 </button>
               </div>
 
@@ -393,7 +370,7 @@
 
       <template #footer="{ cerrar }">
         <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="submit" form="formManual" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesando">
+        <button type="submit" form="formManual" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesando">
           <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span>
           {{ procesando ? 'GUARDANDO...' : (lineas.length > 1 ? `GUARDAR ${lineas.length} MOVIMIENTOS` : 'CREAR AJUSTE') }}
         </button>
@@ -404,6 +381,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, onMounted, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'

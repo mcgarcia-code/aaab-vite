@@ -138,9 +138,9 @@
 
 
 <script setup>
-import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
-import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
-import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, onMounted, watch, inject } from 'vue';
 import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';

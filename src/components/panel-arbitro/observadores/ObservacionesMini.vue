@@ -197,8 +197,8 @@
 </template>
 
 <script setup>
-import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
-import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'

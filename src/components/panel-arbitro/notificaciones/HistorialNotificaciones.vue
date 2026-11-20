@@ -102,8 +102,8 @@
 </template>
 
 <script setup>
-import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
-import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, onMounted, computed} from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';

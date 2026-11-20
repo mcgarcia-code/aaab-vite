@@ -6,42 +6,20 @@
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-shield-exclamation me-1"></i> Historial de Sanciones
-            </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ sancionesFiltradas.length }} sanciones</span>
-          </div>
+          <p class="seccion-descripcion">Sanciones vigentes e históricas · Total: {{ sancionesFiltradas.length }} sanciones</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <!-- Botón Recargar -->
-            <button @click="fetchSanciones" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="fetchSanciones" />
 
             <!-- Botón Filtros (Solo Móvil) -->
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
 
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
 
-            <RouterLink to="/panel-admin/tribunal/cargar-sancion" class="text-decoration-none">
-              <button class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger h-100">
-                <span class="material-icons fs-6">add_circle</span>
-                <span class="fw-bold d-none d-md-inline small">Nuevo</span>
-              </button>
-            </RouterLink>
+            <BotonHerramienta tipo="nuevo" texto="Nueva sanción" icono="bi-plus-circle" @click="$router.push('/panel-admin/tribunal/cargar-sancion')" />
 
-            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
-              <span class="material-icons fs-6">download</span>
-              <span class="fw-bold d-none d-md-inline small">Excel</span>
-            </button>
+            <BotonHerramienta tipo="excel" @click="exportarExcel" />
           </div>
         </div>
 
@@ -88,7 +66,7 @@
             </div>
 
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -96,10 +74,7 @@
         <div class="card-body p-0 p-md-3 bg-white">
 
           <!-- SPINNER DE CARGA -->
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando sanciones...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando sanciones" />
 
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
@@ -127,13 +102,13 @@
                         <button @click="gestionarDescargo(s)" class="btn btn-sm shadow-sm rounded p-1 position-relative d-flex align-items-center justify-content-center"
                                 :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-danger text-white border-danger' : 'btn-primary text-white border-primary') : 'btn-secondary text-white border-secondary'"
                                 :title="s.estado_dinamico == 3 ? 'Ver Descargos' : 'Historial Chat'">
-                          <span class="material-icons" style="font-size:16px;">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
+                          <i :class="['bi', s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history']" style="font-size:16px;"></i>
                           <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light rounded-circle"></span>
                         </button>
 
-                        <button @click="editarSancion(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar"><span class="material-icons" style="font-size:16px;">edit</span></button>
-                        <button @click="verHistorialArbitro(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial"><span class="material-icons" style="font-size:16px;">manage_search</span></button>
-                        <button @click="eliminarSancionRegistro(s.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar"><span class="material-icons" style="font-size:16px;">delete</span></button>
+                        <button @click="editarSancion(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar"><i class="bi bi-pencil" style="font-size:16px;"></i></button>
+                        <button @click="verHistorialArbitro(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial"><i class="bi bi-search" style="font-size:16px;"></i></button>
+                        <button @click="eliminarSancionRegistro(s.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar"><i class="bi bi-trash" style="font-size:16px;"></i></button>
                       </div>
                     </td>
                     <td class="text-dark fw-bold text-uppercase col-fija col-arbitro text-truncate" :title="s.arbitro">{{ s.arbitro }}</td>
@@ -158,7 +133,7 @@
                   </tr>
                   <tr v-if="sancionesPaginadas.length === 0">
                     <td colspan="8" class="py-5 text-center text-muted border-0 bg-white">
-                      <span class="material-icons d-block fs-1 mb-2">search_off</span>
+                      <i class="bi bi-search d-block fs-1 mb-2"></i>
                       <p class="m-0 fw-bold">No se encontraron sanciones.</p>
                     </td>
                   </tr>
@@ -204,21 +179,18 @@
                     <!-- Botón Chat Móvil -->
                     <button @click="gestionarDescargo(s)" class="btn btn-sm flex-grow-1 shadow-sm position-relative d-flex justify-content-center align-items-center gap-1 fw-bold"
                             :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-outline-danger' : 'btn-outline-primary') : 'btn-outline-secondary'">
-                      <span class="material-icons" style="font-size: 16px;">{{ s.estado_dinamico == 3 ? 'chat' : 'history' }}</span>
+                      <i :class="['bi', s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history']" style="font-size: 16px;"></i>
                       {{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'NUEVOS' : 'DESCARGOS') : 'HISTORIAL' }}
                       <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="margin-left: -15px;"></span>
                     </button>
-                    <button @click="editarSancion(s)" class="btn btn-sm btn-outline-primary shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">edit</span></button>
-                    <button @click="verHistorialArbitro(s)" class="btn btn-sm btn-outline-warning shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">manage_search</span></button>
-                    <button @click="eliminarSancionRegistro(s.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3"><span class="material-icons" style="font-size: 18px;">delete</span></button>
+                    <button @click="editarSancion(s)" class="btn btn-sm btn-outline-primary shadow-sm px-3"><i class="bi bi-pencil" style="font-size: 18px;"></i></button>
+                    <button @click="verHistorialArbitro(s)" class="btn btn-sm btn-outline-warning shadow-sm px-3"><i class="bi bi-search" style="font-size: 18px;"></i></button>
+                    <button @click="eliminarSancionRegistro(s.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3"><i class="bi bi-trash" style="font-size: 18px;"></i></button>
                   </div>
                 </div>
               </div>
 
-              <div v-if="sancionesPaginadas.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
-                <p class="text-muted m-0 fw-bold">No se encontraron sanciones.</p>
-              </div>
+              <EstadoVacio v-if="sancionesPaginadas.length === 0" icono="bi-search" titulo="No se encontraron sanciones" />
             </div>
 
             <!-- PAGINACIÓN -->
@@ -288,7 +260,7 @@
       </div>
       <template #footer="{ cerrar }">
         <button @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">CANCELAR</button>
-        <button @click="confirmarEdicion" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargandoProceso">
+        <button @click="confirmarEdicion" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargandoProceso">
           <span v-if="cargandoProceso" class="spinner-border spinner-border-sm me-1"></span>
           {{ cargandoProceso ? 'GUARDANDO...' : 'GUARDAR CAMBIOS' }}
         </button>
@@ -310,10 +282,7 @@
         <span class="spinner-border text-warning"></span>
       </div>
 
-      <div v-else-if="historialSanciones.length === 0" class="text-center py-5 text-muted bg-light rounded-4 shadow-sm border border-light-subtle">
-        <span class="material-icons d-block mb-2 fs-1 text-muted opacity-50">history_toggle_off</span>
-        <p class="mb-0 fw-bold">Sin registros previos.</p>
-      </div>
+      <EstadoVacio v-else-if="historialSanciones.length === 0" icono="bi-clock-history" titulo="Sin registros previos" />
 
       <div v-else>
         <!-- Historial PC -->
@@ -395,7 +364,7 @@
         <div v-if="cargandoDescargos" class="text-center mt-4"><span class="spinner-border text-primary"></span></div>
 
         <div v-else-if="historialDescargos.length === 0" class="text-center text-muted mt-5">
-          <span class="material-icons fs-1 opacity-50 mb-2">forum</span><br>
+          <i class="bi bi-chat-dots fs-1 opacity-50 mb-2"></i><br>
           {{ sancionActiva?.estado_dinamico == 3 ? 'Esperando descargo del árbitro.' : 'No se registraron descargos para esta sanción.' }}
         </div>
 
@@ -467,6 +436,9 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'

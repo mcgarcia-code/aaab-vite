@@ -136,7 +136,7 @@
 </template>
 
 <script setup>
-import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'

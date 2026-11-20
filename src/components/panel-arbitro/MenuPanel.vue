@@ -52,7 +52,7 @@ import { useHead } from '@vueuse/head'
 import { auth } from '@/api/auth'
 import { normalizarTexto } from '@/utils/texto'
 import { useModulosArbitro } from '@/composables/useModulosArbitro'
-import ListaModulos from '@/components/panel-arbitro/ListaModulos.vue'
+import ListaModulos from '@/components/comunes/ListaModulos.vue'
 
 useHead({ title: 'Menú | AAAB' })
 

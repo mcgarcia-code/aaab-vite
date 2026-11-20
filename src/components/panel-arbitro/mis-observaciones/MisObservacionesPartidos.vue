@@ -136,9 +136,9 @@
 </template>
 
 <script setup>
-import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
-import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
-import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, computed, onMounted, inject } from 'vue'
 import { api } from '@/api/api'

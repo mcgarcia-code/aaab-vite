@@ -3,50 +3,19 @@
    <div class="panel-cuerpo">
 
     <!-- ============ MENÚ LATERAL (solo escritorio) ============ -->
-    <aside :class="['panel-lateral d-none d-lg-flex', { colapsado: menuColapsado }]" aria-label="Menú del panel">
-      <!-- Ocultar / mostrar el menú (queda solo la columna de íconos) -->
-      <button type="button" class="lateral-link lateral-toggle" @click="alternarMenuLateral"
-              :aria-expanded="!menuColapsado" :title="menuColapsado ? 'Mostrar menú' : 'Ocultar menú'">
-        <i :class="['bi', menuColapsado ? 'bi-chevron-double-right' : 'bi-chevron-double-left']"></i>
-        <span class="lateral-texto">Ocultar menú</span>
-      </button>
-
-      <button type="button" class="lateral-perfil" @click="mostrarMenuPerfil = !mostrarMenuPerfil"
-              :aria-expanded="mostrarMenuPerfil" aria-haspopup="true" aria-label="Abrir menú de perfil" title="Mi perfil">
-        <img :src="urlFoto" @error="onErrorFoto" class="perfil-img" alt="">
-        <span class="lateral-texto d-flex flex-column align-items-start min-w-0 flex-grow-1">
-          <span class="lateral-nombre text-truncate">{{ nombreFormateado }}</span>
-          <span class="subtitulo-perfil">Árbitro · ID {{ arbitro.id }}</span>
-        </span>
-        <i class="lateral-texto bi bi-chevron-down chevron-perfil" :class="{ girado: mostrarMenuPerfil }"></i>
-      </button>
-
-      <nav class="lateral-nav">
-        <RouterLink to="/panel-arbitro" class="lateral-link" exact-active-class="activo" title="Inicio">
-          <i class="bi bi-house-door"></i><span class="lateral-texto">Inicio</span>
-        </RouterLink>
-
-        <template v-for="grupo in gruposModulos" :key="grupo.categoria">
-          <p class="lateral-categoria"><span class="lateral-texto">{{ grupo.categoria }}</span></p>
-          <component
-            v-for="item in grupo.items"
-            :key="item.title"
-            :is="item.href ? 'a' : 'RouterLink'"
-            v-bind="item.href ? { href: item.href, target: '_blank', rel: 'noopener noreferrer' } : { to: item.to, activeClass: 'activo' }"
-            class="lateral-link"
-            :title="item.title"
-          >
-            <i :class="item.icon"></i>
-            <span class="lateral-texto flex-grow-1 text-truncate">{{ item.title }}</span>
-            <i v-if="item.href" class="lateral-texto bi bi-box-arrow-up-right lateral-externo"></i>
-          </component>
-        </template>
-      </nav>
-
-      <button type="button" class="lateral-link lateral-salir" @click="cerrarSesion" title="Cerrar sesión">
-        <i class="bi bi-box-arrow-right"></i><span class="lateral-texto">Cerrar sesión</span>
-      </button>
-    </aside>
+    <MenuLateral
+      inicio="/panel-arbitro"
+      :grupos="gruposModulos"
+      :nombre="nombreFormateado"
+      :subtitulo="`Árbitro · ID ${arbitro.id}`"
+      :foto="urlFoto"
+      perfil-interactivo
+      :perfil-abierto="mostrarMenuPerfil"
+      clave-almacenamiento="panelArbitro.menuColapsado"
+      @perfil="mostrarMenuPerfil = !mostrarMenuPerfil"
+      @salir="cerrarSesion"
+      @error-foto="onErrorFoto"
+    />
 
     <div class="panel-principal">
     <!-- ============ HEADER UNIFICADO ============ -->
@@ -250,34 +219,13 @@ import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { Cropper } from 'vue-advanced-cropper'
 import 'vue-advanced-cropper/dist/style.css'
-import '@/assets/css/panel-arbitro.css'
+import '@/assets/css/panel.css'
 import ToastNotificacion from '@/components/ToastNotificacion.vue'
 import { useModulosArbitro } from '@/composables/useModulosArbitro'
+import MenuLateral from '@/components/comunes/MenuLateral.vue'
 
 // Módulos del menú lateral (escritorio)
 const { gruposModulos } = useModulosArbitro()
-
-// Menú lateral oculto (solo íconos): se recuerda en este navegador
-const CLAVE_MENU_COLAPSADO = 'panelArbitro.menuColapsado'
-
-const leerMenuColapsado = () => {
-  try {
-    return localStorage.getItem(CLAVE_MENU_COLAPSADO) === '1'
-  } catch {
-    return false
-  }
-}
-
-const menuColapsado = ref(leerMenuColapsado())
-
-const alternarMenuLateral = () => {
-  menuColapsado.value = !menuColapsado.value
-  try {
-    localStorage.setItem(CLAVE_MENU_COLAPSADO, menuColapsado.value ? '1' : '0')
-  } catch {
-    // Sin almacenamiento (modo privado): el menú funciona igual, solo no se recuerda
-  }
-}
 
 const route = useRoute()
 const router = useRouter()
@@ -687,123 +635,6 @@ useHead({
   display: block;
   font-size: 0.8rem;
   color: #94a3b8;
-}
-
-/* ============ MENÚ LATERAL (escritorio) ============ */
-/* Sin scroll propio: ocupa todo el largo de la página
-   (se estira con el contenido y como mínimo llena la pantalla) */
-.panel-lateral {
-  flex: 0 0 264px;
-  flex-direction: column;
-  gap: 4px;
-  min-height: 100vh;
-  padding: 16px 12px;
-  background: #0b1222;
-  border-right: 1px solid #1e293b;
-  z-index: 95;
-}
-
-.lateral-perfil {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 8px;
-  border: 0;
-  border-radius: 12px;
-  background: #111a2e;
-  color: #fff;
-  text-align: left;
-  margin-bottom: 8px;
-}
-.lateral-perfil:hover { background: #1e293b; }
-.lateral-perfil:focus-visible { outline: 2px solid #94a3b8; outline-offset: 2px; }
-
-.lateral-nombre {
-  font-size: 0.95rem;
-  font-weight: 700;
-  max-width: 100%;
-}
-
-.lateral-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.lateral-categoria {
-  margin: 16px 12px 6px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #64748b;
-}
-
-.lateral-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 40px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 10px;
-  background: none;
-  color: #cbd5e1;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-decoration: none;
-  text-align: left;
-  transition: background-color 0.15s, color 0.15s;
-}
-.lateral-link > .bi:first-child {
-  width: 18px;
-  font-size: 1rem;
-  color: #94a3b8;
-  text-align: center;
-}
-.lateral-link:hover { background: #1e293b; color: #fff; }
-.lateral-link:focus-visible { outline: 2px solid #94a3b8; outline-offset: -2px; }
-
-/* Sección actual: fondo resaltado e ícono rojo */
-.lateral-link.activo { background: #1e293b; color: #fff; font-weight: 600; }
-.lateral-link.activo > .bi:first-child { color: #f87171; }
-
-.lateral-externo { font-size: 0.7rem; color: #64748b; }
-
-.lateral-salir {
-  margin-top: auto;
-  color: #fca5a5;
-}
-.lateral-salir > .bi:first-child { color: #fca5a5; }
-
-.lateral-toggle { color: #94a3b8; margin-bottom: 4px; }
-
-/* ============ MENÚ LATERAL OCULTO: solo columna de íconos ============ */
-.panel-lateral { transition: flex-basis 0.2s ease; }
-
-.panel-lateral.colapsado {
-  flex-basis: 72px;
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-.panel-lateral.colapsado .lateral-texto { display: none !important; }
-
-.panel-lateral.colapsado .lateral-link,
-.panel-lateral.colapsado .lateral-perfil {
-  justify-content: center;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.panel-lateral.colapsado .lateral-perfil { background: transparent; }
-
-/* Las categorías se convierten en una línea divisoria */
-.panel-lateral.colapsado .lateral-categoria {
-  height: 1px;
-  margin: 10px 8px;
-  background: #1e293b;
 }
 
 /* ============ HEADER UNIFICADO ============ */

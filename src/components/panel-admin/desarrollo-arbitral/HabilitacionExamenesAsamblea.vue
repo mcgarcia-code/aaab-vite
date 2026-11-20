@@ -4,32 +4,19 @@
 
       <!-- Card Header -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-center border-bottom gap-3 text-center text-md-start">
-        <div class="w-100 w-md-auto">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center justify-content-center justify-content-md-start gap-2 fs-5 fs-md-4">
-            <i class="bi bi-shield-check me-1 me-md-2"></i> Administración de Exámenes Generales — Asamblea
-          </h4>
-          <p class="text-muted small m-0 mt-1">Elegí una asamblea/recuperatorio y qué grupos quedan habilitados para rendir el examen teórico.</p>
-        </div>
-        <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold flex-shrink-0" @click="abrirModalReunion">
-          <i class="bi bi-calendar2-check me-1"></i>Habilitar en Reuniones
-        </button>
+        <p class="seccion-descripcion w-100 w-md-auto">Grupos habilitados para rendir · Elegí una asamblea o recuperatorio y qué grupos pueden rendir el teórico</p>
+        <BotonHerramienta tipo="enlace" texto="Habilitar en reuniones" icono="bi-calendar2-check" class="flex-shrink-0" @click="abrirModalReunion" />
       </div>
 
       <!-- Card Body -->
       <div class="card-body p-3 p-md-4">
 
         <!-- Estado: Cargando -->
-        <div v-if="cargandoInicial" class="text-center py-5">
-          <span class="spinner-border text-danger" role="status"></span>
-          <p class="text-muted mt-3 m-0 fw-bold small">Cargando...</p>
-        </div>
+        <EstadoCargando v-if="cargandoInicial" texto="Cargando" />
 
         <div v-else>
           <!-- Estado: Sin eventos -->
-          <div v-if="!eventos.length" class="text-center py-5 px-3 text-muted bg-light rounded-3">
-            <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">event_busy</span>
-            <p class="m-0 fw-bold">No hay eventos de tipo asamblea o recuperatorio cargados.</p>
-          </div>
+          <EstadoVacio v-if="!eventos.length" icono="bi-calendar-x" titulo="No hay eventos de tipo asamblea o recuperatorio cargados" />
 
           <!-- Estado: Lista de eventos -->
           <div v-else class="row g-3">
@@ -161,15 +148,10 @@
         Elegí la reunión en la que querés habilitar el examen. Se habilitan automáticamente los grupos que participan de esa reunión.
       </p>
 
-      <div v-if="cargandoReuniones" class="text-center py-4">
-        <span class="spinner-border text-danger" role="status"></span>
-      </div>
+      <EstadoCargando v-if="cargandoReuniones" texto="Cargando" />
 
       <div v-else>
-        <div v-if="!opcionesReunion.length" class="text-center py-4 px-3 text-muted bg-light rounded-3">
-          <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">event_busy</span>
-          <p class="m-0 fw-bold small">No hay reuniones con fecha vigente para habilitar.</p>
-        </div>
+        <EstadoVacio v-if="!opcionesReunion.length" icono="bi-calendar-x" titulo="No hay reuniones con fecha vigente para habilitar" />
 
         <div v-else>
           <label class="form-label small fw-bold text-muted">Reunión</label>
@@ -206,6 +188,9 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'

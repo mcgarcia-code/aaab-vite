@@ -6,39 +6,19 @@
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-mortarboard-fill me-1"></i> Legajos del Curso
-            </h4>
-            <span class="text-muted small d-block mt-1">
-              Total: {{ legajosFiltrados.length }} inscriptos
-              <template v-for="(cantidad, estado) in resumenEstados" :key="estado">
-                <span v-if="cantidad" class="badge rounded-pill ms-1" :class="ESTADOS_CURSO[estado].clase">{{ cantidad }} {{ ESTADOS_CURSO[estado].etiqueta.toLowerCase() }}</span>
-              </template>
-            </span>
-          </div>
+          <p class="seccion-descripcion">
+            Inscriptos del curso · Total: {{ legajosFiltrados.length }} inscriptos
+            <template v-for="(cantidad, estado) in resumenEstados" :key="estado">
+              <span v-if="cantidad" class="badge rounded-pill ms-1" :class="ESTADOS_CURSO[estado].clase">{{ cantidad }} {{ ESTADOS_CURSO[estado].etiqueta.toLowerCase() }}</span>
+            </template>
+          </p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2" aria-label="Mostrar filtros">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
-            <button @click="cargarDatos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
-            <button @click="abrirNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
-              <span class="material-icons fs-6">person_add</span>
-              <span class="fw-bold d-none d-md-inline small">Nuevo</span>
-            </button>
-            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0" :disabled="!legajosFiltrados.length">
-              <span class="material-icons fs-6">download</span>
-              <span class="fw-bold d-none d-md-inline small">Excel</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargarDatos" />
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
+            <BotonHerramienta tipo="nuevo" texto="Nuevo inscripto" icono="bi-person-plus" @click="abrirNuevo" />
+            <BotonHerramienta tipo="excel" :disabled="!legajosFiltrados.length" @click="exportarExcel" />
           </div>
         </div>
 
@@ -65,16 +45,13 @@
               </select>
             </div>
             <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando inscriptos...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando inscriptos" />
 
           <template v-else>
             <!-- TABLA (Escritorio) -->
@@ -112,13 +89,13 @@
                     <td class="text-center col-fija col-acciones">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="abrirEditar(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar" aria-label="Editar">
-                          <span class="material-icons" style="font-size:16px;">edit</span>
+                          <i class="bi bi-pencil" style="font-size:16px;"></i>
                         </button>
                         <button @click="abrirEstado(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Cambiar estado" aria-label="Cambiar estado">
-                          <span class="material-icons" style="font-size:16px;">swap_horiz</span>
+                          <i class="bi bi-arrow-left-right" style="font-size:16px;"></i>
                         </button>
                         <button @click="abrirHistorial(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial" aria-label="Historial">
-                          <span class="material-icons" style="font-size:16px;">history</span>
+                          <i class="bi bi-clock-history" style="font-size:16px;"></i>
                         </button>
                       </div>
                     </td>
@@ -132,7 +109,7 @@
                   </tr>
                   <tr v-if="!legajosPaginados.length">
                     <td :colspan="COLUMNAS.length + 4" class="text-center py-5 text-muted bg-white border-0">
-                      <span class="material-icons d-block fs-1 mb-2 opacity-50">search_off</span>
+                      <i class="bi bi-search d-block fs-1 mb-2 opacity-50"></i>
                       <span class="fw-bold">No se encontraron inscriptos.</span>
                     </td>
                   </tr>
@@ -165,10 +142,7 @@
                   </div>
                 </div>
               </div>
-              <div v-if="!legajosPaginados.length" class="text-center p-4 bg-white rounded-3 shadow-sm border">
-                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
-                <p class="text-muted m-0 fw-bold">No se encontraron inscriptos.</p>
-              </div>
+              <EstadoVacio v-if="!legajosPaginados.length" icono="bi-search" titulo="No se encontraron inscriptos" />
             </div>
 
             <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
@@ -212,7 +186,7 @@
       </form>
       <template #footer="{ cerrar }">
         <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="submit" form="formLegajoCurso" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
+        <button type="submit" form="formLegajoCurso" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
           <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
           {{ guardando ? 'GUARDANDO...' : 'GUARDAR' }}
         </button>
@@ -368,7 +342,7 @@
       </div>
       <template #footer="{ cerrar }">
         <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="button" @click="confirmarEstado" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoEstado">
+        <button type="button" @click="confirmarEstado" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoEstado">
           <span v-if="guardandoEstado" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR ESTADO
         </button>
@@ -378,6 +352,9 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { crearPlanillaExcel, pintarCabeceraExcel, descargarLibroExcel } from '@/composables/useExcelPlanilla'

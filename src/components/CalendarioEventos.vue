@@ -299,7 +299,8 @@ watch(() => props.fechaSeleccionada, (f) => {
 watch(mesVisible, recargar)
 onMounted(recargar)
 
-defineExpose({ recargar, irAFecha })
+// cargando: lo usa el botón Actualizar de Gestión de Eventos
+defineExpose({ recargar, irAFecha, cargando })
 </script>
 
 <style scoped>

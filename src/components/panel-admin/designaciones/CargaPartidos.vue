@@ -5,12 +5,7 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-clipboard2-check-fill me-1"></i> Carga de Designaciones
-            </h4>
-            <span class="text-muted small d-block mt-1">
-              Total: {{ designaciones.length }} partidos
+          <p class="seccion-descripcion">Cargá y asigná partidos · Total: {{ designaciones.length }} partidos
               <template v-if="totalADesignar > 0">
                 · <button type="button" @click="abrirModalPendientes('a_designar')" class="btn-contador text-danger fw-bold" title="Ver lista de partidos sin designar"><i class="bi bi-exclamation-circle-fill"></i> {{ totalADesignar }} sin designar</button>
               </template>
@@ -22,49 +17,27 @@
               </template>
               <template v-if="totalConflictos > 0">
                 · <button type="button" @click="abrirModalPendientes('aviso_todos')" class="btn-contador text-danger fw-bold" title="Ver lista de partidos con avisos"><i class="bi bi-exclamation-triangle-fill"></i> {{ totalConflictos }} {{ totalConflictos === 1 ? 'conflicto' : 'conflictos' }}</button>
-              </template>
-            </span>
-          </div>
+              </template></p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <button @click="abrirModalCarga" class="btn btn-primary shadow-sm py-2 d-flex align-items-center gap-2 text-white">
-              <span class="material-icons fs-6">upload_file</span>
-              <span class="fw-bold d-none d-md-inline small">Cargar Excel</span>
-            </button>
+            <BotonHerramienta tipo="enlace" texto="Cargar Excel" icono="bi-file-earmark-arrow-up" @click="abrirModalCarga" />
 
-            <button
-              @click="abrirModalPublicar"
-              class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white"
-              :disabled="designaciones.length === 0"
-              title="Primera publicación de esta designación"
-            >
-              <span class="material-icons fs-6">cloud_upload</span>
-              <span class="fw-bold d-none d-md-inline small">Publicar</span>
-            </button>
+            <BotonHerramienta tipo="nuevo" texto="Publicar" icono="bi-cloud-upload" :disabled="designaciones.length === 0" @click="abrirModalPublicar" />
 
             <div class="dropdown">
-              <button
-                class="btn btn-dark shadow-sm py-2 d-flex align-items-center gap-2 text-white dropdown-toggle"
-                type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                :disabled="designaciones.length === 0 || descargandoArchivo"
-                title="Descargar las designaciones"
-              >
-                <span v-if="descargandoArchivo" class="spinner-border spinner-border-sm"></span>
-                <span v-else class="material-icons fs-6">download</span>
-                <span class="fw-bold d-none d-md-inline small">Descargar</span>
-              </button>
+              <BotonHerramienta tipo="enlace" texto="Descargar" icono="bi-download" class="dropdown-toggle"
+                                data-bs-toggle="dropdown" aria-expanded="false"
+                                :cargando="descargandoArchivo" :disabled="designaciones.length === 0" />
               <ul class="dropdown-menu dropdown-menu-end shadow">
                 <li>
                   <button class="dropdown-item d-flex align-items-center gap-2" @click="abrirModalDescarga('pdf')">
-                    <span class="material-icons fs-6 text-danger">picture_as_pdf</span>
+                    <i class="bi bi-file-earmark-pdf fs-6 text-danger"></i>
                     <span class="small fw-bold">PDF</span>
                   </button>
                 </li>
                 <li>
                   <button class="dropdown-item d-flex align-items-center gap-2" @click="abrirModalDescarga('excel')">
-                    <span class="material-icons fs-6 text-success">table_view</span>
+                    <i class="bi bi-table fs-6 text-success"></i>
                     <span class="small fw-bold">Excel</span>
                   </button>
                 </li>
@@ -99,16 +72,9 @@
             </button>
           </div>
 
-          <div v-if="cargando" class="text-center py-5">
-            <span class="spinner-border text-danger"></span>
-            <p class="text-muted mt-3 m-0 fw-bold small">Cargando designaciones...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando designaciones" />
 
-          <div v-else-if="designaciones.length === 0" class="text-center p-5 bg-white rounded shadow-sm border">
-            <span class="material-icons text-muted opacity-50 d-block mb-2 fs-1">upload_file</span>
-            <p class="text-muted m-0 fw-bold">No hay designaciones cargadas.</p>
-            <p class="text-muted small mt-1 mb-0">Usá el botón "Cargar Excel" para importar la planilla de partidos.</p>
-          </div>
+          <EstadoVacio v-else-if="designaciones.length === 0" icono="bi-file-earmark-arrow-up" titulo="No hay designaciones cargadas" mensaje="Usá el botón «Cargar Excel» para importar la planilla de partidos." />
 
           <template v-else>
 <!-- Pestañas por día (una sola línea, con scroll si no entran) -->
@@ -211,10 +177,7 @@
               </div>
             </div>
 
-            <div v-if="canchas.length === 0" class="text-center p-4 bg-white rounded shadow-sm border">
-              <span class="material-icons text-muted opacity-50 d-block mb-2 fs-1">search_off</span>
-              <p class="text-muted m-0 fw-bold">No se encontraron partidos con ese filtro.</p>
-            </div>
+            <EstadoVacio v-if="canchas.length === 0" icono="bi-search" titulo="No se encontraron partidos con ese filtro" />
 
             <!-- ============ VISTA DESKTOP: TABLA TIPO EXCEL ============ -->
             <div v-else class="d-none d-md-block border rounded shadow-sm bg-white grilla-container">
@@ -240,7 +203,7 @@
               <tr class="fila-cancha">
                 <td colspan="11">
                   <div class="d-flex align-items-center gap-2">
-                    <span class="material-icons fs-5">stadium</span>
+                    <i class="bi bi-geo-alt fs-5"></i>
 
                     <span class="nombre-cancha fw-bold text-uppercase">
                       {{ c.nombre }}
@@ -284,7 +247,7 @@
                           class="badge-sin-cancha"
                           title="Asignar cancha a este partido"
                         >
-                          <span class="material-icons" style="font-size: 12px; vertical-align: middle;">stadium</span>
+                          <i class="bi bi-geo-alt" style="font-size: 12px; vertical-align: middle;"></i>
                           SIN CANCHA
                         </button>
                       </td>
@@ -327,7 +290,7 @@
                             :class="colorClase(p, 1)"
                             title="Marcar estado del árbitro"
                           >
-                            <span class="material-icons" style="font-size: 14px;">label</span>
+                            <i class="bi bi-tag" style="font-size: 14px;"></i>
                           </button>
                         </div>
                       </td>
@@ -348,7 +311,7 @@
                             :class="colorClase(p, 2)"
                             title="Marcar estado del árbitro"
                           >
-                            <span class="material-icons" style="font-size: 14px;">label</span>
+                            <i class="bi bi-tag" style="font-size: 14px;"></i>
                           </button>
                         </div>
                       </td>
@@ -379,7 +342,7 @@
                             :class="colorClaseDelegado(p)"
                             title="Marcar estado del delegado técnico"
                           >
-                            <span class="material-icons" style="font-size: 14px;">label</span>
+                            <i class="bi bi-tag" style="font-size: 14px;"></i>
                           </button>
                         </div>
                       </td>
@@ -390,7 +353,7 @@
                         :class="{ 'con-mesa': tieneMesa(p) }"
                         :title="tituloMesa(p)"
                       >
-                        <span class="material-icons" style="font-size: 18px;">table_restaurant</span>
+                        <i class="bi bi-table" style="font-size: 18px;"></i>
                       </button>
                     </td>
                       <td class="text-center">
@@ -402,12 +365,12 @@
                             :title="textoAvisosPartido(p)"
                             @click="mostrarAvisosPartido(p)"
                           ></div>
-                          <span
+                          <i
                             v-if="estadoDesignacion(p) === 'a_designar'"
-                            class="material-icons text-danger borrar-partido"
+                            class="bi bi-x-circle text-danger borrar-partido"
                             title="Borrar partido"
                             @click="borrarPartido(p)"
-                          >cancel</span>
+                          ></i>
                         </div>
                       </td>
                     </tr>
@@ -423,7 +386,7 @@
 
             <!-- Encabezado de cancha (solo lectura) -->
             <div class="cancha-mobile-header d-flex align-items-center gap-2 px-3 py-2 rounded-top-3">
-              <span class="material-icons fs-5">stadium</span>
+              <i class="bi bi-geo-alt fs-5"></i>
               <span class="nombre-cancha fw-bold text-uppercase flex-grow-1">{{ c.nombre }}</span>
 
               <a
@@ -459,17 +422,17 @@
                         :title="textoAvisosPartido(p)"
                         @click="mostrarAvisosPartido(p)"
                       ></div>
-                      <span
+                      <i
                         v-if="estadoDesignacion(p) === 'a_designar'"
-                        class="material-icons text-danger borrar-partido flex-shrink-0"
+                        class="bi bi-x-circle text-danger borrar-partido flex-shrink-0"
                         title="Borrar partido"
                         @click="borrarPartido(p)"
-                      >cancel</span>
+                      ></i>
                     </div>
 
                     <!-- Horario -->
                     <div class="d-flex align-items-center gap-2 mb-2">
-                      <span class="material-icons text-danger" style="font-size: 18px;">schedule</span>
+                      <i class="bi bi-clock text-danger" style="font-size: 18px;"></i>
                       <button
                         v-if="esAdmin"
                         @click="abrirModalFechaHorario(p)"
@@ -477,7 +440,7 @@
                         title="Editar fecha y horario (admin)"
                       >
                         <span class="fw-bold">{{ p.horario || '—' }}</span>
-                        <span class="material-icons" style="font-size: 14px;">edit</span>
+                        <i class="bi bi-pencil" style="font-size: 14px;"></i>
                       </button>
                       <span v-else class="fw-bold">{{ p.horario || '—' }}</span>
                     </div>
@@ -489,7 +452,7 @@
                       class="badge-sin-cancha w-100 text-start mb-2"
                       title="Asignar cancha a este partido"
                     >
-                      <span class="material-icons" style="font-size: 14px; vertical-align: middle;">stadium</span>
+                      <i class="bi bi-geo-alt" style="font-size: 14px; vertical-align: middle;"></i>
                       SIN CANCHA — Tocá para asignar
                     </button>
 
@@ -550,7 +513,7 @@
                           class="btn btn-sm btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-1"
                           :class="colorClase(p, 1)"
                         >
-                          <span class="material-icons" style="font-size: 14px;">label</span>
+                          <i class="bi bi-tag" style="font-size: 14px;"></i>
                           <span class="small">Estado Árb. 1</span>
                         </button>
                       </div>
@@ -561,7 +524,7 @@
                           class="btn btn-sm btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-1"
                           :class="colorClase(p, 2)"
                         >
-                          <span class="material-icons" style="font-size: 14px;">label</span>
+                          <i class="bi bi-tag" style="font-size: 14px;"></i>
                           <span class="small">Estado Árb. 2</span>
                         </button>
                       </div>
@@ -594,7 +557,7 @@
                           class="btn btn-sm btn-outline-secondary w-100 mt-1 d-flex align-items-center justify-content-center gap-1"
                           :class="colorClaseDelegado(p)"
                         >
-                          <span class="material-icons" style="font-size: 14px;">label</span>
+                          <i class="bi bi-tag" style="font-size: 14px;"></i>
                           <span class="small">Estado</span>
                         </button>
                       </div>
@@ -605,7 +568,7 @@
                       class="btn btn-sm w-100 mt-2 d-flex align-items-center justify-content-center gap-2"
                       :class="tieneMesa(p) ? 'btn-danger' : 'btn-outline-secondary'"
                     >
-                      <span class="material-icons" style="font-size: 16px;">table_restaurant</span>
+                      <i class="bi bi-table" style="font-size: 16px;"></i>
                       <span class="small fw-bold">{{ tieneMesa(p) ? 'Mesa de control asignada' : 'Planillero / Cronometrista' }}</span>
                     </button>
                   </div>
@@ -693,7 +656,7 @@
           @click="asignarSinArbitro"
           class="opcion-arbitro text-secondary fw-bold d-flex align-items-center gap-2"
         >
-          <span class="material-icons" style="font-size: 16px;">person_off</span>
+          <i class="bi bi-person-x" style="font-size: 16px;"></i>
           {{ SIN_ARBITRO }}
         </button>
 
@@ -702,7 +665,7 @@
           @click="asignarArbitroLibre(busquedaArbitro)"
           class="opcion-arbitro text-primary fw-bold d-flex align-items-center gap-2"
         >
-          <span class="material-icons" style="font-size: 16px;">person_add</span>
+          <i class="bi bi-person-plus" style="font-size: 16px;"></i>
           Usar "{{ busquedaArbitro.trim().toUpperCase() }}" (árbitro externo)
         </button>
 
@@ -720,7 +683,7 @@
           @click="asignarArbitroLibre(busquedaArbitro)"
           class="opcion-arbitro text-primary d-flex align-items-center gap-2 border-top"
         >
-          <span class="material-icons" style="font-size: 16px;">person_add</span>
+          <i class="bi bi-person-plus" style="font-size: 16px;"></i>
           Usar "{{ busquedaArbitro.trim().toUpperCase() }}" como árbitro externo
         </button>
       </div>
@@ -1056,7 +1019,7 @@
         </button>
         <button
           @click="confirmarDescarga"
-          class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100"
+          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
           :disabled="descargandoArchivo || estadosDescarga.length === 0"
         >
           <span v-if="descargandoArchivo" class="spinner-border spinner-border-sm me-2"></span>
@@ -1093,10 +1056,7 @@
         Estos partidos todavía no tienen árbitros asignados. Tocá uno para ir a designarlo.
       </p>
 
-      <div v-if="partidosPendientesModal.length === 0" class="text-center py-4 text-muted">
-        <span class="material-icons d-block mb-2 opacity-50" style="font-size: 40px;">check_circle</span>
-        <p class="m-0 fw-bold small">No hay pendientes.</p>
-      </div>
+      <EstadoVacio v-if="partidosPendientesModal.length === 0" icono="bi-check-circle" titulo="No hay pendientes" />
 
       <div v-else class="lista-pendientes">
         <div v-for="grupo in pendientesAgrupados" :key="grupo.fecha" class="mb-3">
@@ -1144,7 +1104,7 @@
                   </div>
                 </div>
               </div>
-              <span class="material-icons text-muted flex-shrink-0">chevron_right</span>
+              <i class="bi bi-chevron-right text-muted flex-shrink-0"></i>
             </div>
           </button>
         </div>
@@ -1165,6 +1125,9 @@
 
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, watch, inject, nextTick } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '../../../api/auth'

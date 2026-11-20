@@ -6,20 +6,10 @@
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <span class="material-icons">gavel</span> Cargar Sanción
-            </h4>
-            <span class="text-muted small d-block mt-1">El estado inicial será <strong class="text-dark">EN PROCESO</strong></span>
-          </div>
+          <p class="seccion-descripcion">Nueva resolución disciplinaria</p>
 
           <div class="d-flex align-items-center">
-            <router-link to="/panel-admin/tribunal/sanciones" class="text-decoration-none">
-              <button class="btn btn-light border shadow-sm py-2 px-3 d-flex align-items-center gap-2">
-                <span class="material-icons text-dark fs-5">list</span>
-                <span class="fw-bold text-dark d-none d-md-inline small">Ver Listado</span>
-              </button>
-            </router-link>
+            <BotonHerramienta tipo="enlace" texto="Ver listado" icono="bi-list-ul" @click="$router.push('/panel-admin/tribunal/sanciones')" />
           </div>
         </div>
 
@@ -71,16 +61,13 @@
               <div class="card border-0 shadow-sm rounded-4 h-100" style="border-top: 4px solid #64748b !important;">
                 <div class="card-body p-4">
                   <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2 border-bottom pb-2">
-                    <span class="material-icons">history</span> Últimos Registros
+                    <i class="bi bi-clock-history"></i> Últimos Registros
                   </h6>
 
-                  <div v-if="cargandoHistorial" class="text-center text-muted my-5">
-                    <div class="spinner-border text-danger mb-2"></div>
-                    <p class="small m-0 fw-bold">Cargando...</p>
-                  </div>
+                  <EstadoCargando v-if="cargandoHistorial" texto="Cargando" />
 
                   <div v-else-if="ultimasSanciones.length === 0" class="text-muted text-center my-5">
-                    <span class="material-icons fs-1 opacity-50 d-block mb-2">history_toggle_off</span>
+                    <i class="bi bi-clock-history fs-1 opacity-50 d-block mb-2"></i>
                     <span class="small fw-bold">Sin registros recientes</span>
                   </div>
 
@@ -114,6 +101,8 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, onMounted, inject } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';

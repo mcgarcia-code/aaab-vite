@@ -6,23 +6,13 @@
 
         <!-- ============ HEADER ============ -->
         <div class="card-header bg-white py-3 border-bottom">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-              <i class="bi bi-table me-1"></i> Planilla General de Observaciones
-            </h4>
-            <span class="text-muted small d-block mt-1">
-              Observaciones por árbitro, agrupadas por grupo. Hacé clic en una celda para ver el detalle.
-            </span>
-          </div>
+          <p class="seccion-descripcion">Observaciones de todos los árbitros</p>
         </div>
 
         <!-- ============ BODY ============ -->
         <div class="card-body p-0">
 
-          <div v-if="cargando" class="text-center py-5">
-            <div class="spinner-border text-danger" role="status"></div>
-            <p class="text-muted mt-3 mb-0">Cargando planilla...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando planilla" />
 
           <template v-else>
 
@@ -33,21 +23,19 @@
                 <label class="form-check-label text-muted" for="chkSoloActivos">Solo activos</label>
               </div>
               <div class="busqueda-wrap">
-                <input v-model="busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO...">
+                <input v-model="busqueda" class="form-control shadow-none control-barra" placeholder="BUSCAR ÁRBITRO...">
                 <button v-if="busqueda" class="btn-limpiar-busqueda" @click="busqueda = ''" title="Limpiar búsqueda" type="button">
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
               <div class="d-flex align-items-center gap-1">
                 <label class="text-muted text-nowrap mb-0">Año:</label>
-                <select v-model="filtroAnio" class="form-select form-select-sm shadow-none text-uppercase text-dark" style="min-width: 110px;">
+                <select v-model="filtroAnio" class="form-select shadow-none text-uppercase text-dark control-barra" style="min-width: 110px;">
                   <option value="">TODOS</option>
                   <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
                 </select>
               </div>
-              <button @click="descargarExcel" class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1" :disabled="cargando">
-                <i class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-              </button>
+              <BotonHerramienta tipo="excel" :disabled="cargando" @click="descargarExcel" />
               <span class="ms-auto d-flex flex-wrap gap-3">
                 <span><span class="cuadrito estado-aprobada"></span> Aprobada</span>
                 <span><span class="cuadrito estado-pendiente"></span> Pendiente</span>
@@ -103,7 +91,7 @@
                           title="Ver detalle y comentarios"
                         >
                           <span v-if="cargandoDetalleId === observacionDe(a, n).id" class="spinner-border spinner-border-sm"></span>
-                          <span v-else class="material-icons">visibility</span>
+                          <i v-else class="bi bi-eye"></i>
                         </button>
                       </div>
                     </td>
@@ -240,6 +228,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { api } from '@/api/api'
@@ -650,7 +640,7 @@ const descargarExcel = async () => {
   border: none; background: transparent; color: #0d6efd; cursor: pointer;
   padding: 0 2px; line-height: 1; display: inline-flex; align-items: center;
 }
-.btn-ver-celda .material-icons { font-size: 17px; }
+.btn-ver-celda .bi { font-size: 17px; }
 .btn-ver-celda:hover { color: #0a58ca; }
 .btn-ver-celda:disabled { opacity: 0.5; cursor: default; }
 

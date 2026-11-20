@@ -4,32 +4,20 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-people-fill me-1"></i> Encuentros de Mini
-            </h4>
-            <span class="text-muted small d-block mt-1">{{ fechas.length }} {{ fechas.length === 1 ? 'fecha' : 'fechas' }} · {{ encuentros.length }} sedes en {{ anio }} · solo para aspirantes del curso anual</span>
-          </div>
+          <p class="seccion-descripcion">Convocatoria y asistencia · {{ fechas.length }} {{ fechas.length === 1 ? 'fecha' : 'fechas' }} · {{ encuentros.length }} sedes en {{ anio }} · solo para aspirantes del curso anual</p>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
-            <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 110px;" aria-label="Año">
+            <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark control-barra" style="width: 110px;" aria-label="Año">
               <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
             </select>
-            <button @click="cargar" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
-            <button @click="abrirModalFecha(null)" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
-              <span class="material-icons fs-6">add_box</span>
-              <span class="fw-bold d-none d-md-inline small">Nueva fecha</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargar" />
+            <BotonHerramienta tipo="nuevo" texto="Nueva fecha" icono="bi-plus-square" @click="abrirModalFecha(null)" />
           </div>
         </div>
 
         <div class="card-body p-3 bg-white">
-          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando encuentros de mini...</p></div>
+          <EstadoCargando v-if="cargando" texto="Cargando encuentros de mini" />
           <div v-else-if="!fechas.length" class="text-center py-5 text-muted">
-            <span class="material-icons d-block fs-1 mb-2 opacity-50">event_busy</span>
+            <i class="bi bi-calendar-x d-block fs-1 mb-2 opacity-50"></i>
             <span class="fw-bold d-block">Todavía no hay fechas de mini en {{ anio }}.</span>
             <button type="button" class="btn btn-danger btn-sm fw-bold mt-3" @click="abrirModalFecha(null)"><i class="bi bi-calendar-plus me-1"></i> Programar una fecha</button>
           </div>
@@ -82,10 +70,7 @@
                 </button>
               </div>
             </div>
-            <div v-if="!fechaActual.encuentros.length" class="text-center py-5 text-muted bg-light rounded-3">
-              <span class="material-icons d-block fs-1 mb-2 opacity-50">add_location_alt</span>
-              <span class="fw-bold">Esta fecha todavía no tiene sedes. Agregá la primera.</span>
-            </div>
+            <EstadoVacio v-if="!fechaActual.encuentros.length" icono="bi-geo-alt" titulo="Esta fecha todavía no tiene sedes. Agregá la primera" />
             <div v-else class="row g-3">
               <div v-for="e in fechaActual.encuentros" :key="e.id" class="col-12 col-md-6 col-xl-4">
                 <div class="tarjeta border rounded-3 p-3 h-100 d-flex flex-column">
@@ -124,7 +109,7 @@
       </form>
       <template #footer>
         <button type="button" @click="mostrarModalFecha = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="submit" form="formFechaMini" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoFecha">
+        <button type="submit" form="formFechaMini" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoFecha">
           <span v-if="guardandoFecha" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR
         </button>
@@ -181,7 +166,7 @@
       </form>
       <template #footer="{ cerrar }">
         <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="submit" form="formEncuentroMini" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
+        <button type="submit" form="formEncuentroMini" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
           <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR
         </button>
@@ -202,6 +187,9 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'

@@ -4,29 +4,17 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-calendar3-week me-1"></i> Clases y Asistencia
-            </h4>
-            <span class="text-muted small d-block mt-1">{{ clasesVisibles.length }} clases en {{ anio }} · cada alumno ve las de su curso<template v-if="clasesSinAsistencia.length"> · <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> {{ clasesSinAsistencia.length }} {{ clasesSinAsistencia.length === 1 ? 'clase dictada' : 'clases dictadas' }} sin asistencia</span></template></span>
-          </div>
+          <p class="seccion-descripcion">Cronograma y exámenes por clase · {{ clasesVisibles.length }} clases en {{ anio }}<template v-if="clasesSinAsistencia.length"> · <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> {{ clasesSinAsistencia.length }} {{ clasesSinAsistencia.length === 1 ? 'clase dictada' : 'clases dictadas' }} sin asistencia</span></template></p>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
-            <select v-model="filtroCurso" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 150px;" aria-label="Curso">
+            <select v-model="filtroCurso" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark control-barra" style="width: 150px;" aria-label="Curso">
               <option value="">CURSO</option>
               <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.corta.toUpperCase() }}</option>
             </select>
-            <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 110px;" aria-label="Año">
+            <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark control-barra" style="width: 110px;" aria-label="Año">
               <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
             </select>
-            <button @click="cargar(anio); planillaRef?.recargar()" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
-            <button @click="abrirNueva" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
-              <span class="material-icons fs-6">add_box</span>
-              <span class="fw-bold d-none d-md-inline small">Nueva clase</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargar(anio); planillaRef?.recargar()" />
+            <BotonHerramienta tipo="nuevo" texto="Nueva clase" icono="bi-plus-square" @click="abrirNueva" />
           </div>
         </div>
 
@@ -54,11 +42,9 @@
         </div>
 
         <div v-else class="card-body p-3 bg-white">
-          <div v-if="cargando" class="text-center p-5">
-            <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando clases...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando clases" />
           <div v-else-if="!clasesVisibles.length" class="text-center py-5 text-muted">
-            <span class="material-icons d-block fs-1 mb-2 opacity-50">event_busy</span>
+            <i class="bi bi-calendar-x d-block fs-1 mb-2 opacity-50"></i>
             <span class="fw-bold">Todavía no hay clases cargadas para {{ anio }}.</span>
           </div>
           <div v-else class="accordion">
@@ -180,7 +166,7 @@
       </form>
       <template #footer="{ cerrar }">
         <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="submit" form="formClaseCurso" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
+        <button type="submit" form="formClaseCurso" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
           <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
           {{ guardando ? 'GUARDANDO...' : 'GUARDAR' }}
         </button>
@@ -314,7 +300,7 @@
       </form>
       <template #footer="{ cerrar }">
         <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="submit" form="formExamenClase" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoExamen || cargandoExamen">
+        <button type="submit" form="formExamenClase" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoExamen || cargandoExamen">
           <span v-if="guardandoExamen" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR EXAMEN
         </button>
@@ -324,6 +310,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'

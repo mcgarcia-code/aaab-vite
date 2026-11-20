@@ -6,55 +6,27 @@
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-people-fill me-1"></i> Gestión de Árbitros
-            </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ totalFiltrados }} árbitros</span>
-          </div>
+          <p class="seccion-descripcion">Datos y disponibilidad de los árbitros · Total: {{ totalFiltrados }} árbitros</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <!-- Botón Filtros (Solo Móvil) -->
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
 
             <!-- Botón Recargar -->
-            <button @click="cargarDatos" :disabled="cargandoTabla" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargandoTabla" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargandoTabla" @click="cargarDatos" />
 
             <!-- Botón Solicitudes -->
-            <button @click="abrirModalSolicitudes" class="btn btn-primary position-relative shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons fs-6">notifications</span>
-              <span class="fw-bold d-none d-md-inline small">Solicitudes</span>
-              <span v-if="solicitudesPendientes.length > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem;">
-                {{ solicitudesPendientes.length }}
-              </span>
-            </button>
+            <BotonHerramienta tipo="enlace" texto="Solicitudes" icono="bi-bell" :cantidad="solicitudesPendientes.length" @click="abrirModalSolicitudes" />
 
             <!-- Botón Edición Global -->
-            <button @click="toggleEdicionGlobal" class="btn shadow-sm py-2 d-flex align-items-center gap-2 text-white" :class="edicionAbierta ? 'btn-danger' : 'btn-success'" :title="edicionAbierta ? 'Bloquear Edición' : 'Permitir Edición'">
-              <span class="material-icons fs-6">{{ edicionAbierta ? 'lock_open' : 'lock' }}</span>
-              <span class="fw-bold d-none d-md-inline small">{{ edicionAbierta ? 'Cerrar Edición' : 'Abrir Edición' }}</span>
-            </button>
+            <BotonHerramienta :tipo="edicionAbierta ? 'nuevo' : 'enlace'" :texto="edicionAbierta ? 'Cerrar edición' : 'Abrir edición'"
+                              :icono="edicionAbierta ? 'bi-unlock' : 'bi-lock'" @click="toggleEdicionGlobal" />
 
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
 
-            <button @click="crearNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
-              <span class="material-icons fs-6">person_add</span>
-              <span class="fw-bold d-none d-md-inline small">Nuevo</span>
-            </button>
+            <BotonHerramienta tipo="nuevo" texto="Nuevo árbitro" icono="bi-person-plus" @click="crearNuevo" />
 
-            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
-              <span class="material-icons fs-6">download</span>
-              <span class="fw-bold d-none d-md-inline small">Excel</span>
-            </button>
+            <BotonHerramienta tipo="excel" @click="exportarExcel" />
           </div>
         </div>
 
@@ -84,7 +56,7 @@
               </select>
             </div>
             <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -92,10 +64,7 @@
         <div class="card-body p-0 p-md-3 bg-white">
 
           <!-- SPINNER DE CARGA -->
-          <div v-if="cargandoTabla" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando árbitros...</p>
-          </div>
+          <EstadoCargando v-if="cargandoTabla" texto="Cargando árbitros" />
 
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
@@ -229,10 +198,10 @@
                     <td class="text-center col-fija col-acciones">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="editarArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar árbitro">
-                          <span class="material-icons" style="font-size:16px;">edit</span>
+                          <i class="bi bi-pencil" style="font-size:16px;"></i>
                         </button>
                         <button @click="verHistorialArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver historial de cambios">
-                          <span class="material-icons" style="font-size:16px;">manage_search</span>
+                          <i class="bi bi-search" style="font-size:16px;"></i>
                         </button>
                       </div>
                     </td>
@@ -255,7 +224,7 @@
                     <td class="text-center text-dark">{{ a.subgrupo }}</td>
                     <td class="text-center text-dark">{{ a.dni }}</td>
                     <td class="text-center">
-                      <span v-if="generoIconos[a.genero]" class="material-icons" :style="{ color: generoIconos[a.genero].color }" :title="generoIconos[a.genero].label">{{ generoIconos[a.genero].icono }}</span>
+                      <i v-if="generoIconos[a.genero]" :class="['bi', generoIconos[a.genero].icono]" :style="{ color: generoIconos[a.genero].color }" :title="generoIconos[a.genero].label"></i>
                       <span v-else class="text-muted">-</span>
                     </td>
                     <td class="text-dark">{{ a.fecha_ingreso ? mostrarFechaArg(a.fecha_ingreso) : '' }}</td>
@@ -329,19 +298,16 @@
 
                   <div class="d-flex gap-2">
                     <button @click="editarArbitro(a)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
+                      <i class="bi bi-pencil" style="font-size: 16px;"></i> EDITAR
                     </button>
                     <button @click="verHistorialArbitro(a)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
-                      <span class="material-icons" style="font-size: 18px;">manage_search</span>
+                      <i class="bi bi-search" style="font-size: 18px;"></i>
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
-                <p class="text-muted m-0 fw-bold">No se encontraron registros.</p>
-              </div>
+              <EstadoVacio v-if="arbitrosPaginados.length === 0" icono="bi-search" titulo="No se encontraron registros" />
             </div>
 
             <!-- PAGINACIÓN -->
@@ -382,7 +348,7 @@
       </div>
       <template #footer>
         <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100">DESCARGAR EXCEL</button>
+        <button @click="ejecutarDescargaExcel" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm w-100">DESCARGAR EXCEL</button>
       </template>
     </ModalBase>
 
@@ -402,7 +368,7 @@
       </template>
 
       <div v-if="mensajeSolicitudActiva" class="alert alert-warning border-warning-subtle text-start shadow-sm d-flex align-items-start gap-3 p-3 mb-4 rounded-3" style="background-color: #fffbeb;">
-        <span class="material-icons text-warning mt-1">assignment_late</span>
+        <i class="bi bi-clipboard-x text-warning mt-1"></i>
         <div class="w-100">
           <strong class="d-block text-dark mb-1 text-uppercase small">Solicitud del árbitro:</strong>
           <div class="text-dark text-break small" style="white-space: pre-line; line-height: 1.5; text-align: justify;">{{ mensajeSolicitudActiva }}</div>
@@ -610,7 +576,7 @@
 
       <template #footer="{ cerrar }">
         <button @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0">CANCELAR</button>
-        <button type="submit" form="formArbitro" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
+        <button type="submit" form="formArbitro" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
           {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR ÁRBITRO' }}
         </button>
@@ -649,9 +615,7 @@
       </div>
 
       <div v-else-if="solicitudesMostradas.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
-        <span class="material-icons mb-2 d-block mx-auto" style="font-size: 48px; color: #cbd5e1;">
-          {{ tabActivo === 'enviado' ? 'inbox' : (tabActivo === 'aprobado' ? 'check_circle_outline' : 'highlight_off') }}
-        </span>
+        <i :class="['bi mb-2 d-block mx-auto', tabActivo === 'enviado' ? 'bi-inbox' : (tabActivo === 'aprobado' ? 'bi-check-circle' : 'bi-x-circle')]" style="font-size: 48px; color: #cbd5e1;"></i>
         <p class="mb-0 fw-bold">No hay solicitudes {{ tabActivo === 'enviado' ? 'pendientes' : tabActivo + 's' }}.</p>
       </div>
 
@@ -676,7 +640,7 @@
 
             <div class="d-flex flex-wrap flex-md-nowrap gap-2 mt-2 w-100 justify-content-start justify-content-md-end" v-if="sol.estado === 'enviado'">
               <button @click="abrirEdicionDesdeSolicitud(sol)" class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1 fw-bold flex-fill" title="Abrir legajo para editar">
-                <span class="material-icons" style="font-size: 16px;">edit</span> LEGAJO
+                <i class="bi bi-pencil" style="font-size: 16px;"></i> LEGAJO
               </button>
               <button @click="rechazarSolicitud(sol)" class="btn btn-sm btn-danger fw-bold flex-fill">RECHAZAR</button>
               <button @click="aprobarSolicitud(sol)" class="btn btn-sm btn-success fw-bold flex-fill">APROBAR</button>
@@ -700,10 +664,7 @@
         <p class="text-muted mt-2 small fw-bold">Cargando historial...</p>
       </div>
 
-      <div v-else-if="historialArbitro.length === 0" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
-        <span class="material-icons d-block fs-1 mb-2 mx-auto" style="font-size: 48px; color: #cbd5e1;">history_toggle_off</span>
-        <p class="mb-0 fw-bold">Este árbitro nunca solicitó cambios.</p>
-      </div>
+      <EstadoVacio v-else-if="historialArbitro.length === 0" icono="bi-clock-history" titulo="Este árbitro nunca solicitó cambios" />
 
       <div v-else>
         <!-- Tabla (Escritorio) -->
@@ -757,6 +718,9 @@
 
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'
@@ -843,10 +807,10 @@ const cargandoHistorialArbitro = ref(false)
 const edicionAbierta = ref(false);
 
 const generoIconos = {
-  masculino: { icono: 'male', color: '#0d6efd', label: 'Masculino' },
-  femenino: { icono: 'female', color: '#d63384', label: 'Femenino' },
-  x: { icono: 'transgender', color: '#6f42c1', label: 'X' },
-  otro: { icono: 'wc', color: '#6c757d', label: 'Otro' },
+  masculino: { icono: 'bi-gender-male', color: '#0d6efd', label: 'Masculino' },
+  femenino: { icono: 'bi-gender-female', color: '#d63384', label: 'Femenino' },
+  x: { icono: 'bi-gender-trans', color: '#6f42c1', label: 'X' },
+  otro: { icono: 'bi-gender-ambiguous', color: '#6c757d', label: 'Otro' },
 }
 
 const mostrarToastExito = (mensaje) => {

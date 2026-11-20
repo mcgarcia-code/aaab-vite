@@ -279,9 +279,9 @@
 </template>
 
 <script setup>
-import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
-import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
-import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { auth } from '../../../api/auth';
 import { api }  from '@/api/api';

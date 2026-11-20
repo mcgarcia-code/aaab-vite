@@ -4,35 +4,26 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-person-check-fill me-1"></i> Alumnos Regulares {{ anio }}
-            </h4>
-            <span class="text-muted small d-block mt-1">{{ filas.length }} alumnos · parcialitos, teórico final, práctico, físico y nota final</span>
-          </div>
+          <p class="seccion-descripcion">Asistencia, mini y exámenes · {{ filas.length }} alumnos · parcialitos, teórico final, práctico, físico y nota final</p>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
-            <select v-model="filtros.modalidad" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 150px;" aria-label="Curso">
+            <select v-model="filtros.modalidad" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark control-barra" style="width: 150px;" aria-label="Curso">
               <option value="">CURSO</option>
               <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.corta.toUpperCase() }}</option>
             </select>
-            <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 110px;" aria-label="Año">
+            <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark control-barra" style="width: 110px;" aria-label="Año">
               <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
             </select>
-            <button @click="cargar" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargar" />
           </div>
         </div>
 
         <div class="card-body bg-white" :class="cargando ? 'p-3' : 'p-0 border-top'">
-          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando alumnos regulares...</p></div>
+          <EstadoCargando v-if="cargando" texto="Cargando alumnos regulares" />
           <template v-else>
             <!-- Barra de herramientas: búsqueda + filtro + descargar + leyenda, igual que la planilla de Exámenes -->
             <div class="d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
               <div class="busqueda-wrap">
-                <input v-model="filtros.texto" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
+                <input v-model="filtros.texto" class="form-control shadow-none control-barra" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
                 <button v-if="filtros.texto" class="btn-limpiar-busqueda" @click="filtros.texto = ''" title="Limpiar búsqueda" type="button">
                   <i class="bi bi-x-lg"></i>
                 </button>
@@ -43,15 +34,7 @@
                 <option value="aprobado">APROBÓ</option>
                 <option value="desaprobado">DESAPROBÓ</option>
               </select>
-              <button
-                type="button"
-                @click="exportarExcel"
-                class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1"
-                :disabled="!filas.length || generandoExcel"
-              >
-                <span v-if="generandoExcel" class="spinner-border spinner-border-sm"></span>
-                <i v-else class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-              </button>
+              <BotonHerramienta tipo="excel" :cargando="generandoExcel" :disabled="!filas.length || generandoExcel" @click="exportarExcel" />
               <span class="text-muted text-nowrap">{{ filas.length }} alumnos</span>
               <span class="ms-auto d-flex flex-wrap gap-3">
                 <span><span class="cuadrito cuadrito-verde"></span> Aprobado / {{ ASISTENCIA_MINIMA }}% o más</span>
@@ -112,10 +95,10 @@
                     <td class="celda">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="abrirNotaFinal(f)" class="btn btn-link btn-sm p-0 text-danger" title="Nota final" :aria-label="'Nota final de ' + f.alumno.apellido">
-                          <span class="material-icons" style="font-size:18px;">workspace_premium</span>
+                          <i class="bi bi-award" style="font-size:18px;"></i>
                         </button>
                         <button @click="seleccionado = f" class="btn btn-link btn-sm p-0 text-primary" title="Ver detalle" :aria-label="'Ver detalle de ' + f.alumno.apellido">
-                          <span class="material-icons" style="font-size:18px;">visibility</span>
+                          <i class="bi bi-eye" style="font-size:18px;"></i>
                         </button>
                       </div>
                     </td>
@@ -208,7 +191,7 @@
       </div>
       <template #footer="{ cerrar }">
         <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="button" @click="guardarNotaFinal" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoNotaFinal">
+        <button type="button" @click="guardarNotaFinal" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoNotaFinal">
           <span v-if="guardandoNotaFinal" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR
         </button>
@@ -295,13 +278,15 @@
         </div>
       </div>
       <template #footer>
-        <button type="button" @click="seleccionado = null" class="btn btn-dark rounded-pill px-4 fw-bold w-100">CERRAR</button>
+        <button type="button" @click="seleccionado = null" class="btn btn-danger rounded-pill px-4 fw-bold w-100">CERRAR</button>
       </template>
     </ModalBase>
   </div>
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'

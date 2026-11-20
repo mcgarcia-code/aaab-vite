@@ -6,40 +6,21 @@
 
         <!-- HEADER -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3 position-relative">
-            <!-- Dot rojo (esquina, tipo la captura) -->
-            <span v-if="pendientes > 0" class="dot-notif"></span>
-
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4 flex-wrap">
-              <i class="bi bi-x-octagon-fill me-1"></i>
-              <span>Designaciones Rechazadas</span>
-              <span v-if="pendientes > 0" class="badge-nuevos rounded-pill">
-                {{ pendientes }} {{ pendientes === 1 ? 'NUEVO' : 'NUEVOS' }}
-              </span>
-            </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ rechazosFiltrados.length }} rechazos</span>
-          </div>
+          <p class="seccion-descripcion d-flex align-items-center flex-wrap gap-2">
+            <span>Rechazos de los árbitros · Total: {{ rechazosFiltrados.length }} rechazos</span>
+            <span v-if="pendientes > 0" class="badge-nuevos rounded-pill">
+              {{ pendientes }} {{ pendientes === 1 ? 'NUEVO' : 'NUEVOS' }}
+            </span>
+          </p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <button @click="obtenerRechazos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="obtenerRechazos" />
 
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
 
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
 
-            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
-              <span class="material-icons fs-6">download</span>
-              <span class="fw-bold d-none d-md-inline small">Excel</span>
-            </button>
+            <BotonHerramienta tipo="excel" @click="exportarExcel" />
           </div>
         </div>
 
@@ -77,7 +58,7 @@
               </select>
             </div>
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -85,10 +66,7 @@
         <div class="card-body p-0 p-md-3 bg-white">
 
           <!-- SPINNER DE CARGA -->
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando designaciones rechazadas...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando designaciones rechazadas" />
 
           <template v-else>
           <!-- TABLA (Escritorio) -->
@@ -111,13 +89,13 @@
                   <td class="text-center">
                     <div class="d-flex justify-content-center gap-1">
                       <button @click="editarRechazo(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar / Resolver">
-                        <span class="material-icons" style="font-size:16px;">edit</span>
+                        <i class="bi bi-pencil" style="font-size:16px;"></i>
                       </button>
                       <button @click="verHistorialRechazo(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver Historial">
-                        <span class="material-icons" style="font-size:16px;">manage_search</span>
+                        <i class="bi bi-search" style="font-size:16px;"></i>
                       </button>
                       <button @click="borrarRechazo(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Borrar">
-                        <span class="material-icons" style="font-size:16px;">delete</span>
+                        <i class="bi bi-trash" style="font-size:16px;"></i>
                       </button>
                     </div>
                   </td>
@@ -177,13 +155,13 @@
 
                 <div class="d-flex gap-2">
                   <button @click="editarRechazo(r)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                    <span class="material-icons" style="font-size: 16px;">edit</span> RESOLVER
+                    <i class="bi bi-pencil" style="font-size: 16px;"></i> RESOLVER
                   </button>
                   <button @click="verHistorialRechazo(r)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
-                    <span class="material-icons" style="font-size: 18px;">manage_search</span>
+                    <i class="bi bi-search" style="font-size: 18px;"></i>
                   </button>
                   <button @click="borrarRechazo(r)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
-                    <span class="material-icons" style="font-size: 18px;">delete</span>
+                    <i class="bi bi-trash" style="font-size: 18px;"></i>
                   </button>
                 </div>
               </div>
@@ -191,10 +169,7 @@
           </div>
 
           <!-- EMPTY STATE -->
-          <div v-if="rechazosPaginados.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-3">
-            <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">check_circle</span>
-            <p class="text-muted m-0 fw-bold">No hay designaciones rechazadas.</p>
-          </div>
+          <EstadoVacio v-if="rechazosPaginados.length === 0" icono="bi-check-circle" titulo="No hay designaciones rechazadas" />
 
           <!-- PAGINACIÓN -->
           <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
@@ -276,7 +251,7 @@
 
       <template #footer>
         <button type="button" @click="cerrarModal" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0" :disabled="guardando">CANCELAR</button>
-        <button type="button" @click="confirmarEdicion" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
+        <button type="button" @click="confirmarEdicion" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
           <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR CAMBIOS
         </button>
@@ -363,6 +338,9 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'

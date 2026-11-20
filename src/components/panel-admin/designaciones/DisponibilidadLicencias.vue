@@ -5,39 +5,19 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-calendar-check-fill me-1"></i> Control de Designaciones
-            </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ arbitrosFiltrados.length }} árbitros</span>
-          </div>
+          <p class="seccion-descripcion">Quién puede dirigir cada fecha · Total: {{ arbitrosFiltrados.length }} árbitros</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <!-- Botón Recargar -->
-            <button @click="cargarDatos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargarDatos" />
 
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
 
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
 
-            <button @click="solicitarLimpiarChecks" class="btn btn-danger shadow-sm py-2 d-flex align-items-center gap-2 text-white d-none d-md-flex">
-              <span class="material-icons fs-6">check_box_outline_blank</span>
-              <span class="fw-bold small">Tildes</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" texto="Limpiar tildes" icono="bi-square" class="d-none d-md-inline-flex" @click="solicitarLimpiarChecks" />
 
-            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
-              <span class="material-icons fs-6">download</span>
-              <span class="fw-bold d-none d-md-inline small">Excel</span>
-            </button>
+            <BotonHerramienta tipo="excel" @click="exportarExcel" />
           </div>
         </div>
 
@@ -71,7 +51,7 @@
               </select>
             </div>
             <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -79,10 +59,7 @@
         <div class="card-body p-0 p-md-3 bg-white">
 
           <!-- SPINNER DE CARGA -->
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando árbitros...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando árbitros" />
 
           <template v-else>
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
@@ -188,17 +165,17 @@
                   <td class="text-center text-dark col-fija col-licencia" style="white-space: nowrap; font-size: 0.7rem;">{{ obtenerTextoLicencia(a) }}</td>
                   <td class="text-center">
                     <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn btn-success btn-sm p-1" title="Enviar WhatsApp">
-                      <span class="material-icons" style="font-size: 14px;">chat</span>
+                      <i class="bi bi-whatsapp" style="font-size: 14px;"></i>
                     </button>
                     <span v-else class="text-muted">-</span>
                   </td>
                   <td class="text-center">
-                    <span v-if="a.es_activo" class="material-icons text-success" title="Activo" style="font-size: 18px;">check_circle</span>
-                    <span v-else class="material-icons text-danger" title="Inactivo" style="font-size: 18px;">cancel</span>
+                    <i v-if="a.es_activo" class="bi bi-check-circle text-success" title="Activo" style="font-size: 18px;"></i>
+                    <i v-else class="bi bi-x-circle text-danger" title="Inactivo" style="font-size: 18px;"></i>
                   </td>
                   <td class="text-center">
-                    <span v-if="a.apto_medico" class="material-icons text-success" title="Apto Físico" style="font-size: 18px;">check_circle</span>
-                    <span v-else class="material-icons text-danger" title="No Apto Físico" style="font-size: 18px;">cancel</span>
+                    <i v-if="a.apto_medico" class="bi bi-check-circle text-success" title="Apto Físico" style="font-size: 18px;"></i>
+                    <i v-else class="bi bi-x-circle text-danger" title="No Apto Físico" style="font-size: 18px;"></i>
                   </td>
                   <td class="text-center text-dark">{{ a.grupo }}</td>
                   <td class="text-center text-dark">{{ a.subgrupo }}</td>
@@ -228,7 +205,7 @@
 
                 <tr v-if="arbitrosPaginados.length === 0">
                   <td colspan="24" class="text-center py-5 text-muted bg-white border-0">
-                    <span class="material-icons d-block mb-2 fs-1 opacity-50">search_off</span>
+                    <i class="bi bi-search d-block mb-2 fs-1 opacity-50"></i>
                     <p class="m-0 fw-bold">No se encontraron registros.</p>
                   </td>
                 </tr>
@@ -262,8 +239,8 @@
                 <div class="bg-white p-2 rounded border small mb-3 border-light-subtle d-flex justify-content-between align-items-center">
                   <span class="text-dark d-flex align-items-center gap-1">
                     <strong>Apto: </strong>
-                    <span v-if="a.apto_medico" class="material-icons text-success" style="font-size: 16px;">check_circle</span>
-                    <span v-else class="material-icons text-danger" style="font-size: 16px;">cancel</span>
+                    <i v-if="a.apto_medico" class="bi bi-check-circle text-success" style="font-size: 16px;"></i>
+                    <i v-else class="bi bi-x-circle text-danger" style="font-size: 16px;"></i>
                   </span>
                   <span class="text-dark"><strong>Juega:</strong> {{ a.juega_handball }}</span>
                 </div>
@@ -289,15 +266,12 @@
                 </div>
 
                 <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn btn-sm w-100 fw-bold shadow-sm mt-3 text-white d-flex align-items-center justify-content-center gap-2" style="background: #25d366;">
-                  <span class="material-icons fs-6">chat</span> WhatsApp
+                  <i class="bi bi-whatsapp fs-6"></i> WhatsApp
                 </button>
               </div>
             </div>
 
-            <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-white rounded shadow-sm border mt-3">
-              <span class="material-icons text-muted opacity-50 d-block mb-2 fs-1">search_off</span>
-              <p class="text-muted m-0 fw-bold">No se encontraron registros.</p>
-            </div>
+            <EstadoVacio v-if="arbitrosPaginados.length === 0" icono="bi-search" titulo="No se encontraron registros" />
           </div>
 
           <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
@@ -320,6 +294,9 @@
 
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
 import { api } from '@/api/api';
 import ExcelJS from 'exceljs'

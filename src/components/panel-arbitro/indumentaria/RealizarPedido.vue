@@ -256,7 +256,7 @@
 </template>
 
 <script setup>
-import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue';
 import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';

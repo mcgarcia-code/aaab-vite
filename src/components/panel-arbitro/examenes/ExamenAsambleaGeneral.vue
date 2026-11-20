@@ -156,7 +156,7 @@
   </div>
 </template>
 <script setup>
-import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, computed, watch, onMounted } from 'vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'

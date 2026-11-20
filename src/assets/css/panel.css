@@ -1,6 +1,6 @@
 /* =========================================================
-   Estilos compartidos de las secciones del Panel Árbitro
-   (se importa una sola vez desde PanelArbitro.vue)
+   Estilos compartidos de las secciones de los paneles (árbitro y admin)
+   (se importa desde PanelArbitro.vue y AdminPanel.vue)
    ========================================================= */
 
 /* Descripción de la sección: reemplaza al título interno,
@@ -64,4 +64,11 @@
   body:has(.barra-inferior) {
     padding-bottom: calc(64px + env(safe-area-inset-bottom));
   }
+}
+
+/* Botones sueltos de las barras (ej. filtro de inconsistencias): mismo alto y radio */
+.panel-layout button.control-barra {
+  border-radius: 10px;
+  padding: 6px 12px;
+  white-space: nowrap;
 }

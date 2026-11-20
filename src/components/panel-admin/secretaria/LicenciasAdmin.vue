@@ -6,40 +6,20 @@
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-calendar-event me-1"></i> Gestión de Licencias
-            </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ licenciasFiltradas.length }} licencias</span>
-          </div>
+          <p class="seccion-descripcion">Licencias e inasistencias · Total: {{ licenciasFiltradas.length }} licencias</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <!-- Botón Recargar (Movido acá) -->
-            <button @click="obtenerLicencias" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="obtenerLicencias" />
 
             <!-- Botón Filtros (Solo Móvil) -->
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
 
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
 
-            <button @click="abrirModalNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
-              <span class="material-icons fs-6">person_add</span>
-              <span class="fw-bold d-none d-md-inline small">Nuevo</span>
-            </button>
+            <BotonHerramienta tipo="nuevo" texto="Nueva licencia" icono="bi-person-plus" @click="abrirModalNuevo" />
 
-            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
-              <span class="material-icons fs-6">download</span>
-              <span class="fw-bold d-none d-md-inline small">Excel</span>
-            </button>
+            <BotonHerramienta tipo="excel" @click="exportarExcel" />
           </div>
         </div>
 
@@ -80,7 +60,7 @@
               <input type="text" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. AUSENCIA O INDETERMINADA">
             </div>
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -88,10 +68,7 @@
         <div class="card-body p-0 p-md-3 bg-white">
 
           <!-- SPINNER DE CARGA -->
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando licencias...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando licencias" />
 
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
@@ -114,13 +91,13 @@
                     <td class="text-center">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="editarLicencia(lic)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar Licencia">
-                          <span class="material-icons" style="font-size:16px;">edit</span>
+                          <i class="bi bi-pencil" style="font-size:16px;"></i>
                         </button>
                         <button @click="verHistorialLicencia(lic)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver Historial">
-                          <span class="material-icons" style="font-size:16px;">manage_search</span>
+                          <i class="bi bi-search" style="font-size:16px;"></i>
                         </button>
                         <button @click="eliminarLicencia(lic.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
-                          <span class="material-icons" style="font-size:16px;">delete</span>
+                          <i class="bi bi-trash" style="font-size:16px;"></i>
                         </button>
                       </div>
                     </td>
@@ -167,13 +144,13 @@
                   <!-- Botones Acciones -->
                   <div class="d-flex gap-2">
                     <button @click="editarLicencia(lic)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <span class="material-icons" style="font-size: 16px;">edit</span> EDITAR
+                      <i class="bi bi-pencil" style="font-size: 16px;"></i> EDITAR
                     </button>
                     <button @click="verHistorialLicencia(lic)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
-                      <span class="material-icons" style="font-size: 18px;">manage_search</span>
+                      <i class="bi bi-search" style="font-size: 18px;"></i>
                     </button>
                     <button @click="eliminarLicencia(lic.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
-                      <span class="material-icons" style="font-size: 18px;">delete</span>
+                      <i class="bi bi-trash" style="font-size: 18px;"></i>
                     </button>
                   </div>
                 </div>
@@ -182,10 +159,7 @@
             </div>
 
             <!-- EMPTY STATE -->
-            <div v-if="licenciasPaginadas.length === 0" class="text-center p-4 p-md-5 bg-white rounded shadow-sm border m-3">
-              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">search_off</span>
-              <p class="text-muted m-0 fw-bold">No se encontraron licencias.</p>
-            </div>
+            <EstadoVacio v-if="licenciasPaginadas.length === 0" icono="bi-search" titulo="No se encontraron licencias" />
 
             <!-- PAGINACIÓN -->
             <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
@@ -290,7 +264,7 @@
 
       <template #footer="{ cerrar }">
         <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="submit" form="formLicencia" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
+        <button type="submit" form="formLicencia" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
           {{ modoModal === 'editar' ? 'GUARDAR CAMBIOS' : 'CREAR LICENCIA' }}
         </button>
@@ -367,6 +341,9 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { api } from '@/api/api'

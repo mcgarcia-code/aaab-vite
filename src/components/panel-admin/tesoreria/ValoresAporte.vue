@@ -6,39 +6,20 @@
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-currency-dollar me-1"></i> Valores y Porcentaje de Aporte
-            </h4>
-            <span class="text-muted small d-block mt-1">
-              Total: {{ filasFiltradas.length }} de {{ filas.length }} conceptos · Editar abre un nuevo período de vigencia
-            </span>
-          </div>
+          <p class="seccion-descripcion">Valor por categoría, pagos y % de aporte · Total: {{ filasFiltradas.length }} de {{ filas.length }} conceptos · Editar abre un nuevo período de vigencia</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <!-- Botón Actualizar -->
-            <button @click="cargarTodo" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargarTodo" />
 
             <!-- Botón Filtros (Solo Móvil) -->
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
 
             <!-- Botón Limpiar filtros -->
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Limpiar filtros">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
 
             <!-- Botón Nuevo Concepto -->
-            <button @click="abrirModalNuevo" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
-              <span class="material-icons fs-6">add_circle</span>
-              <span class="fw-bold d-none d-md-inline small">Nuevo Concepto</span>
-            </button>
+            <BotonHerramienta tipo="nuevo" texto="Nuevo concepto" icono="bi-plus-circle" @click="abrirModalNuevo" />
           </div>
         </div>
 
@@ -75,7 +56,7 @@
             </div>
 
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -83,10 +64,7 @@
         <div class="card-body p-0 p-md-3 bg-white">
 
           <!-- SPINNER DE CARGA -->
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando valores...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando valores" />
 
           <template v-else>
 
@@ -108,19 +86,19 @@
                     <td class="ps-3 text-center">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="abrirModalEditar(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
-                          <span class="material-icons" style="font-size:16px;">edit</span>
+                          <i class="bi bi-pencil" style="font-size:16px;"></i>
                         </button>
                         <button @click="abrirModalHistorial(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Historial">
-                          <span class="material-icons" style="font-size:16px;">history</span>
+                          <i class="bi bi-clock-history" style="font-size:16px;"></i>
                         </button>
                         <button v-if="f.admiteSubconceptos" @click.stop="abrirModalSub(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-success" title="Agregar subconcepto">
-                          <span class="material-icons" style="font-size:16px;">playlist_add</span>
+                          <i class="bi bi-journal-plus" style="font-size:16px;"></i>
                         </button>
                         <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
-                          <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
+                          <i class="bi bi-pencil-square" style="font-size:16px;"></i>
                         </button>
                         <button v-if="f.editable" @click.stop="confirmarEliminarConcepto(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
-                          <span class="material-icons" style="font-size:16px;">delete</span>
+                          <i class="bi bi-trash" style="font-size:16px;"></i>
                         </button>
                       </div>
                     </td>
@@ -148,16 +126,16 @@
                       <td class="ps-3 text-center">
                         <div class="d-flex justify-content-center gap-1">
                           <button type="button" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" :title="estaExpandido(f) ? 'Contraer' : 'Desplegar'">
-                            <span class="material-icons" style="font-size:16px;">{{ estaExpandido(f) ? 'expand_less' : 'expand_more' }}</span>
+                            <i :class="['bi', estaExpandido(f) ? 'bi-chevron-up' : 'bi-chevron-down']" style="font-size:16px;"></i>
                           </button>
                           <button v-if="f.admiteSubconceptos" @click.stop="abrirModalSub(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-success" title="Agregar subconcepto">
-                          <span class="material-icons" style="font-size:16px;">playlist_add</span>
+                          <i class="bi bi-journal-plus" style="font-size:16px;"></i>
                         </button>
                         <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
-                          <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
+                          <i class="bi bi-pencil-square" style="font-size:16px;"></i>
                         </button>
                         <button v-if="f.editable" @click.stop="confirmarEliminarConcepto(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
-                          <span class="material-icons" style="font-size:16px;">delete</span>
+                          <i class="bi bi-trash" style="font-size:16px;"></i>
                         </button>
                         </div>
                       </td>
@@ -181,22 +159,22 @@
                         <td class="ps-3 text-center">
                           <div class="d-flex justify-content-center gap-1">
                             <button @click="abrirModalEditar(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
-                              <span class="material-icons" style="font-size:16px;">edit</span>
+                              <i class="bi bi-pencil" style="font-size:16px;"></i>
                             </button>
                             <button @click="abrirModalHistorial(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Historial">
-                              <span class="material-icons" style="font-size:16px;">history</span>
+                              <i class="bi bi-clock-history" style="font-size:16px;"></i>
                             </button>
                             <button v-if="h.editable" @click.stop="abrirModalRenombrar(h)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
-                          <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
+                          <i class="bi bi-pencil-square" style="font-size:16px;"></i>
                         </button>
                         <button v-if="h.editable" @click.stop="confirmarEliminarConcepto(h)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
-                          <span class="material-icons" style="font-size:16px;">delete</span>
+                          <i class="bi bi-trash" style="font-size:16px;"></i>
                         </button>
                           </div>
                         </td>
                         <td class="text-dark">
                           <div class="d-flex align-items-center gap-2 ps-4">
-                            <span class="material-icons text-muted" style="font-size:16px;">subdirectory_arrow_right</span>
+                            <i class="bi bi-arrow-return-right text-muted" style="font-size:16px;"></i>
                             <span>{{ h.etiqueta }}</span>
                           </div>
                         </td>
@@ -215,7 +193,7 @@
                   </template>
                   <tr v-if="filasPaginadas.length === 0">
                     <td colspan="5" class="py-5 text-center text-muted border-0 bg-white">
-                      <span class="material-icons d-block fs-1 mb-2">inbox</span>
+                      <i class="bi bi-inbox d-block fs-1 mb-2"></i>
                       <p class="m-0 fw-bold">{{ hayFiltrosActivos ? 'No hay valores que coincidan con los filtros.' : 'No hay valores cargados.' }}</p>
                     </td>
                   </tr>
@@ -245,19 +223,19 @@
                   </div>
                   <div class="d-flex gap-2">
                     <button @click="abrirModalEditar(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-sm btn-outline-primary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                      <span class="material-icons" style="font-size:16px;">edit</span> Editar
+                      <i class="bi bi-pencil" style="font-size:16px;"></i> Editar
                     </button>
                     <button @click="abrirModalHistorial(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                      <span class="material-icons" style="font-size:16px;">history</span> Historial
+                      <i class="bi bi-clock-history" style="font-size:16px;"></i> Historial
                     </button>
                     <button v-if="f.admiteSubconceptos" @click="abrirModalSub(f)" class="btn btn-sm btn-outline-success px-2" aria-label="Agregar subconcepto">
-                      <span class="material-icons" style="font-size:16px;">playlist_add</span>
+                      <i class="bi bi-journal-plus" style="font-size:16px;"></i>
                     </button>
                     <button v-if="f.editable" @click="abrirModalRenombrar(f)" class="btn btn-sm btn-outline-primary px-2" aria-label="Renombrar">
-                      <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
+                      <i class="bi bi-pencil-square" style="font-size:16px;"></i>
                     </button>
                     <button v-if="f.editable" @click="confirmarEliminarConcepto(f)" class="btn btn-sm btn-outline-danger px-2" aria-label="Eliminar">
-                      <span class="material-icons" style="font-size:16px;">delete</span>
+                      <i class="bi bi-trash" style="font-size:16px;"></i>
                     </button>
                   </div>
                 </div>
@@ -275,16 +253,16 @@
                   </div>
                   <div class="d-flex align-items-center gap-1">
                     <button v-if="f.admiteSubconceptos" @click.stop="abrirModalSub(f)" class="btn btn-sm btn-light border p-1 text-success" aria-label="Agregar subconcepto">
-                      <span class="material-icons" style="font-size:16px;">playlist_add</span>
+                      <i class="bi bi-journal-plus" style="font-size:16px;"></i>
                     </button>
                     <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-sm btn-light border p-1 text-primary" aria-label="Renombrar">
-                      <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
+                      <i class="bi bi-pencil-square" style="font-size:16px;"></i>
                     </button>
                     <button v-if="f.editable" @click.stop="confirmarEliminarConcepto(f)" class="btn btn-sm btn-light border p-1 text-danger" aria-label="Eliminar">
-                      <span class="material-icons" style="font-size:16px;">delete</span>
+                      <i class="bi bi-trash" style="font-size:16px;"></i>
                     </button>
                     <span class="badge" :class="claseEstado(f.estado)">{{ f.definidos }}/{{ f.hijos.length }}</span>
-                    <span class="material-icons text-muted" style="font-size:20px;">{{ estaExpandido(f) ? 'expand_less' : 'expand_more' }}</span>
+                    <i :class="['bi text-muted', estaExpandido(f) ? 'bi-chevron-up' : 'bi-chevron-down']" style="font-size:20px;"></i>
                   </div>
                 </div>
                 <div v-if="estaExpandido(f)" class="card-body pt-0 px-3 pb-3 d-flex flex-column gap-2">
@@ -298,16 +276,16 @@
                     </div>
                     <div class="d-flex gap-2">
                       <button @click="abrirModalEditar(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-sm btn-outline-primary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                        <span class="material-icons" style="font-size:16px;">edit</span> Editar
+                        <i class="bi bi-pencil" style="font-size:16px;"></i> Editar
                       </button>
                       <button @click="abrirModalHistorial(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                        <span class="material-icons" style="font-size:16px;">history</span> Historial
+                        <i class="bi bi-clock-history" style="font-size:16px;"></i> Historial
                       </button>
                       <button v-if="h.editable" @click="abrirModalRenombrar(h)" class="btn btn-sm btn-outline-primary px-2" aria-label="Renombrar">
-                        <span class="material-icons" style="font-size:16px;">drive_file_rename_outline</span>
+                        <i class="bi bi-pencil-square" style="font-size:16px;"></i>
                       </button>
                       <button v-if="h.editable" @click="confirmarEliminarConcepto(h)" class="btn btn-sm btn-outline-danger px-2" aria-label="Eliminar">
-                        <span class="material-icons" style="font-size:16px;">delete</span>
+                        <i class="bi bi-trash" style="font-size:16px;"></i>
                       </button>
                     </div>
                   </div>
@@ -315,7 +293,7 @@
               </div>
               </template>
               <div v-if="filasPaginadas.length === 0" class="text-center py-5 text-muted">
-                <span class="material-icons d-block fs-1 mb-2">inbox</span>
+                <i class="bi bi-inbox d-block fs-1 mb-2"></i>
                 <p class="m-0 fw-bold">{{ hayFiltrosActivos ? 'No hay valores que coincidan con los filtros.' : 'No hay valores cargados.' }}</p>
               </div>
             </div>
@@ -446,20 +424,20 @@
 
           <div class="d-flex flex-column gap-2">
             <div v-for="(sub, i) in formNuevo.subconceptos" :key="sub.uid" class="d-flex gap-2 align-items-start bg-light border rounded p-2">
-              <span class="material-icons text-muted mt-1" style="font-size:16px;">subdirectory_arrow_right</span>
+              <i class="bi bi-arrow-return-right text-muted mt-1" style="font-size:16px;"></i>
               <div class="flex-grow-1">
                 <input v-model="sub.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none mb-1" :placeholder="'Subconcepto ' + (i + 1)" required>
                 <input v-model.number="sub.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" placeholder="Valor ($) — opcional">
               </div>
               <button type="button" @click="quitarSubconcepto(i)" :disabled="formNuevo.subconceptos.length === 1"
                       class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Quitar">
-                <span class="material-icons" style="font-size:16px;">delete</span>
+                <i class="bi bi-trash" style="font-size:16px;"></i>
               </button>
             </div>
           </div>
 
           <button type="button" @click="agregarSubconcepto" class="btn btn-sm btn-outline-danger fw-bold mt-2 d-flex align-items-center gap-1">
-            <span class="material-icons" style="font-size:16px;">add</span> Agregar subconcepto
+            <i class="bi bi-plus-lg" style="font-size:16px;"></i> Agregar subconcepto
           </button>
         </div>
       </form>
@@ -494,20 +472,20 @@
 
         <div class="d-flex flex-column gap-2">
           <div v-for="(sub, i) in formSub.subconceptos" :key="sub.uid" class="d-flex gap-2 align-items-start bg-light border rounded p-2">
-            <span class="material-icons text-muted mt-1" style="font-size:16px;">subdirectory_arrow_right</span>
+            <i class="bi bi-arrow-return-right text-muted mt-1" style="font-size:16px;"></i>
             <div class="flex-grow-1">
               <input v-model="sub.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none mb-1" :placeholder="'Subconcepto ' + (i + 1)" required>
               <input v-model.number="sub.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" placeholder="Valor ($) — opcional">
             </div>
             <button type="button" @click="formSub.subconceptos.splice(i, 1)" :disabled="formSub.subconceptos.length === 1"
                     class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Quitar">
-              <span class="material-icons" style="font-size:16px;">delete</span>
+              <i class="bi bi-trash" style="font-size:16px;"></i>
             </button>
           </div>
         </div>
 
         <button type="button" @click="formSub.subconceptos.push(subVacio())" class="btn btn-sm btn-outline-danger fw-bold mt-1 align-self-start d-flex align-items-center gap-1">
-          <span class="material-icons" style="font-size:16px;">add</span> Agregar subconcepto
+          <i class="bi bi-plus-lg" style="font-size:16px;"></i> Agregar subconcepto
         </button>
       </form>
 
@@ -557,14 +535,8 @@
         </div>
       </template>
 
-      <div v-if="cargandoHistorial" class="text-center py-4">
-        <span class="spinner-border text-danger"></span>
-        <p class="text-muted mt-2 small fw-bold mb-0">Cargando historial...</p>
-      </div>
-      <div v-else-if="historial.length === 0" class="text-center py-4 text-muted">
-        <span class="material-icons d-block mb-2 fs-1">inbox</span>
-        <p class="mb-0 fw-bold">Sin registros previos.</p>
-      </div>
+      <EstadoCargando v-if="cargandoHistorial" texto="Cargando historial" />
+      <EstadoVacio v-else-if="historial.length === 0" icono="bi-inbox" titulo="Sin registros previos" />
       <div v-else class="table-responsive border rounded shadow-sm tabla-sin-lineas">
         <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.75rem;">
           <thead class="table-light">
@@ -604,6 +576,9 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, onMounted, inject, watch } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'

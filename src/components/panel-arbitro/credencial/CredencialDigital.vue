@@ -94,7 +94,7 @@
 </template>
 
 <script setup>
-import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, onMounted } from 'vue';
 import { api } from '@/api/api';
 import html2canvas from 'html2canvas';

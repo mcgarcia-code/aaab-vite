@@ -7,7 +7,7 @@
 
 <script setup>
 import { useHead } from '@vueuse/head'
-import ListaModulos from '@/components/panel-arbitro/ListaModulos.vue'
+import ListaModulos from '@/components/comunes/ListaModulos.vue'
 
 useHead({
   title: 'Coordinadores | AAAB',

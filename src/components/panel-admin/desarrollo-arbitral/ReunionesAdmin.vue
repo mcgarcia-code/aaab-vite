@@ -6,11 +6,8 @@
         <div class="card-header bg-white py-3 border-bottom">
           <div class="row g-3 align-items-center">
             <div class="col-12 col-xl-auto">
-              <div class="border-start border-danger border-5 ps-3">
-                <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-                  <i class="bi bi-people-fill me-1"></i> Gestión de Reuniones
-                </h4>
-                <span class="text-muted small d-block mt-1">
+              <div>
+                <p class="seccion-descripcion">
                   <template v-if="modoReunion && !cargandoArbitros">
                     {{ reunionActual?.titulo }}
                     <span v-if="reunionActual?.nombreGrupo" class="fst-italic"> · {{ reunionActual.nombreGrupo }}</span>
@@ -19,8 +16,8 @@
                     <span v-if="resumenReunionActual.ausentes"    class="ms-1 badge rounded-pill bg-secondary">✗ {{ resumenReunionActual.ausentes }}</span>
                     <span v-if="resumenReunionActual.sinRegistro" class="ms-1 badge rounded-pill bg-light text-muted border">— {{ resumenReunionActual.sinRegistro }}</span>
                   </template>
-                  <template v-else>Reuniones Mensuales — Todos los grupos · {{ totalFiltrados }} árbitros</template>
-                </span>
+                  <template v-else>Presentes y ausentes · Todos los grupos · {{ totalFiltrados }} árbitros</template>
+                </p>
                 <span v-if="modoReunion && reunionActual?.reunion" class="text-muted d-block mt-1 texto-creacion">
                   <i class="bi bi-person-badge me-1"></i>{{ textoCreacionReunion(reunionActual.reunion) }}
                 </span>
@@ -58,13 +55,9 @@
                     </label>
                   </div>
                   <div class="d-flex gap-2">
-                    <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2 flex-shrink-0 control-encabezado" aria-label="Mostrar filtros">
-                      <span class="material-icons fs-6">filter_alt</span>
-                    </button>
-                    <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 flex-shrink-0 control-encabezado" aria-label="Limpiar filtros">
-                      <span class="material-icons text-dark fs-6">filter_alt_off</span>
-                      <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-                    </button>
+                    <BotonHerramienta tipo="filtros" class="d-md-none flex-shrink-0" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
+                    <BotonHerramienta tipo="limpiar" class="flex-shrink-0" @click="limpiarFiltros" />
+                    <BotonHerramienta tipo="actualizar" class="flex-shrink-0" :cargando="cargandoInicial || cargandoArbitros" @click="recargar" />
                   </div>
                 </div>
               </div>
@@ -101,7 +94,7 @@
               </select>
             </div>
             <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -124,11 +117,7 @@
                   </th>
                 </tr>
                 <tr class="bg-light">
-                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
-                    <button @click="recargar" class="btn btn-sm btn-light border rounded text-secondary shadow-sm px-2 py-1" aria-label="Recargar">
-                      <i class="bi bi-arrow-clockwise"></i>
-                    </button>
-                  </td>
+                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id"></td>
                   <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
                   <td class="p-2 border-bottom border-2 col-fija col-apellido">
                     <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
@@ -171,7 +160,7 @@
                 </tr>
                 <tr v-else-if="!arbitrosPaginados.length">
                   <td colspan="7" class="text-center py-4 text-muted">
-                    <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">search_off</span>
+                    <i class="bi bi-search opacity-50 d-block mb-2" style="font-size: 32px;"></i>
                     <span class="fw-bold">No se encontraron árbitros.</span>
                   </td>
                 </tr>
@@ -188,7 +177,7 @@
                   <td class="text-center col-fija col-acciones">
                     <div class="d-flex justify-content-center gap-1">
                       <button @click="verDetalleArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver historial" aria-label="Ver historial">
-                        <span class="material-icons" style="font-size:16px;">manage_search</span>
+                        <i class="bi bi-search" style="font-size:16px;"></i>
                       </button>
                     </div>
                   </td>
@@ -243,10 +232,7 @@
           </div>
 
           <div class="d-md-none p-3 bg-light">
-            <div v-if="cargandoInicial || cargandoArbitros" class="text-center p-4 bg-white rounded-3 shadow-sm border">
-              <div class="spinner-border text-danger spinner-border-sm" role="status"></div>
-              <p class="m-0 mt-2 small fw-bold text-muted">Cargando datos...</p>
-            </div>
+            <EstadoCargando v-if="cargandoInicial || cargandoArbitros" texto="Cargando datos" />
             <template v-else>
               <div
                 v-for="a in arbitrosPaginados"
@@ -279,7 +265,7 @@
                       <ResumenAsistencia :resumen="resumenAsistencia(a.id)" :mobile="true" />
                     </div>
                     <button @click="verDetalleArbitro(a)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center" aria-label="Ver historial">
-                      <span class="material-icons" style="font-size: 18px;">manage_search</span>
+                      <i class="bi bi-search" style="font-size: 18px;"></i>
                     </button>
                   </div>
 
@@ -310,10 +296,7 @@
                 </div>
               </div>
 
-              <div v-if="!arbitrosPaginados.length" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
-                <p class="text-muted m-0 fw-bold">No se encontraron árbitros.</p>
-              </div>
+              <EstadoVacio v-if="!arbitrosPaginados.length" icono="bi-search" titulo="No se encontraron árbitros" />
             </template>
           </div>
 
@@ -360,14 +343,7 @@
             >
               <option v-for="a in aniosDisertantes" :key="a" :value="a">{{ a }}</option>
             </select>
-            <button
-              @click="exportarExcelDisertantes"
-              class="btn btn-success shadow-sm py-2 d-flex align-items-center justify-content-center gap-2 text-white border-0 flex-shrink-0"
-              :disabled="cargandoDisertantes || !filasDisertantesFiltradas.length"
-            >
-              <span class="material-icons fs-6">download</span>
-              <span class="fw-bold d-none d-md-inline small">Excel</span>
-            </button>
+            <BotonHerramienta tipo="excel" :disabled="cargandoDisertantes || !filasDisertantesFiltradas.length" @click="exportarExcelDisertantes" />
           </div>
         </div>
 
@@ -378,7 +354,7 @@
           </div>
 
           <div v-else-if="!filasDisertantesFiltradas.length" class="text-center py-5 text-muted">
-            <span class="material-icons opacity-50 d-block mb-2" style="font-size: 36px;">event_busy</span>
+            <i class="bi bi-calendar-x opacity-50 d-block mb-2" style="font-size: 36px;"></i>
             <span class="fw-bold small">No hay reuniones{{ mesDisertantes ? ' en el mes elegido' : '' }}.</span>
           </div>
 
@@ -473,10 +449,7 @@
         <div class="mt-2 text-muted fw-bold small">Cargando historial...</div>
       </div>
 
-      <div v-else-if="!reunionesDelArbitroDetalle.length" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
-        <span class="material-icons d-block mb-2" style="font-size: 48px; color: #cbd5e1;">history_toggle_off</span>
-        <p class="mb-0 fw-bold">No hay reuniones registradas para este árbitro.</p>
-      </div>
+      <EstadoVacio v-else-if="!reunionesDelArbitroDetalle.length" icono="bi-clock-history" titulo="No hay reuniones registradas para este árbitro" />
 
       <div v-else>
         <div class="d-flex justify-content-end mb-3" v-if="añosDetalleArbitro.length">
@@ -520,7 +493,7 @@
         </div>
 
         <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-warning">
-          <span class="material-icons text-warning-emphasis me-2">event_note</span>
+          <i class="bi bi-calendar-event text-warning-emphasis me-2"></i>
           <h6 class="fw-bold m-0 text-dark text-uppercase">Reuniones</h6>
         </div>
         <div class="row g-2">
@@ -549,6 +522,9 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h } from 'vue'
 import { api } from '@/api/api'

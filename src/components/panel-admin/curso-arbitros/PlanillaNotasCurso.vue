@@ -1,30 +1,22 @@
 <template>
   <!-- Planilla de notas del curso: alumnos x exámenes (solapa Planilla de Exámenes del Curso) -->
   <div>
-    <div v-if="cargandoPlanilla" class="text-center p-5"><span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando planilla...</p></div>
+    <EstadoCargando v-if="cargandoPlanilla" texto="Cargando planilla" />
     <template v-else>
               <!-- Barra de herramientas: búsqueda + descargar + leyenda, igual que la Planilla General -->
               <div class="d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
                 <div class="busqueda-wrap">
-                  <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
+                  <input v-model="filtroAlumno" class="form-control shadow-none control-barra" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
                   <button v-if="filtroAlumno" class="btn-limpiar-busqueda" @click="filtroAlumno = ''" title="Limpiar búsqueda" type="button">
                     <i class="bi bi-x-lg"></i>
                   </button>
                 </div>
-                <button
-                  type="button"
-                  @click="descargarExcelPlanilla"
-                  class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1"
-                  :disabled="!alumnosPlanilla.length || generandoExcel"
-                >
-                  <span v-if="generandoExcel" class="spinner-border spinner-border-sm"></span>
-                  <i v-else class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-                </button>
+                <BotonHerramienta tipo="excel" :cargando="generandoExcel" :disabled="!alumnosPlanilla.length || generandoExcel" @click="descargarExcelPlanilla" />
                 <span class="text-muted text-nowrap">{{ alumnosPlanilla.length }} alumnos · {{ columnasPlanilla.length }} exámenes</span>
                 <button
                   v-if="totalInconsistencias || soloInconsistencias"
                   type="button"
-                  class="btn btn-sm fw-bold d-flex align-items-center gap-1"
+                  class="btn fw-bold d-flex align-items-center gap-2 control-barra"
                   :class="soloInconsistencias ? 'btn-warning' : 'btn-outline-warning text-dark'"
                   title="Nota del examen que no coincide con la asistencia de la clase"
                   @click="soloInconsistencias = !soloInconsistencias"
@@ -114,6 +106,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { api } from '@/api/api'
 import { fechaDMA } from '@/utils/fechas'

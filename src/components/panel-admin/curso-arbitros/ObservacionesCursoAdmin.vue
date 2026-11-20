@@ -4,29 +4,14 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-clipboard-data-fill me-1"></i> Observaciones del Curso
-            </h4>
-            <span class="text-muted small d-block mt-1">{{ observacionesFiltradas.length }} observaciones de partidos en {{ anio }}</span>
-          </div>
+          <p class="seccion-descripcion">Observaciones de los aspirantes · {{ observacionesFiltradas.length }} observaciones de partidos en {{ anio }}</p>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
-            <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark" style="width: 110px;" aria-label="Año">
+            <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark control-barra" style="width: 110px;" aria-label="Año">
               <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
             </select>
-            <button @click="cargarObservaciones" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
-            <button @click="abrirNueva" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
-              <span class="material-icons fs-6">add_box</span>
-              <span class="fw-bold d-none d-md-inline small">Nueva observación</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargarObservaciones" />
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
+            <BotonHerramienta tipo="nuevo" texto="Nueva observación" icono="bi-plus-square" @click="abrirNueva" />
           </div>
         </div>
 
@@ -55,7 +40,7 @@
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">
-          <div v-if="cargando" class="text-center p-5"><span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando observaciones...</p></div>
+          <EstadoCargando v-if="cargando" texto="Cargando observaciones" />
           <template v-else>
             <div class="d-none d-md-block table-responsive border rounded shadow-sm">
               <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.78rem;">
@@ -77,13 +62,13 @@
                     <td class="ps-3 text-center">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="abrirVer(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-success" title="Ver y revisar" aria-label="Ver y revisar">
-                          <span class="material-icons" style="font-size:16px;">visibility</span>
+                          <i class="bi bi-eye" style="font-size:16px;"></i>
                         </button>
                         <button @click="abrirEditar(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar" aria-label="Editar">
-                          <span class="material-icons" style="font-size:16px;">edit</span>
+                          <i class="bi bi-pencil" style="font-size:16px;"></i>
                         </button>
                         <button @click="confirmarEliminar(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Borrar" aria-label="Borrar">
-                          <span class="material-icons" style="font-size:16px;">delete</span>
+                          <i class="bi bi-trash" style="font-size:16px;"></i>
                         </button>
                       </div>
                     </td>
@@ -98,7 +83,7 @@
                   </tr>
                   <tr v-if="!observacionesFiltradas.length">
                     <td colspan="9" class="text-center py-5 text-muted border-0">
-                      <span class="material-icons d-block fs-1 mb-2 opacity-50">search_off</span>
+                      <i class="bi bi-search d-block fs-1 mb-2 opacity-50"></i>
                       <span class="fw-bold">No hay observaciones para mostrar.</span>
                     </td>
                   </tr>
@@ -201,13 +186,15 @@
       </div>
       <template #footer="{ cerrar }">
         <button type="button" @click="editarDesdeVer" class="btn btn-outline-primary rounded-pill px-4 fw-bold w-100 mb-2 mb-sm-0">EDITAR</button>
-        <button type="button" @click="cerrar" class="btn btn-dark rounded-pill px-4 fw-bold w-100">CERRAR</button>
+        <button type="button" @click="cerrar" class="btn btn-danger rounded-pill px-4 fw-bold w-100">CERRAR</button>
       </template>
     </ModalBase>
   </div>
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'

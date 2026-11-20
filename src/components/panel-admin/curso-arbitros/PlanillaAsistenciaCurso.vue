@@ -1,26 +1,16 @@
 <template>
   <!-- Planilla de asistencia del curso: alumnos x clases dictadas (solapa de Clases y Asistencia) -->
   <div>
-    <div v-if="cargandoPlanilla || cargandoClases" class="text-center p-5">
-      <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando planilla...</p>
-    </div>
+    <EstadoCargando v-if="cargandoPlanilla || cargandoClases" texto="Cargando planilla" />
     <template v-else>
       <div class="d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
         <div class="busqueda-wrap">
-          <input v-model="filtroAlumno" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
+          <input v-model="filtroAlumno" class="form-control shadow-none control-barra" placeholder="BUSCAR ALUMNO..." aria-label="Buscar alumno">
           <button v-if="filtroAlumno" class="btn-limpiar-busqueda" @click="filtroAlumno = ''" title="Limpiar búsqueda" type="button">
             <i class="bi bi-x-lg"></i>
           </button>
         </div>
-        <button
-          type="button"
-          @click="descargarExcelAsistencia"
-          class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1"
-          :disabled="!alumnosPlanilla.length || !clasesPlanilla.length || generandoExcel"
-        >
-          <span v-if="generandoExcel" class="spinner-border spinner-border-sm"></span>
-          <i v-else class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-        </button>
+        <BotonHerramienta tipo="excel" :cargando="generandoExcel" :disabled="!alumnosPlanilla.length || !clasesPlanilla.length || generandoExcel" @click="descargarExcelAsistencia" />
         <span class="text-muted text-nowrap">{{ alumnosPlanilla.length }} alumnos · {{ clasesPlanilla.length }} clases dictadas</span>
         <span class="ms-auto d-flex flex-wrap gap-3">
           <span><span class="cuadrito cuadrito-verde"></span> Presente (P)</span>
@@ -83,6 +73,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { api } from '@/api/api'
 import { fechaDMA } from '@/utils/fechas'

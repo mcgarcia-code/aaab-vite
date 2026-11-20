@@ -6,37 +6,20 @@
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-clipboard-check me-1"></i> Solicitudes Institucionales
-            </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ solicitudesFiltradas.length }} de {{ solicitudes.length }} solicitudes</span>
-          </div>
+          <p class="seccion-descripcion">Pedidos de los coordinadores · Total: {{ solicitudesFiltradas.length }} de {{ solicitudes.length }} solicitudes</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <!-- Botón Actualizar -->
-            <button @click="cargarSolicitudes" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargarSolicitudes" />
 
             <!-- Botón Filtros (Solo Móvil) -->
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
 
             <!-- Botón Limpiar filtros -->
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Limpiar filtros">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
 
             <!-- Botón Agregar Solicitud -->
-            <button @click="abrirModalNueva" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger">
-              <span class="material-icons fs-6">add_circle</span>
-              <span class="fw-bold d-none d-md-inline small">Agregar Solicitud</span>
-            </button>
+            <BotonHerramienta tipo="nuevo" texto="Agregar solicitud" icono="bi-plus-circle" @click="abrirModalNueva" />
           </div>
         </div>
 
@@ -101,7 +84,7 @@
             </div>
 
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -109,10 +92,7 @@
         <div class="card-body p-0 p-md-3 bg-white">
 
           <!-- SPINNER DE CARGA -->
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando solicitudes...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando solicitudes" />
 
           <template v-else>
 
@@ -139,10 +119,10 @@
                     <td class="text-center">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="abrirModalEditar(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
-                          <span class="material-icons" style="font-size:16px;">edit</span>
+                          <i class="bi bi-pencil" style="font-size:16px;"></i>
                         </button>
                         <button @click="confirmarEliminar(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
-                          <span class="material-icons" style="font-size:16px;">delete</span>
+                          <i class="bi bi-trash" style="font-size:16px;"></i>
                         </button>
                       </div>
                     </td>
@@ -181,7 +161,7 @@
                   </tr>
                   <tr v-if="solicitudesPaginadas.length === 0">
                     <td colspan="10" class="py-5 text-center text-muted border-0 bg-white">
-                      <span class="material-icons d-block fs-1 mb-2">inbox</span>
+                      <i class="bi bi-inbox d-block fs-1 mb-2"></i>
                       <p class="m-0 fw-bold">{{ hayFiltrosActivos ? 'No hay solicitudes que coincidan con los filtros.' : 'No hay solicitudes cargadas.' }}</p>
                     </td>
                   </tr>
@@ -194,7 +174,7 @@
               <div v-for="s in solicitudesPaginadas" :key="'mob-'+s.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
                 <div class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 rounded-top-3 d-flex justify-content-between align-items-start">
                   <div class="text-dark fw-bold d-flex align-items-center gap-2" style="font-size: 1rem;">
-                    <span class="material-icons text-primary" style="font-size: 20px;">person</span>
+                    <i class="bi bi-person text-primary" style="font-size: 20px;"></i>
                     <div>
                       <div>{{ s.apellido }}, {{ s.nombre }}</div>
                     </div>
@@ -226,16 +206,16 @@
                   </div>
                   <div class="d-flex gap-2">
                     <button @click="abrirModalEditar(s)" class="btn btn-sm btn-outline-primary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                      <span class="material-icons" style="font-size:16px;">edit</span> Editar
+                      <i class="bi bi-pencil" style="font-size:16px;"></i> Editar
                     </button>
                     <button @click="confirmarEliminar(s)" class="btn btn-sm btn-outline-danger flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                      <span class="material-icons" style="font-size:16px;">delete</span> Eliminar
+                      <i class="bi bi-trash" style="font-size:16px;"></i> Eliminar
                     </button>
                   </div>
                 </div>
               </div>
               <div v-if="solicitudesPaginadas.length === 0" class="text-center py-5 text-muted">
-                <span class="material-icons d-block fs-1 mb-2">inbox</span>
+                <i class="bi bi-inbox d-block fs-1 mb-2"></i>
                 <p class="m-0 fw-bold">{{ hayFiltrosActivos ? 'No hay solicitudes que coincidan con los filtros.' : 'No hay solicitudes cargadas.' }}</p>
               </div>
             </div>
@@ -408,6 +388,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { api } from '@/api/api'

@@ -6,23 +6,13 @@
 
         <!-- ============ HEADER ============ -->
         <div class="card-header bg-white py-3 border-bottom">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-table me-1"></i> Planilla General de Árbitros
-            </h4>
-            <span class="text-muted small d-block mt-1">
-              Asambleas, recuperatorios y reuniones. Hacé clic en una celda de Teórico o Físico para editarla.
-            </span>
-          </div>
+          <p class="seccion-descripcion">Asambleas, recuperatorios y reuniones</p>
         </div>
 
         <!-- ============ BODY ============ -->
         <div class="card-body p-0">
 
-          <div v-if="cargando" class="text-center py-5">
-            <div class="spinner-border text-danger" role="status"></div>
-            <p class="text-muted mt-3 mb-0">Cargando planilla...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando planilla" />
 
           <template v-else>
 
@@ -38,7 +28,7 @@
               <div class="busqueda-wrap">
                 <input
                   v-model="busqueda"
-                  class="form-control form-control-sm shadow-none"
+                  class="form-control shadow-none control-barra"
                   placeholder="BUSCAR ÁRBITRO..."
                 >
                 <button
@@ -51,13 +41,7 @@
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
-              <button
-                @click="descargarExcel"
-                class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1"
-                :disabled="cargando"
-              >
-                <i class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-              </button>
+              <BotonHerramienta tipo="excel" :disabled="cargando" @click="descargarExcel" />
               <span class="ms-auto d-flex flex-wrap gap-3">
                 <span><span class="cuadrito bg-success-subtle border-success-subtle"></span> Aprobado / Teórico ≥ 75 / Presente</span>
                 <span><span class="cuadrito bg-danger-subtle border-danger-subtle"></span> Desaprobado / Teórico ≤ 74 / Ausente a reunión</span>
@@ -185,6 +169,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'

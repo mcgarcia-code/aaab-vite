@@ -183,7 +183,7 @@
 </template>
 
 <script setup>
-import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, onMounted, inject, computed, watch } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';

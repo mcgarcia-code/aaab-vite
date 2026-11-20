@@ -24,6 +24,7 @@
             <span class="lista-titulo">{{ item.title }}</span>
             <span v-if="item.desc" class="lista-desc">{{ item.desc }}</span>
           </span>
+          <span v-if="item.badge" class="lista-badge" :aria-label="`${item.badge} pendientes`">{{ item.badge }}</span>
           <i :class="['bi', item.href ? 'bi-box-arrow-up-right' : 'bi-chevron-right', 'lista-flecha']"></i>
         </component>
       </div>
@@ -33,7 +34,8 @@
 
 <script setup>
 // Lista agrupada de módulos (estilo "ajustes del celular").
-// grupos: [{ categoria?, icono?, items: [{ to | href, title, desc, icon }] }]
+// grupos: [{ categoria?, icono?, items: [{ to | href, title, desc, icon, badge? }] }]
+// badge: número de pendientes (se muestra en rojo a la derecha)
 // enColumnas: reparte las categorías en 2 columnas (tablet) y 3 (escritorio)
 defineProps({
   grupos: { type: Array, required: true },
@@ -122,6 +124,20 @@ defineProps({
   color: #475569;
   margin-top: 2px;
   line-height: 1.3;
+}
+
+.lista-badge {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .lista-flecha {

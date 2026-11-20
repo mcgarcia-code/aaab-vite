@@ -1,84 +1,121 @@
 <template>
   <div class="panel-layout">
-    <nav class="navbar navbar-dark bg-dark px-3 shadow-sm mb-4">
-      <div class="container-fluid d-flex justify-content-between align-items-center">
-        <!-- Clases de texto responsivo fs-6 en celular, fs-5 en PC -->
-        <span class="navbar-brand fw-bold fs-6 fs-md-5">Panel Gestión AAAB</span>
-        <button @click="cerrarSesion" class="btn btn-outline-danger btn-sm px-3 rounded-pill fw-bold">Cerrar Sesión</button>
-      </div>
-    </nav>
+    <div class="panel-cuerpo">
 
-    <!-- Padding lateral dinámico -->
-    <div class="container-fluid px-3 px-md-4 py-2">
-      <div class="mx-auto">
-        <div class="user-header d-flex align-items-center mb-4 p-3 p-md-4 rounded-4 shadow">
-          <!-- flex-shrink-0 evita que el círculo se deforme si el nombre es muy largo -->
-          <div class="icon-admin-circle me-3 shadow-sm flex-shrink-0">
-             <i class="bi bi-person-workspace text-white"></i>
-          </div>
-          <div class="overflow-hidden">
-            <!-- Tipografía responsiva fs-5 a fs-md-3 -->
-            <h2 class="text-white fw-bold m-0 text-capitalize text-truncate fs-5 fs-md-3" style="line-height: 1.2;">
-              Hola, {{ admin.nombre || 'Administrador' }} 👋
-            </h2>
-            <span class="badge bg-danger mt-1 px-2 py-1 shadow-sm">Nivel: {{ etiquetaRol(admin.rol) }}</span>
-          </div>
-        </div>
+      <!-- ============ MENÚ LATERAL (solo escritorio) ============ -->
+      <MenuLateral
+        inicio="/panel-admin"
+        :grupos="gruposModulos"
+        :nombre="nombreAdmin"
+        :subtitulo="etiquetaRol(admin.rol)"
+        clave-almacenamiento="panelAdmin.menuColapsado"
+        @salir="cerrarSesion"
+      />
 
-        <div v-if="route.name !== 'AdminInicio'" class="mb-4">
-            <button @click="handleVolver" class="btn-volver shadow-sm">
-            <i class="bi bi-arrow-left me-2"></i>
-                {{ esRutaProfunda ? 'Volver atrás' : 'Volver al Menú' }}
+      <div class="panel-principal">
+        <!-- ============ HEADER UNIFICADO ============ -->
+        <header class="panel-header">
+          <div class="panel-header-inner d-flex align-items-center gap-2 px-3 px-md-4 py-2">
+
+            <!-- Inicio: fecha (celular) + saludo + cargo -->
+            <div v-if="esInicio" class="min-w-0">
+              <span class="fecha-hoy d-lg-none">{{ fechaHoy }}</span>
+              <h1 class="titulo-seccion text-truncate m-0">Hola, {{ primerNombre }}</h1>
+              <span class="cargo">{{ etiquetaRol(admin.rol) }}</span>
+            </div>
+
+            <!-- Secciones: flecha para volver + título -->
+            <template v-else>
+              <button type="button" class="btn-icono" @click="handleVolver" :aria-label="esRutaProfunda ? 'Volver atrás' : 'Volver al inicio'">
+                <i class="bi bi-arrow-left"></i>
+              </button>
+              <h1 class="titulo-seccion text-truncate m-0">{{ tituloSeccion }}</h1>
+            </template>
+
+            <!-- Celular: cerrar sesión (en escritorio está en el menú lateral) -->
+            <button v-if="esInicio" type="button" class="btn-icono ms-auto d-lg-none" @click="cerrarSesion" aria-label="Cerrar sesión" title="Cerrar sesión">
+              <i class="bi bi-box-arrow-right"></i>
             </button>
-        </div>
+          </div>
+        </header>
 
-        <RouterView />
+        <div class="container-fluid panel-contenido px-3 px-md-4 py-2">
+          <RouterView />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { RouterView, useRoute, useRouter } from 'vue-router';
-import { auth } from '../../api/auth';
-import { useHead } from '@vueuse/head';
-import { etiquetaRol } from '@/config/modulosAdmin'
+import { ref, computed, onMounted } from 'vue'
+import { RouterView, useRoute, useRouter } from 'vue-router'
+import { auth } from '@/api/auth'
+import { useHead } from '@vueuse/head'
+import { etiquetaRol, buscarSeccionAdmin } from '@/config/modulosAdmin'
+import { useModulosAdmin } from '@/composables/useModulosAdmin'
+import MenuLateral from '@/components/comunes/MenuLateral.vue'
+import '@/assets/css/panel.css'
 
-const route = useRoute();
-const router = useRouter();
+const route = useRoute()
+const router = useRouter()
 
-// 1. Detectar si estamos en un "hijo del hijo"
-// Si la URL tiene más de 2 segmentos (ej: /panel-admin/usuarios/editar), es profunda.
+const admin = ref(auth.getUser() || {})
+
+// Capitaliza cada palabra respetando tildes y ñ
+const nombreAdmin = computed(() => {
+  const nombre = admin.value.nombre || 'Administrador'
+  return nombre.toLowerCase().replace(/(^|\s)(\S)/g, (_, espacio, letra) => espacio + letra.toUpperCase())
+})
+
+const primerNombre = computed(() => nombreAdmin.value.split(' ')[0])
+
+// Fecha de hoy para el saludo del Inicio en celular (ej. "Jueves 20 de noviembre")
+const fechaHoy = (() => {
+  const texto = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '')
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
+})()
+
+// =======================================================
+// HEADER: inicio vs secciones
+// =======================================================
+const esInicio = computed(() => route.name === 'AdminInicio')
+
+const tituloSeccion = computed(() => buscarSeccionAdmin(route.path)?.title || 'Panel de gestión')
+
+// Si la URL tiene más de 2 segmentos (ej: /panel-admin/tesoreria/aportes-pagos/valores) es una subsección
 const esRutaProfunda = computed(() => {
-  const segmentos = route.path.split('/').filter(p => p !== '');
-  return segmentos.length > 2;
-});
+  const segmentos = route.path.split('/').filter(p => p !== '')
+  return segmentos.length > 3
+})
 
-// 2. Función lógica del botón
 const handleVolver = () => {
   if (esRutaProfunda.value) {
-    router.back(); // Si es hijo de una card, simplemente vuelve atrás
+    router.back()
   } else {
-    router.push('/panel-admin'); // Si es una sección principal, vuelve al inicio
+    router.push('/panel-admin')
   }
-};
-
-const admin = ref(auth.getUser() || {});
+}
 
 const cerrarSesion = () => {
-  auth.logout();
-};
+  auth.logout()
+}
 
-onMounted(() => {
+// =======================================================
+// MÓDULOS (menú lateral) Y PENDIENTES
+// =======================================================
+const { cargarPermisos, gruposModulos, cargarPendientes } = useModulosAdmin()
+
+onMounted(async () => {
   if (auth.isLoggedIn()) {
-    admin.value = auth.getUser();
+    admin.value = auth.getUser()
   }
-});
+  await cargarPermisos(true)
+  cargarPendientes()
+})
 
-// Configuración de Head
 useHead({
-  title: 'Panel de Gestión  | AAAB',
+  title: 'Panel de Gestión | AAAB',
   meta: [
     { name: 'description', content: 'Sección de administración para el panel de inicio de árbitros AAAB.' },
     { property: 'og:title', content: 'Panel de Gestión | AAAB' },
@@ -91,50 +128,70 @@ useHead({
 
 <style scoped>
 .panel-layout {
+  position: relative;
   min-height: 100vh;
   background-color: #0f172a;
+}
+
+/* ============ ESTRUCTURA: menú lateral + contenido ============ */
+.panel-cuerpo {
+  display: flex;
+  align-items: stretch;
+}
+
+.panel-principal {
+  flex: 1 1 auto;
+  min-width: 0;
   padding-bottom: 40px;
 }
 
-.user-header {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.min-w-0 { min-width: 0; }
+
+/* ============ HEADER UNIFICADO ============ */
+.panel-header {
+  background: #0b1222;
+  border-bottom: 1px solid #1e293b;
+  position: relative;
+  z-index: 90;
+  margin-bottom: 8px;
 }
 
-/* Responsive nativo con clamp: min 50px, escala a 10vw, max 70px */
-.icon-admin-circle {
-  width: clamp(50px, 10vw, 70px);
-  height: clamp(50px, 10vw, 70px);
+.panel-header-inner {
+  min-height: 68px;
+}
+
+.titulo-seccion {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  min-width: 0;
+}
+
+.fecha-hoy {
+  display: block;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.cargo {
+  display: block;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.btn-icono {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
   border-radius: 50%;
+  border: 0;
+  background: #1e293b;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #dc2626;
-  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-size: 1.15rem;
+  transition: background 0.2s;
 }
-
-.navbar {
-  border-bottom: 2px solid #dc2626;
-}
-
-.btn-volver {
-  display: inline-flex;
-  align-items: center;
-  color: #fff;
-  text-decoration: none;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 8px 20px;
-  border-radius: 50px;
-  transition: 0.3s;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.btn-volver:hover {
-  background: #dc2626;
-  border-color: #dc2626;
-}
-
+.btn-icono:hover, .btn-icono:focus-visible { background: #334155; }
 </style>

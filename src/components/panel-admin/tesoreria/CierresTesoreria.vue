@@ -5,19 +5,10 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5 fs-md-4">
-              <i class="bi bi-calendar-check me-1"></i> Cierre Mensual
-            </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ cierres.length }} cierres realizados</span>
-          </div>
+          <p class="seccion-descripcion">Cerrar el período e historial · Total: {{ cierres.length }} cierres realizados</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <button @click="obtenerCierres" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="obtenerCierres" />
           </div>
         </div>
 
@@ -43,15 +34,9 @@
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando cierres...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando cierres" />
 
-          <div v-else-if="cierresOrdenados.length === 0" class="text-center p-5 bg-white">
-            <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 48px;">calendar_month</span>
-            <p class="text-muted m-0 fw-bold">Todavía no se realizó ningún cierre.</p>
-          </div>
+          <EstadoVacio v-else-if="cierresOrdenados.length === 0" icono="bi-calendar3" titulo="Todavía no se realizó ningún cierre" />
 
           <div v-else class="table-responsive border rounded shadow-sm">
             <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
@@ -72,18 +57,18 @@
                     <div class="dropdown">
                       <button class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" :disabled="!!descargando[c.periodo]" title="Descargar detalle" aria-label="Descargar detalle">
                         <span v-if="descargando[c.periodo]" class="spinner-border spinner-border-sm"></span>
-                        <span v-else class="material-icons align-middle" style="font-size:16px;">download</span>
+                        <i v-else class="bi bi-download align-middle" style="font-size:16px;"></i>
                       </button>
                       <ul class="dropdown-menu dropdown-menu-end shadow">
                         <li>
                           <button class="dropdown-item d-flex align-items-center gap-2" @click="descargar(c, 'pdf')">
-                            <span class="material-icons fs-6 text-danger">picture_as_pdf</span>
+                            <i class="bi bi-file-earmark-pdf fs-6 text-danger"></i>
                             <span class="small fw-bold">PDF</span>
                           </button>
                         </li>
                         <li>
                           <button class="dropdown-item d-flex align-items-center gap-2" @click="descargar(c, 'excel')">
-                            <span class="material-icons fs-6 text-success">table_view</span>
+                            <i class="bi bi-table fs-6 text-success"></i>
                             <span class="small fw-bold">Excel</span>
                           </button>
                         </li>
@@ -101,6 +86,9 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, onMounted, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
