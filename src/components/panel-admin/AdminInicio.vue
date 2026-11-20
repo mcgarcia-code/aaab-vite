@@ -73,22 +73,6 @@
       </div>
     </section>
 
-    <!-- ============ MÓDULOS (celular y tablet; en escritorio están en el menú lateral) ============ -->
-    <section class="d-lg-none d-flex flex-column gap-3">
-      <h2 class="titulo-modulos m-0">Módulos</h2>
-
-      <label class="buscador">
-        <i class="bi bi-search"></i>
-        <input v-model="busqueda" type="search" placeholder="Buscar un módulo… (ej. licencias)" aria-label="Buscar un módulo">
-        <button v-if="busqueda" type="button" class="buscador-limpiar" @click="busqueda = ''" aria-label="Borrar búsqueda">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </label>
-
-      <ListaModulos v-if="gruposFiltrados.length" :grupos="gruposFiltrados" en-columnas />
-      <p v-else class="sin-resultados">No hay módulos con “{{ busqueda }}”.</p>
-    </section>
-
   </div>
 </template>
 
@@ -97,9 +81,7 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
-import { normalizarTexto } from '@/utils/texto'
 import { useModulosAdmin } from '@/composables/useModulosAdmin'
-import ListaModulos from '@/components/comunes/ListaModulos.vue'
 
 useHead({
   title: 'Panel de Gestión | AAAB',
@@ -167,24 +149,6 @@ const proximosEventos = computed(() => {
 
 // Accesos rápidos: los primeros 4 módulos que el usuario tiene permitidos
 const accesosRapidos = computed(() => gruposModulos.value.flatMap(g => g.items).slice(0, 4))
-
-// ============ BÚSQUEDA (sin importar tildes ni mayúsculas) ============
-const busqueda = ref('')
-
-const gruposFiltrados = computed(() => {
-  const texto = normalizarTexto(busqueda.value.trim())
-  if (!texto) return gruposModulos.value
-  return gruposModulos.value
-    .map(grupo => ({
-      ...grupo,
-      items: grupo.items.filter(item =>
-        normalizarTexto(item.title).includes(texto) ||
-        normalizarTexto(item.desc).includes(texto) ||
-        normalizarTexto(grupo.categoria).includes(texto)
-      )
-    }))
-    .filter(grupo => grupo.items.length > 0)
-})
 
 // Cada vez que se vuelve al Inicio se actualizan los pendientes
 onMounted(async () => {
@@ -382,57 +346,6 @@ onMounted(async () => {
     font-size: 0.95rem;
     text-align: left;
   }
-}
-
-/* ============ MÓDULOS (celular) ============ */
-.titulo-modulos {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #fff;
-}
-
-.buscador {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 48px;
-  padding: 0 14px;
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 14px;
-  color: #94a3b8;
-}
-.buscador:focus-within { border-color: #94a3b8; }
-
-.buscador input {
-  flex: 1;
-  min-width: 0;
-  background: transparent;
-  border: 0;
-  outline: none;
-  color: #fff;
-  font-size: 1rem;
-}
-.buscador input::placeholder { color: #94a3b8; }
-.buscador input::-webkit-search-cancel-button { display: none; }
-
-.buscador-limpiar {
-  border: 0;
-  background: none;
-  color: #94a3b8;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sin-resultados {
-  margin: 0;
-  padding: 24px 0;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 0.9rem;
 }
 
 .animate__animated { animation-duration: 0.4s; }

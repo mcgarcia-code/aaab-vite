@@ -195,6 +195,9 @@ const routes = [
       // --- INFORMES ---
       { path: 'informes', name: 'InformesAdmin', component: () => import('../components/panel-admin/informes/InformesAdmin.vue'), meta: { modulo: 'informes' } },
 
+      // --- MENÚ (pestaña de la barra inferior en celular) ---
+      { path: 'menu', name: 'AdminMenu', component: () => import('../components/panel-admin/AdminMenu.vue') },
+
       // --- DESARROLLO ARBITRAL ---
 
       { path: 'desarrollo-arbitral/observaciones', name: 'ObservacionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ObservacionesAdmin.vue'), meta: { modulo: 'desarrollo' } },

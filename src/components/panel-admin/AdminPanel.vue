@@ -24,6 +24,9 @@
               <span class="cargo">{{ etiquetaRol(admin.rol) }}</span>
             </div>
 
+            <!-- Pestaña Menú (celular): es una pestaña, no lleva flecha para volver -->
+            <h1 v-else-if="esMenu" class="titulo-seccion text-truncate m-0">Menú</h1>
+
             <!-- Secciones: flecha para volver + título -->
             <template v-else>
               <button type="button" class="btn-icono" @click="handleVolver" :aria-label="esRutaProfunda ? 'Volver atrás' : 'Volver al inicio'">
@@ -31,11 +34,6 @@
               </button>
               <h1 class="titulo-seccion text-truncate m-0">{{ tituloSeccion }}</h1>
             </template>
-
-            <!-- Celular: cerrar sesión (en escritorio está en el menú lateral) -->
-            <button v-if="esInicio" type="button" class="btn-icono ms-auto d-lg-none" @click="cerrarSesion" aria-label="Cerrar sesión" title="Cerrar sesión">
-              <i class="bi bi-box-arrow-right"></i>
-            </button>
           </div>
         </header>
 
@@ -44,6 +42,9 @@
         </div>
       </div>
     </div>
+
+    <!-- ============ BARRA INFERIOR (celular y tablet) ============ -->
+    <BarraInferior :items="itemsBarraInferior" />
   </div>
 </template>
 
@@ -55,6 +56,7 @@ import { useHead } from '@vueuse/head'
 import { etiquetaRol, buscarSeccionAdmin } from '@/config/modulosAdmin'
 import { useModulosAdmin } from '@/composables/useModulosAdmin'
 import MenuLateral from '@/components/comunes/MenuLateral.vue'
+import BarraInferior from '@/components/comunes/BarraInferior.vue'
 import '@/assets/css/panel.css'
 
 const route = useRoute()
@@ -80,6 +82,7 @@ const fechaHoy = (() => {
 // HEADER: inicio vs secciones
 // =======================================================
 const esInicio = computed(() => route.name === 'AdminInicio')
+const esMenu = computed(() => route.name === 'AdminMenu')
 
 const tituloSeccion = computed(() => buscarSeccionAdmin(route.path)?.title || 'Panel de gestión')
 
@@ -104,7 +107,16 @@ const cerrarSesion = () => {
 // =======================================================
 // MÓDULOS (menú lateral) Y PENDIENTES
 // =======================================================
-const { cargarPermisos, gruposModulos, cargarPendientes } = useModulosAdmin()
+const { cargarPermisos, tienePermiso, gruposModulos, cargarPendientes, totalPendientes } = useModulosAdmin()
+
+// Barra inferior (celular): Inicio (con el total de pendientes) · Eventos (si tiene Secretaría) · Menú
+const itemsBarraInferior = computed(() => [
+  { to: '/panel-admin', label: 'Inicio', icono: 'bi-house-door', iconoActivo: 'bi-house-door-fill', exacta: true, badge: totalPendientes.value || null },
+  ...(tienePermiso('secretaria')
+    ? [{ to: '/panel-admin/secretaria/eventos-notificaciones', label: 'Eventos', icono: 'bi-calendar-event' }]
+    : []),
+  { to: '/panel-admin/menu', label: 'Menú', icono: 'bi-list' }
+])
 
 onMounted(async () => {
   if (auth.isLoggedIn()) {
@@ -142,7 +154,11 @@ useHead({
 .panel-principal {
   flex: 1 1 auto;
   min-width: 0;
-  padding-bottom: 40px;
+  /* Celular: lugar para la barra inferior fija */
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+@media (min-width: 992px) {
+  .panel-principal { padding-bottom: 40px; }
 }
 
 .min-w-0 { min-width: 0; }

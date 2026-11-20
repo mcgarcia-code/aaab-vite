@@ -62,6 +62,11 @@ export function useModulosAdmin() {
       }))
   )
 
+  // Total de pendientes (se muestra en la pestaña Inicio de la barra inferior)
+  const totalPendientes = computed(() =>
+    TIPOS_PENDIENTE.reduce((total, tipo) => total + (Number(contadores.value[tipo.clave]) || 0), 0)
+  )
+
   // Una sola consulta con todos los contadores (panel_admin/contarPendientes)
   const cargarPendientes = async () => {
     cargandoPendientes.value = true
@@ -81,6 +86,7 @@ export function useModulosAdmin() {
     gruposModulos,
     subseccionesDe,
     pendientes,
+    totalPendientes,
     cargarPendientes,
     cargandoPendientes
   }

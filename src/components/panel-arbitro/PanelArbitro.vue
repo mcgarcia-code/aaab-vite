@@ -145,28 +145,7 @@
    </div>
 
     <!-- ============ BARRA INFERIOR (celular y tablet) ============ -->
-    <nav class="barra-inferior d-lg-none" aria-label="Navegación principal">
-      <RouterLink to="/panel-arbitro" class="barra-item" exact-active-class="activo">
-        <i :class="['bi', esInicio ? 'bi-house-door-fill' : 'bi-house-door']"></i>
-        <span>Inicio</span>
-      </RouterLink>
-      <RouterLink to="/panel-arbitro/designaciones" class="barra-item" active-class="activo">
-        <i class="bi bi-calendar4-week"></i>
-        <span>Designaciones</span>
-      </RouterLink>
-      <RouterLink to="/panel-arbitro/historial-notificaciones" class="barra-item" active-class="activo"
-                  :aria-label="notificacionesNoLeidas > 0 ? `Avisos, ${notificacionesNoLeidas} sin leer` : 'Avisos'">
-        <span class="position-relative">
-          <i class="bi bi-bell"></i>
-          <span v-if="notificacionesNoLeidas > 0" class="barra-badge">{{ notificacionesNoLeidas }}</span>
-        </span>
-        <span>Avisos</span>
-      </RouterLink>
-      <RouterLink to="/panel-arbitro/menu" class="barra-item" active-class="activo">
-        <i class="bi bi-list"></i>
-        <span>Menú</span>
-      </RouterLink>
-    </nav>
+    <BarraInferior :items="itemsBarraInferior" />
 
     <div v-if="mostrarFotoAmpliada" class="foto-overlay" @click="mostrarFotoAmpliada = false">
       <button class="foto-overlay-cerrar" @click.stop="mostrarFotoAmpliada = false" aria-label="Cerrar">
@@ -223,6 +202,7 @@ import '@/assets/css/panel.css'
 import ToastNotificacion from '@/components/ToastNotificacion.vue'
 import { useModulosArbitro } from '@/composables/useModulosArbitro'
 import MenuLateral from '@/components/comunes/MenuLateral.vue'
+import BarraInferior from '@/components/comunes/BarraInferior.vue'
 
 // Módulos del menú lateral (escritorio)
 const { gruposModulos } = useModulosArbitro()
@@ -267,6 +247,14 @@ const primerNombre = computed(() => nombreFormateado.value.split(' ')[0] || '')
 // =======================================================
 const esInicio = computed(() => route.name === 'PanelInicio')
 const esMenu = computed(() => route.name === 'PanelMenu')
+
+// Barra inferior (celular): Inicio · Designaciones · Avisos (notificaciones sin leer) · Menú
+const itemsBarraInferior = computed(() => [
+  { to: '/panel-arbitro', label: 'Inicio', icono: 'bi-house-door', iconoActivo: 'bi-house-door-fill', exacta: true },
+  { to: '/panel-arbitro/designaciones', label: 'Designaciones', icono: 'bi-calendar4-week' },
+  { to: '/panel-arbitro/historial-notificaciones', label: 'Avisos', icono: 'bi-bell', badge: notificacionesNoLeidas.value || null },
+  { to: '/panel-arbitro/menu', label: 'Menú', icono: 'bi-list' }
+])
 
 // Fecha de hoy para el saludo del Inicio en celular (ej. "Jueves 20 de noviembre")
 const fechaHoy = (() => {
@@ -579,56 +567,6 @@ useHead({
 }
 @media (min-width: 992px) {
   .panel-principal { padding-bottom: 40px; }
-}
-
-/* ============ BARRA INFERIOR (celular y tablet) ============ */
-.barra-inferior {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1030;
-  display: flex;
-  padding: 0 6px env(safe-area-inset-bottom);
-  background: #0b1222;
-  border-top: 1px solid #1e293b;
-}
-
-.barra-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-height: 64px;
-  color: #94a3b8;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-.barra-item .bi { font-size: 1.3rem; line-height: 1; }
-.barra-item:focus-visible { outline: 2px solid #94a3b8; outline-offset: -4px; border-radius: 12px; }
-
-/* Pestaña actual: texto blanco e ícono rojo */
-.barra-item.activo { color: #fff; }
-.barra-item.activo .bi { color: #f87171; }
-
-.barra-badge {
-  position: absolute;
-  top: -6px;
-  left: 12px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 8px;
-  background: #dc2626;
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .fecha-hoy {
