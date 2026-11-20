@@ -3,12 +3,7 @@
 
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-clock me-1"></i> Disponibilidad Horaria
-          </h4>
-          <span class="text-muted small d-block mt-1">Gestioná tus horarios y actividad deportiva.</span>
-        </div>
+        <p class="seccion-descripcion">Cargá tus días y horarios</p>
 
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
           <span v-if="edicionAbierta" class="badge bg-primary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
@@ -160,7 +155,7 @@
           />
         </div>
 
-        <button v-if="edicionAbierta" @click="guardarCambios" class="btn btn-success w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
+        <button v-if="edicionAbierta" @click="guardarCambios" class="btn btn-danger w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
           ACTUALIZAR DISPONIBILIDAD
         </button>
@@ -221,7 +216,7 @@
                 </div>
 
                 <div v-else class="text-center py-5 text-muted small bg-light">
-                    <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">history_toggle_off</span>
+                    <i class="bi bi-clock-history opacity-50 d-block mb-2" style="font-size: 32px;"></i>
                     Sin solicitudes previas de disponibilidad.
                 </div>
             </div>

@@ -6,19 +6,16 @@
         <div class="card-header bg-white py-3 border-bottom">
           <div class="row g-3 align-items-center">
             <div class="col-12 col-xl-auto">
-              <div class="border-start border-danger border-5 ps-3">
-                <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-                  <i class="bi bi-people-fill me-1"></i> Gestión de Reuniones
-                </h4>
-                <span class="text-muted small d-block mt-1">
+              <div>
+                <p class="seccion-descripcion">
                   <template v-if="modoReunion && !cargandoArbitros">
                     {{ reunionActual?.titulo }} — {{ arbitrosReunion.length }} árbitros
                     <span v-if="resumenReunionActual.presentes"   class="ms-1 badge rounded-pill bg-success">✓ {{ resumenReunionActual.presentes }}</span>
                     <span v-if="resumenReunionActual.ausentes"    class="ms-1 badge rounded-pill bg-secondary">✗ {{ resumenReunionActual.ausentes }}</span>
                     <span v-if="resumenReunionActual.sinRegistro" class="ms-1 badge rounded-pill bg-light text-muted border">— {{ resumenReunionActual.sinRegistro }}</span>
                   </template>
-                  <template v-else>Reuniones Mensuales — Mi grupo · {{ totalFiltrados }} árbitros</template>
-                </span>
+                  <template v-else>Presentes y ausentes de cada reunión · {{ totalFiltrados }} árbitros</template>
+                </p>
                 <span v-if="modoReunion && reunionActual" class="text-muted d-block mt-1 texto-creacion">
                   <i class="bi bi-person-badge me-1"></i>{{ textoCreacionReunion(reunionActual) }}
                 </span>
@@ -55,17 +52,10 @@
                     </label>
                   </div>
                   <div class="d-flex gap-2">
-                    <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2 flex-shrink-0 control-encabezado" aria-label="Mostrar filtros">
-                      <span class="material-icons fs-6">filter_alt</span>
-                    </button>
-                    <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 flex-shrink-0 control-encabezado" aria-label="Limpiar filtros">
-                      <span class="material-icons text-dark fs-6">filter_alt_off</span>
-                      <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-                    </button>
-                    <button @click="abrirModalNuevaReunion" class="btn btn-danger-subtle border-danger-subtle shadow-sm py-2 d-flex align-items-center gap-2 text-danger flex-shrink-0 control-encabezado" aria-label="Nueva reunión">
-                      <span class="material-icons fs-6">add_alert</span>
-                      <span class="fw-bold d-none d-md-inline small">Nuevo</span>
-                    </button>
+                    <BotonHerramienta tipo="filtros" class="d-md-none flex-shrink-0 control-encabezado" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
+                    <BotonHerramienta tipo="limpiar" class="flex-shrink-0" @click="limpiarFiltros" />
+                    <BotonHerramienta tipo="actualizar" class="flex-shrink-0" :cargando="cargandoInicial || cargandoArbitros" @click="recargar" />
+                    <BotonHerramienta tipo="nuevo" texto="Nueva reunión" class="flex-shrink-0" @click="abrirModalNuevaReunion" />
                   </div>
                 </div>
               </div>
@@ -171,7 +161,7 @@
               </select>
             </div>
             <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -195,11 +185,7 @@
                   </th>
                 </tr>
                 <tr class="bg-light">
-                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id">
-                    <button @click="recargar" class="btn btn-sm btn-light border rounded text-secondary shadow-sm px-2 py-1" aria-label="Recargar">
-                      <i class="bi bi-arrow-clockwise"></i>
-                    </button>
-                  </td>
+                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id"></td>
                   <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
                   <td class="p-2 border-bottom border-2 col-fija col-apellido">
                     <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
@@ -236,14 +222,13 @@
 
               <tbody>
                 <tr v-if="cargandoInicial || cargandoArbitros">
-                  <td :colspan="modoReunion ? 8 : 7" class="text-center py-5">
-                    <div class="spinner-border text-danger spinner-border-sm" role="status"></div>
-                    <span class="ms-2 fw-bold text-muted">Cargando datos...</span>
+                  <td :colspan="modoReunion ? 8 : 7">
+                    <EstadoCargando texto="Cargando datos" />
                   </td>
                 </tr>
                 <tr v-else-if="!arbitrosPaginados.length">
                   <td :colspan="modoReunion ? 8 : 7" class="text-center py-4 text-muted">
-                    <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">search_off</span>
+                    <i class="bi bi-search opacity-50 d-block mb-2" style="font-size: 32px;"></i>
                     <span class="fw-bold">No se encontraron árbitros.</span>
                   </td>
                 </tr>
@@ -260,7 +245,7 @@
                   <td class="text-center col-fija col-acciones">
                     <div class="d-flex justify-content-center gap-1">
                       <button @click="verDetalleArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver historial" aria-label="Ver historial">
-                        <span class="material-icons" style="font-size:16px;">manage_search</span>
+                        <i class="bi bi-search" style="font-size:16px;"></i>
                       </button>
                     </div>
                   </td>
@@ -334,9 +319,8 @@
           </div>
 
           <div class="d-md-none p-3 bg-light">
-            <div v-if="cargandoInicial || cargandoArbitros" class="text-center p-4 bg-white rounded-3 shadow-sm border">
-              <div class="spinner-border text-danger spinner-border-sm" role="status"></div>
-              <p class="m-0 mt-2 small fw-bold text-muted">Cargando datos...</p>
+            <div v-if="cargandoInicial || cargandoArbitros" class="bg-white rounded-3 shadow-sm border">
+              <EstadoCargando texto="Cargando datos" />
             </div>
             <template v-else>
               <div
@@ -386,7 +370,7 @@
                       <ResumenAsistencia :resumen="resumenAsistencia(a.id)" :mobile="true" />
                     </div>
                     <button @click="verDetalleArbitro(a)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center" aria-label="Ver historial">
-                      <span class="material-icons" style="font-size: 18px;">manage_search</span>
+                      <i class="bi bi-search" style="font-size: 18px;"></i>
                     </button>
                   </div>
 
@@ -418,7 +402,7 @@
               </div>
 
               <div v-if="!arbitrosPaginados.length" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
+                <i class="bi bi-search text-muted opacity-50 d-block mb-2" style="font-size: 40px;"></i>
                 <p class="text-muted m-0 fw-bold">No se encontraron árbitros.</p>
               </div>
             </template>
@@ -526,7 +510,7 @@
 
       <template #footer="{ cerrar }">
         <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="submit" form="formNuevaReunion" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesandoReunion || !misGrupos.length">
+        <button type="submit" form="formNuevaReunion" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="procesandoReunion || !misGrupos.length">
           <span v-if="procesandoReunion" class="spinner-border spinner-border-sm me-1"></span>
           {{ procesandoReunion ? 'GUARDANDO...' : (modoEdicionReunion ? 'GUARDAR CAMBIOS' : 'PUBLICAR REUNIÓN') }}
         </button>
@@ -636,7 +620,7 @@
       </div>
 
       <div v-else-if="!reunionesDelArbitroDetalle.length" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
-        <span class="material-icons d-block mb-2" style="font-size: 48px; color: #cbd5e1;">history_toggle_off</span>
+        <i class="bi bi-clock-history d-block mb-2" style="font-size: 48px; color: #cbd5e1;"></i>
         <p class="mb-0 fw-bold">No hay reuniones registradas para este árbitro.</p>
       </div>
 
@@ -682,7 +666,7 @@
         </div>
 
         <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-warning">
-          <span class="material-icons text-warning-emphasis me-2">event_note</span>
+          <i class="bi bi-calendar-event text-warning-emphasis me-2"></i>
           <h6 class="fw-bold m-0 text-dark text-uppercase">Reuniones</h6>
         </div>
         <div class="row g-2">
@@ -711,6 +695,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h } from 'vue'
 import { api } from '@/api/api'

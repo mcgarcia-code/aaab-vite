@@ -5,12 +5,7 @@
 
       <!-- ================= HEADER ================= -->
       <div class="card-header bg-white p-0 border-bottom">
-        <div class="mx-3 my-3 border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-calendar-week me-1"></i> Mis Designaciones
-          </h4>
-          <span class="text-muted small d-block mt-1">Tus partidos designados, próximos y anteriores</span>
-        </div>
+        <p class="seccion-descripcion mx-3 my-3">Partidos, horarios y canchas</p>
 
         <div
           v-if="infoTorneo && vistaActiva === 'proximas'"
@@ -30,10 +25,7 @@
       <!-- ================= BODY ================= -->
       <div class="card-body p-2 p-sm-3 p-md-4">
 
-        <div v-if="cargando" class="text-center py-5">
-          <span class="spinner-border text-danger"></span>
-          <p class="text-muted mt-3 m-0 fw-bold small">Cargando tus designaciones...</p>
-        </div>
+        <EstadoCargando v-if="cargando" texto="Cargando tus designaciones" />
 
         <template v-else>
 
@@ -65,11 +57,9 @@
 
           <!-- ================= PROXIMAS ================= -->
           <div v-if="vistaActiva === 'proximas'">
-            <div v-if="proximas.length === 0" class="text-center py-5 text-muted bg-light rounded-3">
-              <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">event_busy</span>
-              <p class="m-0 fw-bold">No tenés designaciones próximas.</p>
-              <p class="small m-0 mt-1">Este fin de semana no fuiste designado.</p>
-            </div>
+            <EstadoVacio v-if="proximas.length === 0" icono="bi-calendar-x"
+                         titulo="No tenés designaciones próximas"
+                         mensaje="Este fin de semana no fuiste designado." />
 
             <div v-else v-for="dia in diasProximas" :key="'prox-' + dia.fecha" class="mb-4">
               <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
@@ -90,7 +80,7 @@
                       <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
                     </div>
                     <div class="small text-muted d-flex align-items-center flex-wrap gap-1 mb-2">
-                      <span class="material-icons flex-shrink-0" style="font-size: 15px;">stadium</span>
+                      <i class="bi bi-geo-alt flex-shrink-0" style="font-size: 15px;"></i>
                       <span class="fw-bold text-dark text-break">{{ p.cancha }}</span>
 
                       <a v-if="linkMapaCancha(p)"
@@ -105,11 +95,11 @@
                     <!-- FUNCION ARBITRO -->
                     <template v-if="p.funcion == 'arbitro'">
                       <div class="small d-flex align-items-start gap-1 text-dark">
-                        <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">groups</span>
+                        <i class="bi bi-people text-danger flex-shrink-0" style="font-size: 15px;"></i>
                         <span class="text-break"><strong>Pareja:</strong> {{ obtenerPareja(p) }}</span>
                       </div>
                       <div v-if="p.delegado" class="small d-flex align-items-start gap-1 text-dark mt-1">
-                        <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">person</span>
+                        <i class="bi bi-person text-danger flex-shrink-0" style="font-size: 15px;"></i>
                         <span class="text-break"><strong>Delegado Técnico:</strong> {{ p.delegado }}</span>
                       </div>
                     </template>
@@ -117,11 +107,11 @@
                     <!-- FUNCION DELEGADO / OBSERVADOR / PLANILLERO / CRONOMETRISTA -->
                     <template v-if="p.funcion != 'arbitro'">
                       <div class="small d-flex align-items-start gap-1 text-dark mb-1">
-                        <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">person</span>
+                        <i class="bi bi-person text-danger flex-shrink-0" style="font-size: 15px;"></i>
                         <span class="text-break"><strong>Función:</strong> {{ etiquetaFuncion(p.funcion) }}</span>
                       </div>
                       <div class="small d-flex align-items-start gap-1 text-dark">
-                        <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">groups</span>
+                        <i class="bi bi-people text-danger flex-shrink-0" style="font-size: 15px;"></i>
                         <span class="text-break"><strong>Arbitros:</strong> {{ p.arbitro_1 }} - {{ p.arbitro_2 }}</span>
                       </div>
                     </template>
@@ -150,7 +140,7 @@
                           @click="abrirModalRechazo(p)"
                           class="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1"
                         >
-                          <span class="material-icons" style="font-size: 15px;">block</span>
+                          <i class="bi bi-slash-circle" style="font-size: 15px;"></i>
                           Rechazar designación
                         </button>
 
@@ -179,10 +169,8 @@
 
           <!-- ================= ANTERIORES ================= -->
           <div v-else class="anteriores">
-            <div v-if="anteriores.length === 0" class="text-center py-5 text-muted bg-light rounded-3">
-              <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">history_toggle_off</span>
-              <p class="m-0 fw-bold">Todavía no tenés designaciones anteriores.</p>
-            </div>
+            <EstadoVacio v-if="anteriores.length === 0" icono="bi-clock-history"
+                         titulo="Todavía no tenés designaciones anteriores" />
 
             <template v-else>
 
@@ -245,7 +233,7 @@
                               <span class="badge bg-secondary-subtle text-secondary border text-wrap text-break text-start" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
                             </div>
                             <div class="small text-muted d-flex align-items-center flex-wrap gap-1 mb-2">
-                              <span class="material-icons flex-shrink-0" style="font-size: 15px;">stadium</span>
+                              <i class="bi bi-geo-alt flex-shrink-0" style="font-size: 15px;"></i>
                               <span class="fw-bold text-dark text-break">{{ p.cancha }}</span>
 
                               <a v-if="linkMapaCancha(p)"
@@ -260,11 +248,11 @@
                             <!-- FUNCION ARBITRO -->
                             <template v-if="p.funcion=='arbitro'">
                               <div class="small d-flex align-items-start gap-1 text-dark">
-                                <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">groups</span>
+                                <i class="bi bi-people text-secondary flex-shrink-0" style="font-size: 15px;"></i>
                                 <span class="text-break"><strong>Pareja:</strong> {{ obtenerPareja(p) }}</span>
                               </div>
                               <div v-if="p.delegado" class="small d-flex align-items-start gap-1 text-dark mt-1">
-                                <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">person</span>
+                                <i class="bi bi-person text-secondary flex-shrink-0" style="font-size: 15px;"></i>
                                 <span class="text-break"><strong>Delegado Técnico:</strong> {{ p.delegado }}</span>
                               </div>
                             </template>
@@ -272,11 +260,11 @@
                             <!-- FUNCION DELEGADO / OBSERVADOR / PLANILLERO / CRONOMETRISTA -->
                             <template v-if="p.funcion!='arbitro'">
                               <div class="small d-flex align-items-start gap-1 text-dark mb-1">
-                                <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">person</span>
+                                <i class="bi bi-person text-secondary flex-shrink-0" style="font-size: 15px;"></i>
                                 <span class="text-break"><strong>Función:</strong> {{ etiquetaFuncion(p.funcion) }}</span>
                               </div>
                               <div class="small d-flex align-items-start gap-1 text-dark">
-                                <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">groups</span>
+                                <i class="bi bi-people text-secondary flex-shrink-0" style="font-size: 15px;"></i>
                                 <span class="text-break"><strong>Arbitros:</strong> {{ p.arbitro_1 }} - {{ p.arbitro_2 }}</span>
                               </div>
                             </template>
@@ -549,6 +537,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, watch, inject } from 'vue'
 import { api } from '@/api/api'

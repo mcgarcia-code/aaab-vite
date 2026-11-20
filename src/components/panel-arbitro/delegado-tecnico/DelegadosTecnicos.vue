@@ -4,12 +4,7 @@
 
       <!-- HEADER -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-stopwatch-fill me-1"></i> Planilla Digital
-          </h4>
-          <span class="text-muted small d-block mt-1">Control de tiempo, anotaciones y eventos del partido.</span>
-        </div>
+        <p class="seccion-descripcion">Planilla digital</p>
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
           <button
             class="btn btn-outline-secondary px-3 py-2 fw-bold shadow-sm d-flex align-items-center"

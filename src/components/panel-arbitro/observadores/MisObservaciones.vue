@@ -5,41 +5,21 @@
 
       <!-- ENCABEZADO -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom border-2 border-danger gap-3">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-journal-check me-1"></i> Mis Observaciones Realizadas
-          </h4>
-          <span class="text-muted small d-block mt-1">Historial de evaluaciones de desempeño arbitral</span>
-        </div>
+        <p class="seccion-descripcion">Las observaciones que cargaste</p>
 
         <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
-          <button @click="obtenerObservaciones" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Actualizar">
-            <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-            <span v-else class="material-icons" style="font-size: 20px;">refresh</span>
-            <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
-          </button>
+          <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="obtenerObservaciones" />
 
-          <button @click="limpiarFiltros" :disabled="!busqueda" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Limpiar filtros">
-            <span class="material-icons" style="font-size: 20px;">filter_alt_off</span>
-            <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Limpiar</span>
-          </button>
+          <BotonHerramienta tipo="limpiar" :disabled="!busqueda" @click="limpiarFiltros" />
 
-          <RouterLink to="/panel-arbitro/observaciones/carga" class="text-decoration-none">
-            <button class="btn btn-danger shadow-sm py-2 d-flex align-items-center gap-2" title="Nueva Evaluación">
-              <span class="material-icons" style="font-size: 20px;">add</span>
-              <span class="d-none d-md-inline fw-bold" style="font-size: 0.8rem;">Nueva Evaluación</span>
-            </button>
-          </RouterLink>
+          <BotonHerramienta tipo="nuevo" texto="Nueva observación" @click="$router.push('/panel-arbitro/observaciones/carga')" />
         </div>
       </div>
 
       <div class="card-body bg-white p-0">
 
         <!-- SPINNER DE CARGA -->
-        <div v-if="cargando" class="text-center p-5 bg-white">
-          <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-          <p class="text-muted mt-3 fw-bold">Cargando observaciones...</p>
-        </div>
+        <EstadoCargando v-if="cargando" texto="Cargando observaciones" />
 
         <template v-else>
           <!-- FILTRO DE BÚSQUEDA -->
@@ -91,18 +71,18 @@
                       <!-- Ver detalle: siempre disponible -->
                       <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-2 d-flex align-items-center gap-1 text-secondary" @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id" title="Ver detalle">
                         <span v-if="cargandoDetalleId === obs.id" class="spinner-border spinner-border-sm"></span>
-                        <span v-else class="material-icons" style="font-size: 16px;">visibility</span>
+                        <i v-else class="bi bi-eye" style="font-size: 16px;"></i>
                       </button>
                       <!-- Anular: sólo si está pendiente -->
                       <button v-if="esPendiente(obs)" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="pedirAnular(obs)" title="Anular observación">
-                        <span class="material-icons" style="font-size: 16px;">block</span>
+                        <i class="bi bi-slash-circle" style="font-size: 16px;"></i>
                       </button>
                     </div>
                   </td>
                 </tr>
                 <tr v-if="observacionesPaginadas.length === 0">
                   <td colspan="6" class="py-5 text-center text-muted border-0 bg-white">
-                    <span class="material-icons d-block fs-1 mb-2">search_off</span>
+                    <i class="bi bi-search d-block fs-1 mb-2"></i>
                     <p class="m-0 fw-bold">No has cargado observaciones.</p>
                   </td>
                 </tr>
@@ -135,10 +115,10 @@
                   <div class="d-flex gap-1">
                     <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold d-flex align-items-center gap-1 text-secondary" @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id">
                       <span v-if="cargandoDetalleId === obs.id" class="spinner-border spinner-border-sm"></span>
-                      <span v-else class="material-icons" style="font-size: 16px;">visibility</span>
+                      <i v-else class="bi bi-eye" style="font-size: 16px;"></i>
                     </button>
                     <button v-if="esPendiente(obs)" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="pedirAnular(obs)">
-                      <span class="material-icons" style="font-size: 16px;">block</span>
+                      <i class="bi bi-slash-circle" style="font-size: 16px;"></i>
                     </button>
                   </div>
                 </div>
@@ -146,7 +126,7 @@
             </div>
 
             <div v-if="observacionesPaginadas.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border">
-              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
+              <i class="bi bi-search text-muted opacity-50 d-block mb-2" style="font-size: 40px;"></i>
               <p class="text-muted m-0 fw-bold">No has cargado observaciones.</p>
             </div>
           </div>
@@ -305,6 +285,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'

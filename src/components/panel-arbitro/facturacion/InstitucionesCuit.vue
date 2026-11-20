@@ -6,31 +6,17 @@
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-building me-1"></i> Instituciones y CUITs
-            </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ filtrados.length }} instituciones encontradas</span>
-          </div>
+          <p class="seccion-descripcion">Datos fiscales de clubes · Total: {{ filtrados.length }} instituciones encontradas</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
             <!-- Botón Actualizar (con spinner) -->
-            <button @click="cargarDatos" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargarDatos" />
 
             <!-- Botón Filtros (Solo Móvil) -->
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
 
             <!-- Botón Limpiar -->
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar Filtros</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
           </div>
         </div>
 
@@ -55,7 +41,7 @@
               <input v-model="filtros.condicion" class="form-control form-control-sm shadow-none py-2" placeholder="FILTRAR POR CONDICIÓN IVA...">
             </div>
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">
                 Aplicar Filtros
               </button>
             </div>
@@ -65,10 +51,7 @@
         <div class="card-body p-0 p-md-3 bg-white">
 
           <!-- SPINNER DE CARGA -->
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando datos...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando instituciones" />
 
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
@@ -97,24 +80,24 @@
                       <!-- Acciones en Escritorio (Solo Iconos) -->
                       <div class="d-flex justify-content-center gap-1">
                         <button v-if="i.cuit && i.cuit !== 'NULL'" @click="copiarAlPortapapeles(i.cuit, 'CUIT')" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Copiar CUIT">
-                          <span class="material-icons" style="font-size:16px;">content_copy</span>
+                          <i class="bi bi-copy" style="font-size:16px;"></i>
                         </button>
 
                         <template v-if="i.email && i.email !== 'NULL' && i.email.trim() !== ''">
-                          <button @click="enviarFactura(i.email)" class="btn btn-primary btn-sm shadow-sm rounded p-1" title="Enviar Email">
-                            <span class="material-icons" style="font-size:16px;">send</span>
+                          <button @click="enviarFactura(i.email)" class="btn btn-light border btn-sm shadow-sm rounded p-1" title="Enviar Email">
+                            <i class="bi bi-send" style="font-size:16px;"></i>
                           </button>
                           <button @click="copiarAlPortapapeles(i.email, 'Email')" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Copiar Email">
-                            <span class="material-icons" style="font-size:16px;">content_copy</span>
+                            <i class="bi bi-copy" style="font-size:16px;"></i>
                           </button>
                         </template>
 
                         <template v-if="i.celular && i.celular !== 'NULL' && i.celular.trim() !== ''">
                           <button @click="enviarWhatsapp(i.celular)" class="btn btn-sm shadow-sm text-white rounded p-1" style="background-color: #25D366;" title="WhatsApp">
-                            <span class="material-icons" style="font-size:16px;">chat</span>
+                            <i class="bi bi-whatsapp" style="font-size:16px;"></i>
                           </button>
                           <button @click="copiarAlPortapapeles(i.celular, 'Celular')" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Copiar Celular">
-                            <span class="material-icons" style="font-size:16px;">phonelink_ring</span>
+                            <i class="bi bi-phone-vibrate" style="font-size:16px;"></i>
                           </button>
                         </template>
 
@@ -126,9 +109,8 @@
                     </td>
                   </tr>
                   <tr v-if="institucionesPaginadas.length === 0">
-                    <td colspan="5" class="py-5 text-center text-muted border-0 bg-white">
-                      <span class="material-icons d-block fs-1 mb-2">business</span>
-                      <p class="m-0 fw-bold">No se encontraron instituciones.</p>
+                    <td colspan="5" class="border-0 bg-white">
+                      <EstadoVacio icono="bi-building" titulo="No se encontraron instituciones" />
                     </td>
                   </tr>
                 </tbody>
@@ -140,7 +122,7 @@
               <div v-for="i in institucionesPaginadas" :key="'mob-'+i.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
                 <div class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
                   <div class="text-dark fw-bold d-flex align-items-center gap-2" style="font-size: 1.05rem;">
-                    <span class="material-icons text-primary" style="font-size: 20px;">domain</span>
+                    <i class="bi bi-building text-primary" style="font-size: 20px;"></i>
                     {{ i.club }}
                   </div>
                 </div>
@@ -161,19 +143,19 @@
 
                     <div class="col-12" v-if="i.cuit && i.cuit !== 'NULL'">
                       <button @click="copiarAlPortapapeles(i.cuit, 'CUIT')" class="btn btn-sm btn-light border w-100 d-flex align-items-center justify-content-center gap-1 fw-bold text-dark py-2">
-                        <span class="material-icons" style="font-size: 16px;">content_copy</span> Copiar CUIT
+                        <i class="bi bi-copy" style="font-size: 16px;"></i> Copiar CUIT
                       </button>
                     </div>
 
                     <template v-if="i.email && i.email !== 'NULL' && i.email.trim() !== ''">
                       <div class="col-6">
-                        <button @click="enviarFactura(i.email)" class="btn btn-sm btn-primary shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2">
-                          <span class="material-icons" style="font-size: 16px;">send</span> Email
+                        <button @click="enviarFactura(i.email)" class="btn btn-sm btn-light border shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2">
+                          <i class="bi bi-send" style="font-size: 16px;"></i> Email
                         </button>
                       </div>
                       <div class="col-6">
                         <button @click="copiarAlPortapapeles(i.email, 'Email')" class="btn btn-sm btn-light border shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2">
-                          <span class="material-icons" style="font-size: 16px;">content_copy</span> Email
+                          <i class="bi bi-copy" style="font-size: 16px;"></i> Email
                         </button>
                       </div>
                     </template>
@@ -181,12 +163,12 @@
                     <template v-if="i.celular && i.celular !== 'NULL' && i.celular.trim() !== ''">
                       <div class="col-6">
                         <button @click="enviarWhatsapp(i.celular)" class="btn btn-sm text-white shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2" style="background-color: #25D366;">
-                          <span class="material-icons" style="font-size: 16px;">chat</span> WhatsApp
+                          <i class="bi bi-whatsapp" style="font-size: 16px;"></i> WhatsApp
                         </button>
                       </div>
                       <div class="col-6">
                         <button @click="copiarAlPortapapeles(i.celular, 'Celular')" class="btn btn-sm btn-light border shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2">
-                          <span class="material-icons" style="font-size: 16px;">phonelink_ring</span> Celular
+                          <i class="bi bi-phone-vibrate" style="font-size: 16px;"></i> Celular
                         </button>
                       </div>
                     </template>
@@ -199,9 +181,8 @@
                 </div>
               </div>
 
-              <div v-if="institucionesPaginadas.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border border-light-subtle mt-2">
-                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">business</span>
-                <p class="text-muted mt-2 mb-0 fw-bold">Sin resultados</p>
+              <div v-if="institucionesPaginadas.length === 0" class="bg-white rounded-3 shadow-sm border border-light-subtle mt-2">
+                <EstadoVacio icono="bi-building" titulo="No se encontraron instituciones" />
               </div>
             </div>
 
@@ -238,6 +219,9 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';

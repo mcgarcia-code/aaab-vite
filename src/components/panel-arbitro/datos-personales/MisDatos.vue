@@ -3,12 +3,7 @@
 
    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-person me-1"></i> Legajo Personal
-          </h4>
-          <span class="text-muted small d-block mt-1">Modificá tus datos personales</span>
-        </div>
+        <p class="seccion-descripcion">Modificá tus datos personales</p>
 
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
             <span v-if="arbitro.apto_medico == 1" class="badge bg-success px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
@@ -135,7 +130,7 @@
                 <input v-model="nuevaPassword" type="password" class="form-control form-control-sm py-2" placeholder="Escribí tu nueva clave aquí">
             </div>
             <div class="col-12 col-md-4">
-                <button @click="cambiarPassword" class="btn btn-dark btn-sm w-100 fw-bold py-2 shadow-sm" :disabled="cargando || !nuevaPassword">
+                <button @click="cambiarPassword" class="btn btn-light border btn-sm w-100 fw-bold py-2 shadow-sm" :disabled="cargando || !nuevaPassword">
                     <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
                     ACTUALIZAR CLAVE
                 </button>
@@ -143,7 +138,7 @@
         </div>
 
         <div v-if="edicionAbierta" class="mt-4 pt-4 border-top">
-            <button @click="guardarCambios" class="btn btn-success w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
+            <button @click="guardarCambios" class="btn btn-danger w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
                 <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
                 GUARDAR CAMBIOS EN LEGAJO
             </button>
@@ -198,7 +193,7 @@
             </div>
 
             <div v-else class="text-center py-5 text-muted small bg-light">
-                <span class="material-icons opacity-50 d-block mb-2" style="font-size: 32px;">history_toggle_off</span>
+                <i class="bi bi-clock-history opacity-50 d-block mb-2" style="font-size: 32px;"></i>
                 Sin solicitudes de rectificación previas.
             </div>
         </div>

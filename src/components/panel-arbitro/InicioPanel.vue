@@ -1,141 +1,189 @@
 <template>
-  <div class="container-fluid py-4 animate__animated animate__fadeIn">
-    <div class="row g-3 g-md-4">
-      <div class="col-12 col-lg-8 col-xl-9 order-2 order-lg-1">
-    <!-- ============ CHIP CONTEXTUAL ============ -->
-    <div v-if="proximaDesignacion" class="chips-contextuales mb-4">
-      <RouterLink
-        to="/panel-arbitro/designaciones"
-        class="chip-contextual chip-designacion text-decoration-none"
-      >
-        <i class="bi bi-calendar4-week chip-icono"></i>
-        <div class="chip-cuerpo">
-          <span class="chip-label">Próxima designación</span>
-          <span class="chip-valor">{{ textoProximaDesignacion }}</span>
-          <span class="chip-cta">Entrá a Mis Designaciones para ver el detalle <i class="bi bi-arrow-right"></i></span>
-        </div>
-      </RouterLink>
-    </div>
-      <!-- ============ MODULOS CATEGORIZADOS ============ -->
-        <div v-for="grupo in gruposConItems" :key="grupo.categoria" class="mb-4">
-          <div class="categoria-label">
-            <i :class="grupo.icono"></i>
-            <span>{{ grupo.categoria }}</span>
-          </div>
+  <div class="inicio-grid py-3 animate__animated animate__fadeIn">
 
-          <div class="row g-3">
-            <div class="col-12 col-sm-6 col-md-4 d-flex" v-for="item in grupo.items" :key="item.title">
-              <component
-                :is="item.href ? 'a' : 'RouterLink'"
-                :href="item.href"
-                :to="item.to"
-                :target="item.href ? '_blank' : null"
-                rel="noopener noreferrer"
-                class="text-decoration-none d-flex w-100 h-100"
-              >
-                <div class="modern-menu-card shadow-sm w-100 h-100">
-                  <div class="icon-box">
-                    <i :class="item.icon"></i>
-                  </div>
-                  <div class="card-text">
-                    <h5 class="fw-bold mb-1">{{ item.title }}</h5>
-                    <p class="extra-small m-0 text-muted">{{ item.desc }}</p>
-                  </div>
-                  <div class="card-arrow">
-                    <i class="bi bi-chevron-right"></i>
-                  </div>
-                </div>
-              </component>
-            </div>
+    <!-- ============ PROXIMA DESIGNACION ============ -->
+    <section class="area-hero">
+      <div v-if="cargandoDesignacion" class="tarjeta-hero placeholder-glow" aria-hidden="true">
+        <span class="placeholder col-5 rounded mb-3"></span>
+        <div class="d-flex gap-3 align-items-center mb-3">
+          <span class="placeholder rounded-3" style="width: 64px; height: 76px;"></span>
+          <div class="flex-grow-1">
+            <span class="placeholder col-10 rounded mb-2"></span>
+            <span class="placeholder col-6 rounded"></span>
           </div>
         </div>
-
+        <span class="placeholder col-12 rounded-3" style="height: 46px;"></span>
       </div>
 
-      <!-- ============ SIDEBAR CON TABS ============ -->
-      <div class="col-12 col-lg-4 col-xl-3 order-1 order-lg-2">
-        <aside class="sidebar-professional shadow-sm mb-3 mb-lg-0 sticky-lg-top" style="top: 20px; z-index: 10;">
-          <div class="sidebar-header">
-            <div class="d-flex align-items-center">
-              <i class="bi bi-calendar3 me-2 text-danger fs-5"></i>
-              <span class="fw-black ls-1 text-uppercase">Avisos y Eventos</span>
-            </div>
-            <div v-if="cargando" class="spinner-border spinner-border-sm text-danger"></div>
+      <div v-else-if="proximaDesignacion" class="tarjeta-hero">
+        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+          <span class="hero-label">Próxima designación</span>
+          <span v-if="textoRelativoDesignacion" class="hero-pill">{{ textoRelativoDesignacion }}</span>
+        </div>
+
+        <div class="d-flex gap-3 align-items-center mb-3">
+          <div class="bloque-fecha">
+            <template v-if="bloqueFechaDesignacion">
+              <span class="bloque-dia">{{ bloqueFechaDesignacion.diaSemana }}</span>
+              <span class="bloque-numero">{{ bloqueFechaDesignacion.numero }}</span>
+              <span class="bloque-mes">{{ bloqueFechaDesignacion.mes }}</span>
+            </template>
+            <i v-else class="bi bi-calendar4-week fs-3"></i>
           </div>
 
-          <!-- TABS -->
-          <div class="tabs-avisos">
-            <button
-              v-for="tab in tabs"
-              :key="tab.clave"
-              @click="tabActiva = tab.clave"
-              class="tab-btn"
-              :class="{ activa: tabActiva === tab.clave }"
-            >
-              {{ tab.etiqueta }}
-              <span v-if="tab.cantidad > 0" class="tab-badge">{{ tab.cantidad }}</span>
-            </button>
+          <div class="d-flex flex-column gap-1 min-w-0">
+            <span class="hero-partido">{{ partidoProximaDesignacion }}</span>
+            <span v-if="proximaDesignacion.horario" class="hero-dato">
+              <i class="bi bi-clock"></i>{{ String(proximaDesignacion.horario).slice(0, 5) }} hs
+            </span>
+            <span v-if="proximaDesignacion.cancha" class="hero-dato flex-wrap">
+              <i class="bi bi-geo-alt"></i><span class="text-break">{{ proximaDesignacion.cancha }}</span>
+              <a v-if="linkMapaCancha(proximaDesignacion)"
+                 :href="linkMapaCancha(proximaDesignacion)"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 class="link-mapa">Ver mapa</a>
+            </span>
+            <span class="d-flex flex-wrap gap-1">
+              <span v-if="proximaDesignacion.funcion" class="hero-funcion">
+                <i class="bi bi-person-fill me-1"></i>{{ textoFuncion(proximaDesignacion.funcion) }}
+              </span>
+              <span v-if="proximaDesignacion.categoria_division" class="hero-categoria">{{ proximaDesignacion.categoria_division }}</span>
+            </span>
           </div>
+        </div>
 
-          <div class="sidebar-scroll-container p-2 p-lg-3 overflow-auto" style="max-height: calc(100vh - 160px);">
+        <RouterLink to="/panel-arbitro/designaciones" class="btn btn-danger w-100 rounded-3 fw-bold py-2 d-flex align-items-center justify-content-center gap-2">
+          Ver detalle <i class="bi bi-chevron-right"></i>
+        </RouterLink>
 
-            <!-- REUNIONES -->
-            <div v-show="tabActiva === 'reuniones'" class="animate__animated animate__fadeIn">
-              <div v-if="proximasFechas.length > 0">
-                <div class="event-card-modern" v-for="ev in proximasFechas" :key="ev.id">
-                  <div class="cal-box">
-                    <span class="day">{{ ev.fecha_evento.split('-')[2] }}</span>
-                    <span class="month text-danger">{{ obtenerMesCorta(ev.fecha_evento) }}</span>
-                  </div>
-                  <div class="event-info">
-                    <strong :class="{ 'text-danger': ev.categoria === 'urgente' }">{{ ev.titulo }}</strong>
-                    <p class="mb-0">{{ ev.descripcion || 'Lugar a confirmar' }}</p>
-                    <span v-if="ev.grupos_coordinados" class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle mt-1 text-wrap text-start">
-                      <i class="bi bi-person-badge me-1"></i>Coordinás · Grupo {{ ev.grupos_coordinados }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <p v-else class="empty-msg">No hay eventos próximos.</p>
-            </div>
+        <!-- Celular: solo el aviso de cuántas hay -->
+        <RouterLink v-if="cantidadOtrasEstaSemana > 0" to="/panel-arbitro/designaciones" class="otras-designaciones d-lg-none">
+          +{{ cantidadOtrasEstaSemana }} {{ cantidadOtrasEstaSemana === 1 ? 'designación más' : 'designaciones más' }} en los próximos 7 días
+        </RouterLink>
 
-            <!-- CUMPLEAÑOS -->
-            <div v-show="tabActiva === 'cumpleanos'" class="animate__animated animate__fadeIn">
-              <div v-if="avisos.cumpleanos && avisos.cumpleanos.length > 0">
-                <div v-for="cumple in avisos.cumpleanos" :key="cumple.nombre" class="event-card-modern">
-                  <div :class="['cal-box', esHoy(cumple.fecha_nacimiento) ? 'today-bg' : '']">
-                    <span class="day">{{ cumple.fecha_nacimiento.split('/')[0] }}</span>
-                    <span :class="['month', esHoy(cumple.fecha_nacimiento) ? 'text-white' : 'text-danger']">
-                      {{ obtenerMesNombre(cumple.fecha_nacimiento.split('/')[1]) }}
-                    </span>
-                  </div>
-                  <div class="event-info d-flex align-items-center">
-                    <div>
-                      <strong class="mb-0">{{ cumple.nombre }} {{ cumple.apellido }}</strong>
-                      <span v-if="esHoy(cumple.fecha_nacimiento)" class="badge-hoy ms-2 bg-danger text-white rounded px-1" style="font-size: 0.6rem;">¡ES HOY!</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <p v-else class="empty-msg">Sin cumpleaños cercanos.</p>
-            </div>
-
-            <!-- RECORDATORIOS -->
-            <div v-show="tabActiva === 'recordatorios'" class="animate__animated animate__fadeIn">
-              <div v-if="avisos.recordatorio && avisos.recordatorio.length > 0">
-                <div v-for="rec in avisos.recordatorio" :key="rec.id" class="reminder-pill">
-                  <i class="bi bi-info-circle-fill me-2"></i>
-                  <span v-html="rec.descripcion"></span>
-                </div>
-              </div>
-              <p v-else class="empty-msg">No hay recordatorios.</p>
-            </div>
-
-          </div>
-        </aside>
+        <!-- Escritorio: las siguientes designaciones, listadas -->
+        <div v-if="siguientesDesignaciones.length" class="siguientes d-none d-lg-block">
+          <RouterLink v-for="p in siguientesDesignaciones" :key="p.id" to="/panel-arbitro/designaciones" class="siguiente">
+            <span class="siguiente-fecha">{{ p.fechaTexto }}</span>
+            <span class="siguiente-partido text-truncate">{{ p.partido }}</span>
+            <span class="siguiente-dato">{{ p.detalle }}</span>
+            <i class="bi bi-chevron-right"></i>
+          </RouterLink>
+        </div>
       </div>
 
-    </div>
+      <div v-else class="tarjeta-hero d-flex align-items-center gap-3">
+        <div class="bloque-fecha bloque-fecha-vacio">
+          <i class="bi bi-calendar-x fs-3"></i>
+        </div>
+        <div class="flex-grow-1">
+          <span class="hero-label d-block mb-1">Próxima designación</span>
+          <span class="hero-dato d-block">No tenés designaciones próximas.</span>
+          <RouterLink to="/panel-arbitro/designaciones" class="link-hero">Ver designaciones</RouterLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ACCESOS RAPIDOS ============ -->
+    <section class="area-rapidos">
+      <h2 class="categoria-label">Accesos rápidos</h2>
+      <div class="row g-2">
+        <div v-for="acceso in accesosRapidos" :key="acceso.to" class="col-3">
+          <RouterLink :to="acceso.to" class="acceso-rapido">
+            <i :class="acceso.icon"></i>
+            <span>{{ acceso.title }}</span>
+          </RouterLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ AVISOS Y EVENTOS ============ -->
+    <aside class="area-avisos">
+      <div class="tarjeta-avisos">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="titulo-avisos m-0">Avisos y eventos</h2>
+          <div v-if="cargando" class="spinner-border spinner-border-sm text-secondary" role="status">
+            <span class="visually-hidden">Cargando avisos</span>
+          </div>
+        </div>
+
+        <div class="tabs-avisos" role="tablist">
+          <button
+            v-for="tab in tabs"
+            :key="tab.clave"
+            type="button"
+            role="tab"
+            :aria-selected="tabActiva === tab.clave"
+            @click="tabActiva = tab.clave"
+            class="tab-btn"
+            :class="{ activa: tabActiva === tab.clave }"
+          >
+            {{ tab.etiqueta }}
+            <span v-if="tab.cantidad > 0" class="tab-badge">{{ tab.cantidad }}</span>
+          </button>
+        </div>
+
+        <div class="avisos-scroll">
+
+          <!-- REUNIONES -->
+          <div v-show="tabActiva === 'reuniones'">
+            <div v-if="proximasFechas.length > 0">
+              <div class="evento" v-for="ev in proximasFechas" :key="ev.id">
+                <div class="cal-box">
+                  <span class="day">{{ ev.fecha_evento.split('-')[2] }}</span>
+                  <span class="month">{{ obtenerMesCorta(ev.fecha_evento) }}</span>
+                </div>
+                <div class="event-info">
+                  <strong :class="{ 'text-danger': ev.categoria === 'urgente' }">{{ ev.titulo }}</strong>
+                  <p class="mb-0">{{ ev.descripcion || 'Lugar a confirmar' }}</p>
+                  <span v-if="ev.grupos_coordinados" class="badge-coordina mt-1">
+                    <i class="bi bi-person-badge me-1"></i>Coordinás · Grupo {{ ev.grupos_coordinados }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <p v-else class="empty-msg">No hay eventos próximos.</p>
+          </div>
+
+          <!-- CUMPLEAÑOS -->
+          <div v-show="tabActiva === 'cumpleanos'">
+            <div v-if="avisos.cumpleanos && avisos.cumpleanos.length > 0">
+              <div v-for="cumple in avisos.cumpleanos" :key="cumple.nombre + cumple.apellido" class="evento">
+                <div :class="['cal-box', esHoy(cumple.fecha_nacimiento) ? 'today-bg' : '']">
+                  <span class="day">{{ cumple.fecha_nacimiento.split('/')[0] }}</span>
+                  <span class="month">{{ esHoy(cumple.fecha_nacimiento) ? 'HOY' : obtenerMesNombre(cumple.fecha_nacimiento.split('/')[1]) }}</span>
+                </div>
+                <div class="event-info">
+                  <strong>{{ cumple.nombre }} {{ cumple.apellido }}</strong>
+                  <p class="mb-0">{{ esHoy(cumple.fecha_nacimiento) ? '¡Cumple años hoy!' : textoRelativoCumple(cumple.fecha_nacimiento) }}</p>
+                </div>
+              </div>
+            </div>
+            <p v-else class="empty-msg">Sin cumpleaños cercanos.</p>
+          </div>
+
+          <!-- RECORDATORIOS -->
+          <div v-show="tabActiva === 'recordatorios'">
+            <div v-if="avisos.recordatorio && avisos.recordatorio.length > 0">
+              <div v-for="rec in avisos.recordatorio" :key="rec.id" class="reminder-pill">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <span v-html="rec.descripcion"></span>
+              </div>
+            </div>
+            <p v-else class="empty-msg">No hay recordatorios.</p>
+          </div>
+
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============ TODOS LOS MODULOS (en escritorio están en el menú lateral) ============ -->
+    <section class="area-modulos d-lg-none">
+      <h2 class="titulo-modulos">Todos los módulos</h2>
+      <ListaModulos :grupos="gruposConItems" en-columnas />
+    </section>
+
   </div>
 </template>
 
@@ -143,67 +191,13 @@
 import { ref, onMounted, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
-import { auth } from '../../api/auth'
+import { useModulosArbitro } from '@/composables/useModulosArbitro'
+import ListaModulos from '@/components/panel-arbitro/ListaModulos.vue'
 
 useHead({ title: 'Panel de Inicio | AAAB' })
 
-// ====================================================
-// MENU: cada item con su categoría
-// ====================================================
-const CATEGORIAS = [
-  { categoria: 'Mi Perfil', icono: 'bi bi-person-circle' },
-  { categoria: 'Actividad Arbitral', icono: 'bi bi-person-raised-hand' },
-  { categoria: 'Exámenes', icono: 'bi bi-journal-check' },
-  { categoria: 'Administración', icono: 'bi bi-folder2' },
-  { categoria: 'Tesorería', icono: 'bi bi-cash-stack' },
-  { categoria: 'Herramientas', icono: 'bi bi-tools' }
-]
-
-const menuItems = [
-  { to: '/panel-arbitro/datos', title: 'Datos Personales', icon: 'bi bi-person-lines-fill', desc: 'Ver legajo y seguridad.', categoria: 'Mi Perfil' },
-  { to: '/panel-arbitro/disponibilidad', title: 'Disponibilidad', icon: 'bi bi-clock-history', desc: 'Modificá tus horarios.', categoria: 'Mi Perfil' },
-  { to: '/panel-arbitro/credencial', title: 'Credencial Digital', icon: 'bi bi-person-badge', desc: 'Carnet oficial 2026.', categoria: 'Mi Perfil' },
-
-  { to: '/panel-arbitro/rendimiento', title: 'Mi Rendimiento', icon: 'bi bi-graph-up-arrow', desc: 'Exámenes y asistencia a reuniones', categoria: 'Actividad Arbitral' },
-
-  { to: '/panel-arbitro/mis-observaciones', title: 'Mis Observaciones', icon: 'bi bi-eye', desc: 'Visualizar observaciones de tus partidos', categoria: 'Actividad Arbitral' },
-
-  { to: '/panel-arbitro/designaciones', title: 'Mis Designaciones', icon: 'bi bi-calendar4-week', desc: 'Mis Designaciones', categoria: 'Actividad Arbitral' },
-  { to: '/panel-arbitro/coordinadores', title: 'Coordinadores', icon: 'bi bi-check', desc: 'Gestión de exámenes y reuniones', rolesPermitidos: [4], categoria: 'Actividad Arbitral' },
-  { to: '/panel-arbitro/observaciones', title: 'Observaciones', icon: 'bi bi-eye', desc: 'Cargar y visualizar observaciones realizadas por vos', rolesPermitidos: [2, 4], categoria: 'Actividad Arbitral' },
-  { to: '/panel-arbitro/examen-asamblea', title: 'Mis Exámenes', icon: 'bi bi-journal-check', desc: 'Rendí los exámenes teóricos online', categoria: 'Exámenes' },
-
-  { to: '/panel-arbitro/licencia', title: 'Solicitar Licencias', icon: 'bi bi-calendar-check', desc: 'Inasistencias con antelación.', categoria: 'Administración' },
-  { to: '/panel-arbitro/sanciones', title: 'Tribunal de Ética', icon: 'bi bi-shield-exclamation', desc: 'Consultá tus sanciones.', categoria: 'Administración' },
-
-  { to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Pedidos de indumentaria.', categoria: 'Tesorería' },
-  { to: '/panel-arbitro/aportes', title: 'Mis Aportes', icon: 'bi bi-cash-coin', desc: 'Consultá el estado de tus aportes.', categoria: 'Tesorería', idsPermitidos: [1, 2] },
-
-  { to: '/panel-arbitro/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Consultá los datos fiscales de los Clubes', categoria: 'Herramientas' },
-  { href: 'https://refflix.com.ar', title: 'Ref-Flix', icon: 'bi bi-cast', desc: 'Plataforma de videos', categoria: 'Herramientas' },
-  { to: '/panel-arbitro/delegado-tecnico', title: 'Delegado Técnico', icon: 'bi bi-person-bounding-box', desc: 'Planilla Digital para Delegados Técnicos', categoria: 'Herramientas' },
-  { to: '/panel-arbitro/contactos-celulares', title: 'Contactos', icon: 'bi bi-telephone-fill', desc: 'Agenda de celulares de árbitros', categoria: 'Herramientas' },
-
-  { to: '/panel-arbitro/informes', title: 'Mis Informes', icon: 'bi bi-file-earmark-text', desc: 'Visualizar y editar informes realizados por vos', categoria: 'Administración' }
-]
-
-const menuItemsFiltrados = computed(() => {
-  const sesion = auth.getUser()
-  if (!sesion) return []
-  return menuItems.filter((item) =>
-    (!item.rolesPermitidos || item.rolesPermitidos.includes(sesion.rol)) &&
-    (!item.idsPermitidos || item.idsPermitidos.includes(sesion.id))
-  )
-})
-
-const gruposConItems = computed(() => {
-  return CATEGORIAS
-    .map(cat => ({
-      ...cat,
-      items: menuItemsFiltrados.value.filter(item => item.categoria === cat.categoria)
-    }))
-    .filter(grupo => grupo.items.length > 0)
-})
+// Módulos y accesos rápidos (compartidos con el menú lateral de escritorio)
+const { gruposModulos: gruposConItems, accesosRapidos } = useModulosArbitro()
 
 // ====================================================
 // AVISOS Y TABS
@@ -227,14 +221,43 @@ const tabs = computed(() => [
 const cargarAvisos = async () => {
   try {
     const res = await api.get({ entity: 'eventos', action: 'obtenerDashboardAvisos' })
-    if (res.ok || res.success) avisos.value = res.payload
+    if (res.ok || res.success) {
+      avisos.value = res.payload
+      tabActiva.value = elegirTabInicial()
+    }
   } catch (e) { console.error(e) } finally { cargando.value = false }
 }
 
+// Si alguien cumple hoy se abre Cumples; si no, la primera pestaña con contenido
+const elegirTabInicial = () => {
+  const cumples = avisos.value.cumpleanos || []
+  if (cumples.some(c => esHoy(c.fecha_nacimiento))) return 'cumpleanos'
+  const conContenido = tabs.value.find(t => t.cantidad > 0)
+  return conContenido ? conContenido.clave : 'reuniones'
+}
+
 // ====================================================
-// PROXIMA DESIGNACION (para el header)
+// PROXIMA DESIGNACION
 // ====================================================
-const proximaDesignacion = ref(null)
+const designacionesFuturas = ref([])
+const proximaDesignacion = computed(() => designacionesFuturas.value[0] || null)
+const cargandoDesignacion = ref(true)
+
+const esRechazada = (p) => p.rechazada === true || Number(p.rechazada) === 1
+
+const FUNCIONES = { arbitro: 'Árbitro', delegado: 'Delegado técnico' }
+
+const textoFuncion = (funcion) => {
+  if (!funcion) return ''
+  const clave = String(funcion).toLowerCase()
+  return FUNCIONES[clave] || clave.charAt(0).toUpperCase() + clave.slice(1)
+}
+
+// Mismo armado que en Mis Designaciones
+const linkMapaCancha = (p) => {
+  const direccion = [p.cj_domicilio, p.cj_localidad].filter(Boolean).join(', ').trim()
+  return direccion ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}` : null
+}
 
 const parsearFechaDesignacion = (fecha) => {
   if (!fecha) return 0
@@ -263,8 +286,9 @@ const cargarProximaDesignacion = async () => {
     if ((res.ok || res.success) && res.payload) {
       const hoy = new Date()
       hoy.setHours(0, 0, 0, 0)
-      const futuras = res.payload
+      designacionesFuturas.value = res.payload
         .filter(p => {
+          if (esRechazada(p)) return false
           const t = parsearFechaDesignacion(fechaLimpiaDesignacion(p.fecha))
           return !t || t >= hoy.getTime()
         })
@@ -273,34 +297,99 @@ const cargarProximaDesignacion = async () => {
           if (diff !== 0) return diff
           return String(a.horario || '').localeCompare(String(b.horario || ''))
         })
-      proximaDesignacion.value = futuras[0] || null
     }
-  } catch (e) { console.error(e) }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    cargandoDesignacion.value = false
+  }
 }
 
-const textoProximaDesignacion = computed(() => {
+const partidoProximaDesignacion = computed(() => {
   const p = proximaDesignacion.value
   if (!p) return ''
   const local = p.local || ''
   const visitante = p.visitante || ''
-  const partido = (local && visitante) ? `${local} vs ${visitante}` : (local || visitante || 'Partido a confirmar')
+  return (local && visitante) ? `${local} vs ${visitante}` : (local || visitante || 'Partido a confirmar')
+})
 
-  const t = parsearFechaDesignacion(p.fecha)
-  let fechaTexto = ''
-  if (t) {
-    const d = new Date(t)
-    const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-    fechaTexto = `${dias[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`
+const tiempoProximaDesignacion = computed(() => {
+  const p = proximaDesignacion.value
+  if (!p) return 0
+  return parsearFechaDesignacion(fechaLimpiaDesignacion(p.fecha))
+})
+
+const bloqueFechaDesignacion = computed(() => {
+  const t = tiempoProximaDesignacion.value
+  if (!t) return null
+  const d = new Date(t)
+  const dias = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB']
+  const meses = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+  return {
+    diaSemana: dias[d.getDay()],
+    numero: String(d.getDate()).padStart(2, '0'),
+    mes: meses[d.getMonth()]
   }
-  const hora = p.horario ? String(p.horario).slice(0, 5) : ''
-  const cuando = [fechaTexto, hora].filter(Boolean).join(' · ')
+})
 
-  return cuando ? `${partido} — ${cuando}` : partido
+const textoRelativoDesignacion = computed(() => {
+  const t = tiempoProximaDesignacion.value
+  if (!t) return ''
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  const dias = Math.round((t - hoy.getTime()) / 86400000)
+  if (dias <= 0) return 'Hoy'
+  if (dias === 1) return 'Mañana'
+  return `En ${dias} días`
+})
+
+// Otras designaciones (además de la próxima) en los próximos 7 días
+const cantidadOtrasEstaSemana = computed(() => {
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  const limite = hoy.getTime() + 7 * 86400000
+  return designacionesFuturas.value.slice(1).filter(p => {
+    const t = parsearFechaDesignacion(fechaLimpiaDesignacion(p.fecha))
+    return t && t < limite
+  }).length
+})
+
+// Escritorio: las 2 designaciones que siguen a la próxima
+const siguientesDesignaciones = computed(() => {
+  const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+  return designacionesFuturas.value.slice(1, 3).map(p => {
+    const t = parsearFechaDesignacion(fechaLimpiaDesignacion(p.fecha))
+    const d = t ? new Date(t) : null
+    const local = p.local || ''
+    const visitante = p.visitante || ''
+    return {
+      id: p.id,
+      fechaTexto: d ? `${dias[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}` : 'A confirmar',
+      partido: (local && visitante) ? `${local} vs ${visitante}` : (local || visitante || 'Partido a confirmar'),
+      detalle: [p.horario ? String(p.horario).slice(0, 5) : '', textoFuncion(p.funcion)].filter(Boolean).join(' · ')
+    }
+  })
 })
 
 // ====================================================
 // HELPERS DE FECHA
 // ====================================================
+
+// "dd/mm" del cumpleaños → texto relativo para los que no son hoy
+const textoRelativoCumple = (diaMes) => {
+  const [dia, mes] = String(diaMes || '').split('/').map(Number)
+  if (!dia || !mes) return ''
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  const fecha = new Date(hoy.getFullYear(), mes - 1, dia)
+  let dias = Math.round((fecha - hoy) / 86400000)
+  // Si ya pasó hace más de una semana, el próximo es el año que viene
+  if (dias < -7) dias = Math.round((new Date(hoy.getFullYear() + 1, mes - 1, dia) - hoy) / 86400000)
+  if (dias === 1) return 'Mañana'
+  if (dias === -1) return 'Fue ayer'
+  if (dias < 0) return `Fue hace ${-dias} días`
+  return `En ${dias} días`
+}
 const obtenerMesNombre = (n) => {
   const meses = ['', 'ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
   return meses[parseInt(n)]
@@ -323,207 +412,354 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ============ CHIP CONTEXTUAL ============ */
-.chips-contextuales {
-  display: block;
+/* ============ LAYOUT (mobile first) ============ */
+/* Celular: designación → accesos → avisos → módulos */
+.inicio-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "hero"
+    "rapidos"
+    "avisos"
+    "modulos";
+  gap: 24px;
+}
+.area-hero { grid-area: hero; }
+.area-rapidos { grid-area: rapidos; }
+.area-avisos { grid-area: avisos; }
+.area-modulos { grid-area: modulos; }
+
+/* Escritorio (con menú lateral): designación y avisos lado a lado,
+   los accesos rápidos debajo a todo el ancho. Los módulos van en el menú lateral */
+@media (min-width: 992px) {
+  .inicio-grid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-areas:
+      "hero avisos"
+      "rapidos rapidos";
+  }
+  /* La tarjeta de avisos toma la altura de la designación (no flota)
+     y si tiene muchos eventos, scrollea por dentro */
+  .area-avisos { position: relative; min-height: 320px; }
+  .area-avisos .tarjeta-avisos {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .area-avisos .avisos-scroll {
+    flex: 1 1 0;
+    min-height: 0;
+    max-height: none;
+  }
 }
 
-.chip-contextual {
+/* ============ PROXIMA DESIGNACION ============ */
+.tarjeta-hero {
+  background: #fff;
+  border-radius: 20px;
+  padding: 16px;
+  color: #0f172a;
+}
+
+.hero-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.hero-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.bloque-fecha {
+  width: 64px;
+  min-width: 64px;
+  height: 76px;
+  border-radius: 14px;
+  background: #0f172a;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.bloque-fecha-vacio { background: #f1f5f9; color: #64748b; }
+.bloque-dia { font-size: 0.75rem; font-weight: 600; color: #94a3b8; }
+.bloque-numero { font-size: 1.75rem; font-weight: 800; line-height: 1.1; }
+.bloque-mes { font-size: 0.75rem; font-weight: 700; color: #f87171; }
+
+.min-w-0 { min-width: 0; }
+
+.hero-partido {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.hero-dato {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.hero-categoria {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.hero-funcion {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.link-mapa {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #b91c1c;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.link-mapa::before { content: '·'; color: #94a3b8; margin-right: 6px; }
+.link-mapa:hover { text-decoration: underline; }
+
+.otras-designaciones {
+  display: block;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  text-decoration: none;
+}
+.otras-designaciones:hover { color: #0f172a; text-decoration: underline; }
+
+.link-hero {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #b91c1c;
+  text-decoration: none;
+}
+.link-hero:hover { text-decoration: underline; }
+
+/* ============ ACCESOS RAPIDOS ============ */
+.acceso-rapido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 84px;
+  height: 100%;
+  padding: 10px 4px;
+  border-radius: 16px;
+  background: #1e293b;
+  color: #f1f5f9;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  transition: background 0.2s;
+}
+.acceso-rapido i { font-size: 1.35rem; color: #f87171; }
+.acceso-rapido:hover { background: #334155; color: #fff; }
+
+/* Escritorio: accesos horizontales (ícono + texto) a todo el ancho */
+@media (min-width: 992px) {
+  .acceso-rapido {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    min-height: 64px;
+    padding: 0 18px;
+    font-size: 0.95rem;
+    text-align: left;
+  }
+}
+
+/* ============ SIGUIENTES DESIGNACIONES (escritorio) ============ */
+.siguientes { margin-top: 14px; }
+.siguiente {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px 18px;
-  border-radius: 14px;
-  transition: all 0.2s ease;
-  width: 100%;
+  padding: 11px 2px;
+  border-top: 1px solid #e2e8f0;
+  color: #0f172a;
+  text-decoration: none;
 }
-
-.chip-designacion {
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-.chip-designacion:hover {
-  background: #fee2e2;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.08);
-}
-
-.chip-icono {
-  font-size: 1.6rem;
-  color: #dc2626;
-}
-
-.chip-cuerpo {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  line-height: 1.2;
-}
-.chip-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.75; font-weight: 700; }
-.chip-valor { font-weight: 800; font-size: 0.88rem; }
-.chip-cta {
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: #dc2626;
-  opacity: 0.85;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 1px;
-}
-.chip-cta i { transition: transform 0.2s ease; }
-.chip-designacion:hover .chip-cta i { transform: translateX(3px); }
+.siguiente:hover { background: #f8fafc; }
+.siguiente-fecha { width: 88px; font-size: 0.8rem; font-weight: 700; color: #475569; flex-shrink: 0; }
+.siguiente-partido { flex: 1; min-width: 0; font-size: 0.875rem; font-weight: 600; }
+.siguiente-dato { font-size: 0.8rem; color: #475569; white-space: nowrap; }
+.siguiente .bi { color: #94a3b8; font-size: 0.75rem; }
 
 /* ============ CATEGORIAS ============ */
+.titulo-modulos {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
 .categoria-label {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #94a3b8;
-  margin-bottom: 14px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed #e2e8f0;
+  margin: 0 0 10px;
 }
 .categoria-label i { font-size: 0.95rem; color: #dc2626; }
 
-/* ============ TARJETAS MODULOS ============ */
-.modern-menu-card {
-  background: white;
-  border-radius: 16px;
-  padding: clamp(15px, 3vw, 18px);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid #f1f5f9;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-}
-
-.icon-box {
-  width: 52px;
-  height: 52px;
-  min-width: 52px;
-  background: #fef2f2;
-  color: #dc2626;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  transition: all 0.3s ease;
-}
-
-.card-text { flex: 1; min-width: 0; }
-.card-text h5 { font-size: 0.9rem; color: #1e293b; }
-.extra-small { font-size: 0.72rem; }
-.card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; align-self: center; }
-
-.modern-menu-card:hover {
-  border-color: #f87171;
-  transform: translateY(-5px);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
-}
-.modern-menu-card:hover .icon-box { background: #dc2626; color: white; }
-
-/* ============ SIDEBAR ============ */
-.sidebar-professional {
-  background: #ffffff;
+/* ============ AVISOS ============ */
+.tarjeta-avisos {
+  background: #fff;
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  padding: 16px;
+  color: #0f172a;
 }
 
-.sidebar-header {
-  background: #e2e8f0;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.titulo-avisos {
+  font-size: 1rem;
+  font-weight: 800;
 }
-.fw-black { font-weight: 800; font-size: 0.85rem; color: #1e293b; }
 
-/* ============ TABS ============ */
 .tabs-avisos {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
-  padding: 10px 12px 0;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 4px;
 }
 
 .tab-btn {
-  flex: 1;
   border: none;
   background: transparent;
-  padding: 8px 6px;
-  font-size: 0.72rem;
+  min-height: 40px;
+  padding: 6px 4px;
+  font-size: 0.78rem;
   font-weight: 700;
-  color: #64748b;
-  cursor: pointer;
-  border-radius: 8px 8px 0 0;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
+  color: #475569;
+  border-radius: 9px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
-.tab-btn:hover { color: #dc2626; }
+.tab-btn:hover { color: #0f172a; }
+.tab-btn:focus-visible { outline: 2px solid #0f172a; outline-offset: 1px; }
 .tab-btn.activa {
-  color: #dc2626;
-  border-bottom-color: #dc2626;
-  background: white;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
 }
 
 .tab-badge {
-  background-color: #fef2f2;
-  color: #dc2626;
+  background-color: #e2e8f0;
+  color: #334155;
   padding: 1px 6px;
   border-radius: 10px;
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   font-weight: 800;
 }
-.tab-btn.activa .tab-badge { background: #dc2626; color: white; }
+.tab-btn.activa .tab-badge { background: #0f172a; color: #fff; }
 
-/* ============ SCROLL ============ */
-.sidebar-scroll-container {
+.avisos-scroll {
+  max-height: 340px;
+  overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
-.sidebar-scroll-container::-webkit-scrollbar { width: 5px; }
-.sidebar-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+.avisos-scroll::-webkit-scrollbar { width: 5px; }
+.avisos-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-/* ============ CALENDARIO ============ */
+/* ============ EVENTOS ============ */
+.evento {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid #e2e8f0;
+}
+.evento:first-child { border-top: none; }
+
 .cal-box {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: #f1f5f9; border-radius: 10px; min-width: 44px; height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border-radius: 12px;
+  min-width: 48px;
+  height: 48px;
 }
-.cal-box .day { font-weight: 800; font-size: 1rem; line-height: 1; color: #1e293b; }
-.cal-box .month { font-size: 0.6rem; font-weight: 700; }
-.today-bg { background: #dc2626 !important; color: white !important; }
-.today-bg .day { color: white !important; }
+.cal-box .day { font-weight: 800; font-size: 1.05rem; line-height: 1; color: #0f172a; }
+.cal-box .month { font-size: 0.7rem; font-weight: 700; color: #b91c1c; margin-top: 2px; }
+.today-bg { background: #dc2626; }
+.today-bg .day, .today-bg .month { color: #fff; }
 
-/* ============ EVENT CARDS ============ */
-.event-card-modern {
-  display: flex; gap: 12px; margin-bottom: 6px; background: #fdfdfd; padding: 8px; border-radius: 12px; border: 1px solid #e2e8f0;
-}
 .event-info { flex: 1; min-width: 0; }
 .event-info strong {
-  font-size: 0.8rem; color: #1e293b; display: block; line-height: 1.2; white-space: normal;
+  font-size: 0.875rem;
+  color: #0f172a;
+  display: block;
+  line-height: 1.25;
 }
 .event-info p {
-  font-size: 0.72rem; color: #64748b; margin: 0; white-space: normal;
+  font-size: 0.8rem;
+  color: #475569;
+  margin: 2px 0 0;
 }
 
-.reminder-pill { background: #fffbeb; color: #92400e; padding: 8px 12px; border-radius: 10px; font-size: 0.72rem; border-left: 3px solid #f59e0b; margin-bottom: 5px; }
-.empty-msg { font-size: 0.7rem; color: #94a3b8; font-style: italic; padding: 8px 0; }
+.badge-coordina {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.reminder-pill {
+  background: #fffbeb;
+  color: #92400e;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  margin: 8px 0;
+}
+.empty-msg { font-size: 0.8rem; color: #64748b; font-style: italic; padding: 12px 0 4px; margin: 0; }
 
 .animate__animated { animation-duration: 0.4s; }
 </style>

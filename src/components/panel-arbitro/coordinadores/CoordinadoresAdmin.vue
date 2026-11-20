@@ -1,50 +1,14 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-
-    <!-- Manejo de margen inferior responsivo con mb-4 y mb-md-5 -->
-    <div class="dashboard-header mb-4 mb-md-5 mt-4 text-start">
-      <div class="border-start border-danger border-5 ps-3">
-        <h4 class="text-white fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-          <i class="bi bi-graph-up-arrow me-1"></i> Coordinadores
-        </h4>
-        <span class="text-white-50 small d-block mt-1">Gestión de coordinadores</span>
-      </div>
-    </div>
-
-    <div class="row g-3 g-md-4">
-      <div v-for="item in opcionesCoordinadores" :key="item.title" class="col-12 col-md-4">
-        <RouterLink :to="item.to" class="text-decoration-none h-100 d-block">
-
-          <!-- Todo el layout de la tarjeta pasado a clases nativas de Bootstrap -->
-          <div class="modern-menu-card d-flex align-items-center gap-3 px-4 py-3 p-md-3 bg-white w-100 h-100 shadow-sm">
-
-            <div class="icon-box flex-shrink-0 d-flex align-items-center justify-content-center">
-              <i :class="item.icon"></i>
-            </div>
-
-            <div class="flex-grow-1">
-              <h5 class="fw-bold m-0 text-dark" style="font-size: 0.95rem;">{{ item.title }}</h5>
-              <p class="m-0 text-muted lh-sm mt-1" style="font-size: 0.75rem;">{{ item.desc }}</p>
-            </div>
-
-            <div class="card-arrow text-secondary fs-5">
-              <i class="bi bi-chevron-right"></i>
-            </div>
-
-          </div>
-
-        </RouterLink>
-      </div>
-    </div>
-
+    <p class="seccion-descripcion seccion-descripcion-oscura">Exámenes y reuniones</p>
+    <ListaModulos :grupos="grupos" />
   </div>
 </template>
 
 <script setup>
-import { RouterLink } from 'vue-router';
-import { useHead } from '@vueuse/head';
+import { useHead } from '@vueuse/head'
+import ListaModulos from '@/components/panel-arbitro/ListaModulos.vue'
 
-// Actualización de Meta Tags
 useHead({
   title: 'Coordinadores | AAAB',
   meta: [
@@ -52,91 +16,20 @@ useHead({
   ],
 })
 
-
-const opcionesCoordinadores = [
+// Mismo título y descripción que muestra cada sección al entrar
+const grupos = [
   {
-    to: '/panel-arbitro/coordinadores/reuniones-mensuales', // Puedes ajustar esta ruta
-    title: 'Reuniones Mensuales',
-    icon: 'bi bi-clipboard-data-fill',
-    desc: 'Registro de presentes y ausentes en reuniones mensuales.'
-  },
-  {
-    to: '/panel-arbitro/coordinadores/disponibilidad-horaria', // Puedes ajustar esta ruta
-    title: 'Disponibilidad Horaria',
-    icon: 'bi bi-clock-history',
-    desc: 'Visualización de la disponibilidad horaria de los árbitros'
-  },
-        {
-    to: '/panel-arbitro/coordinadores/resumen-arbitros', // Puedes ajustar esta ruta
-    title: 'Planilla General de Árbitros',
-    icon: 'bi bi-graph-up-arrow',
-    desc: 'Administración de exámenes teóricos/físicos.'
-  },
-  {
-    to: '/panel-arbitro/coordinadores/planilla-general-observaciones', // Puedes ajustar esta ruta
-    title: 'Planilla General de Observaciones',
-    icon: 'bi bi-clipboard2-data-fill',
-    desc: 'Visualizar todas las observaciones realizadas a los árbitros.'
-  },
-  {
-    to: '/panel-arbitro/coordinadores/informes-coordinadores', // Puedes ajustar esta ruta
-    title: 'Informes',
-    icon: 'bi bi-file-earmark-text-fill',
-    desc: 'Administración de informes.'
+    items: [
+      { to: '/panel-arbitro/coordinadores/reuniones-mensuales', title: 'Reuniones mensuales', icon: 'bi bi-clipboard-data-fill', desc: 'Presentes y ausentes de cada reunión' },
+      { to: '/panel-arbitro/coordinadores/disponibilidad-horaria', title: 'Disponibilidad horaria', icon: 'bi bi-clock-history', desc: 'Horarios de los árbitros de tu grupo' },
+      { to: '/panel-arbitro/coordinadores/resumen-arbitros', title: 'Planilla general de árbitros', icon: 'bi bi-table', desc: 'Asambleas, recuperatorios y reuniones' },
+      { to: '/panel-arbitro/coordinadores/planilla-general-observaciones', title: 'Planilla general de observaciones', icon: 'bi bi-clipboard2-data-fill', desc: 'Observaciones de los árbitros de tus grupos' },
+      { to: '/panel-arbitro/coordinadores/informes-coordinadores', title: 'Informes', icon: 'bi bi-file-earmark-text-fill', desc: 'Informes de los árbitros' }
+    ]
   }
-];
+]
 </script>
 
 <style scoped>
-/* ====================================================
-   ESTILOS DE LA CABECERA
-   ==================================================== */
-
-/* ====================================================
-   TARJETAS DE NAVEGACIÓN
-   ==================================================== */
-.modern-menu-card {
-  border: 1px solid #f1f5f9;
-  border-radius: 16px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-}
-
-/* El tamaño del ícono coincide con la referencia (IndumentariaArbitro) */
-.icon-box {
-  width: 56px;
-  height: 56px;
-  min-width: 56px;
-  background: #fef2f2;
-  color: #dc2626;
-  border-radius: 16px;
-  font-size: 1.5rem;
-  transition: all 0.3s ease;
-}
-
-.card-arrow {
-  transition: all 0.3s ease;
-}
-
-/* --- EFECTOS HOVER --- */
-.modern-menu-card:hover {
-  border-color: #f87171;
-  transform: translateY(-5px);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06) !important;
-}
-
-.modern-menu-card:hover .icon-box {
-  background: #dc2626;
-  color: white;
-  transform: scale(1.05);
-}
-
-.modern-menu-card:hover .card-arrow {
-  color: #dc2626;
-  transform: translateX(4px);
-}
-
 .animate__animated { animation-duration: 0.5s; }
-
-/* Sin media queries. Diseño fluido con Bootstrap nativo y CSS moderno. */
 </style>

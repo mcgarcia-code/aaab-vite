@@ -14,12 +14,7 @@
 
       <!-- Card Header -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-center border-bottom gap-3">
-        <div class="w-100 w-md-auto border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-journal-check me-1"></i> Mis Exámenes
-          </h4>
-          <span class="text-muted small d-block mt-1">Rendí los exámenes teóricos online y consultá tus resultados</span>
-        </div>
+        <p class="seccion-descripcion w-100 w-md-auto">Rendí los teóricos online</p>
 
         <div v-if="estado === 'habilitado' && evento" class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-end w-100 w-md-auto">
           <span class="badge bg-danger px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
@@ -32,16 +27,13 @@
       <div class="card-body p-3 p-md-4">
 
         <!-- Estado: Cargando -->
-        <div v-if="estado === 'cargando'" class="text-center py-5">
-          <span class="spinner-border text-danger"></span>
-          <p class="text-muted mt-3 m-0 fw-bold small">Verificando tu habilitación...</p>
-        </div>
+        <EstadoCargando v-if="estado === 'cargando'" texto="Verificando tu habilitación" />
 
         <!-- Estado: Habilitado para rendir -->
         <div v-else-if="estado === 'habilitado'" class="mb-4">
           <div class="card border border-danger-subtle bg-danger-subtle shadow-sm rounded-4 overflow-hidden">
              <div class="card-body p-3 p-md-4 text-center">
-                <span class="material-icons text-danger mb-2 d-block" style="font-size: 45px;">quiz</span>
+                <i class="bi bi-question-circle text-danger mb-2 d-block" style="font-size: 45px;"></i>
                 <h5 class="fw-bold text-dark mb-1 fs-5 fs-md-4">¡Tenés un examen habilitado!</h5>
                 <p class="text-dark mb-4 fs-6">{{ evento.titulo }}</p>
 
@@ -57,20 +49,20 @@
 
         <!-- Estado: Ya finalizado -->
         <div v-else-if="estado === 'finalizado'" class="text-center py-4 px-3 text-muted bg-light rounded-3 mb-4">
-          <span class="material-icons opacity-50 d-block mb-2 text-success" style="font-size: 40px;">check_circle</span>
+          <i class="bi bi-check-circle opacity-50 d-block mb-2 text-success" style="font-size: 40px;"></i>
           <p class="m-0 fw-bold">Ya rendiste el examen habilitado.</p>
           <p class="small m-0 mt-1">Podés ver el resultado en tu historial más abajo.</p>
         </div>
 
         <div v-else-if="estado === 'ausente'" class="text-center py-4 px-3 text-muted bg-light rounded-3 mb-4">
-          <span class="material-icons opacity-50 d-block mb-2 text-danger" style="font-size: 40px;">event_busy</span>
+          <i class="bi bi-calendar-x opacity-50 d-block mb-2 text-danger" style="font-size: 40px;"></i>
           <p class="m-0 fw-bold">Figurás como ausente en la reunión, no podés realizar este examen.</p>
           <p v-if="evento?.titulo" class="small m-0 mt-1">{{ evento.titulo }}<span v-if="evento.fecha"> · {{ evento.fecha }}</span></p>
         </div>
 
         <!-- Estado: Sin permiso -->
         <div v-else class="text-center py-4 px-3 text-muted bg-light rounded-3 mb-4">
-          <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">lock</span>
+          <i class="bi bi-lock opacity-50 d-block mb-2" style="font-size: 40px;"></i>
           <p class="m-0 fw-bold">Aún no tenés permiso para realizar un examen nuevo.</p>
         </div>
 
@@ -111,7 +103,7 @@
         </div>
 
         <div v-else-if="!porTipo[pestana].length" class="text-center py-5 px-3 text-muted bg-light rounded-3">
-          <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">history_toggle_off</span>
+          <i class="bi bi-clock-history opacity-50 d-block mb-2" style="font-size: 40px;"></i>
           <p class="m-0 fw-bold">No rendiste exámenes de {{ TIPOS.find(t => t.clave === pestana).etiqueta.toLowerCase() }} en {{ anioSeleccionado }}.</p>
         </div>
 
@@ -164,6 +156,7 @@
   </div>
 </template>
 <script setup>
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
 import { ref, computed, watch, onMounted } from 'vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'

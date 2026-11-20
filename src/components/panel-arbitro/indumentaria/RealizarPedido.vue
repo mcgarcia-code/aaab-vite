@@ -6,30 +6,12 @@
       <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-shop me-1"></i> Solicitar Indumentaria
-            </h4>
-            <span class="text-muted small d-block mt-1">Armá tu pedido de temporada</span>
-          </div>
+          <p class="seccion-descripcion">Armá tu pedido de temporada</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <RouterLink to="/panel-arbitro/indumentaria/mis-pedidos" class="text-decoration-none">
-              <button class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Ver Mis Pedidos" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
-                <span class="material-icons" style="font-size: 22px; color: #000;">history</span>
-                <!-- Texto oculto en móvil, visible en tablet/desktop -->
-                <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Mis Pedidos</span>
-              </button>
-            </RouterLink>
+            <BotonHerramienta tipo="enlace" texto="Pedidos" icono="bi-clock-history" @click="$router.push('/panel-arbitro/indumentaria/mis-pedidos')" />
 
-            <button @click="mostrarCarrito = true" class="btn-blue position-relative rounded shadow-sm border-0 p-2 d-flex align-items-center justify-content-center gap-2 text-white" title="Ver Carrito" style="background-color: #3b82f6;">
-              <span class="material-icons" style="font-size: 20px;">shopping_cart</span>
-              <!-- Texto oculto en móvil, visible en tablet/desktop -->
-              <span class="d-none d-md-inline fw-bold text-white" style="font-size: 0.8rem;">Ver Carrito</span>
-              <span v-if="carrito.length > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.6rem; transform: translate(-30%, -30%) !important;">
-                {{ totalArticulosCarrito }}
-              </span>
-            </button>
+            <BotonHerramienta tipo="nuevo" texto="Ver carrito" icono="bi-cart" :cantidad="totalArticulosCarrito" @click="mostrarCarrito = true" />
           </div>
         </div>
 
@@ -63,16 +45,16 @@
                       alt="Indumentaria"
                     >
                     <div class="zoom-icon-overlay">
-                      <span class="material-icons" style="font-size: 16px;">search</span>
+                      <i class="bi bi-search" style="font-size: 16px;"></i>
                     </div>
                   </div>
 
                   <template v-if="obtenerTotalImagenes(prenda) > 1">
                     <button @click.stop="cambiarFoto(prenda, -1)" class="btn-nav-foto start-0 ms-1">
-                      <span class="material-icons">chevron_left</span>
+                      <i class="bi bi-chevron-left"></i>
                     </button>
                     <button @click.stop="cambiarFoto(prenda, 1)" class="btn-nav-foto end-0 me-1">
-                      <span class="material-icons">chevron_right</span>
+                      <i class="bi bi-chevron-right"></i>
                     </button>
                     <div class="indicador-fotos">
                       {{ (prenda.fotoActualIndex || 0) + 1 }} / {{ obtenerTotalImagenes(prenda) }}
@@ -104,7 +86,7 @@
                             style="width: 28px; height: 100%; background: transparent;"
                             @click="prenda.cantidadSeleccionada > 1 ? (prenda.cantidadSeleccionada--, validarCantidad(prenda)) : null"
                           >
-                            <span class="material-icons" style="font-size: 16px;">remove</span>
+                            <i class="bi bi-dash-lg" style="font-size: 16px;"></i>
                           </button>
 
                           <input
@@ -123,7 +105,7 @@
                             style="width: 28px; height: 100%; background: transparent;"
                             @click="prenda.cantidadSeleccionada < (permitePedidoSinStock(prenda) ? 99 : obtenerStockMaximo(prenda)) ? (prenda.cantidadSeleccionada++, validarCantidad(prenda)) : null"
                           >
-                            <span class="material-icons" style="font-size: 16px;">add</span>
+                            <i class="bi bi-plus-lg" style="font-size: 16px;"></i>
                           </button>
                         </div>
                       </div>
@@ -146,9 +128,7 @@
                       :disabled="obtenerStockMaximo(prenda) <= 0 && !permitePedidoSinStock(prenda)"
                       :class="['btn btn-sm w-100 rounded-pill fw-bold shadow-sm py-2 d-flex align-items-center justify-content-center gap-1 mt-2', (obtenerStockMaximo(prenda) <= 0 && permitePedidoSinStock(prenda)) ? 'btn-warning text-dark' : 'btn-danger text-white']"
                     >
-                      <span class="material-icons" style="font-size: 16px;">
-                        {{ (obtenerStockMaximo(prenda) > 0 || permitePedidoSinStock(prenda)) ? 'add_shopping_cart' : 'remove_shopping_cart' }}
-                      </span>
+                      <i :class="['bi', (obtenerStockMaximo(prenda) > 0 || permitePedidoSinStock(prenda)) ? 'bi-cart-plus' : 'bi-cart-x']" style="font-size: 16px;"></i>
                       {{ obtenerStockMaximo(prenda) > 0 ? 'AGREGAR' : (permitePedidoSinStock(prenda) ? 'ENCARGAR' : 'SIN STOCK') }}
                     </button>
                   </div>
@@ -158,7 +138,7 @@
           </div>
 
           <div v-if="stockPaginado.length === 0" class="text-center p-5 bg-light rounded border mt-3" style="border-radius: 12px !important;">
-            <span class="material-icons text-muted" style="font-size: 48px;">inventory_2</span>
+            <i class="bi bi-box-seam text-muted" style="font-size: 48px;"></i>
             <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron prendas.</p>
           </div>
 
@@ -193,7 +173,7 @@
     <Teleport to="body">
       <div v-if="imagenZoom" class="modal-zoom-overlay animate__animated animate__fadeIn" @click="imagenZoom = null" style="z-index: 20000; cursor: pointer;">
         <button class="btn-cerrar-zoom shadow" @click.stop="imagenZoom = null">
-          <span class="material-icons">close</span>
+          <i class="bi bi-x-lg"></i>
         </button>
         <img :src="imagenZoom" class="img-zoom-full animate__animated animate__zoomIn" @click.stop style="cursor: default;">
       </div>
@@ -211,7 +191,7 @@
       maxWidth="450px"
     >
       <div v-if="carrito.length === 0" class="text-center py-5 text-muted bg-light rounded border">
-        <span class="material-icons fs-1 mb-2">remove_shopping_cart</span>
+        <i class="bi bi-cart-x fs-1 mb-2"></i>
         <p class="m-0">El carrito está vacío</p>
       </div>
 
@@ -222,7 +202,7 @@
             <div class="text-muted extra-small">Talle: <strong>{{ p.talle }}</strong> | Cant: <strong>{{ p.cantidadSolicitada }}</strong> | ${{ p.precio * p.cantidadSolicitada }}</div>
           </div>
           <button @click="carrito.splice(i, 1)" class="btn btn-sm text-danger border-0 p-1">
-            <span class="material-icons" style="font-size: 18px;">delete</span>
+            <i class="bi bi-trash" style="font-size: 18px;"></i>
           </button>
         </div>
         <div class="d-flex justify-content-between mt-3 fw-bold fs-5 text-danger bg-danger-subtle p-2 rounded">
@@ -232,7 +212,7 @@
 
       <template #footer>
         <button @click="mostrarCarrito = false" class="btn btn-light w-100 rounded-pill fw-bold border" style="font-size: 0.8rem;">SEGUIR MIRANDO</button>
-        <button v-if="carrito.length > 0" @click="confirmarPedido" class="btn btn-dark w-100 rounded-pill fw-bold shadow" style="font-size: 0.8rem;">FINALIZAR</button>
+        <button v-if="carrito.length > 0" @click="confirmarPedido" class="btn btn-danger w-100 rounded-pill fw-bold shadow" style="font-size: 0.8rem;">FINALIZAR</button>
       </template>
     </ModalBase>
 
@@ -259,7 +239,7 @@
       </div>
 
       <div class="alert alert-info extra-small py-2 border-0 mb-0 fw-bold">
-        <span class="material-icons align-middle me-1" style="font-size: 14px;">info</span>
+        <i class="bi bi-info-circle align-middle me-1" style="font-size: 14px;"></i>
         Para que tu pedido sea ACEPTADO, debes enviar el comprobante de pago a tesoreria@arbitroshandball.com.ar
       </div>
 
@@ -276,6 +256,7 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
 import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue';
 import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';

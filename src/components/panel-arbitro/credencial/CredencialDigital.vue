@@ -1,10 +1,7 @@
 <template>
   <div class="container-fluid py-4 d-flex justify-content-center animate__animated animate__fadeIn">
 
-    <div v-if="cargando" class="loader-full text-center mt-5">
-      <div class="spinner-border text-primary"></div>
-      <p class="text-white mt-2 fw-bold">Generando credencial oficial...</p>
-    </div>
+    <EstadoCargando v-if="cargando" texto="Generando credencial oficial" class="w-100" style="max-width: 750px;" />
 
     <div v-else class="w-100 d-flex flex-column gap-4" style="max-width: 750px;">
 
@@ -97,6 +94,7 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
 import { ref, onMounted } from 'vue';
 import { api } from '@/api/api';
 import html2canvas from 'html2canvas';

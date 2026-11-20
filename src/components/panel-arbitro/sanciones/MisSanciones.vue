@@ -4,25 +4,13 @@
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <!-- Header de la Tarjeta -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-hammer me-1"></i> Mis Sanciones
-          </h4>
-          <span class="text-muted small d-block mt-1">Total: {{ sancionesFiltradas.length }} resoluciones en tu legajo</span>
-        </div>
+        <p class="seccion-descripcion">Consultá tus sanciones · Total: {{ sancionesFiltradas.length }} resoluciones en tu legajo</p>
 
         <div class="d-flex gap-2 align-items-center">
           <!-- Botón de filtros (Solo visible en celular) -->
-          <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-            <span class="material-icons fs-6">filter_alt</span>
-          </button>
-          <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-            <span class="material-icons text-dark fs-6">filter_alt_off</span>
-            <span class="fw-bold text-dark d-none d-md-inline small">Limpiar Filtros</span>
-          </button>
-          <button @click="obtenerSancionesLocales" class="btn btn-light border shadow-sm py-2 d-flex align-items-center">
-            <span class="material-icons text-dark fs-6">refresh</span>
-          </button>
+          <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
+          <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
+          <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="obtenerSancionesLocales" />
         </div>
       </div>
 
@@ -56,21 +44,16 @@
             <input type="text" v-model="filtros.hasta" class="form-control form-control-sm shadow-none" placeholder="HASTA (DD/MM/AAAA)">
           </div>
           <div class="col-12 d-md-none mt-2">
-            <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold">Aplicar Filtros</button>
+            <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold">Aplicar Filtros</button>
           </div>
         </div>
       </div>
 
       <div class="card-body bg-white p-0">
-        <div v-if="cargando" class="text-center my-5">
-          <div class="spinner-border text-danger" role="status"></div>
-          <p class="mt-2 text-muted">Buscando en legajo...</p>
-        </div>
-        <div v-else-if="sancionesFiltradas.length === 0" class="text-center p-5 bg-light">
-          <span class="material-icons text-success" style="font-size: 60px;">verified</span>
-          <h5 class="fw-bold text-dark mt-3">Sin resultados</h5>
-          <p class="text-muted small m-0">No se encontraron medidas disciplinarias con los filtros aplicados.</p>
-        </div>
+        <EstadoCargando v-if="cargando" texto="Buscando en tu legajo" />
+        <EstadoVacio v-else-if="sancionesFiltradas.length === 0" icono="bi-patch-check"
+                     titulo="Sin resultados"
+                     mensaje="No se encontraron medidas disciplinarias con los filtros aplicados." />
 
         <div v-else>
           <!-- Encabezado de la lista (Solo visible en Escritorio) -->
@@ -96,7 +79,7 @@
                 <!-- ACCIÓN -->
                 <div class="col-md-2 px-2">
                   <div class="d-flex flex-column gap-2 align-items-center">
-                    <button @click="abrirDescargo(s)" class="btn btn-sm fw-bold position-relative w-100" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary') : 'btn-outline-secondary'">
+                    <button @click="abrirDescargo(s)" class="btn btn-sm fw-bold position-relative w-100" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-danger text-white' : 'btn-outline-danger') : 'btn-outline-secondary'">
                       <i class="bi" :class="s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history'"></i>
                       <span class="ms-1">{{ s.estado_dinamico == 3 ? 'Descargo' : 'Historial' }}</span>
                       <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
@@ -151,7 +134,7 @@
                 </div>
                 <!-- Acciones -->
                 <div class="d-flex flex-column gap-2">
-                  <button @click="abrirDescargo(s)" class="btn btn-sm fw-bold position-relative w-100" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-primary text-white' : 'btn-outline-primary') : 'btn-outline-secondary'">
+                  <button @click="abrirDescargo(s)" class="btn btn-sm fw-bold position-relative w-100" :class="s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'btn-danger text-white' : 'btn-outline-danger') : 'btn-outline-secondary'">
                     <i class="bi" :class="s.estado_dinamico == 3 ? 'bi-chat-text' : 'bi-clock-history'"></i>
                     <span class="ms-1">{{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'Nuevo Mensaje' : 'Realizar Descargo') : 'Historial de Descargos' }}</span>
                     <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
@@ -243,7 +226,7 @@
 
       <template #footer>
         <div v-if="sancionActiva?.estado_dinamico == 3" class="w-100 d-flex justify-content-end gap-2">
-          <button @click="enviarDescargo" class="btn btn-primary fw-bold" :disabled="enviandoDescargo || (!nuevoMensaje && !fileInput?.files?.length)">
+          <button @click="enviarDescargo" class="btn btn-danger fw-bold" :disabled="enviandoDescargo || (!nuevoMensaje && !fileInput?.files?.length)">
             <span v-if="enviandoDescargo" class="spinner-border spinner-border-sm me-1"></span>
             ENVIAR DESCARGO
           </button>
@@ -269,7 +252,7 @@
 
       <div class="text-center p-3">
         <div class="mb-4">
-          <span class="material-icons text-danger" style="font-size: 50px;">forward_to_inbox</span>
+          <i class="bi bi-envelope text-danger" style="font-size: 50px;"></i>
         </div>
         <p class="fs-6 text-dark">
           Para apelar esta sanción ante la Comisión Directiva, debés enviar un e-mail formal detallando los motivos de tu apelación.
@@ -285,7 +268,7 @@
 
       <template #footer>
         <div class="w-100 d-flex justify-content-center">
-          <button @click="mostrarModalApelar = false" class="btn btn-dark rounded-pill px-5 fw-bold shadow-sm">
+          <button @click="mostrarModalApelar = false" class="btn btn-danger rounded-pill px-5 fw-bold shadow-sm">
             ENTENDIDO
           </button>
         </div>
@@ -296,6 +279,9 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { auth } from '../../../api/auth';
 import { api }  from '@/api/api';

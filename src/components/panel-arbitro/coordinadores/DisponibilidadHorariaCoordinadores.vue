@@ -5,27 +5,14 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-person-lines-fill me-1"></i> Datos Personales — Mi Grupo
-            </h4>
-            <span class="text-muted small d-block mt-1">Mi grupo · {{ arbitrosFiltrados.length }} árbitros</span>
-          </div>
+          <p class="seccion-descripcion">Horarios de los árbitros de tu grupo · {{ arbitrosFiltrados.length }} árbitros</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
 
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
 
-            <button @click="exportarExcel" class="btn btn-success shadow-sm py-2 d-flex align-items-center gap-2 text-white border-0">
-              <span class="material-icons fs-6">download</span>
-              <span class="fw-bold d-none d-md-inline small">Excel</span>
-            </button>
+            <BotonHerramienta tipo="excel" @click="exportarExcel" />
           </div>
         </div>
 
@@ -77,7 +64,7 @@
               <input v-model="filtros.zona" class="form-control form-control-sm shadow-none" placeholder="ZONA...">
             </div>
             <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -171,17 +158,17 @@
                   <td class="text-center text-dark">{{ a.edad }}</td>
                   <td class="text-center">
                     <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn btn-success btn-sm p-1" title="Enviar WhatsApp">
-                      <span class="material-icons" style="font-size: 14px;">chat</span>
+                      <i class="bi bi-whatsapp" style="font-size: 14px;"></i>
                     </button>
                     <span v-else class="text-muted">-</span>
                   </td>
                   <td class="text-center">
-                    <span v-if="a.es_activo" class="material-icons text-success" title="Activo" style="font-size: 18px;">check_circle</span>
-                    <span v-else class="material-icons text-danger" title="Inactivo" style="font-size: 18px;">cancel</span>
+                    <i v-if="a.es_activo" class="bi bi-check-circle-fill text-success" title="Activo" style="font-size: 18px;"></i>
+                    <i v-else class="bi bi-x-circle-fill text-danger" title="Inactivo" style="font-size: 18px;"></i>
                   </td>
                   <td class="text-center">
-                    <span v-if="a.apto_medico" class="material-icons text-success" title="Apto Físico" style="font-size: 18px;">check_circle</span>
-                    <span v-else class="material-icons text-danger" title="No Apto Físico" style="font-size: 18px;">cancel</span>
+                    <i v-if="a.apto_medico" class="bi bi-check-circle-fill text-success" title="Apto Físico" style="font-size: 18px;"></i>
+                    <i v-else class="bi bi-x-circle-fill text-danger" title="No Apto Físico" style="font-size: 18px;"></i>
                   </td>
                   <td class="text-center text-dark">{{ a.grupo }}</td>
                   <td class="text-center text-dark">{{ a.subgrupo }}</td>
@@ -205,7 +192,7 @@
                 </tr>
                 <tr v-if="!cargando && arbitrosPaginados.length === 0">
                   <td colspan="21" class="text-center py-5 text-muted">
-                    <span class="material-icons d-block mb-2" style="font-size: 40px;">search_off</span>
+                    <i class="bi bi-search d-block mb-2" style="font-size: 40px;"></i>
                     <p class="m-0 fw-bold">No se encontraron registros.</p>
                   </td>
                 </tr>
@@ -243,8 +230,8 @@
                   <div class="bg-white p-2 rounded border small mb-3 border-light-subtle d-flex justify-content-between align-items-center">
                     <span class="text-dark d-flex align-items-center gap-1">
                       <strong>Apto Físico: </strong>
-                      <span v-if="a.apto_medico" class="material-icons text-success align-middle" style="font-size: 16px;">check_circle</span>
-                      <span v-else class="material-icons text-danger align-middle" style="font-size: 16px;">cancel</span>
+                      <i v-if="a.apto_medico" class="bi bi-check-circle-fill text-success align-middle" style="font-size: 16px;"></i>
+                      <i v-else class="bi bi-x-circle-fill text-danger align-middle" style="font-size: 16px;"></i>
                     </span>
                     <span class="text-dark"><strong>Juega:</strong> {{ a.juega_handball }} <span v-if="a.juega_handball === 'SI'">({{ a.donde_juega }})</span></span>
                   </div>
@@ -255,13 +242,13 @@
                   </div>
 
                   <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn btn-sm w-100 fw-bold shadow-sm mt-3 text-white d-flex align-items-center justify-content-center gap-2" style="background: #25d366;">
-                    <span class="material-icons fs-6">chat</span> WhatsApp
+                    <i class="bi bi-whatsapp fs-6"></i> WhatsApp
                   </button>
                 </div>
               </div>
 
               <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
+                <i class="bi bi-search text-muted opacity-50 d-block mb-2" style="font-size: 40px;"></i>
                 <p class="text-muted m-0 fw-bold">No se encontraron registros.</p>
               </div>
             </template>
@@ -310,7 +297,7 @@
 
       <template #footer>
         <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="!algunaSeleccionada">
+        <button @click="ejecutarDescargaExcel" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="!algunaSeleccionada">
           <i class="bi bi-file-earmark-excel me-1"></i> DESCARGAR EXCEL
         </button>
       </template>
@@ -320,6 +307,7 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'

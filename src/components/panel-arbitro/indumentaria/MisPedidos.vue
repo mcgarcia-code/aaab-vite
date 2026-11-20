@@ -4,25 +4,12 @@
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
 
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-box-seam me-1"></i> Mis Pedidos
-          </h4>
-          <span class="text-muted small d-block mt-1">Total: {{ pedidosFiltradas.length }} solicitudes</span>
-        </div>
+        <p class="seccion-descripcion">Estado de tus solicitudes · Total: {{ pedidosFiltradas.length }} solicitudes</p>
 
         <div class="header-actions d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-          <button @click="obtenerPedidos" class="btn-clear bg-light rounded shadow-sm border p-2 d-flex align-items-center justify-content-center gap-2" title="Actualizar" style="background-color: #e2e8f0 !important; border-color: #e2e8f0 !important; transition: all 0.2s;">
-            <span class="material-icons" style="font-size: 22px; color: #000;">refresh</span>
-            <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
-          </button>
+          <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="obtenerPedidos" />
 
-          <RouterLink to="/panel-arbitro/indumentaria/nuevo" class="text-decoration-none">
-            <button class="rounded shadow-sm border-0 p-2 d-flex align-items-center justify-content-center gap-2 text-white" title="Nuevo Pedido" style="background-color: #3b82f6;">
-              <span class="material-icons" style="font-size: 20px;">add_shopping_cart</span>
-              <span class="d-none d-md-inline fw-bold text-white" style="font-size: 0.8rem;">Pedir Ropa</span>
-            </button>
-          </RouterLink>
+          <BotonHerramienta tipo="nuevo" texto="Nuevo pedido" icono="bi-cart-plus" @click="$router.push('/panel-arbitro/indumentaria/nuevo')" />
         </div>
       </div>
 
@@ -40,8 +27,10 @@
           </div>
         </div>
 
+        <EstadoCargando v-if="cargando" texto="Cargando tus pedidos" />
+
         <!-- LISTA UNIFICADA (Reemplaza a la tabla y tarjetas mobile) -->
-        <div class="border shadow-sm rounded overflow-hidden">
+        <div v-else class="border shadow-sm rounded overflow-hidden">
 
           <!-- Encabezado de Columnas (Solo visible en Escritorio) -->
           <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase" style="font-size: 0.75rem; color: #0f172a;">
@@ -54,11 +43,8 @@
             <div class="col-md-2 text-center pe-2">Acciones</div>
           </div>
 
-          <div v-if="pedidosPaginados.length === 0" class="text-center p-5 bg-light">
-            <span class="material-icons text-muted opacity-50 d-block mb-3" style="font-size: 48px;">search_off</span>
-            <h5 class="fw-bold text-dark mt-3">Sin resultados</h5>
-            <p class="text-muted small m-0">No se encontraron pedidos.</p>
-          </div>
+          <EstadoVacio v-if="pedidosPaginados.length === 0" icono="bi-bag"
+                       titulo="Sin resultados" mensaje="No se encontraron pedidos." />
 
           <!-- Filas de Datos -->
           <div class="d-flex flex-column">
@@ -124,7 +110,7 @@
                   title="Cancelar Pedido"
                   style="font-size: 0.75rem; padding: 4px 10px;"
                 >
-                  <span class="material-icons" style="font-size: 14px;">cancel</span> Cancelar <span class="d-md-none ms-1">Pedido</span>
+                  <i class="bi bi-x-circle" style="font-size: 14px;"></i> Cancelar <span class="d-md-none ms-1">Pedido</span>
                 </button>
                 <span v-else class="text-muted small d-none d-md-inline">-</span>
               </div>
@@ -152,6 +138,9 @@
 
 
 <script setup>
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
+import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
 import { ref, computed, onMounted, watch, inject } from 'vue';
 import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';

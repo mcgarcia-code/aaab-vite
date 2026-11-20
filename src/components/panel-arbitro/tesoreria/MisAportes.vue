@@ -4,24 +4,11 @@
     <!-- RESUMEN DE SALDO -->
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-cash-coin me-1"></i> Mis Aportes
-          </h4>
-          <span class="text-muted small d-block mt-1">Consultá el estado de tus aportes a la asociación</span>
-        </div>
-        <button @click="cargarTodo" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2 align-self-start align-self-md-center">
-          <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-          <span v-else class="material-icons text-dark fs-6">refresh</span>
-          <span class="fw-bold text-dark small">Actualizar</span>
-        </button>
+        <p class="seccion-descripcion">Estado de tus pagos</p>
+        <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargarTodo" />
       </div>
 
-      <div class="card-body p-4" v-if="cargando">
-        <div class="text-center py-4">
-          <span class="spinner-border text-danger"></span>
-        </div>
-      </div>
+      <EstadoCargando v-if="cargando" texto="Cargando tus aportes" />
 
       <div class="card-body p-4" v-else-if="estadoCuenta">
         <div class="text-center mb-4">
@@ -79,9 +66,8 @@
         <span v-if="movimientosPendientes.length" class="badge bg-light text-dark border">{{ movimientosPendientes.length }}</span>
       </div>
       <div class="card-body p-0">
-        <div v-if="!cargando && movimientosPendientes.length === 0" class="text-center p-4 bg-light">
-          <p class="text-muted m-0 small">No tenés movimientos pendientes en este momento.</p>
-        </div>
+        <EstadoVacio v-if="!cargando && movimientosPendientes.length === 0" icono="bi-check2-circle"
+                     titulo="No tenés movimientos pendientes" />
 
         <div v-else class="d-flex flex-column">
           <div v-for="m in movimientosPaginados" :key="m.id" class="border-bottom item-movimiento bg-white p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -118,9 +104,8 @@
       </div>
       <div class="card-body p-0">
         <div v-if="errorPdf" class="alert alert-danger small m-3 py-2">{{ errorPdf }}</div>
-        <div v-if="!cargando && historialCierres.length === 0" class="text-center p-4 bg-light">
-          <p class="text-muted m-0 small">Todavía no tenés cierres registrados.</p>
-        </div>
+        <EstadoVacio v-if="!cargando && historialCierres.length === 0" icono="bi-journal-x"
+                     titulo="Todavía no tenés cierres registrados" />
         <div v-else class="table-responsive">
           <table class="table align-middle mb-0" style="font-size: 0.85rem;">
             <thead class="table-light">
@@ -162,6 +147,9 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useHead } from '@vueuse/head';
 import { api } from '@/api/api';

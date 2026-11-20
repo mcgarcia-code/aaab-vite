@@ -6,14 +6,7 @@
 
         <!-- ============ HEADER ============ -->
         <div class="card-header bg-white py-3 border-bottom">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-table me-1"></i> Planilla General de mis Grupos
-            </h4>
-            <span class="text-muted small d-block mt-1">
-              Asambleas, recuperatorios y reuniones de tus grupos. Vista de solo lectura.
-            </span>
-          </div>
+          <p class="seccion-descripcion">Asambleas, recuperatorios y reuniones</p>
         </div>
 
         <!-- ============ BODY ============ -->
@@ -35,7 +28,7 @@
               <div class="busqueda-wrap">
                 <input
                   v-model="busqueda"
-                  class="form-control form-control-sm shadow-none"
+                  class="form-control shadow-none control-barra"
                   placeholder="BUSCAR ÁRBITRO..."
                 >
                 <button
@@ -48,13 +41,7 @@
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
-              <button
-                @click="descargarExcel"
-                class="btn btn-success btn-sm fw-bold d-flex align-items-center gap-1"
-                :disabled="cargando"
-              >
-                <i class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-              </button>
+              <BotonHerramienta tipo="excel" :disabled="cargando" @click="descargarExcel" />
               <span class="ms-auto d-flex flex-wrap gap-3">
                 <span><span class="cuadrito bg-success-subtle border-success-subtle"></span> Aprobado / Teórico ≥ 75 / Presente</span>
                 <span><span class="cuadrito bg-danger-subtle border-danger-subtle"></span> Desaprobado / Teórico ≤ 74 / Ausente</span>
@@ -149,6 +136,7 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted } from 'vue'
 import { api } from '@/api/api'
 import ExcelJS from 'exceljs'

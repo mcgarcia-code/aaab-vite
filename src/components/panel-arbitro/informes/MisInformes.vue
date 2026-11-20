@@ -6,28 +6,14 @@
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-clipboard-data-fill me-1"></i> Mis Informes
-            </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ informesFiltrados.length }} registros</span>
-          </div>
+          <p class="seccion-descripcion">Revisá y editá tus informes · Total: {{ informesFiltrados.length }} registros</p>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <button @click="obtenerInformes" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Recargar">
-              <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-              <span v-else class="material-icons text-dark fs-6">refresh</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Actualizar</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="obtenerInformes" />
 
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
 
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
           </div>
         </div>
 
@@ -74,7 +60,7 @@
               </select>
             </div>
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -82,10 +68,7 @@
         <div class="card-body p-0 p-md-3 bg-white">
 
           <!-- SPINNER DE CARGA -->
-          <div v-if="cargando" class="text-center p-5 bg-white">
-            <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-            <p class="text-muted mt-3 fw-bold">Cargando tus informes...</p>
-          </div>
+          <EstadoCargando v-if="cargando" texto="Cargando tus informes" />
 
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
@@ -111,7 +94,7 @@
                     <td class="text-center col-fija col-acciones">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="verDetalle(inf)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Ver detalle">
-                          <span class="material-icons" style="font-size:16px;">visibility</span>
+                          <i class="bi bi-eye" style="font-size:16px;"></i>
                         </button>
                         <button
                           @click="descargarPDF(inf)"
@@ -120,7 +103,7 @@
                           :disabled="descargandoId === inf.id"
                         >
                           <span v-if="descargandoId === inf.id" class="spinner-border spinner-border-sm" style="width:14px;height:14px;"></span>
-                          <span v-else class="material-icons" style="font-size:16px;">picture_as_pdf</span>
+                          <i v-else class="bi bi-file-earmark-pdf" style="font-size:16px;"></i>
                         </button>
                         <button
                           v-if="puedeEditar(inf)"
@@ -128,7 +111,7 @@
                           class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary"
                           title="Editar"
                         >
-                          <span class="material-icons" style="font-size:16px;">edit</span>
+                          <i class="bi bi-pencil" style="font-size:16px;"></i>
                         </button>
                         <button
                           v-if="puedeAnular(inf)"
@@ -136,7 +119,7 @@
                           class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger"
                           title="Anular informe"
                         >
-                          <span class="material-icons" style="font-size:16px;">block</span>
+                          <i class="bi bi-slash-circle" style="font-size:16px;"></i>
                         </button>
                       </div>
                     </td>
@@ -155,10 +138,10 @@
                     <td class="text-center pe-3 text-muted">{{ formatearFechaHora(inf.creado_en) }}</td>
                   </tr>
                   <tr v-if="informesPaginados.length === 0">
-                    <td colspan="10" class="py-5 text-center text-muted border-0 bg-white">
-                      <span class="material-icons d-block fs-1 mb-2">description</span>
-                      <p class="m-0 fw-bold">Todavía no cargaste ningún informe.</p>
-                      <p class="small m-0 mt-1">Podés cargar informes desde "Mis Designaciones".</p>
+                    <td colspan="10" class="border-0 bg-white">
+                      <EstadoVacio icono="bi-file-earmark-text"
+                                   titulo="Todavía no cargaste ningún informe"
+                                   mensaje="Podés cargar informes desde Designaciones." />
                     </td>
                   </tr>
                 </tbody>
@@ -200,7 +183,7 @@
 
                   <div class="d-flex gap-2 mt-3">
                     <button @click="verDetalle(inf)" class="btn btn-sm btn-outline-secondary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <span class="material-icons" style="font-size: 18px;">visibility</span> Ver detalle
+                      <i class="bi bi-eye" style="font-size: 18px;"></i> Ver detalle
                     </button>
                     <button
                       @click="descargarPDF(inf)"
@@ -209,7 +192,7 @@
                       title="Descargar PDF"
                     >
                       <span v-if="descargandoId === inf.id" class="spinner-border spinner-border-sm"></span>
-                      <span v-else class="material-icons" style="font-size: 18px;">picture_as_pdf</span>
+                      <i v-else class="bi bi-file-earmark-pdf" style="font-size: 18px;"></i>
                     </button>
                     <button
                       v-if="puedeEditar(inf)"
@@ -217,7 +200,7 @@
                       class="btn btn-sm btn-outline-primary shadow-sm px-3 d-flex justify-content-center align-items-center"
                       title="Editar"
                     >
-                      <span class="material-icons" style="font-size: 18px;">edit</span>
+                      <i class="bi bi-pencil" style="font-size: 18px;"></i>
                     </button>
                     <button
                       v-if="puedeAnular(inf)"
@@ -225,16 +208,16 @@
                       class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center"
                       title="Anular informe"
                     >
-                      <span class="material-icons" style="font-size: 18px;">block</span>
+                      <i class="bi bi-slash-circle" style="font-size: 18px;"></i>
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div v-if="informesPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-                <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">description</span>
-                <p class="text-muted m-0 fw-bold">Todavía no cargaste ningún informe.</p>
-                <p class="text-muted small m-0 mt-1">Podés cargar informes desde "Mis Designaciones".</p>
+              <div v-if="informesPaginados.length === 0" class="bg-white rounded-3 shadow-sm border mt-3">
+                <EstadoVacio icono="bi-file-earmark-text"
+                             titulo="Todavía no cargaste ningún informe"
+                             mensaje="Podés cargar informes desde Designaciones." />
               </div>
             </div>
 
@@ -486,6 +469,9 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue';
 import { api } from '@/api/api';

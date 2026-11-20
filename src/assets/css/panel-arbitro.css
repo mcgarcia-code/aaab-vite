@@ -1,0 +1,60 @@
+/* =========================================================
+   Estilos compartidos de las secciones del Panel Árbitro
+   (se importa una sola vez desde PanelArbitro.vue)
+   ========================================================= */
+
+/* Descripción de la sección: reemplaza al título interno,
+   que ahora se muestra en el header del panel */
+.seccion-descripcion {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+/* Variante sobre el fondo oscuro (secciones sin tarjeta blanca) */
+.seccion-descripcion-oscura {
+  color: #cbd5e1;
+  margin-bottom: 1rem;
+}
+
+/* Mismo redondeo para todas las tarjetas de las secciones */
+.panel-layout .card {
+  border-radius: 16px !important;
+}
+
+/* Algunas secciones usaban un contenedor de ancho completo copiado
+   del panel de admin: dentro del panel árbitro respetamos los márgenes */
+.panel-layout .full-screen-wrapper {
+  width: auto !important;
+  margin-left: 0 !important;
+  transform: none !important;
+  min-height: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 24px !important;
+}
+
+.panel-layout .admin-panel {
+  min-height: 0 !important;
+  background-color: transparent !important;
+}
+
+/* Botón secundario estándar: blanco con borde gris */
+.panel-layout .btn-light.border {
+  border-color: #cbd5e1 !important;
+}
+
+/* Las secciones ya vienen dentro del contenedor del panel:
+   sin el padding extra de su propio container-fluid */
+.panel-contenido > .container-fluid {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Controles de las barras de herramientas (selects y buscadores):
+   misma altura que los botones de BotonHerramienta */
+.panel-layout .control-barra {
+  height: 40px;
+  font-size: 0.85rem;
+}

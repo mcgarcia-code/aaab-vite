@@ -4,12 +4,7 @@
 
       <!-- ── Header ── -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-graph-up-arrow me-1"></i> Mi Rendimiento
-          </h4>
-          <span class="text-muted small d-block mt-1">Asistencia a reuniones y exámenes</span>
-        </div>
+        <p class="seccion-descripcion">Asistencia a reuniones y exámenes</p>
         <div class="d-flex align-items-center gap-2">
           <label for="rendimiento-anio" class="small fw-bold text-muted text-uppercase m-0 text-nowrap">Año:</label>
           <select id="rendimiento-anio" v-model="filtroAño" class="form-select form-select-sm shadow-none w-auto fw-bold text-uppercase text-dark" :disabled="cargando">
@@ -20,16 +15,11 @@
       </div>
 
       <!-- ── Loading ── -->
-      <div v-if="cargando" class="card-body text-center py-5">
-        <span class="spinner-border text-danger"></span>
-        <p class="text-muted mt-3 mb-0 fw-bold">Cargando tu rendimiento...</p>
-      </div>
+      <EstadoCargando v-if="cargando" texto="Cargando tu rendimiento" />
 
       <!-- ── Sin usuario ── -->
-      <div v-else-if="!datosArbitro.id" class="card-body text-center py-5 text-muted">
-        <span class="material-icons d-block mb-2 opacity-50" style="font-size: 48px;">person_off</span>
-        <p class="fw-bold m-0">No se pudo identificar al árbitro.</p>
-      </div>
+      <EstadoVacio v-else-if="!datosArbitro.id" icono="bi-person-x"
+                   titulo="No se pudo identificar al árbitro" />
 
       <div v-else class="card-body p-3 p-md-4">
         <!-- RESUMEN -->
@@ -143,6 +133,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, reactive, onMounted, computed } from 'vue'
 import { api } from '@/api/api'

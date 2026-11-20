@@ -5,11 +5,7 @@
       <!-- COLUMNA IZQUIERDA: FORMULARIO -->
       <div class="col-12 col-lg-4">
         <div class="card shadow p-3 p-md-4 border-0 h-100" style="border-radius: 15px;">
-          <div class="border-start border-danger border-5 ps-3 mb-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-calendar me-1"></i> Solicitar Licencia
-            </h4>
-          </div>
+          <p class="seccion-descripcion mb-3">Avisá tus inasistencias</p>
           <p class="text-muted small mb-4">
             Las licencias particulares deben solicitarse con un mínimo de <strong>10 días</strong> de antelación. Las mismas son por día completo, no hay licencias parciales.
           </p>
@@ -85,7 +81,7 @@
             <button
               @click="solicitarLicencia"
               :disabled="!puedeEnviar || cargando"
-              class="btn btn-primary w-100 fw-bold py-3 py-md-2 shadow-sm"
+              class="btn btn-danger w-100 fw-bold py-3 py-md-2 shadow-sm"
             >
               <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
               {{ cargando ? 'PROCESANDO...' : 'ENVIAR SOLICITUD' }}
@@ -103,10 +99,8 @@
 
           <div class="card-body p-0 bg-white flex-grow-1">
 
-            <div v-if="licencias.length === 0" class="text-center text-muted p-5">
-              <span class="material-icons opacity-50 mb-2" style="font-size: 40px;">calendar_today</span>
-              <p class="m-0 small fw-bold">No tenés licencias registradas.</p>
-            </div>
+            <EstadoVacio v-if="licencias.length === 0" icono="bi-calendar"
+                         titulo="No tenés licencias registradas" />
 
             <!-- LISTA RESPONSIVA (Reemplaza a la etiqueta table) -->
             <div v-else class="h-100 d-flex flex-column">
@@ -189,6 +183,7 @@
 </template>
 
 <script setup>
+import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
 import { ref, onMounted, inject, computed, watch } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';

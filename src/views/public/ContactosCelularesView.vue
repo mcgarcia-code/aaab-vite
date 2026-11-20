@@ -5,26 +5,21 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <div class="border-start border-danger border-5 ps-3">
+          <!-- Dentro del panel el título ya está en el header del panel -->
+          <p v-if="enPanel" class="seccion-descripcion">Celulares de árbitros · Total: {{ arbitrosFiltrados.length }} personas encontradas</p>
+          <div v-else class="border-start border-danger border-5 ps-3">
             <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-person-badge-fill me-1"></i> Agenda de Contactos
+              <i class="bi bi-person-badge-fill me-1"></i> Contactos
             </h4>
-            <span class="text-muted small d-block mt-1">Total: {{ arbitrosFiltrados.length }} personas encontradas</span>
+            <span class="text-muted small d-block mt-1">Celulares de árbitros · Total: {{ arbitrosFiltrados.length }} personas encontradas</span>
           </div>
 
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center mt-2 mt-md-0">
-            <button @click="obtenerArbitros" class="btn btn-light border shadow-sm py-2 d-none d-md-flex align-items-center gap-2" title="Actualizar">
-              <span class="material-icons text-dark fs-6">refresh</span>
-            </button>
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargarDatos" />
 
-            <button @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" class="btn btn-primary d-md-none d-flex align-items-center gap-1 shadow-sm py-2">
-              <span class="material-icons fs-6">filter_alt</span>
-            </button>
+            <BotonHerramienta tipo="filtros" class="d-md-none" :solo-icono-en-celular="false" @click="mostrarFiltrosMobile = !mostrarFiltrosMobile" />
 
-            <button @click="limpiarFiltros" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2">
-              <span class="material-icons text-dark fs-6">filter_alt_off</span>
-              <span class="fw-bold text-dark d-none d-md-inline small">Limpiar Filtros</span>
-            </button>
+            <BotonHerramienta tipo="limpiar" @click="limpiarFiltros" />
           </div>
         </div>
 
@@ -48,12 +43,14 @@
               <input v-model="filtros.subgrupo" class="form-control form-control-sm shadow-none" placeholder="SUBGRUPO...">
             </div>
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">
+          <EstadoCargando v-if="cargando" texto="Cargando contactos" />
+          <template v-else>
 
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
             <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.85rem; table-layout: fixed;">
@@ -76,10 +73,10 @@
                     <div class="d-flex justify-content-center gap-2">
                       <template v-if="a.celular">
                         <button @click="abrirWhatsApp(a.celular)" class="btn btn-success btn-sm p-1 lh-1 rounded-circle shadow-sm" title="Enviar WhatsApp" style="background-color: #25d366; border-color: #25d366;">
-                          <span class="material-icons" style="font-size: 16px;">chat</span>
+                          <i class="bi bi-whatsapp" style="font-size: 16px;"></i>
                         </button>
                         <button @click="copiarAlPortapapeles(a.celular)" class="btn btn-light btn-sm p-1 lh-1 rounded-circle shadow-sm border" title="Copiar Número">
-                          <span class="material-icons text-dark" style="font-size: 16px;">content_copy</span>
+                          <i class="bi bi-copy text-dark" style="font-size: 16px;"></i>
                         </button>
                       </template>
                       <span v-else class="text-muted small font-italic">Sin número</span>
@@ -88,9 +85,8 @@
                 </tr>
 
                 <tr v-if="arbitrosPaginados.length === 0">
-                  <td colspan="5" class="py-5 text-center text-muted border-0 bg-white">
-                    <span class="material-icons d-block fs-1 mb-2">search_off</span>
-                    <p class="m-0 fw-bold">No se encontraron contactos.</p>
+                  <td colspan="5" class="border-0 bg-white">
+                    <EstadoVacio icono="bi-search" titulo="No se encontraron contactos" />
                   </td>
                 </tr>
               </tbody>
@@ -113,10 +109,10 @@
 
                 <div class="d-flex gap-2" v-if="a.celular">
                   <button @click="copiarAlPortapapeles(a.celular)" class="btn btn-light flex-grow-1 shadow-sm border d-flex align-items-center justify-content-center gap-2 fw-bold" style="font-size: 0.85rem;">
-                    <span class="material-icons" style="font-size: 18px;">content_copy</span> Copiar
+                    <i class="bi bi-copy" style="font-size: 18px;"></i> Copiar
                   </button>
                   <button @click="abrirWhatsApp(a.celular)" class="btn flex-grow-1 shadow-sm d-flex align-items-center justify-content-center gap-2 text-white fw-bold" style="background-color: #25d366; font-size: 0.85rem;">
-                    <span class="material-icons" style="font-size: 18px;">chat</span> WhatsApp
+                    <i class="bi bi-whatsapp" style="font-size: 18px;"></i> WhatsApp
                   </button>
                 </div>
                 <div v-else class="text-center mt-2 bg-white p-2 rounded border border-light-subtle">
@@ -125,9 +121,8 @@
               </div>
             </div>
 
-            <div v-if="arbitrosPaginados.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-              <span class="material-icons text-muted opacity-50 d-block mb-2 fs-1">search_off</span>
-              <p class="text-muted m-0 fw-bold">No se encontraron contactos.</p>
+            <div v-if="arbitrosPaginados.length === 0" class="bg-white rounded-3 shadow-sm border mt-3">
+              <EstadoVacio icono="bi-search" titulo="No se encontraron contactos" />
             </div>
           </div>
 
@@ -141,6 +136,7 @@
             </button>
           </div>
 
+          </template>
         </div>
       </div>
     </div>
@@ -148,9 +144,16 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const enPanel = computed(() => route.path.startsWith('/panel-arbitro'))
 
 useHead({
   title: 'Contactos Celulares | AAAB',
@@ -179,7 +182,10 @@ const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
 const notificar = inject('notificar');
 
 // --- LÓGICA DE CARGA ---
+const cargando = ref(false)
+
 const cargarDatos = async () => {
+  cargando.value = true
   try {
     const {payload} = await api.get({
       entity: "arbitros",
@@ -189,6 +195,8 @@ const cargarDatos = async () => {
   } catch (err) {
     console.error("Error al cargar datos:", err);
     notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
+  } finally {
+    cargando.value = false
   }
 };
 

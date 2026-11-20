@@ -4,28 +4,15 @@
     <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
 
       <div class="card-header bg-white py-3 border-bottom">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-clock-history me-1"></i> Historial de Notificaciones
-          </h4>
-          <span class="text-muted small d-block mt-1">Revisá todos tus avisos y alertas pasadas.</span>
-        </div>
+        <p class="seccion-descripcion">Revisá todos tus avisos y alertas pasadas.</p>
       </div>
 
       <div class="card-body bg-white p-3 p-md-4">
 
-        <div v-if="cargando" class="text-center my-5">
-          <div class="spinner-border text-danger" role="status">
-            <span class="visually-hidden">Cargando...</span>
-          </div>
-          <p class="text-muted mt-2 small">Cargando historial...</p>
-        </div>
+        <EstadoCargando v-if="cargando" texto="Cargando historial" />
 
-        <div v-else-if="notificaciones.length === 0" class="text-center p-5 rounded border bg-light shadow-sm">
-          <span class="material-icons text-muted opacity-50 d-block mb-3" style="font-size: 48px;">notifications_off</span>
-          <h5 class="fw-bold text-dark mt-3">Historial limpio</h5>
-          <p class="text-muted small m-0">No tenés ninguna notificación registrada.</p>
-        </div>
+        <EstadoVacio v-else-if="notificaciones.length === 0" icono="bi-bell-slash"
+                     titulo="Historial limpio" mensaje="No tenés ninguna notificación registrada." />
 
         <!-- LISTA UNIFICADA (Reemplaza a la tabla hackeada por CSS) -->
         <div v-else class="border rounded shadow-sm overflow-hidden">
@@ -48,7 +35,7 @@
               <div class="col-12 d-md-none d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
                 <span class="text-muted small fw-bold">{{ notif.fecha }}</span>
                 <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
-                  <span class="material-icons text-primary" style="font-size: 14px;">done_all</span> Leída
+                  <i class="bi bi-check2-all text-primary" style="font-size: 14px;"></i> Leída
                 </span>
                 <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
                   Nueva
@@ -63,7 +50,7 @@
               <!-- COL 2: TIPO DE AVISO (Ambos) -->
               <div class="col-12 col-md-3 mb-2 mb-md-0 px-0 px-md-2">
                 <span class="badge rounded-pill fw-bold d-inline-flex align-items-center gap-1 py-1 px-2" :class="getEstiloBadge(notif.tipo)">
-                  <span class="material-icons" style="font-size: 14px;">{{ getIcono(notif.tipo) }}</span>
+                  <i :class="['bi', getIcono(notif.tipo)]" style="font-size: 14px;"></i>
                   {{ notif.titulo }}
                 </span>
               </div>
@@ -76,7 +63,7 @@
               <!-- COL 4: ESTADO (Escritorio) -->
               <div class="col-md-2 d-none d-md-flex justify-content-center pe-3">
                 <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
-                  <span class="material-icons text-primary" style="font-size: 14px;">done_all</span> Leída
+                  <i class="bi bi-check2-all text-primary" style="font-size: 14px;"></i> Leída
                 </span>
                 <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
                   Nueva
@@ -115,6 +102,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/panel-arbitro/comunes/EstadoVacio.vue'
 import { ref, onMounted, computed} from 'vue';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
@@ -158,11 +147,11 @@ const getEstiloBadge = (tipo) => {
 
 const getIcono = (tipo) => {
   switch (tipo) {
-    case 'success': return 'check_circle';
-    case 'danger': return 'error';
-    case 'warning': return 'warning';
-    case 'info': return 'info';
-    default: return 'notifications';
+    case 'success': return 'bi-check-circle';
+    case 'danger': return 'bi-exclamation-octagon';
+    case 'warning': return 'bi-exclamation-triangle';
+    case 'info': return 'bi-info-circle';
+    default: return 'bi-bell';
   }
 };
 

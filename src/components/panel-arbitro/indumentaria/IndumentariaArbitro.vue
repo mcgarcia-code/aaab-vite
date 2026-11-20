@@ -1,60 +1,13 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-
-    <!-- Cambiamos mb-5 por mb-4 mb-md-5 para que achique automáticamente en celular -->
-    <div class="dashboard-header mb-4 mb-md-5">
-      <div class="border-start border-danger border-5 ps-3">
-        <h4 class="text-white fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-          <i class="bi bi-bag-fill me-1"></i> Mi Indumentaria
-        </h4>
-        <span class="text-white-50 small d-block mt-1">Gestioná tu equipamiento oficial de la asociación</span>
-      </div>
-    </div>
-
-    <div class="row g-3 g-md-4 justify-content-center">
-
-      <div class="col-12 col-md-6">
-        <RouterLink to="/panel-arbitro/indumentaria/nuevo" class="text-decoration-none h-100 d-block">
-          <!-- Agregamos px-4 py-3 p-md-3 para el padding responsivo nativo -->
-          <div class="modern-menu-card shadow-sm px-4 py-3 p-md-3">
-            <div class="icon-box">
-              <i class="bi bi-cart-plus"></i>
-            </div>
-            <div class="card-text">
-              <h5 class="fw-bold mb-1">Solicitar Indumentaria</h5>
-              <p class="extra-small m-0 text-muted">Realizar un nuevo pedido de indumentaria oficial.</p>
-            </div>
-            <div class="card-arrow">
-              <i class="bi bi-chevron-right"></i>
-            </div>
-          </div>
-        </RouterLink>
-      </div>
-
-      <div class="col-12 col-md-6">
-        <RouterLink to="/panel-arbitro/indumentaria/mis-pedidos" class="text-decoration-none h-100 d-block">
-          <!-- Agregamos px-4 py-3 p-md-3 para el padding responsivo nativo -->
-          <div class="modern-menu-card shadow-sm px-4 py-3 p-md-3">
-            <div class="icon-box">
-              <i class="bi bi-list-check"></i>
-            </div>
-            <div class="card-text">
-              <h5 class="fw-bold mb-1">Mis Pedidos</h5>
-              <p class="extra-small m-0 text-muted">Consultar el historial y estado de tus solicitudes.</p>
-            </div>
-            <div class="card-arrow">
-              <i class="bi bi-chevron-right"></i>
-            </div>
-          </div>
-        </RouterLink>
-      </div>
-
-    </div>
+    <p class="seccion-descripcion seccion-descripcion-oscura">Hacé y seguí tus pedidos</p>
+    <ListaModulos :grupos="grupos" />
   </div>
 </template>
 
 <script setup>
 import { useHead } from '@vueuse/head'
+import ListaModulos from '@/components/panel-arbitro/ListaModulos.vue'
 
 useHead({
   title: 'Indumentaria | AAAB',
@@ -62,57 +15,18 @@ useHead({
     { name: 'description', content: 'Gestión de indumentaria oficial para los árbitros de la AAAB.' }
   ],
 })
+
+// Mismo título y descripción que muestra cada sección al entrar
+const grupos = [
+  {
+    items: [
+      { to: '/panel-arbitro/indumentaria/nuevo', title: 'Nuevo pedido', icon: 'bi bi-cart-plus', desc: 'Armá tu pedido de temporada' },
+      { to: '/panel-arbitro/indumentaria/mis-pedidos', title: 'Pedidos', icon: 'bi bi-list-check', desc: 'Estado de tus solicitudes' }
+    ]
+  }
+]
 </script>
 
 <style scoped>
-/* ====================================================
-   1. ESTILOS BASE Y COMPONENTES
-   ==================================================== */
-
-.modern-menu-card {
-  background: white;
-  border-radius: 16px;
-  /* El padding se maneja ahora desde el template con Bootstrap */
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid #f1f5f9;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.icon-box {
-  width: 56px;
-  height: 56px;
-  min-width: 56px;
-  background: #fef2f2;
-  color: #dc2626;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  transition: all 0.3s ease;
-}
-
-.card-text {
-  flex: 1;
-  min-width: 0;
-}
-.card-text h5 { font-size: 0.95rem; color: #1e293b; }
-.extra-small { font-size: 0.75rem; }
-.card-arrow { margin-left: auto; color: #cbd5e1; font-size: 1rem; align-self: center; }
-
-.modern-menu-card:hover {
-  border-color: #f87171;
-  transform: translateY(-5px);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
-}
-
-.modern-menu-card:hover .icon-box { background: #dc2626; color: white; }
-
 .animate__animated { animation-duration: 0.5s; }
-
 </style>

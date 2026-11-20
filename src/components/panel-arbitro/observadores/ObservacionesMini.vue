@@ -5,43 +5,25 @@
 
       <!-- ENCABEZADO -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom border-2 border-danger gap-3">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-mortarboard-fill me-1"></i> Observaciones del Curso
-          </h4>
-          <span class="text-muted small d-block mt-1">Observaciones que hiciste a aspirantes del curso de árbitros</span>
-        </div>
+        <p class="seccion-descripcion">Observaciones del curso de árbitros</p>
 
         <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
-          <select v-model="anio" class="form-select form-select-sm shadow-none text-uppercase text-dark py-2" style="width: 100px;" aria-label="Año">
+          <select v-model="anio" class="form-select shadow-none text-uppercase text-dark control-barra" style="width: 100px;" aria-label="Año">
             <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
           </select>
 
-          <button @click="cargar" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Actualizar">
-            <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-            <span v-else class="material-icons" style="font-size: 20px;">refresh</span>
-            <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
-          </button>
+          <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargar" />
 
-          <button @click="busqueda = ''" :disabled="!busqueda" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Limpiar filtros">
-            <span class="material-icons" style="font-size: 20px;">filter_alt_off</span>
-            <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Limpiar</span>
-          </button>
+          <BotonHerramienta tipo="limpiar" :disabled="!busqueda" @click="busqueda = ''" />
 
-          <button @click="abrirNueva" class="btn btn-danger shadow-sm py-2 d-flex align-items-center gap-2" title="Nueva observación">
-            <span class="material-icons" style="font-size: 20px;">add</span>
-            <span class="d-none d-md-inline fw-bold" style="font-size: 0.8rem;">Nueva Observación</span>
-          </button>
+          <BotonHerramienta tipo="nuevo" texto="Nueva observación" @click="abrirNueva" />
         </div>
       </div>
 
       <div class="card-body bg-white p-0">
 
         <!-- SPINNER DE CARGA -->
-        <div v-if="cargando" class="text-center p-5 bg-white">
-          <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-          <p class="text-muted mt-3 fw-bold">Cargando observaciones...</p>
-        </div>
+        <EstadoCargando v-if="cargando" texto="Cargando observaciones" />
 
         <template v-else>
           <!-- FILTRO DE BÚSQUEDA -->
@@ -88,14 +70,14 @@
                   <td class="text-center pe-3">
                     <div class="d-flex justify-content-center gap-1">
                       <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-2 d-flex align-items-center gap-1 text-secondary" @click="detalle = obs" title="Ver detalle" aria-label="Ver detalle">
-                        <span class="material-icons" style="font-size: 16px;">visibility</span>
+                        <i class="bi bi-eye" style="font-size: 16px;"></i>
                       </button>
                       <template v-if="esPendiente(obs)">
                         <button class="btn btn-sm btn-outline-primary shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="abrirEditar(obs)" title="Editar" aria-label="Editar">
-                          <span class="material-icons" style="font-size: 16px;">edit</span>
+                          <i class="bi bi-pencil" style="font-size: 16px;"></i>
                         </button>
                         <button class="btn btn-sm btn-outline-danger shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="confirmarEliminar(obs)" title="Borrar" aria-label="Borrar">
-                          <span class="material-icons" style="font-size: 16px;">delete</span>
+                          <i class="bi bi-trash" style="font-size: 16px;"></i>
                         </button>
                       </template>
                     </div>
@@ -103,7 +85,7 @@
                 </tr>
                 <tr v-if="observacionesPaginadas.length === 0">
                   <td colspan="5" class="py-5 text-center text-muted border-0 bg-white">
-                    <span class="material-icons d-block fs-1 mb-2">search_off</span>
+                    <i class="bi bi-search d-block fs-1 mb-2"></i>
                     <p class="m-0 fw-bold">No cargaste observaciones del curso.</p>
                   </td>
                 </tr>
@@ -128,14 +110,14 @@
                 <div class="text-dark small mb-2">{{ obs.encuentro }}</div>
                 <div class="d-flex justify-content-end align-items-center border-top pt-2 gap-1">
                   <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold d-flex align-items-center gap-1 text-secondary" @click="detalle = obs" aria-label="Ver detalle">
-                    <span class="material-icons" style="font-size: 16px;">visibility</span>
+                    <i class="bi bi-eye" style="font-size: 16px;"></i>
                   </button>
                   <template v-if="esPendiente(obs)">
                     <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="abrirEditar(obs)" aria-label="Editar">
-                      <span class="material-icons" style="font-size: 16px;">edit</span>
+                      <i class="bi bi-pencil" style="font-size: 16px;"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="confirmarEliminar(obs)" aria-label="Borrar">
-                      <span class="material-icons" style="font-size: 16px;">delete</span>
+                      <i class="bi bi-trash" style="font-size: 16px;"></i>
                     </button>
                   </template>
                 </div>
@@ -143,7 +125,7 @@
             </div>
 
             <div v-if="observacionesPaginadas.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border">
-              <span class="material-icons text-muted opacity-50 d-block mb-2" style="font-size: 40px;">search_off</span>
+              <i class="bi bi-search text-muted opacity-50 d-block mb-2" style="font-size: 40px;"></i>
               <p class="text-muted m-0 fw-bold">No cargaste observaciones del curso.</p>
             </div>
           </div>
@@ -204,7 +186,7 @@
 
         <!-- Acciones (dentro del cuerpo para que se vean también en mobile) -->
         <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
-          <button v-if="esPendiente(detalle)" @click="editarDesdeDetalle" class="btn btn-outline-primary rounded-pill px-4 fw-bold order-1 order-sm-2 flex-sm-grow-1">EDITAR</button>
+          <button v-if="esPendiente(detalle)" @click="editarDesdeDetalle" class="btn btn-danger rounded-pill px-4 fw-bold order-1 order-sm-2 flex-sm-grow-1">EDITAR</button>
           <button @click="detalle = null" class="btn btn-light border rounded-pill px-4 fw-bold order-2 order-sm-1 flex-sm-grow-1">CERRAR</button>
         </div>
       </div>
@@ -215,6 +197,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/panel-arbitro/comunes/EstadoCargando.vue'
+import BotonHerramienta from '@/components/panel-arbitro/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
