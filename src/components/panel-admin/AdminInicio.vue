@@ -42,12 +42,17 @@
 
       <template v-else>
         <div v-for="ev in proximosEventos" :key="ev.clave" class="evento">
-          <div :class="['cal-box', { hoy: ev.esHoy, curso: ev.esClase && !ev.esHoy }]">
+          <div :class="['cal-box', { hoy: ev.esHoy }]">
             <span class="cal-dia">{{ ev.dia }}</span>
             <span class="cal-mes">{{ ev.esHoy ? 'HOY' : ev.mes }}</span>
           </div>
           <div class="flex-grow-1 min-w-0">
             <span class="evento-titulo text-truncate">{{ ev.titulo }}</span>
+            <span v-if="ev.hora || ev.lugar" class="evento-detalle text-truncate">
+              <template v-if="ev.hora"><i class="bi bi-clock"></i> {{ ev.hora }} hs</template>
+              <template v-if="ev.hora && ev.lugar"> · </template>
+              <template v-if="ev.lugar"><i class="bi bi-geo-alt"></i> {{ ev.lugar }}</template>
+            </span>
             <span class="evento-detalle text-truncate">{{ ev.detalle }}</span>
             <span v-if="ev.pendiente" class="evento-pendiente"><i class="bi bi-hourglass-split me-1"></i>Para aprobar</span>
           </div>
@@ -163,7 +168,8 @@ const proximosEventos = computed(() => {
   const deAgenda = eventos.value.map(ev => ({
     clave: `evento-${ev.id}`,
     fecha: ev.fecha_evento,
-    hora: '',
+    hora: ev.hora || '',
+    lugar: ev.descripcion || 'Lugar a confirmar',
     titulo: ev.titulo,
     detalle: `${CATEGORIAS_EVENTO[ev.categoria] || ev.categoria || 'Evento'} · ${textoGrupos(ev)}`,
     pendiente: ev.aprobacion === 'pendiente',
@@ -171,14 +177,13 @@ const proximosEventos = computed(() => {
   }))
 
   const deCurso = clasesCurso.value.map(c => {
-    const horario = c.hora_inicio ? `${c.hora_inicio} hs` : ''
-    const donde = c.lugar || (c.modalidad === 'virtual' ? 'Virtual' : '')
     return {
       clave: `clase-${c.id}`,
       fecha: c.fecha,
       hora: c.hora_inicio || '',
+      lugar: c.lugar || (c.modalidad === 'virtual' ? 'Virtual' : 'Lugar a confirmar'),
       titulo: c.titulo || 'Clase del curso',
-      detalle: ['Clase del curso', horario, donde].filter(Boolean).join(' · '),
+      detalle: 'Clase del curso',
       pendiente: false,
       esClase: true
     }
@@ -249,9 +254,9 @@ onMounted(async () => {
 .evento:first-of-type { border-top: 0; }
 
 .cal-box {
-  width: 46px;
-  min-width: 46px;
-  height: 46px;
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
   border-radius: 12px;
   background: #f1f5f9;
   display: flex;
@@ -259,12 +264,9 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
 }
-.cal-dia { font-size: 1rem; font-weight: 800; color: #0f172a; line-height: 1; }
+.cal-dia { font-size: 1.05rem; font-weight: 800; color: #0f172a; line-height: 1; }
 .cal-mes { font-size: 0.7rem; font-weight: 700; color: #b91c1c; margin-top: 2px; }
 .cal-box.hoy { background: #dc2626; }
-/* Clases del curso: se distinguen de los eventos con un fondo azulado */
-.cal-box.curso { background: #e0e7ff; }
-.cal-box.curso .cal-mes { color: #3730a3; }
 .cal-box.hoy .cal-dia, .cal-box.hoy .cal-mes { color: #fff; }
 
 .evento-titulo {

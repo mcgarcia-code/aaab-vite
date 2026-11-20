@@ -136,7 +136,7 @@
                 </div>
                 <div class="event-info">
                   <strong :class="{ 'text-danger': ev.categoria === 'urgente' }">{{ ev.titulo }}</strong>
-                  <p class="mb-0">{{ ev.descripcion || 'Lugar a confirmar' }}</p>
+                  <p class="mb-0"><template v-if="ev.hora_evento">{{ String(ev.hora_evento).slice(0, 5) }} hs · </template>{{ ev.descripcion || 'Lugar a confirmar' }}</p>
                   <span v-if="ev.grupos_coordinados" class="badge-coordina mt-1">
                     <i class="bi bi-person-badge me-1"></i>Coordinás · Grupo {{ ev.grupos_coordinados }}
                   </span>

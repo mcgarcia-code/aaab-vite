@@ -39,6 +39,7 @@
                 <option value="urgente">URGENTE</option>
                 <option value="asamblea">ASAMBLEA GENERAL</option>
                 <option value="recuperatorio">RECUPERATORIO</option>
+                <option value="clase_curso">CLASE DEL CURSO</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
@@ -102,6 +103,7 @@
             editable
             :puede-aprobar="esAprobador"
             :puede-eliminar="esAprobador"
+            incluir-clases-curso
             @nuevo="abrirModalNuevo"
             @editar="cargarDatosEdicion"
             @eliminar="ev => confirmarEliminacion(ev.id)"
@@ -140,11 +142,18 @@
             <textarea v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="2  " placeholder="Ej: Casa del Handball..." required></textarea>
           </div>
 
-          <div class="col-md-6">
+          <div class="col-6 col-md-4">
             <label class="small fw-bold text-dark mb-1">Fecha del Evento *</label>
-            <input v-model="form.fecha_evento" type="date" class="form-control shadow-none border-secondary-subtle" required>          </div>
+            <input v-model="form.fecha_evento" type="date" class="form-control shadow-none border-secondary-subtle" required>
+          </div>
 
-          <div class="col-md-6">
+          <div class="col-6 col-md-3">
+            <label for="evento-hora" class="small fw-bold text-dark mb-1">Hora</label>
+            <input id="evento-hora" v-model="form.hora_evento" type="time" class="form-control shadow-none border-secondary-subtle"
+                   aria-describedby="evento-hora-ayuda">
+          </div>
+
+          <div class="col-12 col-md-5">
             <label class="small fw-bold text-dark mb-1">Categoria *</label>
             <select v-model="form.categoria" class="form-select shadow-none border-secondary-subtle">
               <option value="reunion">Reunion</option>
@@ -153,6 +162,12 @@
               <option value="asamblea">Asamblea General</option>
               <option value="recuperatorio">Recuperatorio</option>
             </select>
+          </div>
+
+          <div class="col-12 mt-1">
+            <p id="evento-hora-ayuda" class="small text-muted m-0">
+              <i class="bi bi-clock me-1"></i>Las reuniones se cargan a las {{ HORA_REUNION }} hs; podés cambiar la hora.
+            </p>
           </div>
 
           <div class="col-12">
@@ -263,11 +278,15 @@ const seSeparaPorGrupo = computed(() =>
   form.categoria === 'reunion' && !form.todosLosGrupos && gruposSeleccionados.value.length > 1
 )
 
+// Hora por defecto de las reuniones (se puede cambiar en el formulario)
+const HORA_REUNION = '19:30'
+
 const formBase = {
   id: null,
   titulo: '',
   descripcion: '',
   fecha_evento: '',
+  hora_evento: HORA_REUNION,
   nombresGrupos: [],
   idsGrupos: [],
   todosLosGrupos: false,
@@ -371,6 +390,7 @@ const cargarDatosEdicion = (evento) => {
     titulo: evento.titulo,
     descripcion: evento.descripcion,
     fecha_evento: (evento.fecha_evento || '').substring(0, 10),
+    hora_evento: evento.hora || ((evento.categoria || 'reunion') === 'reunion' ? HORA_REUNION : ''),
     idsGrupos: [...(evento.idsGrupos || [])],
     todosLosGrupos: !!evento.todosLosGrupos,
     categoria: evento.categoria || 'reunion'
@@ -378,6 +398,11 @@ const cargarDatosEdicion = (evento) => {
   gruposSeleccionados.value = [...(evento.idsGrupos || [])]
   mostrarModal.value = true
 }
+
+// Al pasar un evento a "Reunión" sin hora cargada, se completa con la hora por defecto
+watch(() => form.categoria, (categoria) => {
+  if (categoria === 'reunion' && !form.hora_evento) form.hora_evento = HORA_REUNION
+})
 
 const toggleGrupoSeleccionado = (id, estaChequeado) => {
   if (!estaChequeado) {

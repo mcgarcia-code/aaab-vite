@@ -39,7 +39,7 @@
       >
         <div class="d-flex justify-content-between align-items-start">
           <span class="num">{{ dia.numero }}</span>
-          <i v-if="dia.superpuestos" class="bi bi-exclamation-circle-fill text-danger" :title="`${dia.eventos.length} eventos este día`"></i>
+          <i v-if="dia.choque" class="bi bi-exclamation-circle-fill text-danger" :title="`${dia.choque.cantidad} eventos en ${dia.choque.lugar}`"></i>
         </div>
         <div class="d-flex flex-column gap-1 mt-1 w-100">
           <span
@@ -92,28 +92,32 @@
         <div v-for="ev in eventosDiaActivo" :key="ev.id" class="detalle-evento bg-white border rounded-3 p-2 d-flex gap-2" :style="{ borderLeftColor: colorEvento(ev) }">
           <div class="flex-grow-1 min-w-0">
             <div class="fw-bold text-dark text-break">{{ ev.titulo }}</div>
-            <div class="small text-muted text-break">{{ ev.descripcion || 'Lugar a confirmar' }}</div>
+            <div class="small text-muted text-break"><template v-if="ev.hora && !ev.soloLectura"><i class="bi bi-clock me-1"></i>{{ ev.hora }} hs · </template>{{ ev.descripcion || 'Lugar a confirmar' }}</div>
             <div class="d-flex flex-wrap gap-1 mt-1">
-              <span class="badge text-bg-light border text-uppercase">{{ ev.categoria }}</span>
+              <span class="badge text-bg-light border text-uppercase">{{ ev.soloLectura ? 'Clase del curso' : ev.categoria }}</span>
               <span v-if="ev.aprobacion === 'pendiente'" class="badge text-bg-warning"><i class="bi bi-hourglass-split me-1"></i>PENDIENTE DE APROBACIÓN</span>
               <span v-if="ev.todosLosGrupos" class="badge" :style="{ background: COLOR_TODOS }">TODOS</span>
               <span v-for="id in ev.idsGrupos" :key="id" class="badge" :style="{ background: colorGrupo(id) }">{{ nombreGrupo(id) }}</span>
             </div>
+            <!-- Las clases del curso se muestran para ver choques, pero se editan desde su sección -->
+            <div v-if="ev.soloLectura && editable" class="small text-muted mt-1">
+              <i class="bi bi-info-circle me-1"></i>Se edita en Curso de Árbitros · Clases y asistencia
+            </div>
           </div>
-          <div v-if="editable" class="d-flex flex-column gap-1 flex-shrink-0">
+          <div v-if="editable && !ev.soloLectura" class="d-flex flex-column gap-1 flex-shrink-0">
             <template v-if="puedeAprobar && ev.aprobacion === 'pendiente'">
               <button type="button" class="btn btn-success btn-sm p-1" title="Aprobar" @click="emit('aprobar', ev)">
-                <span class="material-icons" style="font-size:16px;">check</span>
+                <i class="bi bi-check-lg" style="font-size:16px;"></i>
               </button>
               <button type="button" class="btn btn-outline-danger btn-sm p-1" title="Rechazar" @click="emit('rechazar', ev)">
-                <span class="material-icons" style="font-size:16px;">block</span>
+                <i class="bi bi-slash-circle" style="font-size:16px;"></i>
               </button>
             </template>
             <button type="button" class="btn btn-light btn-sm border p-1 text-primary" title="Editar" @click="emit('editar', ev)">
-              <span class="material-icons" style="font-size:16px;">edit</span>
+              <i class="bi bi-pencil" style="font-size:16px;"></i>
             </button>
             <button v-if="puedeEliminar" type="button" class="btn btn-light btn-sm border p-1 text-danger" title="Eliminar" @click="emit('eliminar', ev)">
-              <span class="material-icons" style="font-size:16px;">delete</span>
+              <i class="bi bi-trash" style="font-size:16px;"></i>
             </button>
           </div>
         </div>
@@ -125,6 +129,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { api } from '@/api/api'
+import { normalizarTexto } from '@/utils/texto'
 
 const props = defineProps({
   editable: { type: Boolean, default: false },
@@ -133,6 +138,8 @@ const props = defineProps({
   gruposDestacados: { type: Array, default: () => [] },
   filtro: { type: Function, default: null },
   puedeAprobar: { type: Boolean, default: false },
+  // Suma las clases del curso de árbitros (solo lectura) para ver choques con los eventos
+  incluirClasesCurso: { type: Boolean, default: false },
   puedeEliminar: { type: Boolean, default: true },
 })
 const emit = defineEmits(['update:fechaSeleccionada', 'editar', 'eliminar', 'nuevo', 'cargado', 'aprobar', 'rechazar'])
@@ -141,7 +148,11 @@ const AVISO_MARTES = 'Los días martes hay curso de árbitros, solo se puede pro
 const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 const PALETA = ['#e63946', '#1d4ed8', '#059669', '#d97706', '#7c3aed', '#db2777', '#0891b2', '#65a30d', '#b45309', '#4f46e5', '#0f766e', '#c2410c', '#9333ea', '#be123c', '#0369a1', '#15803d']
 const COLOR_TODOS = '#343a40'
+const COLOR_CURSO = '#3730a3'
+const ID_CURSO = -1
 const CATEGORIAS_SIN_SUPERPOSICION = ['recordatorio']
+// Hay choque cuando este número de eventos (o más) cae el mismo día en el mismo lugar
+const MIN_EVENTOS_CHOQUE = 3
 
 const aISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 const desdeISO = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d) }
@@ -175,6 +186,7 @@ const nombres = computed(() => Object.fromEntries(grupos.value.map(g => [g.id, g
 const colorGrupo = (id) => colores.value[id] || '#6c757d'
 const nombreGrupo = (id) => nombres.value[id] || `Grupo ${id}`
 const colorEvento = (ev) => {
+  if (ev.soloLectura) return COLOR_CURSO
   if (ev.todosLosGrupos) return COLOR_TODOS
   const visible = ev.idsGrupos.find(id => !gruposOcultos.value.includes(id))
   return colorGrupo(visible ?? ev.idsGrupos[0])
@@ -182,11 +194,13 @@ const colorEvento = (ev) => {
 
 const leyenda = computed(() => [
   { id: 0, nombre: 'Todos', color: COLOR_TODOS },
+  ...(props.incluirClasesCurso ? [{ id: ID_CURSO, nombre: 'Curso de árbitros', color: COLOR_CURSO }] : []),
   ...grupos.value.map(g => ({ id: g.id, nombre: g.nombre, color: colorGrupo(g.id) })),
 ])
 
 const eventoVisible = (ev) => {
   if (props.filtro && !props.filtro(ev)) return false
+  if (ev.soloLectura) return !gruposOcultos.value.includes(ID_CURSO)
   if (ev.todosLosGrupos) return !gruposOcultos.value.includes(0)
   if (!ev.idsGrupos.length) return true
   return ev.idsGrupos.some(id => !gruposOcultos.value.includes(id))
@@ -202,6 +216,9 @@ const eventosPorDia = computed(() => {
 
 const chipsDe = (evs) => evs.flatMap(ev => {
   const base = { titulo: ev.titulo, categoria: ev.categoria, pendiente: ev.aprobacion === 'pendiente' }
+  if (ev.soloLectura) {
+    return [{ ...base, clave: `${ev.id}-c`, grupo: 'Curso', categoria: 'clase del curso', color: COLOR_CURSO }]
+  }
   if (ev.todosLosGrupos || !ev.idsGrupos.length) {
     return [{ ...base, clave: `${ev.id}-t`, grupo: 'Todos', color: COLOR_TODOS }]
   }
@@ -209,6 +226,23 @@ const chipsDe = (evs) => evs.flatMap(ev => {
     .filter(id => !gruposOcultos.value.includes(id))
     .map(id => ({ ...base, clave: `${ev.id}-${id}`, grupo: nombreGrupo(id), color: colorGrupo(id) }))
 })
+
+// Choque: MIN_EVENTOS_CHOQUE o más eventos el mismo día en el mismo lugar (sin importar mayúsculas ni tildes).
+// Devuelve { lugar, cantidad } del lugar con más eventos, o null si no hay choque
+const choqueDelDia = (evs) => {
+  const porLugar = {}
+  evs
+    .filter(e => !CATEGORIAS_SIN_SUPERPOSICION.includes(e.categoria))
+    .forEach(e => {
+      const lugar = String(e.lugar ?? e.descripcion ?? '').trim()
+      const clave = normalizarTexto(lugar)
+      if (!clave) return
+      porLugar[clave] ||= { lugar, cantidad: 0 }
+      porLugar[clave].cantidad++
+    })
+  const mayor = Object.values(porLugar).sort((a, b) => b.cantidad - a.cantidad)[0]
+  return mayor && mayor.cantidad >= MIN_EVENTOS_CHOQUE ? mayor : null
+}
 
 const dias = computed(() => {
   const lista = []
@@ -223,7 +257,7 @@ const dias = computed(() => {
       delMes: d.getMonth() === mesVisible.value.getMonth(),
       eventos: evs,
       chips: chipsDe(evs),
-      superpuestos: evs.filter(e => !CATEGORIAS_SIN_SUPERPOSICION.includes(e.categoria)).length > 1,
+      choque: choqueDelDia(evs),
     })
   }
   return lista
@@ -272,7 +306,11 @@ const recargar = async () => {
     const res = await api.get({
       entity: 'eventos',
       action: 'obtenerAgenda',
-      payload: { desde: aISO(rango.value.inicio), hasta: aISO(rango.value.fin) },
+      payload: {
+        desde: aISO(rango.value.inicio),
+        hasta: aISO(rango.value.fin),
+        ...(props.incluirClasesCurso ? { incluirClasesCurso: true } : {})
+      },
     })
     if (actual !== pedido) return
     if (!res?.ok) throw new Error(res?.message || 'No se pudo cargar la agenda')
