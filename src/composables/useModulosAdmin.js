@@ -15,7 +15,10 @@ const TIPOS_PENDIENTE = [
   { clave: 'observaciones', icono: 'bi-clipboard-data', to: '/panel-admin/desarrollo-arbitral/observaciones', detalle: 'Observaciones realizadas', singular: 'observación para aprobar', plural: 'observaciones para aprobar' },
   { clave: 'informes', icono: 'bi-file-earmark-text', to: '/panel-admin/informes', detalle: 'Informes', singular: 'informe sin revisar', plural: 'informes sin revisar' },
   { clave: 'descargos', icono: 'bi-chat-text', to: '/panel-admin/tribunal/sanciones', detalle: 'Listado de sanciones', singular: 'sanción con descargos nuevos', plural: 'sanciones con descargos nuevos' },
-  { clave: 'pedidos', icono: 'bi-bag-check', to: '/panel-admin/tesoreria/indumentaria/pedidos', detalle: 'Indumentaria · Pedidos', singular: 'pedido de indumentaria nuevo', plural: 'pedidos de indumentaria nuevos' }
+  { clave: 'pedidos', icono: 'bi-bag-check', to: '/panel-admin/tesoreria/indumentaria/pedidos', detalle: 'Indumentaria · Pedidos', singular: 'pedido de indumentaria nuevo', plural: 'pedidos de indumentaria nuevos' },
+  { clave: 'inscripcionesCurso', icono: 'bi-person-plus', to: '/panel-admin/curso-arbitros/legajos-curso', detalle: 'Curso · Legajos', singular: 'inscripción nueva al curso', plural: 'inscripciones nuevas al curso' },
+  { clave: 'observacionesCurso', icono: 'bi-clipboard-check', to: '/panel-admin/curso-arbitros/observaciones-curso', detalle: 'Curso · Observaciones', singular: 'observación del curso para revisar', plural: 'observaciones del curso para revisar' },
+  { clave: 'clasesSinAsistencia', icono: 'bi-calendar-x', to: '/panel-admin/curso-arbitros/cronograma', detalle: 'Curso · Clases y asistencia', singular: 'clase dictada sin asistencia', plural: 'clases dictadas sin asistencia' }
 ]
 
 // Estado compartido entre componentes

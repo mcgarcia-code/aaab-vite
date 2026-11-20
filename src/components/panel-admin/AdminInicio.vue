@@ -32,7 +32,7 @@
     <section class="tarjeta-pendientes">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h2 class="titulo-bloque m-0">Próximos eventos</h2>
-        <RouterLink v-if="tienePermiso('secretaria')" to="/panel-admin/secretaria/eventos-notificaciones" class="link-ver-todos">Ver todos</RouterLink>
+        <RouterLink v-if="linkVerTodos" :to="linkVerTodos" class="link-ver-todos">Ver todos</RouterLink>
       </div>
 
       <div v-if="cargandoEventos" class="placeholder-glow py-2" aria-hidden="true">
@@ -41,21 +41,21 @@
       </div>
 
       <template v-else>
-        <div v-for="ev in proximosEventos" :key="ev.id" class="evento">
-          <div :class="['cal-box', { hoy: ev.esHoy }]">
+        <div v-for="ev in proximosEventos" :key="ev.clave" class="evento">
+          <div :class="['cal-box', { hoy: ev.esHoy, curso: ev.esClase && !ev.esHoy }]">
             <span class="cal-dia">{{ ev.dia }}</span>
             <span class="cal-mes">{{ ev.esHoy ? 'HOY' : ev.mes }}</span>
           </div>
           <div class="flex-grow-1 min-w-0">
             <span class="evento-titulo text-truncate">{{ ev.titulo }}</span>
-            <span class="evento-detalle text-truncate">{{ ev.categoria }} · {{ ev.grupos }}</span>
+            <span class="evento-detalle text-truncate">{{ ev.detalle }}</span>
             <span v-if="ev.pendiente" class="evento-pendiente"><i class="bi bi-hourglass-split me-1"></i>Para aprobar</span>
           </div>
         </div>
 
         <div v-if="!proximosEventos.length" class="al-dia">
           <i class="bi bi-calendar-x text-secondary"></i>
-          <span>{{ errorEventos || 'No hay eventos en los próximos 30 días.' }}</span>
+          <span>{{ errorEventos || 'No hay eventos próximos.' }}</span>
         </div>
       </template>
     </section>
@@ -98,7 +98,7 @@ const CATEGORIAS_EVENTO = {
   asamblea: 'Asamblea'
 }
 const MESES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
-const MAX_EVENTOS = 6
+const MAX_EVENTOS = 8
 
 const eventos = ref([])
 const gruposEvento = ref([])
@@ -107,13 +107,36 @@ const errorEventos = ref('')
 
 const aISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
+// Clases del curso de los próximos 7 días (solo con permiso del curso)
+const DIAS_CLASES = 7
+const clasesCurso = ref([])
+
+const cargarClasesCurso = async (hoy) => {
+  const hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + DIAS_CLASES)
+  // Si la semana cruza de año, se piden los dos cronogramas
+  const anios = [...new Set([hoy.getFullYear(), hasta.getFullYear()])]
+  const respuestas = await Promise.all(anios.map(anio =>
+    api.get({ entity: 'cronograma_curso_arbitro', action: 'obtenerCronogramaCurso', payload: { anio } })
+  ))
+  const desdeISO = aISO(hoy)
+  const hastaISO = aISO(hasta)
+  clasesCurso.value = respuestas
+    .flatMap(res => (res?.ok && Array.isArray(res.payload) ? res.payload : []))
+    .filter(c => c.fecha >= desdeISO && c.fecha <= hastaISO)
+}
+
 const cargarEventos = async () => {
   cargandoEventos.value = true
   errorEventos.value = ''
   const hoy = new Date()
   const hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 30)
   try {
-    const res = await api.get({ entity: 'eventos', action: 'obtenerAgenda', payload: { desde: aISO(hoy), hasta: aISO(hasta) } })
+    const [res] = await Promise.all([
+      api.get({ entity: 'eventos', action: 'obtenerAgenda', payload: { desde: aISO(hoy), hasta: aISO(hasta) } }),
+      tienePermiso('curso')
+        ? cargarClasesCurso(hoy).catch(err => console.error('Error al cargar las clases del curso:', err))
+        : Promise.resolve()
+    ])
     if (!res?.ok) throw new Error()
     eventos.value = res.payload?.eventos || []
     gruposEvento.value = res.payload?.grupos || []
@@ -124,36 +147,67 @@ const cargarEventos = async () => {
   }
 }
 
+const textoGrupos = (ev) => {
+  if (ev.todosLosGrupos) return 'Todos los grupos'
+  const nombres = (ev.idsGrupos || [])
+    .map(id => gruposEvento.value.find(g => Number(g.id) === Number(id))?.nombre)
+    .filter(Boolean)
+  if (nombres.length === 0) return 'Sin grupos'
+  return nombres.length <= 2 ? nombres.join(', ') : `${nombres.length} grupos`
+}
+
+// Eventos (agenda) + clases del curso, ordenados por fecha y hora
 const proximosEventos = computed(() => {
   const hoyISO = aISO(new Date())
-  const nombreGrupo = (id) => gruposEvento.value.find(g => Number(g.id) === Number(id))?.nombre
-  return eventos.value.slice(0, MAX_EVENTOS).map(ev => {
-    const [, mes, dia] = String(ev.fecha_evento).split('-')
-    const nombres = (ev.idsGrupos || []).map(nombreGrupo).filter(Boolean)
-    let grupos = 'Todos los grupos'
-    if (!ev.todosLosGrupos) {
-      grupos = nombres.length === 0 ? 'Sin grupos' : nombres.length <= 2 ? nombres.join(', ') : `${nombres.length} grupos`
-    }
+
+  const deAgenda = eventos.value.map(ev => ({
+    clave: `evento-${ev.id}`,
+    fecha: ev.fecha_evento,
+    hora: '',
+    titulo: ev.titulo,
+    detalle: `${CATEGORIAS_EVENTO[ev.categoria] || ev.categoria || 'Evento'} · ${textoGrupos(ev)}`,
+    pendiente: ev.aprobacion === 'pendiente',
+    esClase: false
+  }))
+
+  const deCurso = clasesCurso.value.map(c => {
+    const horario = c.hora_inicio ? `${c.hora_inicio} hs` : ''
+    const donde = c.lugar || (c.modalidad === 'virtual' ? 'Virtual' : '')
     return {
-      id: ev.id,
-      titulo: ev.titulo,
-      dia,
-      mes: MESES[Number(mes) - 1] || '',
-      esHoy: ev.fecha_evento === hoyISO,
-      categoria: CATEGORIAS_EVENTO[ev.categoria] || ev.categoria || 'Evento',
-      grupos,
-      pendiente: ev.aprobacion === 'pendiente'
+      clave: `clase-${c.id}`,
+      fecha: c.fecha,
+      hora: c.hora_inicio || '',
+      titulo: c.titulo || 'Clase del curso',
+      detalle: ['Clase del curso', horario, donde].filter(Boolean).join(' · '),
+      pendiente: false,
+      esClase: true
     }
   })
+
+  return [...deAgenda, ...deCurso]
+    .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora))
+    .slice(0, MAX_EVENTOS)
+    .map(ev => {
+      const [, mes, dia] = String(ev.fecha).split('-')
+      return { ...ev, dia, mes: MESES[Number(mes) - 1] || '', esHoy: ev.fecha === hoyISO }
+    })
+})
+
+// "Ver todos": Gestión de eventos (Secretaría) o el cronograma del curso
+const linkVerTodos = computed(() => {
+  if (tienePermiso('secretaria')) return '/panel-admin/secretaria/eventos-notificaciones'
+  if (tienePermiso('curso')) return '/panel-admin/curso-arbitros/cronograma'
+  return null
 })
 
 // Accesos rápidos: los primeros 4 módulos que el usuario tiene permitidos
 const accesosRapidos = computed(() => gruposModulos.value.flatMap(g => g.items).slice(0, 4))
 
 // Cada vez que se vuelve al Inicio se actualizan los pendientes
+// Primero los permisos: definen si se piden las clases del curso
 onMounted(async () => {
-  cargarEventos()
   await cargarPermisos()
+  cargarEventos()
   cargarPendientes()
 })
 </script>
@@ -208,6 +262,9 @@ onMounted(async () => {
 .cal-dia { font-size: 1rem; font-weight: 800; color: #0f172a; line-height: 1; }
 .cal-mes { font-size: 0.7rem; font-weight: 700; color: #b91c1c; margin-top: 2px; }
 .cal-box.hoy { background: #dc2626; }
+/* Clases del curso: se distinguen de los eventos con un fondo azulado */
+.cal-box.curso { background: #e0e7ff; }
+.cal-box.curso .cal-mes { color: #3730a3; }
 .cal-box.hoy .cal-dia, .cal-box.hoy .cal-mes { color: #fff; }
 
 .evento-titulo {

@@ -93,11 +93,11 @@ export const CATEGORIAS_ADMIN = [
     categoria: 'Curso de Árbitros',
     icono: 'bi bi-file-person-fill',
     items: [
-      { modulo: 'curso', to: '/panel-admin/curso-arbitros/legajos-curso', title: 'Legajos del curso', icon: 'bi bi-person-lines-fill', desc: 'Inscriptos del curso' },
+      { modulo: 'curso', to: '/panel-admin/curso-arbitros/legajos-curso', title: 'Legajos del curso', icon: 'bi bi-person-lines-fill', desc: 'Inscriptos del curso', pendiente: 'inscripcionesCurso' },
       { modulo: 'curso', to: '/panel-admin/curso-arbitros/alumnos-regulares', title: 'Alumnos regulares', icon: 'bi bi-person-check-fill', desc: 'Asistencia, mini y exámenes' },
       { modulo: 'curso', to: '/panel-admin/curso-arbitros/encuentros-mini', title: 'Encuentros de Mini', icon: 'bi bi-people-fill', desc: 'Convocatoria y asistencia' },
-      { modulo: 'curso', to: '/panel-admin/curso-arbitros/cronograma', title: 'Clases y asistencia', icon: 'bi bi-calendar3-week', desc: 'Cronograma y exámenes por clase' },
-      { modulo: 'curso', to: '/panel-admin/curso-arbitros/observaciones-curso', title: 'Observaciones del curso', icon: 'bi bi-clipboard-data-fill', desc: 'Observaciones de los aspirantes' },
+      { modulo: 'curso', to: '/panel-admin/curso-arbitros/cronograma', title: 'Clases y asistencia', icon: 'bi bi-calendar3-week', desc: 'Cronograma y exámenes por clase', pendiente: 'clasesSinAsistencia' },
+      { modulo: 'curso', to: '/panel-admin/curso-arbitros/observaciones-curso', title: 'Observaciones del curso', icon: 'bi bi-clipboard-data-fill', desc: 'Observaciones de los aspirantes', pendiente: 'observacionesCurso' },
       { modulo: 'curso', to: '/panel-admin/curso-arbitros/examenes-curso', title: 'Exámenes del curso', icon: 'bi bi-journal-check', desc: 'Exámenes y resultados' }
     ]
   },
