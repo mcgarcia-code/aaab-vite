@@ -212,6 +212,7 @@ const fechaHoy = (() => {
 })()
 
 const TITULOS_SECCION = {
+  PanelAaabTv: 'AAAB TV',
   PanelLicencia: 'Licencias',
   PanelDatos: 'Datos personales',
   PanelDisponibilidad: 'Disponibilidad',

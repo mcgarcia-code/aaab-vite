@@ -113,6 +113,7 @@ const routes = [
       { path: 'contactos-celulares', name: 'PanelContactosCelulares', component: () => import('../views/public/ContactosCelularesView.vue') },
 
       // --- DELEGADO TÉCNICO ---
+      { path: 'aaab-tv', name: 'PanelAaabTv', component: () => import('../components/panel-arbitro/aaab-tv/AaabTv.vue'), meta: { idsPermitidos: [1, 2] } },
       { path: 'delegado-tecnico', name: 'DelegadoTecnico', component: () => import('../components/panel-arbitro/delegado-tecnico/DelegadosTecnicos.vue') },
 
       // --- DESIGNACIONES ---
@@ -202,6 +203,7 @@ const routes = [
 
       // --- DESARROLLO ARBITRAL ---
 
+      { path: 'desarrollo-arbitral/aaab-tv', name: 'AaabTvAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/AaabTvAdmin.vue'), meta: { modulo: 'desarrollo' } },
       { path: 'desarrollo-arbitral/observaciones', name: 'ObservacionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ObservacionesAdmin.vue'), meta: { modulo: 'desarrollo' } },
       { path: 'desarrollo-arbitral/reuniones-mensuales', name: 'ReunionesAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/ReunionesAdmin.vue'), meta: { modulo: 'desarrollo' } },
       { path: 'desarrollo-arbitral/resumen-arbitros', name: 'ResumenArbitrosAdmin', component: () => import('../components/panel-admin/desarrollo-arbitral/PlanillaGeneralAdmin.vue'), meta: { modulo: 'desarrollo' } },

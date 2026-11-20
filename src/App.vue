@@ -1,14 +1,15 @@
 <template>
   <!-- Wrapper global para garantizar que el footer siempre quede abajo (Sticky Footer nativo) -->
   <div class="d-flex flex-column min-vh-100">
-    <AppHeader />
+    <!-- En la app instalada no van el menú ni el footer del sitio web: se navega con los paneles -->
+    <AppHeader v-if="!esApp" />
 
     <!-- flex-grow-1 hace que el main ocupe todo el espacio sobrante empujando el footer -->
     <main class="flex-grow-1">
       <RouterView />
     </main>
 
-    <AppFooter />
+    <AppFooter v-if="!esApp" />
   </div>
 
   <ModalExito
@@ -22,6 +23,9 @@
   />
 
   <ToastNotificacion ref="toastRef" />
+
+  <!-- App instalable: versión nueva, sin conexión, instalar -->
+  <AvisosApp />
 </template>
 
 <script setup>
@@ -30,6 +34,10 @@ import AppHeader from './components/AppHeader.vue'
 import AppFooter from './components/AppFooter.vue'
 import ModalExito from './components/ModalExito.vue'
 import ToastNotificacion from './components/ToastNotificacion.vue'
+import AvisosApp from './components/comunes/AvisosApp.vue'
+import { esAppInstalada } from './utils/app'
+
+const esApp = esAppInstalada()
 
 const modalConfig = reactive({
   visible: false,

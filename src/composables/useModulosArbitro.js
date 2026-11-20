@@ -33,6 +33,8 @@ const MODULOS = [
 
   { to: '/panel-arbitro/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Datos fiscales de clubes', categoria: 'Herramientas' },
   { href: 'https://refflix.com.ar', title: 'Ref-Flix', icon: 'bi bi-cast', desc: 'Plataforma de videos', categoria: 'Herramientas' },
+  // En prueba: solo los ID 1 y 2 (la ruta tiene la misma restricción)
+  { to: '/panel-arbitro/aaab-tv', title: 'AAAB TV', icon: 'bi bi-camera-reels', desc: 'Análisis de partidos y clips', categoria: 'Herramientas', idsPermitidos: [1, 2] },
   { to: '/panel-arbitro/delegado-tecnico', title: 'Delegado técnico', icon: 'bi bi-person-bounding-box', desc: 'Planilla digital', categoria: 'Herramientas' },
   { to: '/panel-arbitro/contactos-celulares', title: 'Contactos', icon: 'bi bi-telephone-fill', desc: 'Celulares de árbitros', categoria: 'Herramientas' }
 ]

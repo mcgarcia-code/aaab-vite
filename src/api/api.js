@@ -1,4 +1,5 @@
 // src/api/api.js
+import { auth } from './auth'
 export const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 function obtenerHeaders() {
@@ -51,7 +52,7 @@ function obtenerConfigArchivo(datos = {}) {
 function manejarSesionVencida() {
   if (!sessionStorage.getItem('token_aaab')) return
   sessionStorage.setItem('aviso_sesion', 'vencida')
-  import('./auth').then(({ auth }) => auth.logout())
+  auth.logout()
 }
 
 // Siempre devuelve un objeto { ok, payload, message }: nunca lanza por errores de red o del servidor,
