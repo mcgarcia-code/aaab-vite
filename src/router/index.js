@@ -106,6 +106,9 @@ const routes = [
       // --- HISTORIAL DE NOTIFICACIONES ---
       { path: 'historial-notificaciones', name: 'HistorialNotificacionesArbitro', component: () => import('../components/panel-arbitro/notificaciones/HistorialNotificaciones.vue') },
 
+      // --- MENÚ (pestaña de la barra inferior en celular) ---
+      { path: 'menu', name: 'PanelMenu', component: () => import('../components/panel-arbitro/MenuPanel.vue') },
+
       // --- CONTACTOS CELULARES (misma vista que la pública /contactos-celulares) ---
       { path: 'contactos-celulares', name: 'PanelContactosCelulares', component: () => import('../views/public/ContactosCelularesView.vue') },
 

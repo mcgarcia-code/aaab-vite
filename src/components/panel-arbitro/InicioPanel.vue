@@ -178,11 +178,6 @@
       </div>
     </aside>
 
-    <!-- ============ TODOS LOS MODULOS (en escritorio están en el menú lateral) ============ -->
-    <section class="area-modulos d-lg-none">
-      <h2 class="titulo-modulos">Todos los módulos</h2>
-      <ListaModulos :grupos="gruposConItems" en-columnas />
-    </section>
 
   </div>
 </template>
@@ -192,12 +187,11 @@ import { ref, onMounted, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { useModulosArbitro } from '@/composables/useModulosArbitro'
-import ListaModulos from '@/components/panel-arbitro/ListaModulos.vue'
 
 useHead({ title: 'Panel de Inicio | AAAB' })
 
-// Módulos y accesos rápidos (compartidos con el menú lateral de escritorio)
-const { gruposModulos: gruposConItems, accesosRapidos } = useModulosArbitro()
+// Accesos rápidos (los módulos están en la pestaña Menú y en el menú lateral)
+const { accesosRapidos } = useModulosArbitro()
 
 // ====================================================
 // AVISOS Y TABS
@@ -413,21 +407,19 @@ onMounted(() => {
 
 <style scoped>
 /* ============ LAYOUT (mobile first) ============ */
-/* Celular: designación → accesos → avisos → módulos */
+/* Celular: designación → accesos → avisos (los módulos están en la pestaña Menú) */
 .inicio-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     "hero"
     "rapidos"
-    "avisos"
-    "modulos";
+    "avisos";
   gap: 24px;
 }
 .area-hero { grid-area: hero; }
 .area-rapidos { grid-area: rapidos; }
 .area-avisos { grid-area: avisos; }
-.area-modulos { grid-area: modulos; }
 
 /* Escritorio (con menú lateral): designación y avisos lado a lado,
    los accesos rápidos debajo a todo el ancho. Los módulos van en el menú lateral */
@@ -617,13 +609,6 @@ onMounted(() => {
 .siguiente .bi { color: #94a3b8; font-size: 0.75rem; }
 
 /* ============ CATEGORIAS ============ */
-.titulo-modulos {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 16px;
-}
-
 .categoria-label {
   display: flex;
   align-items: center;

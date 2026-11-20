@@ -53,21 +53,14 @@
     <header class="panel-header">
       <div class="panel-header-inner d-flex align-items-center gap-2 px-3 px-md-4 py-2">
 
-        <!-- Escritorio: el perfil está en el menú lateral, acá solo el saludo -->
-        <h1 v-if="esInicio" class="titulo-seccion text-truncate m-0 d-none d-lg-block">Hola, {{ primerNombre }}</h1>
-
-        <!-- Inicio (celular y tablet): foto + saludo, abre el menú de perfil -->
-        <div v-if="esInicio" class="position-relative min-w-0 d-lg-none">
-          <button type="button" class="btn-perfil" @click="mostrarMenuPerfil = !mostrarMenuPerfil"
-                  :aria-expanded="mostrarMenuPerfil" aria-haspopup="true" aria-label="Abrir menú de perfil">
-            <img :src="urlFoto" @error="onErrorFoto" class="perfil-img" alt="">
-            <span class="d-flex flex-column align-items-start min-w-0">
-              <span class="saludo text-truncate">Hola, {{ primerNombre }}</span>
-              <span class="subtitulo-perfil">Árbitro · ID {{ arbitro.id }}</span>
-            </span>
-            <i class="bi bi-chevron-down chevron-perfil" :class="{ girado: mostrarMenuPerfil }"></i>
-          </button>
+        <!-- Inicio: fecha (solo celular) + saludo. El perfil está en el menú lateral (escritorio) o en la pestaña Menú (celular) -->
+        <div v-if="esInicio" class="min-w-0">
+          <span class="fecha-hoy d-lg-none">{{ fechaHoy }}</span>
+          <h1 class="titulo-seccion text-truncate m-0">Hola, {{ primerNombre }}</h1>
         </div>
+
+        <!-- Pestaña Menú (celular): es una pestaña, no lleva flecha para volver -->
+        <h1 v-else-if="esMenu" class="titulo-seccion text-truncate m-0">Menú</h1>
 
         <!-- Secciones internas: flecha para volver + título -->
         <template v-else>
@@ -77,7 +70,8 @@
           <h1 class="titulo-seccion text-truncate m-0">{{ tituloSeccion }}</h1>
         </template>
 
-        <div class="dropdown ms-auto">
+        <!-- Campanita solo en escritorio: en celular las notificaciones están en la barra inferior -->
+        <div class="dropdown ms-auto d-none d-lg-block">
             <button class="btn-icono position-relative" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false"
                     :aria-label="notificacionesNoLeidas > 0 ? `Notificaciones, ${notificacionesNoLeidas} sin leer` : 'Notificaciones'">
               <i class="bi bi-bell-fill"></i>
@@ -181,6 +175,30 @@
     </div>
    </div>
 
+    <!-- ============ BARRA INFERIOR (celular y tablet) ============ -->
+    <nav class="barra-inferior d-lg-none" aria-label="Navegación principal">
+      <RouterLink to="/panel-arbitro" class="barra-item" exact-active-class="activo">
+        <i :class="['bi', esInicio ? 'bi-house-door-fill' : 'bi-house-door']"></i>
+        <span>Inicio</span>
+      </RouterLink>
+      <RouterLink to="/panel-arbitro/designaciones" class="barra-item" active-class="activo">
+        <i class="bi bi-calendar4-week"></i>
+        <span>Designaciones</span>
+      </RouterLink>
+      <RouterLink to="/panel-arbitro/historial-notificaciones" class="barra-item" active-class="activo"
+                  :aria-label="notificacionesNoLeidas > 0 ? `Avisos, ${notificacionesNoLeidas} sin leer` : 'Avisos'">
+        <span class="position-relative">
+          <i class="bi bi-bell"></i>
+          <span v-if="notificacionesNoLeidas > 0" class="barra-badge">{{ notificacionesNoLeidas }}</span>
+        </span>
+        <span>Avisos</span>
+      </RouterLink>
+      <RouterLink to="/panel-arbitro/menu" class="barra-item" active-class="activo">
+        <i class="bi bi-list"></i>
+        <span>Menú</span>
+      </RouterLink>
+    </nav>
+
     <div v-if="mostrarFotoAmpliada" class="foto-overlay" @click="mostrarFotoAmpliada = false">
       <button class="foto-overlay-cerrar" @click.stop="mostrarFotoAmpliada = false" aria-label="Cerrar">
         <i class="bi bi-x-lg"></i>
@@ -225,7 +243,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { auth } from '@/api/auth'
 import { useHead } from '@vueuse/head'
@@ -300,6 +318,13 @@ const primerNombre = computed(() => nombreFormateado.value.split(' ')[0] || '')
 // HEADER: inicio vs secciones internas
 // =======================================================
 const esInicio = computed(() => route.name === 'PanelInicio')
+const esMenu = computed(() => route.name === 'PanelMenu')
+
+// Fecha de hoy para el saludo del Inicio en celular (ej. "Jueves 20 de noviembre")
+const fechaHoy = (() => {
+  const texto = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '')
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
+})()
 
 const TITULOS_SECCION = {
   PanelLicencia: 'Licencias',
@@ -329,7 +354,8 @@ const TITULOS_SECCION = {
   DelegadoTecnico: 'Delegado técnico',
   DesignacionesArbitro: 'Designaciones',
   ExamenAsamblea: 'Exámenes',
-  InformesArbitro: 'Informes'
+  InformesArbitro: 'Informes',
+  PanelMenu: 'Menú'
 }
 
 const tituloSeccion = computed(() => TITULOS_SECCION[route.name] || 'Panel árbitro')
@@ -551,6 +577,17 @@ const marcarLeidas = async () => {
   }
 }
 
+// Celular: la pestaña "Avisos" abre el historial. Al salir de ahí las damos por leídas
+// (al salir y no al entrar, así en el historial todavía se ven cuáles eran nuevas)
+watch(() => route.name, (nueva, anterior) => {
+  if (anterior === 'HistorialNotificacionesArbitro' && nueva !== anterior && notificacionesNoLeidas.value > 0) {
+    marcarLeidas()
+  }
+})
+
+// La pestaña Menú usa la foto y las acciones de perfil que maneja este componente
+provide('panelArbitro', { urlFoto, abrirSelectorFoto, cerrarSesion, onErrorFoto })
+
 onMounted(() => {
   window.addEventListener('keydown', onTeclaMenuPerfil)
   if (auth.isLoggedIn()) {
@@ -589,7 +626,67 @@ useHead({
 .panel-principal {
   flex: 1 1 auto;
   min-width: 0;
-  padding-bottom: 40px;
+  /* Celular: lugar para la barra inferior fija */
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+@media (min-width: 992px) {
+  .panel-principal { padding-bottom: 40px; }
+}
+
+/* ============ BARRA INFERIOR (celular y tablet) ============ */
+.barra-inferior {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+  display: flex;
+  padding: 0 6px env(safe-area-inset-bottom);
+  background: #0b1222;
+  border-top: 1px solid #1e293b;
+}
+
+.barra-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 64px;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.barra-item .bi { font-size: 1.3rem; line-height: 1; }
+.barra-item:focus-visible { outline: 2px solid #94a3b8; outline-offset: -4px; border-radius: 12px; }
+
+/* Pestaña actual: texto blanco e ícono rojo */
+.barra-item.activo { color: #fff; }
+.barra-item.activo .bi { color: #f87171; }
+
+.barra-badge {
+  position: absolute;
+  top: -6px;
+  left: 12px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fecha-hoy {
+  display: block;
+  font-size: 0.8rem;
+  color: #94a3b8;
 }
 
 /* ============ MENÚ LATERAL (escritorio) ============ */
