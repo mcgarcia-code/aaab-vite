@@ -48,8 +48,9 @@
           <div class="col-6 col-md-3">
             <div class="resumen-card bg-danger text-white">
               <i class="bi bi-journal-check"></i>
-              <div class="valor">{{ totalEvaluaciones ? `${porcentajeExamenes}%` : '-' }}</div>
-              <div class="etiqueta">Evaluaciones aprobadas</div>
+              <div class="valor">{{ promedioTeoricos ?? '-' }}</div>
+              <div class="etiqueta">Promedio teóricos</div>
+              <div v-if="totalEvaluaciones" class="detalle">{{ statsGlobales.aprobadosExamen }} de {{ totalEvaluaciones }} aprobadas</div>
             </div>
           </div>
         </div>
@@ -433,9 +434,17 @@ const porcentajeAsistencia = computed(() => {
   return totales === 0 ? 0 : Math.round((statsGlobales.value.presentesReunion / totales) * 100)
 })
 
-const porcentajeExamenes = computed(() => {
-  const totales = statsGlobales.value.aprobadosExamen + statsGlobales.value.desaprobadosExamen
-  return totales === 0 ? 0 : Math.round((statsGlobales.value.aprobadosExamen / totales) * 100)
+// Promedio de los teóricos con nota, igual que el panel del curso (el físico es un nivel, no se promedia)
+const promedioTeoricos = computed(() => {
+  const notas = []
+  for (const ex of examenesFiltrados.value) {
+    const det = getDetalle(ex, 'teorico')
+    if (!det || det.estado === 'no lo hizo' || det.estado === 'ausente') continue
+    const num = notaNumerica(det)
+    if (num !== null) notas.push(num)
+  }
+  if (!notas.length) return null
+  return `${Math.round(notas.reduce((s, n) => s + n, 0) / notas.length)}%`
 })
 
 // ═══════════ INIT ═══════════
@@ -465,6 +474,7 @@ onMounted(async () => {
 .resumen-card i { font-size: 1.2rem; }
 .resumen-card .valor { font-size: 1.4rem; font-weight: 800; line-height: 1.1; margin-top: 4px; }
 .resumen-card .etiqueta { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
+.resumen-card .detalle { font-size: 0.68rem; opacity: 0.8; margin-top: 2px; }
 .accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
 .accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
 .accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
