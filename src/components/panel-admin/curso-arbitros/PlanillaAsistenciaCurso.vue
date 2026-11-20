@@ -22,7 +22,7 @@
       <div v-if="!clasesPlanilla.length" class="text-center py-5 text-muted fw-bold">Todavía no hay clases dictadas en {{ anio }}.</div>
       <div v-else-if="!alumnosPlanilla.length" class="text-center py-5 text-muted fw-bold">No hay alumnos regulares para mostrar.</div>
       <template v-else>
-        <div class="d-none d-lg-block tabla-scroll tabla-scroll-pagina">
+        <div class="d-none d-lg-block tabla-scroll">
           <table class="tabla-excel">
             <thead>
               <tr>
@@ -212,8 +212,6 @@ const descargarExcelAsistencia = async () => {
 
 <style scoped src="@/assets/css/planilla-curso.css"></style>
 <style scoped>
-/* Sin scroll vertical propio: la planilla crece y se usa el scroll de la página (el horizontal se mantiene) */
-.tabla-scroll-pagina { max-height: none; overflow-y: visible; overflow-x: auto; }
 .th-clase { min-width: 90px; cursor: pointer; }
 .th-clase:hover { background-color: #e2e6ea !important; }
 .texto-recortado { max-width: 120px; overflow: hidden; text-overflow: ellipsis; margin: 0 auto; }

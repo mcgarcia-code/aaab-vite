@@ -38,7 +38,7 @@
 
           <EstadoVacio v-else-if="cierresOrdenados.length === 0" icono="bi-calendar3" titulo="Todavía no se realizó ningún cierre" />
 
-          <div v-else class="table-responsive border rounded shadow-sm">
+          <div v-else class="table-responsive planilla-scroll border rounded shadow-sm">
             <table class="table table-hover align-middle mb-0 texto-085">
               <thead class="table-light">
                 <tr>

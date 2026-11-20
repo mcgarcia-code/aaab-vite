@@ -42,7 +42,7 @@
         <div class="card-body p-0 p-md-3 bg-white">
           <EstadoCargando v-if="cargando" texto="Cargando observaciones" />
           <template v-else>
-            <div class="d-none d-md-block table-responsive border rounded shadow-sm">
+            <div class="d-none d-md-block table-responsive planilla-scroll border rounded shadow-sm">
               <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.78rem;">
                 <thead class="table-light">
                   <tr>

@@ -20,7 +20,7 @@
         <div class="card-body p-0 p-md-3 bg-white">
           <EstadoCargando v-if="cargando" texto="Cargando estado de cuenta" />
 
-          <div v-else class="table-responsive border rounded shadow-sm">
+          <div v-else class="table-responsive planilla-scroll border rounded shadow-sm">
             <table class="table table-hover align-middle mb-0 texto-085">
               <thead class="table-light">
                 <tr>

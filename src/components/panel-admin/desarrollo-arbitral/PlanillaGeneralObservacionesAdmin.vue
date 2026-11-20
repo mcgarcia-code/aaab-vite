@@ -590,7 +590,8 @@ const descargarExcel = async () => {
 /* ====================================================
    TABLA TIPO EXCEL
    ==================================================== */
-.tabla-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* Scroll propio (vertical y horizontal): la fila de títulos y la primera columna quedan fijas */
+.tabla-scroll { max-height: 70vh; overflow: auto; -webkit-overflow-scrolling: touch; }
 .tabla-excel {
   border-collapse: separate; border-spacing: 0;
   width: max-content; min-width: 0; font-size: 0.8rem; background: #fff;
