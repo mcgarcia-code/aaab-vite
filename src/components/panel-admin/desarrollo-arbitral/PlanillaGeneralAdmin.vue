@@ -1009,8 +1009,19 @@ const descargarExcel = async () => {
   vertical-align: middle;
   font-size: 0.72rem;
 }
-.tabla-excel thead tr:nth-child(2) th {
-  top: auto;
+/* El encabezado tiene dos filas (evento + TEÓRICO/FÍSICO): se fija el thead completo,
+   así las dos filas bajan juntas y la segunda no pasa por encima de la primera */
+.tabla-excel thead {
+  position: sticky;
+  top: 0;
+  z-index: 7;
+}
+.tabla-excel thead th {
+  position: static;
+}
+.tabla-excel thead .esquina {
+  position: sticky;
+  left: 0;
 }
 
 .th-evento { min-width: 140px; }
