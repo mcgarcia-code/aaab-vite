@@ -3,6 +3,16 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/public/HomeView.vue';
 import { auth } from '../api/auth.js';
 import { usePermisos } from '@/composables/usePermisos'
+import { esAppInstalada } from '@/utils/app'
+
+// Panel que le corresponde a cada usuario
+const rutaPanel = (user) => {
+  if (user?.rol === 'alumno_curso') return '/panel-curso'
+  return user?.esAutoridad ? '/panel-admin' : '/panel-arbitro'
+}
+
+// Páginas sin login que sí se usan dentro de la app instalada (el resto del sitio público no)
+const PUBLICAS_EN_APP = ['LoginArbitro', 'OlvidePassword', 'RestablecerPassword', 'RegistroArbitro', 'RegistroArbitroCurso']
 
 // --- PUBLIC ---
 const routes = [
@@ -26,9 +36,7 @@ const routes = [
     component: () => import('../views/public/LoginArbitro.vue'),
     beforeEnter: (to, from, next) => {
       if (auth.isLoggedIn()) {
-        const user = auth.getUser();
-        if (user?.rol === 'alumno_curso') return next('/panel-curso');
-        user?.esAutoridad ? next('/panel-admin') : next('/panel-arbitro');
+        next(rutaPanel(auth.getUser()));
       } else {
         next();
       }
@@ -237,6 +245,12 @@ router.beforeEach(async (to, from, next) => {
   const user = auth.getUser();
   const userRole = user?.rol;
   const esAutoridad = !!user?.esAutoridad
+
+  // En la app instalada no hay menú del sitio web: cualquier página pública (Home, Descargas, etc.)
+  // lleva al panel, o al login si todavía no se inició sesión
+  if (esAppInstalada() && !to.path.startsWith('/panel-') && !PUBLICAS_EN_APP.includes(to.name)) {
+    return next(estaLogueado ? rutaPanel(user) : '/login-arbitro')
+  }
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!estaLogueado) {
