@@ -74,10 +74,14 @@
                   <div class="timeline-hora">
                     <span class="hora-burbuja">{{ formatearHora(p.horario) }}</span>
                   </div>
-                  <div class="timeline-card shadow-sm" :class="{ 'card-rechazada': p.rechazada }">
+                  <div class="timeline-card shadow-sm" :class="{ 'card-rechazada': p.rechazada, 'card-suspendida': p.suspendido }">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
                       <span class="fw-bold text-dark text-uppercase text-break">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
                       <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start texto-065">{{ p.categoria_division }}</span>
+                    </div>
+                    <div v-if="p.suspendido" class="aviso-suspendido mb-2" role="status">
+                      <i class="bi bi-slash-circle" aria-hidden="true"></i>
+                      Partido suspendido: no tenés que presentarte. Si se reprograma, vas a recibir la nueva designación.
                     </div>
                     <div class="small text-muted d-flex align-items-center flex-wrap gap-1 mb-2">
                       <i class="bi bi-geo-alt flex-shrink-0 texto-15px"></i>
@@ -136,7 +140,7 @@
                       <!-- Botones de acción: rechazar + informe en la misma línea -->
                       <div class="d-flex flex-wrap align-items-center gap-2">
                         <button
-                          v-if="!p.rechazada && (p.funcion == 'arbitro' || p.funcion == 'delegado')"
+                          v-if="!p.rechazada && !p.suspendido && (p.funcion == 'arbitro' || p.funcion == 'delegado')"
                           @click="abrirModalRechazo(p)"
                           class="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1"
                         >
@@ -227,10 +231,14 @@
                           <div class="timeline-hora">
                             <span class="hora-burbuja">{{ formatearHora(p.horario) }}</span>
                           </div>
-                          <div class="timeline-card shadow-sm" :class="{ 'card-rechazada': p.rechazada }">
+                          <div class="timeline-card shadow-sm" :class="{ 'card-rechazada': p.rechazada, 'card-suspendida': p.suspendido }">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
                               <span class="fw-bold text-dark text-uppercase text-break">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
                               <span class="badge bg-secondary-subtle text-secondary border text-wrap text-break text-start texto-065">{{ p.categoria_division }}</span>
+                            </div>
+                            <div v-if="p.suspendido" class="aviso-suspendido mb-2" role="status">
+                              <i class="bi bi-slash-circle" aria-hidden="true"></i>
+                              Partido suspendido
                             </div>
                             <div class="small text-muted d-flex align-items-center flex-wrap gap-1 mb-2">
                               <i class="bi bi-geo-alt flex-shrink-0 texto-15px"></i>
@@ -679,6 +687,7 @@ const cargarContadoresInformes = async () => {
 const normalizarRechazo = (p) => ({
   ...p,
   rechazada: p.rechazada === true || p.rechazada === 1 || p.rechazada === '1' || !!p.id_rechazo,
+  suspendido: p.suspendido === true || Number(p.suspendido) === 1,
   id_rechazo: p.id_rechazo || null,
   rechazo_motivo: p.rechazo_motivo || p.motivo_rechazo || '',
   rechazo_estado: p.rechazo_estado || 'creado',
@@ -916,7 +925,7 @@ const opcionesTorneo = [
 ]
 
 // El árbitro y el delegado técnico pueden cargar informe
-const puedeInformar = (p) => p.funcion === 'arbitro' || p.funcion === 'delegado'
+const puedeInformar = (p) => !p.suspendido && (p.funcion === 'arbitro' || p.funcion === 'delegado')
 
 // Cantidad de informes que tiene un partido
 const informesDe = (p) => Number(p.informes_count || 0)
@@ -1129,6 +1138,23 @@ onMounted(cargarMisDesignaciones)
 }
 
 /* Card de un partido rechazado: fondo rojo (como el estado reemplazar) */
+/* Partido suspendido: tachado y con aviso rojo */
+.timeline-card.card-suspendida { border-left-color: #94a3b8; opacity: 0.95; }
+.timeline-card.card-suspendida .text-uppercase.text-break { text-decoration: line-through; color: #64748b !important; }
+.aviso-suspendido {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.aviso-suspendido .bi { font-size: 1rem; line-height: 1.2; }
+
 .timeline-card.card-rechazada {
   background-color: #fee2e2 !important;
   border-color: #ef4444 !important;

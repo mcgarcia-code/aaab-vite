@@ -165,7 +165,7 @@
         <!-- Comentario de la revisión -->
         <div v-if="detalle.motivo_revision" class="alert py-2 px-3 small mb-3" :class="estadoDe(detalle).alerta">
           <div class="fw-bold mb-1"><i class="bi bi-chat-left-text me-1"></i>{{ detalle.estado_revision === 'rechazada' ? 'Motivo de rechazo' : 'Comentarios de la revisión' }}</div>
-          <div class="texto-multilinea">{{ detalle.motivo_revision }}</div>
+          <div class="texto-pre-line">{{ detalle.motivo_revision }}</div>
         </div>
 
         <!-- Comentarios -->
@@ -176,7 +176,7 @@
           <template v-for="c in CAMPOS_OBSERVACION_CURSO" :key="c.clave">
             <div v-if="detalle[c.columna]" class="mb-3">
               <div class="fw-bold small" :class="c.clave === 'aspectosAMejorar' ? 'text-danger' : 'text-dark'">{{ c.etiqueta }}</div>
-              <div class="small text-muted texto-multilinea">{{ detalle[c.columna] }}</div>
+              <div class="small text-muted texto-pre-line">{{ detalle[c.columna] }}</div>
             </div>
           </template>
           <div v-if="!CAMPOS_OBSERVACION_CURSO.some(c => detalle[c.columna])" class="text-center py-3 text-muted small">

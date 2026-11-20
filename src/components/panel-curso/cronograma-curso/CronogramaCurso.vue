@@ -149,7 +149,7 @@ const ClaseItem = defineComponent({
           c.docentes?.length
             ? h('div', { class: 'small text-dark' }, [h('i', { class: 'bi bi-person-video3 me-1' }), h('strong', 'Dictada por: '), c.docentes.map(d => d.nombre).join(' · ')])
             : null,
-          c.descripcion && !props.pasada ? h('div', { class: 'small text-dark mt-1 texto-multilinea' }, c.descripcion) : null,
+          c.descripcion && !props.pasada ? h('div', { class: 'small text-dark mt-1 texto-pre-line' }, c.descripcion) : null,
           c.enlace && !props.pasada
             ? h('a', { href: c.enlace, target: '_blank', rel: 'noopener noreferrer', class: 'small d-inline-block mt-1' }, [h('i', { class: 'bi bi-link-45deg' }), ' Enlace'])
             : null,
@@ -187,5 +187,5 @@ onMounted(() => cargar(anio))
 :deep(.cal-box .dia), .cal-box .dia { font-size: 1.2rem; font-weight: 800; line-height: 1; }
 :deep(.cal-box .mes), .cal-box .mes { font-size: 0.62rem; font-weight: 700; margin-top: 2px; }
 :deep(.min-w-0), .min-w-0 { min-width: 0; }
-:deep(.texto-multilinea) { white-space: pre-wrap; }
+:deep(.texto-pre-line) { white-space: pre-wrap; }
 </style>

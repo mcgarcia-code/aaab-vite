@@ -371,7 +371,7 @@
         <i class="bi bi-clipboard-x text-warning mt-1"></i>
         <div class="w-100">
           <strong class="d-block text-dark mb-1 text-uppercase small">Solicitud del árbitro:</strong>
-          <div class="text-dark text-break small texto-multilinea" style="line-height: 1.5; text-align: justify;">{{ mensajeSolicitudActiva }}</div>
+          <div class="text-dark text-break small texto-pre-line" style="line-height: 1.5; text-align: justify;">{{ mensajeSolicitudActiva }}</div>
         </div>
       </div>
 
@@ -627,7 +627,7 @@
           <div style="flex: 1 1 0%; min-width: 0;">
             <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
             <strong class="d-block text-dark mb-1 fs-6 text-uppercase">{{ sol.arbitro_nombre }}</strong>
-            <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle texto-multilinea" style="line-height: 1.4; text-align: justify; word-break: break-word;">
+            <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle texto-pre-line" style="line-height: 1.4; text-align: justify; word-break: break-word;">
               {{ sol.mensaje }}
             </p>
           </div>
@@ -669,7 +669,7 @@
       <div v-else>
         <!-- Tabla (Escritorio) -->
         <div class="table-responsive d-none d-md-block bg-white rounded shadow-sm border border-light-subtle">
-          <table class="table table-sm table-hover align-middle m-0 texto-075 tabla-fija" style="width: 100%;">
+          <table class="table table-sm table-hover align-middle m-0 texto-075 tabla-layout-fijo" style="width: 100%;">
             <thead class="table-light">
               <tr>
                 <th class="py-2 ps-3 fw-bold text-uppercase text-muted texto-075" style="width: 120px;">Fecha</th>

@@ -3,6 +3,17 @@
 
     <!-- ============ PROXIMA DESIGNACION ============ -->
     <section class="area-hero">
+      <!-- Partidos suspendidos: aviso arriba de la próxima designación -->
+      <RouterLink v-for="s in partidosSuspendidos" :key="'susp-' + s.id" to="/panel-arbitro/designaciones" class="aviso-suspendido mb-3" role="status">
+        <i class="bi bi-slash-circle" aria-hidden="true"></i>
+        <span class="min-w-0">
+          <span class="d-block fw-bold">Partido suspendido</span>
+          <span class="d-block text-truncate">{{ s.partido }}</span>
+          <span class="d-block small">{{ s.fechaTexto }}<template v-if="s.horario"> · {{ s.horario }}</template></span>
+        </span>
+        <i class="bi bi-chevron-right ms-auto" aria-hidden="true"></i>
+      </RouterLink>
+
       <div v-if="cargandoDesignacion" class="tarjeta-hero placeholder-glow" aria-hidden="true">
         <span class="placeholder col-5 rounded mb-3"></span>
         <div class="d-flex gap-3 align-items-center mb-3">
@@ -239,7 +250,24 @@ const elegirTabInicial = () => {
 // PROXIMA DESIGNACION
 // ====================================================
 const designacionesFuturas = ref([])
-const proximaDesignacion = computed(() => designacionesFuturas.value[0] || null)
+const esSuspendido = (p) => p.suspendido === true || Number(p.suspendido) === 1
+// Los partidos suspendidos se avisan aparte; la próxima designación es la próxima que se juega
+const designacionesActivas = computed(() => designacionesFuturas.value.filter(p => !esSuspendido(p)))
+const proximaDesignacion = computed(() => designacionesActivas.value[0] || null)
+
+const DIAS_CORTOS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+const partidosSuspendidos = computed(() => designacionesFuturas.value.filter(esSuspendido).map(p => {
+  const t = fechaATimestamp(fechaLimpiaDesignacion(p.fecha))
+  const d = t ? new Date(t) : null
+  const local = p.local || ''
+  const visitante = p.visitante || ''
+  return {
+    id: p.id,
+    partido: (local && visitante) ? `${local} vs ${visitante}` : (local || visitante || 'Partido'),
+    fechaTexto: d ? `${DIAS_CORTOS[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}` : 'Fecha a confirmar',
+    horario: p.horario ? `${String(p.horario).slice(0, 5)} hs` : ''
+  }
+}))
 const cargandoDesignacion = ref(true)
 
 const esRechazada = (p) => p.rechazada === true || Number(p.rechazada) === 1
@@ -331,7 +359,7 @@ const cantidadOtrasEstaSemana = computed(() => {
   const hoy = new Date()
   hoy.setHours(0, 0, 0, 0)
   const limite = hoy.getTime() + 7 * 86400000
-  return designacionesFuturas.value.slice(1).filter(p => {
+  return designacionesActivas.value.slice(1).filter(p => {
     const t = fechaATimestamp(fechaLimpiaDesignacion(p.fecha))
     return t && t < limite
   }).length
@@ -340,7 +368,7 @@ const cantidadOtrasEstaSemana = computed(() => {
 // Escritorio: las 2 designaciones que siguen a la próxima
 const siguientesDesignaciones = computed(() => {
   const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
-  return designacionesFuturas.value.slice(1, 3).map(p => {
+  return designacionesActivas.value.slice(1, 3).map(p => {
     const t = fechaATimestamp(fechaLimpiaDesignacion(p.fecha))
     const d = t ? new Date(t) : null
     const local = p.local || ''
@@ -675,6 +703,23 @@ onMounted(() => {
 }
 
 .texto-recordatorio { white-space: pre-line; }
+
+/* ============ PARTIDO SUSPENDIDO ============ */
+.aviso-suspendido {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #dc2626;
+  color: #7f1d1d;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.aviso-suspendido > .bi:first-child { font-size: 1.5rem; color: #dc2626; }
+.aviso-suspendido:hover { background: #fee2e2; color: #7f1d1d; }
 .reminder-pill {
   background: #fffbeb;
   color: #92400e;

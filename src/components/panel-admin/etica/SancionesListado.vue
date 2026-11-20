@@ -79,7 +79,7 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075 tabla-fija">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075 tabla-layout-fijo">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
@@ -374,7 +374,7 @@
             <div class="small fw-bold mb-1" :class="d.emisor_tipo === 'admin' ? 'text-light' : 'text-danger'">
               {{ d.emisor_tipo === 'admin' ? 'Tribunal de Ética' : sancionActiva?.arbitro }}
             </div>
-            <div class="texto-multilinea">{{ d.mensaje }}</div>
+            <div class="texto-pre-line">{{ d.mensaje }}</div>
 
             <!-- Archivos Adjuntos -->
             <div v-if="d.archivos && d.archivos.length > 0" class="mt-2 border-top pt-2" :class="d.emisor_tipo === 'admin' ? 'border-secondary' : 'border-light-subtle'">

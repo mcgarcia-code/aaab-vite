@@ -23,4 +23,13 @@ export default defineConfig([
   js.configs.recommended,
   ...pluginVue.configs['flat/essential'],
   skipFormatting,
+
+  {
+    rules: {
+      // El proyecto no usa punto y coma: una línea que empieza con ( [ o ` se pega a la anterior
+      // (ej. "const x = {}" + "(lista || []).forEach(...)" = llamar a {} como función).
+      // skipFormatting la apaga; se vuelve a activar porque detecta ese error, no es de formato.
+      'no-unexpected-multiline': 'error',
+    },
+  },
 ])

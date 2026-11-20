@@ -297,7 +297,7 @@
       <div v-else>
         <!-- Tabla Historial (Escritorio) -->
         <div class="table-responsive d-none d-md-block bg-white rounded shadow-sm border border-light-subtle">
-          <table class="table table-sm table-hover align-middle m-0 texto-085 tabla-fija" style="width: 100%;">
+          <table class="table table-sm table-hover align-middle m-0 texto-085 tabla-layout-fijo" style="width: 100%;">
             <thead class="table-light">
               <tr>
                 <th class="py-2 ps-3 fw-bold text-uppercase text-muted texto-075" style="width: 130px;">F. Solicitud</th>

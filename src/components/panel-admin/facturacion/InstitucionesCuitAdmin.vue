@@ -69,7 +69,7 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075 tabla-fija">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075 tabla-layout-fijo">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>

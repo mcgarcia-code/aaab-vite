@@ -47,7 +47,7 @@
             <div v-if="!filas.length" class="text-center py-5 text-muted fw-bold">No hay alumnos para mostrar.</div>
             <template v-else>
             <!-- ESCRITORIO -->
-            <div class="d-none d-lg-block tabla-scroll">
+            <div class="d-none d-lg-block tabla-scroll tabla-scroll-pagina">
               <table class="tabla-excel">
                 <thead>
                   <tr>
@@ -480,6 +480,8 @@ onMounted(cargar)
 <style scoped src="@/assets/css/planilla-curso.css"></style>
 <style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
+/* Sin scroll vertical propio: la planilla crece y se usa el scroll de la página (el horizontal se mantiene) */
+.tabla-scroll-pagina { max-height: none; overflow-y: visible; overflow-x: auto; }
 .dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
 .fila-detalle { border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; }
 .opcion-final { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }

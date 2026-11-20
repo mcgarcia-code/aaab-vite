@@ -94,7 +94,7 @@
           <template v-for="c in CAMPOS_OBSERVACION_CURSO" :key="c.clave">
             <div v-if="detalle[c.columna]" class="mb-3">
               <div class="fw-bold small" :class="c.clave === 'aspectosAMejorar' ? 'text-danger' : 'text-dark'">{{ c.etiqueta }}</div>
-              <div class="small text-muted texto-multilinea">{{ detalle[c.columna] }}</div>
+              <div class="small text-muted texto-pre-line">{{ detalle[c.columna] }}</div>
             </div>
           </template>
 

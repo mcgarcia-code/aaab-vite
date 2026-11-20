@@ -25,7 +25,7 @@
 .radio-15 { border-radius: 15px !important; }
 
 /* Texto */
-.texto-multilinea { white-space: pre-line !important; }
+.texto-pre-line { white-space: pre-line !important; }
 .texto-preformateado { white-space: pre-wrap !important; }
 .espaciado-05 { letter-spacing: 0.5px !important; }
 .espaciado-1 { letter-spacing: 1px !important; }
@@ -33,4 +33,4 @@
 
 /* Varios */
 .cursor-pointer { cursor: pointer !important; }
-.tabla-fija { table-layout: fixed !important; }
+.tabla-layout-fijo { table-layout: fixed !important; }

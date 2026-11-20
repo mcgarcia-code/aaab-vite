@@ -171,7 +171,7 @@
         <!-- Comentario de la revisión: motivo (anulada/rechazada) o comentarios adicionales (pendiente/aprobada) -->
         <div v-if="detalle.comentario_estado" class="alert py-2 px-3 small mb-3" :class="avisoComentario(detalle.estado).clase">
           <div class="fw-bold mb-1"><i class="bi me-1" :class="avisoComentario(detalle.estado).icono"></i>{{ avisoComentario(detalle.estado).titulo }}</div>
-          <div class="texto-multilinea">{{ detalle.comentario_estado }}</div>
+          <div class="texto-pre-line">{{ detalle.comentario_estado }}</div>
         </div>
 
         <!-- Tabs: Score sheet (puntajes) / Comment sheet (comentarios) -->
@@ -223,7 +223,7 @@
           <div v-if="comentariosPorCategoria.length">
             <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
               <div class="fw-bold small text-dark">{{ c.categoria }}</div>
-              <div class="small text-muted texto-multilinea">{{ c.comentario }}</div>
+              <div class="small text-muted texto-pre-line">{{ c.comentario }}</div>
             </div>
           </div>
 
@@ -231,12 +231,12 @@
             <div class="fw-bold small text-dark mb-1">Prioridades de mejora</div>
             <div v-if="detalle.prioridad_mejora_1" class="small text-muted mb-1"><strong>1.</strong> {{ detalle.prioridad_mejora_1 }}</div>
             <div v-if="detalle.prioridad_mejora_2" class="small text-muted mb-1"><strong>2.</strong> {{ detalle.prioridad_mejora_2 }}</div>
-            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1 texto-multilinea">{{ detalle.prioridad_mejora_resto }}</div>
+            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1 texto-pre-line">{{ detalle.prioridad_mejora_resto }}</div>
           </div>
 
           <div v-if="detalle.influencia_resultado_comentarios" class="mt-2 pt-2 border-top">
             <div class="fw-bold small text-dark mb-1">Influencia en el resultado</div>
-            <div class="small text-muted texto-multilinea">{{ detalle.influencia_resultado_comentarios }}</div>
+            <div class="small text-muted texto-pre-line">{{ detalle.influencia_resultado_comentarios }}</div>
           </div>
 
           <div v-if="!tieneComentarios" class="text-center py-3 text-muted small">

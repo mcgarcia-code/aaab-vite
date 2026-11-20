@@ -186,7 +186,7 @@
           <div v-if="comentariosPorCategoria.length">
             <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
               <div class="fw-bold small text-dark">{{ c.categoria }}</div>
-              <div class="small text-muted texto-multilinea">{{ c.comentario }}</div>
+              <div class="small text-muted texto-pre-line">{{ c.comentario }}</div>
             </div>
           </div>
 
@@ -195,13 +195,13 @@
             <div class="fw-bold small text-dark mb-1">Prioridades de mejora</div>
             <div v-if="detalle.prioridad_mejora_1" class="small text-muted mb-1"><strong>1.</strong> {{ detalle.prioridad_mejora_1 }}</div>
             <div v-if="detalle.prioridad_mejora_2" class="small text-muted mb-1"><strong>2.</strong> {{ detalle.prioridad_mejora_2 }}</div>
-            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1 texto-multilinea">{{ detalle.prioridad_mejora_resto }}</div>
+            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1 texto-pre-line">{{ detalle.prioridad_mejora_resto }}</div>
           </div>
 
           <!-- Influencia en el resultado -->
           <div v-if="detalle.influencia_resultado_comentarios" class="mt-2 pt-2 border-top">
             <div class="fw-bold small text-dark mb-1">Influencia en el resultado</div>
-            <div class="small text-muted texto-multilinea">{{ detalle.influencia_resultado_comentarios }}</div>
+            <div class="small text-muted texto-pre-line">{{ detalle.influencia_resultado_comentarios }}</div>
           </div>
 
           <div v-if="!tieneComentarios" class="text-center py-3 text-muted small">

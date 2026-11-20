@@ -53,7 +53,7 @@
           <template v-else>
 
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-            <table class="table table-hover align-middle mb-0 text-nowrap texto-085 tabla-fija">
+            <table class="table table-hover align-middle mb-0 text-nowrap texto-085 tabla-layout-fijo">
               <thead class="table-light">
                 <tr>
                   <th class="py-3 ps-3 text-uppercase text-muted border-bottom-0" style="width: 25%;">Apellido</th>

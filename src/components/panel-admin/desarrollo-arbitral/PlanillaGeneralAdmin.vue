@@ -280,7 +280,7 @@ const cargarNotas = async () => {
     const res = await api.get({ entity: 'examenes', action: 'obtenerNotasPlanilla' })
     if ((res.ok || res.success) && res.payload && Array.isArray(res.payload)) {
       const mapa = {}
-      (res.payload || []).forEach(row => {
+      res.payload.forEach(row => {
         let estado = String(row.estado ?? '').trim().toLowerCase()
         if (estado === '4') return // borrado lógico
         if (MAPA_ESTADOS_NUMERICOS[estado]) estado = MAPA_ESTADOS_NUMERICOS[estado]
@@ -306,7 +306,7 @@ const cargarAsistencias = async () => {
     const res = await api.get({ entity: 'reuniones', action: 'obtenerAsistenciasPlanilla' })
     if ((res.ok || res.success) && res.payload && Array.isArray(res.payload)) {
       const mapa = {}
-      (res.payload || []).forEach(row => {
+      res.payload.forEach(row => {
         const estado = Number(row.estado)
         let asis = ''
         if (estado === 1) asis = 'presente'
