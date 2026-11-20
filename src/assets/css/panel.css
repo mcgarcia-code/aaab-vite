@@ -72,3 +72,15 @@
   padding: 6px 12px;
   white-space: nowrap;
 }
+
+/* Título de una tarjeta dentro de una sección (cuando la sección tiene más de un bloque) */
+.subtitulo-tarjeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+.subtitulo-tarjeta .bi { color: #dc2626; }

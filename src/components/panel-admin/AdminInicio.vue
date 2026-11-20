@@ -68,15 +68,8 @@
     </div>
 
     <!-- ============ ACCESOS RÁPIDOS ============ -->
-    <section v-if="accesosRapidos.length">
-      <h2 class="categoria-label">Accesos rápidos</h2>
-      <div class="accesos">
-        <RouterLink v-for="acceso in accesosRapidos" :key="acceso.to" :to="acceso.to" class="acceso-rapido">
-          <i :class="acceso.icon"></i>
-          <span>{{ acceso.title }}</span>
-        </RouterLink>
-      </div>
-    </section>
+    <AccesosRapidos v-if="accesosDisponibles.length" :disponibles="accesosDisponibles"
+                    :predeterminados="accesosPredeterminados" :clave-almacenamiento="claveAccesos" />
 
   </div>
 </template>
@@ -86,6 +79,8 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
+import { auth } from '@/api/auth'
+import AccesosRapidos from '@/components/comunes/AccesosRapidos.vue'
 import { useModulosAdmin } from '@/composables/useModulosAdmin'
 
 useHead({
@@ -206,7 +201,10 @@ const linkVerTodos = computed(() => {
 })
 
 // Accesos rápidos: los primeros 4 módulos que el usuario tiene permitidos
-const accesosRapidos = computed(() => gruposModulos.value.flatMap(g => g.items).slice(0, 4))
+// Accesos rápidos personalizables: los módulos que el usuario tiene permitidos (por defecto, los primeros 4)
+const accesosDisponibles = computed(() => gruposModulos.value.flatMap(g => g.items))
+const accesosPredeterminados = computed(() => accesosDisponibles.value.slice(0, 4).map(item => item.to))
+const claveAccesos = `panelAdmin.accesos.${auth.getUser()?.id ?? 'anonimo'}`
 
 // Cada vez que se vuelve al Inicio se actualizan los pendientes
 // Primero los permisos: definen si se piden las clases del curso

@@ -22,10 +22,16 @@
     <header class="panel-header">
       <div class="panel-header-inner d-flex align-items-center gap-2 px-3 px-md-4 py-2">
 
-        <!-- Inicio: fecha (solo celular) + saludo. El perfil está en el menú lateral (escritorio) o en la pestaña Menú (celular) -->
-        <div v-if="esInicio" class="min-w-0">
-          <span class="fecha-hoy d-lg-none">{{ fechaHoy }}</span>
-          <h1 class="titulo-seccion text-truncate m-0">Hola, {{ primerNombre }}</h1>
+        <!-- Inicio: foto (solo celular, lleva al Menú) + fecha (solo celular) + saludo.
+             En escritorio la foto está en el menú lateral -->
+        <div v-if="esInicio" class="d-flex align-items-center gap-3 min-w-0">
+          <RouterLink to="/panel-arbitro/menu" class="d-lg-none flex-shrink-0" aria-label="Ir al menú y perfil">
+            <img :src="urlFoto" @error="onErrorFoto" class="perfil-img" alt="">
+          </RouterLink>
+          <div class="min-w-0">
+            <span class="fecha-hoy d-lg-none">{{ fechaHoy }}</span>
+            <h1 class="titulo-seccion text-truncate m-0">Hola, {{ primerNombre }}</h1>
+          </div>
         </div>
 
         <!-- Pestaña Menú (celular): es una pestaña, no lleva flecha para volver -->
@@ -95,48 +101,20 @@
     <input ref="inputFoto" type="file" accept="image/jpeg,image/png,image/webp" class="d-none" @change="onFotoSeleccionada">
 
     <!-- ============ MENU DE PERFIL ============ -->
-    <div v-if="mostrarMenuPerfil" class="menu-perfil-fondo" @click="cerrarMenuPerfil"></div>
-    <section v-if="mostrarMenuPerfil" class="menu-perfil shadow-lg" aria-label="Menú de perfil">
-      <div class="menu-perfil-asa d-md-none"></div>
-
-      <div class="d-flex flex-column align-items-center gap-2 px-3 pt-3 pb-3">
-        <div class="perfil-wrap">
-          <img :src="urlFoto" @error="onErrorFoto" class="perfil-img-grande" role="button" alt="Ver foto de perfil ampliada"
-               @click="abrirFotoAmpliada">
-          <button type="button" class="btn-editar-foto" @click="abrirSelectorFoto" aria-label="Cambiar foto de perfil">
-            <i class="bi bi-camera-fill"></i>
-          </button>
-        </div>
-        <span class="nombre-perfil text-center">{{ nombreFormateado }}</span>
-        <span class="id-perfil">ID Árbitro {{ arbitro.id }}</span>
-      </div>
-
-      <div class="border-top">
-        <RouterLink to="/panel-arbitro/datos" class="opcion-perfil" @click="cerrarMenuPerfil">
-          <span class="opcion-icono"><i class="bi bi-person-lines-fill"></i></span>
-          <span class="flex-grow-1">Datos personales</span>
-          <i class="bi bi-chevron-right text-secondary"></i>
-        </RouterLink>
-        <RouterLink to="/panel-arbitro/credencial" class="opcion-perfil" @click="cerrarMenuPerfil">
-          <span class="opcion-icono"><i class="bi bi-person-badge"></i></span>
-          <span class="flex-grow-1 d-flex flex-column">
-            Ver credencial
-            <small class="opcion-desc">Carnet oficial {{ anioActual }}</small>
-          </span>
-          <i class="bi bi-chevron-right text-secondary"></i>
-        </RouterLink>
-        <button type="button" class="opcion-perfil" @click="abrirSelectorFoto">
-          <span class="opcion-icono"><i class="bi bi-camera"></i></span>
-          <span class="flex-grow-1">Cambiar foto</span>
-        </button>
-      </div>
-      <div class="border-top">
-        <button type="button" class="opcion-perfil opcion-salir" @click="cerrarSesion">
-          <span class="opcion-icono"><i class="bi bi-box-arrow-right"></i></span>
-          <span class="flex-grow-1">Cerrar sesión</span>
-        </button>
-      </div>
-    </section>
+    <MenuPerfil
+      :abierto="mostrarMenuPerfil"
+      :foto="urlFoto"
+      :nombre="nombreFormateado"
+      :subtitulo="`ID Árbitro ${arbitro.id}`"
+      ruta-datos="/panel-arbitro/datos"
+      ruta-credencial="/panel-arbitro/credencial"
+      :texto-credencial="`Carnet oficial ${anioActual}`"
+      @cerrar="cerrarMenuPerfil"
+      @cambiar-foto="abrirSelectorFoto"
+      @ampliar-foto="abrirFotoAmpliada"
+      @salir="cerrarSesion"
+      @error-foto="onErrorFoto"
+    />
 
     <div class="container-fluid panel-contenido px-3 px-md-4 py-2">
       <RouterView />
@@ -202,6 +180,7 @@ import '@/assets/css/panel.css'
 import ToastNotificacion from '@/components/ToastNotificacion.vue'
 import { useModulosArbitro } from '@/composables/useModulosArbitro'
 import MenuLateral from '@/components/comunes/MenuLateral.vue'
+import MenuPerfil from '@/components/comunes/MenuPerfil.vue'
 import BarraInferior from '@/components/comunes/BarraInferior.vue'
 
 // Módulos del menú lateral (escritorio)
@@ -675,143 +654,6 @@ useHead({
   border: 2px solid #0b1222;
 }
 
-/* ============ MENU DE PERFIL ============ */
-/* Celular: hoja que sube desde abajo. Escritorio: panel bajo el header */
-.menu-perfil-fondo {
-  position: fixed;
-  inset: 0;
-  background: rgba(2, 6, 23, 0.6);
-  z-index: 1040;
-}
-
-.menu-perfil {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1045;
-  background: #fff;
-  border-radius: 24px 24px 0 0;
-  padding-bottom: 16px;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: subirMenu 0.2s ease-out;
-}
-
-.menu-perfil-asa {
-  width: 40px;
-  height: 4px;
-  border-radius: 2px;
-  background: #cbd5e1;
-  margin: 10px auto 0;
-}
-
-@keyframes subirMenu {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-@media (min-width: 768px) {
-  .menu-perfil-fondo { background: transparent; }
-  .menu-perfil {
-    position: absolute;
-    top: 76px;
-    left: 24px;
-    right: auto;
-    bottom: auto;
-    width: 320px;
-    border-radius: 16px;
-    padding-bottom: 8px;
-    animation: none;
-  }
-}
-
-/* Contenedor de la foto para posicionar el botón de editar */
-.perfil-wrap {
-  position: relative;
-  display: inline-block;
-  line-height: 0;
-}
-
-.perfil-img-grande {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
-  object-fit: cover;
-  cursor: zoom-in;
-}
-
-.btn-editar-foto {
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #0f172a;
-  border: 3px solid #fff;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  padding: 0;
-}
-.btn-editar-foto:hover { background: #334155; }
-
-.nombre-perfil {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.id-perfil {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #475569;
-  background: #f1f5f9;
-  padding: 4px 10px;
-  border-radius: 999px;
-}
-
-.opcion-perfil {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  min-height: 56px;
-  padding: 0 16px;
-  background: none;
-  border: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #0f172a;
-  text-decoration: none;
-  text-align: left;
-}
-.opcion-perfil:hover { background: #f8fafc; }
-
-.opcion-icono {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: #fef2f2;
-  color: #dc2626;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.opcion-desc {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #64748b;
-}
-
-.opcion-salir { color: #b91c1c; }
-.opcion-salir .opcion-icono { background: #fef2f2; color: #b91c1c; }
 
 /* Modal de recorte de foto */
 .modal-foto {

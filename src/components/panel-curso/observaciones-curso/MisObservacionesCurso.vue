@@ -5,12 +5,7 @@
 
       <!-- ENCABEZADO -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom border-2 border-danger gap-3">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-clipboard-check me-1"></i> Mis Observaciones
-          </h4>
-          <span class="text-muted small d-block mt-1">Encuentros en los que fuiste observado/a, con la observación aprobada</span>
-        </div>
+        <p class="seccion-descripcion">De encuentros de mini y amistosos</p>
 
         <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
           <div class="d-flex align-items-center gap-1">
@@ -20,21 +15,14 @@
               <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
             </select>
           </div>
-          <button @click="obtenerObservaciones" :disabled="cargando" class="btn btn-light border shadow-sm py-2 d-flex align-items-center gap-2" title="Actualizar">
-            <span v-if="cargando" class="spinner-border spinner-border-sm text-secondary"></span>
-            <span v-else class="material-icons" style="font-size: 20px;">refresh</span>
-            <span class="d-none d-md-inline fw-bold text-dark" style="font-size: 0.8rem;">Actualizar</span>
-          </button>
+          <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="obtenerObservaciones" />
         </div>
       </div>
 
       <div class="card-body bg-white p-0">
 
         <!-- SPINNER -->
-        <div v-if="cargando" class="text-center p-5 bg-white">
-          <span class="spinner-border text-danger" style="width: 3rem; height: 3rem;"></span>
-          <p class="text-muted mt-3 fw-bold">Cargando observaciones...</p>
-        </div>
+        <EstadoCargando v-if="cargando" texto="Cargando observaciones" />
 
         <template v-else>
           <!-- AVISO -->
@@ -46,10 +34,7 @@
           </div>
 
           <!-- SIN DATOS -->
-          <div v-if="observacionesFiltradas.length === 0" class="text-center p-5 bg-white">
-            <span class="material-icons d-block fs-1 mb-2 text-muted opacity-50">assignment_turned_in</span>
-            <p class="m-0 fw-bold text-muted">No tenés observaciones aprobadas en el período seleccionado.</p>
-          </div>
+          <EstadoVacio v-if="observacionesFiltradas.length === 0" icono="bi-clipboard-check" titulo="No tenés observaciones aprobadas en el período seleccionado" />
 
           <!-- TARJETAS -->
           <div v-else class="p-3 p-md-4">
@@ -76,7 +61,7 @@
                     </div>
 
                     <button class="btn btn-sm btn-outline-danger w-100 fw-bold d-flex align-items-center justify-content-center gap-1" @click="detalle = obs">
-                      <span class="material-icons" style="font-size: 16px;">visibility</span>
+                      <i class="bi bi-eye" style="font-size: 16px;"></i>
                       Ver detalle
                     </button>
                   </div>
@@ -129,6 +114,9 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'

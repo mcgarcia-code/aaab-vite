@@ -2,23 +2,13 @@
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 border-bottom">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-calendar3-week me-1"></i> Cronograma {{ anio }}
-          </h4>
-          <span class="text-muted small d-block mt-1">Clases del curso de árbitros</span>
-        </div>
+        <p class="seccion-descripcion">Clases de tu curso · {{ anio }}</p>
       </div>
 
       <div class="card-body p-3 p-md-4">
-        <div v-if="cargando" class="text-center py-5">
-          <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando cronograma...</p>
-        </div>
+        <EstadoCargando v-if="cargando" texto="Cargando cronograma" />
         <div v-else-if="error" class="alert alert-danger small mb-0">{{ error }}</div>
-        <div v-else-if="!clases.length" class="text-center py-5 text-muted">
-          <span class="material-icons d-block fs-1 mb-2 opacity-50">event_busy</span>
-          <span class="fw-bold">Todavía no hay clases cargadas.</span>
-        </div>
+        <EstadoVacio v-else-if="!clases.length" icono="bi-calendar-x" titulo="Todavía no hay clases cargadas" />
         <template v-else>
           <!-- PRÓXIMA CLASE: siempre visible -->
           <div v-if="proximaClase" class="proxima-destacada rounded-3 p-3 mb-4 d-flex gap-3">
@@ -96,6 +86,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { reactive, computed, watch, onMounted, defineComponent, h } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada } from '@/composables/useCronogramaCurso'

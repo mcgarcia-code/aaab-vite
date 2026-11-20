@@ -1,9 +1,6 @@
 <template>
   <div class="container-fluid py-4 d-flex justify-content-center animate__animated animate__fadeIn">
-    <div v-if="cargando" class="text-center mt-5">
-      <div class="spinner-border text-danger"></div>
-      <p class="text-white mt-2 fw-bold">Generando credencial...</p>
-    </div>
+    <EstadoCargando v-if="cargando" texto="Generando credencial" />
 
     <div v-else-if="perfil" class="w-100 d-flex flex-column gap-4" style="max-width: 750px;">
       <div ref="credencialRef" class="card border-0 shadow-lg position-relative overflow-hidden mx-auto w-100" style="border-radius: 20px;">
@@ -74,6 +71,7 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import html2canvas from 'html2canvas'

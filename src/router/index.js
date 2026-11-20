@@ -142,6 +142,8 @@ const routes = [
       { path: 'designaciones-curso', name: 'MisDesignacionesCurso', component: () => import('../components/panel-curso/designaciones-curso/MisDesignacionesCurso.vue') },
       { path: 'rendimiento-curso', name: 'PanelRendimientoCurso', component: () => import('../components/panel-curso/rendimiento-curso/MiRendimientoCurso.vue') },
       { path: 'cuota-curso', name: 'CuotaCurso', component: () => import('../components/panel-curso/tesoreria/CuotaCurso.vue') },
+      // --- MENÚ (pestaña de la barra inferior en celular) ---
+      { path: 'menu', name: 'PanelMenuCurso', component: () => import('../components/panel-curso/MenuPanelCurso.vue') },
       { path: 'cronograma-curso', name: 'CronogramaCurso', component: () => import('../components/panel-curso/cronograma-curso/CronogramaCurso.vue') },
 
     ]

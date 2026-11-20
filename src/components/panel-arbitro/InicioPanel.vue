@@ -87,15 +87,7 @@
 
     <!-- ============ ACCESOS RAPIDOS ============ -->
     <section class="area-rapidos">
-      <h2 class="categoria-label">Accesos rápidos</h2>
-      <div class="row g-2">
-        <div v-for="acceso in accesosRapidos" :key="acceso.to" class="col-3">
-          <RouterLink :to="acceso.to" class="acceso-rapido">
-            <i :class="acceso.icon"></i>
-            <span>{{ acceso.title }}</span>
-          </RouterLink>
-        </div>
-      </div>
+      <AccesosRapidos :disponibles="accesosDisponibles" :predeterminados="accesosPredeterminados" :clave-almacenamiento="claveAccesos" />
     </section>
 
     <!-- ============ AVISOS Y EVENTOS ============ -->
@@ -186,12 +178,23 @@
 import { ref, onMounted, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
+import { auth } from '@/api/auth'
+import AccesosRapidos from '@/components/comunes/AccesosRapidos.vue'
 import { useModulosArbitro } from '@/composables/useModulosArbitro'
 
 useHead({ title: 'Panel de Inicio | AAAB' })
 
 // Accesos rápidos (los módulos están en la pestaña Menú y en el menú lateral)
-const { accesosRapidos } = useModulosArbitro()
+const { gruposModulos, accesosRapidos } = useModulosArbitro()
+
+// Accesos rápidos personalizables: todos los módulos internos + datos y credencial
+const accesosDisponibles = computed(() => [
+  ...gruposModulos.value.flatMap(g => g.items).filter(item => item.to),
+  { to: '/panel-arbitro/datos', title: 'Datos personales', icon: 'bi bi-person-lines-fill' },
+  { to: '/panel-arbitro/credencial', title: 'Credencial digital', icon: 'bi bi-person-badge' }
+])
+const accesosPredeterminados = accesosRapidos.map(a => a.to)
+const claveAccesos = `panelArbitro.accesos.${auth.getUser()?.id ?? 'anonimo'}`
 
 // ====================================================
 // AVISOS Y TABS

@@ -34,12 +34,8 @@
 
       <div v-if="pendientes.length && !cursoCerrado" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
         <div class="card-header bg-white py-3 border-bottom">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-laptop me-1"></i> Exámenes para rendir
-            </h4>
-            <span class="text-muted small d-block mt-1">Exámenes online de las clases a las que asististe</span>
-          </div>
+          <h2 class="subtitulo-tarjeta"><i class="bi bi-laptop"></i> Exámenes para rendir</h2>
+          <p class="seccion-descripcion">Exámenes online de las clases a las que asististe</p>
         </div>
         <div class="card-body p-3 p-md-4 d-flex flex-column gap-2">
           <div v-for="x in pendientes" :key="'on-' + x.id" class="examen-card d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
@@ -57,21 +53,11 @@
 
       <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
         <div class="card-header bg-white py-3 border-bottom">
-          <div class="border-start border-danger border-5 ps-3">
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-              <i class="bi bi-journal-text me-1"></i> Mis Exámenes
-            </h4>
-            <span class="text-muted small d-block mt-1">Notas de los exámenes del curso</span>
-          </div>
+          <p class="seccion-descripcion">Notas de los exámenes del curso</p>
         </div>
 
-        <div v-if="cargando" class="card-body text-center py-5">
-          <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando tus exámenes...</p>
-        </div>
-        <div v-else-if="!examenes.length" class="card-body text-center py-5 text-muted">
-          <span class="material-icons d-block fs-1 mb-2 opacity-50">assignment</span>
-          <span class="fw-bold">Todavía no tenés exámenes cargados.</span>
-        </div>
+        <EstadoCargando v-if="cargando" texto="Cargando tus exámenes" />
+        <EstadoVacio v-else-if="!examenes.length" icono="bi-clipboard" titulo="Todavía no tenés exámenes cargados" />
         <div v-else class="card-body p-3 p-md-4">
           <ul class="nav nav-pills flex-nowrap overflow-auto gap-1 mb-3 pb-1 pestanas" role="tablist">
             <li v-for="tipo in TIPOS" :key="tipo" class="nav-item flex-shrink-0" role="presentation">
@@ -132,6 +118,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'

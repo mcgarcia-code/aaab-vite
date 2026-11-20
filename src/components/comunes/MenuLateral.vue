@@ -36,7 +36,7 @@
         <p class="lateral-categoria"><span class="lateral-texto">{{ grupo.categoria }}</span></p>
         <component
           v-for="item in grupo.items"
-          :key="item.to || item.href"
+          :key="item.title"
           :is="item.href ? 'a' : 'RouterLink'"
           v-bind="item.href ? { href: item.href, target: '_blank', rel: 'noopener noreferrer' } : { to: item.to, activeClass: 'activo' }"
           class="lateral-link"

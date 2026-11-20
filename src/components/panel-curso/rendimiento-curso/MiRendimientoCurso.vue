@@ -2,17 +2,10 @@
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 border-bottom">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-graph-up-arrow me-1"></i> Mi Rendimiento
-          </h4>
-          <span class="text-muted small d-block mt-1">Estado del curso, asistencia<template v-if="esAnual"> a clases y a mini</template> y promedio de exámenes · Curso {{ datos.anio }}</span>
-        </div>
+        <p class="seccion-descripcion">Asistencia, mini y promedio</p>
       </div>
 
-      <div v-if="cargando" class="card-body text-center py-5">
-        <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando tu rendimiento...</p>
-      </div>
+      <EstadoCargando v-if="cargando" texto="Cargando tu rendimiento" />
 
       <div v-else class="card-body p-3 p-md-4">
         <!-- ESTADO FINAL DEL CURSO (único lugar donde se muestra el resultado) -->
@@ -110,6 +103,7 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'

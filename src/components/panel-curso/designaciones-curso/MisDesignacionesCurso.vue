@@ -5,26 +5,15 @@
 
       <!-- ================= HEADER ================= -->
       <div class="card-header bg-white p-0 border-bottom">
-        <div class="mx-3 my-3 border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-calendar-week me-1"></i> Mis Designaciones
-          </h4>
-          <span class="text-muted small d-block mt-1">Encuentros de mini a los que fuiste convocado/a, próximos y anteriores</span>
-        </div>
+        <p class="seccion-descripcion mx-3 my-3">Encuentros de mini convocados</p>
       </div>
 
       <!-- ================= BODY ================= -->
       <div class="card-body p-2 p-sm-3 p-md-4">
 
-        <div v-if="cargando" class="text-center py-5">
-          <span class="spinner-border text-danger"></span>
-          <p class="text-muted mt-3 m-0 fw-bold small">Cargando tus designaciones...</p>
-        </div>
+        <EstadoCargando v-if="cargando" texto="Cargando tus designaciones" />
 
-        <div v-else-if="modalidad && modalidad !== 'anual'" class="text-center py-5 text-muted bg-light rounded-3">
-          <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">info</span>
-          <p class="m-0 fw-bold">Los encuentros de mini son solo para el curso anual.</p>
-        </div>
+        <EstadoVacio v-else-if="modalidad && modalidad !== 'anual'" icono="bi-info-circle" titulo="Los encuentros de mini son solo para el curso anual" />
 
         <template v-else>
 
@@ -58,11 +47,7 @@
 
           <!-- ================= PROXIMAS ================= -->
           <div v-if="vistaActiva === 'proximas'">
-            <div v-if="proximas.length === 0" class="text-center py-5 text-muted bg-light rounded-3">
-              <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">event_busy</span>
-              <p class="m-0 fw-bold">No tenés designaciones próximas.</p>
-              <p class="small m-0 mt-1">Cuando te convoquen a un encuentro de mini va a aparecer acá.</p>
-            </div>
+            <EstadoVacio v-if="proximas.length === 0" icono="bi-calendar-x" titulo="No tenés designaciones próximas" mensaje="Cuando te convoquen a un encuentro de mini va a aparecer acá." />
 
             <div v-else v-for="dia in diasProximas" :key="'prox-' + dia.fecha" class="mb-4">
               <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
@@ -83,7 +68,7 @@
                       <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem;">Encuentro de mini</span>
                     </div>
                     <div class="small text-muted d-flex align-items-center flex-wrap gap-1">
-                      <span class="material-icons flex-shrink-0" style="font-size: 15px;">schedule</span>
+                      <i class="bi bi-clock flex-shrink-0" style="font-size: 15px;"></i>
                       <span class="fw-bold text-dark">{{ formatearHora(e.hora) }} hs</span>
                     </div>
                     <div v-if="e.docentes?.length" class="small text-dark d-flex align-items-start gap-1 mt-1">
@@ -91,7 +76,7 @@
                       <span class="text-break"><strong>Profesor a cargo:</strong> {{ nombresDocentes(e) }}</span>
                     </div>
                     <div v-if="e.comentarios" class="mt-2 pt-2 border-top small d-flex align-items-start gap-1 text-dark">
-                      <span class="material-icons text-danger flex-shrink-0" style="font-size: 15px;">chat</span>
+                      <i class="bi bi-chat-text text-danger flex-shrink-0" style="font-size: 15px;"></i>
                       <span class="text-break comentarios"><strong>Comentarios:</strong> {{ e.comentarios }}</span>
                     </div>
                   </div>
@@ -102,10 +87,7 @@
 
           <!-- ================= ANTERIORES ================= -->
           <div v-else class="anteriores">
-            <div v-if="anteriores.length === 0" class="text-center py-5 text-muted bg-light rounded-3">
-              <span class="material-icons opacity-50 d-block mb-2" style="font-size: 40px;">history_toggle_off</span>
-              <p class="m-0 fw-bold">Todavía no tenés designaciones anteriores.</p>
-            </div>
+            <EstadoVacio v-if="anteriores.length === 0" icono="bi-clock-history" titulo="Todavía no tenés designaciones anteriores" />
 
             <template v-else>
               <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
@@ -163,7 +145,7 @@
                               <span class="badge" :class="claseAsistencia(e.asistencia)" style="font-size: 0.65rem;">{{ textoAsistencia(e.asistencia) }}</span>
                             </div>
                             <div class="small text-muted d-flex align-items-center flex-wrap gap-1">
-                              <span class="material-icons flex-shrink-0" style="font-size: 15px;">schedule</span>
+                              <i class="bi bi-clock flex-shrink-0" style="font-size: 15px;"></i>
                               <span class="fw-bold text-dark">{{ formatearHora(e.hora) }} hs</span>
                             </div>
                             <div v-if="e.docentes?.length" class="small text-dark d-flex align-items-start gap-1 mt-1">
@@ -171,7 +153,7 @@
                               <span class="text-break"><strong>Profesor a cargo:</strong> {{ nombresDocentes(e) }}</span>
                             </div>
                             <div v-if="e.comentarios" class="mt-2 pt-2 border-top small d-flex align-items-start gap-1 text-dark">
-                              <span class="material-icons text-secondary flex-shrink-0" style="font-size: 15px;">chat</span>
+                              <i class="bi bi-chat-text text-secondary flex-shrink-0" style="font-size: 15px;"></i>
                               <span class="text-break comentarios"><strong>Comentarios:</strong> {{ e.comentarios }}</span>
                             </div>
                           </div>
@@ -190,6 +172,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'

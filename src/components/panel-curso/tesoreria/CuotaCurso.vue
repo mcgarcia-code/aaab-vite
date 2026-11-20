@@ -1,17 +1,10 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4 w-100 bg-white border-start border-danger border-5">
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4 w-100 bg-white">
 
       <div class="card-header bg-white py-3 border-bottom border-light-subtle">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-          <div>
-            <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
-              <i class="bi bi-tools"></i> Sección en Construcción
-            </h4>
-            <p class="text-muted small m-0 mt-1">Estamos trabajando para brindarte nuevas herramientas de gestión.</p>
-          </div>
-        </div>
+        <p class="seccion-descripcion">Estado de tus pagos · Sección en construcción</p>
       </div>
 
       <div class="card-body p-5">

@@ -2,20 +2,11 @@
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-person-lines-fill me-1"></i> Datos Personales
-          </h4>
-          <span class="text-muted small d-block mt-1">Tu legajo del curso de árbitros</span>
-        </div>
-        <button v-if="!editando && perfil" @click="empezarEdicion" class="btn btn-outline-primary btn-sm fw-bold px-3 align-self-start align-self-md-center">
-          <i class="bi bi-pencil-square me-1"></i> Editar mis datos
-        </button>
+        <p class="seccion-descripcion">Tu legajo del curso de árbitros</p>
+        <BotonHerramienta v-if="!editando && perfil" tipo="nuevo" texto="Editar mis datos" icono="bi-pencil-square" class="align-self-start align-self-md-center" @click="empezarEdicion" />
       </div>
 
-      <div v-if="cargando" class="card-body text-center py-5">
-        <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando tus datos...</p>
-      </div>
+      <EstadoCargando v-if="cargando" texto="Cargando tus datos" />
 
       <div v-else-if="perfil" class="card-body p-3 p-md-4">
         <div class="d-flex flex-wrap align-items-center gap-2 mb-4 pb-3 border-bottom">
@@ -83,7 +74,7 @@
           </div>
           <div class="col-12 d-flex flex-column flex-sm-row gap-2 justify-content-end">
             <button type="button" @click="editando = false" class="btn btn-light border fw-bold px-4">CANCELAR</button>
-            <button type="submit" class="btn btn-success fw-bold px-4" :disabled="guardando">
+            <button type="submit" class="btn btn-danger fw-bold px-4" :disabled="guardando">
               <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
               GUARDAR CAMBIOS
             </button>
@@ -118,7 +109,7 @@
             <input id="mdc-pass-confirmacion" v-model="pass.confirmacion" type="password" autocomplete="new-password" maxlength="72" class="form-control">
           </div>
           <div class="col-12 d-flex justify-content-end">
-            <button type="submit" class="btn btn-dark fw-bold px-4" :disabled="cambiandoPass || !pass.nueva">
+            <button type="submit" class="btn btn-light border fw-bold px-4" :disabled="cambiandoPass || !pass.nueva">
               <span v-if="cambiandoPass" class="spinner-border spinner-border-sm me-1"></span>
               CAMBIAR CONTRASEÑA
             </button>
@@ -130,6 +121,8 @@
 </template>
 
 <script setup>
+import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, reactive, computed, onMounted, inject } from 'vue'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'

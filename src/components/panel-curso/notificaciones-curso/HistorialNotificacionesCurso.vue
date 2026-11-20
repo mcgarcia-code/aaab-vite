@@ -2,24 +2,14 @@
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
     <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-        <div class="border-start border-danger border-5 ps-3">
-          <h4 class="text-danger fw-bold m-0 d-flex align-items-center gap-2 fs-5">
-            <i class="bi bi-bell-fill me-1"></i> Notificaciones
-          </h4>
-          <span class="text-muted small d-block mt-1">Avisos del curso: cambios de estado, notas y observaciones</span>
-        </div>
+        <p class="seccion-descripcion">Avisos del curso: cambios de estado, notas y observaciones</p>
         <button v-if="noLeidas.length" @click="marcarLeidas" class="btn btn-outline-secondary btn-sm fw-bold align-self-start align-self-md-center">
           <i class="bi bi-check2-all me-1"></i> Marcar todas como leídas
         </button>
       </div>
 
-      <div v-if="cargando" class="card-body text-center py-5">
-        <span class="spinner-border text-danger"></span><p class="text-muted mt-3 mb-0 fw-bold">Cargando notificaciones...</p>
-      </div>
-      <div v-else-if="!notificaciones.length" class="card-body text-center py-5 text-muted">
-        <i class="bi bi-bell-slash fs-1 d-block mb-2 opacity-50"></i>
-        <span class="fw-bold">No tenés notificaciones.</span>
-      </div>
+      <EstadoCargando v-if="cargando" texto="Cargando notificaciones" />
+      <EstadoVacio v-else-if="!notificaciones.length" icono="bi-bell-slash" titulo="No tenés notificaciones" />
       <div v-else class="card-body p-3 p-md-4 d-flex flex-column gap-2">
         <div v-for="n in notificaciones" :key="n.id" class="notif-item d-flex gap-3 align-items-start" :class="{ nueva: !n.leida }">
           <div class="icono-notif flex-shrink-0" :class="ICONOS_NOTIFICACION[n.tipo]?.bg || 'bg-secondary'">
@@ -39,6 +29,8 @@
 </template>
 
 <script setup>
+import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useNotificacionesCurso, ICONOS_NOTIFICACION } from '@/composables/useNotificacionesCurso'
