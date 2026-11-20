@@ -1,5 +1,5 @@
 <template>
-    <select
+    <select aria-label="Localidad"
         :value="modelValueNormalizado"
         @change="actualizarLocalidad"
     >

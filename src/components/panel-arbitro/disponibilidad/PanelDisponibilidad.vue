@@ -1,12 +1,12 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
         <p class="seccion-descripcion">Cargá tus días y horarios</p>
 
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-          <span v-if="edicionAbierta" class="badge bg-primary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
+          <span v-if="edicionAbierta" class="badge bg-secondary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
             <i class="bi bi-pencil-square me-1"></i> Edición Abierta
           </span>
           <span v-else class="badge bg-secondary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
@@ -16,7 +16,7 @@
       </div>
 
       <div class="card-body p-3 p-md-4">
-        <h6 class="text-danger fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">Movilidad</h6>
+        <h6 class="text-danger fw-bold text-uppercase mb-3 small espaciado-1">Movilidad</h6>
         <div class="row mb-4 border-bottom pb-3">
           <div class="col-12 d-flex flex-wrap gap-3 gap-md-4">
             <div class="form-check">
@@ -38,11 +38,11 @@
           </div>
         </div>
 
-        <h6 class="text-danger fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">Sábados</h6>
+        <h6 class="text-danger fw-bold text-uppercase mb-3 small espaciado-1">Sábados</h6>
         <div class="row g-3 mb-4 border-bottom pb-4">
           <div class="col-12 col-md-4">
             <label class="form-label small fw-bold text-muted">Disponibilidad</label>
-            <select v-if="edicionAbierta" v-model="arbitro.disponibilidad_sabado" class="form-select form-select-sm">
+            <select aria-label="Disponibilidad" v-if="edicionAbierta" v-model="arbitro.disponibilidad_sabado" class="form-select form-select-sm">
               <option value="NO">NO</option>
               <option value="FT">FT (Full Time)</option>
               <option value="OTROS">OTROS</option>
@@ -51,21 +51,21 @@
           </div>
           <div v-if="arbitro.disponibilidad_sabado === 'OTROS'" class="col-6 col-md-4">
             <label class="form-label small fw-bold text-muted">Desde</label>
-            <input v-if="edicionAbierta" v-model="arbitro.disponibilidad_sabado_desde" type="time" class="form-control form-control-sm">
+            <input aria-label="Desde" v-if="edicionAbierta" v-model="arbitro.disponibilidad_sabado_desde" type="time" class="form-control form-control-sm">
             <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.disponibilidad_sabado_desde || '--:--' }}</div>
           </div>
           <div v-if="arbitro.disponibilidad_sabado === 'OTROS'" class="col-6 col-md-4">
             <label class="form-label small fw-bold text-muted">Hasta</label>
-            <input v-if="edicionAbierta" v-model="arbitro.disponibilidad_sabado_hasta" type="time" class="form-control form-control-sm">
+            <input aria-label="Hasta" v-if="edicionAbierta" v-model="arbitro.disponibilidad_sabado_hasta" type="time" class="form-control form-control-sm">
             <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.disponibilidad_sabado_hasta || '--:--' }}</div>
           </div>
         </div>
 
-        <h6 class="text-danger fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">Domingos</h6>
+        <h6 class="text-danger fw-bold text-uppercase mb-3 small espaciado-1">Domingos</h6>
         <div class="row g-3 mb-4 border-bottom pb-4">
           <div class="col-12 col-md-4">
             <label class="form-label small fw-bold text-muted">Disponibilidad</label>
-            <select v-if="edicionAbierta" v-model="arbitro.disponibilidad_domingo" class="form-select form-select-sm">
+            <select aria-label="Disponibilidad" v-if="edicionAbierta" v-model="arbitro.disponibilidad_domingo" class="form-select form-select-sm">
               <option value="NO">NO</option>
               <option value="FT">FT (Full Time)</option>
               <option value="OTROS">OTROS</option>
@@ -74,21 +74,21 @@
           </div>
           <div v-if="arbitro.disponibilidad_domingo === 'OTROS'" class="col-6 col-md-4">
             <label class="form-label small fw-bold text-muted">Desde</label>
-            <input v-if="edicionAbierta" v-model="arbitro.disponibilidad_domingo_desde" type="time" class="form-control form-control-sm">
+            <input aria-label="Desde" v-if="edicionAbierta" v-model="arbitro.disponibilidad_domingo_desde" type="time" class="form-control form-control-sm">
             <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.disponibilidad_domingo_desde || '--:--' }}</div>
           </div>
           <div v-if="arbitro.disponibilidad_domingo === 'OTROS'" class="col-6 col-md-4">
             <label class="form-label small fw-bold text-muted">Hasta</label>
-            <input v-if="edicionAbierta" v-model="arbitro.disponibilidad_domingo_hasta" type="time" class="form-control form-control-sm">
+            <input aria-label="Hasta" v-if="edicionAbierta" v-model="arbitro.disponibilidad_domingo_hasta" type="time" class="form-control form-control-sm">
             <div v-else class="p-2 bg-light rounded fw-bold text-dark">{{ arbitro.disponibilidad_domingo_hasta || '--:--' }}</div>
           </div>
         </div>
 
-        <h6 class="text-danger fw-bold text-uppercase mb-3 small" style="letter-spacing: 1px;">Actividad Deportiva</h6>
+        <h6 class="text-danger fw-bold text-uppercase mb-3 small espaciado-1">Actividad Deportiva</h6>
         <div class="row g-3 mb-4">
           <div class="col-12 col-md-4">
             <label class="form-label small fw-bold text-muted">¿Juega al Handball?</label>
-            <select v-if="edicionAbierta" v-model="arbitro.juega_handball" class="form-select form-select-sm">
+            <select aria-label="¿Juega al Handball?" v-if="edicionAbierta" v-model="arbitro.juega_handball" class="form-select form-select-sm">
               <option value="no">NO</option>
               <option value="si">SI</option>
             </select>
@@ -121,12 +121,12 @@
           </div>
           <div class="col-12">
             <label class="form-label small fw-bold text-muted">Observaciones Generales</label>
-            <textarea v-if="edicionAbierta" v-model="arbitro.observaciones" class="form-control form-control-sm" rows="2"></textarea>
+            <textarea aria-label="Observaciones Generales" v-if="edicionAbierta" v-model="arbitro.observaciones" class="form-control form-control-sm" rows="2"></textarea>
             <div v-else class="p-2 bg-light rounded small text-dark">{{ arbitro.observaciones || 'Sin observaciones' }}</div>
           </div>
         </div>
 
-        <h6 class="text-danger fw-bold text-uppercase mb-3 small border-top pt-4" style="letter-spacing: 1px;">Familiares o DT en clubes</h6>
+        <h6 class="text-danger fw-bold text-uppercase mb-3 small border-top pt-4 espaciado-1">Familiares o DT en clubes</h6>
         <div class="mb-4">
           <SeccionFamiliares
             v-model:tiene="tieneFamiliares"
@@ -140,7 +140,7 @@
           />
         </div>
 
-        <h6 class="text-danger fw-bold text-uppercase mb-3 small border-top pt-4" style="letter-spacing: 1px;">Ex-jugador o club con el que te identificás</h6>
+        <h6 class="text-danger fw-bold text-uppercase mb-3 small border-top pt-4 espaciado-1">Ex-jugador o club con el que te identificás</h6>
         <div class="mb-4">
           <div v-if="!vinculosCargados" class="small text-muted"><span class="spinner-border spinner-border-sm me-1"></span> Cargando...</div>
           <SeccionClubesVinculados
@@ -169,7 +169,7 @@
             Todas las modificaciones quedan registradas en el sistema.
         </div>
 
-        <div class="card border-0 shadow-sm overflow-hidden mb-4" style="border-radius: 12px;">
+        <div class="card border-0 shadow-sm overflow-hidden mb-4 radio-12">
             <div class="card-header bg-white border-bottom py-3 ps-3">
                 <h6 class="m-0 fw-bold text-dark small text-uppercase">Historial de Solicitudes</h6>
             </div>
@@ -190,7 +190,7 @@
                         <!-- HEADER MOBILE: Fecha y Estado -->
                         <div class="col-12 d-md-none mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
                             <span class="small fw-bold text-dark">{{ h.fecha }}</span>
-                            <span :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem;">
+                            <span class="texto-065" :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]">
                                 {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
                             </span>
                         </div>
@@ -207,7 +207,7 @@
 
                         <!-- COL 3: ESTADO (Escritorio) -->
                         <div class="col-md-3 d-none d-md-flex justify-content-center pe-3">
-                            <span :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                            <span class="texto-065 espaciado-05" :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]">
                                 {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
                             </span>
                         </div>
@@ -232,7 +232,7 @@
 
             <div class="p-3 p-md-4 rounded-4 shadow-lg" style="background: #0c1624; border: 1px dashed rgba(255,255,255,0.2);">
                 <h6 class="text-white fw-bold small mb-2 text-uppercase">Informar cambio urgente</h6>
-                <textarea v-model="solicitudCambio" class="form-control mb-3 custom-textarea p-3" rows="3" placeholder="Detallá aquí tu cambio de horarios..."></textarea>
+                <textarea aria-label="Detallá aquí tu cambio de horarios" v-model="solicitudCambio" class="form-control mb-3 custom-textarea p-3" rows="3" placeholder="Detallá aquí tu cambio de horarios..."></textarea>
                 <button @click="enviarSolicitudRectificacion" class="btn btn-danger w-100 fw-bold py-3 py-md-2 shadow" :disabled="cargando || !solicitudCambio">
                     ENVIAR SOLICITUD FORMAL
                 </button>
@@ -263,7 +263,7 @@ useHead({
 })
 
 // Inyección del notificador global
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 const arbitro = ref(auth.getUser() || {});
 const solicitudCambio = ref('');
 const historialRectificaciones = ref([]);

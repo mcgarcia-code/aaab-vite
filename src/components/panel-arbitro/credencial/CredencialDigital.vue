@@ -20,13 +20,13 @@
                 class="w-100 h-100 object-fit-cover"
                 style="border-radius: 10px;"
                 :src="`https://arbitroshandball.com.ar/uploads/carnet-arbitros/${String(arbitro.dni).trim()}.webp?t=${new Date().getTime()}`"
-                @error="e => e.target.src = 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'"
+                @error="e => e.target.src = 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'" alt="Foto del árbitro"
               >
             </div>
 
-            <div class="badge rounded-pill px-3 py-2 mt-4 d-inline-flex align-items-center gap-2 shadow-sm"
+            <div class="badge rounded-pill px-3 py-2 mt-4 d-inline-flex align-items-center gap-2 shadow-sm texto-075 espaciado-05"
                  :class="arbitro.es_activo == 1 ? 'bg-success' : 'bg-danger'"
-                 style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                >
               <i :class="arbitro.es_activo == 1 ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'"></i>
               {{ arbitro.es_activo == 1 ? 'ACTIVO' : 'INACTIVO' }}
             </div>
@@ -42,7 +42,7 @@
 
             <div class="d-flex flex-column gap-3 flex-grow-1">
               <div>
-                <span class="text-secondary fw-bold d-block mb-1" style="font-size: 0.75rem;">APELLIDO Y NOMBRE</span>
+                <span class="text-secondary fw-bold d-block mb-1 texto-075">APELLIDO Y NOMBRE</span>
                 <h1 class="fw-black text-dark m-0" style="font-size: clamp(1.5rem, 5vw, 2rem); line-height: 1.1;">
                   {{ (arbitro.apellido || '').toUpperCase() }}, {{ arbitro.nombre }}
                 </h1>
@@ -50,7 +50,7 @@
 
               <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start mt-2">
                 <div class="text-center text-md-start">
-                  <span class="text-secondary fw-bold d-block mb-1" style="font-size: 0.75rem;">DOCUMENTO</span>
+                  <span class="text-secondary fw-bold d-block mb-1 texto-075">DOCUMENTO</span>
                   <span class="fw-bolder text-dark" style="font-size: 1.4rem;">{{ arbitro.dni }}</span>
                 </div>
 
@@ -58,7 +58,7 @@
                 <div class="vr d-none d-md-block mx-4 text-secondary opacity-25"></div>
 
                 <div class="text-center text-md-start mt-3 mt-md-0">
-                  <span class="text-secondary fw-bold d-block mb-1" style="font-size: 0.75rem;">GRUPO</span>
+                  <span class="text-secondary fw-bold d-block mb-1 texto-075">GRUPO</span>
                   <span class="fw-bolder text-danger" style="font-size: 1.4rem;">{{ arbitro.grupo }}</span>
                 </div>
               </div>
@@ -68,10 +68,10 @@
               <div class="bg-white p-1 border rounded shadow-sm">
                 <qrcode-vue :value="`https://arbitroshandball.com.ar/perfil/${arbitro.dni}`" :size="70" level="H" />
               </div>
-              <div class="text-center text-md-start fw-bold" style="font-size: 0.65rem; color: #444; line-height: 1.2;">
+              <div class="text-center text-md-start fw-bold texto-065 lh-12" style="color: #444;">
                 ASOCIACIÓN ARGENTINA<br>DE ÁRBITROS DE HANDBALL
               </div>
-              <div class="text-center text-md-end fw-bold text-muted" style="font-size: 0.75rem;">
+              <div class="text-center text-md-end fw-bold text-muted texto-075">
                 VENCE: 31/12/{{ añoActual }}
               </div>
             </div>
@@ -96,8 +96,8 @@
 <script setup>
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, onMounted } from 'vue';
+import { cargarHtml2canvas } from '@/utils/librerias'
 import { api } from '@/api/api';
-import html2canvas from 'html2canvas';
 import QrcodeVue from 'qrcode.vue';
 import { useHead } from '@vueuse/head';
 import logo from '@/assets/fotos/logo.png';
@@ -150,7 +150,7 @@ const descargar = async () => {
   if (procesando.value || !credencialRef.value) return;
   procesando.value = true;
   try {
-    const canvas = await html2canvas(credencialRef.value, {
+    const canvas = await (await cargarHtml2canvas())(credencialRef.value, {
       useCORS: true,
       scale: 3,
       backgroundColor: '#ffffff',

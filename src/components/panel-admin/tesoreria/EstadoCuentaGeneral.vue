@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Saldo de todos los árbitros · Total: {{ arbitrosFiltrados.length }} árbitros con movimientos</p>
@@ -14,14 +14,14 @@
         </div>
 
         <div class="bg-light p-3 border-bottom">
-          <input v-model="busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO...">
+          <input aria-label="Buscar árbitro" v-model="busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO...">
         </div>
 
         <div class="card-body p-0 p-md-3 bg-white">
           <EstadoCargando v-if="cargando" texto="Cargando estado de cuenta" />
 
           <div v-else class="table-responsive border rounded shadow-sm">
-            <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+            <table class="table table-hover align-middle mb-0 texto-085">
               <thead class="table-light">
                 <tr>
                   <th class="py-3 text-uppercase text-muted">Árbitro</th>
@@ -38,8 +38,8 @@
                   <td class="text-end">{{ formatearMonto(a.pendiente_sin_cerrar) }}</td>
                   <td class="text-end fw-bold" :class="saldoTotal(a) > 0 ? 'text-danger' : 'text-success'">{{ formatearMonto(saldoTotal(a)) }}</td>
                   <td class="text-center">
-                    <RouterLink :to="{ path: '/panel-admin/tesoreria/aportes-pagos/movimientos', query: { id_arbitro: a.id } }" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Ver movimientos">
-                      <i class="bi bi-eye" style="font-size:16px;"></i>
+                    <RouterLink :to="{ path: '/panel-admin/tesoreria/aportes-pagos/movimientos', query: { id_arbitro: a.id } }" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Ver movimientos">
+                      <i class="bi bi-eye texto-16px"></i>
                     </RouterLink>
                   </td>
                 </tr>
@@ -62,10 +62,10 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, onMounted } from 'vue'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import { RouterLink } from 'vue-router'
-import ExcelJS from 'exceljs'
 
 useHead({ title: 'Estado de Cuenta General | AAAB' })
 
@@ -100,7 +100,7 @@ const exportarExcel = async () => {
     'Saldo Total': saldoTotal(a)
   }))
 
-  const wb = new ExcelJS.Workbook()
+  const wb = new (await cargarExcelJS()).Workbook()
   const ws = wb.addWorksheet('EstadoCuenta')
   const claves = Object.keys(data[0] || {})
   ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 22 }))

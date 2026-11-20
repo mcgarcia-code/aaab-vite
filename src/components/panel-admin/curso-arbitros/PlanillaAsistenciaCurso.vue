@@ -95,7 +95,7 @@ const props = defineProps({
 // Tocar el encabezado de una clase abre la ventana de asistencia de la vista
 const emit = defineEmits(['abrir-asistencia'])
 
-const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const notificar = inject('notificar')
 
 const etiquetaCurso = (curso) => (curso === 'ambos' ? 'Ambos cursos' : MODALIDADES_CURSO[curso]?.etiqueta || curso)
 

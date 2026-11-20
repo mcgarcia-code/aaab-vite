@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -28,21 +28,21 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Rechazos</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <div class="col-6 col-md-3">
-              <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="ÁRBITRO (APELLIDO O NOMBRE)...">
+              <input aria-label="Árbitro (apellido o nombre)" v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="ÁRBITRO (APELLIDO O NOMBRE)...">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por año" v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">AÑO</option>
                 <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="creado">CREADO</option>
                 <option value="justificado">JUSTIFICADO</option>
@@ -51,7 +51,7 @@
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.funcion" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por función" v-model="filtros.funcion" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">FUNCIÓN</option>
                 <option value="arbitro">ÁRBITRO</option>
                 <option value="delegado">DELEGADO TÉCNICO</option>
@@ -71,16 +71,16 @@
           <template v-else>
           <!-- TABLA (Escritorio) -->
           <div class="d-none d-md-block table-responsive border rounded shadow-sm">
-            <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem;">
+            <table class="table table-hover align-middle mb-0 texto-075">
               <thead class="table-light">
                 <tr>
-                  <th class="py-3 ps-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 1px;">ID</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
-                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro</th>
-                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Partido</th>
-                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Función</th>
-                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Motivo</th>
-                  <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
+                  <th class="py-3 ps-3 text-uppercase text-muted texto-075" style="width: 1px;">ID</th>
+                  <th class="py-3 text-center text-uppercase text-muted texto-075">Acciones</th>
+                  <th class="py-3 text-uppercase text-muted texto-075">Árbitro</th>
+                  <th class="py-3 text-uppercase text-muted texto-075">Partido</th>
+                  <th class="py-3 text-uppercase text-muted texto-075">Función</th>
+                  <th class="py-3 text-uppercase text-muted texto-075">Motivo</th>
+                  <th class="py-3 text-center pe-3 text-uppercase text-muted texto-075">Estado</th>
                 </tr>
               </thead>
               <tbody>
@@ -88,14 +88,14 @@
                   <td class="ps-3 text-muted fw-bold font-monospace">{{ r.id }}</td>
                   <td class="text-center">
                     <div class="d-flex justify-content-center gap-1">
-                      <button @click="editarRechazo(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar / Resolver">
-                        <i class="bi bi-pencil" style="font-size:16px;"></i>
+                      <button @click="editarRechazo(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar / Resolver">
+                        <i class="bi bi-pencil texto-16px"></i>
                       </button>
                       <button @click="verHistorialRechazo(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver Historial">
-                        <i class="bi bi-search" style="font-size:16px;"></i>
+                        <i class="bi bi-search texto-16px"></i>
                       </button>
                       <button @click="borrarRechazo(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Borrar">
-                        <i class="bi bi-trash" style="font-size:16px;"></i>
+                        <i class="bi bi-trash texto-16px"></i>
                       </button>
                     </div>
                   </td>
@@ -122,7 +122,7 @@
           <div class="d-md-none p-3 bg-light">
             <div v-for="r in rechazosPaginados" :key="'mob-'+r.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
               <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
-                <div class="text-uppercase text-dark fw-bold" style="font-size: 1.05rem;">
+                <div class="text-uppercase text-dark fw-bold texto-105">
                   {{ r.apellido }}, {{ r.nombre }}
                 </div>
                 <div class="small text-muted fw-bold font-monospace">#{{ r.id }}</div>
@@ -131,7 +131,7 @@
               <div class="card-body pt-0 px-3 pb-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <span class="fw-bold text-dark">{{ r.local }} vs {{ r.visitante }}</span>
-                  <span :class="['badge-status-sm', r.estado]" style="font-size: 0.7rem; padding: 3px 10px;">{{ r.estado.toUpperCase() }}</span>
+                  <span class="texto-07" :class="['badge-status-sm', r.estado]" style="padding: 3px 10px;">{{ r.estado.toUpperCase() }}</span>
                 </div>
 
                 <div class="bg-light p-2 rounded border small mb-3">
@@ -154,14 +154,14 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                  <button @click="editarRechazo(r)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                    <i class="bi bi-pencil" style="font-size: 16px;"></i> RESOLVER
+                  <button @click="editarRechazo(r)" class="btn btn-sm btn-outline-secondary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                    <i class="bi bi-pencil texto-16px"></i> RESOLVER
                   </button>
-                  <button @click="verHistorialRechazo(r)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
-                    <i class="bi bi-search" style="font-size: 18px;"></i>
+                  <button type="button" aria-label="Ver historial del rechazo" title="Ver historial del rechazo" @click="verHistorialRechazo(r)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
+                    <i class="bi bi-search texto-18px"></i>
                   </button>
-                  <button @click="borrarRechazo(r)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
-                    <i class="bi bi-trash" style="font-size: 18px;"></i>
+                  <button type="button" aria-label="Eliminar rechazo" title="Eliminar rechazo" @click="borrarRechazo(r)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
+                    <i class="bi bi-trash texto-18px"></i>
                   </button>
                 </div>
               </div>
@@ -200,7 +200,7 @@
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Resolver Rechazo</span>
-          <div v-if="rechazoSeleccionado" class="text-muted small" style="font-size: 0.85rem;">
+          <div v-if="rechazoSeleccionado" class="text-muted small texto-085">
             #{{ rechazoSeleccionado.id }} — {{ rechazoSeleccionado.apellido }}, {{ rechazoSeleccionado.nombre }}
           </div>
         </div>
@@ -231,7 +231,7 @@
         </div>
 
         <label class="small fw-bold text-dark mb-1">Estado del rechazo</label>
-        <select v-model="estadoEdicion" class="form-select shadow-none border-secondary-subtle">
+        <select aria-label="Estado del rechazo" v-model="estadoEdicion" class="form-select shadow-none border-secondary-subtle">
           <option value="creado">Creado</option>
           <option value="justificado">Justificado</option>
           <option value="injustificado">Injustificado</option>
@@ -286,14 +286,14 @@
       <div v-else>
         <!-- Tabla Historial (Escritorio) -->
         <div class="table-responsive d-none d-md-block bg-white rounded shadow-sm border border-light-subtle">
-          <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem;">
+          <table class="table table-sm table-hover align-middle m-0 texto-085">
             <thead class="table-light">
               <tr>
-                <th class="py-2 ps-3 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Partido</th>
-                <th class="py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Función</th>
-                <th class="py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Fecha</th>
-                <th class="py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Motivo</th>
-                <th class="text-center py-2 pe-3 fw-bold text-uppercase text-muted" style="width: 150px; font-size: 0.75rem;">Estado</th>
+                <th class="py-2 ps-3 fw-bold text-uppercase text-muted texto-075">Partido</th>
+                <th class="py-2 fw-bold text-uppercase text-muted texto-075">Función</th>
+                <th class="py-2 fw-bold text-uppercase text-muted texto-075">Fecha</th>
+                <th class="py-2 fw-bold text-uppercase text-muted texto-075">Motivo</th>
+                <th class="text-center py-2 pe-3 fw-bold text-uppercase text-muted texto-075" style="width: 150px;">Estado</th>
               </tr>
             </thead>
             <tbody>
@@ -307,8 +307,8 @@
                     {{ etiquetaFuncion(h.funcion) }}
                   </span>
                 </td>
-                <td class="text-nowrap text-primary fw-bold py-3">{{ formatearFechaVista(h.fecha) }}</td>
-                <td class="text-muted py-3" style="white-space: normal; word-wrap: break-word;">{{ etiquetaMotivo(h.motivo) }}</td>
+                <td class="text-nowrap text-danger fw-bold py-3">{{ formatearFechaVista(h.fecha) }}</td>
+                <td class="text-muted py-3 text-wrap" style="word-wrap: break-word;">{{ etiquetaMotivo(h.motivo) }}</td>
                 <td class="text-center py-3 pe-3">
                   <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
                 </td>
@@ -343,8 +343,8 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
@@ -354,7 +354,7 @@ useHead({
 })
 
 const notificar = inject('notificar')
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 // Mismos motivos que ve el árbitro al rechazar
 const opcionesMotivo = [
@@ -579,7 +579,7 @@ const exportarExcel = async () => {
     'Estado': (r.estado || '').toUpperCase()
   }))
 
-  const wb = new ExcelJS.Workbook()
+  const wb = new (await cargarExcelJS()).Workbook()
   const ws = wb.addWorksheet('Rechazos')
 
   const claves = Object.keys(data[0] || {})
@@ -639,18 +639,6 @@ onMounted(obtenerRechazos)
   line-height: 1;
 }
 
-.dot-notif {
-  position: absolute;
-  top: -4px;
-  left: -6px;
-  width: 12px;
-  height: 12px;
-  background: #dc3545;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  animation: pulso 1.5s infinite;
-}
-
 @keyframes pulso {
   0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.5); }
   70% { box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
@@ -683,7 +671,7 @@ onMounted(obtenerRechazos)
   font-weight: 700;
   white-space: nowrap;
 }
-.func-arbitro { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.func-arbitro { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
 .func-delegado { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
 
 </style>

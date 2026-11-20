@@ -76,24 +76,24 @@ const routes = [
       { path: 'mis-observaciones', name: 'PanelMisObservaciones', component: () => import('../components/panel-arbitro/mis-observaciones/MisObservacionesPartidos.vue') },
 
       // --- APORTES Y PAGOS ---
-      { path: 'aportes', name: 'PanelAportes', component: () => import('../components/panel-arbitro/tesoreria/MisAportes.vue') },
+      { path: 'aportes', name: 'PanelAportes', component: () => import('../components/panel-arbitro/tesoreria/MisAportes.vue'), meta: { idsPermitidos: [1, 2] } },
 
       // --- REF-FLIX ---
       { path: 'ref-flix', name: 'PanelRefFlix', beforeEnter() { window.location.href = 'https://refflix.com.ar' } },
 
       // --- OBSERVACIONES ---
-      { path: 'observaciones', name: 'Observaciones', component: () => import('../components/panel-arbitro/observadores/ObservacionesPanel.vue') },
-      { path: 'observaciones/carga', name: 'ObservacionesCarga', component: () => import('../components/panel-arbitro/observadores/CargaObservaciones.vue') },
-      { path: 'observaciones/mis-observaciones', name: 'ObservacionesMias', component: () => import('../components/panel-arbitro/observadores/MisObservaciones.vue') },
-      { path: 'observaciones/observaciones-mini', name: 'ObservacionesMini', component: () => import('../components/panel-arbitro/observadores/ObservacionesMini.vue') },
+      { path: 'observaciones', name: 'Observaciones', component: () => import('../components/panel-arbitro/observadores/ObservacionesPanel.vue'), meta: { roles: [2, 4] } },
+      { path: 'observaciones/carga', name: 'ObservacionesCarga', component: () => import('../components/panel-arbitro/observadores/CargaObservaciones.vue'), meta: { roles: [2, 4] } },
+      { path: 'observaciones/mis-observaciones', name: 'ObservacionesMias', component: () => import('../components/panel-arbitro/observadores/MisObservaciones.vue'), meta: { roles: [2, 4] } },
+      { path: 'observaciones/observaciones-mini', name: 'ObservacionesMini', component: () => import('../components/panel-arbitro/observadores/ObservacionesMini.vue'), meta: { roles: [2, 4] } },
 
       // --- COORDINADORES ---
-      { path: 'coordinadores', name: 'PanelCoordinadoresAdmin', component: () => import('../components/panel-arbitro/coordinadores/CoordinadoresAdmin.vue') },
-      { path: 'coordinadores/resumen-arbitros', name: 'CoordinadoresResumen', component: () => import('../components/panel-arbitro/coordinadores/PlanillaGeneralCoordinadores.vue') },
-      { path: 'coordinadores/reuniones-mensuales', name: 'CoordinadoresReuniones', component: () => import('../components/panel-arbitro/coordinadores/ReunionesMensualesCoordinadores.vue') },
-      { path: 'coordinadores/disponibilidad-horaria', name: 'CoordinadoresDisponibilidad', component: () => import('../components/panel-arbitro/coordinadores/DisponibilidadHorariaCoordinadores.vue') },
-      { path: 'coordinadores/planilla-general-observaciones', name: 'CoordinadoresPlanillaGeneralObservaciones', component: () => import('../components/panel-arbitro/coordinadores/PlanillaGeneralObservacionesCoordinadores.vue') },
-      {path: 'coordinadores/informes-coordinadores', name: 'InformesCoordinadores', component: () => import('../components/panel-arbitro/coordinadores/InformesCoordinadores.vue')},
+      { path: 'coordinadores', name: 'PanelCoordinadoresAdmin', component: () => import('../components/panel-arbitro/coordinadores/CoordinadoresAdmin.vue'), meta: { roles: [4] } },
+      { path: 'coordinadores/resumen-arbitros', name: 'CoordinadoresResumen', component: () => import('../components/panel-arbitro/coordinadores/PlanillaGeneralCoordinadores.vue'), meta: { roles: [4] } },
+      { path: 'coordinadores/reuniones-mensuales', name: 'CoordinadoresReuniones', component: () => import('../components/panel-arbitro/coordinadores/ReunionesMensualesCoordinadores.vue'), meta: { roles: [4] } },
+      { path: 'coordinadores/disponibilidad-horaria', name: 'CoordinadoresDisponibilidad', component: () => import('../components/panel-arbitro/coordinadores/DisponibilidadHorariaCoordinadores.vue'), meta: { roles: [4] } },
+      { path: 'coordinadores/planilla-general-observaciones', name: 'CoordinadoresPlanillaGeneralObservaciones', component: () => import('../components/panel-arbitro/coordinadores/PlanillaGeneralObservacionesCoordinadores.vue'), meta: { roles: [4] } },
+      {path: 'coordinadores/informes-coordinadores', name: 'InformesCoordinadores', component: () => import('../components/panel-arbitro/coordinadores/InformesCoordinadores.vue'), meta: { roles: [4] } },
 
       // --- INDUMENTARIA ---
       { path: 'indumentaria', name: 'PanelIndumentaria', component: () => import('../components/panel-arbitro/indumentaria/IndumentariaArbitro.vue') },
@@ -257,7 +257,12 @@ router.beforeEach(async (to, from, next) => {
     const matchedRecord = [...to.matched].reverse().find(record => record.meta.roles);
     const rolesPermitidos = matchedRecord ? matchedRecord.meta.roles : null;
 
-    if (rolesPermitidos && !rolesPermitidos.includes(userRole)) {
+    // Se compara como texto: el rol puede venir como número o como string según el endpoint
+    const idsPermitidos = [...to.matched].reverse().find(record => record.meta.idsPermitidos)?.meta.idsPermitidos
+    const rolValido = !rolesPermitidos || rolesPermitidos.some(rol => String(rol) === String(userRole))
+    const idValido = !idsPermitidos || idsPermitidos.some(id => String(id) === String(user?.id))
+
+    if (!rolValido || !idValido) {
       return esAutoridad ? next('/panel-admin') : next('/panel-arbitro');
     }
 

@@ -6,7 +6,8 @@
 
     <div class="d-flex flex-column align-items-center gap-2 px-3 pt-3 pb-3">
       <div class="perfil-wrap">
-        <img :src="foto" @error="(e) => emit('error-foto', e)" class="perfil-img-grande" role="button" alt="Ver foto de perfil ampliada"
+        <img :src="foto" @error="(e) => emit('error-foto', e)" class="perfil-img-grande" role="button" tabindex="0" alt="Ver foto de perfil ampliada"
+             @keydown.enter.prevent="emit('ampliar-foto')" @keydown.space.prevent="emit('ampliar-foto')"
              @click="emit('ampliar-foto')">
         <button type="button" class="btn-editar-foto" @click="emit('cambiar-foto')" aria-label="Cambiar foto de perfil">
           <i class="bi bi-camera-fill"></i>

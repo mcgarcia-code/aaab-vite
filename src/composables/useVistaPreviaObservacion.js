@@ -15,7 +15,7 @@
 // ============================================================
 
 import { ref, computed } from 'vue';
-import ExcelJS from 'exceljs';
+import { cargarExcelJS } from '@/utils/librerias'
 
 // --- Mapa de categorías / ítems: copiado 1:1 de _categoriasEvaluacionExcel() del PHP ---
 const CATEGORIAS_EVALUACION = [
@@ -141,16 +141,14 @@ export function useVistaPreviaObservacion() {
     analizando.value = false;
   };
 
-  // datosPartido: lo que devuelve armarDatosPartido() en cada .vue
-  // (categoria, fecha_partido, etc.) para completar la cabecera de la preview.
-  const analizarArchivo = async (file, datosPartido = {}) => {
+  const analizarArchivo = async (file) => {
     limpiarPreview();
     if (!file) return;
 
     analizando.value = true;
     try {
       const buffer = await file.arrayBuffer();
-      const wb = new ExcelJS.Workbook();
+      const wb = new (await cargarExcelJS()).Workbook();
       await wb.xlsx.load(buffer);
 
       const scoreSheet = wb.getWorksheet('Score sheet');

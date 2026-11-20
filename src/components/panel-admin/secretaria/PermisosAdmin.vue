@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -23,21 +23,21 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Usuarios</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <div class="col-12 col-md-6">
-              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="NOMBRE O EMAIL...">
+              <input aria-label="Nombre o email" v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="NOMBRE O EMAIL...">
             </div>
             <div class="col-6 col-md-3">
-              <select v-model="filtros.rol" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por rol" v-model="filtros.rol" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">CARGO</option>
                 <option v-for="r in rolesEnLista" :key="r" :value="r">{{ etiquetaRol(r).toUpperCase() }}</option>
               </select>
             </div>
             <div class="col-6 col-md-3">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="1">ACTIVOS</option>
                 <option value="0">DESACTIVADOS</option>
@@ -57,16 +57,16 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm">
-              <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem;">
+              <table class="table table-hover align-middle mb-0 texto-075">
                 <thead class="table-light">
                   <tr>
-                    <th class="py-3 ps-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 1px;">ID</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Nombre</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Usuario</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Cargo</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
-                    <th class="py-3 pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">Categorías que ve</th>
+                    <th class="py-3 ps-3 text-uppercase text-muted texto-075" style="width: 1px;">ID</th>
+                    <th class="py-3 text-center text-uppercase text-muted texto-075">Acciones</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">Nombre</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">Usuario</th>
+                    <th class="py-3 text-center text-uppercase text-muted texto-075">Cargo</th>
+                    <th class="py-3 text-center text-uppercase text-muted texto-075">Estado</th>
+                    <th class="py-3 pe-3 text-uppercase text-muted texto-075">Categorías que ve</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -74,14 +74,14 @@
                     <td class="ps-3 text-muted fw-bold font-monospace">{{ u.id }}</td>
                     <td class="text-center">
                       <div v-if="puedeGestionar(u)" class="d-flex justify-content-center gap-1">
-                        <button @click="abrirModalEdicion(u)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar Usuario">
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                        <button @click="abrirModalEdicion(u)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar Usuario">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button @click="abrirModalPassword(u)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Cambiar Contraseña">
-                          <i class="bi bi-key" style="font-size:16px;"></i>
+                          <i class="bi bi-key texto-16px"></i>
                         </button>
                         <button v-if="!esUsuarioActual(u)" @click="confirmarCambioEstado(u)" :class="['btn btn-light btn-sm border shadow-sm rounded p-1', esActivo(u) ? 'text-danger' : 'text-success']" :title="esActivo(u) ? 'Desactivar' : 'Activar'">
-                          <i :class="['bi', esActivo(u) ? 'bi-person-x' : 'bi-person-plus']" style="font-size:16px;"></i>
+                          <i class="texto-16px" :class="['bi', esActivo(u) ? 'bi-person-x' : 'bi-person-plus']"></i>
                         </button>
                       </div>
                       <span v-else class="text-muted small fw-bold">SOLO ADMIN</span>
@@ -108,7 +108,7 @@
               <div v-for="u in usuariosPaginados" :key="'mob-' + u.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'opacity-50': !esActivo(u) }">
 
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start gap-2">
-                  <div class="text-uppercase text-dark fw-bold text-break" style="font-size: 1.05rem;">
+                  <div class="text-uppercase text-dark fw-bold text-break texto-105">
                     {{ u.nombre || 'Sin nombre' }}
                     <span v-if="esUsuarioActual(u)" class="badge-status-sm vos ms-1">VOS</span>
                   </div>
@@ -118,7 +118,7 @@
                 <div class="card-body pt-0 px-3 pb-3">
                   <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
                     <span class="text-muted small text-break">{{ u.usuario }}</span>
-                    <span :class="['badge-status-sm', esActivo(u) ? 'activo' : 'inactivo']" style="font-size: 0.7rem; padding: 3px 10px;">{{ esActivo(u) ? 'ACTIVO' : 'INACTIVO' }}</span>
+                    <span class="texto-07" :class="['badge-status-sm', esActivo(u) ? 'activo' : 'inactivo']" style="padding: 3px 10px;">{{ esActivo(u) ? 'ACTIVO' : 'INACTIVO' }}</span>
                   </div>
 
                   <div class="bg-light p-2 rounded border small mb-3">
@@ -133,14 +133,14 @@
                   </div>
 
                   <div v-if="puedeGestionar(u)" class="d-flex gap-2">
-                    <button @click="abrirModalEdicion(u)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <i class="bi bi-pencil" style="font-size: 16px;"></i> EDITAR
+                    <button @click="abrirModalEdicion(u)" class="btn btn-sm btn-outline-secondary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                      <i class="bi bi-pencil texto-16px"></i> EDITAR
                     </button>
                     <button @click="abrirModalPassword(u)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center" title="Cambiar Contraseña">
-                      <i class="bi bi-key" style="font-size: 18px;"></i>
+                      <i class="bi bi-key texto-18px"></i>
                     </button>
                     <button v-if="!esUsuarioActual(u)" @click="confirmarCambioEstado(u)" :class="['btn btn-sm shadow-sm px-3 d-flex justify-content-center align-items-center', esActivo(u) ? 'btn-outline-danger' : 'btn-outline-success']" :title="esActivo(u) ? 'Desactivar' : 'Activar'">
-                      <i :class="['bi', esActivo(u) ? 'bi-person-x' : 'bi-person-plus']" style="font-size: 18px;"></i>
+                      <i class="texto-18px" :class="['bi', esActivo(u) ? 'bi-person-x' : 'bi-person-plus']"></i>
                     </button>
                   </div>
                   <div v-else class="text-muted small fw-bold text-center">SOLO UN ADMIN PUEDE MODIFICARLO</div>
@@ -173,7 +173,7 @@
       :hay-cambios="hayCambios"
       @close="mostrarModal = false"
       :icono="modoEdicion ? 'edit' : 'person_add'"
-      :colorIcono="modoEdicion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      :colorIcono="modoEdicion ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'"
       maxWidth="600px"
     >
       <template #header>
@@ -184,13 +184,13 @@
         <div class="row g-3">
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Nombre *</label>
-            <input v-model.trim="form.nombre" type="text" maxlength="100" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.nombre }" placeholder="Ej: Tesorería, Comisión de Ética...">
+            <input aria-label="Nombre" v-model.trim="form.nombre" type="text" maxlength="100" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.nombre }" placeholder="Ej: Tesorería, Comisión de Ética...">
             <div class="invalid-feedback">{{ errores.nombre }}</div>
           </div>
 
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Usuario (email) *</label>
-            <input v-model.trim="form.usuario" type="email" maxlength="100" autocomplete="off" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.usuario }" placeholder="nombre@aaab.com.ar">
+            <input aria-label="Usuario (email)" v-model.trim="form.usuario" type="email" maxlength="100" autocomplete="off" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.usuario }" placeholder="nombre@aaab.com.ar">
             <div class="invalid-feedback">{{ errores.usuario }}</div>
             <span class="text-muted small">Tiene que terminar en @aaab.com.ar para que entre al panel de gestión.</span>
           </div>
@@ -204,7 +204,7 @@
 
           <div v-if="!form.esAdmin" class="col-12">
             <label class="small fw-bold text-dark mb-1">Cargo *</label>
-            <input v-model="form.rol" type="text" maxlength="40" list="cargosExistentes" autocomplete="off" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.rol }" :disabled="editandoseASiMismo" placeholder="Ej: Tesorero, Contador...">
+            <input aria-label="Cargo" v-model="form.rol" type="text" maxlength="40" list="cargosExistentes" autocomplete="off" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.rol }" :disabled="editandoseASiMismo" placeholder="Ej: Tesorero, Contador...">
             <datalist id="cargosExistentes">
               <option v-for="c in cargosExistentes" :key="c" :value="c">{{ etiquetaRol(c) }}</option>
             </datalist>
@@ -222,14 +222,14 @@
 
               <div v-if="!modulosBloqueados && usuariosParaCopiar.length" class="mb-3">
                 <label class="small text-muted mb-1">Copiar permisos de otro usuario (después podés ajustarlos a mano)</label>
-                <select v-model="copiarDe" @change="copiarPermisos" class="form-select form-select-sm shadow-none border-secondary-subtle">
+                <select aria-label="Copiar permisos de otro usuario (después podés ajustarlos a mano)" v-model="copiarDe" @change="copiarPermisos" class="form-select form-select-sm shadow-none border-secondary-subtle">
                   <option value="">Elegí un usuario...</option>
                   <option v-for="u in usuariosParaCopiar" :key="u.id" :value="u.id">{{ u.nombre || u.usuario }} · {{ etiquetaRol(u.rol) }}</option>
                 </select>
               </div>
 
               <div v-for="grupo in modulosPorCategoria" :key="grupo.categoria" class="mb-2">
-                <span class="small text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 0.7rem;">{{ grupo.categoria }}</span>
+                <span class="small text-uppercase text-muted fw-bold d-block mb-1 texto-07">{{ grupo.categoria }}</span>
                 <div v-for="m in grupo.modulos" :key="m.clave" class="form-check">
                   <input
                     :id="`modulo-${m.clave}`"
@@ -249,12 +249,12 @@
           <template v-if="!modoEdicion">
             <div class="col-12 col-sm-6">
               <label class="small fw-bold text-dark mb-1">Contraseña *</label>
-              <input v-model="form.password" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.password }">
+              <input aria-label="Contraseña" v-model="form.password" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.password }">
               <div class="invalid-feedback">{{ errores.password }}</div>
             </div>
             <div class="col-12 col-sm-6">
               <label class="small fw-bold text-dark mb-1">Repetir contraseña *</label>
-              <input v-model="form.confirmacion" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.confirmacion }">
+              <input aria-label="Repetir contraseña" v-model="form.confirmacion" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.confirmacion }">
               <div class="invalid-feedback">{{ errores.confirmacion }}</div>
             </div>
           </template>
@@ -288,12 +288,12 @@
         <div class="row g-3">
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Nueva contraseña *</label>
-            <input v-model="formPassword.password" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': erroresPassword.password }">
+            <input aria-label="Nueva contraseña" v-model="formPassword.password" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': erroresPassword.password }">
             <div class="invalid-feedback">{{ erroresPassword.password }}</div>
           </div>
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Repetir contraseña *</label>
-            <input v-model="formPassword.confirmacion" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': erroresPassword.confirmacion }">
+            <input aria-label="Repetir contraseña" v-model="formPassword.confirmacion" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': erroresPassword.confirmacion }">
             <div class="invalid-feedback">{{ erroresPassword.confirmacion }}</div>
           </div>
         </div>
@@ -315,6 +315,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, inject, onMounted, watch } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
@@ -328,7 +329,7 @@ useHead({
 })
 
 const notificar = inject('notificar')
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 const usuarioActual = auth.getUser()
 const soyAdmin = usuarioActual?.rol === ROL_ADMIN
@@ -370,8 +371,6 @@ const usuariosParaCopiar = computed(() => listaUsuarios.value.filter(u =>
 ))
 
 const editandoseASiMismo = computed(() => modoEdicion.value && Number(form.id) === Number(usuarioActual?.id))
-
-const normalizarTexto = (texto) => String(texto || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 const esActivo = (u) => Number(u.activo) === 1
 const esUsuarioActual = (u) => Number(u.id) === Number(usuarioActual?.id)
@@ -664,9 +663,6 @@ onMounted(() => {
 .inactivo { background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; }
 .rol { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 .vos { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
-
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
 
 .animate__animated { animation-duration: 0.5s; }
 </style>

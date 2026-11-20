@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
 
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <p class="seccion-descripcion">Estado de tus solicitudes · Total: {{ pedidosFiltradas.length }} solicitudes</p>
@@ -18,7 +18,7 @@
         <div class="mb-4">
           <div class="input-group shadow-sm rounded-pill overflow-hidden border border-secondary-subtle">
             <span class="input-group-text bg-light border-0 text-muted ps-4"><i class="bi bi-search"></i></span>
-            <input
+            <input aria-label="Buscar por prenda o estado"
               v-model="busqueda"
               type="text"
               class="form-control border-0 py-2 py-md-3 bg-light shadow-none input-filtro-custom"
@@ -33,7 +33,7 @@
         <div v-else class="border shadow-sm rounded overflow-hidden">
 
           <!-- Encabezado de Columnas (Solo visible en Escritorio) -->
-          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase" style="font-size: 0.75rem; color: #0f172a;">
+          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase texto-075" style="color: #0f172a;">
             <div class="col-md-1 text-center">Pedido</div>
             <div class="col-md-3 ps-2">Prenda Solicitada</div>
             <div class="col-md-1 text-center">Cant.</div>
@@ -53,12 +53,12 @@
               <!-- HEADER MOBILE: Título, Fecha y Estado (Se oculta en escritorio) -->
               <div class="col-12 d-md-none mb-2 pb-2 border-bottom">
                 <div class="d-flex justify-content-between align-items-start mb-1">
-                  <div class="fw-bold text-dark text-uppercase text-truncate pe-2" style="font-size: 1.05rem;">
+                  <div class="fw-bold text-dark text-uppercase text-truncate pe-2 texto-105">
                     {{ p.descripcion }} <span class="text-danger">({{ p.talle }})</span>
                   </div>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mt-2">
-                  <div class="text-muted fw-bold" style="font-size: 0.8rem;">
+                  <div class="text-muted fw-bold texto-08">
                     Pedido #{{ p.id }} <span class="mx-1">•</span> {{ p.fecha_creacion || 'S/F' }}
                   </div>
                   <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
@@ -72,27 +72,27 @@
               </div>
 
               <!-- COL 1: ID (Escritorio) -->
-              <div class="col-md-1 d-none d-md-block text-center text-muted fw-bold" style="font-size: 0.85rem;">
+              <div class="col-md-1 d-none d-md-block text-center text-muted fw-bold texto-085">
                 #{{ p.id }}
               </div>
 
               <!-- COL 2: Prenda (Escritorio) -->
-              <div class="col-md-3 d-none d-md-block fw-bold text-dark ps-2 text-truncate" style="font-size: 0.85rem;">
+              <div class="col-md-3 d-none d-md-block fw-bold text-dark ps-2 text-truncate texto-085">
                 {{ p.descripcion }} <span class="text-danger">({{ p.talle }})</span>
               </div>
 
               <!-- COL 3: Cantidad (Escritorio) -->
-              <div class="col-md-1 d-none d-md-block text-center" style="font-size: 0.85rem;">
+              <div class="col-md-1 d-none d-md-block text-center texto-085">
                 {{ p.cantidad + p.cantidad_encargada }}
               </div>
 
               <!-- COL 4: Total (Escritorio) -->
-              <div class="col-md-2 d-none d-md-block text-center fw-bold text-success" style="font-size: 0.85rem;">
+              <div class="col-md-2 d-none d-md-block text-center fw-bold text-success texto-085">
                 ${{ (p.cantidad + p.cantidad_encargada) * p.precioUnitario }}
               </div>
 
               <!-- COL 5: Fecha (Escritorio) -->
-              <div class="col-md-2 d-none d-md-block text-center text-muted fw-bold" style="font-size: 0.85rem;">
+              <div class="col-md-2 d-none d-md-block text-center text-muted fw-bold texto-085">
                 {{ p.fecha_creacion || 'S/F' }}
               </div>
 
@@ -106,11 +106,11 @@
                 <button
                   v-if="p.estado && ['creado', 'en proceso'].includes(p.estado.toLowerCase())"
                   @click="abrirModalCancelar(p.id)"
-                  class="btn btn-sm btn-outline-danger shadow-sm rounded-pill d-inline-flex align-items-center justify-content-center gap-1 w-100"
+                  class="btn btn-sm btn-outline-danger shadow-sm rounded-pill d-inline-flex align-items-center justify-content-center gap-1 w-100 texto-075"
                   title="Cancelar Pedido"
-                  style="font-size: 0.75rem; padding: 4px 10px;"
-                >
-                  <i class="bi bi-x-circle" style="font-size: 14px;"></i> Cancelar <span class="d-md-none ms-1">Pedido</span>
+                 
+                 style="padding: 4px 10px;">
+                  <i class="bi bi-x-circle texto-14px"></i> Cancelar <span class="d-md-none ms-1">Pedido</span>
                 </button>
                 <span v-else class="text-muted small d-none d-md-inline">-</span>
               </div>
@@ -142,7 +142,6 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, onMounted, watch, inject } from 'vue';
-import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 
@@ -157,7 +156,7 @@ useHead({
 });
 
 const notificar = inject('notificar');
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 
 const pedidos = ref([]);
 const busqueda = ref('');
@@ -248,16 +247,6 @@ onMounted(obtenerPedidos);
 </script>
 
 <style scoped>
-/* ====================================================
-   1. BOTONES E INPUTS
-   ==================================================== */
-.btn-clear {
-  border: none;
-  cursor: pointer;
-}
-.btn-clear:hover {
-  background-color: #cbd5e1 !important;
-}
 
 .input-filtro-custom {
   font-size: 1rem !important;
@@ -289,13 +278,12 @@ onMounted(obtenerPedidos);
 }
 
 .estado-creado { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
-.estado-proceso { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-.estado-aceptado { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.estado-proceso { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.estado-aceptado { background: #e2e8f0; color: #0f172a; border: 1px solid #94a3b8; }
 .estado-entregado { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 .estado-rechazado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 .estado-cancelado { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
 
 .animate__animated { animation-duration: 0.5s; }
-
 
 </style>

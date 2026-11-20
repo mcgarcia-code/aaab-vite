@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -23,13 +23,13 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Inventario</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
           <div class="row g-2 align-items-center">
             <div class="col-12 col-md-6">
               <div class="input-group input-group-sm shadow-sm">
                 <span class="input-group-text bg-white border-end-0 text-muted ps-3"><i class="bi bi-search"></i></span>
-                <input v-model="filtros.modelo" type="text" class="form-control border-start-0 py-2" placeholder="BUSCAR POR NOMBRE DE MODELO...">
+                <input aria-label="Buscar por nombre de modelo" v-model="filtros.modelo" type="text" class="form-control border-start-0 py-2" placeholder="BUSCAR POR NOMBRE DE MODELO...">
               </div>
             </div>
             <div class="col-12 col-md-auto d-md-none mt-2">
@@ -51,7 +51,7 @@
 
                 <!-- FOTO CON ACCIONES -->
                 <div class="bg-white contenedor-foto-admin d-flex align-items-center justify-content-center position-relative border-bottom">
-                  <img :src="obtenerImagen(modelo)" class="img-fluid foto-gestion" alt="Modelo">
+                  <img loading="lazy" decoding="async" :src="obtenerImagen(modelo)" class="img-fluid foto-gestion" alt="Modelo">
                   <div class="acciones-flotantes-modelo">
                     <button @click="abrirModalEdicion(modelo)" class="btn-editar-flotante shadow" title="Editar item">
                       <i class="bi bi-pencil-fill"></i>
@@ -70,8 +70,8 @@
                     </h6>
                       <span
                         v-if="modelo.admite_encargo"
-                        class="badge bg-warning-subtle text-dark border border-warning mt-1"
-                        style="font-size: 0.65rem;"
+                        class="badge bg-warning-subtle text-dark border border-warning mt-1 texto-065"
+                       
                       >
                         <i class="bi bi-box-seam-fill me-1"></i> ADMITE ENCARGO
                       </span>
@@ -122,29 +122,29 @@
       @close="cerrarModal"
       :titulo="modoModal === 'editar' ? 'Gestionar Modelo' : 'Nuevo Modelo'"
       :icono="modoModal === 'editar' ? 'inventory' : 'add_circle'"
-      :colorIcono="modoModal === 'editar' ? 'bg-primary text-white' : 'bg-danger text-white'"
+      :colorIcono="modoModal === 'editar' ? 'bg-danger text-white' : 'bg-danger text-white'"
       maxWidth="650px"
     >
       <div class="row g-3 text-start p-1">
         <div class="col-md-8 col-12">
           <label class="small fw-bold text-muted text-uppercase mb-1">Nombre del Modelo *</label>
-          <input v-model="formModal.descripcion" type="text" class="form-control shadow-none py-2" placeholder="Ej: REMERA NEGRA - HUMMEL">
+          <input aria-label="Nombre del Modelo" v-model="formModal.descripcion" type="text" class="form-control shadow-none py-2" placeholder="Ej: REMERA NEGRA - HUMMEL">
         </div>
 
         <div class="col-md-4 col-12">
           <label class="small fw-bold text-muted text-uppercase mb-1">Precio ($) *</label>
-          <input v-model.number="formModal.precioGeneral" type="number" min="0" class="form-control shadow-none fw-bold text-success py-2" placeholder="0.00">
+          <input aria-label="Precio ($)" v-model.number="formModal.precioGeneral" type="number" min="0" class="form-control shadow-none fw-bold text-success py-2" placeholder="0.00">
         </div>
 
         <div class="col-12">
           <div class="form-check form-switch p-3 bg-light border rounded d-flex align-items-center justify-content-between">
             <div class="pe-3">
-              <label class="form-check-label fw-bold d-block mb-0 h6" for="switchEncargo" style="cursor: pointer;">
+              <label class="form-check-label fw-bold d-block mb-0 h6 cursor-pointer" for="switchEncargo">
                 Permitir encargos sin stock
               </label>
               <span class="text-muted small">El usuario podrá pedirlo aunque el stock sea cero.</span>
             </div>
-            <input class="form-check-input shadow-none fs-3 m-0" type="checkbox" role="switch" id="switchEncargo" v-model="formModal.admite_encargo" style="cursor: pointer;">
+            <input class="form-check-input shadow-none fs-3 m-0 cursor-pointer" type="checkbox" role="switch" id="switchEncargo" v-model="formModal.admite_encargo">
           </div>
         </div>
 
@@ -157,7 +157,7 @@
               <ul class="list-group list-group-flush border rounded overflow-hidden shadow-sm">
                 <li v-for="(file, i) in archivosSeleccionados" :key="i" class="list-group-item d-flex justify-content-between align-items-center bg-white py-1">
                   <span class="x-small text-muted text-truncate w-75">{{ file.name }}</span>
-                  <button @click="eliminarArchivo(i)" class="btn btn-sm btn-light text-danger rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                  <button type="button" aria-label="Quitar imagen" title="Quitar imagen" @click="eliminarArchivo(i)" class="btn btn-sm btn-light text-danger rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
                     <i class="bi bi-x fs-5"></i>
                   </button>
                 </li>
@@ -174,7 +174,7 @@
               <div class="d-flex align-items-center p-2 bg-light rounded border border-secondary-subtle shadow-sm">
                 <span class="fw-bold text-danger me-2 text-center" style="width: 35px;">{{ t.talle }}</span>
                 <div class="input-group input-group-sm">
-                  <input v-model.number="t.cantidad" type="number" min="0" class="form-control text-center shadow-none fw-bold border-secondary-subtle">
+                  <input :aria-label="`Cantidad del talle ${t.talle}`" v-model.number="t.cantidad" type="number" min="0" class="form-control text-center shadow-none fw-bold border-secondary-subtle">
                 </div>
               </div>
             </div>
@@ -199,8 +199,8 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, onUnmounted, computed, reactive, inject, watch } from 'vue';
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api';
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
@@ -211,7 +211,7 @@ useHead({
 });
 
 const notificar = inject('notificar');
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 
 const listaStock = ref([]);
 const cargando = ref(false);
@@ -276,7 +276,7 @@ const obtenerStock = async () => {
     const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
 
     if (respuesta.ok) {
-      listaStock.value = respuesta.payload.map(prenda => {
+      listaStock.value = (respuesta.payload || []).map(prenda => {
         prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
         prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
         prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
@@ -462,7 +462,7 @@ const exportarExcel = async () => {
     return row;
   });
 
-  const wb = new ExcelJS.Workbook();
+  const wb = new (await cargarExcelJS()).Workbook();
   const ws = wb.addWorksheet('Inventario');
 
   const claves = Object.keys(data[0] || {});
@@ -554,7 +554,7 @@ onUnmounted(() => {
 }
 
 .btn-editar-flotante { background: #212529; }
-.btn-editar-flotante:hover { background: #0d6efd; }
+.btn-editar-flotante:hover { background: #0f172a; }
 .btn-eliminar-flotante { background: #dc3545; }
 .btn-eliminar-flotante:hover { background: #7f1d1d; }
 
@@ -587,7 +587,5 @@ onUnmounted(() => {
 }
 
 .animate__animated { animation-duration: 0.5s; }
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
 
 </style>

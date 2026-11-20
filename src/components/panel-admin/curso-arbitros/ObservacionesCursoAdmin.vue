@@ -1,7 +1,7 @@
 <template>
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Observaciones de los aspirantes · {{ observacionesFiltradas.length }} observaciones de partidos en {{ anio }}</p>
@@ -17,9 +17,9 @@
 
         <div class="bg-light p-3 border-bottom">
           <div class="row g-2">
-            <div class="col-12 col-md-4"><input v-model="filtros.texto" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ASPIRANTE, ENCUENTRO U OBSERVADOR..."></div>
+            <div class="col-12 col-md-4"><input aria-label="Buscar aspirante, encuentro u observador" v-model="filtros.texto" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ASPIRANTE, ENCUENTRO U OBSERVADOR..."></div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.modalidad" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por modalidad" v-model="filtros.modalidad" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">CURSO</option>
                 <option v-for="(m, clave) in MODALIDADES_CURSO" :key="clave" :value="clave">{{ m.corta.toUpperCase() }}</option>
               </select>
@@ -62,13 +62,13 @@
                     <td class="ps-3 text-center">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="abrirVer(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-success" title="Ver y revisar" aria-label="Ver y revisar">
-                          <i class="bi bi-eye" style="font-size:16px;"></i>
+                          <i class="bi bi-eye texto-16px"></i>
                         </button>
-                        <button @click="abrirEditar(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar" aria-label="Editar">
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                        <button @click="abrirEditar(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar" aria-label="Editar">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button @click="confirmarEliminar(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Borrar" aria-label="Borrar">
-                          <i class="bi bi-trash" style="font-size:16px;"></i>
+                          <i class="bi bi-trash texto-16px"></i>
                         </button>
                       </div>
                     </td>
@@ -103,7 +103,7 @@
                   <div v-if="o.categoria" class="text-muted">{{ o.categoria }}</div>
                   <div class="d-flex gap-2 mt-3">
                     <button @click="abrirVer(o)" class="btn btn-sm btn-outline-success flex-fill fw-bold"><i class="bi bi-eye me-1"></i> Ver y revisar</button>
-                    <button @click="abrirEditar(o)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
+                    <button @click="abrirEditar(o)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
                     <button @click="confirmarEliminar(o)" class="btn btn-sm btn-outline-danger fw-bold" aria-label="Borrar"><i class="bi bi-trash3"></i></button>
                   </div>
                 </div>
@@ -185,7 +185,7 @@
         </div>
       </div>
       <template #footer="{ cerrar }">
-        <button type="button" @click="editarDesdeVer" class="btn btn-outline-primary rounded-pill px-4 fw-bold w-100 mb-2 mb-sm-0">EDITAR</button>
+        <button type="button" @click="editarDesdeVer" class="btn btn-outline-secondary rounded-pill px-4 fw-bold w-100 mb-2 mb-sm-0">EDITAR</button>
         <button type="button" @click="cerrar" class="btn btn-danger rounded-pill px-4 fw-bold w-100">CERRAR</button>
       </template>
     </ModalBase>
@@ -208,7 +208,7 @@ import { normalizarTexto } from '@/utils/texto'
 
 useHead({ title: 'Observaciones del Curso | AAAB' })
 
-const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const notificar = inject('notificar')
 const toast = inject('toast', (m) => notificar(m))
 
 const anio = ref(Number(anioActual()))
@@ -219,7 +219,7 @@ const filtros = reactive({ texto: '', modalidad: '', estado: '', tipo: '' })
 
 // Tipo de observación: encuentro de mini o partido amistoso
 const etiquetaTipo = (o) => (o.tipo === 'amistoso' ? 'Amistoso' : 'Mini')
-const claseTipo = (o) => (o.tipo === 'amistoso' ? 'bg-primary' : 'bg-dark')
+const claseTipo = (o) => (o.tipo === 'amistoso' ? 'bg-secondary' : 'bg-dark')
 
 
 const observacionesFiltradas = computed(() => {
@@ -334,17 +334,11 @@ onMounted(cargarObservaciones)
 
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped>
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
+
 .dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
 .revision { border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
 .bloque-comentario { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; }
 .detalle-titulo { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
 .detalle-texto { white-space: pre-wrap; font-size: 0.9rem; color: #1e293b; overflow-wrap: anywhere; }
 
-/* Píldoras de estado: mismo estilo que Observaciones del panel-admin */
-.estado-pill { border-radius: 999px; padding: 0.35em 0.85em; font-weight: 700; font-size: 0.7rem; letter-spacing: 0.02em; border: 1px solid transparent; display: inline-block; white-space: nowrap; }
-.estado-pendiente { background-color: #fdf3d3; color: #a6841f; border-color: #f2e2a5; }
-.estado-aprobada { background-color: #e3f5e6; color: #2f8a45; border-color: #bfe6c8; }
-.estado-rechazada { background-color: #fde7ea; color: #c0304a; border-color: #f5c2cb; }
 </style>

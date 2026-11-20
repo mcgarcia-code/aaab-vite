@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Cargá y asigná partidos · Total: {{ designaciones.length }} partidos
@@ -95,7 +95,7 @@
 
             <!-- Barra de estado: filtros por estado + buscador -->
             <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 mb-3 px-3 py-2 bg-white border rounded shadow-sm">
-              <span class="text-muted small fw-bold text-uppercase flex-shrink-0" style="letter-spacing: 0.5px;">Estado:</span>
+              <span class="text-muted small fw-bold text-uppercase flex-shrink-0 espaciado-05">Estado:</span>
 
               <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
                 <button
@@ -134,7 +134,7 @@
 
               <div class="input-group input-group-sm shadow-sm buscador-grupo flex-shrink-0" style="min-width: 260px; max-width: 380px;">
                 <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input
+                <input aria-label="Buscar partido"
                   v-model="filtroBusqueda"
                   type="text"
                   class="form-control border-start-0 shadow-none"
@@ -158,7 +158,7 @@
               v-if="totalConflictos > 0"
               class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 mb-3 px-3 py-2 bg-white border rounded shadow-sm"
             >
-              <span class="text-muted small fw-bold text-uppercase flex-shrink-0" style="letter-spacing: 0.5px;">Avisos:</span>
+              <span class="text-muted small fw-bold text-uppercase flex-shrink-0 espaciado-05">Avisos:</span>
               <div class="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
                 <button
                   v-for="t in TIPOS_AVISO"
@@ -290,7 +290,7 @@
                             :class="colorClase(p, 1)"
                             title="Marcar estado del árbitro"
                           >
-                            <i class="bi bi-tag" style="font-size: 14px;"></i>
+                            <i class="bi bi-tag texto-14px"></i>
                           </button>
                         </div>
                       </td>
@@ -311,7 +311,7 @@
                             :class="colorClase(p, 2)"
                             title="Marcar estado del árbitro"
                           >
-                            <i class="bi bi-tag" style="font-size: 14px;"></i>
+                            <i class="bi bi-tag texto-14px"></i>
                           </button>
                         </div>
                       </td>
@@ -342,7 +342,7 @@
                             :class="colorClaseDelegado(p)"
                             title="Marcar estado del delegado técnico"
                           >
-                            <i class="bi bi-tag" style="font-size: 14px;"></i>
+                            <i class="bi bi-tag texto-14px"></i>
                           </button>
                         </div>
                       </td>
@@ -353,7 +353,7 @@
                         :class="{ 'con-mesa': tieneMesa(p) }"
                         :title="tituloMesa(p)"
                       >
-                        <i class="bi bi-table" style="font-size: 18px;"></i>
+                        <i class="bi bi-table texto-18px"></i>
                       </button>
                     </td>
                       <td class="text-center">
@@ -432,7 +432,7 @@
 
                     <!-- Horario -->
                     <div class="d-flex align-items-center gap-2 mb-2">
-                      <i class="bi bi-clock text-danger" style="font-size: 18px;"></i>
+                      <i class="bi bi-clock text-danger texto-18px"></i>
                       <button
                         v-if="esAdmin"
                         @click="abrirModalFechaHorario(p)"
@@ -440,7 +440,7 @@
                         title="Editar fecha y horario (admin)"
                       >
                         <span class="fw-bold">{{ p.horario || '—' }}</span>
-                        <i class="bi bi-pencil" style="font-size: 14px;"></i>
+                        <i class="bi bi-pencil texto-14px"></i>
                       </button>
                       <span v-else class="fw-bold">{{ p.horario || '—' }}</span>
                     </div>
@@ -452,7 +452,7 @@
                       class="badge-sin-cancha w-100 text-start mb-2"
                       title="Asignar cancha a este partido"
                     >
-                      <i class="bi bi-geo-alt" style="font-size: 14px; vertical-align: middle;"></i>
+                      <i class="bi bi-geo-alt texto-14px" style="vertical-align: middle;"></i>
                       SIN CANCHA — Tocá para asignar
                     </button>
 
@@ -513,7 +513,7 @@
                           class="btn btn-sm btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-1"
                           :class="colorClase(p, 1)"
                         >
-                          <i class="bi bi-tag" style="font-size: 14px;"></i>
+                          <i class="bi bi-tag texto-14px"></i>
                           <span class="small">Estado Árb. 1</span>
                         </button>
                       </div>
@@ -524,7 +524,7 @@
                           class="btn btn-sm btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-1"
                           :class="colorClase(p, 2)"
                         >
-                          <i class="bi bi-tag" style="font-size: 14px;"></i>
+                          <i class="bi bi-tag texto-14px"></i>
                           <span class="small">Estado Árb. 2</span>
                         </button>
                       </div>
@@ -557,7 +557,7 @@
                           class="btn btn-sm btn-outline-secondary w-100 mt-1 d-flex align-items-center justify-content-center gap-1"
                           :class="colorClaseDelegado(p)"
                         >
-                          <i class="bi bi-tag" style="font-size: 14px;"></i>
+                          <i class="bi bi-tag texto-14px"></i>
                           <span class="small">Estado</span>
                         </button>
                       </div>
@@ -568,7 +568,7 @@
                       class="btn btn-sm w-100 mt-2 d-flex align-items-center justify-content-center gap-2"
                       :class="tieneMesa(p) ? 'btn-danger' : 'btn-outline-secondary'"
                     >
-                      <i class="bi bi-table" style="font-size: 16px;"></i>
+                      <i class="bi bi-table texto-16px"></i>
                       <span class="small fw-bold">{{ tieneMesa(p) ? 'Mesa de control asignada' : 'Planillero / Cronometrista' }}</span>
                     </button>
                   </div>
@@ -639,7 +639,7 @@
       :zIndex="zIndexSelector"
       @close="cerrarSelectorArbitro"
     >
-      <input
+      <input aria-label="Buscar por apellido o nombre"
         v-model="busquedaArbitro"
         type="text"
         class="form-control shadow-none border-secondary-subtle mb-3"
@@ -656,16 +656,16 @@
           @click="asignarSinArbitro"
           class="opcion-arbitro text-secondary fw-bold d-flex align-items-center gap-2"
         >
-          <i class="bi bi-person-x" style="font-size: 16px;"></i>
+          <i class="bi bi-person-x texto-16px"></i>
           {{ SIN_ARBITRO }}
         </button>
 
         <button
           v-if="busquedaArbitro.trim() && arbitrosFiltrados.length === 0"
           @click="asignarArbitroLibre(busquedaArbitro)"
-          class="opcion-arbitro text-primary fw-bold d-flex align-items-center gap-2"
+          class="opcion-arbitro text-danger fw-bold d-flex align-items-center gap-2"
         >
-          <i class="bi bi-person-plus" style="font-size: 16px;"></i>
+          <i class="bi bi-person-plus texto-16px"></i>
           Usar "{{ busquedaArbitro.trim().toUpperCase() }}" (árbitro externo)
         </button>
 
@@ -681,9 +681,9 @@
         <button
           v-if="busquedaArbitro.trim() && arbitrosFiltrados.length > 0"
           @click="asignarArbitroLibre(busquedaArbitro)"
-          class="opcion-arbitro text-primary d-flex align-items-center gap-2 border-top"
+          class="opcion-arbitro text-danger d-flex align-items-center gap-2 border-top"
         >
-          <i class="bi bi-person-plus" style="font-size: 16px;"></i>
+          <i class="bi bi-person-plus texto-16px"></i>
           Usar "{{ busquedaArbitro.trim().toUpperCase() }}" como árbitro externo
         </button>
       </div>
@@ -705,7 +705,7 @@
       <p class="text-muted small mb-3">¿Deseás continuar con esta designación de todos modos?</p>
       <div class="alert alert-warning small py-2 px-3 d-flex align-items-start gap-2 mb-0">
         <i class="bi bi-exclamation-triangle-fill mt-1"></i>
-        <span style="white-space: pre-wrap;">{{ textoAvisosDesignacionPendiente }}</span>
+        <span class="texto-preformateado">{{ textoAvisosDesignacionPendiente }}</span>
       </div>
 
       <template #footer>
@@ -735,7 +735,7 @@
       <p class="text-muted small mb-3">Este partido tiene los siguientes avisos:</p>
       <div class="alert alert-warning small py-2 px-3 d-flex align-items-start gap-2 mb-0">
         <i class="bi bi-exclamation-triangle-fill mt-1"></i>
-        <span style="white-space: pre-wrap;">{{ textoAvisosPartidoActual }}</span>
+        <span class="texto-preformateado">{{ textoAvisosPartidoActual }}</span>
       </div>
 
       <template #footer>
@@ -751,7 +751,7 @@
       :show="mostrarModalCarga"
       titulo="Cargar Designaciones desde Excel"
       icono="upload_file"
-      colorIcono="bg-primary text-white"
+      colorIcono="bg-danger text-white"
       maxWidth="600px"
       @close="cerrarModalCarga"
     >
@@ -788,7 +788,7 @@
         </button>
         <button
           @click="confirmarCargaExcel"
-          class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm w-100"
+          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
           :disabled="subiendoExcel || !archivoExcel"
         >
           <span v-if="subiendoExcel" class="spinner-border spinner-border-sm me-2"></span>
@@ -853,7 +853,7 @@
 
       <div class="mb-2">
         <label class="form-label small fw-bold">Cancha</label>
-        <select v-model="campoJuegoSeleccionado" class="form-select shadow-none border-secondary-subtle">
+        <select aria-label="Cancha" v-model="campoJuegoSeleccionado" class="form-select shadow-none border-secondary-subtle">
           <option value="" disabled>Seleccione una cancha</option>
           <option v-for="cj in camposJuego" :key="cj.cj_id" :value="cj.cj_id">
             {{ cj.cj_nombre }} — {{ cj.club_nombre }}
@@ -893,12 +893,12 @@
 
       <div class="mb-3">
         <label class="form-label small fw-bold">Fecha</label>
-        <input v-model="fechaEditada" type="date" class="form-control shadow-none border-secondary-subtle">
+        <input aria-label="Fecha" v-model="fechaEditada" type="date" class="form-control shadow-none border-secondary-subtle">
       </div>
 
       <div class="mb-2">
         <label class="form-label small fw-bold">Horario</label>
-        <input v-model="horarioEditada" type="time" class="form-control shadow-none border-secondary-subtle">
+        <input aria-label="Horario" v-model="horarioEditada" type="time" class="form-control shadow-none border-secondary-subtle">
       </div>
 
       <template #footer>
@@ -935,7 +935,7 @@
       <div class="mb-3">
         <label class="form-label small fw-bold">Fechas a publicar</label>
         <div class="d-flex flex-column gap-1 border rounded p-2">
-          <label v-for="f in fechas" :key="f.fecha" class="d-flex align-items-center gap-2 small mb-0" style="cursor:pointer;">
+          <label v-for="f in fechas" :key="f.fecha" class="d-flex align-items-center gap-2 small mb-0 cursor-pointer">
             <input
               type="checkbox"
               class="form-check-input m-0 flex-shrink-0"
@@ -993,7 +993,7 @@
     >
       <label class="form-label small fw-bold">Estados a incluir</label>
       <div class="d-flex flex-column gap-1 border rounded p-2">
-        <label v-for="e in opcionesEstadoDescarga" :key="e.valor" class="d-flex align-items-center gap-2 small mb-0" style="cursor:pointer;">
+        <label v-for="e in opcionesEstadoDescarga" :key="e.valor" class="d-flex align-items-center gap-2 small mb-0 cursor-pointer">
           <input
             type="checkbox"
             class="form-check-input m-0 flex-shrink-0"
@@ -1145,8 +1145,8 @@ useHead({
   ],
 })
 
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
-const notificar = inject('notificar', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
+const notificar = inject('notificar')
 
 const esAdmin = computed(() => auth.getUser()?.rol === 'admin')
 
@@ -1343,11 +1343,11 @@ const etiquetaDia = (fecha) => {
 // Padrón liviano solo para el selector (las validaciones ya no lo necesitan)
 const cargarArbitros = async () => {
   try {
-    const res = await api.get({
+    const res = await api.getCacheado({
       entity: 'arbitros',
       action: 'getArbitrosBasico',
       payload: { soloActivos: false }
-    })
+    }, { ttl: 60 * 1000 })
     if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
   } catch (err) { console.error(err) }
 }
@@ -2705,8 +2705,8 @@ onMounted(async () => {
 
 /* Árbitro externo puesto a mano (intencional, fuera del padrón) */
 .celda-arbitro.externo {
-  background-color: #dbeafe;
-  border-color: #60a5fa;
+  background-color: #f3e8ff;
+  border-color: #c084fc;
   font-weight: 600;
 }
 
@@ -2850,7 +2850,7 @@ onMounted(async () => {
 }
 
 @keyframes destello {
-  0%, 40% { background-color: #bfdbfe !important; box-shadow: inset 0 0 0 2px #3b82f6; }
+  0%, 40% { background-color: #fef3c7 !important; box-shadow: inset 0 0 0 2px #f59e0b; }
   100% { background-color: transparent; box-shadow: none; }
 }
 
@@ -3031,8 +3031,8 @@ onMounted(async () => {
 
 /* Árbitro externo puesto a mano (intencional) */
 .celda-arbitro-mobile.externo {
-  background-color: #dbeafe;
-  border-color: #60a5fa;
+  background-color: #f3e8ff;
+  border-color: #c084fc;
   font-weight: 600;
 }
 
@@ -3057,9 +3057,9 @@ onMounted(async () => {
   border-color: #86b7fe !important;
 }
 
-/* Sombra exterior (anillo) celeste a todo el grupo */
+/* Sombra exterior (anillo) roja a todo el grupo */
 .buscador-grupo:focus-within {
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  box-shadow: 0 0 0 0.25rem rgba(220, 38, 38, 0.2) !important;
 }
 
 /* ====================================================

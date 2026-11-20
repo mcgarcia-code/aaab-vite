@@ -1,11 +1,10 @@
 import { ref, computed } from 'vue'
 import { api } from '@/api/api'
-import { fechaDMA } from '@/utils/fechas'
+import { fechaDMA, MESES } from '@/utils/fechas'
 
 // Cronograma anual del curso (tabla cronograma_curso_arbitro).
 // Lo usan CronogramaCursoAdmin.vue (carga) y CronogramaCurso.vue (alumnos).
 
-const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 export const hoyIso = () => {

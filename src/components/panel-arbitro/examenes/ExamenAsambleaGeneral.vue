@@ -10,7 +10,7 @@
 
   <!-- Estructura alineada a "Mis Designaciones" -->
   <div v-else class="container-fluid py-2 py-md-0 px-2 px-md-3 animate__animated animate__fadeIn">
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
 
       <!-- Card Header -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-center border-bottom gap-3">
@@ -49,20 +49,20 @@
 
         <!-- Estado: Ya finalizado -->
         <div v-else-if="estado === 'finalizado'" class="text-center py-4 px-3 text-muted bg-light rounded-3 mb-4">
-          <i class="bi bi-check-circle opacity-50 d-block mb-2 text-success" style="font-size: 40px;"></i>
+          <i class="bi bi-check-circle opacity-50 d-block mb-2 text-success texto-40px"></i>
           <p class="m-0 fw-bold">Ya rendiste el examen habilitado.</p>
           <p class="small m-0 mt-1">Podés ver el resultado en tu historial más abajo.</p>
         </div>
 
         <div v-else-if="estado === 'ausente'" class="text-center py-4 px-3 text-muted bg-light rounded-3 mb-4">
-          <i class="bi bi-calendar-x opacity-50 d-block mb-2 text-danger" style="font-size: 40px;"></i>
+          <i class="bi bi-calendar-x opacity-50 d-block mb-2 text-danger texto-40px"></i>
           <p class="m-0 fw-bold">Figurás como ausente en la reunión, no podés realizar este examen.</p>
           <p v-if="evento?.titulo" class="small m-0 mt-1">{{ evento.titulo }}<span v-if="evento.fecha"> · {{ evento.fecha }}</span></p>
         </div>
 
         <!-- Estado: Sin permiso -->
         <div v-else class="text-center py-4 px-3 text-muted bg-light rounded-3 mb-4">
-          <i class="bi bi-lock opacity-50 d-block mb-2" style="font-size: 40px;"></i>
+          <i class="bi bi-lock opacity-50 d-block mb-2 texto-40px"></i>
           <p class="m-0 fw-bold">Aún no tenés permiso para realizar un examen nuevo.</p>
         </div>
 
@@ -103,7 +103,7 @@
         </div>
 
         <div v-else-if="!porTipo[pestana].length" class="text-center py-5 px-3 text-muted bg-light rounded-3">
-          <i class="bi bi-clock-history opacity-50 d-block mb-2" style="font-size: 40px;"></i>
+          <i class="bi bi-clock-history opacity-50 d-block mb-2 texto-40px"></i>
           <p class="m-0 fw-bold">No rendiste exámenes de {{ TIPOS.find(t => t.clave === pestana).etiqueta.toLowerCase() }} en {{ anioSeleccionado }}.</p>
         </div>
 

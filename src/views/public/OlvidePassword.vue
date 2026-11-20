@@ -11,7 +11,7 @@
       <form @submit.prevent="solicitarRecuperacion">
         <div class="mb-4">
           <label class="form-label small fw-bold text-dark">DNI registrado</label>
-          <input v-model="dni" type="text" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="Sin puntos, ej: 30123456" required :disabled="cargando">
+          <input aria-label="DNI registrado" v-model="dni" type="text" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="Sin puntos, ej: 30123456" required :disabled="cargando">
         </div>
 
         <button :disabled="cargando" type="submit" class="btn btn-danger w-100 fw-bold py-3 mt-2 rounded-3 shadow-sm btn-login">
@@ -21,11 +21,11 @@
       </form>
 
       <div class="text-center mt-4 border-top border-light-subtle pt-4">
-        <router-link to="/login-arbitro" class="text-muted text-decoration-none fw-bold back-link d-inline-flex align-items-center justify-content-center gap-1 mb-3" style="font-size: 0.85rem;">
+        <router-link to="/login-arbitro" class="text-muted text-decoration-none fw-bold back-link d-inline-flex align-items-center justify-content-center gap-1 mb-3 texto-085">
           <i class="bi bi-arrow-left-short fs-5"></i> Volver al inicio de sesión
         </router-link>
 
-        <p class="text-muted mb-0" style="font-size: 0.75rem; line-height: 1.4;">
+        <p class="text-muted mb-0 texto-075" style="line-height: 1.4;">
           Si tenés algún problema técnico comunicate con <br>
           <a href="mailto:soporte@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none support-link">soporte@arbitroshandball.com.ar</a>
         </p>

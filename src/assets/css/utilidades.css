@@ -1,0 +1,36 @@
+/* =====================================================================
+   Utilidades propias (complementan las de Bootstrap)
+   Reemplazan los style="..." que se repetían en los templates.
+   Llevan !important como las utilidades de Bootstrap, para que ganen igual que el estilo inline.
+   ===================================================================== */
+
+/* Tamaños de texto en rem (textos chicos de tablas, badges, etiquetas) */
+.texto-065 { font-size: 0.65rem !important; }
+.texto-07 { font-size: 0.7rem !important; }
+.texto-075 { font-size: 0.75rem !important; }
+.texto-08 { font-size: 0.8rem !important; }
+.texto-085 { font-size: 0.85rem !important; }
+.texto-105 { font-size: 1.05rem !important; }
+
+/* Tamaños fijos en px (sobre todo íconos de Bootstrap Icons) */
+.texto-13px { font-size: 13px !important; }
+.texto-14px { font-size: 14px !important; }
+.texto-15px { font-size: 15px !important; }
+.texto-16px { font-size: 16px !important; }
+.texto-18px { font-size: 18px !important; }
+.texto-40px { font-size: 40px !important; }
+
+/* Bordes redondeados intermedios (Bootstrap salta de 8px a 16px) */
+.radio-12 { border-radius: 12px !important; }
+.radio-15 { border-radius: 15px !important; }
+
+/* Texto */
+.texto-multilinea { white-space: pre-line !important; }
+.texto-preformateado { white-space: pre-wrap !important; }
+.espaciado-05 { letter-spacing: 0.5px !important; }
+.espaciado-1 { letter-spacing: 1px !important; }
+.lh-12 { line-height: 1.2 !important; }
+
+/* Varios */
+.cursor-pointer { cursor: pointer !important; }
+.tabla-fija { table-layout: fixed !important; }

@@ -1,7 +1,7 @@
 <template>
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 border-bottom">
           <div class="row g-3 align-items-center">
@@ -71,22 +71,22 @@
             <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm" aria-label="Cerrar filtros"></button>
           </div>
           <div class="row g-2">
-            <div class="col-6"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
-            <div class="col-6"><input v-model="filtros.nombre"   class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
+            <div class="col-6"><input aria-label="Apellido" v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
+            <div class="col-6"><input aria-label="Nombre" v-model="filtros.nombre"   class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
             <div class="col-6">
-              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por grupo" v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">GRUPO</option>
                 <option v-for="g in GRUPOS" :key="g" :value="g">{{ g }}</option>
               </select>
             </div>
             <div class="col-6">
-              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por subgrupo" v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">SUBGRUPO</option>
                 <option v-for="sg in SUBGRUPOS" :key="sg" :value="sg">{{ sg }}</option>
               </select>
             </div>
             <div class="col-12" v-if="modoReunion">
-              <select v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por asistencia" v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ASISTENCIA</option>
                 <option value="presente">SOLO PRESENTES</option>
                 <option value="ausente">SOLO AUSENTES</option>
@@ -101,7 +101,7 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
-            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
+            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075">
               <thead class="table-light">
                 <tr>
                   <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
@@ -113,26 +113,26 @@
                   <th v-if="!modoReunion" class="py-3 text-center text-uppercase text-muted">Reuniones</th>
                   <th v-else class="py-3 text-uppercase text-muted" style="min-width: 270px;">
                     Asistencia
-                    <span class="fw-normal fst-italic text-muted ms-1" style="font-size: 0.7rem;">(guardado automático)</span>
+                    <span class="fw-normal fst-italic text-muted ms-1 texto-07">(guardado automático)</span>
                   </th>
                 </tr>
                 <tr class="bg-light">
                   <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id"></td>
                   <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
                   <td class="p-2 border-bottom border-2 col-fija col-apellido">
-                    <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
+                    <input aria-label="Filtrar.." v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
                   </td>
                   <td class="p-2 border-bottom border-2 col-fija col-nombre">
-                    <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
+                    <input aria-label="Filtrar.." v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
                   </td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por grupo" v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODOS</option>
                       <option v-for="g in GRUPOS" :key="g" :value="g">{{ g }}</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por subgrupo" v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODOS</option>
                       <option v-for="sg in SUBGRUPOS" :key="sg" :value="sg">{{ sg }}</option>
                     </select>
@@ -141,7 +141,7 @@
                     <span class="text-muted small fst-italic">← Seleccioná una reunión</span>
                   </td>
                   <td v-else class="p-2 border-bottom border-2">
-                    <select v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por asistencia" v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODAS</option>
                       <option value="presente">SOLO PRESENTES</option>
                       <option value="ausente">SOLO AUSENTES</option>
@@ -177,7 +177,7 @@
                   <td class="text-center col-fija col-acciones">
                     <div class="d-flex justify-content-center gap-1">
                       <button @click="verDetalleArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver historial" aria-label="Ver historial">
-                        <i class="bi bi-search" style="font-size:16px;"></i>
+                        <i class="bi bi-search texto-16px"></i>
                       </button>
                     </div>
                   </td>
@@ -244,7 +244,7 @@
                 }"
               >
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                  <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">{{ a.apellido }}, {{ a.nombre }}</div>
+                  <div class="text-dark fw-bold text-uppercase texto-105">{{ a.apellido }}, {{ a.nombre }}</div>
                   <div class="d-flex align-items-center gap-2">
                     <div class="small text-muted fw-bold font-monospace">#{{ a.id }}</div>
                     <span v-if="modoReunion && guardando[a.id]"    class="spinner-border spinner-border-sm text-danger"></span>
@@ -265,7 +265,7 @@
                       <ResumenAsistencia :resumen="resumenAsistencia(a.id)" :mobile="true" />
                     </div>
                     <button @click="verDetalleArbitro(a)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center" aria-label="Ver historial">
-                      <i class="bi bi-search" style="font-size: 18px;"></i>
+                      <i class="bi bi-search texto-18px"></i>
                     </button>
                   </div>
 
@@ -313,7 +313,7 @@
       </div>
 
       <!-- ¿Quién dio la reunión? -->
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
         <div class="card-header bg-white py-3 d-flex flex-column flex-lg-row justify-content-between align-items-lg-center border-bottom gap-3">
           <div class="border-start border-danger border-5 ps-3">
             <h5 class="text-danger fw-bold m-0 d-flex align-items-center gap-2">
@@ -455,7 +455,7 @@
         <div class="d-flex justify-content-end mb-3" v-if="añosDetalleArbitro.length">
           <div class="d-flex align-items-center gap-2">
             <label class="small fw-bold text-dark text-uppercase m-0">Año:</label>
-            <select v-model="filtroAñoDetalle" class="form-select form-select-sm shadow-sm border-secondary-subtle text-uppercase text-dark" style="min-width: 140px;">
+            <select aria-label="Año" v-model="filtroAñoDetalle" class="form-select form-select-sm shadow-sm border-secondary-subtle text-uppercase text-dark" style="min-width: 140px;">
               <option value="">AÑO</option>
               <option v-for="año in añosDetalleArbitro" :key="año" :value="año">{{ año }}</option>
             </select>
@@ -468,7 +468,7 @@
               <div class="card-body p-2 text-center text-white">
                 <i class="bi bi-person-check-fill" style="font-size: 1.2rem;"></i>
                 <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.presentes }}</div>
-                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Presentes</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Presentes</div>
               </div>
             </div>
           </div>
@@ -477,7 +477,7 @@
               <div class="card-body p-2 text-center text-white">
                 <i class="bi bi-person-dash-fill" style="font-size: 1.2rem;"></i>
                 <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.ausentes }}</div>
-                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Ausentes</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Ausentes</div>
               </div>
             </div>
           </div>
@@ -486,7 +486,7 @@
               <div class="card-body p-2 text-center text-muted">
                 <i class="bi bi-question-circle-fill" style="font-size: 1.2rem;"></i>
                 <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.sinInformacion }}</div>
-                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Sin info</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Sin info</div>
               </div>
             </div>
           </div>
@@ -508,7 +508,7 @@
                     <div v-if="ex.titulo" class="text-muted small fst-italic">{{ ex.titulo }}</div>
                   </div>
                   <div class="d-flex flex-column align-items-end gap-1">
-                    <span class="badge bg-dark font-monospace" style="font-size: 0.65rem;">#{{ ex.id }}</span>
+                    <span class="badge bg-dark font-monospace texto-065">#{{ ex.id }}</span>
                     <AsistenciaBadge :asistencia="ex.asistencia" />
                   </div>
                 </div>
@@ -527,10 +527,11 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
-import ExcelJS from 'exceljs'
 import { etiquetaCreadorReunion, textoCreacionReunion } from '@/composables/useCreadorReunion'
 
 useHead({
@@ -543,8 +544,6 @@ const CATEGORIA         = 'reunion'
 const MOBILE_BREAKPOINT = 768
 
 // ─── Helpers ─────────────────────────────────────────────────────
-const normalizarTexto = (v) =>
-  String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 const formatFecha  = (f) => f?.split(' ')[0] ?? ''
 const añoDeFecha   = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
 const sortPorFecha = (lista) => [...lista].sort((a, b) => (b._ts ?? 0) - (a._ts ?? 0))
@@ -598,7 +597,7 @@ const AsistenciaBadge = defineComponent({
 })
 
 // ─── Inyectado ───────────────────────────────────────────────────
-const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast')
 
 // ─── Estado ──────────────────────────────────────────────────────
 const arrReuniones         = ref([])
@@ -806,13 +805,13 @@ const obtenerReuniones = async () => {
   try {
     const res = await api.get({ entity: 'reuniones', action: 'obtenerReuniones' })
     if ((res.ok || res.success) && res.payload)
-      arrReuniones.value = res.payload.filter(r => r.categoria === 'reunion')
+      arrReuniones.value = (res.payload || []).filter(r => r.categoria === 'reunion')
   } catch (e) { console.error('obtenerReuniones:', e) }
 }
 
 const obtenerGrupos = async () => {
   try {
-    const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos' })
+    const res = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' })
     const lista = res?.payload ?? res ?? []
     grupos.value = Array.isArray(lista) ? lista : []
   } catch (e) { console.error('obtenerGrupos:', e) }
@@ -821,11 +820,11 @@ const obtenerGrupos = async () => {
 // Admin ve TODOS los árbitros (no solo su grupo).
 const cargarArbitros = async () => {
   try {
-    const res = await api.get({
+    const res = await api.getCacheado({
       entity: 'arbitros',
       action: 'getArbitrosBasico',
       payload: { soloActivos: soloActivos.value }
-    })
+    }, { ttl: 60 * 1000 })
     if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
   } catch (e) { console.error('cargarArbitros:', e) }
 }
@@ -1032,7 +1031,7 @@ const cargarDisertantes = async () => {
       api.get({ entity: 'reuniones', action: 'obtenerDisertantesReuniones', payload: { anio } }),
       arbitrosDisertantesBase.value.length
         ? Promise.resolve(null)
-        : api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: false } }),
+        : api.getCacheado({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: false } }, { ttl: 60 * 1000 }),
     ])
     if (resArb && (resArb.ok || resArb.success) && Array.isArray(resArb.payload)) arbitrosDisertantesBase.value = resArb.payload
     if (Number(anioDisertantes.value) !== anio) return
@@ -1078,7 +1077,7 @@ const exportarExcelDisertantes = async () => {
     toast({ titulo: 'Tabla vacía', mensaje: 'No hay reuniones para exportar.', tipo: 'warning' })
     return
   }
-  const wb = new ExcelJS.Workbook()
+  const wb = new (await cargarExcelJS()).Workbook()
   const ws = wb.addWorksheet('Reuniones')
   ws.columns = [
     { header: 'Fecha',             key: 'fecha',      width: 12 },

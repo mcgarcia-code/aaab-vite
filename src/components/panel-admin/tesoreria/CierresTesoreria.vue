@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Cerrar el período e historial · Total: {{ cierres.length }} cierres realizados</p>
@@ -16,7 +16,7 @@
           <div class="row g-2 align-items-end">
             <div class="col-8 col-md-3">
               <label class="small fw-bold text-dark mb-1 d-block">Período a cerrar</label>
-              <input type="month" v-model="periodoCerrar" class="form-control form-control-sm shadow-none">
+              <input aria-label="Período a cerrar" type="month" v-model="periodoCerrar" class="form-control form-control-sm shadow-none">
             </div>
             <div class="col-12 col-md-3">
               <div class="form-check form-switch mb-1">
@@ -39,7 +39,7 @@
           <EstadoVacio v-else-if="cierresOrdenados.length === 0" icono="bi-calendar3" titulo="Todavía no se realizó ningún cierre" />
 
           <div v-else class="table-responsive border rounded shadow-sm">
-            <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+            <table class="table table-hover align-middle mb-0 texto-085">
               <thead class="table-light">
                 <tr>
                   <th class="py-3 text-uppercase text-muted">Período</th>
@@ -57,7 +57,7 @@
                     <div class="dropdown">
                       <button class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" :disabled="!!descargando[c.periodo]" title="Descargar detalle" aria-label="Descargar detalle">
                         <span v-if="descargando[c.periodo]" class="spinner-border spinner-border-sm"></span>
-                        <i v-else class="bi bi-download align-middle" style="font-size:16px;"></i>
+                        <i v-else class="bi bi-download align-middle texto-16px"></i>
                       </button>
                       <ul class="dropdown-menu dropdown-menu-end shadow">
                         <li>
@@ -96,7 +96,7 @@ import { useHead } from '@vueuse/head'
 useHead({ title: 'Cierre Mensual | AAAB' })
 
 const notificar = inject('notificar')
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 const cargando = ref(false)
 const cerrando = ref(false)

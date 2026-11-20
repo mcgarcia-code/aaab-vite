@@ -49,13 +49,13 @@
 
                 <div class="row g-2">
                   <div class="col-6">
-                    <a :href="infoInscripcion.detailsLink" target="_blank" class="btn btn-light border shadow-sm w-100 btn-sm py-2 fw-bold">Ver Programa</a>
+                    <a :href="infoInscripcion.detailsLink" target="_blank" rel="noopener noreferrer" class="btn btn-light border shadow-sm w-100 btn-sm py-2 fw-bold">Ver Programa</a>
                   </div>
                   <div class="col-6">
-                    <a :href="infoInscripcion.scheduleLink" target="_blank" class="btn btn-light border shadow-sm w-100 btn-sm py-2 fw-bold">Cronograma Anual</a>
+                    <a :href="infoInscripcion.scheduleLink" target="_blank" rel="noopener noreferrer" class="btn btn-light border shadow-sm w-100 btn-sm py-2 fw-bold">Cronograma Anual</a>
                   </div>
                   <div class="col-12 mt-2">
-                    <a :href="infoInscripcion.enrollLink" target="_blank" class="btn btn-danger btn-enroll w-100 py-2 fw-bold shadow-sm">INSCRIBIRME</a>
+                    <a :href="infoInscripcion.enrollLink" target="_blank" rel="noopener noreferrer" class="btn btn-danger btn-enroll w-100 py-2 fw-bold shadow-sm">INSCRIBIRME</a>
                   </div>
                 </div>
               </div>
@@ -101,14 +101,14 @@
 
       <div class="row mt-5">
         <div class="col-12 mb-4 text-center">
-          <h2 class="fw-bold text-white border-bottom border-danger pb-2 d-inline-block text-uppercase" style="letter-spacing: 1px;">Cuerpo Docente</h2>
+          <h2 class="fw-bold text-white border-bottom border-danger pb-2 d-inline-block text-uppercase espaciado-1">Cuerpo Docente</h2>
         </div>
 
         <div v-for="profe in cuerpoDocente" :key="profe.name" class="col-lg-6 mb-3">
           <div class="card bg-dark border-secondary rounded-4 h-100 docente-horizontal-card">
             <div class="card-body d-flex align-items-center p-4 gap-3">
               <div class="flex-shrink-0">
-                <img
+                <img loading="lazy" decoding="async"
                   :src="profe.image"
                   :alt="profe.name"
                   class="rounded-circle border border-2 border-danger shadow-sm"
@@ -142,7 +142,7 @@
 
       <div class="row mt-5 pt-4">
         <div class="col-12 mb-4 text-center">
-          <h2 class="fw-bold text-white border-bottom border-danger pb-2 d-inline-block text-uppercase" style="letter-spacing: 1px;">Preguntas Frecuentes</h2>
+          <h2 class="fw-bold text-white border-bottom border-danger pb-2 d-inline-block text-uppercase espaciado-1">Preguntas Frecuentes</h2>
         </div>
         <div class="col-lg-10 mx-auto">
           <div class="accordion accordion-flush rounded-4 overflow-hidden shadow-lg" id="faqAccordion" data-bs-theme="dark">

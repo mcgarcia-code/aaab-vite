@@ -78,7 +78,7 @@ useHead({
 })
 
 const notificar = inject('notificar', null)
-const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast')
 
 const form = ref(formularioCursoVacio())
 const errores = ref({})
@@ -95,7 +95,7 @@ watch(form, () => { if (intentoEnviar.value) errores.value = validarFormularioCu
 
 const cargarDatos = async () => {
   try {
-    const res = await api.get({ entity: 'localidades', action: 'obtenerProvinciasLocalidades', payload: {} })
+    const res = await api.getCacheado({ entity: 'localidades', action: 'obtenerProvinciasLocalidades', payload: {} })
     if (!res?.ok) throw new Error(res?.message)
     provincias.value = res.payload?.provincias ?? []
     localidades.value = res.payload?.localidades ?? []

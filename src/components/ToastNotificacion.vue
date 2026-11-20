@@ -17,7 +17,7 @@
             class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 toast-icono"
             :class="claseIcono(t.tipo)"
           >
-            <span class="material-icons" style="font-size: 20px;">{{ icono(t.tipo) }}</span>
+            <i :class="icono(t.tipo)" style="font-size: 20px;" aria-hidden="true"></i>
           </span>
 
           <!-- Texto -->
@@ -50,9 +50,9 @@ const toasts = ref([])
 let contador = 0
 
 const icono = (tipo) => {
-  if (tipo === 'danger') return 'error'
-  if (tipo === 'warning') return 'warning'
-  return 'check_circle'
+  if (tipo === 'danger') return 'bi bi-exclamation-circle-fill'
+  if (tipo === 'warning') return 'bi bi-exclamation-triangle-fill'
+  return 'bi bi-check-circle-fill'
 }
 
 const claseIcono = (tipo) => {

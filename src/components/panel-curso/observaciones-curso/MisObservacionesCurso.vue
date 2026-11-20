@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+    <div class="card shadow border-0 mb-4 w-100 mx-auto radio-12 overflow-hidden">
 
       <!-- ENCABEZADO -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom border-2 border-danger gap-3">
@@ -49,7 +49,7 @@
                         </div>
                         <div class="text-muted small text-truncate">{{ esAmistoso(obs) ? 'Partido amistoso' : 'Encuentro de mini' }}</div>
                       </div>
-                      <span class="badge flex-shrink-0" :class="esAmistoso(obs) ? 'bg-primary' : 'bg-dark'">
+                      <span class="badge flex-shrink-0" :class="esAmistoso(obs) ? 'bg-secondary' : 'bg-dark'">
                         <i :class="['bi', esAmistoso(obs) ? 'bi-flag' : 'bi-people', 'me-1']"></i>{{ esAmistoso(obs) ? 'Amistoso' : 'Mini' }}
                       </span>
                     </div>
@@ -61,7 +61,7 @@
                     </div>
 
                     <button class="btn btn-sm btn-outline-danger w-100 fw-bold d-flex align-items-center justify-content-center gap-1" @click="detalle = obs">
-                      <i class="bi bi-eye" style="font-size: 16px;"></i>
+                      <i class="bi bi-eye texto-16px"></i>
                       Ver detalle
                     </button>
                   </div>
@@ -94,7 +94,7 @@
           <template v-for="c in CAMPOS_OBSERVACION_CURSO" :key="c.clave">
             <div v-if="detalle[c.columna]" class="mb-3">
               <div class="fw-bold small" :class="c.clave === 'aspectosAMejorar' ? 'text-danger' : 'text-dark'">{{ c.etiqueta }}</div>
-              <div class="small text-muted" style="white-space: pre-line;">{{ detalle[c.columna] }}</div>
+              <div class="small text-muted texto-multilinea">{{ detalle[c.columna] }}</div>
             </div>
           </template>
 
@@ -127,7 +127,7 @@ import { fechaDMA } from '@/utils/fechas'
 
 useHead({ title: 'Mis Observaciones | Curso AAAB' })
 
-const toast = inject('toast', (m) => alert(m.mensaje || m))
+const toast = inject('toast')
 
 const observaciones = ref([])
 const cargando = ref(false)

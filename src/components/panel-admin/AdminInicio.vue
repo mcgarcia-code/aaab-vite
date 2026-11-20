@@ -76,6 +76,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { MESES_CORTOS } from '@/utils/fechas'
 import { RouterLink } from 'vue-router'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
@@ -97,7 +98,7 @@ const CATEGORIAS_EVENTO = {
   recuperatorio: 'Recuperatorio',
   asamblea: 'Asamblea'
 }
-const MESES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+const MESES = MESES_CORTOS
 const MAX_EVENTOS = 8
 
 const eventos = ref([])
@@ -352,58 +353,6 @@ onMounted(async () => {
 }
 .al-dia .bi { font-size: 1.2rem; color: #16a34a; }
 
-/* ============ ACCESOS RÁPIDOS ============ */
-.categoria-label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #94a3b8;
-  margin: 0 0 10px;
-}
-
-.accesos {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.acceso-rapido {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 84px;
-  padding: 10px 4px;
-  border-radius: 16px;
-  background: #1e293b;
-  color: #f1f5f9;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-  transition: background 0.2s;
-}
-.acceso-rapido i { font-size: 1.35rem; color: #f87171; }
-.acceso-rapido:hover { background: #334155; color: #fff; }
-
-/* Escritorio: accesos horizontales (ícono + texto) a todo el ancho */
-@media (min-width: 992px) {
-  .accesos { gap: 12px; }
-  .acceso-rapido {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 12px;
-    min-height: 64px;
-    padding: 0 18px;
-    font-size: 0.95rem;
-    text-align: left;
-  }
-}
 
 .animate__animated { animation-duration: 0.4s; }
 </style>

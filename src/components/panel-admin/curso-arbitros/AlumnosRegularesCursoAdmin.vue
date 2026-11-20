@@ -1,7 +1,7 @@
 <template>
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Asistencia, mini y exámenes · {{ filas.length }} alumnos · parcialitos, teórico final, práctico, físico y nota final</p>
@@ -78,7 +78,7 @@
                     <td class="celda" :class="celdaParcialitos(f)" :title="textoParcialitos(f)">
                       <template v-if="f.parcialitos.total">
                         {{ f.parcialitos.aprobados }}/{{ f.parcialitos.total }}
-                        <span v-if="f.parcialitos.recuperados" class="detalle-parcialitos text-primary">· {{ f.parcialitos.recuperados }} con recup.</span>
+                        <span v-if="f.parcialitos.recuperados" class="detalle-parcialitos text-danger">· {{ f.parcialitos.recuperados }} con recup.</span>
                         <span v-if="f.parcialitos.recuperando" class="detalle-parcialitos text-warning-emphasis">· {{ f.parcialitos.recuperando }} recuperando</span>
                         <span v-if="f.parcialitos.desaprobados" class="detalle-parcialitos text-danger">· {{ f.parcialitos.desaprobados }} desap.</span>
                       </template>
@@ -95,10 +95,10 @@
                     <td class="celda">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="abrirNotaFinal(f)" class="btn btn-link btn-sm p-0 text-danger" title="Nota final" :aria-label="'Nota final de ' + f.alumno.apellido">
-                          <i class="bi bi-award" style="font-size:18px;"></i>
+                          <i class="bi bi-award texto-18px"></i>
                         </button>
-                        <button @click="seleccionado = f" class="btn btn-link btn-sm p-0 text-primary" title="Ver detalle" :aria-label="'Ver detalle de ' + f.alumno.apellido">
-                          <i class="bi bi-eye" style="font-size:18px;"></i>
+                        <button @click="seleccionado = f" class="btn btn-link btn-sm p-0 text-dark" title="Ver detalle" :aria-label="'Ver detalle de ' + f.alumno.apellido">
+                          <i class="bi bi-eye texto-18px"></i>
                         </button>
                       </div>
                     </td>
@@ -153,7 +153,7 @@
                   </div>
                   <div class="d-flex gap-2 mt-3">
                     <button @click="abrirNotaFinal(f)" class="btn btn-sm btn-outline-danger flex-fill fw-bold"><i class="bi bi-award me-1"></i> Nota final</button>
-                    <button @click="seleccionado = f" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-eye me-1"></i> Detalle</button>
+                    <button @click="seleccionado = f" class="btn btn-sm btn-outline-secondary flex-fill fw-bold"><i class="bi bi-eye me-1"></i> Detalle</button>
                   </div>
                 </div>
               </div>
@@ -303,7 +303,7 @@ import { normalizarTexto } from '@/utils/texto'
 
 useHead({ title: 'Alumnos Regulares del Curso | AAAB' })
 
-const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const notificar = inject('notificar')
 const toast = inject('toast', (m) => notificar(m))
 
 const anio = ref(Number(anioActual()))

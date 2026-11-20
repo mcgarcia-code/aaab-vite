@@ -43,7 +43,7 @@
               <div class="fw-bold text-dark small text-uppercase text-break">{{ a.apellido }}, {{ a.nombre }}</div>
               <div v-if="a.modalidadCurso || a.tieneExamen || a.aviso" class="text-muted" style="font-size: 0.72rem;">
                 <template v-if="a.modalidadCurso">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</template>
-                <span v-if="a.tieneExamen" class="badge bg-info-subtle text-info-emphasis ms-1" title="Ya rindió o tiene nota en el examen de esta clase">
+                <span v-if="a.tieneExamen" class="badge bg-secondary-subtle text-secondary-emphasis ms-1" title="Ya rindió o tiene nota en el examen de esta clase">
                   <i class="bi bi-journal-check"></i> Rindió
                 </span>
                 <span v-if="a.aviso" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1">
@@ -88,7 +88,7 @@ const props = defineProps({
 // guardar: recibe las filas con la asistencia marcada (y asistenciaOriginal para comparar)
 const emit = defineEmits(['close', 'guardar'])
 
-const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const notificar = inject('notificar')
 
 const filas = ref([])
 const filtro = ref(null)

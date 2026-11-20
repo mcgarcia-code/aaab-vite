@@ -53,7 +53,7 @@
                     >
                       <div class="d-flex align-items-start mb-2">
                         <i class="bi bi-patch-question-fill text-danger fs-5 me-2 mt-1"></i>
-                        <h6 class="fw-bold text-dark mb-0 lh-base" style="font-size: 1.05rem;">
+                        <h6 class="fw-bold text-dark mb-0 lh-base texto-105">
                           {{ item.question }}
                         </h6>
                       </div>

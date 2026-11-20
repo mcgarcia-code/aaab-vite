@@ -22,10 +22,11 @@
 
           <button
             @click="cerrar"
+            aria-label="Cerrar"
             class="btn btn-light rounded-circle position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center p-0 border shadow-sm"
             style="width: 35px; height: 35px;"
           >
-            <span class="material-icons" style="font-size: 20px;">close</span>
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
           </button>
 
           <div class="text-center px-4">
@@ -33,10 +34,10 @@
             <div
               v-if="icono"
               class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
-              :class="colorIcono || 'bg-info-subtle text-primary'"
+              :class="colorIcono || 'bg-danger-subtle text-danger'"
               style="width: 45px; height: 45px;"
             >
-              <span class="material-icons">{{ icono }}</span>
+              <i :class="claseIcono(icono)" class="fs-5" aria-hidden="true"></i>
             </div>
 
             <!-- Título -->
@@ -65,12 +66,13 @@
 
 <script setup>
 import { onMounted, onUnmounted, computed, ref, watch, nextTick, inject } from 'vue';
+import { claseIcono } from '@/utils/iconos'
 
 const props = defineProps({
   show: Boolean,
   titulo: String,
   icono: String,
-  colorIcono: { type: String, default: 'bg-info text-white' },
+  colorIcono: { type: String, default: 'bg-danger text-white' },
   maxWidth: { type: String, default: '500px' },
   zIndex: { type: [Number, String], default: 1040 },
   hayCambios: Boolean,
@@ -135,7 +137,7 @@ watch(() => props.show, async (val) => {
     if (!window.__modalStack) window.__modalStack = []
     window.__modalStack.push(modalId)
 
-    let modalCount = parseInt(document.body.dataset.modalCount || '0') + 1
+    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) + 1
     document.body.dataset.modalCount = modalCount
     document.body.style.overflow = 'hidden'
 
@@ -147,7 +149,7 @@ watch(() => props.show, async (val) => {
       window.__modalStack = window.__modalStack.filter(id => id !== modalId)
     }
 
-    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1
+    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) - 1
     if (modalCount < 0) modalCount = 0
     document.body.dataset.modalCount = modalCount
 
@@ -171,7 +173,7 @@ onUnmounted(() => {
       window.__modalStack = window.__modalStack.filter(id => id !== modalId)
     }
 
-    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1
+    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) - 1
     if (modalCount < 0) modalCount = 0
     document.body.dataset.modalCount = modalCount
 

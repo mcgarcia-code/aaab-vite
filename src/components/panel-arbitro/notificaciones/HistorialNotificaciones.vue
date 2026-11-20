@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+    <div class="card shadow border-0 mb-4 w-100 mx-auto radio-12 overflow-hidden">
 
       <div class="card-header bg-white py-3 border-bottom">
         <p class="seccion-descripcion">Revisá todos tus avisos y alertas pasadas.</p>
@@ -18,7 +18,7 @@
         <div v-else class="border rounded shadow-sm overflow-hidden">
 
           <!-- Encabezado de Columnas (Solo visible en Escritorio) -->
-          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">
+          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted texto-075">
             <div class="col-md-2 ps-3">Fecha</div>
             <div class="col-md-3">Tipo</div>
             <div class="col-md-5">Mensaje</div>
@@ -35,7 +35,7 @@
               <div class="col-12 d-md-none d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
                 <span class="text-muted small fw-bold">{{ notif.fecha }}</span>
                 <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
-                  <i class="bi bi-check2-all text-primary" style="font-size: 14px;"></i> Leída
+                  <i class="bi bi-check2-all text-danger texto-14px"></i> Leída
                 </span>
                 <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
                   Nueva
@@ -50,7 +50,7 @@
               <!-- COL 2: TIPO DE AVISO (Ambos) -->
               <div class="col-12 col-md-3 mb-2 mb-md-0 px-0 px-md-2">
                 <span class="badge rounded-pill fw-bold d-inline-flex align-items-center gap-1 py-1 px-2" :class="getEstiloBadge(notif.tipo)">
-                  <i :class="['bi', getIcono(notif.tipo)]" style="font-size: 14px;"></i>
+                  <i class="texto-14px" :class="['bi', getIcono(notif.tipo)]"></i>
                   {{ notif.titulo }}
                 </span>
               </div>
@@ -63,7 +63,7 @@
               <!-- COL 4: ESTADO (Escritorio) -->
               <div class="col-md-2 d-none d-md-flex justify-content-center pe-3">
                 <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
-                  <i class="bi bi-check2-all text-primary" style="font-size: 14px;"></i> Leída
+                  <i class="bi bi-check2-all text-danger texto-14px"></i> Leída
                 </span>
                 <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
                   Nueva
@@ -89,7 +89,7 @@
     </div>
 
     <!-- Alerta de contacto -->
-    <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
+    <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100 radio-12">
       <div class="d-flex align-items-center">
         <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
         <div class="small text-dark lh-sm">
@@ -140,7 +140,7 @@ const getEstiloBadge = (tipo) => {
     case 'success': return 'bg-success-subtle text-success border border-success-subtle';
     case 'danger': return 'bg-danger-subtle text-danger border border-danger-subtle';
     case 'warning': return 'bg-warning-subtle text-dark border border-warning';
-    case 'info': return 'bg-primary-subtle text-primary border border-primary-subtle';
+    case 'info': return 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle';
     default: return 'bg-secondary-subtle text-secondary border border-secondary-subtle';
   }
 };

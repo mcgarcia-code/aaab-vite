@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- ============ HEADER ============ -->
         <div class="card-header bg-white py-3 border-bottom">
@@ -26,7 +26,7 @@
                 <label class="form-check-label text-muted" for="chkSoloActivos">Solo activos</label>
               </div>
               <div class="busqueda-wrap">
-                <input
+                <input aria-label="Buscar árbitro"
                   v-model="busqueda"
                   class="form-control shadow-none control-barra"
                   placeholder="BUSCAR ÁRBITRO..."
@@ -112,7 +112,7 @@
                           title="Clic para editar"
                         >
                           <div v-if="esCeldaEnEdicion(a, col, tipoDet)" class="editor-celda" @click.stop>
-                            <input
+                            <input :aria-label="tipoDet === 'fisico' ? 'Nivel' : 'Nota'"
                               v-if="editor.estado !== 'ausente' && editor.estado !== 'no lo hizo'"
                               v-model="editor.calificacion"
                               @input="alTipearNota"
@@ -124,7 +124,7 @@
                               :title="tipoDet === 'fisico' ? 'Nivel alcanzado (opcional): si lo cargás, aprobado o desaprobado se calcula según género y edad' : 'Nota'"
                               ref="editorInputRef"
                             >
-                            <select v-model="editor.estado" class="editor-select" @keyup.enter="guardarEditor">
+                            <select aria-label="Estado de la nota" v-model="editor.estado" class="editor-select" @keyup.enter="guardarEditor">
                               <option value="aprobado">Aprobado</option>
                               <option value="desaprobado">Desaprobado</option>
                               <option value="no lo hizo">No lo hizo</option>
@@ -172,8 +172,8 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import { conAnioActual, anioActual } from '@/utils/anios'
 
@@ -185,7 +185,7 @@ useHead({
   ],
 })
 
-const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast')
 
 /* ====================================================
    ESTADO
@@ -235,18 +235,18 @@ const fechaCortaDe = (f) => {
    ==================================================== */
 const cargarArbitros = async () => {
   try {
-    const res = await api.get({
+    const res = await api.getCacheado({
       entity: 'arbitros',
       action: 'getArbitrosBasico',
       payload: { soloActivos: soloActivos.value }
-    })
+    }, { ttl: 60 * 1000 })
     if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
   } catch (e) { console.error('cargarArbitros:', e) }
 }
 
 const cargarGrupos = async () => {
   try {
-    const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos' })
+    const res = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' })
     if ((res.ok || res.success) && res.payload) grupos.value = res.payload
   } catch (e) { console.error('cargarGrupos:', e) }
 }
@@ -255,7 +255,7 @@ const cargarEventosExamen = async () => {
   try {
     const res = await api.get({ entity: 'eventos', action: 'obtenerEventosParaExamen' })
     if ((res.ok || res.success) && res.payload) {
-      eventosExamen.value = res.payload.filter(ev => ['asamblea', 'recuperatorio'].includes(ev.categoria))
+      eventosExamen.value = (res.payload || []).filter(ev => ['asamblea', 'recuperatorio'].includes(ev.categoria))
     }
   } catch (e) { console.error('cargarEventosExamen:', e) }
 }
@@ -264,7 +264,7 @@ const cargarReuniones = async () => {
   try {
     const res = await api.get({ entity: 'reuniones', action: 'obtenerReuniones' })
     if ((res.ok || res.success) && res.payload) {
-      reuniones.value = res.payload.filter(r => r.categoria === 'reunion')
+      reuniones.value = (res.payload || []).filter(r => r.categoria === 'reunion')
     }
   } catch (e) { console.error('cargarReuniones:', e) }
 }
@@ -280,7 +280,7 @@ const cargarNotas = async () => {
     const res = await api.get({ entity: 'examenes', action: 'obtenerNotasPlanilla' })
     if ((res.ok || res.success) && res.payload && Array.isArray(res.payload)) {
       const mapa = {}
-      res.payload.forEach(row => {
+      (res.payload || []).forEach(row => {
         let estado = String(row.estado ?? '').trim().toLowerCase()
         if (estado === '4') return // borrado lógico
         if (MAPA_ESTADOS_NUMERICOS[estado]) estado = MAPA_ESTADOS_NUMERICOS[estado]
@@ -306,7 +306,7 @@ const cargarAsistencias = async () => {
     const res = await api.get({ entity: 'reuniones', action: 'obtenerAsistenciasPlanilla' })
     if ((res.ok || res.success) && res.payload && Array.isArray(res.payload)) {
       const mapa = {}
-      res.payload.forEach(row => {
+      (res.payload || []).forEach(row => {
         const estado = Number(row.estado)
         let asis = ''
         if (estado === 1) asis = 'presente'
@@ -851,7 +851,7 @@ const pintarCelda = (celda, colorKey, opciones = {}) => {
 }
 
 const descargarExcel = async () => {
-  const wb = new ExcelJS.Workbook()
+  const wb = new (await cargarExcelJS()).Workbook()
   const usados = new Set()
 
   gruposTabs.value.forEach((g, indiceGrupo) => {
@@ -1120,7 +1120,7 @@ const descargarExcel = async () => {
    EDICIÓN INLINE DE CELDAS
    ==================================================== */
 .celda-editable { cursor: pointer; }
-.celda-editable:hover { outline: 2px solid #0d6efd; outline-offset: -2px; }
+.celda-editable:hover { outline: 2px solid #dc2626; outline-offset: -2px; }
 
 .editor-celda {
   display: flex;
@@ -1132,7 +1132,7 @@ const descargarExcel = async () => {
 
 .editor-input {
   width: 52px;
-  border: 1px solid #0d6efd;
+  border: 1px solid #dc2626;
   border-radius: 4px;
   padding: 2px 4px;
   font-size: 0.75rem;

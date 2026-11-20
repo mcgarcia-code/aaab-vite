@@ -21,6 +21,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Si ESLint encuentra errores (no avisos), el deploy se corta antes de publicar
+      - name: Lint
+        run: npx eslint src --max-warnings=-1
+
       - name: Build Vue
         run: npm run build
 

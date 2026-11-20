@@ -89,17 +89,17 @@
           <!-- BRANDING Y REDES SOCIALES -->
           <div class="col-12 col-lg-4">
             <div class="text-center text-lg-end">
-              <img :src="logo" alt="AAAB Logo" class="footer-logo mb-3" />
+              <img loading="lazy" decoding="async" :src="logo" alt="AAAB Logo" class="footer-logo mb-3" />
               <h5 class="fw-black text-white m-0" style="letter-spacing: 3px; font-size: 1.2rem;">CAMBIA TU VISIÓN</h5>
               <h5 class="fw-black text-danger m-0" style="letter-spacing: 3px; font-size: 1.2rem;">HACETE ÁRBITRO</h5>
 
               <div class="mt-4">
                 <p class="small text-secondary mb-2">Seguinos en redes</p>
                 <div class="d-flex justify-content-center justify-content-lg-end gap-4">
-                  <a href="https://www.instagram.com/arbitros.balonmano/" target="_blank" class="text-white social-link">
+                  <a href="https://www.instagram.com/arbitros.balonmano/" target="_blank" rel="noopener noreferrer" class="text-white social-link">
                     <i class="bi bi-instagram fs-4"></i>
                   </a>
-                  <a href="https://x.com/aaabalonmano" target="_blank" class="text-white social-link">
+                  <a href="https://x.com/aaabalonmano" target="_blank" rel="noopener noreferrer" class="text-white social-link">
                     <i class="bi bi-twitter-x fs-4"></i>
                   </a>
                 </div>
@@ -113,7 +113,7 @@
 
     <!-- COPYRIGHT BAR -->
     <div class="py-3 text-center" style="background-color: #0a0a0a; border-top: 1px solid #1a1a1a;">
-      <span class="small" style="color: #444; letter-spacing: 1px;">
+      <span class="small espaciado-1" style="color: #444;">
        © 2026 Asociación de Árbitros de Handball | Todos los derechos reservados.
       </span>
     </div>

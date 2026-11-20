@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-   <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+   <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
         <p class="seccion-descripcion">Modificá tus datos personales</p>
 
@@ -13,7 +13,7 @@
                 <i class="bi bi-exclamation-triangle-fill"></i> APTO MÉDICO: NO
             </span>
 
-            <span v-if="edicionAbierta" class="badge bg-primary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
+            <span v-if="edicionAbierta" class="badge bg-secondary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
                 <i class="bi bi-pencil-square me-1"></i> Edición Abierta
             </span>
             <span v-else class="badge bg-secondary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
@@ -39,22 +39,22 @@
                         {{ arbitro.grupo }} {{ arbitro.subgrupo ? '- ' + arbitro.subgrupo : '' }}
                     </span>
                     <!-- Reemplazamos status-pill custom por utilidades de Bootstrap -->
-                    <span v-if="arbitro.es_activo == 1" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                    <span v-if="arbitro.es_activo == 1" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-1 texto-085">
                         <i class="bi bi-check-circle-fill"></i> En actividad
                     </span>
-                    <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                    <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-1 texto-085">
                         <i class="bi bi-x-circle-fill"></i> Inactivo
                     </span>
                 </div>
             </div>
         </div>
 
-        <h6 class="text-danger fw-bold text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Información de contacto</h6>
+        <h6 class="text-danger fw-bold text-uppercase mb-3 texto-08 espaciado-1">Información de contacto</h6>
         <div class="row g-3 mb-5">
             <div class="col-12 col-md-3">
                 <label class="small text-muted mb-1 d-block">Fecha de Nacimiento</label>
                 <div v-if="edicionAbierta" class="date-custom-wrapper" :data-date="arbitro.fecha_nacimiento ? mostrarFechaArg(arbitro.fecha_nacimiento) : 'Seleccionar fecha'">
-                    <input type="date" v-model="arbitro.fecha_nacimiento" class="form-control form-control-sm input-fecha-nativa">
+                    <input aria-label="Fecha de Nacimiento" type="date" v-model="arbitro.fecha_nacimiento" class="form-control form-control-sm input-fecha-nativa">
                 </div>
                 <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">
                     {{ mostrarFechaArg(arbitro.fecha_nacimiento) }}
@@ -62,17 +62,17 @@
             </div>
             <div class="col-12 col-md-5">
                 <label class="small text-muted mb-1 d-block">Email</label>
-                <input v-if="edicionAbierta" v-model="arbitro.email" type="email" class="form-control form-control-sm">
+                <input aria-label="Email" v-if="edicionAbierta" v-model="arbitro.email" type="email" class="form-control form-control-sm">
                 <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded text-break">{{ arbitro.email }}</span>
             </div>
             <div class="col-12 col-md-4">
                 <label class="small text-muted mb-1 d-block">Celular</label>
-                <input v-if="edicionAbierta" v-model="arbitro.celular" type="text" class="form-control form-control-sm">
+                <input aria-label="Celular" v-if="edicionAbierta" v-model="arbitro.celular" type="text" class="form-control form-control-sm">
                 <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.celular }}</span>
             </div>
             <div class="col-12 col-md-6">
                 <label class="small text-muted mb-1 d-block">Género</label>
-                <select v-if="edicionAbierta" v-model="arbitro.genero" class="form-select form-select-sm">
+                <select aria-label="Género" v-if="edicionAbierta" v-model="arbitro.genero" class="form-select form-select-sm">
                     <option value="">Seleccionar...</option>
                     <option value="masculino">Masculino</option>
                     <option value="femenino">Femenino</option>
@@ -84,50 +84,50 @@
             <div class="col-12 col-md-6">
                 <label class="small text-muted mb-1 d-block">Fecha de Ingreso a la AAAB</label>
                 <div v-if="edicionAbierta" class="date-custom-wrapper" :data-date="arbitro.fecha_ingreso ? mostrarFechaArg(arbitro.fecha_ingreso) : 'Seleccionar fecha'">
-                    <input type="date" v-model="arbitro.fecha_ingreso" class="form-control form-control-sm input-fecha-nativa">
+                    <input aria-label="Fecha de Ingreso a la AAAB" type="date" v-model="arbitro.fecha_ingreso" class="form-control form-control-sm input-fecha-nativa">
                 </div>
                 <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.fecha_ingreso ? mostrarFechaArg(arbitro.fecha_ingreso) : '-' }}</span>
             </div>
             <div class="col-12">
                 <label class="small text-muted mb-1 d-block">Dirección Residencial</label>
-                <input v-if="edicionAbierta" v-model="arbitro.direccion" type="text" class="form-control form-control-sm">
+                <input aria-label="Dirección Residencial" v-if="edicionAbierta" v-model="arbitro.direccion" type="text" class="form-control form-control-sm">
                 <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.direccion }}</span>
             </div>
             <div class="col-12 col-md-6">
                 <label class="small text-muted mb-1 d-block">Provincia</label>
-                <select v-if="edicionAbierta" v-model="arbitro.provincia" class="form-select form-select-sm">
+                <select aria-label="Provincia" v-if="edicionAbierta" v-model="arbitro.provincia" class="form-select form-select-sm">
                     <option v-for="p in opciones.provincias" :key="p.id" :value="p.id">{{ p.nombre }}</option>
                 </select>
                 <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.nombre_provincia }}</span>
             </div>
             <div class="col-12 col-md-6">
                 <label class="small text-muted mb-1 d-block">Localidad</label>
-                <select v-if="edicionAbierta" v-model="arbitro.localidad" class="form-select form-select-sm">
+                <select aria-label="Localidad" v-if="edicionAbierta" v-model="arbitro.localidad" class="form-select form-select-sm">
                     <option v-for="l in localidadesFiltradas" :key="l.id" :value="l.id">{{ l.nombre }}</option>
                 </select>
                 <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.nombre_localidad }}</span>
             </div>
         </div>
 
-        <h6 class="text-danger fw-bold text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">Contacto de Emergencia</h6>
+        <h6 class="text-danger fw-bold text-uppercase mb-3 texto-08 espaciado-1">Contacto de Emergencia</h6>
         <div class="row g-3 border-bottom pb-5">
             <div class="col-12 col-md-6">
                 <label class="small text-muted mb-1 d-block">Tel. de Emergencia</label>
-                <input v-if="edicionAbierta" v-model="arbitro.telefonocontacto" type="text" class="form-control form-control-sm">
+                <input aria-label="Tel. de Emergencia" v-if="edicionAbierta" v-model="arbitro.telefonocontacto" type="text" class="form-control form-control-sm">
                 <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.telefonocontacto }}</span>
             </div>
             <div class="col-12 col-md-6">
                 <label class="small text-muted mb-1 d-block">Parentesco</label>
-                <input v-if="edicionAbierta" v-model="arbitro.parentescocontacto" type="text" class="form-control form-control-sm">
+                <input aria-label="Parentesco" v-if="edicionAbierta" v-model="arbitro.parentescocontacto" type="text" class="form-control form-control-sm">
                 <span v-else class="fw-bold text-dark d-block p-2 bg-light rounded">{{ arbitro.parentescocontacto }}</span>
             </div>
         </div>
 
-        <h6 class="text-danger fw-bold text-uppercase mb-3 mt-4" style="font-size: 0.8rem; letter-spacing: 1px;">Seguridad</h6>
+        <h6 class="text-danger fw-bold text-uppercase mb-3 mt-4 texto-08 espaciado-1">Seguridad</h6>
         <div class="row g-3 align-items-end">
             <div class="col-12 col-md-8">
                 <label class="small text-muted mb-1 d-block">Nueva Contraseña</label>
-                <input v-model="nuevaPassword" type="password" class="form-control form-control-sm py-2" placeholder="Escribí tu nueva clave aquí">
+                <input aria-label="Nueva Contraseña" v-model="nuevaPassword" type="password" class="form-control form-control-sm py-2" placeholder="Escribí tu nueva clave aquí">
             </div>
             <div class="col-12 col-md-4">
                 <button @click="cambiarPassword" class="btn btn-light border btn-sm w-100 fw-bold py-2 shadow-sm" :disabled="cargando || !nuevaPassword">
@@ -146,7 +146,7 @@
       </div>
     </div>
 
-    <div class="card border-0 shadow mx-auto mb-4 overflow-hidden w-100" style="border-radius: 15px;">
+    <div class="card border-0 shadow mx-auto mb-4 overflow-hidden w-100 radio-15">
         <div class="card-header bg-white py-3 ps-3 border-bottom">
             <h6 class="m-0 fw-bold text-dark small text-uppercase">Historial de Rectificaciones</h6>
         </div>
@@ -167,7 +167,7 @@
                     <!-- HEADER MOBILE: Fecha y Estado -->
                     <div class="col-12 d-md-none mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
                         <span class="small fw-bold text-dark">{{ h.fecha }}</span>
-                        <span :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem;">
+                        <span class="texto-065" :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]">
                             {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
                         </span>
                     </div>
@@ -184,7 +184,7 @@
 
                     <!-- COL 3: ESTADO (Escritorio) -->
                     <div class="col-md-3 d-none d-md-flex justify-content-center pe-3">
-                        <span :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                        <span class="texto-065 espaciado-05" :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]">
                             {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
                         </span>
                     </div>
@@ -207,11 +207,11 @@
 
         <div class="p-3 p-md-4 rounded-4 shadow-lg" style="background: #0c1624; border: 1px dashed rgba(255,255,255,0.2);">
             <h6 class="text-white fw-bold small mb-2 text-uppercase">Solicitar Rectificación</h6>
-            <p class="small text-white-50 mb-3" style="font-size: 0.8rem;">
+            <p class="small text-white-50 mb-3 texto-08">
                 Si necesitás corregir datos personales (DNI, Fecha de Nac., etc.), detallalo a continuación.
             </p>
 
-            <textarea
+            <textarea aria-label="Ej: Hola, necesito corregir mi DNI, el correcto es"
                 v-model="solicitudCambio"
                 class="form-control mb-3 custom-textarea p-3"
                 rows="3"
@@ -232,6 +232,7 @@
 
 <script setup>
 import { ref, onMounted, watch, inject } from 'vue';
+import { fechaDMA } from '@/utils/fechas'
 import { api } from '@/api/api';
 import { auth } from '../../../api/auth';
 import { useHead } from '@vueuse/head';
@@ -246,7 +247,7 @@ useHead({
 });
 
 // Inyectamos el notificador global
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 const arbitro = ref(auth.getUser() || {});
 
 // Los <input type="date"> solo aceptan 'YYYY-MM-DD'. Si la fecha viene con hora
@@ -264,12 +265,7 @@ const historialRectificaciones = ref([]);
 const nuevaPassword = ref('');
 const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
 
-const mostrarFechaArg = (fecha) => {
-    if (!fecha) return '';
-    const partes = fecha.split('-');
-    if (partes.length !== 3) return fecha;
-    return `${partes[2]}-${partes[1]}-${partes[0]}`;
-};
+const mostrarFechaArg = (fecha) => fechaDMA(fecha)
 
 const generoLabel = (genero) => {
     const labels = { masculino: 'Masculino', femenino: 'Femenino', x: 'X', otro: 'Otro' };
@@ -294,7 +290,7 @@ onMounted(async () => {
 
     if (edicionAbierta.value) {
         try {
-            const { payload } = await api.get({
+            const { payload } = await api.getCacheado({
                 entity: 'localidades',
                 action: 'obtenerProvinciasLocalidades'
             });

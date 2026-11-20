@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 15px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-15 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -24,21 +24,21 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Pedidos</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <div class="col-6 col-md-3">
-              <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO...">
+              <input aria-label="Buscar árbitro" v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.prenda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR PRENDA...">
+              <input aria-label="Buscar prenda" v-model="filtros.prenda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR PRENDA...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="FECHA (DD/MM/YY)">
+              <input aria-label="Fecha (dd/mm/yy)" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="FECHA (DD/MM/YY)">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="creado">CREADO</option>
                 <option value="en proceso">EN PROCESO</option>
@@ -49,7 +49,7 @@
               </select>
             </div>
             <div class="col-6 col-md-1">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por año" v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">AÑO</option>
                 <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
               </select>
@@ -68,17 +68,17 @@
           <template v-else>
           <!-- TABLA (Solo Escritorio) -->
           <div class="d-none d-md-block table-responsive border rounded shadow-sm">
-            <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem;">
+            <table class="table table-hover align-middle mb-0 texto-075">
               <thead class="table-light">
                 <tr>
-                  <th class="py-3 ps-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 1px;">ID</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
-                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro</th>
-                  <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Prenda Solicitada</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Cant.</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Total</th>
-                  <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Fecha</th>
-                  <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
+                  <th class="py-3 ps-3 text-uppercase text-muted texto-075" style="width: 1px;">ID</th>
+                  <th class="py-3 text-center text-uppercase text-muted texto-075">Acciones</th>
+                  <th class="py-3 text-uppercase text-muted texto-075">Árbitro</th>
+                  <th class="py-3 text-uppercase text-muted texto-075">Prenda Solicitada</th>
+                  <th class="py-3 text-center text-uppercase text-muted texto-075">Cant.</th>
+                  <th class="py-3 text-center text-uppercase text-muted texto-075">Total</th>
+                  <th class="py-3 text-center text-uppercase text-muted texto-075">Fecha</th>
+                  <th class="py-3 text-center pe-3 text-uppercase text-muted texto-075">Estado</th>
                 </tr>
               </thead>
               <tbody>
@@ -86,11 +86,11 @@
                   <td class="ps-3 text-muted fw-bold font-monospace">{{ p.id }}</td>
                   <td class="text-center">
                     <div class="d-flex justify-content-center gap-1">
-                      <button @click="abrirModalEstado(p)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Cambiar Estado">
-                        <i class="bi bi-pencil" style="font-size:16px;"></i>
+                      <button @click="abrirModalEstado(p)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Cambiar Estado">
+                        <i class="bi bi-pencil texto-16px"></i>
                       </button>
                       <button @click="verHistorial(p)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver pedidos de este árbitro">
-                        <i class="bi bi-search" style="font-size:16px;"></i>
+                        <i class="bi bi-search texto-16px"></i>
                       </button>
                     </div>
                   </td>
@@ -111,7 +111,7 @@
           <div class="d-md-none p-3 bg-light">
             <div v-for="p in pedidosPaginados" :key="'mob-'+p.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
               <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
-                <div class="text-uppercase text-dark fw-bold" style="font-size: 1.05rem;">
+                <div class="text-uppercase text-dark fw-bold texto-105">
                   {{ p.apellido }}, {{ p.nombre }}
                 </div>
                 <div class="small text-muted fw-bold font-monospace">
@@ -121,7 +121,7 @@
 
               <div class="card-body pt-0 px-3 pb-3">
                 <div class="mb-2">
-                  <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]" style="font-size: 0.7rem; padding: 3px 10px;">{{ (p.estado || 'N/A').toUpperCase() }}</span>
+                  <span class="texto-07" :class="['badge-status-sm', obtenerClaseEstado(p.estado)]" style="padding: 3px 10px;">{{ (p.estado || 'N/A').toUpperCase() }}</span>
                   <span class="ms-2 text-muted small fw-bold">{{ p.fecha_creacion || 'S/F' }}</span>
                 </div>
 
@@ -134,11 +134,11 @@
                 </div>
 
                 <div class="d-flex gap-2 mt-3">
-                  <button @click="abrirModalEstado(p)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                    <i class="bi bi-pencil" style="font-size: 16px;"></i> ESTADO
+                  <button @click="abrirModalEstado(p)" class="btn btn-sm btn-outline-secondary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                    <i class="bi bi-pencil texto-16px"></i> ESTADO
                   </button>
                   <button @click="verHistorial(p)" class="btn btn-sm btn-outline-warning px-3 shadow-sm d-flex justify-content-center align-items-center" title="Ver sus pedidos">
-                    <i class="bi bi-search" style="font-size: 18px;"></i>
+                    <i class="bi bi-search texto-18px"></i>
                   </button>
                 </div>
               </div>
@@ -174,7 +174,7 @@
       @close="cerrarModal"
       titulo="Gestionar Pedido"
       icono="local_shipping"
-      colorIcono="bg-info-subtle text-info"
+      colorIcono="bg-danger-subtle text-danger"
       maxWidth="450px"
     >
       <div class="text-center mb-4">
@@ -192,7 +192,7 @@
 
       <div class="text-start">
         <label class="small fw-bold mb-2 text-dark text-uppercase">Actualizar Estado</label>
-        <select v-model="nuevoEstado" class="form-select shadow-sm border-secondary-subtle fw-bold py-2">
+        <select aria-label="Actualizar Estado" v-model="nuevoEstado" class="form-select shadow-sm border-secondary-subtle fw-bold py-2">
           <option value="creado">CREADO (A PAGAR)</option>
           <option value="en proceso">EN PROCESO</option>
           <option value="aceptado">ACEPTADO (PREPARANDO)</option>
@@ -213,7 +213,7 @@
 
       <template #footer>
         <button @click="cerrarModal" class="btn btn-light border px-4 fw-bold rounded-pill w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button @click="guardarEstado" class="btn btn-dark px-4 fw-bold shadow-sm rounded-pill w-100" :disabled="cargando">
+        <button @click="guardarEstado" class="btn btn-danger px-4 fw-bold shadow-sm rounded-pill w-100" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR ESTADO
         </button>
@@ -239,14 +239,14 @@
 
       <!-- Tabla (Solo Escritorio) -->
       <div class="d-none d-md-block table-responsive border rounded shadow-sm m-0">
-        <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.75rem;">
+        <table class="table table-sm table-hover align-middle m-0 texto-075">
           <thead class="table-light">
             <tr>
-              <th class="py-2 ps-3 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Fecha</th>
-              <th class="py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Prenda</th>
-              <th class="text-center py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Cant</th>
-              <th class="text-end py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Total</th>
-              <th class="text-center py-2 pe-3 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
+              <th class="py-2 ps-3 fw-bold text-uppercase text-muted texto-075">Fecha</th>
+              <th class="py-2 fw-bold text-uppercase text-muted texto-075">Prenda</th>
+              <th class="text-center py-2 fw-bold text-uppercase text-muted texto-075">Cant</th>
+              <th class="text-end py-2 fw-bold text-uppercase text-muted texto-075">Total</th>
+              <th class="text-center py-2 pe-3 fw-bold text-uppercase text-muted texto-075">Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -274,7 +274,7 @@
 
         <div v-for="h in historialArbitro" :key="h.id" class="bg-white border rounded shadow-sm p-3">
           <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="fw-bold text-dark m-0 lh-sm pe-2" style="font-size: 0.75rem;">
+            <h6 class="fw-bold text-dark m-0 lh-sm pe-2 texto-075">
               {{ h.descripcion }} <span class="text-danger">({{ h.talle }})</span>
             </h6>
             <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">
@@ -299,8 +299,8 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api';
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
 
@@ -309,7 +309,7 @@ useHead({
   meta: [{ name: 'description', content: 'Administración de pedidos de indumentaria.' }],
 });
 
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 
 const pedidos = ref([]);
 const cargando = ref(false);
@@ -328,9 +328,6 @@ const mostrarModalHistorial = ref(false);
 const historialArbitro = ref([]);
 const arbitroHistorialNombre = ref('');
 
-const pedidosNuevos = computed(() => {
-  return pedidos.value.filter(p => p.estado && p.estado.toLowerCase() === 'creado').length;
-});
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
@@ -391,7 +388,7 @@ const obtenerPedidos = async () => {
   try {
     const res = await api.get({ entity: 'indumentaria', action: 'obtenerPedidos' });
     if (res.ok) {
-      pedidos.value = res.payload.sort((a, b) => b.id - a.id);
+      pedidos.value = (res.payload || []).sort((a, b) => b.id - a.id);
     }
   } catch {
     toast({ titulo: 'Error', mensaje: 'Problema al cargar los pedidos.', tipo: 'danger' });
@@ -518,7 +515,7 @@ const exportarExcel = async () => {
   datosHoja2.sort((a, b) => a['Árbitro'].localeCompare(b['Árbitro']));
 
   // --- GENERACIÓN DEL ARCHIVO ---
-  const wb = new ExcelJS.Workbook();
+  const wb = new (await cargarExcelJS()).Workbook();
 
   // Helper para cargar un array de objetos en una hoja
   const cargarHoja = (nombreHoja, datos) => {
@@ -579,8 +576,8 @@ onMounted(obtenerPedidos);
   white-space: nowrap;
 }
 .estado-creado { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
-.estado-proceso { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-.estado-aceptado { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.estado-proceso { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.estado-aceptado { background: #e2e8f0; color: #0f172a; border: 1px solid #94a3b8; }
 .estado-entregado { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 .estado-rechazado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 

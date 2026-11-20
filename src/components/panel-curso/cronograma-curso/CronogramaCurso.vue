@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
       <div class="card-header bg-white py-3 border-bottom">
         <p class="seccion-descripcion">Clases de tu curso · {{ anio }}</p>
       </div>
@@ -17,7 +17,7 @@
               <div class="mes">{{ mesCorto(proximaClase.fecha) }}</div>
             </div>
             <div class="min-w-0">
-              <div class="small text-uppercase fw-bold text-danger mb-1" style="letter-spacing: 1px;">
+              <div class="small text-uppercase fw-bold text-danger mb-1 espaciado-1">
                 {{ proximaClase.fecha === hoy ? 'Hoy hay clase' : 'Próxima clase' }}
               </div>
               <div class="fw-bold text-dark fs-6 text-break">{{ proximaClase.titulo }}</div>
@@ -89,6 +89,7 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { reactive, computed, watch, onMounted, defineComponent, h } from 'vue'
+import { MESES_CORTOS } from '@/utils/fechas'
 import { useHead } from '@vueuse/head'
 import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada } from '@/composables/useCronogramaCurso'
 
@@ -98,7 +99,6 @@ const anio = new Date().getFullYear()
 const { clases, cargando, error, cargar, clasesPorMes, proximaClase } = useCronogramaCurso()
 
 const hoy = new Date().toLocaleDateString('sv-SE')
-const MESES_CORTOS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
 const mesCorto = (fecha) => MESES_CORTOS[Number(fecha.substring(5, 7)) - 1]
 
 const meses = computed(() => clasesPorMes.value.map((g, i) => ({

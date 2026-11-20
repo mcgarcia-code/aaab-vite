@@ -12,7 +12,7 @@
         <div class="col-lg-10">
 
           <div class="mb-4">
-            <input
+            <input aria-label="Buscar por árbitro o motivo"
               v-model="filtro"
               class="form-control form-control-lg buscador-publico shadow-lg"
               placeholder="🔍 BUSCAR POR ÁRBITRO O MOTIVO..."

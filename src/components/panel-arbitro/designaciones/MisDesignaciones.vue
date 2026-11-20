@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid px-2 px-md-3 py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
 
       <!-- ================= HEADER ================= -->
       <div class="card-header bg-white p-0 border-bottom">
@@ -77,10 +77,10 @@
                   <div class="timeline-card shadow-sm" :class="{ 'card-rechazada': p.rechazada }">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
                       <span class="fw-bold text-dark text-uppercase text-break">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
-                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
+                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start texto-065">{{ p.categoria_division }}</span>
                     </div>
                     <div class="small text-muted d-flex align-items-center flex-wrap gap-1 mb-2">
-                      <i class="bi bi-geo-alt flex-shrink-0" style="font-size: 15px;"></i>
+                      <i class="bi bi-geo-alt flex-shrink-0 texto-15px"></i>
                       <span class="fw-bold text-dark text-break">{{ p.cancha }}</span>
 
                       <a v-if="linkMapaCancha(p)"
@@ -95,11 +95,11 @@
                     <!-- FUNCION ARBITRO -->
                     <template v-if="p.funcion == 'arbitro'">
                       <div class="small d-flex align-items-start gap-1 text-dark">
-                        <i class="bi bi-people text-danger flex-shrink-0" style="font-size: 15px;"></i>
+                        <i class="bi bi-people text-danger flex-shrink-0 texto-15px"></i>
                         <span class="text-break"><strong>Pareja:</strong> {{ obtenerPareja(p) }}</span>
                       </div>
                       <div v-if="p.delegado" class="small d-flex align-items-start gap-1 text-dark mt-1">
-                        <i class="bi bi-person text-danger flex-shrink-0" style="font-size: 15px;"></i>
+                        <i class="bi bi-person text-danger flex-shrink-0 texto-15px"></i>
                         <span class="text-break"><strong>Delegado Técnico:</strong> {{ p.delegado }}</span>
                       </div>
                     </template>
@@ -107,11 +107,11 @@
                     <!-- FUNCION DELEGADO / OBSERVADOR / PLANILLERO / CRONOMETRISTA -->
                     <template v-if="p.funcion != 'arbitro'">
                       <div class="small d-flex align-items-start gap-1 text-dark mb-1">
-                        <i class="bi bi-person text-danger flex-shrink-0" style="font-size: 15px;"></i>
+                        <i class="bi bi-person text-danger flex-shrink-0 texto-15px"></i>
                         <span class="text-break"><strong>Función:</strong> {{ etiquetaFuncion(p.funcion) }}</span>
                       </div>
                       <div class="small d-flex align-items-start gap-1 text-dark">
-                        <i class="bi bi-people text-danger flex-shrink-0" style="font-size: 15px;"></i>
+                        <i class="bi bi-people text-danger flex-shrink-0 texto-15px"></i>
                         <span class="text-break"><strong>Arbitros:</strong> {{ p.arbitro_1 }} - {{ p.arbitro_2 }}</span>
                       </div>
                     </template>
@@ -140,7 +140,7 @@
                           @click="abrirModalRechazo(p)"
                           class="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1"
                         >
-                          <i class="bi bi-slash-circle" style="font-size: 15px;"></i>
+                          <i class="bi bi-slash-circle texto-15px"></i>
                           Rechazar designación
                         </button>
 
@@ -176,7 +176,7 @@
 
               <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
                 <span class="small fw-bold text-muted text-uppercase">Filtrar por año:</span>
-                <select v-model="anioSeleccionado" class="form-select form-select-sm shadow-none w-auto fw-bold text-uppercase text-dark">
+                <select aria-label="Filtrar por año" v-model="anioSeleccionado" class="form-select form-select-sm shadow-none w-auto fw-bold text-uppercase text-dark">
                   <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
                 </select>
               </div>
@@ -230,10 +230,10 @@
                           <div class="timeline-card shadow-sm" :class="{ 'card-rechazada': p.rechazada }">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
                               <span class="fw-bold text-dark text-uppercase text-break">{{ p.local }} <span class="text-muted fw-normal">vs</span> {{ p.visitante }}</span>
-                              <span class="badge bg-secondary-subtle text-secondary border text-wrap text-break text-start" style="font-size: 0.65rem;">{{ p.categoria_division }}</span>
+                              <span class="badge bg-secondary-subtle text-secondary border text-wrap text-break text-start texto-065">{{ p.categoria_division }}</span>
                             </div>
                             <div class="small text-muted d-flex align-items-center flex-wrap gap-1 mb-2">
-                              <i class="bi bi-geo-alt flex-shrink-0" style="font-size: 15px;"></i>
+                              <i class="bi bi-geo-alt flex-shrink-0 texto-15px"></i>
                               <span class="fw-bold text-dark text-break">{{ p.cancha }}</span>
 
                               <a v-if="linkMapaCancha(p)"
@@ -248,11 +248,11 @@
                             <!-- FUNCION ARBITRO -->
                             <template v-if="p.funcion=='arbitro'">
                               <div class="small d-flex align-items-start gap-1 text-dark">
-                                <i class="bi bi-people text-secondary flex-shrink-0" style="font-size: 15px;"></i>
+                                <i class="bi bi-people text-secondary flex-shrink-0 texto-15px"></i>
                                 <span class="text-break"><strong>Pareja:</strong> {{ obtenerPareja(p) }}</span>
                               </div>
                               <div v-if="p.delegado" class="small d-flex align-items-start gap-1 text-dark mt-1">
-                                <i class="bi bi-person text-secondary flex-shrink-0" style="font-size: 15px;"></i>
+                                <i class="bi bi-person text-secondary flex-shrink-0 texto-15px"></i>
                                 <span class="text-break"><strong>Delegado Técnico:</strong> {{ p.delegado }}</span>
                               </div>
                             </template>
@@ -260,11 +260,11 @@
                             <!-- FUNCION DELEGADO / OBSERVADOR / PLANILLERO / CRONOMETRISTA -->
                             <template v-if="p.funcion!='arbitro'">
                               <div class="small d-flex align-items-start gap-1 text-dark mb-1">
-                                <i class="bi bi-person text-secondary flex-shrink-0" style="font-size: 15px;"></i>
+                                <i class="bi bi-person text-secondary flex-shrink-0 texto-15px"></i>
                                 <span class="text-break"><strong>Función:</strong> {{ etiquetaFuncion(p.funcion) }}</span>
                               </div>
                               <div class="small d-flex align-items-start gap-1 text-dark">
-                                <i class="bi bi-people text-secondary flex-shrink-0" style="font-size: 15px;"></i>
+                                <i class="bi bi-people text-secondary flex-shrink-0 texto-15px"></i>
                                 <span class="text-break"><strong>Arbitros:</strong> {{ p.arbitro_1 }} - {{ p.arbitro_2 }}</span>
                               </div>
                             </template>
@@ -357,7 +357,7 @@
 
         <div v-if="motivoSeleccionado === 'otro'" class="mb-2">
           <label class="form-label small fw-bold text-dark mb-1">Escribí el motivo *</label>
-          <textarea
+          <textarea aria-label="Escribí el motivo"
             v-model="motivoOtro"
             class="form-control shadow-none border-secondary-subtle"
             rows="3"
@@ -369,7 +369,7 @@
       <!-- DELEGADO TECNICO: motivo de texto libre -->
       <template v-else>
         <label class="form-label small fw-bold text-dark mb-1">Escribí el motivo del rechazo *</label>
-        <textarea
+        <textarea aria-label="Escribí el motivo del rechazo"
           v-model="motivoOtro"
           class="form-control shadow-none border-secondary-subtle"
           rows="4"
@@ -412,23 +412,23 @@
         <div class="row g-2 mb-3">
           <div class="col-12 col-sm-6">
             <label class="form-label small fw-bold text-dark mb-1">Fecha</label>
-            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="etiquetaDia(partidoInforme.fecha)" readonly>
+            <input aria-label="Fecha" type="text" class="form-control form-control-sm bg-light input-readonly" :value="etiquetaDia(partidoInforme.fecha)" readonly>
           </div>
           <div class="col-12 col-sm-6">
             <label class="form-label small fw-bold text-dark mb-1">Categoría</label>
-            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="partidoInforme.categoria_division || '-'" readonly>
+            <input aria-label="Categoría" type="text" class="form-control form-control-sm bg-light input-readonly" :value="partidoInforme.categoria_division || '-'" readonly>
           </div>
           <div class="col-12">
             <label class="form-label small fw-bold text-dark mb-1">Encuentro</label>
-            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="`${partidoInforme.local} vs ${partidoInforme.visitante}`" readonly>
+            <input aria-label="Encuentro" type="text" class="form-control form-control-sm bg-light input-readonly" :value="`${partidoInforme.local} vs ${partidoInforme.visitante}`" readonly>
           </div>
           <div class="col-12">
             <label class="form-label small fw-bold text-dark mb-1">Árbitros</label>
-            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="arbitrosDelPartido(partidoInforme)" readonly>
+            <input aria-label="Árbitros" type="text" class="form-control form-control-sm bg-light input-readonly" :value="arbitrosDelPartido(partidoInforme)" readonly>
           </div>
           <div class="col-12" v-if="partidoInforme.funcion === 'delegado'">
             <label class="form-label small fw-bold text-dark mb-1">Delegado técnico</label>
-            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="nombreDelegadoLogueado()" readonly>
+            <input aria-label="Delegado técnico" type="text" class="form-control form-control-sm bg-light input-readonly" :value="nombreDelegadoLogueado()" readonly>
             <small class="text-muted">Este informe quedará registrado a tu nombre como delegado técnico.</small>
           </div>
         </div>
@@ -438,7 +438,7 @@
         <!-- Datos a completar -->
         <div class="mb-3">
           <label class="form-label small fw-bold text-dark mb-1">Torneo *</label>
-          <select v-model="formInforme.torneo" class="form-select form-select-sm shadow-none">
+          <select aria-label="Torneo" v-model="formInforme.torneo" class="form-select form-select-sm shadow-none">
             <option value="" disabled>Seleccioná el torneo...</option>
             <option v-for="t in opcionesTorneo" :key="t.valor" :value="t.valor">{{ t.etiqueta }}</option>
           </select>
@@ -447,17 +447,17 @@
         <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label small fw-bold text-dark mb-1">Implicado *</label>
-            <input v-model="formInforme.implicado" type="text" class="form-control form-control-sm shadow-none" placeholder="Nombre del implicado">
+            <input aria-label="Implicado" v-model="formInforme.implicado" type="text" class="form-control form-control-sm shadow-none" placeholder="Nombre del implicado">
           </div>
           <div class="col-md-6">
             <label class="form-label small fw-bold text-dark mb-1">Sanción *</label>
-            <input v-model="formInforme.sancion" type="text" class="form-control form-control-sm shadow-none" placeholder="Ej: Informe escrito, Desc. más informe escrito...">
+            <input aria-label="Sanción" v-model="formInforme.sancion" type="text" class="form-control form-control-sm shadow-none" placeholder="Ej: Informe escrito, Desc. más informe escrito...">
           </div>
         </div>
 
         <div class="mb-3">
           <label class="form-label small fw-bold text-dark mb-1">Institución a la que pertenece *</label>
-          <select v-model="formInforme.institucion" class="form-select form-select-sm shadow-none">
+          <select aria-label="Institución a la que pertenece" v-model="formInforme.institucion" class="form-select form-select-sm shadow-none">
             <option value="" disabled>Seleccioná la institución...</option>
             <option value="local">{{ partidoInforme.local }}</option>
             <option value="visitante">{{ partidoInforme.visitante }}</option>
@@ -466,7 +466,7 @@
 
         <div class="mb-3">
           <label class="form-label small fw-bold text-dark mb-1">Motivo y descripción *</label>
-          <textarea
+          <textarea aria-label="Motivo y descripción"
             v-model="formInforme.motivo_descripcion"
             class="form-control shadow-none"
             rows="4"
@@ -541,6 +541,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, watch, inject } from 'vue'
+import { fechaATimestamp, MESES as MESES_LARGOS } from '@/utils/fechas'
 import { api } from '@/api/api'
 import { auth } from '../../../api/auth'
 import { useHead } from '@vueuse/head'
@@ -556,9 +557,9 @@ useHead({
   ],
 })
 
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
-const MESES = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE']
+const MESES = MESES_LARGOS.map(m => m.toUpperCase())
 
 // Motivos de rechazo compartidos (mismo listado que usa la sección de admin)
 const opcionesMotivo = [
@@ -632,7 +633,7 @@ const cargarMisDesignaciones = async () => {
       action: 'obtenerDesignacionesArbitro'
     })
     if ((res.ok || res.success) && res.payload) {
-      partidos.value = res.payload.map(normalizarRechazo)
+      partidos.value = (res.payload || []).map(normalizarRechazo)
 
       // Si no hay próximas pero sí historial, arrancamos en Anteriores
       if (proximas.value.length === 0 && anteriores.value.length > 0) {
@@ -688,29 +689,13 @@ const normalizarRechazo = (p) => ({
 /* ====================================================
    FECHAS
    ==================================================== */
-const parsearFecha = (fecha) => {
-  if (!fecha) return 0
-  const texto = String(fecha).trim().slice(0, 10)
-
-  let m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
-  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
-
-  m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
-  if (m) {
-    const anio = m[3].length === 2 ? '20' + m[3] : m[3]
-    return new Date(Number(anio), Number(m[2]) - 1, Number(m[1])).getTime()
-  }
-
-  return 0
-}
-
 const linkMapaCancha = (p) => {
   const direccion = [p.cj_domicilio, p.cj_localidad].filter(Boolean).join(', ').trim()
   return direccion ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}` : null
 }
 
 const etiquetaDia = (fecha) => {
-  const timestamp = parsearFecha(fecha)
+  const timestamp = fechaATimestamp(fecha)
   if (!timestamp) return fecha || 'Sin fecha'
   const d = new Date(timestamp)
   const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO']
@@ -740,14 +725,14 @@ const hoy = () => {
    ==================================================== */
 const proximas = computed(() => {
   return partidos.value.filter(p => {
-    const t = parsearFecha(fechaLimpia(p.fecha))
+    const t = fechaATimestamp(fechaLimpia(p.fecha))
     return !t || t >= hoy()
   })
 })
 
 const anteriores = computed(() => {
   return partidos.value.filter(p => {
-    const t = parsearFecha(fechaLimpia(p.fecha))
+    const t = fechaATimestamp(fechaLimpia(p.fecha))
     return t && t < hoy()
   })
 })
@@ -761,7 +746,7 @@ const agruparPorDia = (lista, orden) => {
   })
 
   return Object.keys(mapa)
-    .sort((a, b) => orden === 'desc' ? parsearFecha(b) - parsearFecha(a) : parsearFecha(a) - parsearFecha(b))
+    .sort((a, b) => orden === 'desc' ? fechaATimestamp(b) - fechaATimestamp(a) : fechaATimestamp(a) - fechaATimestamp(b))
     .map(fecha => ({
       fecha,
       partidos: mapa[fecha].sort((a, b) => String(a.horario || '').localeCompare(String(b.horario || '')))

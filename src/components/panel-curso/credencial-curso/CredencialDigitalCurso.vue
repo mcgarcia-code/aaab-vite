@@ -25,7 +25,7 @@
 
             <div class="d-flex flex-column gap-3 flex-grow-1">
               <div>
-                <span class="text-secondary fw-bold d-block mb-1" style="font-size: 0.75rem;">APELLIDO Y NOMBRE</span>
+                <span class="text-secondary fw-bold d-block mb-1 texto-075">APELLIDO Y NOMBRE</span>
                 <h1 class="fw-black text-dark m-0" style="font-size: clamp(1.5rem, 5vw, 2rem); line-height: 1.1;">
                   {{ String(perfil.apellido || '').toUpperCase() }}, {{ perfil.nombre }}
                 </h1>
@@ -33,12 +33,12 @@
 
               <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start mt-2">
                 <div class="text-center text-md-start">
-                  <span class="text-secondary fw-bold d-block mb-1" style="font-size: 0.75rem;">DOCUMENTO</span>
+                  <span class="text-secondary fw-bold d-block mb-1 texto-075">DOCUMENTO</span>
                   <span class="fw-bolder text-dark" style="font-size: 1.4rem;">{{ perfil.dni }}</span>
                 </div>
                 <div class="vr d-none d-md-block mx-4 text-secondary opacity-25"></div>
                 <div class="text-center text-md-start mt-3 mt-md-0">
-                  <span class="text-secondary fw-bold d-block mb-1" style="font-size: 0.75rem;">CURSO</span>
+                  <span class="text-secondary fw-bold d-block mb-1 texto-075">CURSO</span>
                   <span class="fw-bolder text-danger" style="font-size: 1.4rem;">{{ textoCurso }}</span>
                 </div>
               </div>
@@ -48,10 +48,10 @@
               <div class="bg-white p-1 border rounded shadow-sm">
                 <qrcode-vue :value="textoQr" :size="70" level="H" />
               </div>
-              <div class="text-center text-md-start fw-bold" style="font-size: 0.65rem; color: #444; line-height: 1.2;">
+              <div class="text-center text-md-start fw-bold texto-065 lh-12" style="color: #444;">
                 ASOCIACIÓN ARGENTINA<br>DE ÁRBITROS DE HANDBALL
               </div>
-              <div class="text-center text-md-end fw-bold text-muted" style="font-size: 0.75rem;">
+              <div class="text-center text-md-end fw-bold text-muted texto-075">
                 VENCE: 31/12/{{ anioCredencial }}
               </div>
             </div>
@@ -73,8 +73,8 @@
 <script setup>
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
+import { cargarHtml2canvas } from '@/utils/librerias'
 import { useHead } from '@vueuse/head'
-import html2canvas from 'html2canvas'
 import QrcodeVue from 'qrcode.vue'
 import logo from '@/assets/fotos/logo.png'
 import { usePerfilCurso } from '@/composables/usePerfilCurso'
@@ -82,7 +82,7 @@ import { MODALIDADES_CURSO, urlFotoCurso, FOTO_POR_DEFECTO } from '@/composables
 
 useHead({ title: 'Credencial Digital | Curso AAAB' })
 
-const toast = inject('toast', (m) => alert(m.mensaje || m))
+const toast = inject('toast')
 
 const credencialRef = ref(null)
 // Perfil compartido del panel (lo carga PanelCurso)
@@ -102,7 +102,7 @@ const descargar = async () => {
   if (procesando.value || !credencialRef.value) return
   procesando.value = true
   try {
-    const canvas = await html2canvas(credencialRef.value, { useCORS: true, scale: 3, backgroundColor: '#ffffff' })
+    const canvas = await (await cargarHtml2canvas())(credencialRef.value, { useCORS: true, scale: 3, backgroundColor: '#ffffff' })
     const link = document.createElement('a')
     link.download = `Credencial-Curso-${perfil.value.dni}.png`
     link.href = canvas.toDataURL('image/png', 1.0)

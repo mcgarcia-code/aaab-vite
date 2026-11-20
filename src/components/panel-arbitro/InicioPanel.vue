@@ -160,7 +160,7 @@
             <div v-if="avisos.recordatorio && avisos.recordatorio.length > 0">
               <div v-for="rec in avisos.recordatorio" :key="rec.id" class="reminder-pill">
                 <i class="bi bi-info-circle-fill me-2"></i>
-                <span v-html="rec.descripcion"></span>
+                <span class="texto-recordatorio">{{ textoPlano(rec.descripcion) }}</span>
               </div>
             </div>
             <p v-else class="empty-msg">No hay recordatorios.</p>
@@ -176,8 +176,10 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { fechaATimestamp } from '@/utils/fechas'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
+import { textoPlano } from '@/utils/texto'
 import { auth } from '@/api/auth'
 import AccesosRapidos from '@/components/comunes/AccesosRapidos.vue'
 import { useModulosArbitro } from '@/composables/useModulosArbitro'
@@ -256,22 +258,6 @@ const linkMapaCancha = (p) => {
   return direccion ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}` : null
 }
 
-const parsearFechaDesignacion = (fecha) => {
-  if (!fecha) return 0
-  const texto = String(fecha).trim().slice(0, 10)
-
-  let m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
-  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
-
-  m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
-  if (m) {
-    const anio = m[3].length === 2 ? '20' + m[3] : m[3]
-    return new Date(Number(anio), Number(m[2]) - 1, Number(m[1])).getTime()
-  }
-
-  return 0
-}
-
 const fechaLimpiaDesignacion = (fecha) => {
   const f = String(fecha || '').trim().slice(0, 10)
   return (!f || f.startsWith('0000')) ? '' : f
@@ -286,11 +272,11 @@ const cargarProximaDesignacion = async () => {
       designacionesFuturas.value = res.payload
         .filter(p => {
           if (esRechazada(p)) return false
-          const t = parsearFechaDesignacion(fechaLimpiaDesignacion(p.fecha))
+          const t = fechaATimestamp(fechaLimpiaDesignacion(p.fecha))
           return !t || t >= hoy.getTime()
         })
         .sort((a, b) => {
-          const diff = parsearFechaDesignacion(fechaLimpiaDesignacion(a.fecha)) - parsearFechaDesignacion(fechaLimpiaDesignacion(b.fecha))
+          const diff = fechaATimestamp(fechaLimpiaDesignacion(a.fecha)) - fechaATimestamp(fechaLimpiaDesignacion(b.fecha))
           if (diff !== 0) return diff
           return String(a.horario || '').localeCompare(String(b.horario || ''))
         })
@@ -313,7 +299,7 @@ const partidoProximaDesignacion = computed(() => {
 const tiempoProximaDesignacion = computed(() => {
   const p = proximaDesignacion.value
   if (!p) return 0
-  return parsearFechaDesignacion(fechaLimpiaDesignacion(p.fecha))
+  return fechaATimestamp(fechaLimpiaDesignacion(p.fecha))
 })
 
 const bloqueFechaDesignacion = computed(() => {
@@ -346,7 +332,7 @@ const cantidadOtrasEstaSemana = computed(() => {
   hoy.setHours(0, 0, 0, 0)
   const limite = hoy.getTime() + 7 * 86400000
   return designacionesFuturas.value.slice(1).filter(p => {
-    const t = parsearFechaDesignacion(fechaLimpiaDesignacion(p.fecha))
+    const t = fechaATimestamp(fechaLimpiaDesignacion(p.fecha))
     return t && t < limite
   }).length
 })
@@ -355,7 +341,7 @@ const cantidadOtrasEstaSemana = computed(() => {
 const siguientesDesignaciones = computed(() => {
   const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
   return designacionesFuturas.value.slice(1, 3).map(p => {
-    const t = parsearFechaDesignacion(fechaLimpiaDesignacion(p.fecha))
+    const t = fechaATimestamp(fechaLimpiaDesignacion(p.fecha))
     const d = t ? new Date(t) : null
     const local = p.local || ''
     const visitante = p.visitante || ''
@@ -389,7 +375,7 @@ const textoRelativoCumple = (diaMes) => {
 }
 const obtenerMesNombre = (n) => {
   const meses = ['', 'ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
-  return meses[parseInt(n)]
+  return meses[parseInt(n, 10)]
 }
 
 const obtenerMesCorta = (f) => {
@@ -556,43 +542,6 @@ onMounted(() => {
 }
 .link-hero:hover { text-decoration: underline; }
 
-/* ============ ACCESOS RAPIDOS ============ */
-.acceso-rapido {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 84px;
-  height: 100%;
-  padding: 10px 4px;
-  border-radius: 16px;
-  background: #1e293b;
-  color: #f1f5f9;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-  transition: background 0.2s;
-}
-.acceso-rapido i { font-size: 1.35rem; color: #f87171; }
-.acceso-rapido:hover { background: #334155; color: #fff; }
-
-/* Escritorio: accesos horizontales (ícono + texto) a todo el ancho */
-@media (min-width: 992px) {
-  .acceso-rapido {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 12px;
-    min-height: 64px;
-    padding: 0 18px;
-    font-size: 0.95rem;
-    text-align: left;
-  }
-}
 
 /* ============ SIGUIENTES DESIGNACIONES (escritorio) ============ */
 .siguientes { margin-top: 14px; }
@@ -610,20 +559,6 @@ onMounted(() => {
 .siguiente-partido { flex: 1; min-width: 0; font-size: 0.875rem; font-weight: 600; }
 .siguiente-dato { font-size: 0.8rem; color: #475569; white-space: nowrap; }
 .siguiente .bi { color: #94a3b8; font-size: 0.75rem; }
-
-/* ============ CATEGORIAS ============ */
-.categoria-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #94a3b8;
-  margin: 0 0 10px;
-}
-.categoria-label i { font-size: 0.95rem; color: #dc2626; }
 
 /* ============ AVISOS ============ */
 .tarjeta-avisos {
@@ -739,6 +674,7 @@ onMounted(() => {
   border-radius: 999px;
 }
 
+.texto-recordatorio { white-space: pre-line; }
 .reminder-pill {
   background: #fffbeb;
   color: #92400e;

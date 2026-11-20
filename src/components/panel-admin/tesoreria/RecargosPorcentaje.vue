@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Recargos individuales sobre el aporte · Total: {{ recargosFiltrados.length }} recargos</p>
@@ -21,14 +21,14 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Recargos</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
           <div class="row g-2">
             <div class="col-6 col-md-4">
-              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO O MOTIVO...">
+              <input aria-label="Buscar árbitro o motivo" v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO O MOTIVO...">
             </div>
             <div class="col-6 col-md-3">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="activo">ACTIVO</option>
                 <option value="finalizado">FINALIZADO</option>
@@ -46,7 +46,7 @@
           <template v-else>
             <!-- TABLA ESCRITORIO -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm">
-              <table class="table table-hover align-middle mb-0" style="font-size: 0.8rem;">
+              <table class="table table-hover align-middle mb-0 texto-08">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 ps-3 text-center text-uppercase text-muted" style="width: 1px;">Acciones</th>
@@ -62,11 +62,11 @@
                   <tr v-for="r in recargosPaginados" :key="r.id">
                     <td class="ps-3 text-center">
                       <div class="d-flex justify-content-center gap-1">
-                        <button @click="abrirModalEditar(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                        <button @click="abrirModalEditar(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button v-if="estaActivo(r)" @click="confirmarFinalizar(r)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Finalizar">
-                          <i class="bi bi-slash-circle" style="font-size:16px;"></i>
+                          <i class="bi bi-slash-circle texto-16px"></i>
                         </button>
                       </div>
                     </td>
@@ -104,11 +104,11 @@
                     <span class="small text-muted">Hasta: <strong class="text-dark">{{ r.fecha_hasta || '-' }}</strong></span>
                   </div>
                   <div class="d-flex gap-2">
-                    <button @click="abrirModalEditar(r)" class="btn btn-sm btn-outline-primary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                      <i class="bi bi-pencil" style="font-size: 16px;"></i> Editar
+                    <button @click="abrirModalEditar(r)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
+                      <i class="bi bi-pencil texto-16px"></i> Editar
                     </button>
                     <button v-if="estaActivo(r)" @click="confirmarFinalizar(r)" class="btn btn-sm btn-outline-danger flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                      <i class="bi bi-slash-circle" style="font-size: 16px;"></i> Finalizar
+                      <i class="bi bi-slash-circle texto-16px"></i> Finalizar
                     </button>
                   </div>
                 </div>
@@ -133,7 +133,7 @@
     </div>
 
     <!-- MODAL NUEVO / EDITAR -->
-    <ModalBase :show="mostrarModal" :hay-cambios="hayCambios" @close="mostrarModal = false" :icono="modoModal === 'editar' ? 'edit' : 'graph_up_arrow'" :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" maxWidth="550px">
+    <ModalBase :show="mostrarModal" :hay-cambios="hayCambios" @close="mostrarModal = false" :icono="modoModal === 'editar' ? 'edit' : 'graph_up_arrow'" :colorIcono="modoModal === 'editar' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'" maxWidth="550px">
       <template #header>
         <span class="fw-bold fs-5">{{ modoModal === 'editar' ? 'Editar Recargo de Porcentaje' : 'Nuevo Recargo de Porcentaje' }}</span>
       </template>
@@ -144,26 +144,26 @@
             <label class="small fw-bold text-dark mb-1">Árbitro *</label>
             <!-- En edición el árbitro no se cambia -->
             <div v-if="modoModal === 'editar'" class="form-control bg-light border-secondary-subtle text-uppercase fw-bold">{{ recargoEnEdicion?.arbitro }}</div>
-            <select v-else v-model="form.id_arbitro" class="form-select shadow-none border-secondary-subtle" required>
+            <select aria-label="Árbitro" v-else v-model="form.id_arbitro" class="form-select shadow-none border-secondary-subtle" required>
               <option value="" disabled>Seleccione un árbitro...</option>
               <option v-for="a in arbitros" :key="a.id" :value="a.id">{{ a.apellido }}, {{ a.nombre }}</option>
             </select>
           </div>
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Porcentaje (%) *</label>
-            <input v-model.number="form.porcentaje" type="number" step="0.01" min="0" class="form-control shadow-none border-secondary-subtle" required>
+            <input aria-label="Porcentaje (%)" v-model.number="form.porcentaje" type="number" step="0.01" min="0" class="form-control shadow-none border-secondary-subtle" required>
           </div>
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Motivo *</label>
-            <textarea v-model="form.motivo" rows="2" class="form-control shadow-none border-secondary-subtle" placeholder="Deuda acumulada, decisión administrativa, etc." required></textarea>
+            <textarea aria-label="Motivo" v-model="form.motivo" rows="2" class="form-control shadow-none border-secondary-subtle" placeholder="Deuda acumulada, decisión administrativa, etc." required></textarea>
           </div>
           <div class="col-6">
             <label class="small fw-bold text-dark mb-1">Desde</label>
-            <input v-model="form.fecha_desde" type="date" class="form-control shadow-none border-secondary-subtle">
+            <input aria-label="Desde" v-model="form.fecha_desde" type="date" class="form-control shadow-none border-secondary-subtle">
           </div>
           <div class="col-6">
             <label class="small fw-bold text-dark mb-1">Hasta (opcional)</label>
-            <input v-model="form.fecha_hasta" type="date" class="form-control shadow-none border-secondary-subtle">
+            <input aria-label="Hasta (opcional)" v-model="form.fecha_hasta" type="date" class="form-control shadow-none border-secondary-subtle">
             <span class="text-muted small">Vacío = indefinido</span>
           </div>
         </div>
@@ -193,7 +193,7 @@ import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 useHead({ title: 'Recargos de Porcentaje | AAAB' })
 
 const notificar = inject('notificar')
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 const cargando = ref(false)
 const procesando = ref(false)
@@ -399,9 +399,6 @@ onMounted(() => {
 }
 .badge-status-sm.activo { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
 .badge-status-sm.finalizado { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
-
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
 
 .animate__animated { animation-duration: 0.5s; }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
       <div class="card-header bg-white py-3 border-bottom">
         <p class="seccion-descripcion">Asistencia, mini y promedio</p>
       </div>
@@ -53,7 +53,7 @@
             </div>
           </div>
           <div v-if="esAnual" class="col-6 col-md">
-            <RouterLink to="/panel-curso/designaciones-curso" class="resumen-card bg-primary text-white d-block text-decoration-none">
+            <RouterLink to="/panel-curso/designaciones-curso" class="resumen-card bg-secondary text-white d-block text-decoration-none">
               <i class="bi bi-people-fill"></i>
               <div class="valor">{{ textoPorcentaje(asistenciaMini.porcentaje) }}</div>
               <div class="etiqueta">Asistencia a mini</div>
@@ -88,7 +88,7 @@
                   <div v-for="c in datos.clases" :key="c.id" class="fila-item d-flex justify-content-between align-items-center gap-2">
                     <div class="min-w-0">
                       <div class="fw-bold text-dark small text-break">{{ c.titulo }}</div>
-                      <div class="text-muted" style="font-size: 0.75rem;">{{ fechaLargaClase(c.fecha) }}</div>
+                      <div class="text-muted texto-075">{{ fechaLargaClase(c.fecha) }}</div>
                     </div>
                     <span class="badge flex-shrink-0" :class="claseAsistencia(c.asistencia)">{{ textoAsistencia(c.asistencia) }}</span>
                   </div>
@@ -113,7 +113,7 @@ import { porcentajeAsistencia, ASISTENCIA_MINIMA } from '@/composables/useAsiste
 
 useHead({ title: 'Mi Rendimiento | Curso AAAB' })
 
-const toast = inject('toast', (m) => alert(m.mensaje || m))
+const toast = inject('toast')
 
 const datos = ref({ anio: new Date().getFullYear(), modalidad: '', clases: [], mini: [], examenes: [] })
 const cargando = ref(true)

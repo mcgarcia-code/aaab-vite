@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Avisos, reuniones y noticias · {{ cantidadEventos }} eventos en la vista</p>
@@ -21,18 +21,18 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Eventos</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <div class="col-12 col-md-2">
-              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR TEMA O DESCRIPCION...">
+              <input aria-label="Buscar tema o descripcion" v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR TEMA O DESCRIPCION...">
             </div>
             <div class="col-6 col-md-2">
-              <input type="date" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center">
+              <input aria-label="Filtrar por fecha" type="date" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.categoria" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por categoría" v-model="filtros.categoria" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">CATEGORÍA</option>
                 <option value="reunion">REUNION</option>
                 <option value="recordatorio">RECORDATORIO</option>
@@ -43,19 +43,19 @@
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por grupo" v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">GRUPO</option>
                 <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por subgrupo" v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">SUBGRUPO</option>
                 <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por año" v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">AÑO</option>
                 <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
               </select>
@@ -77,14 +77,14 @@
                 <div class="flex-grow-1 min-w-0">
                   <div class="fw-bold text-dark text-break">
                     {{ formatearFecha(r.fecha_evento) }} · {{ r.titulo }}
-                    <span v-if="r.fue_revisada" class="badge text-bg-info ms-1">MODIFICADA</span>
+                    <span v-if="r.fue_revisada" class="badge text-bg-secondary ms-1">MODIFICADA</span>
                   </div>
                   <div class="small text-muted text-break">
                     {{ r.grupos || 'Sin grupo' }} · {{ r.descripcion || 'Lugar a confirmar' }}<span v-if="r.creador"> · Cargada por {{ r.creador }}</span>
                   </div>
                 </div>
                 <div class="d-flex gap-2 flex-shrink-0">
-                  <button type="button" class="btn btn-light border btn-sm fw-bold" @click="calendario?.irAFecha(r.fecha_evento)">
+                  <button aria-label="Ver en el calendario" title="Ver en el calendario" type="button" class="btn btn-light border btn-sm fw-bold" @click="calendario?.irAFecha(r.fecha_evento)">
                     <i class="bi bi-calendar3"></i>
                   </button>
                   <button type="button" class="btn btn-success btn-sm fw-bold flex-grow-1" :disabled="resolviendo === r.id" @click="confirmarAprobacion(r)">
@@ -121,7 +121,7 @@
       :hay-cambios="hayCambiosEvento"
       @close="mostrarModal = false"
       :icono="modoEdicion ? 'edit' : 'notification_add'"
-      :colorIcono="modoEdicion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      :colorIcono="modoEdicion ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'"
       maxWidth="600px"
     >
       <template #header>
@@ -134,17 +134,17 @@
         <div class="row g-3">
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Tema del Evento *</label>
-            <input v-model="form.titulo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Reunion general..." required>
+            <input aria-label="Tema del Evento" v-model="form.titulo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Reunion general..." required>
           </div>
 
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Lugar*</label>
-            <textarea v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="2  " placeholder="Ej: Casa del Handball..." required></textarea>
+            <textarea aria-label="Lugar" v-model="form.descripcion" class="form-control shadow-none border-secondary-subtle" rows="2  " placeholder="Ej: Casa del Handball..." required></textarea>
           </div>
 
           <div class="col-6 col-md-4">
             <label class="small fw-bold text-dark mb-1">Fecha del Evento *</label>
-            <input v-model="form.fecha_evento" type="date" class="form-control shadow-none border-secondary-subtle" required>
+            <input aria-label="Fecha del Evento" v-model="form.fecha_evento" type="date" class="form-control shadow-none border-secondary-subtle" required>
           </div>
 
           <div class="col-6 col-md-3">
@@ -155,7 +155,7 @@
 
           <div class="col-12 col-md-5">
             <label class="small fw-bold text-dark mb-1">Categoria *</label>
-            <select v-model="form.categoria" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Categoria" v-model="form.categoria" class="form-select shadow-none border-secondary-subtle">
               <option value="reunion">Reunion</option>
               <option value="recordatorio">Recordatorio</option>
               <option value="urgente">Urgente</option>
@@ -205,7 +205,7 @@
               </div>
               <p v-else class="text-muted small mb-0">No hay grupos disponibles para seleccionar.</p>
             </div>
-            <small v-if="seSeparaPorGrupo" class="d-block text-primary fw-semibold mt-2">
+            <small v-if="seSeparaPorGrupo" class="d-block text-danger fw-semibold mt-2">
               <i class="bi bi-diagram-3-fill me-1"></i>Se va a crear una reunión separada para cada grupo ({{ gruposSeleccionados.length }}), así cada coordinador puede gestionar la suya.
             </small>
           </div>
@@ -237,7 +237,7 @@
           {{ formatearFecha(reunionRechazo.fecha_evento) }} · {{ reunionRechazo.titulo }}<span v-if="reunionRechazo.grupos"> · {{ reunionRechazo.grupos }}</span>
         </p>
         <label class="small fw-bold text-dark mb-1">Motivo del rechazo *</label>
-        <textarea v-model="motivoRechazo" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Ej: Ese día ya hay otra reunión en el Dickens..."></textarea>
+        <textarea aria-label="Motivo del rechazo" v-model="motivoRechazo" class="form-control shadow-none border-secondary-subtle" rows="3" placeholder="Ej: Ese día ya hay otra reunión en el Dickens..."></textarea>
         <small class="text-muted d-block mt-1">Se le envía por email al coordinador del grupo para que reprograme la reunión.</small>
       </div>
       <template #footer="{ cerrar }">
@@ -255,6 +255,8 @@
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { conAnioActual } from '@/utils/anios'
 import { ref, reactive, onMounted, inject, computed, watch } from 'vue'
+import { fechaArg } from '@/utils/fechas'
+import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
@@ -268,7 +270,7 @@ useHead({
 })
 
 const notificar = inject('notificar')
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 const calendario = ref(null)
 const procesando = ref(false)
@@ -308,12 +310,6 @@ const filtros = reactive({
   grupo: '',
   subgrupo: ''
 })
-
-const normalizarTexto = (texto) => String(texto || '')
-  .normalize('NFD')
-  .replace(/[̀-ͯ]/g, '')
-  .toLowerCase()
-  .trim()
 
 const opcionesGrupo = computed(() => {
   const vistos = []
@@ -370,7 +366,7 @@ const limpiarFiltrosTabla = () => {
 }
 
 const obtenerGrupos = async () => {
-  const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos', payload: {} })
+  const res = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos', payload: {} })
   if (res.ok) {
     grupos.value = Array.isArray(res.payload) ? res.payload : []
   }
@@ -486,7 +482,7 @@ const reunionRechazo = ref(null)
 const motivoRechazo = ref('')
 const { hayCambios: hayCambiosRechazo } = useCambiosSinGuardar(motivoRechazo, () => !!reunionRechazo.value)
 
-const formatearFecha = (f) => f ? String(f).substring(0, 10).split('-').reverse().join('/') : ''
+const formatearFecha = (fecha) => fechaArg(fecha)
 
 const cargarPendientes = async () => {
   if (!esAprobador.value) return
@@ -559,25 +555,6 @@ onMounted(() => {
   min-height: 100vh;
   border-radius: 12px;
 }
-
-.badge-category {
-  font-size: 0.65rem;
-  padding: 4px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  font-weight: 800;
-  display: inline-block;
-}
-
-.badge-status-sm {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 700;
-}
-
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
 
 .animate__animated { animation-duration: 0.5s; }
 .min-w-0 { min-width: 0; }

@@ -1,5 +1,5 @@
 <template>
-  <input
+  <input aria-label="dd-mm-aaaa"
     :value="texto"
     type="text"
     inputmode="numeric"

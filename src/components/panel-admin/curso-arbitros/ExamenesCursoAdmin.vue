@@ -1,7 +1,7 @@
 <template>
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Exámenes y resultados · {{ anio }} · los teóricos se programan desde Clases y Asistencia</p>
@@ -62,15 +62,15 @@
                       <div class="d-flex flex-wrap gap-1 mt-2 etiquetas-examen">
                         <span v-if="g.esRecuperatorio" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio</span>
                         <span v-if="g.examen.esRecuperatorioParcialitos" class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Recuperatorio de parcialitos</span>
-                        <span v-if="g.examen.tipo === 'fisico'" class="badge" :class="g.examen.esFinal ? 'bg-primary' : 'bg-light text-dark border'">{{ g.examen.esFinal ? 'Físico final' : 'Simulacro' }}</span>
+                        <span v-if="g.examen.tipo === 'fisico'" class="badge" :class="g.examen.esFinal ? 'bg-secondary' : 'bg-light text-dark border'">{{ g.examen.esFinal ? 'Físico final' : 'Simulacro' }}</span>
                         <span class="badge" :class="claseCurso(g.examen.curso)">{{ etiquetaCurso(g.examen.curso) }}</span>
-                        <span v-if="g.examen.online" class="badge" :class="g.examen.habilitado ? 'bg-primary' : 'bg-secondary'">
+                        <span v-if="g.examen.online" class="badge" :class="g.examen.habilitado ? 'bg-secondary' : 'bg-secondary'">
                           <i class="bi bi-laptop me-1"></i>{{ g.examen.habilitado ? 'Online habilitado' : 'Online cerrado' }}
                         </span>
                       </div>
                     </div>
                     <div class="d-flex flex-column gap-1 flex-shrink-0">
-                      <button v-if="!g.examen.idClase" @click="abrirEditar(g.examen)" class="btn btn-light btn-sm border p-1 lh-1" title="Editar examen" aria-label="Editar examen"><i class="bi bi-pencil text-primary"></i></button>
+                      <button v-if="!g.examen.idClase" @click="abrirEditar(g.examen)" class="btn btn-light btn-sm border p-1 lh-1" title="Editar examen" aria-label="Editar examen"><i class="bi bi-pencil text-dark"></i></button>
                       <button @click="confirmarEliminar(g.examen)" class="btn btn-light btn-sm border p-1 lh-1" title="Borrar examen" aria-label="Borrar examen"><i class="bi bi-trash3 text-danger"></i></button>
                     </div>
                   </header>
@@ -261,7 +261,7 @@ import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import { conAnioActual, anioActual } from '@/utils/anios'
-import { fechaDMA } from '@/utils/fechas'
+import { fechaDMA, MESES_CORTOS } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { formatoNota } from '@/composables/useExamenesCurso'
 import { useCronogramaCurso } from '@/composables/useCronogramaCurso'
@@ -269,7 +269,7 @@ import PlanillaNotasCurso from '@/components/panel-admin/curso-arbitros/Planilla
 
 useHead({ title: 'Exámenes del Curso | AAAB' })
 
-const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const notificar = inject('notificar')
 const toast = inject('toast', (m) => notificar(m))
 
 const PORCENTAJE_DEFECTO = 75
@@ -277,7 +277,7 @@ const PORCENTAJE_DEFECTO = 75
 const TIPOS_EXAMEN = {
   teorico: { etiqueta: 'Teórico', clase: 'bg-danger' },
   practico: { etiqueta: 'Práctico', clase: 'bg-dark' },
-  fisico: { etiqueta: 'Físico', clase: 'bg-primary' },
+  fisico: { etiqueta: 'Físico', clase: 'bg-secondary' },
 }
 const TEXTO_UMBRALES_FISICO = 'Aprueba con 8.5 (femenino y masculino de 45 años o más) o 9.5 (masculino menor de 45)'
 
@@ -357,7 +357,6 @@ const grupos = computed(() => {
   return resultado
 })
 
-const MESES_CORTOS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
 const diaDe = (fecha) => String(fecha || '').substring(8, 10)
 const mesDe = (fecha) => MESES_CORTOS[Number(String(fecha || '').substring(5, 7)) - 1] || ''
 const porcentaje = (parte, total) => (total ? Math.round(parte / total * 100) : 0)
@@ -609,8 +608,7 @@ onMounted(() => {
 
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped>
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
+
 .filtro-badge { cursor: pointer; font-size: 0.75rem; padding: 0.35em 0.65em; transition: opacity 0.15s ease, box-shadow 0.15s ease; }
 .filtro-badge.activo { box-shadow: 0 0 0 2px #0f172a; }
 .filtro-badge.apagado { opacity: 0.45; }
@@ -620,7 +618,7 @@ onMounted(() => {
 .examen-card { background: #fff; border: 1px solid #e2e8f0; border-top: 4px solid #94a3b8; border-radius: 12px; min-width: 0; overflow-wrap: anywhere; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06); }
 .examen-card.borde-teorico { border-top-color: #dc3545; }
 .examen-card.borde-practico { border-top-color: #0f172a; }
-.examen-card.borde-fisico { border-top-color: #0d6efd; }
+.examen-card.borde-fisico { border-top-color: #16a34a; }
 .fecha-bloque { width: 52px; border-radius: 10px; background: #f1f5f9; padding: 6px 0; line-height: 1; }
 .fecha-bloque .dia { font-size: 1.3rem; font-weight: 900; color: #0f172a; }
 .fecha-bloque .mes { font-size: 0.65rem; font-weight: 800; color: #dc3545; letter-spacing: 1px; margin-top: 3px; }
@@ -631,8 +629,7 @@ onMounted(() => {
 .stat-mal { background: #fef2f2; color: #b91c1c; }
 .stat-aus { background: #f1f5f9; color: #475569; }
 .examen-card.es-recuperatorio { background: #fffbeb; border-color: #fde68a; }
-.opcion-fisico { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
-.opcion-fisico.activa { border-color: #0d6efd; background: #eff6ff; }
+
 .estado-vacio { border: 2px dashed #e2e8f0; border-radius: 12px; }
 .etiquetas-examen .badge { white-space: normal; text-align: left; line-height: 1.3; }
 .fila-nota { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }

@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+    <div class="card shadow border-0 mb-4 w-100 mx-auto radio-12 overflow-hidden">
 
       <!-- ENCABEZADO -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom border-2 border-danger gap-3">
@@ -26,7 +26,7 @@
           <div class="p-3 p-md-4 border-bottom bg-light">
             <div class="input-group shadow-sm rounded-pill overflow-hidden border border-secondary-subtle bg-white">
               <span class="input-group-text bg-white border-0 text-muted ps-3"><i class="bi bi-search"></i></span>
-              <input
+              <input aria-label="Buscar por árbitro, categoría o partido"
                 v-model="busqueda"
                 type="text"
                 class="form-control border-0 py-2 shadow-none"
@@ -37,7 +37,7 @@
 
           <!-- TABLA (Escritorio) -->
           <div class="table-responsive d-none d-md-block">
-            <table class="table table-hover align-middle mb-0" style="font-size: 0.8rem;">
+            <table class="table table-hover align-middle mb-0 texto-08">
               <thead class="table-light">
                 <tr>
                   <th class="py-3 text-uppercase text-muted ps-3" style="width: 110px;">Fecha</th>
@@ -64,18 +64,18 @@
                     <span :class="badgeEstado(obs.estado)">
                       {{ etiquetaEstado(obs.estado) }}
                     </span>
-                    <i v-if="obs.comentario_estado" class="bi bi-chat-left-text-fill text-primary ms-1" title="Tiene comentarios de la revisión"></i>
+                    <i v-if="obs.comentario_estado" class="bi bi-chat-left-text-fill text-danger ms-1" title="Tiene comentarios de la revisión"></i>
                   </td>
                   <td class="text-center pe-3">
                     <div class="d-flex justify-content-center gap-1">
                       <!-- Ver detalle: siempre disponible -->
                       <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-2 d-flex align-items-center gap-1 text-secondary" @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id" title="Ver detalle">
                         <span v-if="cargandoDetalleId === obs.id" class="spinner-border spinner-border-sm"></span>
-                        <i v-else class="bi bi-eye" style="font-size: 16px;"></i>
+                        <i v-else class="bi bi-eye texto-16px"></i>
                       </button>
                       <!-- Anular: sólo si está pendiente -->
                       <button v-if="esPendiente(obs)" class="btn btn-sm btn-outline-danger shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="pedirAnular(obs)" title="Anular observación">
-                        <i class="bi bi-slash-circle" style="font-size: 16px;"></i>
+                        <i class="bi bi-slash-circle texto-16px"></i>
                       </button>
                     </div>
                   </td>
@@ -95,30 +95,30 @@
             <div v-for="obs in observacionesPaginadas" :key="'mob-' + obs.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
               <div class="card-body p-3">
                 <div class="d-flex justify-content-between align-items-start mb-2">
-                  <div class="fw-bold text-uppercase text-dark" style="font-size: 1rem; line-height: 1.2;">
+                  <div class="fw-bold text-uppercase text-dark lh-12" style="font-size: 1rem;">
                     <div>{{ obs.arb1 }}</div>
                     <div v-if="obs.arb2 && obs.ref2_id">{{ obs.arb2 }}</div>
                   </div>
                   <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                    <i v-if="obs.comentario_estado" class="bi bi-chat-left-text-fill text-primary" title="Tiene comentarios de la revisión"></i>
+                    <i v-if="obs.comentario_estado" class="bi bi-chat-left-text-fill text-danger" title="Tiene comentarios de la revisión"></i>
                     <span :class="badgeEstado(obs.estado)">
                       {{ etiquetaEstado(obs.estado) }}
                     </span>
                   </div>
                 </div>
-                <div class="text-muted fw-bold mb-2" style="font-size: 0.8rem;">
+                <div class="text-muted fw-bold mb-2 texto-08">
                   {{ formatearFecha(obs.fecha_partido) }} <span class="mx-1">•</span> {{ obs.categoria || obs.categoria_edad || '-' }}
                 </div>
                 <div class="text-dark small mb-2">{{ obs.equipo_local }} vs {{ obs.equipo_visitante }}</div>
                 <div class="d-flex justify-content-between align-items-center border-top pt-2">
                   <span class="fw-bold text-danger small">Puntaje: {{ obs.puntaje_final ?? '-' }}</span>
                   <div class="d-flex gap-1">
-                    <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold d-flex align-items-center gap-1 text-secondary" @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id">
+                    <button type="button" aria-label="Ver detalle" title="Ver detalle" class="btn btn-sm btn-light border rounded-pill px-3 fw-bold d-flex align-items-center gap-1 text-secondary" @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id">
                       <span v-if="cargandoDetalleId === obs.id" class="spinner-border spinner-border-sm"></span>
-                      <i v-else class="bi bi-eye" style="font-size: 16px;"></i>
+                      <i v-else class="bi bi-eye texto-16px"></i>
                     </button>
-                    <button v-if="esPendiente(obs)" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="pedirAnular(obs)">
-                      <i class="bi bi-slash-circle" style="font-size: 16px;"></i>
+                    <button type="button" aria-label="Anular observación" title="Anular observación" v-if="esPendiente(obs)" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="pedirAnular(obs)">
+                      <i class="bi bi-slash-circle texto-16px"></i>
                     </button>
                   </div>
                 </div>
@@ -126,7 +126,7 @@
             </div>
 
             <div v-if="observacionesPaginadas.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border">
-              <i class="bi bi-search text-muted opacity-50 d-block mb-2" style="font-size: 40px;"></i>
+              <i class="bi bi-search text-muted opacity-50 d-block mb-2 texto-40px"></i>
               <p class="text-muted m-0 fw-bold">No has cargado observaciones.</p>
             </div>
           </div>
@@ -171,7 +171,7 @@
         <!-- Comentario de la revisión: motivo (anulada/rechazada) o comentarios adicionales (pendiente/aprobada) -->
         <div v-if="detalle.comentario_estado" class="alert py-2 px-3 small mb-3" :class="avisoComentario(detalle.estado).clase">
           <div class="fw-bold mb-1"><i class="bi me-1" :class="avisoComentario(detalle.estado).icono"></i>{{ avisoComentario(detalle.estado).titulo }}</div>
-          <div style="white-space: pre-line;">{{ detalle.comentario_estado }}</div>
+          <div class="texto-multilinea">{{ detalle.comentario_estado }}</div>
         </div>
 
         <!-- Tabs: Score sheet (puntajes) / Comment sheet (comentarios) -->
@@ -223,7 +223,7 @@
           <div v-if="comentariosPorCategoria.length">
             <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
               <div class="fw-bold small text-dark">{{ c.categoria }}</div>
-              <div class="small text-muted" style="white-space: pre-line;">{{ c.comentario }}</div>
+              <div class="small text-muted texto-multilinea">{{ c.comentario }}</div>
             </div>
           </div>
 
@@ -231,12 +231,12 @@
             <div class="fw-bold small text-dark mb-1">Prioridades de mejora</div>
             <div v-if="detalle.prioridad_mejora_1" class="small text-muted mb-1"><strong>1.</strong> {{ detalle.prioridad_mejora_1 }}</div>
             <div v-if="detalle.prioridad_mejora_2" class="small text-muted mb-1"><strong>2.</strong> {{ detalle.prioridad_mejora_2 }}</div>
-            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1" style="white-space: pre-line;">{{ detalle.prioridad_mejora_resto }}</div>
+            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1 texto-multilinea">{{ detalle.prioridad_mejora_resto }}</div>
           </div>
 
           <div v-if="detalle.influencia_resultado_comentarios" class="mt-2 pt-2 border-top">
             <div class="fw-bold small text-dark mb-1">Influencia en el resultado</div>
-            <div class="small text-muted" style="white-space: pre-line;">{{ detalle.influencia_resultado_comentarios }}</div>
+            <div class="small text-muted texto-multilinea">{{ detalle.influencia_resultado_comentarios }}</div>
           </div>
 
           <div v-if="!tieneComentarios" class="text-center py-3 text-muted small">
@@ -288,11 +288,12 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import { fechaArg } from '@/utils/fechas'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 useHead({
   title: 'Mis Observaciones Realizadas | AAAB',
@@ -310,7 +311,7 @@ const torneos = ref([])
 
 const obtenerTorneos = async () => {
   try {
-    const res = await api.get({ entity: 'observaciones', action: 'obtenerTorneos' })
+    const res = await api.getCacheado({ entity: 'observaciones', action: 'obtenerTorneos' })
     if (res && res.ok && Array.isArray(res.payload)) torneos.value = res.payload
   } catch (error) {
     console.error('Error pidiendo torneos:', error)
@@ -328,12 +329,7 @@ const registrosPorPagina = 10
 const normalizar = (texto) =>
   texto ? texto.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : ''
 
-const formatearFecha = (fechaIso) => {
-  if (!fechaIso) return 'S/F'
-  const [anio, mes, dia] = fechaIso.split(' ')[0].split('-')
-  if (!anio || !mes || !dia) return fechaIso
-  return `${dia}/${mes}/${anio}`
-}
+const formatearFecha = (fecha) => fechaArg(fecha, 'S/F')
 
 // Árbitros observados: prioriza los nombres reales (arb1/arb2); cae al texto del Excel si no hay ids.
 const nombresArbitros = (o) => {

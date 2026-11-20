@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -29,9 +29,9 @@
             <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm" aria-label="Cerrar filtros"></button>
           </div>
           <div class="row g-2">
-            <div class="col-6"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
-            <div class="col-6"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
-            <div class="col-6"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI..."></div>
+            <div class="col-6"><input aria-label="Apellido" v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
+            <div class="col-6"><input aria-label="Nombre" v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
+            <div class="col-6"><input aria-label="Dni" v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI..."></div>
             <div class="col-6">
               <select v-model="filtros.anio_curso" class="form-select form-select-sm shadow-none text-uppercase text-dark" aria-label="Año">
                 <option value="">AÑO: TODOS</option>
@@ -39,7 +39,7 @@
               </select>
             </div>
             <div class="col-6">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option v-for="(e, clave) in ESTADOS_CURSO" :key="clave" :value="clave">{{ e.etiqueta.toUpperCase() }}</option>
               </select>
@@ -56,7 +56,7 @@
           <template v-else>
             <!-- TABLA (Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
-              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id">ID</th>
@@ -68,18 +68,18 @@
                   <tr class="bg-light">
                     <td class="p-2 border-bottom border-2 col-fija col-id"></td>
                     <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
-                    <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
-                    <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
+                    <td class="p-2 border-bottom border-2 col-fija col-apellido"><input aria-label="Filtrar.." v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
+                    <td class="p-2 border-bottom border-2 col-fija col-nombre"><input aria-label="Filtrar.." v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
                     <td v-for="c in COLUMNAS" :key="'f-' + c.id" class="p-2 border-bottom border-2">
                       <select v-if="c.id === 'anio_curso'" v-model="filtros.anio_curso" class="form-select form-select-sm shadow-none text-uppercase text-dark" aria-label="Año">
                         <option value="">TODOS</option>
                         <option v-for="a in aniosLegajos" :key="'fa-' + a" :value="String(a)">{{ a }}</option>
                       </select>
-                      <select v-else-if="c.opciones" v-model="filtros[c.id]" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <select :aria-label="`Filtrar por ${c.label.toLowerCase()}`" v-else-if="c.opciones" v-model="filtros[c.id]" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                         <option value="">TODOS</option>
                         <option v-for="o in c.opciones" :key="o.valor" :value="o.valor">{{ o.etiqueta }}</option>
                       </select>
-                      <input v-else-if="c.filtro !== false" v-model="filtros[c.id]" class="form-control form-control-sm shadow-none">
+                      <input :aria-label="`Filtrar por ${c.label.toLowerCase()}`" v-else-if="c.filtro !== false" v-model="filtros[c.id]" class="form-control form-control-sm shadow-none">
                     </td>
                   </tr>
                 </thead>
@@ -88,14 +88,14 @@
                     <td class="ps-3 text-muted fw-bold font-monospace col-fija col-id">{{ l.id }}</td>
                     <td class="text-center col-fija col-acciones">
                       <div class="d-flex justify-content-center gap-1">
-                        <button @click="abrirEditar(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar" aria-label="Editar">
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                        <button @click="abrirEditar(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar" aria-label="Editar">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button @click="abrirEstado(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Cambiar estado" aria-label="Cambiar estado">
-                          <i class="bi bi-arrow-left-right" style="font-size:16px;"></i>
+                          <i class="bi bi-arrow-left-right texto-16px"></i>
                         </button>
                         <button @click="abrirHistorial(l)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial" aria-label="Historial">
-                          <i class="bi bi-clock-history" style="font-size:16px;"></i>
+                          <i class="bi bi-clock-history texto-16px"></i>
                         </button>
                       </div>
                     </td>
@@ -121,7 +121,7 @@
             <div class="d-md-none p-3 bg-light">
               <div v-for="l in legajosPaginados" :key="'m-' + l.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'border-danger border-2': l.estado === 'baja' }">
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                  <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">{{ l.apellido }}, {{ l.nombre }}</div>
+                  <div class="text-dark fw-bold text-uppercase texto-105">{{ l.apellido }}, {{ l.nombre }}</div>
                   <span class="badge" :class="ESTADOS_CURSO[l.estado]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[l.estado]?.etiqueta || l.estado }}</span>
                 </div>
                 <div class="card-body pt-0 px-3 pb-3 small text-dark">
@@ -132,7 +132,7 @@
                   <div class="text-truncate"><strong>Usuario:</strong> {{ l.usuario }}</div>
                   <div v-if="l.motivo_estado" :class="{ 'text-danger': l.estado === 'baja' }"><strong>Motivo:</strong> {{ l.motivo_estado }}</div>
                   <div class="d-flex gap-2 mt-3">
-                    <button @click="abrirEditar(l)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
+                    <button @click="abrirEditar(l)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
                     <button @click="abrirEstado(l)" class="btn btn-sm btn-outline-danger flex-fill fw-bold">
                       <i class="bi bi-arrow-left-right me-1"></i> Estado
                     </button>
@@ -165,7 +165,7 @@
       :hay-cambios="hayCambiosLegajo"
       @close="mostrarModal = false"
       :icono="form.id ? 'edit' : 'person_add'"
-      :colorIcono="form.id ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      :colorIcono="form.id ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'"
       maxWidth="900px"
     >
       <template #header>
@@ -371,7 +371,7 @@ import { normalizarTexto } from '@/utils/texto'
 
 useHead({ title: 'Legajos del Curso | AAAB' })
 
-const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const notificar = inject('notificar')
 const toast = inject('toast', (m) => notificar(m))
 
 // ─── Columnas (después de ID / Acciones / Apellido / Nombre, que son fijas) ──
@@ -493,7 +493,7 @@ const cargarDatos = async () => {
 
 const cargarUbicaciones = async () => {
   try {
-    const res = await api.get({ entity: 'localidades', action: 'obtenerProvinciasLocalidades', payload: {} })
+    const res = await api.getCacheado({ entity: 'localidades', action: 'obtenerProvinciasLocalidades', payload: {} })
     provincias.value = res?.payload?.provincias ?? []
     localidades.value = res?.payload?.localidades ?? []
   } catch (e) {
@@ -648,8 +648,6 @@ onMounted(() => {
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
 
 .tabla-container { overflow-x: auto; }
 .tabla-fija { border-collapse: separate; border-spacing: 0; }

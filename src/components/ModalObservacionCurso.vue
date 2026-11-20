@@ -93,7 +93,7 @@
     </form>
     <template #footer="{ cerrar }">
       <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-      <button type="submit" form="formObservacionCurso" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
+      <button type="submit" form="formObservacionCurso" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando">
         <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
         GUARDAR
       </button>
@@ -122,7 +122,7 @@ const mostrar = defineModel('show', { type: Boolean, default: false })
 
 const notificar = inject('notificar', null)
 const toast = inject('toast', null)
-const avisar = (m) => (toast || notificar || ((x) => alert(x.mensaje)))(m)
+const avisar = (m) => (toast || notificar)(m)
 
 const form = ref(observacionCursoVacia())
 const intento = ref(false)

@@ -124,7 +124,7 @@ const props = defineProps({
   anio: { type: Number, required: true },
 })
 
-const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const notificar = inject('notificar')
 
 const examenesFiltrados = computed(() =>
   props.filtroCurso ? props.examenes.filter(e => e.curso === props.filtroCurso || e.curso === 'ambos') : props.examenes

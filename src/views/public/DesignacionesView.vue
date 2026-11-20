@@ -10,7 +10,7 @@
           <div class="col-12 col-md-7 text-center text-md-start animate__animated animate__fadeInLeft">
 
             <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 fw-bold small mb-4">
-              <span class="material-icons pulse-icon" style="font-size: 16px;">campaign</span>
+              <i class="bi bi-megaphone pulse-icon texto-16px" aria-hidden="true"></i>
               ÚLTIMA ACTUALIZACIÓN
             </div>
 
@@ -24,7 +24,7 @@
 
             <div class="bg-white border rounded-4 p-3 d-inline-flex align-items-center text-start gap-3 mb-4 shadow-sm w-100" style="max-width: 350px;">
               <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px;">
-                <span class="material-icons fs-4">event</span>
+                <i class="bi bi-calendar-event fs-4" aria-hidden="true"></i>
               </div>
               <div>
                 <span class="d-block small fw-bold text-muted text-uppercase mb-1">Semana</span>
@@ -42,7 +42,7 @@
                 :disabled="!designacionPrincipal || descargando !== null"
               >
                 <span v-if="descargando === designacionPrincipal?.semanaAtras" class="spinner-border spinner-border-sm"></span>
-                <span v-else class="material-icons">cloud_download</span>
+                <i v-else class="bi bi-cloud-download" aria-hidden="true"></i>
                 <span>Descargar Designaciones</span>
               </button>
             </div>
@@ -50,7 +50,7 @@
           </div>
 
           <div class="col-12 col-md-5 text-center text-md-end animate__animated animate__fadeInRight">
-            <img
+            <img loading="lazy" decoding="async"
               :src="designacionesImg"
               alt="Designaciones en tu celular"
               class="img-fluid hero-img shadow-lg"
@@ -70,7 +70,7 @@
             <div v-for="item in historialDesignaciones" :key="item.semanaAtras" class="col-12 col-md-6 col-lg-3">
               <div class="card h-100 border-0 rounded-4 p-3 shadow-sm history-card">
                 <div class="d-flex align-items-center mb-3 flex-grow-1">
-                  <span class="material-icons text-danger me-2 fs-5">history</span>
+                  <i class="bi bi-clock-history text-danger me-2 fs-5" aria-hidden="true"></i>
                   <span class="text-dark fw-bold small">{{ item.label }}</span>
                 </div>
                 <button
@@ -80,7 +80,7 @@
                   :disabled="descargando !== null"
                 >
                   <span v-if="descargando === item.semanaAtras" class="spinner-border spinner-border-sm"></span>
-                  <span v-else class="material-icons" style="font-size: 16px;">download</span>
+                  <i v-else class="bi bi-download texto-16px" aria-hidden="true"></i>
                   Descargar
                 </button>
               </div>

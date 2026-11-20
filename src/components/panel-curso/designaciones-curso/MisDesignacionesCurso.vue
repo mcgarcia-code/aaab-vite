@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid px-2 px-md-3 py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
 
       <!-- ================= HEADER ================= -->
       <div class="card-header bg-white p-0 border-bottom">
@@ -65,10 +65,10 @@
                   <div class="timeline-card shadow-sm">
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
                       <span class="fw-bold text-dark text-uppercase text-break">{{ e.titulo }}</span>
-                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem;">Encuentro de mini</span>
+                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle texto-065">Encuentro de mini</span>
                     </div>
                     <div class="small text-muted d-flex align-items-center flex-wrap gap-1">
-                      <i class="bi bi-clock flex-shrink-0" style="font-size: 15px;"></i>
+                      <i class="bi bi-clock flex-shrink-0 texto-15px"></i>
                       <span class="fw-bold text-dark">{{ formatearHora(e.hora) }} hs</span>
                     </div>
                     <div v-if="e.docentes?.length" class="small text-dark d-flex align-items-start gap-1 mt-1">
@@ -76,7 +76,7 @@
                       <span class="text-break"><strong>Profesor a cargo:</strong> {{ nombresDocentes(e) }}</span>
                     </div>
                     <div v-if="e.comentarios" class="mt-2 pt-2 border-top small d-flex align-items-start gap-1 text-dark">
-                      <i class="bi bi-chat-text text-danger flex-shrink-0" style="font-size: 15px;"></i>
+                      <i class="bi bi-chat-text text-danger flex-shrink-0 texto-15px"></i>
                       <span class="text-break comentarios"><strong>Comentarios:</strong> {{ e.comentarios }}</span>
                     </div>
                   </div>
@@ -142,10 +142,10 @@
                           <div class="timeline-card shadow-sm">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-1 mb-1">
                               <span class="fw-bold text-dark text-uppercase text-break">{{ e.titulo }}</span>
-                              <span class="badge" :class="claseAsistencia(e.asistencia)" style="font-size: 0.65rem;">{{ textoAsistencia(e.asistencia) }}</span>
+                              <span class="badge texto-065" :class="claseAsistencia(e.asistencia)">{{ textoAsistencia(e.asistencia) }}</span>
                             </div>
                             <div class="small text-muted d-flex align-items-center flex-wrap gap-1">
-                              <i class="bi bi-clock flex-shrink-0" style="font-size: 15px;"></i>
+                              <i class="bi bi-clock flex-shrink-0 texto-15px"></i>
                               <span class="fw-bold text-dark">{{ formatearHora(e.hora) }} hs</span>
                             </div>
                             <div v-if="e.docentes?.length" class="small text-dark d-flex align-items-start gap-1 mt-1">
@@ -153,7 +153,7 @@
                               <span class="text-break"><strong>Profesor a cargo:</strong> {{ nombresDocentes(e) }}</span>
                             </div>
                             <div v-if="e.comentarios" class="mt-2 pt-2 border-top small d-flex align-items-start gap-1 text-dark">
-                              <i class="bi bi-chat-text text-secondary flex-shrink-0" style="font-size: 15px;"></i>
+                              <i class="bi bi-chat-text text-secondary flex-shrink-0 texto-15px"></i>
                               <span class="text-break comentarios"><strong>Comentarios:</strong> {{ e.comentarios }}</span>
                             </div>
                           </div>
@@ -175,13 +175,14 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import { MESES } from '@/utils/fechas'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
 import { anioActual } from '@/utils/anios'
 
 useHead({ title: 'Mis Designaciones | Curso AAAB' })
 
-const toast = inject('toast', (m) => alert(m.mensaje || m))
+const toast = inject('toast')
 
 const encuentros = ref([])
 const modalidad = ref('')
@@ -191,7 +192,6 @@ const mesesAbiertos = ref([])
 const diasAbiertos = ref([])
 
 const hoy = new Date().toLocaleDateString('sv-SE')
-const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 const DIAS = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO']
 
 const etiquetaDia = (fecha) => {

@@ -1,7 +1,7 @@
 <template>
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 border-bottom">
           <div class="row g-3 align-items-center">
@@ -63,7 +63,7 @@
               <div v-if="modoReunion" class="d-flex flex-wrap gap-2 mt-2">
                 <button
                   type="button"
-                  class="btn btn-sm btn-outline-primary fw-bold d-flex align-items-center justify-content-center gap-1 flex-fill flex-sm-grow-0"
+                  class="btn btn-sm btn-outline-secondary fw-bold d-flex align-items-center justify-content-center gap-1 flex-fill flex-sm-grow-0"
                   :disabled="cargandoArbitros || !!motivoNoGestionable"
                   @click="abrirModalEditarReunion"
                   :title="motivoNoGestionable || 'Modificar esta reunión'"
@@ -138,22 +138,22 @@
             <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm" aria-label="Cerrar filtros"></button>
           </div>
           <div class="row g-2">
-            <div class="col-6"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
-            <div class="col-6"><input v-model="filtros.nombre"   class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
+            <div class="col-6"><input aria-label="Apellido" v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
+            <div class="col-6"><input aria-label="Nombre" v-model="filtros.nombre"   class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
             <div class="col-6">
-              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por grupo" v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">GRUPO</option>
                 <option v-for="g in GRUPOS" :key="g" :value="g">{{ g }}</option>
               </select>
             </div>
             <div class="col-6">
-              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por subgrupo" v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">SUBGRUPO</option>
                 <option v-for="sg in SUBGRUPOS" :key="sg" :value="sg">{{ sg }}</option>
               </select>
             </div>
             <div class="col-12" v-if="modoReunion">
-              <select v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por asistencia" v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ASISTENCIA</option>
                 <option value="presente">SOLO PRESENTES</option>
                 <option value="ausente">SOLO AUSENTES</option>
@@ -168,7 +168,7 @@
 
         <div class="card-body p-0 p-md-3 bg-white">
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
-            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
+            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075">
               <thead class="table-light">
                 <tr>
                   <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
@@ -181,26 +181,26 @@
                   <th v-if="modoReunion" class="py-3 text-center text-uppercase text-muted">Teórico</th>
                   <th v-if="modoReunion" class="py-3 text-uppercase text-muted" style="min-width: 270px;">
                     Asistencia
-                    <span class="fw-normal fst-italic text-muted ms-1" style="font-size: 0.7rem;">(guardado automático)</span>
+                    <span class="fw-normal fst-italic text-muted ms-1 texto-07">(guardado automático)</span>
                   </th>
                 </tr>
                 <tr class="bg-light">
                   <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id"></td>
                   <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
                   <td class="p-2 border-bottom border-2 col-fija col-apellido">
-                    <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
+                    <input aria-label="Filtrar.." v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
                   </td>
                   <td class="p-2 border-bottom border-2 col-fija col-nombre">
-                    <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
+                    <input aria-label="Filtrar.." v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
                   </td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por grupo" v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODOS</option>
                       <option v-for="g in GRUPOS" :key="g" :value="g">{{ g }}</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por subgrupo" v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODOS</option>
                       <option v-for="sg in SUBGRUPOS" :key="sg" :value="sg">{{ sg }}</option>
                     </select>
@@ -210,7 +210,7 @@
                   </td>
                   <td v-if="modoReunion" class="p-2 border-bottom border-2"></td>
                   <td v-if="modoReunion" class="p-2 border-bottom border-2">
-                    <select v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por asistencia" v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODAS</option>
                       <option value="presente">SOLO PRESENTES</option>
                       <option value="ausente">SOLO AUSENTES</option>
@@ -245,7 +245,7 @@
                   <td class="text-center col-fija col-acciones">
                     <div class="d-flex justify-content-center gap-1">
                       <button @click="verDetalleArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver historial" aria-label="Ver historial">
-                        <i class="bi bi-search" style="font-size:16px;"></i>
+                        <i class="bi bi-search texto-16px"></i>
                       </button>
                     </div>
                   </td>
@@ -268,7 +268,7 @@
                       <button
                         @click="descargarPdfTeorico(a)"
                         :disabled="!!descargandoPdf[a.id]"
-                        class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary"
+                        class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark"
                         title="Descargar teórico"
                         aria-label="Descargar teórico"
                       >
@@ -333,7 +333,7 @@
                 }"
               >
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                  <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">{{ a.apellido }}, {{ a.nombre }}</div>
+                  <div class="text-dark fw-bold text-uppercase texto-105">{{ a.apellido }}, {{ a.nombre }}</div>
                   <div class="d-flex align-items-center gap-2">
                     <div class="small text-muted fw-bold font-monospace">#{{ a.id }}</div>
                     <span v-if="modoReunion && guardando[a.id]"    class="spinner-border spinner-border-sm text-danger"></span>
@@ -357,7 +357,7 @@
                     <button
                       @click="descargarPdfTeorico(a)"
                       :disabled="!!descargandoPdf[a.id]"
-                      class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary"
+                      class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark"
                       aria-label="Descargar teórico"
                     >
                       <span v-if="descargandoPdf[a.id]" class="spinner-border spinner-border-sm"></span>
@@ -370,7 +370,7 @@
                       <ResumenAsistencia :resumen="resumenAsistencia(a.id)" :mobile="true" />
                     </div>
                     <button @click="verDetalleArbitro(a)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center" aria-label="Ver historial">
-                      <i class="bi bi-search" style="font-size: 18px;"></i>
+                      <i class="bi bi-search texto-18px"></i>
                     </button>
                   </div>
 
@@ -402,7 +402,7 @@
               </div>
 
               <div v-if="!arbitrosPaginados.length" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-                <i class="bi bi-search text-muted opacity-50 d-block mb-2" style="font-size: 40px;"></i>
+                <i class="bi bi-search text-muted opacity-50 d-block mb-2 texto-40px"></i>
                 <p class="text-muted m-0 fw-bold">No se encontraron árbitros.</p>
               </div>
             </template>
@@ -427,7 +427,7 @@
       :hay-cambios="hayCambiosReunion"
       @close="mostrarModalNueva = false"
       :icono="modoEdicionReunion ? 'edit' : 'notification_add'"
-      :colorIcono="modoEdicionReunion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      :colorIcono="modoEdicionReunion ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'"
       maxWidth="900px"
     >
       <template #header>
@@ -454,17 +454,17 @@
         <div class="row g-3">
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Tema de la Reunión *</label>
-            <input v-model="formReunion.titulo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Reunión mensual..." required>
+            <input aria-label="Tema de la Reunión" v-model="formReunion.titulo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Reunión mensual..." required>
           </div>
 
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Lugar *</label>
-            <textarea v-model="formReunion.descripcion" class="form-control shadow-none border-secondary-subtle" rows="2" placeholder="Ej: Casa del Handball..." required></textarea>
+            <textarea aria-label="Lugar" v-model="formReunion.descripcion" class="form-control shadow-none border-secondary-subtle" rows="2" placeholder="Ej: Casa del Handball..." required></textarea>
           </div>
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Fecha de la Reunión *</label>
-            <input v-model="formReunion.fecha_evento" type="date" :min="modoEdicionReunion ? manianaStr() : hoyStr()" class="form-control shadow-none border-secondary-subtle" required>
+            <input aria-label="Fecha de la Reunión" v-model="formReunion.fecha_evento" type="date" :min="modoEdicionReunion ? manianaStr() : hoyStr()" class="form-control shadow-none border-secondary-subtle" required>
             <small v-if="eventosMismoDia.length" class="d-block text-danger fw-semibold mt-1">
               <i class="bi bi-exclamation-circle-fill me-1"></i>Ese día ya hay {{ eventosMismoDia.length === 1 ? 'otro evento' : `${eventosMismoDia.length} eventos` }}: {{ eventosMismoDia.map(e => e.titulo).join(', ') }}
             </small>
@@ -568,12 +568,12 @@
               </div>
               <p v-else class="text-muted small mb-0">No hay preguntas cargadas.</p>
             </div>
-            <span class="d-block text-muted mt-1" style="font-size: 0.75rem;">{{ preguntasDisponiblesExamen }} preguntas disponibles con las reglas elegidas.</span>
+            <span class="d-block text-muted mt-1 texto-075">{{ preguntasDisponiblesExamen }} preguntas disponibles con las reglas elegidas.</span>
           </div>
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Cantidad de preguntas *</label>
-            <input
+            <input aria-label="Cantidad de preguntas"
               v-model.number="formExamen.cantidadPreguntas"
               type="number"
               min="1"
@@ -585,7 +585,7 @@
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Tiempo (minutos) *</label>
-            <input
+            <input aria-label="Tiempo (minutos)"
               v-model.number="formExamen.tiempoLimiteMin"
               type="number"
               min="1"
@@ -628,7 +628,7 @@
         <div class="d-flex justify-content-end mb-3" v-if="añosDetalleArbitro.length">
           <div class="d-flex align-items-center gap-2">
             <label class="small fw-bold text-dark text-uppercase m-0">Año:</label>
-            <select v-model="filtroAñoDetalle" class="form-select form-select-sm shadow-sm border-secondary-subtle text-uppercase text-dark" style="min-width: 140px;">
+            <select aria-label="Año" v-model="filtroAñoDetalle" class="form-select form-select-sm shadow-sm border-secondary-subtle text-uppercase text-dark" style="min-width: 140px;">
               <option value="">AÑO</option>
               <option v-for="año in añosDetalleArbitro" :key="año" :value="año">{{ año }}</option>
             </select>
@@ -641,7 +641,7 @@
               <div class="card-body p-2 text-center text-white">
                 <i class="bi bi-person-check-fill" style="font-size: 1.2rem;"></i>
                 <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.presentes }}</div>
-                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Presentes</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Presentes</div>
               </div>
             </div>
           </div>
@@ -650,7 +650,7 @@
               <div class="card-body p-2 text-center text-white">
                 <i class="bi bi-person-dash-fill" style="font-size: 1.2rem;"></i>
                 <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.ausentes }}</div>
-                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Ausentes</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Ausentes</div>
               </div>
             </div>
           </div>
@@ -659,7 +659,7 @@
               <div class="card-body p-2 text-center text-muted">
                 <i class="bi bi-question-circle-fill" style="font-size: 1.2rem;"></i>
                 <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.sinInformacion }}</div>
-                <div class="small text-uppercase fw-bold opacity-75 mt-1" style="font-size: 0.65rem;">Sin info</div>
+                <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Sin info</div>
               </div>
             </div>
           </div>
@@ -681,7 +681,7 @@
                     <div v-if="ex.titulo" class="text-muted small fst-italic">{{ ex.titulo }}</div>
                   </div>
                   <div class="d-flex flex-column align-items-end gap-1">
-                    <span class="badge bg-dark font-monospace" style="font-size: 0.65rem;">#{{ ex.id }}</span>
+                    <span class="badge bg-dark font-monospace texto-065">#{{ ex.id }}</span>
                     <AsistenciaBadge :asistencia="ex.asistencia" />
                   </div>
                 </div>
@@ -699,6 +699,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
@@ -718,8 +719,6 @@ const CATEGORIA         = 'reunion'
 const MOBILE_BREAKPOINT = 768
 
 // ─── Helpers ─────────────────────────────────────────────────────
-const normalizarTexto = (v) =>
-  String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 const formatFecha  = (f) => f?.split(' ')[0] ?? ''
 const añoDeFecha   = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
 const sortPorFecha = (lista) => [...lista].sort((a, b) => (b._ts ?? 0) - (a._ts ?? 0))
@@ -813,7 +812,7 @@ const AsistenciaBadge = defineComponent({
 })
 
 // ─── Inyectado ───────────────────────────────────────────────────
-const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast')
 const notificar = inject('notificar')
 
 // ─── Estado ──────────────────────────────────────────────────────
@@ -1229,7 +1228,7 @@ const obtenerReuniones = async () => {
     const res = await api.get({ entity: 'reuniones', action: 'obtenerReuniones' })
     if ((res.ok || res.success) && res.payload) {
       const vistos = new Set()
-      arrReuniones.value = res.payload.filter(r => {
+      arrReuniones.value = (res.payload || []).filter(r => {
         if (r.categoria !== 'reunion' || vistos.has(String(r.id))) return false
         vistos.add(String(r.id))
         return true
@@ -1240,7 +1239,7 @@ const obtenerReuniones = async () => {
 
 const obtenerGrupos = async () => {
   try {
-    const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos' })
+    const res = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' })
     const lista = res?.payload ?? res ?? []
     grupos.value = Array.isArray(lista) ? lista : []
   } catch (e) { console.error('obtenerGrupos:', e) }
@@ -1573,7 +1572,7 @@ onMounted(async () => {
 .full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
 .admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
 .animate__animated { animation-duration: 0.4s; }
-.min-w-0 { min-width: 0; }
+
 .select-reunion { width: 100%; min-width: 0; font-size: 1rem; }
 @media (min-width: 768px) {
   .select-reunion { flex: 0 1 300px; max-width: 300px; font-size: 0.875rem; }
@@ -1603,6 +1602,5 @@ onMounted(async () => {
 .toggle-asist:active { opacity: 0.82; }
 .texto-creacion { font-size: 0.75rem; }
 .control-encabezado { height: 40px; }
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
+
 </style>

@@ -12,7 +12,7 @@
           <div class="card h-100 border-0 rounded-4 overflow-hidden course-card shadow-lg">
 
             <div class="position-relative">
-              <img :src="curso.image" class="card-img-top" :alt="curso.title" style="height: 220px; object-fit: cover;" />
+              <img loading="lazy" decoding="async" :src="curso.image" class="card-img-top" :alt="curso.title" style="height: 220px; object-fit: cover;" />
               <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(to bottom, transparent 70%, rgba(0,0,0,0.4));"></div>
             </div>
 

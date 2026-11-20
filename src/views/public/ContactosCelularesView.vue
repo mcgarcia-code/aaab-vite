@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <!-- Dentro del panel el título ya está en el header del panel -->
@@ -26,21 +26,21 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Contactos</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <div class="col-6 col-md-3">
-              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
+              <input aria-label="Apellido" v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
+              <input aria-label="Nombre" v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.grupo" class="form-control form-control-sm shadow-none" placeholder="GRUPO...">
+              <input aria-label="Grupo" v-model="filtros.grupo" class="form-control form-control-sm shadow-none" placeholder="GRUPO...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.subgrupo" class="form-control form-control-sm shadow-none" placeholder="SUBGRUPO...">
+              <input aria-label="Subgrupo" v-model="filtros.subgrupo" class="form-control form-control-sm shadow-none" placeholder="SUBGRUPO...">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
@@ -53,7 +53,7 @@
           <template v-else>
 
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-            <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.85rem; table-layout: fixed;">
+            <table class="table table-hover align-middle mb-0 text-nowrap texto-085 tabla-fija">
               <thead class="table-light">
                 <tr>
                   <th class="py-3 ps-3 text-uppercase text-muted border-bottom-0" style="width: 25%;">Apellido</th>
@@ -73,10 +73,10 @@
                     <div class="d-flex justify-content-center gap-2">
                       <template v-if="a.celular">
                         <button @click="abrirWhatsApp(a.celular)" class="btn btn-success btn-sm p-1 lh-1 rounded-circle shadow-sm" title="Enviar WhatsApp" style="background-color: #25d366; border-color: #25d366;">
-                          <i class="bi bi-whatsapp" style="font-size: 16px;"></i>
+                          <i class="bi bi-whatsapp texto-16px"></i>
                         </button>
                         <button @click="copiarAlPortapapeles(a.celular)" class="btn btn-light btn-sm p-1 lh-1 rounded-circle shadow-sm border" title="Copiar Número">
-                          <i class="bi bi-copy text-dark" style="font-size: 16px;"></i>
+                          <i class="bi bi-copy text-dark texto-16px"></i>
                         </button>
                       </template>
                       <span v-else class="text-muted small font-italic">Sin número</span>
@@ -97,7 +97,7 @@
             <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{'bg-danger-subtle': a.es_activo == 0}">
 
               <div class="card-header bg-transparent border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
-                <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem;">
+                <div class="text-dark fw-bold text-uppercase texto-105">
                   {{ a.apellido }}, {{ a.nombre }}
                 </div>
               </div>
@@ -108,11 +108,11 @@
                 </div>
 
                 <div class="d-flex gap-2" v-if="a.celular">
-                  <button @click="copiarAlPortapapeles(a.celular)" class="btn btn-light flex-grow-1 shadow-sm border d-flex align-items-center justify-content-center gap-2 fw-bold" style="font-size: 0.85rem;">
-                    <i class="bi bi-copy" style="font-size: 18px;"></i> Copiar
+                  <button @click="copiarAlPortapapeles(a.celular)" class="btn btn-light flex-grow-1 shadow-sm border d-flex align-items-center justify-content-center gap-2 fw-bold texto-085">
+                    <i class="bi bi-copy texto-18px"></i> Copiar
                   </button>
-                  <button @click="abrirWhatsApp(a.celular)" class="btn flex-grow-1 shadow-sm d-flex align-items-center justify-content-center gap-2 text-white fw-bold" style="background-color: #25d366; font-size: 0.85rem;">
-                    <i class="bi bi-whatsapp" style="font-size: 18px;"></i> WhatsApp
+                  <button @click="abrirWhatsApp(a.celular)" class="btn flex-grow-1 shadow-sm d-flex align-items-center justify-content-center gap-2 text-white fw-bold texto-085" style="background-color: #25d366;">
+                    <i class="bi bi-whatsapp texto-18px"></i> WhatsApp
                   </button>
                 </div>
                 <div v-else class="text-center mt-2 bg-white p-2 rounded border border-light-subtle">
@@ -148,6 +148,8 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
+import { abrirWhatsApp } from '@/utils/whatsapp'
+import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head'
 import { useRoute } from 'vue-router'
@@ -209,12 +211,6 @@ const cambiarPagina = (delta) => {
   }
 };
 
-const abrirWhatsApp = (numero) => {
-  if (!numero) return;
-  const limpio = String(numero).replace(/\D/g, '');
-  const prefijo = limpio.startsWith('54') ? limpio : `54${limpio}`;
-  window.open(`https://wa.me/${prefijo}`, '_blank');
-};
 
 const copiarAlPortapapeles = async (numero) => {
   if (!numero) return;
@@ -226,9 +222,6 @@ const copiarAlPortapapeles = async (numero) => {
   }
 };
 
-const normalizarTexto = (valor) => {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-};
 
 const arbitrosFiltrados = computed(() => {
   const filtrados = arbitros.value.filter(a => {

@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+    <div class="card shadow border-0 mb-4 w-100 mx-auto radio-12 overflow-hidden">
 
       <!-- ENCABEZADO -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom border-2 border-danger gap-3">
@@ -10,7 +10,7 @@
         <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
           <div class="d-flex align-items-center gap-1">
             <label class="text-muted small text-nowrap mb-0">Año:</label>
-            <select v-model="filtroAnio" class="form-select form-select-sm shadow-none text-uppercase text-dark" style="min-width: 110px;">
+            <select aria-label="Año" v-model="filtroAnio" class="form-select form-select-sm shadow-none text-uppercase text-dark" style="min-width: 110px;">
               <option value="">TODOS</option>
               <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
             </select>
@@ -63,7 +63,7 @@
                     <button class="btn btn-sm btn-outline-danger w-100 fw-bold d-flex align-items-center justify-content-center gap-1"
                             @click="verDetalle(obs)" :disabled="cargandoDetalleId === obs.id">
                       <span v-if="cargandoDetalleId === obs.id" class="spinner-border spinner-border-sm"></span>
-                      <i v-else class="bi bi-eye" style="font-size: 16px;"></i>
+                      <i v-else class="bi bi-eye texto-16px"></i>
                       Ver detalle
                     </button>
                   </div>
@@ -99,7 +99,7 @@
           <div v-if="comentariosCategoria.length">
             <div v-for="(c, idx) in comentariosCategoria" :key="'com-' + idx" class="mb-3">
               <div class="fw-bold small text-dark">{{ c.categoria }}</div>
-              <div class="small text-muted" style="white-space: pre-line;">{{ c.comentario }}</div>
+              <div class="small text-muted texto-multilinea">{{ c.comentario }}</div>
             </div>
           </div>
 
@@ -108,13 +108,13 @@
             <div class="fw-bold small text-dark mb-1">Prioridades de mejora</div>
             <div v-if="detalle.prioridad_mejora_1" class="small text-muted mb-1"><strong>1.</strong> {{ detalle.prioridad_mejora_1 }}</div>
             <div v-if="detalle.prioridad_mejora_2" class="small text-muted mb-1"><strong>2.</strong> {{ detalle.prioridad_mejora_2 }}</div>
-            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1" style="white-space: pre-line;">{{ detalle.prioridad_mejora_resto }}</div>
+            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1 texto-multilinea">{{ detalle.prioridad_mejora_resto }}</div>
           </div>
 
           <!-- Influencia en el resultado -->
           <div v-if="detalle.influencia_resultado_comentarios" class="mt-2 pt-2 border-top">
             <div class="fw-bold small text-dark mb-1">Influencia en el resultado</div>
-            <div class="small text-muted" style="white-space: pre-line;">{{ detalle.influencia_resultado_comentarios }}</div>
+            <div class="small text-muted texto-multilinea">{{ detalle.influencia_resultado_comentarios }}</div>
           </div>
 
           <div v-if="!tieneComentarios" class="text-center py-3 text-muted small">
@@ -141,12 +141,13 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, computed, onMounted, inject } from 'vue'
+import { fechaArg } from '@/utils/fechas'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
-const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast')
 
 useHead({
   title: 'Mis Observaciones | AAAB',
@@ -162,7 +163,7 @@ const torneos = ref([])
 
 const obtenerTorneos = async () => {
   try {
-    const res = await api.get({ entity: 'observaciones', action: 'obtenerTorneos' })
+    const res = await api.getCacheado({ entity: 'observaciones', action: 'obtenerTorneos' })
     if ((res.ok || res.success) && Array.isArray(res.payload)) torneos.value = res.payload
   } catch (error) {
     console.error('Error pidiendo torneos:', error)
@@ -176,12 +177,7 @@ const nombreTorneo = (o) => {
   return t ? t.nombre : ''
 }
 
-const formatearFecha = (fechaIso) => {
-  if (!fechaIso) return 'S/F'
-  const [anio, mes, dia] = String(fechaIso).split(' ')[0].split('-')
-  if (!anio || !mes || !dia) return fechaIso
-  return `${dia}/${mes}/${anio}`
-}
+const formatearFecha = (fecha) => fechaArg(fecha, 'S/F')
 
 // Categoría del partido con fallback a la categoría de edad del Excel.
 const categoriaObs = (o) => o.categoria || o.categoria_edad || '-'

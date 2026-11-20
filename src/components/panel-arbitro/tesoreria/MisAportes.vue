@@ -2,7 +2,7 @@
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
     <!-- RESUMEN DE SALDO -->
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-2">
         <p class="seccion-descripcion">Estado de tus pagos</p>
         <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargarTodo" />
@@ -58,7 +58,7 @@
     </div>
 
     <!-- MOVIMIENTOS PENDIENTES -->
-    <div ref="cardMovimientos" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div ref="cardMovimientos" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
       <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center gap-2">
         <h5 class="fw-bold m-0 text-dark d-flex align-items-center gap-2">
           <i class="bi bi-list-check"></i> Movimientos del Período Actual
@@ -73,7 +73,7 @@
           <div v-for="m in movimientosPaginados" :key="m.id" class="border-bottom item-movimiento bg-white p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
               <span class="fw-bold text-dark d-block">{{ m.concepto_etiqueta }}</span>
-              <span v-if="m.partido_categoria" class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start me-1" style="font-size: 0.65rem;">{{ m.partido_categoria }}</span>
+              <span v-if="m.partido_categoria" class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start me-1 texto-065">{{ m.partido_categoria }}</span>
               <span class="text-muted small">{{ formatearFecha(m.fecha_generacion) }}{{ m.descripcion ? ' · ' + m.descripcion : '' }}</span>
             </div>
             <span class="fw-bold" :class="m.tipo === 'debito' ? 'text-danger' : 'text-success'">
@@ -96,7 +96,7 @@
     </div>
 
     <!-- HISTORIAL DE CIERRES -->
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
       <div class="card-header bg-white py-3 border-bottom">
         <h5 class="fw-bold m-0 text-dark d-flex align-items-center gap-2">
           <i class="bi bi-calendar-check"></i> Historial de Cierres
@@ -107,7 +107,7 @@
         <EstadoVacio v-if="!cargando && historialCierres.length === 0" icono="bi-journal-x"
                      titulo="Todavía no tenés cierres registrados" />
         <div v-else class="table-responsive">
-          <table class="table align-middle mb-0" style="font-size: 0.85rem;">
+          <table class="table align-middle mb-0 texto-085">
             <thead class="table-light">
               <tr>
                 <th class="py-2 ps-3 text-uppercase text-muted">Período</th>
@@ -134,7 +134,7 @@
       </div>
     </div>
 
-    <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
+    <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100 radio-12">
       <div class="d-flex align-items-center">
         <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
         <div class="small text-dark lh-sm">
@@ -151,6 +151,7 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { fechaDMA } from '@/utils/fechas'
 import { useHead } from '@vueuse/head';
 import { api } from '@/api/api';
 
@@ -172,11 +173,7 @@ const recargos = ref([]);
 
 
 // "2026-09-01" (o "2026-09-01 10:00:00") -> "01-09-2026"
-const formatearFecha = (f) => {
-  if (!f) return '';
-  const [anio, mes, dia] = String(f).substring(0, 10).split('-');
-  return dia && mes && anio ? `${dia}-${mes}-${anio}` : f;
-};
+const formatearFecha = (fecha) => fechaDMA(fecha)
 
 const formatearMonto = (v) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(Number(v) || 0);
 

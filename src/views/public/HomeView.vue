@@ -113,7 +113,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
-import axios from 'axios'
 
 // 1. Importación de imágenes para procesamiento de Vite
 import heroBg from '../../assets/fotos/hero-background.webp'
@@ -157,8 +156,10 @@ const fetchFecha = async () => {
      * Esto obliga al navegador a pedir el archivo real al servidor
      * en lugar de usar una versión vieja guardada en caché.
      */
-    const response = await axios.get(`/data/config.json?v=${new Date().getTime()}`);
-    fechaDesignacion.value = response.data.fecha;
+    const response = await fetch(`/data/config.json?v=${Date.now()}`)
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const datos = await response.json()
+    fechaDesignacion.value = datos.fecha || 'Próximamente'
   } catch (error) {
     console.error("Error cargando la fecha en el inicio", error);
     // Valor por defecto por si falla la carga

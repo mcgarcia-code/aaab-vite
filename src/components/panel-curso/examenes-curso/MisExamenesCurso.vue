@@ -10,7 +10,7 @@
 
     <template v-else>
       <!-- RECUPERATORIO DE PARCIALITOS -->
-      <div v-for="r in recuperatoriosParcialitos" v-show="!cursoCerrado" :key="'rp-' + r.id" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 card-recuperatorio" style="border-radius: 15px;">
+      <div v-for="r in recuperatoriosParcialitos" v-show="!cursoCerrado" :key="'rp-' + r.id" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 card-recuperatorio radio-15">
         <div class="card-header py-3 border-bottom">
           <div class="border-start border-warning border-5 ps-3">
             <h4 class="fw-bold m-0 d-flex align-items-center gap-2 fs-5 text-warning-emphasis">
@@ -32,7 +32,7 @@
         </div>
       </div>
 
-      <div v-if="pendientes.length && !cursoCerrado" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+      <div v-if="pendientes.length && !cursoCerrado" class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
         <div class="card-header bg-white py-3 border-bottom">
           <h2 class="subtitulo-tarjeta"><i class="bi bi-laptop"></i> Exámenes para rendir</h2>
           <p class="seccion-descripcion">Exámenes online de las clases a las que asististe</p>
@@ -51,7 +51,7 @@
         </div>
       </div>
 
-      <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+      <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
         <div class="card-header bg-white py-3 border-bottom">
           <p class="seccion-descripcion">Notas de los exámenes del curso</p>
         </div>
@@ -93,7 +93,7 @@
                   </div>
                 </div>
                 <div class="d-flex flex-wrap gap-1 mt-2">
-                  <span class="badge" :class="esRecuperatorio(e) ? 'bg-warning text-dark' : e.esFinal ? (e.tipo === 'fisico' ? 'bg-primary' : 'bg-danger') : 'bg-light text-dark border'">
+                  <span class="badge" :class="esRecuperatorio(e) ? 'bg-warning text-dark' : e.esFinal ? (e.tipo === 'fisico' ? 'bg-secondary' : 'bg-danger') : 'bg-light text-dark border'">
                     <i v-if="esRecuperatorio(e)" class="bi bi-arrow-repeat me-1"></i>{{ etiquetaExamen(e) }}
                   </span>
                   <span v-if="e.online" class="badge bg-light text-dark border"><i class="bi bi-laptop me-1"></i>Online</span>
@@ -130,7 +130,7 @@ import { usePerfilCurso } from '@/composables/usePerfilCurso'
 
 useHead({ title: 'Mis Exámenes | Curso AAAB' })
 
-const toast = inject('toast', (m) => alert(m.mensaje || m))
+const toast = inject('toast')
 
 const examenes = ref([])
 const online = ref([])

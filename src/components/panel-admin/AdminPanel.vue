@@ -122,6 +122,7 @@ onMounted(async () => {
   if (auth.isLoggedIn()) {
     admin.value = auth.getUser()
   }
+  if (auth.isLoggedIn()) auth.startInactivityTimer()
   await cargarPermisos(true)
   cargarPendientes()
 })

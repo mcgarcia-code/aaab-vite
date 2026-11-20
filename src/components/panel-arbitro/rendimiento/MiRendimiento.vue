@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
 
       <!-- ── Header ── -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -72,7 +72,7 @@
                   <div v-for="r in reunionesFiltradas" :key="r.id_evento" class="fila-item d-flex justify-content-between align-items-center gap-2">
                     <div class="min-w-0">
                       <div class="fw-bold text-dark small text-break">{{ r.titulo || 'Reunión General' }}</div>
-                      <div class="text-muted" style="font-size: 0.75rem;">{{ fechaGuiones(r.fecha_reunion) }}</div>
+                      <div class="text-muted texto-075">{{ fechaGuiones(r.fecha_reunion) }}</div>
                     </div>
                     <span class="badge flex-shrink-0" :class="claseAsistencia(r.asistencia)">{{ textoAsistencia(r.asistencia) }}</span>
                   </div>
@@ -98,7 +98,7 @@
                     <div class="d-flex justify-content-between align-items-start gap-2">
                       <div class="min-w-0">
                         <div class="fw-bold text-dark small text-break">{{ ex.titulo || 'Evaluación General' }}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">{{ fechaGuiones(ex.fecha_examen) }}</div>
+                        <div class="text-muted texto-075">{{ fechaGuiones(ex.fecha_examen) }}</div>
                       </div>
                       <span class="badge flex-shrink-0" :class="badgeTipo(ex.tipo)">{{ ex.tipo === 'recuperatorio' ? 'Recuperatorio' : 'Asamblea General' }}</span>
                     </div>
@@ -235,7 +235,7 @@ const claseTextoExamen = (detalle, tipo) => {
   const est = estadoEfectivo(detalle, tipo)
   if (est === 'aprobado') return 'text-success'
   if (est === 'desaprobado') return 'text-danger'
-  if (est === 'no lo hizo') return 'text-info'
+  if (est === 'no lo hizo') return 'text-danger'
   return 'text-secondary'
 }
 
@@ -345,7 +345,7 @@ const cargarEventosExamen = async () => {
     api.get({ entity: 'reuniones', action: 'obtenerMisAusenciasExamen' }),
   ])
   if (!(res.ok || res.success) || !Array.isArray(res.payload)) return
-  const eventos = res.payload.filter(ev => TIPOS_EXAMEN.includes(ev.categoria))
+  const eventos = (res.payload || []).filter(ev => TIPOS_EXAMEN.includes(ev.categoria))
   const ausencias = new Set(
     (resAusencias.ok || resAusencias.success) && Array.isArray(resAusencias.payload)
       ? resAusencias.payload.map(String)

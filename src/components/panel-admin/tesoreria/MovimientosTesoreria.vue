@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Aportes del período y ajustes · Total: {{ movimientosFiltrados.length }} movimientos</p>
@@ -21,7 +21,7 @@
           <div class="row g-2 align-items-end">
             <div class="col-6 col-md-3">
               <label class="small fw-bold text-dark mb-1 d-block">Período</label>
-              <input type="month" v-model="periodoGenerar" class="form-control form-control-sm shadow-none">
+              <input aria-label="Período" type="month" v-model="periodoGenerar" class="form-control form-control-sm shadow-none">
             </div>
             <div class="col-6 col-md-3">
               <button @click="confirmarGenerar" :disabled="!periodoGenerar || generando" class="btn btn-danger btn-sm w-100 fw-bold shadow-sm">
@@ -36,23 +36,23 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Movimientos</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
           <div class="row g-2">
             <div class="col-6 col-md-3">
-              <input v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO...">
+              <input aria-label="Buscar árbitro" v-model="filtros.arbitro" class="form-control form-control-sm shadow-none" placeholder="BUSCAR ÁRBITRO...">
             </div>
             <div class="col-6 col-md-2">
-              <input type="month" v-model="filtros.periodo" class="form-control form-control-sm shadow-none">
+              <input aria-label="Filtrar por período" type="month" v-model="filtros.periodo" class="form-control form-control-sm shadow-none">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.concepto" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por concepto" v-model="filtros.concepto" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">CONCEPTO</option>
                 <option v-for="t in tiposMovimiento" :key="t.clave" :value="t.clave">{{ t.etiqueta }}</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="pendiente">PENDIENTE</option>
                 <option value="cerrado">CERRADO</option>
@@ -70,7 +70,7 @@
 
           <template v-else>
             <div class="d-none d-md-block table-responsive border rounded shadow-sm">
-              <table class="table table-hover align-middle mb-0" style="font-size: 0.8rem;">
+              <table class="table table-hover align-middle mb-0 texto-08">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 text-uppercase text-muted">Fecha</th>
@@ -88,7 +88,7 @@
                     <td class="fw-bold text-dark text-uppercase">{{ m.arbitro }}</td>
                     <td>
                       <div>{{ m.concepto_etiqueta }}</div>
-                      <span v-if="m.partido_categoria" class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start" style="font-size: 0.65rem;">{{ m.partido_categoria }}</span>
+                      <span v-if="m.partido_categoria" class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start texto-065">{{ m.partido_categoria }}</span>
                       <div v-if="m.descripcion" class="text-muted small text-wrap" style="max-width: 260px;">{{ m.descripcion }}</div>
                     </td>
                     <td class="text-center">
@@ -100,11 +100,11 @@
                     </td>
                     <td class="text-center">
                       <div v-if="m.concepto === 'ajuste_manual' && m.estado === 'pendiente'" class="d-flex justify-content-center gap-1">
-                        <button @click="abrirModalEditarManual(m)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                        <button @click="abrirModalEditarManual(m)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button @click="confirmarAnular(m)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Anular">
-                          <i class="bi bi-trash" style="font-size:16px;"></i>
+                          <i class="bi bi-trash texto-16px"></i>
                         </button>
                       </div>
                       <span v-else class="text-muted small">—</span>
@@ -135,12 +135,12 @@
                     <span :class="['badge-status-sm', m.tipo === 'debito' ? 'debito' : 'credito']">{{ m.tipo === 'debito' ? 'DÉBITO' : 'CRÉDITO' }}</span>
                   </div>
                   <div v-if="m.partido_categoria" class="mb-2">
-                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start" style="font-size: 0.65rem;">{{ m.partido_categoria }}</span>
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start texto-065">{{ m.partido_categoria }}</span>
                   </div>
                   <div class="fw-bold fs-6 mb-2">{{ formatearMonto(m.monto) }}</div>
                   <p v-if="m.descripcion" class="text-muted small mb-2">{{ m.descripcion }}</p>
                   <div v-if="m.concepto === 'ajuste_manual' && m.estado === 'pendiente'" class="d-flex gap-2">
-                    <button @click="abrirModalEditarManual(m)" class="btn btn-sm btn-outline-primary flex-fill fw-bold">
+                    <button @click="abrirModalEditarManual(m)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold">
                       Editar
                     </button>
                     <button @click="confirmarAnular(m)" class="btn btn-sm btn-outline-danger flex-fill fw-bold">
@@ -168,7 +168,7 @@
       </div>
     </div>
 
-    <ModalBase :show="mostrarModalEditar" :hay-cambios="hayCambiosEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-info-subtle text-info" maxWidth="500px">
+    <ModalBase :show="mostrarModalEditar" :hay-cambios="hayCambiosEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-danger-subtle text-danger" maxWidth="500px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Editar Ajuste Manual</span>
@@ -182,13 +182,13 @@
           <div class="btn-group btn-group-sm w-100" role="group" aria-label="Tipo de movimiento">
             <button type="button" class="btn fw-bold" :class="formEditar.opcion === 'debito' ? 'btn-danger' : 'btn-outline-secondary bg-white'" @click="elegirOpcionEditar('debito')">Débito</button>
             <button type="button" class="btn fw-bold" :class="formEditar.opcion === 'credito' ? 'btn-success' : 'btn-outline-secondary bg-white'" @click="elegirOpcionEditar('credito')">Crédito</button>
-            <button type="button" class="btn fw-bold" :class="formEditar.opcion === 'item' ? 'btn-primary' : 'btn-outline-secondary bg-white'" @click="elegirOpcionEditar('item')">Ítem</button>
+            <button type="button" class="btn fw-bold" :class="formEditar.opcion === 'item' ? 'btn-danger' : 'btn-outline-secondary bg-white'" @click="elegirOpcionEditar('item')">Ítem</button>
           </div>
           <span v-if="formEditar.opcion === 'item'" class="d-block text-muted small mt-1">Los ítems siempre van como <strong class="text-success">crédito</strong>.</span>
         </div>
 
         <div v-if="formEditar.opcion === 'item'">
-          <select v-model="formEditar.item" @change="formEditar.monto = valorDeItem(formEditar.item)" class="form-select form-select-sm shadow-none border-secondary-subtle">
+          <select aria-label="Ítem" v-model="formEditar.item" @change="formEditar.monto = valorDeItem(formEditar.item)" class="form-select form-select-sm shadow-none border-secondary-subtle">
             <option value="" disabled>Seleccione un ítem...</option>
             <optgroup v-for="g in itemsAgrupados" :key="g.grupo" :label="g.grupo">
               <option v-for="i in g.items" :key="i.clave" :value="i.clave">
@@ -201,17 +201,17 @@
         <div class="row g-2">
           <div class="col-12 col-sm-6">
             <label class="small fw-bold text-dark mb-1">Monto ($)</label>
-            <input v-model.number="formEditar.monto" type="number" step="0.01" min="0.01" inputmode="decimal" class="form-control form-control-sm shadow-none border-secondary-subtle" required>
+            <input aria-label="Monto ($)" v-model.number="formEditar.monto" type="number" step="0.01" min="0.01" inputmode="decimal" class="form-control form-control-sm shadow-none border-secondary-subtle" required>
           </div>
           <div class="col-12 col-sm-6">
             <label class="small fw-bold text-dark mb-1">Fecha</label>
-            <input v-model="formEditar.fecha" type="date" class="form-control form-control-sm shadow-none border-secondary-subtle" required>
+            <input aria-label="Fecha" v-model="formEditar.fecha" type="date" class="form-control form-control-sm shadow-none border-secondary-subtle" required>
           </div>
         </div>
 
         <div>
           <label class="small fw-bold text-dark mb-1">Descripción</label>
-          <input v-model="formEditar.descripcion" type="text" maxlength="255" class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Opcional">
+          <input aria-label="Descripción" v-model="formEditar.descripcion" type="text" maxlength="255" class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Opcional">
         </div>
       </form>
 
@@ -235,14 +235,14 @@
           <!-- 1. ÁRBITRO Y FECHA (valen para todos los movimientos de la lista) -->
           <div class="col-12 col-sm-7">
             <label class="small fw-bold text-dark mb-1">Árbitro *</label>
-            <select v-model="formManual.id_arbitro" class="form-select shadow-none border-secondary-subtle" required>
+            <select aria-label="Árbitro" v-model="formManual.id_arbitro" class="form-select shadow-none border-secondary-subtle" required>
               <option value="" disabled>Seleccione un árbitro...</option>
               <option v-for="a in arbitros" :key="a.id" :value="a.id">{{ a.apellido }}, {{ a.nombre }}</option>
             </select>
           </div>
           <div class="col-12 col-sm-5">
             <label class="small fw-bold text-dark mb-1">Fecha</label>
-            <input v-model="formManual.fecha" type="date" class="form-control shadow-none border-secondary-subtle">
+            <input aria-label="Fecha" v-model="formManual.fecha" type="date" class="form-control shadow-none border-secondary-subtle">
           </div>
 
           <!-- 2. ARMAR UN MOVIMIENTO -->
@@ -261,7 +261,7 @@
                   Crédito
                 </button>
                 <button type="button" class="btn fw-bold"
-                        :class="linea.opcion === 'item' ? 'btn-primary' : 'btn-outline-secondary bg-white'"
+                        :class="linea.opcion === 'item' ? 'btn-danger' : 'btn-outline-secondary bg-white'"
                         @click="elegirOpcion('item')">
                   Ítem
                 </button>
@@ -275,7 +275,7 @@
               <div class="row g-2">
                 <!-- Ítem -->
                 <div v-if="linea.opcion === 'item'" class="col-12">
-                  <select v-model="linea.item" @change="alElegirItem" class="form-select form-select-sm shadow-none border-secondary-subtle">
+                  <select aria-label="Ítem" v-model="linea.item" @change="alElegirItem" class="form-select form-select-sm shadow-none border-secondary-subtle">
                     <option value="" disabled>Seleccione un ítem...</option>
                     <optgroup v-for="g in itemsAgrupados" :key="g.grupo" :label="g.grupo">
                       <option v-for="i in g.items" :key="i.clave" :value="i.clave">
@@ -293,12 +293,12 @@
                 <template v-if="linea.opcion === 'item'">
                   <div class="col-4 col-sm-3">
                     <label class="small text-muted mb-1">Cantidad</label>
-                    <input v-model.number="linea.cantidad" type="number" min="1" max="999" step="1" inputmode="numeric"
+                    <input aria-label="Cantidad" v-model.number="linea.cantidad" type="number" min="1" max="999" step="1" inputmode="numeric"
                            class="form-control form-control-sm shadow-none border-secondary-subtle text-center">
                   </div>
                   <div class="col-8 col-sm-4">
                     <label class="small text-muted mb-1">Valor unitario ($)</label>
-                    <input v-model.number="linea.monto" type="number" step="0.01" min="0.01" inputmode="decimal"
+                    <input aria-label="Valor unitario ($)" v-model.number="linea.monto" type="number" step="0.01" min="0.01" inputmode="decimal"
                            class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Valor ($)">
                   </div>
                   <div class="col-12 col-sm-5 d-flex align-items-end">
@@ -311,19 +311,19 @@
 
                 <!-- Débito / Crédito: monto libre -->
                 <div v-else class="col-12 col-sm-5">
-                  <input v-model.number="linea.monto" type="number" step="0.01" min="0.01" inputmode="decimal"
+                  <input aria-label="Monto ($)" v-model.number="linea.monto" type="number" step="0.01" min="0.01" inputmode="decimal"
                          class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Monto ($)">
                 </div>
 
                 <!-- Descripción -->
                 <div class="col-12" :class="{ 'col-sm-7': linea.opcion !== 'item' }">
-                  <input v-model="linea.descripcion" type="text" maxlength="255"
+                  <input aria-label="Descripción (opcional)" v-model="linea.descripcion" type="text" maxlength="255"
                          class="form-control form-control-sm shadow-none border-secondary-subtle" placeholder="Descripción (opcional)">
                 </div>
 
                 <div class="col-12">
                   <button type="button" @click="agregarLinea" class="btn btn-sm btn-outline-danger fw-bold w-100 d-flex align-items-center justify-content-center gap-1">
-                    <i class="bi bi-plus-lg" style="font-size:16px;"></i> Agregar a la lista
+                    <i class="bi bi-plus-lg texto-16px"></i> Agregar a la lista
                   </button>
                 </div>
               </div>
@@ -353,7 +353,7 @@
                   {{ l.tipo === 'debito' ? '-' : '+' }} {{ formatearMonto(l.monto) }}
                 </span>
                 <button type="button" @click="quitarLinea(i)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Quitar">
-                  <i class="bi bi-trash" style="font-size:16px;"></i>
+                  <i class="bi bi-trash texto-16px"></i>
                 </button>
               </div>
 
@@ -384,8 +384,8 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, onMounted, inject, watch } from 'vue'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
@@ -394,7 +394,7 @@ useHead({ title: 'Movimientos de Tesorería | AAAB' })
 
 const route = useRoute()
 const notificar = inject('notificar')
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 const cargando = ref(false)
 const generando = ref(false)
@@ -824,7 +824,7 @@ const exportarExcel = async () => {
     Descripción: m.descripcion || ''
   }))
 
-  const wb = new ExcelJS.Workbook()
+  const wb = new (await cargarExcelJS()).Workbook()
   const ws = wb.addWorksheet('Movimientos')
   const claves = Object.keys(data[0] || {})
   ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 18 }))
@@ -880,9 +880,6 @@ onMounted(() => {
 .badge-status-sm.pendiente { background: #fef9c3; color: #a16207; border-color: #fef08a; }
 .badge-status-sm.cerrado { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
 .badge-status-sm.anulado { background: #0f172a; color: #ffffff; border-color: #0f172a; }
-
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
 
 .animate__animated { animation-duration: 0.5s; }
 </style>

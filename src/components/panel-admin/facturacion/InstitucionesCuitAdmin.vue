@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -27,21 +27,21 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Instituciones</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <div class="col-12 col-md-3">
-              <input v-model="filtros.club" class="form-control form-control-sm shadow-none" placeholder="BUSCAR CLUB...">
+              <input aria-label="Buscar club" v-model="filtros.club" class="form-control form-control-sm shadow-none" placeholder="BUSCAR CLUB...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.forma_de_pago" class="form-control form-control-sm shadow-none" placeholder="FORMA DE PAGO...">
+              <input aria-label="Forma de pago" v-model="filtros.forma_de_pago" class="form-control form-control-sm shadow-none" placeholder="FORMA DE PAGO...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.cuit" class="form-control form-control-sm shadow-none" placeholder="CUIT...">
+              <input aria-label="Cuit" v-model="filtros.cuit" class="form-control form-control-sm shadow-none" placeholder="CUIT...">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.condicion" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por condición fiscal" v-model="filtros.condicion" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">CONDICIÓN IVA</option>
                 <option value="Consumidor Final">CONSUMIDOR FINAL</option>
                 <option value="Exento">EXENTO</option>
@@ -51,7 +51,7 @@
               </select>
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.email" class="form-control form-control-sm shadow-none" placeholder="EMAIL...">
+              <input aria-label="Email" v-model="filtros.email" class="form-control form-control-sm shadow-none" placeholder="EMAIL...">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">
@@ -69,7 +69,7 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem; table-layout: fixed;">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075 tabla-fija">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
@@ -88,17 +88,17 @@
                     <td class="ps-3 text-muted fw-bold font-monospace col-fija col-id">{{ inst.id }}</td>
                     <td class="text-center col-fija col-acciones">
                       <div class="d-flex justify-content-center gap-1">
-                        <button @click="editarInstitucion(inst)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar institución">
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                        <button @click="editarInstitucion(inst)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar institución">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button @click="confirmarEliminacion(inst.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar institución">
-                          <i class="bi bi-trash" style="font-size:16px;"></i>
+                          <i class="bi bi-trash texto-16px"></i>
                         </button>
                       </div>
                     </td>
                     <td class="text-dark fw-bold col-fija col-club text-truncate" :title="inst.club">{{ inst.club }}</td>
                     <td class="text-dark">
-                      <span v-if="inst.forma_de_pago" class="badge bg-info-subtle text-primary border">{{ inst.forma_de_pago }}</span>
+                      <span v-if="inst.forma_de_pago" class="badge bg-secondary-subtle text-secondary-emphasis border">{{ inst.forma_de_pago }}</span>
                       <span v-else>-</span>
                     </td>
                     <td class="text-dark">{{ inst.cuit || '-' }}</td>
@@ -122,8 +122,8 @@
             <div class="d-md-none p-3 bg-light">
               <div v-for="inst in institucionesPaginadas" :key="'mob-'+inst.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
                 <div class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                  <div class="text-dark fw-bold d-flex align-items-center gap-2" style="font-size: 1.05rem;">
-                    <i class="bi bi-building text-primary" style="font-size: 20px;"></i>
+                  <div class="text-dark fw-bold d-flex align-items-center gap-2 texto-105">
+                    <i class="bi bi-building text-danger" style="font-size: 20px;"></i>
                     {{ inst.club }}
                   </div>
                   <div class="small text-muted fw-bold font-monospace mt-1">#{{ inst.id }}</div>
@@ -136,7 +136,7 @@
                       <span class="text-dark small"><strong>IVA:</strong> {{ inst.condicion || '-' }}</span>
                     </div>
                     <div class="d-flex justify-content-between border-top pt-2 mt-1 border-light-subtle">
-                      <span class="text-dark small"><strong>Pago:</strong> <span class="badge bg-info-subtle text-primary">{{ inst.forma_de_pago || '-' }}</span></span>
+                      <span class="text-dark small"><strong>Pago:</strong> <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ inst.forma_de_pago || '-' }}</span></span>
                     </div>
                   </div>
 
@@ -146,11 +146,11 @@
                   </div>
 
                   <div class="d-flex gap-2">
-                    <button @click="editarInstitucion(inst)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <i class="bi bi-pencil" style="font-size: 16px;"></i> EDITAR
+                    <button @click="editarInstitucion(inst)" class="btn btn-sm btn-outline-secondary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                      <i class="bi bi-pencil texto-16px"></i> EDITAR
                     </button>
-                    <button @click="confirmarEliminacion(inst.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
-                      <i class="bi bi-trash" style="font-size: 18px;"></i>
+                    <button type="button" aria-label="Eliminar institución" title="Eliminar institución" @click="confirmarEliminacion(inst.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
+                      <i class="bi bi-trash texto-18px"></i>
                     </button>
                   </div>
                 </div>
@@ -186,13 +186,13 @@
       :hay-cambios="hayCambios"
       @close="cerrarModal"
       :icono="modoModal === 'editar' ? 'domain' : 'domain_add'"
-      :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-primary' : 'bg-success-subtle text-success'"
+      :colorIcono="modoModal === 'editar' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'"
       maxWidth="600px"
     >
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">{{ modoModal === 'editar' ? 'Editar Institución' : 'Registrar Nueva Institución' }}</span>
-          <div v-if="modoModal === 'editar'" class="text-muted small mt-1" style="font-size: 0.85rem;">
+          <div v-if="modoModal === 'editar'" class="text-muted small mt-1 texto-085">
             {{ formModal.club }} (ID #{{ formModal.id }})
           </div>
         </div>
@@ -204,13 +204,13 @@
 
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Nombre del Club / Institución *</label>
-            <input v-model="formModal.club" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Club Atlético..." required>
+            <input aria-label="Nombre del Club / Institución" v-model="formModal.club" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Club Atlético..." required>
           </div>
 
           <!-- SECCIÓN: FORMA DE PAGO -->
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Forma de Pago</label>
-            <select v-model="tipoPagoSelect" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Forma de Pago" v-model="tipoPagoSelect" class="form-select shadow-none border-secondary-subtle">
               <option value="">Seleccionar...</option>
               <option value="Cancha">Cancha</option>
               <option value="Contrafactura">Contrafactura</option>
@@ -220,18 +220,18 @@
 
           <div class="col-md-6" v-if="tipoPagoSelect === 'Otro'">
             <label class="small fw-bold text-dark mb-1">Especificar *</label>
-            <input v-model="tipoPagoOtro" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Consultar en cancha" required>
+            <input aria-label="Especificar" v-model="tipoPagoOtro" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Consultar en cancha" required>
           </div>
           <!-- FIN SECCIÓN: FORMA DE PAGO -->
 
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">CUIT *</label>
-            <input v-model="formModal.cuit" class="form-control shadow-none border-secondary-subtle" placeholder="Sin guiones" required>
+            <input aria-label="Cuit" v-model="formModal.cuit" class="form-control shadow-none border-secondary-subtle" placeholder="Sin guiones" required>
           </div>
 
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Condición frente al IVA</label>
-            <select v-model="formModal.condicion" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Condición frente al IVA" v-model="formModal.condicion" class="form-select shadow-none border-secondary-subtle">
               <option value="">Seleccionar...</option>
               <option value="Consumidor Final">Consumidor Final</option>
               <option value="Exento">Exento</option>
@@ -245,12 +245,12 @@
 
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Email Institucional</label>
-            <input v-model="formModal.email" type="email" class="form-control shadow-none border-secondary-subtle" placeholder="correo@club.com">
+            <input aria-label="Email Institucional" v-model="formModal.email" type="email" class="form-control shadow-none border-secondary-subtle" placeholder="correo@club.com">
           </div>
 
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Celular / Teléfono</label>
-            <input v-model="formModal.celular" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: 11 1234-5678">
+            <input aria-label="Celular / Teléfono" v-model="formModal.celular" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: 11 1234-5678">
           </div>
         </div>
       </form>
@@ -274,8 +274,9 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
@@ -416,8 +417,6 @@ const limpiarFiltros = () => {
   Object.keys(filtros).forEach(key => (filtros[key] = ''))
 }
 
-const normalizarTexto = (valor) => String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-
 const exportarExcel = async () => {
   const datos = institucionesFiltradas.value.map(i => ({
     ID: i.id,
@@ -429,7 +428,7 @@ const exportarExcel = async () => {
     Celular: i.celular
   }))
 
-  const wb = new ExcelJS.Workbook()
+  const wb = new (await cargarExcelJS()).Workbook()
   const ws = wb.addWorksheet('Instituciones')
 
   const claves = Object.keys(datos[0] || {})
@@ -503,12 +502,6 @@ onMounted(() => {
   min-height: 100vh;
   border-radius: 12px;
 }
-
-/* ====================================================
-   UTILIDADES
-   ==================================================== */
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
 
 .animate__animated { animation-duration: 0.5s; }
 

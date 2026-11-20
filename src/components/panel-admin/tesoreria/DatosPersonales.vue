@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Datos de los miembros · Total: {{ totalFiltrados }} registros</p>
@@ -20,37 +20,37 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Registros</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <div class="col-6 col-md">
-              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
+              <input aria-label="Apellido" v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
             </div>
             <div class="col-6 col-md">
-              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
+              <input aria-label="Nombre" v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
             </div>
             <div class="col-6 col-md">
-              <input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI...">
+              <input aria-label="Dni" v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI...">
             </div>
             <div class="col-6 col-md">
-              <input v-model="filtros.celular" class="form-control form-control-sm shadow-none" placeholder="CELULAR...">
+              <input aria-label="Celular" v-model="filtros.celular" class="form-control form-control-sm shadow-none" placeholder="CELULAR...">
             </div>
             <div class="col-6 col-md">
-              <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por activo" v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="si">ACTIVO</option>
                 <option value="no">INACTIVO</option>
               </select>
             </div>
             <div class="col-6 col-md">
-              <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por grupo" v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">GRUPO</option>
                 <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
               </select>
             </div>
             <div class="col-6 col-md">
-              <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por subgrupo" v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">SUBGRUPO</option>
                 <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
               </select>
@@ -70,7 +70,7 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
-              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id">ID</th>
@@ -118,7 +118,7 @@
               <div v-for="a in datosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
 
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                  <div class="text-dark fw-bold text-uppercase d-flex align-items-center gap-2" style="font-size: 1.05rem;">
+                  <div class="text-dark fw-bold text-uppercase d-flex align-items-center gap-2 texto-105">
                     <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
                     {{ a.apellido }}, {{ a.nombre }}
                   </div>
@@ -165,8 +165,10 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, reactive, watch } from 'vue'
+import { fechaArg } from '@/utils/fechas'
+import { normalizarTexto } from '@/utils/texto'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 
 useHead({
@@ -211,7 +213,7 @@ const opcionesSubgrupo = computed(() => {
 
 const obtenerGrupos = async () => {
   try {
-    const { payload } = await api.get({ entity: 'grupos', action: 'obtenerGrupos' });
+    const { payload } = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' });
     grupos.value = Array.isArray(payload) ? payload : [];
   } catch (error) {
     console.error('Error al obtener grupos:', error);
@@ -236,13 +238,7 @@ const cargarDatos = async () => {
   }
 };
 
-const normalizarTexto = (valor) => String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-
-const mostrarFechaArg = (fecha) => {
-  if (!fecha) return '';
-  const partes = fecha.split('-');
-  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
-};
+const mostrarFechaArg = (fecha) => fechaArg(fecha)
 
 const datosFiltrados = computed(() => {
   return listaCompleta.value.filter(a => {
@@ -290,7 +286,7 @@ const exportarExcel = async () => {
     'EMAIL': a.email
   }));
 
-  const wb = new ExcelJS.Workbook();
+  const wb = new (await cargarExcelJS()).Workbook();
   const ws = wb.addWorksheet('Datos');
 
   const claves = Object.keys(datosExcel[0] || {});
@@ -346,18 +342,6 @@ onMounted(() => {
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
-}
-
-/* ====================================================
-   UTILIDADES
-   ==================================================== */
-.btn-danger-subtle {
-  background: #fee2e2;
-  color: #dc3545;
-  border: 1px solid transparent;
-}
-.btn-danger-subtle:hover {
-  background: #fecaca;
 }
 
 .animate__animated {

@@ -3,7 +3,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+      <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Armá tu pedido de temporada</p>
@@ -20,7 +20,7 @@
           <div class="mb-4">
             <div class="input-group shadow-sm rounded-pill overflow-hidden border border-secondary-subtle">
               <span class="input-group-text bg-light border-0 text-muted ps-4"><i class="bi bi-search"></i></span>
-              <input
+              <input aria-label="Buscar prenda o modelo"
                 v-model="busqueda"
                 type="text"
                 class="form-control border-0 py-2 py-md-3 bg-light shadow-none input-filtro-custom"
@@ -31,7 +31,7 @@
 
           <div class="row g-3">
             <div v-for="(prenda, key) in stockPaginado" :key="key" class="col-12 col-md-4 col-lg-3 text-center">
-              <div class="card h-100 shadow-sm bg-light hover-card overflow-hidden" style="border-radius: 12px; border: 1px solid #e2e8f0;">
+              <div class="card h-100 shadow-sm bg-light hover-card overflow-hidden radio-12" style="border: 1px solid #e2e8f0;">
 
                 <!-- Usamos clamp() para que la altura vaya de 150px a 180px fluidamente -->
                 <div class="bg-white position-relative contenedor-imagen-superior" style="height: clamp(150px, 30vw, 180px);">
@@ -39,21 +39,21 @@
                     class="d-flex align-items-center justify-content-center h-100 cursor-zoom"
                     @click="abrirZoom(obtenerImagenActual(prenda))"
                   >
-                    <img
+                    <img loading="lazy" decoding="async"
                       :src="obtenerImagenActual(prenda)"
                       class="img-fluid foto-prenda animate__animated animate__fadeIn animate__faster"
                       alt="Indumentaria"
                     >
                     <div class="zoom-icon-overlay">
-                      <i class="bi bi-search" style="font-size: 16px;"></i>
+                      <i class="bi bi-search texto-16px"></i>
                     </div>
                   </div>
 
                   <template v-if="obtenerTotalImagenes(prenda) > 1">
-                    <button @click.stop="cambiarFoto(prenda, -1)" class="btn-nav-foto start-0 ms-1">
+                    <button type="button" aria-label="Foto anterior" title="Foto anterior" @click.stop="cambiarFoto(prenda, -1)" class="btn-nav-foto start-0 ms-1">
                       <i class="bi bi-chevron-left"></i>
                     </button>
-                    <button @click.stop="cambiarFoto(prenda, 1)" class="btn-nav-foto end-0 me-1">
+                    <button type="button" aria-label="Foto siguiente" title="Foto siguiente" @click.stop="cambiarFoto(prenda, 1)" class="btn-nav-foto end-0 me-1">
                       <i class="bi bi-chevron-right"></i>
                     </button>
                     <div class="indicador-fotos">
@@ -63,49 +63,49 @@
                 </div>
 
                 <div class="card-body p-3 d-flex flex-column flex-grow-1">
-                  <h6 class="fw-bold text-dark mb-1 text-uppercase" style="font-size: 0.85rem; line-height: 1.2;">{{ prenda.descripcion }}</h6>
+                  <h6 class="fw-bold text-dark mb-1 text-uppercase texto-085 lh-12">{{ prenda.descripcion }}</h6>
                   <h5 class="fw-bold text-danger mb-2 mb-md-3">$ {{ prenda.precio_general }}</h5>
 
                   <div class="mt-auto">
                     <div class="row g-2 mb-2 text-start">
                       <div class="col-7">
-                        <label class="fw-bold text-muted d-block mb-1" style="font-size: 0.7rem;">Talle:</label>
-                        <select v-model="prenda.itemSeleccionado" @change="validarCantidad(prenda)" class="form-select form-select-sm rounded-pill shadow-sm border-secondary-subtle bg-white">
+                        <label class="fw-bold text-muted d-block mb-1 texto-07">Talle:</label>
+                        <select aria-label="Talle" v-model="prenda.itemSeleccionado" @change="validarCantidad(prenda)" class="form-select form-select-sm rounded-pill shadow-sm border-secondary-subtle bg-white">
                           <option v-for="(t, k) in prenda.items" :key="k" :value="k">
                             {{ t.talle }}
                           </option>
                         </select>
                       </div>
                       <div class="col-5">
-                        <label class="fw-bold text-muted d-block mb-1" style="font-size: 0.7rem;">Cant:</label>
+                        <label class="fw-bold text-muted d-block mb-1 texto-07">Cant:</label>
 
                         <div class="d-flex align-items-center rounded-pill shadow-sm border border-secondary-subtle bg-white overflow-hidden p-0" style="height: 31px;">
                           <button
-                            type="button"
+                            type="button" aria-label="Restar uno"
                             class="btn btn-light border-0 text-muted p-0 d-flex align-items-center justify-content-center flex-shrink-0"
                             style="width: 28px; height: 100%; background: transparent;"
                             @click="prenda.cantidadSeleccionada > 1 ? (prenda.cantidadSeleccionada--, validarCantidad(prenda)) : null"
                           >
-                            <i class="bi bi-dash-lg" style="font-size: 16px;"></i>
+                            <i class="bi bi-dash-lg texto-16px"></i>
                           </button>
 
-                          <input
+                          <input :aria-label="`Cantidad de ${prenda.descripcion}`"
                             type="number"
                             v-model.number="prenda.cantidadSeleccionada"
                             min="1"
                             :max="permitePedidoSinStock(prenda) ? 99 : obtenerStockMaximo(prenda)"
                             @input="validarCantidad(prenda)"
-                            class="form-control border-0 text-center p-0 shadow-none bg-transparent hide-arrows fw-bold text-dark"
-                            style="min-width: 0; font-size: 0.85rem;"
-                          >
+                            class="form-control border-0 text-center p-0 shadow-none bg-transparent hide-arrows fw-bold text-dark texto-085"
+                           
+                           style="min-width: 0;">
 
                           <button
-                            type="button"
+                            type="button" aria-label="Sumar uno"
                             class="btn btn-light border-0 text-muted p-0 d-flex align-items-center justify-content-center flex-shrink-0"
                             style="width: 28px; height: 100%; background: transparent;"
                             @click="prenda.cantidadSeleccionada < (permitePedidoSinStock(prenda) ? 99 : obtenerStockMaximo(prenda)) ? (prenda.cantidadSeleccionada++, validarCantidad(prenda)) : null"
                           >
-                            <i class="bi bi-plus-lg" style="font-size: 16px;"></i>
+                            <i class="bi bi-plus-lg texto-16px"></i>
                           </button>
                         </div>
                       </div>
@@ -114,10 +114,10 @@
                         <span v-if="obtenerStockMaximo(prenda) > 0" class="badge rounded-pill bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">
                           Disp: {{ obtenerStockMaximo(prenda) }}
                         </span>
-                        <span v-else-if="permitePedidoSinStock(prenda)" class="badge rounded-pill bg-warning-subtle text-dark border border-warning" style="font-size: 0.65rem;">
+                        <span v-else-if="permitePedidoSinStock(prenda)" class="badge rounded-pill bg-warning-subtle text-dark border border-warning texto-065">
                           A Pedido (Demora de fábrica)
                         </span>
-                        <span v-else class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem;">
+                        <span v-else class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle texto-065">
                           Agotado Definitivamente
                         </span>
                       </div>
@@ -156,7 +156,7 @@
       </div>
 
       <!-- Alerta Info -->
-      <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
+      <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100 radio-12">
         <div class="d-flex align-items-center">
           <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
           <div class="small text-dark lh-sm">
@@ -171,11 +171,11 @@
     <!-- ZOOM DE IMAGEN -->
     <!-- ========================================== -->
     <Teleport to="body">
-      <div v-if="imagenZoom" class="modal-zoom-overlay animate__animated animate__fadeIn" @click="imagenZoom = null" style="z-index: 20000; cursor: pointer;">
-        <button class="btn-cerrar-zoom shadow" @click.stop="imagenZoom = null">
+      <div v-if="imagenZoom" class="modal-zoom-overlay animate__animated animate__fadeIn cursor-pointer" @click="imagenZoom = null" style="z-index: 20000;">
+        <button type="button" aria-label="Cerrar imagen" title="Cerrar imagen" class="btn-cerrar-zoom shadow" @click.stop="imagenZoom = null">
           <i class="bi bi-x-lg"></i>
         </button>
-        <img :src="imagenZoom" class="img-zoom-full animate__animated animate__zoomIn" @click.stop style="cursor: default;">
+        <img :src="imagenZoom" class="img-zoom-full animate__animated animate__zoomIn" alt="Prenda ampliada" @click.stop style="cursor: default;">
       </div>
     </Teleport>
 
@@ -201,8 +201,8 @@
             <div class="fw-bold small text-dark">{{ p.descripcion }}</div>
             <div class="text-muted extra-small">Talle: <strong>{{ p.talle }}</strong> | Cant: <strong>{{ p.cantidadSolicitada }}</strong> | ${{ p.precio * p.cantidadSolicitada }}</div>
           </div>
-          <button @click="carrito.splice(i, 1)" class="btn btn-sm text-danger border-0 p-1">
-            <i class="bi bi-trash" style="font-size: 18px;"></i>
+          <button type="button" aria-label="Quitar del carrito" title="Quitar del carrito" @click="carrito.splice(i, 1)" class="btn btn-sm text-danger border-0 p-1">
+            <i class="bi bi-trash texto-18px"></i>
           </button>
         </div>
         <div class="d-flex justify-content-between mt-3 fw-bold fs-5 text-danger bg-danger-subtle p-2 rounded">
@@ -211,7 +211,7 @@
       </div>
 
       <template #footer>
-        <button @click="mostrarCarrito = false" class="btn btn-light w-100 rounded-pill fw-bold border" style="font-size: 0.8rem;">SEGUIR MIRANDO</button>
+        <button @click="mostrarCarrito = false" class="btn btn-light w-100 rounded-pill fw-bold border texto-08">SEGUIR MIRANDO</button>
         <button v-if="carrito.length > 0" @click="confirmarPedido" class="btn btn-danger w-100 rounded-pill fw-bold shadow" style="font-size: 0.8rem;">FINALIZAR</button>
       </template>
     </ModalBase>
@@ -239,7 +239,7 @@
       </div>
 
       <div class="alert alert-info extra-small py-2 border-0 mb-0 fw-bold">
-        <i class="bi bi-info-circle align-middle me-1" style="font-size: 14px;"></i>
+        <i class="bi bi-info-circle align-middle me-1 texto-14px"></i>
         Para que tu pedido sea ACEPTADO, debes enviar el comprobante de pago a tesoreria@arbitroshandball.com.ar
       </div>
 
@@ -258,7 +258,6 @@
 <script setup>
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue';
-import { RouterLink } from 'vue-router';
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
@@ -273,7 +272,7 @@ useHead({
   ],
 });
 
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 
 const listaAgrupada = ref([]);
 const busqueda = ref('');
@@ -352,7 +351,7 @@ const cargarStock = async () => {
     action: 'obtenerStock'
   });
   if (respuesta.ok) {
-    listaAgrupada.value = respuesta.payload.map(prenda => {
+    listaAgrupada.value = (respuesta.payload || []).map(prenda => {
       prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
       return {
         ...prenda,
@@ -527,18 +526,6 @@ onUnmounted(() => {
   border-radius: 12px;
 }
 
-/* ====================================================
-   2. BOTONES E INPUTS
-   ==================================================== */
-.btn-clear {
-  border: none;
-  cursor: pointer;
-}
-
-.btn-clear:hover {
-  background-color: #cbd5e1 !important;
-}
-
 .input-filtro-custom {
   font-size: 1rem !important;
   height: auto !important;
@@ -548,7 +535,7 @@ onUnmounted(() => {
   outline: none;
 }
 
-.form-select-sm, .form-control-sm {
+.form-select-sm {
   font-size: 0.75rem;
   padding: 0.3rem 0.5rem;
 }
@@ -701,6 +688,5 @@ onUnmounted(() => {
 }
 
 .animate__animated { animation-duration: 0.5s; }
-
 
 </style>

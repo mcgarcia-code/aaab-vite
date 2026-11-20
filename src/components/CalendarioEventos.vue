@@ -107,17 +107,17 @@
           <div v-if="editable && !ev.soloLectura" class="d-flex flex-column gap-1 flex-shrink-0">
             <template v-if="puedeAprobar && ev.aprobacion === 'pendiente'">
               <button type="button" class="btn btn-success btn-sm p-1" title="Aprobar" @click="emit('aprobar', ev)">
-                <i class="bi bi-check-lg" style="font-size:16px;"></i>
+                <i class="bi bi-check-lg texto-16px"></i>
               </button>
               <button type="button" class="btn btn-outline-danger btn-sm p-1" title="Rechazar" @click="emit('rechazar', ev)">
-                <i class="bi bi-slash-circle" style="font-size:16px;"></i>
+                <i class="bi bi-slash-circle texto-16px"></i>
               </button>
             </template>
-            <button type="button" class="btn btn-light btn-sm border p-1 text-primary" title="Editar" @click="emit('editar', ev)">
-              <i class="bi bi-pencil" style="font-size:16px;"></i>
+            <button type="button" class="btn btn-light btn-sm border p-1 text-dark" title="Editar" @click="emit('editar', ev)">
+              <i class="bi bi-pencil texto-16px"></i>
             </button>
             <button v-if="puedeEliminar" type="button" class="btn btn-light btn-sm border p-1 text-danger" title="Eliminar" @click="emit('eliminar', ev)">
-              <i class="bi bi-trash" style="font-size:16px;"></i>
+              <i class="bi bi-trash texto-16px"></i>
             </button>
           </div>
         </div>

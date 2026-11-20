@@ -15,18 +15,15 @@
   },
   "dependencies": {
     "@vueuse/head": "^0.9.8",
-    "axios": "^1.13.6",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "exceljs": "^4.4.0",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.14.0",
-    "pinia": "^3.0.3",
     "qrcode.vue": "^3.8.0",
     "vue": "^3.5.18",
     "vue-advanced-cropper": "^2.8.9",
-    "vue-router": "^4.5.1",
-    "vuex": "^4.0.2"
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
@@ -36,6 +33,7 @@
     "eslint-plugin-vue": "~10.3.0",
     "globals": "^16.3.0",
     "prettier": "3.6.2",
+    "sass-embedded": "^1.108.2",
     "vite": "^7.0.6",
     "vite-plugin-sitemap": "^0.8.2",
     "vite-plugin-vue-devtools": "^8.0.0"

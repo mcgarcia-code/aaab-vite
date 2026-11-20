@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -27,24 +27,24 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Observaciones</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2 flex-md-nowrap">
             <div class="col-6 col-md-2">
-              <input v-model="filtros.nombre_observador" class="form-control form-control-sm shadow-none" placeholder="OBSERVADOR...">
+              <input aria-label="Observador" v-model="filtros.nombre_observador" class="form-control form-control-sm shadow-none" placeholder="OBSERVADOR...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.arbitros" class="form-control form-control-sm shadow-none" placeholder="ÁRBITROS OBSERVADOS...">
+              <input aria-label="Árbitros observados" v-model="filtros.arbitros" class="form-control form-control-sm shadow-none" placeholder="ÁRBITROS OBSERVADOS...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.competencia" class="form-control form-control-sm shadow-none" placeholder="COMPETENCIA...">
+              <input aria-label="Competencia" v-model="filtros.competencia" class="form-control form-control-sm shadow-none" placeholder="COMPETENCIA...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="CATEGORÍA...">
+              <input aria-label="Categoría" v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="CATEGORÍA...">
             </div>
             <div class="col-12 col-md-1">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="pendiente">PENDIENTE</option>
                 <option value="aprobada">APROBADA</option>
@@ -59,7 +59,7 @@
               </select>
             </div>
             <div class="col-6 col-md-1">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por año" v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">AÑO</option>
                 <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
               </select>
@@ -78,7 +78,7 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem; table-layout: fixed;">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075 tabla-fija">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
@@ -98,15 +98,15 @@
                     <td class="text-center text-muted fw-bold font-monospace col-fija col-id">{{ o.id }}</td>
                     <td class="text-center col-fija col-acciones">
                       <div class="d-flex justify-content-center gap-1">
-                        <button @click="abrirModalGestion(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Gestionar / Modificar">
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                        <button @click="abrirModalGestion(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Gestionar / Modificar">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button @click="verDetalle(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Ver detalle" :disabled="cargandoDetalleId === o.id">
                           <span v-if="cargandoDetalleId === o.id" class="spinner-border spinner-border-sm"></span>
-                          <i v-else class="bi bi-eye" style="font-size:16px;"></i>
+                          <i v-else class="bi bi-eye texto-16px"></i>
                         </button>
                         <button @click="verHistorial(o)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Historial de estos árbitros">
-                          <i class="bi bi-search" style="font-size:16px;"></i>
+                          <i class="bi bi-search texto-16px"></i>
                         </button>
                       </div>
                     </td>
@@ -120,7 +120,7 @@
                     </td>
                     <td class="text-center">
                       <span :class="badgeEstado(o.estado)">{{ etiquetaEstado(o.estado) }}</span>
-                      <i v-if="o.comentario_estado" class="bi bi-chat-left-text-fill text-primary ms-1" title="Tiene comentarios de la revisión"></i>
+                      <i v-if="o.comentario_estado" class="bi bi-chat-left-text-fill text-danger ms-1" title="Tiene comentarios de la revisión"></i>
                     </td>
                     <td class="text-center pe-3 text-muted">{{ formatearFechaHora(o.creado_en) }}</td>
                   </tr>
@@ -139,7 +139,7 @@
               <div v-for="o in observacionesPaginadas" :key="'mob-'+o.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
 
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                  <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem; line-height: 1.2;">
+                  <div class="text-dark fw-bold text-uppercase texto-105 lh-12">
                     {{ o.arb1 }} - {{ o.arb2 }}
                     <span v-if="!o.arb1">{{ o.arbitros }}</span>
                   </div>
@@ -147,7 +147,7 @@
                     #{{ o.id }}<br>
                     {{ formatearFecha(o.fecha_partido) }}
                     <div class="mt-1 d-flex align-items-center justify-content-end gap-1">
-                      <i v-if="o.comentario_estado" class="bi bi-chat-left-text-fill text-primary" title="Tiene comentarios de la revisión"></i>
+                      <i v-if="o.comentario_estado" class="bi bi-chat-left-text-fill text-danger" title="Tiene comentarios de la revisión"></i>
                       <span :class="badgeEstado(o.estado)">{{ etiquetaEstado(o.estado) }}</span>
                     </div>
                   </div>
@@ -167,15 +167,15 @@
                   </div>
 
                   <div class="d-flex gap-2 mt-3">
-                    <button @click="abrirModalGestion(o)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <i class="bi bi-pencil" style="font-size: 18px;"></i> Gestionar
+                    <button @click="abrirModalGestion(o)" class="btn btn-sm btn-outline-secondary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                      <i class="bi bi-pencil texto-18px"></i> Gestionar
                     </button>
                     <button @click="verDetalle(o)" class="btn btn-sm btn-outline-secondary shadow-sm px-3 d-flex justify-content-center align-items-center" title="Ver detalle" :disabled="cargandoDetalleId === o.id">
                       <span v-if="cargandoDetalleId === o.id" class="spinner-border spinner-border-sm"></span>
-                      <i v-else class="bi bi-eye" style="font-size: 18px;"></i>
+                      <i v-else class="bi bi-eye texto-18px"></i>
                     </button>
                     <button @click="verHistorial(o)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center" title="Ver historial">
-                      <i class="bi bi-search" style="font-size: 18px;"></i>
+                      <i class="bi bi-search texto-18px"></i>
                     </button>
                   </div>
                 </div>
@@ -203,7 +203,7 @@
     <!-- ==========================================
          MODAL 1: GESTIONAR OBSERVACIÓN (APROBAR/ANULAR)
          ========================================== -->
-    <ModalBase :show="mostrarModal" :hay-cambios="hayCambiosGestion" @close="cerrarModal" titulo="Gestionar Observación" icono="edit" colorIcono="bg-primary text-white" maxWidth="500px">
+    <ModalBase :show="mostrarModal" :hay-cambios="hayCambiosGestion" @close="cerrarModal" titulo="Gestionar Observación" icono="edit" colorIcono="bg-danger text-white" maxWidth="500px">
       <div class="text-center mb-3">
         <p class="text-muted small mt-1 mb-1">Observación #{{ observacionActual.id }} — {{ formatearFecha(observacionActual.fecha_partido) }}</p>
         <span :class="badgeEstado(observacionActual.estado)">Estado actual: {{ etiquetaEstado(observacionActual.estado) }}</span>
@@ -214,20 +214,20 @@
         <p class="m-0 small text-dark mt-1">
           <strong class="text-muted">Partido:</strong> {{ observacionActual.equipo_local }} vs {{ observacionActual.equipo_visitante }} ({{ categoriaObs(observacionActual) }})
         </p>
-        <div class="alert alert-info py-2 px-3 mt-3 mb-0 d-flex align-items-center gap-2" style="font-size: 0.8rem;">
-          <i class="bi bi-info-circle" style="font-size: 16px;"></i>
+        <div class="alert alert-info py-2 px-3 mt-3 mb-0 d-flex align-items-center gap-2 texto-08">
+          <i class="bi bi-info-circle texto-16px"></i>
           Cargada el <strong>{{ formatearFechaHora(observacionActual.creado_en) }}</strong>.
         </div>
       </div>
       <div class="text-start">
         <label class="small fw-bold mb-1 text-dark">Torneo</label>
-        <select v-model="torneoEditado" class="form-select shadow-none border-secondary-subtle mb-3" :disabled="cargandoTorneos">
+        <select aria-label="Torneo" v-model="torneoEditado" class="form-select shadow-none border-secondary-subtle mb-3" :disabled="cargandoTorneos">
           <option value="" disabled>{{ cargandoTorneos ? 'Cargando...' : 'Seleccione torneo' }}</option>
           <option v-for="t in torneos" :key="t.id" :value="t.id">{{ t.nombre }}</option>
         </select>
 
         <label class="small fw-bold mb-1 text-dark">Actualizar Estado de la Observación</label>
-        <select v-model="nuevoEstado" class="form-select shadow-none border-primary-subtle fw-bold">
+        <select aria-label="Actualizar Estado de la Observación" v-model="nuevoEstado" class="form-select shadow-none border-danger-subtle fw-bold">
           <option value="pendiente">Pendiente de Revisión</option>
           <option value="aprobada">Aprobar Observación</option>
           <option value="rechazada">Rechazar Observación</option>
@@ -241,9 +241,9 @@
           <label class="small fw-bold mb-1 text-dark">
             {{ esMotivo ? (nuevoEstado === 'anulada' ? 'Motivo de anulación' : 'Motivo de rechazo') : 'Comentarios adicionales' }} (Opcional)
           </label>
-          <textarea v-model="comentariosRevision" class="form-control shadow-none border-secondary-subtle" rows="3"
+          <textarea aria-label="(Opcional)" v-model="comentariosRevision" class="form-control shadow-none border-secondary-subtle" rows="3"
                     :placeholder="esMotivo ? 'Por qué se ' + (nuevoEstado === 'anulada' ? 'anula' : 'rechaza') + ' la observación...' : 'Sugerencias para que el observador mejore...'"></textarea>
-          <span class="text-muted d-block mt-1" style="font-size: 0.75rem;">El observador lo ve en el detalle de la observación, en Mis Observaciones.</span>
+          <span class="text-muted d-block mt-1 texto-075">El observador lo ve en el detalle de la observación, en Mis Observaciones.</span>
         </div>
       </div>
       <template #footer="{ cerrar }">
@@ -289,7 +289,7 @@
 
           <div v-if="formulario.partido_categoria === 'Mayores'" class="mb-3 animate__animated animate__fadeIn">
             <label class="form-label fw-bold text-uppercase small text-dark">Competencia Mayores *</label>
-            <select @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
+            <select aria-label="Competencia Mayores" @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
               <option value="" disabled>Seleccione competencia</option>
               <option v-for="(div, k) in divisionesMayores" :key="k" :value="div.idCategoria">{{ div.division }}</option>
             </select>
@@ -298,14 +298,14 @@
           <div v-if="formulario.partido_categoria === 'Inferiores'" class="row g-3 mb-3 animate__animated animate__fadeIn">
             <div class="col-md-8">
               <label class="form-label fw-bold text-uppercase small text-dark">Categoría Específica *</label>
-              <select @change='setDivisiones()' v-model="formulario.id_categoria_especifica" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoCategorias">
+              <select aria-label="Categoría Específica" @change='setDivisiones()' v-model="formulario.id_categoria_especifica" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoCategorias">
                 <option value="" disabled>{{ cargandoCategorias ? 'Cargando...' : 'Seleccione Categoría' }}</option>
                 <option v-for="(cat, k) in listas.divisiones_categorias" :key="k" :value="k">{{ cat.categoria }}</option>
               </select>
             </div>
             <div class="col-md-4">
               <label class="form-label fw-bold text-uppercase small text-dark">Nivel *</label>
-              <select @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
+              <select aria-label="Nivel" @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
                 <option value="" disabled>Nivel</option>
                 <option v-for="opt in listas.divisiones" :key="opt.idCategoria" :value="opt.idCategoria">{{ opt.division }}</option>
               </select>
@@ -314,7 +314,7 @@
 
           <div class="mb-3 animate__animated animate__fadeIn">
             <label class="form-label fw-bold text-uppercase small text-dark">Torneo *</label>
-            <select v-model="formulario.id_torneo" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoTorneos">
+            <select aria-label="Torneo" v-model="formulario.id_torneo" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoTorneos">
               <option value="" disabled>{{ cargandoTorneos ? 'Cargando...' : 'Seleccione torneo' }}</option>
               <option v-for="t in torneos" :key="t.id" :value="t.id">{{ t.nombre }}</option>
             </select>
@@ -322,12 +322,12 @@
 
           <div v-if="idCategoria" class="mb-3 animate__animated animate__fadeIn">
             <label class="form-label fw-bold text-uppercase small text-dark">Fecha del Partido *</label>
-            <input type="date" @change="obtenerPartidos()" v-model="fechaPartido" class="form-control shadow-sm border-secondary-subtle" required>
+            <input aria-label="Fecha del Partido" type="date" @change="obtenerPartidos()" v-model="fechaPartido" class="form-control shadow-sm border-secondary-subtle" required>
           </div>
 
           <div v-if="fechaPartido" class="mb-2 animate__animated animate__fadeIn">
             <label class="form-label fw-bold text-uppercase small text-dark">Partido *</label>
-            <select v-model="idPartido" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoPartidos">
+            <select aria-label="Partido" v-model="idPartido" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoPartidos">
               <option value="" disabled>{{ cargandoPartidos ? 'Cargando...' : (partidos.length ? 'Seleccione partido' : 'No hay partidos para esa fecha') }}</option>
               <option v-for="p in partidos" :key="p.id" :value="p.id">{{ p.local }} vs {{ p.visitante }}</option>
             </select>
@@ -372,7 +372,7 @@
             <h6 class="fw-bold m-0 text-dark text-uppercase">Observador</h6>
           </div>
           <label class="form-label fw-bold text-uppercase small text-dark">Quién realizó la observación *</label>
-          <select v-model="formulario.id_observador" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoArbitros">
+          <select aria-label="Quién realizó la observación" v-model="formulario.id_observador" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoArbitros">
             <option value="" disabled>{{ cargandoArbitros ? 'Cargando árbitros...' : 'Seleccione observador' }}</option>
             <option v-for="a in listaArbitros" :key="a.id" :value="a.id">{{ a.apellido }}, {{ a.nombre }}</option>
           </select>
@@ -451,15 +451,15 @@
 
       <!-- Historial PC -->
       <div class="d-none d-md-block table-responsive border rounded shadow-sm m-0">
-        <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.75rem;">
+        <table class="table table-sm table-hover align-middle m-0 texto-075">
           <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
             <tr>
-              <th class="py-2 ps-3 fw-bold text-uppercase" style="font-size: 0.75rem;">Fecha</th>
-              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Categoría</th>
-              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Partido</th>
-              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Competencia</th>
-              <th class="py-2 fw-bold text-uppercase" style="font-size: 0.75rem;">Árbitros</th>
-              <th class="py-2 pe-3 fw-bold text-uppercase text-center" style="font-size: 0.75rem;">Estado</th>
+              <th class="py-2 ps-3 fw-bold text-uppercase texto-075">Fecha</th>
+              <th class="py-2 fw-bold text-uppercase texto-075">Categoría</th>
+              <th class="py-2 fw-bold text-uppercase texto-075">Partido</th>
+              <th class="py-2 fw-bold text-uppercase texto-075">Competencia</th>
+              <th class="py-2 fw-bold text-uppercase texto-075">Árbitros</th>
+              <th class="py-2 pe-3 fw-bold text-uppercase text-center texto-075">Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -473,7 +473,7 @@
               <td class="py-3 text-dark">{{ nombresArbitros(h) }}</td>
               <td class="py-3 pe-3 text-center text-nowrap">
                 <span :class="badgeEstado(h.estado)">{{ etiquetaEstado(h.estado) }}</span>
-                <i v-if="h.comentario_estado" class="bi bi-chat-left-text-fill text-primary ms-1" title="Tiene comentarios de la revisión"></i>
+                <i v-if="h.comentario_estado" class="bi bi-chat-left-text-fill text-danger ms-1" title="Tiene comentarios de la revisión"></i>
               </td>
             </tr>
             <tr v-if="historialSeleccionado.length === 0">
@@ -492,7 +492,7 @@
           <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
             <div class="fw-bold lh-sm text-dark pe-2" style="font-size: 0.95rem;">
               {{ h.equipo_local }} vs {{ h.equipo_visitante }}
-              <div class="text-danger mt-1" style="font-size: 0.75rem;">{{ categoriaObs(h) }} • {{ formatearFecha(h.fecha_partido) }}</div>
+              <div class="text-danger mt-1 texto-075">{{ categoriaObs(h) }} • {{ formatearFecha(h.fecha_partido) }}</div>
             </div>
           </div>
           <div class="d-flex justify-content-between border-bottom pb-2 mb-2 small">
@@ -506,7 +506,7 @@
           <div class="d-flex justify-content-between align-items-center small">
             <span class="fw-bold text-dark">Estado:</span>
             <span class="d-flex align-items-center gap-1">
-              <i v-if="h.comentario_estado" class="bi bi-chat-left-text-fill text-primary" title="Tiene comentarios de la revisión"></i>
+              <i v-if="h.comentario_estado" class="bi bi-chat-left-text-fill text-danger" title="Tiene comentarios de la revisión"></i>
               <span :class="badgeEstado(h.estado)">{{ etiquetaEstado(h.estado) }}</span>
             </span>
           </div>
@@ -540,7 +540,7 @@
         <!-- Comentario de la revisión: motivo (anulada/rechazada) o comentarios adicionales (pendiente/aprobada) -->
         <div v-if="detalle.comentario_estado" class="alert py-2 px-3 small mb-3" :class="avisoComentario(detalle.estado).clase">
           <div class="fw-bold mb-1"><i class="bi me-1" :class="avisoComentario(detalle.estado).icono"></i>{{ avisoComentario(detalle.estado).titulo }}</div>
-          <div style="white-space: pre-line;">{{ detalle.comentario_estado }}</div>
+          <div class="texto-multilinea">{{ detalle.comentario_estado }}</div>
         </div>
 
         <!-- Tabs: Score sheet (puntajes) / Comment sheet (comentarios) -->
@@ -593,7 +593,7 @@
           <div v-if="comentariosPorCategoria.length">
             <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
               <div class="fw-bold small text-dark">{{ c.categoria }}</div>
-              <div class="small text-muted" style="white-space: pre-line;">{{ c.comentario }}</div>
+              <div class="small text-muted texto-multilinea">{{ c.comentario }}</div>
             </div>
           </div>
 
@@ -602,13 +602,13 @@
             <div class="fw-bold small text-dark mb-1">Prioridades de mejora</div>
             <div v-if="detalle.prioridad_mejora_1" class="small text-muted mb-1"><strong>1.</strong> {{ detalle.prioridad_mejora_1 }}</div>
             <div v-if="detalle.prioridad_mejora_2" class="small text-muted mb-1"><strong>2.</strong> {{ detalle.prioridad_mejora_2 }}</div>
-            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1" style="white-space: pre-line;">{{ detalle.prioridad_mejora_resto }}</div>
+            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1 texto-multilinea">{{ detalle.prioridad_mejora_resto }}</div>
           </div>
 
           <!-- Influencia en el resultado -->
           <div v-if="detalle.influencia_resultado_comentarios" class="mt-2 pt-2 border-top">
             <div class="fw-bold small text-dark mb-1">Influencia en el resultado</div>
-            <div class="small text-muted" style="white-space: pre-line;">{{ detalle.influencia_resultado_comentarios }}</div>
+            <div class="small text-muted texto-multilinea">{{ detalle.influencia_resultado_comentarios }}</div>
           </div>
 
           <div v-if="!tieneComentarios" class="text-center py-3 text-muted small">
@@ -640,8 +640,9 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
+import { fechaArg, fechaHoraArg, MESES as MESES_LARGOS } from '@/utils/fechas'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api';
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
@@ -653,7 +654,7 @@ useHead({
   meta: [{ name: 'description', content: 'Administración y seguimiento de observaciones arbitrales.' }],
 });
 
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 
 /* ====================================================
    ESTADO GLOBAL DE LA TABLA
@@ -663,7 +664,7 @@ const cargando = ref(false);
 
 const filtros = reactive({ mes: '', anio: anioActual(), estado: '', nombre_observador: '', arbitros: '', competencia: '', categoria: '' })
 
-const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const MESES = MESES_LARGOS
   .map((nombre, i) => ({ valor: String(i + 1).padStart(2, '0'), nombre }))
 const mostrarFiltrosMobile = ref(false);
 
@@ -673,18 +674,9 @@ const registrosPorPagina = 10;
 // Filtros y Paginación
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
 
-const formatearFecha = (fechaIso) => {
-  if (!fechaIso) return 'S/F';
-  const [anio, mes, dia] = fechaIso.split(' ')[0].split('-');
-  if (!anio || !mes || !dia) return fechaIso;
-  return `${dia}/${mes}/${anio}`;
-};
+const formatearFecha = (fecha) => fechaArg(fecha, 'S/F')
 
-const formatearFechaHora = (fechaHora) => {
-  if (!fechaHora) return '-';
-  const [fecha, hora] = fechaHora.split(' ');
-  return `${formatearFecha(fecha)}${hora ? ' ' + hora.slice(0, 5) : ''}`;
-};
+const formatearFechaHora = (fechaHora) => fechaHoraArg(fechaHora, '-')
 
 // Árbitros observados: prioriza los nombres reales (arb1/arb2, que salen de ref1_id/ref2_id);
 // si no hay ids cargados, cae al texto libre del Excel (o.arbitros).
@@ -768,7 +760,7 @@ const obtenerObservaciones = async () => {
   try {
     const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluaciones' });
     if (res && res.ok) {
-      observaciones.value = res.payload.sort((a, b) => b.id - a.id);
+      observaciones.value = (res.payload || []).sort((a, b) => b.id - a.id);
     } else {
       observaciones.value = [];
       toast({ titulo: 'Sin datos', mensaje: 'No se pudieron cargar las observaciones.', tipo: 'warning' });
@@ -865,7 +857,7 @@ const cargandoTorneos = ref(false);
 const obtenerTorneos = async () => {
   cargandoTorneos.value = true;
   try {
-    const res = await api.get({ entity: 'observaciones', action: 'obtenerTorneos' });
+    const res = await api.getCacheado({ entity: 'observaciones', action: 'obtenerTorneos' });
     if (res && res.ok && Array.isArray(res.payload)) torneos.value = res.payload;
   } catch (error) {
     console.error('Error pidiendo torneos:', error);
@@ -908,7 +900,7 @@ const cargarArbitrosObservadores = async () => {
   if (listaArbitros.value.length) return; // ya cargados
   cargandoArbitros.value = true;
   try {
-    const res = await api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: false } });
+    const res = await api.getCacheado({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: false } }, { ttl: 60 * 1000 });
     if (res && res.ok && Array.isArray(res.payload)) {
       listaArbitros.value = res.payload
         .slice()
@@ -1157,7 +1149,7 @@ const exportarExcel = async () => {
     'Estado': etiquetaEstado(o.estado), 'Cargado': o.creado_en
   }));
 
-  const wb = new ExcelJS.Workbook();
+  const wb = new (await cargarExcelJS()).Workbook();
   const ws = wb.addWorksheet('Observaciones');
 
   const claves = Object.keys(datosExportar[0] || {});
@@ -1203,12 +1195,6 @@ onMounted(() => {
   min-height: 100vh;
   border-radius: 12px;
 }
-
-/* ====================================================
-   UTILIDADES
-   ==================================================== */
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
 
 .animate__animated { animation-duration: 0.5s; }
 

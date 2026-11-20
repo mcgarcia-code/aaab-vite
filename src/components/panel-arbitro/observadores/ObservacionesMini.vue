@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 mb-4 w-100 mx-auto" style="border-radius: 12px; overflow: hidden;">
+    <div class="card shadow border-0 mb-4 w-100 mx-auto radio-12 overflow-hidden">
 
       <!-- ENCABEZADO -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom border-2 border-danger gap-3">
@@ -42,7 +42,7 @@
 
           <!-- TABLA (Escritorio) -->
           <div class="table-responsive d-none d-md-block">
-            <table class="table table-hover align-middle mb-0" style="font-size: 0.8rem;">
+            <table class="table table-hover align-middle mb-0 texto-08">
               <thead class="table-light">
                 <tr>
                   <th class="py-3 text-uppercase text-muted ps-3" style="width: 110px;">Fecha</th>
@@ -65,19 +65,19 @@
                   </td>
                   <td class="text-center">
                     <span :class="estadoDe(obs).clase">{{ estadoDe(obs).etiqueta }}</span>
-                    <i v-if="obs.motivo_revision" class="bi bi-chat-left-text-fill text-primary ms-1" title="Tiene comentarios de la revisión"></i>
+                    <i v-if="obs.motivo_revision" class="bi bi-chat-left-text-fill text-danger ms-1" title="Tiene comentarios de la revisión"></i>
                   </td>
                   <td class="text-center pe-3">
                     <div class="d-flex justify-content-center gap-1">
                       <button class="btn btn-sm btn-light border shadow-sm rounded-pill px-2 d-flex align-items-center gap-1 text-secondary" @click="detalle = obs" title="Ver detalle" aria-label="Ver detalle">
-                        <i class="bi bi-eye" style="font-size: 16px;"></i>
+                        <i class="bi bi-eye texto-16px"></i>
                       </button>
                       <template v-if="esPendiente(obs)">
-                        <button class="btn btn-sm btn-outline-primary shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="abrirEditar(obs)" title="Editar" aria-label="Editar">
-                          <i class="bi bi-pencil" style="font-size: 16px;"></i>
+                        <button class="btn btn-sm btn-outline-secondary shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="abrirEditar(obs)" title="Editar" aria-label="Editar">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button class="btn btn-sm btn-outline-danger shadow-sm rounded-pill px-2 d-flex align-items-center gap-1" @click="confirmarEliminar(obs)" title="Borrar" aria-label="Borrar">
-                          <i class="bi bi-trash" style="font-size: 16px;"></i>
+                          <i class="bi bi-trash texto-16px"></i>
                         </button>
                       </template>
                     </div>
@@ -98,26 +98,26 @@
             <div v-for="obs in observacionesPaginadas" :key="'mob-' + obs.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
               <div class="card-body p-3">
                 <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
-                  <div class="fw-bold text-uppercase text-dark" style="font-size: 1rem; line-height: 1.2;">{{ obs.apellido }}, {{ obs.nombre }}</div>
+                  <div class="fw-bold text-uppercase text-dark lh-12" style="font-size: 1rem;">{{ obs.apellido }}, {{ obs.nombre }}</div>
                   <div class="d-flex align-items-center gap-1 flex-shrink-0">
-                    <i v-if="obs.motivo_revision" class="bi bi-chat-left-text-fill text-primary" title="Tiene comentarios de la revisión"></i>
+                    <i v-if="obs.motivo_revision" class="bi bi-chat-left-text-fill text-danger" title="Tiene comentarios de la revisión"></i>
                     <span :class="estadoDe(obs).clase">{{ estadoDe(obs).etiqueta }}</span>
                   </div>
                 </div>
-                <div class="text-muted fw-bold mb-2" style="font-size: 0.8rem;">
+                <div class="text-muted fw-bold mb-2 texto-08">
                   {{ fechaDMA(obs.fecha_partido) }} <span class="mx-1">•</span> {{ obs.categoria || '-' }}
                 </div>
                 <div class="text-dark small mb-2">{{ obs.encuentro }}</div>
                 <div class="d-flex justify-content-end align-items-center border-top pt-2 gap-1">
                   <button class="btn btn-sm btn-light border rounded-pill px-3 fw-bold d-flex align-items-center gap-1 text-secondary" @click="detalle = obs" aria-label="Ver detalle">
-                    <i class="bi bi-eye" style="font-size: 16px;"></i>
+                    <i class="bi bi-eye texto-16px"></i>
                   </button>
                   <template v-if="esPendiente(obs)">
-                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="abrirEditar(obs)" aria-label="Editar">
-                      <i class="bi bi-pencil" style="font-size: 16px;"></i>
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="abrirEditar(obs)" aria-label="Editar">
+                      <i class="bi bi-pencil texto-16px"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-flex align-items-center gap-1" @click="confirmarEliminar(obs)" aria-label="Borrar">
-                      <i class="bi bi-trash" style="font-size: 16px;"></i>
+                      <i class="bi bi-trash texto-16px"></i>
                     </button>
                   </template>
                 </div>
@@ -125,7 +125,7 @@
             </div>
 
             <div v-if="observacionesPaginadas.length === 0" class="text-center p-4 bg-white rounded-3 shadow-sm border">
-              <i class="bi bi-search text-muted opacity-50 d-block mb-2" style="font-size: 40px;"></i>
+              <i class="bi bi-search text-muted opacity-50 d-block mb-2 texto-40px"></i>
               <p class="text-muted m-0 fw-bold">No cargaste observaciones del curso.</p>
             </div>
           </div>
@@ -165,7 +165,7 @@
         <!-- Comentario de la revisión -->
         <div v-if="detalle.motivo_revision" class="alert py-2 px-3 small mb-3" :class="estadoDe(detalle).alerta">
           <div class="fw-bold mb-1"><i class="bi bi-chat-left-text me-1"></i>{{ detalle.estado_revision === 'rechazada' ? 'Motivo de rechazo' : 'Comentarios de la revisión' }}</div>
-          <div style="white-space: pre-line;">{{ detalle.motivo_revision }}</div>
+          <div class="texto-multilinea">{{ detalle.motivo_revision }}</div>
         </div>
 
         <!-- Comentarios -->
@@ -176,7 +176,7 @@
           <template v-for="c in CAMPOS_OBSERVACION_CURSO" :key="c.clave">
             <div v-if="detalle[c.columna]" class="mb-3">
               <div class="fw-bold small" :class="c.clave === 'aspectosAMejorar' ? 'text-danger' : 'text-dark'">{{ c.etiqueta }}</div>
-              <div class="small text-muted" style="white-space: pre-line;">{{ detalle[c.columna] }}</div>
+              <div class="small text-muted texto-multilinea">{{ detalle[c.columna] }}</div>
             </div>
           </template>
           <div v-if="!CAMPOS_OBSERVACION_CURSO.some(c => detalle[c.columna])" class="text-center py-3 text-muted small">
@@ -212,7 +212,7 @@ import { normalizarTexto } from '@/utils/texto'
 
 useHead({ title: 'Observaciones del Curso | AAAB' })
 
-const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const notificar = inject('notificar')
 const toast = inject('toast', (m) => notificar(m))
 
 const anio = ref(Number(anioActual()))
@@ -307,9 +307,4 @@ onMounted(cargar)
 <style scoped>
 .animate__animated { animation-duration: 0.5s; }
 
-/* Píldoras de estado: mismo estilo que Mis Observaciones Realizadas */
-.estado-pill { border-radius: 999px; padding: 0.35em 0.85em; font-weight: 700; font-size: 0.7rem; letter-spacing: 0.02em; border: 1px solid transparent; display: inline-block; white-space: nowrap; }
-.estado-pendiente { background-color: #fdf3d3; color: #a6841f; border-color: #f2e2a5; }
-.estado-aprobada { background-color: #e3f5e6; color: #2f8a45; border-color: #bfe6c8; }
-.estado-rechazada { background-color: #fde7ea; color: #c0304a; border-color: #f5c2cb; }
 </style>

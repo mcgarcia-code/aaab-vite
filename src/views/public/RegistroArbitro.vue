@@ -266,7 +266,7 @@ useHead({
 })
 
 const notificar = inject('notificar', null)
-const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast')
 
 // ─── Opciones fijas (mismos valores que usa el panel del árbitro) ──
 const GENEROS = [
@@ -446,7 +446,7 @@ const cargarDatos = async () => {
   cargandoDatos.value = true
   try {
     const [resUbicacion, datosClubes] = await Promise.all([
-      api.get({ entity: 'localidades', action: 'obtenerProvinciasLocalidades', payload: {} }),
+      api.getCacheado({ entity: 'localidades', action: 'obtenerProvinciasLocalidades', payload: {} }),
       obtenerClubes(),
     ])
     if (!resUbicacion?.ok) throw new Error(resUbicacion?.message || 'No se pudo cargar el formulario')

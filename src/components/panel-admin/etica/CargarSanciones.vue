@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom gap-3">
@@ -25,7 +25,7 @@
 
                       <div class="col-12">
                         <label class="fw-bold text-dark small mb-1">Árbitro Involucrado *</label>
-                        <select v-model="nuevaSancion.id_arbitro" class="form-select shadow-none border-secondary-subtle bg-light py-2" required :disabled="cargando">
+                        <select aria-label="Árbitro Involucrado" v-model="nuevaSancion.id_arbitro" class="form-select shadow-none border-secondary-subtle bg-light py-2" required :disabled="cargando">
                           <option value="" disabled>Seleccione un árbitro...</option>
                           <option v-for="a in arbitros" :key="a.id" :value="a.id">
                             {{ a.apellido }}, {{ a.nombre }}
@@ -35,12 +35,12 @@
 
                       <div class="col-12">
                         <label class="fw-bold text-dark small mb-1">Artículo (Reglamento) *</label>
-                        <input type="text" v-model="nuevaSancion.articulo" placeholder="Ej: Art. 42 inc B" class="form-control shadow-none border-secondary-subtle bg-light py-2" required :disabled="cargando">
+                        <input aria-label="Artículo (Reglamento)" type="text" v-model="nuevaSancion.articulo" placeholder="Ej: Art. 42 inc B" class="form-control shadow-none border-secondary-subtle bg-light py-2" required :disabled="cargando">
                       </div>
 
                       <div class="col-12">
                         <label class="fw-bold text-dark small mb-1">Motivo / Descripción de los hechos *</label>
-                        <textarea v-model="nuevaSancion.motivo" rows="5" class="form-control shadow-none border-secondary-subtle bg-light py-2" placeholder="Detalle los motivos por los cuales se inicia este proceso..." required :disabled="cargando"></textarea>
+                        <textarea aria-label="Motivo / Descripción de los hechos" v-model="nuevaSancion.motivo" rows="5" class="form-control shadow-none border-secondary-subtle bg-light py-2" placeholder="Detalle los motivos por los cuales se inicia este proceso..." required :disabled="cargando"></textarea>
                       </div>
 
                       <div class="col-12 mt-4 pt-3 border-top border-light-subtle">
@@ -111,10 +111,7 @@ useHead({
   title: 'Cargar Sanción | AAAB'
 });
 
-const toast = inject('toast', (opts) => {
-    console.error("No se encontró el notificador global", opts);
-    alert(opts.mensaje);
-});
+const toast = inject('toast');
 
 const arbitros  = ref([]);
 const ultimasSanciones = ref([]);

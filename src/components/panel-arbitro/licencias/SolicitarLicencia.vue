@@ -4,7 +4,7 @@
     <div class="row g-4">
       <!-- COLUMNA IZQUIERDA: FORMULARIO -->
       <div class="col-12 col-lg-4">
-        <div class="card shadow p-3 p-md-4 border-0 h-100" style="border-radius: 15px;">
+        <div class="card shadow p-3 p-md-4 border-0 h-100 radio-15">
           <p class="seccion-descripcion mb-3">Avisá tus inasistencias</p>
           <p class="text-muted small mb-4">
             Las licencias particulares deben solicitarse con un mínimo de <strong>10 días</strong> de antelación. Las mismas son por día completo, no hay licencias parciales.
@@ -12,7 +12,7 @@
 
           <div class="mb-3">
             <label class="form-label fw-bold small text-dark">Motivo de la Licencia</label>
-            <select v-model="motivoSeleccionado" class="form-select form-select-lg shadow-none fs-6" :disabled="cargando">
+            <select aria-label="Motivo de la Licencia" v-model="motivoSeleccionado" class="form-select form-select-lg shadow-none fs-6" :disabled="cargando">
               <option value="particular">Particular</option>
               <option value="lesion_enfermedad">Lesión / Enfermedad</option>
               <option v-if="!tiempoIndeterminado" value="designacion_torneo_nacional">Designación Torneo Nacional</option>
@@ -92,9 +92,9 @@
 
       <!-- COLUMNA DERECHA: HISTORIAL -->
       <div class="col-12 col-lg-8">
-        <div class="card shadow border-0 overflow-hidden h-100 d-flex flex-column" style="border-radius: 15px;">
+        <div class="card shadow border-0 overflow-hidden h-100 d-flex flex-column radio-15">
           <div class="card-header bg-white py-3 border-bottom flex-shrink-0">
-            <h6 class="m-0 fw-bold text-dark small text-uppercase" style="letter-spacing: 1px;">Mi Historial de Licencias</h6>
+            <h6 class="m-0 fw-bold text-dark small text-uppercase espaciado-1">Mi Historial de Licencias</h6>
           </div>
 
           <div class="card-body p-0 bg-white flex-grow-1">
@@ -121,16 +121,16 @@
                   <!-- HEADER MOBILE: Datos (Se oculta en PC) -->
                   <div class="col-12 d-md-none mb-3 border-bottom pb-2">
                     <div class="fw-bold text-dark fs-6">{{ formatearFechaAusencia(lic) }}</div>
-                    <div class="text-muted mt-1" style="font-size: 0.8rem;">
+                    <div class="text-muted mt-1 texto-08">
                       <i class="bi bi-clock me-1"></i> Solicitada: {{ formatearFecha(lic.fecha_solicitud) }}
                     </div>
-                    <div class="text-muted" style="font-size: 0.8rem;">
+                    <div class="text-muted texto-08">
                       <i class="bi bi-tag me-1"></i> Motivo: {{ etiquetaMotivo(lic.motivo, true) }}
                     </div>
                   </div>
 
                   <!-- COLUMNAS ESCRITORIO -->
-                  <div class="col-md-3 d-none d-md-block fw-bold text-dark ps-3" style="font-size: 0.85rem;">
+                  <div class="col-md-3 d-none d-md-block fw-bold text-dark ps-3 texto-085">
                     {{ formatearFechaAusencia(lic) }}
                   </div>
                   <div class="col-md-2 d-none d-md-block text-muted small">
@@ -142,7 +142,7 @@
 
                   <!-- ESTADO Y ACCIÓN (Ambos, en celular se parten mitad y mitad) -->
                   <div class="col-6 col-md-2 text-start text-md-center pe-2 pe-md-0">
-                    <span class="badge w-90 py-2 py-md-1 shadow-sm" style="font-size: 0.7rem; letter-spacing: 0.5px;"
+                    <span class="badge w-90 py-2 py-md-1 shadow-sm texto-07 espaciado-05"
                           :class="{'bg-success': lic.estado === 'aprobada', 'bg-danger': lic.estado === 'rechazada' || lic.estado === 'borrada' || lic.estado === 'anulada', 'bg-warning text-dark': lic.estado === 'pendiente'}">
                       {{ lic.estado.toUpperCase() }}
                     </span>
@@ -151,7 +151,7 @@
                     <button
                       v-if="puedeAnular(lic)"
                       @click="anularLicencia(lic)"
-                      class="btn btn-sm btn-anular w-90 py-2 py-md-1 shadow-sm" style="font-size: 0.7rem; letter-spacing: 0.5px;"
+                      class="btn btn-sm btn-anular w-90 py-2 py-md-1 shadow-sm texto-07 espaciado-05"
                       :disabled="cargando"
                     >
                       <i class="bi bi-x-circle"></i> Anular
@@ -185,6 +185,7 @@
 <script setup>
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, onMounted, inject, computed, watch } from 'vue';
+import { fechaArg } from '@/utils/fechas'
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 
@@ -196,7 +197,7 @@ useHead({
 });
 
 const notificar = inject('notificar');
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 const fechaDesde = ref('');
 const fechaHasta = ref('');
 const aISOlocal = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -248,12 +249,7 @@ const licenciasPaginadas = computed(() => {
 });
 
 // Formateadores de fecha
-const formatearFecha = (fechaStr) => {
-  if (!fechaStr) return '';
-  const soloFecha = fechaStr.split(' ')[0];
-  const partes = soloFecha.split('-');
-  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fechaStr;
-};
+const formatearFecha = (fecha) => fechaArg(fecha)
 
 const formatearFechaAusencia = (lic) => {
   if (lic.tiempo_indeterminado == 1) return 'Tiempo indeterminado';
@@ -496,17 +492,8 @@ onMounted(() => {
 
 <style scoped>
 /* ====================================================
-   COMPONENTES Y BOTONES
+   LISTA DE LICENCIAS
    ==================================================== */
-.btn-primary {
-  background-color: #dc2626 !important;
-  border: none;
-}
-.btn-primary:hover:not(:disabled) {
-  background-color: #b91c1c !important;
-}
-
-/* Efectos de la lista */
 .item-licencia {
   transition: background-color 0.2s ease;
 }

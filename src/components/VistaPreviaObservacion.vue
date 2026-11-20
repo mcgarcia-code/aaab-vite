@@ -52,7 +52,7 @@
       </div>
 
       <!-- ── Recordatorio antes de cargar ── -->
-      <div class="alert alert-warning border-warning-subtle text-dark d-flex align-items-start gap-2 rounded-3" style="font-size: 0.85rem;">
+      <div class="alert alert-warning border-warning-subtle text-dark d-flex align-items-start gap-2 rounded-3 texto-085">
         <i class="bi bi-exclamation-triangle-fill text-warning mt-1 flex-shrink-0 fs-6"></i>
         <span>
           <strong>Antes de cargar:</strong> revisá que <strong>no haya errores</strong> en la planilla.
@@ -108,7 +108,7 @@
         <div v-if="comentariosPorCategoria.length">
           <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
             <div class="fw-bold small text-dark">{{ c.categoria }}</div>
-            <div class="small text-muted" style="white-space: pre-line;">{{ c.comentario }}</div>
+            <div class="small text-muted texto-multilinea">{{ c.comentario }}</div>
           </div>
         </div>
 
@@ -116,12 +116,12 @@
           <div class="fw-bold small text-dark mb-1">Prioridades de mejora</div>
           <div v-if="preview.prioridad_mejora_1" class="small text-muted mb-1"><strong>1.</strong> {{ preview.prioridad_mejora_1 }}</div>
           <div v-if="preview.prioridad_mejora_2" class="small text-muted mb-1"><strong>2.</strong> {{ preview.prioridad_mejora_2 }}</div>
-          <div v-if="preview.prioridad_mejora_resto" class="small text-muted mb-1" style="white-space: pre-line;">{{ preview.prioridad_mejora_resto }}</div>
+          <div v-if="preview.prioridad_mejora_resto" class="small text-muted mb-1 texto-multilinea">{{ preview.prioridad_mejora_resto }}</div>
         </div>
 
         <div v-if="preview.influencia_resultado_comentarios" class="mt-2 pt-2 border-top">
           <div class="fw-bold small text-dark mb-1">Influencia en el resultado</div>
-          <div class="small text-muted" style="white-space: pre-line;">{{ preview.influencia_resultado_comentarios }}</div>
+          <div class="small text-muted texto-multilinea">{{ preview.influencia_resultado_comentarios }}</div>
         </div>
 
         <div v-if="!tieneComentarios" class="text-center py-3 text-muted small">

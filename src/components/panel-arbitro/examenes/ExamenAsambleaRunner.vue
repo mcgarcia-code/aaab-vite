@@ -40,10 +40,10 @@
           </h2>
           <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 gap-sm-3 mb-3">
             <span class="badge bg-light text-dark border fs-6 py-2 px-3 w-100 w-sm-auto">
-              <i class="bi bi-bullseye text-primary me-2"></i>Puntaje: {{ resultado.puntaje }} / {{ resultado.posible }}
+              <i class="bi bi-bullseye text-danger me-2"></i>Puntaje: {{ resultado.puntaje }} / {{ resultado.posible }}
             </span>
             <span class="badge bg-light text-dark border fs-6 py-2 px-3 w-100 w-sm-auto">
-              <i class="bi bi-percent text-info me-2"></i>Nota: {{ Number(resultado.calificacion).toFixed(2) }}%
+              <i class="bi bi-percent text-danger me-2"></i>Nota: {{ Number(resultado.calificacion).toFixed(2) }}%
             </span>
           </div>
           <div class="alert alert-success py-2 px-3 small d-inline-block text-start text-sm-center">
@@ -88,7 +88,7 @@
       <!-- Examen en curso -->
       <div v-else-if="fase === 'examen'" class="quiz-wrap">
         <div class="text-center mb-4 border-bottom pb-3">
-          <h5 class="fw-bold text-muted mb-1 text-uppercase fs-6 fs-md-5" style="letter-spacing:1px;">
+          <h5 class="fw-bold text-muted mb-1 text-uppercase fs-6 fs-md-5 espaciado-1">
             Pregunta <span class="text-danger fs-4 fs-md-3">{{ indice + 1 }}</span> de {{ total }}
           </h5>
           <small class="text-secondary d-block px-2">{{ props.titulo }}</small>

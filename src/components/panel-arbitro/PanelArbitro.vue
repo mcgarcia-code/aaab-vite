@@ -68,12 +68,12 @@
                         <i :class="['bi', getIconoNotificacion(notif.tipo).icono, 'text-white']"></i>
                       </div>
                       <div class="flex-grow-1">
-                        <p class="mb-1 text-dark small fw-bold" style="line-height: 1.2;">
+                        <p class="mb-1 text-dark small fw-bold lh-12">
                           {{ notif.titulo }}
                           <span class="d-inline-block ms-1 bg-danger rounded-circle" style="width: 6px; height: 6px;"></span>
                         </p>
-                        <p class="mb-1 text-muted" style="font-size: 0.75rem; line-height: 1.3;">{{ notif.mensaje }}</p>
-                        <small class="text-muted fw-bold" style="font-size: 0.65rem;">{{ notif.fecha }}</small>
+                        <p class="mb-1 text-muted texto-075" style="line-height: 1.3;">{{ notif.mensaje }}</p>
+                        <small class="text-muted fw-bold texto-065">{{ notif.fecha }}</small>
                       </div>
                     </div>
                   </a>
@@ -89,7 +89,7 @@
                 <button v-if="notificacionesNoLeidas > 0" @click.stop="marcarLeidas" class="btn btn-link btn-sm text-decoration-none text-muted small fw-bold p-0">
                   Marcar como leídas
                 </button>
-                <RouterLink to="/panel-arbitro/historial-notificaciones" class="btn btn-link btn-sm text-decoration-none text-primary small fw-bold p-0">
+                <RouterLink to="/panel-arbitro/historial-notificaciones" class="btn btn-link btn-sm text-decoration-none text-dark small fw-bold p-0">
                   Ver historial completo
                 </RouterLink>
               </li>
@@ -98,7 +98,6 @@
       </div>
     </header>
 
-    <input ref="inputFoto" type="file" accept="image/jpeg,image/png,image/webp" class="d-none" @change="onFotoSeleccionada">
 
     <!-- ============ MENU DE PERFIL ============ -->
     <MenuPerfil
@@ -125,43 +124,15 @@
     <!-- ============ BARRA INFERIOR (celular y tablet) ============ -->
     <BarraInferior :items="itemsBarraInferior" />
 
-    <div v-if="mostrarFotoAmpliada" class="foto-overlay" @click="mostrarFotoAmpliada = false">
-      <button class="foto-overlay-cerrar" @click.stop="mostrarFotoAmpliada = false" aria-label="Cerrar">
-        <i class="bi bi-x-lg"></i>
-      </button>
-      <img :src="urlFoto" class="foto-overlay-img shadow-lg" @click.stop>
-    </div>
-
-    <!-- Modal de recorte de la nueva foto -->
-    <div v-if="mostrarModalFoto" class="foto-overlay" @click.self="cancelarFoto">
-      <div class="modal-foto shadow-lg">
-        <h5 class="fw-bold text-dark mb-3">Recortá tu foto de perfil</h5>
-
-        <div v-if="previewUrl" class="cropper-wrap mb-3">
-          <Cropper
-            ref="cropperRef"
-            class="cropper"
-            :src="previewUrl"
-            :stencil-props="{ aspectRatio: 3 / 4 }"
-            image-restriction="stencil"
-          />
-        </div>
-
-        <p class="text-muted small text-center mb-3">
-          Esta foto se usará en tu panel y en tu credencial digital.
-        </p>
-
-        <div class="d-flex gap-2">
-          <button class="btn btn-outline-secondary rounded-pill fw-bold flex-grow-1" @click="cancelarFoto" :disabled="subiendoFoto">
-            Cancelar
-          </button>
-          <button class="btn btn-danger rounded-pill fw-bold flex-grow-1 d-flex justify-content-center align-items-center" @click="confirmarFoto" :disabled="subiendoFoto || !previewUrl">
-            <span v-if="subiendoFoto" class="spinner-border spinner-border-sm me-2"></span>
-            {{ subiendoFoto ? 'Subiendo...' : 'Guardar' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Foto de perfil: ampliada y cambio con recorte -->
+    <EditorFotoPerfil
+      ref="editorFoto"
+      :foto="urlFoto"
+      entity="datos_personales"
+      action="actualizarFoto"
+      @actualizada="versionFoto = Date.now()"
+      @aviso="(m) => toastRef?.mostrar(m)"
+    />
 
     <!-- Toasts de feedback -->
     <ToastNotificacion ref="toastRef" />
@@ -174,8 +145,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { auth } from '@/api/auth'
 import { useHead } from '@vueuse/head'
 import { api } from '@/api/api'
-import { Cropper } from 'vue-advanced-cropper'
-import 'vue-advanced-cropper/dist/style.css'
+import EditorFotoPerfil from '@/components/comunes/EditorFotoPerfil.vue'
 import '@/assets/css/panel.css'
 import ToastNotificacion from '@/components/ToastNotificacion.vue'
 import { useModulosArbitro } from '@/composables/useModulosArbitro'
@@ -194,7 +164,7 @@ const toastRef = ref(null)
 
 // Datos del Árbitro
 const arbitro = ref(auth.getUser() || {})
-const mostrarFotoAmpliada = ref(false)
+const editorFoto = ref(null)
 
 // Cache-buster: se actualiza al subir una foto nueva para forzar la recarga de la imagen
 const versionFoto = ref(Date.now())
@@ -287,7 +257,12 @@ const cerrarMenuPerfil = () => {
 
 const abrirFotoAmpliada = () => {
   cerrarMenuPerfil()
-  mostrarFotoAmpliada.value = true
+  editorFoto.value?.ampliar()
+}
+
+const abrirSelectorFoto = () => {
+  cerrarMenuPerfil()
+  editorFoto.value?.abrirSelector()
 }
 
 const onTeclaMenuPerfil = (e) => {
@@ -316,137 +291,6 @@ const cerrarSesion = () => {
 }
 
 // =======================================================
-// LÓGICA DE FOTO DE PERFIL (con recorte)
-// =======================================================
-
-const inputFoto = ref(null)
-const cropperRef = ref(null)
-const mostrarModalFoto = ref(false)
-const subiendoFoto = ref(false)
-const previewUrl = ref('')
-
-const MAX_MB = 5
-const TIPOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp']
-
-const abrirSelectorFoto = () => {
-  cerrarMenuPerfil()
-  inputFoto.value?.click()
-}
-
-const onFotoSeleccionada = (e) => {
-  const archivo = e.target.files?.[0]
-  // Limpiamos el input para poder volver a elegir el mismo archivo si se cancela
-  e.target.value = ''
-  if (!archivo) return
-
-  // Validación de tipo
-  if (!TIPOS_PERMITIDOS.includes(archivo.type)) {
-    toastRef.value?.mostrar({
-      tipo: 'danger',
-      titulo: 'Formato no válido',
-      mensaje: 'Usá una imagen JPG, PNG o WEBP.'
-    })
-    return
-  }
-
-  // Validación de peso
-  if (archivo.size > MAX_MB * 1024 * 1024) {
-    toastRef.value?.mostrar({
-      tipo: 'warning',
-      titulo: 'Imagen muy pesada',
-      mensaje: `La imagen supera los ${MAX_MB} MB. Elegí una más liviana.`
-    })
-    return
-  }
-
-  previewUrl.value = URL.createObjectURL(archivo)
-  mostrarModalFoto.value = true
-}
-
-const cancelarFoto = () => {
-  if (subiendoFoto.value) return
-  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
-  previewUrl.value = ''
-  mostrarModalFoto.value = false
-}
-
-// Toma el recorte del cropper y lo devuelve como Blob (archivo real para subir por FormData)
-const obtenerRecorteBlob = () => {
-  return new Promise((resolve, reject) => {
-    const resultado = cropperRef.value?.getResult()
-    if (!resultado || !resultado.canvas) {
-      reject(new Error('No se pudo procesar el recorte'))
-      return
-    }
-    // Exportamos a JPEG; el backend lo convierte a WEBP y lo guarda como {dni}.webp
-    resultado.canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error('No se pudo generar la imagen'))
-          return
-        }
-        resolve(blob)
-      },
-      'image/jpeg',
-      0.9
-    )
-  })
-}
-
-const confirmarFoto = async () => {
-  if (subiendoFoto.value || !previewUrl.value) return
-  subiendoFoto.value = true
-
-  try {
-    const blob = await obtenerRecorteBlob()
-    // Convertimos el blob en File para que $_FILES['fotos']['name'] tenga un nombre/extensión válidos
-    const archivo = new File([blob], 'perfil.jpg', { type: 'image/jpeg' })
-
-    // api.postFile espera que el payload sea un FormData; los archivos van
-    // dentro con append. Usamos 'fotos' para que en el back llegue como
-    // $_FILES['fotos'] (mismo patrón que indumentaria).
-    const formData = new FormData()
-    formData.append('fotos', archivo)
-
-    const res = await api.postFile({
-      entity: 'datos_personales',
-      action: 'actualizarFoto',
-      payload: formData
-    })
-
-    if (res.ok) {
-      // Forzamos la recarga de la imagen en el panel (y en la credencial la próxima vez que se abra)
-      versionFoto.value = Date.now()
-      // Cerramos el modal directamente. No usamos cancelarFoto() acá porque su
-      // guarda (if subiendoFoto) todavía es true en este punto y no cerraría.
-      if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
-      previewUrl.value = ''
-      mostrarModalFoto.value = false
-      toastRef.value?.mostrar({
-        tipo: 'success',
-        titulo: 'Foto actualizada',
-        mensaje: 'Tu foto de perfil se guardó correctamente.'
-      })
-    } else {
-      toastRef.value?.mostrar({
-        tipo: 'danger',
-        titulo: 'No se pudo actualizar',
-        mensaje: res.payload?.mensaje || 'Intentá de nuevo en unos minutos.'
-      })
-    }
-  } catch (error) {
-    console.error('Error al subir la foto', error)
-    toastRef.value?.mostrar({
-      tipo: 'danger',
-      titulo: 'Error',
-      mensaje: 'Ocurrió un error al procesar o subir la foto.'
-    })
-  } finally {
-    subiendoFoto.value = false
-  }
-}
-
-// =======================================================
 // LÓGICA DE NOTIFICACIONES
 // =======================================================
 
@@ -465,7 +309,7 @@ const getIconoNotificacion = (tipo) => {
     case 'success': return { icono: 'bi-check-circle', bg: 'bg-success' }
     case 'danger': return { icono: 'bi-exclamation-octagon', bg: 'bg-danger' }
     case 'warning': return { icono: 'bi-exclamation-triangle', bg: 'bg-warning text-dark' }
-    case 'info': return { icono: 'bi-info-circle', bg: 'bg-primary' }
+    case 'info': return { icono: 'bi-info-circle', bg: 'bg-secondary' }
     default: return { icono: 'bi-bell', bg: 'bg-secondary' }
   }
 }
@@ -569,21 +413,6 @@ useHead({
 
 .min-w-0 { min-width: 0; }
 
-.btn-perfil {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 44px;
-  max-width: 100%;
-  padding: 4px 8px 4px 0;
-  background: none;
-  border: 0;
-  border-radius: 12px;
-  color: #fff;
-  text-align: left;
-}
-.btn-perfil:focus-visible { outline: 2px solid #94a3b8; outline-offset: 2px; }
-
 .perfil-img {
   width: 44px;
   height: 44px;
@@ -600,18 +429,6 @@ useHead({
   line-height: 1.2;
   max-width: 100%;
 }
-
-.subtitulo-perfil {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
-.chevron-perfil {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  transition: transform 0.2s;
-}
-.chevron-perfil.girado { transform: rotate(180deg); }
 
 .btn-icono {
   width: 44px;
@@ -652,72 +469,6 @@ useHead({
   align-items: center;
   justify-content: center;
   border: 2px solid #0b1222;
-}
-
-
-/* Modal de recorte de foto */
-.modal-foto {
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-  width: 100%;
-  max-width: 420px;
-  cursor: default;
-}
-
-.cropper-wrap {
-  border-radius: 12px;
-  overflow: hidden;
-  border: 2px solid #e2e8f0;
-}
-
-.cropper {
-  height: 320px;
-  background: #1a1a1a;
-}
-
-.foto-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1050;
-  padding: 20px;
-  cursor: zoom-out;
-}
-
-.foto-overlay-img {
-  max-width: min(90vw, 500px);
-  max-height: 90vh;
-  border-radius: 12px;
-  border: 3px solid #fff;
-  object-fit: cover;
-  cursor: default;
-}
-
-.foto-overlay-cerrar {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.foto-overlay-cerrar:hover {
-  background: #334155;
-  border-color: #334155;
 }
 
 .dropdown-notificaciones {
@@ -773,5 +524,4 @@ useHead({
   background: #94a3b8;
 }
 
-.animate__animated { animation-duration: 0.5s; }
 </style>

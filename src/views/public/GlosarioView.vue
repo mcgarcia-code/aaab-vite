@@ -40,7 +40,7 @@
             <span class="input-group-text bg-white border-0 text-danger">
               <i class="bi bi-search"></i>
             </span>
-            <input
+            <input :aria-label="currentLang === 'es' ? 'Buscar término' : 'Search term'"
               v-model="searchQuery"
               type="text"
               class="form-control border-0 focus-ring focus-ring-danger py-2"
@@ -58,7 +58,7 @@
         <div v-show="currentLang === 'es'" class="animate__animated animate__fadeIn">
           <div class="row">
             <div class="col-12 mb-4">
-               <h2 class="fw-bold text-white border-bottom border-danger pb-2 d-inline-block text-uppercase" style="letter-spacing: 1px;">Glosario Reglas de Juego Handball</h2>
+               <h2 class="fw-bold text-white border-bottom border-danger pb-2 d-inline-block text-uppercase espaciado-1">Glosario Reglas de Juego Handball</h2>
             </div>
             <div class="col-12">
               <div class="card bg-dark border-secondary rounded-2 shadow-lg overflow-hidden">
@@ -91,7 +91,7 @@
         <div v-show="currentLang === 'en'" class="animate__animated animate__fadeIn">
           <div class="row">
             <div class="col-12 mb-4">
-               <h2 class="fw-bold text-white border-bottom border-danger pb-2 d-inline-block text-uppercase" style="letter-spacing: 1px;">Glossary Handball Rules</h2>
+               <h2 class="fw-bold text-white border-bottom border-danger pb-2 d-inline-block text-uppercase espaciado-1">Glossary Handball Rules</h2>
             </div>
             <div class="col-12">
               <div class="card bg-dark border-secondary rounded-2 shadow-lg overflow-hidden">

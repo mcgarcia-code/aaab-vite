@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -27,18 +27,18 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Solicitudes</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <!-- Árbitro/s -->
             <div class="col-6 col-md-2">
-              <input v-model="filtros.arbitro" type="text" class="form-control form-control-sm shadow-none" placeholder="ÁRBITRO...">
+              <input aria-label="Árbitro" v-model="filtros.arbitro" type="text" class="form-control form-control-sm shadow-none" placeholder="ÁRBITRO...">
             </div>
 
             <!-- Solicitud (tipo) -->
             <div class="col-6 col-md-2">
-              <select v-model="filtros.tipo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por tipo" v-model="filtros.tipo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">SOLICITUD</option>
                 <option value="no_designar">NO SER DESIGNADO A CLUB</option>
                 <option value="no_designar_arbitro">NO SER DESIGNADO CON ÁRBITRO</option>
@@ -47,17 +47,17 @@
 
             <!-- Árbitro a evitar -->
             <div class="col-6 col-md-2">
-              <input v-model="filtros.arbitroPar" type="text" class="form-control form-control-sm shadow-none" placeholder="NO DESIGNADO CON...">
+              <input aria-label="No designado con" v-model="filtros.arbitroPar" type="text" class="form-control form-control-sm shadow-none" placeholder="NO DESIGNADO CON...">
             </div>
 
             <!-- Club -->
             <div class="col-6 col-md-2">
-              <input v-model="filtros.club" type="text" class="form-control form-control-sm shadow-none" placeholder="CLUB...">
+              <input aria-label="Club" v-model="filtros.club" type="text" class="form-control form-control-sm shadow-none" placeholder="CLUB...">
             </div>
 
             <!-- Rama -->
             <div class="col-6 col-md-1">
-              <select v-model="filtros.rama" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por rama" v-model="filtros.rama" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">RAMA</option>
                 <option value="F">FEMENINA</option>
                 <option value="M">MASCULINA</option>
@@ -66,7 +66,7 @@
 
             <!-- Estado -->
             <div class="col-6 col-md-2">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="creado">CREADO</option>
                 <option value="vigente">VIGENTE</option>
@@ -77,7 +77,7 @@
 
             <!-- Año -->
             <div class="col-6 col-md-1">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por año" v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">AÑO</option>
                 <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
               </select>
@@ -98,19 +98,19 @@
 
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-              <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.75rem;">
+              <table class="table table-hover align-middle mb-0 text-nowrap texto-075">
                 <thead class="table-light">
                   <tr>
-                    <th class="py-3 ps-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 1px;">ID</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro/s</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Solicitud</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">No ser designado con</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Club</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Rama</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Categorías</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Vigencia</th>
-                    <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
+                    <th class="py-3 ps-3 text-uppercase text-muted texto-075" style="width: 1px;">ID</th>
+                    <th class="py-3 text-center text-uppercase text-muted texto-075">Acciones</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">Árbitro/s</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">Solicitud</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">No ser designado con</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">Club</th>
+                    <th class="py-3 text-center text-uppercase text-muted texto-075">Rama</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">Categorías</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">Vigencia</th>
+                    <th class="py-3 text-center pe-3 text-uppercase text-muted texto-075">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -118,11 +118,11 @@
                     <td class="ps-3 text-muted fw-bold font-monospace">{{ s.id }}</td>
                     <td class="text-center">
                       <div class="d-flex justify-content-center gap-1">
-                        <button @click="abrirModalEditar(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                        <button @click="abrirModalEditar(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button @click="confirmarEliminar(s)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
-                          <i class="bi bi-trash" style="font-size:16px;"></i>
+                          <i class="bi bi-trash texto-16px"></i>
                         </button>
                       </div>
                     </td>
@@ -144,9 +144,9 @@
                       <template v-else>{{ s.club || '-' }}</template>
                     </td>
                     <td class="text-center text-muted">{{ esSolicitudPar(s) ? '-' : etiquetaRama(s.rama) }}</td>
-                    <td class="text-muted" style="white-space: normal;">
+                    <td class="text-muted text-wrap">
                       <span v-if="esSolicitudPar(s)" class="text-muted">-</span>
-                      <span v-else-if="s.todas_categorias" class="badge bg-info-subtle text-primary border">TODAS</span>
+                      <span v-else-if="s.todas_categorias" class="badge bg-secondary-subtle text-secondary-emphasis border">TODAS</span>
                       <template v-else>
                         <span class="badge bg-light text-dark border me-1 mb-1">{{ s.categoria }}</span>
                       </template>
@@ -174,7 +174,7 @@
               <div v-for="s in solicitudesPaginadas" :key="'mob-'+s.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
                 <div class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 rounded-top-3 d-flex justify-content-between align-items-start">
                   <div class="text-dark fw-bold d-flex align-items-center gap-2" style="font-size: 1rem;">
-                    <i class="bi bi-person text-primary" style="font-size: 20px;"></i>
+                    <i class="bi bi-person text-danger" style="font-size: 20px;"></i>
                     <div>
                       <div>{{ s.apellido }}, {{ s.nombre }}</div>
                     </div>
@@ -196,7 +196,7 @@
                       <span class="text-dark small"><strong>Rama:</strong> {{ etiquetaRama(s.rama) }}</span>
                       <div class="text-dark small">
                         <strong>Categorías:</strong>
-                        <span v-if="s.todas_categorias" class="badge bg-info-subtle text-primary ms-1">TODAS</span>
+                        <span v-if="s.todas_categorias" class="badge bg-secondary-subtle text-secondary-emphasis ms-1">TODAS</span>
                         <template v-else>
                           <span class="badge bg-white text-dark border ms-1">{{ s.categoria }}</span>
                         </template>
@@ -205,11 +205,11 @@
                     <span class="text-dark small"><strong>Vigencia:</strong> {{ formatearFecha(s.fecha_desde) }} → {{ formatearFecha(s.fecha_hasta) }}</span>
                   </div>
                   <div class="d-flex gap-2">
-                    <button @click="abrirModalEditar(s)" class="btn btn-sm btn-outline-primary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                      <i class="bi bi-pencil" style="font-size:16px;"></i> Editar
+                    <button @click="abrirModalEditar(s)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
+                      <i class="bi bi-pencil texto-16px"></i> Editar
                     </button>
                     <button @click="confirmarEliminar(s)" class="btn btn-sm btn-outline-danger flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                      <i class="bi bi-trash" style="font-size:16px;"></i> Eliminar
+                      <i class="bi bi-trash texto-16px"></i> Eliminar
                     </button>
                   </div>
                 </div>
@@ -237,7 +237,7 @@
     </div>
 
     <!-- MODAL AGREGAR / EDITAR SOLICITUD -->
-    <ModalBase :show="mostrarModal" :hay-cambios="hayCambios" @close="cerrarModal" :icono="modoModal === 'editar' ? 'edit' : 'add_circle'" :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'" maxWidth="700px">
+    <ModalBase :show="mostrarModal" :hay-cambios="hayCambios" @close="cerrarModal" :icono="modoModal === 'editar' ? 'edit' : 'add_circle'" :colorIcono="modoModal === 'editar' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'" maxWidth="700px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">{{ modoModal === 'editar' ? 'Editar Solicitud' : 'Nueva Solicitud Institucional' }}</span>
@@ -251,15 +251,15 @@
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">
             Árbitro/s <span class="text-danger">*</span>
           </label>
-          <input v-model="filtroArbitro" class="form-control form-control-sm shadow-none mb-2" placeholder="BUSCAR ÁRBITRO POR APELLIDO O NOMBRE...">
-          <div class="border rounded p-2 bg-light" style="max-height: 200px; overflow-y: auto;">
+          <input aria-label="Árbitro/s" v-model="filtroArbitro" class="form-control form-control-sm shadow-none mb-2" placeholder="BUSCAR ÁRBITRO POR APELLIDO O NOMBRE...">
+          <div class="border rounded p-2 bg-light overflow-y-auto" style="max-height: 200px;">
             <div v-for="a in arbitrosFiltrados" :key="a.id" class="form-check">
               <input class="form-check-input shadow-none" type="checkbox" :id="'arb-'+a.id" :value="a.id" v-model="form.arbitros">
               <label class="form-check-label small" :for="'arb-'+a.id">{{ a.apellido }}, {{ a.nombre }}</label>
             </div>
             <p v-if="arbitrosFiltrados.length === 0" class="text-muted small m-0 text-center py-2">Sin resultados.</p>
           </div>
-          <span class="text-muted" style="font-size: 0.75rem;">Podés marcar más de uno (por ejemplo, una pareja arbitral).</span>
+          <span class="text-muted texto-075">Podés marcar más de uno (por ejemplo, una pareja arbitral).</span>
         </div>
 
         <!-- TIPO DE SOLICITUD -->
@@ -284,15 +284,15 @@
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">
             Árbitro con el que no ser designado <span class="text-danger">*</span>
           </label>
-          <input v-model="filtroArbitroPar" class="form-control form-control-sm shadow-none mb-2" placeholder="BUSCAR ÁRBITRO POR APELLIDO O NOMBRE...">
-          <div class="border rounded p-2 bg-light" style="max-height: 200px; overflow-y: auto;">
+          <input aria-label="Árbitro con el que no ser designado" v-model="filtroArbitroPar" class="form-control form-control-sm shadow-none mb-2" placeholder="BUSCAR ÁRBITRO POR APELLIDO O NOMBRE...">
+          <div class="border rounded p-2 bg-light overflow-y-auto" style="max-height: 200px;">
             <div v-for="a in arbitrosParFiltrados" :key="'par-'+a.id" class="form-check">
               <input class="form-check-input shadow-none" type="radio" :id="'arbpar-'+a.id" :value="a.id" v-model="form.id_arbitro_par">
               <label class="form-check-label small" :for="'arbpar-'+a.id">{{ a.apellido }}, {{ a.nombre }}</label>
             </div>
             <p v-if="arbitrosParFiltrados.length === 0" class="text-muted small m-0 text-center py-2">Sin resultados.</p>
           </div>
-          <span class="text-muted" style="font-size: 0.75rem;">No aplican club, rama ni categorías para este tipo de solicitud.</span>
+          <span class="text-muted texto-075">No aplican club, rama ni categorías para este tipo de solicitud.</span>
         </div>
 
         <!-- CLUB (solo tipo no_designar) -->
@@ -300,7 +300,7 @@
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">
             Club <span class="text-danger">*</span>
           </label>
-          <select v-model="form.club_id" class="form-select form-select-sm shadow-none">
+          <select aria-label="Club" v-model="form.club_id" class="form-select form-select-sm shadow-none">
             <option value="">Seleccionar club...</option>
             <option v-for="c in clubes" :key="c.club_id" :value="c.club_id">{{ c.club_nombre }}</option>
           </select>
@@ -313,10 +313,10 @@
           </label>
           <div class="d-flex flex-wrap gap-2">
             <button type="button" class="btn btn-sm flex-fill"
-                    :class="form.rama === 'F' ? 'btn-primary text-white shadow-sm' : 'btn-light border'"
+                    :class="form.rama === 'F' ? 'btn-danger text-white shadow-sm' : 'btn-light border'"
                     @click="form.rama = 'F'">Femenina</button>
             <button type="button" class="btn btn-sm flex-fill"
-                    :class="form.rama === 'M' ? 'btn-primary text-white shadow-sm' : 'btn-light border'"
+                    :class="form.rama === 'M' ? 'btn-danger text-white shadow-sm' : 'btn-light border'"
                     @click="form.rama = 'M'">Masculina</button>
           </div>
         </div>
@@ -326,7 +326,7 @@
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">Categorías</label>
 
           <div v-if="cargandoCategorias" class="text-center py-3">
-            <span class="spinner-border spinner-border-sm text-primary"></span>
+            <span class="spinner-border spinner-border-sm text-danger"></span>
             <span class="text-muted small ms-2">Cargando categorías...</span>
           </div>
 
@@ -343,7 +343,7 @@
               <input class="form-check-input shadow-none" type="checkbox" id="cat-todas" v-model="form.todas_categorias">
               <label class="form-check-label small fw-bold text-danger" for="cat-todas">TODAS las categorías</label>
             </div>
-            <div class="border rounded p-2 bg-light" style="max-height: 180px; overflow-y: auto;" :class="{ 'opacity-50': form.todas_categorias }">
+            <div class="border rounded p-2 bg-light overflow-y-auto" :class="{ 'opacity-50': form.todas_categorias }" style="max-height: 180px;">
               <div v-for="c in categorias" :key="c.id" class="form-check">
                 <input class="form-check-input shadow-none" type="checkbox" :id="'cat-'+c.id" :value="c.id" v-model="form.categorias" :disabled="form.todas_categorias">
                 <label class="form-check-label small" :for="'cat-'+c.id">
@@ -362,14 +362,14 @@
           <div class="row g-2">
             <div class="col-6">
               <label class="form-label small text-muted mb-1">Desde</label>
-              <input v-model="form.fecha_desde" type="date" class="form-control form-control-sm shadow-none">
+              <input aria-label="Desde" v-model="form.fecha_desde" type="date" class="form-control form-control-sm shadow-none">
             </div>
             <div class="col-6">
               <label class="form-label small text-muted mb-1">Hasta</label>
-              <input v-model="form.fecha_hasta" type="date" class="form-control form-control-sm shadow-none">
+              <input aria-label="Hasta" v-model="form.fecha_hasta" type="date" class="form-control form-control-sm shadow-none">
             </div>
           </div>
-          <span class="text-muted" style="font-size: 0.75rem;">Cuando se cumple la fecha "Hasta", la solicitud pasa a estado CUMPLIDA automáticamente.</span>
+          <span class="text-muted texto-075">Cuando se cumple la fecha "Hasta", la solicitud pasa a estado CUMPLIDA automáticamente.</span>
         </div>
       </div>
 
@@ -392,6 +392,8 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
+import { fechaArg } from '@/utils/fechas'
+import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
@@ -404,7 +406,7 @@ useHead({
 
 // Sistemas globales (mismos que usa toda la web)
 const notificar = inject('notificar')
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 // Wrapper para conservar la firma (mensaje, tipo) usada en este componente
 const mostrarToast = (mensaje, tipo = 'success') => {
@@ -483,10 +485,6 @@ const { hayCambios } = useCambiosSinGuardar(form, () => mostrarModal.value && !c
 // ====================================================
 //  HELPERS
 // ====================================================
-const normalizarTexto = (valor) => {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-}
-
 const esSolicitudPar = (s) => s.tipo === 'no_designar_arbitro'
 
 const etiquetaRama = (rama) => {
@@ -504,12 +502,7 @@ const claseEstado = (estado) => {
   return 'estado-pill estado-default'
 }
 
-const formatearFecha = (fecha) => {
-  if (!fecha) return '-'
-  const partes = String(fecha).split('-')
-  if (partes.length !== 3) return fecha
-  return `${partes[2]}/${partes[1]}/${partes[0]}`
-}
+const formatearFecha = (fecha) => fechaArg(fecha, '-')
 
 // Extrae el año (AAAA) de una fecha 'AAAA-MM-DD ...'. Devuelve '' si no hay fecha.
 const anioDeFecha = (f) => {
@@ -870,18 +863,6 @@ onMounted(() => {
 }
 
 .animate__animated { animation-duration: 0.5s; }
-
-/* ====================================================
-   UTILIDADES
-   ==================================================== */
-.btn-danger-subtle {
-  background: #fee2e2;
-  color: #dc3545;
-  border: 1px solid transparent;
-}
-.btn-danger-subtle:hover {
-  background: #fecaca;
-}
 
 /* ====================================================
    TABLA SIN LÍNEAS

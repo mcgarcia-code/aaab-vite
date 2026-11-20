@@ -1,7 +1,7 @@
 <template>
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="panel-personal animate__animated animate__fadeIn">
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- ── Header ── -->
         <div class="card-header bg-white py-3 border-bottom">
@@ -45,7 +45,7 @@
 
             <div v-if="formulario.partido_categoria === 'Mayores'" class="mb-3 animate__animated animate__fadeIn">
               <label class="form-label fw-bold text-uppercase small text-dark">Competencia Mayores *</label>
-              <select @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
+              <select aria-label="Competencia Mayores" @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
                 <option value="" disabled>Seleccione competencia</option>
                 <option v-for="(div, k) in divisionesMayores" :key="k" :value="div.idCategoria">{{ div.division }}</option>
               </select>
@@ -54,14 +54,14 @@
             <div v-if="formulario.partido_categoria === 'Inferiores'" class="row g-3 mb-3 animate__animated animate__fadeIn">
               <div class="col-12 col-md-8">
                 <label class="form-label fw-bold text-uppercase small text-dark">Categoría Específica *</label>
-                <select @change='setDivisiones()' v-model="formulario.id_categoria_especifica" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoCategorias">
+                <select aria-label="Categoría Específica" @change='setDivisiones()' v-model="formulario.id_categoria_especifica" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoCategorias">
                   <option value="" disabled>{{ cargandoCategorias ? 'Cargando...' : 'Seleccione Categoría' }}</option>
                   <option v-for="(cat, k) in listas.divisiones_categorias" :key="k" :value="k">{{ cat.categoria }}</option>
                 </select>
               </div>
               <div class="col-12 col-md-4">
                 <label class="form-label fw-bold text-uppercase small text-dark">Nivel *</label>
-                <select @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
+                <select aria-label="Nivel" @change='seleccionarCategoria()' v-model="formulario.inf_nivel" class="form-select shadow-sm border-secondary-subtle" required>
                   <option value="" disabled>Nivel</option>
                   <option v-for="opt in listas.divisiones" :key="opt.idCategoria" :value="opt.idCategoria">{{ opt.division }}</option>
                 </select>
@@ -70,7 +70,7 @@
 
             <div class="mb-3 animate__animated animate__fadeIn">
               <label class="form-label fw-bold text-uppercase small text-dark">Torneo *</label>
-              <select v-model="formulario.id_torneo" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoTorneos">
+              <select aria-label="Torneo" v-model="formulario.id_torneo" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoTorneos">
                 <option value="" disabled>{{ cargandoTorneos ? 'Cargando...' : 'Seleccione torneo' }}</option>
                 <option v-for="t in torneos" :key="t.id" :value="t.id">{{ t.nombre }}</option>
               </select>
@@ -78,12 +78,12 @@
 
             <div v-if="idCategoria" class="mb-3 animate__animated animate__fadeIn">
               <label class="form-label fw-bold text-uppercase small text-dark">Fecha del Partido *</label>
-              <input type="date" @change="obtenerPartidos()" v-model="fechaPartido" class="form-control shadow-sm border-secondary-subtle" required>
+              <input aria-label="Fecha del Partido" type="date" @change="obtenerPartidos()" v-model="fechaPartido" class="form-control shadow-sm border-secondary-subtle" required>
             </div>
 
             <div v-if="fechaPartido" class="mb-3 animate__animated animate__fadeIn">
               <label class="form-label fw-bold text-uppercase small text-dark">Partido *</label>
-              <select v-model="idPartido" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoPartidos">
+              <select aria-label="Partido" v-model="idPartido" class="form-select shadow-sm border-secondary-subtle" required :disabled="cargandoPartidos">
                 <option value="" disabled>{{ cargandoPartidos ? 'Cargando...' : (partidos.length ? 'Seleccione partido' : 'No hay partidos para esa fecha') }}</option>
                 <option v-for="p in partidos" :key="p.id" :value="p.id">{{ p.local }} vs {{ p.visitante }}</option>
               </select>
@@ -124,7 +124,7 @@
             </div>
 
             <!-- ── Advertencia: verificar que los árbitros coincidan ── -->
-            <div v-if="partidoSeleccionado" class="alert alert-warning border-warning-subtle text-dark d-flex align-items-start gap-2 mt-3 mb-0 rounded-3 animate__animated animate__fadeIn" style="font-size: 0.85rem;" role="alert">
+            <div v-if="partidoSeleccionado" class="alert alert-warning border-warning-subtle text-dark d-flex align-items-start gap-2 mt-3 mb-0 rounded-3 animate__animated animate__fadeIn texto-085" role="alert">
               <i class="bi bi-exclamation-triangle-fill text-warning mt-1 flex-shrink-0 fs-6"></i>
               <span>
                 <strong>Importante:</strong> Verificá que los árbitros que figuran arriba coincidan con los de la observación que vas a cargar.
@@ -195,7 +195,7 @@
           </div>
 
           <!-- ── Alerta de soporte ── -->
-          <div class="alert alert-warning border-warning-subtle text-dark d-flex align-items-start gap-2 m-3 m-md-4 rounded-3" style="font-size: 0.85rem;">
+          <div class="alert alert-warning border-warning-subtle text-dark d-flex align-items-start gap-2 m-3 m-md-4 rounded-3 texto-085">
             <i class="bi bi-info-circle-fill text-dark mt-1 flex-shrink-0"></i>
             <span>
               <strong>Recordá:</strong> adjuntá la planilla de Excel completa de la observación. Se sube junto con los datos del partido y de los árbitros cargados arriba.
@@ -225,7 +225,7 @@ useHead({
   ]
 })
 
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 const procesandoCarga = ref(false)
 const cargandoCategorias = ref(false)
@@ -257,7 +257,7 @@ const cargandoTorneos = ref(false)
 const obtenerTorneos = async () => {
   cargandoTorneos.value = true
   try {
-    const res = await api.get({ entity: 'observaciones', action: 'obtenerTorneos' })
+    const res = await api.getCacheado({ entity: 'observaciones', action: 'obtenerTorneos' })
     if (res && res.ok && Array.isArray(res.payload)) torneos.value = res.payload
   } catch (error) {
     console.error('Error pidiendo torneos:', error)

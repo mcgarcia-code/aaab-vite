@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-2 py-md-0 px-2 px-md-3 animate__animated animate__fadeIn">
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
 
       <!-- Card Header -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center align-items-md-center border-bottom gap-3 text-center text-md-start">
@@ -48,7 +48,7 @@
                     <small class="text-muted d-block mb-2 fw-bold">Árbitros habilitados ({{ arbitrosDeEvento(ev.id).length }})</small>
                     <div v-if="arbitrosDeEvento(ev.id).length" class="d-flex flex-wrap gap-1">
                       <span v-for="(a, i) in arbitrosDeEvento(ev.id)" :key="i"
-                            class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ a }}</span>
+                            class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle">{{ a }}</span>
                     </div>
                     <span v-else class="text-secondary small fst-italic">Ningún árbitro habilitado individualmente</span>
                   </div>
@@ -93,7 +93,7 @@
           Árbitros habilitados
           <span class="text-secondary fw-normal">({{ arrArbitrosSeleccionados.length }} seleccionados)</span>
         </p>
-        <input v-model="busquedaArbitro" type="search" class="form-control form-control-sm buscador-arbitro"
+        <input aria-label="Buscar por apellido" v-model="busquedaArbitro" type="search" class="form-control form-control-sm buscador-arbitro"
                placeholder="BUSCAR POR APELLIDO...">
       </div>
       <div class="arbitros-tabla-wrap mb-2">
@@ -155,7 +155,7 @@
 
         <div v-else>
           <label class="form-label small fw-bold text-muted">Reunión</label>
-          <select class="form-select mb-3" v-model="opcionReunionSeleccionada">
+          <select aria-label="Reunión" class="form-select mb-3" v-model="opcionReunionSeleccionada">
             <option :value="null" disabled>Seleccioná una reunión...</option>
             <option v-for="op in opcionesReunion" :key="op.key" :value="op.key">
               {{ op.label }}
@@ -205,7 +205,7 @@ useHead({
   ],
 })
 
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 const cargandoInicial = ref(true)
 const guardando = ref(false)
@@ -370,7 +370,7 @@ async function cargarTodo() {
       action: 'obtenerAsambleas',
       payload: {}
     }),
-    api.get({
+    api.getCacheado({
       entity: 'grupos',
       action: 'obtenerGrupos'
     }),
@@ -378,11 +378,11 @@ async function cargarTodo() {
       entity: 'examenes_habilitaciones',
       action: 'obtenerHabilitaciones'
     }),
-    api.get({
+    api.getCacheado({
       entity: 'arbitros',
       action: 'getArbitrosBasico',
       payload: {}
-    })
+    }, { ttl: 60 * 1000 })
   ])
   const listaEv = ev?.payload ?? ev ?? []
   const listaGr = gr?.payload ?? gr ?? []

@@ -1,22 +1,22 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 panel-card" style="border-radius: 15px; background: #f8fafc;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 panel-card radio-15" style="background: #f8fafc;">
 
       <!-- HEADER -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
         <p class="seccion-descripcion">Planilla digital</p>
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
           <button
-            class="btn btn-outline-secondary px-3 py-2 fw-bold shadow-sm d-flex align-items-center"
+            class="btn btn-outline-secondary px-3 py-2 fw-bold shadow-sm d-flex align-items-center texto-085"
             @click="abrirConfig"
-            style="font-size: 0.85rem;"
+           
           >
             <i class="bi bi-gear-fill me-2"></i> CONFIG
           </button>
           <button
-            class="btn btn-danger px-3 py-2 fw-bold shadow-sm d-flex align-items-center"
+            class="btn btn-danger px-3 py-2 fw-bold shadow-sm d-flex align-items-center texto-085"
             @click="resetMatch"
-            style="font-size: 0.85rem;"
+           
           >
             <i class="bi bi-arrow-counterclockwise me-2"></i> REINICIAR
           </button>
@@ -50,10 +50,10 @@
 
           <!-- Reloj clickeable -->
           <div
-            class="time-display"
+            class="time-display cursor-pointer"
             :class="{ 'text-danger': !isRunning }"
             @click="abrirModalTiempo"
-            style="cursor: pointer;"
+           
             title="Ajustar cronómetro"
           >
             {{ formattedTime }}
@@ -61,7 +61,7 @@
 
           <div class="d-flex flex-column gap-2 mt-2">
             <button
-              class="btn btn-primary w-100 py-2 py-md-3 fw-bold fs-5 shadow-sm"
+              class="btn btn-danger w-100 py-2 py-md-3 fw-bold fs-5 shadow-sm"
               @click="toggleTimer"
               :disabled="state.activeTTO !== null || state.matchStatus === 'finished' || state.breakActive"
             >
@@ -105,11 +105,11 @@
           <div
             v-if="state.breakActive"
             class="mt-3 p-3 rounded-3 fw-bold border text-center"
-            :class="state.breakType === 'ot_round' ? 'bg-purple text-white border-purple' : 'bg-info text-white border-info'"
+            :class="state.breakType === 'ot_round' ? 'bg-purple text-white border-purple' : 'bg-secondary text-white border-secondary'"
             style="background: #6f42c1 !important;"
             :style="state.breakType === 'ot_half' ? { background: '#0dcaf0' } : { background: '#6f42c1' }"
           >
-            <div class="text-uppercase small mb-1" style="letter-spacing: 1px; opacity: 0.85;">
+            <div class="text-uppercase small mb-1 espaciado-1" style="opacity: 0.85;">
               {{ state.breakType === 'ot_half' ? '⏸ Descanso entre tiempos' : '⏸ Descanso entre prórrogas' }}
             </div>
             <div class="display-6 fw-bold font-monospace">
@@ -128,18 +128,18 @@
 
           <!-- Exclusiones activas -->
           <div class="mt-3 pt-3 border-top border-secondary" v-if="state.activePenalties.length > 0">
-            <h4 class="text-uppercase text-muted small fw-bold mb-2" style="letter-spacing: 1px;">
+            <h4 class="text-uppercase text-muted small fw-bold mb-2 espaciado-1">
               Exclusiones Activas
-              <span class="text-muted fw-light ms-1" style="font-size: 0.65rem; letter-spacing: 0;">(toca para editar)</span>
+              <span class="text-muted fw-light ms-1 texto-065" style="letter-spacing: 0;">(toca para editar)</span>
             </h4>
             <div class="d-flex flex-wrap gap-2 justify-content-center">
               <div
                 v-for="penalty in state.activePenalties"
                 :key="penalty.id"
-                class="penalty-box"
+                class="penalty-box cursor-pointer"
                 :class="penalty.team"
                 @click="editarPenalidad(penalty)"
-                style="cursor: pointer;"
+               
                 title="Toca para corregir el tiempo"
               >
                 <span class="penalty-team">{{ penalty.team === 'local' ? 'L' : 'V' }}</span>
@@ -157,7 +157,7 @@
           <div class="col-6">
             <div class="bg-white p-2 p-md-4 rounded-4 border shadow-sm h-100 d-flex flex-column text-center">
               <div class="mb-2">
-                <select
+                <select aria-label="Club local"
                   v-model="state.localClubId"
                   class="form-select form-select-sm fw-bold text-center border-0 bg-light shadow-sm text-uppercase"
                   style="font-size: 1rem; color: #212529;"
@@ -209,7 +209,7 @@
                 <button class="btn btn-action bg-danger text-white w-100" @click="pedirDorsal('local', 'red_card')" :disabled="state.matchStatus === 'finished'">
                   <span class="fs-5 lh-1">🟥</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">Roja</span>
                 </button>
-                <button class="btn btn-action bg-primary text-white w-100" @click="pedirDorsal('local', 'blue_card')" :disabled="state.matchStatus === 'finished'">
+                <button class="btn btn-action bg-secondary text-white w-100" @click="pedirDorsal('local', 'blue_card')" :disabled="state.matchStatus === 'finished'">
                   <span class="fs-5 lh-1">🟦</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">Azul</span>
                 </button>
                 <button class="btn btn-action btn-tto text-white w-100" @click="requestTTO('local')" :disabled="!canUseTimeout('local') || state.matchStatus === 'finished'">
@@ -223,7 +223,7 @@
           <div class="col-6">
             <div class="bg-white p-2 p-md-4 rounded-4 border shadow-sm h-100 d-flex flex-column text-center">
               <div class="mb-2">
-                <select
+                <select aria-label="Club visitante"
                   v-model="state.visitorClubId"
                   class="form-select form-select-sm fw-bold text-center border-0 bg-light shadow-sm text-uppercase"
                   style="font-size: 1rem; color: #212529;"
@@ -275,7 +275,7 @@
                 <button class="btn btn-action bg-danger text-white w-100" @click="pedirDorsal('visitor', 'red_card')" :disabled="state.matchStatus === 'finished'">
                   <span class="fs-5 lh-1">🟥</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">Roja</span>
                 </button>
-                <button class="btn btn-action bg-primary text-white w-100" @click="pedirDorsal('visitor', 'blue_card')" :disabled="state.matchStatus === 'finished'">
+                <button class="btn btn-action bg-secondary text-white w-100" @click="pedirDorsal('visitor', 'blue_card')" :disabled="state.matchStatus === 'finished'">
                   <span class="fs-5 lh-1">🟦</span><span class="d-none d-md-inline fw-bold text-uppercase ms-2 small">Azul</span>
                 </button>
                 <button class="btn btn-action btn-tto text-white w-100" @click="requestTTO('visitor')" :disabled="!canUseTimeout('visitor') || state.matchStatus === 'finished'">
@@ -297,7 +297,7 @@
 
           <div class="row g-2 mb-3">
             <div class="col-12 col-md-9">
-              <select v-model="logFilter" class="form-select bg-light shadow-none">
+              <select aria-label="Filtrar eventos del partido" v-model="logFilter" class="form-select bg-light shadow-none">
                 <option value="all">Todos los eventos</option>
                 <option value="goals">Goles</option>
                 <option value="sanctions">Sanciones</option>
@@ -310,7 +310,7 @@
             </div>
           </div>
 
-          <div class="border rounded bg-light overflow-hidden" style="max-height: 250px; overflow-y: auto;">
+          <div class="border rounded bg-light overflow-hidden overflow-y-auto" style="max-height: 250px;">
             <ul class="list-group list-group-flush mb-0">
               <li
                 v-for="event in filteredLog"
@@ -360,7 +360,7 @@
           <svg viewBox="0 0 24 24" class="shirt-svg" :style="{ fill: modalJugador.team === 'local' ? '#dc2626' : '#2563eb' }">
             <path d="M21.99 7.99l-3.99-3.98c-.54-.54-1.42-.64-2.08-.22L12 6.51 8.08 3.79c-.66-.42-1.54-.32-2.08.22L2.01 7.99c-.42.42-.42 1.11 0 1.54l1.49 1.49c.42.42 1.11.42 1.54 0l1.48-1.48v8.46c0 .55.45 1 1 1h8.96c.55 0 1-.45 1-1v-8.46l1.48 1.48c.42.42 1.11.42 1.54 0l1.49-1.49c.43-.43.43-1.12.01-1.54z"/>
           </svg>
-          <input
+          <input aria-label="Nº"
             type="text"
             v-model="modalJugador.dorsal"
             class="dorsal-input"
@@ -372,7 +372,7 @@
       </div>
       <template #footer>
         <button class="btn btn-light fw-bold px-4 border" @click="cerrarModalDorsal">CANCELAR</button>
-        <button class="btn btn-dark fw-bold px-4 shadow-sm" @click="confirmarSancion">CONFIRMAR</button>
+        <button class="btn btn-danger fw-bold px-4 shadow-sm" @click="confirmarSancion">CONFIRMAR</button>
       </template>
     </ModalBase>
 
@@ -381,7 +381,7 @@
       :show="modalTiempo.visible"
       titulo="Ajustar Tiempo"
       icono="timer"
-      colorIcono="bg-primary text-white"
+      colorIcono="bg-danger text-white"
       @close="modalTiempo.visible = false"
     >
       <div class="text-center p-3">
@@ -389,7 +389,7 @@
         <div class="d-flex justify-content-center align-items-center gap-3">
           <div class="text-center">
             <label class="small fw-bold text-muted d-block mb-1">MINUTOS</label>
-            <input
+            <input aria-label="Minutos"
               type="number"
               v-model="modalTiempo.mm"
               class="form-control form-control-lg text-center fw-bold shadow-none border-secondary"
@@ -400,7 +400,7 @@
           <div class="display-6 fw-bold mt-3 text-muted">:</div>
           <div class="text-center">
             <label class="small fw-bold text-muted d-block mb-1">SEGUNDOS</label>
-            <input
+            <input aria-label="Segundos"
               type="number"
               v-model="modalTiempo.ss"
               class="form-control form-control-lg text-center fw-bold shadow-none border-secondary"
@@ -413,7 +413,7 @@
       </div>
       <template #footer>
         <button class="btn btn-light fw-bold px-4 border" @click="modalTiempo.visible = false">CANCELAR</button>
-        <button class="btn btn-primary fw-bold px-4 shadow-sm" @click="confirmarAjusteTiempo">GUARDAR TIEMPO</button>
+        <button class="btn btn-danger fw-bold px-4 shadow-sm" @click="confirmarAjusteTiempo">GUARDAR TIEMPO</button>
       </template>
     </ModalBase>
 
@@ -453,7 +453,7 @@
       <div class="p-3">
         <div class="mb-4">
           <label class="fw-bold small text-muted d-block mb-2">⏱ DURACIÓN DE CADA TIEMPO (minutos)</label>
-          <input
+          <input aria-label="⏱ DURACIÓN DE CADA TIEMPO (minutos)"
             type="number"
             v-model="modalConfig.halfMinutes"
             class="form-control form-control-lg text-center fw-bold"
@@ -464,7 +464,7 @@
         </div>
         <div class="mb-4">
           <label class="fw-bold small text-muted d-block mb-2">⚡ DURACIÓN DE CADA PRÓRROGA (minutos)</label>
-          <input
+          <input aria-label="DURACIÓN DE CADA PRÓRROGA (minutos)"
             type="number"
             v-model="modalConfig.otMinutes"
             class="form-control form-control-lg text-center fw-bold"
@@ -477,25 +477,25 @@
           <label class="fw-bold small text-muted d-block mb-2">🔄 RONDAS DE PRÓRROGA</label>
           <div class="d-flex flex-column gap-2">
             <div
-              class="form-check p-3 rounded-3 border"
-              :class="modalConfig.otRounds === 1 ? 'bg-primary-subtle border-primary' : 'bg-light'"
-              style="cursor: pointer;"
+              class="form-check p-3 rounded-3 border cursor-pointer"
+              :class="modalConfig.otRounds === 1 ? 'bg-secondary-subtle border-secondary' : 'bg-light'"
+             
               @click="modalConfig.otRounds = 1"
             >
               <input class="form-check-input" type="radio" v-model="modalConfig.otRounds" :value="1" id="ot1">
-              <label class="form-check-label fw-bold" for="ot1" style="cursor: pointer;">
+              <label class="form-check-label fw-bold cursor-pointer" for="ot1">
                 1 ronda
                 <span class="d-block text-muted fw-normal small">Fe.Me.Bal— 5'+5' (un solo período doble)</span>
               </label>
             </div>
             <div
-              class="form-check p-3 rounded-3 border"
-              :class="modalConfig.otRounds === 2 ? 'bg-primary-subtle border-primary' : 'bg-light'"
-              style="cursor: pointer;"
+              class="form-check p-3 rounded-3 border cursor-pointer"
+              :class="modalConfig.otRounds === 2 ? 'bg-secondary-subtle border-secondary' : 'bg-light'"
+             
               @click="modalConfig.otRounds = 2"
             >
               <input class="form-check-input" type="radio" v-model="modalConfig.otRounds" :value="2" id="ot2">
-              <label class="form-check-label fw-bold" for="ot2" style="cursor: pointer;">
+              <label class="form-check-label fw-bold cursor-pointer" for="ot2">
                 2 rondas
                 <span class="d-block text-muted fw-normal small">Internacional — 5'+5', luego 5'+5' si sigue empatado</span>
               </label>
@@ -509,7 +509,7 @@
       </div>
       <template #footer="{ cerrar }">
         <button class="btn btn-light fw-bold px-4 border" @click="cerrar">CANCELAR</button>
-        <button class="btn btn-dark fw-bold px-4 shadow-sm" @click="guardarConfig">GUARDAR</button>
+        <button class="btn btn-danger fw-bold px-4 shadow-sm" @click="guardarConfig">GUARDAR</button>
       </template>
     </ModalBase>
 
@@ -527,7 +527,7 @@
         <div class="d-flex justify-content-center align-items-center gap-3">
           <div class="text-center">
             <label class="small fw-bold text-muted d-block mb-1">MINUTOS</label>
-            <input
+            <input aria-label="Minutos"
               type="number"
               v-model="modalPenalidad.mm"
               class="form-control form-control-lg text-center fw-bold shadow-none border-secondary"
@@ -539,7 +539,7 @@
           <div class="display-6 fw-bold mt-3 text-muted">:</div>
           <div class="text-center">
             <label class="small fw-bold text-muted d-block mb-1">SEGUNDOS</label>
-            <input
+            <input aria-label="Segundos"
               type="number"
               v-model="modalPenalidad.ss"
               class="form-control form-control-lg text-center fw-bold shadow-none border-secondary"
@@ -576,7 +576,7 @@ useHead({
 });
 
 const notificar = inject('notificar');
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 const STORAGE_KEY = 'aaab_delegado_match_state';
 
 // ─── ESTADO PRINCIPAL ────────────────────────────────────────────────────────
@@ -683,10 +683,21 @@ const filteredLog = computed(() => {
 });
 
 // ─── PERSISTENCIA ────────────────────────────────────────────────────────────
+// Lee el partido guardado. Si el dato está corrupto o no hay almacenamiento (modo privado),
+// se descarta y la planilla arranca vacía en lugar de quedar rota.
+const leerGuardado = () => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* sin almacenamiento */ }
+    return null;
+  }
+};
+
 const loadState = () => {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    const parsed = JSON.parse(saved);
+  const parsed = leerGuardado();
+  if (parsed) {
     delete parsed.clubes;
     // Defaults para campos nuevos en saves previos
     parsed.config              ??= { halfDuration: 30 * 60, otDuration: 5 * 60, otRounds: 1 };
@@ -705,7 +716,9 @@ const loadState = () => {
 watch(state, (newState) => {
   const toSave = { ...newState };
   delete toSave.clubes;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch { /* sin almacenamiento: la planilla sigue funcionando, solo no se recupera al recargar */ }
 }, { deep: true });
 
 watch(() => state.unsyncedEvents.length, (n) => {
@@ -744,7 +757,7 @@ const resetMatch = () => {
         breakTimeRemaining: 0,
         breakType:          null,
       });
-      localStorage.removeItem(STORAGE_KEY);
+      try { localStorage.removeItem(STORAGE_KEY); } catch { /* sin almacenamiento */ }
     },
   });
 };
@@ -806,8 +819,8 @@ const abrirConfig = () => {
 };
 
 const guardarConfig = () => {
-  const half = parseInt(modalConfig.halfMinutes);
-  const ot   = parseInt(modalConfig.otMinutes);
+  const half = parseInt(modalConfig.halfMinutes, 10);
+  const ot   = parseInt(modalConfig.otMinutes, 10);
   if (isNaN(half) || half < 1 || half > 60) {
     mostrarNotificacion('Error', 'La duración del tiempo debe ser entre 1 y 60 minutos.', 'danger');
     return;
@@ -836,8 +849,8 @@ const abrirModalTiempo = () => {
 };
 
 const confirmarAjusteTiempo = () => {
-  const m = parseInt(modalTiempo.mm);
-  const s = parseInt(modalTiempo.ss);
+  const m = parseInt(modalTiempo.mm, 10);
+  const s = parseInt(modalTiempo.ss, 10);
   if (isNaN(m) || isNaN(s) || s < 0 || s > 59 || m < 0) {
     mostrarNotificacion('Error', 'Ingrese un formato de tiempo válido.', 'danger');
     return;
@@ -1019,7 +1032,7 @@ const getLocalTimestamp = () => {
 const validarDorsal = (dorsal) => {
   const clean = dorsal.toString().trim().toUpperCase();
   if (['A','B','C','D','E'].includes(clean)) return { valido: true, valor: clean, tipo: 'oficial' };
-  const n = parseInt(clean);
+  const n = parseInt(clean, 10);
   if (!isNaN(n) && n > 0) return { valido: true, valor: n.toString(), tipo: 'jugador' };
   return { valido: false };
 };
@@ -1240,8 +1253,8 @@ const editarPenalidad = (penalty) => {
 };
 
 const confirmarEditarPenalidad = () => {
-  const m = parseInt(modalPenalidad.mm);
-  const s = parseInt(modalPenalidad.ss);
+  const m = parseInt(modalPenalidad.mm, 10);
+  const s = parseInt(modalPenalidad.ss, 10);
   if (isNaN(m) || isNaN(s) || s < 0 || s > 59 || m < 0) {
     mostrarNotificacion('Error', 'Tiempo inválido.', 'danger');
     return;

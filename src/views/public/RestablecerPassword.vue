@@ -11,12 +11,12 @@
       <form @submit.prevent="guardarNuevaPassword">
         <div class="mb-3">
           <label class="form-label small fw-bold text-dark">Nueva Contraseña</label>
-          <input v-model="password" type="password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required minlength="6" :disabled="cargando">
+          <input aria-label="Nueva Contraseña" v-model="password" type="password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required minlength="6" :disabled="cargando">
         </div>
 
         <div class="mb-4">
           <label class="form-label small fw-bold text-dark">Repetir Contraseña</label>
-          <input v-model="confirmPassword" type="password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required minlength="6" :disabled="cargando">
+          <input aria-label="Repetir Contraseña" v-model="confirmPassword" type="password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required minlength="6" :disabled="cargando">
         </div>
 
         <button :disabled="cargando" type="submit" class="btn btn-danger w-100 fw-bold py-3 mt-2 rounded-3 shadow-sm btn-login">
@@ -26,7 +26,7 @@
       </form>
 
       <div class="text-center mt-4 border-top border-light-subtle pt-4">
-        <p class="text-muted mb-0" style="font-size: 0.75rem; line-height: 1.4;">
+        <p class="text-muted mb-0 texto-075" style="line-height: 1.4;">
           Si tenés algún problema técnico comunicate con <br>
           <a href="mailto:soporte@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none support-link">soporte@arbitroshandball.com.ar</a>
         </p>

@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -27,18 +27,18 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Valores</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <!-- Concepto / Categoría -->
             <div class="col-12 col-md-4">
-              <input v-model="filtros.texto" type="text" class="form-control form-control-sm shadow-none" placeholder="CONCEPTO O CATEGORÍA...">
+              <input aria-label="Concepto o categoría" v-model="filtros.texto" type="text" class="form-control form-control-sm shadow-none" placeholder="CONCEPTO O CATEGORÍA...">
             </div>
 
             <!-- Tipo -->
             <div class="col-6 col-md-3">
-              <select v-model="filtros.tipo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por tipo" v-model="filtros.tipo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">TIPO</option>
                 <option value="fijo">OTROS CONCEPTOS</option>
                 <option value="partido">VALOR DE PARTIDO</option>
@@ -47,7 +47,7 @@
 
             <!-- Estado -->
             <div class="col-6 col-md-3">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="definido">DEFINIDO</option>
                 <option value="sin_definir">SIN DEFINIR</option>
@@ -70,14 +70,14 @@
 
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-              <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.75rem;">
+              <table class="table table-hover align-middle mb-0 text-nowrap texto-075">
                 <thead class="table-light">
                   <tr>
-                    <th class="py-3 ps-3 text-center text-uppercase text-muted" style="font-size: 0.75rem; width: 1px;">Acciones</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Concepto</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Tipo</th>
-                    <th class="py-3 text-end text-uppercase text-muted" style="font-size: 0.75rem;">Valor vigente</th>
-                    <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
+                    <th class="py-3 ps-3 text-center text-uppercase text-muted texto-075" style="width: 1px;">Acciones</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">Concepto</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">Tipo</th>
+                    <th class="py-3 text-end text-uppercase text-muted texto-075">Valor vigente</th>
+                    <th class="py-3 text-center pe-3 text-uppercase text-muted texto-075">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -85,20 +85,20 @@
                   <tr v-if="!f.esGrupo">
                     <td class="ps-3 text-center">
                       <div class="d-flex justify-content-center gap-1">
-                        <button @click="abrirModalEditar(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                        <button @click="abrirModalEditar(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button @click="abrirModalHistorial(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Historial">
-                          <i class="bi bi-clock-history" style="font-size:16px;"></i>
+                          <i class="bi bi-clock-history texto-16px"></i>
                         </button>
                         <button v-if="f.admiteSubconceptos" @click.stop="abrirModalSub(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-success" title="Agregar subconcepto">
-                          <i class="bi bi-journal-plus" style="font-size:16px;"></i>
+                          <i class="bi bi-journal-plus texto-16px"></i>
                         </button>
-                        <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
-                          <i class="bi bi-pencil-square" style="font-size:16px;"></i>
+                        <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Renombrar">
+                          <i class="bi bi-pencil-square texto-16px"></i>
                         </button>
                         <button v-if="f.editable" @click.stop="confirmarEliminarConcepto(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
-                          <i class="bi bi-trash" style="font-size:16px;"></i>
+                          <i class="bi bi-trash texto-16px"></i>
                         </button>
                       </div>
                     </td>
@@ -109,7 +109,7 @@
                       </div>
                     </td>
                     <td class="text-muted">
-                      <span v-if="f.tipo === 'partido'" class="badge bg-info-subtle text-primary border">Valor de partido</span>
+                      <span v-if="f.tipo === 'partido'" class="badge bg-secondary-subtle text-secondary-emphasis border">Valor de partido</span>
                       <span v-else class="badge bg-danger-subtle text-danger border">Otro concepto</span>
                     </td>
                     <td class="text-end fw-bold" :class="f.estado === 'definido' ? 'text-dark' : 'text-muted'">
@@ -122,20 +122,20 @@
 
                   <!-- GRUPO (ej: Valor por Observación) -->
                   <template v-else>
-                    <tr class="fila-grupo" @click="toggleGrupo(f)" style="cursor: pointer;">
+                    <tr class="fila-grupo cursor-pointer" @click="toggleGrupo(f)">
                       <td class="ps-3 text-center">
                         <div class="d-flex justify-content-center gap-1">
                           <button type="button" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" :title="estaExpandido(f) ? 'Contraer' : 'Desplegar'">
-                            <i :class="['bi', estaExpandido(f) ? 'bi-chevron-up' : 'bi-chevron-down']" style="font-size:16px;"></i>
+                            <i class="texto-16px" :class="['bi', estaExpandido(f) ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
                           </button>
                           <button v-if="f.admiteSubconceptos" @click.stop="abrirModalSub(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-success" title="Agregar subconcepto">
-                          <i class="bi bi-journal-plus" style="font-size:16px;"></i>
+                          <i class="bi bi-journal-plus texto-16px"></i>
                         </button>
-                        <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
-                          <i class="bi bi-pencil-square" style="font-size:16px;"></i>
+                        <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Renombrar">
+                          <i class="bi bi-pencil-square texto-16px"></i>
                         </button>
                         <button v-if="f.editable" @click.stop="confirmarEliminarConcepto(f)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
-                          <i class="bi bi-trash" style="font-size:16px;"></i>
+                          <i class="bi bi-trash texto-16px"></i>
                         </button>
                         </div>
                       </td>
@@ -146,7 +146,7 @@
                         </div>
                       </td>
                       <td class="text-muted">
-                        <span v-if="f.tipo === 'partido'" class="badge bg-info-subtle text-primary border">Valor de partido</span>
+                        <span v-if="f.tipo === 'partido'" class="badge bg-secondary-subtle text-secondary-emphasis border">Valor de partido</span>
                         <span v-else class="badge bg-danger-subtle text-danger border">Otro concepto</span>
                       </td>
                       <td class="text-end text-muted fw-bold">{{ f.hijos.length }} {{ f.tipo === 'partido' ? 'categorías' : 'ítems' }}</td>
@@ -158,23 +158,23 @@
                       <tr v-for="h in f.hijosVisibles" :key="h.key" class="fila-hijo">
                         <td class="ps-3 text-center">
                           <div class="d-flex justify-content-center gap-1">
-                            <button @click="abrirModalEditar(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar">
-                              <i class="bi bi-pencil" style="font-size:16px;"></i>
+                            <button @click="abrirModalEditar(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar">
+                              <i class="bi bi-pencil texto-16px"></i>
                             </button>
                             <button @click="abrirModalHistorial(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Historial">
-                              <i class="bi bi-clock-history" style="font-size:16px;"></i>
+                              <i class="bi bi-clock-history texto-16px"></i>
                             </button>
-                            <button v-if="h.editable" @click.stop="abrirModalRenombrar(h)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Renombrar">
-                          <i class="bi bi-pencil-square" style="font-size:16px;"></i>
+                            <button v-if="h.editable" @click.stop="abrirModalRenombrar(h)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Renombrar">
+                          <i class="bi bi-pencil-square texto-16px"></i>
                         </button>
                         <button v-if="h.editable" @click.stop="confirmarEliminarConcepto(h)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
-                          <i class="bi bi-trash" style="font-size:16px;"></i>
+                          <i class="bi bi-trash texto-16px"></i>
                         </button>
                           </div>
                         </td>
                         <td class="text-dark">
                           <div class="d-flex align-items-center gap-2 ps-4">
-                            <i class="bi bi-arrow-return-right text-muted" style="font-size:16px;"></i>
+                            <i class="bi bi-arrow-return-right text-muted texto-16px"></i>
                             <span>{{ h.etiqueta }}</span>
                           </div>
                         </td>
@@ -222,20 +222,20 @@
                     </span>
                   </div>
                   <div class="d-flex gap-2">
-                    <button @click="abrirModalEditar(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-sm btn-outline-primary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                      <i class="bi bi-pencil" style="font-size:16px;"></i> Editar
+                    <button @click="abrirModalEditar(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
+                      <i class="bi bi-pencil texto-16px"></i> Editar
                     </button>
                     <button @click="abrirModalHistorial(f.clave, f.idCategoria, f.etiqueta)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                      <i class="bi bi-clock-history" style="font-size:16px;"></i> Historial
+                      <i class="bi bi-clock-history texto-16px"></i> Historial
                     </button>
                     <button v-if="f.admiteSubconceptos" @click="abrirModalSub(f)" class="btn btn-sm btn-outline-success px-2" aria-label="Agregar subconcepto">
-                      <i class="bi bi-journal-plus" style="font-size:16px;"></i>
+                      <i class="bi bi-journal-plus texto-16px"></i>
                     </button>
-                    <button v-if="f.editable" @click="abrirModalRenombrar(f)" class="btn btn-sm btn-outline-primary px-2" aria-label="Renombrar">
-                      <i class="bi bi-pencil-square" style="font-size:16px;"></i>
+                    <button v-if="f.editable" @click="abrirModalRenombrar(f)" class="btn btn-sm btn-outline-secondary px-2" aria-label="Renombrar">
+                      <i class="bi bi-pencil-square texto-16px"></i>
                     </button>
                     <button v-if="f.editable" @click="confirmarEliminarConcepto(f)" class="btn btn-sm btn-outline-danger px-2" aria-label="Eliminar">
-                      <i class="bi bi-trash" style="font-size:16px;"></i>
+                      <i class="bi bi-trash texto-16px"></i>
                     </button>
                   </div>
                 </div>
@@ -243,7 +243,7 @@
 
               <!-- GRUPO (Celular) -->
               <div v-else class="card shadow-sm mb-3 border-light-subtle rounded-3">
-                <div @click="toggleGrupo(f)" style="cursor: pointer;" class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 rounded-top-3 d-flex justify-content-between align-items-start">
+                <div @click="toggleGrupo(f)" @keydown.enter.prevent="toggleGrupo(f)" @keydown.space.prevent="toggleGrupo(f)" role="button" tabindex="0" :aria-expanded="estaExpandido(f)" class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 rounded-top-3 d-flex justify-content-between align-items-start cursor-pointer">
                   <div class="text-dark fw-bold d-flex align-items-center gap-2" style="font-size: 1rem;">
                     <i :class="f.icono" class="text-danger"></i>
                     <div>
@@ -253,13 +253,13 @@
                   </div>
                   <div class="d-flex align-items-center gap-1">
                     <button v-if="f.admiteSubconceptos" @click.stop="abrirModalSub(f)" class="btn btn-sm btn-light border p-1 text-success" aria-label="Agregar subconcepto">
-                      <i class="bi bi-journal-plus" style="font-size:16px;"></i>
+                      <i class="bi bi-journal-plus texto-16px"></i>
                     </button>
-                    <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-sm btn-light border p-1 text-primary" aria-label="Renombrar">
-                      <i class="bi bi-pencil-square" style="font-size:16px;"></i>
+                    <button v-if="f.editable" @click.stop="abrirModalRenombrar(f)" class="btn btn-sm btn-light border p-1 text-dark" aria-label="Renombrar">
+                      <i class="bi bi-pencil-square texto-16px"></i>
                     </button>
                     <button v-if="f.editable" @click.stop="confirmarEliminarConcepto(f)" class="btn btn-sm btn-light border p-1 text-danger" aria-label="Eliminar">
-                      <i class="bi bi-trash" style="font-size:16px;"></i>
+                      <i class="bi bi-trash texto-16px"></i>
                     </button>
                     <span class="badge" :class="claseEstado(f.estado)">{{ f.definidos }}/{{ f.hijos.length }}</span>
                     <i :class="['bi text-muted', estaExpandido(f) ? 'bi-chevron-up' : 'bi-chevron-down']" style="font-size:20px;"></i>
@@ -275,17 +275,17 @@
                       <span class="badge" :class="claseEstado(h.estado)">{{ etiquetaEstado(h.estado) }}</span>
                     </div>
                     <div class="d-flex gap-2">
-                      <button @click="abrirModalEditar(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-sm btn-outline-primary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                        <i class="bi bi-pencil" style="font-size:16px;"></i> Editar
+                      <button @click="abrirModalEditar(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
+                        <i class="bi bi-pencil texto-16px"></i> Editar
                       </button>
                       <button @click="abrirModalHistorial(h.clave, h.idCategoria, h.etiqueta)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold d-flex align-items-center justify-content-center gap-1">
-                        <i class="bi bi-clock-history" style="font-size:16px;"></i> Historial
+                        <i class="bi bi-clock-history texto-16px"></i> Historial
                       </button>
-                      <button v-if="h.editable" @click="abrirModalRenombrar(h)" class="btn btn-sm btn-outline-primary px-2" aria-label="Renombrar">
-                        <i class="bi bi-pencil-square" style="font-size:16px;"></i>
+                      <button v-if="h.editable" @click="abrirModalRenombrar(h)" class="btn btn-sm btn-outline-secondary px-2" aria-label="Renombrar">
+                        <i class="bi bi-pencil-square texto-16px"></i>
                       </button>
                       <button v-if="h.editable" @click="confirmarEliminarConcepto(h)" class="btn btn-sm btn-outline-danger px-2" aria-label="Eliminar">
-                        <i class="bi bi-trash" style="font-size:16px;"></i>
+                        <i class="bi bi-trash texto-16px"></i>
                       </button>
                     </div>
                   </div>
@@ -314,7 +314,7 @@
     </div>
 
     <!-- MODAL EDITAR -->
-    <ModalBase :show="mostrarModalEditar" :hay-cambios="hayCambiosEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-info-subtle text-info" maxWidth="500px">
+    <ModalBase :show="mostrarModalEditar" :hay-cambios="hayCambiosEditar" @close="mostrarModalEditar = false" icono="edit" colorIcono="bg-danger-subtle text-danger" maxWidth="500px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Editar Valor</span>
@@ -333,11 +333,11 @@
         <div v-if="formEdicion.concepto === 'valor_partido'">
           <div class="form-check border-bottom pb-2">
             <input class="form-check-input shadow-none" type="checkbox" v-model="formEdicion.exento" id="checkExento">
-            <label class="form-check-label small fw-bold text-danger" for="checkExento" style="cursor: pointer;">
+            <label class="form-check-label small fw-bold text-danger cursor-pointer" for="checkExento">
               Categoría EXENTA de aporte
             </label>
           </div>
-          <span class="text-muted" style="font-size: 0.75rem;">No genera débito de arbitraje.</span>
+          <span class="text-muted texto-075">No genera débito de arbitraje.</span>
         </div>
 
         <!-- VALOR -->
@@ -345,8 +345,8 @@
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">
             {{ formEdicion.concepto === 'porcentaje_aporte' ? 'Porcentaje (%)' : 'Monto ($)' }} <span class="text-danger">*</span>
           </label>
-          <input v-model.number="formEdicion.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" required>
-          <span class="text-muted" style="font-size: 0.75rem;">El valor anterior queda registrado en el historial con fecha de fin hoy.</span>
+          <input :aria-label="formEdicion.concepto === 'porcentaje_aporte' ? 'Porcentaje (%)' : 'Monto ($)'" v-model.number="formEdicion.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" required>
+          <span class="text-muted texto-075">El valor anterior queda registrado en el historial con fecha de fin hoy.</span>
         </div>
       </form>
 
@@ -376,7 +376,7 @@
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">
             Concepto <span class="text-danger">*</span>
           </label>
-          <input v-model="formNuevo.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none" placeholder="Ej: Designaciones" required>
+          <input aria-label="Concepto" v-model="formNuevo.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none" placeholder="Ej: Designaciones" required>
         </div>
 
         <!-- TIPO -->
@@ -400,11 +400,11 @@
         <div>
           <div class="form-check border-bottom pb-2">
             <input class="form-check-input shadow-none" type="checkbox" v-model="formNuevo.conSubconceptos" id="checkSubconceptos">
-            <label class="form-check-label small fw-bold text-danger" for="checkSubconceptos" style="cursor: pointer;">
+            <label class="form-check-label small fw-bold text-danger cursor-pointer" for="checkSubconceptos">
               Tiene subconceptos
             </label>
           </div>
-          <span class="text-muted" style="font-size: 0.75rem;">
+          <span class="text-muted texto-075">
             Ej: "Designaciones" con "Designación Liga de Honor" y "Designadora General". Cada subconcepto lleva su propio valor.
           </span>
         </div>
@@ -412,8 +412,8 @@
         <!-- SIN SUBCONCEPTOS: VALOR DEL CONCEPTO -->
         <div v-if="!formNuevo.conSubconceptos">
           <label class="form-label fw-bold small text-uppercase text-muted mb-2">Valor ($)</label>
-          <input v-model.number="formNuevo.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" placeholder="Opcional">
-          <span class="text-muted" style="font-size: 0.75rem;">Si lo dejás vacío, queda "Sin definir" y lo cargás después con Editar.</span>
+          <input aria-label="Valor ($)" v-model.number="formNuevo.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" placeholder="Opcional">
+          <span class="text-muted texto-075">Si lo dejás vacío, queda "Sin definir" y lo cargás después con Editar.</span>
         </div>
 
         <!-- CON SUBCONCEPTOS: LISTA -->
@@ -424,20 +424,20 @@
 
           <div class="d-flex flex-column gap-2">
             <div v-for="(sub, i) in formNuevo.subconceptos" :key="sub.uid" class="d-flex gap-2 align-items-start bg-light border rounded p-2">
-              <i class="bi bi-arrow-return-right text-muted mt-1" style="font-size:16px;"></i>
+              <i class="bi bi-arrow-return-right text-muted mt-1 texto-16px"></i>
               <div class="flex-grow-1">
-                <input v-model="sub.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none mb-1" :placeholder="'Subconcepto ' + (i + 1)" required>
-                <input v-model.number="sub.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" placeholder="Valor ($) — opcional">
+                <input :aria-label="'Subconcepto ' + (i + 1)" v-model="sub.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none mb-1" :placeholder="'Subconcepto ' + (i + 1)" required>
+                <input aria-label="Valor ($) — opcional" v-model.number="sub.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" placeholder="Valor ($) — opcional">
               </div>
               <button type="button" @click="quitarSubconcepto(i)" :disabled="formNuevo.subconceptos.length === 1"
                       class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Quitar">
-                <i class="bi bi-trash" style="font-size:16px;"></i>
+                <i class="bi bi-trash texto-16px"></i>
               </button>
             </div>
           </div>
 
           <button type="button" @click="agregarSubconcepto" class="btn btn-sm btn-outline-danger fw-bold mt-2 d-flex align-items-center gap-1">
-            <i class="bi bi-plus-lg" style="font-size:16px;"></i> Agregar subconcepto
+            <i class="bi bi-plus-lg texto-16px"></i> Agregar subconcepto
           </button>
         </div>
       </form>
@@ -472,20 +472,20 @@
 
         <div class="d-flex flex-column gap-2">
           <div v-for="(sub, i) in formSub.subconceptos" :key="sub.uid" class="d-flex gap-2 align-items-start bg-light border rounded p-2">
-            <i class="bi bi-arrow-return-right text-muted mt-1" style="font-size:16px;"></i>
+            <i class="bi bi-arrow-return-right text-muted mt-1 texto-16px"></i>
             <div class="flex-grow-1">
-              <input v-model="sub.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none mb-1" :placeholder="'Subconcepto ' + (i + 1)" required>
-              <input v-model.number="sub.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" placeholder="Valor ($) — opcional">
+              <input :aria-label="'Subconcepto ' + (i + 1)" v-model="sub.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none mb-1" :placeholder="'Subconcepto ' + (i + 1)" required>
+              <input aria-label="Valor ($) — opcional" v-model.number="sub.valor" type="number" step="0.01" min="0" class="form-control form-control-sm shadow-none" placeholder="Valor ($) — opcional">
             </div>
             <button type="button" @click="formSub.subconceptos.splice(i, 1)" :disabled="formSub.subconceptos.length === 1"
                     class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Quitar">
-              <i class="bi bi-trash" style="font-size:16px;"></i>
+              <i class="bi bi-trash texto-16px"></i>
             </button>
           </div>
         </div>
 
         <button type="button" @click="formSub.subconceptos.push(subVacio())" class="btn btn-sm btn-outline-danger fw-bold mt-1 align-self-start d-flex align-items-center gap-1">
-          <i class="bi bi-plus-lg" style="font-size:16px;"></i> Agregar subconcepto
+          <i class="bi bi-plus-lg texto-16px"></i> Agregar subconcepto
         </button>
       </form>
 
@@ -501,7 +501,7 @@
     </ModalBase>
 
     <!-- MODAL RENOMBRAR CONCEPTO -->
-    <ModalBase :show="mostrarModalRenombrar" @close="mostrarModalRenombrar = false" icono="drive_file_rename_outline" colorIcono="bg-info-subtle text-info" maxWidth="500px">
+    <ModalBase :show="mostrarModalRenombrar" @close="mostrarModalRenombrar = false" icono="drive_file_rename_outline" colorIcono="bg-danger-subtle text-danger" maxWidth="500px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Renombrar Concepto</span>
@@ -512,7 +512,7 @@
         <label class="form-label fw-bold small text-uppercase text-muted mb-0">
           Nombre <span class="text-danger">*</span>
         </label>
-        <input v-model="formRenombrar.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none" required>
+        <input aria-label="Nombre" v-model="formRenombrar.etiqueta" type="text" maxlength="120" class="form-control form-control-sm shadow-none" required>
       </form>
 
       <template #footer>
@@ -538,12 +538,12 @@
       <EstadoCargando v-if="cargandoHistorial" texto="Cargando historial" />
       <EstadoVacio v-else-if="historial.length === 0" icono="bi-inbox" titulo="Sin registros previos" />
       <div v-else class="table-responsive border rounded shadow-sm tabla-sin-lineas">
-        <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.75rem;">
+        <table class="table table-hover align-middle mb-0 text-nowrap texto-075">
           <thead class="table-light">
             <tr>
-              <th class="py-3 ps-3 text-uppercase text-muted" style="font-size: 0.75rem;">Valor</th>
-              <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Vigencia</th>
-              <th class="py-3 pe-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
+              <th class="py-3 ps-3 text-uppercase text-muted texto-075">Valor</th>
+              <th class="py-3 text-uppercase text-muted texto-075">Vigencia</th>
+              <th class="py-3 pe-3 text-center text-uppercase text-muted texto-075">Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -580,6 +580,8 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, onMounted, inject, watch } from 'vue'
+import { fechaArg } from '@/utils/fechas'
+import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
@@ -592,7 +594,7 @@ useHead({
 
 // Sistemas globales (mismos que usa toda la web)
 const notificar = inject('notificar')
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 const mostrarToast = (mensaje, tipo = 'success') => {
   toast({
@@ -639,10 +641,6 @@ const hayFiltrosActivos = computed(() =>
 // ====================================================
 //  HELPERS
 // ====================================================
-const normalizarTexto = (valor) => {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-}
-
 function buscarRegistro(concepto, idCategoria) {
   return valoresVigentes.value.find(v => v.concepto === concepto && Number(v.id_categoria) === Number(idCategoria || 0)) || null
 }
@@ -651,12 +649,7 @@ const formatearMonto = (valor) => {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(valor)
 }
 
-const formatearFecha = (fecha) => {
-  if (!fecha) return '-'
-  const partes = String(fecha).slice(0, 10).split('-')
-  if (partes.length !== 3) return fecha
-  return `${partes[2]}/${partes[1]}/${partes[0]}`
-}
+const formatearFecha = (fecha) => fechaArg(fecha, '-')
 
 const textoValor = (f) => {
   if (f.estado === 'exenta') return 'Exenta'
@@ -1250,18 +1243,6 @@ onMounted(cargarTodo)
 }
 
 .animate__animated { animation-duration: 0.5s; }
-
-/* ====================================================
-   UTILIDADES
-   ==================================================== */
-.btn-danger-subtle {
-  background: #fee2e2;
-  color: #dc3545;
-  border: 1px solid transparent;
-}
-.btn-danger-subtle:hover {
-  background: #fecaca;
-}
 
 /* ====================================================
    TABLA SIN LÍNEAS

@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -24,21 +24,21 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Instituciones</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <div class="col-12 col-md-3">
-              <input v-model="filtros.club" class="form-control form-control-sm shadow-none py-2" placeholder="FILTRAR POR CLUB O INSTITUCIÓN...">
+              <input aria-label="Filtrar por club o institución" v-model="filtros.club" class="form-control form-control-sm shadow-none py-2" placeholder="FILTRAR POR CLUB O INSTITUCIÓN...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.forma_de_pago" class="form-control form-control-sm shadow-none py-2" placeholder="FORMA DE PAGO...">
+              <input aria-label="Forma de pago" v-model="filtros.forma_de_pago" class="form-control form-control-sm shadow-none py-2" placeholder="FORMA DE PAGO...">
             </div>
             <div class="col-6 col-md-3">
-              <input v-model="filtros.cuit" class="form-control form-control-sm shadow-none py-2" placeholder="FILTRAR POR CUIT...">
+              <input aria-label="Filtrar por cuit" v-model="filtros.cuit" class="form-control form-control-sm shadow-none py-2" placeholder="FILTRAR POR CUIT...">
             </div>
             <div class="col-12 col-md-3">
-              <input v-model="filtros.condicion" class="form-control form-control-sm shadow-none py-2" placeholder="FILTRAR POR CONDICIÓN IVA...">
+              <input aria-label="Filtrar por condición iva" v-model="filtros.condicion" class="form-control form-control-sm shadow-none py-2" placeholder="FILTRAR POR CONDICIÓN IVA...">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">
@@ -56,7 +56,7 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-              <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.85rem;">
+              <table class="table table-hover align-middle mb-0 text-nowrap texto-085">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 ps-3 text-uppercase text-muted" style="width: 30%;">Institución / Club</th>
@@ -70,7 +70,7 @@
                   <tr v-for="i in institucionesPaginadas" :key="i.id">
                     <td class="ps-3 text-dark fw-bold text-truncate" :title="i.club">{{ i.club }}</td>
                     <td class="text-dark">
-                      <span v-if="i.forma_de_pago" class="badge bg-info-subtle text-primary border">{{ i.forma_de_pago }}</span>
+                      <span v-if="i.forma_de_pago" class="badge bg-secondary-subtle text-secondary-emphasis border">{{ i.forma_de_pago }}</span>
                       <span v-else>-</span>
                     </td>
                     <td class="text-muted">{{ i.cuit || '-' }}</td>
@@ -80,24 +80,24 @@
                       <!-- Acciones en Escritorio (Solo Iconos) -->
                       <div class="d-flex justify-content-center gap-1">
                         <button v-if="i.cuit && i.cuit !== 'NULL'" @click="copiarAlPortapapeles(i.cuit, 'CUIT')" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Copiar CUIT">
-                          <i class="bi bi-copy" style="font-size:16px;"></i>
+                          <i class="bi bi-copy texto-16px"></i>
                         </button>
 
                         <template v-if="i.email && i.email !== 'NULL' && i.email.trim() !== ''">
                           <button @click="enviarFactura(i.email)" class="btn btn-light border btn-sm shadow-sm rounded p-1" title="Enviar Email">
-                            <i class="bi bi-send" style="font-size:16px;"></i>
+                            <i class="bi bi-send texto-16px"></i>
                           </button>
                           <button @click="copiarAlPortapapeles(i.email, 'Email')" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Copiar Email">
-                            <i class="bi bi-copy" style="font-size:16px;"></i>
+                            <i class="bi bi-copy texto-16px"></i>
                           </button>
                         </template>
 
                         <template v-if="i.celular && i.celular !== 'NULL' && i.celular.trim() !== ''">
                           <button @click="enviarWhatsapp(i.celular)" class="btn btn-sm shadow-sm text-white rounded p-1" style="background-color: #25D366;" title="WhatsApp">
-                            <i class="bi bi-whatsapp" style="font-size:16px;"></i>
+                            <i class="bi bi-whatsapp texto-16px"></i>
                           </button>
                           <button @click="copiarAlPortapapeles(i.celular, 'Celular')" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Copiar Celular">
-                            <i class="bi bi-phone-vibrate" style="font-size:16px;"></i>
+                            <i class="bi bi-phone-vibrate texto-16px"></i>
                           </button>
                         </template>
 
@@ -121,8 +121,8 @@
             <div class="d-md-none p-3 bg-light">
               <div v-for="i in institucionesPaginadas" :key="'mob-'+i.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
                 <div class="card-header bg-white border-bottom-0 pb-2 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                  <div class="text-dark fw-bold d-flex align-items-center gap-2" style="font-size: 1.05rem;">
-                    <i class="bi bi-building text-primary" style="font-size: 20px;"></i>
+                  <div class="text-dark fw-bold d-flex align-items-center gap-2 texto-105">
+                    <i class="bi bi-building text-danger" style="font-size: 20px;"></i>
                     {{ i.club }}
                   </div>
                 </div>
@@ -134,7 +134,7 @@
                       <span class="text-dark small"><strong>IVA:</strong> {{ i.condicion || '-' }}</span>
                     </div>
                     <div class="d-flex justify-content-between border-top pt-2 mt-1 border-light-subtle">
-                      <span class="text-dark small"><strong>Pago:</strong> <span class="badge bg-info-subtle text-primary">{{ i.forma_de_pago || '-' }}</span></span>
+                      <span class="text-dark small"><strong>Pago:</strong> <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ i.forma_de_pago || '-' }}</span></span>
                     </div>
                   </div>
 
@@ -143,19 +143,19 @@
 
                     <div class="col-12" v-if="i.cuit && i.cuit !== 'NULL'">
                       <button @click="copiarAlPortapapeles(i.cuit, 'CUIT')" class="btn btn-sm btn-light border w-100 d-flex align-items-center justify-content-center gap-1 fw-bold text-dark py-2">
-                        <i class="bi bi-copy" style="font-size: 16px;"></i> Copiar CUIT
+                        <i class="bi bi-copy texto-16px"></i> Copiar CUIT
                       </button>
                     </div>
 
                     <template v-if="i.email && i.email !== 'NULL' && i.email.trim() !== ''">
                       <div class="col-6">
                         <button @click="enviarFactura(i.email)" class="btn btn-sm btn-light border shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2">
-                          <i class="bi bi-send" style="font-size: 16px;"></i> Email
+                          <i class="bi bi-send texto-16px"></i> Email
                         </button>
                       </div>
                       <div class="col-6">
                         <button @click="copiarAlPortapapeles(i.email, 'Email')" class="btn btn-sm btn-light border shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2">
-                          <i class="bi bi-copy" style="font-size: 16px;"></i> Email
+                          <i class="bi bi-copy texto-16px"></i> Email
                         </button>
                       </div>
                     </template>
@@ -163,12 +163,12 @@
                     <template v-if="i.celular && i.celular !== 'NULL' && i.celular.trim() !== ''">
                       <div class="col-6">
                         <button @click="enviarWhatsapp(i.celular)" class="btn btn-sm text-white shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2" style="background-color: #25D366;">
-                          <i class="bi bi-whatsapp" style="font-size: 16px;"></i> WhatsApp
+                          <i class="bi bi-whatsapp texto-16px"></i> WhatsApp
                         </button>
                       </div>
                       <div class="col-6">
                         <button @click="copiarAlPortapapeles(i.celular, 'Celular')" class="btn btn-sm btn-light border shadow-sm w-100 d-flex align-items-center justify-content-center gap-1 py-2">
-                          <i class="bi bi-phone-vibrate" style="font-size: 16px;"></i> Celular
+                          <i class="bi bi-phone-vibrate texto-16px"></i> Celular
                         </button>
                       </div>
                     </template>
@@ -204,7 +204,7 @@
       </div>
 
       <!-- Alerta de contacto original restaurada -->
-      <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100" style="border-radius: 12px;">
+      <div class="alert alert-secondary mt-4 border-0 shadow-sm mx-auto w-100 radio-12">
         <div class="d-flex align-items-center">
           <i class="bi bi-info-square-fill me-3 fs-3 text-secondary opacity-75"></i>
           <div class="small text-dark lh-sm">
@@ -223,6 +223,8 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
+import { normalizarTexto } from '@/utils/texto'
+import { abrirWhatsApp } from '@/utils/whatsapp'
 import { api } from '@/api/api';
 import { useHead } from '@vueuse/head';
 
@@ -237,7 +239,7 @@ useHead({
   ],
 });
 
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 const mostrarToast = (mensaje, tipo = 'success') => {
   toast({ mensaje, tipo });
 };
@@ -300,15 +302,9 @@ const enviarFactura = (emailClub) => {
 
 const enviarWhatsapp = (celular) => {
   if (!celular || celular === 'NULL' || celular.trim() === '') return;
-  const numeroLimpio = String(celular).replace(/\D/g, '');
-  const mensaje = encodeURIComponent("Hola, ¿Cómo estás? Me comunico por el envío de facturación de arbitraje de Handball.");
-  const prefijo = numeroLimpio.startsWith('54') ? numeroLimpio : `54${numeroLimpio}`;
-  window.open(`https://wa.me/${prefijo}?text=${mensaje}`, '_blank');
+  abrirWhatsApp(celular, 'Hola, ¿Cómo estás? Me comunico por el envío de facturación de arbitraje de Handball.');
 };
 
-const normalizarTexto = (valor) => {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-};
 
 const filtrados = computed(() => {
   const listaFiltrada = instituciones.value.filter(i => {

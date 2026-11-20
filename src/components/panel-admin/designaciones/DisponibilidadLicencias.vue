@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Quién puede dirigir cada fecha · Total: {{ arbitrosFiltrados.length }} árbitros</p>
@@ -24,29 +24,29 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none']">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Árbitros</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
-            <div class="col-6"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
-            <div class="col-6"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
+            <div class="col-6"><input aria-label="Apellido" v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
+            <div class="col-6"><input aria-label="Nombre" v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
             <div class="col-6">
-              <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por activo" v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ACTIVO</option><option value="1">SÓLO ACTIVOS</option><option value="0">SÓLO INACTIVOS</option>
               </select>
             </div>
             <div class="col-6">
-              <select v-model="filtros.licencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por licencia" v-model="filtros.licencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">LICENCIA</option><option value="sin_licencia">SIN LICENCIA</option><option value="aprobada">APROBADA</option><option value="indeterminada">INDETERMINADA</option><option value="rechazada">RECHAZADA</option><option value="pendiente">PENDIENTE</option><option value="sancion_vigente">SANCIÓN VIGENTE</option><option value="sancion_proceso">SANCIÓN EN PROCESO</option>
               </select>
             </div>
             <div class="col-6">
-              <select v-model="filtros.designado_sabado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por designado el sábado" v-model="filtros.designado_sabado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">DESIGNADO SÁB</option><option value="1">DESIGNADOS</option><option value="0">NO DESIGNADOS</option>
               </select>
             </div>
             <div class="col-6">
-              <select v-model="filtros.designado_domingo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por designado el domingo" v-model="filtros.designado_domingo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">DESIGNADO DOM</option><option value="1">DESIGNADOS</option><option value="0">NO DESIGNADOS</option>
               </select>
             </div>
@@ -63,7 +63,7 @@
 
           <template v-else>
           <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
-            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
+            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075">
               <thead class="table-light">
                 <tr>
                   <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
@@ -92,64 +92,64 @@
                   <th class="py-3 text-center text-uppercase text-muted">Observaciones</th>
                 </tr>
                 <tr class="bg-light">
-                  <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
-                  <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
+                  <td class="p-2 border-bottom border-2 col-fija col-apellido"><input aria-label="Filtrar.." v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
+                  <td class="p-2 border-bottom border-2 col-fija col-nombre"><input aria-label="Filtrar.." v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
                   <td class="p-2 border-bottom border-2 text-center col-fija col-sab">
-                    <select v-model="filtros.designado_sabado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por designado el sábado" v-model="filtros.designado_sabado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODOS</option><option value="1">SI</option><option value="0">NO</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2 text-center col-fija col-dom">
-                    <select v-model="filtros.designado_domingo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por designado el domingo" v-model="filtros.designado_domingo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODOS</option><option value="1">SI</option><option value="0">NO</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2 col-fija col-licencia">
-                    <select v-model="filtros.licencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por licencia" v-model="filtros.licencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODAS</option><option value="sin_licencia">SIN LIC.</option><option value="aprobada">APROBADA</option><option value="indeterminada">INDETERMINADA</option><option value="rechazada">RECHAZADA</option><option value="pendiente">PENDIENTE</option><option value="sancion_vigente">SANCIÓN VIG.</option><option value="sancion_proceso">SANC. PROC.</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2"></td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por activo" v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODOS</option><option value="1">SÍ</option><option value="0">NO</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por apto médico" v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODOS</option><option value="1">SÍ</option><option value="0">NO</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por grupo" v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODOS</option>
                       <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
                     </select>
                   </td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por subgrupo" v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODOS</option>
                       <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
                     </select>
                   </td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.zona" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.movilidad" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por zona" v-model="filtros.zona" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por movilidad" v-model="filtros.movilidad" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por disponibilidad del sábado" v-model="filtros.disponibilidad_sabado" class="form-control form-control-sm shadow-none"></td>
                   <td class="p-2 border-bottom border-2"></td>
                   <td class="p-2 border-bottom border-2"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por disponibilidad del domingo" v-model="filtros.disponibilidad_domingo" class="form-control form-control-sm shadow-none"></td>
                   <td class="p-2 border-bottom border-2"></td>
                   <td class="p-2 border-bottom border-2"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.juega_handball" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.donde_juega" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.categoria_handball" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por si juega handball" v-model="filtros.juega_handball" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por dónde juega" v-model="filtros.donde_juega" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por categoría en la que juega" v-model="filtros.categoria_handball" class="form-control form-control-sm shadow-none"></td>
                   <td class="p-2 border-bottom border-2">
-                    <select v-model="filtros.tiene_familiares" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                    <select aria-label="Filtrar por si tiene familiares en el handball" v-model="filtros.tiene_familiares" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                       <option value="">TODOS</option><option value="SI">SÍ</option><option value="NO">NO</option>
                     </select>
                   </td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.familiares_texto" class="form-control form-control-sm shadow-none"></td>
-                  <td class="p-2 border-bottom border-2"><input v-model="filtros.observaciones" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por familiares" v-model="filtros.familiares_texto" class="form-control form-control-sm shadow-none"></td>
+                  <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por observaciones" v-model="filtros.observaciones" class="form-control form-control-sm shadow-none"></td>
                 </tr>
               </thead>
               <tbody>
@@ -157,25 +157,25 @@
                   <td class="text-dark fw-bold text-uppercase col-fija col-apellido">{{ a.apellido }}</td>
                   <td class="text-dark fw-bold text-uppercase col-fija col-nombre">{{ a.nombre }}</td>
                   <td class="text-center col-fija col-sab">
-                    <input type="checkbox" :checked="designadosSabado.has(a.id)" :disabled="a.disponibilidad_sabado === 'NO'" @change="toggleDesignacion(a.id, 'S')" class="form-check-input" style="transform: scale(1.3); cursor:pointer;">
+                    <input type="checkbox" :checked="designadosSabado.has(a.id)" :disabled="a.disponibilidad_sabado === 'NO'" @change="toggleDesignacion(a.id, 'S')" class="form-check-input cursor-pointer" style="transform: scale(1.3);">
                   </td>
                   <td class="text-center col-fija col-dom">
-                    <input type="checkbox" :checked="designadosDomingo.has(a.id)" :disabled="a.disponibilidad_domingo === 'NO'" @change="toggleDesignacion(a.id, 'D')" class="form-check-input" style="transform: scale(1.3); cursor:pointer;">
+                    <input type="checkbox" :checked="designadosDomingo.has(a.id)" :disabled="a.disponibilidad_domingo === 'NO'" @change="toggleDesignacion(a.id, 'D')" class="form-check-input cursor-pointer" style="transform: scale(1.3);">
                   </td>
-                  <td class="text-center text-dark col-fija col-licencia" style="white-space: nowrap; font-size: 0.7rem;">{{ obtenerTextoLicencia(a) }}</td>
+                  <td class="text-center text-dark col-fija col-licencia texto-07" style="white-space: nowrap;">{{ obtenerTextoLicencia(a) }}</td>
                   <td class="text-center">
                     <button v-if="a.celular" @click="abrirWhatsApp(a.celular)" class="btn btn-success btn-sm p-1" title="Enviar WhatsApp">
-                      <i class="bi bi-whatsapp" style="font-size: 14px;"></i>
+                      <i class="bi bi-whatsapp texto-14px"></i>
                     </button>
                     <span v-else class="text-muted">-</span>
                   </td>
                   <td class="text-center">
-                    <i v-if="a.es_activo" class="bi bi-check-circle text-success" title="Activo" style="font-size: 18px;"></i>
-                    <i v-else class="bi bi-x-circle text-danger" title="Inactivo" style="font-size: 18px;"></i>
+                    <i v-if="a.es_activo" class="bi bi-check-circle text-success texto-18px" title="Activo"></i>
+                    <i v-else class="bi bi-x-circle text-danger texto-18px" title="Inactivo"></i>
                   </td>
                   <td class="text-center">
-                    <i v-if="a.apto_medico" class="bi bi-check-circle text-success" title="Apto Físico" style="font-size: 18px;"></i>
-                    <i v-else class="bi bi-x-circle text-danger" title="No Apto Físico" style="font-size: 18px;"></i>
+                    <i v-if="a.apto_medico" class="bi bi-check-circle text-success texto-18px" title="Apto Físico"></i>
+                    <i v-else class="bi bi-x-circle text-danger texto-18px" title="No Apto Físico"></i>
                   </td>
                   <td class="text-center text-dark">{{ a.grupo }}</td>
                   <td class="text-center text-dark">{{ a.subgrupo }}</td>
@@ -217,7 +217,7 @@
             <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 rounded-3 border-light-subtle" :class="obtenerClaseFila(a)">
 
               <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                <div class="text-dark fw-bold text-uppercase d-flex align-items-center gap-2" style="font-size: 1.05rem;">
+                <div class="text-dark fw-bold text-uppercase d-flex align-items-center gap-2 texto-105">
                   <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
                   {{ a.apellido }}, {{ a.nombre }}
                 </div>
@@ -233,14 +233,14 @@
                 <div v-if="obtenerTextoLicencia(a) !== '-'" class="alert py-2 px-3 small fw-bold mb-3 d-flex align-items-center gap-2"
                      :class="((Number(a.tiene_aprobada) > 0) || (Number(a.licencia_indeterminada) > 0) || a.sancion_vigente) ? 'alert-danger border-danger-subtle text-danger' : 'alert-warning border-warning-subtle text-warning-emphasis'">
                      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-                     <span class="text-break" style="white-space: normal; line-height: 1.3;">{{ obtenerTextoLicencia(a) }}</span>
+                     <span class="text-break text-wrap" style="line-height: 1.3;">{{ obtenerTextoLicencia(a) }}</span>
                 </div>
 
                 <div class="bg-white p-2 rounded border small mb-3 border-light-subtle d-flex justify-content-between align-items-center">
                   <span class="text-dark d-flex align-items-center gap-1">
                     <strong>Apto: </strong>
-                    <i v-if="a.apto_medico" class="bi bi-check-circle text-success" style="font-size: 16px;"></i>
-                    <i v-else class="bi bi-x-circle text-danger" style="font-size: 16px;"></i>
+                    <i v-if="a.apto_medico" class="bi bi-check-circle text-success texto-16px"></i>
+                    <i v-else class="bi bi-x-circle text-danger texto-16px"></i>
                   </span>
                   <span class="text-dark"><strong>Juega:</strong> {{ a.juega_handball }}</span>
                 </div>
@@ -254,13 +254,13 @@
                   <div class="flex-grow-1 bg-white p-2 rounded border shadow-sm d-flex flex-column align-items-center justify-content-center">
                     <label class="small fw-bold text-dark mb-2" :for="'sab-'+a.id">Designar SÁB</label>
                     <div class="form-check form-switch m-0">
-                      <input class="form-check-input shadow-none" type="checkbox" role="switch" :id="'sab-'+a.id" :checked="designadosSabado.has(a.id)" :disabled="a.disponibilidad_sabado === 'NO'" @change="toggleDesignacion(a.id, 'S')" style="transform: scale(1.3); cursor:pointer;">
+                      <input class="form-check-input shadow-none cursor-pointer" type="checkbox" role="switch" :id="'sab-'+a.id" :checked="designadosSabado.has(a.id)" :disabled="a.disponibilidad_sabado === 'NO'" @change="toggleDesignacion(a.id, 'S')" style="transform: scale(1.3);">
                     </div>
                   </div>
                   <div class="flex-grow-1 bg-white p-2 rounded border shadow-sm d-flex flex-column align-items-center justify-content-center">
                     <label class="small fw-bold text-dark mb-2" :for="'dom-'+a.id">Designar DOM</label>
                     <div class="form-check form-switch m-0">
-                      <input class="form-check-input shadow-none" type="checkbox" role="switch" :id="'dom-'+a.id" :checked="designadosDomingo.has(a.id)" :disabled="a.disponibilidad_domingo === 'NO'" @change="toggleDesignacion(a.id, 'D')" style="transform: scale(1.3); cursor:pointer;">
+                      <input class="form-check-input shadow-none cursor-pointer" type="checkbox" role="switch" :id="'dom-'+a.id" :checked="designadosDomingo.has(a.id)" :disabled="a.disponibilidad_domingo === 'NO'" @change="toggleDesignacion(a.id, 'D')" style="transform: scale(1.3);">
                     </div>
                   </div>
                 </div>
@@ -298,8 +298,11 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
+import { fechaArg } from '@/utils/fechas'
+import { abrirWhatsApp } from '@/utils/whatsapp'
+import { normalizarTexto } from '@/utils/texto'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api';
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import { textoFamiliares } from '@/composables/useFamiliares'
 
@@ -315,7 +318,7 @@ useHead({
 })
 
 const notificar = inject('notificar');
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 
 const arbitros = ref([]);
 const cargando = ref(false);
@@ -356,7 +359,7 @@ const opcionesSubgrupo = computed(() => {
 
 const obtenerGrupos = async () => {
   try {
-    const { payload } = await api.get({ entity: 'grupos', action: 'obtenerGrupos' });
+    const { payload } = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' });
     grupos.value = Array.isArray(payload) ? payload : [];
   } catch (error) {
     console.error('Error al obtener grupos:', error);
@@ -524,18 +527,8 @@ const obtenerClaseFila = (a) => {
 
 const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
 
-const mostrarFechaArg = (fecha) => {
-  if (!fecha) return '';
-  const partes = fecha.split('-');
-  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha;
-};
+const mostrarFechaArg = (fecha) => fechaArg(fecha)
 
-const abrirWhatsApp = (numero) => {
-  if (!numero) return;
-  const limpio = String(numero).replace(/\D/g, '');
-  const prefijo = limpio.startsWith('54') ? limpio : `54${limpio}`;
-  window.open(`https://wa.me/${prefijo}`, '_blank');
-};
 
 const obtenerTextoLicencia = (a) => {
   let textos = [];
@@ -573,9 +566,6 @@ const obtenerTextoLicencia = (a) => {
   return textos.length > 0 ? textos.join(' | ') : '-';
 };
 
-const normalizarTexto = (valor) => {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-};
 
 const arbitrosFiltrados = computed(() => {
   const filtrados = arbitros.value.filter(a => {
@@ -664,7 +654,7 @@ const exportarExcel = async () => {
     OBS: a.observaciones
   }))
 
-  const wb = new ExcelJS.Workbook()
+  const wb = new (await cargarExcelJS()).Workbook()
   const ws = wb.addWorksheet('Designaciones')
 
   // Definir columnas a partir de las claves del primer objeto

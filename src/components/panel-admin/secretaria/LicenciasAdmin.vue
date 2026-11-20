@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -27,18 +27,18 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Licencias</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <div class="col-6 col-md-2">
-              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
+              <input aria-label="Apellido" v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
+              <input aria-label="Nombre" v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="pendiente">PENDIENTE</option>
                 <option value="aprobada">APROBADA</option>
@@ -48,16 +48,16 @@
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por año" v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">AÑO</option>
                 <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
               </select>
             </div>
             <div class="col-6 col-md-2">
-              <input type="text" v-model="filtros.fecha_solicitud" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. SOLICITUD">
+              <input aria-label="F. solicitud" type="text" v-model="filtros.fecha_solicitud" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. SOLICITUD">
             </div>
             <div class="col-6 col-md-2">
-              <input type="text" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. AUSENCIA O INDETERMINADA">
+              <input aria-label="F. ausencia o indeterminada" type="text" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="F. AUSENCIA O INDETERMINADA">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
@@ -73,16 +73,16 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm">
-              <table class="table table-hover align-middle mb-0" style="font-size: 0.75rem;">
+              <table class="table table-hover align-middle mb-0 texto-075">
                 <thead class="table-light">
                   <tr>
-                    <th class="py-3 ps-3 text-uppercase text-muted" style="font-size: 0.75rem; width: 1px;">ID</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Acciones</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Árbitro</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">Estado</th>
-                    <th class="py-3 text-uppercase text-muted" style="font-size: 0.75rem;">Motivo</th>
-                    <th class="py-3 text-center text-uppercase text-muted" style="font-size: 0.75rem;">F. Solicitud</th>
-                    <th class="py-3 text-center pe-3 text-uppercase text-muted" style="font-size: 0.75rem;">F. Ausencia</th>
+                    <th class="py-3 ps-3 text-uppercase text-muted texto-075" style="width: 1px;">ID</th>
+                    <th class="py-3 text-center text-uppercase text-muted texto-075">Acciones</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">Árbitro</th>
+                    <th class="py-3 text-center text-uppercase text-muted texto-075">Estado</th>
+                    <th class="py-3 text-uppercase text-muted texto-075">Motivo</th>
+                    <th class="py-3 text-center text-uppercase text-muted texto-075">F. Solicitud</th>
+                    <th class="py-3 text-center pe-3 text-uppercase text-muted texto-075">F. Ausencia</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -90,14 +90,14 @@
                     <td class="ps-3 text-muted fw-bold font-monospace">{{ lic.id }}</td>
                     <td class="text-center">
                       <div class="d-flex justify-content-center gap-1">
-                        <button @click="editarLicencia(lic)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar Licencia">
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                        <button @click="editarLicencia(lic)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar Licencia">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button @click="verHistorialLicencia(lic)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver Historial">
-                          <i class="bi bi-search" style="font-size:16px;"></i>
+                          <i class="bi bi-search texto-16px"></i>
                         </button>
                         <button @click="eliminarLicencia(lic.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger" title="Eliminar">
-                          <i class="bi bi-trash" style="font-size:16px;"></i>
+                          <i class="bi bi-trash texto-16px"></i>
                         </button>
                       </div>
                     </td>
@@ -107,7 +107,7 @@
                     </td>
                     <td class="text-muted small">{{ etiquetaMotivo(lic.motivo, true) }}</td>
                     <td class="text-center text-muted fw-bold">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
-                    <td class="text-center pe-3 text-primary fw-bold">{{ formatearFechaAusencia(lic) }}</td>
+                    <td class="text-center pe-3 text-danger fw-bold">{{ formatearFechaAusencia(lic) }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -118,7 +118,7 @@
               <div v-for="lic in licenciasPaginadas" :key="'mob-'+lic.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
 
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start">
-                  <div class="text-uppercase text-dark fw-bold" style="font-size: 1.05rem;">
+                  <div class="text-uppercase text-dark fw-bold texto-105">
                     {{ lic.apellido }}, {{ lic.nombre }}
                   </div>
                   <div class="small text-muted fw-bold font-monospace">#{{ lic.id }}</div>
@@ -126,8 +126,8 @@
 
                 <div class="card-body pt-0 px-3 pb-3">
                   <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="fw-bold text-primary fs-5">{{ formatearFechaAusencia(lic) }}</span>
-                    <span :class="['badge-status-sm', lic.estado]" style="font-size: 0.7rem; padding: 3px 10px;">{{ lic.estado.toUpperCase() }}</span>
+                    <span class="fw-bold text-danger fs-5">{{ formatearFechaAusencia(lic) }}</span>
+                    <span class="texto-07" :class="['badge-status-sm', lic.estado]" style="padding: 3px 10px;">{{ lic.estado.toUpperCase() }}</span>
                   </div>
 
                   <div class="bg-light p-2 rounded border small mb-3">
@@ -143,14 +143,14 @@
 
                   <!-- Botones Acciones -->
                   <div class="d-flex gap-2">
-                    <button @click="editarLicencia(lic)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <i class="bi bi-pencil" style="font-size: 16px;"></i> EDITAR
+                    <button @click="editarLicencia(lic)" class="btn btn-sm btn-outline-secondary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                      <i class="bi bi-pencil texto-16px"></i> EDITAR
                     </button>
-                    <button @click="verHistorialLicencia(lic)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
-                      <i class="bi bi-search" style="font-size: 18px;"></i>
+                    <button type="button" aria-label="Ver historial de la licencia" title="Ver historial de la licencia" @click="verHistorialLicencia(lic)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
+                      <i class="bi bi-search texto-18px"></i>
                     </button>
-                    <button @click="eliminarLicencia(lic.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
-                      <i class="bi bi-trash" style="font-size: 18px;"></i>
+                    <button type="button" aria-label="Eliminar licencia" title="Eliminar licencia" @click="eliminarLicencia(lic.id)" class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center">
+                      <i class="bi bi-trash texto-18px"></i>
                     </button>
                   </div>
                 </div>
@@ -187,13 +187,13 @@
       :hay-cambios="hayCambios"
       @close="cerrarModal"
       :icono="modoModal === 'editar' ? 'edit' : 'calendar_today'"
-      :colorIcono="modoModal === 'editar' ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      :colorIcono="modoModal === 'editar' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'"
       maxWidth="600px"
     >
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">{{ modoModal === 'editar' ? 'Editar Licencia' : 'Registrar Licencia' }}</span>
-          <div v-if="modoModal === 'editar'" class="text-muted small" style="font-size: 0.85rem;">
+          <div v-if="modoModal === 'editar'" class="text-muted small texto-085">
             ID #{{ formModal.id }} — {{ formModal.apellido }}, {{ formModal.nombre }}
           </div>
         </div>
@@ -203,7 +203,7 @@
         <div class="row g-3">
           <div class="col-12" v-if="modoModal === 'nuevo'">
             <label class="small fw-bold text-dark mb-1">Seleccionar Árbitro *</label>
-            <select v-model="formModal.id_arbitro" class="form-select border-secondary-subtle shadow-none" required>
+            <select aria-label="Seleccionar Árbitro" v-model="formModal.id_arbitro" class="form-select border-secondary-subtle shadow-none" required>
               <option value="" disabled>Elegir árbitro...</option>
               <option v-for="arb in arbitrosLista" :key="arb.id" :value="arb.id">
                 {{ arb.apellido }}, {{ arb.nombre }}
@@ -213,7 +213,7 @@
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Motivo</label>
-            <select v-model="formModal.motivo" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Motivo" v-model="formModal.motivo" class="form-select shadow-none border-secondary-subtle">
               <option value="particular">Particular</option>
               <option value="lesion_enfermedad">Lesión / Enfermedad</option>
               <option v-if="!formModal.tiempo_indeterminado" value="designacion_torneo_nacional">Designación Torneo Nacional</option>
@@ -222,7 +222,7 @@
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Estado</label>
-            <select v-model="formModal.estado" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Estado" v-model="formModal.estado" class="form-select shadow-none border-secondary-subtle">
               <option value="pendiente">Pendiente</option>
               <option value="aprobada">Aprobada</option>
               <option value="rechazada">Rechazada</option>
@@ -232,7 +232,7 @@
 
           <div class="col-12 col-md-6">
             <label class="small fw-bold text-dark mb-1">Fecha Solicitud *</label>
-            <input v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none border-secondary-subtle" required :disabled="formModal.tiempo_indeterminado && modoModal === 'nuevo'">
+            <input aria-label="Fecha Solicitud" v-model="formModal.fecha_solicitud" type="date" class="form-control shadow-none border-secondary-subtle" required :disabled="formModal.tiempo_indeterminado && modoModal === 'nuevo'">
           </div>
 
           <div class="col-6 col-md-3">
@@ -297,20 +297,20 @@
       <div v-else>
         <!-- Tabla Historial (Escritorio) -->
         <div class="table-responsive d-none d-md-block bg-white rounded shadow-sm border border-light-subtle">
-          <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.85rem; table-layout: fixed; width: 100%;">
+          <table class="table table-sm table-hover align-middle m-0 texto-085 tabla-fija" style="width: 100%;">
             <thead class="table-light">
               <tr>
-                <th class="py-2 ps-3 fw-bold text-uppercase text-muted" style="width: 130px; font-size: 0.75rem;">F. Solicitud</th>
-                <th class="py-2 fw-bold text-uppercase text-muted" style="width: 130px; font-size: 0.75rem;">F. Ausencia</th>
-                <th class="py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Motivo</th>
-                <th class="text-center py-2 pe-3 fw-bold text-uppercase text-muted" style="width: 120px; font-size: 0.75rem;">Estado</th>
+                <th class="py-2 ps-3 fw-bold text-uppercase text-muted texto-075" style="width: 130px;">F. Solicitud</th>
+                <th class="py-2 fw-bold text-uppercase text-muted texto-075" style="width: 130px;">F. Ausencia</th>
+                <th class="py-2 fw-bold text-uppercase text-muted texto-075">Motivo</th>
+                <th class="text-center py-2 pe-3 fw-bold text-uppercase text-muted texto-075" style="width: 120px;">Estado</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="h in historialLicencia" :key="h.id">
                 <td class="text-nowrap text-muted fw-bold py-3 ps-3">{{ formatearFechaVista(h.fecha_solicitud) }}</td>
-                <td class="text-nowrap text-primary fw-bold py-3">{{ formatearFechaAusencia(h) }}</td>
-                <td class="text-muted py-3" style="white-space: normal; word-wrap: break-word;">
+                <td class="text-nowrap text-danger fw-bold py-3">{{ formatearFechaAusencia(h) }}</td>
+                <td class="text-muted py-3 text-wrap" style="word-wrap: break-word;">
                   {{ etiquetaMotivo(h.motivo, true) }}
                 </td>
                 <td class="text-center py-3 pe-3">
@@ -325,7 +325,7 @@
         <div class="d-md-none d-flex flex-column gap-2">
           <div v-for="h in historialLicencia" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-3 p-3 shadow-sm bg-light">
             <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-              <span class="fw-bold text-primary fs-5">{{ formatearFechaAusencia(h) }}</span>
+              <span class="fw-bold text-danger fs-5">{{ formatearFechaAusencia(h) }}</span>
               <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
             </div>
             <div class="d-flex justify-content-between align-items-center text-muted small mt-2">
@@ -346,8 +346,8 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
@@ -358,7 +358,7 @@ useHead({
 })
 
 const notificar = inject('notificar')
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 
 const licencias = ref([])
 const arbitrosLista = ref([])
@@ -469,7 +469,7 @@ const obtenerArbitros = async () => {
     action: 'getArbitros'
   });
   if (res.ok && Array.isArray(res.payload)) {
-    arbitrosLista.value = res.payload.sort((a, b) => (a.apellido || '').localeCompare(b.apellido || ''));
+    arbitrosLista.value = (res.payload || []).sort((a, b) => (a.apellido || '').localeCompare(b.apellido || ''));
   }
 };
 
@@ -628,7 +628,7 @@ const exportarExcel = async () => {
     'Fecha Licencia': formatearFechaAusencia(l)
   }));
 
-  const wb = new ExcelJS.Workbook();
+  const wb = new (await cargarExcelJS()).Workbook();
   const ws = wb.addWorksheet('Licencias');
 
   const claves = Object.keys(data[0] || {});
@@ -697,7 +697,5 @@ onMounted(() => {
    UTILIDADES
    ==================================================== */
 .animate__animated { animation-duration: 0.5s; }
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
 
 </style>

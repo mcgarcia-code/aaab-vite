@@ -1,7 +1,7 @@
 <template>
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Convocatoria y asistencia · {{ fechas.length }} {{ fechas.length === 1 ? 'fecha' : 'fechas' }} · {{ encuentros.length }} sedes en {{ anio }} · solo para aspirantes del curso anual</p>
@@ -85,7 +85,7 @@
                   </div>
                   <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
                     <button @click="abrirAsistencia(e)" :disabled="esEncuentroFuturo(e)" class="btn btn-sm btn-outline-success flex-fill fw-bold" :title="esEncuentroFuturo(e) ? 'La asistencia se toma desde el día del encuentro' : undefined"><i class="bi bi-person-check me-1"></i> Asistencia</button>
-                    <button @click="abrirEditar(e)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
+                    <button @click="abrirEditar(e)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
                     <button @click="confirmarEliminar(e)" class="btn btn-sm btn-outline-danger fw-bold" aria-label="Borrar encuentro"><i class="bi bi-trash3"></i></button>
                   </div>
                 </div>
@@ -202,7 +202,7 @@ import { fechaLargaClase, hoyIso } from '@/composables/useCronogramaCurso'
 
 useHead({ title: 'Encuentros de Mini | AAAB' })
 
-const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const notificar = inject('notificar')
 const toast = inject('toast', (m) => notificar(m))
 
 const anio = ref(Number(anioActual()))
@@ -481,12 +481,11 @@ onMounted(cargar)
 
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped>
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
+
 .tarjeta { background: #fff; }
 .tarjeta-fecha { border-left: 4px solid #dc3545 !important; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
 .tarjeta-fecha:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1); }
 .tarjeta-fecha.fecha-pasada { border-left-color: #9ca3af !important; }
-.texto-multilinea { white-space: pre-wrap; }
+
 .lista-aspirantes { max-height: 280px; overflow-y: auto; }
 </style>

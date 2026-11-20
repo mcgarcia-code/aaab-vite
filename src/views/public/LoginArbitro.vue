@@ -8,21 +8,25 @@
         <p class="text-muted small mb-0">Ingresá con tu email de registro</p>
       </div>
 
-      <div v-if="errorMsg" class="alert alert-danger small p-3 text-center border-0 rounded-3 shadow-sm fw-bold">
+      <div v-if="avisoSesion && !errorMsg" class="alert alert-warning small p-3 text-center border-0 rounded-3 fw-bold" role="status">
+        <i class="bi bi-clock-history me-2"></i>{{ avisoSesion }}
+      </div>
+
+      <div v-if="errorMsg" role="alert" class="alert alert-danger small p-3 text-center border-0 rounded-3 shadow-sm fw-bold">
         <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMsg }}
       </div>
 
       <form @submit.prevent="iniciarSesion">
         <div class="mb-3">
           <label class="form-label small fw-bold text-dark">Email o usuario del curso</label>
-          <input v-model="email" type="email" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="ejemplo@mail.com o usuario@cursoaaab.com.ar" required :disabled="cargando">
+          <input aria-label="Email o usuario del curso" v-model="email" type="email" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="ejemplo@mail.com o usuario@cursoaaab.com.ar" required :disabled="cargando">
         </div>
 
         <div class="mb-4">
           <div class="d-flex justify-content-between align-items-center mb-1">
             <label class="form-label small fw-bold text-dark mb-0">Contraseña</label>
             </div>
-          <input v-model="password" type="password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required :disabled="cargando">
+          <input aria-label="Contraseña" v-model="password" type="password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required :disabled="cargando">
         </div>
 
         <button :disabled="cargando" type="submit" class="btn btn-danger w-100 fw-bold py-3 mt-2 rounded-3 shadow-sm btn-login">
@@ -38,8 +42,8 @@
       </form>
 
       <div class="text-center mt-4 pt-4 border-top border-light-subtle">
-        <p class="text-muted fw-bold mb-1" style="font-size: 0.75rem;">ASOCIACIÓN ARGENTINA DE ÁRBITROS DE BALONMANO</p>
-        <p class="text-muted mb-0" style="font-size: 0.75rem; line-height: 1.4;">
+        <p class="text-muted fw-bold mb-1 texto-075">ASOCIACIÓN ARGENTINA DE ÁRBITROS DE BALONMANO</p>
+        <p class="text-muted mb-0 texto-075" style="line-height: 1.4;">
           Si tenés algún problema técnico comunicate con <br>
           <a href="mailto:soporte@arbitroshandball.com.ar" class="text-danger fw-bold text-decoration-none support-link">soporte@arbitroshandball.com.ar</a>
         </p>
@@ -72,6 +76,13 @@ const email = ref('');
 const password = ref('');
 const errorMsg = ref('');
 const cargando = ref(false);
+
+// Si se llegó al login porque la sesión se cerró sola, se avisa el motivo una vez
+const MENSAJES_SESION = {
+  inactividad: 'Tu sesión se cerró por inactividad. Volvé a ingresar.',
+  vencida: 'Tu sesión venció. Volvé a ingresar.'
+}
+const avisoSesion = ref(MENSAJES_SESION[auth.tomarAvisoSesion()] || '')
 
 const iniciarSesion = async () => {
   if (!email.value || !password.value) {

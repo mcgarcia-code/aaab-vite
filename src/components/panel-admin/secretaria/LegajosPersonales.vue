@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -34,21 +34,21 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none']">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Árbitros</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <div class="col-6">
-              <input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
+              <input aria-label="Apellido" v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO...">
             </div>
             <div class="col-6">
-              <input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
+              <input aria-label="Nombre" v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="NOMBRE...">
             </div>
             <div class="col-6">
-              <input v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI...">
+              <input aria-label="Dni" v-model="filtros.dni" class="form-control form-control-sm shadow-none" placeholder="DNI...">
             </div>
             <div class="col-6">
-              <select v-model="filtros.rol" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por rol" v-model="filtros.rol" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ROL</option>
                 <option :value="1">ÁRBITRO</option>
                 <option :value="2">OBSERVADOR</option>
@@ -69,7 +69,7 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
-              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem;">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075">
                 <thead class="table-light">
                   <!-- Títulos -->
                   <tr>
@@ -116,80 +116,80 @@
                   <tr class="bg-light">
                     <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id"></td>
                     <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
-                    <td class="p-2 border-bottom border-2 col-fija col-apellido"><input v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
-                    <td class="p-2 border-bottom border-2 col-fija col-nombre"><input v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
+                    <td class="p-2 border-bottom border-2 col-fija col-apellido"><input aria-label="Filtrar.." v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
+                    <td class="p-2 border-bottom border-2 col-fija col-nombre"><input aria-label="Filtrar.." v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR.."></td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <select aria-label="Filtrar por activo" v-model="filtros.es_activo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                         <option value="">TODOS</option><option value="NO">NO</option><option value="SI">SÍ</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.rol" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <select aria-label="Filtrar por rol" v-model="filtros.rol" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                         <option value="">TODOS</option><option :value="0">NINGUNO</option><option :value="1">ÁRBITRO</option><option :value="2">OBSERVADOR</option><option :value="4">COORDINADOR</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <select aria-label="Filtrar por apto médico" v-model="filtros.apto_medico" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                         <option value="">TODOS</option><option value="SI">SÍ</option><option value="NO">NO</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <select aria-label="Filtrar por grupo" v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                         <option value="">TODOS</option>
                         <option v-for="g in opcionesGrupo" :key="g" :value="g">{{ g }}</option>
                       </select>
                     </td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <select aria-label="Filtrar por subgrupo" v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                         <option value="">TODOS</option>
                         <option v-for="s in opcionesSubgrupo" :key="s" :value="s">{{ s }}</option>
                       </select>
                     </td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.dni" class="form-control form-control-sm shadow-none text-center"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por DNI" v-model="filtros.dni" class="form-control form-control-sm shadow-none text-center"></td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.genero" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <select aria-label="Filtrar por género" v-model="filtros.genero" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                         <option value="">TODOS</option><option value="masculino">MASCULINO</option><option value="femenino">FEMENINO</option><option value="x">X</option><option value="otro">OTRO</option>
                       </select>
                     </td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.fecha_ingreso" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.email" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.direccion" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por fecha de ingreso" v-model="filtros.fecha_ingreso" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por email" v-model="filtros.email" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por dirección" v-model="filtros.direccion" class="form-control form-control-sm shadow-none"></td>
                     <td class="p-2 border-bottom border-2"><selProvincia v-model="filtros.provincia" :provincias="provincias" class="form-select form-select-sm shadow-none" /></td>
                     <td class="p-2 border-bottom border-2"><selLocalidad v-model="filtros.localidad" :localidades="localidadesFiltradas" class="form-select form-select-sm shadow-none" /></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.zona" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.celular" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.fecha_nacimiento" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.telefonocontacto" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.parentescocontacto" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.movilidad" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado_desde" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_sabado_hasta" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo_desde" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.disponibilidad_domingo_hasta" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.juega_handball" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.donde_juega" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.categoria_handball" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por zona" v-model="filtros.zona" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por celular" v-model="filtros.celular" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por fecha de nacimiento" v-model="filtros.fecha_nacimiento" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por teléfono de contacto" v-model="filtros.telefonocontacto" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por parentesco del contacto" v-model="filtros.parentescocontacto" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por movilidad" v-model="filtros.movilidad" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por disponibilidad del sábado" v-model="filtros.disponibilidad_sabado" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por horario desde del sábado" v-model="filtros.disponibilidad_sabado_desde" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por horario hasta del sábado" v-model="filtros.disponibilidad_sabado_hasta" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por disponibilidad del domingo" v-model="filtros.disponibilidad_domingo" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por horario desde del domingo" v-model="filtros.disponibilidad_domingo_desde" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por horario hasta del domingo" v-model="filtros.disponibilidad_domingo_hasta" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por si juega handball" v-model="filtros.juega_handball" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por dónde juega" v-model="filtros.donde_juega" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por categoría en la que juega" v-model="filtros.categoria_handball" class="form-control form-control-sm shadow-none"></td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.tiene_familiares" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <select aria-label="Filtrar por si tiene familiares en el handball" v-model="filtros.tiene_familiares" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                         <option value="">TODOS</option><option value="SI">SÍ</option><option value="NO">NO</option>
                       </select>
                     </td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.familiares_texto" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por familiares" v-model="filtros.familiares_texto" class="form-control form-control-sm shadow-none"></td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.ex_jugador" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <select aria-label="Filtrar por ex jugador" v-model="filtros.ex_jugador" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                         <option value="">TODOS</option><option value="SI">SÍ</option><option value="NO">NO</option>
                       </select>
                     </td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.club_ex_jugador" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por club como ex jugador" v-model="filtros.club_ex_jugador" class="form-control form-control-sm shadow-none"></td>
                     <td class="p-2 border-bottom border-2">
-                      <select v-model="filtros.identifica_club" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+                      <select aria-label="Filtrar por si se identifica con un club" v-model="filtros.identifica_club" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                         <option value="">TODOS</option><option value="SI">SÍ</option><option value="NO">NO</option>
                       </select>
                     </td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.clubes_identifica_texto" class="form-control form-control-sm shadow-none"></td>
-                    <td class="p-2 border-bottom border-2"><input v-model="filtros.observaciones" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por clubes con los que se identifica" v-model="filtros.clubes_identifica_texto" class="form-control form-control-sm shadow-none"></td>
+                    <td class="p-2 border-bottom border-2"><input aria-label="Filtrar por observaciones" v-model="filtros.observaciones" class="form-control form-control-sm shadow-none"></td>
                   </tr>
                 </thead>
                 <tbody>
@@ -197,11 +197,11 @@
                     <td class="ps-3 text-muted fw-bold font-monospace col-fija col-id">{{ a.id }}</td>
                     <td class="text-center col-fija col-acciones">
                       <div class="d-flex justify-content-center gap-1">
-                        <button @click="editarArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary" title="Editar árbitro">
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                        <button @click="editarArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark" title="Editar árbitro">
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button @click="verHistorialArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver historial de cambios">
-                          <i class="bi bi-search" style="font-size:16px;"></i>
+                          <i class="bi bi-search texto-16px"></i>
                         </button>
                       </div>
                     </td>
@@ -276,7 +276,7 @@
               <div v-for="a in arbitrosPaginados" :key="'mob-'+a.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'bg-danger-subtle': a.es_activo == 0 }">
 
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                  <div class="text-dark fw-bold text-uppercase d-flex align-items-center gap-2" style="font-size: 1.05rem;">
+                  <div class="text-dark fw-bold text-uppercase d-flex align-items-center gap-2 texto-105">
                     <span class="status-dot" :class="a.es_activo == 1 ? 'bg-success' : 'bg-danger'"></span>
                     {{ a.apellido }}, {{ a.nombre }}
                   </div>
@@ -297,11 +297,11 @@
                   </div>
 
                   <div class="d-flex gap-2">
-                    <button @click="editarArbitro(a)" class="btn btn-sm btn-outline-primary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <i class="bi bi-pencil" style="font-size: 16px;"></i> EDITAR
+                    <button @click="editarArbitro(a)" class="btn btn-sm btn-outline-secondary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
+                      <i class="bi bi-pencil texto-16px"></i> EDITAR
                     </button>
-                    <button @click="verHistorialArbitro(a)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
-                      <i class="bi bi-search" style="font-size: 18px;"></i>
+                    <button type="button" aria-label="Ver historial del árbitro" title="Ver historial del árbitro" @click="verHistorialArbitro(a)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center">
+                      <i class="bi bi-search texto-18px"></i>
                     </button>
                   </div>
                 </div>
@@ -338,10 +338,10 @@
           <div class="text-muted small mt-1">Marcá las columnas que querés incluir en el Excel</div>
         </div>
       </template>
-      <div class="row g-2 text-start my-2 mx-auto shadow-sm p-3 rounded-3 bg-light border border-light-subtle" style="max-height: 250px; overflow-y: auto;">
+      <div class="row g-2 text-start my-2 mx-auto shadow-sm p-3 rounded-3 bg-light border border-light-subtle overflow-y-auto" style="max-height: 250px;">
         <div v-for="col in columnasExcel" :key="col.id" class="col-12 col-sm-6">
           <div class="form-check form-switch bg-white border p-2 rounded shadow-sm m-0">
-            <input class="form-check-input ms-1 shadow-none" type="checkbox" role="switch" v-model="col.visible" :id="'col-'+col.id" style="cursor:pointer;">
+            <input class="form-check-input ms-1 shadow-none cursor-pointer" type="checkbox" role="switch" v-model="col.visible" :id="'col-'+col.id">
             <label class="form-check-label ms-2 small fw-bold text-dark cursor-pointer" :for="'col-'+col.id">{{ col.label }}</label>
           </div>
         </div>
@@ -359,7 +359,7 @@
           <img
             v-if="modoModal === 'editar'"
             :src="urlFotoModal"
-            @error="(e) => e.target.src = 'https://via.placeholder.com/150'"
+            @error="(e) => e.target.src = 'https://ui-avatars.com/api/?name=Sin+Foto&background=334155&color=fff'" alt="Foto del árbitro"
             class="perfil-img-legajo shadow-sm mb-2"
           >
           <span class="fw-bold fs-5 d-block">{{ modoModal === 'editar' ? `Editar árbitro` : 'Registrar Nuevo Árbitro' }}</span>
@@ -371,7 +371,7 @@
         <i class="bi bi-clipboard-x text-warning mt-1"></i>
         <div class="w-100">
           <strong class="d-block text-dark mb-1 text-uppercase small">Solicitud del árbitro:</strong>
-          <div class="text-dark text-break small" style="white-space: pre-line; line-height: 1.5; text-align: justify;">{{ mensajeSolicitudActiva }}</div>
+          <div class="text-dark text-break small texto-multilinea" style="line-height: 1.5; text-align: justify;">{{ mensajeSolicitudActiva }}</div>
         </div>
       </div>
 
@@ -379,13 +379,13 @@
         <div class="row g-3 pb-3">
 
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-0">Datos básicos</div>
-          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Apellido *</label><input v-model="formModal.apellido" class="form-control shadow-none border-secondary-subtle" required></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Nombre *</label><input v-model="formModal.nombre" class="form-control shadow-none border-secondary-subtle" required></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">DNI</label><input v-model="formModal.dni" class="form-control shadow-none border-secondary-subtle"></div>
-          <div class="col-md-6"><label class="small fw-bold text-dark mb-1">Email (Usuario) *</label><input v-model="formModal.email" type="email" class="form-control shadow-none border-secondary-subtle" required></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Apellido *</label><input aria-label="Apellido" v-model="formModal.apellido" class="form-control shadow-none border-secondary-subtle" required></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Nombre *</label><input aria-label="Nombre" v-model="formModal.nombre" class="form-control shadow-none border-secondary-subtle" required></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">DNI</label><input aria-label="Dni" v-model="formModal.dni" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-6"><label class="small fw-bold text-dark mb-1">Email (Usuario) *</label><input aria-label="Email (Usuario)" v-model="formModal.email" type="email" class="form-control shadow-none border-secondary-subtle" required></div>
           <div class="col-md-6" v-if="modoModal !== 'editar'">
             <label class="small fw-bold text-dark mb-1">Password *</label>
-            <input v-model="formModal.password" type="text" class="form-control shadow-none border-secondary-subtle" required>
+            <input aria-label="Password" v-model="formModal.password" type="text" class="form-control shadow-none border-secondary-subtle" required>
           </div>
           <div class="col-md-6" v-else>
             <label class="small fw-bold text-dark mb-1">Contraseña</label>
@@ -398,7 +398,7 @@
           </div>
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Género</label>
-            <select v-model="formModal.genero" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Género" v-model="formModal.genero" class="form-select shadow-none border-secondary-subtle">
               <option value="">Seleccionar...</option>
               <option value="masculino">Masculino</option>
               <option value="femenino">Femenino</option>
@@ -408,32 +408,32 @@
           </div>
           <div class="col-md-6">
             <label class="small fw-bold text-dark mb-1">Fecha de Ingreso a la AAAB</label>
-            <input type="date" v-model="formModal.fecha_ingreso" class="form-control shadow-none border-secondary-subtle">
+            <input aria-label="Fecha de Ingreso a la AAAB" type="date" v-model="formModal.fecha_ingreso" class="form-control shadow-none border-secondary-subtle">
           </div>
 
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Clasificación</div>
           <div class="col-md-3">
             <label class="small fw-bold text-dark mb-1">Rol</label>
-            <select v-model="formModal.rol" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Rol" v-model="formModal.rol" class="form-select shadow-none border-secondary-subtle">
               <option :value="1">Árbitro</option><option :value="2">Observador</option><option :value="4">Coordinador</option><option :value="0">Ninguno</option>
             </select>
           </div>
           <div class="col-md-3">
             <label class="small fw-bold text-dark mb-1">Estado</label>
-            <select v-model="formModal.es_activo" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Estado" v-model="formModal.es_activo" class="form-select shadow-none border-secondary-subtle">
               <option :value="1">Activo</option><option :value="0">Inactivo</option>
             </select>
           </div>
           <div class="col-md-2">
             <label class="small fw-bold text-dark mb-1">Grupo</label>
-            <select v-model="formModal.id_grupo" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Grupo" v-model="formModal.id_grupo" class="form-select shadow-none border-secondary-subtle">
               <option v-for="(grupo,k) in grupos" :key='k' :value="grupo.id">{{ grupo.nombre }} {{ grupo.subgrupo }}</option>
             </select>
           </div>
           <!--
           <div class="col-md-2" v-if="formModal.grupo == '3'">
             <label class="small fw-bold text-dark mb-1">Subgrupo</label>
-            <select v-model="formModal.subgrupo" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Subgrupo" v-model="formModal.subgrupo" class="form-select shadow-none border-secondary-subtle">
               <option value="A">A</option><option value="B">B</option><option value="C">C</option>
             </select>
           </div>
@@ -441,7 +441,7 @@
         -->
           <div class="col-md-2">
             <label class="small fw-bold text-dark mb-1">Apto Médico</label>
-            <select v-model="formModal.apto_medico" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Apto Médico" v-model="formModal.apto_medico" class="form-select shadow-none border-secondary-subtle">
               <option :value="true">SI</option><option :value="false">NO</option>
             </select>
           </div>
@@ -467,14 +467,14 @@
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Ubicación</div>
           <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Provincia</label><selProvincia v-model="formModal.provincia" :provincias="provincias" class="form-select shadow-none border-secondary-subtle" /></div>
           <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Localidad</label><selLocalidad v-model="formModal.localidad" :localidades="localidades.filter(l => l.provincia_id == formModal.provincia)" class="form-select shadow-none border-secondary-subtle" /></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Zona</label><input v-model="formModal.zona" class="form-control shadow-none border-secondary-subtle"></div>
-          <div class="col-12"><label class="small fw-bold text-dark mb-1">Dirección</label><input v-model="formModal.direccion" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Zona</label><input aria-label="Zona" v-model="formModal.zona" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-12"><label class="small fw-bold text-dark mb-1">Dirección</label><input aria-label="Dirección" v-model="formModal.direccion" class="form-control shadow-none border-secondary-subtle"></div>
 
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Contacto y Movilidad</div>
-          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Celular</label><input v-model="formModal.celular" class="form-control shadow-none border-secondary-subtle"></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Tel. Contacto</label><input v-model="formModal.telefonocontacto" class="form-control shadow-none border-secondary-subtle"></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Parentesco</label><input v-model="formModal.parentescocontacto" class="form-control shadow-none border-secondary-subtle"></div>
-          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">F. Nacimiento</label><input type="date" v-model="formModal.fecha_nacimiento" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Celular</label><input aria-label="Celular" v-model="formModal.celular" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Tel. Contacto</label><input aria-label="Tel. Contacto" v-model="formModal.telefonocontacto" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">Parentesco</label><input aria-label="Parentesco" v-model="formModal.parentescocontacto" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-4"><label class="small fw-bold text-dark mb-1">F. Nacimiento</label><input aria-label="F. Nacimiento" type="date" v-model="formModal.fecha_nacimiento" class="form-control shadow-none border-secondary-subtle"></div>
           <div class="col-md-8">
             <label class="small fw-bold text-dark mb-1">Movilidad</label>
             <div class="bg-light p-2 rounded border shadow-sm d-flex flex-wrap align-items-center gap-3 border-light-subtle">
@@ -488,25 +488,25 @@
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Disponibilidad</div>
           <div class="col-md-2">
             <label class="small fw-bold text-dark mb-1">Sáb. Disp.</label>
-            <select v-model="formModal.disponibilidad_sabado" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Sáb. Disp." v-model="formModal.disponibilidad_sabado" class="form-select shadow-none border-secondary-subtle">
               <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
             </select>
           </div>
-          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Sáb. Desde</label><input type="time" v-model="formModal.disponibilidad_sabado_desde" class="form-control shadow-none border-secondary-subtle"></div>
-          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Sáb. Hasta</label><input type="time" v-model="formModal.disponibilidad_sabado_hasta" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Sáb. Desde</label><input aria-label="Sáb. Desde" type="time" v-model="formModal.disponibilidad_sabado_desde" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Sáb. Hasta</label><input aria-label="Sáb. Hasta" type="time" v-model="formModal.disponibilidad_sabado_hasta" class="form-control shadow-none border-secondary-subtle"></div>
           <div class="col-md-2">
             <label class="small fw-bold text-dark mb-1">Dom. Disp.</label>
-            <select v-model="formModal.disponibilidad_domingo" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Dom. Disp." v-model="formModal.disponibilidad_domingo" class="form-select shadow-none border-secondary-subtle">
               <option value="FT">FT</option><option value="NO">NO</option><option value="OTROS">OTROS</option>
             </select>
           </div>
-          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Dom. Desde</label><input type="time" v-model="formModal.disponibilidad_domingo_desde" class="form-control shadow-none border-secondary-subtle"></div>
-          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Dom. Hasta</label><input type="time" v-model="formModal.disponibilidad_domingo_hasta" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Dom. Desde</label><input aria-label="Dom. Desde" type="time" v-model="formModal.disponibilidad_domingo_desde" class="form-control shadow-none border-secondary-subtle"></div>
+          <div class="col-md-2"><label class="small fw-bold text-dark mb-1">Dom. Hasta</label><input aria-label="Dom. Hasta" type="time" v-model="formModal.disponibilidad_domingo_hasta" class="form-control shadow-none border-secondary-subtle"></div>
 
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Handball</div>
           <div class="col-md-4">
             <label class="small fw-bold text-dark mb-1">Juega handball</label>
-            <select v-model="formModal.juega_handball" @change="cambioJuegaHandball" class="form-select shadow-none border-secondary-subtle">
+            <select aria-label="Juega handball" v-model="formModal.juega_handball" @change="cambioJuegaHandball" class="form-select shadow-none border-secondary-subtle">
               <option value="SI">SI</option><option value="NO">NO</option>
             </select>
           </div>
@@ -568,7 +568,7 @@
 
           <div class="col-12 border-bottom border-2 pb-1 text-uppercase fw-bold text-muted small mt-4">Observaciones</div>
           <div class="col-12">
-            <textarea v-model="formModal.observaciones" class="form-control shadow-none border-secondary-subtle" rows="3"></textarea>
+            <textarea aria-label="Observaciones" v-model="formModal.observaciones" class="form-control shadow-none border-secondary-subtle" rows="3"></textarea>
           </div>
 
         </div>
@@ -584,7 +584,7 @@
     </ModalBase>
 
     <!-- 3. Modal Solicitudes de Cambios -->
-    <ModalBase :show="mostrarModalSolicitudes" @close="mostrarModalSolicitudes = false" icono="history" colorIcono="bg-primary-subtle text-primary" maxWidth="800px">
+    <ModalBase :show="mostrarModalSolicitudes" @close="mostrarModalSolicitudes = false" icono="history" colorIcono="bg-danger-subtle text-danger" maxWidth="800px">
       <template #header>
         <div class="text-center">
           <span class="fw-bold fs-5">Solicitudes de Cambios</span>
@@ -592,25 +592,25 @@
       </template>
 
       <div class="d-flex flex-wrap flex-sm-nowrap justify-content-between gap-2 w-100 bg-light p-2 rounded-3 border border-light-subtle mb-4">
-        <button class="btn fw-bold rounded px-2 py-1 flex-fill d-flex align-items-center justify-content-center gap-1"
-                :class="tabActivo === 'enviado' ? 'btn-primary shadow-sm text-white' : 'btn-transparent text-muted'" style="font-size: 0.8rem;" @click="tabActivo = 'enviado'">
+        <button class="btn fw-bold rounded px-2 py-1 flex-fill d-flex align-items-center justify-content-center gap-1 texto-08"
+                :class="tabActivo === 'enviado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'" @click="tabActivo = 'enviado'">
           PENDIENTES
-          <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-primary rounded-pill p-1 d-flex align-items-center justify-content-center" style="font-size: 0.7rem; min-width: 20px;">
+          <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-danger rounded-pill p-1 d-flex align-items-center justify-content-center" style="font-size: 0.7rem; min-width: 20px;">
             {{ solicitudesPendientes.length }}
           </span>
         </button>
-        <button class="btn fw-bold rounded px-2 py-1 flex-fill"
-                :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm text-white' : 'btn-transparent text-muted'" style="font-size: 0.8rem;" @click="tabActivo = 'aprobado'">
+        <button class="btn fw-bold rounded px-2 py-1 flex-fill texto-08"
+                :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm text-white' : 'btn-transparent text-muted'" @click="tabActivo = 'aprobado'">
           APROBADAS
         </button>
-        <button class="btn fw-bold rounded px-2 py-1 flex-fill"
-                :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'" style="font-size: 0.8rem;" @click="tabActivo = 'rechazado'">
+        <button class="btn fw-bold rounded px-2 py-1 flex-fill texto-08"
+                :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'" @click="tabActivo = 'rechazado'">
           RECHAZADAS
         </button>
       </div>
 
       <div v-if="cargandoSolicitudes" class="text-center py-5">
-        <span class="spinner-border text-primary"></span>
+        <span class="spinner-border text-danger"></span>
         <p class="text-muted mt-2 small fw-bold">Cargando solicitudes...</p>
       </div>
 
@@ -627,7 +627,7 @@
           <div style="flex: 1 1 0%; min-width: 0;">
             <div class="text-xs fw-bold text-muted mb-1">{{ sol.fecha }}</div>
             <strong class="d-block text-dark mb-1 fs-6 text-uppercase">{{ sol.arbitro_nombre }}</strong>
-            <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle" style="white-space: pre-line; line-height: 1.4; text-align: justify; word-break: break-word;">
+            <p class="m-0 small text-secondary bg-light p-2 rounded border border-light-subtle texto-multilinea" style="line-height: 1.4; text-align: justify; word-break: break-word;">
               {{ sol.mensaje }}
             </p>
           </div>
@@ -639,8 +639,8 @@
             </span>
 
             <div class="d-flex flex-wrap flex-md-nowrap gap-2 mt-2 w-100 justify-content-start justify-content-md-end" v-if="sol.estado === 'enviado'">
-              <button @click="abrirEdicionDesdeSolicitud(sol)" class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1 fw-bold flex-fill" title="Abrir legajo para editar">
-                <i class="bi bi-pencil" style="font-size: 16px;"></i> LEGAJO
+              <button @click="abrirEdicionDesdeSolicitud(sol)" class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center gap-1 fw-bold flex-fill" title="Abrir legajo para editar">
+                <i class="bi bi-pencil texto-16px"></i> LEGAJO
               </button>
               <button @click="rechazarSolicitud(sol)" class="btn btn-sm btn-danger fw-bold flex-fill">RECHAZAR</button>
               <button @click="aprobarSolicitud(sol)" class="btn btn-sm btn-success fw-bold flex-fill">APROBAR</button>
@@ -669,20 +669,20 @@
       <div v-else>
         <!-- Tabla (Escritorio) -->
         <div class="table-responsive d-none d-md-block bg-white rounded shadow-sm border border-light-subtle">
-          <table class="table table-sm table-hover align-middle m-0" style="font-size: 0.75rem; table-layout: fixed; width: 100%;">
+          <table class="table table-sm table-hover align-middle m-0 texto-075 tabla-fija" style="width: 100%;">
             <thead class="table-light">
               <tr>
-                <th class="py-2 ps-3 fw-bold text-uppercase text-muted" style="width: 120px; font-size: 0.75rem;">Fecha</th>
-                <th class="py-2 fw-bold text-uppercase text-muted" style="width: 140px; font-size: 0.75rem;">Tipo</th>
-                <th class="py-2 fw-bold text-uppercase text-muted" style="font-size: 0.75rem;">Mensaje</th>
-                <th class="text-center py-2 pe-3 fw-bold text-uppercase text-muted" style="width: 100px; font-size: 0.75rem;">Estado</th>
+                <th class="py-2 ps-3 fw-bold text-uppercase text-muted texto-075" style="width: 120px;">Fecha</th>
+                <th class="py-2 fw-bold text-uppercase text-muted texto-075" style="width: 140px;">Tipo</th>
+                <th class="py-2 fw-bold text-uppercase text-muted texto-075">Mensaje</th>
+                <th class="text-center py-2 pe-3 fw-bold text-uppercase text-muted texto-075" style="width: 100px;">Estado</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="h in historialArbitro" :key="h.id">
                 <td class="text-muted fw-bold ps-3 py-3">{{ h.fecha }}</td>
-                <td class="text-uppercase text-dark py-3" style="font-size: 0.75rem;">{{ h.tipo_solicitud || 'general' }}</td>
-                <td class="text-dark py-3" style="white-space: pre-wrap; word-wrap: break-word;">{{ h.mensaje }}</td>
+                <td class="text-uppercase text-dark py-3 texto-075">{{ h.tipo_solicitud || 'general' }}</td>
+                <td class="text-dark py-3 texto-preformateado" style="word-wrap: break-word;">{{ h.mensaje }}</td>
                 <td class="text-center pe-3 py-3">
                   <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
                     {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
@@ -698,14 +698,14 @@
           <div v-for="h in historialArbitro" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded p-3 shadow-sm bg-white">
             <div class="d-flex justify-content-between align-items-start mb-2 border-bottom border-secondary-subtle pb-2">
               <div>
-                <span class="d-block fw-bold text-dark" style="font-size: 0.75rem;">{{ h.fecha }}</span>
-                <span class="text-uppercase text-muted fw-bold" style="font-size: 0.75rem;">TIPO: {{ h.tipo_solicitud || 'GENERAL' }}</span>
+                <span class="d-block fw-bold text-dark texto-075">{{ h.fecha }}</span>
+                <span class="text-uppercase text-muted fw-bold texto-075">TIPO: {{ h.tipo_solicitud || 'GENERAL' }}</span>
               </div>
               <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
                 {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
               </span>
             </div>
-            <div class="text-dark mt-2 bg-light p-2 rounded border border-light-subtle" style="font-size: 0.85rem; white-space: pre-wrap; word-wrap: break-word;">
+            <div class="text-dark mt-2 bg-light p-2 rounded border border-light-subtle texto-085 texto-preformateado" style="word-wrap: break-word;">
               {{ h.mensaje }}
             </div>
           </div>
@@ -722,8 +722,10 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import { fechaArg } from '@/utils/fechas'
+import { normalizarTexto } from '@/utils/texto'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import selLocalidad from '@/components/select/selLocalidad.vue'
 import selProvincia from '@/components/select/selProvincia.vue'
@@ -743,8 +745,8 @@ useHead({
 
 const cargandoTabla = ref(false)
 
-const notificar = inject('notificar', (msg) => alert(msg.mensaje || msg))
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const notificar = inject('notificar')
+const toast = inject('toast')
 
 const arbitros = ref([])
 
@@ -1254,7 +1256,7 @@ const prepararPayload = (a) => {
   })
   if (!clon.password) delete clon.password
   clon.apto_medico = clon.apto_medico ? 1 : 0
-  clon.rol = parseInt(clon.rol)
+  clon.rol = parseInt(clon.rol, 10)
   if (familiaresCargados.value) {
     clon.familiares = familiaresParaEnviar(clon.tieneFamiliares, clon.familiares || [])
   } else {
@@ -1281,7 +1283,7 @@ const actualizarArbitroLocal = (datosForm) => {
     ...datosForm,
     movilidad: movilidadArray.value.join(', '),
     apto_medico: !!datosForm.apto_medico,
-    rol: datosForm.rol !== null ? parseInt(datosForm.rol) : 0,
+    rol: datosForm.rol !== null ? parseInt(datosForm.rol, 10) : 0,
     nombre_provincia: provinciaObj ? provinciaObj.nombre : arbitros.value[idx].nombre_provincia,
     nombre_localidad: localidadObj ? localidadObj.nombre : arbitros.value[idx].nombre_localidad,
   }
@@ -1336,13 +1338,7 @@ const limpiarFiltros = () => {
   Object.assign(filtrosDebounced, filtros)
   paginaActual.value = 1
 }
-const mostrarFechaArg = (fecha) => {
-  if (!fecha) return ''
-  const partes = fecha.split('-')
-  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fecha
-}
-const normalizarTexto = (valor) => String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-
+const mostrarFechaArg = (fecha) => fechaArg(fecha)
 const exportarExcel = () => { mostrarModalExcel.value = true }
 const mostrarModalExcel = ref(false)
 const columnasExcel = ref([
@@ -1366,7 +1362,7 @@ const columnasExcel = ref([
 const ejecutarDescargaExcel = async () => {
   const cols = columnasExcel.value.filter(c => c.visible)
 
-  const wb = new ExcelJS.Workbook()
+  const wb = new (await cargarExcelJS()).Workbook()
   const ws = wb.addWorksheet('Arbitros')
 
   // Definir columnas (header = label, key = id)
@@ -1465,7 +1461,7 @@ const cargarDatos = async () => {
         const base = {
           ...a,
           apto_medico: a.apto_medico == 1,
-          rol: a.rol !== null ? parseInt(a.rol) : 0,
+          rol: a.rol !== null ? parseInt(a.rol, 10) : 0,
           tiene_familiares: familiares.length ? 'SI' : 'NO',
           familiares_texto: textoFamiliares(familiares),
           ...columnasVinculos(vinculosPorArbitro[a.id]),
@@ -1487,14 +1483,14 @@ const cargarDatos = async () => {
 }
 
 const obtenerProvinciasLocalidades = async () => {
-  const { payload } = await api.get({ entity: 'localidades', action: 'obtenerProvinciasLocalidades' })
+  const { payload } = await api.getCacheado({ entity: 'localidades', action: 'obtenerProvinciasLocalidades' })
   provincias.value = payload.provincias
   localidades.value = payload.localidades
 }
 
 const obtenerGrupos = async () => {
   try {
-    const { payload } = await api.get({
+    const { payload } = await api.getCacheado({
       entity: 'grupos',
       action: 'obtenerGrupos'
     })
@@ -1690,18 +1686,6 @@ onMounted(() => {
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
-}
-
-/* ====================================================
-   UTILIDADES
-   ==================================================== */
-.btn-danger-subtle {
-  background: #fee2e2;
-  color: #dc3545;
-  border: 1px solid transparent;
-}
-.btn-danger-subtle:hover {
-  background: #fecaca;
 }
 
 .animate__animated {

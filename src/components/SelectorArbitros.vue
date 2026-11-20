@@ -76,7 +76,7 @@ const alternar = (a) => {
 onMounted(async () => {
   cargando.value = true
   try {
-    const res = await api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: false } })
+    const res = await api.getCacheado({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: false } }, { ttl: 60 * 1000 })
     arbitros.value = (res?.payload || [])
       .map(a => ({ ...a, id: Number(a.id) }))
       .sort((x, y) => `${x.apellido} ${x.nombre}`.localeCompare(`${y.apellido} ${y.nombre}`))

@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -21,30 +21,30 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Informes</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2 flex-md-nowrap">
             <div class="col-6 col-md-1">
-              <input v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="DD/MM/AAAA">
+              <input aria-label="Fecha (DD/MM/AAAA)" v-model="filtros.fecha" class="form-control form-control-sm shadow-none text-md-center" placeholder="DD/MM/AAAA">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.encuentro" class="form-control form-control-sm shadow-none" placeholder="ENCUENTRO...">
+              <input aria-label="Encuentro" v-model="filtros.encuentro" class="form-control form-control-sm shadow-none" placeholder="ENCUENTRO...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.implicado" class="form-control form-control-sm shadow-none" placeholder="IMPLICADO...">
+              <input aria-label="Implicado" v-model="filtros.implicado" class="form-control form-control-sm shadow-none" placeholder="IMPLICADO...">
             </div>
             <div class="col-6 col-md-2">
-              <input v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="CATEGORÍA...">
+              <input aria-label="Categoría" v-model="filtros.categoria" class="form-control form-control-sm shadow-none" placeholder="CATEGORÍA...">
             </div>
             <div class="col-6 col-md-2">
-              <select v-model="filtros.torneo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por torneo" v-model="filtros.torneo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">TORNEO</option>
                 <option v-for="t in opcionesTorneo" :key="t.valor" :value="t.valor">{{ t.etiqueta }}</option>
               </select>
             </div>
             <div class="col-6 col-md-1">
-              <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">ESTADO</option>
                 <option value="creado">CREADO</option>
                 <option value="pendiente">PENDIENTE</option>
@@ -54,7 +54,7 @@
               </select>
             </div>
             <div class="col-6 col-md-1">
-              <select v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+              <select aria-label="Filtrar por año" v-model="filtros.anio" class="form-select form-select-sm shadow-none text-uppercase text-dark">
                 <option value="">AÑO</option>
                 <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
               </select>
@@ -73,7 +73,7 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija" style="font-size: 0.75rem; table-layout: fixed;">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075 tabla-fija">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
@@ -94,7 +94,7 @@
                     <td class="text-center col-fija col-acciones">
                       <div class="d-flex justify-content-center gap-1">
                         <button @click="verDetalle(inf)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-secondary" title="Ver detalle">
-                          <i class="bi bi-eye" style="font-size:16px;"></i>
+                          <i class="bi bi-eye texto-16px"></i>
                         </button>
                         <button
                           @click="descargarPDF(inf)"
@@ -103,15 +103,15 @@
                           :disabled="descargandoId === inf.id"
                         >
                           <span v-if="descargandoId === inf.id" class="spinner-border spinner-border-sm" style="width:14px;height:14px;"></span>
-                          <i v-else class="bi bi-file-earmark-pdf" style="font-size:16px;"></i>
+                          <i v-else class="bi bi-file-earmark-pdf texto-16px"></i>
                         </button>
                         <button
                           v-if="puedeEditar(inf)"
                           @click="abrirEdicion(inf)"
-                          class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary"
+                          class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark"
                           title="Editar"
                         >
-                          <i class="bi bi-pencil" style="font-size:16px;"></i>
+                          <i class="bi bi-pencil texto-16px"></i>
                         </button>
                         <button
                           v-if="puedeAnular(inf)"
@@ -119,7 +119,7 @@
                           class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger"
                           title="Anular informe"
                         >
-                          <i class="bi bi-slash-circle" style="font-size:16px;"></i>
+                          <i class="bi bi-slash-circle texto-16px"></i>
                         </button>
                       </div>
                     </td>
@@ -153,7 +153,7 @@
               <div v-for="inf in informesPaginados" :key="'mob-'+inf.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
 
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                  <div class="text-dark fw-bold text-uppercase" style="font-size: 1.05rem; line-height: 1.2;">
+                  <div class="text-dark fw-bold text-uppercase texto-105 lh-12">
                     {{ inf.encuentro }}
                     <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal align-middle" style="font-size:0.6rem;">{{ etiquetaOrigen(inf) }}</span>
                   </div>
@@ -183,7 +183,7 @@
 
                   <div class="d-flex gap-2 mt-3">
                     <button @click="verDetalle(inf)" class="btn btn-sm btn-outline-secondary flex-grow-1 shadow-sm d-flex justify-content-center align-items-center gap-1 fw-bold">
-                      <i class="bi bi-eye" style="font-size: 18px;"></i> Ver detalle
+                      <i class="bi bi-eye texto-18px"></i> Ver detalle
                     </button>
                     <button
                       @click="descargarPDF(inf)"
@@ -192,15 +192,15 @@
                       title="Descargar PDF"
                     >
                       <span v-if="descargandoId === inf.id" class="spinner-border spinner-border-sm"></span>
-                      <i v-else class="bi bi-file-earmark-pdf" style="font-size: 18px;"></i>
+                      <i v-else class="bi bi-file-earmark-pdf texto-18px"></i>
                     </button>
                     <button
                       v-if="puedeEditar(inf)"
                       @click="abrirEdicion(inf)"
-                      class="btn btn-sm btn-outline-primary shadow-sm px-3 d-flex justify-content-center align-items-center"
+                      class="btn btn-sm btn-outline-secondary shadow-sm px-3 d-flex justify-content-center align-items-center"
                       title="Editar"
                     >
-                      <i class="bi bi-pencil" style="font-size: 18px;"></i>
+                      <i class="bi bi-pencil texto-18px"></i>
                     </button>
                     <button
                       v-if="puedeAnular(inf)"
@@ -208,7 +208,7 @@
                       class="btn btn-sm btn-outline-danger shadow-sm px-3 d-flex justify-content-center align-items-center"
                       title="Anular informe"
                     >
-                      <i class="bi bi-slash-circle" style="font-size: 18px;"></i>
+                      <i class="bi bi-slash-circle texto-18px"></i>
                     </button>
                   </div>
                 </div>
@@ -267,7 +267,7 @@
           <div class="col-12"><DatoDetalle etiqueta="Institución" :valor="informeSel.institucion_nombre" /></div>
           <div class="col-12">
             <label class="form-label small fw-bold text-muted mb-1">Motivo y descripción</label>
-            <div class="border rounded p-2 bg-light small text-break" style="white-space: pre-wrap;">{{ informeSel.motivo_descripcion }}</div>
+            <div class="border rounded p-2 bg-light small text-break texto-preformateado">{{ informeSel.motivo_descripcion }}</div>
           </div>
           <div class="col-12">
             <DatoDetalle etiqueta="Cargado" :valor="formatearFechaHora(informeSel.creado_en)" />
@@ -313,26 +313,26 @@
     <!-- ==========================================
          MODAL EDICIÓN
          ========================================== -->
-    <ModalBase :show="mostrarEdicion" :hay-cambios="hayCambiosEdicion" @close="cerrarEdicion" titulo="Editar informe" icono="edit" colorIcono="bg-primary text-white" maxWidth="640px">
+    <ModalBase :show="mostrarEdicion" :hay-cambios="hayCambiosEdicion" @close="cerrarEdicion" titulo="Editar informe" icono="edit" colorIcono="bg-danger text-white" maxWidth="640px">
       <div v-if="informeEdit" class="text-start">
 
         <!-- Datos automáticos (solo lectura) -->
         <div class="row g-2 mb-3">
           <div class="col-12 col-sm-6">
             <label class="form-label small fw-bold text-dark mb-1">Fecha</label>
-            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="formatearFecha(informeEdit.fecha_partido)" readonly>
+            <input aria-label="Fecha" type="text" class="form-control form-control-sm bg-light input-readonly" :value="formatearFecha(informeEdit.fecha_partido)" readonly>
           </div>
           <div class="col-12 col-sm-6">
             <label class="form-label small fw-bold text-dark mb-1">Categoría</label>
-            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="informeEdit.categoria || '-'" readonly>
+            <input aria-label="Categoría" type="text" class="form-control form-control-sm bg-light input-readonly" :value="informeEdit.categoria || '-'" readonly>
           </div>
           <div class="col-12">
             <label class="form-label small fw-bold text-dark mb-1">Encuentro</label>
-            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="informeEdit.encuentro" readonly>
+            <input aria-label="Encuentro" type="text" class="form-control form-control-sm bg-light input-readonly" :value="informeEdit.encuentro" readonly>
           </div>
           <div class="col-12" v-if="informeEdit.delegado_tecnico">
             <label class="form-label small fw-bold text-dark mb-1">Delegado técnico (cargó el informe)</label>
-            <input type="text" class="form-control form-control-sm bg-light input-readonly" :value="informeEdit.delegado_tecnico" readonly>
+            <input aria-label="Delegado técnico (cargó el informe)" type="text" class="form-control form-control-sm bg-light input-readonly" :value="informeEdit.delegado_tecnico" readonly>
           </div>
         </div>
 
@@ -340,30 +340,30 @@
 
         <div class="mb-3">
           <label class="form-label small fw-bold text-dark mb-1">Torneo *</label>
-          <select v-model="formEdit.torneo" class="form-select form-select-sm shadow-none">
+          <select aria-label="Torneo" v-model="formEdit.torneo" class="form-select form-select-sm shadow-none">
             <option v-for="t in opcionesTorneo" :key="t.valor" :value="t.valor">{{ t.etiqueta }}</option>
           </select>
         </div>
         <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label small fw-bold text-dark mb-1">Implicado *</label>
-            <input v-model="formEdit.implicado" type="text" class="form-control form-control-sm shadow-none">
+            <input aria-label="Implicado" v-model="formEdit.implicado" type="text" class="form-control form-control-sm shadow-none">
           </div>
           <div class="col-md-6">
             <label class="form-label small fw-bold text-dark mb-1">Sanción *</label>
-            <input v-model="formEdit.sancion" type="text" class="form-control form-control-sm shadow-none">
+            <input aria-label="Sanción" v-model="formEdit.sancion" type="text" class="form-control form-control-sm shadow-none">
           </div>
         </div>
         <div class="mb-3">
           <label class="form-label small fw-bold text-dark mb-1">Institución a la que pertenece *</label>
-          <select v-model="formEdit.institucion" class="form-select form-select-sm shadow-none">
+          <select aria-label="Institución a la que pertenece" v-model="formEdit.institucion" class="form-select form-select-sm shadow-none">
             <option value="local">{{ informeEdit.equipo_local }}</option>
             <option value="visitante">{{ informeEdit.equipo_visitante }}</option>
           </select>
         </div>
         <div class="mb-3">
           <label class="form-label small fw-bold text-dark mb-1">Motivo y descripción *</label>
-          <textarea v-model="formEdit.motivo_descripcion" class="form-control shadow-none" rows="4"></textarea>
+          <textarea aria-label="Motivo y descripción" v-model="formEdit.motivo_descripcion" class="form-control shadow-none" rows="4"></textarea>
         </div>
 
         <!-- ARCHIVOS YA ADJUNTOS -->
@@ -474,8 +474,9 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue';
+import { fechaArg, fechaHoraArg } from '@/utils/fechas'
+import { cargarHtml2pdf } from '@/utils/librerias'
 import { api } from '@/api/api';
-import html2pdf from 'html2pdf.js';
 import { useHead } from '@vueuse/head';
 import ModalBase from '@/components/ModalBase.vue';
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
@@ -489,7 +490,7 @@ useHead({
   ],
 });
 
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 
 const DatoDetalle = (props) => h('div', {}, [
   h('label', { class: 'form-label small fw-bold text-muted mb-1' }, props.etiqueta),
@@ -567,18 +568,9 @@ const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replac
 /* ====================================================
    FECHAS
    ==================================================== */
-const formatearFecha = (fechaIso) => {
-  if (!fechaIso) return 'S/F';
-  const [anio, mes, dia] = fechaIso.split(' ')[0].split('-');
-  if (!anio || !mes || !dia) return fechaIso;
-  return `${dia}/${mes}/${anio}`;
-};
+const formatearFecha = (fecha) => fechaArg(fecha, 'S/F')
 
-const formatearFechaHora = (fechaHora) => {
-  if (!fechaHora) return '-';
-  const [fecha, hora] = fechaHora.split(' ');
-  return `${formatearFecha(fecha)}${hora ? ' ' + hora.slice(0, 5) : ''}`;
-};
+const formatearFechaHora = (fechaHora) => fechaHoraArg(fechaHora, '-')
 
 /* ====================================================
    FILTROS Y PAGINACIÓN
@@ -674,7 +666,7 @@ const descargarArchivo = async (arc) => {
     window.URL.revokeObjectURL(url);
   } catch (err) {
     console.error('Error al descargar archivo:', err);
-    window.open(arc.url_completa, '_blank');
+    window.open(arc.url_completa, '_blank', 'noopener');
   } finally {
     descargandoArchivo.value = null;
   }
@@ -703,7 +695,7 @@ const descargarPDF = async (inf) => {
     contenedor.style.color = '#111';
     contenedor.innerHTML = `
       <div style="display:flex;align-items:center;gap:14px;border-bottom:3px solid #dc2626;padding-bottom:14px;margin-bottom:18px;">
-        <img src="https://arbitroshandball.com.ar/logo.png" style="height:56px;" crossorigin="anonymous"
+        <img src="https://arbitroshandball.com.ar/logo.png" alt="AAAB" style="height:56px;" crossorigin="anonymous"
              onerror="this.style.display='none'">
         <div>
           <h1 style="margin:0;font-size:20px;color:#dc2626;">Informe de Partido</h1>
@@ -746,7 +738,7 @@ const descargarPDF = async (inf) => {
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    await html2pdf().set(opciones).from(contenedor).save();
+    await (await cargarHtml2pdf())().set(opciones).from(contenedor).save();
   } catch (err) {
     console.error('Error al generar PDF:', err);
     toast({ titulo: 'Error', mensaje: 'No se pudo generar el PDF.', tipo: 'danger' });

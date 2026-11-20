@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
 
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100" style="border-radius: 15px;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 radio-15">
       <!-- Header de la Tarjeta -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
         <p class="seccion-descripcion">Consultá tus sanciones · Total: {{ sancionesFiltradas.length }} resoluciones en tu legajo</p>
@@ -18,12 +18,12 @@
       <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
         <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
           <span class="small fw-bold text-dark text-uppercase">Filtrar Sanciones</span>
-          <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+          <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
         </div>
 
         <div class="row g-2">
           <div class="col-12 col-md-2">
-            <select v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
+            <select aria-label="Filtrar por estado" v-model="filtros.estado" class="form-select form-select-sm shadow-none text-uppercase text-dark">
               <option value="">ESTADO</option>
               <option value="vigente">VIGENTE</option>
               <option value="cumplida">CUMPLIDA</option>
@@ -32,16 +32,16 @@
             </select>
           </div>
           <div class="col-12 col-md-3">
-            <input v-model="filtros.sancion" class="form-control form-control-sm shadow-none" placeholder="BUSCAR SANCIÓN...">
+            <input aria-label="Buscar sanción" v-model="filtros.sancion" class="form-control form-control-sm shadow-none" placeholder="BUSCAR SANCIÓN...">
           </div>
           <div class="col-12 col-md-3">
-            <input v-model="filtros.motivo_articulo" class="form-control form-control-sm shadow-none" placeholder="MOTIVO / ART...">
+            <input aria-label="Motivo / art" v-model="filtros.motivo_articulo" class="form-control form-control-sm shadow-none" placeholder="MOTIVO / ART...">
           </div>
           <div class="col-6 col-md-2">
-            <input type="text" v-model="filtros.desde" class="form-control form-control-sm shadow-none" placeholder="DESDE (DD/MM/AAAA)">
+            <input aria-label="Desde (dd/mm/aaaa)" type="text" v-model="filtros.desde" class="form-control form-control-sm shadow-none" placeholder="DESDE (DD/MM/AAAA)">
           </div>
           <div class="col-6 col-md-2">
-            <input type="text" v-model="filtros.hasta" class="form-control form-control-sm shadow-none" placeholder="HASTA (DD/MM/AAAA)">
+            <input aria-label="Hasta (dd/mm/aaaa)" type="text" v-model="filtros.hasta" class="form-control form-control-sm shadow-none" placeholder="HASTA (DD/MM/AAAA)">
           </div>
           <div class="col-12 d-md-none mt-2">
             <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold">Aplicar Filtros</button>
@@ -57,7 +57,7 @@
 
         <div v-else>
           <!-- Encabezado de la lista (Solo visible en Escritorio) -->
-          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-center align-items-center text-uppercase" style="font-size: 0.75rem; color: #0f172a;">
+          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-center align-items-center text-uppercase texto-075" style="color: #0f172a;">
             <div class="col-md-2">Estado</div>
             <div class="col-md-2">Acción</div>
             <div class="col-md-2 text-start px-2">Sanción</div>
@@ -95,17 +95,17 @@
                 </div>
                 <!-- MOTIVO / ART. -->
                 <div class="col-md-3 text-start px-2">
-                  <p class="mb-0 text-dark" style="font-size: 0.85rem; line-height: 1.3;">
+                  <p class="mb-0 text-dark texto-085" style="line-height: 1.3;">
                     <span v-if="s.articulo" class="fw-bold">Art. {{ s.articulo }} - </span>
                     <span class="text-muted">{{ s.motivo }}</span>
                   </p>
                 </div>
                 <!-- DESDE -->
-                <div class="col-md-1 fw-bold text-dark" style="font-size: 0.85rem;">
+                <div class="col-md-1 fw-bold text-dark texto-085">
                   {{ s.desde_formateada || '-' }}
                 </div>
                 <!-- HASTA -->
-                <div class="col-md-2 fw-bold" style="font-size: 0.85rem;" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">
+                <div class="col-md-2 fw-bold texto-085" :class="s.estado_dinamico == 3 ? 'text-muted' : 'text-danger'">
                   <span v-if="s.es_indefinido == 1">Indefinido</span>
                   <span v-else>{{ s.hasta_formateada || '-' }}</span>
                 </div>
@@ -116,17 +116,17 @@
                 <!-- Sanción + Estado -->
                 <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                   <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" class="fs-6 fw-bold">{{ s.sancion }}</span>
-                  <span :class="obtenerClaseEstado(s.estado_dinamico, true)" style="font-size: 0.7rem; padding: 3px 10px;">{{ obtenerTextoEstado(s.estado_dinamico) }}</span>
+                  <span class="texto-07" :class="obtenerClaseEstado(s.estado_dinamico, true)" style="padding: 3px 10px;">{{ obtenerTextoEstado(s.estado_dinamico) }}</span>
                 </div>
                 <!-- Motivo -->
-                <p class="mb-3 text-dark" style="font-size: 0.85rem; line-height: 1.3;">
+                <p class="mb-3 text-dark texto-085" style="line-height: 1.3;">
                   <span v-if="s.articulo" class="fw-bold">Art. {{ s.articulo }} - </span>
                   <span class="text-muted">{{ s.motivo }}</span>
                 </p>
                 <!-- Fechas -->
                 <div class="bg-light p-2 rounded border d-flex justify-content-between align-items-center mb-3">
-                  <span class="text-dark" style="font-size: 0.85rem;">Desde: <strong>{{ s.desde_formateada || '-' }}</strong></span>
-                  <span class="text-dark" style="font-size: 0.85rem;">Hasta:
+                  <span class="text-dark texto-085">Desde: <strong>{{ s.desde_formateada || '-' }}</strong></span>
+                  <span class="text-dark texto-085">Hasta:
                     <strong class="text-danger" v-if="s.es_indefinido == 1">Indefinido</strong>
                     <strong class="text-danger" v-else-if="s.hasta_formateada">{{ s.hasta_formateada }}</strong>
                     <strong class="text-muted" v-else>-</strong>
@@ -177,32 +177,32 @@
         </div>
       </template>
 
-      <div class="chat-container bg-light border rounded p-3 mb-3" style="height: 300px; overflow-y: auto;">
-        <div v-if="cargandoDescargos" class="text-center mt-4"><span class="spinner-border text-primary"></span></div>
+      <div class="chat-container bg-light border rounded p-3 mb-3 overflow-y-auto" style="height: 300px;">
+        <div v-if="cargandoDescargos" class="text-center mt-4"><span class="spinner-border text-danger"></span></div>
         <div v-else-if="historialDescargos.length === 0" class="text-center text-muted mt-4">
           {{ sancionActiva?.estado_dinamico == 3 ? 'No hay mensajes aún. Enviá tu descargo inicial.' : 'No se registraron descargos durante el proceso.' }}
         </div>
 
         <div v-for="d in historialDescargos" :key="d.id" class="mb-3 d-flex flex-column" :class="d.emisor_tipo === 'arbitro' ? 'align-items-end' : 'align-items-start'">
-          <div :class="d.emisor_tipo === 'arbitro' ? 'bg-primary text-white' : 'bg-white border text-dark'" class="p-2 rounded shadow-sm" style="max-width: 85%;">
+          <div :class="d.emisor_tipo === 'arbitro' ? 'bg-secondary text-white' : 'bg-white border text-dark'" class="p-2 rounded shadow-sm" style="max-width: 85%;">
             <div class="small fw-bold mb-1">{{ d.emisor_tipo === 'arbitro' ? 'Yo' : 'Tribunal de Ética' }}</div>
             <div>{{ d.mensaje }}</div>
 
             <div v-if="d.archivos && d.archivos.length > 0" class="mt-2 border-top pt-2" :class="d.emisor_tipo === 'arbitro' ? 'border-light' : 'border-secondary'">
               <div v-for="arc in d.archivos" :key="arc.url_completa" class="small mb-1">
                 <div v-if="arc.archivo_nombre.match(/\.(jpeg|jpg|gif|png)$/i)" class="mt-1">
-                   <a :href="arc.url_completa" target="_blank" title="Ver imagen completa">
-                     <img :src="arc.url_completa" class="img-thumbnail" style="max-height: 80px; max-width: 100%; object-fit: cover; cursor: pointer;" :alt="arc.archivo_nombre">
+                   <a :href="arc.url_completa" target="_blank" rel="noopener noreferrer" title="Ver imagen completa">
+                     <img loading="lazy" decoding="async" :src="arc.url_completa" class="img-thumbnail cursor-pointer" :alt="arc.archivo_nombre" style="max-height: 80px; max-width: 100%; object-fit: cover;">
                    </a>
                 </div>
                 <div v-else>
-                  <a :href="arc.url_completa" target="_blank" :class="d.emisor_tipo === 'arbitro' ? 'text-white text-decoration-underline' : 'text-primary'">
+                  <a :href="arc.url_completa" target="_blank" rel="noopener noreferrer" :class="d.emisor_tipo === 'arbitro' ? 'text-white text-decoration-underline' : 'text-danger'">
                     <i class="bi bi-paperclip"></i> {{ arc.archivo_nombre }}
                   </a>
                 </div>
               </div>
             </div>
-            <div class="text-end" style="font-size: 0.7rem; opacity: 0.8; margin-top: 4px;">{{ d.fecha_formateada }}</div>
+            <div class="text-end texto-07" style="opacity: 0.8; margin-top: 4px;">{{ d.fecha_formateada }}</div>
           </div>
         </div>
       </div>
@@ -210,7 +210,7 @@
       <template v-if="sancionActiva?.estado_dinamico == 3">
         <div class="row g-2">
           <div class="col-12">
-            <textarea v-model="nuevoMensaje" class="form-control" rows="3" placeholder="Escribí tu descargo o respuesta aquí..."></textarea>
+            <textarea aria-label="Escribí tu descargo o respuesta aquí" v-model="nuevoMensaje" class="form-control" rows="3" placeholder="Escribí tu descargo o respuesta aquí..."></textarea>
           </div>
           <div class="col-12">
             <input type="file" ref="fileInput" multiple @change="adjuntosDescargo = $event.target.files.length" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
@@ -259,7 +259,7 @@
         </p>
         <div class="bg-light p-3 rounded border shadow-sm my-3">
           <span class="d-block small text-muted text-uppercase fw-bold mb-1">Enviar correo electrónico a:</span>
-          <a href="mailto:secretaria@arbitroshandball.com.ar" class="fs-5 fw-bold text-primary text-decoration-none">
+          <a href="mailto:secretaria@arbitroshandball.com.ar" class="fs-5 fw-bold text-danger text-decoration-none">
             secretaria@arbitroshandball.com.ar
           </a>
         </div>
@@ -282,10 +282,12 @@
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch, inject } from 'vue';
 import { auth } from '../../../api/auth';
 import { api }  from '@/api/api';
 import ModalBase from '@/components/ModalBase.vue';
+
+const toast = inject('toast');
 
 const arbitro = ref(auth.getUser() || {});
 const sanciones = ref([]);
@@ -423,7 +425,7 @@ const convertirABase64 = (file) => {
 const enviarDescargo = async () => {
   const idEmisor = arbitro.value.id || arbitro.value.id_arbitro;
   if (!idEmisor) {
-    alert("Error: No se pudo identificar tu usuario.");
+    toast({ tipo: 'danger', titulo: 'Error', mensaje: 'No se pudo identificar tu usuario. Volvé a ingresar.' });
     return;
   }
 

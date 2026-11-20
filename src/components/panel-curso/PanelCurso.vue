@@ -79,7 +79,7 @@
                       <div class="min-w-0">
                         <p class="mb-1 text-dark small fw-bold">{{ n.titulo }}</p>
                         <p class="mb-1 text-muted texto-notif">{{ n.mensaje }}</p>
-                        <small class="text-muted fw-bold" style="font-size: 0.75rem;">{{ fechaHoraDMA(n.fecha) }}</small>
+                        <small class="text-muted fw-bold texto-075">{{ fechaHoraDMA(n.fecha) }}</small>
                       </div>
                     </div>
                   </div>
@@ -109,12 +109,10 @@
           :texto-credencial="`Credencial de aspirante ${anioActual}`"
           @cerrar="mostrarMenuPerfil = false"
           @cambiar-foto="mostrarMenuPerfil = false; abrirSelectorFoto()"
-          @ampliar-foto="mostrarMenuPerfil = false; mostrarFotoAmpliada = true"
+          @ampliar-foto="mostrarMenuPerfil = false; editorFoto?.ampliar()"
           @salir="cerrarSesion"
           @error-foto="(e) => e.target.src = FOTO_POR_DEFECTO"
         />
-
-        <input ref="inputFoto" type="file" accept="image/jpeg,image/png,image/webp" class="d-none" @change="alSeleccionarFoto">
 
         <div class="container-fluid panel-contenido px-3 px-md-4 py-2">
           <RouterView />
@@ -125,29 +123,17 @@
     <!-- ============ BARRA INFERIOR (celular y tablet) ============ -->
     <BarraInferior :items="itemsBarraInferior" />
 
-    <div v-if="mostrarFotoAmpliada" class="foto-overlay" @click="mostrarFotoAmpliada = false">
-      <button type="button" class="foto-overlay-cerrar" @click.stop="mostrarFotoAmpliada = false" aria-label="Cerrar">
-        <i class="bi bi-x-lg"></i>
-      </button>
-      <img :src="urlFoto" @error="(e) => e.target.src = FOTO_POR_DEFECTO" class="foto-overlay-img shadow-lg" alt="Foto de perfil" @click.stop>
-    </div>
-
-    <div v-if="mostrarModalFoto" class="foto-overlay" @click.self="cancelarFoto">
-      <div class="modal-foto shadow-lg">
-        <h5 class="fw-bold text-dark mb-3">Recortá tu foto de perfil</h5>
-        <div v-if="previewUrl" class="cropper-wrap mb-3">
-          <Cropper ref="cropperRef" class="cropper" :src="previewUrl" :stencil-props="{ aspectRatio: 3 / 4 }" image-restriction="stencil" />
-        </div>
-        <p class="text-muted small text-center mb-3">Esta foto se usará en tu panel y en tu credencial digital del curso.</p>
-        <div class="d-flex gap-2">
-          <button type="button" class="btn btn-outline-secondary rounded-pill fw-bold flex-grow-1" @click="cancelarFoto" :disabled="subiendoFoto">Cancelar</button>
-          <button type="button" class="btn btn-danger rounded-pill fw-bold flex-grow-1 d-flex justify-content-center align-items-center" @click="confirmarFoto" :disabled="subiendoFoto || !previewUrl">
-            <span v-if="subiendoFoto" class="spinner-border spinner-border-sm me-2"></span>
-            {{ subiendoFoto ? 'Subiendo...' : 'Guardar' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Foto de perfil: ampliada y cambio con recorte -->
+    <EditorFotoPerfil
+      ref="editorFoto"
+      :foto="urlFoto"
+      :foto-por-defecto="FOTO_POR_DEFECTO"
+      entity="perfil_curso_arbitro"
+      action="actualizarFotoCurso"
+      texto-ayuda="Esta foto se usará en tu panel y en tu credencial digital del curso."
+      @actualizada="avisarFotoActualizada"
+      @aviso="toast"
+    />
 
     <ToastNotificacion ref="toastRef" />
   </div>
@@ -157,10 +143,8 @@
 import { ref, computed, onMounted, onBeforeUnmount, provide, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@vueuse/head'
-import { Cropper } from 'vue-advanced-cropper'
-import 'vue-advanced-cropper/dist/style.css'
+import EditorFotoPerfil from '@/components/comunes/EditorFotoPerfil.vue'
 import { auth } from '@/api/auth'
-import { api } from '@/api/api'
 import ToastNotificacion from '@/components/ToastNotificacion.vue'
 import { ESTADOS_CURSO, MODALIDADES_CURSO, urlFotoCurso, FOTO_POR_DEFECTO } from '@/composables/useCursoArbitro'
 import { useNotificacionesCurso, ICONOS_NOTIFICACION as ICONOS } from '@/composables/useNotificacionesCurso'
@@ -244,71 +228,11 @@ const cerrarAlClickearAfuera = (e) => {
 const refrescarFoto = () => { versionFoto.value = Date.now() }
 const refrescarAlumno = () => { alumno.value = auth.getUser() || {} }
 
-// ─── Foto de perfil (con recorte) ────────────────────────────────
-const MAX_MB = 5
-const TIPOS_FOTO = ['image/jpeg', 'image/png', 'image/webp']
-const inputFoto = ref(null)
-const cropperRef = ref(null)
-const mostrarModalFoto = ref(false)
-const mostrarFotoAmpliada = ref(false)
-const subiendoFoto = ref(false)
-const previewUrl = ref('')
-
-const abrirSelectorFoto = () => inputFoto.value?.click()
-
-const alSeleccionarFoto = (e) => {
-  const archivo = e.target.files?.[0]
-  e.target.value = ''
-  if (!archivo) return
-  if (!TIPOS_FOTO.includes(archivo.type)) {
-    toast({ tipo: 'danger', titulo: 'Formato no válido', mensaje: 'Usá una imagen JPG, PNG o WEBP.' })
-    return
-  }
-  if (archivo.size > MAX_MB * 1024 * 1024) {
-    toast({ tipo: 'warning', titulo: 'Imagen muy pesada', mensaje: `La imagen supera los ${MAX_MB} MB. Elegí una más liviana.` })
-    return
-  }
-  previewUrl.value = URL.createObjectURL(archivo)
-  mostrarModalFoto.value = true
-}
-
-const cerrarModalFoto = () => {
-  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
-  previewUrl.value = ''
-  mostrarModalFoto.value = false
-}
-
-const cancelarFoto = () => {
-  if (!subiendoFoto.value) cerrarModalFoto()
-}
-
-const obtenerRecorteBlob = () => new Promise((resolve, reject) => {
-  const canvas = cropperRef.value?.getResult()?.canvas
-  if (!canvas) {
-    reject(new Error('No se pudo procesar el recorte'))
-    return
-  }
-  canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('No se pudo generar la imagen'))), 'image/jpeg', 0.9)
-})
-
-const confirmarFoto = async () => {
-  if (subiendoFoto.value || !previewUrl.value) return
-  subiendoFoto.value = true
-  try {
-    const blob = await obtenerRecorteBlob()
-    const formData = new FormData()
-    formData.append('fotos', new File([blob], 'perfil.jpg', { type: 'image/jpeg' }))
-    const res = await api.postFile({ entity: 'perfil_curso_arbitro', action: 'actualizarFotoCurso', payload: formData })
-    if (!res?.ok) throw new Error(res?.message || 'No se pudo actualizar la foto')
-    window.dispatchEvent(new Event('foto-curso-actualizada'))
-    cerrarModalFoto()
-    toast({ tipo: 'success', titulo: 'Foto actualizada', mensaje: 'Tu foto de perfil se guardó correctamente.' })
-  } catch (e) {
-    toast({ tipo: 'danger', titulo: 'Error', mensaje: e.message || 'Ocurrió un error al subir la foto.' })
-  } finally {
-    subiendoFoto.value = false
-  }
-}
+// ─── Foto de perfil (ampliar / cambiar con recorte: EditorFotoPerfil) ───
+const editorFoto = ref(null)
+const abrirSelectorFoto = () => editorFoto.value?.abrirSelector()
+// Otras vistas (credencial, menú) escuchan este evento para refrescar la foto
+const avisarFotoActualizada = () => window.dispatchEvent(new Event('foto-curso-actualizada'))
 
 // Barra inferior (celular): Inicio · Cronograma · Avisos (notificaciones sin leer) · Menú
 const itemsBarraInferior = computed(() => [
@@ -413,44 +337,6 @@ onBeforeUnmount(() => {
   justify-content: center;
   border: 2px solid #0b1222;
 }
-.modal-foto { background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 420px; cursor: default; }
-.cropper-wrap { border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; }
-.cropper { height: 320px; background: #1a1a1a; }
-.foto-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1050;
-  padding: 20px;
-  cursor: zoom-out;
-}
-.foto-overlay-img {
-  max-width: min(90vw, 500px);
-  max-height: 90vh;
-  border-radius: 12px;
-  border: 3px solid #dc2626;
-  object-fit: cover;
-  cursor: default;
-}
-.foto-overlay-cerrar {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.foto-overlay-cerrar:hover { background: #dc2626; border-color: #dc2626; }
 .min-w-0 { min-width: 0; }
 .panel-notificaciones {
   position: absolute;

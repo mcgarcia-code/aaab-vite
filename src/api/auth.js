@@ -1,66 +1,82 @@
 // src/api/auth.js
 
 const USER_TOKEN = 'token_aaab'
-const USER_KEY = 'user_aaab';
-const INACTIVITY_LIMIT = 60 * 60 * 1000; // 60 minutos
-let inactivityTimeout;
+const USER_KEY = 'user_aaab'
+const LIMITE_INACTIVIDAD = 60 * 60 * 1000 // 60 minutos
+const REINICIO_MINIMO = 5000 // el timer se reinicia como mucho cada 5 s (no en cada movimiento del mouse)
+const EVENTOS_ACTIVIDAD = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll']
 
-// Función auxiliar para resetear el timer (fuera para poder remover el listener)
-const events = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
-const resetHandler = () => auth.startInactivityTimer();
+let temporizador = null
+let ultimoReinicio = 0
+let escuchando = false
+
+const programarCierre = () => {
+  clearTimeout(temporizador)
+  ultimoReinicio = Date.now()
+  temporizador = setTimeout(() => {
+    sessionStorage.setItem('aviso_sesion', 'inactividad')
+    auth.logout()
+  }, LIMITE_INACTIVIDAD)
+}
+
+const alHaberActividad = () => {
+  if (Date.now() - ultimoReinicio >= REINICIO_MINIMO) programarCierre()
+}
 
 export const auth = {
   setUser(userData) {
-    // CAMBIO: Ahora usamos sessionStorage
     sessionStorage.setItem(USER_KEY, JSON.stringify(userData.arbitro))
     sessionStorage.setItem(USER_TOKEN, userData.token)
-    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new Event('storage'))
     this.startInactivityTimer()
   },
 
   // Actualiza solo los datos del usuario en sesión, sin tocar el token.
   updateUser(arbitro) {
-    sessionStorage.setItem(USER_KEY, JSON.stringify(arbitro));
-    window.dispatchEvent(new Event('storage'));
+    sessionStorage.setItem(USER_KEY, JSON.stringify(arbitro))
+    window.dispatchEvent(new Event('storage'))
   },
 
   getUser() {
-    // CAMBIO: Ahora buscamos en sessionStorage
-    const user = sessionStorage.getItem(USER_KEY);
-    if (!user || user === 'undefined') return null;
+    const user = sessionStorage.getItem(USER_KEY)
+    if (!user || user === 'undefined') return null
     try {
-      return JSON.parse(user);
+      return JSON.parse(user)
     } catch {
-      return null;
+      return null
     }
   },
 
   isLoggedIn() {
-    return !!sessionStorage.getItem(USER_TOKEN);
+    return !!sessionStorage.getItem(USER_TOKEN)
   },
 
   logout() {
     sessionStorage.removeItem(USER_KEY)
     sessionStorage.removeItem(USER_TOKEN)
-    this.stopInactivityTimer();
-    window.dispatchEvent(new Event('storage'));
-    window.location.href = '/login-arbitro';
+    this.stopInactivityTimer()
+    window.dispatchEvent(new Event('storage'))
+    window.location.href = '/login-arbitro'
   },
 
+  // Cierra la sesión tras 60 min sin actividad. Los listeners se registran una sola vez.
   startInactivityTimer() {
-    clearTimeout(inactivityTimeout);
-
-    inactivityTimeout = setTimeout(() => {
-      alert("Tu sesión ha expirado por inactividad.");
-      this.logout();
-    }, INACTIVITY_LIMIT);
-
-    // Agregamos listeners si no estaban
-    events.forEach(event => window.addEventListener(event, resetHandler));
+    programarCierre()
+    if (escuchando) return
+    EVENTOS_ACTIVIDAD.forEach(evento => window.addEventListener(evento, alHaberActividad, { passive: true }))
+    escuchando = true
   },
 
   stopInactivityTimer() {
-    clearTimeout(inactivityTimeout);
-    events.forEach(event => window.removeEventListener(event, resetHandler));
+    clearTimeout(temporizador)
+    EVENTOS_ACTIVIDAD.forEach(evento => window.removeEventListener(evento, alHaberActividad))
+    escuchando = false
+  },
+
+  // Motivo por el que se cerró la sesión (para mostrarlo en el login una sola vez)
+  tomarAvisoSesion() {
+    const aviso = sessionStorage.getItem('aviso_sesion')
+    sessionStorage.removeItem('aviso_sesion')
+    return aviso
   }
-};
+}

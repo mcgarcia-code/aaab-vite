@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- ============ HEADER ============ -->
         <div class="card-header bg-white py-3 border-bottom">
@@ -23,14 +23,14 @@
                 <label class="form-check-label text-muted" for="chkSoloActivos">Solo activos</label>
               </div>
               <div class="busqueda-wrap">
-                <input v-model="busqueda" class="form-control shadow-none control-barra" placeholder="BUSCAR ÁRBITRO...">
+                <input aria-label="Buscar árbitro" v-model="busqueda" class="form-control shadow-none control-barra" placeholder="BUSCAR ÁRBITRO...">
                 <button v-if="busqueda" class="btn-limpiar-busqueda" @click="busqueda = ''" title="Limpiar búsqueda" type="button">
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
               <div class="d-flex align-items-center gap-1">
                 <label class="text-muted text-nowrap mb-0">Año:</label>
-                <select v-model="filtroAnio" class="form-select shadow-none text-uppercase text-dark control-barra" style="min-width: 110px;">
+                <select aria-label="Año" v-model="filtroAnio" class="form-select shadow-none text-uppercase text-dark control-barra" style="min-width: 110px;">
                   <option value="">TODOS</option>
                   <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">{{ anio }}</option>
                 </select>
@@ -186,7 +186,7 @@
           <div v-if="comentariosPorCategoria.length">
             <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
               <div class="fw-bold small text-dark">{{ c.categoria }}</div>
-              <div class="small text-muted" style="white-space: pre-line;">{{ c.comentario }}</div>
+              <div class="small text-muted texto-multilinea">{{ c.comentario }}</div>
             </div>
           </div>
 
@@ -195,13 +195,13 @@
             <div class="fw-bold small text-dark mb-1">Prioridades de mejora</div>
             <div v-if="detalle.prioridad_mejora_1" class="small text-muted mb-1"><strong>1.</strong> {{ detalle.prioridad_mejora_1 }}</div>
             <div v-if="detalle.prioridad_mejora_2" class="small text-muted mb-1"><strong>2.</strong> {{ detalle.prioridad_mejora_2 }}</div>
-            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1" style="white-space: pre-line;">{{ detalle.prioridad_mejora_resto }}</div>
+            <div v-if="detalle.prioridad_mejora_resto" class="small text-muted mb-1 texto-multilinea">{{ detalle.prioridad_mejora_resto }}</div>
           </div>
 
           <!-- Influencia en el resultado -->
           <div v-if="detalle.influencia_resultado_comentarios" class="mt-2 pt-2 border-top">
             <div class="fw-bold small text-dark mb-1">Influencia en el resultado</div>
-            <div class="small text-muted" style="white-space: pre-line;">{{ detalle.influencia_resultado_comentarios }}</div>
+            <div class="small text-muted texto-multilinea">{{ detalle.influencia_resultado_comentarios }}</div>
           </div>
 
           <div v-if="!tieneComentarios" class="text-center py-3 text-muted small">
@@ -232,8 +232,9 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import { fechaArg } from '@/utils/fechas'
+import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import ExcelJS from 'exceljs'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
 
@@ -242,7 +243,7 @@ useHead({
   meta: [{ name: 'description', content: 'Planilla general de observaciones arbitrales por grupo.' }]
 })
 
-const toast = inject('toast', (msg) => alert(msg.mensaje || msg))
+const toast = inject('toast')
 
 /* ====================================================
    ESTADO
@@ -262,12 +263,7 @@ const grupoActivo = ref(null)
    ==================================================== */
 const normalizar = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
 
-const formatearFecha = (fechaIso) => {
-  if (!fechaIso) return 'S/F'
-  const [anio, mes, dia] = String(fechaIso).split(' ')[0].split('-')
-  if (!anio || !mes || !dia) return fechaIso
-  return `${dia}/${mes}/${anio}`
-}
+const formatearFecha = (fecha) => fechaArg(fecha, 'S/F')
 
 const etiquetaEstado = (estado) => {
   const e = (estado || 'pendiente').toLowerCase()
@@ -290,14 +286,14 @@ const badgeEstado = (estado) => {
    ==================================================== */
 const cargarArbitros = async () => {
   try {
-    const res = await api.get({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: soloActivos.value } })
+    const res = await api.getCacheado({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: soloActivos.value } }, { ttl: 60 * 1000 })
     if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
   } catch (e) { console.error('cargarArbitros:', e) }
 }
 
 const cargarGrupos = async () => {
   try {
-    const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos' })
+    const res = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' })
     if ((res.ok || res.success) && res.payload) grupos.value = res.payload
   } catch (e) { console.error('cargarGrupos:', e) }
 }
@@ -307,7 +303,7 @@ const torneos = ref([])
 
 const cargarTorneos = async () => {
   try {
-    const res = await api.get({ entity: 'observaciones', action: 'obtenerTorneos' })
+    const res = await api.getCacheado({ entity: 'observaciones', action: 'obtenerTorneos' })
     if ((res.ok || res.success) && Array.isArray(res.payload)) torneos.value = res.payload
   } catch (e) { console.error('cargarTorneos:', e) }
 }
@@ -547,7 +543,7 @@ const descargarObservacionExcel = async (obs) => {
 }
 
 const descargarExcel = async () => {
-  const wb = new ExcelJS.Workbook()
+  const wb = new (await cargarExcelJS()).Workbook()
   const ws = wb.addWorksheet(etiquetaGrupo(grupoActivo.value) || 'Observaciones')
 
   const cols = maxObservaciones.value
@@ -637,11 +633,11 @@ const descargarExcel = async () => {
   min-width: 22px; padding: 1px 3px; border-radius: 3px;
 }
 .btn-ver-celda {
-  border: none; background: transparent; color: #0d6efd; cursor: pointer;
+  border: none; background: transparent; color: #dc2626; cursor: pointer;
   padding: 0 2px; line-height: 1; display: inline-flex; align-items: center;
 }
 .btn-ver-celda .bi { font-size: 17px; }
-.btn-ver-celda:hover { color: #0a58ca; }
+.btn-ver-celda:hover { color: #b91c1c; }
 .btn-ver-celda:disabled { opacity: 0.5; cursor: default; }
 
 /* Colores de estado en celda (mismos tonos que las píldoras) */

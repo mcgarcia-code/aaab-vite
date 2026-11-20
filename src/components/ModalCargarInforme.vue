@@ -9,7 +9,7 @@
       <div class="row g-3">
         <div class="col-12 col-md-6">
           <label class="form-label small fw-bold text-dark mb-1">Género *</label>
-          <select v-model="carga.genero" class="form-select form-select-sm shadow-none">
+          <select aria-label="Género" v-model="carga.genero" class="form-select form-select-sm shadow-none">
             <option value="" disabled>Seleccioná</option>
             <option value="Caballeros">Caballeros</option>
             <option value="Damas">Damas</option>
@@ -17,7 +17,7 @@
         </div>
         <div class="col-12 col-md-6">
           <label class="form-label small fw-bold text-dark mb-1">Categoría *</label>
-          <select v-model="carga.tipo" class="form-select form-select-sm shadow-none">
+          <select aria-label="Categoría" v-model="carga.tipo" class="form-select form-select-sm shadow-none">
             <option value="" disabled>Seleccioná</option>
             <option value="Mayores">Mayores</option>
             <option value="Inferiores">Inferiores</option>
@@ -27,7 +27,7 @@
         <!-- Mayores: competencia -->
         <div v-if="carga.tipo === 'Mayores'" class="col-12">
           <label class="form-label small fw-bold text-dark mb-1">Competencia (Mayores) *</label>
-          <select @change="seleccionarCategoriaCarga" v-model="carga.inf_nivel" class="form-select form-select-sm shadow-none" :disabled="cargandoCat">
+          <select aria-label="Competencia (Mayores)" @change="seleccionarCategoriaCarga" v-model="carga.inf_nivel" class="form-select form-select-sm shadow-none" :disabled="cargandoCat">
             <option value="" disabled>{{ cargandoCat ? 'Cargando...' : 'Seleccioná competencia' }}</option>
             <option v-for="(div, k) in divisionesMayoresCarga" :key="k" :value="div.idCategoria">{{ div.division }}</option>
           </select>
@@ -37,14 +37,14 @@
         <template v-if="carga.tipo === 'Inferiores'">
           <div class="col-12 col-md-8">
             <label class="form-label small fw-bold text-dark mb-1">Categoría específica *</label>
-            <select @change="setDivisionesCarga" v-model="carga.id_categoria_especifica" class="form-select form-select-sm shadow-none" :disabled="cargandoCat">
+            <select aria-label="Categoría específica" @change="setDivisionesCarga" v-model="carga.id_categoria_especifica" class="form-select form-select-sm shadow-none" :disabled="cargandoCat">
               <option value="" disabled>{{ cargandoCat ? 'Cargando...' : 'Seleccioná categoría' }}</option>
               <option v-for="(cat, k) in listasCarga.divisiones_categorias" :key="k" :value="k">{{ cat.categoria }}</option>
             </select>
           </div>
           <div class="col-12 col-md-4">
             <label class="form-label small fw-bold text-dark mb-1">Nivel *</label>
-            <select @change="seleccionarCategoriaCarga" v-model="carga.inf_nivel" class="form-select form-select-sm shadow-none">
+            <select aria-label="Nivel" @change="seleccionarCategoriaCarga" v-model="carga.inf_nivel" class="form-select form-select-sm shadow-none">
               <option value="" disabled>Nivel</option>
               <option v-for="opt in listasCarga.divisiones" :key="opt.idCategoria" :value="opt.idCategoria">{{ opt.division }}</option>
             </select>
@@ -54,13 +54,13 @@
         <!-- Fecha -->
         <div v-if="idCategoriaCarga" class="col-12 col-md-6">
           <label class="form-label small fw-bold text-dark mb-1">Fecha del partido *</label>
-          <input type="date" @change="obtenerPartidosCarga" v-model="fechaPartidoCarga" class="form-control form-control-sm shadow-none">
+          <input aria-label="Fecha del partido" type="date" @change="obtenerPartidosCarga" v-model="fechaPartidoCarga" class="form-control form-control-sm shadow-none">
         </div>
 
         <!-- Partido -->
         <div v-if="fechaPartidoCarga" class="col-12 col-md-6">
           <label class="form-label small fw-bold text-dark mb-1">Partido *</label>
-          <select v-model="idPartidoCarga" class="form-select form-select-sm shadow-none" :disabled="cargandoPartidos">
+          <select aria-label="Partido" v-model="idPartidoCarga" class="form-select form-select-sm shadow-none" :disabled="cargandoPartidos">
             <option :value="null" disabled>{{ cargandoPartidos ? 'Cargando...' : (partidosCarga.length ? 'Seleccioná partido' : 'No hay partidos para esa fecha') }}</option>
             <option v-for="p in partidosCarga" :key="p.id" :value="p.id">{{ p.local }} vs {{ p.visitante }}</option>
           </select>
@@ -79,14 +79,14 @@
       <div class="row g-3" v-if="partidoCargaSel">
         <div class="col-12 col-md-6">
           <label class="form-label small fw-bold text-dark mb-1">Torneo *</label>
-          <select v-model="carga.torneo" class="form-select form-select-sm shadow-none">
+          <select aria-label="Torneo" v-model="carga.torneo" class="form-select form-select-sm shadow-none">
             <option value="" disabled>Seleccioná</option>
             <option v-for="t in opcionesTorneo" :key="t.valor" :value="t.valor">{{ t.etiqueta }}</option>
           </select>
         </div>
         <div class="col-12 col-md-6">
           <label class="form-label small fw-bold text-dark mb-1">Institución del implicado *</label>
-          <select v-model="carga.institucion" class="form-select form-select-sm shadow-none">
+          <select aria-label="Institución del implicado" v-model="carga.institucion" class="form-select form-select-sm shadow-none">
             <option value="" disabled>Seleccioná</option>
             <option value="local">{{ partidoCargaSel.local }} (Local)</option>
             <option value="visitante">{{ partidoCargaSel.visitante }} (Visitante)</option>
@@ -94,15 +94,15 @@
         </div>
         <div class="col-12 col-md-6">
           <label class="form-label small fw-bold text-dark mb-1">Implicado *</label>
-          <input type="text" v-model="carga.implicado" class="form-control form-control-sm shadow-none" placeholder="Nombre del implicado">
+          <input aria-label="Implicado" type="text" v-model="carga.implicado" class="form-control form-control-sm shadow-none" placeholder="Nombre del implicado">
         </div>
         <div class="col-12 col-md-6">
           <label class="form-label small fw-bold text-dark mb-1">Sanción *</label>
-          <input type="text" v-model="carga.sancion" class="form-control form-control-sm shadow-none" placeholder="Sanción aplicada">
+          <input aria-label="Sanción" type="text" v-model="carga.sancion" class="form-control form-control-sm shadow-none" placeholder="Sanción aplicada">
         </div>
         <div class="col-12">
           <label class="form-label small fw-bold text-dark mb-1">Motivo y descripción *</label>
-          <textarea v-model="carga.motivo_descripcion" class="form-control shadow-none" rows="4" placeholder="Describí el motivo del informe..."></textarea>
+          <textarea aria-label="Motivo y descripción" v-model="carga.motivo_descripcion" class="form-control shadow-none" rows="4" placeholder="Describí el motivo del informe..."></textarea>
         </div>
 
         <!-- Archivos -->
@@ -134,7 +134,7 @@
         :disabled="guardandoCarga || !cargaValida"
       >
         <span v-if="guardandoCarga" class="spinner-border spinner-border-sm"></span>
-        <span v-else class="material-icons" style="font-size:18px;">save</span> Cargar informe
+        <i v-else class="bi bi-floppy" aria-hidden="true"></i> Cargar informe
       </button>
       <button @click="intentarCerrar" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1" :disabled="guardandoCarga">CANCELAR</button>
     </template>
@@ -152,7 +152,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['close', 'cargado']);
 
-const toast = inject('toast', ({ mensaje }) => alert(mensaje));
+const toast = inject('toast');
 
 const opcionesTorneo = [
   { valor: 'metropolitano_apertura', etiqueta: 'Metropolitano Apertura' },

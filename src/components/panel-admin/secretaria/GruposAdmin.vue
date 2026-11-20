@@ -2,7 +2,7 @@
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- HEADER RESPONSIVO -->
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -22,12 +22,12 @@
         <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none d-md-block']">
           <div class="d-flex justify-content-between align-items-center d-md-none mb-3">
             <span class="small fw-bold text-dark text-uppercase">Filtrar Grupos</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
+            <button type="button" aria-label="Cerrar filtros" title="Cerrar filtros" @click="mostrarFiltrosMobile = false" class="btn-close btn-sm"></button>
           </div>
 
           <div class="row g-2">
             <div class="col-12">
-              <input v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR POR NOMBRE, GRUPO O SUBGRUPO...">
+              <input aria-label="Buscar por nombre, grupo o subgrupo" v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR POR NOMBRE, GRUPO O SUBGRUPO...">
             </div>
             <div class="col-12 d-md-none mt-2">
               <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
@@ -56,12 +56,12 @@
                 </div>
 
                 <div class="tile-acciones">
-                  <button @click="cargarDatosEdicion(grupo)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-primary flex-grow-1 d-flex justify-content-center align-items-center gap-1" title="Editar Grupo">
-                    <i class="bi bi-pencil" style="font-size:16px;"></i>
+                  <button @click="cargarDatosEdicion(grupo)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark flex-grow-1 d-flex justify-content-center align-items-center gap-1" title="Editar Grupo">
+                    <i class="bi bi-pencil texto-16px"></i>
                     <span class="fw-bold small d-none d-sm-inline">Editar</span>
                   </button>
                   <button @click="confirmarEliminacion(grupo.id)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-danger flex-grow-1 d-flex justify-content-center align-items-center gap-1" title="Eliminar Grupo">
-                    <i class="bi bi-trash" style="font-size:16px;"></i>
+                    <i class="bi bi-trash texto-16px"></i>
                     <span class="fw-bold small d-none d-sm-inline">Borrar</span>
                   </button>
                 </div>
@@ -90,7 +90,7 @@
       :hay-cambios="hayCambios"
       @close="mostrarModal = false"
       :icono="modoEdicion ? 'edit' : 'group_add'"
-      :colorIcono="modoEdicion ? 'bg-info-subtle text-info' : 'bg-success-subtle text-success'"
+      :colorIcono="modoEdicion ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'"
       maxWidth="600px"
     >
       <template #header>
@@ -103,17 +103,17 @@
         <div class="row g-3">
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Nombre del Grupo *</label>
-            <input v-model="form.grupo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Pre Liga, LH, 3..." required>
+            <input aria-label="Nombre del Grupo" v-model="form.grupo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: Pre Liga, LH, 3..." required>
           </div>
 
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Subgrupo</label>
-            <input v-model="form.subgrupo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: A, B, C (opcional)">
+            <input aria-label="Subgrupo" v-model="form.subgrupo" type="text" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: A, B, C (opcional)">
           </div>
 
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Orden *</label>
-            <input v-model.number="form.orden" type="number" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: 1, 2, 3..." required>
+            <input aria-label="Orden" v-model.number="form.orden" type="number" class="form-control shadow-none border-secondary-subtle" placeholder="Ej: 1, 2, 3..." required>
             <span class="text-muted small">Define la posicion del grupo en los listados.</span>
           </div>
         </div>
@@ -135,6 +135,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, onMounted, inject, computed, watch } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
 import { useHead } from '@vueuse/head'
 import ModalBase from '@/components/ModalBase.vue'
@@ -146,7 +147,7 @@ useHead({
 })
 
 const notificar = inject('notificar')
-const toast = inject('toast', ({ mensaje }) => alert(mensaje))
+const toast = inject('toast')
 const procesando = ref(false)
 const listaGrupos = ref([])
 
@@ -185,13 +186,6 @@ const paletaAvatar = [
   { bg: '#104547', text: '#a8d5e2' }, // Petróleo / Celeste agua
   { bg: '#5c3a21', text: '#edc4b3' }  // Cobre oscuro / Durazno
 ]
-
-const normalizarTexto = (texto) => {
-  return String(texto || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-}
 
 const nombreCompleto = (grupo) => {
   return grupo.subgrupo ? `${grupo.nombre} ${grupo.subgrupo}` : grupo.nombre
@@ -281,7 +275,7 @@ const limpiarFiltrosTabla = () => {
 const obtenerGrupos = async () => {
   cargando.value = true
   try {
-    const res = await api.get({ entity: 'grupos', action: 'obtenerGrupos', payload: {} })
+    const res = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos', payload: {} })
     if (res.ok) {
       listaGrupos.value = Array.isArray(res.payload) ? res.payload : []
     }
@@ -450,9 +444,6 @@ onMounted(() => {
   border-top: 0.5px solid rgba(255, 255, 255, 0.08);
   padding-top: 12px;
 }
-
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
 
 .animate__animated { animation-duration: 0.5s; }
 </style>

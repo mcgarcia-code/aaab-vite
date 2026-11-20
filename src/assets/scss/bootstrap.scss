@@ -1,0 +1,53 @@
+// Bootstrap 5.3 a medida: misma configuración y orden que bootstrap.scss, sin los componentes
+// que el sitio no usa (breadcrumb, carousel, modal, offcanvas, pagination, popover, tooltip y toasts:
+// los modales y avisos del sitio son componentes propios, ModalBase / ModalExito / ToastNotificacion).
+// Si se empieza a usar alguno, descomentar su @import.
+
+// Color principal del sitio: el rojo institucional. De $primary salen el foco de los campos, checkboxes,
+// switches, links, ítems activos y barras de progreso (antes eran el azul de Bootstrap).
+$primary: #dc2626;
+
+// Configuración
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";
+
+// Layout y componentes
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/button-group";
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/accordion";
+// @import "bootstrap/scss/breadcrumb";
+// @import "bootstrap/scss/pagination";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/progress";
+@import "bootstrap/scss/list-group";
+@import "bootstrap/scss/close";
+// @import "bootstrap/scss/toasts";
+// @import "bootstrap/scss/modal";
+// @import "bootstrap/scss/tooltip";
+// @import "bootstrap/scss/popover";
+// @import "bootstrap/scss/carousel";
+@import "bootstrap/scss/spinners";
+// @import "bootstrap/scss/offcanvas";
+@import "bootstrap/scss/placeholders";
+
+// Helpers y utilidades
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/utilities/api";

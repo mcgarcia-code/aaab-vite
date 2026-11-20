@@ -22,10 +22,7 @@
           :class="tipo === 'danger' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'"
           style="width: 70px; height: 70px;"
         >
-          <span class="material-icons" style="font-size: 40px;">
-            {{ tipo === 'danger' ? (tieneAccion ? 'delete_forever' : 'report_problem') : 'check' }}
-          </span>
-        </div>
+          <i class="texto-40px" :class="['bi', tipo === 'danger' ? (tieneAccion ? 'bi-trash3' : 'bi-exclamation-triangle') : 'bi-check-lg']" aria-hidden="true"></i>        </div>
 
         <h4 class="fw-bold text-dark mt-2 mb-2">{{ titulo }}</h4>
         <!-- mensaje-modal: respeta los saltos de línea (\n) para avisos multilínea.
@@ -45,8 +42,7 @@
 
           <button
             @click="handleAccion"
-            class="btn rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto hover-elevate"
-            :class="tipo === 'danger' ? 'btn-danger' : 'btn-dark'"
+            class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto hover-elevate"
           >
             {{ tieneAccion ? (tipo === 'danger' ? 'CONTINUAR' : 'CONFIRMAR') : 'ACEPTAR' }}
           </button>
@@ -98,7 +94,7 @@ const handleKeydown = (e) => {
 watch(() => props.visible, async (val) => {
   if (val) {
 
-    let modalCount = parseInt(document.body.dataset.modalCount || '0') + 1;
+    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) + 1;
     document.body.dataset.modalCount = modalCount;
 
     document.body.style.overflow = 'hidden';
@@ -108,7 +104,7 @@ watch(() => props.visible, async (val) => {
     modalRef.value?.focus();
   } else {
 
-    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1;
+    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) - 1;
     if (modalCount < 0) modalCount = 0;
     document.body.dataset.modalCount = modalCount;
 
@@ -126,7 +122,7 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown, true);
 
   if (props.visible) {
-    let modalCount = parseInt(document.body.dataset.modalCount || '0') - 1;
+    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) - 1;
     if (modalCount < 0) modalCount = 0;
     document.body.dataset.modalCount = modalCount;
 

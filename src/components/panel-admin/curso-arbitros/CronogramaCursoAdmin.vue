@@ -1,7 +1,7 @@
 <template>
   <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4" style="border-radius: 12px; overflow: hidden;">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p class="seccion-descripcion">Cronograma y exámenes por clase · {{ clasesVisibles.length }} clases en {{ anio }}<template v-if="clasesSinAsistencia.length"> · <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> {{ clasesSinAsistencia.length }} {{ clasesSinAsistencia.length === 1 ? 'clase dictada' : 'clases dictadas' }} sin asistencia</span></template></p>
@@ -93,8 +93,8 @@
                     </a>
                     <div class="d-flex flex-wrap gap-2 mt-3">
                       <button @click="abrirAsistencia(c)" :disabled="esClaseFutura(c)" class="btn btn-sm btn-outline-success flex-fill fw-bold" :title="esClaseFutura(c) ? 'La asistencia se toma desde el día de la clase' : undefined"><i class="bi bi-person-check me-1"></i> Asistencia</button>
-                      <button @click="abrirExamen(c)" class="btn btn-sm btn-outline-dark flex-fill fw-bold"><i class="bi bi-journal-check me-1"></i> Examen</button>
-                      <button @click="abrirEditar(c)" class="btn btn-sm btn-outline-primary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
+                      <button @click="abrirExamen(c)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold"><i class="bi bi-journal-check me-1"></i> Examen</button>
+                      <button @click="abrirEditar(c)" class="btn btn-sm btn-outline-secondary flex-fill fw-bold"><i class="bi bi-pencil me-1"></i> Editar</button>
                       <button @click="confirmarEliminar(c)" class="btn btn-sm btn-outline-danger flex-fill fw-bold"><i class="bi bi-trash3 me-1"></i> Borrar</button>
                     </div>
                   </div>
@@ -208,7 +208,7 @@
           <button type="button" class="btn fw-bold" :class="formExamen.tipo === 'teorico' ? 'btn-danger' : 'btn-outline-danger'" @click="formExamen.tipo = 'teorico'">
             <i class="bi bi-journal-text me-1"></i> Teórico
           </button>
-          <button type="button" class="btn fw-bold" :class="formExamen.tipo === 'fisico' ? 'btn-primary' : 'btn-outline-primary'" @click="formExamen.tipo = 'fisico'">
+          <button type="button" class="btn fw-bold" :class="formExamen.tipo === 'fisico' ? 'btn-danger' : 'btn-outline-secondary'" @click="formExamen.tipo = 'fisico'">
             <i class="bi bi-stopwatch me-1"></i> Físico
           </button>
         </div>
@@ -328,7 +328,7 @@ import PlanillaAsistenciaCurso from '@/components/panel-admin/curso-arbitros/Pla
 
 useHead({ title: 'Clases y Asistencia | AAAB' })
 
-const notificar = inject('notificar', (m) => alert(m.mensaje || m))
+const notificar = inject('notificar')
 const toast = inject('toast', (m) => notificar(m))
 
 const { clasesVisibles, filtroCurso, cargando, error, cargar, clasesPorMes, proximaClase } = useCronogramaCurso()
@@ -750,8 +750,7 @@ onMounted(() => cargar(anio.value))
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
-.btn-danger-subtle { background: #fee2e2; color: #dc3545; border: 1px solid transparent; }
-.btn-danger-subtle:hover { background: #fecaca; }
+
 .tarjeta-clase { background-color: #fff; }
 .tarjeta-clase.pasada { background-color: #f8fafc; opacity: 0.75; }
 .tarjeta-clase.proxima { border-color: #dc3545 !important; box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15); }
