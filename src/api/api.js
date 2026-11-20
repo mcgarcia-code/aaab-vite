@@ -6,7 +6,7 @@ function obtenerHeaders() {
   const headers = {
     'Content-Type': 'application/json',
   }
-  const token = sessionStorage.getItem('token_aaab')
+  const token = auth.getToken()
   if (!token) {
     return headers
   }
@@ -50,7 +50,7 @@ function obtenerConfigArchivo(datos = {}) {
 // Sesión vencida o token inválido: si había sesión iniciada, se cierra y se vuelve al login.
 // (Si no había sesión, por ejemplo un login fallido, no se hace nada)
 function manejarSesionVencida() {
-  if (!sessionStorage.getItem('token_aaab')) return
+  if (!auth.getToken()) return
   sessionStorage.setItem('aviso_sesion', 'vencida')
   auth.logout()
 }
@@ -75,7 +75,7 @@ async function request(metodo, datos = {}, tipoPost = 'json') {
 
     const respuesta = await fetch(url, config)
 
-    if (respuesta.status === 401 && sessionStorage.getItem('token_aaab')) {
+    if (respuesta.status === 401 && auth.getToken()) {
       manejarSesionVencida()
       return { ok: false, payload: null, message: 'Tu sesión venció. Volvé a ingresar.' }
     }

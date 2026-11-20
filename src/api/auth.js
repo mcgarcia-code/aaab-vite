@@ -1,10 +1,25 @@
 // src/api/auth.js
+import { esAppInstalada } from '@/utils/app'
 
 const USER_TOKEN = 'token_aaab'
 const USER_KEY = 'user_aaab'
 const LIMITE_INACTIVIDAD = 60 * 60 * 1000 // 60 minutos
 const REINICIO_MINIMO = 5000 // el timer se reinicia como mucho cada 5 s (no en cada movimiento del mouse)
 const EVENTOS_ACTIVIDAD = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll']
+
+// Dónde vive la sesión:
+// - Navegador: sessionStorage → se cierra al cerrar la pestaña y por 60 min de inactividad.
+// - App instalada: localStorage → queda abierta como cualquier app del celular, hasta "Cerrar sesión".
+const EN_APP = esAppInstalada()
+const almacen = () => (EN_APP ? localStorage : sessionStorage)
+
+const leerClave = (clave) => {
+  try {
+    return almacen().getItem(clave)
+  } catch {
+    return null
+  }
+}
 
 let temporizador = null
 let ultimoReinicio = 0
@@ -25,20 +40,20 @@ const alHaberActividad = () => {
 
 export const auth = {
   setUser(userData) {
-    sessionStorage.setItem(USER_KEY, JSON.stringify(userData.arbitro))
-    sessionStorage.setItem(USER_TOKEN, userData.token)
+    almacen().setItem(USER_KEY, JSON.stringify(userData.arbitro))
+    almacen().setItem(USER_TOKEN, userData.token)
     window.dispatchEvent(new Event('storage'))
     this.startInactivityTimer()
   },
 
   // Actualiza solo los datos del usuario en sesión, sin tocar el token.
   updateUser(arbitro) {
-    sessionStorage.setItem(USER_KEY, JSON.stringify(arbitro))
+    almacen().setItem(USER_KEY, JSON.stringify(arbitro))
     window.dispatchEvent(new Event('storage'))
   },
 
   getUser() {
-    const user = sessionStorage.getItem(USER_KEY)
+    const user = leerClave(USER_KEY)
     if (!user || user === 'undefined') return null
     try {
       return JSON.parse(user)
@@ -47,20 +62,30 @@ export const auth = {
     }
   },
 
+  getToken() {
+    return leerClave(USER_TOKEN)
+  },
+
   isLoggedIn() {
-    return !!sessionStorage.getItem(USER_TOKEN)
+    return !!leerClave(USER_TOKEN)
   },
 
   logout() {
-    sessionStorage.removeItem(USER_KEY)
-    sessionStorage.removeItem(USER_TOKEN)
+    try {
+      almacen().removeItem(USER_KEY)
+      almacen().removeItem(USER_TOKEN)
+    } catch {
+      // Sin almacenamiento: no hay nada guardado que borrar
+    }
     this.stopInactivityTimer()
     window.dispatchEvent(new Event('storage'))
     window.location.href = '/login-arbitro'
   },
 
-  // Cierra la sesión tras 60 min sin actividad. Los listeners se registran una sola vez.
+  // Cierra la sesión tras 60 min sin actividad (solo en el navegador; en la app la sesión queda abierta).
+  // Los listeners se registran una sola vez.
   startInactivityTimer() {
+    if (EN_APP) return
     programarCierre()
     if (escuchando) return
     EVENTOS_ACTIVIDAD.forEach(evento => window.addEventListener(evento, alHaberActividad, { passive: true }))

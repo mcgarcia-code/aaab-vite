@@ -7,7 +7,7 @@ const rol = ref(null)
 let tokenCargado = null
 let cargaEnCurso = null
 
-const tokenActual = () => sessionStorage.getItem('token_aaab')
+const tokenActual = () => auth.getToken()
 
 const cargarPermisos = async (forzar = false) => {
   const token = tokenActual()
