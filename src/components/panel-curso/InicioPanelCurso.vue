@@ -97,7 +97,7 @@
 
           <template v-else>
             <!-- CLASES -->
-            <div v-show="tabActiva === 'clases'">
+            <div v-show="tabActiva === 'clases'" :class="{ 'lista-recortada': !expandidos.includes('clases') }">
               <RouterLink v-for="c in otrasClases" :key="c.id" to="/panel-curso/cronograma-curso" class="evento text-decoration-none">
                 <div class="cal-box">
                   <span class="day">{{ c.fecha.substring(8, 10) }}</span>
@@ -110,9 +110,10 @@
               </RouterLink>
               <p v-if="!otrasClases.length" class="empty-msg">{{ proximaClase ? 'No hay más clases cargadas por ahora.' : 'No hay clases próximas cargadas.' }}</p>
             </div>
+            <BotonVerTodos v-if="tabActiva === 'clases'" :cantidad="otrasClases.length" :expandido="expandidos.includes('clases')" @alternar="alternarExpandido('clases')" />
 
             <!-- CUMPLEAÑOS -->
-            <div v-show="tabActiva === 'cumpleanos'">
+            <div v-show="tabActiva === 'cumpleanos'" :class="{ 'lista-recortada': !expandidos.includes('cumpleanos') }">
               <div v-for="c in cumpleanosProximos" :key="c.nombre + c.dia" class="evento">
                 <div :class="['cal-box', { 'today-bg': c.esHoy }]">
                   <span class="day">{{ String(c.dia).padStart(2, '0') }}</span>
@@ -125,6 +126,7 @@
               </div>
               <p v-if="!cumpleanosProximos.length" class="empty-msg">No hay más cumpleaños de alumnos regulares este mes.</p>
             </div>
+            <BotonVerTodos v-if="tabActiva === 'cumpleanos'" :cantidad="cumpleanosProximos.length" :expandido="expandidos.includes('cumpleanos')" @alternar="alternarExpandido('cumpleanos')" />
           </template>
         </div>
       </div>
@@ -144,6 +146,7 @@ import { CLAVE_PRECARGA_REGISTRO, precargaRegistroArbitro } from '@/composables/
 import { horarioClase } from '@/composables/useCronogramaCurso'
 import { useModulosCurso, ITEM_REGISTRO_ARBITRO } from '@/composables/useModulosCurso'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import BotonVerTodos from '@/components/comunes/BotonVerTodos.vue'
 
 useHead({ title: 'Inicio Curso | AAAB' })
 
@@ -182,6 +185,14 @@ const tabs = computed(() => [
   { clave: 'clases', etiqueta: 'Clases', cantidad: otrasClases.value.length },
   { clave: 'cumpleanos', etiqueta: 'Cumpleaños', cantidad: cumpleanosProximos.value.length }
 ])
+
+// Pestañas desplegadas con "Ver todos" (solo celular: ahí la lista no scrollea por dentro)
+const expandidos = ref([])
+const alternarExpandido = (clave) => {
+  expandidos.value = expandidos.value.includes(clave)
+    ? expandidos.value.filter(c => c !== clave)
+    : [...expandidos.value, clave]
+}
 
 // ─── Fechas ──────────────────────────────────────────────────────
 const fechaLocal = (iso) => {
@@ -270,7 +281,9 @@ onMounted(cargarInicio)
   .area-avisos .avisos-scroll {
     flex: 1 1 0;
     min-height: 0;
-    max-height: none;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
   }
 }
 
@@ -416,12 +429,6 @@ onMounted(cargarInicio)
 }
 .tab-btn.activa .tab-badge { background: #0f172a; color: #fff; }
 
-.avisos-scroll {
-  max-height: 340px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
-}
 
 .evento {
   display: flex;

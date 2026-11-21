@@ -89,3 +89,10 @@
   color: var(--t-texto);
 }
 .subtitulo-tarjeta .bi { color: var(--t-icono-texto); }
+
+/* Avisos del Inicio (árbitro y curso): en celular y app la lista no scrollea por dentro
+   (el dedo siempre desliza la página). Se ven los primeros 5 y el resto con "Ver todos"
+   (BotonVerTodos.vue, mismo límite). En escritorio se ve todo con scroll propio */
+@media (max-width: 991.98px) {
+  .lista-recortada > :nth-child(n+6) { display: none !important; }
+}

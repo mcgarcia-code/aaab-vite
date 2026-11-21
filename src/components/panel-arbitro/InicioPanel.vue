@@ -122,16 +122,18 @@
             class="tab-btn"
             :class="{ activa: tabActiva === tab.clave }"
           >
-            {{ tab.etiqueta }}
+            <span class="tab-texto">{{ tab.etiqueta }}</span>
             <span v-if="tab.cantidad > 0" class="tab-badge">{{ tab.cantidad }}</span>
           </button>
         </div>
 
+        <!-- Celular: sin scroll propio (el dedo siempre desliza la página); se ven los primeros
+             LIMITE_AVISOS y el resto con "Ver todos". Escritorio: scroll por dentro, como siempre -->
         <div class="avisos-scroll">
 
           <!-- REUNIONES -->
           <div v-show="tabActiva === 'reuniones'">
-            <div v-if="proximasFechas.length > 0">
+            <div v-if="proximasFechas.length > 0" :class="{ 'lista-recortada': !expandidos.includes('reuniones') }">
               <div class="evento" v-for="ev in proximasFechas" :key="ev.id">
                 <div class="cal-box">
                   <span class="day">{{ ev.fecha_evento.split('-')[2] }}</span>
@@ -147,11 +149,12 @@
               </div>
             </div>
             <p v-else class="empty-msg">No hay eventos próximos.</p>
+            <BotonVerTodos :cantidad="proximasFechas.length" :expandido="expandidos.includes('reuniones')" @alternar="alternarExpandido('reuniones')" />
           </div>
 
           <!-- CUMPLEAÑOS -->
           <div v-show="tabActiva === 'cumpleanos'">
-            <div v-if="avisos.cumpleanos && avisos.cumpleanos.length > 0">
+            <div v-if="avisos.cumpleanos && avisos.cumpleanos.length > 0" :class="{ 'lista-recortada': !expandidos.includes('cumpleanos') }">
               <div v-for="cumple in avisos.cumpleanos" :key="cumple.nombre + cumple.apellido" class="evento">
                 <div :class="['cal-box', esHoy(cumple.fecha_nacimiento) ? 'today-bg' : '']">
                   <span class="day">{{ cumple.fecha_nacimiento.split('/')[0] }}</span>
@@ -164,17 +167,19 @@
               </div>
             </div>
             <p v-else class="empty-msg">Sin cumpleaños cercanos.</p>
+            <BotonVerTodos :cantidad="(avisos.cumpleanos || []).length" :expandido="expandidos.includes('cumpleanos')" @alternar="alternarExpandido('cumpleanos')" />
           </div>
 
           <!-- RECORDATORIOS -->
           <div v-show="tabActiva === 'recordatorios'">
-            <div v-if="avisos.recordatorio && avisos.recordatorio.length > 0">
+            <div v-if="avisos.recordatorio && avisos.recordatorio.length > 0" :class="{ 'lista-recortada': !expandidos.includes('recordatorios') }">
               <div v-for="rec in avisos.recordatorio" :key="rec.id" class="reminder-pill">
                 <i class="bi bi-info-circle-fill me-2"></i>
                 <span class="texto-recordatorio">{{ textoPlano(rec.descripcion) }}</span>
               </div>
             </div>
             <p v-else class="empty-msg">No hay recordatorios.</p>
+            <BotonVerTodos :cantidad="(avisos.recordatorio || []).length" :expandido="expandidos.includes('recordatorios')" @alternar="alternarExpandido('recordatorios')" />
           </div>
 
         </div>
@@ -193,6 +198,7 @@ import { api } from '@/api/api'
 import { textoPlano } from '@/utils/texto'
 import { auth } from '@/api/auth'
 import AccesosRapidos from '@/components/comunes/AccesosRapidos.vue'
+import BotonVerTodos from '@/components/comunes/BotonVerTodos.vue'
 import { useModulosArbitro } from '@/composables/useModulosArbitro'
 
 useHead({ title: 'Panel de Inicio | AAAB' })
@@ -216,6 +222,14 @@ const avisos = ref({ reunion: [], urgente: [], cumpleanos: [], recordatorio: [],
 const cargando = ref(true)
 
 const tabActiva = ref('reuniones')
+
+// Pestañas desplegadas con "Ver todos" (solo celular)
+const expandidos = ref([])
+const alternarExpandido = (clave) => {
+  expandidos.value = expandidos.value.includes(clave)
+    ? expandidos.value.filter(c => c !== clave)
+    : [...expandidos.value, clave]
+}
 
 const proximasFechas = computed(() => {
   const combinados = [...(avisos.value.reunion || []), ...(avisos.value.urgente || []), ...(avisos.value.recuperatorio || []), ...(avisos.value.asamblea || [])]
@@ -459,8 +473,12 @@ onMounted(() => {
   .area-avisos .avisos-scroll {
     flex: 1 1 0;
     min-height: 0;
-    max-height: none;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
   }
+  .avisos-scroll::-webkit-scrollbar { width: 5px; }
+  .avisos-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 }
 
 /* ============ PROXIMA DESIGNACION ============ */
@@ -601,9 +619,10 @@ onMounted(() => {
   font-weight: 800;
 }
 
+/* Cada pestaña toma el ancho de su texto ("Recordatorios" es más larga que "Cumples"):
+   con tercios fijos, en celular el texto se desbordaba y se pisaba con la pestaña de al lado */
 .tabs-avisos {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
   gap: 4px;
   background: var(--o-chip, #f1f5f9);
   border-radius: 12px;
@@ -612,10 +631,13 @@ onMounted(() => {
 }
 
 .tab-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
   border: none;
   background: transparent;
   min-height: 40px;
-  padding: 6px 4px;
+  padding: 6px 6px;
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--o-texto-medio, #475569);
@@ -635,7 +657,15 @@ onMounted(() => {
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
 }
 
+/* Si en un celular muy angosto igual no entra, el texto se corta con "…" en vez de pisarse */
+.tab-texto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .tab-badge {
+  flex-shrink: 0;
   background-color: var(--o-chip, #e2e8f0);
   color: var(--o-texto-medio, #334155);
   padding: 1px 6px;
@@ -645,14 +675,29 @@ onMounted(() => {
 }
 .tab-btn.activa .tab-badge { background: #0f172a; color: #fff; }
 
-.avisos-scroll {
-  max-height: 340px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+/* Celular: texto + número no entran en el ancho, así que el número pasa a un globito
+   en la esquina de la pestaña y los tres textos se leen completos (probado a 320px) */
+.tab-btn { position: relative; }
+@media (max-width: 575.98px) {
+  .tabs-avisos { padding-top: 6px; }
+  .tab-btn { padding: 6px 4px; }
+  .tab-badge {
+    position: absolute;
+    top: -5px;
+    right: -2px;
+    z-index: 1;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    line-height: 1;
+    box-shadow: 0 0 0 2px var(--o-chip, #f1f5f9);
+  }
 }
-.avisos-scroll::-webkit-scrollbar { width: 5px; }
-.avisos-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
 
 /* ============ EVENTOS ============ */
 .evento {
