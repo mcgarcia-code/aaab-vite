@@ -4,6 +4,7 @@ import HomeView from '../views/public/HomeView.vue';
 import { auth } from '../api/auth.js';
 import { usePermisos } from '@/composables/usePermisos'
 import { esAppInstalada } from '@/utils/app'
+import { setRutaActual } from '@/composables/useTema'
 
 // Panel que le corresponde a cada usuario
 const rutaPanel = (user) => {
@@ -294,5 +295,8 @@ router.beforeEach(async (to, from, next) => {
     next();
   }
 });
+
+// Tema claro/oscuro: solo dentro de los paneles; las páginas públicas quedan con sus colores
+router.afterEach((to) => setRutaActual(to.path))
 
 export default router;
