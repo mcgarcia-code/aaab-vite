@@ -4,7 +4,7 @@
     <div class="card shadow border-0 mb-4 w-100 mx-auto radio-12 overflow-hidden">
 
       <!-- ENCABEZADO -->
-      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom border-2 border-danger gap-3">
+      <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
         <p class="seccion-descripcion">Las observaciones que cargaste</p>
 
         <div class="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
