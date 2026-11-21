@@ -84,17 +84,28 @@
 
 /* ── Oscuro: estructura azul marino y tarjetas oscuras ── */
 :root[data-tema="oscuro"] {
+  /* Escala de profundidad: fondo (más oscuro) → barras → tarjeta → bloque interno → chip (más claro) */
+  --t-panel-fondo: #0b1120;
+  --t-barra-fondo: #111a2e;
+  --t-barra-borde: #26334a;
+  --t-barra-elevado: #1e293b;
+  --t-barra-elevado-hover: #334155;
+  --t-barra-perfil: #1a2438;
+  --t-baldosa: #1e293b;
+  --t-baldosa-borde: #3e4c63;
+  --t-baldosa-hover: #2a374d;
+
   --t-tarjeta: #1e293b;
-  --t-tarjeta-borde: #334155;
-  --t-tarjeta-hover: #273449;
-  --t-superficie: #162033;
-  --t-chip: #334155;
+  --t-tarjeta-borde: #3e4c63;
+  --t-tarjeta-hover: #2a374d;
+  --t-superficie: #2a374d;
+  --t-chip: #3a4860;
   --t-texto: #f1f5f9;
   --t-texto-medio: #cbd5e1;
-  --t-texto-suave: #94a3b8;
-  --t-texto-tenue: #94a3b8;
-  --t-borde-fuerte: #475569;
-  --t-icono-fondo: #2a1215;
+  --t-texto-suave: #a3b1c6;
+  --t-texto-tenue: #a3b1c6;
+  --t-borde-fuerte: #556479;
+  --t-icono-fondo: #3b1519;
   --t-icono-texto: #f87171;
   --t-elegido-borde: #7f1d1d;
   --t-peligro-texto: #fca5a5;
@@ -108,12 +119,12 @@
   --bs-emphasis-color: #ffffff;
   --bs-emphasis-color-rgb: 255, 255, 255;
   --bs-secondary-color: #cbd5e1;
-  --bs-secondary-bg: #273449;
-  --bs-secondary-bg-rgb: 39, 52, 73;
-  --bs-tertiary-color: #94a3b8;
-  --bs-tertiary-bg: #162033;
-  --bs-tertiary-bg-rgb: 22, 32, 51;
-  --bs-border-color: #334155;
+  --bs-secondary-bg: #3a4860;
+  --bs-secondary-bg-rgb: 58, 72, 96;
+  --bs-tertiary-color: #a3b1c6;
+  --bs-tertiary-bg: #2a374d;
+  --bs-tertiary-bg-rgb: 42, 55, 77;
+  --bs-border-color: #3e4c63;
   --bs-border-color-translucent: rgba(148, 163, 184, 0.2);
   --bs-heading-color: #f8fafc;
 }
@@ -130,27 +141,27 @@
    ========================================================= */
 :root[data-tema="oscuro"] {
   --o-tarjeta: #1e293b;
-  --o-superficie: #162033;
-  --o-chip: #273449;
+  --o-superficie: #2a374d;
+  --o-chip: #3a4860;
   --o-texto: #f1f5f9;
   --o-texto-medio: #cbd5e1;
-  --o-texto-suave: #94a3b8;
-  --o-borde: #334155;
+  --o-texto-suave: #a3b1c6;
+  --o-borde: #3e4c63;
 
   --o-rojo-texto: #f87171;
-  --o-rojo-fondo: #2a1215;
+  --o-rojo-fondo: #3b1519;
   --o-rojo-borde: #7f1d1d;
   --o-verde-texto: #4ade80;
-  --o-verde-fondo: #0f2a1d;
+  --o-verde-fondo: #12321f;
   --o-verde-borde: #14532d;
   --o-ambar-texto: #fcd34d;
-  --o-ambar-fondo: #332701;
+  --o-ambar-fondo: #3d3008;
   --o-ambar-borde: #854d0e;
   --o-azul-texto: #93c5fd;
-  --o-azul-fondo: #0c2340;
+  --o-azul-fondo: #132e52;
   --o-azul-borde: #1e3a8a;
   --o-violeta-texto: #c4b5fd;
-  --o-violeta-fondo: #2e1065;
+  --o-violeta-fondo: #3b1a75;
   --o-violeta-borde: #5b21b6;
   /* Filas resaltadas de las planillas (rojo / verde intensos) */
   --o-rojo-fuerte: #7f1d1d;
@@ -177,8 +188,8 @@
   --bs-table-bg: var(--o-chip);
   --bs-table-color: var(--o-texto);
   --bs-table-border-color: var(--o-borde);
-  --bs-table-striped-bg: #2c3a52;
-  --bs-table-hover-bg: #334155;
+  --bs-table-striped-bg: #33415a;
+  --bs-table-hover-bg: #45546d;
   color: var(--o-texto);
   border-color: var(--o-borde);
 }
@@ -186,10 +197,10 @@
   --bs-btn-bg: var(--o-chip);
   --bs-btn-color: var(--o-texto);
   --bs-btn-border-color: var(--o-borde);
-  --bs-btn-hover-bg: #334155;
+  --bs-btn-hover-bg: #45546d;
   --bs-btn-hover-color: #ffffff;
-  --bs-btn-hover-border-color: #475569;
-  --bs-btn-active-bg: #334155;
+  --bs-btn-hover-border-color: #556479;
+  --bs-btn-active-bg: #45546d;
   --bs-btn-active-color: #ffffff;
   --bs-btn-active-border-color: #475569;
   --bs-btn-disabled-bg: var(--o-chip);
@@ -207,14 +218,32 @@
   --bs-btn-active-color: #0f172a;
 }
 :root[data-tema="oscuro"] .btn-dark {
-  --bs-btn-bg: #0f172a;
-  --bs-btn-border-color: #475569;
+  --bs-btn-bg: #0b1120;
+  --bs-btn-border-color: #556479;
   --bs-btn-hover-bg: #334155;
   --bs-btn-hover-border-color: #64748b;
 }
 :root[data-tema="oscuro"] :is(.form-control, .form-select):not(:disabled) {
-  background-color: #0f172a;
-  border-color: #475569;
+  background-color: #0b1120;
+  border-color: #556479;
+}
+
+/* Tarjetas: sin sombra visible en oscuro, un contorno las separa del fondo
+   (outline y no border, para no pisar los bordes de color que tienen algunas) */
+:root[data-tema="oscuro"] .card { outline: 1px solid var(--t-tarjeta-borde); outline-offset: -1px; }
+
+/* bg-dark (#212529) se confundía con las tarjetas: más oscuro y con borde */
+:root[data-tema="oscuro"] .bg-dark {
+  background-color: #0b1120 !important;
+  box-shadow: inset 0 0 0 1px #3e4c63;
+}
+
+/* Tablas: encabezado y bordes un escalón más claros que la tarjeta */
+:root[data-tema="oscuro"] .table {
+  --bs-table-border-color: var(--t-tarjeta-borde);
+}
+:root[data-tema="oscuro"] .table > thead > tr > th {
+  background-color: var(--t-superficie);
 }
 
 /* Texto blanco apoyado directo sobre el fondo del panel: en claro el fondo es gris claro */
