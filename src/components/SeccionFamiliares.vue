@@ -217,11 +217,11 @@ const quitarFila = (i) => emitirFilas(props.familiares.filter((_, j) => j !== i)
 
 <style scoped>
 .tarjeta-familiar {
-  background-color: #fcfcfd;
+  background-color: var(--o-superficie, #fcfcfd);
 }
 .lista-categorias {
   max-height: 240px;
   overflow-y: auto;
-  background-color: #fff;
+  background-color: var(--o-tarjeta, #fff);
 }
 </style>

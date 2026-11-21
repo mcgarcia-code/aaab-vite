@@ -125,6 +125,6 @@ const alternar = (categoria, marcada) => {
 .lista-categorias {
   max-height: 240px;
   overflow-y: auto;
-  background-color: #fff;
+  background-color: var(--o-tarjeta, #fff);
 }
 </style>

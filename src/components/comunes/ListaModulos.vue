@@ -70,7 +70,7 @@ defineProps({
   color: var(--t-sobre-fondo-suave);
   margin: 0 0 8px 4px;
 }
-.lista-categoria i { font-size: 0.95rem; color: #dc2626; }
+.lista-categoria i { font-size: 0.95rem; color: var(--o-rojo-texto, #dc2626); }
 
 .lista-grupo {
   background: var(--t-tarjeta);

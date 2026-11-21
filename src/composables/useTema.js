@@ -56,6 +56,9 @@ const aplicarTema = () => {
   }
   html.setAttribute('data-tema', temaEfectivo.value)
   html.setAttribute('data-bs-theme', temaEfectivo.value === 'oscuro' ? 'dark' : 'light')
+  // Barra de estado del celular del mismo color que el encabezado del panel
+  document.querySelector('meta[name="theme-color"]')
+    ?.setAttribute('content', temaEfectivo.value === 'oscuro' ? '#0b1222' : '#ffffff')
 }
 
 watch(temaEfectivo, aplicarTema)

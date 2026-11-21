@@ -115,7 +115,7 @@ defineExpose({ mostrar, quitar })
   pointer-events: auto;
   border-radius: 12px;
   padding: 12px 14px;
-  border-left: 4px solid #adb5bd;
+  border-left: 4px solid var(--o-borde, #adb5bd);
 }
 
 .toast-success { border-left-color: #198754; }

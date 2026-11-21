@@ -142,7 +142,7 @@ defineExpose({ abrirSelector, ampliar })
 
 <style scoped>
 .modal-foto {
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
   border-radius: 16px;
   padding: 24px;
   width: 100%;
@@ -153,7 +153,7 @@ defineExpose({ abrirSelector, ampliar })
 .cropper-wrap {
   border-radius: 12px;
   overflow: hidden;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--o-borde, #e2e8f0);
 }
 
 .cropper {
@@ -177,7 +177,7 @@ defineExpose({ abrirSelector, ampliar })
   max-width: min(90vw, 500px);
   max-height: 90vh;
   border-radius: 12px;
-  border: 3px solid #fff;
+  border: 3px solid var(--o-tarjeta, #fff);
   object-fit: cover;
   cursor: default;
 }

@@ -200,7 +200,7 @@
     </div>
 
     <div v-if="!edicionAbierta" class="manual-section p-0 mx-auto mt-4 w-100" style="background: transparent; box-shadow: none;">
-        <div class="text-center text-white-50 mb-3 small">
+        <div class="text-center text-white-50 sobre-fondo mb-3 small">
             <i class="bi bi-info-circle-fill me-1"></i>
             La edición directa está cerrada. Podés enviar una solicitud formal aquí.
         </div>

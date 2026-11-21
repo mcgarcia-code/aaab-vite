@@ -109,5 +109,5 @@ const quitar = (valor) => {
 
 <style scoped>
 .lista-resultados { max-height: 220px; overflow-y: auto; }
-.resultado:hover { background: #f8fafc; }
+.resultado:hover { background: var(--o-superficie, #f8fafc); }
 </style>

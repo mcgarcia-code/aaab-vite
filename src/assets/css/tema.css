@@ -216,3 +216,6 @@
   background-color: #0f172a;
   border-color: #475569;
 }
+
+/* Texto blanco apoyado directo sobre el fondo del panel: en claro el fondo es gris claro */
+:root[data-tema="claro"] .sobre-fondo { color: var(--t-sobre-fondo-texto) !important; }

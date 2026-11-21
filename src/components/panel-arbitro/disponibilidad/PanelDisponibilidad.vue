@@ -164,7 +164,7 @@
 
     <!-- Sección de Historial y Cambios Manuales -->
     <div class="manual-section p-0 mx-auto mt-4 mb-5 w-100" style="background: transparent; box-shadow: none;">
-        <div class="text-center text-white-50 mb-3 small">
+        <div class="text-center text-white-50 sobre-fondo mb-3 small">
             <i class="bi bi-shield-lock-fill me-1"></i>
             Todas las modificaciones quedan registradas en el sistema.
         </div>

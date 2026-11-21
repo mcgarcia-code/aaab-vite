@@ -456,7 +456,7 @@ const cargarObservacionExcel = async () => {
 }
 .panel-personal {
   width: 100%;
-  background-color: #0f172a;
+  background-color: var(--t-panel-fondo);
   min-height: 100vh;
   border-radius: 12px;
 }

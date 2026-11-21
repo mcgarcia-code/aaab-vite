@@ -352,7 +352,7 @@ defineExpose({ recargar, irAFecha, cargando })
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #6c757d;
+  color: var(--o-texto-suave, #6c757d);
   padding: 4px 0;
 }
 .cal-dia {
@@ -362,20 +362,20 @@ defineExpose({ recargar, irAFecha, cargando })
   text-align: left;
   min-height: 56px;
   padding: 4px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--o-borde, #e5e7eb);
   border-radius: 8px;
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
   overflow: hidden;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
-.cal-dia:hover { border-color: #adb5bd; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); }
+.cal-dia:hover { border-color: var(--o-borde, #adb5bd); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); }
 .cal-dia.fuera-mes { opacity: 0.45; }
 .cal-dia.es-hoy .num { background: #dc3545; color: #fff; border-radius: 999px; padding: 0 6px; }
 .cal-dia.activo { border-color: #212529; box-shadow: 0 0 0 1px #212529; }
 .cal-dia.elegido { border-color: #dc3545; box-shadow: 0 0 0 2px #dc3545; }
-.cal-dia.bloqueado { cursor: not-allowed; background: #f8f9fa; }
-.cal-dia.bloqueado .num { color: #adb5bd; }
-.num { font-size: 0.8rem; font-weight: 700; color: #212529; }
+.cal-dia.bloqueado { cursor: not-allowed; background: var(--o-superficie, #f8f9fa); }
+.cal-dia.bloqueado .num { color: var(--o-texto-suave, #adb5bd); }
+.num { font-size: 0.8rem; font-weight: 700; color: var(--o-texto, #212529); }
 .chip {
   display: block;
   color: #fff;
@@ -394,7 +394,7 @@ defineExpose({ recargar, irAFecha, cargando })
   outline: 1px dashed rgba(0, 0, 0, 0.45);
   outline-offset: -1px;
 }
-.mas { font-size: 0.65rem; color: #6c757d; font-weight: 600; }
+.mas { font-size: 0.65rem; color: var(--o-texto-suave, #6c757d); font-weight: 600; }
 .punto { display: inline-block; width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
 .cal-cargando {
   position: absolute;
@@ -411,10 +411,10 @@ defineExpose({ recargar, irAFecha, cargando })
   gap: 5px;
   font-size: 0.72rem;
   padding: 2px 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--o-borde, #e5e7eb);
   border-radius: 999px;
-  background: #fff;
-  color: #212529;
+  background: var(--o-tarjeta, #fff);
+  color: var(--o-texto, #212529);
 }
 .leyenda-item.oculto { opacity: 0.4; text-decoration: line-through; }
 .detalle-evento { border-left-width: 4px !important; }

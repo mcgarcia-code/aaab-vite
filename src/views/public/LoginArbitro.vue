@@ -157,13 +157,13 @@ const iniciarSesion = async () => {
    INPUTS PERSONALIZADOS
    ==================================================== */
 .custom-input {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--o-superficie, #f8fafc);
+  border: 1px solid var(--o-borde, #e2e8f0);
   transition: all 0.3s ease;
 }
 
 .custom-input:focus {
-  background-color: #ffffff;
+  background-color: var(--o-tarjeta, #ffffff);
   border-color: #ef4444; /* Borde rojo al enfocar */
   box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important; /* Resplandor rojo suave */
 }
@@ -186,7 +186,7 @@ const iniciarSesion = async () => {
 }
 
 .support-link:hover {
-  color: #b02a37 !important;
+  color: var(--o-rojo-texto, #b02a37) !important;
   text-decoration: underline !important;
 }
 

@@ -243,17 +243,17 @@ const limpiarSiNo = (campoSiNo, campoClub, campoCategorias) => {
 
 <style scoped>
 .titulo-seccion {
-  color: #dc3545;
+  color: var(--o-rojo-texto, #dc3545);
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--o-borde, #f1f5f9);
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
 }
 .bloque-deportivo {
-  background-color: #fcfcfd;
+  background-color: var(--o-superficie, #fcfcfd);
 }
 .form-control,
 .form-select {

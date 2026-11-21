@@ -88,7 +88,7 @@ const textoFinal = computed(() => props.texto || config.value.texto)
 
 .boton-herramienta .bi { font-size: 1rem; line-height: 1; }
 
-.btn-light.boton-herramienta { color: #0f172a; }
+.btn-light.boton-herramienta { color: var(--o-texto, #0f172a); }
 
 .girando { animation: girar 0.8s linear infinite; }
 

@@ -32,8 +32,8 @@ defineProps({
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--o-chip, #f1f5f9);
+  color: var(--o-texto-medio, #475569);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,13 +45,13 @@ defineProps({
   margin: 0;
   font-size: 0.95rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--o-texto, #0f172a);
 }
 
 .estado-mensaje {
   margin: 0;
   font-size: 0.85rem;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
   max-width: 360px;
 }
 </style>

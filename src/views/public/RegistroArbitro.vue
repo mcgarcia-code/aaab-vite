@@ -536,24 +536,24 @@ onMounted(async () => {
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
 }
 .titulo-seccion {
-  color: #dc3545;
+  color: var(--o-rojo-texto, #dc3545);
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--o-borde, #f1f5f9);
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
 }
 .form-control,
 .form-select {
   font-size: 1rem;
-  background-color: #f8fafc;
-  border-color: #e2e8f0;
+  background-color: var(--o-superficie, #f8fafc);
+  border-color: var(--o-borde, #e2e8f0);
 }
 .form-control:focus,
 .form-select:focus {
-  background-color: #ffffff;
+  background-color: var(--o-tarjeta, #ffffff);
   border-color: #ef4444;
   box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
 }
@@ -564,7 +564,7 @@ onMounted(async () => {
 .lista-categorias {
   max-height: 220px;
   overflow-y: auto;
-  background-color: #f8fafc;
+  background-color: var(--o-superficie, #f8fafc);
 }
 .campo-trampa {
   position: absolute;
