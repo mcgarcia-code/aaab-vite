@@ -24,6 +24,10 @@
         <i class="bi bi-camera"></i>
         <span class="flex-grow-1">Cambiar foto</span>
       </button>
+      <button type="button" class="opcion-perfil opcion-salir" @click="cerrarSesion">
+        <i class="bi bi-box-arrow-right"></i>
+        <span class="flex-grow-1">Cerrar sesión</span>
+      </button>
     </section>
 
     <!-- ============ APARIENCIA ============ -->
@@ -41,11 +45,6 @@
     <!-- ============ MÓDULOS ============ -->
     <ListaModulos v-if="gruposFiltrados.length" :grupos="gruposFiltrados" />
     <p v-else class="sin-resultados">No hay módulos con “{{ busqueda }}”.</p>
-
-    <!-- ============ CERRAR SESIÓN ============ -->
-    <button type="button" class="btn-cerrar-sesion" @click="cerrarSesion">
-      <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-    </button>
   </div>
 </template>
 
@@ -182,21 +181,9 @@ const gruposFiltrados = computed(() => {
   font-size: 0.9rem;
 }
 
-/* ============ CERRAR SESIÓN ============ */
-.btn-cerrar-sesion {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 52px;
-  border-radius: 14px;
-  border: 1px solid var(--t-barra-salir-borde);
-  background: transparent;
-  color: var(--t-barra-salir);
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-.btn-cerrar-sesion:hover { background: var(--t-barra-salir-hover); }
+/* Cerrar sesión: última opción del perfil, en rojo */
+.opcion-salir,
+.opcion-perfil.opcion-salir > .bi:first-child { color: var(--t-peligro-texto); }
 
 .animate__animated { animation-duration: 0.4s; }
 </style>

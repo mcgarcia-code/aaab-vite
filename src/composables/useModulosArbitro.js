@@ -43,7 +43,7 @@ const MODULOS = [
 // Accesos de uso más frecuente (etiquetas cortas para que no se corten en el celular)
 const ACCESOS_RAPIDOS = [
   { to: '/panel-arbitro/examen-asamblea', title: 'Exámenes', icon: 'bi bi-journal-check' },
-  { to: '/panel-arbitro/disponibilidad', title: 'Disponibilidad', icon: 'bi bi-clock-history' },
+  { to: '/panel-arbitro/practica-catalogo', title: 'Catálogo', icon: 'bi bi-ui-checks-grid' },
   { to: '/panel-arbitro/licencia', title: 'Licencias', icon: 'bi bi-calendar-check' },
   { to: '/panel-arbitro/rendimiento', title: 'Rendimiento', icon: 'bi bi-graph-up-arrow' }
 ]
