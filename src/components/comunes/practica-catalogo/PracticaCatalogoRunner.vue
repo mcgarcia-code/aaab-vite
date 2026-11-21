@@ -45,7 +45,7 @@
               Pregunta <span class="text-danger fs-4">{{ indice + 1 }}</span> de {{ total }}
             </h5>
             <small class="text-secondary d-block">
-              Práctica del catálogo · Regla {{ preguntaActual?.codigo }}
+              Práctica del catálogo
             </small>
           </div>
           <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-bold flex-shrink-0" @click="salirGuardando">
@@ -61,7 +61,8 @@
 
         <div class="list-group mb-4 gap-2">
           <label v-for="(o, i) in opcionesActuales" :key="o.id"
-                 class="list-group-item d-flex gap-2 gap-md-3 align-items-start p-2 p-md-3 opcion-item shadow-sm border">
+                 class="list-group-item d-flex gap-2 gap-md-3 align-items-start p-2 p-md-3 opcion-item shadow-sm border"
+                 :class="{ elegida: estaElegida(preguntaActual.id, o.id) }">
             <input class="form-check-input flex-shrink-0 fs-5 mt-1" type="checkbox"
                    :checked="estaElegida(preguntaActual.id, o.id)"
                    @change="alternarOpcion(preguntaActual.id, o.id)">
@@ -231,7 +232,23 @@ onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
   border-radius: .6rem !important;
   transition: background .12s ease;
 }
-.opcion-item:hover { background: var(--o-rojo-fondo, #fff5f5); }
+/* Hover solo con mouse: en el celular el hover queda "pegado" en la última opción tocada */
+@media (hover: hover) {
+  .opcion-item:hover { background: var(--o-rojo-fondo, #fff5f5); }
+}
+
+/* Cada opción elegida: casillero completo en rojo + checkbox rojo (todas las que se marquen) */
+.opcion-item.elegida {
+  background: var(--o-rojo-fondo, #fff5f5);
+  border-color: var(--o-rojo, #dc3545) !important;
+  box-shadow: 0 0 0 1px var(--o-rojo, #dc3545) !important;
+}
+.opcion-item.elegida .text-dark { color: var(--o-rojo-texto, #b91c1c) !important; font-weight: 600; }
+.opcion-item .form-check-input:checked {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+.opcion-item .form-check-input:focus { box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); border-color: #dc3545; }
 
 .nav-pregunta {
   width: 42px;

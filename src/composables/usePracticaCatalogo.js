@@ -8,6 +8,16 @@ import { api } from '@/api/api'
 export const UMBRAL_APROBADO = 75
 export const CANTIDADES_PREGUNTAS = [5, 10, 20, 30, 'todas']
 
+// "Regla 17.1": regla (codigo) y número de pregunta dentro de la regla (subcodigo),
+// para que se pueda ubicar la pregunta en el catálogo. Sin subcodigo queda "Regla 17"
+export const textoNumeroPregunta = (pregunta) => {
+  if (!pregunta) return ''
+  const { codigo, subcodigo } = pregunta
+  return subcodigo !== null && subcodigo !== undefined && subcodigo !== ''
+    ? `Regla ${codigo}.${subcodigo}`
+    : `Regla ${codigo}`
+}
+
 export function usePracticaCatalogo() {
   const reglas = ref([])            // [{ codigo, cantidad }]
   const enCurso = ref(null)         // práctica sin terminar o null

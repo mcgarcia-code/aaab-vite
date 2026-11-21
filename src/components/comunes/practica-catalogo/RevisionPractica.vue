@@ -23,7 +23,7 @@
           <span class="badge rounded-pill" :class="r.correcta ? 'bg-success' : 'bg-danger'">
             <i class="bi me-1" :class="r.correcta ? 'bi-check-lg' : 'bi-x-lg'"></i>{{ r.correcta ? 'Correcta' : (r.respondida ? 'Incorrecta' : 'Sin responder') }}
           </span>
-          <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">Regla {{ r.codigo }}</span>
+          <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">{{ textoNumeroPregunta(r) }}</span>
         </div>
         <h6 class="fw-bold text-dark mb-3 fs-6 lh-base text-break"><span class="text-danger">{{ r.numero }}.</span> {{ r.texto }}</h6>
         <div class="d-flex flex-column gap-2">
@@ -47,6 +47,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { textoNumeroPregunta } from '@/composables/usePracticaCatalogo'
 
 const props = defineProps({
   // [{ id, codigo, texto, correcta, respondida, opciones: [{ texto, es_correcta, elegida }] }]

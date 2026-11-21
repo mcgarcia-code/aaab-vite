@@ -231,7 +231,7 @@
               <div v-for="(f, i) in estadisticas.falladas" :key="f.id" class="historial-card borde-mal shadow-sm p-3">
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small">
                   <span class="badge rounded-pill bg-danger">#{{ i + 1 }}</span>
-                  <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">Regla {{ f.codigo }}</span>
+                  <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">{{ textoNumeroPregunta(f) }}</span>
                   <span class="text-danger fw-bold ms-auto">
                     <i class="bi bi-x-circle me-1"></i>{{ f.errores }} de {{ f.respondidas }} {{ f.respondidas === 1 ? 'vez' : 'veces' }}
                   </span>
@@ -260,7 +260,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { fechaHoraDMA, MESES } from '@/utils/fechas'
-import { usePracticaCatalogo, UMBRAL_APROBADO, CANTIDADES_PREGUNTAS } from '@/composables/usePracticaCatalogo'
+import { usePracticaCatalogo, UMBRAL_APROBADO, CANTIDADES_PREGUNTAS, textoNumeroPregunta } from '@/composables/usePracticaCatalogo'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import PracticaCatalogoRunner from './PracticaCatalogoRunner.vue'
 import DetallePractica from './DetallePractica.vue'
