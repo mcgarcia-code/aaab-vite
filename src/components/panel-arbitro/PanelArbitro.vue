@@ -488,12 +488,12 @@ useHead({
 }
 
 .dropdown-item:active {
-  background-color: #f1f5f9 !important;
+  background-color: var(--o-chip, #f1f5f9) !important;
   color: inherit;
 }
 
 .dropdown-item:hover {
-  background-color: #e2e8f0;
+  background-color: var(--o-chip, #e2e8f0);
 }
 
 .icon-circle {
@@ -515,7 +515,7 @@ useHead({
   width: 6px;
 }
 .notification-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--o-chip, #f1f1f1);
 }
 .notification-list::-webkit-scrollbar-thumb {
   background: #cbd5e1;

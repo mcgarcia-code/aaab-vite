@@ -31,7 +31,7 @@
 
           <div class="row g-3">
             <div v-for="(prenda, key) in stockPaginado" :key="key" class="col-12 col-md-4 col-lg-3 text-center">
-              <div class="card h-100 shadow-sm bg-light hover-card overflow-hidden radio-12" style="border: 1px solid #e2e8f0;">
+              <div class="card h-100 shadow-sm bg-light hover-card overflow-hidden radio-12" style="border: 1px solid var(--o-borde, #e2e8f0);">
 
                 <!-- Usamos clamp() para que la altura vaya de 150px a 180px fluidamente -->
                 <div class="bg-white position-relative contenedor-imagen-superior" style="height: clamp(150px, 30vw, 180px);">
@@ -244,7 +244,7 @@
       </div>
 
       <template #footer>
-        <button @click="mostrarPago = false" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1" style="background: #e2e8f0; border: 1px solid #e2e8f0;">CANCELAR</button>
+        <button @click="mostrarPago = false" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1" style="background: var(--o-chip, #e2e8f0); border: 1px solid var(--o-borde, #e2e8f0);">CANCELAR</button>
         <button @click="realizarPedidoFinal" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-1"></span>
           {{ cargando ? 'PROCESANDO' : 'CONFIRMAR' }}
@@ -520,7 +520,7 @@ onUnmounted(() => {
   width: 100%;
   max-width: 100%;
   font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: #000;
+  color: var(--o-texto, #000);
   background-color: #0f172a;
   min-height: 100vh;
   border-radius: 12px;
@@ -551,7 +551,7 @@ onUnmounted(() => {
 .hover-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
-  border-color: #cbd5e1 !important;
+  border-color: var(--o-borde, #cbd5e1) !important;
 }
 
 .contenedor-imagen-superior {
@@ -586,7 +586,7 @@ onUnmounted(() => {
   top: 10px;
   right: 10px;
   background: rgba(0,0,0,0.05);
-  color: #666;
+  color: var(--o-texto-medio, #666);
   border-radius: 50%;
   width: 28px;
   height: 28px;
@@ -610,7 +610,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #dc2626;
+  color: var(--o-rojo-texto, #dc2626);
   z-index: 10;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -683,7 +683,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #dc2626;
+  color: var(--o-rojo-texto, #dc2626);
   z-index: 11001;
 }
 

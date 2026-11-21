@@ -122,3 +122,91 @@
 .card {
   --bs-card-bg: var(--t-tarjeta);
 }
+
+/* =========================================================
+   Colores sueltos de las secciones: se escriben como
+   var(--o-…, #colorOriginal). Las --o-* solo existen en oscuro,
+   así que en claro (y en producción) queda el color original.
+   ========================================================= */
+:root[data-tema="oscuro"] {
+  --o-tarjeta: #1e293b;
+  --o-superficie: #162033;
+  --o-chip: #273449;
+  --o-texto: #f1f5f9;
+  --o-texto-medio: #cbd5e1;
+  --o-texto-suave: #94a3b8;
+  --o-borde: #334155;
+
+  --o-rojo-texto: #f87171;
+  --o-rojo-fondo: #2a1215;
+  --o-rojo-borde: #7f1d1d;
+  --o-verde-texto: #4ade80;
+  --o-verde-fondo: #0f2a1d;
+  --o-verde-borde: #14532d;
+  --o-ambar-texto: #fcd34d;
+  --o-ambar-fondo: #332701;
+  --o-ambar-borde: #854d0e;
+  --o-azul-texto: #93c5fd;
+  --o-azul-fondo: #0c2340;
+  --o-azul-borde: #1e3a8a;
+}
+
+/* =========================================================
+   Clases de Bootstrap con color fijo, adaptadas al modo oscuro
+   (en claro siguen igual que siempre)
+   ========================================================= */
+:root[data-tema="oscuro"] .bg-white { background-color: var(--o-tarjeta) !important; }
+:root[data-tema="oscuro"] .bg-light { background-color: var(--o-superficie) !important; }
+:root[data-tema="oscuro"] .border-light { border-color: var(--o-borde) !important; }
+:root[data-tema="oscuro"] .border-white { border-color: var(--o-tarjeta) !important; }
+
+/* Texto oscuro → claro, salvo sobre fondos que siguen claros (amarillo, celeste) */
+:root[data-tema="oscuro"] :is(.text-dark, .text-black, .link-dark):not(.bg-warning, .bg-info, .btn-warning, .btn-info, .bg-warning *, .bg-info *, .btn-warning *, .btn-info *) {
+  color: var(--o-texto) !important;
+}
+:root[data-tema="oscuro"] .text-secondary:not(.bg-warning *, .bg-info *) { color: var(--o-texto-suave) !important; }
+
+/* Tablas, botones y campos */
+:root[data-tema="oscuro"] .table-light {
+  --bs-table-bg: var(--o-chip);
+  --bs-table-color: var(--o-texto);
+  --bs-table-border-color: var(--o-borde);
+  --bs-table-striped-bg: #2c3a52;
+  --bs-table-hover-bg: #334155;
+  color: var(--o-texto);
+  border-color: var(--o-borde);
+}
+:root[data-tema="oscuro"] .btn-light {
+  --bs-btn-bg: var(--o-chip);
+  --bs-btn-color: var(--o-texto);
+  --bs-btn-border-color: var(--o-borde);
+  --bs-btn-hover-bg: #334155;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-border-color: #475569;
+  --bs-btn-active-bg: #334155;
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-border-color: #475569;
+  --bs-btn-disabled-bg: var(--o-chip);
+  --bs-btn-disabled-color: var(--o-texto-suave);
+  --bs-btn-disabled-border-color: var(--o-borde);
+}
+:root[data-tema="oscuro"] .btn-outline-dark,
+:root[data-tema="oscuro"] .btn-outline-secondary {
+  --bs-btn-color: var(--o-texto-medio);
+  --bs-btn-border-color: #475569;
+  --bs-btn-hover-bg: #f1f5f9;
+  --bs-btn-hover-color: #0f172a;
+  --bs-btn-hover-border-color: #f1f5f9;
+  --bs-btn-active-bg: #f1f5f9;
+  --bs-btn-active-color: #0f172a;
+}
+:root[data-tema="oscuro"] .btn-dark {
+  --bs-btn-bg: #0f172a;
+  --bs-btn-border-color: #475569;
+  --bs-btn-hover-bg: #334155;
+  --bs-btn-hover-border-color: #64748b;
+}
+:root[data-tema="oscuro"] :is(.form-control, .form-select):not(:disabled) {
+  background-color: #0f172a;
+  border-color: #475569;
+}

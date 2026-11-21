@@ -1093,7 +1093,7 @@ onMounted(cargarMisDesignaciones)
   top: 34px;
   bottom: 0;
   width: 2px;
-  background: #e5e7eb;
+  background: var(--o-chip, #e5e7eb);
 }
 
 .timeline-item:last-child::before {
@@ -1124,8 +1124,8 @@ onMounted(cargarMisDesignaciones)
 .timeline-card {
   flex: 1 1 auto;
   min-width: 0;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--o-tarjeta, #fff);
+  border: 1px solid var(--o-borde, #e5e7eb);
   border-left: 4px solid #dc2626;
   border-radius: 10px;
   padding: 10px 12px;
@@ -1140,23 +1140,23 @@ onMounted(cargarMisDesignaciones)
 /* Card de un partido rechazado: fondo rojo (como el estado reemplazar) */
 /* Partido suspendido: tachado y con aviso rojo */
 .timeline-card.card-suspendida { border-left-color: #94a3b8; opacity: 0.95; }
-.timeline-card.card-suspendida .text-uppercase.text-break { text-decoration: line-through; color: #64748b !important; }
+.timeline-card.card-suspendida .text-uppercase.text-break { text-decoration: line-through; color: var(--o-texto-suave, #64748b) !important; }
 .aviso-suspendido {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   padding: 8px 10px;
   border-radius: 10px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
+  background: var(--o-rojo-fondo, #fef2f2);
+  border: 1px solid var(--o-rojo-borde, #fecaca);
+  color: var(--o-rojo-texto, #991b1b);
   font-size: 0.8rem;
   font-weight: 600;
 }
 .aviso-suspendido .bi { font-size: 1rem; line-height: 1.2; }
 
 .timeline-card.card-rechazada {
-  background-color: #fee2e2 !important;
+  background-color: var(--o-rojo-fondo, #fee2e2) !important;
   border-color: #ef4444 !important;
   border-left-color: #dc2626 !important;
 }
@@ -1164,7 +1164,7 @@ onMounted(cargarMisDesignaciones)
 .link-mapa-cancha {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #dc2626;
+  color: var(--o-rojo-texto, #dc2626);
   text-decoration: none;
   white-space: nowrap;
   margin-left: 2px;
@@ -1172,7 +1172,7 @@ onMounted(cargarMisDesignaciones)
 
 .link-mapa-cancha:hover {
   text-decoration: underline;
-  color: #dc2626;
+  color: var(--o-rojo-texto, #dc2626);
 }
 
 /* Variante apagada para las designaciones anteriores */
@@ -1183,12 +1183,12 @@ onMounted(cargarMisDesignaciones)
 
 .anteriores .timeline-card {
   border-left-color: #9ca3af;
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
 }
 
 /* El rechazo pinta de rojo aun en anteriores */
 .anteriores .timeline-card.card-rechazada {
-  background-color: #fee2e2 !important;
+  background-color: var(--o-rojo-fondo, #fee2e2) !important;
   border-color: #ef4444 !important;
   border-left-color: #dc2626 !important;
 }
@@ -1197,14 +1197,14 @@ onMounted(cargarMisDesignaciones)
    ACORDEON DE MESES (ANTERIORES)
    ==================================================== */
 .acordeon-mes {
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
   border: none;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .acordeon-mes:hover {
-  background: #f8fafc;
+  background: var(--o-superficie, #f8fafc);
 }
 
 /* ====================================================
@@ -1217,8 +1217,8 @@ onMounted(cargarMisDesignaciones)
 }
 
 .opcion-motivo {
-  background: #fff;
-  border-bottom: 1px solid #f1f3f5;
+  background: var(--o-tarjeta, #fff);
+  border-bottom: 1px solid var(--o-borde, #f1f3f5);
   padding: 10px 12px;
   cursor: pointer;
   transition: background-color 0.15s ease;
@@ -1230,11 +1230,11 @@ onMounted(cargarMisDesignaciones)
 }
 
 .opcion-motivo:hover {
-  background: #fef2f2;
+  background: var(--o-rojo-fondo, #fef2f2);
 }
 
 .opcion-motivo.activa {
-  background: #fee2e2;
+  background: var(--o-rojo-fondo, #fee2e2);
   font-weight: 600;
 }
 
@@ -1243,8 +1243,8 @@ onMounted(cargarMisDesignaciones)
    ==================================================== */
 .btn-informe {
   border: 1px dashed #dc2626;
-  color: #dc2626;
-  background: #fff5f5;
+  color: var(--o-rojo-texto, #dc2626);
+  background: var(--o-rojo-fondo, #fff5f5);
   border-radius: 8px;
   padding: 7px 10px;
   font-size: 0.75rem;
@@ -1252,8 +1252,8 @@ onMounted(cargarMisDesignaciones)
 }
 
 .btn-informe:hover {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--o-rojo-fondo, #fee2e2);
+  color: var(--o-rojo-texto, #b91c1c);
 }
 
 /* ====================================================
@@ -1265,7 +1265,7 @@ onMounted(cargarMisDesignaciones)
 }
 
 .input-readonly:focus {
-  border-color: #dee2e6;
+  border-color: var(--o-borde, #dee2e6);
   box-shadow: none;
 }
 

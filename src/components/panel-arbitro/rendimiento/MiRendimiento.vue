@@ -475,17 +475,17 @@ onMounted(async () => {
 .resumen-card .valor { font-size: 1.4rem; font-weight: 800; line-height: 1.1; margin-top: 4px; }
 .resumen-card .etiqueta { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
 .resumen-card .detalle { font-size: 0.68rem; opacity: 0.8; margin-top: 2px; }
-.accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid #e2e8f0; }
-.accordion-button { font-size: 0.9rem; color: #0f172a; background: #fff; box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
-.accordion-button:not(.collapsed) { color: #dc2626; background: #fef2f2; }
+.accordion-item { border-radius: 10px !important; overflow: hidden; margin-bottom: 8px; border: 1px solid var(--o-borde, #e2e8f0); }
+.accordion-button { font-size: 0.9rem; color: var(--o-texto, #0f172a); background: var(--o-tarjeta, #fff); box-shadow: none; flex-wrap: wrap; row-gap: 4px; }
+.accordion-button:not(.collapsed) { color: var(--o-rojo-texto, #dc2626); background: var(--o-rojo-fondo, #fef2f2); }
 .accordion-button:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2); }
 .fila-item {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-radius: 10px;
   padding: 10px 12px;
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
 }
-.resultado { background: #f8fafc; border-radius: 8px; padding: 6px 8px; flex-wrap: wrap; }
+.resultado { background: var(--o-superficie, #f8fafc); border-radius: 8px; padding: 6px 8px; flex-wrap: wrap; }
 .min-w-0 { min-width: 0; }
 .nota { font-weight: 800; font-size: 0.8rem; }
 </style>

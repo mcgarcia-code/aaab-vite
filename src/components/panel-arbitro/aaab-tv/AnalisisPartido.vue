@@ -525,22 +525,22 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .bloque {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--o-tarjeta, #fff);
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-radius: 14px;
   padding: 14px;
 }
 .bloque-oscuro {
   background: #0f172a;
-  border-color: #0f172a;
+  border-color: var(--o-texto, #0f172a);
   color: #e2e8f0;
 }
-.titulo-bloque { font-size: 0.95rem; font-weight: 800; color: #0f172a; }
+.titulo-bloque { font-size: 0.95rem; font-weight: 800; color: var(--o-texto, #0f172a); }
 
 /* Selector de modo */
 .selector-modo {
   display: flex;
-  background: #f1f5f9;
+  background: var(--o-chip, #f1f5f9);
   border-radius: 10px;
   padding: 3px;
   gap: 3px;
@@ -553,7 +553,7 @@ onBeforeUnmount(() => {
   background: transparent;
   font-weight: 700;
   font-size: 0.875rem;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
 }
 .selector-modo button.activo { background: #0f172a; color: #fff; }
 
@@ -561,11 +561,11 @@ onBeforeUnmount(() => {
 .zona-video-vacia {
   text-align: center;
   padding: 36px 16px;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed var(--o-borde, #cbd5e1);
   border-radius: 12px;
-  background: #f8fafc;
+  background: var(--o-superficie, #f8fafc);
 }
-.zona-video-vacia > .bi { font-size: 2.5rem; color: #dc2626; }
+.zona-video-vacia > .bi { font-size: 2.5rem; color: var(--o-rojo-texto, #dc2626); }
 
 .marco-video {
   position: relative;
@@ -596,11 +596,11 @@ onBeforeUnmount(() => {
   position: relative;
   height: 26px;
   border-radius: 8px;
-  background: #e2e8f0;
+  background: var(--o-chip, #e2e8f0);
   cursor: pointer;
   overflow: hidden;
 }
-.linea-tiempo:focus-visible { outline: 2px solid #0f172a; outline-offset: 2px; }
+.linea-tiempo:focus-visible { outline: 2px solid var(--o-texto, #0f172a); outline-offset: 2px; }
 .marca-clip {
   position: absolute;
   top: 5px;
@@ -620,7 +620,7 @@ onBeforeUnmount(() => {
   font-variant-numeric: tabular-nums;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--o-texto, #0f172a);
   padding: 0 6px;
 }
 
@@ -633,7 +633,7 @@ onBeforeUnmount(() => {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #94a3b8;
+  color: var(--o-texto-suave, #94a3b8);
 }
 .estado-vivo .punto { width: 10px; height: 10px; border-radius: 50%; background: #64748b; }
 .estado-vivo.corriendo { color: #fca5a5; }
@@ -650,7 +650,7 @@ onBeforeUnmount(() => {
   line-height: 1.1;
   margin: 10px 0 14px;
 }
-.nota-vivo { font-size: 0.78rem; color: #94a3b8; text-align: center; margin: 12px 0 0; }
+.nota-vivo { font-size: 0.78rem; color: var(--o-texto-suave, #94a3b8); text-align: center; margin: 12px 0 0; }
 
 .sincronizar {
   margin-top: 14px;
@@ -667,7 +667,7 @@ onBeforeUnmount(() => {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #64748b;
+  color: var(--o-texto-suave, #64748b);
   margin-bottom: 6px;
 }
 .pad {
@@ -708,13 +708,13 @@ onBeforeUnmount(() => {
 .lista-clips { position: sticky; top: 12px; }
 .clips { max-height: 60vh; overflow-y: auto; padding-right: 2px; }
 .clip {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-left: 4px solid;
   border-radius: 10px;
   padding: 10px;
   margin-bottom: 8px;
 }
-.clip.publicado { background: #f8fafc; opacity: 0.8; }
+.clip.publicado { background: var(--o-superficie, #f8fafc); opacity: 0.8; }
 .badge-tag {
   display: inline-block;
   padding: 2px 8px;
@@ -722,17 +722,17 @@ onBeforeUnmount(() => {
   font-size: 0.72rem;
   font-weight: 800;
 }
-.tiempo-clip { font-size: 0.78rem; font-weight: 700; color: #475569; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.tiempo-clip { font-size: 0.78rem; font-weight: 700; color: var(--o-texto-medio, #475569); margin-top: 4px; font-variant-numeric: tabular-nums; }
 .pie-clips {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--o-borde, #e2e8f0);
   padding-top: 10px;
   margin-top: 4px;
 }
 .clip-publicar {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 10px;

@@ -460,14 +460,14 @@ const enviarSolicitudRectificacion = async () => {
 }
 
 .custom-textarea {
-  background-color: #ffffff !important;
-  color: #000000 !important;
+  background-color: var(--o-tarjeta, #ffffff) !important;
+  color: var(--o-texto, #000000) !important;
   border: none;
   border-radius: 8px;
 }
 
 .custom-textarea::placeholder {
-  color: #6c757d;
+  color: var(--o-texto-suave, #6c757d);
 }
 
 .badge {
@@ -482,7 +482,7 @@ const enviarSolicitudRectificacion = async () => {
 }
 
 .item-historial:hover {
-  background-color: #f8fafc !important;
+  background-color: var(--o-superficie, #f8fafc) !important;
 }
 
 .animate__animated { animation-duration: 0.5s; }

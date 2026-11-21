@@ -390,7 +390,7 @@ onBeforeUnmount(() => { detenerReloj(); detenerTrackingVisibilidad() })
 }
 
 .opcion-item:hover {
-  background: #fff5f5;
+  background: var(--o-rojo-fondo, #fff5f5);
 }
 
 .espacio-oculto {

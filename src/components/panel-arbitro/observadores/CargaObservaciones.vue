@@ -472,17 +472,17 @@ const cargarObservacionExcel = async () => {
   justify-content: center;
   text-align: center;
   padding: 40px 20px;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed var(--o-borde, #cbd5e1);
   border-radius: 12px;
-  background: #f8fafc;
+  background: var(--o-superficie, #f8fafc);
   cursor: pointer;
   transition: 0.2s;
 }
-.excel-dropzone:hover { border-color: #dc3545; background: #fff8f8; }
-.excel-dropzone.is-dragover { border-color: #dc3545; background: #fff8f8; transform: scale(1.01); }
-.excel-dropzone.has-file { border-style: solid; border-color: #198754; background: #f0fdf4; }
-.excel-dropzone-icon { font-size: 42px; color: #94a3b8; margin-bottom: 10px; }
+.excel-dropzone:hover { border-color: #dc3545; background: var(--o-rojo-fondo, #fff8f8); }
+.excel-dropzone.is-dragover { border-color: #dc3545; background: var(--o-rojo-fondo, #fff8f8); transform: scale(1.01); }
+.excel-dropzone.has-file { border-style: solid; border-color: #198754; background: var(--o-verde-fondo, #f0fdf4); }
+.excel-dropzone-icon { font-size: 42px; color: var(--o-texto-suave, #94a3b8); margin-bottom: 10px; }
 .excel-dropzone.is-dragover .excel-dropzone-icon,
-.excel-dropzone:hover .excel-dropzone-icon { color: #dc3545; }
-.excel-dropzone.has-file .excel-dropzone-icon { color: #198754; }
+.excel-dropzone:hover .excel-dropzone-icon { color: var(--o-rojo-texto, #dc3545); }
+.excel-dropzone.has-file .excel-dropzone-icon { color: var(--o-verde-texto, #198754); }
 </style>

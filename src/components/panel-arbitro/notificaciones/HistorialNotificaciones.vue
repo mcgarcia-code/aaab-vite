@@ -183,7 +183,7 @@ onMounted(() => {
 }
 
 .notif-item:hover {
-  background-color: #f8fafc !important;
+  background-color: var(--o-superficie, #f8fafc) !important;
 }
 
 .bg-unread {

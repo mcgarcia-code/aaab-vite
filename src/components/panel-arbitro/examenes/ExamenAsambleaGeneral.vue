@@ -277,12 +277,12 @@ onMounted(recargar)
 /* ====================================================
    VISTA HISTORIAL (Cards apiladas)
    ==================================================== */
-.pestanas .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; padding: 0.5rem 0.75rem; white-space: nowrap; }
+.pestanas .nav-link { color: var(--o-texto-medio, #475569); background: var(--o-chip, #f1f5f9); font-size: 0.85rem; padding: 0.5rem 0.75rem; white-space: nowrap; }
 .pestanas .nav-link.active { background: #dc3545; color: #fff; }
 
 .historial-card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--o-tarjeta, #fff);
+  border: 1px solid var(--o-borde, #e5e7eb);
   border-left: 4px solid #6b7280; /* El color se sobreescribe inline con :style */
   border-radius: 10px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;

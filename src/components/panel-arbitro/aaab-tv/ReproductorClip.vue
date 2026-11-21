@@ -121,22 +121,22 @@ onBeforeUnmount(() => videoRef.value?.pause())
   gap: 8px;
   padding: 16px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--o-texto-suave, #94a3b8);
   background: linear-gradient(135deg, #0f172a, #1e293b);
   font-size: 0.875rem;
 }
-.sin-video .bi { font-size: 2.5rem; color: #dc2626; }
+.sin-video .bi { font-size: 2.5rem; color: var(--o-rojo-texto, #dc2626); }
 
 .barra {
   position: relative;
   height: 10px;
   border-radius: 999px;
-  background: #e2e8f0;
+  background: var(--o-chip, #e2e8f0);
   cursor: pointer;
 }
-.barra:focus-visible { outline: 2px solid #0f172a; outline-offset: 2px; }
+.barra:focus-visible { outline: 2px solid var(--o-texto, #0f172a); outline-offset: 2px; }
 .relleno { position: absolute; inset: 0 auto 0 0; background: #dc2626; border-radius: 999px; }
 .centro { position: absolute; top: -3px; bottom: -3px; left: 50%; width: 2px; background: #0f172a; }
 
-.tiempo { font-variant-numeric: tabular-nums; font-size: 0.85rem; font-weight: 700; color: #0f172a; padding: 0 6px; }
+.tiempo { font-variant-numeric: tabular-nums; font-size: 0.85rem; font-weight: 700; color: var(--o-texto, #0f172a); padding: 0 6px; }
 </style>

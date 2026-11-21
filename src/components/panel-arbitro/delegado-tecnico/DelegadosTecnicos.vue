@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 panel-card radio-15" style="background: #f8fafc;">
+    <div class="card shadow border-0 overflow-hidden mx-auto mb-4 w-100 panel-card radio-15" style="background: var(--o-superficie, #f8fafc);">
 
       <!-- HEADER -->
       <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
@@ -160,7 +160,7 @@
                 <select aria-label="Club local"
                   v-model="state.localClubId"
                   class="form-select form-select-sm fw-bold text-center border-0 bg-light shadow-sm text-uppercase"
-                  style="font-size: 1rem; color: #212529;"
+                  style="font-size: 1rem; color: var(--o-texto, #212529);"
                 >
                   <option value="" disabled>SELECCIONAR LOCAL</option>
                   <option v-for="club in state.clubes" :key="club.club_id" :value="club.club_id">
@@ -226,7 +226,7 @@
                 <select aria-label="Club visitante"
                   v-model="state.visitorClubId"
                   class="form-select form-select-sm fw-bold text-center border-0 bg-light shadow-sm text-uppercase"
-                  style="font-size: 1rem; color: #212529;"
+                  style="font-size: 1rem; color: var(--o-texto, #212529);"
                 >
                   <option value="" disabled>SELECCIONAR VISITA</option>
                   <option v-for="club in state.clubes" :key="club.club_id" :value="club.club_id">
@@ -1445,7 +1445,7 @@ onUnmounted(() => {
 .bg-yellow { background-color: #facc15 !important; }
 
 .btn-tto { background: #16a34a; border: 2px dashed #14532d; }
-.btn-tto:disabled { background: #e2e8f0; color: #94a3b8 !important; border-color: #cbd5e1; cursor: not-allowed; }
+.btn-tto:disabled { background: var(--o-chip, #e2e8f0); color: var(--o-texto-suave, #94a3b8) !important; border-color: var(--o-borde, #cbd5e1); cursor: not-allowed; }
 
 /* =========================================
    DIBUJO DE CAMISETA EN MODAL DORSAL

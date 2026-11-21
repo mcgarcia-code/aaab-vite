@@ -223,7 +223,7 @@
         </div>
 
         <div v-if="!edicionAbierta" class="mt-4">
-            <div class="alert alert-info border-0 shadow-sm mb-3 d-flex align-items-center p-3" style="background-color: #e0f7fa; color: #006064; border-radius: 10px;">
+            <div class="alert alert-info border-0 shadow-sm mb-3 d-flex align-items-center p-3" style="background-color: var(--o-azul-fondo, #e0f7fa); color: var(--o-azul-texto, #006064); border-radius: 10px;">
                 <i class="bi bi-info-circle-fill me-3 fs-5 d-none d-md-block"></i>
                 <div class="small">
                     Informar cambios urgentes a <strong>secretaría y designaciones</strong>.
@@ -544,14 +544,14 @@ const enviarSolicitudRectificacion = async () => {
 }
 
 .custom-textarea {
-  background-color: #ffffff !important;
-  color: #000000 !important;
+  background-color: var(--o-tarjeta, #ffffff) !important;
+  color: var(--o-texto, #000000) !important;
   border: none;
   border-radius: 8px;
 }
 
 .custom-textarea::placeholder {
-  color: #6c757d;
+  color: var(--o-texto-suave, #6c757d);
 }
 
 .badge {
@@ -566,11 +566,11 @@ const enviarSolicitudRectificacion = async () => {
 }
 
 .item-historial:hover {
-  background-color: #f8fafc !important;
+  background-color: var(--o-superficie, #f8fafc) !important;
 }
 
 .animate__animated { animation-duration: 0.5s; }
 
-.lista-categorias { max-height: 220px; overflow-y: auto; background: #fff; }
+.lista-categorias { max-height: 220px; overflow-y: auto; background: var(--o-tarjeta, #fff); }
 
 </style>

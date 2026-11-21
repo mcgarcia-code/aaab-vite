@@ -556,8 +556,8 @@ onMounted(cargarDatos)
 .tabla-fija { border-collapse: separate; border-spacing: 0; }
 .tabla-fija th, .tabla-fija td { border-left: none !important; border-right: none !important; }
 .col-fija { position: sticky; background-color: inherit; z-index: 10; }
-.tabla-fija thead .col-fija { background-color: #f8f9fa; z-index: 30; }
-.tabla-fija tbody .col-fija { background-color: #ffffff; }
+.tabla-fija thead .col-fija { background-color: var(--o-superficie, #f8f9fa); z-index: 30; }
+.tabla-fija tbody .col-fija { background-color: var(--o-tarjeta, #ffffff); }
 .col-apellido { left: 0;     min-width: 140px; z-index: 11; }
 .col-nombre   { left: 140px; min-width: 140px; z-index: 11; }
 .col-licencia { left: 280px; min-width: 160px; z-index: 11; }
@@ -570,8 +570,8 @@ td:hover .observacion-tooltip { display: block; }
 .observacion-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: #1f2937; }
 
 /* ── Colores de filas ── */
-.fila-roja td, .fila-roja .col-fija { background-color: #fca5a5 !important; color: #000 !important; }
-.fila-amarilla td, .fila-amarilla .col-fija { background-color: #fef08a !important; color: #000 !important; }
-.card.fila-roja, .card.fila-roja .card-header, .card.fila-roja .card-body, .card.fila-roja .bg-white { background-color: #fca5a5 !important; color: #000 !important; }
-.card.fila-amarilla, .card.fila-amarilla .card-header, .card.fila-amarilla .card-body, .card.fila-amarilla .bg-white { background-color: #fef08a !important; color: #000 !important; }
+.fila-roja td, .fila-roja .col-fija { background-color: #fca5a5 !important; color: var(--o-texto, #000) !important; }
+.fila-amarilla td, .fila-amarilla .col-fija { background-color: var(--o-ambar-fondo, #fef08a) !important; color: var(--o-texto, #000) !important; }
+.card.fila-roja, .card.fila-roja .card-header, .card.fila-roja .card-body, .card.fila-roja .bg-white { background-color: #fca5a5 !important; color: var(--o-texto, #000) !important; }
+.card.fila-amarilla, .card.fila-amarilla .card-header, .card.fila-amarilla .card-body, .card.fila-amarilla .bg-white { background-color: var(--o-ambar-fondo, #fef08a) !important; color: var(--o-texto, #000) !important; }
 </style>

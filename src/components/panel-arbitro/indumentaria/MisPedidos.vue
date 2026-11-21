@@ -33,7 +33,7 @@
         <div v-else class="border shadow-sm rounded overflow-hidden">
 
           <!-- Encabezado de Columnas (Solo visible en Escritorio) -->
-          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase texto-075" style="color: #0f172a;">
+          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase texto-075" style="color: var(--o-texto, #0f172a);">
             <div class="col-md-1 text-center">Pedido</div>
             <div class="col-md-3 ps-2">Prenda Solicitada</div>
             <div class="col-md-1 text-center">Cant.</div>
@@ -263,7 +263,7 @@ onMounted(obtenerPedidos);
   transition: background-color 0.2s ease;
 }
 .item-pedido:hover {
-  background-color: #f8fafc !important;
+  background-color: var(--o-superficie, #f8fafc) !important;
 }
 
 /* ====================================================
@@ -277,12 +277,12 @@ onMounted(obtenerPedidos);
   white-space: nowrap;
 }
 
-.estado-creado { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
-.estado-proceso { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-.estado-aceptado { background: #e2e8f0; color: #0f172a; border: 1px solid #94a3b8; }
-.estado-entregado { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.estado-rechazado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-.estado-cancelado { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+.estado-creado { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); border: 1px solid var(--o-borde, #cbd5e1); }
+.estado-proceso { background: var(--o-ambar-fondo, #fef3c7); color: var(--o-ambar-texto, #b45309); border: 1px solid var(--o-ambar-borde, #fde68a); }
+.estado-aceptado { background: var(--o-chip, #e2e8f0); color: var(--o-texto, #0f172a); border: 1px solid #94a3b8; }
+.estado-entregado { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border: 1px solid var(--o-verde-borde, #bbf7d0); }
+.estado-rechazado { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
+.estado-cancelado { background: var(--o-chip, #f1f5f9); color: var(--o-texto-suave, #64748b); border: 1px solid var(--o-borde, #cbd5e1); }
 
 .animate__animated { animation-duration: 0.5s; }
 

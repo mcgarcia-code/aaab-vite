@@ -175,7 +175,7 @@ const confirmarBorrado = () => {
 /* Pestañas AAAB TV / Estudio */
 .pestanas {
   display: flex;
-  background: #f1f5f9;
+  background: var(--o-chip, #f1f5f9);
   border-radius: 12px;
   padding: 4px;
   gap: 4px;
@@ -193,10 +193,10 @@ const confirmarBorrado = () => {
   background: transparent;
   font-weight: 800;
   font-size: 0.875rem;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
   white-space: nowrap;
 }
-.pestanas button .badge { background: #e2e8f0; color: #0f172a; }
+.pestanas button .badge { background: var(--o-chip, #e2e8f0); color: var(--o-texto, #0f172a); }
 .pestanas button.activa { background: #0f172a; color: #fff; }
 .pestanas button.activa .badge { background: #dc2626; color: #fff; }
 
@@ -204,7 +204,7 @@ const confirmarBorrado = () => {
 .pasos {
   display: flex;
   gap: 8px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--o-borde, #e2e8f0);
 }
 .pasos button {
   display: inline-flex;
@@ -216,10 +216,10 @@ const confirmarBorrado = () => {
   border-bottom: 3px solid transparent;
   background: transparent;
   font-weight: 800;
-  color: #64748b;
+  color: var(--o-texto-suave, #64748b);
 }
 .pasos button + button { margin-left: 12px; }
-.pasos button.activo { color: #0f172a; border-bottom-color: #dc2626; }
+.pasos button.activo { color: var(--o-texto, #0f172a); border-bottom-color: #dc2626; }
 .numero {
   display: inline-flex;
   align-items: center;
@@ -227,8 +227,8 @@ const confirmarBorrado = () => {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #e2e8f0;
-  color: #0f172a;
+  background: var(--o-chip, #e2e8f0);
+  color: var(--o-texto, #0f172a);
   font-size: 0.75rem;
 }
 .pasos button.activo .numero { background: #dc2626; color: #fff; }
@@ -239,13 +239,13 @@ const confirmarBorrado = () => {
   min-height: 34px;
   padding: 0 14px;
   border-radius: 999px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
+  border: 1px solid var(--o-borde, #e2e8f0);
+  background: var(--o-tarjeta, #fff);
   font-size: 0.8rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
 }
-.filtro.activo { background: #0f172a; border-color: #0f172a; color: #fff; }
+.filtro.activo { background: #0f172a; border-color: var(--o-texto, #0f172a); color: #fff; }
 
 .grilla {
   display: grid;
@@ -256,14 +256,14 @@ const confirmarBorrado = () => {
   display: flex;
   flex-direction: column;
   padding: 0;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-radius: 14px;
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
   overflow: hidden;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .tarjeta-clip:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12); }
-.tarjeta-clip:focus-visible { outline: 2px solid #0f172a; outline-offset: 2px; }
+.tarjeta-clip:focus-visible { outline: 2px solid var(--o-texto, #0f172a); outline-offset: 2px; }
 
 .miniatura {
   position: relative;
@@ -309,10 +309,10 @@ const confirmarBorrado = () => {
 .miniatura .badge-tag { position: absolute; top: 10px; left: 10px; }
 .estado-miniatura { position: absolute; top: 10px; right: 10px; }
 
-.titulo-clip { font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 4px; line-height: 1.3; }
+.titulo-clip { font-size: 0.95rem; font-weight: 800; color: var(--o-texto, #0f172a); margin-bottom: 4px; line-height: 1.3; }
 .descripcion-clip {
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--o-texto-suave, #64748b);
   margin-bottom: 10px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -324,9 +324,9 @@ const confirmarBorrado = () => {
   justify-content: space-between;
   gap: 8px;
   padding-top: 8px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--o-borde, #f1f5f9);
   font-size: 0.75rem;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
   font-weight: 600;
 }
 

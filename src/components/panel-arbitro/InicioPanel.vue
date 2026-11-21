@@ -465,10 +465,10 @@ onMounted(() => {
 
 /* ============ PROXIMA DESIGNACION ============ */
 .tarjeta-hero {
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
   border-radius: 20px;
   padding: 16px;
-  color: #0f172a;
+  color: var(--o-texto, #0f172a);
 }
 
 .hero-label {
@@ -476,14 +476,14 @@ onMounted(() => {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
 }
 
 .hero-pill {
   font-size: 0.75rem;
   font-weight: 700;
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--o-ambar-fondo, #fef3c7);
+  color: var(--o-ambar-texto, #92400e);
   padding: 4px 10px;
   border-radius: 999px;
   white-space: nowrap;
@@ -501,8 +501,8 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
 }
-.bloque-fecha-vacio { background: #f1f5f9; color: #64748b; }
-.bloque-dia { font-size: 0.75rem; font-weight: 600; color: #94a3b8; }
+.bloque-fecha-vacio { background: var(--o-chip, #f1f5f9); color: var(--o-texto-suave, #64748b); }
+.bloque-dia { font-size: 0.75rem; font-weight: 600; color: var(--o-texto-suave, #94a3b8); }
 .bloque-numero { font-size: 1.75rem; font-weight: 800; line-height: 1.1; }
 .bloque-mes { font-size: 0.75rem; font-weight: 700; color: #f87171; }
 
@@ -519,15 +519,15 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   font-size: 0.875rem;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
 }
 
 .hero-categoria {
   align-self: flex-start;
   font-size: 0.75rem;
   font-weight: 600;
-  background: #f1f5f9;
-  color: #334155;
+  background: var(--o-chip, #f1f5f9);
+  color: var(--o-texto-medio, #334155);
   padding: 2px 8px;
   border-radius: 6px;
 }
@@ -535,8 +535,8 @@ onMounted(() => {
 .hero-funcion {
   font-size: 0.75rem;
   font-weight: 700;
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--o-rojo-fondo, #fef2f2);
+  color: var(--o-rojo-texto, #b91c1c);
   padding: 2px 8px;
   border-radius: 6px;
 }
@@ -544,11 +544,11 @@ onMounted(() => {
 .link-mapa {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #b91c1c;
+  color: var(--o-rojo-texto, #b91c1c);
   text-decoration: none;
   white-space: nowrap;
 }
-.link-mapa::before { content: '·'; color: #94a3b8; margin-right: 6px; }
+.link-mapa::before { content: '·'; color: var(--o-texto-suave, #94a3b8); margin-right: 6px; }
 .link-mapa:hover { text-decoration: underline; }
 
 .otras-designaciones {
@@ -557,15 +557,15 @@ onMounted(() => {
   text-align: center;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
   text-decoration: none;
 }
-.otras-designaciones:hover { color: #0f172a; text-decoration: underline; }
+.otras-designaciones:hover { color: var(--o-texto, #0f172a); text-decoration: underline; }
 
 .link-hero {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #b91c1c;
+  color: var(--o-rojo-texto, #b91c1c);
   text-decoration: none;
 }
 .link-hero:hover { text-decoration: underline; }
@@ -578,22 +578,22 @@ onMounted(() => {
   align-items: center;
   gap: 14px;
   padding: 11px 2px;
-  border-top: 1px solid #e2e8f0;
-  color: #0f172a;
+  border-top: 1px solid var(--o-borde, #e2e8f0);
+  color: var(--o-texto, #0f172a);
   text-decoration: none;
 }
-.siguiente:hover { background: #f8fafc; }
-.siguiente-fecha { width: 88px; font-size: 0.8rem; font-weight: 700; color: #475569; flex-shrink: 0; }
+.siguiente:hover { background: var(--o-superficie, #f8fafc); }
+.siguiente-fecha { width: 88px; font-size: 0.8rem; font-weight: 700; color: var(--o-texto-medio, #475569); flex-shrink: 0; }
 .siguiente-partido { flex: 1; min-width: 0; font-size: 0.875rem; font-weight: 600; }
-.siguiente-dato { font-size: 0.8rem; color: #475569; white-space: nowrap; }
-.siguiente .bi { color: #94a3b8; font-size: 0.75rem; }
+.siguiente-dato { font-size: 0.8rem; color: var(--o-texto-medio, #475569); white-space: nowrap; }
+.siguiente .bi { color: var(--o-texto-suave, #94a3b8); font-size: 0.75rem; }
 
 /* ============ AVISOS ============ */
 .tarjeta-avisos {
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
   border-radius: 20px;
   padding: 16px;
-  color: #0f172a;
+  color: var(--o-texto, #0f172a);
 }
 
 .titulo-avisos {
@@ -605,7 +605,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
-  background: #f1f5f9;
+  background: var(--o-chip, #f1f5f9);
   border-radius: 12px;
   padding: 4px;
   margin-bottom: 4px;
@@ -618,7 +618,7 @@ onMounted(() => {
   padding: 6px 4px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
   border-radius: 9px;
   display: inline-flex;
   align-items: center;
@@ -627,17 +627,17 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
 }
-.tab-btn:hover { color: #0f172a; }
-.tab-btn:focus-visible { outline: 2px solid #0f172a; outline-offset: 1px; }
+.tab-btn:hover { color: var(--o-texto, #0f172a); }
+.tab-btn:focus-visible { outline: 2px solid var(--o-texto, #0f172a); outline-offset: 1px; }
 .tab-btn.activa {
-  background: #fff;
-  color: #0f172a;
+  background: var(--o-tarjeta, #fff);
+  color: var(--o-texto, #0f172a);
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
 }
 
 .tab-badge {
-  background-color: #e2e8f0;
-  color: #334155;
+  background-color: var(--o-chip, #e2e8f0);
+  color: var(--o-texto-medio, #334155);
   padding: 1px 6px;
   border-radius: 10px;
   font-size: 0.7rem;
@@ -660,7 +660,7 @@ onMounted(() => {
   gap: 12px;
   align-items: center;
   padding: 10px 0;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--o-borde, #e2e8f0);
 }
 .evento:first-child { border-top: none; }
 
@@ -669,26 +669,26 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f1f5f9;
+  background: var(--o-chip, #f1f5f9);
   border-radius: 12px;
   min-width: 48px;
   height: 48px;
 }
-.cal-box .day { font-weight: 800; font-size: 1.05rem; line-height: 1; color: #0f172a; }
-.cal-box .month { font-size: 0.7rem; font-weight: 700; color: #b91c1c; margin-top: 2px; }
+.cal-box .day { font-weight: 800; font-size: 1.05rem; line-height: 1; color: var(--o-texto, #0f172a); }
+.cal-box .month { font-size: 0.7rem; font-weight: 700; color: var(--o-rojo-texto, #b91c1c); margin-top: 2px; }
 .today-bg { background: #dc2626; }
 .today-bg .day, .today-bg .month { color: #fff; }
 
 .event-info { flex: 1; min-width: 0; }
 .event-info strong {
   font-size: 0.875rem;
-  color: #0f172a;
+  color: var(--o-texto, #0f172a);
   display: block;
   line-height: 1.25;
 }
 .event-info p {
   font-size: 0.8rem;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
   margin: 2px 0 0;
 }
 
@@ -696,8 +696,8 @@ onMounted(() => {
   display: inline-block;
   font-size: 0.75rem;
   font-weight: 600;
-  background: #f1f5f9;
-  color: #334155;
+  background: var(--o-chip, #f1f5f9);
+  color: var(--o-texto-medio, #334155);
   padding: 2px 8px;
   border-radius: 999px;
 }
@@ -711,24 +711,24 @@ onMounted(() => {
   gap: 12px;
   padding: 14px 16px;
   border-radius: 16px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--o-rojo-fondo, #fef2f2);
+  border: 1px solid var(--o-rojo-borde, #fecaca);
   border-left: 4px solid #dc2626;
-  color: #7f1d1d;
+  color: var(--o-rojo-texto, #7f1d1d);
   text-decoration: none;
   font-size: 0.9rem;
 }
-.aviso-suspendido > .bi:first-child { font-size: 1.5rem; color: #dc2626; }
-.aviso-suspendido:hover { background: #fee2e2; color: #7f1d1d; }
+.aviso-suspendido > .bi:first-child { font-size: 1.5rem; color: var(--o-rojo-texto, #dc2626); }
+.aviso-suspendido:hover { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #7f1d1d); }
 .reminder-pill {
-  background: #fffbeb;
-  color: #92400e;
+  background: var(--o-ambar-fondo, #fffbeb);
+  color: var(--o-ambar-texto, #92400e);
   padding: 10px 12px;
   border-radius: 10px;
   font-size: 0.8rem;
   margin: 8px 0;
 }
-.empty-msg { font-size: 0.8rem; color: #64748b; font-style: italic; padding: 12px 0 4px; margin: 0; }
+.empty-msg { font-size: 0.8rem; color: var(--o-texto-suave, #64748b); font-style: italic; padding: 12px 0 4px; margin: 0; }
 
 .animate__animated { animation-duration: 0.4s; }
 </style>

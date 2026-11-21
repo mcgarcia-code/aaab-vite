@@ -57,7 +57,7 @@
 
         <div v-else>
           <!-- Encabezado de la lista (Solo visible en Escritorio) -->
-          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-center align-items-center text-uppercase texto-075" style="color: #0f172a;">
+          <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-center align-items-center text-uppercase texto-075" style="color: var(--o-texto, #0f172a);">
             <div class="col-md-2">Estado</div>
             <div class="col-md-2">Acción</div>
             <div class="col-md-2 text-start px-2">Sanción</div>
@@ -468,22 +468,22 @@ onMounted(obtenerSancionesLocales);
 <style scoped>
 /* Transición sutil al pasar el mouse por una fila en escritorio */
 .item-sancion { transition: background-color 0.2s; }
-.item-sancion:hover { background-color: #f8fafc !important; }
+.item-sancion:hover { background-color: var(--o-superficie, #f8fafc) !important; }
 
 /* Mantenemos tus colores y medallas de estado */
-.text-en-proceso { color: #d97706 !important; }
-.text-anulada { color: #0f172a !important; }
+.text-en-proceso { color: var(--o-ambar-texto, #d97706) !important; }
+.text-anulada { color: var(--o-texto, #0f172a) !important; }
 
 .badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-block; text-align: center;}
-.badge-status.aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.badge-status.rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-.badge-status.pendiente { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
-.badge-status.anulada { background: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
+.badge-status.aprobada { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border: 1px solid var(--o-verde-borde, #bbf7d0); }
+.badge-status.rechazada { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
+.badge-status.pendiente { background: var(--o-ambar-fondo, #fef9c3); color: var(--o-ambar-texto, #a16207); border: 1px solid var(--o-ambar-borde, #fef08a); }
+.badge-status.anulada { background: #0f172a; color: #ffffff; border: 1px solid var(--o-texto, #0f172a); }
 
 .badge-status-sm { padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; display: inline-block; text-align: center;}
-.badge-status-sm.aprobada { background: #dcfce7; color: #15803d; }
-.badge-status-sm.rechazada { background: #fee2e2; color: #b91c1c; }
-.badge-status-sm.pendiente { background: #fef9c3; color: #a16207; }
+.badge-status-sm.aprobada { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); }
+.badge-status-sm.rechazada { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); }
+.badge-status-sm.pendiente { background: var(--o-ambar-fondo, #fef9c3); color: var(--o-ambar-texto, #a16207); }
 .badge-status-sm.anulada { background: #0f172a; color: #ffffff; }
 
 .animate__animated { animation-duration: 0.5s; }

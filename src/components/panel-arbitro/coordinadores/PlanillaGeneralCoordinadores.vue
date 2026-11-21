@@ -757,21 +757,21 @@ const descargarExcel = async () => {
   width: max-content;
   min-width: 100%;
   font-size: 0.8rem;
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
 }
 
 .tabla-excel th,
 .tabla-excel td {
-  border-right: 1px solid #d4d4d8;
-  border-bottom: 1px solid #d4d4d8;
+  border-right: 1px solid var(--o-borde, #d4d4d8);
+  border-bottom: 1px solid var(--o-borde, #d4d4d8);
   padding: 4px 8px;
   white-space: nowrap;
 }
 
 /* Cabeceras estilo planilla */
 .tabla-excel thead th {
-  background-color: #f1f3f5;
-  color: #343a40;
+  background-color: var(--o-chip, #f1f3f5);
+  color: var(--o-texto, #343a40);
   position: sticky;
   top: 0;
   z-index: 5;
@@ -795,58 +795,58 @@ const descargarExcel = async () => {
 }
 
 .th-evento { min-width: 140px; }
-.th-subtipo { font-weight: 600; color: #6c757d; }
-.fecha-evento { font-size: 0.68rem; color: #6c757d; font-weight: 500; }
+.th-subtipo { font-weight: 600; color: var(--o-texto-suave, #6c757d); }
+.fecha-evento { font-size: 0.68rem; color: var(--o-texto-suave, #6c757d); font-weight: 500; }
 .texto-recortado { max-width: 180px; overflow: hidden; text-overflow: ellipsis; margin: 0 auto; }
 
 /* Reuniones: columna angosta, solo la fecha */
 .th-reunion { min-width: 48px; max-width: 60px; padding: 6px 4px; }
 
 /* Separador visual entre el bloque de exámenes y el de reuniones */
-.sep-reuniones { border-left: 2px solid #adb5bd !important; }
+.sep-reuniones { border-left: 2px solid var(--o-borde, #adb5bd) !important; }
 
 /* Primera columna fija (árbitro) */
 .col-arbitro {
   position: sticky;
   left: 0;
-  background-color: #fff;
+  background-color: var(--o-tarjeta, #fff);
   z-index: 6;
   min-width: 190px;
   text-align: left !important;
 }
 .tabla-excel thead .esquina {
   z-index: 8;
-  background-color: #e9ecef;
+  background-color: var(--o-chip, #e9ecef);
 }
 .celda-nombre {
   font-weight: 600;
-  color: #212529;
-  border-right: 2px solid #adb5bd !important;
+  color: var(--o-texto, #212529);
+  border-right: 2px solid var(--o-borde, #adb5bd) !important;
 }
 
 /* Celdas de datos */
 .celda {
   text-align: center;
   min-width: 44px;
-  color: #212529;
+  color: var(--o-texto, #212529);
 }
-.celda-verde { background-color: #d1e7dd; color: #0f5132; font-weight: 600; }
-.celda-roja { background-color: #f8d7da; color: #842029; font-weight: 600; }
-.celda-gris { background-color: #e9ecef; color: #6c757d; font-weight: 600; }
+.celda-verde { background-color: var(--o-verde-fondo, #d1e7dd); color: var(--o-verde-texto, #0f5132); font-weight: 600; }
+.celda-roja { background-color: var(--o-rojo-fondo, #f8d7da); color: var(--o-rojo-texto, #842029); font-weight: 600; }
+.celda-gris { background-color: var(--o-chip, #e9ecef); color: var(--o-texto-suave, #6c757d); font-weight: 600; }
 
 /* Leyenda */
 .cuadrito {
   display: inline-block;
   width: 12px;
   height: 12px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--o-borde, #ced4da);
   border-radius: 2px;
   margin-right: 4px;
   vertical-align: -1px;
 }
-.cuadrito.bg-success-subtle { background-color: #d1e7dd !important; }
-.cuadrito.bg-danger-subtle { background-color: #f8d7da !important; }
-.cuadrito.bg-secondary-subtle { background-color: #e9ecef !important; }
+.cuadrito.bg-success-subtle { background-color: var(--o-verde-fondo, #d1e7dd) !important; }
+.cuadrito.bg-danger-subtle { background-color: var(--o-rojo-fondo, #f8d7da) !important; }
+.cuadrito.bg-secondary-subtle { background-color: var(--o-chip, #e9ecef) !important; }
 
 /* ====================================================
    SOLAPAS DE GRUPO (arriba, cada una con su color)
@@ -855,13 +855,13 @@ const descargarExcel = async () => {
   display: flex;
   flex-wrap: nowrap;
   overflow-x: auto;
-  background-color: #f1f3f5;
+  background-color: var(--o-chip, #f1f3f5);
   padding: 8px 8px 0 8px;
   gap: 3px;
 }
 
 .hoja-tab {
-  border: 1px solid #ced4da;
+  border: 1px solid var(--o-borde, #ced4da);
   border-bottom: none;
   border-radius: 8px 8px 0 0;
   font-size: 0.78rem;
@@ -919,7 +919,7 @@ const descargarExcel = async () => {
   transform: translateY(-50%);
   border: none;
   background: transparent;
-  color: #adb5bd;
+  color: var(--o-texto-suave, #adb5bd);
   padding: 0;
   width: 20px;
   height: 20px;
@@ -932,6 +932,6 @@ const descargarExcel = async () => {
 }
 
 .btn-limpiar-busqueda:hover {
-  color: #dc3545;
+  color: var(--o-rojo-texto, #dc3545);
 }
 </style>

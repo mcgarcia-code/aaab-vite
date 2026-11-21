@@ -121,9 +121,9 @@ const guardarBoton = () => {
 
 <style scoped>
 .categoria {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-radius: 14px;
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
   overflow: hidden;
 }
 .categoria-encabezado {
@@ -131,10 +131,10 @@ const guardarBoton = () => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--o-superficie, #f8fafc);
+  border-bottom: 1px solid var(--o-borde, #e2e8f0);
 }
-.categoria-encabezado h3 { font-size: 0.9rem; font-weight: 800; color: #0f172a; }
+.categoria-encabezado h3 { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); }
 
 .boton-fila {
   display: flex;
@@ -142,7 +142,7 @@ const guardarBoton = () => {
   gap: 8px;
   padding: 8px 10px;
   margin-bottom: 6px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-left: 4px solid;
   border-radius: 10px;
   font-size: 0.875rem;
@@ -158,22 +158,22 @@ const guardarBoton = () => {
 }
 
 .formulario-boton {
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--o-borde, #cbd5e1);
   border-radius: 14px;
   padding: 14px;
-  background: #f8fafc;
+  background: var(--o-superficie, #f8fafc);
 }
-.formulario-titulo { font-size: 0.9rem; font-weight: 800; color: #0f172a; margin-bottom: 10px; }
+.formulario-titulo { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); margin-bottom: 10px; }
 
 .muestra-color {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 2px solid var(--o-tarjeta, #fff);
   box-shadow: 0 0 0 1px #cbd5e1;
 }
 .muestra-color.elegido { box-shadow: 0 0 0 2px #0f172a; }
-.muestra-color:focus-visible { outline: 2px solid #0f172a; outline-offset: 2px; }
+.muestra-color:focus-visible { outline: 2px solid var(--o-texto, #0f172a); outline-offset: 2px; }
 
 .min-w-0 { min-width: 0; }
 </style>

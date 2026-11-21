@@ -498,7 +498,7 @@ onMounted(() => {
   transition: background-color 0.2s ease;
 }
 .item-licencia:hover {
-  background-color: #f8fafc !important;
+  background-color: var(--o-superficie, #f8fafc) !important;
 }
 
 /* Botón Anular con color personalizado y animación */
@@ -523,9 +523,9 @@ onMounted(() => {
    HACKS VISUALES PARA INPUT DATE (Nativo)
    ==================================================== */
 .custom-input-date {
-  color: #000000 !important;
-  background-color: #ffffff !important;
-  border: 1px solid #ced4da !important;
+  color: var(--o-texto, #000000) !important;
+  background-color: var(--o-tarjeta, #ffffff) !important;
+  border: 1px solid var(--o-borde, #ced4da) !important;
   font-size: 1rem;
 }
 
@@ -544,7 +544,7 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-year-field,
 input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-month-field,
 input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-day-field,
 input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
-  color: #000 !important;
+  color: var(--o-texto, #000) !important;
 }
 
 .animate__animated { animation-duration: 0.5s; }
