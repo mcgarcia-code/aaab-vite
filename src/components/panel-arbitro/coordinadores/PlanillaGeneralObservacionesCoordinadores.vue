@@ -1,8 +1,8 @@
 <template>
-  <div class="full-screen-wrapper planilla-general px-3 px-md-4">
+  <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card planilla-card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- ============ HEADER ============ -->
         <div class="card-header bg-white py-3 border-bottom">
@@ -10,7 +10,7 @@
         </div>
 
         <!-- ============ BODY ============ -->
-        <div class="card-body planilla-cuerpo p-0">
+        <div class="card-body p-0">
 
           <div v-if="cargando" class="text-center py-5">
             <div class="spinner-border text-danger" role="status"></div>
@@ -21,6 +21,9 @@
 
             <!-- Barra de herramientas -->
             <div class="barra-planilla d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
+              <select v-if="gruposTabs.length > 1" aria-label="Grupo" class="form-select shadow-none fw-semibold text-dark control-barra selector-grupo" :value="grupoActivo?.clave" @change="elegirGrupo($event.target.value)">
+                <option v-for="g in gruposTabs" :key="g.clave" :value="g.clave">{{ etiquetaGrupo(g) }} ({{ contarArbitros(g) }})</option>
+              </select>
               <div class="form-check form-switch mb-0">
                 <input v-model="soloActivos" class="form-check-input" type="checkbox" id="chkSoloActivos">
                 <label class="form-check-label text-muted" for="chkSoloActivos">Solo activos</label>
@@ -39,6 +42,7 @@
                 </select>
               </div>
               <BotonHerramienta tipo="excel" :disabled="cargando" @click="descargarExcel" />
+              <span class="text-muted text-nowrap">{{ arbitrosVisibles.length }} árbitros</span>
               <span class="leyenda-planilla ms-auto d-flex flex-wrap gap-3">
                 <span><span class="cuadrito estado-aprobada"></span> Aprobada</span>
                 <span><span class="cuadrito estado-pendiente"></span> Pendiente</span>
@@ -46,28 +50,8 @@
                 <span><span class="cuadrito estado-anulada"></span> Anulada</span>
               </span>
             </div>
-
-            <!-- Solapas de grupo -->
-            <div class="hojas-excel border-bottom">
-              <button
-                v-for="(g, i) in gruposTabs"
-                :key="g.clave"
-                class="hoja-tab"
-                :class="{ activa: g.clave === grupoActivo?.clave }"
-                :style="estiloTab(g, i)"
-                @click="grupoActivo = g"
-              >
-                <span class="punto-color" :style="{ backgroundColor: colorDeGrupo(i) }"></span>
-                {{ etiquetaGrupo(g) }}
-                <span class="badge-cantidad">{{ contarArbitros(g) }}</span>
-              </button>
-              <span class="ms-auto pe-3 align-self-center text-muted small text-nowrap">
-                {{ arbitrosVisibles.length }} árbitros en {{ etiquetaGrupo(grupoActivo) }}
-              </span>
-            </div>
-
             <!-- Tabla tipo Excel -->
-            <div class="tabla-scroll">
+            <div class="d-none d-lg-block tabla-scroll">
               <table class="tabla-excel">
                 <thead>
                   <tr>
@@ -107,6 +91,32 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- Celular y app: una tarjeta por árbitro, como las planillas del curso -->
+            <div class="d-lg-none d-flex flex-column gap-3 p-3">
+              <div v-if="!arbitrosVisibles.length" class="text-center py-4 text-muted fst-italic small">No hay árbitros para mostrar en este grupo.</div>
+              <div v-for="a in arbitrosVisibles" :key="'m-' + a.id" class="card border-light-subtle shadow-sm rounded-3">
+                <div class="card-body p-3 small">
+                  <div class="fw-bold text-dark text-uppercase mb-1">{{ a.apellido }}, {{ a.nombre }}</div>
+                  <div v-if="!observacionDe(a, 1)" class="text-muted fst-italic">Sin observaciones.</div>
+                  <template v-for="n in maxObservaciones" :key="'m-' + a.id + '-obs-' + n">
+                    <div v-if="observacionDe(a, n)" class="fila-planilla d-flex justify-content-between align-items-center gap-2">
+                      <div class="min-w-0">
+                        <div class="text-dark">Obs {{ n }}</div>
+                        <div class="text-muted texto-07 text-break">{{ tituloCeldaObs(observacionDe(a, n)) }}</div>
+                      </div>
+                      <div class="flex-shrink-0 d-flex align-items-center gap-2">
+                        <span class="chip-nota" :class="claseCeldaObs(observacionDe(a, n))">{{ textoCeldaObs(observacionDe(a, n)) }}</span>
+                        <button type="button" class="btn-ver-celda" :disabled="cargandoDetalleId === observacionDe(a, n).id" title="Ver detalle y comentarios" aria-label="Ver detalle y comentarios" @click="verDetalle(observacionDe(a, n))">
+                          <span v-if="cargandoDetalleId === observacionDe(a, n).id" class="spinner-border spinner-border-sm"></span>
+                          <i v-else class="bi bi-eye"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
             </div>
 
           </template>
@@ -395,18 +405,11 @@ const gruposTabs = computed(() => {
 
 const contarArbitros = (g) => arbitros.value.filter(a => perteneceAlGrupo(a, g)).length
 
-const PALETA_GRUPOS = ['#0d6efd', '#6f42c1', '#d63384', '#fd7e14', '#198754', '#20c997', '#0dcaf0', '#dc3545', '#6610f2', '#795548', '#607d8b', '#9e9d24']
-const colorDeGrupo = (indice) => PALETA_GRUPOS[indice % PALETA_GRUPOS.length]
-
-const estiloTab = (g, indice) => {
-  const color = colorDeGrupo(indice)
-  const activa = g.clave === grupoActivo.value?.clave
-  return {
-    borderTop: `3px solid ${color}`,
-    backgroundColor: activa ? 'var(--o-tarjeta, #fff)' : color + '14',
-    color: activa ? color : 'var(--o-texto-medio, #495057)'
-  }
+// Selector de grupo de la barra de herramientas
+const elegirGrupo = (clave) => {
+  grupoActivo.value = gruposTabs.value.find(g => g.clave === clave) || null
 }
+
 
 const arbitrosDelGrupo = computed(() => {
   if (!grupoActivo.value) return []
@@ -684,21 +687,6 @@ const descargarExcel = async () => {
 .cuadrito.estado-pendiente { background-color: var(--o-ambar-fondo, #fdf3d3) !important; }
 .cuadrito.estado-rechazada { background-color: var(--o-rojo-fondo, #fde7ea) !important; }
 .cuadrito.estado-anulada { background-color: var(--o-chip, #eef1f5) !important; }
-
-/* ====================================================
-   SOLAPAS DE GRUPO
-   ==================================================== */
-.hojas-excel {
-  display: flex; flex-wrap: nowrap; overflow-x: auto; background-color: var(--o-chip, #f1f3f5); padding: 8px 8px 0 8px; gap: 3px;
-}
-.hoja-tab {
-  border: 1px solid var(--o-borde, #ced4da); border-bottom: none; border-radius: 8px 8px 0 0; font-size: 0.78rem; font-weight: 600;
-  padding: 6px 14px; white-space: nowrap; cursor: pointer; transition: filter 0.15s; display: flex; align-items: center; gap: 6px;
-}
-.hoja-tab:hover { filter: brightness(0.96); }
-.hoja-tab.activa { margin-bottom: -1px; box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.06); font-weight: 700; }
-.punto-color { display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-.badge-cantidad { display: inline-block; background-color: rgba(0, 0, 0, 0.1); border-radius: 10px; font-size: 0.65rem; padding: 1px 6px; }
 
 /* ====================================================
    PÍLDORAS DE ESTADO (mismo estilo que Solicitudes Institucionales)

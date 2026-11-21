@@ -1,8 +1,8 @@
 <template>
-  <div class="full-screen-wrapper planilla-general px-3 px-md-4">
+  <div class="full-screen-wrapper px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card planilla-card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
+      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- ============ HEADER ============ -->
         <div class="card-header bg-white py-3 border-bottom">
@@ -10,7 +10,7 @@
         </div>
 
         <!-- ============ BODY ============ -->
-        <div class="card-body planilla-cuerpo p-0">
+        <div class="card-body p-0">
 
           <EstadoCargando v-if="cargando" texto="Cargando planilla" />
 
@@ -18,6 +18,9 @@
 
             <!-- Barra de herramientas: filtro + solo activos + descargar, en una fila -->
             <div class="barra-planilla d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
+              <select v-if="gruposTabs.length" aria-label="Grupo" class="form-select shadow-none fw-semibold text-dark control-barra selector-grupo" :value="grupoActivo?.clave" @change="elegirGrupo($event.target.value)">
+                <option v-for="g in gruposTabs" :key="g.clave" :value="g.clave">{{ etiquetaGrupo(g) }} ({{ contarArbitros(g) }})</option>
+              </select>
               <select v-model="anioFiltro" class="form-select form-select-sm shadow-none fw-semibold" style="width: 100px;" aria-label="Año">
                 <option v-for="a in aniosDisponibles" :key="a" :value="a">{{ a }}</option>
               </select>
@@ -42,34 +45,15 @@
                 </button>
               </div>
               <BotonHerramienta tipo="excel" :disabled="cargando" @click="descargarExcel" />
+              <span class="text-muted text-nowrap">{{ arbitrosVisibles.length }} árbitros</span>
               <span class="leyenda-planilla ms-auto d-flex flex-wrap gap-3">
                 <span><span class="cuadrito bg-success-subtle border-success-subtle"></span> Aprobado / Teórico ≥ 75 / Presente</span>
                 <span><span class="cuadrito bg-danger-subtle border-danger-subtle"></span> Desaprobado / Teórico ≤ 74 / Ausente a reunión</span>
                 <span><span class="cuadrito bg-secondary-subtle border-secondary-subtle"></span> No lo hizo / Ausente (AUS)</span>
               </span>
             </div>
-
-            <!-- Solapas de grupo (arriba, cada una con su color) -->
-            <div class="hojas-excel border-bottom">
-              <button
-                v-for="(g, i) in gruposTabs"
-                :key="g.clave"
-                class="hoja-tab"
-                :class="{ activa: g.clave === grupoActivo?.clave }"
-                :style="estiloTab(g, i)"
-                @click="grupoActivo = g"
-              >
-                <span class="punto-color" :style="{ backgroundColor: colorDeGrupo(i) }"></span>
-                {{ etiquetaGrupo(g) }}
-                <span class="badge-cantidad">{{ contarArbitros(g) }}</span>
-              </button>
-              <span class="ms-auto pe-3 align-self-center text-muted small text-nowrap">
-                {{ arbitrosVisibles.length }} árbitros en {{ etiquetaGrupo(grupoActivo) }}
-              </span>
-            </div>
-
             <!-- Tabla tipo Excel -->
-            <div class="tabla-scroll">
+            <div class="d-none d-lg-block tabla-scroll">
               <table class="tabla-excel">
                 <thead>
                   <tr>
@@ -159,6 +143,66 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- Celular y app: una tarjeta por árbitro, como las planillas del curso -->
+            <div class="d-lg-none d-flex flex-column gap-3 p-3">
+              <div v-if="!arbitrosVisibles.length" class="text-center py-4 text-muted fst-italic small">No hay árbitros para mostrar en este grupo.</div>
+              <div v-for="a in arbitrosVisibles" :key="'m-' + a.id" class="card border-light-subtle shadow-sm rounded-3">
+                <div class="card-body p-3 small">
+                  <div class="fw-bold text-dark text-uppercase mb-1">{{ a.apellido }}, {{ a.nombre }}</div>
+                  <div v-if="!columnasGrupo.length" class="text-muted fst-italic">Sin asambleas ni reuniones para este grupo.</div>
+                  <div v-for="col in columnasGrupo" :key="'m-' + a.id + '-' + col.clave" class="fila-planilla">
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                      <div class="min-w-0">
+                        <div class="text-dark text-break">{{ col.titulo }}</div>
+                        <div class="text-muted texto-07">{{ col.esExamen ? 'Teórico (T) / Físico (F)' : 'Reunión' }} · {{ col.fechaCorta }}</div>
+                      </div>
+                      <div class="flex-shrink-0 d-flex gap-1">
+                        <template v-if="col.esExamen">
+                          <button v-for="tipoDet in ['teorico', 'fisico']" :key="tipoDet" type="button" class="chip-nota chip-boton" :class="claseCeldaExamen(a, col, tipoDet)" :aria-label="'Editar ' + (tipoDet === 'teorico' ? 'teórico' : 'físico')" @click="abrirEditor(a, col, tipoDet)">{{ tipoDet === 'teorico' ? 'T' : 'F' }} {{ textoCeldaExamen(a, col, tipoDet) || '—' }}</button>
+                        </template>
+                        <span v-else class="chip-nota" :class="claseCeldaReunion(a, col)">{{ textoCeldaReunion(a, col) || '—' }}</span>
+                      </div>
+                    </div>
+                    <template v-if="col.esExamen">
+                      <template v-for="tipoDet in ['teorico', 'fisico']" :key="'ed-' + tipoDet">
+                        <div v-if="esCeldaEnEdicion(a, col, tipoDet)" class="editor-celda editor-movil mt-2" @click.stop>
+                            <input :aria-label="tipoDet === 'fisico' ? 'Nivel' : 'Nota'"
+                              v-if="editor.estado !== 'ausente' && editor.estado !== 'no lo hizo'"
+                              v-model="editor.calificacion"
+                              @input="alTipearNota"
+                              @keyup.enter="guardarEditor"
+                              @keyup.esc="cerrarEditor"
+                              class="editor-input"
+                              :placeholder="tipoDet === 'fisico' ? 'Nivel' : 'Nota'"
+                              :inputmode="tipoDet === 'fisico' ? 'decimal' : 'text'"
+                              :title="tipoDet === 'fisico' ? 'Nivel alcanzado (opcional): si lo cargás, aprobado o desaprobado se calcula según género y edad' : 'Nota'"
+                              ref="editorInputRef"
+                            >
+                            <select aria-label="Estado de la nota" v-model="editor.estado" class="editor-select" @keyup.enter="guardarEditor">
+                              <option value="aprobado">Aprobado</option>
+                              <option value="desaprobado">Desaprobado</option>
+                              <option value="no lo hizo">No lo hizo</option>
+                              <option value="ausente">Ausente</option>
+                            </select>
+                            <div class="editor-botones">
+                              <button class="btn-mini ok" @click="guardarEditor" :disabled="editor.guardando" title="Guardar">
+                                <i class="bi" :class="editor.guardando ? 'bi-hourglass-split' : 'bi-check-lg'"></i>
+                              </button>
+                              <button class="btn-mini borrar" @click="borrarCelda" :disabled="editor.guardando" title="Borrar contenido">
+                                <i class="bi bi-trash"></i>
+                              </button>
+                              <button class="btn-mini no" @click="cerrarEditor" title="Cancelar">
+                                <i class="bi bi-x-lg"></i>
+                              </button>
+                            </div>
+                          </div>
+                      </template>
+                    </template>
+                  </div>
+                </div>
+              </div>
             </div>
 
           </template>
@@ -374,19 +418,15 @@ const gruposTabs = computed(() => {
 
 const contarArbitros = (g) => arbitros.value.filter(a => perteneceAlGrupo(a, g)).length
 
-/* Colores para distinguir los grupos en las solapas */
+/* Colores de los grupos: se usan en las pestañas de las hojas del Excel */
 const PALETA_GRUPOS = ['#0d6efd', '#6f42c1', '#d63384', '#fd7e14', '#198754', '#20c997', '#0dcaf0', '#dc3545', '#6610f2', '#795548', '#607d8b', '#9e9d24']
 const colorDeGrupo = (indice) => PALETA_GRUPOS[indice % PALETA_GRUPOS.length]
 
-const estiloTab = (g, indice) => {
-  const color = colorDeGrupo(indice)
-  const activa = g.clave === grupoActivo.value?.clave
-  return {
-    borderTop: `3px solid ${color}`,
-    backgroundColor: activa ? 'var(--o-tarjeta, #fff)' : color + '14', // tinte suave al color cuando está inactiva
-    color: activa ? color : 'var(--o-texto-medio, #495057)'
-  }
+// Selector de grupo de la barra de herramientas
+const elegirGrupo = (clave) => {
+  grupoActivo.value = gruposTabs.value.find(g => g.clave === clave) || null
 }
+
 
 const arbitrosDelGrupo = computed(() => {
   if (!grupoActivo.value) return []
@@ -582,7 +622,8 @@ const abrirEditor = async (a, col, tipo) => {
     guardando: false
   }
   await nextTick()
-  const input = Array.isArray(editorInputRef.value) ? editorInputRef.value[0] : editorInputRef.value
+  const inputs = [].concat(editorInputRef.value || [])
+  const input = inputs.find(el => el && el.offsetParent !== null) || inputs[0]
   if (input) input.focus()
 }
 
@@ -1077,57 +1118,6 @@ const descargarExcel = async () => {
 .cuadrito.bg-success-subtle { background-color: var(--o-verde-fondo, #d1e7dd) !important; }
 .cuadrito.bg-danger-subtle { background-color: var(--o-rojo-fondo, #f8d7da) !important; }
 .cuadrito.bg-secondary-subtle { background-color: var(--o-chip, #e9ecef) !important; }
-
-/* ====================================================
-   SOLAPAS DE GRUPO (arriba, cada una con su color)
-   ==================================================== */
-.hojas-excel {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  background-color: var(--o-chip, #f1f3f5);
-  padding: 8px 8px 0 8px;
-  gap: 3px;
-}
-
-.hoja-tab {
-  border: 1px solid var(--o-borde, #ced4da);
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 6px 14px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: filter 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.hoja-tab:hover { filter: brightness(0.96); }
-
-.hoja-tab.activa {
-  margin-bottom: -1px;
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.06);
-  font-weight: 700;
-}
-
-.punto-color {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.badge-cantidad {
-  display: inline-block;
-  background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  font-size: 0.65rem;
-  padding: 1px 6px;
-}
 
 /* ====================================================
    EDICIÓN INLINE DE CELDAS
