@@ -6,7 +6,7 @@ import { esAppInstalada } from '@/utils/app'
 // se ve siempre como siempre y el selector no aparece.
 // Mientras se migran los colores, además, solo se activa en desarrollo.
 // Al terminar la migración, pasar TEMA_PUBLICADO a true.
-export const TEMA_PUBLICADO = false
+export const TEMA_PUBLICADO = true
 
 // Para probarlo en el navegador con npm run dev: abrir cualquier página con ?probarTema=1
 // (se recuerda en la pestaña; ?probarTema=0 lo apaga)
