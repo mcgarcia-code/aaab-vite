@@ -5,6 +5,11 @@
    PlanillaGeneralCoordinadores y PlanillaGeneralObservacionesCoordinadores.
    En escritorio no cambia nada.
    ========================================================= */
+/* Al llegar al borde de la tabla, el gesto no sigue arrastrando la página */
+.tabla-scroll {
+  overscroll-behavior: contain;
+}
+
 @media (max-width: 767.98px) {
   /* Barra de herramientas: controles en una fila que se acomoda y la leyenda abajo, en una línea con scroll */
   .barra-planilla {

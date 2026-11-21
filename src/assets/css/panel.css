@@ -18,6 +18,11 @@
   margin-bottom: 1rem;
 }
 
+/* Nada dentro del panel ensancha la página: lo ancho (tablas, planillas) scrollea en su propia caja */
+.panel-layout {
+  overflow-x: clip;
+}
+
 /* Mismo redondeo para todas las tarjetas de las secciones */
 .panel-layout .card {
   border-radius: 16px !important;

@@ -91,6 +91,15 @@ body {
   overflow-x: hidden;
 }
 
+/* App instalada: la pantalla queda fija como una app (sin rebote ni arrastre lateral de toda la página) */
+@media (display-mode: standalone) {
+  html,
+  body {
+    overscroll-behavior: none;
+    overflow-x: clip;
+  }
+}
+
 /* Animaciones globales de scroll reveal */
 .fade-in-section {
   opacity: 0;

@@ -29,7 +29,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import { esAppInstalada } from '@/utils/app'
@@ -38,14 +38,37 @@ import { esAppInstalada } from '@/utils/app'
 const route = useRoute()
 
 // ─── Service worker: actualizaciones ───────────────────────
-const UNA_HORA = 60 * 60 * 1000
+// Busca una versión nueva publicada: al abrir, cada 15 minutos, cuando la app vuelve
+// a primer plano y al cambiar de sección (como mucho una vez cada 2 minutos),
+// así el aviso aparece sin tener que cerrar y abrir la app
+const CADA_15_MIN = 15 * 60 * 1000
+const ESPERA_MINIMA = 2 * 60 * 1000
+let registroSW = null
+let ultimaBusqueda = 0
+
+const buscarVersionNueva = (forzar = false) => {
+  if (!registroSW || !navigator.onLine) return
+  if (!forzar && Date.now() - ultimaBusqueda < ESPERA_MINIMA) return
+  ultimaBusqueda = Date.now()
+  registroSW.update().catch(() => {
+    // Sin conexión o servidor caído: se vuelve a intentar en la próxima búsqueda
+  })
+}
+
 const { needRefresh, updateServiceWorker } = useRegisterSW({
-  // Revisa cada hora si hay una versión nueva publicada (por si la app queda abierta mucho tiempo)
   onRegisteredSW(_url, registro) {
-    if (registro) setInterval(() => { if (navigator.onLine) registro.update() }, UNA_HORA)
+    if (!registro) return
+    registroSW = registro
+    ultimaBusqueda = Date.now()
+    setInterval(() => buscarVersionNueva(true), CADA_15_MIN)
   }
 })
 const actualizar = () => updateServiceWorker(true)
+
+const alVolverAlFrente = () => {
+  if (document.visibilityState === 'visible') buscarVersionNueva()
+}
+watch(() => route.path, () => buscarVersionNueva())
 
 // ─── Conexión ──────────────────────────────────────────────
 const sinConexion = ref(typeof navigator !== 'undefined' && !navigator.onLine)
@@ -100,12 +123,14 @@ onMounted(() => {
   window.addEventListener('offline', alCambiarConexion)
   window.addEventListener('beforeinstallprompt', alPoderInstalar)
   window.addEventListener('appinstalled', descartarInstalacion)
+  document.addEventListener('visibilitychange', alVolverAlFrente)
 })
 onBeforeUnmount(() => {
   window.removeEventListener('online', alCambiarConexion)
   window.removeEventListener('offline', alCambiarConexion)
   window.removeEventListener('beforeinstallprompt', alPoderInstalar)
   window.removeEventListener('appinstalled', descartarInstalacion)
+  document.removeEventListener('visibilitychange', alVolverAlFrente)
 })
 </script>
 
