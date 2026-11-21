@@ -132,7 +132,7 @@ const routes = [
       { path: 'examen-asamblea', name: 'ExamenAsamblea', component: () => import('../components/panel-arbitro/examenes/ExamenAsambleaGeneral.vue') },
 
       // --- PRÁCTICA DEL CATÁLOGO (exámenes de práctica guardados por árbitro) ---
-      { path: 'practica-catalogo', name: 'PracticaCatalogo', component: () => import('../components/panel-arbitro/practica-catalogo/PracticaCatalogo.vue') },
+      { path: 'practica-catalogo', name: 'PracticaCatalogo', component: () => import('../components/comunes/practica-catalogo/PracticaCatalogo.vue') },
 
       // --- INFORMES ---
       { path: 'informes', name: 'InformesArbitro', component: () => import('../components/panel-arbitro/informes/MisInformes.vue') },
@@ -158,6 +158,8 @@ const routes = [
       // --- MENÚ (pestaña de la barra inferior en celular) ---
       { path: 'menu', name: 'PanelMenuCurso', component: () => import('../components/panel-curso/MenuPanelCurso.vue') },
       { path: 'cronograma-curso', name: 'CronogramaCurso', component: () => import('../components/panel-curso/cronograma-curso/CronogramaCurso.vue') },
+      // --- PRÁCTICA DEL CATÁLOGO (la misma pantalla que el panel árbitro; se guarda por alumno) ---
+      { path: 'practica-catalogo', name: 'PracticaCatalogoCurso', component: () => import('../components/comunes/practica-catalogo/PracticaCatalogo.vue') },
 
     ]
   },

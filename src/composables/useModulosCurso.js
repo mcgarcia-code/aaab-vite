@@ -37,12 +37,19 @@ const GRUPOS = [
     items: [
       { to: '/panel-curso/cuota-curso', title: 'Cuota del curso', icon: 'bi bi-cash-coin', desc: 'Estado de tus pagos' }
     ]
+  },
+  {
+    categoria: 'Herramientas',
+    icono: 'bi bi-tools',
+    items: [
+      { to: '/panel-curso/practica-catalogo', title: 'Practicar catálogo', icon: 'bi bi-ui-checks-grid', desc: 'Exámenes de práctica del reglamento' }
+    ]
   }
 ]
 
 // Accesos de uso más frecuente (etiquetas cortas para que no se corten en el celular)
 const ACCESOS_RAPIDOS = [
-  { to: '/panel-curso/cronograma-curso', title: 'Cronograma', icon: 'bi bi-calendar3-week' },
+  { to: '/panel-curso/practica-catalogo', title: 'Catálogo', icon: 'bi bi-ui-checks-grid' },
   { to: '/panel-curso/designaciones-curso', title: 'Designaciones', icon: 'bi bi-calendar2-check' },
   { to: '/panel-curso/examenes-curso', title: 'Exámenes', icon: 'bi bi-journal-text' },
   { to: '/panel-curso/rendimiento-curso', title: 'Rendimiento', icon: 'bi bi-graph-up-arrow' }
@@ -59,6 +66,7 @@ export const TITULOS_SECCION_CURSO = {
   PanelRendimientoCurso: 'Rendimiento',
   CuotaCurso: 'Cuota del curso',
   CronogramaCurso: 'Cronograma',
+  PracticaCatalogoCurso: 'Practicar catálogo',
   PanelMenuCurso: 'Menú'
 }
 

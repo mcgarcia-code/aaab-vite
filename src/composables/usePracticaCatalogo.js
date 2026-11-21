@@ -1,8 +1,8 @@
 import { ref } from 'vue'
 import { api } from '@/api/api'
 
-// Práctica del catálogo de preguntas desde el panel del árbitro (backend: catalogo_practica.php).
-// Cada práctica queda guardada a nombre del árbitro logueado (id_arbitro sale del token).
+// Práctica del catálogo de preguntas desde el panel del árbitro y el del curso (backend: catalogo_practica.php).
+// Cada práctica queda guardada a nombre de quien inició sesión: árbitro (id_arbitro) o alumno del curso (id_alumno_curso), los dos salen del token.
 
 // Misma nota de aprobación que los exámenes online (solo para pintar verde / rojo)
 export const UMBRAL_APROBADO = 75
