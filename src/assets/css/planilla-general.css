@@ -1,0 +1,68 @@
+/* =========================================================
+   Planillas generales (exámenes/reuniones y observaciones),
+   versión celular y app. Se usa como <style scoped src> en:
+   PlanillaGeneralAdmin, PlanillaGeneralObservacionesAdmin,
+   PlanillaGeneralCoordinadores y PlanillaGeneralObservacionesCoordinadores.
+   En escritorio no cambia nada.
+   ========================================================= */
+@media (max-width: 767.98px) {
+  /* Barra de herramientas: controles en una fila que se acomoda y la leyenda abajo, en una línea con scroll */
+  .barra-planilla {
+    gap: 8px !important;
+    padding: 8px 12px !important;
+  }
+  .barra-planilla .busqueda-wrap {
+    flex: 1 1 150px;
+    max-width: none;
+  }
+  .barra-planilla .busqueda-wrap input {
+    min-width: 0;
+    width: 100%;
+  }
+  .leyenda-planilla {
+    order: 10;
+    width: 100%;
+    margin-left: 0 !important;
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 0.7rem;
+    padding-bottom: 2px;
+  }
+
+  /* Solapas de grupo más compactas */
+  .hoja-tab {
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+
+  /* La tabla ocupa el alto disponible entre la barra superior y la inferior del panel,
+     así se scrollea solo la tabla y la fila de títulos queda siempre a la vista */
+  .tabla-scroll {
+    max-height: calc(100vh - 290px);
+    max-height: calc(100dvh - 290px);
+    min-height: 280px;
+  }
+
+  .tabla-excel { font-size: 0.72rem; }
+  .tabla-excel th,
+  .tabla-excel td { padding: 3px 5px; }
+
+  /* Columna fija del árbitro más angosta: deja más lugar para las notas */
+  .col-arbitro {
+    min-width: 0;
+    width: 118px;
+    max-width: 118px;
+  }
+  .celda-nombre {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .th-evento { min-width: 96px; }
+  .texto-recortado { max-width: 110px; }
+  .th-reunion { min-width: 40px; }
+  .celda { min-width: 38px; }
+}

@@ -560,7 +560,7 @@ onUnmounted(() => {
 
 .badge-talle {
   font-size: 0.65rem;
-  background: white;
+  background: var(--o-tarjeta, white);
   padding: 3px 8px;
   border-radius: 8px;
   border: 1px solid var(--o-borde, #dee2e6);

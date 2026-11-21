@@ -683,7 +683,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--o-rojo-texto, #dc2626);
+  color: #dc2626;
   z-index: 11001;
 }
 

@@ -409,8 +409,9 @@ onMounted(() => {
   height: 22px;
   padding: 0 6px;
   border-radius: 6px;
-  background: rgb(255, 255, 255);
-  color: var(--o-texto, #000000);
+  /* Etiqueta blanca con número negro en los dos temas (la tarjeta es siempre oscura) */
+  background: #ffffff;
+  color: #000000;
   font-size: 0.7rem;
   font-weight: 700;
 }

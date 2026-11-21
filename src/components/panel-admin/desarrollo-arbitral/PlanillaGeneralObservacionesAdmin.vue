@@ -17,7 +17,7 @@
           <template v-else>
 
             <!-- Barra de herramientas -->
-            <div class="d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
+            <div class="barra-planilla d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
               <div class="form-check form-switch mb-0">
                 <input v-model="soloActivos" class="form-check-input" type="checkbox" id="chkSoloActivos">
                 <label class="form-check-label text-muted" for="chkSoloActivos">Solo activos</label>
@@ -36,7 +36,7 @@
                 </select>
               </div>
               <BotonHerramienta tipo="excel" :disabled="cargando" @click="descargarExcel" />
-              <span class="ms-auto d-flex flex-wrap gap-3">
+              <span class="leyenda-planilla ms-auto d-flex flex-wrap gap-3">
                 <span><span class="cuadrito estado-aprobada"></span> Aprobada</span>
                 <span><span class="cuadrito estado-pendiente"></span> Pendiente</span>
                 <span><span class="cuadrito estado-rechazada"></span> Rechazada</span>
@@ -375,8 +375,8 @@ const estiloTab = (g, indice) => {
   const activa = g.clave === grupoActivo.value?.clave
   return {
     borderTop: `3px solid ${color}`,
-    backgroundColor: activa ? '#fff' : color + '14',
-    color: activa ? color : '#495057'
+    backgroundColor: activa ? 'var(--o-tarjeta, #fff)' : color + '14',
+    color: activa ? color : 'var(--o-texto-medio, #495057)'
   }
 }
 
@@ -684,3 +684,4 @@ const descargarExcel = async () => {
 .estado-rechazada { background-color: var(--o-rojo-fondo, #fde7ea); color: var(--o-rojo-texto, #c0304a); border-color: var(--o-rojo-borde, #f5c2cb); }
 .estado-anulada { background-color: var(--o-chip, #eef1f5); color: var(--o-texto-suave, #5b6b7f); border-color: var(--o-borde, #d4dbe4); }
 </style>
+<style scoped src="@/assets/css/planilla-general.css"></style>

@@ -20,7 +20,7 @@
           <template v-else>
 
             <!-- Barra de herramientas: filtro + solo activos + descargar, en una fila -->
-            <div class="d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
+            <div class="barra-planilla d-flex flex-wrap gap-3 align-items-center px-3 py-2 border-bottom bg-light small">
               <div class="form-check form-switch mb-0">
                 <input v-model="soloActivos" class="form-check-input" type="checkbox" id="chkSoloActivos">
                 <label class="form-check-label text-muted" for="chkSoloActivos">Solo activos</label>
@@ -42,7 +42,7 @@
                 </button>
               </div>
               <BotonHerramienta tipo="excel" :disabled="cargando" @click="descargarExcel" />
-              <span class="ms-auto d-flex flex-wrap gap-3">
+              <span class="leyenda-planilla ms-auto d-flex flex-wrap gap-3">
                 <span><span class="cuadrito bg-success-subtle border-success-subtle"></span> Aprobado / Teórico ≥ 75 / Presente</span>
                 <span><span class="cuadrito bg-danger-subtle border-danger-subtle"></span> Desaprobado / Teórico ≤ 74 / Ausente</span>
                 <span><span class="cuadrito bg-secondary-subtle border-secondary-subtle"></span> No lo hizo</span>
@@ -371,8 +371,8 @@ const estiloTab = (g, indice) => {
   const activa = g.clave === grupoActivo.value?.clave
   return {
     borderTop: `3px solid ${color}`,
-    backgroundColor: activa ? '#fff' : color + '14', // tinte suave al color cuando está inactiva
-    color: activa ? color : '#495057'
+    backgroundColor: activa ? 'var(--o-tarjeta, #fff)' : color + '14', // tinte suave al color cuando está inactiva
+    color: activa ? color : 'var(--o-texto-medio, #495057)'
   }
 }
 
@@ -935,3 +935,4 @@ const descargarExcel = async () => {
   color: var(--o-rojo-texto, #dc3545);
 }
 </style>
+<style scoped src="@/assets/css/planilla-general.css"></style>
