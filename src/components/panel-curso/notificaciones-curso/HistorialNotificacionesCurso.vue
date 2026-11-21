@@ -45,12 +45,12 @@ onMounted(cargar)
 
 <style scoped>
 .notif-item {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-radius: 12px;
   padding: 12px;
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
 }
-.notif-item.nueva { border-left: 4px solid #dc2626; background: #fef2f2; }
+.notif-item.nueva { border-left: 4px solid #dc2626; background: var(--o-rojo-fondo, #fef2f2); }
 .icono-notif {
   width: 38px;
   height: 38px;

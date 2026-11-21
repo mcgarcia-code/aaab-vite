@@ -192,17 +192,17 @@ a.resumen-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(
 .resumen-card .detalle { font-size: 0.68rem; opacity: 0.8; margin-top: 2px; }
 .resumen-card .detalle i { font-size: 0.65rem; }
 .fila-item {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-radius: 10px;
   padding: 10px 12px;
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
 }
 .min-w-0 { min-width: 0; }
 .estado-final { border: 1px solid; }
-.estado-aprobado { background: #d1e7dd; border-color: #a3cfbb; color: #0f5132; }
-.estado-desaprobado { background: #f8d7da; border-color: #f1aeb5; color: #842029; }
-.estado-pendiente { background: #f8f9fa; border-color: #dee2e6; color: #495057; }
+.estado-aprobado { background: var(--o-verde-fondo, #d1e7dd); border-color: var(--o-verde-borde, #a3cfbb); color: var(--o-verde-texto, #0f5132); }
+.estado-desaprobado { background: var(--o-rojo-fondo, #f8d7da); border-color: var(--o-rojo-borde, #f1aeb5); color: var(--o-rojo-texto, #842029); }
+.estado-pendiente { background: var(--o-superficie, #f8f9fa); border-color: var(--o-borde, #dee2e6); color: var(--o-texto-medio, #495057); }
 .etiqueta-estado { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; opacity: 0.8; }
-.observacion-final { background: rgba(255, 255, 255, 0.6); border-radius: 8px; padding: 8px 12px; color: #212529; font-size: 0.9rem; }
+.observacion-final { background: rgba(255, 255, 255, 0.6); border-radius: 8px; padding: 8px 12px; color: var(--o-texto, #212529); font-size: 0.9rem; }
 .texto-multilinea { white-space: pre-wrap; word-break: break-word; }
 </style>

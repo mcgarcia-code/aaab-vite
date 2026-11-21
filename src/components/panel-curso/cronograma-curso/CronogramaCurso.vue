@@ -165,18 +165,18 @@ onMounted(() => cargar(anio))
 <style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
 .proxima-destacada {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--o-rojo-fondo, #fef2f2);
+  border: 1px solid var(--o-rojo-borde, #fecaca);
   border-left: 5px solid #dc2626;
 }
-:deep(.clase-item) { background: #fff; }
-:deep(.clase-item.pasada) { background: #f8fafc; opacity: 0.75; }
+:deep(.clase-item) { background: var(--o-tarjeta, #fff); }
+:deep(.clase-item.pasada) { background: var(--o-superficie, #f8fafc); opacity: 0.75; }
 :deep(.clase-item.destacada) { border-color: #dc2626 !important; box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12); }
 :deep(.cal-box), .cal-box {
   width: 48px;
   border-radius: 10px;
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--o-rojo-fondo, #fee2e2);
+  color: var(--o-rojo-texto, #b91c1c);
   padding: 6px 0;
   display: flex;
   flex-direction: column;

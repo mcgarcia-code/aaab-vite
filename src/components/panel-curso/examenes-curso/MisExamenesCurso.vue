@@ -252,17 +252,17 @@ onMounted(async () => {
 
 <style scoped>
 .examen-card {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-radius: 12px;
   padding: 14px;
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
 }
 .nota { font-size: 1.6rem; font-weight: 800; line-height: 1; }
-.comentario { white-space: pre-wrap; background: #f8fafc; border-radius: 8px; padding: 8px 10px; }
+.comentario { white-space: pre-wrap; background: var(--o-superficie, #f8fafc); border-radius: 8px; padding: 8px 10px; }
 .min-w-0 { min-width: 0; }
-.examen-card.recuperatorio { background: #fffbeb; border-color: #fde68a; }
-.card-recuperatorio .card-header { background: #fffbeb; }
-.adeudado { border: 1px solid #fde68a; background: #fffbeb; border-radius: 10px; padding: 8px 12px; }
-.pestanas .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; padding: 0.5rem 0.75rem; white-space: nowrap; }
+.examen-card.recuperatorio { background: var(--o-ambar-fondo, #fffbeb); border-color: var(--o-ambar-borde, #fde68a); }
+.card-recuperatorio .card-header { background: var(--o-ambar-fondo, #fffbeb); }
+.adeudado { border: 1px solid var(--o-ambar-borde, #fde68a); background: var(--o-ambar-fondo, #fffbeb); border-radius: 10px; padding: 8px 12px; }
+.pestanas .nav-link { color: var(--o-texto-medio, #475569); background: var(--o-chip, #f1f5f9); font-size: 0.85rem; padding: 0.5rem 0.75rem; white-space: nowrap; }
 .pestanas .nav-link.active { background: #dc3545; color: #fff; }
 </style>

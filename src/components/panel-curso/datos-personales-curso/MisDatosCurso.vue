@@ -273,28 +273,28 @@ const cambiarPassword = async () => {
 
 <style scoped>
 .titulo-seccion {
-  color: #dc3545;
+  color: var(--o-rojo-texto, #dc3545);
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--o-borde, #f1f5f9);
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
 }
 .dato-etiqueta {
   display: block;
   font-size: 0.72rem;
-  color: #64748b;
+  color: var(--o-texto-suave, #64748b);
   font-weight: 600;
   margin-bottom: 2px;
 }
 .dato-valor {
-  background: #f8fafc;
+  background: var(--o-superficie, #f8fafc);
   border-radius: 8px;
   padding: 8px 10px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--o-texto, #1e293b);
   font-size: 0.9rem;
   word-break: break-word;
 }

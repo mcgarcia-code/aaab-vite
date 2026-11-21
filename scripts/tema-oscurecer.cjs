@@ -56,6 +56,8 @@ const procesarDecl = (txt) => txt.replace(/([a-zA-Z-]+)(\s*:\s*)([^;{}"]+?)(\s*(
 for (const archivo of process.argv.slice(2)) {
   let txt = fs.readFileSync(archivo, 'utf8')
   const antes = txt
+  // Archivo .css: se procesa entero
+  if (archivo.endsWith(".css")) { const nuevo = procesarDecl(txt); if (nuevo !== txt) fs.writeFileSync(archivo, nuevo); continue }
   // <style> ... </style>
   txt = txt.replace(/(<style[^>]*>)([\s\S]*?)(<\/style>)/g, (m, a, cuerpo, c) => a + procesarDecl(cuerpo) + c)
   // style="..." estáticos dentro del <template> (no :style)

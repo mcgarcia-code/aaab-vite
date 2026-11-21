@@ -292,7 +292,7 @@ onMounted(async () => {
 
 .timeline { position: relative; }
 .timeline-item { display: flex; gap: 10px; position: relative; padding-bottom: 16px; }
-.timeline-item::before { content: ''; position: absolute; left: 28px; top: 34px; bottom: 0; width: 2px; background: #e5e7eb; }
+.timeline-item::before { content: ''; position: absolute; left: 28px; top: 34px; bottom: 0; width: 2px; background: var(--o-chip, #e5e7eb); }
 .timeline-item:last-child::before { display: none; }
 .timeline-hora { width: 56px; flex-shrink: 0; position: relative; z-index: 1; }
 .hora-burbuja {
@@ -309,8 +309,8 @@ onMounted(async () => {
 .timeline-card {
   flex: 1 1 auto;
   min-width: 0;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--o-tarjeta, #fff);
+  border: 1px solid var(--o-borde, #e5e7eb);
   border-left: 4px solid #dc2626;
   border-radius: 10px;
   padding: 10px 12px;
@@ -319,10 +319,10 @@ onMounted(async () => {
 .timeline-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important; }
 
 .anteriores .hora-burbuja { background: #6b7280; box-shadow: 0 2px 6px rgba(107, 114, 128, 0.3); }
-.anteriores .timeline-card { border-left-color: #9ca3af; background: #fff; }
+.anteriores .timeline-card { border-left-color: #9ca3af; background: var(--o-tarjeta, #fff); }
 
-.acordeon-mes { background: #fff; border: none; cursor: pointer; transition: background-color 0.15s ease; }
-.acordeon-mes:hover { background: #f8fafc; }
+.acordeon-mes { background: var(--o-tarjeta, #fff); border: none; cursor: pointer; transition: background-color 0.15s ease; }
+.acordeon-mes:hover { background: var(--o-superficie, #f8fafc); }
 
 .comentarios { white-space: pre-wrap; }
 

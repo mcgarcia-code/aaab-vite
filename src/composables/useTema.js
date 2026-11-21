@@ -1,11 +1,13 @@
 import { ref, computed, watch } from 'vue'
+import { esAppInstalada } from '@/utils/app'
 
-// Tema del sitio: claro, oscuro o automático (sigue la configuración del dispositivo).
-// Mientras se migran los colores de todas las pantallas, el tema solo se aplica
-// en desarrollo: en producción el sitio se ve como siempre y el selector no aparece.
-// Al terminar la migración, pasar TEMA_PUBLICADO a true.
+// Tema de la app: claro, oscuro o automático (sigue la configuración del dispositivo).
+// Solo existe en la app instalada: en el navegador (escritorio o celular) el sitio
+// se ve siempre como siempre y el selector no aparece.
+// Mientras se migran los colores, además, solo se activa en desarrollo
+// (para probarlo con npm run dev). Al terminar la migración, pasar TEMA_PUBLICADO a true.
 export const TEMA_PUBLICADO = false
-export const temaDisponible = TEMA_PUBLICADO || import.meta.env.DEV
+export const temaDisponible = import.meta.env.DEV || (TEMA_PUBLICADO && esAppInstalada())
 
 const CLAVE = 'aaab.tema'
 const MODOS = ['claro', 'oscuro', 'auto']
