@@ -74,7 +74,7 @@ onUnmounted(() => window.removeEventListener('keydown', alPresionarTecla))
 .menu-perfil-fondo {
   position: fixed;
   inset: 0;
-  background: rgba(2, 6, 23, 0.6);
+  background: var(--t-velo);
   z-index: 1040;
 }
 
@@ -84,7 +84,7 @@ onUnmounted(() => window.removeEventListener('keydown', alPresionarTecla))
   right: 0;
   bottom: 0;
   z-index: 1045;
-  background: #fff;
+  background: var(--t-tarjeta);
   border-radius: 24px 24px 0 0;
   padding-bottom: 16px;
   max-height: 90vh;
@@ -96,7 +96,7 @@ onUnmounted(() => window.removeEventListener('keydown', alPresionarTecla))
   width: 40px;
   height: 4px;
   border-radius: 2px;
-  background: #cbd5e1;
+  background: var(--t-borde-fuerte);
   margin: 10px auto 0;
 }
 
@@ -142,7 +142,7 @@ onUnmounted(() => window.removeEventListener('keydown', alPresionarTecla))
   height: 36px;
   border-radius: 50%;
   background: #0f172a;
-  border: 3px solid #fff;
+  border: 3px solid var(--t-tarjeta);
   color: #fff;
   display: flex;
   align-items: center;
@@ -154,13 +154,13 @@ onUnmounted(() => window.removeEventListener('keydown', alPresionarTecla))
 }
 .btn-editar-foto:hover { background: #334155; }
 
-.nombre-perfil { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
+.nombre-perfil { font-size: 1.1rem; font-weight: 800; color: var(--t-texto); }
 
 .id-perfil {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #475569;
-  background: #f1f5f9;
+  color: var(--t-texto-medio);
+  background: var(--t-chip);
   padding: 4px 10px;
   border-radius: 999px;
 }
@@ -176,25 +176,25 @@ onUnmounted(() => window.removeEventListener('keydown', alPresionarTecla))
   border: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--t-texto);
   text-decoration: none;
   text-align: left;
 }
-.opcion-perfil:hover { background: #f8fafc; }
+.opcion-perfil:hover { background: var(--t-tarjeta-hover); }
 
 .opcion-icono {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: #fef2f2;
-  color: #dc2626;
+  background: var(--t-icono-fondo);
+  color: var(--t-icono-texto);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.opcion-desc { font-size: 0.75rem; font-weight: 500; color: #64748b; }
+.opcion-desc { font-size: 0.75rem; font-weight: 500; color: var(--t-texto-suave); }
 
-.opcion-salir { color: #b91c1c; }
-.opcion-salir .opcion-icono { background: #fef2f2; color: #b91c1c; }
+.opcion-salir { color: var(--t-peligro-texto); }
+.opcion-salir .opcion-icono { background: var(--t-icono-fondo); color: var(--t-peligro-texto); }
 </style>

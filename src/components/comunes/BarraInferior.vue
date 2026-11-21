@@ -41,8 +41,8 @@ const estaActivo = (item) => (item.exacta ? route.path === item.to : route.path.
   z-index: 1030;
   display: flex;
   padding: 0 6px env(safe-area-inset-bottom);
-  background: #0b1222;
-  border-top: 1px solid #1e293b;
+  background: var(--t-barra-fondo);
+  border-top: 1px solid var(--t-barra-borde);
 }
 
 .barra-item {
@@ -53,17 +53,17 @@ const estaActivo = (item) => (item.exacta ? route.path === item.to : route.path.
   justify-content: center;
   gap: 4px;
   min-height: 64px;
-  color: #94a3b8;
+  color: var(--t-barra-texto-suave);
   font-size: 0.75rem;
   font-weight: 600;
   text-decoration: none;
 }
 .barra-item .bi { font-size: 1.3rem; line-height: 1; }
-.barra-item:focus-visible { outline: 2px solid #94a3b8; outline-offset: -4px; border-radius: 12px; }
+.barra-item:focus-visible { outline: 2px solid var(--t-barra-texto-suave); outline-offset: -4px; border-radius: 12px; }
 
 /* Pestaña actual: texto blanco e ícono rojo */
-.barra-item.activo { color: #fff; }
-.barra-item.activo .bi { color: #f87171; }
+.barra-item.activo { color: var(--t-barra-texto); }
+.barra-item.activo .bi { color: var(--t-barra-acento); }
 
 .barra-badge {
   position: absolute;

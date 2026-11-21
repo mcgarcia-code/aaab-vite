@@ -121,7 +121,7 @@ const restablecer = () => {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--t-sobre-fondo-suave);
 }
 
 .btn-personalizar,
@@ -137,10 +137,10 @@ const restablecer = () => {
   font-size: 0.85rem;
   font-weight: 700;
 }
-.btn-personalizar { color: #cbd5e1; }
-.btn-personalizar:hover { background: #1e293b; color: #fff; }
-.btn-restablecer { color: #475569; }
-.btn-restablecer:hover { background: #f1f5f9; color: #0f172a; }
+.btn-personalizar { color: var(--t-sobre-fondo-texto); }
+.btn-personalizar:hover { background: var(--t-baldosa); color: var(--t-baldosa-texto); }
+.btn-restablecer { color: var(--t-texto-medio); }
+.btn-restablecer:hover { background: var(--t-chip); color: var(--t-texto); }
 
 /* ============ GRILLA ============ */
 .accesos-grilla {
@@ -158,8 +158,8 @@ const restablecer = () => {
   min-height: 84px;
   padding: 10px 4px;
   border-radius: 16px;
-  background: #1e293b;
-  color: #f1f5f9;
+  background: var(--t-baldosa);
+  color: var(--t-baldosa-texto);
   font-size: 0.75rem;
   font-weight: 600;
   text-align: center;
@@ -169,8 +169,8 @@ const restablecer = () => {
   hyphens: auto;
   transition: background 0.2s;
 }
-.acceso-rapido i { font-size: 1.35rem; color: #f87171; }
-.acceso-rapido:hover { background: #334155; color: #fff; }
+.acceso-rapido i { font-size: 1.35rem; color: var(--t-barra-acento); }
+.acceso-rapido:hover { background: var(--t-baldosa-hover); color: var(--t-baldosa-texto); }
 
 /* Escritorio: accesos horizontales (ícono + texto) */
 @media (min-width: 992px) {
@@ -189,18 +189,18 @@ const restablecer = () => {
 .acceso-vacio {
   width: 100%;
   min-height: 64px;
-  border: 1px dashed #334155;
+  border: 1px dashed var(--t-baldosa-borde);
   border-radius: 16px;
   background: transparent;
-  color: #cbd5e1;
+  color: var(--t-sobre-fondo-texto);
   font-size: 0.9rem;
   font-weight: 600;
 }
-.acceso-vacio:hover { background: #1e293b; color: #fff; }
+.acceso-vacio:hover { background: var(--t-baldosa); color: var(--t-baldosa-texto); }
 
 /* ============ PERSONALIZAR ============ */
 .panel-edicion {
-  background: #fff;
+  background: var(--t-tarjeta);
   border-radius: 16px;
   padding: 14px;
 }
@@ -217,20 +217,20 @@ const restablecer = () => {
   gap: 10px;
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--t-tarjeta-borde);
   border-radius: 12px;
-  background: #fff;
-  color: #0f172a;
+  background: var(--t-tarjeta);
+  color: var(--t-texto);
   font-size: 0.875rem;
   font-weight: 600;
   text-align: left;
   min-width: 0;
 }
-.opcion > .bi:first-child { color: #94a3b8; font-size: 1rem; }
-.opcion > .bi:nth-child(2) { color: #dc2626; }
-.opcion:hover:not(:disabled) { background: #f8fafc; }
+.opcion > .bi:first-child { color: var(--t-texto-tenue); font-size: 1rem; }
+.opcion > .bi:nth-child(2) { color: var(--t-icono-texto); }
+.opcion:hover:not(:disabled) { background: var(--t-tarjeta-hover); }
 .opcion:disabled { opacity: 0.5; cursor: not-allowed; }
-.opcion.elegida { border-color: #fca5a5; background: #fef2f2; }
-.opcion.elegida > .bi:first-child { color: #dc2626; }
-.opcion:focus-visible { outline: 2px solid #0f172a; outline-offset: 1px; }
+.opcion.elegida { border-color: var(--t-elegido-borde); background: var(--t-icono-fondo); }
+.opcion.elegida > .bi:first-child { color: var(--t-icono-texto); }
+.opcion:focus-visible { outline: 2px solid var(--t-texto); outline-offset: 1px; }
 </style>

@@ -8,13 +8,13 @@
 .seccion-descripcion {
   margin: 0;
   font-size: 0.875rem;
-  color: #475569;
+  color: var(--t-texto-medio);
   line-height: 1.4;
 }
 
 /* Variante sobre el fondo oscuro (secciones sin tarjeta blanca) */
 .seccion-descripcion-oscura {
-  color: #cbd5e1;
+  color: var(--t-sobre-fondo-texto);
   margin-bottom: 1rem;
 }
 
@@ -42,7 +42,7 @@
 
 /* Botón secundario estándar: blanco con borde gris */
 .panel-layout .btn-light.border {
-  border-color: #cbd5e1 !important;
+  border-color: var(--t-borde-fuerte) !important;
 }
 
 /* Las secciones ya vienen dentro del contenedor del panel:
@@ -81,6 +81,6 @@
   margin: 0 0 4px;
   font-size: 1rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--t-texto);
 }
-.subtitulo-tarjeta .bi { color: #dc2626; }
+.subtitulo-tarjeta .bi { color: var(--t-icono-texto); }

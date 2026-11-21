@@ -1,0 +1,61 @@
+import { ref, computed, watch } from 'vue'
+
+// Tema del sitio: claro, oscuro o automático (sigue la configuración del dispositivo).
+// Mientras se migran los colores de todas las pantallas, el tema solo se aplica
+// en desarrollo: en producción el sitio se ve como siempre y el selector no aparece.
+// Al terminar la migración, pasar TEMA_PUBLICADO a true.
+export const TEMA_PUBLICADO = false
+export const temaDisponible = TEMA_PUBLICADO || import.meta.env.DEV
+
+const CLAVE = 'aaab.tema'
+const MODOS = ['claro', 'oscuro', 'auto']
+
+const leerModo = () => {
+  try {
+    const valor = localStorage.getItem(CLAVE)
+    return MODOS.includes(valor) ? valor : null
+  } catch {
+    return null
+  }
+}
+
+const consultaOscuro = typeof window !== 'undefined' ? window.matchMedia?.('(prefers-color-scheme: dark)') : null
+
+// Estado compartido por toda la app
+const modo = ref(leerModo() ?? (TEMA_PUBLICADO ? 'auto' : 'claro'))
+const dispositivoOscuro = ref(!!consultaOscuro?.matches)
+consultaOscuro?.addEventListener?.('change', (e) => { dispositivoOscuro.value = e.matches })
+
+const temaEfectivo = computed(() => {
+  if (modo.value === 'auto') return dispositivoOscuro.value ? 'oscuro' : 'claro'
+  return modo.value
+})
+
+const aplicarTema = () => {
+  const html = document.documentElement
+  if (!temaDisponible) {
+    html.removeAttribute('data-tema')
+    html.removeAttribute('data-bs-theme')
+    return
+  }
+  html.setAttribute('data-tema', temaEfectivo.value)
+  html.setAttribute('data-bs-theme', temaEfectivo.value === 'oscuro' ? 'dark' : 'light')
+}
+
+watch(temaEfectivo, aplicarTema)
+
+// Se llama una vez desde main.js, antes de montar la app
+export const iniciarTema = () => aplicarTema()
+
+export const useTema = () => {
+  const elegirModo = (nuevo) => {
+    if (!MODOS.includes(nuevo)) return
+    modo.value = nuevo
+    try {
+      localStorage.setItem(CLAVE, nuevo)
+    } catch {
+      // Sin almacenamiento (modo privado): el tema se aplica igual, solo no se recuerda
+    }
+  }
+  return { modo, temaEfectivo, temaDisponible, elegirModo }
+}

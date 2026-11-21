@@ -67,13 +67,13 @@ defineProps({
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--t-sobre-fondo-suave);
   margin: 0 0 8px 4px;
 }
 .lista-categoria i { font-size: 0.95rem; color: #dc2626; }
 
 .lista-grupo {
-  background: #fff;
+  background: var(--t-tarjeta);
   border-radius: 16px;
   overflow: hidden;
 }
@@ -84,21 +84,21 @@ defineProps({
   gap: 14px;
   min-height: 60px;
   padding: 8px 16px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--t-tarjeta-borde);
   text-decoration: none;
   transition: background-color 0.15s;
 }
 .lista-fila:first-child { border-top: 0; }
-.lista-fila:hover { background: #f8fafc; }
-.lista-fila:focus-visible { outline: 2px solid #0f172a; outline-offset: -2px; }
+.lista-fila:hover { background: var(--t-tarjeta-hover); }
+.lista-fila:focus-visible { outline: 2px solid var(--t-texto); outline-offset: -2px; }
 
 .lista-icono {
   width: 36px;
   height: 36px;
   min-width: 36px;
   border-radius: 10px;
-  background: #fef2f2;
-  color: #dc2626;
+  background: var(--t-icono-fondo);
+  color: var(--t-icono-texto);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -115,13 +115,13 @@ defineProps({
 .lista-titulo {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--t-texto);
   line-height: 1.25;
 }
 
 .lista-desc {
   font-size: 0.8rem;
-  color: #475569;
+  color: var(--t-texto-medio);
   margin-top: 2px;
   line-height: 1.3;
 }
@@ -141,7 +141,7 @@ defineProps({
 }
 
 .lista-flecha {
-  color: #94a3b8;
+  color: var(--t-texto-tenue);
   font-size: 0.85rem;
 }
 </style>

@@ -270,7 +270,7 @@ onBeforeUnmount(() => {
 .panel-layout {
   position: relative;
   min-height: 100vh;
-  background-color: #0f172a;
+  background-color: var(--t-panel-fondo);
 }
 
 /* ============ ESTRUCTURA: menú lateral + contenido ============ */
@@ -288,22 +288,22 @@ onBeforeUnmount(() => {
 
 /* ============ HEADER UNIFICADO ============ */
 .panel-header {
-  background: #0b1222;
-  border-bottom: 1px solid #1e293b;
+  background: var(--t-barra-fondo);
+  border-bottom: 1px solid var(--t-barra-borde);
   position: relative;
   z-index: 90;
   margin-bottom: 8px;
 }
 .panel-header-inner { min-height: 68px; }
-.titulo-seccion { font-size: 1.1rem; font-weight: 700; color: #fff; min-width: 0; }
-.fecha-hoy { display: block; font-size: 0.8rem; color: #94a3b8; }
+.titulo-seccion { font-size: 1.1rem; font-weight: 700; color: var(--t-barra-texto); min-width: 0; }
+.fecha-hoy { display: block; font-size: 0.8rem; color: var(--t-barra-texto-suave); }
 .perfil-img {
   width: 44px;
   height: 44px;
   min-width: 44px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #334155;
+  border: 2px solid var(--t-avatar-borde);
 }
 .btn-icono {
   width: 44px;
@@ -311,15 +311,15 @@ onBeforeUnmount(() => {
   min-width: 44px;
   border-radius: 50%;
   border: 0;
-  background: #1e293b;
-  color: #fff;
+  background: var(--t-barra-elevado);
+  color: var(--t-barra-texto);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.15rem;
   transition: background 0.2s;
 }
-.btn-icono:hover, .btn-icono:focus-visible { background: #334155; }
+.btn-icono:hover, .btn-icono:focus-visible { background: var(--t-barra-elevado-hover); }
 .badge-notif {
   position: absolute;
   top: 2px;
@@ -335,7 +335,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #0b1222;
+  border: 2px solid var(--t-barra-fondo);
 }
 .min-w-0 { min-width: 0; }
 .panel-notificaciones {

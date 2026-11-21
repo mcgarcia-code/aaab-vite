@@ -39,6 +39,9 @@
     <ListaModulos v-if="gruposFiltrados.length" :grupos="gruposFiltrados" />
     <p v-else class="sin-resultados">No hay módulos con “{{ busqueda }}”.</p>
 
+    <!-- ============ APARIENCIA ============ -->
+    <SelectorTema />
+
     <!-- ============ CERRAR SESIÓN ============ -->
     <button type="button" class="btn-cerrar-sesion" @click="cerrarSesion">
       <i class="bi bi-box-arrow-right"></i> Cerrar sesión
@@ -52,6 +55,7 @@ import { useHead } from '@vueuse/head'
 import { normalizarTexto } from '@/utils/texto'
 import { FOTO_POR_DEFECTO } from '@/composables/useCursoArbitro'
 import ListaModulos from '@/components/comunes/ListaModulos.vue'
+import SelectorTema from '@/components/comunes/SelectorTema.vue'
 
 useHead({ title: 'Menú | Panel del Curso AAAB' })
 
@@ -96,7 +100,7 @@ const gruposFiltrados = computed(() => {
 
 /* ============ PERFIL ============ */
 .tarjeta-perfil {
-  background: #fff;
+  background: var(--t-tarjeta);
   border-radius: 16px;
   overflow: hidden;
 }
@@ -109,8 +113,8 @@ const gruposFiltrados = computed(() => {
   flex-shrink: 0;
 }
 
-.menu-nombre { font-size: 1.05rem; font-weight: 800; color: #0f172a; }
-.menu-id { font-size: 0.85rem; color: #475569; }
+.menu-nombre { font-size: 1.05rem; font-weight: 800; color: var(--t-texto); }
+.menu-id { font-size: 0.85rem; color: var(--t-texto-medio); }
 
 .opcion-perfil {
   display: flex;
@@ -120,17 +124,17 @@ const gruposFiltrados = computed(() => {
   min-height: 52px;
   padding: 0 16px;
   border: 0;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--t-tarjeta-borde);
   background: none;
-  color: #0f172a;
+  color: var(--t-texto);
   font-size: 0.95rem;
   font-weight: 600;
   text-decoration: none;
   text-align: left;
 }
-.opcion-perfil > .bi:first-child { color: #dc2626; font-size: 1.05rem; width: 20px; text-align: center; }
-.opcion-perfil:hover { background: #f8fafc; }
-.flecha { color: #94a3b8; font-size: 0.8rem; }
+.opcion-perfil > .bi:first-child { color: var(--t-icono-texto); font-size: 1.05rem; width: 20px; text-align: center; }
+.opcion-perfil:hover { background: var(--t-tarjeta-hover); }
+.flecha { color: var(--t-texto-tenue); font-size: 0.8rem; }
 
 /* ============ BUSCADOR ============ */
 .buscador {
@@ -139,12 +143,12 @@ const gruposFiltrados = computed(() => {
   gap: 10px;
   min-height: 48px;
   padding: 0 14px;
-  background: #1e293b;
-  border: 1px solid #334155;
+  background: var(--t-baldosa);
+  border: 1px solid var(--t-baldosa-borde);
   border-radius: 14px;
-  color: #94a3b8;
+  color: var(--t-sobre-fondo-suave);
 }
-.buscador:focus-within { border-color: #94a3b8; }
+.buscador:focus-within { border-color: var(--t-sobre-fondo-suave); }
 
 .buscador input {
   flex: 1;
@@ -152,17 +156,17 @@ const gruposFiltrados = computed(() => {
   background: transparent;
   border: 0;
   outline: none;
-  color: #fff;
+  color: var(--t-baldosa-texto);
   font-size: 1rem;
 }
-.buscador input::placeholder { color: #94a3b8; }
+.buscador input::placeholder { color: var(--t-sobre-fondo-suave); }
 /* Sin la "x" nativa del input search: usamos la nuestra */
 .buscador input::-webkit-search-cancel-button { display: none; }
 
 .buscador-limpiar {
   border: 0;
   background: none;
-  color: #94a3b8;
+  color: var(--t-sobre-fondo-suave);
   width: 36px;
   height: 36px;
   display: flex;
@@ -174,7 +178,7 @@ const gruposFiltrados = computed(() => {
   margin: 0;
   padding: 24px 0;
   text-align: center;
-  color: #94a3b8;
+  color: var(--t-sobre-fondo-suave);
   font-size: 0.9rem;
 }
 
@@ -186,13 +190,13 @@ const gruposFiltrados = computed(() => {
   gap: 10px;
   min-height: 52px;
   border-radius: 14px;
-  border: 1px solid #7f1d1d;
+  border: 1px solid var(--t-barra-salir-borde);
   background: transparent;
-  color: #fca5a5;
+  color: var(--t-barra-salir);
   font-size: 0.95rem;
   font-weight: 700;
 }
-.btn-cerrar-sesion:hover { background: #1f1215; }
+.btn-cerrar-sesion:hover { background: var(--t-barra-salir-hover); }
 
 .animate__animated { animation-duration: 0.4s; }
 </style>

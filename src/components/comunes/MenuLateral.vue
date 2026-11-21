@@ -54,6 +54,9 @@
       </template>
     </nav>
 
+    <!-- Apariencia (con el menú oculto no entra: se elige desde Menú) -->
+    <SelectorTema compacto class="lateral-texto lateral-tema" />
+
     <button type="button" class="lateral-link lateral-salir" @click="emit('salir')" title="Cerrar sesión">
       <i class="bi bi-box-arrow-right"></i><span class="lateral-texto">Cerrar sesión</span>
     </button>
@@ -62,6 +65,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import SelectorTema from '@/components/comunes/SelectorTema.vue'
 
 // Menú lateral de escritorio, común a panel-arbitro y panel-admin.
 // grupos: [{ categoria, items: [{ to | href, title, icon, badge? }] }]
@@ -112,8 +116,8 @@ const alternar = () => {
   gap: 4px;
   min-height: 100vh;
   padding: 16px 12px;
-  background: #0b1222;
-  border-right: 1px solid #1e293b;
+  background: var(--t-barra-fondo);
+  border-right: 1px solid var(--t-barra-borde);
   z-index: 95;
   transition: flex-basis 0.2s ease;
 }
@@ -129,13 +133,13 @@ const alternar = () => {
   padding: 8px;
   border: 0;
   border-radius: 12px;
-  background: #111a2e;
-  color: #fff;
+  background: var(--t-barra-perfil);
+  color: var(--t-barra-texto);
   text-align: left;
   margin-bottom: 8px;
 }
-.lateral-perfil.interactivo:hover { background: #1e293b; }
-.lateral-perfil:focus-visible { outline: 2px solid #94a3b8; outline-offset: 2px; }
+.lateral-perfil.interactivo:hover { background: var(--t-barra-elevado); }
+.lateral-perfil:focus-visible { outline: 2px solid var(--t-barra-texto-suave); outline-offset: 2px; }
 
 .lateral-foto {
   width: 44px;
@@ -143,15 +147,15 @@ const alternar = () => {
   min-width: 44px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #334155;
+  border: 2px solid var(--t-avatar-borde);
 }
 
 .lateral-iniciales {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #334155;
-  color: #fff;
+  background: var(--t-barra-elevado-hover);
+  color: var(--t-barra-texto);
   font-size: 0.9rem;
   font-weight: 700;
 }
@@ -164,13 +168,13 @@ const alternar = () => {
 
 .lateral-subtitulo {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--t-barra-texto-suave);
   max-width: 100%;
 }
 
 .lateral-chevron {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--t-barra-texto-suave);
   transition: transform 0.2s;
 }
 .lateral-chevron.girado { transform: rotate(180deg); }
@@ -188,7 +192,7 @@ const alternar = () => {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--t-barra-categoria);
 }
 
 .lateral-link {
@@ -200,7 +204,7 @@ const alternar = () => {
   border: 0;
   border-radius: 10px;
   background: none;
-  color: #cbd5e1;
+  color: var(--t-barra-texto-medio);
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
@@ -211,19 +215,19 @@ const alternar = () => {
 .lateral-icono .bi {
   width: 18px;
   font-size: 1rem;
-  color: #94a3b8;
+  color: var(--t-barra-texto-suave);
   text-align: center;
   display: inline-block;
 }
-.lateral-link:hover { background: #1e293b; color: #fff; }
-.lateral-link:focus-visible { outline: 2px solid #94a3b8; outline-offset: -2px; }
+.lateral-link:hover { background: var(--t-barra-elevado); color: var(--t-barra-texto); }
+.lateral-link:focus-visible { outline: 2px solid var(--t-barra-texto-suave); outline-offset: -2px; }
 
 /* Sección actual: fondo resaltado e ícono rojo */
-.lateral-link.activo { background: #1e293b; color: #fff; font-weight: 600; }
+.lateral-link.activo { background: var(--t-barra-elevado); color: var(--t-barra-texto); font-weight: 600; }
 .lateral-link.activo > .bi:first-child,
-.lateral-link.activo .lateral-icono .bi { color: #f87171; }
+.lateral-link.activo .lateral-icono .bi { color: var(--t-barra-acento); }
 
-.lateral-externo { font-size: 0.7rem; color: #64748b; }
+.lateral-externo { font-size: 0.7rem; color: var(--t-barra-categoria); }
 
 .lateral-punto {
   position: absolute;
@@ -251,11 +255,14 @@ const alternar = () => {
 
 .lateral-salir {
   margin-top: auto;
-  color: #fca5a5;
+  color: var(--t-barra-salir);
 }
-.lateral-salir > .bi:first-child { color: #fca5a5; }
+/* Con el selector de apariencia, es el selector el que baja al pie */
+.lateral-tema { margin-top: auto; padding: 8px 4px 4px; }
+.lateral-tema + .lateral-salir { margin-top: 0; }
+.lateral-salir > .bi:first-child { color: var(--t-barra-salir); }
 
-.lateral-toggle { color: #94a3b8; margin-bottom: 4px; }
+.lateral-toggle { color: var(--t-barra-texto-suave); margin-bottom: 4px; }
 
 /* ============ MENÚ OCULTO: solo columna de íconos ============ */
 .panel-lateral.colapsado {
@@ -279,6 +286,6 @@ const alternar = () => {
 .panel-lateral.colapsado .lateral-categoria {
   height: 1px;
   margin: 10px 8px;
-  background: #1e293b;
+  background: var(--t-barra-borde);
 }
 </style>

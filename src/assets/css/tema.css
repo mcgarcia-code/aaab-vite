@@ -1,0 +1,124 @@
+/* =========================================================
+   Colores del sitio por tema (claro / oscuro / automático)
+   ---------------------------------------------------------
+   - Sin data-tema (producción mientras se migra): el aspecto de siempre,
+     estructura de los paneles en azul marino y tarjetas blancas.
+   - data-tema="claro": estructura clara (fondo gris, barras blancas).
+   - data-tema="oscuro": todo oscuro, incluidas las tarjetas.
+   El atributo lo pone useTema en <html>. Los componentes usan siempre
+   estas variables en lugar de colores escritos a mano.
+   ========================================================= */
+
+:root {
+  /* ── Estructura de los paneles: fondo, encabezado, menú lateral y barra inferior ── */
+  --t-panel-fondo: #0f172a;
+  --t-barra-fondo: #0b1222;
+  --t-barra-borde: #1e293b;
+  --t-barra-texto: #ffffff;
+  --t-barra-texto-medio: #cbd5e1;
+  --t-barra-texto-suave: #94a3b8;
+  --t-barra-categoria: #64748b;
+  --t-barra-elevado: #1e293b;
+  --t-barra-elevado-hover: #334155;
+  --t-barra-perfil: #111a2e;
+  --t-barra-acento: #f87171;
+  --t-barra-salir: #fca5a5;
+  --t-barra-salir-borde: #7f1d1d;
+  --t-barra-salir-hover: #1f1215;
+  --t-avatar-borde: #334155;
+
+  /* Texto apoyado directo sobre el fondo del panel (fuera de una tarjeta) */
+  --t-sobre-fondo-texto: #cbd5e1;
+  --t-sobre-fondo-suave: #94a3b8;
+
+  /* Baldosas sobre el fondo del panel (accesos rápidos, buscador) */
+  --t-baldosa: #1e293b;
+  --t-baldosa-borde: #334155;
+  --t-baldosa-hover: #334155;
+  --t-baldosa-texto: #f1f5f9;
+
+  /* ── Tarjetas y contenido ── */
+  --t-tarjeta: #ffffff;
+  --t-tarjeta-borde: #e2e8f0;
+  --t-tarjeta-hover: #f8fafc;
+  --t-superficie: #f8fafc;
+  --t-chip: #f1f5f9;
+  --t-texto: #0f172a;
+  --t-texto-medio: #475569;
+  --t-texto-suave: #64748b;
+  --t-texto-tenue: #94a3b8;
+  --t-borde-fuerte: #cbd5e1;
+  --t-icono-fondo: #fef2f2;
+  --t-icono-texto: #dc2626;
+  --t-elegido-borde: #fca5a5;
+  --t-peligro-texto: #b91c1c;
+  --t-velo: rgba(2, 6, 23, 0.6);
+}
+
+/* ── Claro: la estructura de los paneles también pasa a clara ── */
+:root[data-tema="claro"] {
+  --t-panel-fondo: #f1f5f9;
+  --t-barra-fondo: #ffffff;
+  --t-barra-borde: #e2e8f0;
+  --t-barra-texto: #0f172a;
+  --t-barra-texto-medio: #334155;
+  --t-barra-texto-suave: #64748b;
+  --t-barra-categoria: #64748b;
+  --t-barra-elevado: #f1f5f9;
+  --t-barra-elevado-hover: #e2e8f0;
+  --t-barra-perfil: #f8fafc;
+  --t-barra-acento: #dc2626;
+  --t-barra-salir: #b91c1c;
+  --t-barra-salir-borde: #fca5a5;
+  --t-barra-salir-hover: #fef2f2;
+  --t-avatar-borde: #cbd5e1;
+
+  --t-sobre-fondo-texto: #475569;
+  --t-sobre-fondo-suave: #64748b;
+
+  --t-baldosa: #ffffff;
+  --t-baldosa-borde: #cbd5e1;
+  --t-baldosa-hover: #f8fafc;
+  --t-baldosa-texto: #0f172a;
+}
+
+/* ── Oscuro: estructura azul marino y tarjetas oscuras ── */
+:root[data-tema="oscuro"] {
+  --t-tarjeta: #1e293b;
+  --t-tarjeta-borde: #334155;
+  --t-tarjeta-hover: #273449;
+  --t-superficie: #162033;
+  --t-chip: #334155;
+  --t-texto: #f1f5f9;
+  --t-texto-medio: #cbd5e1;
+  --t-texto-suave: #94a3b8;
+  --t-texto-tenue: #94a3b8;
+  --t-borde-fuerte: #475569;
+  --t-icono-fondo: #2a1215;
+  --t-icono-texto: #f87171;
+  --t-elegido-borde: #7f1d1d;
+  --t-peligro-texto: #fca5a5;
+  --t-velo: rgba(2, 6, 23, 0.75);
+
+  /* Bootstrap en modo oscuro (data-bs-theme="dark"), con la paleta del sitio */
+  --bs-body-bg: #1e293b;
+  --bs-body-bg-rgb: 30, 41, 59;
+  --bs-body-color: #e2e8f0;
+  --bs-body-color-rgb: 226, 232, 240;
+  --bs-emphasis-color: #ffffff;
+  --bs-emphasis-color-rgb: 255, 255, 255;
+  --bs-secondary-color: #cbd5e1;
+  --bs-secondary-bg: #273449;
+  --bs-secondary-bg-rgb: 39, 52, 73;
+  --bs-tertiary-color: #94a3b8;
+  --bs-tertiary-bg: #162033;
+  --bs-tertiary-bg-rgb: 22, 32, 51;
+  --bs-border-color: #334155;
+  --bs-border-color-translucent: rgba(148, 163, 184, 0.2);
+  --bs-heading-color: #f8fafc;
+}
+
+/* Las tarjetas de Bootstrap toman el color de tarjeta del tema */
+.card {
+  --bs-card-bg: var(--t-tarjeta);
+}
