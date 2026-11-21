@@ -10,6 +10,41 @@
   overscroll-behavior: contain;
 }
 
+/* Celular, tablet y app (con barra inferior): la planilla queda fija en la pantalla.
+   La tarjeta ocupa exactamente el alto libre entre el encabezado del panel y la barra
+   inferior, así la página no scrollea y solo se desliza la tabla por dentro
+   (la fila de títulos, la barra de herramientas y las solapas de grupo quedan quietas).
+   192px = encabezado del panel (77) + márgenes del contenido (16) + reserva de la barra inferior (96) + 3 de margen */
+@media (max-width: 991.98px) {
+  .planilla-general.full-screen-wrapper {
+    padding-bottom: 0 !important;
+  }
+  .planilla-general .admin-panel {
+    min-height: 0 !important;
+    padding: 0 !important;
+  }
+  .planilla-card {
+    height: calc(100vh - 192px - env(safe-area-inset-bottom));
+    height: calc(100dvh - 192px - env(safe-area-inset-bottom));
+    min-height: 360px;
+    margin-bottom: 0 !important;
+    display: flex;
+    flex-direction: column;
+  }
+  .planilla-cuerpo {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .planilla-cuerpo > * { flex-shrink: 0; }
+  .planilla-cuerpo > .tabla-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+  }
+}
+
 @media (max-width: 767.98px) {
   /* Barra de herramientas: controles en una fila que se acomoda y la leyenda abajo, en una línea con scroll */
   .barra-planilla {
@@ -40,14 +75,6 @@
   .hoja-tab {
     padding: 6px 10px;
     font-size: 0.74rem;
-  }
-
-  /* La tabla ocupa el alto disponible entre la barra superior y la inferior del panel,
-     así se scrollea solo la tabla y la fila de títulos queda siempre a la vista */
-  .tabla-scroll {
-    max-height: calc(100vh - 290px);
-    max-height: calc(100dvh - 290px);
-    min-height: 280px;
   }
 
   .tabla-excel { font-size: 0.72rem; }

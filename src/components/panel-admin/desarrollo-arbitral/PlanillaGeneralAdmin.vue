@@ -1,8 +1,8 @@
 <template>
-  <div class="full-screen-wrapper px-3 px-md-4">
+  <div class="full-screen-wrapper planilla-general px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
-      <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
+      <div class="card planilla-card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <!-- ============ HEADER ============ -->
         <div class="card-header bg-white py-3 border-bottom">
@@ -10,7 +10,7 @@
         </div>
 
         <!-- ============ BODY ============ -->
-        <div class="card-body p-0">
+        <div class="card-body planilla-cuerpo p-0">
 
           <EstadoCargando v-if="cargando" texto="Cargando planilla" />
 
