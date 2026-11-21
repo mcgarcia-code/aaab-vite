@@ -10,6 +10,9 @@
       </div>
     </section>
 
+    <!-- ============ APARIENCIA ============ -->
+    <SelectorTema />
+
     <!-- ============ BUSCADOR DE MÓDULOS ============ -->
     <label class="buscador">
       <i class="bi bi-search"></i>
@@ -22,9 +25,6 @@
     <!-- ============ MÓDULOS ============ -->
     <ListaModulos v-if="gruposFiltrados.length" :grupos="gruposFiltrados" en-columnas />
     <p v-else class="sin-resultados">No hay módulos con “{{ busqueda }}”.</p>
-
-    <!-- ============ APARIENCIA ============ -->
-    <SelectorTema />
 
     <!-- ============ CERRAR SESIÓN ============ -->
     <button type="button" class="btn-cerrar-sesion" @click="cerrarSesion">
