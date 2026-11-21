@@ -53,7 +53,7 @@ export default defineConfig({
         '/tribunal-de-etica',
         '/sanciones',
         '/preguntas-frecuentes',
-        '/catalogo',
+        '/catalogo/',
 
         
       ],
