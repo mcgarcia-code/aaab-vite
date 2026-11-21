@@ -240,6 +240,7 @@ const TITULOS_SECCION = {
   DelegadoTecnico: 'Delegado técnico',
   DesignacionesArbitro: 'Designaciones',
   ExamenAsamblea: 'Exámenes',
+  PracticaCatalogo: 'Practicar catálogo',
   InformesArbitro: 'Informes',
   PanelMenu: 'Menú'
 }

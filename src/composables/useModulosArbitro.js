@@ -31,6 +31,7 @@ const MODULOS = [
   { to: '/panel-arbitro/indumentaria', title: 'Indumentaria', icon: 'bi bi-bag-fill', desc: 'Hacé y seguí tus pedidos', categoria: 'Tesorería' },
   { to: '/panel-arbitro/aportes', title: 'Aportes', icon: 'bi bi-cash-coin', desc: 'Estado de tus pagos', categoria: 'Tesorería', idsPermitidos: [1, 2] },
 
+  { to: '/panel-arbitro/practica-catalogo', title: 'Practicar catálogo', icon: 'bi bi-ui-checks-grid', desc: 'Exámenes de práctica del reglamento', categoria: 'Herramientas' },
   { to: '/panel-arbitro/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Datos fiscales de clubes', categoria: 'Herramientas' },
   { href: 'https://refflix.com.ar', title: 'Ref-Flix', icon: 'bi bi-cast', desc: 'Plataforma de videos', categoria: 'Herramientas' },
   // En prueba: solo los ID 1 y 2 (la ruta tiene la misma restricción)

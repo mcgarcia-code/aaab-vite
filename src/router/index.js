@@ -131,6 +131,9 @@ const routes = [
       // --- EXAMEN ASAMBLEA GENERAL - REUNIÓN MENSUAL ---
       { path: 'examen-asamblea', name: 'ExamenAsamblea', component: () => import('../components/panel-arbitro/examenes/ExamenAsambleaGeneral.vue') },
 
+      // --- PRÁCTICA DEL CATÁLOGO (exámenes de práctica guardados por árbitro) ---
+      { path: 'practica-catalogo', name: 'PracticaCatalogo', component: () => import('../components/panel-arbitro/practica-catalogo/PracticaCatalogo.vue') },
+
       // --- INFORMES ---
       { path: 'informes', name: 'InformesArbitro', component: () => import('../components/panel-arbitro/informes/MisInformes.vue') },
 
