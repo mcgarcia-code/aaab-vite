@@ -213,8 +213,8 @@ const descargarExcelAsistencia = async () => {
 <style scoped src="@/assets/css/planilla-curso.css"></style>
 <style scoped>
 .th-clase { min-width: 90px; cursor: pointer; }
-.th-clase:hover { background-color: #e2e6ea !important; }
+.th-clase:hover { background-color: var(--o-chip, #e2e6ea) !important; }
 .texto-recortado { max-width: 120px; overflow: hidden; text-overflow: ellipsis; margin: 0 auto; }
-.chip-nota { border: 1px solid #e9ecef; }
+.chip-nota { border: 1px solid var(--o-borde, #e9ecef); }
 .min-w-0 { min-width: 0; }
 </style>

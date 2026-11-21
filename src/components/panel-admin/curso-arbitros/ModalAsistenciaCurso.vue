@@ -148,10 +148,10 @@ const intentarCerrar = () => {
 .filtro-badge { cursor: pointer; font-size: 0.75rem; padding: 0.35em 0.65em; transition: opacity 0.15s ease, box-shadow 0.15s ease; }
 .filtro-badge.activo { box-shadow: 0 0 0 2px #0f172a; }
 .filtro-badge.apagado { opacity: 0.45; }
-.fila-asistencia { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
+.fila-asistencia { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; padding: 8px 10px; }
 .busqueda-asistencia { position: relative; }
 .busqueda-asistencia input { padding-right: 30px; }
-.btn-limpiar { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); border: none; background: transparent; color: #adb5bd; padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; line-height: 1; }
-.btn-limpiar:hover { color: #dc3545; }
+.btn-limpiar { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); border: none; background: transparent; color: var(--o-texto-suave, #adb5bd); padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; line-height: 1; }
+.btn-limpiar:hover { color: var(--o-rojo-texto, #dc3545); }
 .min-w-0 { min-width: 0; }
 </style>

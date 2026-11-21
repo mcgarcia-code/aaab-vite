@@ -193,14 +193,14 @@ const guardar = () => {
   min-height: 36px;
   padding: 0 14px;
   border-radius: 999px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
+  border: 1px solid var(--o-borde, #e2e8f0);
+  background: var(--o-tarjeta, #fff);
   font-size: 0.85rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
 }
-.estados .badge { background: #e2e8f0; color: #0f172a; }
-.estados button.activo { background: #0f172a; border-color: #0f172a; color: #fff; }
+.estados .badge { background: var(--o-chip, #e2e8f0); color: var(--o-texto, #0f172a); }
+.estados button.activo { background: #0f172a; border-color: var(--o-texto, #0f172a); color: #fff; }
 .estados button.activo .badge { background: #dc2626; color: #fff; }
 
 .fila {
@@ -210,12 +210,12 @@ const guardar = () => {
   gap: 10px;
   padding: 12px 14px;
   margin-bottom: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-left: 4px solid;
   border-radius: 12px;
 }
-.titulo-clip { font-size: 0.95rem; font-weight: 800; color: #0f172a; margin: 0 0 2px; }
-.datos-clip { font-size: 0.8rem; color: #64748b; margin: 0; }
+.titulo-clip { font-size: 0.95rem; font-weight: 800; color: var(--o-texto, #0f172a); margin: 0 0 2px; }
+.datos-clip { font-size: 0.8rem; color: var(--o-texto-suave, #64748b); margin: 0; }
 .acciones { display: flex; flex-wrap: wrap; gap: 6px; }
 @media (max-width: 767px) {
   .acciones { width: 100%; }
@@ -241,14 +241,14 @@ const guardar = () => {
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-radius: 12px;
   cursor: pointer;
 }
-.opcion > .bi { font-size: 1.2rem; color: #64748b; }
-.opcion.elegida { border-color: #dc2626; background: #fef2f2; }
-.opcion.elegida > .bi { color: #dc2626; }
-.opcion:focus-within { outline: 2px solid #0f172a; outline-offset: 2px; }
+.opcion > .bi { font-size: 1.2rem; color: var(--o-texto-suave, #64748b); }
+.opcion.elegida { border-color: #dc2626; background: var(--o-rojo-fondo, #fef2f2); }
+.opcion.elegida > .bi { color: var(--o-rojo-texto, #dc2626); }
+.opcion:focus-within { outline: 2px solid var(--o-texto, #0f172a); outline-offset: 2px; }
 
 .min-w-0 { min-width: 0; }
 </style>

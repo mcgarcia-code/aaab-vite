@@ -515,8 +515,8 @@ onMounted(async () => {
 }
 
 .evento-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--o-tarjeta, #ffffff);
+  border: 1px solid var(--o-borde, #e5e7eb);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -537,7 +537,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   padding: 0.6rem 0.8rem;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--o-borde, #dee2e6);
   border-radius: 0.6rem;
   cursor: pointer;
   font-size: 0.9rem;
@@ -547,12 +547,12 @@ onMounted(async () => {
 
 .grupo-item:hover {
   border-color: #dc3545;
-  background: #fff5f5;
+  background: var(--o-rojo-fondo, #fff5f5);
 }
 
 .grupo-item.activo {
   border-color: #dc3545;
-  background: #fff0f0;
+  background: var(--o-rojo-fondo, #fff0f0);
   font-weight: 600;
 }
 
@@ -567,7 +567,7 @@ onMounted(async () => {
 .arbitros-tabla-wrap {
   max-height: 40vh;
   overflow-y: auto;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--o-borde, #dee2e6);
   border-radius: 0.5rem;
 }
 </style>

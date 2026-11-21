@@ -751,18 +751,18 @@ onMounted(() => cargar(anio.value))
 <style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
 
-.tarjeta-clase { background-color: #fff; }
-.tarjeta-clase.pasada { background-color: #f8fafc; opacity: 0.75; }
+.tarjeta-clase { background-color: var(--o-tarjeta, #fff); }
+.tarjeta-clase.pasada { background-color: var(--o-superficie, #f8fafc); opacity: 0.75; }
 .tarjeta-clase.proxima { border-color: #dc3545 !important; box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.15); }
 .tarjeta-clase.falta-asistencia { opacity: 1; border-color: #ffc107 !important; box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.25); }
-.aviso-asistencia { color: #856404; background: #fff3cd; border-radius: 6px; padding: 4px 8px; }
+.aviso-asistencia { color: var(--o-ambar-texto, #856404); background: var(--o-ambar-fondo, #fff3cd); border-radius: 6px; padding: 4px 8px; }
 .texto-multilinea { white-space: pre-wrap; }
-.opcion-modo { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; cursor: pointer; }
-.opcion-modo.activa { border-color: #dc3545; background: #fef2f2; }
+.opcion-modo { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+.opcion-modo.activa { border-color: #dc3545; background: var(--o-rojo-fondo, #fef2f2); }
 
 /* Pestañas (igual que Exámenes del curso) */
 .pestanas-cronograma { scrollbar-width: thin; }
-.pestanas-cronograma .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; white-space: nowrap; }
+.pestanas-cronograma .nav-link { color: var(--o-texto-medio, #475569); background: var(--o-chip, #f1f5f9); font-size: 0.85rem; white-space: nowrap; }
 .pestanas-cronograma .nav-link.active { background: #dc3545; color: #fff; }
 
 </style>

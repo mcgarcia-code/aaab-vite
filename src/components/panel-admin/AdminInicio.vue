@@ -238,7 +238,7 @@ onMounted(async () => {
 .link-ver-todos {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #b91c1c;
+  color: var(--o-rojo-texto, #b91c1c);
   text-decoration: none;
 }
 .link-ver-todos:hover { text-decoration: underline; }
@@ -248,7 +248,7 @@ onMounted(async () => {
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--o-borde, #e2e8f0);
 }
 .evento:first-of-type { border-top: 0; }
 
@@ -257,14 +257,14 @@ onMounted(async () => {
   min-width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: #f1f5f9;
+  background: var(--o-chip, #f1f5f9);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
-.cal-dia { font-size: 1.05rem; font-weight: 800; color: #0f172a; line-height: 1; }
-.cal-mes { font-size: 0.7rem; font-weight: 700; color: #b91c1c; margin-top: 2px; }
+.cal-dia { font-size: 1.05rem; font-weight: 800; color: var(--o-texto, #0f172a); line-height: 1; }
+.cal-mes { font-size: 0.7rem; font-weight: 700; color: var(--o-rojo-texto, #b91c1c); margin-top: 2px; }
 .cal-box.hoy { background: #dc2626; }
 .cal-box.hoy .cal-dia, .cal-box.hoy .cal-mes { color: #fff; }
 
@@ -277,7 +277,7 @@ onMounted(async () => {
 .evento-detalle {
   display: block;
   font-size: 0.8rem;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
 }
 
 .evento-pendiente {
@@ -285,18 +285,18 @@ onMounted(async () => {
   margin-top: 3px;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #92400e;
-  background: #fef3c7;
+  color: var(--o-ambar-texto, #92400e);
+  background: var(--o-ambar-fondo, #fef3c7);
   padding: 2px 8px;
   border-radius: 999px;
 }
 
 /* ============ PENDIENTES ============ */
 .tarjeta-pendientes {
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
   border-radius: 20px;
   padding: 16px;
-  color: #0f172a;
+  color: var(--o-texto, #0f172a);
 }
 
 .titulo-bloque {
@@ -309,8 +309,8 @@ onMounted(async () => {
   align-items: center;
   gap: 12px;
   padding: 12px 0;
-  border-top: 1px solid #e2e8f0;
-  color: #0f172a;
+  border-top: 1px solid var(--o-borde, #e2e8f0);
+  color: var(--o-texto, #0f172a);
   text-decoration: none;
 }
 .pendiente:first-of-type { border-top: 0; }
@@ -321,8 +321,8 @@ onMounted(async () => {
   height: 40px;
   min-width: 40px;
   border-radius: 12px;
-  background: #fef2f2;
-  color: #dc2626;
+  background: var(--o-rojo-fondo, #fef2f2);
+  color: var(--o-rojo-texto, #dc2626);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -338,10 +338,10 @@ onMounted(async () => {
 .pendiente-detalle {
   display: block;
   font-size: 0.8rem;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
 }
 
-.pendiente-flecha { color: #94a3b8; font-size: 0.8rem; }
+.pendiente-flecha { color: var(--o-texto-suave, #94a3b8); font-size: 0.8rem; }
 
 .al-dia {
   display: flex;
@@ -349,9 +349,9 @@ onMounted(async () => {
   gap: 10px;
   padding: 8px 0 4px;
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
 }
-.al-dia .bi { font-size: 1.2rem; color: #16a34a; }
+.al-dia .bi { font-size: 1.2rem; color: var(--o-verde-texto, #16a34a); }
 
 
 .animate__animated { animation-duration: 0.4s; }

@@ -13,12 +13,16 @@ const TEXTO = {
   ...G('#198754 #15803d #166534 #0f5132 #146c43 #16a34a #047857 #065f46 #059669 #14532d #2f8a45', 'o-verde-texto'),
   ...G('#92400e #b45309 #856404 #664d03 #a16207 #d97706 #997404 #9a3412 #c2410c #78350f #854d0e #a6841f #b5691a', 'o-ambar-texto'),
   ...G('#1d4ed8 #2563eb #0d6efd #1e40af #0369a1 #055160 #084298 #1e3a8a #0284c7 #0c4a6e #3730a3 #4338ca #1c6ea4 #006064', 'o-azul-texto'),
+  ...G('#7e22ce #5b21b6 #6b21a8 #7c3aed', 'o-violeta-texto'),
 }
 const FONDO = {
   ...G('#ffffff', 'o-tarjeta'),
   ...G('#f8fafc #f8f9fa #f9fafb #fafafa #f5f5f5 #fcfcfd #fdfdfd #f7f7f7', 'o-superficie'),
-  ...G('#f1f5f9 #f1f3f5 #f3f4f6 #e9ecef #eef2f7 #f0f0f0 #f1f1f1 #e2e8f0 #e5e7eb #dee2e6 #eeeeee #f4f4f5 #f0f2f5 #eef1f5', 'o-chip'),
-  ...G('#fef2f2 #fee2e2 #fde8e8 #f8d7da #fff5f5 #fecaca #fff1f2 #ffe4e6 #fde7ea #fff8f8', 'o-rojo-fondo'),
+  ...G('#f1f5f9 #f1f3f5 #f3f4f6 #e9ecef #eef2f7 #f0f0f0 #f1f1f1 #e2e8f0 #e5e7eb #dee2e6 #eeeeee #f4f4f5 #f0f2f5 #eef1f5 #e2e6ea', 'o-chip'),
+  ...G('#fef2f2 #fee2e2 #fde8e8 #f8d7da #fff5f5 #fecaca #fff1f2 #ffe4e6 #fde7ea #fff8f8 #fff0f0', 'o-rojo-fondo'),
+  ...G('#fca5a5', 'o-rojo-fuerte'),
+  ...G('#93e2ab', 'o-verde-fuerte'),
+  ...G('#f3e8ff #ede9fe #faf5ff #f5f3ff', 'o-violeta-fondo'),
   ...G('#d1e7dd #dcfce7 #f0fdf4 #ecfdf5 #d1fae5 #bbf7d0 #e3f5e6', 'o-verde-fondo'),
   ...G('#fff3cd #fef3c7 #fffbeb #fef9c3 #fff7ed #ffedd5 #fefce8 #fdf3d3 #fdecd8 #fef08a', 'o-ambar-fondo'),
   ...G('#dbeafe #eff6ff #cfe2ff #e0f2fe #cff4fc #f0f9ff #e0e7ff #eef2ff #dceefb #e0f7fa', 'o-azul-fondo'),
@@ -31,6 +35,7 @@ const BORDE = {
   ...G('#a3cfbb #bbf7d0 #badbcc #86efac #a7f3d0 #bfe6c8', 'o-verde-borde'),
   ...G('#ffe69c #fde68a #fcd34d #ffecb5 #fed7aa #f2e2a5 #f6d3a8 #fef08a', 'o-ambar-borde'),
   ...G('#bfdbfe #9ec5fe #93c5fd #b6effb #c7d2fe #b6dcf5', 'o-azul-borde'),
+  ...G('#e9d5ff #ddd6fe', 'o-violeta-borde'),
 }
 const tablaPara = (prop) => {
   prop = prop.toLowerCase()

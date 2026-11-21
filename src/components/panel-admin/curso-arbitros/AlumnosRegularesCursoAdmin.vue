@@ -480,10 +480,10 @@ onMounted(cargar)
 <style scoped src="@/assets/css/planilla-curso.css"></style>
 <style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
-.dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
-.fila-detalle { border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; }
-.opcion-final { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
-.opcion-final.activa { border-color: #dc3545; background: #fef2f2; }
+.dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: var(--o-texto-suave, #64748b); text-transform: uppercase; }
+.fila-detalle { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 8px; padding: 6px 10px; }
+.opcion-final { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+.opcion-final.activa { border-color: #dc3545; background: var(--o-rojo-fondo, #fef2f2); }
 
 /* Planilla: anchos de columna propios (el resto está en planilla-curso.css) */
 .th-corta { min-width: 70px; }

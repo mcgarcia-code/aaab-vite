@@ -149,6 +149,12 @@
   --o-azul-texto: #93c5fd;
   --o-azul-fondo: #0c2340;
   --o-azul-borde: #1e3a8a;
+  --o-violeta-texto: #c4b5fd;
+  --o-violeta-fondo: #2e1065;
+  --o-violeta-borde: #5b21b6;
+  /* Filas resaltadas de las planillas (rojo / verde intensos) */
+  --o-rojo-fuerte: #7f1d1d;
+  --o-verde-fuerte: #14532d;
 }
 
 /* =========================================================

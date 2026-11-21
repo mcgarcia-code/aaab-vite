@@ -655,10 +655,10 @@ onMounted(obtenerRechazos)
   font-weight: 700;
   white-space: nowrap;
 }
-.justificado { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.creado { background: #fef3c7; color: #d97706; border: 1px solid #fde047; }
-.injustificado { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-.borrado { background: #e5e7eb; color: #4b5563; border: 1px solid #d1d5db; }
+.justificado { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border: 1px solid var(--o-verde-borde, #bbf7d0); }
+.creado { background: var(--o-ambar-fondo, #fef3c7); color: var(--o-ambar-texto, #d97706); border: 1px solid #fde047; }
+.injustificado { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
+.borrado { background: var(--o-chip, #e5e7eb); color: var(--o-texto-medio, #4b5563); border: 1px solid var(--o-borde, #d1d5db); }
 
 /* ====================================================
    BADGE DE FUNCIÓN (árbitro / delegado técnico)
@@ -671,7 +671,7 @@ onMounted(obtenerRechazos)
   font-weight: 700;
   white-space: nowrap;
 }
-.func-arbitro { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
-.func-delegado { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+.func-arbitro { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #334155); border: 1px solid var(--o-borde, #cbd5e1); }
+.func-delegado { background: var(--o-violeta-fondo, #f3e8ff); color: var(--o-violeta-texto, #7e22ce); border: 1px solid var(--o-violeta-borde, #e9d5ff); }
 
 </style>

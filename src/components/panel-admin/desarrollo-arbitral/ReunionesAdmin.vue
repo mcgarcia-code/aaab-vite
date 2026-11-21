@@ -1153,17 +1153,17 @@ onMounted(async () => {
 .tabla-fija { border-collapse: separate; border-spacing: 0; }
 .tabla-fija th, .tabla-fija td { border-left: none !important; border-right: none !important; }
 .col-fija { position: sticky; background-color: inherit; z-index: 10; }
-.tabla-fija thead .col-fija { background-color: #f8f9fa; z-index: 12; }
-.tabla-fija tbody .col-fija { background-color: #ffffff; }
+.tabla-fija thead .col-fija { background-color: var(--o-superficie, #f8f9fa); z-index: 12; }
+.tabla-fija tbody .col-fija { background-color: var(--o-tarjeta, #ffffff); }
 .col-id       { left: 0;     min-width: 60px;  }
 .col-acciones { left: 60px;  min-width: 90px;  }
 .col-apellido { left: 150px; min-width: 150px; }
 .col-nombre   { left: 300px; min-width: 150px; }
 .col-nombre::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 1px; background: linear-gradient(to right, rgba(0,0,0,0.1), transparent); }
-.fila-presente           { background-color: #f0fdf4 !important; }
-.fila-presente .col-fija { background-color: #f0fdf4 !important; }
-.fila-ausente            { background-color: #f9fafb !important; }
-.fila-ausente  .col-fija { background-color: #f9fafb !important; }
+.fila-presente           { background-color: var(--o-verde-fondo, #f0fdf4) !important; }
+.fila-presente .col-fija { background-color: var(--o-verde-fondo, #f0fdf4) !important; }
+.fila-ausente            { background-color: var(--o-superficie, #f9fafb) !important; }
+.fila-ausente  .col-fija { background-color: var(--o-superficie, #f9fafb) !important; }
 .texto-creacion { font-size: 0.75rem; }
 .control-encabezado { height: 40px; }
 .select-reunion { width: 100%; min-width: 0; font-size: 1rem; }
@@ -1180,8 +1180,8 @@ onMounted(async () => {
   .select-anio { font-size: 0.875rem; }
 }
 .select-disertante { width: 190px; max-width: 190px; font-size: 0.75rem; }
-.radio-presente { accent-color: #198754; }
-.radio-ausente  { accent-color: #6c757d; }
+.radio-presente { accent-color: var(--o-verde-texto, #198754); }
+.radio-ausente  { accent-color: var(--o-texto-suave, #6c757d); }
 .estado-indicator { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; }
 .toggle-asist { cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; user-select: none; font-size: 0.85rem; }
 .toggle-asist:active { opacity: 0.82; }

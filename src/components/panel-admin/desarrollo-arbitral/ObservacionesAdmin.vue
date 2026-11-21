@@ -452,7 +452,7 @@
       <!-- Historial PC -->
       <div class="d-none d-md-block table-responsive border rounded shadow-sm m-0">
         <table class="table table-sm table-hover align-middle m-0 texto-075">
-          <thead class="table-light" style="border-bottom: 2px solid #e2e8f0;">
+          <thead class="table-light" style="border-bottom: 2px solid var(--o-borde, #e2e8f0);">
             <tr>
               <th class="py-2 ps-3 fw-bold text-uppercase texto-075">Fecha</th>
               <th class="py-2 fw-bold text-uppercase texto-075">Categoría</th>
@@ -463,7 +463,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="h in historialSeleccionado" :key="'h-'+h.id" style="border-bottom: 1px solid #f1f5f9;">
+            <tr v-for="h in historialSeleccionado" :key="'h-'+h.id" style="border-bottom: 1px solid var(--o-borde, #f1f5f9);">
               <td class="text-nowrap text-muted fw-bold ps-3 py-3">{{ formatearFecha(h.fecha_partido) }}</td>
               <td class="py-3"><span class="badge bg-secondary">{{ categoriaObs(h) }}</span></td>
               <td class="py-3 text-dark">
@@ -1220,12 +1220,12 @@ onMounted(() => {
   }
 
   .tabla-fija thead .col-fija {
-    background-color: #f8f9fa !important;
+    background-color: var(--o-superficie, #f8f9fa) !important;
     z-index: 12;
   }
 
   .tabla-fija tbody .col-fija {
-    background-color: #ffffff !important;
+    background-color: var(--o-tarjeta, #ffffff) !important;
   }
 
   .col-id       { left: 0; min-width: 50px !important; max-width: 50px !important; }
@@ -1243,16 +1243,16 @@ onMounted(() => {
    ==================================================== */
 .excel-dropzone {
   display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-  padding: 40px 20px; border: 2px dashed #cbd5e1; border-radius: 12px; background: #f8fafc;
+  padding: 40px 20px; border: 2px dashed var(--o-borde, #cbd5e1); border-radius: 12px; background: var(--o-superficie, #f8fafc);
   cursor: pointer; transition: 0.2s;
 }
-.excel-dropzone:hover { border-color: #dc3545; background: #fff8f8; }
-.excel-dropzone.is-dragover { border-color: #dc3545; background: #fff8f8; transform: scale(1.01); }
-.excel-dropzone.has-file { border-style: solid; border-color: #198754; background: #f0fdf4; }
-.excel-dropzone-icon { font-size: 42px; color: #94a3b8; margin-bottom: 10px; }
+.excel-dropzone:hover { border-color: #dc3545; background: var(--o-rojo-fondo, #fff8f8); }
+.excel-dropzone.is-dragover { border-color: #dc3545; background: var(--o-rojo-fondo, #fff8f8); transform: scale(1.01); }
+.excel-dropzone.has-file { border-style: solid; border-color: #198754; background: var(--o-verde-fondo, #f0fdf4); }
+.excel-dropzone-icon { font-size: 42px; color: var(--o-texto-suave, #94a3b8); margin-bottom: 10px; }
 .excel-dropzone.is-dragover .excel-dropzone-icon,
-.excel-dropzone:hover .excel-dropzone-icon { color: #dc3545; }
-.excel-dropzone.has-file .excel-dropzone-icon { color: #198754; }
+.excel-dropzone:hover .excel-dropzone-icon { color: var(--o-rojo-texto, #dc3545); }
+.excel-dropzone.has-file .excel-dropzone-icon { color: var(--o-verde-texto, #198754); }
 
 /* ====================================================
    PÍLDORAS DE ESTADO (mismo estilo que Solicitudes Institucionales)
@@ -1270,30 +1270,30 @@ onMounted(() => {
 
 /* PENDIENTE — amarillo */
 .estado-pendiente {
-  background-color: #fdf3d3;
-  color: #a6841f;
-  border-color: #f2e2a5;
+  background-color: var(--o-ambar-fondo, #fdf3d3);
+  color: var(--o-ambar-texto, #a6841f);
+  border-color: var(--o-ambar-borde, #f2e2a5);
 }
 
 /* APROBADA — verde */
 .estado-aprobada {
-  background-color: #e3f5e6;
-  color: #2f8a45;
-  border-color: #bfe6c8;
+  background-color: var(--o-verde-fondo, #e3f5e6);
+  color: var(--o-verde-texto, #2f8a45);
+  border-color: var(--o-verde-borde, #bfe6c8);
 }
 
 /* RECHAZADA — rojo/rosa */
 .estado-rechazada {
-  background-color: #fde7ea;
-  color: #c0304a;
-  border-color: #f5c2cb;
+  background-color: var(--o-rojo-fondo, #fde7ea);
+  color: var(--o-rojo-texto, #c0304a);
+  border-color: var(--o-rojo-borde, #f5c2cb);
 }
 
 /* ANULADA — gris azulado */
 .estado-anulada {
-  background-color: #eef1f5;
-  color: #5b6b7f;
-  border-color: #d4dbe4;
+  background-color: var(--o-chip, #eef1f5);
+  color: var(--o-texto-suave, #5b6b7f);
+  border-color: var(--o-borde, #d4dbe4);
 }
 
 </style>

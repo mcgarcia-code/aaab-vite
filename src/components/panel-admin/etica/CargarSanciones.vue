@@ -249,15 +249,15 @@ onMounted(() => {
    UTILIDADES PARA INPUTS
    ==================================================== */
 .form-control:focus, .form-select:focus {
-  background-color: #fff !important;
+  background-color: var(--o-tarjeta, #fff) !important;
   border-color: #dc2626 !important;
 }
 
 /* ====================================================
    ESTADOS DE SANCIONES (Badges y Textos)
    ==================================================== */
-.text-en-proceso { color: #d97706 !important; }
-.text-anulada { color: #0f172a !important; }
+.text-en-proceso { color: var(--o-ambar-texto, #d97706) !important; }
+.text-anulada { color: var(--o-texto, #0f172a) !important; }
 
 .badge-status-sm {
   border-radius: 20px;
@@ -269,10 +269,10 @@ onMounted(() => {
   border: 1px solid;
 }
 
-.vigente { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
-.cumplida { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
-.en-proceso { background: #fef9c3; color: #a16207; border-color: #fef08a; }
-.anulada { background: #0f172a; color: #ffffff; border-color: #0f172a; }
+.vigente { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border-color: var(--o-rojo-borde, #fecaca); }
+.cumplida { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border-color: var(--o-verde-borde, #bbf7d0); }
+.en-proceso { background: var(--o-ambar-fondo, #fef9c3); color: var(--o-ambar-texto, #a16207); border-color: var(--o-ambar-borde, #fef08a); }
+.anulada { background: #0f172a; color: #ffffff; border-color: var(--o-texto, #0f172a); }
 
 .animate__animated { animation-duration: 0.5s; }
 

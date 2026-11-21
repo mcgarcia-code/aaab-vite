@@ -482,7 +482,7 @@ onMounted(cargar)
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped>
 
-.tarjeta { background: #fff; }
+.tarjeta { background: var(--o-tarjeta, #fff); }
 .tarjeta-fecha { border-left: 4px solid #dc3545 !important; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
 .tarjeta-fecha:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1); }
 .tarjeta-fecha.fecha-pasada { border-left-color: #9ca3af !important; }

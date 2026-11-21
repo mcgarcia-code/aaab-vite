@@ -376,18 +376,18 @@ onMounted(() => {
 
 /* Fondo para thead y Z-INDEX ALTO para que tape los datos al scrollear hacia abajo */
 .tabla-fija thead .col-fija {
-  background-color: #f8f9fa;
+  background-color: var(--o-superficie, #f8f9fa);
   z-index: 12;
 }
 
 /* Fondo para tbody */
 .tabla-fija tbody .col-fija {
-  background-color: #ffffff;
+  background-color: var(--o-tarjeta, #ffffff);
 }
 
 /* Fondo especial para filas con bg-danger-subtle */
 .tabla-fija tbody tr.bg-danger-subtle .col-fija {
-  background-color: #f8d7da;
+  background-color: var(--o-rojo-fondo, #f8d7da);
 }
 
 /* Posiciones de las columnas fijas */

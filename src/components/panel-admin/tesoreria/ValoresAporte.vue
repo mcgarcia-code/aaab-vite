@@ -1260,7 +1260,7 @@ onMounted(cargarTodo)
   background-color: #f8f9fb;
 }
 .fila-hijo td:first-child {
-  border-left: 3px solid #f5c2cb !important;
+  border-left: 3px solid var(--o-rojo-borde, #f5c2cb) !important;
 }
 
 /* ====================================================
@@ -1277,35 +1277,35 @@ onMounted(cargarTodo)
 
 /* VIGENTE — rojo/rosa */
 .estado-vigente {
-  background-color: #fde7ea;
-  color: #c0304a;
-  border-color: #f5c2cb;
+  background-color: var(--o-rojo-fondo, #fde7ea);
+  color: var(--o-rojo-texto, #c0304a);
+  border-color: var(--o-rojo-borde, #f5c2cb);
 }
 
 /* DEFINIDO / FINALIZADO — verde */
 .estado-cumplida {
-  background-color: #e3f5e6;
-  color: #2f8a45;
-  border-color: #bfe6c8;
+  background-color: var(--o-verde-fondo, #e3f5e6);
+  color: var(--o-verde-texto, #2f8a45);
+  border-color: var(--o-verde-borde, #bfe6c8);
 }
 
 /* SIN DEFINIR — amarillo */
 .estado-creado {
-  background-color: #fdf3d3;
-  color: #a6841f;
-  border-color: #f2e2a5;
+  background-color: var(--o-ambar-fondo, #fdf3d3);
+  color: var(--o-ambar-texto, #a6841f);
+  border-color: var(--o-ambar-borde, #f2e2a5);
 }
 
 /* EXENTA — gris azulado */
 .estado-borrado {
-  background-color: #eef1f5;
-  color: #5b6b7f;
-  border-color: #d4dbe4;
+  background-color: var(--o-chip, #eef1f5);
+  color: var(--o-texto-suave, #5b6b7f);
+  border-color: var(--o-borde, #d4dbe4);
 }
 
 .estado-default {
-  background-color: #f1f3f5;
-  color: #495057;
-  border-color: #dee2e6;
+  background-color: var(--o-chip, #f1f3f5);
+  color: var(--o-texto-medio, #495057);
+  border-color: var(--o-borde, #dee2e6);
 }
 </style>

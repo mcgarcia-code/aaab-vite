@@ -4,10 +4,24 @@ import { esAppInstalada } from '@/utils/app'
 // Tema de la app: claro, oscuro o automático (sigue la configuración del dispositivo).
 // Solo existe en la app instalada: en el navegador (escritorio o celular) el sitio
 // se ve siempre como siempre y el selector no aparece.
-// Mientras se migran los colores, además, solo se activa en desarrollo
-// (para probarlo con npm run dev). Al terminar la migración, pasar TEMA_PUBLICADO a true.
+// Mientras se migran los colores, además, solo se activa en desarrollo.
+// Al terminar la migración, pasar TEMA_PUBLICADO a true.
 export const TEMA_PUBLICADO = false
-export const temaDisponible = import.meta.env.DEV || (TEMA_PUBLICADO && esAppInstalada())
+
+// Para probarlo en el navegador con npm run dev: abrir cualquier página con ?probarTema=1
+// (se recuerda en la pestaña; ?probarTema=0 lo apaga)
+const probarEnNavegador = () => {
+  if (!import.meta.env.DEV) return false
+  try {
+    const param = new URLSearchParams(window.location.search).get('probarTema')
+    if (param !== null) sessionStorage.setItem('aaab.tema.probar', param)
+    return sessionStorage.getItem('aaab.tema.probar') === '1'
+  } catch {
+    return false
+  }
+}
+
+export const temaDisponible = (esAppInstalada() && (TEMA_PUBLICADO || import.meta.env.DEV)) || probarEnNavegador()
 
 const CLAVE = 'aaab.tema'
 const MODOS = ['claro', 'oscuro', 'auto']

@@ -659,10 +659,10 @@ onMounted(() => {
   white-space: nowrap;
   display: inline-block;
 }
-.activo { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.inactivo { background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; }
-.rol { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-.vos { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
+.activo { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border: 1px solid var(--o-verde-borde, #bbf7d0); }
+.inactivo { background: var(--o-chip, #e2e8f0); color: var(--o-texto-medio, #475569); border: 1px solid var(--o-borde, #cbd5e1); }
+.rol { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
+.vos { background: var(--o-azul-fondo, #e0e7ff); color: var(--o-azul-texto, #4338ca); border: 1px solid var(--o-azul-borde, #c7d2fe); }
 
 .animate__animated { animation-duration: 0.5s; }
 </style>

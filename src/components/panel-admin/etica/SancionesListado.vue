@@ -856,8 +856,8 @@ onMounted(fetchSanciones)
 /* ====================================================
    ESTADOS DE SANCIONES (Badges y Textos)
    ==================================================== */
-.text-en-proceso { color: #d97706 !important; }
-.text-anulada { color: #0f172a !important; }
+.text-en-proceso { color: var(--o-ambar-texto, #d97706) !important; }
+.text-anulada { color: var(--o-texto, #0f172a) !important; }
 
 /* Base para los badges de estado */
 .badge-status-sm {
@@ -871,10 +871,10 @@ onMounted(fetchSanciones)
   white-space: nowrap;
 }
 
-.vigente { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
-.cumplida { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
-.en-proceso { background: #fef9c3; color: #a16207; border-color: #fef08a; }
-.anulada { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+.vigente { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border-color: var(--o-rojo-borde, #fecaca); }
+.cumplida { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border-color: var(--o-verde-borde, #bbf7d0); }
+.en-proceso { background: var(--o-ambar-fondo, #fef9c3); color: var(--o-ambar-texto, #a16207); border-color: var(--o-ambar-borde, #fef08a); }
+.anulada { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); border-color: var(--o-borde, #cbd5e1); }
 
 .animate__animated { animation-duration: 0.5s; }
 
@@ -902,13 +902,13 @@ onMounted(fetchSanciones)
 
   /* Fondo thead y Z-INDEX 12 (Tapa el scroll vertical) */
   .tabla-fija thead .col-fija {
-    background-color: #f8f9fa !important;
+    background-color: var(--o-superficie, #f8f9fa) !important;
     z-index: 12;
   }
 
   /* Fondo tbody */
   .tabla-fija tbody .col-fija {
-    background-color: #ffffff !important;
+    background-color: var(--o-tarjeta, #ffffff) !important;
   }
 
   /* Posiciones y anchos calculados */

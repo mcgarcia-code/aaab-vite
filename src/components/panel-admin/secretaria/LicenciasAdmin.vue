@@ -688,10 +688,10 @@ onMounted(() => {
   font-weight: 700;
   white-space: nowrap;
 }
-.aprobada { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.pendiente { background: #fef3c7; color: #d97706; border: 1px solid #fde047; }
-.rechazada { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-.anulada { background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; }
+.aprobada { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border: 1px solid var(--o-verde-borde, #bbf7d0); }
+.pendiente { background: var(--o-ambar-fondo, #fef3c7); color: var(--o-ambar-texto, #d97706); border: 1px solid #fde047; }
+.rechazada { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
+.anulada { background: var(--o-chip, #e2e8f0); color: var(--o-texto-medio, #475569); border: 1px solid var(--o-borde, #cbd5e1); }
 
 /* ====================================================
    UTILIDADES

@@ -875,11 +875,11 @@ onMounted(() => {
   text-align: center;
   border: 1px solid;
 }
-.badge-status-sm.debito { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
-.badge-status-sm.credito { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
-.badge-status-sm.pendiente { background: #fef9c3; color: #a16207; border-color: #fef08a; }
-.badge-status-sm.cerrado { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
-.badge-status-sm.anulado { background: #0f172a; color: #ffffff; border-color: #0f172a; }
+.badge-status-sm.debito { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border-color: var(--o-rojo-borde, #fecaca); }
+.badge-status-sm.credito { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border-color: var(--o-verde-borde, #bbf7d0); }
+.badge-status-sm.pendiente { background: var(--o-ambar-fondo, #fef9c3); color: var(--o-ambar-texto, #a16207); border-color: var(--o-ambar-borde, #fef08a); }
+.badge-status-sm.cerrado { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); border-color: var(--o-borde, #cbd5e1); }
+.badge-status-sm.anulado { background: #0f172a; color: #ffffff; border-color: var(--o-texto, #0f172a); }
 
 .animate__animated { animation-duration: 0.5s; }
 </style>

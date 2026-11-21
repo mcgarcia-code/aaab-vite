@@ -367,7 +367,7 @@
         </div>
       </template>
 
-      <div v-if="mensajeSolicitudActiva" class="alert alert-warning border-warning-subtle text-start shadow-sm d-flex align-items-start gap-3 p-3 mb-4 rounded-3" style="background-color: #fffbeb;">
+      <div v-if="mensajeSolicitudActiva" class="alert alert-warning border-warning-subtle text-start shadow-sm d-flex align-items-start gap-3 p-3 mb-4 rounded-3" style="background-color: var(--o-ambar-fondo, #fffbeb);">
         <i class="bi bi-clipboard-x text-warning mt-1"></i>
         <div class="w-100">
           <strong class="d-block text-dark mb-1 text-uppercase small">Solicitud del árbitro:</strong>
@@ -1646,7 +1646,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.lista-categorias { max-height: 220px; overflow-y: auto; background: #fff; }
+.lista-categorias { max-height: 220px; overflow-y: auto; background: var(--o-tarjeta, #fff); }
 /* ====================================================
    ESTILOS GENERALES
    ==================================================== */
@@ -1720,18 +1720,18 @@ onMounted(() => {
 
 /* Fondo para thead y Z-INDEX ALTO para que tape los datos al scrollear hacia abajo */
 .tabla-fija thead .col-fija {
-  background-color: #f8f9fa;
+  background-color: var(--o-superficie, #f8f9fa);
   z-index: 12;
 }
 
 /* Fondo para tbody */
 .tabla-fija tbody .col-fija {
-  background-color: #ffffff;
+  background-color: var(--o-tarjeta, #ffffff);
 }
 
 /* Fondo especial para filas con bg-danger-subtle */
 .tabla-fija tbody tr.bg-danger-subtle .col-fija {
-  background-color: #f8d7da;
+  background-color: var(--o-rojo-fondo, #f8d7da);
 }
 
 /* Posiciones de las columnas fijas */

@@ -815,12 +815,12 @@ onMounted(obtenerInformes);
   }
 
   .tabla-fija thead .col-fija {
-    background-color: #f8f9fa !important;
+    background-color: var(--o-superficie, #f8f9fa) !important;
     z-index: 12;
   }
 
   .tabla-fija tbody .col-fija {
-    background-color: #ffffff !important;
+    background-color: var(--o-tarjeta, #ffffff) !important;
   }
 
   .col-id       { left: 0; min-width: 50px !important; max-width: 50px !important; }
@@ -848,29 +848,29 @@ onMounted(obtenerInformes);
 }
 
 .estado-aprobado {
-  background-color: #e3f5e6;
-  color: #2f8a45;
-  border-color: #bfe6c8;
+  background-color: var(--o-verde-fondo, #e3f5e6);
+  color: var(--o-verde-texto, #2f8a45);
+  border-color: var(--o-verde-borde, #bfe6c8);
 }
 
 /* CREADO — celeste */
 .estado-creado {
-  background-color: #dceefb;
-  color: #1c6ea4;
-  border-color: #b6dcf5;
+  background-color: var(--o-azul-fondo, #dceefb);
+  color: var(--o-azul-texto, #1c6ea4);
+  border-color: var(--o-azul-borde, #b6dcf5);
 }
 
 /* PENDIENTE — amarillo */
 .estado-pendiente {
-  background-color: #fdf3d3;
-  color: #a6841f;
-  border-color: #f2e2a5;
+  background-color: var(--o-ambar-fondo, #fdf3d3);
+  color: var(--o-ambar-texto, #a6841f);
+  border-color: var(--o-ambar-borde, #f2e2a5);
 }
 
 /* DESESTIMADO — naranja */
 .estado-desestimado {
-  background-color: #fdecd8;
-  color: #b5691a;
-  border-color: #f6d3a8;
+  background-color: var(--o-ambar-fondo, #fdecd8);
+  color: var(--o-ambar-texto, #b5691a);
+  border-color: var(--o-ambar-borde, #f6d3a8);
 }
 </style>

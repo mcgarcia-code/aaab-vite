@@ -335,10 +335,10 @@ onMounted(cargarObservaciones)
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped>
 
-.dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
-.revision { border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
-.bloque-comentario { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; }
+.dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: var(--o-texto-suave, #64748b); text-transform: uppercase; }
+.revision { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; background: var(--o-superficie, #f8fafc); }
+.bloque-comentario { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; padding: 10px 12px; }
 .detalle-titulo { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
-.detalle-texto { white-space: pre-wrap; font-size: 0.9rem; color: #1e293b; overflow-wrap: anywhere; }
+.detalle-texto { white-space: pre-wrap; font-size: 0.9rem; color: var(--o-texto, #1e293b); overflow-wrap: anywhere; }
 
 </style>

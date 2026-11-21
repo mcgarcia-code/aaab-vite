@@ -584,7 +584,7 @@ const descargarExcel = async () => {
 .busqueda-wrap input { padding-right: 28px; min-width: 200px; }
 .btn-limpiar-busqueda {
   position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-  border: none; background: transparent; color: #adb5bd; cursor: pointer; padding: 0; line-height: 1;
+  border: none; background: transparent; color: var(--o-texto-suave, #adb5bd); cursor: pointer; padding: 0; line-height: 1;
 }
 
 /* ====================================================
@@ -594,7 +594,7 @@ const descargarExcel = async () => {
 .tabla-scroll { max-height: 70vh; overflow: auto; -webkit-overflow-scrolling: touch; }
 .tabla-excel {
   border-collapse: separate; border-spacing: 0;
-  width: max-content; min-width: 0; font-size: 0.8rem; background: #fff;
+  width: max-content; min-width: 0; font-size: 0.8rem; background: var(--o-tarjeta, #fff);
 }
 
 /* Mobile-first: en pantallas chicas achicamos un poco todo y limitamos
@@ -607,26 +607,26 @@ const descargarExcel = async () => {
   .celda { min-width: 58px; }
 }
 .tabla-excel th, .tabla-excel td {
-  border-right: 1px solid #d4d4d8; border-bottom: 1px solid #d4d4d8;
+  border-right: 1px solid var(--o-borde, #d4d4d8); border-bottom: 1px solid var(--o-borde, #d4d4d8);
   padding: 4px 8px; white-space: nowrap;
 }
 .tabla-excel thead th {
-  background-color: #f1f3f5; color: #343a40; position: sticky; top: 0; z-index: 5;
+  background-color: var(--o-chip, #f1f3f5); color: var(--o-texto, #343a40); position: sticky; top: 0; z-index: 5;
   text-align: center; vertical-align: middle; font-size: 0.72rem;
 }
 .th-obs { min-width: 64px; }
 
 /* Primera columna fija (árbitro) */
 .col-arbitro {
-  position: sticky; left: 0; background-color: #fff; z-index: 6; width: 1%; white-space: nowrap; text-align: left !important;
+  position: sticky; left: 0; background-color: var(--o-tarjeta, #fff); z-index: 6; width: 1%; white-space: nowrap; text-align: left !important;
 }
-.tabla-excel thead .esquina { z-index: 8; background-color: #e9ecef; }
-.celda-nombre { font-weight: 600; color: #212529; border-right: 2px solid #adb5bd !important; padding-right: 14px; }
+.tabla-excel thead .esquina { z-index: 8; background-color: var(--o-chip, #e9ecef); }
+.celda-nombre { font-weight: 600; color: var(--o-texto, #212529); border-right: 2px solid var(--o-borde, #adb5bd) !important; padding-right: 14px; }
 
 /* Celdas de datos */
-.celda { text-align: center; min-width: 72px; color: #212529; padding: 2px 4px; }
+.celda { text-align: center; min-width: 72px; color: var(--o-texto, #212529); padding: 2px 4px; }
 .celda-obs { font-weight: 600; }
-.celda-vacia { background: #fff; }
+.celda-vacia { background: var(--o-tarjeta, #fff); }
 
 /* Contenido de la celda: nota + botón de Ver al lado */
 .celda-obs-contenido { display: flex; align-items: center; justify-content: center; gap: 4px; }
@@ -634,37 +634,37 @@ const descargarExcel = async () => {
   min-width: 22px; padding: 1px 3px; border-radius: 3px;
 }
 .btn-ver-celda {
-  border: none; background: transparent; color: #dc2626; cursor: pointer;
+  border: none; background: transparent; color: var(--o-rojo-texto, #dc2626); cursor: pointer;
   padding: 0 2px; line-height: 1; display: inline-flex; align-items: center;
 }
 .btn-ver-celda .bi { font-size: 17px; }
-.btn-ver-celda:hover { color: #b91c1c; }
+.btn-ver-celda:hover { color: var(--o-rojo-texto, #b91c1c); }
 .btn-ver-celda:disabled { opacity: 0.5; cursor: default; }
 
 /* Colores de estado en celda (mismos tonos que las píldoras) */
-.celda-aprobada { background-color: #e3f5e6; color: #2f8a45; }
-.celda-pendiente { background-color: #fdf3d3; color: #a6841f; }
-.celda-rechazada { background-color: #fde7ea; color: #c0304a; }
-.celda-anulada { background-color: #eef1f5; color: #5b6b7f; }
+.celda-aprobada { background-color: var(--o-verde-fondo, #e3f5e6); color: var(--o-verde-texto, #2f8a45); }
+.celda-pendiente { background-color: var(--o-ambar-fondo, #fdf3d3); color: var(--o-ambar-texto, #a6841f); }
+.celda-rechazada { background-color: var(--o-rojo-fondo, #fde7ea); color: var(--o-rojo-texto, #c0304a); }
+.celda-anulada { background-color: var(--o-chip, #eef1f5); color: var(--o-texto-suave, #5b6b7f); }
 
 /* Leyenda (cuadraditos con los mismos colores) */
 .cuadrito {
-  display: inline-block; width: 12px; height: 12px; border: 1px solid #ced4da;
+  display: inline-block; width: 12px; height: 12px; border: 1px solid var(--o-borde, #ced4da);
   border-radius: 2px; margin-right: 4px; vertical-align: -1px;
 }
-.cuadrito.estado-aprobada { background-color: #e3f5e6 !important; }
-.cuadrito.estado-pendiente { background-color: #fdf3d3 !important; }
-.cuadrito.estado-rechazada { background-color: #fde7ea !important; }
-.cuadrito.estado-anulada { background-color: #eef1f5 !important; }
+.cuadrito.estado-aprobada { background-color: var(--o-verde-fondo, #e3f5e6) !important; }
+.cuadrito.estado-pendiente { background-color: var(--o-ambar-fondo, #fdf3d3) !important; }
+.cuadrito.estado-rechazada { background-color: var(--o-rojo-fondo, #fde7ea) !important; }
+.cuadrito.estado-anulada { background-color: var(--o-chip, #eef1f5) !important; }
 
 /* ====================================================
    SOLAPAS DE GRUPO
    ==================================================== */
 .hojas-excel {
-  display: flex; flex-wrap: nowrap; overflow-x: auto; background-color: #f1f3f5; padding: 8px 8px 0 8px; gap: 3px;
+  display: flex; flex-wrap: nowrap; overflow-x: auto; background-color: var(--o-chip, #f1f3f5); padding: 8px 8px 0 8px; gap: 3px;
 }
 .hoja-tab {
-  border: 1px solid #ced4da; border-bottom: none; border-radius: 8px 8px 0 0; font-size: 0.78rem; font-weight: 600;
+  border: 1px solid var(--o-borde, #ced4da); border-bottom: none; border-radius: 8px 8px 0 0; font-size: 0.78rem; font-weight: 600;
   padding: 6px 14px; white-space: nowrap; cursor: pointer; transition: filter 0.15s; display: flex; align-items: center; gap: 6px;
 }
 .hoja-tab:hover { filter: brightness(0.96); }
@@ -679,8 +679,8 @@ const descargarExcel = async () => {
   border-radius: 999px; padding: 0.35em 0.85em; font-weight: 700; font-size: 0.7rem;
   letter-spacing: 0.02em; border: 1px solid transparent; display: inline-block; white-space: nowrap;
 }
-.estado-pendiente { background-color: #fdf3d3; color: #a6841f; border-color: #f2e2a5; }
-.estado-aprobada { background-color: #e3f5e6; color: #2f8a45; border-color: #bfe6c8; }
-.estado-rechazada { background-color: #fde7ea; color: #c0304a; border-color: #f5c2cb; }
-.estado-anulada { background-color: #eef1f5; color: #5b6b7f; border-color: #d4dbe4; }
+.estado-pendiente { background-color: var(--o-ambar-fondo, #fdf3d3); color: var(--o-ambar-texto, #a6841f); border-color: var(--o-ambar-borde, #f2e2a5); }
+.estado-aprobada { background-color: var(--o-verde-fondo, #e3f5e6); color: var(--o-verde-texto, #2f8a45); border-color: var(--o-verde-borde, #bfe6c8); }
+.estado-rechazada { background-color: var(--o-rojo-fondo, #fde7ea); color: var(--o-rojo-texto, #c0304a); border-color: var(--o-rojo-borde, #f5c2cb); }
+.estado-anulada { background-color: var(--o-chip, #eef1f5); color: var(--o-texto-suave, #5b6b7f); border-color: var(--o-borde, #d4dbe4); }
 </style>

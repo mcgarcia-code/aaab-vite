@@ -397,8 +397,8 @@ onMounted(() => {
   text-align: center;
   border: 1px solid;
 }
-.badge-status-sm.activo { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
-.badge-status-sm.finalizado { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+.badge-status-sm.activo { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border-color: var(--o-rojo-borde, #fecaca); }
+.badge-status-sm.finalizado { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); border-color: var(--o-borde, #cbd5e1); }
 
 .animate__animated { animation-duration: 0.5s; }
 </style>

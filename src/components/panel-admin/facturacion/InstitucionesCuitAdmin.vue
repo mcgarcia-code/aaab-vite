@@ -529,13 +529,13 @@ onMounted(() => {
 
   /* Fondo thead y Z-INDEX 12 (Tapa el scroll vertical) */
   .tabla-fija thead .col-fija {
-    background-color: #f8f9fa !important;
+    background-color: var(--o-superficie, #f8f9fa) !important;
     z-index: 12;
   }
 
   /* Fondo tbody */
   .tabla-fija tbody .col-fija {
-    background-color: #ffffff !important;
+    background-color: var(--o-tarjeta, #ffffff) !important;
   }
 
 /* Posiciones exactas corregidas para evitar la línea blanca */

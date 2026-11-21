@@ -2580,8 +2580,8 @@ onMounted(async () => {
   position: sticky;
   top: 0;
   z-index: 5;
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
+  background-color: var(--o-superficie, #f8f9fa);
+  border-bottom: 2px solid var(--o-borde, #dee2e6);
   padding: 10px 8px;
   font-size: 0.68rem;
   letter-spacing: 0.5px;
@@ -2589,7 +2589,7 @@ onMounted(async () => {
 
 .grilla-designaciones td {
   padding: 2px 4px;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid var(--o-borde, #f1f3f5);
 }
 
 /* Fila separadora de cancha (como la celda combinada del Excel) */
@@ -2632,7 +2632,7 @@ onMounted(async () => {
   width: 100%;
   padding: 5px 6px;
   font-size: 0.78rem;
-  color: #212529;
+  color: var(--o-texto, #212529);
 }
 
 /* Cancha sin asignar: chip clickeable que abre el selector de cancha */
@@ -2644,15 +2644,15 @@ onMounted(async () => {
   padding: 2px 8px;
   border: 1px solid #eab308;
   border-radius: 20px;
-  background-color: #fef9c3;
-  color: #854d0e;
+  background-color: var(--o-ambar-fondo, #fef9c3);
+  color: var(--o-ambar-texto, #854d0e);
   font-size: 0.68rem;
   font-weight: 700;
   cursor: pointer;
 }
 
 .badge-sin-cancha:hover {
-  background-color: #fef08a;
+  background-color: var(--o-ambar-fondo, #fef08a);
 }
 
 /* Celda de árbitro: botón liviano que abre el selector compartido */
@@ -2664,7 +2664,7 @@ onMounted(async () => {
   background: transparent;
   padding: 5px 6px;
   font-size: 0.78rem;
-  color: #212529;
+  color: var(--o-texto, #212529);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2673,39 +2673,39 @@ onMounted(async () => {
 
 /* Árbitro que no matcheó con el padrón (hay que corregirlo) */
 .celda-arbitro-mobile.sin-match {
-  background-color: #fef08a;
+  background-color: var(--o-ambar-fondo, #fef08a);
   border-color: #eab308;
   font-weight: 700;
 }
 
 .celda-arbitro:hover {
-  border-color: #ced4da;
-  background: #fff;
+  border-color: var(--o-borde, #ced4da);
+  background: var(--o-tarjeta, #fff);
 }
 
 .celda-arbitro.vacio {
-  color: #adb5bd;
+  color: var(--o-texto-suave, #adb5bd);
 }
 
 /* Árbitro que no matcheó con el padrón (hay que corregirlo) */
 .celda-arbitro.sin-match {
-  background-color: #fef08a;
+  background-color: var(--o-ambar-fondo, #fef08a);
   border-color: #eab308;
   font-weight: 700;
 }
 
 .celda-arbitro.sin-arbitro {
-  background-color: #f1f3f5;
-  border-color: #adb5bd;
+  background-color: var(--o-chip, #f1f3f5);
+  border-color: var(--o-borde, #adb5bd);
   border-style: dashed;
-  color: #495057;
+  color: var(--o-texto-medio, #495057);
   font-style: italic;
   font-weight: 600;
 }
 
 /* Árbitro externo puesto a mano (intencional, fuera del padrón) */
 .celda-arbitro.externo {
-  background-color: #f3e8ff;
+  background-color: var(--o-violeta-fondo, #f3e8ff);
   border-color: #c084fc;
   font-weight: 600;
 }
@@ -2780,17 +2780,17 @@ onMounted(async () => {
 }
 
 .muestra-a-designar {
-  background-color: #fee2e2;
+  background-color: var(--o-rojo-fondo, #fee2e2);
   border-color: #f87171;
 }
 
 .muestra-designado {
-  background-color: #fef9c3;
+  background-color: var(--o-ambar-fondo, #fef9c3);
   border-color: #facc15;
 }
 
 .muestra-publicado {
-  background-color: #dcfce7;
+  background-color: var(--o-verde-fondo, #dcfce7);
   border-color: #4ade80;
 }
 
@@ -2820,14 +2820,14 @@ onMounted(async () => {
 
 .fecha-encabezado {
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--o-borde, #e5e7eb);
   padding-bottom: 4px;
 }
 
 .item-pendiente {
   display: block;
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--o-tarjeta, #fff);
+  border: 1px solid var(--o-borde, #e5e7eb);
   border-radius: 10px;
   padding: 10px 12px;
   margin-bottom: 8px;
@@ -2835,8 +2835,8 @@ onMounted(async () => {
 }
 
 .item-pendiente:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: var(--o-superficie, #f8fafc);
+  border-color: var(--o-borde, #cbd5e1);
   transform: translateY(-1px);
 }
 
@@ -2850,7 +2850,7 @@ onMounted(async () => {
 }
 
 @keyframes destello {
-  0%, 40% { background-color: #fef3c7 !important; box-shadow: inset 0 0 0 2px #f59e0b; }
+  0%, 40% { background-color: var(--o-ambar-fondo, #fef3c7) !important; box-shadow: inset 0 0 0 2px #f59e0b; }
   100% { background-color: transparent; box-shadow: none; }
 }
 
@@ -2862,15 +2862,15 @@ onMounted(async () => {
    La fila suspendida (más abajo) prevalece sobre estos.
    ==================================================== */
 .fila-estado-a_designar td {
-  background-color: #fef2f2;
+  background-color: var(--o-rojo-fondo, #fef2f2);
 }
 
 .fila-estado-designado td {
-  background-color: #fefce8;
+  background-color: var(--o-ambar-fondo, #fefce8);
 }
 
 .fila-estado-publicado td {
-  background-color: #f0fdf4;
+  background-color: var(--o-verde-fondo, #f0fdf4);
 }
 
 /* Punto de color junto a la categoría (refuerzo del estado) */
@@ -2906,17 +2906,17 @@ onMounted(async () => {
   display: block;
   width: 100%;
   text-align: left;
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
   border: none;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid var(--o-borde, #f1f3f5);
   padding: 8px 12px;
   font-size: 0.85rem;
-  color: #212529;
+  color: var(--o-texto, #212529);
   cursor: pointer;
 }
 
 .opcion-arbitro:hover {
-  background: #fef2f2;
+  background: var(--o-rojo-fondo, #fef2f2);
 }
 
 /* ====================================================
@@ -2954,17 +2954,17 @@ onMounted(async () => {
 
 /* Fondos y borde izquierdo de card según estado (móvil) */
 .card-estado-a_designar {
-  background-color: #fef2f2;
+  background-color: var(--o-rojo-fondo, #fef2f2);
   border-left-color: #ef4444;
 }
 
 .card-estado-designado {
-  background-color: #fefce8;
+  background-color: var(--o-ambar-fondo, #fefce8);
   border-left-color: #eab308;
 }
 
 .card-estado-publicado {
-  background-color: #f0fdf4;
+  background-color: var(--o-verde-fondo, #f0fdf4);
   border-left-color: #22c55e;
 }
 
@@ -2981,31 +2981,31 @@ onMounted(async () => {
 }
 
 .badge-a_designar {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: var(--o-rojo-fondo, #fee2e2);
+  color: var(--o-rojo-texto, #991b1b);
   border: 1px solid #f87171;
 }
 
 .badge-designado {
-  background-color: #fef9c3;
-  color: #854d0e;
+  background-color: var(--o-ambar-fondo, #fef9c3);
+  color: var(--o-ambar-texto, #854d0e);
   border: 1px solid #facc15;
 }
 
 .badge-publicado {
-  background-color: #dcfce7;
-  color: #166534;
+  background-color: var(--o-verde-fondo, #dcfce7);
+  color: var(--o-verde-texto, #166534);
   border: 1px solid #4ade80;
 }
 
 /* Botón de árbitro en móvil: como un select tocable */
 .celda-arbitro-mobile {
-  border: 1px solid #ced4da;
+  border: 1px solid var(--o-borde, #ced4da);
   border-radius: 6px;
-  background: #fff;
+  background: var(--o-tarjeta, #fff);
   padding: 8px 10px;
   font-size: 0.8rem;
-  color: #212529;
+  color: var(--o-texto, #212529);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3013,25 +3013,25 @@ onMounted(async () => {
 }
 
 .celda-arbitro-mobile:active {
-  background: #f8f9fa;
+  background: var(--o-superficie, #f8f9fa);
 }
 
 .celda-arbitro-mobile.vacio {
-  color: #adb5bd;
+  color: var(--o-texto-suave, #adb5bd);
 }
 
 .celda-arbitro-mobile.sin-arbitro {
-  background-color: #f1f3f5;
-  border-color: #adb5bd;
+  background-color: var(--o-chip, #f1f3f5);
+  border-color: var(--o-borde, #adb5bd);
   border-style: dashed;
-  color: #495057;
+  color: var(--o-texto-medio, #495057);
   font-style: italic;
   font-weight: 600;
 }
 
 /* Árbitro externo puesto a mano (intencional) */
 .celda-arbitro-mobile.externo {
-  background-color: #f3e8ff;
+  background-color: var(--o-violeta-fondo, #f3e8ff);
   border-color: #c084fc;
   font-weight: 600;
 }
@@ -3046,7 +3046,7 @@ onMounted(async () => {
 
 /* Evitar que el input ponga su propio borde cuando tiene foco */
 .buscador-grupo .form-control:focus {
-  border-color: #dee2e6;
+  border-color: var(--o-borde, #dee2e6);
   box-shadow: none;
 }
 
@@ -3066,11 +3066,11 @@ onMounted(async () => {
    FILA SUSPENDIDA
    ==================================================== */
 .fila-suspendida td {
-  background-color: #fee2e2 !important;
+  background-color: var(--o-rojo-fondo, #fee2e2) !important;
 }
 
 .fila-suspendida .celda-texto {
-  color: #991b1b;
+  color: var(--o-rojo-texto, #991b1b);
   text-decoration: line-through;
 }
 
@@ -3097,10 +3097,10 @@ onMounted(async () => {
 }
 
 .btn-color-tag {
-  border: 1px solid #ced4da;
+  border: 1px solid var(--o-borde, #ced4da);
   border-radius: 4px;
-  background: #fff;
-  color: #6c757d;
+  background: var(--o-tarjeta, #fff);
+  color: var(--o-texto-suave, #6c757d);
   padding: 3px;
   display: flex;
   align-items: center;
@@ -3109,38 +3109,38 @@ onMounted(async () => {
 }
 
 .btn-color-tag:hover {
-  background: #f8f9fa;
+  background: var(--o-superficie, #f8f9fa);
 }
 
 /* Colores de estado (celda y botón toman el mismo fondo) */
 .estado-observaciones {
-  background-color: #ede9fe !important;
+  background-color: var(--o-violeta-fondo, #ede9fe) !important;
   border-color: #8b5cf6 !important;
-  color: #5b21b6 !important;
+  color: var(--o-violeta-texto, #5b21b6) !important;
 }
 
 .estado-reemplazar {
-  background-color: #fee2e2 !important;
+  background-color: var(--o-rojo-fondo, #fee2e2) !important;
   border-color: #ef4444 !important;
-  color: #991b1b !important;
+  color: var(--o-rojo-texto, #991b1b) !important;
 }
 
 .estado-cambiar {
-  background-color: #ffedd5 !important;
+  background-color: var(--o-ambar-fondo, #ffedd5) !important;
   border-color: #f97316 !important;
-  color: #9a3412 !important;
+  color: var(--o-ambar-texto, #9a3412) !important;
 }
 
 .estado-confirmado {
-  background-color: #fef9c3 !important;
+  background-color: var(--o-ambar-fondo, #fef9c3) !important;
   border-color: #eab308 !important;
-  color: #854d0e !important;
+  color: var(--o-ambar-texto, #854d0e) !important;
 }
 
 .estado-posible {
-  background-color: #dcfce7 !important;
+  background-color: var(--o-verde-fondo, #dcfce7) !important;
   border-color: #22c55e !important;
-  color: #166534 !important;
+  color: var(--o-verde-texto, #166534) !important;
 }
 
 /* ====================================================
@@ -3158,17 +3158,17 @@ onMounted(async () => {
   gap: 10px;
   width: 100%;
   text-align: left;
-  background: #fff;
-  border: 1px solid #f1f3f5;
+  background: var(--o-tarjeta, #fff);
+  border: 1px solid var(--o-borde, #f1f3f5);
   border-radius: 6px;
   padding: 10px 12px;
   font-size: 0.85rem;
-  color: #212529;
+  color: var(--o-texto, #212529);
   cursor: pointer;
 }
 
 .opcion-color:hover {
-  background: #f8f9fa;
+  background: var(--o-superficie, #f8f9fa);
 }
 
 .muestra-color {
@@ -3180,17 +3180,17 @@ onMounted(async () => {
 }
 
 .muestra-none {
-  background: repeating-linear-gradient(45deg, #f1f3f5, #f1f3f5 4px, #fff 4px, #fff 8px);
+  background: repeating-linear-gradient(45deg, var(--o-chip, #f1f3f5), var(--o-chip, #f1f3f5) 4px, var(--o-tarjeta, #fff) 4px, var(--o-tarjeta, #fff) 8px);
 }
 
 /* ====================================================
    BOTÓN MESA DE CONTROL (planillero / cronometrista)
    ==================================================== */
 .btn-mesa {
-  border: 1px solid #ced4da;
+  border: 1px solid var(--o-borde, #ced4da);
   border-radius: 4px;
-  background: #fff;
-  color: #adb5bd;
+  background: var(--o-tarjeta, #fff);
+  color: var(--o-texto-suave, #adb5bd);
   padding: 3px 6px;
   display: inline-flex;
   align-items: center;
@@ -3198,15 +3198,15 @@ onMounted(async () => {
 }
 
 .btn-mesa:hover {
-  background: #f8f9fa;
-  color: #6c757d;
+  background: var(--o-superficie, #f8f9fa);
+  color: var(--o-texto-suave, #6c757d);
 }
 
 /* Cuando el partido ya tiene planillero o cronometrista */
 .btn-mesa.con-mesa {
-  background: #fee2e2;
+  background: var(--o-rojo-fondo, #fee2e2);
   border-color: #ef4444;
-  color: #dc2626;
+  color: var(--o-rojo-texto, #dc2626);
 }
 
 /* Fechas en una sola línea, con scroll horizontal si no entran */
@@ -3235,20 +3235,20 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--o-tarjeta, #fff);
+  border: 1px solid var(--o-borde, #e2e8f0);
   border-radius: 50px;
   padding: 4px 12px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #475569;
+  color: var(--o-texto-medio, #475569);
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 }
 
 .chip-estado:hover {
-  border-color: #cbd5e1;
-  background: #f8fafc;
+  border-color: var(--o-borde, #cbd5e1);
+  background: var(--o-superficie, #f8fafc);
 }
 
 .chip-estado.chip-activo {
@@ -3258,6 +3258,6 @@ onMounted(async () => {
 }
 
 .muestra-todos {
-  background: linear-gradient(135deg, #fee2e2 0%, #fee2e2 33%, #fef9c3 33%, #fef9c3 66%, #dcfce7 66%);
+  background: linear-gradient(135deg, var(--o-rojo-fondo, #fee2e2) 0%, var(--o-rojo-fondo, #fee2e2) 33%, var(--o-ambar-fondo, #fef9c3) 33%, var(--o-ambar-fondo, #fef9c3) 66%, var(--o-verde-fondo, #dcfce7) 66%);
 }
 </style>

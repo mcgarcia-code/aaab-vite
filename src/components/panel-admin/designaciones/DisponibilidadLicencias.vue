@@ -743,20 +743,20 @@ onMounted(() => {
 
 /* THEAD: Cabecera por encima de todo (z-index: 12) para tapar datos al scrollear hacia abajo */
 .tabla-fija thead .col-fija {
-  background-color: #f8f9fa !important;
+  background-color: var(--o-superficie, #f8f9fa) !important;
   z-index: 12 !important;
 }
 
 /* TBODY: Datos por debajo de la cabecera (z-index: 10) */
 .tabla-fija tbody .col-fija {
-  background-color: #ffffff;
+  background-color: var(--o-tarjeta, #ffffff);
   z-index: 10 !important;
 }
 
 /* Respetamos el color si la fila está coloreada dinámicamente */
-.tabla-fija tbody tr.fila-roja .col-fija { background-color: #fca5a5 !important; }
-.tabla-fija tbody tr.fila-amarilla .col-fija { background-color: #fef08a !important; }
-.tabla-fija tbody tr.fila-des .col-fija { background-color: #93e2ab !important; }
+.tabla-fija tbody tr.fila-roja .col-fija { background-color: var(--o-rojo-fuerte, #fca5a5) !important; }
+.tabla-fija tbody tr.fila-amarilla .col-fija { background-color: var(--o-ambar-fondo, #fef08a) !important; }
+.tabla-fija tbody tr.fila-des .col-fija { background-color: var(--o-verde-fuerte, #93e2ab) !important; }
 
 /* Posiciones EXACTAS de las columnas (Sin z-index extra) */
 .col-apellido {
@@ -841,20 +841,20 @@ td:hover .observacion-tooltip {
    ==================================================== */
 .fila-roja td,
 .fila-roja .col-fija {
-  background-color: #fca5a5 !important;
-  color: #000 !important;
+  background-color: var(--o-rojo-fuerte, #fca5a5) !important;
+  color: var(--o-texto, #000) !important;
 }
 
 .fila-amarilla td,
 .fila-amarilla .col-fija {
-  background-color: #fef08a !important;
-  color: #000 !important;
+  background-color: var(--o-ambar-fondo, #fef08a) !important;
+  color: var(--o-texto, #000) !important;
 }
 
 .fila-des td,
 .fila-des .col-fija {
-  background-color: #93e2ab !important;
-  color: #000 !important;
+  background-color: var(--o-verde-fuerte, #93e2ab) !important;
+  color: var(--o-texto, #000) !important;
 }
 
 /* Vista móvil: aplicar el mismo estado a la card completa */
@@ -862,23 +862,23 @@ td:hover .observacion-tooltip {
 .card.fila-roja .card-header,
 .card.fila-roja .card-body,
 .card.fila-roja .bg-white {
-  background-color: #fca5a5 !important;
-  color: #000 !important;
+  background-color: var(--o-rojo-fuerte, #fca5a5) !important;
+  color: var(--o-texto, #000) !important;
 }
 
 .card.fila-amarilla,
 .card.fila-amarilla .card-header,
 .card.fila-amarilla .card-body,
 .card.fila-amarilla .bg-white {
-  background-color: #fef08a !important;
-  color: #000 !important;
+  background-color: var(--o-ambar-fondo, #fef08a) !important;
+  color: var(--o-texto, #000) !important;
 }
 
 .card.fila-des,
 .card.fila-des .card-header,
 .card.fila-des .card-body,
 .card.fila-des .bg-white {
-  background-color: #93e2ab !important;
-  color: #000 !important;
+  background-color: var(--o-verde-fuerte, #93e2ab) !important;
+  color: var(--o-texto, #000) !important;
 }
 </style>

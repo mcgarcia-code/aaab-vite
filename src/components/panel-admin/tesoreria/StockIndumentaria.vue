@@ -563,14 +563,14 @@ onUnmounted(() => {
   background: white;
   padding: 3px 8px;
   border-radius: 8px;
-  border: 1px solid #dee2e6;
-  color: #475569;
+  border: 1px solid var(--o-borde, #dee2e6);
+  color: var(--o-texto-medio, #475569);
 }
 
 .bajo-stock {
-  border-color: #fecaca;
-  background: #fef2f2;
-  color: #dc2626;
+  border-color: var(--o-rojo-borde, #fecaca);
+  background: var(--o-rojo-fondo, #fef2f2);
+  color: var(--o-rojo-texto, #dc2626);
 }
 
 .border-dashed {

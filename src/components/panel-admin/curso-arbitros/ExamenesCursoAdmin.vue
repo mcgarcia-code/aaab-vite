@@ -613,25 +613,25 @@ onMounted(() => {
 .filtro-badge.activo { box-shadow: 0 0 0 2px #0f172a; }
 .filtro-badge.apagado { opacity: 0.45; }
 .pestanas-examenes { scrollbar-width: thin; }
-.pestanas-examenes .nav-link { color: #475569; background: #f1f5f9; font-size: 0.85rem; white-space: nowrap; }
+.pestanas-examenes .nav-link { color: var(--o-texto-medio, #475569); background: var(--o-chip, #f1f5f9); font-size: 0.85rem; white-space: nowrap; }
 .pestanas-examenes .nav-link.active { background: #dc3545; color: #fff; }
-.examen-card { background: #fff; border: 1px solid #e2e8f0; border-top: 4px solid #94a3b8; border-radius: 12px; min-width: 0; overflow-wrap: anywhere; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06); }
+.examen-card { background: var(--o-tarjeta, #fff); border: 1px solid var(--o-borde, #e2e8f0); border-top: 4px solid #94a3b8; border-radius: 12px; min-width: 0; overflow-wrap: anywhere; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06); }
 .examen-card.borde-teorico { border-top-color: #dc3545; }
-.examen-card.borde-practico { border-top-color: #0f172a; }
+.examen-card.borde-practico { border-top-color: var(--o-texto, #0f172a); }
 .examen-card.borde-fisico { border-top-color: #16a34a; }
-.fecha-bloque { width: 52px; border-radius: 10px; background: #f1f5f9; padding: 6px 0; line-height: 1; }
-.fecha-bloque .dia { font-size: 1.3rem; font-weight: 900; color: #0f172a; }
-.fecha-bloque .mes { font-size: 0.65rem; font-weight: 800; color: #dc3545; letter-spacing: 1px; margin-top: 3px; }
+.fecha-bloque { width: 52px; border-radius: 10px; background: var(--o-chip, #f1f5f9); padding: 6px 0; line-height: 1; }
+.fecha-bloque .dia { font-size: 1.3rem; font-weight: 900; color: var(--o-texto, #0f172a); }
+.fecha-bloque .mes { font-size: 0.65rem; font-weight: 800; color: var(--o-rojo-texto, #dc3545); letter-spacing: 1px; margin-top: 3px; }
 .stat { border-radius: 10px; padding: 6px 4px; }
 .stat .valor { font-size: 1.25rem; font-weight: 900; line-height: 1.1; }
 .stat .etiqueta { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; }
-.stat-ok { background: #f0fdf4; color: #15803d; }
-.stat-mal { background: #fef2f2; color: #b91c1c; }
-.stat-aus { background: #f1f5f9; color: #475569; }
-.examen-card.es-recuperatorio { background: #fffbeb; border-color: #fde68a; }
+.stat-ok { background: var(--o-verde-fondo, #f0fdf4); color: var(--o-verde-texto, #15803d); }
+.stat-mal { background: var(--o-rojo-fondo, #fef2f2); color: var(--o-rojo-texto, #b91c1c); }
+.stat-aus { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); }
+.examen-card.es-recuperatorio { background: var(--o-ambar-fondo, #fffbeb); border-color: var(--o-ambar-borde, #fde68a); }
 
-.estado-vacio { border: 2px dashed #e2e8f0; border-radius: 12px; }
+.estado-vacio { border: 2px dashed var(--o-borde, #e2e8f0); border-radius: 12px; }
 .etiquetas-examen .badge { white-space: normal; text-align: left; line-height: 1.3; }
-.fila-nota { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; }
+.fila-nota { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; padding: 8px 10px; }
 
 </style>
