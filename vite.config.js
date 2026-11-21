@@ -24,9 +24,9 @@ export default defineConfig({
         // Librerías pesadas de exportación: se guardan recién la primera vez que se usan
         globIgnores: ['**/exceljs*', '**/html2pdf*', '**/html2canvas*'],
         cleanupOutdatedCaches: true,
-        // Navegación sin conexión → index.html, salvo backend, archivos subidos y archivos con extensión
+        // Navegación sin conexión → index.html, salvo backend, archivos subidos, el catálogo (sitio aparte) y archivos con extensión
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//, /^\/data\//, /\.[a-z0-9]+$/i],
+        navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//, /^\/data\//, /^\/catalogo(\/|$)/, /\.[a-z0-9]+$/i],
         runtimeCaching: [
           {
             urlPattern: ({ url, sameOrigin }) => sameOrigin && /\/assets\/(exceljs|html2pdf|html2canvas)/.test(url.pathname),
