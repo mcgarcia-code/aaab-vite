@@ -145,15 +145,7 @@
               <EstadoVacio v-if="!legajosPaginados.length" icono="bi-search" titulo="No se encontraron inscriptos" />
             </div>
 
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
+            <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
           </template>
         </div>
       </div>
@@ -356,6 +348,8 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { useHead } from '@unhead/vue'
 import { crearPlanillaExcel, pintarCabeceraExcel, descargarLibroExcel } from '@/composables/useExcelPlanilla'
 import { api } from '@/api/api'
@@ -450,25 +444,16 @@ const resumenEstados = computed(() => {
   return r
 })
 
-const totalPaginas = computed(() => Math.ceil(legajosFiltrados.value.length / registrosPorPagina) || 1)
-const legajosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return legajosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
-})
+const { totalPaginas, paginados: legajosPaginados } = usePaginacion(legajosFiltrados, registrosPorPagina, paginaActual)
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 // Al cambiar el año se vuelve a pedir al servidor solo ese año
 watch(() => filtros.anio_curso, () => cargarDatos())
-watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
 
 const aniosServidor = ref([])
 const aniosLegajos = computed(() => conAnioActual(aniosServidor.value))
 const requiereMotivo = computed(() => ['baja', 'rechazado'].includes(nuevoEstado.value))
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  if (window.innerWidth <= 768) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
-}
 
 const limpiarFiltros = () => Object.assign(filtros, filtrosVacios())
 

@@ -143,15 +143,7 @@
             </div>
 
             <!-- PAGINACIÓN -->
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3 mb-md-0" v-if="totalPaginas > 1">
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border border-light-subtle" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border border-light-subtle" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
+            <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3 mb-md-0" />
           </template>
 
         </div>
@@ -165,6 +157,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, reactive, watch } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { fechaArg } from '@/utils/fechas'
 import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
@@ -260,15 +253,6 @@ const datosPaginados = computed(() => {
   return datosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
 })
 
-// NUEVA FUNCIÓN: Cambiar página y scrollear arriba SOLO EN MOBILE
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, 50)
-}
 
 const limpiarFiltros = () => Object.keys(filtros).forEach(key => filtros[key] = '')
 

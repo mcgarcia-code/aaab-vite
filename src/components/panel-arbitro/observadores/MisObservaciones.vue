@@ -132,15 +132,7 @@
           </div>
 
           <!-- PAGINACIÓN -->
-          <div class="d-flex justify-content-center align-items-center gap-3 my-4" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="my-4" />
         </template>
       </div>
     </div>
@@ -288,6 +280,8 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { fechaArg } from '@/utils/fechas'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
@@ -378,12 +372,8 @@ const observacionesFiltradas = computed(() => {
   })
 })
 
-const totalPaginas = computed(() => Math.ceil(observacionesFiltradas.value.length / registrosPorPagina) || 1)
+const { totalPaginas, paginados: observacionesPaginadas } = usePaginacion(observacionesFiltradas, registrosPorPagina, paginaActual)
 
-const observacionesPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return observacionesFiltradas.value.slice(inicio, inicio + registrosPorPagina)
-})
 
 watch(busqueda, () => { paginaActual.value = 1 })
 
@@ -392,10 +382,6 @@ const limpiarFiltros = () => {
   paginaActual.value = 1
 }
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' })
-}
 
 // -------------------- DESCARGA EXCEL --------------------
 const descargandoId = ref(null)

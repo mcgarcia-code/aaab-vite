@@ -185,15 +185,7 @@
             </div>
 
             <!-- PAGINACIÓN -->
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
+            <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
           </template>
 
         </div>
@@ -640,6 +632,8 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { fechaArg, fechaHoraArg, MESES as MESES_LARGOS } from '@/utils/fechas'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
@@ -739,21 +733,10 @@ const observacionesFiltradas = computed(() => {
   })
 })
 
-const totalPaginas = computed(() => Math.ceil(observacionesFiltradas.value.length / registrosPorPagina) || 1)
-const observacionesPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return observacionesFiltradas.value.slice(inicio, inicio + registrosPorPagina)
-})
+const { totalPaginas, paginados: observacionesPaginadas } = usePaginacion(observacionesFiltradas, registrosPorPagina, paginaActual)
 
-const cambiarPagina = (delta) => {
-  if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta
-    setTimeout(() => { if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }) }, 50)
-  }
-}
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
-watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 const obtenerObservaciones = async () => {
   cargando.value = true

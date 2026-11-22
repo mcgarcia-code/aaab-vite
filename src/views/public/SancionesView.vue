@@ -110,17 +110,7 @@
               </div>
             </div>
 
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-5" v-if="totalPaginas > 1">
-              <button class="btn btn-light rounded-pill px-4 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-white small px-3 py-1 bg-dark bg-opacity-50 rounded-pill">
-                Página {{ paginaActual }} de {{ totalPaginas }}
-              </span>
-              <button class="btn btn-light rounded-pill px-4 fw-bold shadow-sm" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
+            <BarraPaginacion v-model="paginaActual" :total="totalPaginas" sobre-fondo-oscuro class="mt-5" />
 
           </div>
 
@@ -137,6 +127,8 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { api } from '@/api/api'
 
 
@@ -196,22 +188,9 @@ const sancionesFiltradas = computed(() => {
 })
 
 // Paginación Calculada (Usando .value en registrosPorPagina)
-const totalPaginas = computed(() => Math.ceil(sancionesFiltradas.value.length / registrosPorPagina.value) || 1)
+const { totalPaginas, paginados: sancionesPaginadas } = usePaginacion(sancionesFiltradas, registrosPorPagina, paginaActual)
 
-const sancionesPaginadas = computed(() => {
-    const inicio = (paginaActual.value - 1) * registrosPorPagina.value
-    return sancionesFiltradas.value.slice(inicio, inicio + registrosPorPagina.value)
-})
 
-// Cambio de página con scroll hacia arriba en móviles
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, 50)
-}
 
 // Reiniciar a la página 1 si el usuario escribe en el buscador
 watch(filtro, () => {

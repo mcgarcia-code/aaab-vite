@@ -142,15 +142,7 @@
             <p class="text-muted mt-2 mb-0 fw-bold">No se encontraron prendas.</p>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          <BarraPaginacion v-model="paginaActual" :total="totalPaginas" :subir="false" class="mt-4" />
 
         </div>
       </div>
@@ -258,6 +250,7 @@
 <script setup>
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
@@ -378,11 +371,6 @@ const stockPaginado = computed(() => {
   return stock
 })
 
-const cambiarPagina = (delta) => {
-  if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta
-  }
-}
 
 watch(paginaActual, () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })

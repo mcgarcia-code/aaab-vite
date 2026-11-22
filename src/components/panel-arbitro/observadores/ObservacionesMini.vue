@@ -131,15 +131,7 @@
           </div>
 
           <!-- PAGINACIÓN -->
-          <div class="d-flex justify-content-center align-items-center gap-3 my-4" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="paginaActual--" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="paginaActual++" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="my-4" />
         </template>
       </div>
     </div>
@@ -200,6 +192,8 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
@@ -238,11 +232,7 @@ const observacionesFiltradas = computed(() => {
 // Paginación
 const paginaActual = ref(1)
 const registrosPorPagina = 10
-const totalPaginas = computed(() => Math.ceil(observacionesFiltradas.value.length / registrosPorPagina) || 1)
-const observacionesPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return observacionesFiltradas.value.slice(inicio, inicio + registrosPorPagina)
-})
+const { totalPaginas, paginados: observacionesPaginadas } = usePaginacion(observacionesFiltradas, registrosPorPagina, paginaActual)
 watch(busqueda, () => { paginaActual.value = 1 })
 
 const cargar = async () => {

@@ -126,15 +126,7 @@
             </div>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
 
           </template>
         </div>
@@ -148,6 +140,8 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { abrirWhatsApp } from '@/utils/whatsapp'
 import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
@@ -202,14 +196,6 @@ const cargarDatos = async () => {
   }
 }
 
-const cambiarPagina = (delta) => {
-  const nueva = paginaActual.value + delta
-  if (nueva < 1 || nueva > totalPaginas.value) return
-  paginaActual.value = nueva
-  if (window.innerWidth <= 768) {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-}
 
 
 const copiarAlPortapapeles = async (numero) => {
@@ -241,12 +227,8 @@ const arbitrosFiltrados = computed(() => {
 })
 
 // --- CÁLCULOS DE PAGINACIÓN ---
-const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1)
+const { totalPaginas, paginados: arbitrosPaginados } = usePaginacion(arbitrosFiltrados, registrosPorPagina, paginaActual)
 
-const arbitrosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
-})
 
 // Reseteamos la paginación al filtrar
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })

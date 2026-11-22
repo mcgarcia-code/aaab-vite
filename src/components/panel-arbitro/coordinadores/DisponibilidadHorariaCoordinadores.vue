@@ -255,15 +255,7 @@
           </div>
 
           <!-- Paginación -->
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
 
         </div>
       </div>
@@ -309,6 +301,8 @@
 <script setup>
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { fechaArg } from '@/utils/fechas'
 import { abrirWhatsApp } from '@/utils/whatsapp'
 import { normalizarTexto } from '@/utils/texto'
@@ -484,23 +478,13 @@ const arbitrosFiltrados = computed(() => {
   })
 })
 
-const totalPaginas      = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1)
-const arbitrosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
-})
+const { totalPaginas, paginados: arbitrosPaginados } = usePaginacion(arbitrosFiltrados, registrosPorPagina, paginaActual)
 
 // ─── Paginación y filtros ─────────────────────────────────────────
 const limpiarFiltros = () => Object.keys(filtros).forEach(k => (filtros[k] = ''))
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  if (window.innerWidth <= 768)
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
-}
 
 watch(filtros,      () => { paginaActual.value = 1 }, { deep: true })
-watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
 
 // ─── Excel ───────────────────────────────────────────────────────
 const exportarExcel = () => { mostrarModalExcel.value = true }

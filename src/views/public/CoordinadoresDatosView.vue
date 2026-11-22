@@ -256,15 +256,7 @@
             </div>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
 
         </div>
       </div>
@@ -308,6 +300,8 @@
 
 <script setup>
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { fechaArg } from '@/utils/fechas'
 import { abrirWhatsApp } from '@/utils/whatsapp'
 import { normalizarTexto } from '@/utils/texto'
@@ -374,14 +368,6 @@ const toggleTodasColumnas = (val) => {
   columnasExcel.value.forEach(c => c.visible = val)
 }
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, 50)
-}
 
 const cargarDatos = async () => {
   try {
@@ -524,18 +510,11 @@ const arbitrosFiltrados = computed(() => {
   })
 })
 
-const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1)
+const { totalPaginas, paginados: arbitrosPaginados } = usePaginacion(arbitrosFiltrados, registrosPorPagina, paginaActual)
 
-const arbitrosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
-})
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 
-watch(totalPaginas, (nuevoTotal) => {
-  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal
-})
 
 const exportarExcel = () => {
   mostrarModalExcel.value = true

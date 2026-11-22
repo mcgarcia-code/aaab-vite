@@ -165,15 +165,7 @@
           </div>
 
           <!-- Paginación -->
-          <div class="d-flex justify-content-center align-items-center gap-3 py-4 bg-white border-top" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="py-4 bg-white border-top" />
 
         </div>
       </div>
@@ -185,6 +177,8 @@
 <script setup>
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, onMounted, inject, computed, watch } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { fechaArg } from '@/utils/fechas'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
@@ -232,21 +226,9 @@ const onToggleTiempoIndeterminado = () => {
 const paginaActual = ref(1)
 const registrosPorPagina = 4
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, 50)
-}
 
-const totalPaginas = computed(() => Math.ceil(licencias.value.length / registrosPorPagina) || 1)
+const { totalPaginas, paginados: licenciasPaginadas } = usePaginacion(licencias, registrosPorPagina, paginaActual)
 
-const licenciasPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return licencias.value.slice(inicio, inicio + registrosPorPagina)
-})
 
 // Formateadores de fecha
 const formatearFecha = (fecha) => fechaArg(fecha)

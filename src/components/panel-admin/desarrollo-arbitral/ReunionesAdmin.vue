@@ -300,15 +300,7 @@
             </template>
           </div>
 
-          <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1" aria-label="Anterior">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas" aria-label="Siguiente">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
         </div>
       </div>
 
@@ -527,6 +519,8 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
@@ -541,7 +535,6 @@ useHead({
 
 // ─── Constantes ───────────────────────────────────────────────────
 const CATEGORIA         = 'reunion'
-const MOBILE_BREAKPOINT = 768
 
 // ─── Helpers ─────────────────────────────────────────────────────
 const formatFecha  = (f) => f?.split(' ')[0] ?? ''
@@ -794,11 +787,7 @@ const arbitrosOrdenados = computed(() =>
 )
 
 const totalFiltrados    = computed(() => arbitrosOrdenados.value.length)
-const totalPaginas      = computed(() => Math.ceil(arbitrosOrdenados.value.length / registrosPorPagina) || 1)
-const arbitrosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return arbitrosOrdenados.value.slice(inicio, inicio + registrosPorPagina)
-})
+const { totalPaginas, paginados: arbitrosPaginados } = usePaginacion(arbitrosOrdenados, registrosPorPagina, paginaActual)
 
 // ─── Cargas ──────────────────────────────────────────────────────
 const obtenerReuniones = async () => {
@@ -1114,15 +1103,9 @@ watch(anioDisertantes, () => cargarDisertantes())
 // ─── Misc ────────────────────────────────────────────────────────
 const limpiarFiltros = () => Object.keys(filtros).forEach(k => (filtros[k] = ''))
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  if (window.innerWidth <= MOBILE_BREAKPOINT)
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
-}
 
 watch(filtros,      () => { paginaActual.value = 1 }, { deep: true })
 watch(modoReunion,  () => { paginaActual.value = 1 })
-watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
 
 watch(soloActivos, async () => {
   if (modoReunion.value) {

@@ -82,15 +82,7 @@
           </div>
 
           <!-- PAGINACIÓN -->
-          <div v-if="totalPaginas > 1" class="d-flex justify-content-center align-items-center gap-3 py-3 bg-white">
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-              <i class="bi bi-chevron-left"></i> Ant
-            </button>
-            <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-            <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-              Sig <i class="bi bi-chevron-right"></i>
-            </button>
-          </div>
+          <BarraPaginacion v-model="paginaActual" :total="totalPaginas" :subir="false" class="py-3 bg-white" @cambio="irAMovimientos" />
         </div>
       </div>
     </div>
@@ -150,7 +142,9 @@
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { fechaDMA } from '@/utils/fechas'
 import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
@@ -185,18 +179,11 @@ const historialCierres = computed(() => estadoCuenta.value?.historial_cierres ||
 const registrosPorPagina = 10
 const paginaActual = ref(1)
 const cardMovimientos = ref(null)
-const totalPaginas = computed(() => Math.ceil(movimientosPendientes.value.length / registrosPorPagina) || 1)
-const movimientosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return movimientosPendientes.value.slice(inicio, inicio + registrosPorPagina)
-})
-watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  // Vuelve al inicio de la lista de movimientos (no al inicio de la página)
-  setTimeout(() => cardMovimientos.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
-}
+// Al cambiar de página vuelve al inicio de la lista de movimientos (no al inicio de la pantalla)
+const irAMovimientos = () => setTimeout(() => cardMovimientos.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+const { totalPaginas, paginados: movimientosPaginados } = usePaginacion(movimientosPendientes, registrosPorPagina, paginaActual)
+
 
 const recargosActivos = computed(() => {
   const hoy = new Date().toISOString().slice(0, 10)

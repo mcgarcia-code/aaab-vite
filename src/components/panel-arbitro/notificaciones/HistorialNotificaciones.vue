@@ -75,15 +75,7 @@
         </div>
 
         <!-- Paginación -->
-        <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
-          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-            <i class="bi bi-chevron-left"></i> Ant
-          </button>
-          <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-            Sig <i class="bi bi-chevron-right"></i>
-          </button>
-        </div>
+        <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4" />
 
       </div>
     </div>
@@ -104,7 +96,9 @@
 <script setup>
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { ref, onMounted, computed} from 'vue'
+import { ref, onMounted } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 
@@ -121,19 +115,9 @@ const cargando = ref(true)
 const paginaActual = ref(1)
 const registrosPorPagina = ref(10)
 
-const totalPaginas = computed(() => Math.ceil(notificaciones.value.length / registrosPorPagina.value) || 1)
+const { totalPaginas, paginados: notificacionesPaginadas } = usePaginacion(notificaciones, registrosPorPagina, paginaActual)
 
-const notificacionesPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina.value
-  return notificaciones.value.slice(inicio, inicio + registrosPorPagina.value)
-})
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  if (window.innerWidth <= 768) {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-}
 
 const getEstiloBadge = (tipo) => {
   switch (tipo) {

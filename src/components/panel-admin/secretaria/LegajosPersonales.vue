@@ -311,15 +311,7 @@
             </div>
 
             <!-- PAGINACIÓN -->
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
+            <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
           </template>
 
         </div>
@@ -722,6 +714,8 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { fechaArg } from '@/utils/fechas'
 import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
@@ -936,15 +930,6 @@ const solicitudesMostradas = computed(() => {
     .filter(s => s.estado === tabActivo.value)
     .slice(0, 50) // a futuro si queremos lo cambiamos, depende de flor y flor
 })
-// FUNCIÓN DE SCROLL MÓVIL AL CAMBIAR PÁGINA
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, 50)
-}
 
 const cargarSolicitudes = async () => {
   cargandoSolicitudes.value = true
@@ -1567,11 +1552,7 @@ const arbitrosFiltrados = computed(() => {
   })
 })
 
-const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1)
-const arbitrosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
-})
+const { totalPaginas, paginados: arbitrosPaginados } = usePaginacion(arbitrosFiltrados, registrosPorPagina, paginaActual)
 const totalFiltrados = computed(() => arbitrosFiltrados.value.length)
 
 watch([() => filtros.provincia, localidadesFiltradas], () => {
@@ -1588,7 +1569,6 @@ watch(filtros, () => {
     paginaActual.value = 1
   }, 200)
 }, { deep: true })
-watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal })
 
 const cargarEstadoEdicion = async () => {
   try {

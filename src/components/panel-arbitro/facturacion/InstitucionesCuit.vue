@@ -187,17 +187,7 @@
             </div>
 
             <!-- PAGINACIÓN -->
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-dark small">
-                Página {{ paginaActual }} de {{ totalPaginas }}
-              </span>
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
+            <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
           </template>
 
         </div>
@@ -223,6 +213,8 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { normalizarTexto } from '@/utils/texto'
 import { abrirWhatsApp } from '@/utils/whatsapp'
 import { api, listaDe } from '@/api/api'
@@ -320,27 +312,12 @@ const filtrados = computed(() => {
   })
 })
 
-const totalPaginas = computed(() => Math.ceil(filtrados.value.length / registrosPorPagina) || 1)
+const { totalPaginas, paginados: institucionesPaginadas } = usePaginacion(filtrados, registrosPorPagina, paginaActual)
 
-const institucionesPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return filtrados.value.slice(inicio, inicio + registrosPorPagina)
-})
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, 50)
-}
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 
-watch(totalPaginas, (nuevoTotal) => {
-  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal
-})
 
 onMounted(cargarDatos)
 </script>

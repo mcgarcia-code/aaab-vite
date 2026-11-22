@@ -70,15 +70,7 @@
 
             <EstadoVacio v-if="gruposPaginados.length === 0" icono="bi-person-x" titulo="No se encontraron grupos" />
 
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-dark small">Pagina {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
+            <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
           </template>
 
         </div>
@@ -135,6 +127,8 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, onMounted, inject, computed, watch } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
@@ -242,12 +236,8 @@ const gruposFiltrados = computed(() => {
   })
 })
 
-const totalPaginas = computed(() => Math.ceil(gruposFiltrados.value.length / registrosPorPagina) || 1)
+const { totalPaginas, paginados: gruposPaginados } = usePaginacion(gruposFiltrados, registrosPorPagina, paginaActual)
 
-const gruposPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return gruposFiltrados.value.slice(inicio, inicio + registrosPorPagina)
-})
 
 watch(filtros, () => {
   paginaActual.value = 1
@@ -259,14 +249,6 @@ watch(totalPaginas, (nuevoTotal) => {
   }
 })
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, 50)
-}
 
 const limpiarFiltrosTabla = () => {
   filtros.busqueda = ''

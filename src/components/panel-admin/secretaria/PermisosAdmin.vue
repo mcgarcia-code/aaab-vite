@@ -153,15 +153,7 @@
             <EstadoVacio v-if="usuariosPaginados.length === 0" icono="bi-search" titulo="No se encontraron usuarios" />
 
             <!-- PAGINACIÓN -->
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
+            <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
           </template>
         </div>
       </div>
@@ -315,6 +307,8 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, inject, onMounted, watch } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { normalizarTexto } from '@/utils/texto'
 import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
@@ -436,25 +430,14 @@ const mostrarFiltrosMobile = ref(false)
 const paginaActual = ref(1)
 const registrosPorPagina = 15
 
-const totalPaginas = computed(() => Math.ceil(usuariosFiltrados.value.length / registrosPorPagina) || 1)
+const { totalPaginas, paginados: usuariosPaginados } = usePaginacion(usuariosFiltrados, registrosPorPagina, paginaActual)
 
-const usuariosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return usuariosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
-})
 
 watch(filtros, () => {
   paginaActual.value = 1
 }, { deep: true })
 
-watch(totalPaginas, (nuevoTotal) => {
-  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal
-})
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' })
-}
 
 const limpiarFiltros = () => {
   Object.assign(filtros, { busqueda: '', rol: '', estado: '' })

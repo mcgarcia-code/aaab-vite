@@ -299,15 +299,7 @@
             </div>
 
             <!-- PAGINACIÓN -->
-            <div v-if="totalPaginas > 1" class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3">
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
+            <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
           </template>
         </div>
       </div>
@@ -580,6 +572,8 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, onMounted, inject, watch } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { fechaArg } from '@/utils/fechas'
 import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
@@ -845,20 +839,13 @@ const toggleGrupo = (f) => {
   expandidos.value[f.key] = !estaExpandido(f)
 }
 
-const totalPaginas = computed(() => Math.ceil(filasFiltradas.value.length / registrosPorPagina) || 1)
+const { totalPaginas, paginados: filasPaginadas } = usePaginacion(filasFiltradas, registrosPorPagina, paginaActual)
 
-const filasPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return filasFiltradas.value.slice(inicio, inicio + registrosPorPagina)
-})
 
 watch(filtros, () => {
   paginaActual.value = 1
 })
 
-watch(totalPaginas, (nuevoTotal) => {
-  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal
-})
 
 // ====================================================
 //  CARGA DE DATOS
@@ -1206,15 +1193,6 @@ const abrirModalHistorial = async (concepto, idCategoria, etiqueta) => {
 
 // ====================================================
 //  PAGINACIÓN
-// ====================================================
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  setTimeout(() => {
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }, 50)
-}
 
 // ====================================================
 //  INIT

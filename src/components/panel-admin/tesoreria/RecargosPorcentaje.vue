@@ -118,15 +118,7 @@
               </div>
             </div>
 
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
+            <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
           </template>
         </div>
       </div>
@@ -185,6 +177,8 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, onMounted, inject, watch } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
@@ -230,19 +224,10 @@ const recargosFiltrados = computed(() => {
   }).sort((a, b) => b.id - a.id)
 })
 
-const totalPaginas = computed(() => Math.ceil(recargosFiltrados.value.length / registrosPorPagina) || 1)
-const recargosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return recargosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
-})
+const { totalPaginas, paginados: recargosPaginados } = usePaginacion(recargosFiltrados, registrosPorPagina, paginaActual)
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
-watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo })
 
-const cambiarPagina = (delta) => {
-  paginaActual.value += delta
-  setTimeout(() => { if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }) }, 50)
-}
 
 const limpiarFiltros = () => { filtros.busqueda = ''; filtros.estado = '' }
 

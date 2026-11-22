@@ -200,15 +200,7 @@
             </div>
 
             <!-- PAGINACIÓN -->
-            <div class="d-flex justify-content-center align-items-center gap-3 mt-4 mb-3" v-if="totalPaginas > 1">
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-                <i class="bi bi-chevron-left"></i> Ant
-              </button>
-              <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-              <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-                Sig <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
+            <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
           </template>
 
         </div>
@@ -421,6 +413,8 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { OPCIONES_TORNEO, etiquetaTorneo } from '@/utils/informes'
 import { useDescargasInforme } from '@/composables/useDescargasInforme'
 import { fechaArg, fechaHoraArg } from '@/utils/fechas'
@@ -517,23 +511,12 @@ const informesFiltrados = computed(() => {
   })
 })
 
-const totalPaginas = computed(() => Math.ceil(informesFiltrados.value.length / registrosPorPagina) || 1)
-const informesPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return informesFiltrados.value.slice(inicio, inicio + registrosPorPagina)
-})
+const { totalPaginas, paginados: informesPaginados } = usePaginacion(informesFiltrados, registrosPorPagina, paginaActual)
 
-const cambiarPagina = (delta) => {
-  if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta
-    setTimeout(() => { if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }) }, 50)
-  }
-}
 
 const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); filtros.anio = anioActual() }
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
-watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 /* ====================================================
    CARGA DE DATOS

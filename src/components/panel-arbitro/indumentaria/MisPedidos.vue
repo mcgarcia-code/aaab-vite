@@ -120,15 +120,7 @@
         </div>
 
         <!-- Paginación -->
-        <div class="d-flex justify-content-center align-items-center gap-3 mt-4" v-if="totalPaginas > 1">
-          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(-1)" :disabled="paginaActual <= 1">
-            <i class="bi bi-chevron-left"></i> Ant
-          </button>
-          <span class="fw-bold text-dark small">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button class="btn btn-light rounded-pill px-3 fw-bold shadow-sm border" @click="cambiarPagina(1)" :disabled="paginaActual >= totalPaginas">
-            Sig <i class="bi bi-chevron-right"></i>
-          </button>
-        </div>
+        <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4" />
 
       </div>
     </div>
@@ -142,6 +134,8 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, onMounted, watch, inject } from 'vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 
@@ -174,15 +168,10 @@ const pedidosFiltradas = computed(() => {
   })
 })
 
-const totalPaginas = computed(() => Math.ceil(pedidosFiltradas.value.length / registrosPorPagina) || 1)
+const { totalPaginas, paginados: pedidosPaginados } = usePaginacion(pedidosFiltradas, registrosPorPagina, paginaActual)
 
-const pedidosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina
-  return pedidosFiltradas.value.slice(inicio, inicio + registrosPorPagina)
-})
 
 watch(busqueda, () => { paginaActual.value = 1 })
-watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 const obtenerPedidos = async () => {
   cargando.value = true
@@ -234,14 +223,6 @@ const obtenerClaseEstado = (estado) => {
   }
 }
 
-const cambiarPagina = (delta) => {
-  if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta
-    if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
-  }
-}
 
 onMounted(obtenerPedidos)
 </script>
