@@ -298,38 +298,38 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
-import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
+import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { cargarExcelJS } from '@/utils/librerias'
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
-import ModalBase from '@/components/ModalBase.vue';
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
+import ModalBase from '@/components/ModalBase.vue'
 
 useHead({
   title: 'Pedidos Realizados | AAAB',
   meta: [{ name: 'description', content: 'Administración de pedidos de indumentaria.' }],
-});
+})
 
-const toast = inject('toast');
+const toast = inject('toast')
 
-const pedidos = ref([]);
-const cargando = ref(false);
+const pedidos = ref([])
+const cargando = ref(false)
 
-const filtros = reactive({ arbitro: '', prenda: '', estado: '', fecha: '', anio: anioActual() });
-const mostrarFiltrosMobile = ref(false);
+const filtros = reactive({ arbitro: '', prenda: '', estado: '', fecha: '', anio: anioActual() })
+const mostrarFiltrosMobile = ref(false)
 
-const paginaActual = ref(1);
-const registrosPorPagina = 10;
+const paginaActual = ref(1)
+const registrosPorPagina = 10
 
-const mostrarModal = ref(false);
-const pedidoActual = ref({});
-const nuevoEstado = ref('');
+const mostrarModal = ref(false)
+const pedidoActual = ref({})
+const nuevoEstado = ref('')
 
-const mostrarModalHistorial = ref(false);
-const historialArbitro = ref([]);
-const arbitroHistorialNombre = ref('');
+const mostrarModalHistorial = ref(false)
+const historialArbitro = ref([])
+const arbitroHistorialNombre = ref('')
 
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 // Extrae el año a 4 dígitos desde fecha_creacion (formato DD/MM/YY o DD/MM/YYYY)
 const extraerAnio = (fecha) => {
@@ -339,7 +339,7 @@ const extraerAnio = (fecha) => {
   let anio = partes[2]
   if (anio.length === 2) anio = '20' + anio
   return anio
-};
+}
 
 const aniosDisponibles = computed(() => {
   const anios = new Set()
@@ -348,123 +348,123 @@ const aniosDisponibles = computed(() => {
     if (anio) anios.add(anio)
   })
   return conAnioActual(anios)
-});
+})
 
 const pedidosFiltrados = computed(() => {
   return pedidos.value.filter(p => {
-    const nombreCompleto = `${p.apellido} ${p.nombre}`;
-    const matchArb = normalizar(nombreCompleto).includes(normalizar(filtros.arbitro));
-    const matchPrenda = normalizar(p.descripcion).includes(normalizar(filtros.prenda));
-    const matchEst = filtros.estado === '' || (p.estado && p.estado.toLowerCase() === filtros.estado.toLowerCase());
-    const matchFecha = p.fecha_creacion && p.fecha_creacion.includes(filtros.fecha);
-    const matchAnio = !filtros.anio || extraerAnio(p.fecha_creacion) === filtros.anio;
+    const nombreCompleto = `${p.apellido} ${p.nombre}`
+    const matchArb = normalizar(nombreCompleto).includes(normalizar(filtros.arbitro))
+    const matchPrenda = normalizar(p.descripcion).includes(normalizar(filtros.prenda))
+    const matchEst = filtros.estado === '' || (p.estado && p.estado.toLowerCase() === filtros.estado.toLowerCase())
+    const matchFecha = p.fecha_creacion && p.fecha_creacion.includes(filtros.fecha)
+    const matchAnio = !filtros.anio || extraerAnio(p.fecha_creacion) === filtros.anio
 
-    return matchArb && matchPrenda && matchEst && matchFecha && matchAnio;
-  });
-});
+    return matchArb && matchPrenda && matchEst && matchFecha && matchAnio
+  })
+})
 
-const totalPaginas = computed(() => Math.ceil(pedidosFiltrados.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(pedidosFiltrados.value.length / registrosPorPagina) || 1)
 const pedidosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return pedidosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return pedidosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
+})
 
 const cambiarPagina = (delta) => {
   if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta;
+    paginaActual.value += delta
     setTimeout(() => {
       if (window.innerWidth <= 768) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       }
-    }, 50);
+    }, 50)
   }
-};
+}
 
-watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
-watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
+watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 const obtenerPedidos = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
-    const res = await api.get({ entity: 'indumentaria', action: 'obtenerPedidos' });
+    const res = await api.get({ entity: 'indumentaria', action: 'obtenerPedidos' })
     if (res.ok) {
-      pedidos.value = (res.payload || []).sort((a, b) => b.id - a.id);
+      pedidos.value = (res.payload || []).sort((a, b) => b.id - a.id)
     }
   } catch {
-    toast({ titulo: 'Error', mensaje: 'Problema al cargar los pedidos.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Problema al cargar los pedidos.', tipo: 'danger' })
   }
-  cargando.value = false;
-};
+  cargando.value = false
+}
 
 const abrirModalEstado = (pedido) => {
-  pedidoActual.value = { ...pedido };
-  nuevoEstado.value = pedido.estado.toLowerCase();
-  mostrarModal.value = true;
-};
+  pedidoActual.value = { ...pedido }
+  nuevoEstado.value = pedido.estado.toLowerCase()
+  mostrarModal.value = true
+}
 
 const cerrarModal = () => {
-  mostrarModal.value = false;
-  cargando.value = false;
-};
+  mostrarModal.value = false
+  cargando.value = false
+}
 
 const guardarEstado = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
     const res = await api.post({
       entity: 'indumentaria',
       action: 'actualizarPedido',
       payload: { id: pedidoActual.value.id, estado: nuevoEstado.value }
-    });
+    })
 
     if (res.ok) {
-      toast({ titulo: 'Actualizado', mensaje: 'Estado del pedido modificado con éxito.', tipo: 'success' });
-      await obtenerPedidos();
-      cerrarModal();
+      toast({ titulo: 'Actualizado', mensaje: 'Estado del pedido modificado con éxito.', tipo: 'success' })
+      await obtenerPedidos()
+      cerrarModal()
     } else {
-      toast({ titulo: 'Error', mensaje: 'No se pudo actualizar el estado.', tipo: 'danger' });
+      toast({ titulo: 'Error', mensaje: 'No se pudo actualizar el estado.', tipo: 'danger' })
     }
   } catch (error) {
-    console.error(error);
+    console.error(error)
     // ACÁ ESTÁ EL CAMBIO DE LA NOTIFICACIÓN DE ERROR
-    toast({ titulo: 'Error de conexión', mensaje: 'Ocurrió un problema al intentar guardar los cambios.', tipo: 'danger' });
+    toast({ titulo: 'Error de conexión', mensaje: 'Ocurrió un problema al intentar guardar los cambios.', tipo: 'danger' })
   }
-  cargando.value = false;
-};
+  cargando.value = false
+}
 
 const verHistorial = (pedido) => {
-  arbitroHistorialNombre.value = `${pedido.apellido}, ${pedido.nombre}`;
+  arbitroHistorialNombre.value = `${pedido.apellido}, ${pedido.nombre}`
   historialArbitro.value = pedidos.value
     .filter(p => p.apellido === pedido.apellido && p.nombre === pedido.nombre)
-    .sort((a, b) => b.id - a.id);
+    .sort((a, b) => b.id - a.id)
 
-  mostrarModalHistorial.value = true;
-};
+  mostrarModalHistorial.value = true
+}
 
 const limpiarFiltros = () => {
-  filtros.arbitro = '';
-  filtros.prenda = '';
-  filtros.estado = '';
-  filtros.fecha = '';
-  filtros.anio = anioActual();
-};
+  filtros.arbitro = ''
+  filtros.prenda = ''
+  filtros.estado = ''
+  filtros.fecha = ''
+  filtros.anio = anioActual()
+}
 
 const obtenerClaseEstado = (estado) => {
-  if (!estado) return 'estado-creado';
+  if (!estado) return 'estado-creado'
   switch (estado.toLowerCase()) {
-    case 'creado': return 'estado-creado';
-    case 'en proceso': return 'estado-proceso';
-    case 'aceptado': return 'estado-aceptado';
-    case 'entregado': return 'estado-entregado';
-    case 'rechazado': return 'estado-rechazado';
-    case 'cancelado': return 'estado-cancelado';
-    default: return 'estado-creado';
+    case 'creado': return 'estado-creado'
+    case 'en proceso': return 'estado-proceso'
+    case 'aceptado': return 'estado-aceptado'
+    case 'entregado': return 'estado-entregado'
+    case 'rechazado': return 'estado-rechazado'
+    case 'cancelado': return 'estado-cancelado'
+    default: return 'estado-creado'
   }
-};
+}
 
 const exportarExcel = async () => {
   if (pedidosFiltrados.value.length === 0) {
-    toast({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' });
-    return;
+    toast({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' })
+    return
   }
 
   // --- HOJA 1: RESUMEN PROVEEDOR (FABRICAR) ---
@@ -472,34 +472,34 @@ const exportarExcel = async () => {
     p.estado.toLowerCase() !== 'rechazado' &&
     p.estado.toLowerCase() !== 'cancelado' &&
     Number(p.cantidad_encargada) > 0
-  );
+  )
 
-  const mapaAgrupado = {};
+  const mapaAgrupado = {}
   pedidosAProducir.forEach(p => {
-    const key = `${p.descripcion}_${p.talle}`;
+    const key = `${p.descripcion}_${p.talle}`
     if (!mapaAgrupado[key]) {
       mapaAgrupado[key] = {
         'Prenda / Modelo': p.descripcion,
         'Talle': p.talle,
         'Cantidad a Fabricar': 0
-      };
+      }
     }
-    mapaAgrupado[key]['Cantidad a Fabricar'] += Number(p.cantidad_encargada);
-  });
+    mapaAgrupado[key]['Cantidad a Fabricar'] += Number(p.cantidad_encargada)
+  })
 
   const datosHoja1 = Object.values(mapaAgrupado)
-    .sort((a, b) => a['Prenda / Modelo'].localeCompare(b['Prenda / Modelo']));
+    .sort((a, b) => a['Prenda / Modelo'].localeCompare(b['Prenda / Modelo']))
 
   // --- HOJA 2: DETALLE INDIVIDUAL A COBRAR ---
   const pedidosActivosDetalle = pedidosFiltrados.value.filter(p =>
     p.estado.toLowerCase() !== 'rechazado' &&
     p.estado.toLowerCase() !== 'cancelado'
-  );
+  )
 
   const datosHoja2 = pedidosActivosDetalle.map(p => {
-    const nombreArbitro = `${p.apellido}, ${p.nombre}`;
-    const cantidadTotal = Number(p.cantidad) + Number(p.cantidad_encargada);
-    const montoCalculado = cantidadTotal * p.precioUnitario;
+    const nombreArbitro = `${p.apellido}, ${p.nombre}`
+    const cantidadTotal = Number(p.cantidad) + Number(p.cantidad_encargada)
+    const montoCalculado = cantidadTotal * p.precioUnitario
 
     return {
       'Árbitro': nombreArbitro,
@@ -509,40 +509,40 @@ const exportarExcel = async () => {
       'Estado(s)': p.estado.toUpperCase(),
       'Nro(s) de Pedido': `#${p.id}`,
       'Fecha de Registro': p.fecha_creacion || 'S/F'
-    };
-  });
+    }
+  })
 
-  datosHoja2.sort((a, b) => a['Árbitro'].localeCompare(b['Árbitro']));
+  datosHoja2.sort((a, b) => a['Árbitro'].localeCompare(b['Árbitro']))
 
   // --- GENERACIÓN DEL ARCHIVO ---
-  const wb = new (await cargarExcelJS()).Workbook();
+  const wb = new (await cargarExcelJS()).Workbook()
 
   // Helper para cargar un array de objetos en una hoja
   const cargarHoja = (nombreHoja, datos) => {
-    const ws = wb.addWorksheet(nombreHoja);
-    const claves = Object.keys(datos[0] || {});
-    ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 22 }));
-    datos.forEach(fila => ws.addRow(fila));
-    if (claves.length) ws.getRow(1).font = { bold: true };
-  };
+    const ws = wb.addWorksheet(nombreHoja)
+    const claves = Object.keys(datos[0] || {})
+    ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 22 }))
+    datos.forEach(fila => ws.addRow(fila))
+    if (claves.length) ws.getRow(1).font = { bold: true }
+  }
 
-  cargarHoja('Resumen Proveedor (Fabricar)', datosHoja1);
-  cargarHoja('Detalle Individual a Cobrar', datosHoja2);
+  cargarHoja('Resumen Proveedor (Fabricar)', datosHoja1)
+  cargarHoja('Detalle Individual a Cobrar', datosHoja2)
 
   // Descargar
-  const buffer = await wb.xlsx.writeBuffer();
+  const buffer = await wb.xlsx.writeBuffer()
   const blob = new Blob([buffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'Reporte_Pedidos_AAAB.xlsx';
-  link.click();
-  URL.revokeObjectURL(url);
-};
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Reporte_Pedidos_AAAB.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
+}
 
-onMounted(obtenerPedidos);
+onMounted(obtenerPedidos)
 </script>
 
 <style scoped>

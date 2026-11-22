@@ -74,8 +74,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useHead } from '@vueuse/head';
+import { ref } from 'vue'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Preguntas Frecuentes | AAAB',
@@ -357,7 +357,7 @@ const categorias = ref([
       }
     ]
   }
-]);
+])
 </script>
 
 <style scoped>

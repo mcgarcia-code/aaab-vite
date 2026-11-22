@@ -1,9 +1,13 @@
 <template>
   <!-- Modo examen a pantalla completa -->
-  <ExamenAsambleaRunner
+  <ExamenOnlineRunner
     v-if="estado === 'rindiendo' && evento?.id_evento"
-    :id-evento="evento.id_evento"
-    :titulo="evento.titulo"
+    entity="examen_online"
+    :acciones="{ iniciar: 'iniciarOReanudar', guardar: 'guardarAvance', finalizar: 'finalizarExamen' }"
+    :identificador="{ idEvento: evento.id_evento }"
+    :titulo="evento.titulo || 'Examen Asamblea General - Reunión Mensual'"
+    titulo-pagina="Examen Online | AAAB"
+    descripcion-pagina="Examen online para los árbitros de la AAAB."
     @terminar="alTerminar"
     @salir="volverAlPanel"
   />
@@ -160,8 +164,8 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, computed, watch, onMounted } from 'vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
-import { api } from '@/api/api'
-import ExamenAsambleaRunner from './ExamenAsambleaRunner.vue'
+import { api, listaDe } from '@/api/api'
+import ExamenOnlineRunner from '@/components/comunes/examenes/ExamenOnlineRunner.vue'
 
 // Estado de la habilitación actual:
 // 'cargando' | 'sin-permiso' | 'habilitado' | 'finalizado' | 'rindiendo'
@@ -223,7 +227,7 @@ async function cargarHistorial() {
   cargandoHistorial.value = true
   try {
     const res = await api.get({ entity: 'examen_online', action: 'misExamenesOnline' })
-    historial.value = res?.payload ?? res ?? []
+    historial.value = listaDe(res)
   } catch {
     historial.value = []
   } finally {

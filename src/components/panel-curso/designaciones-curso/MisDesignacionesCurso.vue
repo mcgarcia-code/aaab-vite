@@ -176,7 +176,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { MESES } from '@/utils/fechas'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import { anioActual } from '@/utils/anios'
 

@@ -141,9 +141,9 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { ref, computed, onMounted, watch, inject } from 'vue';
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
+import { ref, computed, onMounted, watch, inject } from 'vue'
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Mis Pedidos | AAAB',
@@ -153,43 +153,43 @@ useHead({
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
     { property: 'og:type', content: 'website' }
   ],
-});
+})
 
-const notificar = inject('notificar');
-const toast = inject('toast');
+const notificar = inject('notificar')
+const toast = inject('toast')
 
-const pedidos = ref([]);
-const busqueda = ref('');
-const cargando = ref(false);
+const pedidos = ref([])
+const busqueda = ref('')
+const cargando = ref(false)
 
-const paginaActual = ref(1);
-const registrosPorPagina = 10;
+const paginaActual = ref(1)
+const registrosPorPagina = 10
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 const pedidosFiltradas = computed(() => {
   return pedidos.value.filter(p => {
-    const texto = `${p.descripcion} ${p.estado}`.toLowerCase();
-    return normalizar(texto).includes(normalizar(busqueda.value));
-  });
-});
+    const texto = `${p.descripcion} ${p.estado}`.toLowerCase()
+    return normalizar(texto).includes(normalizar(busqueda.value))
+  })
+})
 
-const totalPaginas = computed(() => Math.ceil(pedidosFiltradas.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(pedidosFiltradas.value.length / registrosPorPagina) || 1)
 
 const pedidosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return pedidosFiltradas.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return pedidosFiltradas.value.slice(inicio, inicio + registrosPorPagina)
+})
 
-watch(busqueda, () => { paginaActual.value = 1 });
-watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo });
+watch(busqueda, () => { paginaActual.value = 1 })
+watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 const obtenerPedidos = async () => {
-  cargando.value = true;
-  const res = await api.get({ entity: 'indumentaria', action: 'obtenerPedidosArbitro' });
-  if (res.ok) pedidos.value = res.payload;
-  cargando.value = false;
-};
+  cargando.value = true
+  const res = await api.get({ entity: 'indumentaria', action: 'obtenerPedidosArbitro' })
+  if (res.ok) pedidos.value = res.payload
+  cargando.value = false
+}
 
 // Acciones del modal usando la alerta global
 const abrirModalCancelar = (id) => {
@@ -198,52 +198,52 @@ const abrirModalCancelar = (id) => {
     mensaje: '¿Estás seguro que querés cancelar este pedido? Esta acción no se puede deshacer.',
     tipo: 'danger',
     alConfirmar: async () => {
-      cargando.value = true;
+      cargando.value = true
       try {
         const res = await api.post({
           entity: 'indumentaria',
           action: 'actualizarPedido',
           payload: { id: id, estado: 'cancelado' }
-        });
+        })
 
         if (res.ok) {
-          toast({ titulo: 'Pedido cancelado', mensaje: 'El pedido ha sido cancelado con éxito.', tipo: 'success' });
-          await obtenerPedidos();
+          toast({ titulo: 'Pedido cancelado', mensaje: 'El pedido ha sido cancelado con éxito.', tipo: 'success' })
+          await obtenerPedidos()
         } else {
-          toast({ titulo: 'Error', mensaje: 'No se pudo cancelar el pedido.', tipo: 'danger' });
+          toast({ titulo: 'Error', mensaje: 'No se pudo cancelar el pedido.', tipo: 'danger' })
         }
       } catch {
-        toast({ titulo: 'Error de Red', mensaje: 'Ocurrió un problema al conectar con el servidor.', tipo: 'danger' });
+        toast({ titulo: 'Error de Red', mensaje: 'Ocurrió un problema al conectar con el servidor.', tipo: 'danger' })
       } finally {
-        cargando.value = false;
+        cargando.value = false
       }
     }
-  });
-};
+  })
+}
 
 const obtenerClaseEstado = (estado) => {
-  if (!estado) return 'estado-creado';
+  if (!estado) return 'estado-creado'
   switch (estado.toLowerCase()) {
-    case 'creado': return 'estado-creado';
-    case 'en proceso': return 'estado-proceso';
-    case 'aceptado': return 'estado-aceptado';
-    case 'entregado': return 'estado-entregado';
-    case 'rechazado': return 'estado-rechazado';
-    case 'cancelado': return 'estado-cancelado';
-    default: return 'estado-creado';
+    case 'creado': return 'estado-creado'
+    case 'en proceso': return 'estado-proceso'
+    case 'aceptado': return 'estado-aceptado'
+    case 'entregado': return 'estado-entregado'
+    case 'rechazado': return 'estado-rechazado'
+    case 'cancelado': return 'estado-cancelado'
+    default: return 'estado-creado'
   }
-};
+}
 
 const cambiarPagina = (delta) => {
   if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta;
+    paginaActual.value += delta
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
-};
+}
 
-onMounted(obtenerPedidos);
+onMounted(obtenerPedidos)
 </script>
 
 <style scoped>

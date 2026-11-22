@@ -348,7 +348,7 @@ import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
@@ -384,102 +384,102 @@ const cargandoHistorial = ref(false)
 const licenciaSeleccionada = ref(null)
 const historialLicencia = ref([])
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
-const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : '';
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
+const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : ''
 const formatearFechaAusencia = (lic) => {
-  if (lic.tiempo_indeterminado == 1) return 'Tiempo indeterminado';
-  const desde = formatearFechaVista(lic.fecha_licencia);
-  const hasta = formatearFechaVista(lic.fecha_hasta);
-  return hasta && hasta !== desde ? `${desde} al ${hasta}` : desde;
-};
+  if (lic.tiempo_indeterminado == 1) return 'Tiempo indeterminado'
+  const desde = formatearFechaVista(lic.fecha_licencia)
+  const hasta = formatearFechaVista(lic.fecha_hasta)
+  return hasta && hasta !== desde ? `${desde} al ${hasta}` : desde
+}
 
 // Extrae el año (AAAA) de una fecha en formato 'AAAA-MM-DD ...'. Devuelve '' si no hay fecha.
-const anioDeFecha = (f) => (f ? String(f).split(' ')[0].split('-')[0] : '');
+const anioDeFecha = (f) => (f ? String(f).split(' ')[0].split('-')[0] : '')
 
 const etiquetaMotivo = (motivo, corto = false) => {
-  if (motivo === 'lesion_enfermedad') return corto ? 'Lesión/Enf.' : 'Lesión/Enfermedad';
-  if (motivo === 'designacion_torneo_nacional') return corto ? 'Desig. T. Nac.' : 'Designación Torneo Nacional';
-  return 'Particular';
-};
+  if (motivo === 'lesion_enfermedad') return corto ? 'Lesión/Enf.' : 'Lesión/Enfermedad'
+  if (motivo === 'designacion_torneo_nacional') return corto ? 'Desig. T. Nac.' : 'Designación Torneo Nacional'
+  return 'Particular'
+}
 
 // Años presentes en las licencias (según fecha de ausencia o de solicitud), ordenados descendente.
 const aniosDisponibles = computed(() => {
-  const set = new Set();
+  const set = new Set()
   licencias.value.forEach(l => {
-    const aAus = anioDeFecha(l.fecha_licencia);
-    const aSol = anioDeFecha(l.fecha_solicitud);
-    if (aAus) set.add(aAus);
-    if (aSol) set.add(aSol);
-  });
-  return conAnioActual(set);
-});
+    const aAus = anioDeFecha(l.fecha_licencia)
+    const aSol = anioDeFecha(l.fecha_solicitud)
+    if (aAus) set.add(aAus)
+    if (aSol) set.add(aSol)
+  })
+  return conAnioActual(set)
+})
 
 const licenciasFiltradas = computed(() => {
   return licencias.value.filter(l => {
-    const matchApe = normalizar(l.apellido).includes(normalizar(filtros.apellido));
-    const matchNom = normalizar(l.nombre).includes(normalizar(filtros.nombre));
-    const matchEst = filtros.estado === '' || l.estado === filtros.estado;
-    const matchFec = normalizar(formatearFechaAusencia(l)).includes(normalizar(filtros.fecha));
-    const matchFecSol = formatearFechaVista(l.fecha_solicitud).includes(filtros.fecha_solicitud);
+    const matchApe = normalizar(l.apellido).includes(normalizar(filtros.apellido))
+    const matchNom = normalizar(l.nombre).includes(normalizar(filtros.nombre))
+    const matchEst = filtros.estado === '' || l.estado === filtros.estado
+    const matchFec = normalizar(formatearFechaAusencia(l)).includes(normalizar(filtros.fecha))
+    const matchFecSol = formatearFechaVista(l.fecha_solicitud).includes(filtros.fecha_solicitud)
     // Año: coincide por fecha de ausencia o de solicitud.
     // Las indeterminadas (sin fecha de ausencia) se muestran siempre.
     const matchAnio = filtros.anio === ''
       || l.tiempo_indeterminado == 1
       || anioDeFecha(l.fecha_licencia) === filtros.anio
-      || anioDeFecha(l.fecha_solicitud) === filtros.anio;
-    return matchApe && matchNom && matchEst && matchFec && matchFecSol && matchAnio;
-  });
-});
+      || anioDeFecha(l.fecha_solicitud) === filtros.anio
+    return matchApe && matchNom && matchEst && matchFec && matchFecSol && matchAnio
+  })
+})
 
-const totalPaginas = computed(() => Math.ceil(licenciasFiltradas.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(licenciasFiltradas.value.length / registrosPorPagina) || 1)
 const licenciasPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return licenciasFiltradas.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return licenciasFiltradas.value.slice(inicio, inicio + registrosPorPagina)
+})
 
-watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
-watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
+watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
 
   setTimeout(() => {
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, 50);
-};
+  }, 50)
+}
 
 const obtenerLicencias = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
     const res = await api.get({
       entity: 'licencias',
       action: 'obtenerTodasLasLicencias'
-    });
-    if (res.ok) licencias.value = res.payload;
+    })
+    if (res.ok) licencias.value = res.payload
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 const obtenerArbitros = async () => {
   const res = await api.get({
     entity: 'arbitros',
     action: 'getArbitros'
-  });
+  })
   if (res.ok && Array.isArray(res.payload)) {
-    arbitrosLista.value = (res.payload || []).sort((a, b) => (a.apellido || '').localeCompare(b.apellido || ''));
+    arbitrosLista.value = (res.payload || []).sort((a, b) => (a.apellido || '').localeCompare(b.apellido || ''))
   }
-};
+}
 
 const abrirModalNuevo = () => {
-  const hoy = new Date().toISOString().split('T')[0];
+  const hoy = new Date().toISOString().split('T')[0]
   // MODIFICADO: Reiniciar motivo a particular por defecto
-  formModal.value = { id: null, id_arbitro: '', fecha_solicitud: hoy, fecha_licencia: '', fecha_hasta: '', estado: 'aprobada', apellido: '', nombre: '', motivo: 'particular', tiempo_indeterminado: false };
-  modoModal.value = 'nuevo';
-  mostrarModal.value = true;
-};
+  formModal.value = { id: null, id_arbitro: '', fecha_solicitud: hoy, fecha_licencia: '', fecha_hasta: '', estado: 'aprobada', apellido: '', nombre: '', motivo: 'particular', tiempo_indeterminado: false }
+  modoModal.value = 'nuevo'
+  mostrarModal.value = true
+}
 
 const editarLicencia = (lic) => {
   // MODIFICADO: Asegurarse de que el motivo se cargue al editar
@@ -493,43 +493,43 @@ const editarLicencia = (lic) => {
   }
   modoModal.value = 'editar'
   mostrarModal.value = true
-};
+}
 
 const onToggleTiempoIndeterminado = () => {
   if (formModal.value.tiempo_indeterminado) {
     if (modoModal.value === 'nuevo') {
-      formModal.value.fecha_solicitud = new Date().toISOString().split('T')[0];
+      formModal.value.fecha_solicitud = new Date().toISOString().split('T')[0]
     }
-    formModal.value.fecha_licencia = '';
-    formModal.value.fecha_hasta = '';
+    formModal.value.fecha_licencia = ''
+    formModal.value.fecha_hasta = ''
     // Las indeterminadas solo admiten lesión/enfermedad o particular.
     if (formModal.value.motivo !== 'lesion_enfermedad') {
-      formModal.value.motivo = 'particular';
+      formModal.value.motivo = 'particular'
     }
   }
-};
+}
 
 const cerrarModal = () => {
-  mostrarModal.value = false;
-};
+  mostrarModal.value = false
+}
 
 const diasAlta = computed(() => {
-  const desde = formModal.value.fecha_licencia;
-  const hasta = formModal.value.fecha_hasta || desde;
-  if (!desde || hasta < desde) return 0;
-  const [y1, m1, d1] = desde.split('-').map(Number);
-  const [y2, m2, d2] = hasta.split('-').map(Number);
-  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000) + 1;
-});
+  const desde = formModal.value.fecha_licencia
+  const hasta = formModal.value.fecha_hasta || desde
+  if (!desde || hasta < desde) return 0
+  const [y1, m1, d1] = desde.split('-').map(Number)
+  const [y2, m2, d2] = hasta.split('-').map(Number)
+  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000) + 1
+})
 
 watch(() => formModal.value.fecha_licencia, (desde) => {
-  if (!desde) return;
-  if (!formModal.value.fecha_hasta || formModal.value.fecha_hasta < desde) formModal.value.fecha_hasta = desde;
-});
+  if (!desde) return
+  if (!formModal.value.fecha_hasta || formModal.value.fecha_hasta < desde) formModal.value.fecha_hasta = desde
+})
 
 const confirmarAlta = async () => {
-  cargando.value = true;
-  const { fecha_licencia, fecha_hasta, ...resto } = formModal.value;
+  cargando.value = true
+  const { fecha_licencia, fecha_hasta, ...resto } = formModal.value
   const res = await api.post({
     entity: 'licencias',
     action: 'crearLicencia',
@@ -539,20 +539,20 @@ const confirmarAlta = async () => {
       fecha_hasta: resto.tiempo_indeterminado ? null : (fecha_hasta || fecha_licencia),
       es_admin: true
     }
-  });
-  cargando.value = false;
+  })
+  cargando.value = false
 
   if (res.ok) {
-    mostrarModal.value = false;
-    obtenerLicencias();
-    toast({ titulo: 'Éxito', mensaje: 'Licencia registrada correctamente.', tipo: 'success' });
+    mostrarModal.value = false
+    obtenerLicencias()
+    toast({ titulo: 'Éxito', mensaje: 'Licencia registrada correctamente.', tipo: 'success' })
   } else {
-    toast({ titulo: 'Error', mensaje: res.message || 'No se pudo registrar la licencia.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: res.message || 'No se pudo registrar la licencia.', tipo: 'danger' })
   }
-};
+}
 
 const confirmarEdicion = async () => {
-  cargando.value = true;
+  cargando.value = true
   const res = await api.post({
     entity: 'licencias',
     action: 'actualizarLicencia',
@@ -565,17 +565,17 @@ const confirmarEdicion = async () => {
       motivo: formModal.value.motivo,
       tiempo_indeterminado: formModal.value.tiempo_indeterminado ? 1 : 0
     }
-  });
-  cargando.value = false;
+  })
+  cargando.value = false
 
   if (res.ok) {
-    mostrarModal.value = false;
-    obtenerLicencias();
-    toast({ titulo: 'Guardado', mensaje: 'Licencia actualizada correctamente.', tipo: 'success' });
+    mostrarModal.value = false
+    obtenerLicencias()
+    toast({ titulo: 'Guardado', mensaje: 'Licencia actualizada correctamente.', tipo: 'success' })
   } else {
-    toast({ titulo: 'Error', mensaje: res.message || 'No se pudieron guardar los cambios.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: res.message || 'No se pudieron guardar los cambios.', tipo: 'danger' })
   }
-};
+}
 
 const eliminarLicencia = (id) => {
   notificar({
@@ -587,36 +587,36 @@ const eliminarLicencia = (id) => {
         entity: 'licencias',
         action: 'eliminarLicencia',
         payload: { id }
-      });
+      })
       if(res.ok) {
-        licencias.value = licencias.value.filter(l => l.id !== id);
-        toast({ titulo: 'Eliminado', mensaje: 'La licencia ha sido removida.', tipo: 'success' });
+        licencias.value = licencias.value.filter(l => l.id !== id)
+        toast({ titulo: 'Eliminado', mensaje: 'La licencia ha sido removida.', tipo: 'success' })
       }
     }
-  });
-};
+  })
+}
 
 const verHistorialLicencia = async (lic) => {
-  licenciaSeleccionada.value = lic;
-  mostrarModalHistorial.value = true;
-  cargandoHistorial.value = true;
-  historialLicencia.value = [];
+  licenciaSeleccionada.value = lic
+  mostrarModalHistorial.value = true
+  cargandoHistorial.value = true
+  historialLicencia.value = []
 
   try {
     const res = await api.get({
       entity: 'licencias',
       action: 'obtenerHistorial',
       payload: { id_arbitro: lic.id_arbitro }
-    });
+    })
     if (res.payload) {
-      historialLicencia.value = res.payload;
+      historialLicencia.value = res.payload
     }
   } catch (error) {
-    console.error("Error al cargar historial", error);
+    console.error("Error al cargar historial", error)
   } finally {
-    cargandoHistorial.value = false;
+    cargandoHistorial.value = false
   }
-};
+}
 const exportarExcel = async () => {
   const data = licenciasFiltradas.value.map(l => ({
     'ID': l.id,
@@ -626,36 +626,36 @@ const exportarExcel = async () => {
     'Motivo': etiquetaMotivo(l.motivo),
     'Fecha Solicitud': formatearFechaVista(l.fecha_solicitud),
     'Fecha Licencia': formatearFechaAusencia(l)
-  }));
+  }))
 
-  const wb = new (await cargarExcelJS()).Workbook();
-  const ws = wb.addWorksheet('Licencias');
+  const wb = new (await cargarExcelJS()).Workbook()
+  const ws = wb.addWorksheet('Licencias')
 
-  const claves = Object.keys(data[0] || {});
-  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 18 }));
-  data.forEach(fila => ws.addRow(fila));
-  if (claves.length) ws.getRow(1).font = { bold: true };
+  const claves = Object.keys(data[0] || {})
+  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 18 }))
+  data.forEach(fila => ws.addRow(fila))
+  if (claves.length) ws.getRow(1).font = { bold: true }
 
-  const buffer = await wb.xlsx.writeBuffer();
+  const buffer = await wb.xlsx.writeBuffer()
   const blob = new Blob([buffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'Licencias_AAAB.xlsx';
-  link.click();
-  URL.revokeObjectURL(url);
-};
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Licencias_AAAB.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
+}
 
 const limpiarFiltros = () => {
-  filtros.nombre = ''; filtros.apellido = ''; filtros.estado = ''; filtros.fecha = ''; filtros.fecha_solicitud = ''; filtros.anio = anioActual();
-};
+  filtros.nombre = ''; filtros.apellido = ''; filtros.estado = ''; filtros.fecha = ''; filtros.fecha_solicitud = ''; filtros.anio = anioActual()
+}
 
 onMounted(() => {
-  obtenerLicencias();
-  obtenerArbitros();
-});
+  obtenerLicencias()
+  obtenerArbitros()
+})
 </script>
 
 <style scoped>

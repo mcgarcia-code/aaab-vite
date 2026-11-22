@@ -112,7 +112,7 @@
 <script setup>
 import { ref, computed, inject } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'

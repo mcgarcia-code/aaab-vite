@@ -30,6 +30,8 @@ export default defineConfig([
       // (ej. "const x = {}" + "(lista || []).forEach(...)" = llamar a {} como función).
       // skipFormatting la apaga; se vuelve a activar porque detecta ese error, no es de formato.
       'no-unexpected-multiline': 'error',
+      // Regla del proyecto (AGENTS.md): sin punto y coma. Se corrige sola con "npm run lint"
+      semi: ['error', 'never'],
     },
   },
 ])

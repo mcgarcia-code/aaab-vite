@@ -64,7 +64,7 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, onMounted } from 'vue'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { RouterLink } from 'vue-router'
 
 useHead({ title: 'Estado de Cuenta General | AAAB' })

@@ -726,7 +726,7 @@ import { fechaArg } from '@/utils/fechas'
 import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import selLocalidad from '@/components/select/selLocalidad.vue'
 import selProvincia from '@/components/select/selProvincia.vue'
 import ModalBase from '@/components/ModalBase.vue'
@@ -806,7 +806,7 @@ const historialArbitro = ref([])
 const arbitroSeleccionado = ref({})
 const cargandoHistorialArbitro = ref(false)
 
-const edicionAbierta = ref(false);
+const edicionAbierta = ref(false)
 
 const generoIconos = {
   masculino: { icono: 'bi-gender-male', color: '#0d6efd', label: 'Masculino' },
@@ -934,17 +934,17 @@ const solicitudesPendientes = computed(() =>
 const solicitudesMostradas = computed(() => {
   return solicitudes.value
     .filter(s => s.estado === tabActivo.value)
-    .slice(0, 50); // a futuro si queremos lo cambiamos, depende de flor y flor
+    .slice(0, 50) // a futuro si queremos lo cambiamos, depende de flor y flor
 })
 // FUNCIÓN DE SCROLL MÓVIL AL CAMBIAR PÁGINA
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   setTimeout(() => {
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, 50);
-};
+  }, 50)
+}
 
 const cargarSolicitudes = async () => {
   cargandoSolicitudes.value = true
@@ -975,7 +975,7 @@ const aprobarSolicitud = async (solicitud) => {
     })
 
     if (res.ok || res.success) {
-      mostrarModalSolicitudes.value = false;
+      mostrarModalSolicitudes.value = false
 
       notificar({ titulo: 'Aprobado', mensaje: 'Se aprobó la solicitud de cambios.', tipo: 'success' })
       solicitud.estado = 'aprobado'
@@ -1002,7 +1002,7 @@ const rechazarSolicitud = async (solicitud) => {
         })
 
         if (res.ok || res.success) {
-          mostrarModalSolicitudes.value = false;
+          mostrarModalSolicitudes.value = false
           notificar({ titulo: 'Rechazado', mensaje: 'Se rechazó la solicitud correctamente.', tipo: 'success' })
           solicitud.estado = 'rechazado'
         } else {
@@ -1595,18 +1595,18 @@ const cargarEstadoEdicion = async () => {
     const res = await api.get({
       entity: 'arbitros',
       action: 'obtenerEstadoEdicionGlobal'
-    });
+    })
     if (res?.ok && res.payload) {
-      edicionAbierta.value = res.payload.estado === 1;
+      edicionAbierta.value = res.payload.estado === 1
     }
   } catch (error) {
-    console.error("Error al cargar estado de edición:", error);
+    console.error("Error al cargar estado de edición:", error)
   }
-};
+}
 
 const toggleEdicionGlobal = async () => {
-  const nuevoEstado = edicionAbierta.value ? 0 : 1;
-  const textoAccion = nuevoEstado === 1 ? 'HABILITAR' : 'CERRAR';
+  const nuevoEstado = edicionAbierta.value ? 0 : 1
+  const textoAccion = nuevoEstado === 1 ? 'HABILITAR' : 'CERRAR'
 
   notificar({
     titulo: '¿Estás seguro?',
@@ -1619,22 +1619,22 @@ const toggleEdicionGlobal = async () => {
           entity: 'arbitros',
           action: 'actualizarEdicionGlobal',
           payload: { estado: nuevoEstado }
-        });
+        })
 
         if (res?.ok) {
-          edicionAbierta.value = nuevoEstado === 1;
+          edicionAbierta.value = nuevoEstado === 1
           notificar({
             titulo: '¡Actualizado!',
             mensaje: `La edición ha sido ${nuevoEstado === 1 ? 'habilitada' : 'cerrada'} correctamente.`,
             tipo: 'success'
-          });
+          })
         }
       } catch{
-        notificar({ titulo: 'Error', mensaje: 'Hubo un problema al actualizar el estado.', tipo: 'danger' });
+        notificar({ titulo: 'Error', mensaje: 'Hubo un problema al actualizar el estado.', tipo: 'danger' })
       }
     }
-  });
-};
+  })
+}
 
 onMounted(() => {
   cargarDatos()

@@ -395,7 +395,7 @@ import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { fechaArg } from '@/utils/fechas'
 import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 

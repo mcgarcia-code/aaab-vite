@@ -198,134 +198,134 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
-import { ref, onMounted, onUnmounted, computed, reactive, inject, watch } from 'vue';
+import { ref, onMounted, onUnmounted, computed, reactive, inject, watch } from 'vue'
 import { cargarExcelJS } from '@/utils/librerias'
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
-import ModalBase from '@/components/ModalBase.vue';
-import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
+import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 useHead({
   title: 'Inventario | AAAB',
   meta: [{ name: 'description', content: 'Gestión de inventario de indumentaria.' }],
-});
+})
 
-const notificar = inject('notificar');
-const toast = inject('toast');
+const notificar = inject('notificar')
+const toast = inject('toast')
 
-const listaStock = ref([]);
-const cargando = ref(false);
-const cargandoTabla = ref(false);
+const listaStock = ref([])
+const cargando = ref(false)
+const cargandoTabla = ref(false)
 
-const filtros = reactive({ modelo: '' });
-const mostrarFiltrosMobile = ref(false);
+const filtros = reactive({ modelo: '' })
+const mostrarFiltrosMobile = ref(false)
 
-const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', 'Único'];
-const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9, 'Único': 10 };
+const tallesEstandar = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', 'Único']
+const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9, 'Único': 10 }
 
-const anchoPantalla = ref(window.innerWidth);
-const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
+const anchoPantalla = ref(window.innerWidth)
+const actualizarAncho = () => { anchoPantalla.value = window.innerWidth }
 
-const paginaActual = ref(1);
-const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 6 : 16);
+const paginaActual = ref(1)
+const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 6 : 16)
 
-const mostrarModal = ref(false);
-const modoModal = ref('nuevo');
-const archivosSeleccionados = ref([]);
+const mostrarModal = ref(false)
+const modoModal = ref('nuevo')
+const archivosSeleccionados = ref([])
 
-const itemAEliminar = ref(null);
+const itemAEliminar = ref(null)
 
-const formModal = ref({ id_item: null, descripcion: '', precioGeneral: 0, admite_encargo: false, items: [] });
+const formModal = ref({ id_item: null, descripcion: '', precioGeneral: 0, admite_encargo: false, items: [] })
 const { hayCambios } = useCambiosSinGuardar(
   () => ({ form: formModal.value, archivos: archivosSeleccionados.value.length }),
   mostrarModal
-);
+)
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 const stockFiltrado = computed(() => {
-  return listaStock.value.filter(l => normalizar(l.descripcion).includes(normalizar(filtros.modelo)));
-});
+  return listaStock.value.filter(l => normalizar(l.descripcion).includes(normalizar(filtros.modelo)))
+})
 
-const totalPaginas = computed(() => Math.ceil(stockFiltrado.value.length / registrosPorPagina.value) || 1);
+const totalPaginas = computed(() => Math.ceil(stockFiltrado.value.length / registrosPorPagina.value) || 1)
 const stockPaginado = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina.value;
-  return stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina.value
+  return stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value)
+})
 
 const cambiarPagina = (delta) => {
   if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta;
+    paginaActual.value += delta
     setTimeout(() => {
       if (window.innerWidth <= 768) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       }
-    }, 50);
+    }, 50)
   }
-};
+}
 
-watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 watch(totalPaginas, (nuevo) => {
-  if (nuevo === 0) paginaActual.value = 1;
-  else if (paginaActual.value > nuevo) paginaActual.value = nuevo;
-});
+  if (nuevo === 0) paginaActual.value = 1
+  else if (paginaActual.value > nuevo) paginaActual.value = nuevo
+})
 
 const obtenerStock = async () => {
-  cargandoTabla.value = true;
+  cargandoTabla.value = true
   try {
-    const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerStock' });
+    const respuesta = await api.get({ entity: 'indumentaria', action: 'obtenerStock' })
 
     if (respuesta.ok) {
       listaStock.value = (respuesta.payload || []).map(prenda => {
-        prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
-        prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle));
-        prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
+        prenda.items.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL' })
+        prenda.items = prenda.items.filter(i => tallesEstandar.includes(i.talle))
+        prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99))
 
         return {
           ...prenda,
           itemSeleccionado: 0,
           cantidadSeleccionada: 1,
           fotoActualIndex: 0
-        };
-      });
+        }
+      })
     }
   } catch (err) {
-    console.error("Error al cargar el inventario:", err);
+    console.error("Error al cargar el inventario:", err)
   } finally {
-    cargandoTabla.value = false;
+    cargandoTabla.value = false
   }
-};
+}
 
 const abrirModalNuevo = () => {
-  modoModal.value = 'nuevo';
-  archivosSeleccionados.value = [];
+  modoModal.value = 'nuevo'
+  archivosSeleccionados.value = []
   formModal.value = {
     id_item: null,
     descripcion: '',
     precioGeneral: 0, // Reinicia el precio general
     admite_encargo: false,
     items: []
-  };
-  mostrarModal.value = true;
-};
+  }
+  mostrarModal.value = true
+}
 
 const abrirModalEdicion = (modelo) => {
-  modoModal.value = 'editar';
-  archivosSeleccionados.value = [];
+  modoModal.value = 'editar'
+  archivosSeleccionados.value = []
 
-  let itemsCombinados = JSON.parse(JSON.stringify(modelo.items));
-  itemsCombinados.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL'; });
-  itemsCombinados = itemsCombinados.filter(i => tallesEstandar.includes(i.talle));
+  let itemsCombinados = JSON.parse(JSON.stringify(modelo.items))
+  itemsCombinados.forEach(i => { if (i.talle === 'XXXL') i.talle = '3XL' })
+  itemsCombinados = itemsCombinados.filter(i => tallesEstandar.includes(i.talle))
 
-  let tallesExistentes = itemsCombinados.map(v => v.talle);
+  let tallesExistentes = itemsCombinados.map(v => v.talle)
 
   tallesEstandar.forEach(talle => {
     if (!tallesExistentes.includes(talle)) {
-      itemsCombinados.push({ id: null, talle: talle, cantidad: 0, precio_general: modelo.precio_general });
+      itemsCombinados.push({ id: null, talle: talle, cantidad: 0, precio_general: modelo.precio_general })
     }
-  });
+  })
 
-  itemsCombinados.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
+  itemsCombinados.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99))
 
   formModal.value = {
     id_item: modelo.id_item,
@@ -333,61 +333,61 @@ const abrirModalEdicion = (modelo) => {
     precioGeneral: modelo.precio_general, // Asigna el precio general al abrir
     admite_encargo: modelo.admite_encargo,
     items: itemsCombinados
-  };
+  }
 
-  mostrarModal.value = true;
-};
+  mostrarModal.value = true
+}
 
 const eliminarItem = (item) => {
-  itemAEliminar.value = item;
+  itemAEliminar.value = item
 
   notificar({
     titulo: 'Eliminar Modelo',
     mensaje: '¿Estás seguro que querés eliminar este modelo del inventario?',
     tipo: 'danger',
     alConfirmar: confirmarEliminacionItem
-  });
-};
+  })
+}
 
 const confirmarEliminacionItem = async () => {
-  if (!itemAEliminar.value) return;
+  if (!itemAEliminar.value) return
 
   const r = await api.post({
     entity: 'indumentaria',
     action: 'eliminarItem',
     payload: { id_item: itemAEliminar.value.id_item }
-  });
+  })
 
   if (r.ok) {
-    const indice = listaStock.value.findIndex(modelo => modelo.id_item === itemAEliminar.value.id_item);
-    if (indice !== -1) listaStock.value.splice(indice, 1);
-    toast({ titulo: 'Item eliminado', mensaje: 'El item fue eliminado correctamente.', tipo: 'success' });
+    const indice = listaStock.value.findIndex(modelo => modelo.id_item === itemAEliminar.value.id_item)
+    if (indice !== -1) listaStock.value.splice(indice, 1)
+    toast({ titulo: 'Item eliminado', mensaje: 'El item fue eliminado correctamente.', tipo: 'success' })
   } else {
-    toast({ titulo: 'Error', mensaje: 'No se pudo eliminar el item.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'No se pudo eliminar el item.', tipo: 'danger' })
   }
 
-  itemAEliminar.value = null;
-};
+  itemAEliminar.value = null
+}
 
 
 const manejarArchivos = (event) => {
-  archivosSeleccionados.value = Array.from(event.target.files);
-};
+  archivosSeleccionados.value = Array.from(event.target.files)
+}
 
 const eliminarArchivo = (index) => {
-  archivosSeleccionados.value.splice(index, 1);
-};
+  archivosSeleccionados.value.splice(index, 1)
+}
 
 const guardarCambios = async () => {
   if (!formModal.value.descripcion) {
-    toast({ titulo: 'Faltan datos', mensaje: 'El nombre del modelo es obligatorio.', tipo: 'danger' });
-    return;
+    toast({ titulo: 'Faltan datos', mensaje: 'El nombre del modelo es obligatorio.', tipo: 'danger' })
+    return
   }
 
   // Validación del precio general único
   if (formModal.value.precioGeneral <= 0) {
-    toast({ titulo: 'Atención', mensaje: 'Debes ingresar un precio mayor a 0.', tipo: 'warning' });
-    return;
+    toast({ titulo: 'Atención', mensaje: 'Debes ingresar un precio mayor a 0.', tipo: 'warning' })
+    return
   }
   const itemsTodos = modoModal.value === 'editar'
     ? formModal.value.items.map(t => ({
@@ -395,101 +395,100 @@ const guardarCambios = async () => {
       talle: t.talle,
       cantidad: t.cantidad || 0,
     }))
-    : [];
-  cargando.value = true;
-  let res;
+    : []
+  cargando.value = true
+  let res
 
-  const flagAdmiteEncargo = formModal.value.admite_encargo ? 1 : 0;
+  const flagAdmiteEncargo = formModal.value.admite_encargo ? 1 : 0
 
-  const formData = new FormData();
-  formData.append('descripcion', formModal.value.descripcion.toUpperCase());
-  formData.append('admiteEncargo', flagAdmiteEncargo);
+  const formData = new FormData()
+  formData.append('descripcion', formModal.value.descripcion.toUpperCase())
+  formData.append('admiteEncargo', flagAdmiteEncargo)
   formData.append('precioGeneral', formModal.value.precioGeneral)
 
   if (archivosSeleccionados.value.length > 0) {
     archivosSeleccionados.value.forEach(file => {
-      formData.append('fotos[]', file);
-    });
+      formData.append('fotos[]', file)
+    })
   }
-  console.log('formData', formData)
   if (modoModal.value === 'editar') {
-    formData.append('id_item', formModal.value.id_item);
-    formData.append('items', JSON.stringify(itemsTodos));
+    formData.append('id_item', formModal.value.id_item)
+    formData.append('items', JSON.stringify(itemsTodos))
     res = await api.postFile({
       entity: 'indumentaria',
       action: 'actualizarStock',
       payload: formData
     })
   } else {
-    formData.append('items', JSON.stringify([]));
+    formData.append('items', JSON.stringify([]))
     res = await api.postFile({
       entity: 'indumentaria',
       action: 'agregarItem',
       payload: formData
-    });
+    })
   }
 
   if (res.ok) {
-    toast({ titulo: '¡Éxito!', mensaje: 'Inventario guardado correctamente.', tipo: 'success' });
-    cerrarModal();
-    await obtenerStock();
+    toast({ titulo: '¡Éxito!', mensaje: 'Inventario guardado correctamente.', tipo: 'success' })
+    cerrarModal()
+    await obtenerStock()
   } else {
-    toast({ titulo: 'Error', mensaje: 'Hubo un problema al guardar el inventario.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Hubo un problema al guardar el inventario.', tipo: 'danger' })
   }
 
-  cargando.value = false;
-};
+  cargando.value = false
+}
 
 const cerrarModal = () => {
-  mostrarModal.value = false;
-  cargando.value = false;
-};
+  mostrarModal.value = false
+  cargando.value = false
+}
 
-const limpiarFiltros = () => { filtros.modelo = ''; };
+const limpiarFiltros = () => { filtros.modelo = '' }
 
 const obtenerImagen = (item) => {
-  const primeraFoto = item.archivo_imagen ? item.archivo_imagen.split(',')[0] : null;
-  return primeraFoto ? item.folder_imagenes + encodeURIComponent(primeraFoto) : "https://placehold.co/400x400?text=Indumentaria";
-};
+  const primeraFoto = item.archivo_imagen ? item.archivo_imagen.split(',')[0] : null
+  return primeraFoto ? item.folder_imagenes + encodeURIComponent(primeraFoto) : "https://placehold.co/400x400?text=Indumentaria"
+}
 
 const exportarExcel = async () => {
   const data = stockFiltrado.value.map(item => {
-    let row = { 'ID Item': item.id_item, 'Modelo': item.descripcion, 'Precio Referencia': `$${item.precio_general}` };
+    let row = { 'ID Item': item.id_item, 'Modelo': item.descripcion, 'Precio Referencia': `$${item.precio_general}` }
     tallesEstandar.forEach(talle => {
-      const stock = item.items.find(i => i.talle === talle);
-      row[`Stock ${talle}`] = stock ? stock.cantidad : 0;
-    });
-    return row;
-  });
+      const stock = item.items.find(i => i.talle === talle)
+      row[`Stock ${talle}`] = stock ? stock.cantidad : 0
+    })
+    return row
+  })
 
-  const wb = new (await cargarExcelJS()).Workbook();
-  const ws = wb.addWorksheet('Inventario');
+  const wb = new (await cargarExcelJS()).Workbook()
+  const ws = wb.addWorksheet('Inventario')
 
-  const claves = Object.keys(data[0] || {});
-  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 16 }));
-  data.forEach(fila => ws.addRow(fila));
-  if (claves.length) ws.getRow(1).font = { bold: true };
+  const claves = Object.keys(data[0] || {})
+  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 16 }))
+  data.forEach(fila => ws.addRow(fila))
+  if (claves.length) ws.getRow(1).font = { bold: true }
 
-  const buffer = await wb.xlsx.writeBuffer();
+  const buffer = await wb.xlsx.writeBuffer()
   const blob = new Blob([buffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'Inventario_Indumentaria.xlsx';
-  link.click();
-  URL.revokeObjectURL(url);
-};
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Inventario_Indumentaria.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
+}
 
 onMounted(() => {
-  window.addEventListener('resize', actualizarAncho);
-  obtenerStock();
-});
+  window.addEventListener('resize', actualizarAncho)
+  obtenerStock()
+})
 
 onUnmounted(() => {
-  window.removeEventListener('resize', actualizarAncho);
-});
+  window.removeEventListener('resize', actualizarAncho)
+})
 </script>
 
 <style scoped>

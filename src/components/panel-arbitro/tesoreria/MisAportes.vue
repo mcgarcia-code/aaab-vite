@@ -150,10 +150,10 @@
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { fechaDMA } from '@/utils/fechas'
-import { useHead } from '@vueuse/head';
-import { api } from '@/api/api';
+import { useHead } from '@unhead/vue'
+import { api } from '@/api/api'
 
 useHead({
   title: 'Mis Aportes | AAAB',
@@ -163,79 +163,79 @@ useHead({
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
     { property: 'og:type', content: 'website' }
   ],
-});
+})
 
-const cargando = ref(false);
-const descargando = reactive({});
-const errorPdf = ref('');
-const estadoCuenta = ref(null);
-const recargos = ref([]);
+const cargando = ref(false)
+const descargando = reactive({})
+const errorPdf = ref('')
+const estadoCuenta = ref(null)
+const recargos = ref([])
 
 
 // "2026-09-01" (o "2026-09-01 10:00:00") -> "01-09-2026"
 const formatearFecha = (fecha) => fechaDMA(fecha)
 
-const formatearMonto = (v) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(Number(v) || 0);
+const formatearMonto = (v) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(Number(v) || 0)
 
-const esDeuda = computed(() => estadoCuenta.value && Number(estadoCuenta.value.saldo_estimado_actual) > 0);
-const movimientosPendientes = computed(() => estadoCuenta.value?.movimientos_pendientes || []);
-const historialCierres = computed(() => estadoCuenta.value?.historial_cierres || []);
+const esDeuda = computed(() => estadoCuenta.value && Number(estadoCuenta.value.saldo_estimado_actual) > 0)
+const movimientosPendientes = computed(() => estadoCuenta.value?.movimientos_pendientes || [])
+const historialCierres = computed(() => estadoCuenta.value?.historial_cierres || [])
 
 // Paginación de movimientos del período actual
-const registrosPorPagina = 10;
-const paginaActual = ref(1);
-const cardMovimientos = ref(null);
-const totalPaginas = computed(() => Math.ceil(movimientosPendientes.value.length / registrosPorPagina) || 1);
+const registrosPorPagina = 10
+const paginaActual = ref(1)
+const cardMovimientos = ref(null)
+const totalPaginas = computed(() => Math.ceil(movimientosPendientes.value.length / registrosPorPagina) || 1)
 const movimientosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return movimientosPendientes.value.slice(inicio, inicio + registrosPorPagina);
-});
-watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n; });
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return movimientosPendientes.value.slice(inicio, inicio + registrosPorPagina)
+})
+watch(totalPaginas, (n) => { if (paginaActual.value > n) paginaActual.value = n })
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   // Vuelve al inicio de la lista de movimientos (no al inicio de la página)
-  setTimeout(() => cardMovimientos.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-};
+  setTimeout(() => cardMovimientos.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+}
 
 const recargosActivos = computed(() => {
-  const hoy = new Date().toISOString().slice(0, 10);
-  return recargos.value.filter(r => Number(r.activo) !== 0 && (!r.fecha_hasta || r.fecha_hasta >= hoy));
-});
+  const hoy = new Date().toISOString().slice(0, 10)
+  return recargos.value.filter(r => Number(r.activo) !== 0 && (!r.fecha_hasta || r.fecha_hasta >= hoy))
+})
 
 const cargarEstadoCuenta = async () => {
-  const res = await api.get({ entity: 'tesoreria', action: 'obtenerEstadoCuenta', payload: {} });
-  if (res.ok) estadoCuenta.value = res.payload;
-};
+  const res = await api.get({ entity: 'tesoreria', action: 'obtenerEstadoCuenta', payload: {} })
+  if (res.ok) estadoCuenta.value = res.payload
+}
 
 const cargarRecargos = async () => {
-  const res = await api.get({ entity: 'tesoreria', action: 'obtenerOverridesPorcentaje', payload: {} });
-  if (res.ok) recargos.value = Array.isArray(res.payload) ? res.payload : [];
-};
+  const res = await api.get({ entity: 'tesoreria', action: 'obtenerOverridesPorcentaje', payload: {} })
+  if (res.ok) recargos.value = Array.isArray(res.payload) ? res.payload : []
+}
 
 const cargarTodo = async () => {
-  cargando.value = true;
-  paginaActual.value = 1;
+  cargando.value = true
+  paginaActual.value = 1
   try {
-    await Promise.all([cargarEstadoCuenta(), cargarRecargos()]);
+    await Promise.all([cargarEstadoCuenta(), cargarRecargos()])
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 const descargarPdf = async (periodo) => {
-  descargando[periodo] = true;
-  errorPdf.value = '';
+  descargando[periodo] = true
+  errorPdf.value = ''
   try {
-    await api.getFile({ entity: 'tesoreria', action: 'descargarPdfMiCierre', payload: { periodo } }, `mis_aportes_${periodo}.pdf`);
+    await api.getFile({ entity: 'tesoreria', action: 'descargarPdfMiCierre', payload: { periodo } }, `mis_aportes_${periodo}.pdf`)
   } catch (e) {
-    errorPdf.value = e?.message || 'No se pudo descargar el PDF';
+    errorPdf.value = e?.message || 'No se pudo descargar el PDF'
   } finally {
-    delete descargando[periodo];
+    delete descargando[periodo]
   }
-};
+}
 
-onMounted(cargarTodo);
+onMounted(cargarTodo)
 </script>
 
 <style scoped>

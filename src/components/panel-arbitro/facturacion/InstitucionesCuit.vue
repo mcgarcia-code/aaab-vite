@@ -222,11 +222,11 @@
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
+import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { normalizarTexto } from '@/utils/texto'
 import { abrirWhatsApp } from '@/utils/whatsapp'
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
+import { api, listaDe } from '@/api/api'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Instituciones y CUITs | AAAB',
@@ -237,112 +237,112 @@ useHead({
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
     { property: 'og:type', content: 'website' }
   ],
-});
+})
 
-const toast = inject('toast');
+const toast = inject('toast')
 const mostrarToast = (mensaje, tipo = 'success') => {
-  toast({ mensaje, tipo });
-};
+  toast({ mensaje, tipo })
+}
 
-const instituciones = ref([]);
-const mostrarFiltrosMobile = ref(false);
-const cargando = ref(false);
+const instituciones = ref([])
+const mostrarFiltrosMobile = ref(false)
+const cargando = ref(false)
 
 const filtros = reactive({
   club: '', forma_de_pago: '', cuit: '', condicion: ''
-});
+})
 
-const paginaActual = ref(1);
-const registrosPorPagina = 7;
+const paginaActual = ref(1)
+const registrosPorPagina = 7
 
 const limpiarFiltros = () => {
-  filtros.club = '';
-  filtros.forma_de_pago = '';
-  filtros.cuit = '';
-  filtros.condicion = '';
-};
+  filtros.club = ''
+  filtros.forma_de_pago = ''
+  filtros.cuit = ''
+  filtros.condicion = ''
+}
 
 const cargarDatos = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
     const res = await api.get({
       entity: 'facturacion',
       action: 'getInstitucionesCuit',
       payload: {}
-    });
-    instituciones.value = res.payload;
+    })
+    instituciones.value = listaDe(res)
   } catch (err) {
-    console.error("Error al cargar instituciones:", err);
+    console.error("Error al cargar instituciones:", err)
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 const copiarAlPortapapeles = async (texto, etiqueta) => {
-  if (!texto || texto === 'NULL' || texto.trim() === '') return;
+  if (!texto || texto === 'NULL' || texto.trim() === '') return
   try {
-    await navigator.clipboard.writeText(texto.trim());
-    mostrarToast(`${etiqueta} copiado: ${texto}`);
+    await navigator.clipboard.writeText(texto.trim())
+    mostrarToast(`${etiqueta} copiado: ${texto}`)
   } catch (err) {
-    console.error('Error al copiar:', err);
-    mostrarToast('No se pudo copiar el texto', 'danger');
+    console.error('Error al copiar:', err)
+    mostrarToast('No se pudo copiar el texto', 'danger')
   }
-};
+}
 
 const enviarFactura = (emailClub) => {
-  if (!emailClub || String(emailClub).toUpperCase() === 'NULL' || emailClub.trim() === '') return;
-  const destinatario = emailClub.trim();
-  const cc = "aaabfacturas@gmail.com";
-  const subject = "Envío de Factura - Arbitraje AAAB";
-  const body = "Estimados,\n\nAdjuntamos la factura correspondiente.\n\nSaludos cordiales.";
-  const mailtoLink = `mailto:${destinatario}?cc=${cc}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  if (!emailClub || String(emailClub).toUpperCase() === 'NULL' || emailClub.trim() === '') return
+  const destinatario = emailClub.trim()
+  const cc = "aaabfacturas@gmail.com"
+  const subject = "Envío de Factura - Arbitraje AAAB"
+  const body = "Estimados,\n\nAdjuntamos la factura correspondiente.\n\nSaludos cordiales."
+  const mailtoLink = `mailto:${destinatario}?cc=${cc}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
-  window.open(mailtoLink, '_self');
-};
+  window.open(mailtoLink, '_self')
+}
 
 const enviarWhatsapp = (celular) => {
-  if (!celular || celular === 'NULL' || celular.trim() === '') return;
-  abrirWhatsApp(celular, 'Hola, ¿Cómo estás? Me comunico por el envío de facturación de arbitraje de Handball.');
-};
+  if (!celular || celular === 'NULL' || celular.trim() === '') return
+  abrirWhatsApp(celular, 'Hola, ¿Cómo estás? Me comunico por el envío de facturación de arbitraje de Handball.')
+}
 
 
 const filtrados = computed(() => {
   const listaFiltrada = instituciones.value.filter(i => {
-    const matchClub = normalizarTexto(i.club).includes(normalizarTexto(filtros.club));
-    const matchPago = normalizarTexto(i.forma_de_pago).includes(normalizarTexto(filtros.forma_de_pago));
-    const matchCuit = normalizarTexto(i.cuit).includes(normalizarTexto(filtros.cuit));
-    const matchCondicion = normalizarTexto(i.condicion).includes(normalizarTexto(filtros.condicion));
-    return matchClub && matchPago && matchCuit && matchCondicion;
-  });
+    const matchClub = normalizarTexto(i.club).includes(normalizarTexto(filtros.club))
+    const matchPago = normalizarTexto(i.forma_de_pago).includes(normalizarTexto(filtros.forma_de_pago))
+    const matchCuit = normalizarTexto(i.cuit).includes(normalizarTexto(filtros.cuit))
+    const matchCondicion = normalizarTexto(i.condicion).includes(normalizarTexto(filtros.condicion))
+    return matchClub && matchPago && matchCuit && matchCondicion
+  })
 
   return listaFiltrada.sort((a, b) => {
-    return (a.club || '').localeCompare(b.club || '');
-  });
-});
+    return (a.club || '').localeCompare(b.club || '')
+  })
+})
 
-const totalPaginas = computed(() => Math.ceil(filtrados.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(filtrados.value.length / registrosPorPagina) || 1)
 
 const institucionesPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return filtrados.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return filtrados.value.slice(inicio, inicio + registrosPorPagina)
+})
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   setTimeout(() => {
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, 50);
-};
+  }, 50)
+}
 
-watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 
 watch(totalPaginas, (nuevoTotal) => {
-  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
-});
+  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal
+})
 
-onMounted(cargarDatos);
+onMounted(cargarDatos)
 </script>
 
 <style scoped>

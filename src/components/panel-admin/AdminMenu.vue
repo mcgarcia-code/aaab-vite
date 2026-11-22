@@ -35,7 +35,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { auth } from '@/api/auth'
 import { etiquetaRol } from '@/config/modulosAdmin'
 import { normalizarTexto } from '@/utils/texto'

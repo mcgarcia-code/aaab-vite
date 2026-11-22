@@ -184,111 +184,111 @@
 
 <script setup>
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { ref, onMounted, inject, computed, watch } from 'vue';
+import { ref, onMounted, inject, computed, watch } from 'vue'
 import { fechaArg } from '@/utils/fechas'
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Solicitar Licencia | AAAB',
   meta: [
     { name: 'description', content: 'Solicita tu licencia para ausentarte de tus compromisos arbitrales.' }
   ],
-});
+})
 
-const notificar = inject('notificar');
-const toast = inject('toast');
-const fechaDesde = ref('');
-const fechaHasta = ref('');
-const aISOlocal = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const hoyISO = aISOlocal(new Date());
+const notificar = inject('notificar')
+const toast = inject('toast')
+const fechaDesde = ref('')
+const fechaHasta = ref('')
+const aISOlocal = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const hoyISO = aISOlocal(new Date())
 const cantidadDias = computed(() => {
-  if (!fechaDesde.value || !fechaHasta.value || fechaHasta.value < fechaDesde.value) return 0;
-  const [y1, m1, d1] = fechaDesde.value.split('-').map(Number);
-  const [y2, m2, d2] = fechaHasta.value.split('-').map(Number);
-  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000) + 1;
-});
-const puedeEnviar = computed(() => tiempoIndeterminado.value || cantidadDias.value >= 1);
+  if (!fechaDesde.value || !fechaHasta.value || fechaHasta.value < fechaDesde.value) return 0
+  const [y1, m1, d1] = fechaDesde.value.split('-').map(Number)
+  const [y2, m2, d2] = fechaHasta.value.split('-').map(Number)
+  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000) + 1
+})
+const puedeEnviar = computed(() => tiempoIndeterminado.value || cantidadDias.value >= 1)
 watch(fechaDesde, (desde) => {
-  if (desde && (!fechaHasta.value || fechaHasta.value < desde)) fechaHasta.value = desde;
-});
-const motivoSeleccionado = ref('particular');
-const tiempoIndeterminado = ref(false);
-const cargando = ref(false);
-const licencias = ref([]);
+  if (desde && (!fechaHasta.value || fechaHasta.value < desde)) fechaHasta.value = desde
+})
+const motivoSeleccionado = ref('particular')
+const tiempoIndeterminado = ref(false)
+const cargando = ref(false)
+const licencias = ref([])
 
 const onToggleTiempoIndeterminado = () => {
   if (tiempoIndeterminado.value) {
-    fechaDesde.value = '';
-    fechaHasta.value = '';
+    fechaDesde.value = ''
+    fechaHasta.value = ''
     // Las indeterminadas solo admiten particular o lesión/enfermedad.
     if (motivoSeleccionado.value === 'designacion_torneo_nacional') {
-      motivoSeleccionado.value = 'particular';
+      motivoSeleccionado.value = 'particular'
     }
   }
-};
+}
 
 // Variables de Paginación
-const paginaActual = ref(1);
-const registrosPorPagina = 4;
+const paginaActual = ref(1)
+const registrosPorPagina = 4
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   setTimeout(() => {
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, 50);
-};
+  }, 50)
+}
 
-const totalPaginas = computed(() => Math.ceil(licencias.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(licencias.value.length / registrosPorPagina) || 1)
 
 const licenciasPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return licencias.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return licencias.value.slice(inicio, inicio + registrosPorPagina)
+})
 
 // Formateadores de fecha
 const formatearFecha = (fecha) => fechaArg(fecha)
 
 const formatearFechaAusencia = (lic) => {
-  if (lic.tiempo_indeterminado == 1) return 'Tiempo indeterminado';
-  const desde = formatearFecha(lic.fecha_licencia);
-  const hasta = formatearFecha(lic.fecha_hasta);
-  return hasta && hasta !== desde ? `${desde} al ${hasta}` : desde;
-};
+  if (lic.tiempo_indeterminado == 1) return 'Tiempo indeterminado'
+  const desde = formatearFecha(lic.fecha_licencia)
+  const hasta = formatearFecha(lic.fecha_hasta)
+  return hasta && hasta !== desde ? `${desde} al ${hasta}` : desde
+}
 
 const etiquetaMotivo = (motivo, corto = false) => {
-  if (motivo === 'lesion_enfermedad') return corto ? 'Lesión/Enf.' : 'Lesión/Enfermedad';
-  if (motivo === 'designacion_torneo_nacional') return corto ? 'Desig. T. Nac.' : 'Designación Torneo Nacional';
-  return 'Particular';
-};
+  if (motivo === 'lesion_enfermedad') return corto ? 'Lesión/Enf.' : 'Lesión/Enfermedad'
+  if (motivo === 'designacion_torneo_nacional') return corto ? 'Desig. T. Nac.' : 'Designación Torneo Nacional'
+  return 'Particular'
+}
 
 const parseFecha = (fechaStr) => {
-  if (!fechaStr) return new Date(8640000000000000); // sin fecha (licencia por tiempo indeterminado): siempre "futura"
-  const [dia, mes, anio] = fechaStr.split('/');
-  return new Date(`20${anio}-${mes}-${dia}`);
-};
+  if (!fechaStr) return new Date(8640000000000000) // sin fecha (licencia por tiempo indeterminado): siempre "futura"
+  const [dia, mes, anio] = fechaStr.split('/')
+  return new Date(`20${anio}-${mes}-${dia}`)
+}
 
 const obtenerLicencias = async () => {
   try {
     const res = await api.get({
       entity: 'licencias',
       action: 'obtenerHistorial',
-    });
+    })
     licencias.value = (res.payload || []).sort((a, b) => {
-      return parseFecha(b.fecha_licencia) - parseFecha(a.fecha_licencia);
-    });
-    paginaActual.value = 1;
+      return parseFecha(b.fecha_licencia) - parseFecha(a.fecha_licencia)
+    })
+    paginaActual.value = 1
   } catch (err) {
-    console.error("Error al cargar historial:", err);
+    console.error("Error al cargar historial:", err)
   }
-};
+}
 
 const solicitarLicencia = async () => {
-  if (!puedeEnviar.value) return;
+  if (!puedeEnviar.value) return
 
-  cargando.value = true;
+  cargando.value = true
 
   try {
     const res = await api.post({
@@ -300,34 +300,34 @@ const solicitarLicencia = async () => {
         motivo: motivoSeleccionado.value,
         tiempo_indeterminado: tiempoIndeterminado.value
       }
-    });
+    })
 
     if (res && res.ok && res.payload && res.payload.estado) {
-      const estadoServidor = res.payload.estado;
+      const estadoServidor = res.payload.estado
 
 
-      let tituloNotificacion = '';
-      let mensajeNotificacion = '';
-      let tipoNotificacion = '';
+      let tituloNotificacion = ''
+      let mensajeNotificacion = ''
+      let tipoNotificacion = ''
 
       if (estadoServidor === 'aprobada') {
-        tituloNotificacion = '¡Licencia Aprobada!';
-        mensajeNotificacion = 'Tu solicitud ha sido procesada y aprobada correctamente.';
-        tipoNotificacion = 'success';
+        tituloNotificacion = '¡Licencia Aprobada!'
+        mensajeNotificacion = 'Tu solicitud ha sido procesada y aprobada correctamente.'
+        tipoNotificacion = 'success'
       } else if (estadoServidor === 'rechazada') {
-        tituloNotificacion = 'Licencia rechazada';
-        mensajeNotificacion = 'Tu solicitud ha sido rechazada.';
-        tipoNotificacion = 'danger';
+        tituloNotificacion = 'Licencia rechazada'
+        mensajeNotificacion = 'Tu solicitud ha sido rechazada.'
+        tipoNotificacion = 'danger'
       } else if (estadoServidor === 'pendiente') {
-        tituloNotificacion = 'Licencia Pendiente';
+        tituloNotificacion = 'Licencia Pendiente'
         if (motivoSeleccionado.value === 'designacion_torneo_nacional') {
-          mensajeNotificacion = 'Tu licencia quedará Pendiente hasta que sea autorizada por la Comisión Directiva.';
+          mensajeNotificacion = 'Tu licencia quedará Pendiente hasta que sea autorizada por la Comisión Directiva.'
         } else if (tiempoIndeterminado.value) {
-          mensajeNotificacion = 'Recordá enviar el certificado médico a licencias@arbitroshandball.com.ar.';
+          mensajeNotificacion = 'Recordá enviar el certificado médico a licencias@arbitroshandball.com.ar.'
         } else {
-          mensajeNotificacion = 'Recordá enviar el certificado médico dentro de las 72 hs.';
+          mensajeNotificacion = 'Recordá enviar el certificado médico dentro de las 72 hs.'
         }
-        tipoNotificacion = 'warning';
+        tipoNotificacion = 'warning'
       }
 
       // Disparamos la notificación con los textos exactos
@@ -335,53 +335,53 @@ const solicitarLicencia = async () => {
         titulo: tituloNotificacion,
         mensaje: mensajeNotificacion,
         tipo: tipoNotificacion
-      });
+      })
 
       // Limpiamos el formulario y recargamos la tabla
-      fechaDesde.value = '';
-      fechaHasta.value = '';
-      motivoSeleccionado.value = 'particular';
-      tiempoIndeterminado.value = false;
-      await obtenerLicencias();
+      fechaDesde.value = ''
+      fechaHasta.value = ''
+      motivoSeleccionado.value = 'particular'
+      tiempoIndeterminado.value = false
+      await obtenerLicencias()
 
     } else {
       toast({
         titulo: 'Error',
         mensaje: res?.message || "No se pudo procesar la solicitud.",
         tipo: 'danger'
-      });
+      })
     }
   } catch (error) {
-    console.error("Detalle del error JS:", error);
+    console.error("Detalle del error JS:", error)
     toast({
       titulo: 'Error de Red',
       mensaje: 'No se pudo conectar con el servidor o hubo un error de procesamiento.',
       tipo: 'danger'
-    });
+    })
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 const esFechaFutura = (fechaStr) => {
-  if (!fechaStr) return false;
-  const fechaLicencia = parseFecha(fechaStr);
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  return fechaLicencia >= hoy;
-};
+  if (!fechaStr) return false
+  const fechaLicencia = parseFecha(fechaStr)
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  return fechaLicencia >= hoy
+}
 
 // ¿Se puede mostrar el botón Anular para esta licencia?
 // - Indeterminada aprobada: sí (la anulación la evalúa la comisión).
 // - Resto: pendiente o aprobada, y con fecha futura (como antes).
-const esIndeterminada = (lic) => lic.tiempo_indeterminado == 1;
+const esIndeterminada = (lic) => lic.tiempo_indeterminado == 1
 
 const puedeAnular = (lic) => {
   if (esIndeterminada(lic)) {
-    return lic.estado === 'aprobada';
+    return lic.estado === 'aprobada'
   }
-  return (lic.estado === 'pendiente' || lic.estado === 'aprobada') && esFechaFutura(lic.fecha_licencia);
-};
+  return (lic.estado === 'pendiente' || lic.estado === 'aprobada') && esFechaFutura(lic.fecha_licencia)
+}
 
 const anularLicencia = (lic) => {
   // Anulación de licencia por tiempo indeterminado: no se borra al instante,
@@ -392,7 +392,7 @@ const anularLicencia = (lic) => {
       mensaje: 'Tu solicitud de anulación de licencia indeterminada será evaluada por la Comisión Directiva.',
       tipo: 'warning',
       alConfirmar: async () => {
-        cargando.value = true;
+        cargando.value = true
         try {
           const res = await api.post({
             entity: 'licencias',
@@ -401,35 +401,35 @@ const anularLicencia = (lic) => {
               id: lic.id,
               estado: 'pendiente'
             }
-          });
+          })
 
           if (res.ok && res.payload.success) {
             toast({
               titulo: 'Solicitud enviada',
               mensaje: 'Tu solicitud de anulación de licencia indeterminada será evaluada por la Comisión Directiva.',
               tipo: 'success'
-            });
-            await obtenerLicencias();
+            })
+            await obtenerLicencias()
           } else {
             toast({
               titulo: 'Error',
               mensaje: res?.message || 'No se pudo enviar la solicitud de anulación.',
               tipo: 'danger'
-            });
+            })
           }
         } catch (err) {
-          console.error('Detalle del error anular indeterminada:', err);
+          console.error('Detalle del error anular indeterminada:', err)
           toast({
             titulo: 'Error de Red',
             mensaje: 'No se pudo conectar con el servidor.',
             tipo: 'danger'
-          });
+          })
         } finally {
-          cargando.value = false;
+          cargando.value = false
         }
       }
-    });
-    return;
+    })
+    return
   }
 
   if (!lic.puede_anular) {
@@ -437,8 +437,8 @@ const anularLicencia = (lic) => {
       titulo: 'No se puede anular',
       mensaje: 'Faltan menos de 6 días para la fecha. Por favor, enviá un e-mail a licencias@arbitroshandball.com.ar',
       tipo: 'danger'
-    });
-    return;
+    })
+    return
   }
 
   notificar({
@@ -446,7 +446,7 @@ const anularLicencia = (lic) => {
     mensaje: 'Esta acción es irreversible. El registro será borrado permanentemente.',
     tipo: 'danger',
     alConfirmar: async () => {
-      cargando.value = true;
+      cargando.value = true
       try {
         const res = await api.post({
           entity: 'licencias',
@@ -455,39 +455,39 @@ const anularLicencia = (lic) => {
             id: lic.id,
             estado: 'anulada'
           }
-        });
+        })
 
         if (res.ok && res.payload.success) {
           toast({
             titulo: 'Licencia Anulada',
             mensaje: 'La licencia fue anulada correctamente.',
             tipo: 'success'
-          });
-          await obtenerLicencias();
+          })
+          await obtenerLicencias()
         } else {
           toast({
             titulo: 'Error',
             mensaje: res?.message || "No se pudo anular la licencia.",
             tipo: 'danger'
-          });
+          })
         }
       } catch(err){
-        console.error("Detalle del error anular:", err);
+        console.error("Detalle del error anular:", err)
         toast({
           titulo: 'Error de Red',
           mensaje: 'No se pudo conectar con el servidor.',
           tipo: 'danger'
-        });
+        })
       } finally {
-        cargando.value = false;
+        cargando.value = false
       }
     }
-  });
-};
+  })
+}
 
 onMounted(() => {
-  obtenerLicencias();
-});
+  obtenerLicencias()
+})
 </script>
 
 <style scoped>

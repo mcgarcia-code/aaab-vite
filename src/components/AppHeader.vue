@@ -48,14 +48,14 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import logo from '@/assets/fotos/logo.png'
-import { auth } from '../api/auth'
+import { auth } from '@/api/auth'
 
 const navbarNav = ref(null)
 const logueado = ref(auth.isLoggedIn())
 
 // Propiedad computada para determinar a qué panel ir
 const rutaPanel = computed(() => {
-  const user = auth.getUser();
+  const user = auth.getUser()
   if (user?.rol === 'alumno_curso') return '/panel-curso'
   return user?.esAutoridad ? '/panel-admin' : '/panel-arbitro'
 })

@@ -245,7 +245,7 @@ import { ref, computed, watch, onMounted, inject } from 'vue'
 import { fechaArg } from '@/utils/fechas'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 
 useHead({

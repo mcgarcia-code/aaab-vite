@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, watch, ref, nextTick, computed } from 'vue';
+import { onMounted, onUnmounted, watch, ref, nextTick, computed } from 'vue'
 
 const props = defineProps({
   visible: Boolean,
@@ -64,73 +64,73 @@ const props = defineProps({
   tipo: String,
   tieneAccion: Boolean,
   zIndex: { type: [Number, String], default: 1060 }
-});
+})
 
-const emit = defineEmits(['cerrar', 'confirmar']);
+const emit = defineEmits(['cerrar', 'confirmar'])
 
-const modalRef = ref(null);
+const modalRef = ref(null)
 
 // Si el mensaje tiene saltos de línea, lo alineamos a la izquierda
-const esMultilinea = computed(() => String(props.mensaje || '').includes('\n'));
+const esMultilinea = computed(() => String(props.mensaje || '').includes('\n'))
 
-const cerrar = () => emit('cerrar');
+const cerrar = () => emit('cerrar')
 
 const handleAccion = () => {
   if (props.tieneAccion) {
-    emit('confirmar');
+    emit('confirmar')
   } else {
-    cerrar();
+    cerrar()
   }
-};
+}
 
 const handleKeydown = (e) => {
   if (e.key === 'Escape' && props.visible) {
-    e.stopImmediatePropagation();
-    cerrar();
+    e.stopImmediatePropagation()
+    cerrar()
   }
-};
+}
 
 
 watch(() => props.visible, async (val) => {
   if (val) {
 
-    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) + 1;
-    document.body.dataset.modalCount = modalCount;
+    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) + 1
+    document.body.dataset.modalCount = modalCount
 
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden'
 
 
-    await nextTick();
-    modalRef.value?.focus();
+    await nextTick()
+    modalRef.value?.focus()
   } else {
 
-    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) - 1;
-    if (modalCount < 0) modalCount = 0;
-    document.body.dataset.modalCount = modalCount;
+    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) - 1
+    if (modalCount < 0) modalCount = 0
+    document.body.dataset.modalCount = modalCount
 
     if (modalCount === 0) {
-      document.body.style.overflow = '';
+      document.body.style.overflow = ''
     }
   }
-});
+})
 
 onMounted(() => {
-  window.addEventListener('keydown', handleKeydown, true);
-});
+  window.addEventListener('keydown', handleKeydown, true)
+})
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown, true);
+  window.removeEventListener('keydown', handleKeydown, true)
 
   if (props.visible) {
-    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) - 1;
-    if (modalCount < 0) modalCount = 0;
-    document.body.dataset.modalCount = modalCount;
+    let modalCount = parseInt(document.body.dataset.modalCount || '0', 10) - 1
+    if (modalCount < 0) modalCount = 0
+    document.body.dataset.modalCount = modalCount
 
     if (modalCount === 0) {
-      document.body.style.overflow = '';
+      document.body.style.overflow = ''
     }
   }
-});
+})
 </script>
 
 <style scoped>

@@ -257,10 +257,10 @@
 
 <script setup>
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
-import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue';
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
-import ModalBase from '@/components/ModalBase.vue';
+import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue'
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
+import ModalBase from '@/components/ModalBase.vue'
 
 useHead({
   title: 'Realizar Pedido | AAAB',
@@ -270,153 +270,152 @@ useHead({
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
     { property: 'og:type', content: 'website' }
   ],
-});
+})
 
-const toast = inject('toast');
+const toast = inject('toast')
 
-const listaAgrupada = ref([]);
-const busqueda = ref('');
-const carrito = ref([]);
-const mostrarCarrito = ref(false);
-const mostrarPago = ref(false);
-const cargando = ref(false);
-const imagenZoom = ref(null);
+const listaAgrupada = ref([])
+const busqueda = ref('')
+const carrito = ref([])
+const mostrarCarrito = ref(false)
+const mostrarPago = ref(false)
+const cargando = ref(false)
+const imagenZoom = ref(null)
 
-const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9 };
+const ordenTalles = { 'XXS': 1, 'XS': 2, 'S': 3, 'M': 4, 'L': 5, 'XL': 6, 'XXL': 7, '3XL': 8, '4XL': 9 }
 
-const anchoPantalla = ref(window.innerWidth);
-const actualizarAncho = () => { anchoPantalla.value = window.innerWidth; };
+const anchoPantalla = ref(window.innerWidth)
+const actualizarAncho = () => { anchoPantalla.value = window.innerWidth }
 
-const paginaActual = ref(1);
-const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 5 : 12);
+const paginaActual = ref(1)
+const registrosPorPagina = computed(() => anchoPantalla.value <= 768 ? 5 : 12)
 
 const manejarEsc = (e) => {
   if (e.key === 'Escape' && imagenZoom.value) {
-    imagenZoom.value = null;
+    imagenZoom.value = null
   }
-};
+}
 
 const permitePedidoSinStock = (prenda) => {
-  if (!prenda) return false;
-  return prenda.admite_encargo === true || prenda.admite_encargo === 1;
-};
+  if (!prenda) return false
+  return prenda.admite_encargo === true || prenda.admite_encargo === 1
+}
 
 const obtenerImagenActual = (prenda) => {
-  const fotos = prenda.archivo_imagen ? prenda.archivo_imagen.split(",") : [];
-  const index = prenda.fotoActualIndex || 0;
-  const archivo = fotos[index]?.trim() || fotos[0]?.trim();
+  const fotos = prenda.archivo_imagen ? prenda.archivo_imagen.split(",") : []
+  const index = prenda.fotoActualIndex || 0
+  const archivo = fotos[index]?.trim() || fotos[0]?.trim()
 
   if (archivo) {
-    return prenda.folder_imagenes + encodeURIComponent(archivo);
+    return prenda.folder_imagenes + encodeURIComponent(archivo)
   }
-  return "https://placehold.co/400x400?text=Indumentaria";
-};
+  return "https://placehold.co/400x400?text=Indumentaria"
+}
 
 const obtenerTotalImagenes = (prenda) => {
   return prenda.archivo_imagen && prenda.archivo_imagen.trim() !== ''
           ? prenda.archivo_imagen.split(",").length
-          : 0;
-};
+          : 0
+}
 
 const cambiarFoto = (prenda, delta) => {
-  const total = obtenerTotalImagenes(prenda);
-  if (total <= 1) return;
-  let current = prenda.fotoActualIndex || 0;
-  current = (current + delta + total) % total;
-  prenda.fotoActualIndex = current;
-};
+  const total = obtenerTotalImagenes(prenda)
+  if (total <= 1) return
+  let current = prenda.fotoActualIndex || 0
+  current = (current + delta + total) % total
+  prenda.fotoActualIndex = current
+}
 
 const obtenerStockMaximo = (prenda) => {
-  const talleInfo = prenda.items[prenda.itemSeleccionado];
-  return talleInfo ? talleInfo.cantidad : 0;
-};
+  const talleInfo = prenda.items[prenda.itemSeleccionado]
+  return talleInfo ? talleInfo.cantidad : 0
+}
 
 const validarCantidad = (prenda) => {
-  const max = obtenerStockMaximo(prenda);
-  const permiteSinStock = permitePedidoSinStock(prenda);
+  const max = obtenerStockMaximo(prenda)
+  const permiteSinStock = permitePedidoSinStock(prenda)
 
   if (!permiteSinStock && prenda.cantidadSeleccionada > max) {
-    prenda.cantidadSeleccionada = max;
+    prenda.cantidadSeleccionada = max
   }
   if (prenda.cantidadSeleccionada < 1) {
-    prenda.cantidadSeleccionada = 1;
+    prenda.cantidadSeleccionada = 1
   }
-};
+}
 
-const abrirZoom = (url) => { imagenZoom.value = url; };
+const abrirZoom = (url) => { imagenZoom.value = url }
 
 const cargarStock = async () => {
   const respuesta = await api.get({
     entity: 'indumentaria',
     action: 'obtenerStock'
-  });
+  })
   if (respuesta.ok) {
     listaAgrupada.value = (respuesta.payload || []).map(prenda => {
-      prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99));
+      prenda.items.sort((a, b) => (ordenTalles[a.talle] || 99) - (ordenTalles[b.talle] || 99))
       return {
         ...prenda,
         itemSeleccionado: 0,
         cantidadSeleccionada: 1,
         fotoActualIndex: 0
-      };
-    });
+      }
+    })
   }
-};
+}
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 const stockFiltrado = computed(() => {
   return listaAgrupada.value
     .filter(p => normalizar(p.descripcion).includes(normalizar(busqueda.value)))
-    .sort((a, b) => a.descripcion.localeCompare(b.descripcion));
-});
+    .sort((a, b) => a.descripcion.localeCompare(b.descripcion))
+})
 
-const totalPaginas = computed(() => Math.ceil(stockFiltrado.value.length / registrosPorPagina.value) || 1);
+const totalPaginas = computed(() => Math.ceil(stockFiltrado.value.length / registrosPorPagina.value) || 1)
 const stockPaginado = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina.value;
-  const stock = stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value);
-  console.log(stock)
+  const inicio = (paginaActual.value - 1) * registrosPorPagina.value
+  const stock = stockFiltrado.value.slice(inicio, inicio + registrosPorPagina.value)
   return stock
-});
+})
 
 const cambiarPagina = (delta) => {
   if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta;
+    paginaActual.value += delta
   }
-};
+}
 
 watch(paginaActual, () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+})
 
-watch(busqueda, () => { paginaActual.value = 1 });
+watch(busqueda, () => { paginaActual.value = 1 })
 watch(totalPaginas, (nuevo) => {
-  if (nuevo === 0) paginaActual.value = 1;
-  else if (paginaActual.value > nuevo) paginaActual.value = nuevo;
-});
+  if (nuevo === 0) paginaActual.value = 1
+  else if (paginaActual.value > nuevo) paginaActual.value = nuevo
+})
 
 const totalCarrito = computed(() => {
-  return carrito.value.reduce((total, p) => total + (p.precio * p.cantidadSolicitada), 0);
-});
+  return carrito.value.reduce((total, p) => total + (p.precio * p.cantidadSolicitada), 0)
+})
 
 const totalArticulosCarrito = computed(() => {
-  return carrito.value.reduce((total, p) => total + p.cantidadSolicitada, 0);
-});
+  return carrito.value.reduce((total, p) => total + p.cantidadSolicitada, 0)
+})
 
 const agregarAlCarrito = (prenda) => {
   const itemTalle = prenda.items[prenda.itemSeleccionado]
   const permiteSinStock = permitePedidoSinStock(prenda)
   const precio_general = prenda.precio_general
   if (itemTalle.cantidad <= 0 && !permiteSinStock) {
-    toast({ titulo: 'Agotado', mensaje: 'Lo sentimos, este modelo no admite encargos.', tipo: 'danger' });
-    return;
+    toast({ titulo: 'Agotado', mensaje: 'Lo sentimos, este modelo no admite encargos.', tipo: 'danger' })
+    return
   }
 
-  const itemExistente = carrito.value.find(p => p.id_item === prenda.id_item && p.id_talle === itemTalle.id);
+  const itemExistente = carrito.value.find(p => p.id_item === prenda.id_item && p.id_talle === itemTalle.id)
 
   if (itemExistente) {
     // NUEVA VALIDACIÓN: Calculamos cuánto habría en total si lo agregamos
-    const nuevaCantidadTotal = itemExistente.cantidad + prenda.cantidadSeleccionada;
+    const nuevaCantidadTotal = itemExistente.cantidad + prenda.cantidadSeleccionada
 
     // Comparamos contra el stock real de la base
     if (!permiteSinStock && nuevaCantidadTotal > itemTalle.cantidad) {
@@ -424,12 +423,12 @@ const agregarAlCarrito = (prenda) => {
         titulo: 'Stock Insuficiente',
         mensaje: `Solo hay ${itemTalle.cantidad} en stock. Ya tenés ${itemExistente.cantidad} en el carrito.`,
         tipo: 'warning'
-      });
-      return; // Cortamos acá, no dejamos que se agregue
+      })
+      return // Cortamos acá, no dejamos que se agregue
     }
 
     // Si pasó la validación, actualizamos la cantidad
-    itemExistente.cantidad = nuevaCantidadTotal;
+    itemExistente.cantidad = nuevaCantidadTotal
   } else {
     // Validación de seguridad por si es la primera vez que lo agrega
     if (!permiteSinStock && prenda.cantidadSeleccionada > itemTalle.cantidad) {
@@ -437,8 +436,8 @@ const agregarAlCarrito = (prenda) => {
          titulo: 'Stock Insuficiente',
          mensaje: `Solo quedan ${itemTalle.cantidad} unidades en stock.`,
          tipo: 'warning'
-       });
-       return;
+       })
+       return
     }
 
     carrito.value.push({
@@ -450,56 +449,55 @@ const agregarAlCarrito = (prenda) => {
       talle: itemTalle.talle,
       cantidadActual: itemTalle.cantidad,
       cantidadSolicitada: prenda.cantidadSeleccionada
-    });
-    console.log(carrito.value)
+    })
   }
 
-  mostrarCarrito.value = true;
-};
+  mostrarCarrito.value = true
+}
 
 const confirmarPedido = () => {
-  mostrarCarrito.value = false;
-  mostrarPago.value = true;
-};
+  mostrarCarrito.value = false
+  mostrarPago.value = true
+}
 
 const realizarPedidoFinal = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
     const respuesta = await api.post({
       entity: 'indumentaria',
       action: 'crearPedidoMultiple',
       payload: { items: carrito.value, total: totalCarrito.value }
-    });
+    })
 
     if (respuesta.ok) {
       toast({
         titulo: '¡Pedido Recibido!',
         mensaje: 'Tu pedido se registró con éxito. Recordá enviar el comprobante.',
         tipo: 'success'
-      });
-      carrito.value = [];
-      mostrarPago.value = false;
-      await cargarStock();
+      })
+      carrito.value = []
+      mostrarPago.value = false
+      await cargarStock()
     } else {
-      toast({ titulo: 'Error', mensaje: 'No pudimos procesar tu pedido.', tipo: 'danger' });
+      toast({ titulo: 'Error', mensaje: 'No pudimos procesar tu pedido.', tipo: 'danger' })
     }
   } catch{
-    toast({ titulo: 'Error de Red', mensaje: 'Error al conectar.', tipo: 'danger' });
+    toast({ titulo: 'Error de Red', mensaje: 'Error al conectar.', tipo: 'danger' })
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 onMounted(() => {
-  window.addEventListener('resize', actualizarAncho);
-  window.addEventListener('keydown', manejarEsc);
-  cargarStock();
-});
+  window.addEventListener('resize', actualizarAncho)
+  window.addEventListener('keydown', manejarEsc)
+  cargarStock()
+})
 
 onUnmounted(() => {
-  window.removeEventListener('resize', actualizarAncho);
-  window.removeEventListener('keydown', manejarEsc);
-});
+  window.removeEventListener('resize', actualizarAncho)
+  window.removeEventListener('keydown', manejarEsc)
+})
 </script>
 
 <style scoped>

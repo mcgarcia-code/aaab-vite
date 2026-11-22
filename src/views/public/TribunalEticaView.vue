@@ -50,7 +50,7 @@
 </template>
 
 <script setup>
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { ref } from 'vue'
 
 // Título y descripción específicos para la página de Tribunal de Ética

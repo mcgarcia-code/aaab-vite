@@ -95,12 +95,12 @@
 
 <script setup>
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue'
 import { cargarHtml2canvas } from '@/utils/librerias'
-import { api } from '@/api/api';
-import QrcodeVue from 'qrcode.vue';
-import { useHead } from '@vueuse/head';
-import logo from '@/assets/fotos/logo.png';
+import { api } from '@/api/api'
+import QrcodeVue from 'qrcode.vue'
+import { useHead } from '@unhead/vue'
+import logo from '@/assets/fotos/logo.png'
 
 useHead({
   title: 'Credencial Digital | AAAB',
@@ -111,11 +111,11 @@ useHead({
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
     { property: 'og:type', content: 'website' }
   ],
-});
+})
 
-const credencialRef = ref(null);
-const procesando = ref(false);
-const cargando = ref(true);
+const credencialRef = ref(null)
+const procesando = ref(false)
+const cargando = ref(true)
 
 const arbitro = ref({
   nombre: '',
@@ -123,48 +123,48 @@ const arbitro = ref({
   dni: '',
   grupo: '',
   es_activo: 0
-});
+})
 
-const añoActual = new Date().getFullYear();
+const añoActual = new Date().getFullYear()
 
 const cargarDatos = async () => {
   try {
     const res = await api.get({
       entity: 'datos_personales',
       action: 'obtenerPerfil',
-    });
+    })
 
     if (res.ok && res.payload) {
-      arbitro.value = res.payload;
+      arbitro.value = res.payload
     }
   } catch (error) {
-    console.error("Error al conectar con la API:", error);
+    console.error("Error al conectar con la API:", error)
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
-onMounted(cargarDatos);
+onMounted(cargarDatos)
 
 const descargar = async () => {
-  if (procesando.value || !credencialRef.value) return;
-  procesando.value = true;
+  if (procesando.value || !credencialRef.value) return
+  procesando.value = true
   try {
     const canvas = await (await cargarHtml2canvas())(credencialRef.value, {
       useCORS: true,
       scale: 3,
       backgroundColor: '#ffffff',
-    });
-    const link = document.createElement('a');
-    link.download = `Credencial-${arbitro.value.dni}.png`;
-    link.href = canvas.toDataURL('image/png', 1.0);
-    link.click();
+    })
+    const link = document.createElement('a')
+    link.download = `Credencial-${arbitro.value.dni}.png`
+    link.href = canvas.toDataURL('image/png', 1.0)
+    link.click()
   } catch (e) {
-    console.error(e);
+    console.error(e)
   } finally {
-    procesando.value = false;
+    procesando.value = false
   }
-};
+}
 </script>
 
 <style scoped>

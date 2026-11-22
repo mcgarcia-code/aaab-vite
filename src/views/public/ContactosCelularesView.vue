@@ -147,11 +147,11 @@
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
+import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { abrirWhatsApp } from '@/utils/whatsapp'
 import { normalizarTexto } from '@/utils/texto'
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head'
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -168,20 +168,20 @@ useHead({
   ],
 })
 
-const arbitros = ref([]);
-const mostrarFiltrosMobile = ref(false);
+const arbitros = ref([])
+const mostrarFiltrosMobile = ref(false)
 
 const filtros = reactive({
   apellido: '', nombre: '', grupo: '', subgrupo: ''
-});
+})
 
 // --- VARIABLES DE PAGINACIÓN ---
-const paginaActual = ref(1);
-const registrosPorPagina = 8;
+const paginaActual = ref(1)
+const registrosPorPagina = 8
 
-const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
+const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '')
 
-const notificar = inject('notificar');
+const notificar = inject('notificar')
 
 // --- LÓGICA DE CARGA ---
 const cargando = ref(false)
@@ -193,71 +193,71 @@ const cargarDatos = async () => {
       entity: "arbitros",
       action:"getArbitros"
     })
-    arbitros.value = payload || [];
+    arbitros.value = payload || []
   } catch (err) {
-    console.error("Error al cargar datos:", err);
-    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
+    console.error("Error al cargar datos:", err)
+    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' })
   } finally {
     cargando.value = false
   }
-};
+}
 
 const cambiarPagina = (delta) => {
-  const nueva = paginaActual.value + delta;
-  if (nueva < 1 || nueva > totalPaginas.value) return;
-  paginaActual.value = nueva;
+  const nueva = paginaActual.value + delta
+  if (nueva < 1 || nueva > totalPaginas.value) return
+  paginaActual.value = nueva
   if (window.innerWidth <= 768) {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
-};
+}
 
 
 const copiarAlPortapapeles = async (numero) => {
-  if (!numero) return;
+  if (!numero) return
   try {
-    await navigator.clipboard.writeText(numero);
-    notificar({ titulo: 'Copiado', mensaje: `Número copiado: ${numero}`, tipo: 'success' });
+    await navigator.clipboard.writeText(numero)
+    notificar({ titulo: 'Copiado', mensaje: `Número copiado: ${numero}`, tipo: 'success' })
   } catch (err) {
-    console.error('Error al copiar:', err);
+    console.error('Error al copiar:', err)
   }
-};
+}
 
 
 const arbitrosFiltrados = computed(() => {
   const filtrados = arbitros.value.filter(a => {
     return Object.keys(filtros).every(key => {
-      if (!filtros[key]) return true;
-      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
-    });
-  });
+      if (!filtros[key]) return true
+      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]))
+    })
+  })
 
   return filtrados.sort((a, b) => {
-    const compApellido = (a.apellido || '').localeCompare(b.apellido || '');
+    const compApellido = (a.apellido || '').localeCompare(b.apellido || '')
     if (compApellido === 0) {
-      return (a.nombre || '').localeCompare(b.nombre || '');
+      return (a.nombre || '').localeCompare(b.nombre || '')
     }
-    return compApellido;
-  });
-});
+    return compApellido
+  })
+})
 
 // --- CÁLCULOS DE PAGINACIÓN ---
-const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1)
 
 const arbitrosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
+})
 
 // Reseteamos la paginación al filtrar
-watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 
 // Ajuste seguro de páginas
 watch(totalPaginas, (nuevoTotal) => {
-  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
-  if (paginaActual.value < 1) paginaActual.value = 1;
-});
+  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal
+  if (paginaActual.value < 1) paginaActual.value = 1
+})
 
-onMounted(cargarDatos);
+onMounted(cargarDatos)
 </script>
 
 <style scoped>

@@ -307,13 +307,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
+import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { fechaArg } from '@/utils/fechas'
 import { abrirWhatsApp } from '@/utils/whatsapp'
 import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head'
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 
 useHead({
@@ -327,10 +327,10 @@ useHead({
   ],
 })
 
-const notificar = inject('notificar');
+const notificar = inject('notificar')
 
-const arbitros = ref([]);
-const mostrarFiltrosMobile = ref(false);
+const arbitros = ref([])
+const mostrarFiltrosMobile = ref(false)
 
 const filtros = reactive({
   apellido: '', nombre: '', licencia: '', es_activo: '',
@@ -338,12 +338,12 @@ const filtros = reactive({
   grupo: '', subgrupo: '', zona: '', movilidad: '',
   disponibilidad_sabado: '', disponibilidad_domingo: '',
   juega_handball: '', donde_juega: '', categoria_handball: '', observaciones: '',
-});
+})
 
-const paginaActual = ref(1);
-const registrosPorPagina = 8;
+const paginaActual = ref(1)
+const registrosPorPagina = 8
 
-const mostrarModalExcel = ref(false);
+const mostrarModalExcel = ref(false)
 
 const columnasExcel = ref([
   { id: 'apellido', label: 'Apellido', visible: true },
@@ -365,55 +365,55 @@ const columnasExcel = ref([
   { id: 'donde_juega', label: 'Club', visible: false },
   { id: 'categoria_handball', label: 'Categoría', visible: false },
   { id: 'observaciones', label: 'Observaciones', visible: false },
-]);
+])
 
-const todasSeleccionadas = computed(() => columnasExcel.value.every(c => c.visible));
-const algunaSeleccionada = computed(() => columnasExcel.value.some(c => c.visible));
+const todasSeleccionadas = computed(() => columnasExcel.value.every(c => c.visible))
+const algunaSeleccionada = computed(() => columnasExcel.value.some(c => c.visible))
 
 const toggleTodasColumnas = (val) => {
-  columnasExcel.value.forEach(c => c.visible = val);
-};
+  columnasExcel.value.forEach(c => c.visible = val)
+}
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   setTimeout(() => {
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, 50);
-};
+  }, 50)
+}
 
 const cargarDatos = async () => {
   try {
     const {payload} = await api.get({
       entity: "arbitros",
       action:"getArbitros"
-    });
+    })
 
-    let sancionesPayload = [];
+    let sancionesPayload = []
     try {
-      const resSanciones = await api.get({ entity: "sanciones", action: "obtenerSanciones" });
-      sancionesPayload = resSanciones.payload || [];
+      const resSanciones = await api.get({ entity: "sanciones", action: "obtenerSanciones" })
+      sancionesPayload = resSanciones.payload || []
     } catch(e) {
-      console.error("Error al cargar sanciones:", e);
+      console.error("Error al cargar sanciones:", e)
     }
 
-    const sancionesMap = {};
+    const sancionesMap = {}
     sancionesPayload.forEach(s => {
       if (s.estado_dinamico === 1 || s.estado_dinamico === 3) {
         if (!sancionesMap[s.id_arbitro]) {
-          sancionesMap[s.id_arbitro] = s;
+          sancionesMap[s.id_arbitro] = s
         } else {
           if (s.estado_dinamico === 1 && sancionesMap[s.id_arbitro].estado_dinamico === 3) {
-            sancionesMap[s.id_arbitro] = s;
+            sancionesMap[s.id_arbitro] = s
           }
         }
       }
-    });
+    })
 
     arbitros.value = payload
       ? payload.map(a => {
-          const sancion = sancionesMap[a.id];
+          const sancion = sancionesMap[a.id]
           return {
             ...a,
             apto_medico: a.apto_medico == 1,
@@ -421,167 +421,167 @@ const cargarDatos = async () => {
             sancion_proceso: sancion && sancion.estado_dinamico === 3,
             sancion_hasta: sancion ? sancion.hasta_formateada : null,
             sancion_indefinida: sancion ? sancion.es_indefinido == 1 : false
-          };
+          }
         })
-      : [];
+      : []
   } catch (err) {
-    console.error("Error al cargar datos:", err);
-    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
+    console.error("Error al cargar datos:", err)
+    notificar({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' })
   }
-};
+}
 
 const obtenerClaseFila = (a) => {
-  const tieneAprobada = Number(a.tiene_aprobada) > 0 || Number(a.licencia_indeterminada) > 0;
-  const tieneRechazada = Number(a.tiene_rechazada) > 0;
-  const tienePendiente = Number(a.tiene_pendiente) > 0;
-  const esInactivo = a.es_activo == 0;
+  const tieneAprobada = Number(a.tiene_aprobada) > 0 || Number(a.licencia_indeterminada) > 0
+  const tieneRechazada = Number(a.tiene_rechazada) > 0
+  const tienePendiente = Number(a.tiene_pendiente) > 0
+  const esInactivo = a.es_activo == 0
 
   if (esInactivo || tieneAprobada || a.sancion_vigente) {
-    return 'fila-roja';
+    return 'fila-roja'
   }
 
-  if (tieneRechazada || tienePendiente || a.sancion_proceso) return 'fila-amarilla';
+  if (tieneRechazada || tienePendiente || a.sancion_proceso) return 'fila-amarilla'
 
-  return '';
-};
+  return ''
+}
 
-const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
+const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '')
 
 const mostrarFechaArg = (fecha) => fechaArg(fecha)
 
 
 const obtenerTextoLicencia = (a) => {
-  let textos = [];
+  let textos = []
 
   const formatearVariasFechas = (cadenaFechas) => {
-    if (!cadenaFechas) return '';
+    if (!cadenaFechas) return ''
     return cadenaFechas
       .split(',')
       .map(f => f.trim())
       .sort((fechaA, fechaB) => new Date(fechaA.split(' al ')[0]) - new Date(fechaB.split(' al ')[0]))
       .map(f => f.split(' al ').map(x => mostrarFechaArg(x.trim())).join(' al '))
-      .join(', ');
-  };
+      .join(', ')
+  }
 
   if (a.sancion_vigente) {
-    const textoHasta = a.sancion_indefinida ? 'Indefinida' : a.sancion_hasta;
-    textos.push(`SANCIONADO (Hasta: ${textoHasta || '-'})`);
+    const textoHasta = a.sancion_indefinida ? 'Indefinida' : a.sancion_hasta
+    textos.push(`SANCIONADO (Hasta: ${textoHasta || '-'})`)
   } else if (a.sancion_proceso) {
-    textos.push(`SANC. EN PROCESO`);
+    textos.push(`SANC. EN PROCESO`)
   }
 
   if (Number(a.licencia_indeterminada) > 0) {
-    textos.push('APR: Tiempo indeterminado');
+    textos.push('APR: Tiempo indeterminado')
   }
   if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
-    textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
+    textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`)
   }
   if (Number(a.tiene_pendiente) > 0 && a.fecha_licencia_pendiente) {
-    textos.push(`PEN: ${formatearVariasFechas(a.fecha_licencia_pendiente)}`);
+    textos.push(`PEN: ${formatearVariasFechas(a.fecha_licencia_pendiente)}`)
   }
   if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
-    textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
+    textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`)
   }
 
-  return textos.length > 0 ? textos.join(' | ') : '-';
-};
+  return textos.length > 0 ? textos.join(' | ') : '-'
+}
 
 
 const arbitrosFiltrados = computed(() => {
   const filtrados = arbitros.value.filter(a => {
     const cumpleTexto = Object.keys(filtros).every(key => {
-      if (!filtros[key] || key === 'licencia' || key === 'apto_medico') return true;
-      if (key === 'es_activo') return String(a[key]) === filtros[key];
-      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
-    });
+      if (!filtros[key] || key === 'licencia' || key === 'apto_medico') return true
+      if (key === 'es_activo') return String(a[key]) === filtros[key]
+      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]))
+    })
 
-    let cumpleLicencia = true;
-    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0 || Number(a.licencia_indeterminada || 0) > 0;
-    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada || 0) > 0;
-    else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente || 0) > 0;
-    else if (filtros.licencia === 'sancion_vigente') cumpleLicencia = a.sancion_vigente === true;
-    else if (filtros.licencia === 'sancion_proceso') cumpleLicencia = a.sancion_proceso === true;
+    let cumpleLicencia = true
+    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0 || Number(a.licencia_indeterminada || 0) > 0
+    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada || 0) > 0
+    else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente || 0) > 0
+    else if (filtros.licencia === 'sancion_vigente') cumpleLicencia = a.sancion_vigente === true
+    else if (filtros.licencia === 'sancion_proceso') cumpleLicencia = a.sancion_proceso === true
     else if (filtros.licencia === 'sin_licencia') {
       cumpleLicencia = Number(a.tiene_aprobada || 0) === 0 &&
                        Number(a.tiene_rechazada || 0) === 0 &&
                        Number(a.tiene_pendiente || 0) === 0 &&
-                       Number(a.licencia_indeterminada || 0) === 0;
+                       Number(a.licencia_indeterminada || 0) === 0
     }
 
-    let cumpleApto = true;
+    let cumpleApto = true
     if (filtros.apto_medico !== '') {
-      const valorFiltro = filtros.apto_medico === '1';
-      cumpleApto = a.apto_medico === valorFiltro;
+      const valorFiltro = filtros.apto_medico === '1'
+      cumpleApto = a.apto_medico === valorFiltro
     }
 
-    return cumpleTexto && cumpleLicencia && cumpleApto;
-  });
+    return cumpleTexto && cumpleLicencia && cumpleApto
+  })
 
   return filtrados.sort((a, b) => {
-    const compApellido = (a.apellido || '').localeCompare(b.apellido || '');
-    if (compApellido === 0) return (a.nombre || '').localeCompare(b.nombre || '');
-    return compApellido;
-  });
-});
+    const compApellido = (a.apellido || '').localeCompare(b.apellido || '')
+    if (compApellido === 0) return (a.nombre || '').localeCompare(b.nombre || '')
+    return compApellido
+  })
+})
 
-const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1)
 
 const arbitrosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
+})
 
-watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 
 watch(totalPaginas, (nuevoTotal) => {
-  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
-});
+  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal
+})
 
 const exportarExcel = () => {
-  mostrarModalExcel.value = true;
-};
+  mostrarModalExcel.value = true
+}
 const ejecutarDescargaExcel = async () => {
-  const cols = columnasExcel.value.filter(c => c.visible);
+  const cols = columnasExcel.value.filter(c => c.visible)
 
   const datos = arbitrosFiltrados.value.map(a => {
-    const fila = {};
+    const fila = {}
     cols.forEach(col => {
-      let valor = '';
-      if (col.id === 'licencia') valor = obtenerTextoLicencia(a);
-      else if (col.id === 'es_activo') valor = a.es_activo == 1 ? 'SI' : 'NO';
-      else if (col.id === 'apto_medico') valor = a.apto_medico ? 'SI' : 'NO';
-      else if (col.id === 'sabado_rango') valor = `${a.disponibilidad_sabado_desde || ''} a ${a.disponibilidad_sabado_hasta || ''}`;
-      else if (col.id === 'domingo_rango') valor = `${a.disponibilidad_domingo_desde || ''} a ${a.disponibilidad_domingo_hasta || ''}`;
-      else valor = a[col.id];
+      let valor = ''
+      if (col.id === 'licencia') valor = obtenerTextoLicencia(a)
+      else if (col.id === 'es_activo') valor = a.es_activo == 1 ? 'SI' : 'NO'
+      else if (col.id === 'apto_medico') valor = a.apto_medico ? 'SI' : 'NO'
+      else if (col.id === 'sabado_rango') valor = `${a.disponibilidad_sabado_desde || ''} a ${a.disponibilidad_sabado_hasta || ''}`
+      else if (col.id === 'domingo_rango') valor = `${a.disponibilidad_domingo_desde || ''} a ${a.disponibilidad_domingo_hasta || ''}`
+      else valor = a[col.id]
 
-      fila[col.label] = valor || '';
-    });
-    return fila;
-  });
+      fila[col.label] = valor || ''
+    })
+    return fila
+  })
 
-  const wb = new (await cargarExcelJS()).Workbook();
-  const ws = wb.addWorksheet('Base_Datos');
+  const wb = new (await cargarExcelJS()).Workbook()
+  const ws = wb.addWorksheet('Base_Datos')
 
   // Las columnas son los labels de las columnas visibles
-  ws.columns = cols.map(col => ({ header: col.label, key: col.label, width: 18 }));
-  datos.forEach(fila => ws.addRow(fila));
-  if (cols.length) ws.getRow(1).font = { bold: true };
+  ws.columns = cols.map(col => ({ header: col.label, key: col.label, width: 18 }))
+  datos.forEach(fila => ws.addRow(fila))
+  if (cols.length) ws.getRow(1).font = { bold: true }
 
-  const buffer = await wb.xlsx.writeBuffer();
+  const buffer = await wb.xlsx.writeBuffer()
   const blob = new Blob([buffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'Base_Datos_Coordinadores_AAAB.xlsx';
-  link.click();
-  URL.revokeObjectURL(url);
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Base_Datos_Coordinadores_AAAB.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
 
-  mostrarModalExcel.value = false;
-};
+  mostrarModalExcel.value = false
+}
 
-onMounted(cargarDatos);
+onMounted(cargarDatos)
 </script>
 
 <style scoped>

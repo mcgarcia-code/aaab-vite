@@ -106,7 +106,7 @@
 
 <script setup>
 import { ref, reactive, computed, inject } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import ReproductorClip from '@/components/panel-arbitro/aaab-tv/ReproductorClip.vue'

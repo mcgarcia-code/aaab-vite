@@ -67,7 +67,7 @@
 
 <script setup>
 import { ref, watch, onMounted, inject, nextTick } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import FormularioCursoArbitro from '@/components/FormularioCursoArbitro.vue'
 import { formularioCursoVacio, validarFormularioCurso, payloadCurso, MODALIDADES_CURSO } from '@/composables/useCursoArbitro'

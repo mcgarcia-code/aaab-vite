@@ -473,13 +473,14 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
-import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue';
+import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue'
+import { OPCIONES_TORNEO, etiquetaTorneo } from '@/utils/informes'
+import { useDescargasInforme } from '@/composables/useDescargasInforme'
 import { fechaArg, fechaHoraArg } from '@/utils/fechas'
-import { cargarHtml2pdf } from '@/utils/librerias'
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
-import ModalBase from '@/components/ModalBase.vue';
-import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
+import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 useHead({
   title: 'Mis Informes | AAAB',
@@ -488,82 +489,73 @@ useHead({
     { property: 'og:title', content: 'Mis Informes | AAAB' },
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' }
   ],
-});
+})
 
-const toast = inject('toast');
+const toast = inject('toast')
 
 const DatoDetalle = (props) => h('div', {}, [
   h('label', { class: 'form-label small fw-bold text-muted mb-1' }, props.etiqueta),
   h('div', { class: 'fw-bold text-dark small text-break' }, props.valor)
-]);
-DatoDetalle.props = ['etiqueta', 'valor'];
+])
+DatoDetalle.props = ['etiqueta', 'valor']
 
 /* ====================================================
    CATÁLOGOS
    ==================================================== */
-const opcionesTorneo = [
-  { valor: 'metropolitano_apertura', etiqueta: 'Metropolitano Apertura' },
-  { valor: 'metropolitano_clausura', etiqueta: 'Metropolitano Clausura' },
-  { valor: 'super_8', etiqueta: 'Super 8' },
-  { valor: 'copa_campeones', etiqueta: 'Copa de Campeones' },
-  { valor: 'desarrollo_apertura', etiqueta: 'Torneo Desarrollo Apertura' },
-  { valor: 'desarrollo_clausura', etiqueta: 'Torneo Desarrollo Clausura' },
-  { valor: 'otros', etiqueta: 'Otros' }
-];
-const etiquetaTorneo = (v) => (opcionesTorneo.find(t => t.valor === v) || {}).etiqueta || v;
+const opcionesTorneo = OPCIONES_TORNEO
 
 /* ====================================================
    ESTADOS (píldoras)
    ==================================================== */
 const etiquetaEstado = (estado) => {
-  const e = (estado || 'creado').toLowerCase();
-  if (e === 'aprobado') return 'APROBADO';
-  if (e === 'desestimado') return 'DESESTIMADO';
-  if (e === 'anulado') return 'ANULADO';
-  if (e === 'pendiente') return 'PENDIENTE';
-  return 'CREADO';
-};
+  const e = (estado || 'creado').toLowerCase()
+  if (e === 'aprobado') return 'APROBADO'
+  if (e === 'desestimado') return 'DESESTIMADO'
+  if (e === 'anulado') return 'ANULADO'
+  if (e === 'pendiente') return 'PENDIENTE'
+  return 'CREADO'
+}
 
 const badgeEstado = (estado) => {
-  const e = (estado || 'creado').toLowerCase();
-  if (e === 'aprobado') return 'estado-pill estado-aprobado';
-  if (e === 'desestimado') return 'estado-pill estado-desestimado';
-  if (e === 'anulado') return 'estado-pill estado-anulado';
-  if (e === 'pendiente') return 'estado-pill estado-pendiente';
-  return 'estado-pill estado-creado';
-};
+  const e = (estado || 'creado').toLowerCase()
+  if (e === 'aprobado') return 'estado-pill estado-aprobado'
+  if (e === 'desestimado') return 'estado-pill estado-desestimado'
+  if (e === 'anulado') return 'estado-pill estado-anulado'
+  if (e === 'pendiente') return 'estado-pill estado-pendiente'
+  return 'estado-pill estado-creado'
+}
 
 // es_autor lo marca el backend: true si el usuario cargó el informe.
 // Si no viene (retrocompat), asumimos que es propio.
-const esAutor = (inf) => inf.es_autor === undefined || inf.es_autor === true || inf.es_autor === 1;
+const esAutor = (inf) => inf.es_autor === undefined || inf.es_autor === true || inf.es_autor === 1
 
 // Distingue el origen de un informe que no cargó el usuario:
 //  - cargado_por_externo (admin/rol alto): "cargado por AAAB"
 //  - si no, fue la pareja de designación: "de mi pareja"
-const cargadoPorExterno = (inf) => inf.cargado_por_externo === true || inf.cargado_por_externo === 1;
-const etiquetaOrigen = (inf) => (cargadoPorExterno(inf) ? 'cargado por AAAB' : 'de mi pareja');
+const cargadoPorExterno = (inf) => inf.cargado_por_externo === true || inf.cargado_por_externo === 1
+const etiquetaOrigen = (inf) => (cargadoPorExterno(inf) ? 'cargado por AAAB' : 'de mi pareja')
 
 // El árbitro solo puede editar SU informe mientras no fue resuelto.
 // Los informes de la pareja se ven pero no se editan.
-const puedeEditar = (inf) => esAutor(inf) && (inf.estado === 'creado' || inf.estado === 'pendiente');
+const puedeEditar = (inf) => esAutor(inf) && (inf.estado === 'creado' || inf.estado === 'pendiente')
 
 // El árbitro solo puede anular SU informe mientras esté en 'creado'
-const puedeAnular = (inf) => esAutor(inf) && inf.estado === 'creado';
+const puedeAnular = (inf) => esAutor(inf) && inf.estado === 'creado'
 
 /* ====================================================
    ESTADO GLOBAL DE LA TABLA
    ==================================================== */
-const informes = ref([]);
-const cargando = ref(false);
-const procesando = ref(false);
+const informes = ref([])
+const cargando = ref(false)
+const procesando = ref(false)
 
-const filtros = reactive({ fecha: '', anio: anioActual(), estado: '', encuentro: '', implicado: '', categoria: '', torneo: '' });
-const mostrarFiltrosMobile = ref(false);
+const filtros = reactive({ fecha: '', anio: anioActual(), estado: '', encuentro: '', implicado: '', categoria: '', torneo: '' })
+const mostrarFiltrosMobile = ref(false)
 
-const paginaActual = ref(1);
-const registrosPorPagina = 10;
+const paginaActual = ref(1)
+const registrosPorPagina = 10
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 /* ====================================================
    FECHAS
@@ -576,307 +568,207 @@ const formatearFechaHora = (fechaHora) => fechaHoraArg(fechaHora, '-')
    FILTROS Y PAGINACIÓN
    ==================================================== */
 const aniosDisponibles = computed(() => {
-  const anios = new Set();
+  const anios = new Set()
   informes.value.forEach(inf => {
-    const anio = (inf.fecha_partido || '').substring(0, 4);
-    if (anio) anios.add(anio);
-  });
-  return conAnioActual(anios);
-});
+    const anio = (inf.fecha_partido || '').substring(0, 4)
+    if (anio) anios.add(anio)
+  })
+  return conAnioActual(anios)
+})
 
 const informesFiltrados = computed(() => {
   return informes.value.filter(inf => {
-    const matchFec = formatearFecha(inf.fecha_partido).includes(filtros.fecha);
-    const matchAnio = !filtros.anio || (inf.fecha_partido || '').substring(0, 4) === filtros.anio;
-    const matchEstado = !filtros.estado || (inf.estado || 'creado').toLowerCase() === filtros.estado;
-    const matchTorneo = !filtros.torneo || inf.torneo === filtros.torneo;
-    const matchEnc = normalizar(inf.encuentro).includes(normalizar(filtros.encuentro));
-    const matchImp = normalizar(inf.implicado).includes(normalizar(filtros.implicado));
-    const matchCat = normalizar(inf.categoria).includes(normalizar(filtros.categoria));
+    const matchFec = formatearFecha(inf.fecha_partido).includes(filtros.fecha)
+    const matchAnio = !filtros.anio || (inf.fecha_partido || '').substring(0, 4) === filtros.anio
+    const matchEstado = !filtros.estado || (inf.estado || 'creado').toLowerCase() === filtros.estado
+    const matchTorneo = !filtros.torneo || inf.torneo === filtros.torneo
+    const matchEnc = normalizar(inf.encuentro).includes(normalizar(filtros.encuentro))
+    const matchImp = normalizar(inf.implicado).includes(normalizar(filtros.implicado))
+    const matchCat = normalizar(inf.categoria).includes(normalizar(filtros.categoria))
 
-    return matchFec && matchAnio && matchEstado && matchTorneo && matchEnc && matchImp && matchCat;
-  });
-});
+    return matchFec && matchAnio && matchEstado && matchTorneo && matchEnc && matchImp && matchCat
+  })
+})
 
-const totalPaginas = computed(() => Math.ceil(informesFiltrados.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(informesFiltrados.value.length / registrosPorPagina) || 1)
 const informesPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return informesFiltrados.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return informesFiltrados.value.slice(inicio, inicio + registrosPorPagina)
+})
 
 const cambiarPagina = (delta) => {
   if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta;
-    setTimeout(() => { if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }); }, 50);
+    paginaActual.value += delta
+    setTimeout(() => { if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }) }, 50)
   }
-};
+}
 
-const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); filtros.anio = anioActual() };
+const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); filtros.anio = anioActual() }
 
-watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
-watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo; });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
+watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 /* ====================================================
    CARGA DE DATOS
    ==================================================== */
 const obtenerInformes = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
-    const res = await api.get({ entity: 'informes', action: 'obtenerMisInformes' });
+    const res = await api.get({ entity: 'informes', action: 'obtenerMisInformes' })
     if ((res && res.ok) || (res && res.success)) {
-      informes.value = (res.payload || []).sort((a, b) => b.id - a.id);
+      informes.value = (res.payload || []).sort((a, b) => b.id - a.id)
     } else {
-      informes.value = [];
+      informes.value = []
     }
   } catch (err) {
-    console.error('Error al cargar mis informes:', err);
-    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar tus informes.', tipo: 'danger' });
+    console.error('Error al cargar mis informes:', err)
+    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar tus informes.', tipo: 'danger' })
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 /* ====================================================
    DETALLE
    ==================================================== */
-const mostrarDetalle = ref(false);
-const informeSel = ref(null);
-const verDetalle = (inf) => { informeSel.value = inf; mostrarDetalle.value = true; };
-const cerrarDetalle = () => { mostrarDetalle.value = false; informeSel.value = null; };
+const mostrarDetalle = ref(false)
+const informeSel = ref(null)
+const verDetalle = (inf) => { informeSel.value = inf; mostrarDetalle.value = true }
+const cerrarDetalle = () => { mostrarDetalle.value = false; informeSel.value = null }
 
-/* ====================================================
-   DESCARGAR ARCHIVOS ADJUNTOS
-   ==================================================== */
-const descargandoArchivo = ref(null);
-
-const descargarArchivo = async (arc) => {
-  if (!arc || !arc.url_completa) return;
-  descargandoArchivo.value = arc.url_completa;
-  try {
-    const resp = await fetch(arc.url_completa);
-    if (!resp.ok) throw new Error('No se pudo descargar el archivo');
-    const blob = await resp.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = arc.archivo_nombre || 'archivo';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error('Error al descargar archivo:', err);
-    window.open(arc.url_completa, '_blank', 'noopener');
-  } finally {
-    descargandoArchivo.value = null;
-  }
-};
-
-/* ====================================================
-   DESCARGAR PDF (dinámico, no se guarda en disco)
-   ==================================================== */
-const descargandoId = ref(null);
-
-const escapar = (v) => String(v ?? '-')
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-const filaPDF = (etiqueta, valor) => `
-  <tr>
-    <td style="padding:8px 10px;border:1px solid #e5e7eb;background:#f8f9fa;font-weight:bold;width:38%;color:#334155;">${escapar(etiqueta)}</td>
-    <td style="padding:8px 10px;border:1px solid #e5e7eb;color:#111;">${escapar(valor)}</td>
-  </tr>`;
-
-const descargarPDF = async (inf) => {
-  descargandoId.value = inf.id;
-  try {
-    const contenedor = document.createElement('div');
-    contenedor.style.padding = '28px';
-    contenedor.style.fontFamily = 'Arial, Helvetica, sans-serif';
-    contenedor.style.color = '#111';
-    contenedor.innerHTML = `
-      <div style="display:flex;align-items:center;gap:14px;border-bottom:3px solid #dc2626;padding-bottom:14px;margin-bottom:18px;">
-        <img src="https://arbitroshandball.com.ar/logo.png" alt="AAAB" style="height:56px;" crossorigin="anonymous"
-             onerror="this.style.display='none'">
-        <div>
-          <h1 style="margin:0;font-size:20px;color:#dc2626;">Informe de Partido</h1>
-          <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Asociación Argentina de Árbitros de Balonmano</p>
-        </div>
-        <div style="margin-left:auto;text-align:right;font-size:12px;color:#64748b;">
-          <div><strong>Informe #${escapar(inf.id)}</strong></div>
-          <div>Estado: ${escapar(etiquetaEstado(inf.estado))}</div>
-        </div>
-      </div>
-
-      <table style="width:100%;border-collapse:collapse;font-size:13px;">
-        ${filaPDF('Fecha del partido', formatearFecha(inf.fecha_partido))}
-        ${filaPDF('Torneo', etiquetaTorneo(inf.torneo))}
-        ${filaPDF('Categoría', inf.categoria || '-')}
-        ${filaPDF('Encuentro', inf.encuentro)}
-        ${filaPDF('Árbitros', inf.arbitros || '-')}
-        ${inf.delegado_tecnico ? filaPDF('Delegado técnico (cargó el informe)', inf.delegado_tecnico) : ''}
-        ${filaPDF('Implicado', inf.implicado)}
-        ${filaPDF('Sanción', inf.sancion)}
-        ${filaPDF('Institución a la que pertenece', inf.institucion_nombre)}
-      </table>
-
-      <div style="margin-top:16px;">
-        <div style="font-weight:bold;font-size:13px;color:#334155;margin-bottom:6px;">Motivo y descripción</div>
-        <div style="border:1px solid #e5e7eb;border-radius:6px;padding:12px;font-size:13px;line-height:1.5;white-space:pre-wrap;background:#fff;">${escapar(inf.motivo_descripcion)}</div>
-      </div>
-
-      <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Cargado por ${inf.cargado_por_es_rol ? escapar(inf.cargado_por_nombre || '') : ((inf.delegado_tecnico ? 'el delegado técnico ' : 'el árbitro ') + escapar(inf.cargado_por_nombre || inf.delegado_tecnico || inf.arbitros || ''))} el ${escapar(formatearFechaHora(inf.creado_en))}.
-        Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
-      </div>
-    `;
-
-    const opciones = {
-      margin: 10,
-      filename: `Informe_${inf.id}_${(inf.encuentro || '').replace(/[^\w]+/g, '_')}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    await (await cargarHtml2pdf())().set(opciones).from(contenedor).save();
-  } catch (err) {
-    console.error('Error al generar PDF:', err);
-    toast({ titulo: 'Error', mensaje: 'No se pudo generar el PDF.', tipo: 'danger' });
-  } finally {
-    descargandoId.value = null;
-  }
-};
+// Descargas del informe (adjuntos y PDF): compartidas con las otras pantallas de informes
+const { descargandoArchivo, descargarArchivo, descargandoId, descargarPDF } = useDescargasInforme({ etiquetaEstado, toast })
 
 /* ====================================================
    ANULACIÓN (por el propio árbitro, solo si está en 'creado')
    ==================================================== */
-const mostrarConfirmAnular = ref(false);
-const infoAAnular = ref(null);
-const anulando = ref(false);
+const mostrarConfirmAnular = ref(false)
+const infoAAnular = ref(null)
+const anulando = ref(false)
 
 const pedirAnular = (inf) => {
   if (!puedeAnular(inf)) {
-    toast({ titulo: 'No permitido', mensaje: 'Solo se pueden anular informes en estado creado.', tipo: 'warning' });
-    return;
+    toast({ titulo: 'No permitido', mensaje: 'Solo se pueden anular informes en estado creado.', tipo: 'warning' })
+    return
   }
-  infoAAnular.value = inf;
-  mostrarConfirmAnular.value = true;
-};
+  infoAAnular.value = inf
+  mostrarConfirmAnular.value = true
+}
 
-const cerrarAnular = () => { mostrarConfirmAnular.value = false; infoAAnular.value = null; };
+const cerrarAnular = () => { mostrarConfirmAnular.value = false; infoAAnular.value = null }
 
 // Desde el modal de detalle: cerramos el detalle y abrimos la confirmación
 const confirmarAnular = async () => {
-  if (!infoAAnular.value) return;
-  const inf = infoAAnular.value;
-  anulando.value = true;
+  if (!infoAAnular.value) return
+  const inf = infoAAnular.value
+  anulando.value = true
   try {
     const res = await api.post({
       entity: 'informes',
       action: 'cambiarEstadoInforme',
       payload: { id_informe: inf.id, estado: 'anulado' }
-    });
+    })
     if (res.ok || res.success) {
-      const idx = informes.value.findIndex(i => i.id === inf.id);
-      if (idx !== -1) informes.value[idx].estado = 'anulado';
-      cerrarAnular();
-      toast({ titulo: 'Informe anulado', mensaje: 'Tu informe fue anulado correctamente.', tipo: 'success' });
+      const idx = informes.value.findIndex(i => i.id === inf.id)
+      if (idx !== -1) informes.value[idx].estado = 'anulado'
+      cerrarAnular()
+      toast({ titulo: 'Informe anulado', mensaje: 'Tu informe fue anulado correctamente.', tipo: 'success' })
     } else {
-      toast({ titulo: 'No se pudo anular', mensaje: (res && res.message) || 'El informe no pudo anularse.', tipo: 'danger' });
+      toast({ titulo: 'No se pudo anular', mensaje: (res && res.message) || 'El informe no pudo anularse.', tipo: 'danger' })
     }
   } catch (err) {
-    console.error('Error al anular informe:', err);
-    toast({ titulo: 'Error', mensaje: err.message || 'Fallo de conexión al anular.', tipo: 'danger' });
+    console.error('Error al anular informe:', err)
+    toast({ titulo: 'Error', mensaje: err.message || 'Fallo de conexión al anular.', tipo: 'danger' })
   } finally {
-    anulando.value = false;
+    anulando.value = false
   }
-};
+}
 
 /* ====================================================
    EDICIÓN
    ==================================================== */
-const mostrarEdicion = ref(false);
-const informeEdit = ref(null);
-const inputArchivosEdit = ref(null);
-const archivosAEliminar = ref([]);  // ids de archivos existentes a borrar
+const mostrarEdicion = ref(false)
+const informeEdit = ref(null)
+const inputArchivosEdit = ref(null)
+const archivosAEliminar = ref([])  // ids de archivos existentes a borrar
 const formEdit = reactive({
   torneo: '', implicado: '', sancion: '', institucion: '', motivo_descripcion: '',
   archivos_nuevos: []  // File[] (binario, multipart)
-});
+})
 
 const edicionValida = computed(() =>
   formEdit.torneo && formEdit.implicado.trim() && formEdit.sancion.trim() && formEdit.institucion && formEdit.motivo_descripcion.trim()
-);
+)
 
 // Límite por archivo (10 MB)
-const MAX_ARCHIVO_BYTES = 10 * 1024 * 1024;
+const MAX_ARCHIVO_BYTES = 10 * 1024 * 1024
 
 const onArchivosEditSeleccionados = (e) => {
-  const files = Array.from(e.target.files || []);
+  const files = Array.from(e.target.files || [])
   for (const file of files) {
     if (file.size > MAX_ARCHIVO_BYTES) {
-      toast({ titulo: 'Archivo muy grande', mensaje: `"${file.name}" supera los 10 MB y no se adjuntó.`, tipo: 'warning' });
-      continue;
+      toast({ titulo: 'Archivo muy grande', mensaje: `"${file.name}" supera los 10 MB y no se adjuntó.`, tipo: 'warning' })
+      continue
     }
-    formEdit.archivos_nuevos.push(file);
+    formEdit.archivos_nuevos.push(file)
   }
-  if (inputArchivosEdit.value) inputArchivosEdit.value.value = '';
-};
+  if (inputArchivosEdit.value) inputArchivosEdit.value.value = ''
+}
 
 const quitarArchivoEdit = (idx) => {
-  formEdit.archivos_nuevos.splice(idx, 1);
-};
+  formEdit.archivos_nuevos.splice(idx, 1)
+}
 
 const toggleEliminarArchivo = (id) => {
-  const i = archivosAEliminar.value.indexOf(id);
-  if (i === -1) archivosAEliminar.value.push(id);
-  else archivosAEliminar.value.splice(i, 1);
-};
+  const i = archivosAEliminar.value.indexOf(id)
+  if (i === -1) archivosAEliminar.value.push(id)
+  else archivosAEliminar.value.splice(i, 1)
+}
 
 const abrirEdicion = (inf) => {
-  informeEdit.value = inf;
-  formEdit.torneo = inf.torneo || '';
-  formEdit.implicado = inf.implicado || '';
-  formEdit.sancion = inf.sancion || '';
-  formEdit.institucion = inf.institucion || '';
-  formEdit.motivo_descripcion = inf.motivo_descripcion || '';
-  formEdit.archivos_nuevos = [];
-  archivosAEliminar.value = [];
-  if (inputArchivosEdit.value) inputArchivosEdit.value.value = '';
-  mostrarEdicion.value = true;
-};
-const cerrarEdicion = () => { mostrarEdicion.value = false; informeEdit.value = null; };
+  informeEdit.value = inf
+  formEdit.torneo = inf.torneo || ''
+  formEdit.implicado = inf.implicado || ''
+  formEdit.sancion = inf.sancion || ''
+  formEdit.institucion = inf.institucion || ''
+  formEdit.motivo_descripcion = inf.motivo_descripcion || ''
+  formEdit.archivos_nuevos = []
+  archivosAEliminar.value = []
+  if (inputArchivosEdit.value) inputArchivosEdit.value.value = ''
+  mostrarEdicion.value = true
+}
+const cerrarEdicion = () => { mostrarEdicion.value = false; informeEdit.value = null }
 
 const { hayCambios: hayCambiosEdicion } = useCambiosSinGuardar(
   () => ({ ...formEdit, archivos_nuevos: formEdit.archivos_nuevos.map(f => f.name), eliminar: [...archivosAEliminar.value].sort() }),
   mostrarEdicion
-);
+)
 
 const guardarEdicion = async () => {
-  if (!edicionValida.value || !informeEdit.value) return;
-  const inf = informeEdit.value;
-  const institucionNombre = formEdit.institucion === 'local' ? inf.equipo_local : inf.equipo_visitante;
+  if (!edicionValida.value || !informeEdit.value) return
+  const inf = informeEdit.value
+  const institucionNombre = formEdit.institucion === 'local' ? inf.equipo_local : inf.equipo_visitante
 
-  procesando.value = true;
+  procesando.value = true
   try {
-    const fd = new FormData();
-    fd.append('id_informe', inf.id);
-    fd.append('torneo', formEdit.torneo);
-    fd.append('implicado', formEdit.implicado.trim());
-    fd.append('sancion', formEdit.sancion.trim());
-    fd.append('institucion', formEdit.institucion);
-    fd.append('institucion_nombre', institucionNombre);
-    fd.append('motivo_descripcion', formEdit.motivo_descripcion.trim());
+    const fd = new FormData()
+    fd.append('id_informe', inf.id)
+    fd.append('torneo', formEdit.torneo)
+    fd.append('implicado', formEdit.implicado.trim())
+    fd.append('sancion', formEdit.sancion.trim())
+    fd.append('institucion', formEdit.institucion)
+    fd.append('institucion_nombre', institucionNombre)
+    fd.append('motivo_descripcion', formEdit.motivo_descripcion.trim())
     // ids a eliminar como JSON string
-    fd.append('archivos_eliminar', JSON.stringify(archivosAEliminar.value));
+    fd.append('archivos_eliminar', JSON.stringify(archivosAEliminar.value))
     // archivos nuevos binarios
-    formEdit.archivos_nuevos.forEach(file => fd.append('archivos_nuevos[]', file, file.name));
+    formEdit.archivos_nuevos.forEach(file => fd.append('archivos_nuevos[]', file, file.name))
 
     const res = await api.postFile({
       entity: 'informes',
       action: 'actualizarInforme',
       payload: fd
-    });
+    })
     if (res.ok || res.success) {
       Object.assign(inf, {
         torneo: formEdit.torneo,
@@ -885,25 +777,25 @@ const guardarEdicion = async () => {
         institucion: formEdit.institucion,
         institucion_nombre: institucionNombre,
         motivo_descripcion: formEdit.motivo_descripcion.trim()
-      });
+      })
       // Reflejar cambios de archivos: el backend devuelve la lista final
       if (res.payload && Array.isArray(res.payload.archivos)) {
-        inf.archivos = res.payload.archivos;
+        inf.archivos = res.payload.archivos
       }
-      cerrarEdicion();
-      toast({ titulo: 'Informe actualizado', mensaje: 'Se guardaron los cambios.', tipo: 'success' });
+      cerrarEdicion()
+      toast({ titulo: 'Informe actualizado', mensaje: 'Se guardaron los cambios.', tipo: 'success' })
     } else {
-      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor');
+      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
     }
   } catch (err) {
-    console.error('Error al editar informe:', err);
-    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo guardar.', tipo: 'danger' });
+    console.error('Error al editar informe:', err)
+    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo guardar.', tipo: 'danger' })
   } finally {
-    procesando.value = false;
+    procesando.value = false
   }
-};
+}
 
-onMounted(obtenerInformes);
+onMounted(obtenerInformes)
 </script>
 
 <style scoped>

@@ -50,7 +50,7 @@
 
 <script setup>
 import { ref, computed, inject } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { auth } from '@/api/auth'
 import { normalizarTexto } from '@/utils/texto'
 import { useModulosArbitro } from '@/composables/useModulosArbitro'

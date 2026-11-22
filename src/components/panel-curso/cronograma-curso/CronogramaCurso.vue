@@ -90,7 +90,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { reactive, computed, watch, onMounted, defineComponent, h } from 'vue'
 import { MESES_CORTOS } from '@/utils/fechas'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada } from '@/composables/useCronogramaCurso'
 
 useHead({ title: 'Cronograma | Curso AAAB' })

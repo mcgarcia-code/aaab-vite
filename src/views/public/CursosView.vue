@@ -75,7 +75,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 
 // Título y descripción específicos para la página de CURSOS
 useHead({

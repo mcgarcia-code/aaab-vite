@@ -103,126 +103,126 @@
 <script setup>
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
-import { ref, onMounted, inject } from 'vue';
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
+import { ref, onMounted, inject } from 'vue'
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Cargar Sanción | AAAB'
-});
+})
 
-const toast = inject('toast');
+const toast = inject('toast')
 
-const arbitros  = ref([]);
-const ultimasSanciones = ref([]);
-const cargando  = ref(false);
-const cargandoHistorial = ref(true);
+const arbitros  = ref([])
+const ultimasSanciones = ref([])
+const cargando  = ref(false)
+const cargandoHistorial = ref(true)
 
 const sancionVacia = () => ({
   id_arbitro: '',
   articulo: '',
   motivo: ''
-});
+})
 
-const nuevaSancion = ref(sancionVacia());
+const nuevaSancion = ref(sancionVacia())
 
 // LÓGICA VISUAL
 const obtenerTextoEstado = (estado_dinamico) => {
-  if (estado_dinamico == 1) return 'VIGENTE';
-  if (estado_dinamico == 2) return 'CUMPLIDA';
-  if (estado_dinamico == 3) return 'EN PROCESO';
-  if (estado_dinamico == 4) return 'ANULADA';
-  return 'DESCONOCIDO';
-};
+  if (estado_dinamico == 1) return 'VIGENTE'
+  if (estado_dinamico == 2) return 'CUMPLIDA'
+  if (estado_dinamico == 3) return 'EN PROCESO'
+  if (estado_dinamico == 4) return 'ANULADA'
+  return 'DESCONOCIDO'
+}
 
 const obtenerClaseEstado = (estado_dinamico) => {
-  if (estado_dinamico == 1) return 'badge-status rechazada';
-  if (estado_dinamico == 2) return 'badge-status aprobada';
-  if (estado_dinamico == 3) return 'badge-status pendiente text-dark';
-  if (estado_dinamico == 4) return 'badge-status anulada';
-  return 'badge-status';
-};
+  if (estado_dinamico == 1) return 'badge-status rechazada'
+  if (estado_dinamico == 2) return 'badge-status aprobada'
+  if (estado_dinamico == 3) return 'badge-status pendiente text-dark'
+  if (estado_dinamico == 4) return 'badge-status anulada'
+  return 'badge-status'
+}
 
 const obtenerTextoSancion = (s) => {
-  if (s.estado_dinamico == 4) return 'Anulada';
-  if (s.estado_dinamico == 3) return 'En proceso';
-  return s.sancion || 'En proceso';
-};
+  if (s.estado_dinamico == 4) return 'Anulada'
+  if (s.estado_dinamico == 3) return 'En proceso'
+  return s.sancion || 'En proceso'
+}
 
 const obtenerClaseTextoSancion = (estado_dinamico) => {
-  if (estado_dinamico == 4) return 'text-anulada fw-bold';
-  if (estado_dinamico == 3) return 'text-en-proceso fw-bold';
-  return 'text-danger fw-bold';
-};
+  if (estado_dinamico == 4) return 'text-anulada fw-bold'
+  if (estado_dinamico == 3) return 'text-en-proceso fw-bold'
+  return 'text-danger fw-bold'
+}
 
 const cargarArbitros = async () => {
   try {
-    const data = await api.get({ entity: 'arbitros', action: 'getArbitros' });
-    let lista = Array.isArray(data) ? data : (data.payload ?? []);
+    const data = await api.get({ entity: 'arbitros', action: 'getArbitros' })
+    let lista = Array.isArray(data) ? data : (data.payload ?? [])
 
     lista.sort((a, b) => {
-      const nombreA = `${a.apellido} ${a.nombre}`.toUpperCase();
-      const nombreB = `${b.apellido} ${b.nombre}`.toUpperCase();
-      return nombreA.localeCompare(nombreB);
-    });
+      const nombreA = `${a.apellido} ${a.nombre}`.toUpperCase()
+      const nombreB = `${b.apellido} ${b.nombre}`.toUpperCase()
+      return nombreA.localeCompare(nombreB)
+    })
 
-    arbitros.value = lista;
+    arbitros.value = lista
   } catch (err) {
-    console.error('Error cargando árbitros:', err);
+    console.error('Error cargando árbitros:', err)
   }
-};
+}
 
 const cargarUltimasSanciones = async () => {
-  cargandoHistorial.value = true;
+  cargandoHistorial.value = true
   try {
-    const data = await api.get({ entity: 'sanciones', action: 'obtenerSanciones' });
-    let lista = Array.isArray(data) ? data : (data.payload ?? []);
+    const data = await api.get({ entity: 'sanciones', action: 'obtenerSanciones' })
+    let lista = Array.isArray(data) ? data : (data.payload ?? [])
 
     // ORDENAR DE MÁS RECIENTE A MÁS ANTIGUA (MAYOR ID PRIMERO)
-    lista.sort((a, b) => b.id - a.id);
+    lista.sort((a, b) => b.id - a.id)
 
-    ultimasSanciones.value = lista.slice(0, 5);
+    ultimasSanciones.value = lista.slice(0, 5)
   } catch (err) {
-    console.error('Error cargando historial:', err);
+    console.error('Error cargando historial:', err)
   } finally {
-    cargandoHistorial.value = false;
+    cargandoHistorial.value = false
   }
-};
+}
 
 const guardarSancion = async () => {
   if (!nuevaSancion.value.id_arbitro || !nuevaSancion.value.articulo.trim() || !nuevaSancion.value.motivo.trim()) {
-    toast({ titulo: 'Datos incompletos', mensaje: 'Por favor completá todos los campos obligatorios.', tipo: 'warning' });
-    return;
+    toast({ titulo: 'Datos incompletos', mensaje: 'Por favor completá todos los campos obligatorios.', tipo: 'warning' })
+    return
   }
 
-  cargando.value = true;
+  cargando.value = true
 
   try {
     const res = await api.post({
       entity:  'sanciones',
       action:  'crearSancion',
       payload: nuevaSancion.value,
-    });
+    })
 
     if (res?.ok !== false) {
-      toast({ titulo: '¡Proceso Iniciado!', mensaje: 'La sanción se registró y se notificó al árbitro.', tipo: 'success' });
-      nuevaSancion.value = sancionVacia();
-      await cargarUltimasSanciones();
+      toast({ titulo: '¡Proceso Iniciado!', mensaje: 'La sanción se registró y se notificó al árbitro.', tipo: 'success' })
+      nuevaSancion.value = sancionVacia()
+      await cargarUltimasSanciones()
     } else {
-      toast({ titulo: 'Error al registrar', mensaje: res?.message || 'Hubo un problema en el servidor al intentar guardar.', tipo: 'danger' });
+      toast({ titulo: 'Error al registrar', mensaje: res?.message || 'Hubo un problema en el servidor al intentar guardar.', tipo: 'danger' })
     }
   } catch (error) {
-    console.error("Error en guardarSancion:", error);
-    toast({ titulo: 'Error de Conexión', mensaje: 'No se pudo contactar con el servidor. Revisá tu conexión.', tipo: 'danger' });
+    console.error("Error en guardarSancion:", error)
+    toast({ titulo: 'Error de Conexión', mensaje: 'No se pudo contactar con el servidor. Revisá tu conexión.', tipo: 'danger' })
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 onMounted(() => {
-  cargarArbitros();
-  cargarUltimasSanciones();
-});
+  cargarArbitros()
+  cargarUltimasSanciones()
+})
 </script>
 
 <style scoped>

@@ -137,7 +137,7 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, onMounted, inject, computed, watch } from 'vue'
 import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 

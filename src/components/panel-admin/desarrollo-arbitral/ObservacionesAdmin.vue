@@ -639,40 +639,40 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
-import { ref, onMounted, computed, reactive, inject, watch } from 'vue';
+import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { fechaArg, fechaHoraArg, MESES as MESES_LARGOS } from '@/utils/fechas'
 import { cargarExcelJS } from '@/utils/librerias'
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
-import ModalBase from '@/components/ModalBase.vue';
-import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
-import VistaPreviaObservacion from '@/components/VistaPreviaObservacion.vue';
-import { useVistaPreviaObservacion } from '@/composables/useVistaPreviaObservacion';
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
+import ModalBase from '@/components/ModalBase.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
+import VistaPreviaObservacion from '@/components/VistaPreviaObservacion.vue'
+import { useVistaPreviaObservacion } from '@/composables/useVistaPreviaObservacion'
 
 useHead({
   title: 'Observaciones | AAAB',
   meta: [{ name: 'description', content: 'Administración y seguimiento de observaciones arbitrales.' }],
-});
+})
 
-const toast = inject('toast');
+const toast = inject('toast')
 
 /* ====================================================
    ESTADO GLOBAL DE LA TABLA
    ==================================================== */
-const observaciones = ref([]);
-const cargando = ref(false);
+const observaciones = ref([])
+const cargando = ref(false)
 
 const filtros = reactive({ mes: '', anio: anioActual(), estado: '', nombre_observador: '', arbitros: '', competencia: '', categoria: '' })
 
 const MESES = MESES_LARGOS
   .map((nombre, i) => ({ valor: String(i + 1).padStart(2, '0'), nombre }))
-const mostrarFiltrosMobile = ref(false);
+const mostrarFiltrosMobile = ref(false)
 
-const paginaActual = ref(1);
-const registrosPorPagina = 10;
+const paginaActual = ref(1)
+const registrosPorPagina = 10
 
 // Filtros y Paginación
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 const formatearFecha = (fecha) => fechaArg(fecha, 'S/F')
 
@@ -681,37 +681,37 @@ const formatearFechaHora = (fechaHora) => fechaHoraArg(fechaHora, '-')
 // Árbitros observados: prioriza los nombres reales (arb1/arb2, que salen de ref1_id/ref2_id);
 // si no hay ids cargados, cae al texto libre del Excel (o.arbitros).
 const nombresArbitros = (o) => {
-  const partes = [o.arb1, o.arb2].filter(n => n && n.trim() && n !== ', ');
-  if (partes.length) return partes.join(' - ');
-  return o.arbitros || '-';
-};
+  const partes = [o.arb1, o.arb2].filter(n => n && n.trim() && n !== ', ')
+  if (partes.length) return partes.join(' - ')
+  return o.arbitros || '-'
+}
 
 // Categoría del partido: usa la categoría del partido (o.categoria) y cae a la
 // categoría de edad del Excel (categoria_edad) si aquella no está.
-const categoriaObs = (o) => o.categoria || o.categoria_edad || '-';
+const categoriaObs = (o) => o.categoria || o.categoria_edad || '-'
 
 const etiquetaEstado = (estado) => {
-  const e = (estado || 'pendiente').toLowerCase();
-  if (e === 'aprobada') return 'APROBADA';
-  if (e === 'rechazada') return 'RECHAZADA';
-  if (e === 'anulada') return 'ANULADA';
-  return 'PENDIENTE';
-};
+  const e = (estado || 'pendiente').toLowerCase()
+  if (e === 'aprobada') return 'APROBADA'
+  if (e === 'rechazada') return 'RECHAZADA'
+  if (e === 'anulada') return 'ANULADA'
+  return 'PENDIENTE'
+}
 
 const badgeEstado = (estado) => {
-  const e = (estado || 'pendiente').toLowerCase();
-  if (e === 'aprobada') return 'estado-pill estado-aprobada';
-  if (e === 'rechazada') return 'estado-pill estado-rechazada';
-  if (e === 'anulada') return 'estado-pill estado-anulada';
-  return 'estado-pill estado-pendiente';
-};
+  const e = (estado || 'pendiente').toLowerCase()
+  if (e === 'aprobada') return 'estado-pill estado-aprobada'
+  if (e === 'rechazada') return 'estado-pill estado-rechazada'
+  if (e === 'anulada') return 'estado-pill estado-anulada'
+  return 'estado-pill estado-pendiente'
+}
 
 // Cómo se muestra el comentario de la revisión según el estado:
 // anulada/rechazada -> motivo; pendiente/aprobada -> comentarios adicionales para el observador.
 const avisoComentario = (estado) => {
   const e = (estado || 'pendiente').toLowerCase()
-  if (e === 'anulada')   return { titulo: 'Motivo de anulación', clase: 'alert-secondary', icono: 'bi-slash-circle' };
-  if (e === 'rechazada') return { titulo: 'Motivo de rechazo', clase: 'alert-danger', icono: 'bi-x-circle' };
+  if (e === 'anulada')   return { titulo: 'Motivo de anulación', clase: 'alert-secondary', icono: 'bi-slash-circle' }
+  if (e === 'rechazada') return { titulo: 'Motivo de rechazo', clase: 'alert-danger', icono: 'bi-x-circle' }
   if (e === 'aprobada')  return { titulo: 'Comentarios adicionales', clase: 'alert-success', icono: 'bi-chat-left-text' }
   return { titulo: 'Comentarios adicionales', clase: 'alert-warning', icono: 'bi-chat-left-text' }
 }
@@ -723,88 +723,88 @@ const aniosDisponibles = computed(() => {
     if (anio) anios.add(anio)
   })
   return conAnioActual(anios)
-});
+})
 
 const observacionesFiltradas = computed(() => {
   return observaciones.value.filter(o => {
     const matchMes = !filtros.mes || (o.fecha_partido || '').substring(5, 7) === filtros.mes
-    const matchAnio = !filtros.anio || (o.fecha_partido || '').substring(0, 4) === filtros.anio;
-    const matchEstado = !filtros.estado || (o.estado || 'pendiente').toLowerCase() === filtros.estado;
-    const matchObs = normalizar(o.nombre_observador).includes(normalizar(filtros.nombre_observador));
-    const matchArb = normalizar(nombresArbitros(o)).includes(normalizar(filtros.arbitros));
-    const matchComp = normalizar(nombreTorneo(o)).includes(normalizar(filtros.competencia));
-    const matchCat = normalizar(categoriaObs(o)).includes(normalizar(filtros.categoria));
+    const matchAnio = !filtros.anio || (o.fecha_partido || '').substring(0, 4) === filtros.anio
+    const matchEstado = !filtros.estado || (o.estado || 'pendiente').toLowerCase() === filtros.estado
+    const matchObs = normalizar(o.nombre_observador).includes(normalizar(filtros.nombre_observador))
+    const matchArb = normalizar(nombresArbitros(o)).includes(normalizar(filtros.arbitros))
+    const matchComp = normalizar(nombreTorneo(o)).includes(normalizar(filtros.competencia))
+    const matchCat = normalizar(categoriaObs(o)).includes(normalizar(filtros.categoria))
 
     return matchMes && matchAnio && matchEstado && matchObs && matchArb && matchComp && matchCat
-  });
-});
+  })
+})
 
-const totalPaginas = computed(() => Math.ceil(observacionesFiltradas.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(observacionesFiltradas.value.length / registrosPorPagina) || 1)
 const observacionesPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return observacionesFiltradas.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return observacionesFiltradas.value.slice(inicio, inicio + registrosPorPagina)
+})
 
 const cambiarPagina = (delta) => {
   if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta;
-    setTimeout(() => { if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }); }, 50);
+    paginaActual.value += delta
+    setTimeout(() => { if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }) }, 50)
   }
-};
+}
 
-watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
-watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
+watch(totalPaginas, (nuevo) => { if(paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 const obtenerObservaciones = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
-    const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluaciones' });
+    const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluaciones' })
     if (res && res.ok) {
-      observaciones.value = (res.payload || []).sort((a, b) => b.id - a.id);
+      observaciones.value = (res.payload || []).sort((a, b) => b.id - a.id)
     } else {
-      observaciones.value = [];
-      toast({ titulo: 'Sin datos', mensaje: 'No se pudieron cargar las observaciones.', tipo: 'warning' });
+      observaciones.value = []
+      toast({ titulo: 'Sin datos', mensaje: 'No se pudieron cargar las observaciones.', tipo: 'warning' })
     }
   } catch {
-    toast({ titulo: 'Error', mensaje: 'Problema al cargar las observaciones.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Problema al cargar las observaciones.', tipo: 'danger' })
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 /* ====================================================
    ESTADO MODAL 1: GESTIONAR (Aprobar/Anular)
    ==================================================== */
-const mostrarModal = ref(false);
-const observacionActual = ref({});
-const nuevoEstado = ref('');
-const comentariosRevision = ref('');
-const torneoEditado = ref('');
+const mostrarModal = ref(false)
+const observacionActual = ref({})
+const nuevoEstado = ref('')
+const comentariosRevision = ref('')
+const torneoEditado = ref('')
 
 // La opción "anular" en el modal sólo se habilita si la observación sigue pendiente.
-const gestionEsPendiente = computed(() => (observacionActual.value.estado || 'pendiente').toLowerCase() === 'pendiente');
+const gestionEsPendiente = computed(() => (observacionActual.value.estado || 'pendiente').toLowerCase() === 'pendiente')
 
 // Anulada / rechazada: el comentario es el motivo. Pendiente / aprobada: comentarios adicionales.
-const esMotivo = computed(() => ['anulada', 'rechazada'].includes(nuevoEstado.value));
+const esMotivo = computed(() => ['anulada', 'rechazada'].includes(nuevoEstado.value))
 
 const abrirModalGestion = (obs) => {
-  observacionActual.value = { ...obs };
-  nuevoEstado.value = (obs.estado || 'pendiente').toLowerCase();
+  observacionActual.value = { ...obs }
+  nuevoEstado.value = (obs.estado || 'pendiente').toLowerCase()
   // Se precarga el comentario actual: al guardar, el back reemplaza comentario_estado con lo que haya acá
-  comentariosRevision.value = obs.comentario_estado || '';
-  torneoEditado.value = obs.id_torneo || '';
-  mostrarModal.value = true;
-};
+  comentariosRevision.value = obs.comentario_estado || ''
+  torneoEditado.value = obs.id_torneo || ''
+  mostrarModal.value = true
+}
 
-const cerrarModal = () => { mostrarModal.value = false; };
+const cerrarModal = () => { mostrarModal.value = false }
 
 const { hayCambios: hayCambiosGestion } = useCambiosSinGuardar(
   () => [nuevoEstado.value, comentariosRevision.value, torneoEditado.value],
   mostrarModal
-);
+)
 
 const guardarCambiosGestion = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
     // Recordatorio: NO enviar puntaje_final, se calcula dinámicamente.
     // Se envía el torneo por si el admin lo corrigió (el back guarda id + nombre).
@@ -813,367 +813,367 @@ const guardarCambiosGestion = async () => {
       estado: nuevoEstado.value,
       comentarios: comentariosRevision.value,
       id_torneo: torneoEditado.value
-    };
-    const res = await api.post({ entity: 'observaciones', action: 'actualizarEstado', payload: payload });
+    }
+    const res = await api.post({ entity: 'observaciones', action: 'actualizarEstado', payload: payload })
 
     if (res && res.ok) {
-      toast({ titulo: 'Actualizado', mensaje: 'Observación modificada con éxito.', tipo: 'success' });
-      await obtenerObservaciones();
-      cerrarModal();
+      toast({ titulo: 'Actualizado', mensaje: 'Observación modificada con éxito.', tipo: 'success' })
+      await obtenerObservaciones()
+      cerrarModal()
     } else {
-      toast({ titulo: 'No se pudo actualizar', mensaje: res?.message || 'El cambio de estado fue rechazado.', tipo: 'danger' });
+      toast({ titulo: 'No se pudo actualizar', mensaje: res?.message || 'El cambio de estado fue rechazado.', tipo: 'danger' })
     }
   } catch{
-    toast({ titulo: 'Error', mensaje: 'Ocurrió un problema al guardar los cambios.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Ocurrió un problema al guardar los cambios.', tipo: 'danger' })
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 /* ====================================================
    ESTADO MODAL 2: CARGAR NUEVA OBSERVACIÓN MANUAL
    ==================================================== */
-const mostrarModalCarga = ref(false);
-const procesandoCarga = ref(false);
-const cargandoCategorias = ref(false);
-const cargandoArbitros = ref(false);
+const mostrarModalCarga = ref(false)
+const procesandoCarga = ref(false)
+const cargandoCategorias = ref(false)
+const cargandoArbitros = ref(false)
 
-const divisionesMayores = ref([]);
-const listaArbitros = ref([]);
+const divisionesMayores = ref([])
+const listaArbitros = ref([])
 
 const listas = reactive({
   divisiones_categorias: [], divisiones: []
-});
+})
 
 const formulario = reactive({
   partido_genero: '', partido_categoria: '', inf_nivel: '',
   id_categoria_especifica: '', categoria: '', id_observador: '', id_torneo: ''
-});
+})
 
 // Torneos: se usa en el select de carga/gestión y para resolver id -> nombre en las tablas.
-const torneos = ref([]);
-const cargandoTorneos = ref(false);
+const torneos = ref([])
+const cargandoTorneos = ref(false)
 
 const obtenerTorneos = async () => {
-  cargandoTorneos.value = true;
+  cargandoTorneos.value = true
   try {
-    const res = await api.getCacheado({ entity: 'observaciones', action: 'obtenerTorneos' });
-    if (res && res.ok && Array.isArray(res.payload)) torneos.value = res.payload;
+    const res = await api.getCacheado({ entity: 'observaciones', action: 'obtenerTorneos' })
+    if (res && res.ok && Array.isArray(res.payload)) torneos.value = res.payload
   } catch (error) {
-    console.error('Error pidiendo torneos:', error);
+    console.error('Error pidiendo torneos:', error)
   } finally {
-    cargandoTorneos.value = false;
+    cargandoTorneos.value = false
   }
-};
+}
 
 const nombreTorneo = (o) => {
-  const t = torneos.value.find(t => String(t.id) === String(o?.id_torneo));
-  return t ? t.nombre : '-';
-};
+  const t = torneos.value.find(t => String(t.id) === String(o?.id_torneo))
+  return t ? t.nombre : '-'
+}
 
-const idCategoria = ref(null);
+const idCategoria = ref(null)
 
-const fechaPartido = ref('');
-const cargandoPartidos = ref(false);
-const partidos = ref([]);
-const idPartido = ref(null);
+const fechaPartido = ref('')
+const cargandoPartidos = ref(false)
+const partidos = ref([])
+const idPartido = ref(null)
 
 // Partido completo seleccionado: de ahí se leen los árbitros designados (solo lectura)
-const partidoSeleccionado = computed(() => partidos.value.find(p => p.id === idPartido.value) || null);
+const partidoSeleccionado = computed(() => partidos.value.find(p => p.id === idPartido.value) || null)
 
-const archivoObservacion = ref(null);
-const arrastrandoArchivo = ref(false);
+const archivoObservacion = ref(null)
+const arrastrandoArchivo = ref(false)
 
 // Vista previa (lectura del Excel en el navegador)
-const { analizando, preview, previewValida, errorLectura, analizarArchivo, limpiarPreview } = useVistaPreviaObservacion();
+const { analizando, preview, previewValida, errorLectura, analizarArchivo, limpiarPreview } = useVistaPreviaObservacion()
 
-const abrirModalCarga = () => { mostrarModalCarga.value = true; cargarArbitrosObservadores(); };
-const cerrarModalCarga = () => { mostrarModalCarga.value = false; reiniciarFormularioCarga(); };
+const abrirModalCarga = () => { mostrarModalCarga.value = true; cargarArbitrosObservadores() }
+const cerrarModalCarga = () => { mostrarModalCarga.value = false; reiniciarFormularioCarga() }
 
 const { hayCambios: hayCambiosCarga } = useCambiosSinGuardar(
   () => ({ formulario, fecha: fechaPartido.value, partido: idPartido.value, archivo: archivoObservacion.value?.name ?? null }),
   mostrarModalCarga
-);
+)
 
 // Trae todos los árbitros para el select de observador.
 const cargarArbitrosObservadores = async () => {
-  if (listaArbitros.value.length) return; // ya cargados
-  cargandoArbitros.value = true;
+  if (listaArbitros.value.length) return // ya cargados
+  cargandoArbitros.value = true
   try {
-    const res = await api.getCacheado({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: false } }, { ttl: 60 * 1000 });
+    const res = await api.getCacheado({ entity: 'arbitros', action: 'getArbitrosBasico', payload: { soloActivos: false } }, { ttl: 60 * 1000 })
     if (res && res.ok && Array.isArray(res.payload)) {
       listaArbitros.value = res.payload
         .slice()
-        .sort((a, b) => `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`, 'es'));
+        .sort((a, b) => `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`, 'es'))
     }
   } catch (e) {
-    console.error('cargarArbitrosObservadores:', e);
+    console.error('cargarArbitrosObservadores:', e)
   } finally {
-    cargandoArbitros.value = false;
+    cargandoArbitros.value = false
   }
-};
+}
 
 const pedirCategoriasEspecíficas = async () => {
-  if (!formulario.partido_genero || !formulario.partido_categoria) return;
-  cargandoCategorias.value = true;
-  listas.divisiones = []; formulario.id_categoria_especifica = '';
+  if (!formulario.partido_genero || !formulario.partido_categoria) return
+  cargandoCategorias.value = true
+  listas.divisiones = []; formulario.id_categoria_especifica = ''
   try {
     const res = await api.get({
       entity: 'observaciones', action: 'obtenerCategorias',
       payload: { genero: formulario.partido_genero, tipo: formulario.partido_categoria }
-    });
+    })
     if (res.ok) {
       if (formulario.partido_categoria === 'Mayores') {
-        divisionesMayores.value = res.payload[0]?.divisiones || [];
+        divisionesMayores.value = res.payload[0]?.divisiones || []
       } else {
-        listas.divisiones_categorias = res.payload;
+        listas.divisiones_categorias = res.payload
       }
     }
-  } catch (error) { console.error(error); }
-  finally { cargandoCategorias.value = false; }
-};
+  } catch (error) { console.error(error) }
+  finally { cargandoCategorias.value = false }
+}
 
-const setDivisiones = () => { listas.divisiones = listas.divisiones_categorias[formulario.id_categoria_especifica].divisiones; };
+const setDivisiones = () => { listas.divisiones = listas.divisiones_categorias[formulario.id_categoria_especifica].divisiones }
 
 const seleccionarCategoria = async () => {
-  idCategoria.value = formulario.inf_nivel;
-  fechaPartido.value = '';
-  partidos.value = [];
-  idPartido.value = null;
-};
+  idCategoria.value = formulario.inf_nivel
+  fechaPartido.value = ''
+  partidos.value = []
+  idPartido.value = null
+}
 
 const obtenerPartidos = async () => {
-  partidos.value = [];
-  idPartido.value = null;
-  if (!fechaPartido.value || !idCategoria.value) return;
-  cargandoPartidos.value = true;
+  partidos.value = []
+  idPartido.value = null
+  if (!fechaPartido.value || !idCategoria.value) return
+  cargandoPartidos.value = true
   try {
     const r = await api.get({
       entity: 'designaciones', action: 'obtenerPartidos',
       payload: { fecha: fechaPartido.value, idCategoria: idCategoria.value }
-    });
-    if (r.ok) partidos.value = r.payload;
-  } catch (error) { console.error('Error pidiendo partidos:', error); }
-  finally { cargandoPartidos.value = false; }
-};
+    })
+    if (r.ok) partidos.value = r.payload
+  } catch (error) { console.error('Error pidiendo partidos:', error) }
+  finally { cargandoPartidos.value = false }
+}
 
-watch(() => [formulario.partido_genero, formulario.partido_categoria], pedirCategoriasEspecíficas);
+watch(() => [formulario.partido_genero, formulario.partido_categoria], pedirCategoriasEspecíficas)
 
-const ACEPTA_EXCEL = /\.(xlsx|xls)$/i;
+const ACEPTA_EXCEL = /\.(xlsx|xls)$/i
 
 const asignarArchivoObservacion = (file) => {
-  if (!file) return;
+  if (!file) return
   if (!ACEPTA_EXCEL.test(file.name)) {
-    toast({ titulo: 'Archivo inválido', mensaje: 'Seleccioná un archivo de Excel (.xlsx o .xls).', tipo: 'warning' });
-    return;
+    toast({ titulo: 'Archivo inválido', mensaje: 'Seleccioná un archivo de Excel (.xlsx o .xls).', tipo: 'warning' })
+    return
   }
-  archivoObservacion.value = file;
-  analizarArchivo(file);
-};
+  archivoObservacion.value = file
+  analizarArchivo(file)
+}
 
 const seleccionarArchivoObservacion = (event) => {
-  asignarArchivoObservacion(event.target.files[0] || null);
-  event.target.value = '';
-};
+  asignarArchivoObservacion(event.target.files[0] || null)
+  event.target.value = ''
+}
 
 const soltarArchivoObservacion = (event) => {
-  arrastrandoArchivo.value = false;
-  asignarArchivoObservacion(event.dataTransfer.files[0] || null);
-};
+  arrastrandoArchivo.value = false
+  asignarArchivoObservacion(event.dataTransfer.files[0] || null)
+}
 
-const quitarArchivoObservacion = () => { archivoObservacion.value = null; limpiarPreview(); };
+const quitarArchivoObservacion = () => { archivoObservacion.value = null; limpiarPreview() }
 
 const armarDatosPartido = () => {
-  const datos = { ...formulario };
+  const datos = { ...formulario }
   if (formulario.partido_categoria === 'Mayores') {
-    datos.categoria = 'Mayores';
+    datos.categoria = 'Mayores'
   } else if (formulario.id_categoria_especifica !== '') {
-    datos.categoria = listas.divisiones_categorias[formulario.id_categoria_especifica].categoria;
+    datos.categoria = listas.divisiones_categorias[formulario.id_categoria_especifica].categoria
   }
-  datos.id_categoria = idCategoria.value;
+  datos.id_categoria = idCategoria.value
   // El torneo lo elige el usuario; el back guarda id + nombre. Se descarta la competencia del Excel.
-  datos.id_torneo = formulario.id_torneo;
-  datos.fecha_partido = fechaPartido.value;
-  datos.id_partido = idPartido.value;
-  datos.id_arb1 = partidoSeleccionado.value?.id_arb1 ?? null;
-  datos.id_arb2 = partidoSeleccionado.value?.id_arb2 ?? null;
-  return datos;
-};
+  datos.id_torneo = formulario.id_torneo
+  datos.fecha_partido = fechaPartido.value
+  datos.id_partido = idPartido.value
+  datos.id_arb1 = partidoSeleccionado.value?.id_arb1 ?? null
+  datos.id_arb2 = partidoSeleccionado.value?.id_arb2 ?? null
+  return datos
+}
 
 const cargarObservacionExcel = async () => {
   if (!archivoObservacion.value) {
-    toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el archivo de Excel para continuar.', tipo: 'warning' });
-    return;
+    toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el archivo de Excel para continuar.', tipo: 'warning' })
+    return
   }
   if (!formulario.id_observador) {
-    toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el observador que realizó la observación.', tipo: 'warning' });
-    return;
+    toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el observador que realizó la observación.', tipo: 'warning' })
+    return
   }
   if (!formulario.id_torneo) {
-    toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el torneo.', tipo: 'warning' });
-    return;
+    toast({ titulo: 'Dato Faltante', mensaje: 'Seleccioná el torneo.', tipo: 'warning' })
+    return
   }
   // No se permite cargar si la planilla tiene errores o no se pudo leer el puntaje final.
   if (!previewValida.value) {
-    toast({ titulo: 'Planilla con errores', mensaje: errorLectura.value || 'Revisá la vista previa: no se puede cargar hasta corregir los errores del Excel.', tipo: 'danger' });
-    return;
+    toast({ titulo: 'Planilla con errores', mensaje: errorLectura.value || 'Revisá la vista previa: no se puede cargar hasta corregir los errores del Excel.', tipo: 'danger' })
+    return
   }
-  procesandoCarga.value = true;
+  procesandoCarga.value = true
   try {
-    const formData = new FormData();
-    formData.append('archivo', archivoObservacion.value);
-    formData.append('datos', JSON.stringify(armarDatosPartido()));
+    const formData = new FormData()
+    formData.append('archivo', archivoObservacion.value)
+    formData.append('datos', JSON.stringify(armarDatosPartido()))
 
-    const res = await api.postFile({ entity: 'observaciones', action: 'cargarObservacionExcel', payload: formData });
+    const res = await api.postFile({ entity: 'observaciones', action: 'cargarObservacionExcel', payload: formData })
 
     if (res && res.ok) {
-      toast({ titulo: 'Guardado', mensaje: 'La observación se ha registrado.', tipo: 'success' });
-      await obtenerObservaciones();
-      cerrarModalCarga();
+      toast({ titulo: 'Guardado', mensaje: 'La observación se ha registrado.', tipo: 'success' })
+      await obtenerObservaciones()
+      cerrarModalCarga()
     } else {
-      toast({ titulo: 'Error al guardar', mensaje: res?.message || 'No se pudo procesar el envío.', tipo: 'danger' });
+      toast({ titulo: 'Error al guardar', mensaje: res?.message || 'No se pudo procesar el envío.', tipo: 'danger' })
     }
   } catch {
-    toast({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Fallo de conexión.', tipo: 'danger' })
   } finally {
-    procesandoCarga.value = false;
+    procesandoCarga.value = false
   }
-};
+}
 
 const reiniciarFormularioCarga = () => {
   Object.assign(formulario, {
     partido_genero: '', partido_categoria: '', inf_nivel: '', id_categoria_especifica: '', categoria: '', id_observador: '', id_torneo: ''
-  });
-  idCategoria.value = null;
-  fechaPartido.value = '';
-  partidos.value = [];
-  idPartido.value = null;
-  archivoObservacion.value = null;
-  arrastrandoArchivo.value = false;
-  limpiarPreview();
-};
+  })
+  idCategoria.value = null
+  fechaPartido.value = ''
+  partidos.value = []
+  idPartido.value = null
+  archivoObservacion.value = null
+  arrastrandoArchivo.value = false
+  limpiarPreview()
+}
 
 /* ====================================================
    ESTADO MODAL 4: DETALLE DE LA OBSERVACIÓN
    ==================================================== */
-const mostrarDetalle = ref(false);
-const detalle = ref(null);
-const cargandoDetalleId = ref(null);
-const tabDetalle = ref('puntajes');
-const descargandoId = ref(null);
+const mostrarDetalle = ref(false)
+const detalle = ref(null)
+const cargandoDetalleId = ref(null)
+const tabDetalle = ref('puntajes')
+const descargandoId = ref(null)
 
 // Descarga el Excel de una observación puntual (solo observador/coordinador/admin en el back).
 const descargarObservacionExcel = async (obs) => {
-  if (!obs) return;
-  descargandoId.value = obs.id;
+  if (!obs) return
+  descargandoId.value = obs.id
   try {
     await api.getFile(
       { entity: 'observaciones', action: 'descargarEvaluacionExcel', payload: { id: obs.id } },
       `observacion_${obs.id}.xlsx`
-    );
+    )
   } catch (e) {
-    console.error('descargarObservacionExcel:', e);
-    toast({ titulo: 'Error', mensaje: 'No se pudo descargar el Excel de la observación.', tipo: 'danger' });
+    console.error('descargarObservacionExcel:', e)
+    toast({ titulo: 'Error', mensaje: 'No se pudo descargar el Excel de la observación.', tipo: 'danger' })
   } finally {
-    descargandoId.value = null;
+    descargandoId.value = null
   }
-};
+}
 
 // Comentarios por categoría (Comment sheet): los ítems tipo categoría que tienen comentario.
 const comentariosPorCategoria = computed(() => {
-  if (!detalle.value || !Array.isArray(detalle.value.items)) return [];
+  if (!detalle.value || !Array.isArray(detalle.value.items)) return []
   return detalle.value.items
     .filter(it => it.tipo === 'categoria' && it.comentario)
-    .map(it => ({ categoria: it.categoria, comentario: it.comentario }));
-});
+    .map(it => ({ categoria: it.categoria, comentario: it.comentario }))
+})
 
 const tieneComentarios = computed(() => {
-  if (!detalle.value) return false;
+  if (!detalle.value) return false
   return comentariosPorCategoria.value.length > 0
     || !!detalle.value.prioridad_mejora_1
     || !!detalle.value.prioridad_mejora_2
     || !!detalle.value.prioridad_mejora_resto
-    || !!detalle.value.influencia_resultado_comentarios;
-});
+    || !!detalle.value.influencia_resultado_comentarios
+})
 
 const verDetalle = async (obs) => {
-  cargandoDetalleId.value = obs.id;
-  detalle.value = null;
-  tabDetalle.value = 'puntajes';
+  cargandoDetalleId.value = obs.id
+  detalle.value = null
+  tabDetalle.value = 'puntajes'
   try {
-    const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluacion', payload: { id: obs.id } });
+    const res = await api.get({ entity: 'observaciones', action: 'obtenerEvaluacion', payload: { id: obs.id } })
     if (res && res.ok && res.payload) {
-      detalle.value = { ...obs, ...res.payload };
-      mostrarDetalle.value = true;
+      detalle.value = { ...obs, ...res.payload }
+      mostrarDetalle.value = true
     } else {
-      toast({ titulo: 'Error', mensaje: 'No se pudo cargar el detalle.', tipo: 'danger' });
+      toast({ titulo: 'Error', mensaje: 'No se pudo cargar el detalle.', tipo: 'danger' })
     }
   } catch {
-    toast({ titulo: 'Error', mensaje: 'Fallo al cargar el detalle.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Fallo al cargar el detalle.', tipo: 'danger' })
   } finally {
-    cargandoDetalleId.value = null;
+    cargandoDetalleId.value = null
   }
-};
+}
 
-const cerrarDetalle = () => { mostrarDetalle.value = false; detalle.value = null; };
+const cerrarDetalle = () => { mostrarDetalle.value = false; detalle.value = null }
 
 /* ====================================================
    ESTADO MODAL 3: HISTORIAL DEL ÁRBITRO
    ==================================================== */
-const mostrarModalHistorial = ref(false);
-const historialSeleccionado = ref([]);
-const observadorHistorialNombre = ref('');
+const mostrarModalHistorial = ref(false)
+const historialSeleccionado = ref([])
+const observadorHistorialNombre = ref('')
 
 const verHistorial = (obs) => {
   // Agrupa el historial por observador: todas las observaciones que cargó
   // el mismo observador que la fila seleccionada.
-  observadorHistorialNombre.value = obs.nombre_observador || 'Observador';
+  observadorHistorialNombre.value = obs.nombre_observador || 'Observador'
   historialSeleccionado.value = observaciones.value
     .filter(o => o.nombre_observador === obs.nombre_observador)
-    .sort((a, b) => b.id - a.id);
-  mostrarModalHistorial.value = true;
-};
+    .sort((a, b) => b.id - a.id)
+  mostrarModalHistorial.value = true
+}
 
 /* ====================================================
    UTILIDADES COMPARTIDAS
    ==================================================== */
-const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); filtros.anio = anioActual() };
+const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); filtros.anio = anioActual() }
 
 const exportarExcel = async () => {
   if (observacionesFiltradas.value.length === 0) {
-    toast({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' }); return;
+    toast({ titulo: 'Tabla Vacía', mensaje: 'No hay datos para exportar.', tipo: 'warning' }); return
   }
   const datosExportar = observacionesFiltradas.value.map(o => ({
     'ID': o.id, 'Fecha': formatearFecha(o.fecha_partido), 'Observador': o.nombre_observador, 'Árbitros': o.arbitros,
     'Competencia': nombreTorneo(o), 'Categoría': o.categoria_edad, 'Local': o.equipo_local, 'Visitante': o.equipo_visitante,
     'Estado': etiquetaEstado(o.estado), 'Cargado': o.creado_en
-  }));
+  }))
 
-  const wb = new (await cargarExcelJS()).Workbook();
-  const ws = wb.addWorksheet('Observaciones');
+  const wb = new (await cargarExcelJS()).Workbook()
+  const ws = wb.addWorksheet('Observaciones')
 
-  const claves = Object.keys(datosExportar[0] || {});
-  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 18 }));
-  datosExportar.forEach(fila => ws.addRow(fila));
-  if (claves.length) ws.getRow(1).font = { bold: true };
+  const claves = Object.keys(datosExportar[0] || {})
+  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 18 }))
+  datosExportar.forEach(fila => ws.addRow(fila))
+  if (claves.length) ws.getRow(1).font = { bold: true }
 
-  const buffer = await wb.xlsx.writeBuffer();
+  const buffer = await wb.xlsx.writeBuffer()
   const blob = new Blob([buffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'Reporte_Observaciones.xlsx';
-  link.click();
-  URL.revokeObjectURL(url);
-};
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Reporte_Observaciones.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
+}
 
 // Inicialización
 onMounted(() => {
-  obtenerObservaciones();
-  obtenerTorneos();
-});
+  obtenerObservaciones()
+  obtenerTorneos()
+})
 </script>
 
 <style scoped>

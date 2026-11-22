@@ -50,7 +50,7 @@
 
 <script setup>
 import { ref, computed, inject } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { normalizarTexto } from '@/utils/texto'
 import { FOTO_POR_DEFECTO } from '@/composables/useCursoArbitro'
 import ListaModulos from '@/components/comunes/ListaModulos.vue'

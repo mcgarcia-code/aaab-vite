@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { useHead } from '@vueuse/head';
+import { useHead } from '@unhead/vue'
 
 // SEO e Identidad de la página
 useHead({
@@ -66,7 +66,7 @@ useHead({
       content: 'https://arbitroshandball.com.ar/logo.png',
     }
   ],
-});
+})
 </script>
 
 <style scoped>

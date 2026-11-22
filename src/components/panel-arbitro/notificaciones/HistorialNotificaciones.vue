@@ -104,74 +104,74 @@
 <script setup>
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { ref, onMounted, computed} from 'vue';
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
+import { ref, onMounted, computed} from 'vue'
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Historial de Notificaciones | AAAB',
   meta: [
     { name: 'description', content: 'Historial completo de notificaciones del árbitro.' }
   ],
-});
+})
 
-const notificaciones = ref([]);
-const cargando = ref(true);
+const notificaciones = ref([])
+const cargando = ref(true)
 
-const paginaActual = ref(1);
-const registrosPorPagina = ref(10);
+const paginaActual = ref(1)
+const registrosPorPagina = ref(10)
 
-const totalPaginas = computed(() => Math.ceil(notificaciones.value.length / registrosPorPagina.value) || 1);
+const totalPaginas = computed(() => Math.ceil(notificaciones.value.length / registrosPorPagina.value) || 1)
 
 const notificacionesPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina.value;
-  return notificaciones.value.slice(inicio, inicio + registrosPorPagina.value);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina.value
+  return notificaciones.value.slice(inicio, inicio + registrosPorPagina.value)
+})
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   if (window.innerWidth <= 768) {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
-};
+}
 
 const getEstiloBadge = (tipo) => {
   switch (tipo) {
-    case 'success': return 'bg-success-subtle text-success border border-success-subtle';
-    case 'danger': return 'bg-danger-subtle text-danger border border-danger-subtle';
-    case 'warning': return 'bg-warning-subtle text-dark border border-warning';
-    case 'info': return 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle';
-    default: return 'bg-secondary-subtle text-secondary border border-secondary-subtle';
+    case 'success': return 'bg-success-subtle text-success border border-success-subtle'
+    case 'danger': return 'bg-danger-subtle text-danger border border-danger-subtle'
+    case 'warning': return 'bg-warning-subtle text-dark border border-warning'
+    case 'info': return 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle'
+    default: return 'bg-secondary-subtle text-secondary border border-secondary-subtle'
   }
-};
+}
 
 const getIcono = (tipo) => {
   switch (tipo) {
-    case 'success': return 'bi-check-circle';
-    case 'danger': return 'bi-exclamation-octagon';
-    case 'warning': return 'bi-exclamation-triangle';
-    case 'info': return 'bi-info-circle';
-    default: return 'bi-bell';
+    case 'success': return 'bi-check-circle'
+    case 'danger': return 'bi-exclamation-octagon'
+    case 'warning': return 'bi-exclamation-triangle'
+    case 'info': return 'bi-info-circle'
+    default: return 'bi-bell'
   }
-};
+}
 
 const cargarHistorial = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
-    const res = await api.get({ entity: 'notificaciones', action: 'obtenerNotificaciones' });
+    const res = await api.get({ entity: 'notificaciones', action: 'obtenerNotificaciones' })
     if (res.ok) {
-      notificaciones.value = res.payload;
+      notificaciones.value = res.payload
     }
   } catch (error) {
-    console.error('Error obteniendo historial de notificaciones', error);
+    console.error('Error obteniendo historial de notificaciones', error)
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 onMounted(() => {
-  cargarHistorial();
-});
+  cargarHistorial()
+})
 </script>
 
 <style scoped>

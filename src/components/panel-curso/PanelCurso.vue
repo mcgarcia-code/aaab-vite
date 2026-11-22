@@ -142,7 +142,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, provide, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import EditorFotoPerfil from '@/components/comunes/EditorFotoPerfil.vue'
 import { auth } from '@/api/auth'
 import ToastNotificacion from '@/components/ToastNotificacion.vue'

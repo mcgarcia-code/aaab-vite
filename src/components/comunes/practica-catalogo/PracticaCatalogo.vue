@@ -257,7 +257,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { fechaHoraDMA, MESES } from '@/utils/fechas'
 import { usePracticaCatalogo, UMBRAL_APROBADO, CANTIDADES_PREGUNTAS, textoNumeroPregunta } from '@/composables/usePracticaCatalogo'

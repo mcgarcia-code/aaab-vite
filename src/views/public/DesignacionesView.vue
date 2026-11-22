@@ -96,7 +96,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import designacionesImg from '@/assets/fotos/designaciones-mobile.png'
 
@@ -128,23 +128,23 @@ const fetchDesignaciones = async () => {
     const res = await api.get({
       entity: 'designaciones',
       action: 'obtenerHistorialDesignaciones'
-    });
+    })
 
     const lista = Array.isArray(res.payload) ? res.payload : []
     const principal = lista.find(item => item.semanaAtras === 0)
 
     if (principal) {
-      designacionPrincipal.value = principal;
-      historialDesignaciones.value = lista.filter(item => item.semanaAtras !== 0).slice(0, 4);
+      designacionPrincipal.value = principal
+      historialDesignaciones.value = lista.filter(item => item.semanaAtras !== 0).slice(0, 4)
     } else {
       // Sin designaciones publicadas para la semana en curso: mostramos
       // "Próximamente" y el historial completo de semanas anteriores.
-      designacionPrincipal.value = null;
+      designacionPrincipal.value = null
       etiquetaPlaceholder.value = 'Próximamente'
-      historialDesignaciones.value = lista.slice(0, 4);
+      historialDesignaciones.value = lista.slice(0, 4)
     }
   } catch (error) {
-    console.error("Error cargando designaciones", error);
+    console.error("Error cargando designaciones", error)
     etiquetaPlaceholder.value = 'Información no disponible'
   }
 }
@@ -164,7 +164,7 @@ const descargar = async (semanaAtras) => {
   }
 }
 
-onMounted(fetchDesignaciones);
+onMounted(fetchDesignaciones)
 </script>
 
 <style scoped>

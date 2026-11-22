@@ -231,11 +231,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, inject } from 'vue';
+import { ref, onMounted, watch, inject } from 'vue'
 import { fechaDMA } from '@/utils/fechas'
-import { api } from '@/api/api';
-import { auth } from '../../../api/auth';
-import { useHead } from '@vueuse/head';
+import { api } from '@/api/api'
+import { auth } from '@/api/auth'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Mis Datos | AAAB',
@@ -244,33 +244,33 @@ useHead({
     { property: 'og:title', content: 'Mis Datos | AAAB' },
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' }
   ],
-});
+})
 
 // Inyectamos el notificador global
-const toast = inject('toast');
-const arbitro = ref(auth.getUser() || {});
+const toast = inject('toast')
+const arbitro = ref(auth.getUser() || {})
 
 // Los <input type="date"> solo aceptan 'YYYY-MM-DD'. Si la fecha viene con hora
 // (ej: '1990-05-15 00:00:00') el input queda en blanco y podría perderse al guardar.
 // Recortamos a los primeros 10 caracteres para que se muestre y edite bien.
-const soloFecha = (f) => (f ? String(f).slice(0, 10) : '');
-arbitro.value.fecha_nacimiento = soloFecha(arbitro.value.fecha_nacimiento);
-arbitro.value.fecha_ingreso = soloFecha(arbitro.value.fecha_ingreso);
+const soloFecha = (f) => (f ? String(f).slice(0, 10) : '')
+arbitro.value.fecha_nacimiento = soloFecha(arbitro.value.fecha_nacimiento)
+arbitro.value.fecha_ingreso = soloFecha(arbitro.value.fecha_ingreso)
 
-const opciones = ref({ provincias: [], localidades: [] });
-const localidadesFiltradas = ref([]);
-const cargando = ref(false);
-const solicitudCambio = ref('');
-const historialRectificaciones = ref([]);
-const nuevaPassword = ref('');
-const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
+const opciones = ref({ provincias: [], localidades: [] })
+const localidadesFiltradas = ref([])
+const cargando = ref(false)
+const solicitudCambio = ref('')
+const historialRectificaciones = ref([])
+const nuevaPassword = ref('')
+const edicionAbierta = ref(arbitro.value.permitir_edicion == 1)
 
 const mostrarFechaArg = (fecha) => fechaDMA(fecha)
 
 const generoLabel = (genero) => {
-    const labels = { masculino: 'Masculino', femenino: 'Femenino', x: 'X', otro: 'Otro' };
-    return labels[genero] || '-';
-};
+    const labels = { masculino: 'Masculino', femenino: 'Femenino', x: 'X', otro: 'Otro' }
+    return labels[genero] || '-'
+}
 
 const obtenerHistorialRectificaciones = async () => {
     try {
@@ -278,50 +278,50 @@ const obtenerHistorialRectificaciones = async () => {
             entity: 'datos_personales',
             action: 'obtenerHistorial',
             payload: { tipo: "datos_personales" }
-        });
-        historialRectificaciones.value = res.payload || [];
+        })
+        historialRectificaciones.value = res.payload || []
     } catch (error) {
-        console.error("Error al cargar el historial de rectificaciones", error);
+        console.error("Error al cargar el historial de rectificaciones", error)
     }
-};
+}
 
 onMounted(async () => {
-    obtenerHistorialRectificaciones();
+    obtenerHistorialRectificaciones()
 
     if (edicionAbierta.value) {
         try {
             const { payload } = await api.getCacheado({
                 entity: 'localidades',
                 action: 'obtenerProvinciasLocalidades'
-            });
+            })
 
-            opciones.value = payload;
+            opciones.value = payload
 
             if (arbitro.value.provincia) {
-                filtrarLocalidades(arbitro.value.provincia);
+                filtrarLocalidades(arbitro.value.provincia)
             }
         } catch (error) {
-            console.error("Error al cargar provincias/localidades", error);
+            console.error("Error al cargar provincias/localidades", error)
         }
     }
-});
+})
 
 const filtrarLocalidades = (provId) => {
-    if (!opciones.value.localidades || !edicionAbierta.value) return;
+    if (!opciones.value.localidades || !edicionAbierta.value) return
 
     localidadesFiltradas.value = opciones.value.localidades.filter(
         l => l.provincia_id == provId
-    );
-};
+    )
+}
 
 watch(() => arbitro.value.provincia, (nuevoId) => {
     if (edicionAbierta.value) {
-        filtrarLocalidades(nuevoId);
+        filtrarLocalidades(nuevoId)
     }
-});
+})
 
 const guardarCambios = async () => {
-    cargando.value = true;
+    cargando.value = true
     try {
         const res = await api.post({
             entity: 'datos_personales',
@@ -336,25 +336,25 @@ const guardarCambios = async () => {
               titulo: '¡Perfil Actualizado!',
               mensaje: 'Tus datos se guardaron correctamente en el legajo.',
               tipo: 'success'
-            });
-            auth.updateUser(arbitro.value);
+            })
+            auth.updateUser(arbitro.value)
         } else {
             toast({
               titulo: 'Error',
               mensaje: res?.payload?.message || res?.message || 'No se pudieron actualizar los datos.',
               tipo: 'danger'
-            });
+            })
         }
     } catch {
         toast({
           titulo: 'Error de Conexión',
           mensaje: 'No pudimos conectar con el servidor para guardar los cambios.',
           tipo: 'danger'
-        });
+        })
     } finally {
-        cargando.value = false;
+        cargando.value = false
     }
-};
+}
 
 const cambiarPassword = async () => {
     if (nuevaPassword.value.length < 6) {
@@ -362,11 +362,11 @@ const cambiarPassword = async () => {
           titulo: 'Clave demasiado corta',
           mensaje: 'La contraseña debe tener al menos 6 caracteres.',
           tipo: 'danger'
-        });
-        return;
+        })
+        return
     }
 
-    cargando.value = true;
+    cargando.value = true
     try {
         const res = await api.post({
             entity: 'arbitros',
@@ -374,35 +374,35 @@ const cambiarPassword = async () => {
             payload: {
                 password: nuevaPassword.value
             }
-        });
+        })
         if (res.ok) {
             toast({
               titulo: '¡Clave Actualizada!',
               mensaje: 'Tu nueva contraseña ha sido guardada con éxito.',
               tipo: 'success'
-            });
-            nuevaPassword.value = '';
+            })
+            nuevaPassword.value = ''
         } else {
             toast({
               titulo: 'Error',
               mensaje: res.payload?.message || 'No se pudo cambiar la contraseña.',
               tipo: 'danger'
-            });
+            })
         }
     } catch {
         toast({
           titulo: 'Error',
           mensaje: 'Hubo un problema al intentar actualizar tu contraseña.',
           tipo: 'danger'
-        });
+        })
     } finally {
-        cargando.value = false;
+        cargando.value = false
     }
-};
+}
 
 const enviarSolicitudRectificacion = async () => {
-    if (!solicitudCambio.value.trim()) return;
-    cargando.value = true;
+    if (!solicitudCambio.value.trim()) return
+    cargando.value = true
     try {
         const res = await api.post({
             entity: 'datos_personales',
@@ -411,29 +411,29 @@ const enviarSolicitudRectificacion = async () => {
                 tipo: "datos_personales",
                 mensaje: "RECTIFICACIÓN: " + solicitudCambio.value
             }
-        });
+        })
 
         if (res.ok || res.success) {
             toast({
                 titulo: 'Solicitud Enviada',
                 mensaje: 'Tu pedido de rectificación fue enviado a la asociación.',
                 tipo: 'success'
-            });
-            solicitudCambio.value = '';
-            await obtenerHistorialRectificaciones();
+            })
+            solicitudCambio.value = ''
+            await obtenerHistorialRectificaciones()
         } else {
-            throw new Error();
+            throw new Error()
         }
     } catch {
         toast({
             titulo: 'Error',
             mensaje: 'No se pudo enviar la solicitud.',
             tipo: 'danger'
-        });
+        })
     } finally {
-        cargando.value = false;
+        cargando.value = false
     }
-};
+}
 </script>
 
 <style scoped>

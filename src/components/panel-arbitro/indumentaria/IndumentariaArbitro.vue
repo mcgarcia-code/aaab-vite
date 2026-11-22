@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import ListaModulos from '@/components/comunes/ListaModulos.vue'
 
 useHead({

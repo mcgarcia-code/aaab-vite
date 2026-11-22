@@ -74,7 +74,7 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
 import { cargarHtml2canvas } from '@/utils/librerias'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import QrcodeVue from 'qrcode.vue'
 import logo from '@/assets/fotos/logo.png'
 import { usePerfilCurso } from '@/composables/usePerfilCurso'

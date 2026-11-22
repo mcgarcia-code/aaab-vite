@@ -105,7 +105,7 @@
 <script setup>
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, computed, onMounted, inject } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
 import { formatoNota } from '@/composables/useExamenesCurso'

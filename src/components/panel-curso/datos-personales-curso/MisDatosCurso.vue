@@ -124,7 +124,7 @@
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, reactive, computed, onMounted, inject } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import { GENEROS_CURSO, MODALIDADES_CURSO, DOMINIO_USUARIO_CURSO, textoDtClubes } from '@/composables/useCursoArbitro'
 import { fechaDMA } from '@/utils/fechas'

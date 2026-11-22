@@ -133,29 +133,29 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed } from 'vue'
 
 const props = defineProps({
   preview: { type: Object, default: null },
   analizando: { type: Boolean, default: false },
   errorLectura: { type: String, default: null },
-});
+})
 
-const tab = ref('puntajes');
+const tab = ref('puntajes')
 
 const comentariosPorCategoria = computed(() => {
-  if (!props.preview || !Array.isArray(props.preview.items)) return [];
+  if (!props.preview || !Array.isArray(props.preview.items)) return []
   return props.preview.items
     .filter(it => it.tipo === 'categoria' && it.comentario)
-    .map(it => ({ categoria: it.categoria, comentario: it.comentario }));
-});
+    .map(it => ({ categoria: it.categoria, comentario: it.comentario }))
+})
 
 const tieneComentarios = computed(() => {
-  if (!props.preview) return false;
+  if (!props.preview) return false
   return comentariosPorCategoria.value.length > 0
     || !!props.preview.prioridad_mejora_1
     || !!props.preview.prioridad_mejora_2
     || !!props.preview.prioridad_mejora_resto
-    || !!props.preview.influencia_resultado_comentarios;
-});
+    || !!props.preview.influencia_resultado_comentarios
+})
 </script>

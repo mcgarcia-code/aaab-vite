@@ -54,11 +54,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { auth } from '../../api/auth';
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { auth } from '@/api/auth'
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Iniciar Sesión | AAAB',
@@ -69,13 +69,13 @@ useHead({
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
     { property: 'og:type', content: 'website' }
   ],
-});
+})
 
-const router = useRouter();
-const email = ref('');
-const password = ref('');
-const errorMsg = ref('');
-const cargando = ref(false);
+const router = useRouter()
+const email = ref('')
+const password = ref('')
+const errorMsg = ref('')
+const cargando = ref(false)
 
 // Si se llegó al login porque la sesión se cerró sola, se avisa el motivo una vez
 const MENSAJES_SESION = {
@@ -86,12 +86,12 @@ const avisoSesion = ref(MENSAJES_SESION[auth.tomarAvisoSesion()] || '')
 
 const iniciarSesion = async () => {
   if (!email.value || !password.value) {
-    errorMsg.value = "Completá todos los campos";
-    return;
+    errorMsg.value = "Completá todos los campos"
+    return
   }
 
-  cargando.value = true;
-  errorMsg.value = '';
+  cargando.value = true
+  errorMsg.value = ''
 
   try {
     const res = await api.post({
@@ -101,33 +101,33 @@ const iniciarSesion = async () => {
         email: email.value.trim(),
         password: password.value
       }
-    });
+    })
 
     if (res.ok && res.payload.success) {
       const userData = {
         arbitro: res.payload.arbitro,
         token: res.payload.token
       }
-      auth.setUser(userData);
+      auth.setUser(userData)
 
       if (res.payload.admin) {
-        router.push('/panel-admin');
+        router.push('/panel-admin')
       } else if (res.payload.curso) {
-        router.push('/panel-curso');
+        router.push('/panel-curso')
       } else {
-        router.push('/panel-arbitro');
+        router.push('/panel-arbitro')
       }
 
     } else {
-      errorMsg.value = res.payload?.message || res.message || "Credenciales incorrectas";
+      errorMsg.value = res.payload?.message || res.message || "Credenciales incorrectas"
     }
   } catch (err) {
-    console.error("Error en login:", err);
-    errorMsg.value = "Error de conexión con el servidor";
+    console.error("Error en login:", err)
+    errorMsg.value = "Error de conexión con el servidor"
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 </script>
 
 <style scoped>

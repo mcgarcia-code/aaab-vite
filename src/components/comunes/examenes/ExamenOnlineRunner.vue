@@ -1,5 +1,5 @@
 <template>
-  <!-- Utilizamos clases responsivas para los paddings desde Bootstrap -->
+  <Teleport to="body">
   <div class="examen-overlay px-2 py-3 px-md-4 py-md-5">
 
     <div class="examen-box mx-auto bg-white w-100 shadow p-3 p-md-4 p-lg-5 animate__animated animate__fadeIn">
@@ -162,26 +162,33 @@
 
     </div>
   </div>
+  </Teleport>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
+
+// Examen online a pantalla completa, común al panel árbitro (examen de reunión / asamblea)
+// y al panel curso. Cada panel le indica su backend:
+// - entity + acciones { iniciar, guardar, finalizar }: archivo PHP y funciones del examen
+// - identificador: lo que identifica el examen en cada pedido (ej. { idEvento: 12 } o { idExamen: 3 })
+const props = defineProps({
+  entity: { type: String, required: true },
+  acciones: { type: Object, required: true },
+  identificador: { type: Object, required: true },
+  titulo: { type: String, default: 'Examen online' },
+  tituloPagina: { type: String, default: 'Examen Online | AAAB' },
+  descripcionPagina: { type: String, default: 'Examen online de la AAAB.' }
+})
 
 useHead({
-  title: 'Examen Online | AAAB',
-  meta: [
-    { name: 'description', content: 'Examen online para los árbitros de la AAAB.' }
-  ],
+  title: props.tituloPagina,
+  meta: [{ name: 'description', content: props.descripcionPagina }]
 })
 
 const notificar = inject('notificar')
-
-const props = defineProps({
-  idEvento: { type: [Number, String], required: true },
-  titulo: { type: String, default: 'Examen Asamblea General - Reunión Mensual' }
-})
 const emit = defineEmits(['terminar', 'salir'])
 
 // fase: 'cargando' | 'examen' | 'enviando' | 'resultado' | 'error'
@@ -239,10 +246,10 @@ async function guardarAvance() {
   let res
   try {
     res = await api.post({
-      entity: 'examen_online',
-      action: 'guardarAvance',
+      entity: props.entity,
+      action: props.acciones.guardar,
       payload: {
-        idEvento: props.idEvento,
+        ...props.identificador,
         indice: indice.value,
         seleccion: seleccion.value,
         tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
@@ -268,9 +275,9 @@ async function iniciar() {
   fase.value = 'cargando'
   try {
     const res = await api.post({
-      entity: 'examen_online',
-      action: 'iniciarOReanudar',
-      payload: { idEvento: props.idEvento }
+      entity: props.entity,
+      action: props.acciones.iniciar,
+      payload: { ...props.identificador }
     })
     if (res?.ok === false) throw new Error(res.message || 'No se pudo iniciar el examen')
     const data = res?.payload ?? res
@@ -304,10 +311,10 @@ async function finalizar() {
   fase.value = 'enviando'
   try {
     const res = await api.post({
-      entity: 'examen_online',
-      action: 'finalizarExamen',
+      entity: props.entity,
+      action: props.acciones.finalizar,
       payload: {
-        idEvento: props.idEvento,
+        ...props.identificador,
         seleccion: seleccion.value,
         tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
       }
@@ -362,8 +369,15 @@ const relojTexto = computed(() => {
 
 function letra(i) { return String.fromCharCode(97 + i) }
 
-onMounted(iniciar)
-onBeforeUnmount(() => { detenerReloj(); detenerTrackingVisibilidad() })
+onMounted(() => {
+  document.body.style.overflow = 'hidden'
+  iniciar()
+})
+onBeforeUnmount(() => {
+  document.body.style.overflow = ''
+  detenerReloj()
+  detenerTrackingVisibilidad()
+})
 </script>
 
 <style scoped>

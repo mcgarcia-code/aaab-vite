@@ -169,7 +169,7 @@ import { fechaArg } from '@/utils/fechas'
 import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Datos Personales | AAAB',
@@ -179,98 +179,98 @@ useHead({
     { property: 'og:image', content: 'https://arbitroshandball.com.ar/logo.png' },
     { property: 'og:type', content: 'website' }
   ],
-});
+})
 
-const listaCompleta = ref([]);
-const cargando = ref(false);
-const mostrarFiltrosMobile = ref(false);
+const listaCompleta = ref([])
+const cargando = ref(false)
+const mostrarFiltrosMobile = ref(false)
 const filtros = reactive({
   apellido: '', nombre: '', es_activo: '', grupo: '', subgrupo: '', fecha_nacimiento: '', celular: '', dni: '', email: ''
-});
-const paginaActual = ref(1);
-const registrosPorPagina = 10;
-const grupos = ref([]);
+})
+const paginaActual = ref(1)
+const registrosPorPagina = 10
+const grupos = ref([])
 
 // Opciones de filtro derivadas de los grupos reales (misma fuente que GruposAdmin),
 // asi se sincronizan solos y no hay que hardcodear cada grupo/subgrupo.
 const opcionesGrupo = computed(() => {
-  const vistos = [];
+  const vistos = []
   for (const g of grupos.value) {
-    const nombre = String(g.nombre || '').trim();
-    if (nombre && !vistos.includes(nombre)) vistos.push(nombre);
+    const nombre = String(g.nombre || '').trim()
+    if (nombre && !vistos.includes(nombre)) vistos.push(nombre)
   }
-  return vistos.sort((a, b) => a.localeCompare(b, 'es'));
-});
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'))
+})
 
 const opcionesSubgrupo = computed(() => {
-  const vistos = [];
+  const vistos = []
   for (const g of grupos.value) {
-    const sub = String(g.subgrupo || '').trim();
-    if (sub && !vistos.includes(sub)) vistos.push(sub);
+    const sub = String(g.subgrupo || '').trim()
+    if (sub && !vistos.includes(sub)) vistos.push(sub)
   }
-  return vistos.sort((a, b) => a.localeCompare(b, 'es'));
-});
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'))
+})
 
 const obtenerGrupos = async () => {
   try {
-    const { payload } = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' });
-    grupos.value = Array.isArray(payload) ? payload : [];
+    const { payload } = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' })
+    grupos.value = Array.isArray(payload) ? payload : []
   } catch (error) {
-    console.error('Error al obtener grupos:', error);
+    console.error('Error al obtener grupos:', error)
   }
-};
+}
 
 const cargarDatos = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
-    const { payload } = await api.get({ entity: 'arbitros', action: 'getArbitros' });
+    const { payload } = await api.get({ entity: 'arbitros', action: 'getArbitros' })
     if (payload) {
       listaCompleta.value = payload.sort((a, b) => {
-        const nombreA = `${a.apellido || ''} ${a.nombre || ''}`.trim().toLowerCase();
-        const nombreB = `${b.apellido || ''} ${b.nombre || ''}`.trim().toLowerCase();
-        return nombreA.localeCompare(nombreB, 'es');
-      });
+        const nombreA = `${a.apellido || ''} ${a.nombre || ''}`.trim().toLowerCase()
+        const nombreB = `${b.apellido || ''} ${b.nombre || ''}`.trim().toLowerCase()
+        return nombreA.localeCompare(nombreB, 'es')
+      })
     }
   } catch (err) {
-    console.error("Error cargando datos:", err);
+    console.error("Error cargando datos:", err)
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 const mostrarFechaArg = (fecha) => fechaArg(fecha)
 
 const datosFiltrados = computed(() => {
   return listaCompleta.value.filter(a => {
     return Object.keys(filtros).every(key => {
-      if (!filtros[key]) return true;
-      const busqueda = filtros[key].toLowerCase();
-      if (key === 'es_activo') return (busqueda === 'si' ? a.es_activo == 1 : a.es_activo == 0);
+      if (!filtros[key]) return true
+      const busqueda = filtros[key].toLowerCase()
+      if (key === 'es_activo') return (busqueda === 'si' ? a.es_activo == 1 : a.es_activo == 0)
       // Grupo y subgrupo salen de un select: comparacion exacta.
-      if (key === 'grupo' || key === 'subgrupo') return normalizarTexto(a[key]) === normalizarTexto(filtros[key]);
-      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
-    });
-  });
-});
+      if (key === 'grupo' || key === 'subgrupo') return normalizarTexto(a[key]) === normalizarTexto(filtros[key])
+      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]))
+    })
+  })
+})
 
-const totalFiltrados = computed(() => datosFiltrados.value.length);
-const totalPaginas = computed(() => Math.ceil(totalFiltrados.value / registrosPorPagina) || 1);
+const totalFiltrados = computed(() => datosFiltrados.value.length)
+const totalPaginas = computed(() => Math.ceil(totalFiltrados.value / registrosPorPagina) || 1)
 const datosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return datosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return datosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
+})
 
 // NUEVA FUNCIÓN: Cambiar página y scrollear arriba SOLO EN MOBILE
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   setTimeout(() => {
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, 50);
-};
+  }, 50)
+}
 
-const limpiarFiltros = () => Object.keys(filtros).forEach(key => filtros[key] = '');
+const limpiarFiltros = () => Object.keys(filtros).forEach(key => filtros[key] = '')
 
 const exportarExcel = async () => {
   const datosExcel = datosFiltrados.value.map(a => ({
@@ -284,33 +284,33 @@ const exportarExcel = async () => {
     'CELULAR': a.celular,
     'DNI': a.dni,
     'EMAIL': a.email
-  }));
+  }))
 
-  const wb = new (await cargarExcelJS()).Workbook();
-  const ws = wb.addWorksheet('Datos');
+  const wb = new (await cargarExcelJS()).Workbook()
+  const ws = wb.addWorksheet('Datos')
 
-  const claves = Object.keys(datosExcel[0] || {});
-  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 18 }));
-  datosExcel.forEach(fila => ws.addRow(fila));
-  if (claves.length) ws.getRow(1).font = { bold: true };
+  const claves = Object.keys(datosExcel[0] || {})
+  ws.columns = claves.map(clave => ({ header: clave, key: clave, width: 18 }))
+  datosExcel.forEach(fila => ws.addRow(fila))
+  if (claves.length) ws.getRow(1).font = { bold: true }
 
-  const buffer = await wb.xlsx.writeBuffer();
+  const buffer = await wb.xlsx.writeBuffer()
   const blob = new Blob([buffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'Reporte_Consulta.xlsx';
-  link.click();
-  URL.revokeObjectURL(url);
-};
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'Reporte_Consulta.xlsx'
+  link.click()
+  URL.revokeObjectURL(url)
+}
 
-watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 onMounted(() => {
-  cargarDatos();
-  obtenerGrupos();
-});
+  cargarDatos()
+  obtenerGrupos()
+})
 </script>
 
 <style scoped>

@@ -530,7 +530,7 @@ import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h }
 import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import { etiquetaCreadorReunion, textoCreacionReunion } from '@/composables/useCreadorReunion'
 

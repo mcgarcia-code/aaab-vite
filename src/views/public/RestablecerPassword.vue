@@ -37,35 +37,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
+import { ref, onMounted, inject } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Crear Nueva Contraseña | AAAB'
-});
+})
 
-const router = useRouter();
-const route = useRoute();
+const router = useRouter()
+const route = useRoute()
 
-const token = ref('');
-const password = ref('');
-const confirmPassword = ref('');
-const cargando = ref(false);
+const token = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const cargando = ref(false)
 
-const notificar = inject('notificar');
+const notificar = inject('notificar')
 
 onMounted(() => {
-  token.value = route.query.token || '';
+  token.value = route.query.token || ''
   if (!token.value) {
     notificar({
       titulo: 'Enlace inválido',
       mensaje: 'Faltan credenciales de seguridad en la URL.',
       tipo: 'danger'
-    });
+    })
   }
-});
+})
 
 const guardarNuevaPassword = async () => {
   if (!token.value) {
@@ -73,8 +73,8 @@ const guardarNuevaPassword = async () => {
       titulo: 'Atención',
       mensaje: 'No se detectó un token de seguridad válido.',
       tipo: 'danger'
-    });
-    return;
+    })
+    return
   }
 
   if (password.value !== confirmPassword.value) {
@@ -82,8 +82,8 @@ const guardarNuevaPassword = async () => {
       titulo: 'Error',
       mensaje: 'Las contraseñas no coinciden.',
       tipo: 'danger'
-    });
-    return;
+    })
+    return
   }
 
   if (password.value.length < 6) {
@@ -91,11 +91,11 @@ const guardarNuevaPassword = async () => {
       titulo: 'Contraseña muy corta',
       mensaje: 'La contraseña debe tener al menos 6 caracteres.',
       tipo: 'danger'
-    });
-    return;
+    })
+    return
   }
 
-  cargando.value = true;
+  cargando.value = true
 
   try {
     const res = await api.post({
@@ -105,35 +105,35 @@ const guardarNuevaPassword = async () => {
         token: token.value,
         password: password.value
       }
-    });
+    })
 
     if (res.ok && res.payload.success) {
       notificar({
         titulo: '¡Contraseña Actualizada!',
         mensaje: 'Tu clave se cambió con éxito. Ya podés ingresar con tu nueva contraseña.',
         tipo: 'success'
-      });
+      })
 
-      router.push('/login-arbitro');
+      router.push('/login-arbitro')
 
     } else {
       notificar({
         titulo: 'Error',
         mensaje: res.payload?.message || "El enlace expiró o es inválido.",
         tipo: 'danger'
-      });
+      })
     }
   } catch (err) {
-    console.error("Error al restablecer:", err);
+    console.error("Error al restablecer:", err)
     notificar({
       titulo: 'Error de conexión',
       mensaje: 'No se pudo conectar con el servidor.',
       tipo: 'danger'
-    });
+    })
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 </script>
 
 <style scoped>

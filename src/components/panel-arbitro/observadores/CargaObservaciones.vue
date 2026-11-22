@@ -213,8 +213,8 @@
 <script setup>
 import { ref, reactive, computed, watch, inject, onMounted } from 'vue'
 import { api } from '@/api/api'
-import { auth } from '../../../api/auth'
-import { useHead } from '@vueuse/head'
+import { auth } from '@/api/auth'
+import { useHead } from '@unhead/vue'
 import VistaPreviaObservacion from '@/components/VistaPreviaObservacion.vue'
 import { useVistaPreviaObservacion } from '@/composables/useVistaPreviaObservacion'
 

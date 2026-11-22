@@ -1,6 +1,6 @@
 // src/api/api.js
 import { auth } from './auth'
-export const BASE_URL = import.meta.env.VITE_BASE_URL;
+export const BASE_URL = import.meta.env.VITE_BASE_URL
 
 function obtenerHeaders() {
   const headers = {
@@ -168,6 +168,10 @@ function postInvalidando(datos, tipo) {
   invalidarCache(datos.entity)
   return request('POST', datos, tipo)
 }
+
+// Lista que vino en la respuesta, o [] si el pedido falló o el payload no es una lista.
+// Evita guardar el objeto de error ({ ok: false, payload: null }) como si fuera la lista
+export const listaDe = (res) => (res?.ok !== false && Array.isArray(res?.payload) ? res.payload : [])
 
 export const api = {
   get: (params = {}) => request('GET', params),

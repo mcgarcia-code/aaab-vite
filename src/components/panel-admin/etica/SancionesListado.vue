@@ -442,9 +442,9 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { cargarExcelJS } from '@/utils/librerias'
-import { api } from '@/api/api'
-import { auth } from '../../../api/auth'
-import { useHead } from '@vueuse/head'
+import { api, listaDe } from '@/api/api'
+import { auth } from '@/api/auth'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
@@ -495,11 +495,11 @@ const adjuntosDescargo = ref(0)
 
 const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 const revertirFechaParaInput = (fecha) => {
-  if (!fecha) return '';
-  if (fecha.includes('-')) return fecha;
-  const partes = fecha.split('/');
-  if (partes.length !== 3) return '';
-  return `${partes[2]}-${partes[1]}-${partes[0]}`;
+  if (!fecha) return ''
+  if (fecha.includes('-')) return fecha
+  const partes = fecha.split('/')
+  if (partes.length !== 3) return ''
+  return `${partes[2]}-${partes[1]}-${partes[0]}`
 }
 
 // Extrae el año a 4 dígitos desde 'desde' (soporta DD/MM/AA, DD/MM/AAAA y YYYY-MM-DD)
@@ -518,28 +518,28 @@ const extraerAnio = (fecha) => {
 }
 
 const obtenerTextoEstado = (estado_dinamico) => {
-  if (estado_dinamico == 1) return 'VIGENTE';
-  if (estado_dinamico == 2) return 'CUMPLIDA';
-  if (estado_dinamico == 3) return 'EN PROCESO';
-  if (estado_dinamico == 4) return 'ANULADA';
-  return 'DESCONOCIDO';
+  if (estado_dinamico == 1) return 'VIGENTE'
+  if (estado_dinamico == 2) return 'CUMPLIDA'
+  if (estado_dinamico == 3) return 'EN PROCESO'
+  if (estado_dinamico == 4) return 'ANULADA'
+  return 'DESCONOCIDO'
 }
 
 const obtenerClaseEstado = (estado_dinamico, es_sm = false) => {
 
-  const prefijo = es_sm ? 'badge-status-sm' : 'badge-status';
+  const prefijo = es_sm ? 'badge-status-sm' : 'badge-status'
 
-  if (estado_dinamico == 1) return `${prefijo} vigente`;
-  if (estado_dinamico == 2) return `${prefijo} cumplida`;
-  if (estado_dinamico == 3) return `${prefijo} en-proceso`;
-  if (estado_dinamico == 4) return `${prefijo} anulada`;
-  return `${prefijo}`;
+  if (estado_dinamico == 1) return `${prefijo} vigente`
+  if (estado_dinamico == 2) return `${prefijo} cumplida`
+  if (estado_dinamico == 3) return `${prefijo} en-proceso`
+  if (estado_dinamico == 4) return `${prefijo} anulada`
+  return `${prefijo}`
 }
 
 const obtenerClaseTextoSancion = (estado_dinamico) => {
-  if (estado_dinamico == 4) return 'text-anulada fw-bold';
-  if (estado_dinamico == 3) return 'text-en-proceso fw-bold';
-  return 'text-danger fw-bold';
+  if (estado_dinamico == 4) return 'text-anulada fw-bold'
+  if (estado_dinamico == 3) return 'text-en-proceso fw-bold'
+  return 'text-danger fw-bold'
 }
 
 // Años presentes en las sanciones (tomados de 'desde'), ordenados de mayor a menor
@@ -564,16 +564,16 @@ const sancionesFiltradas = computed(() => {
     if (filtros.anio) matchAnio = extraerAnio(s.desde) === filtros.anio
 
     let matchEst = true
-    if (filtros.estado === 'vigente') matchEst = (s.estado_dinamico == 1);
-    if (filtros.estado === 'cumplida') matchEst = (s.estado_dinamico == 2);
-    if (filtros.estado === 'en_proceso') matchEst = (s.estado_dinamico == 3);
-    if (filtros.estado === 'anulada') matchEst = (s.estado_dinamico == 4);
+    if (filtros.estado === 'vigente') matchEst = (s.estado_dinamico == 1)
+    if (filtros.estado === 'cumplida') matchEst = (s.estado_dinamico == 2)
+    if (filtros.estado === 'en_proceso') matchEst = (s.estado_dinamico == 3)
+    if (filtros.estado === 'anulada') matchEst = (s.estado_dinamico == 4)
 
     let matchNuevos = true
-    if (filtros.conNuevos) matchNuevos = (s.tiene_nuevos && s.estado_dinamico == 3);
+    if (filtros.conNuevos) matchNuevos = (s.tiene_nuevos && s.estado_dinamico == 3)
 
     return matchArb && matchBusqueda && matchDes && matchHas && matchAnio && matchEst && matchNuevos
-  }).sort((a, b) => b.id - a.id);
+  }).sort((a, b) => b.id - a.id)
 })
 
 const totalPaginas = computed(() => Math.ceil(sancionesFiltradas.value.length / registrosPorPagina) || 1)
@@ -586,19 +586,19 @@ watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   setTimeout(() => {
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, 50);
-};
+  }, 50)
+}
 
 const fetchSanciones = async () => {
   cargando.value = true
   try {
     const res = await api.get({ entity: 'sanciones', action: 'obtenerSanciones' })
-    sanciones.value = res.payload ?? res ?? []
+    sanciones.value = listaDe(res)
   } catch (err) {
     console.error("Error:", err)
   } finally {
@@ -724,46 +724,46 @@ const verHistorialArbitro = async (sancion) => {
 // ----- MÉTODOS DE DESCARGO (CHAT) -----
 
 const gestionarDescargo = async (sancion) => {
-  sancionActiva.value = sancion;
-  nuevoMensaje.value = '';
-  adjuntosDescargo.value = 0;
-  mostrarModalDescargo.value = true;
-  await cargarDescargos(sancion.id);
+  sancionActiva.value = sancion
+  nuevoMensaje.value = ''
+  adjuntosDescargo.value = 0
+  mostrarModalDescargo.value = true
+  await cargarDescargos(sancion.id)
 
   if (sancion.tiene_nuevos) {
-      sancion.tiene_nuevos = false;
+      sancion.tiene_nuevos = false
   }
-};
+}
 
 const cargarDescargos = async (id_sancion) => {
-  cargandoDescargos.value = true;
+  cargandoDescargos.value = true
   try {
-    const res = await api.get({ entity: 'sanciones', action: 'obtenerDescargos', payload: { id_sancion } });
-    historialDescargos.value = res.payload || res || [];
+    const res = await api.get({ entity: 'sanciones', action: 'obtenerDescargos', payload: { id_sancion } })
+    historialDescargos.value = listaDe(res)
   } catch (error) {
-    console.error(error);
+    console.error(error)
   } finally {
-    cargandoDescargos.value = false;
+    cargandoDescargos.value = false
   }
-};
+}
 
 const convertirABase64 = (file) => {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve({ nombre: file.name, base64: reader.result });
-    reader.onerror = error => reject(error);
-  });
-};
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve({ nombre: file.name, base64: reader.result })
+    reader.onerror = error => reject(error)
+  })
+}
 
 const enviarDescargoAdmin = async () => {
-  enviandoDescargo.value = true;
+  enviandoDescargo.value = true
 
-  let archivosConvertidos = [];
+  let archivosConvertidos = []
   if (fileInput.value && fileInput.value.files.length > 0) {
     for (let i = 0; i < fileInput.value.files.length; i++) {
-      const base64Data = await convertirABase64(fileInput.value.files[i]);
-      archivosConvertidos.push(base64Data);
+      const base64Data = await convertirABase64(fileInput.value.files[i])
+      archivosConvertidos.push(base64Data)
     }
   }
 
@@ -773,27 +773,27 @@ const enviarDescargoAdmin = async () => {
     emisor_id: adminLogueado.value.id,
     mensaje: nuevoMensaje.value,
     archivos: archivosConvertidos
-  };
+  }
 
   try {
-    const res = await api.post({ entity: 'sanciones', action: 'enviarDescargo', payload });
+    const res = await api.post({ entity: 'sanciones', action: 'enviarDescargo', payload })
     if (res?.success !== false) {
-      nuevoMensaje.value = '';
-      if (fileInput.value) fileInput.value.value = '';
-      adjuntosDescargo.value = 0;
-      await cargarDescargos(sancionActiva.value.id);
+      nuevoMensaje.value = ''
+      if (fileInput.value) fileInput.value.value = ''
+      adjuntosDescargo.value = 0
+      await cargarDescargos(sancionActiva.value.id)
     }
   } catch {
-    toast({ titulo: 'Error', mensaje: 'No se pudo enviar la respuesta', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'No se pudo enviar la respuesta', tipo: 'danger' })
   } finally {
-    enviandoDescargo.value = false;
+    enviandoDescargo.value = false
   }
-};
+}
 
 const cerrarSancionDesdeDescargo = () => {
-  mostrarModalDescargo.value = false;
-  editarSancion(sancionActiva.value);
-};
+  mostrarModalDescargo.value = false
+  editarSancion(sancionActiva.value)
+}
 
 const exportarExcel = async () => {
   const data = sancionesFiltradas.value.map(s => ({
@@ -827,7 +827,7 @@ const exportarExcel = async () => {
 }
 
 const limpiarFiltros = () => {
-  filtros.arbitro = ''; filtros.busqueda = ''; filtros.desde = ''; filtros.hasta = ''; filtros.anio = anioActual(); filtros.estado = ''; filtros.conNuevos = false;
+  filtros.arbitro = ''; filtros.busqueda = ''; filtros.desde = ''; filtros.hasta = ''; filtros.anio = anioActual(); filtros.estado = ''; filtros.conNuevos = false
 }
 
 onMounted(fetchSanciones)

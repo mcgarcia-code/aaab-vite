@@ -36,18 +36,18 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue';
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
+import { ref, inject } from 'vue'
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Recuperar Contraseña | AAAB'
-});
+})
 
-const dni = ref('');
-const cargando = ref(false);
+const dni = ref('')
+const cargando = ref(false)
 
-const notificar = inject('notificar');
+const notificar = inject('notificar')
 
 const solicitarRecuperacion = async () => {
   if (!dni.value) {
@@ -55,44 +55,44 @@ const solicitarRecuperacion = async () => {
       titulo: 'Atención',
       mensaje: 'Por favor, ingresá tu DNI.',
       tipo: 'danger'
-    });
-    return;
+    })
+    return
   }
 
-  cargando.value = true;
+  cargando.value = true
 
   try {
     const res = await api.post({
       entity: 'login_arbitro',
       action: 'solicitarRecuperacion',
       payload: { dni: dni.value.trim() }
-    });
+    })
 
     if (res.ok && res.payload.success) {
       notificar({
         titulo: '¡Correo enviado!',
         mensaje: 'Si el DNI está registrado, recibirás un correo con las instrucciones.',
         tipo: 'success'
-      });
-      dni.value = '';
+      })
+      dni.value = ''
     } else {
       notificar({
         titulo: 'Error',
         mensaje: res.payload?.message || "Ocurrió un error al procesar la solicitud.",
         tipo: 'danger'
-      });
+      })
     }
   } catch (err) {
-    console.error("Error al solicitar recuperación:", err);
+    console.error("Error al solicitar recuperación:", err)
     notificar({
       titulo: 'Error de conexión',
       mensaje: "No se pudo conectar con el servidor.",
       tipo: 'danger'
-    });
+    })
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 </script>
 
 <style scoped>

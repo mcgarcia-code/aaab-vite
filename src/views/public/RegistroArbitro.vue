@@ -250,7 +250,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, inject, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
 import BuscadorClub from '@/components/BuscadorClub.vue'

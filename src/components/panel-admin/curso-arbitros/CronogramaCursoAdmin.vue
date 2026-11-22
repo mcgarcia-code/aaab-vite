@@ -313,7 +313,7 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'

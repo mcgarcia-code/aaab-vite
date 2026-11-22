@@ -159,74 +159,74 @@ const fetchSanciones = async () => {
   } catch (err) {
     console.error(err)
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
 }
 
 // Función para ajustar registros según tamaño de pantalla
 const chequearResolucion = () => {
-  const esMobile = window.innerWidth <= 768;
-  const nuevaCantidad = esMobile ? 10 : 10;
+  const esMobile = window.innerWidth <= 768
+  const nuevaCantidad = esMobile ? 10 : 10
 
   // Solo reseteamos la página si la cantidad realmente cambió para evitar parpadeos
   if (registrosPorPagina.value !== nuevaCantidad) {
-    registrosPorPagina.value = nuevaCantidad;
-    paginaActual.value = 1;
+    registrosPorPagina.value = nuevaCantidad
+    paginaActual.value = 1
   }
 }
 
 const sancionesFiltradas = computed(() => {
-    let res = sanciones.value;
+    let res = sanciones.value
 
     // 1. Filtrado por texto
     if (filtro.value) {
-        const textoBusqueda = filtro.value.toLowerCase();
+        const textoBusqueda = filtro.value.toLowerCase()
         res = res.filter(s =>
           (s.arbitro || '').toLowerCase().includes(textoBusqueda) ||
           (s.motivo || '').toLowerCase().includes(textoBusqueda)
-        );
+        )
     }
 
     // 2. Ordenamiento: Vigentes (1) y En Proceso (3) arriba. Cumplidas (2) abajo.
     return res.sort((a, b) => {
-        const pesoA = (a.estado_dinamico == 1 || a.estado_dinamico == 3) ? 0 : 1;
-        const pesoB = (b.estado_dinamico == 1 || b.estado_dinamico == 3) ? 0 : 1;
-        return pesoA - pesoB;
-    });
-});
+        const pesoA = (a.estado_dinamico == 1 || a.estado_dinamico == 3) ? 0 : 1
+        const pesoB = (b.estado_dinamico == 1 || b.estado_dinamico == 3) ? 0 : 1
+        return pesoA - pesoB
+    })
+})
 
 // Paginación Calculada (Usando .value en registrosPorPagina)
-const totalPaginas = computed(() => Math.ceil(sancionesFiltradas.value.length / registrosPorPagina.value) || 1);
+const totalPaginas = computed(() => Math.ceil(sancionesFiltradas.value.length / registrosPorPagina.value) || 1)
 
 const sancionesPaginadas = computed(() => {
-    const inicio = (paginaActual.value - 1) * registrosPorPagina.value;
-    return sancionesFiltradas.value.slice(inicio, inicio + registrosPorPagina.value);
-});
+    const inicio = (paginaActual.value - 1) * registrosPorPagina.value
+    return sancionesFiltradas.value.slice(inicio, inicio + registrosPorPagina.value)
+})
 
 // Cambio de página con scroll hacia arriba en móviles
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   setTimeout(() => {
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, 50);
+  }, 50)
 }
 
 // Reiniciar a la página 1 si el usuario escribe en el buscador
 watch(filtro, () => {
-    paginaActual.value = 1;
-});
+    paginaActual.value = 1
+})
 
 onMounted(() => {
-  fetchSanciones();
-  chequearResolucion();
-  window.addEventListener('resize', chequearResolucion);
-});
+  fetchSanciones()
+  chequearResolucion()
+  window.addEventListener('resize', chequearResolucion)
+})
 
 onUnmounted(() => {
-  window.removeEventListener('resize', chequearResolucion);
-});
+  window.removeEventListener('resize', chequearResolucion)
+})
 </script>
 
 <style scoped>

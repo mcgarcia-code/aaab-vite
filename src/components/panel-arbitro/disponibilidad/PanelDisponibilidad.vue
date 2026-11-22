@@ -244,10 +244,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, inject } from 'vue';
-import { auth } from '../../../api/auth';
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head'
+import { ref, computed, onMounted, watch, inject } from 'vue'
+import { auth } from '@/api/auth'
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
 import { useOpcionesHandball, separarCategorias, unirCategorias, MAX_LARGO_CATEGORIAS } from '@/composables/useOpcionesHandball'
 import { validarFamiliares, familiaresParaEnviar, familiaresDesdeServidor } from '@/composables/useFamiliares'
 import SeccionFamiliares from '@/components/SeccionFamiliares.vue'
@@ -263,13 +263,13 @@ useHead({
 })
 
 // Inyección del notificador global
-const toast = inject('toast');
-const arbitro = ref(auth.getUser() || {});
-const solicitudCambio = ref('');
-const historialRectificaciones = ref([]);
-const cargando = ref(false);
-const movilidadSeleccionada = ref([]);
-const edicionAbierta = ref(arbitro.value.permitir_edicion == 1);
+const toast = inject('toast')
+const arbitro = ref(auth.getUser() || {})
+const solicitudCambio = ref('')
+const historialRectificaciones = ref([])
+const cargando = ref(false)
+const movilidadSeleccionada = ref([])
+const edicionAbierta = ref(arbitro.value.permitir_edicion == 1)
 
 // La columna juega_handball es enum('SI','NO'): la base la devuelve en mayúscula
 // y el formulario trabaja con 'si' / 'no'.
@@ -319,47 +319,47 @@ const obtenerHistorialRectificaciones = async () => {
             entity: 'datos_personales',
             action: 'obtenerHistorial',
             payload: { tipo: "disponibilidad" }
-        });
+        })
 
-        historialRectificaciones.value = res.payload || [];
+        historialRectificaciones.value = res.payload || []
     } catch (error) {
-        console.error("Error al cargar el historial de rectificaciones", error);
+        console.error("Error al cargar el historial de rectificaciones", error)
     }
-};
+}
 
 onMounted(() => {
-  obtenerHistorialRectificaciones();
+  obtenerHistorialRectificaciones()
   cargarFamiliares()
   cargarVinculos()
   if (arbitro.value.movilidad) {
-    movilidadSeleccionada.value = arbitro.value.movilidad.split(',');
+    movilidadSeleccionada.value = arbitro.value.movilidad.split(',')
   }
-});
+})
 
 watch(movilidadSeleccionada, (nuevo) => {
-  arbitro.value.movilidad = nuevo.join(',');
-});
+  arbitro.value.movilidad = nuevo.join(',')
+})
 
 watch(() => arbitro.value.disponibilidad_sabado, (val) => {
   if (val !== 'OTROS') {
-    arbitro.value.disponibilidad_sabado_desde = null;
-    arbitro.value.disponibilidad_sabado_hasta = null;
+    arbitro.value.disponibilidad_sabado_desde = null
+    arbitro.value.disponibilidad_sabado_hasta = null
   }
-});
+})
 
 watch(() => arbitro.value.disponibilidad_domingo, (val) => {
   if (val !== 'OTROS') {
-    arbitro.value.disponibilidad_domingo_desde = null;
-    arbitro.value.disponibilidad_domingo_hasta = null;
+    arbitro.value.disponibilidad_domingo_desde = null
+    arbitro.value.disponibilidad_domingo_hasta = null
   }
-});
+})
 
 watch(() => arbitro.value.juega_handball, (nuevoValor) => {
   if (nuevoValor === 'no') {
-    arbitro.value.donde_juega = null;
-    arbitro.value.categoria_handball = null;
+    arbitro.value.donde_juega = null
+    arbitro.value.categoria_handball = null
   }
-});
+})
 
 // Al cambiar de club, la categoría anterior deja de ser válida
 watch(() => arbitro.value.donde_juega, (nuevo, anterior) => {
@@ -441,7 +441,7 @@ const guardarCambios = async () => {
       toast({ titulo: 'Revisá ex-jugador / club', mensaje: errorVinculos, tipo: 'danger' })
       return
     }
-    cargando.value = true;
+    cargando.value = true
     try {
         const res = await api.post({
             entity: 'datos_personales',
@@ -452,7 +452,7 @@ const guardarCambios = async () => {
         })
         // El api devuelve { ok, payload }: el resultado real del PHP viene en res.payload
         if (res?.ok && res.payload?.success) {
-            auth.updateUser(arbitro.value);
+            auth.updateUser(arbitro.value)
             try {
               await guardarFamiliares()
             } catch (e) {
@@ -470,28 +470,28 @@ const guardarCambios = async () => {
               titulo: '¡Perfil Actualizado!',
               mensaje: 'Tus datos se guardaron correctamente en el legajo.',
               tipo: 'success'
-            });
+            })
         } else {
             toast({
               titulo: 'Error',
               mensaje: res?.payload?.message || res?.message || 'No se pudieron actualizar los datos.',
               tipo: 'danger'
-            });
+            })
         }
     } catch {
         toast({
           titulo: 'Error de Conexión',
           mensaje: 'No pudimos conectar con el servidor para guardar los cambios.',
           tipo: 'danger'
-        });
+        })
     } finally {
-        cargando.value = false;
+        cargando.value = false
     }
-};
+}
 
 const enviarSolicitudRectificacion = async () => {
-    if (!solicitudCambio.value.trim()) return;
-    cargando.value = true;
+    if (!solicitudCambio.value.trim()) return
+    cargando.value = true
     try {
         const res = await api.post({
             entity: 'datos_personales',
@@ -500,29 +500,29 @@ const enviarSolicitudRectificacion = async () => {
                 tipo: "disponibilidad",
                 mensaje: "RECTIFICACIÓN: " + solicitudCambio.value
             }
-        });
+        })
 
         if (res.ok || res.success) {
             toast({
                 titulo: 'Solicitud Enviada',
                 mensaje: 'Tu pedido de rectificación fue enviado a la asociación.',
                 tipo: 'success'
-            });
-            solicitudCambio.value = '';
-            await obtenerHistorialRectificaciones();
+            })
+            solicitudCambio.value = ''
+            await obtenerHistorialRectificaciones()
         } else {
-            throw new Error();
+            throw new Error()
         }
     } catch {
         toast({
             titulo: 'Error',
             mensaje: 'No se pudo enviar la solicitud.',
             tipo: 'danger'
-        });
+        })
     } finally {
-        cargando.value = false;
+        cargando.value = false
     }
-};
+}
 </script>
 
 <style scoped>

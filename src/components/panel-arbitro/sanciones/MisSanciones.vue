@@ -282,160 +282,160 @@
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { ref, reactive, computed, onMounted, watch, inject } from 'vue';
-import { auth } from '../../../api/auth';
-import { api }  from '@/api/api';
-import ModalBase from '@/components/ModalBase.vue';
+import { ref, reactive, computed, onMounted, watch, inject } from 'vue'
+import { auth } from '@/api/auth'
+import { api, listaDe } from '@/api/api'
+import ModalBase from '@/components/ModalBase.vue'
 
-const toast = inject('toast');
+const toast = inject('toast')
 
-const arbitro = ref(auth.getUser() || {});
-const sanciones = ref([]);
-const cargando = ref(false);
+const arbitro = ref(auth.getUser() || {})
+const sanciones = ref([])
+const cargando = ref(false)
 
-const filtros = reactive({ motivo_articulo: '', sancion: '', desde: '', hasta: '', estado: '' });
-const mostrarFiltrosMobile = ref(false);
-const paginaActual = ref(1);
-const registrosPorPagina = 10;
+const filtros = reactive({ motivo_articulo: '', sancion: '', desde: '', hasta: '', estado: '' })
+const mostrarFiltrosMobile = ref(false)
+const paginaActual = ref(1)
+const registrosPorPagina = 10
 
 // Chat / Descargos
-const mostrarModalDescargo = ref(false);
-const sancionActiva = ref(null);
-const historialDescargos = ref([]);
-const cargandoDescargos = ref(false);
-const nuevoMensaje = ref('');
-const enviandoDescargo = ref(false);
-const fileInput = ref(null);
-const adjuntosDescargo = ref(0);
+const mostrarModalDescargo = ref(false)
+const sancionActiva = ref(null)
+const historialDescargos = ref([])
+const cargandoDescargos = ref(false)
+const nuevoMensaje = ref('')
+const enviandoDescargo = ref(false)
+const fileInput = ref(null)
+const adjuntosDescargo = ref(0)
 
 // Modal Apelar
-const mostrarModalApelar = ref(false);
+const mostrarModalApelar = ref(false)
 
-const limpiarFiltros = () => { filtros.motivo_articulo = ''; filtros.sancion = ''; filtros.desde = ''; filtros.hasta = ''; filtros.estado = ''; };
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+const limpiarFiltros = () => { filtros.motivo_articulo = ''; filtros.sancion = ''; filtros.desde = ''; filtros.hasta = ''; filtros.estado = '' }
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 const obtenerTextoEstado = (estado_dinamico) => {
-  if (estado_dinamico == 1) return 'VIGENTE';
-  if (estado_dinamico == 2) return 'CUMPLIDA';
-  if (estado_dinamico == 3) return 'EN PROCESO';
-  if (estado_dinamico == 4) return 'ANULADA';
-  return 'DESCONOCIDO';
+  if (estado_dinamico == 1) return 'VIGENTE'
+  if (estado_dinamico == 2) return 'CUMPLIDA'
+  if (estado_dinamico == 3) return 'EN PROCESO'
+  if (estado_dinamico == 4) return 'ANULADA'
+  return 'DESCONOCIDO'
 }
 
 const obtenerClaseEstado = (estado_dinamico, es_sm = false) => {
-  const prefijo = es_sm ? 'badge-status-sm' : 'badge-status';
-  if (estado_dinamico == 1) return `${prefijo} rechazada`;
-  if (estado_dinamico == 2) return `${prefijo} aprobada`;
-  if (estado_dinamico == 3) return `${prefijo} pendiente text-dark`;
-  if (estado_dinamico == 4) return `${prefijo} anulada`;
-  return `${prefijo}`;
+  const prefijo = es_sm ? 'badge-status-sm' : 'badge-status'
+  if (estado_dinamico == 1) return `${prefijo} rechazada`
+  if (estado_dinamico == 2) return `${prefijo} aprobada`
+  if (estado_dinamico == 3) return `${prefijo} pendiente text-dark`
+  if (estado_dinamico == 4) return `${prefijo} anulada`
+  return `${prefijo}`
 }
 
 const obtenerClaseTextoSancion = (estado_dinamico) => {
-  if (estado_dinamico == 4) return 'text-anulada fw-bold';
-  if (estado_dinamico == 3) return 'text-en-proceso fw-bold';
-  return 'text-danger fw-bold';
+  if (estado_dinamico == 4) return 'text-anulada fw-bold'
+  if (estado_dinamico == 3) return 'text-en-proceso fw-bold'
+  return 'text-danger fw-bold'
 }
 
 const sancionesFiltradas = computed(() => {
   return sanciones.value.filter(s => {
-    const matchMotArt = normalizar((s.motivo || '') + ' ' + (s.articulo || '')).includes(normalizar(filtros.motivo_articulo));
-    const matchSan = normalizar(s.sancion || '').includes(normalizar(filtros.sancion));
-    const matchDes = (s.desde_formateada || '').includes(filtros.desde);
-    const matchHas = (s.hasta_formateada || '').includes(filtros.hasta);
+    const matchMotArt = normalizar((s.motivo || '') + ' ' + (s.articulo || '')).includes(normalizar(filtros.motivo_articulo))
+    const matchSan = normalizar(s.sancion || '').includes(normalizar(filtros.sancion))
+    const matchDes = (s.desde_formateada || '').includes(filtros.desde)
+    const matchHas = (s.hasta_formateada || '').includes(filtros.hasta)
 
-    let matchEst = true;
-    if (filtros.estado === 'vigente') matchEst = (s.estado_dinamico == 1);
-    if (filtros.estado === 'cumplida') matchEst = (s.estado_dinamico == 2);
-    if (filtros.estado === 'en_proceso') matchEst = (s.estado_dinamico == 3);
-    if (filtros.estado === 'anulada') matchEst = (s.estado_dinamico == 4);
+    let matchEst = true
+    if (filtros.estado === 'vigente') matchEst = (s.estado_dinamico == 1)
+    if (filtros.estado === 'cumplida') matchEst = (s.estado_dinamico == 2)
+    if (filtros.estado === 'en_proceso') matchEst = (s.estado_dinamico == 3)
+    if (filtros.estado === 'anulada') matchEst = (s.estado_dinamico == 4)
 
-    return matchMotArt && matchSan && matchDes && matchHas && matchEst;
-  });
-});
+    return matchMotArt && matchSan && matchDes && matchHas && matchEst
+  })
+})
 
-const totalPaginas = computed(() => Math.ceil(sancionesFiltradas.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(sancionesFiltradas.value.length / registrosPorPagina) || 1)
 const sancionesPaginadas = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return sancionesFiltradas.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return sancionesFiltradas.value.slice(inicio, inicio + registrosPorPagina)
+})
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
-  setTimeout(() => { if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }); }, 50);
-};
+  paginaActual.value += delta
+  setTimeout(() => { if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }) }, 50)
+}
 
-watch(filtros, () => { paginaActual.value = 1 }, { deep: true });
-watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
+watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 const obtenerSancionesLocales = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
-    const idEmisor = arbitro.value.id || arbitro.value.id_arbitro;
-    const res = await api.get({ entity: 'sanciones', action: 'obtenerSancionesArbitro', payload: { id_arbitro: idEmisor } });
-    sanciones.value = res.payload || [];
+    const idEmisor = arbitro.value.id || arbitro.value.id_arbitro
+    const res = await api.get({ entity: 'sanciones', action: 'obtenerSancionesArbitro', payload: { id_arbitro: idEmisor } })
+    sanciones.value = listaDe(res)
   } catch (err) {
-    console.error(err);
+    console.error(err)
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 // --- Funciones Apelar ---
 const abrirApelar = (sancion) => {
-  sancionActiva.value = sancion;
-  mostrarModalApelar.value = true;
+  sancionActiva.value = sancion
+  mostrarModalApelar.value = true
 }
 
 // --- Funciones de Descargo ---
 const abrirDescargo = async (sancion) => {
-  sancionActiva.value = sancion;
-  nuevoMensaje.value = '';
-  adjuntosDescargo.value = 0;
-  mostrarModalDescargo.value = true;
-  await cargarDescargos(sancion.id);
+  sancionActiva.value = sancion
+  nuevoMensaje.value = ''
+  adjuntosDescargo.value = 0
+  mostrarModalDescargo.value = true
+  await cargarDescargos(sancion.id)
 
   // Limpiamos globo rojo al abrir
   if (sancion.tiene_nuevos) {
-      sancion.tiene_nuevos = false;
+      sancion.tiene_nuevos = false
   }
-};
+}
 
 const cargarDescargos = async (id_sancion) => {
-  cargandoDescargos.value = true;
+  cargandoDescargos.value = true
   try {
-    const res = await api.get({ entity: 'sanciones', action: 'obtenerDescargos', payload: { id_sancion } });
-    historialDescargos.value = res.payload || res || [];
+    const res = await api.get({ entity: 'sanciones', action: 'obtenerDescargos', payload: { id_sancion } })
+    historialDescargos.value = listaDe(res)
   } catch (error) {
-    console.error(error);
+    console.error(error)
   } finally {
-    cargandoDescargos.value = false;
+    cargandoDescargos.value = false
   }
-};
+}
 
 const convertirABase64 = (file) => {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve({ nombre: file.name, base64: reader.result });
-    reader.onerror = error => reject(error);
-  });
-};
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve({ nombre: file.name, base64: reader.result })
+    reader.onerror = error => reject(error)
+  })
+}
 
 const enviarDescargo = async () => {
-  const idEmisor = arbitro.value.id || arbitro.value.id_arbitro;
+  const idEmisor = arbitro.value.id || arbitro.value.id_arbitro
   if (!idEmisor) {
-    toast({ tipo: 'danger', titulo: 'Error', mensaje: 'No se pudo identificar tu usuario. Volvé a ingresar.' });
-    return;
+    toast({ tipo: 'danger', titulo: 'Error', mensaje: 'No se pudo identificar tu usuario. Volvé a ingresar.' })
+    return
   }
 
-  enviandoDescargo.value = true;
+  enviandoDescargo.value = true
 
-  let archivosConvertidos = [];
+  let archivosConvertidos = []
   if (fileInput.value && fileInput.value.files.length > 0) {
     for (let i = 0; i < fileInput.value.files.length; i++) {
-      const base64Data = await convertirABase64(fileInput.value.files[i]);
-      archivosConvertidos.push(base64Data);
+      const base64Data = await convertirABase64(fileInput.value.files[i])
+      archivosConvertidos.push(base64Data)
     }
   }
 
@@ -445,24 +445,24 @@ const enviarDescargo = async () => {
     emisor_id: idEmisor,
     mensaje: nuevoMensaje.value,
     archivos: archivosConvertidos
-  };
+  }
 
   try {
-    const res = await api.post({ entity: 'sanciones', action: 'enviarDescargo', payload });
+    const res = await api.post({ entity: 'sanciones', action: 'enviarDescargo', payload })
     if (res?.success !== false) {
-      nuevoMensaje.value = '';
-      if (fileInput.value) fileInput.value.value = '';
-      adjuntosDescargo.value = 0;
-      await cargarDescargos(sancionActiva.value.id);
+      nuevoMensaje.value = ''
+      if (fileInput.value) fileInput.value.value = ''
+      adjuntosDescargo.value = 0
+      await cargarDescargos(sancionActiva.value.id)
     }
   } catch (error) {
-    console.error("Error al enviar", error);
+    console.error("Error al enviar", error)
   } finally {
-    enviandoDescargo.value = false;
+    enviandoDescargo.value = false
   }
-};
+}
 
-onMounted(obtenerSancionesLocales);
+onMounted(obtenerSancionesLocales)
 </script>
 
 <style scoped>

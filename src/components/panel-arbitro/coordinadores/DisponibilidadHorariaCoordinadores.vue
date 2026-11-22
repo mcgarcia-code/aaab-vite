@@ -314,7 +314,7 @@ import { abrirWhatsApp } from '@/utils/whatsapp'
 import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 
 useHead({

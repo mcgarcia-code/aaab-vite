@@ -1130,8 +1130,8 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, watch, inject, nextTick } from 'vue'
 import { api } from '@/api/api'
-import { auth } from '../../../api/auth'
-import { useHead } from '@vueuse/head'
+import { auth } from '@/api/auth'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 
 useHead({

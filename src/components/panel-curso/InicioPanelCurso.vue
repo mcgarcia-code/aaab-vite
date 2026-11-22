@@ -138,7 +138,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { MESES_CORTOS } from '@/utils/fechas'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import AccesosRapidos from '@/components/comunes/AccesosRapidos.vue'

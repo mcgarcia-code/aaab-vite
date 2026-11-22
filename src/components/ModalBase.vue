@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, computed, ref, watch, nextTick, inject } from 'vue';
+import { onMounted, onUnmounted, computed, ref, watch, nextTick, inject } from 'vue'
 import { claseIcono } from '@/utils/iconos'
 
 const props = defineProps({
@@ -77,10 +77,10 @@ const props = defineProps({
   zIndex: { type: [Number, String], default: 1040 },
   hayCambios: Boolean,
   mensajeCambios: { type: String, default: 'Cargaste datos que todavía no guardaste. Si salís se pierden esos cambios.' }
-});
+})
 
-const emit = defineEmits(['close']);
-const modalRef = ref(null);
+const emit = defineEmits(['close'])
+const modalRef = ref(null)
 const modalId = Symbol('modal')
 const notificar = inject('notificar', null)
 const cerrar = () => {
@@ -94,7 +94,7 @@ const cerrar = () => {
     tipo: 'danger',
     alConfirmar: () => emit('close'),
   })
-};
+}
 
 
 // ESC — solo cierra el modal que está más arriba en la pila
@@ -109,25 +109,25 @@ const handleKeydown = (e) => {
 }
 // FOCUS TRAP
 const handleTab = (e) => {
-  if (!props.show || e.key !== 'Tab') return;
+  if (!props.show || e.key !== 'Tab') return
 
   const focusables = modalRef.value?.querySelectorAll(
     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-  );
+  )
 
-  if (!focusables || focusables.length === 0) return;
+  if (!focusables || focusables.length === 0) return
 
-  const first = focusables[0];
-  const last = focusables[focusables.length - 1];
+  const first = focusables[0]
+  const last = focusables[focusables.length - 1]
 
   if (e.shiftKey && document.activeElement === first) {
-    e.preventDefault();
-    last.focus();
+    e.preventDefault()
+    last.focus()
   } else if (!e.shiftKey && document.activeElement === last) {
-    e.preventDefault();
-    first.focus();
+    e.preventDefault()
+    first.focus()
   }
-};
+}
 
 
 // Observador unificado con contador de modales abiertos
@@ -160,9 +160,9 @@ watch(() => props.show, async (val) => {
 })
 
 onMounted(() => {
-  window.addEventListener('keydown', handleKeydown);
-  window.addEventListener('keydown', handleTab);
-});
+  window.addEventListener('keydown', handleKeydown)
+  window.addEventListener('keydown', handleTab)
+})
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
   window.removeEventListener('keydown', handleTab)
@@ -192,7 +192,7 @@ const modalStyle = computed(() => ({
   flexDirection: 'column',
   background: '#ffffff',
   overflow: 'hidden'
-}));
+}))
 </script>
 
 <style scoped>

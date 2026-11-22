@@ -384,72 +384,64 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
-import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue';
+import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue'
+import { OPCIONES_TORNEO, etiquetaTorneo } from '@/utils/informes'
+import { useDescargasInforme } from '@/composables/useDescargasInforme'
 import { fechaArg, fechaHoraArg } from '@/utils/fechas'
-import { cargarHtml2pdf } from '@/utils/librerias'
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head';
-import ModalBase from '@/components/ModalBase.vue';
-import ModalCargarInforme from '@/components/ModalCargarInforme.vue';
-import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar';
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
+import ModalBase from '@/components/ModalBase.vue'
+import ModalCargarInforme from '@/components/ModalCargarInforme.vue'
+import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
 useHead({
   title: 'Informes | AAAB',
   meta: [{ name: 'description', content: 'Panel de administración de informes de partidos.' }],
-});
+})
 
-const toast = inject('toast');
+const toast = inject('toast')
 
 const DatoDetalle = (props) => h('div', {}, [
   h('label', { class: 'form-label small fw-bold text-muted mb-1' }, props.etiqueta),
   h('div', { class: 'fw-bold text-dark small text-break' }, props.valor)
-]);
-DatoDetalle.props = ['etiqueta', 'valor'];
+])
+DatoDetalle.props = ['etiqueta', 'valor']
 
 /* ====================================================
    CATÁLOGOS
    ==================================================== */
-const opcionesTorneo = [
-  { valor: 'metropolitano_apertura', etiqueta: 'Metropolitano Apertura' },
-  { valor: 'metropolitano_clausura', etiqueta: 'Metropolitano Clausura' },
-  { valor: 'super_8', etiqueta: 'Super 8' },
-  { valor: 'copa_campeones', etiqueta: 'Copa de Campeones' },
-  { valor: 'desarrollo_apertura', etiqueta: 'Torneo Desarrollo Apertura' },
-  { valor: 'desarrollo_clausura', etiqueta: 'Torneo Desarrollo Clausura' },
-  { valor: 'otros', etiqueta: 'Otros' }
-];
-const etiquetaTorneo = (v) => (opcionesTorneo.find(t => t.valor === v) || {}).etiqueta || v;
+const opcionesTorneo = OPCIONES_TORNEO
 
 /* Estados (píldoras) — en admin llegan creado, pendiente, aprobado y desestimado */
 const etiquetaEstado = (estado) => {
-  const e = (estado || '').toLowerCase();
-  if (e === 'desestimado') return 'DESESTIMADO';
-  if (e === 'pendiente') return 'PENDIENTE';
-  if (e === 'creado') return 'CREADO';
-  return 'APROBADO';
-};
+  const e = (estado || '').toLowerCase()
+  if (e === 'desestimado') return 'DESESTIMADO'
+  if (e === 'pendiente') return 'PENDIENTE'
+  if (e === 'creado') return 'CREADO'
+  return 'APROBADO'
+}
 const badgeEstado = (estado) => {
-  const e = (estado || '').toLowerCase();
-  if (e === 'desestimado') return 'estado-pill estado-desestimado';
-  if (e === 'pendiente') return 'estado-pill estado-pendiente';
-  if (e === 'creado') return 'estado-pill estado-creado';
-  return 'estado-pill estado-aprobado';
-};
+  const e = (estado || '').toLowerCase()
+  if (e === 'desestimado') return 'estado-pill estado-desestimado'
+  if (e === 'pendiente') return 'estado-pill estado-pendiente'
+  if (e === 'creado') return 'estado-pill estado-creado'
+  return 'estado-pill estado-aprobado'
+}
 
 /* ====================================================
    ESTADO GLOBAL DE LA TABLA
    ==================================================== */
-const informes = ref([]);
-const cargando = ref(false);
-const guardandoLarry = ref(null);
+const informes = ref([])
+const cargando = ref(false)
+const guardandoLarry = ref(null)
 
-const filtros = reactive({ fecha: '', anio: anioActual(), torneo: '', estado: '', larry: '', encuentro: '', arbitros: '', implicado: '' });
-const mostrarFiltrosMobile = ref(false);
+const filtros = reactive({ fecha: '', anio: anioActual(), torneo: '', estado: '', larry: '', encuentro: '', arbitros: '', implicado: '' })
+const mostrarFiltrosMobile = ref(false)
 
-const paginaActual = ref(1);
-const registrosPorPagina = 10;
+const paginaActual = ref(1)
+const registrosPorPagina = 10
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 /* ====================================================
    FECHAS
@@ -462,162 +454,162 @@ const formatearFechaHora = (fechaHora) => fechaHoraArg(fechaHora, '-')
    FILTROS Y PAGINACIÓN
    ==================================================== */
 const aniosDisponibles = computed(() => {
-  const anios = new Set();
+  const anios = new Set()
   informes.value.forEach(inf => {
-    const anio = (inf.fecha_partido || '').substring(0, 4);
-    if (anio) anios.add(anio);
-  });
-  return conAnioActual(anios);
-});
+    const anio = (inf.fecha_partido || '').substring(0, 4)
+    if (anio) anios.add(anio)
+  })
+  return conAnioActual(anios)
+})
 
 const informesFiltrados = computed(() => {
   return informes.value.filter(inf => {
-    const matchFec = formatearFecha(inf.fecha_partido).includes(filtros.fecha);
-    const matchAnio = !filtros.anio || (inf.fecha_partido || '').substring(0, 4) === filtros.anio;
-    const matchTorneo = !filtros.torneo || inf.torneo === filtros.torneo;
-    const matchEstado = !filtros.estado || (inf.estado || '').toLowerCase() === filtros.estado;
+    const matchFec = formatearFecha(inf.fecha_partido).includes(filtros.fecha)
+    const matchAnio = !filtros.anio || (inf.fecha_partido || '').substring(0, 4) === filtros.anio
+    const matchTorneo = !filtros.torneo || inf.torneo === filtros.torneo
+    const matchEstado = !filtros.estado || (inf.estado || '').toLowerCase() === filtros.estado
     const matchLarry = !filtros.larry
       || (filtros.larry === 'si' && !!inf.cargado_larry)
-      || (filtros.larry === 'no' && !inf.cargado_larry);
-    const matchEnc = normalizar(inf.encuentro).includes(normalizar(filtros.encuentro));
-    const matchArb = normalizar(inf.arbitros).includes(normalizar(filtros.arbitros));
-    const matchImp = normalizar(inf.implicado).includes(normalizar(filtros.implicado));
+      || (filtros.larry === 'no' && !inf.cargado_larry)
+    const matchEnc = normalizar(inf.encuentro).includes(normalizar(filtros.encuentro))
+    const matchArb = normalizar(inf.arbitros).includes(normalizar(filtros.arbitros))
+    const matchImp = normalizar(inf.implicado).includes(normalizar(filtros.implicado))
 
-    return matchFec && matchAnio && matchTorneo && matchEstado && matchLarry && matchEnc && matchArb && matchImp;
-  });
-});
+    return matchFec && matchAnio && matchTorneo && matchEstado && matchLarry && matchEnc && matchArb && matchImp
+  })
+})
 
-const totalPaginas = computed(() => Math.ceil(informesFiltrados.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(informesFiltrados.value.length / registrosPorPagina) || 1)
 const informesPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return informesFiltrados.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return informesFiltrados.value.slice(inicio, inicio + registrosPorPagina)
+})
 
 const cambiarPagina = (delta) => {
   if (paginaActual.value + delta >= 1 && paginaActual.value + delta <= totalPaginas.value) {
-    paginaActual.value += delta;
-    setTimeout(() => { if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }); }, 50);
+    paginaActual.value += delta
+    setTimeout(() => { if (window.innerWidth <= 768) window.scrollTo({ top: 0, behavior: 'smooth' }) }, 50)
   }
-};
+}
 
-const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); filtros.anio = anioActual() };
+const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); filtros.anio = anioActual() }
 
-watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
-watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo; });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
+watch(totalPaginas, (nuevo) => { if (paginaActual.value > nuevo) paginaActual.value = nuevo })
 
 /* ====================================================
    CARGA DE DATOS
    ==================================================== */
 const obtenerInformes = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
-    const res = await api.get({ entity: 'informes', action: 'obtenerInformesAdmin' });
+    const res = await api.get({ entity: 'informes', action: 'obtenerInformesAdmin' })
     if ((res && res.ok) || (res && res.success)) {
-      informes.value = (res.payload || []).sort((a, b) => b.id - a.id);
+      informes.value = (res.payload || []).sort((a, b) => b.id - a.id)
     } else {
-      informes.value = [];
-      toast({ titulo: 'Sin datos', mensaje: 'No se pudieron cargar los informes.', tipo: 'warning' });
+      informes.value = []
+      toast({ titulo: 'Sin datos', mensaje: 'No se pudieron cargar los informes.', tipo: 'warning' })
     }
   } catch {
-    toast({ titulo: 'Error', mensaje: 'Problema al cargar los informes.', tipo: 'danger' });
+    toast({ titulo: 'Error', mensaje: 'Problema al cargar los informes.', tipo: 'danger' })
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 /* ====================================================
    CHECKBOX CARGADO EN LARRY
    ==================================================== */
 const toggleLarry = async (inf, event) => {
-  const nuevoValor = event.target.checked ? 1 : 0;
-  guardandoLarry.value = inf.id;
+  const nuevoValor = event.target.checked ? 1 : 0
+  guardandoLarry.value = inf.id
   try {
     const res = await api.post({
       entity: 'informes',
       action: 'marcarCargadoLarry',
       payload: { id_informe: inf.id, cargado_larry: nuevoValor }
-    });
+    })
     if (res.ok || res.success) {
-      inf.cargado_larry = nuevoValor;
+      inf.cargado_larry = nuevoValor
     } else {
-      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor');
+      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
     }
   } catch (err) {
     // Revertir el checkbox visual
-    event.target.checked = !!inf.cargado_larry;
-    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo actualizar.', tipo: 'danger' });
+    event.target.checked = !!inf.cargado_larry
+    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo actualizar.', tipo: 'danger' })
   } finally {
-    guardandoLarry.value = null;
+    guardandoLarry.value = null
   }
-};
+}
 
 /* ====================================================
    DETALLE
    ==================================================== */
-const mostrarDetalle = ref(false);
-const informeSel = ref(null);
-const verDetalle = (inf) => { informeSel.value = inf; modoEdicion.value = false; mostrarDetalle.value = true; };
-const cerrarDetalle = () => { mostrarDetalle.value = false; informeSel.value = null; modoEdicion.value = false; };
+const mostrarDetalle = ref(false)
+const informeSel = ref(null)
+const verDetalle = (inf) => { informeSel.value = inf; modoEdicion.value = false; mostrarDetalle.value = true }
+const cerrarDetalle = () => { mostrarDetalle.value = false; informeSel.value = null; modoEdicion.value = false }
 
 // Abrir el modal directamente en modo edición desde el botón de la tabla.
 const editarDesdeTabla = (inf) => {
-  informeSel.value = inf;
-  mostrarDetalle.value = true;
-  abrirEdicionAdmin();
-};
+  informeSel.value = inf
+  mostrarDetalle.value = true
+  abrirEdicionAdmin()
+}
 
 /* ====================================================
    EDICIÓN DESDE ADMIN (motivo/descripción + estado)
    Disponible mientras el informe esté 'creado' o 'pendiente'.
    ==================================================== */
-const modoEdicion = ref(false);
-const guardandoAdmin = ref(false);
-const formAdmin = reactive({ motivo_descripcion: '', estado: '' });
-const { hayCambios: hayCambiosEdicion } = useCambiosSinGuardar(formAdmin, () => mostrarDetalle.value && modoEdicion.value);
+const modoEdicion = ref(false)
+const guardandoAdmin = ref(false)
+const formAdmin = reactive({ motivo_descripcion: '', estado: '' })
+const { hayCambios: hayCambiosEdicion } = useCambiosSinGuardar(formAdmin, () => mostrarDetalle.value && modoEdicion.value)
 
 const abrirEdicionAdmin = () => {
-  if (!informeSel.value) return;
-  formAdmin.motivo_descripcion = informeSel.value.motivo_descripcion || '';
-  formAdmin.estado = informeSel.value.estado || 'creado';
-  modoEdicion.value = true;
-};
+  if (!informeSel.value) return
+  formAdmin.motivo_descripcion = informeSel.value.motivo_descripcion || ''
+  formAdmin.estado = informeSel.value.estado || 'creado'
+  modoEdicion.value = true
+}
 
 const cancelarEdicionAdmin = () => {
-  modoEdicion.value = false;
-};
+  modoEdicion.value = false
+}
 
 const guardarCambiosAdmin = async () => {
-  const inf = informeSel.value;
-  if (!inf) return;
+  const inf = informeSel.value
+  if (!inf) return
   if (!formAdmin.motivo_descripcion.trim()) {
-    toast({ titulo: 'Falta el motivo', mensaje: 'El motivo y descripción no puede quedar vacío.', tipo: 'warning' });
-    return;
+    toast({ titulo: 'Falta el motivo', mensaje: 'El motivo y descripción no puede quedar vacío.', tipo: 'warning' })
+    return
   }
 
-  guardandoAdmin.value = true;
+  guardandoAdmin.value = true
   try {
-    const estadoCambio = formAdmin.estado !== inf.estado;
+    const estadoCambio = formAdmin.estado !== inf.estado
 
     // 1) Guardar motivo/descripción (y demás datos que exige el backend)
-    const fd = new FormData();
-    fd.append('id_informe', inf.id);
-    fd.append('torneo', inf.torneo || '');
-    fd.append('implicado', inf.implicado || '');
-    fd.append('sancion', inf.sancion || '');
-    fd.append('institucion', inf.institucion || '');
-    fd.append('institucion_nombre', inf.institucion_nombre || '');
-    fd.append('motivo_descripcion', formAdmin.motivo_descripcion.trim());
-    fd.append('archivos_eliminar', JSON.stringify([]));
+    const fd = new FormData()
+    fd.append('id_informe', inf.id)
+    fd.append('torneo', inf.torneo || '')
+    fd.append('implicado', inf.implicado || '')
+    fd.append('sancion', inf.sancion || '')
+    fd.append('institucion', inf.institucion || '')
+    fd.append('institucion_nombre', inf.institucion_nombre || '')
+    fd.append('motivo_descripcion', formAdmin.motivo_descripcion.trim())
+    fd.append('archivos_eliminar', JSON.stringify([]))
 
     const resEdit = await api.postFile({
       entity: 'informes',
       action: 'actualizarInforme',
       payload: fd
-    });
+    })
     if (!(resEdit.ok || resEdit.success)) {
-      throw new Error((resEdit.payload && resEdit.payload.mensaje) ? resEdit.payload.mensaje : 'No se pudo guardar el motivo.');
+      throw new Error((resEdit.payload && resEdit.payload.mensaje) ? resEdit.payload.mensaje : 'No se pudo guardar el motivo.')
     }
-    inf.motivo_descripcion = formAdmin.motivo_descripcion.trim();
+    inf.motivo_descripcion = formAdmin.motivo_descripcion.trim()
 
     // 2) Si cambió el estado, lo actualizamos aparte (dispara el email al árbitro)
     if (estadoCambio) {
@@ -625,143 +617,42 @@ const guardarCambiosAdmin = async () => {
         entity: 'informes',
         action: 'cambiarEstadoInforme',
         payload: { id_informe: inf.id, estado: formAdmin.estado }
-      });
+      })
       if (!(resEstado.ok || resEstado.success)) {
-        throw new Error((resEstado.payload && resEstado.payload.mensaje) ? resEstado.payload.mensaje : 'No se pudo cambiar el estado.');
+        throw new Error((resEstado.payload && resEstado.payload.mensaje) ? resEstado.payload.mensaje : 'No se pudo cambiar el estado.')
       }
-      inf.estado = formAdmin.estado;
+      inf.estado = formAdmin.estado
     }
 
     // Si se anuló, el informe ya no debe figurar en la tabla de admin.
     if (estadoCambio && formAdmin.estado === 'anulado') {
-      informes.value = informes.value.filter(i => i.id !== inf.id);
-      cerrarDetalle();
-      toast({ titulo: 'Informe anulado', mensaje: 'El informe fue anulado y quitado de la lista.', tipo: 'success' });
-      return;
+      informes.value = informes.value.filter(i => i.id !== inf.id)
+      cerrarDetalle()
+      toast({ titulo: 'Informe anulado', mensaje: 'El informe fue anulado y quitado de la lista.', tipo: 'success' })
+      return
     }
 
-    modoEdicion.value = false;
-    toast({ titulo: 'Informe actualizado', mensaje: 'Se guardaron los cambios.', tipo: 'success' });
+    modoEdicion.value = false
+    toast({ titulo: 'Informe actualizado', mensaje: 'Se guardaron los cambios.', tipo: 'success' })
   } catch (err) {
-    console.error('Error al guardar cambios admin:', err);
-    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo guardar.', tipo: 'danger' });
+    console.error('Error al guardar cambios admin:', err)
+    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo guardar.', tipo: 'danger' })
   } finally {
-    guardandoAdmin.value = false;
+    guardandoAdmin.value = false
   }
-};
+}
 
-/* ====================================================
-   DESCARGAR PDF
-   ==================================================== */
-const descargandoId = ref(null);
-
-/* ====================================================
-   DESCARGAR ARCHIVOS ADJUNTOS
-   ==================================================== */
-const descargandoArchivo = ref(null);
-
-const descargarArchivo = async (arc) => {
-  if (!arc || !arc.url_completa) return;
-  descargandoArchivo.value = arc.url_completa;
-  try {
-    const resp = await fetch(arc.url_completa);
-    if (!resp.ok) throw new Error('No se pudo descargar el archivo');
-    const blob = await resp.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = arc.archivo_nombre || 'archivo';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error('Error al descargar archivo:', err);
-    // Fallback: abrir en pestaña nueva
-    window.open(arc.url_completa, '_blank', 'noopener');
-  } finally {
-    descargandoArchivo.value = null;
-  }
-};
-
-const escapar = (v) => String(v ?? '-')
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-const filaPDF = (etiqueta, valor) => `
-  <tr>
-    <td style="padding:8px 10px;border:1px solid #e5e7eb;background:#f8f9fa;font-weight:bold;width:38%;color:#334155;">${escapar(etiqueta)}</td>
-    <td style="padding:8px 10px;border:1px solid #e5e7eb;color:#111;">${escapar(valor)}</td>
-  </tr>`;
-
-const descargarPDF = async (inf) => {
-  descargandoId.value = inf.id;
-  try {
-    const contenedor = document.createElement('div');
-    contenedor.style.padding = '28px';
-    contenedor.style.fontFamily = 'Arial, Helvetica, sans-serif';
-    contenedor.style.color = '#111';
-    contenedor.innerHTML = `
-      <div style="display:flex;align-items:center;gap:14px;border-bottom:3px solid #dc2626;padding-bottom:14px;margin-bottom:18px;">
-        <img src="https://arbitroshandball.com.ar/logo.png" alt="AAAB" style="height:56px;" crossorigin="anonymous"
-             onerror="this.style.display='none'">
-        <div>
-          <h1 style="margin:0;font-size:20px;color:#dc2626;">Informe de Partido</h1>
-          <p style="margin:2px 0 0;font-size:12px;color:#64748b;">Asociación Argentina de Árbitros de Balonmano</p>
-        </div>
-        <div style="margin-left:auto;text-align:right;font-size:12px;color:#64748b;">
-          <div><strong>Informe #${escapar(inf.id)}</strong></div>
-          <div>Estado: ${escapar(etiquetaEstado(inf.estado))}</div>
-        </div>
-      </div>
-
-      <table style="width:100%;border-collapse:collapse;font-size:13px;">
-        ${filaPDF('Fecha del partido', formatearFecha(inf.fecha_partido))}
-        ${filaPDF('Torneo', etiquetaTorneo(inf.torneo))}
-        ${filaPDF('Categoría', inf.categoria || '-')}
-        ${filaPDF('Encuentro', inf.encuentro)}
-        ${filaPDF('Árbitros', inf.arbitros || '-')}
-        ${inf.delegado_tecnico ? filaPDF('Delegado técnico (cargó el informe)', inf.delegado_tecnico) : ''}
-        ${filaPDF('Implicado', inf.implicado)}
-        ${filaPDF('Sanción', inf.sancion)}
-        ${filaPDF('Institución a la que pertenece', inf.institucion_nombre)}
-      </table>
-
-      <div style="margin-top:16px;">
-        <div style="font-weight:bold;font-size:13px;color:#334155;margin-bottom:6px;">Motivo y descripción</div>
-        <div style="border:1px solid #e5e7eb;border-radius:6px;padding:12px;font-size:13px;line-height:1.5;white-space:pre-wrap;background:#fff;">${escapar(inf.motivo_descripcion)}</div>
-      </div>
-
-      <div style="margin-top:22px;font-size:11px;color:#94a3b8;border-top:1px solid #e5e7eb;padding-top:10px;">
-        Cargado por ${inf.cargado_por_es_rol ? escapar(inf.cargado_por_nombre || '') : ((inf.delegado_tecnico ? 'el delegado técnico ' : 'el árbitro ') + escapar(inf.cargado_por_nombre || inf.delegado_tecnico || inf.arbitros || ''))} el ${escapar(formatearFechaHora(inf.creado_en))}.
-        Documento generado el ${escapar(new Date().toLocaleDateString('es-AR'))}.
-      </div>
-    `;
-
-    const opciones = {
-      margin: 10,
-      filename: `Informe_${inf.id}_${(inf.encuentro || '').replace(/[^\w]+/g, '_')}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    await (await cargarHtml2pdf())().set(opciones).from(contenedor).save();
-  } catch (err) {
-    console.error('Error al generar PDF:', err);
-    toast({ titulo: 'Error', mensaje: 'No se pudo generar el PDF.', tipo: 'danger' });
-  } finally {
-    descargandoId.value = null;
-  }
-};
+// Descargas del informe (adjuntos y PDF): compartidas con las otras pantallas de informes
+const { descargandoArchivo, descargarArchivo, descargandoId, descargarPDF } = useDescargasInforme({ etiquetaEstado, toast })
 
 /* ====================================================
    CARGAR INFORME (modal compartido)
    ==================================================== */
-const mostrarCarga = ref(false);
-const abrirModalCarga = () => { mostrarCarga.value = true; };
-const cerrarModalCarga = () => { mostrarCarga.value = false; };
+const mostrarCarga = ref(false)
+const abrirModalCarga = () => { mostrarCarga.value = true }
+const cerrarModalCarga = () => { mostrarCarga.value = false }
 
-onMounted(obtenerInformes);
+onMounted(obtenerInformes)
 </script>
 
 <style scoped>

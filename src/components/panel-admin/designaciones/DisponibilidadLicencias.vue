@@ -297,13 +297,13 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
-import { ref, onMounted, computed, reactive, watch, inject } from 'vue';
+import { ref, onMounted, computed, reactive, watch, inject } from 'vue'
 import { fechaArg } from '@/utils/fechas'
 import { abrirWhatsApp } from '@/utils/whatsapp'
 import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
-import { api } from '@/api/api';
-import { useHead } from '@vueuse/head'
+import { api } from '@/api/api'
+import { useHead } from '@unhead/vue'
 import { textoFamiliares } from '@/composables/useFamiliares'
 
 useHead({
@@ -317,12 +317,12 @@ useHead({
   ],
 })
 
-const notificar = inject('notificar');
-const toast = inject('toast');
+const notificar = inject('notificar')
+const toast = inject('toast')
 
-const arbitros = ref([]);
-const cargando = ref(false);
-const mostrarFiltrosMobile = ref(false);
+const arbitros = ref([])
+const cargando = ref(false)
+const mostrarFiltrosMobile = ref(false)
 
 const filtros = reactive({
   apellido: '', nombre: '', licencia: '', es_activo: '',
@@ -333,94 +333,94 @@ const filtros = reactive({
   tiene_familiares: '', familiares_texto: '',
   designado_sabado: '',
   designado_domingo: '',
-});
+})
 
 // Grupos reales (misma fuente que GruposAdmin). Las opciones de filtro
 // se derivan de aca para no hardcodear cada grupo/subgrupo.
-const grupos = ref([]);
+const grupos = ref([])
 
 const opcionesGrupo = computed(() => {
-  const vistos = [];
+  const vistos = []
   for (const g of grupos.value) {
-    const nombre = String(g.nombre || '').trim();
-    if (nombre && !vistos.includes(nombre)) vistos.push(nombre);
+    const nombre = String(g.nombre || '').trim()
+    if (nombre && !vistos.includes(nombre)) vistos.push(nombre)
   }
-  return vistos.sort((a, b) => a.localeCompare(b, 'es'));
-});
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'))
+})
 
 const opcionesSubgrupo = computed(() => {
-  const vistos = [];
+  const vistos = []
   for (const g of grupos.value) {
-    const sub = String(g.subgrupo || '').trim();
-    if (sub && !vistos.includes(sub)) vistos.push(sub);
+    const sub = String(g.subgrupo || '').trim()
+    if (sub && !vistos.includes(sub)) vistos.push(sub)
   }
-  return vistos.sort((a, b) => a.localeCompare(b, 'es'));
-});
+  return vistos.sort((a, b) => a.localeCompare(b, 'es'))
+})
 
 const obtenerGrupos = async () => {
   try {
-    const { payload } = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' });
-    grupos.value = Array.isArray(payload) ? payload : [];
+    const { payload } = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' })
+    grupos.value = Array.isArray(payload) ? payload : []
   } catch (error) {
-    console.error('Error al obtener grupos:', error);
+    console.error('Error al obtener grupos:', error)
   }
-};
+}
 
 
 
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   setTimeout(() => {
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, 50);
-};
+  }, 50)
+}
 
-const designadosSabado = ref(new Set());
-const designadosDomingo = ref(new Set());
+const designadosSabado = ref(new Set())
+const designadosDomingo = ref(new Set())
 
-const paginaActual = ref(1);
-const registrosPorPagina = 8;
+const paginaActual = ref(1)
+const registrosPorPagina = 8
 
 const cargarDatos = async () => {
-  cargando.value = true;
+  cargando.value = true
   try {
     const [{ payload }, resFamiliares] = await Promise.all([
       api.get({ entity: "arbitros", action: "getArbitros" }),
       // Familiares / DT: endpoint aparte, solo para roles de administración
       api.get({ entity: "familiares", action: "obtenerFamiliaresTodos", payload: {} }).catch(() => null),
-    ]);
-    const familiaresPorArbitro = {};
+    ])
+    const familiaresPorArbitro = {}
     if (resFamiliares?.ok) {
-      for (const f of resFamiliares.payload || []) familiaresPorArbitro[f.idArbitro] = f.familiares;
+      for (const f of resFamiliares.payload || []) familiaresPorArbitro[f.idArbitro] = f.familiares
     }
 
-    let sancionesPayload = [];
+    let sancionesPayload = []
     try {
-      const resSanciones = await api.get({ entity: "sanciones", action: "obtenerSanciones" });
-      sancionesPayload = resSanciones.payload || [];
+      const resSanciones = await api.get({ entity: "sanciones", action: "obtenerSanciones" })
+      sancionesPayload = resSanciones.payload || []
     } catch(e) {
-      console.error("Error al cargar sanciones:", e);
+      console.error("Error al cargar sanciones:", e)
     }
 
-    const sancionesMap = {};
+    const sancionesMap = {}
     sancionesPayload.forEach(s => {
       if (s.estado_dinamico === 1 || s.estado_dinamico === 3) {
         if (!sancionesMap[s.id_arbitro]) {
-          sancionesMap[s.id_arbitro] = s;
+          sancionesMap[s.id_arbitro] = s
         } else {
           if (s.estado_dinamico === 1 && sancionesMap[s.id_arbitro].estado_dinamico === 3) {
-            sancionesMap[s.id_arbitro] = s;
+            sancionesMap[s.id_arbitro] = s
           }
         }
       }
-    });
+    })
 
     arbitros.value = payload
       ? payload.map(a => {
-          const sancion = sancionesMap[a.id];
+          const sancion = sancionesMap[a.id]
           return {
             ...a,
             apto_medico: a.apto_medico == 1,
@@ -430,51 +430,51 @@ const cargarDatos = async () => {
             sancion_indefinida: sancion ? sancion.es_indefinido == 1 : false,
             tiene_familiares: (familiaresPorArbitro[a.id] || []).length ? 'SI' : 'NO',
             familiares_texto: textoFamiliares(familiaresPorArbitro[a.id] || []),
-          };
+          }
         })
-      : [];
+      : []
 
     const resChecks = await api.get({
       entity: 'designaciones',
       action: 'obtener_tildes',
-    });
-    const listaTildes = resChecks.payload;
+    })
+    const listaTildes = resChecks.payload
 
     if (listaTildes && Array.isArray(listaTildes)) {
-      designadosSabado.value.clear();
-      designadosDomingo.value.clear();
+      designadosSabado.value.clear()
+      designadosDomingo.value.clear()
 
       listaTildes.forEach(item => {
-        if (item.dia === 'S') designadosSabado.value.add(item.idarbitro);
-        if (item.dia === 'D') designadosDomingo.value.add(item.idarbitro);
-      });
+        if (item.dia === 'S') designadosSabado.value.add(item.idarbitro)
+        if (item.dia === 'D') designadosDomingo.value.add(item.idarbitro)
+      })
     }
   } catch (err) {
-    console.error("Error al cargar datos:", err);
-    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' });
+    console.error("Error al cargar datos:", err)
+    toast({ titulo: 'Error', mensaje: 'No se pudieron cargar los datos de la tabla.', tipo: 'danger' })
   } finally {
-    cargando.value = false;
+    cargando.value = false
   }
-};
+}
 
 const toggleDesignacion = async (id, dia) => {
-  const set = dia === 'S' ? designadosSabado.value : designadosDomingo.value;
-  const nuevoValor = !set.has(id);
+  const set = dia === 'S' ? designadosSabado.value : designadosDomingo.value
+  const nuevoValor = !set.has(id)
 
-  if (nuevoValor) set.add(id); else set.delete(id);
+  if (nuevoValor) set.add(id); else set.delete(id)
 
   try {
     await api.post({
       entity: 'designaciones',
       action: 'actualizar_tilde',
       payload: { id_arbitro: id, dia: dia, checked: nuevoValor }
-    });
+    })
   } catch (err) {
-    console.error("Error al guardar tilde:", err);
-    if (nuevoValor) set.delete(id); else set.add(id);
-    toast({ titulo: 'Error', mensaje: 'No se pudo guardar la designación.', tipo: 'danger' });
+    console.error("Error al guardar tilde:", err)
+    if (nuevoValor) set.delete(id); else set.add(id)
+    toast({ titulo: 'Error', mensaje: 'No se pudo guardar la designación.', tipo: 'danger' })
   }
-};
+}
 
 const solicitarLimpiarChecks = () => {
   notificar({
@@ -482,8 +482,8 @@ const solicitarLimpiarChecks = () => {
     mensaje: '¿Estás seguro que deseas limpiar todos los tildes de designación? Esta acción no se puede deshacer.',
     tipo: 'warning',
     alConfirmar: () => limpiarChecks()
-  });
-};
+  })
+}
 
 const limpiarChecks = async () => {
   try {
@@ -491,144 +491,144 @@ const limpiarChecks = async () => {
       entity: 'designaciones',
       action: 'limpiarTildesDesignaciones',
       payload: {}
-    });
+    })
 
     if (res.ok || res.success) {
-      designadosSabado.value.clear();
-      designadosDomingo.value.clear();
-      toast({ titulo: 'Éxito', mensaje: 'Se limpiaron todas las designaciones.', tipo: 'success' });
+      designadosSabado.value.clear()
+      designadosDomingo.value.clear()
+      toast({ titulo: 'Éxito', mensaje: 'Se limpiaron todas las designaciones.', tipo: 'success' })
     } else {
-      throw new Error("Error del servidor");
+      throw new Error("Error del servidor")
     }
   } catch (err) {
-    console.error("Error al limpiar tildes en BE:", err);
-    toast({ titulo: 'Error', mensaje: 'Hubo un problema al limpiar las designaciones.', tipo: 'danger' });
+    console.error("Error al limpiar tildes en BE:", err)
+    toast({ titulo: 'Error', mensaje: 'Hubo un problema al limpiar las designaciones.', tipo: 'danger' })
   }
-};
+}
 
 const obtenerClaseFila = (a) => {
-  const tieneAprobada = Number(a.tiene_aprobada) > 0 || Number(a.licencia_indeterminada) > 0;
-  const tieneRechazada = Number(a.tiene_rechazada) > 0;
-  const tienePendiente = Number(a.tiene_pendiente) > 0;
-  const esInactivo = a.es_activo == 0;
+  const tieneAprobada = Number(a.tiene_aprobada) > 0 || Number(a.licencia_indeterminada) > 0
+  const tieneRechazada = Number(a.tiene_rechazada) > 0
+  const tienePendiente = Number(a.tiene_pendiente) > 0
+  const esInactivo = a.es_activo == 0
 
-  const tildadoSabado = designadosSabado.value.has(a.id);
-  const tildadoDomingo = designadosDomingo.value.has(a.id);
+  const tildadoSabado = designadosSabado.value.has(a.id)
+  const tildadoDomingo = designadosDomingo.value.has(a.id)
 
   if ((tildadoSabado && tildadoDomingo) || esInactivo || tieneAprobada || a.sancion_vigente) {
-    return 'fila-roja';
+    return 'fila-roja'
   }
 
-  if (tieneRechazada || tienePendiente || a.sancion_proceso) return 'fila-amarilla';
+  if (tieneRechazada || tienePendiente || a.sancion_proceso) return 'fila-amarilla'
 
-  if (tildadoSabado || tildadoDomingo) return 'fila-des';
-  return '';
-};
+  if (tildadoSabado || tildadoDomingo) return 'fila-des'
+  return ''
+}
 
-const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '');
+const limpiarFiltros = () => Object.keys(filtros).forEach(k => filtros[k] = '')
 
 const mostrarFechaArg = (fecha) => fechaArg(fecha)
 
 
 const obtenerTextoLicencia = (a) => {
-  let textos = [];
+  let textos = []
 
   const formatearVariasFechas = (cadenaFechas) => {
-    if (!cadenaFechas) return '';
+    if (!cadenaFechas) return ''
     return cadenaFechas
       .split(',')
       .map(f => f.trim())
       .sort((fechaA, fechaB) => new Date(fechaA.split(' al ')[0]) - new Date(fechaB.split(' al ')[0]))
       .map(f => f.split(' al ').map(x => mostrarFechaArg(x.trim())).join(' al '))
-      .join(', ');
-  };
+      .join(', ')
+  }
 
   if (a.sancion_vigente) {
-    const textoHasta = a.sancion_indefinida ? 'Indefinida' : a.sancion_hasta;
-    textos.push(`SANCIONADO (Hasta: ${textoHasta || '-'})`);
+    const textoHasta = a.sancion_indefinida ? 'Indefinida' : a.sancion_hasta
+    textos.push(`SANCIONADO (Hasta: ${textoHasta || '-'})`)
   } else if (a.sancion_proceso) {
-    textos.push(`SANC. EN PROCESO`);
+    textos.push(`SANC. EN PROCESO`)
   }
 
   if (Number(a.licencia_indeterminada) > 0) {
-    textos.push('APR: Tiempo indeterminado');
+    textos.push('APR: Tiempo indeterminado')
   }
   if (Number(a.tiene_aprobada) > 0 && a.fecha_licencia_aprobada) {
-    textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`);
+    textos.push(`APR: ${formatearVariasFechas(a.fecha_licencia_aprobada)}`)
   }
   if (Number(a.tiene_pendiente) > 0 && a.fecha_licencia_pendiente) {
-    textos.push(`PEN: ${formatearVariasFechas(a.fecha_licencia_pendiente)}`);
+    textos.push(`PEN: ${formatearVariasFechas(a.fecha_licencia_pendiente)}`)
   }
   if (Number(a.tiene_rechazada) > 0 && a.fecha_licencia_rechazada) {
-    textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`);
+    textos.push(`REC: ${formatearVariasFechas(a.fecha_licencia_rechazada)}`)
   }
 
-  return textos.length > 0 ? textos.join(' | ') : '-';
-};
+  return textos.length > 0 ? textos.join(' | ') : '-'
+}
 
 
 const arbitrosFiltrados = computed(() => {
   const filtrados = arbitros.value.filter(a => {
     const cumpleTexto = Object.keys(filtros).every(key => {
-      if (!filtros[key] || key === 'licencia' || key === 'apto_medico' || key === 'designado_sabado' || key === 'designado_domingo') return true;
-      if (key === 'es_activo') return String(a[key]) === filtros[key];
+      if (!filtros[key] || key === 'licencia' || key === 'apto_medico' || key === 'designado_sabado' || key === 'designado_domingo') return true
+      if (key === 'es_activo') return String(a[key]) === filtros[key]
       // Grupo y subgrupo salen de un select: comparacion exacta.
-      if (key === 'grupo' || key === 'subgrupo' || key === 'tiene_familiares') return normalizarTexto(a[key]) === normalizarTexto(filtros[key]);
-      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]));
-    });
+      if (key === 'grupo' || key === 'subgrupo' || key === 'tiene_familiares') return normalizarTexto(a[key]) === normalizarTexto(filtros[key])
+      return normalizarTexto(a[key]).includes(normalizarTexto(filtros[key]))
+    })
 
-    let cumpleLicencia = true;
-    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0;
-    else if (filtros.licencia === 'indeterminada') cumpleLicencia = Number(a.licencia_indeterminada || 0) > 0;
-    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada || 0) > 0;
-    else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente || 0) > 0;
-    else if (filtros.licencia === 'sancion_vigente') cumpleLicencia = a.sancion_vigente === true;
-    else if (filtros.licencia === 'sancion_proceso') cumpleLicencia = a.sancion_proceso === true;
+    let cumpleLicencia = true
+    if (filtros.licencia === 'aprobada') cumpleLicencia = Number(a.tiene_aprobada || 0) > 0
+    else if (filtros.licencia === 'indeterminada') cumpleLicencia = Number(a.licencia_indeterminada || 0) > 0
+    else if (filtros.licencia === 'rechazada') cumpleLicencia = Number(a.tiene_rechazada || 0) > 0
+    else if (filtros.licencia === 'pendiente') cumpleLicencia = Number(a.tiene_pendiente || 0) > 0
+    else if (filtros.licencia === 'sancion_vigente') cumpleLicencia = a.sancion_vigente === true
+    else if (filtros.licencia === 'sancion_proceso') cumpleLicencia = a.sancion_proceso === true
     else if (filtros.licencia === 'sin_licencia') {
       cumpleLicencia = Number(a.tiene_aprobada || 0) === 0 &&
                        Number(a.tiene_rechazada || 0) === 0 &&
                        Number(a.tiene_pendiente || 0) === 0 &&
-                       Number(a.licencia_indeterminada || 0) === 0;
+                       Number(a.licencia_indeterminada || 0) === 0
     }
 
-    let cumpleApto = true;
+    let cumpleApto = true
     if (filtros.apto_medico !== '') {
-      const valorFiltro = filtros.apto_medico === '1';
-      cumpleApto = a.apto_medico === valorFiltro;
+      const valorFiltro = filtros.apto_medico === '1'
+      cumpleApto = a.apto_medico === valorFiltro
     }
 
-    let cumpleDesignadoSab = true;
+    let cumpleDesignadoSab = true
     if (filtros.designado_sabado !== '') {
-      cumpleDesignadoSab = (filtros.designado_sabado === '1') === designadosSabado.value.has(a.id);
+      cumpleDesignadoSab = (filtros.designado_sabado === '1') === designadosSabado.value.has(a.id)
     }
 
-    let cumpleDesignadoDom = true;
+    let cumpleDesignadoDom = true
     if (filtros.designado_domingo !== '') {
-      cumpleDesignadoDom = (filtros.designado_domingo === '1') === designadosDomingo.value.has(a.id);
+      cumpleDesignadoDom = (filtros.designado_domingo === '1') === designadosDomingo.value.has(a.id)
     }
 
-    return cumpleTexto && cumpleLicencia && cumpleApto && cumpleDesignadoSab && cumpleDesignadoDom;
-  });
+    return cumpleTexto && cumpleLicencia && cumpleApto && cumpleDesignadoSab && cumpleDesignadoDom
+  })
 
   return filtrados.sort((a, b) => {
-    const compApellido = (a.apellido || '').localeCompare(b.apellido || '');
-    if (compApellido === 0) return (a.nombre || '').localeCompare(b.nombre || '');
-    return compApellido;
-  });
-});
+    const compApellido = (a.apellido || '').localeCompare(b.apellido || '')
+    if (compApellido === 0) return (a.nombre || '').localeCompare(b.nombre || '')
+    return compApellido
+  })
+})
 
-const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1);
+const totalPaginas = computed(() => Math.ceil(arbitrosFiltrados.value.length / registrosPorPagina) || 1)
 
 const arbitrosPaginados = computed(() => {
-  const inicio = (paginaActual.value - 1) * registrosPorPagina;
-  return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina);
-});
+  const inicio = (paginaActual.value - 1) * registrosPorPagina
+  return arbitrosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
+})
 
-watch(filtros, () => { paginaActual.value = 1; }, { deep: true });
+watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 
 watch(totalPaginas, (nuevoTotal) => {
-  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal;
-});
+  if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal
+})
 
 
 const exportarExcel = async () => {
@@ -685,9 +685,9 @@ const exportarExcel = async () => {
 }
 
 onMounted(() => {
-  cargarDatos();
-  obtenerGrupos();
-});
+  cargarDatos()
+  obtenerGrupos()
+})
 </script>
 
 

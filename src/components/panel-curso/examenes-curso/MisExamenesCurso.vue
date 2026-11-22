@@ -1,9 +1,13 @@
 <template>
   <div class="container-fluid py-0 animate__animated animate__fadeIn">
-    <ExamenCursoRunner
+    <ExamenOnlineRunner
       v-if="examenEnCurso"
-      :id-examen="examenEnCurso.id"
-      :titulo="examenEnCurso.titulo"
+      entity="examen_online_curso_arbitro"
+      :acciones="{ iniciar: 'iniciarExamenCurso', guardar: 'guardarAvanceExamenCurso', finalizar: 'finalizarExamenCurso' }"
+      :identificador="{ idExamen: examenEnCurso.id }"
+      :titulo="examenEnCurso.titulo || 'Examen del Curso de Árbitros'"
+      titulo-pagina="Examen Online | Curso AAAB"
+      descripcion-pagina="Examen online del curso de árbitros de la AAAB."
       @terminar="recargar"
       @salir="examenEnCurso = null"
     />
@@ -121,9 +125,9 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, onMounted, inject } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
-import ExamenCursoRunner from '@/components/panel-curso/examenes-curso/ExamenCursoRunner.vue'
+import ExamenOnlineRunner from '@/components/comunes/examenes/ExamenOnlineRunner.vue'
 import { fechaLargaClase } from '@/composables/useCronogramaCurso'
 import { formatoNota, claseNota, estaAprobado } from '@/composables/useExamenesCurso'
 import { usePerfilCurso } from '@/composables/usePerfilCurso'

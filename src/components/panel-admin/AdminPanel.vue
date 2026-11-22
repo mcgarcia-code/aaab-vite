@@ -52,7 +52,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import { auth } from '@/api/auth'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { etiquetaRol, buscarSeccionAdmin } from '@/config/modulosAdmin'
 import { useModulosAdmin } from '@/composables/useModulosAdmin'
 import MenuLateral from '@/components/comunes/MenuLateral.vue'

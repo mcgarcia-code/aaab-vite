@@ -290,7 +290,7 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import { fechaArg } from '@/utils/fechas'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 
 const toast = inject('toast')

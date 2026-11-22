@@ -32,7 +32,7 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { useNotificacionesCurso, ICONOS_NOTIFICACION } from '@/composables/useNotificacionesCurso'
 import { fechaHoraDMA } from '@/utils/fechas'
 

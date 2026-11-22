@@ -14,7 +14,7 @@
 //  puede leer la nota final.
 // ============================================================
 
-import { ref, computed } from 'vue';
+import { ref, computed } from 'vue'
 import { cargarExcelJS } from '@/utils/librerias'
 
 // --- Mapa de categorías / ítems: copiado 1:1 de _categoriasEvaluacionExcel() del PHP ---
@@ -29,7 +29,7 @@ const CATEGORIAS_EVALUACION = [
   { nombre: 'Faltas en ataque', filaComentario: 38, filasItems: [56, 57, 58, 59] },
   { nombre: 'Errores técnicos', filaComentario: 43, filasItems: [60, 61, 62, 63, 64] },
   { nombre: 'Habilidades mentales', filaComentario: 48, filasItems: [65, 66, 67, 68, 69, 70] },
-];
+]
 
 // Columnas de valoración marcadas con 'x' (mismo mapa que _extraerItemsEvaluacionExcel del PHP).
 const BUCKET_COLUMNAS = {
@@ -39,7 +39,7 @@ const BUCKET_COLUMNAS = {
   AD: 'Por debajo de adecuado',
   AF: 'Insuficiente',
   AG: 'No aplica',
-};
+}
 
 // ------------------------------------------------------------
 //  Helpers de lectura de celdas (equivalentes a los del PHP).
@@ -48,43 +48,43 @@ const BUCKET_COLUMNAS = {
 //  getOldCalculatedValue() de PhpSpreadsheet.
 // ------------------------------------------------------------
 function valorCrudo(hoja, coord) {
-  const celda = hoja.getCell(coord);
-  let v = celda.value;
+  const celda = hoja.getCell(coord)
+  let v = celda.value
   // Fórmula: { formula, result } -> usamos el resultado cacheado.
-  if (v && typeof v === 'object' && 'result' in v) v = v.result;
+  if (v && typeof v === 'object' && 'result' in v) v = v.result
   // Texto enriquecido: { richText: [...] }
   if (v && typeof v === 'object' && Array.isArray(v.richText)) {
-    v = v.richText.map(t => t.text).join('');
+    v = v.richText.map(t => t.text).join('')
   }
   // Hipervínculos u objetos con .text
-  if (v && typeof v === 'object' && 'text' in v) v = v.text;
-  return v;
+  if (v && typeof v === 'object' && 'text' in v) v = v.text
+  return v
 }
 
 function celdaTexto(hoja, coord) {
-  const v = valorCrudo(hoja, coord);
-  if (v === null || v === undefined || typeof v === 'object') return null;
-  const t = String(v).trim();
-  return t === '' ? null : t;
+  const v = valorCrudo(hoja, coord)
+  if (v === null || v === undefined || typeof v === 'object') return null
+  const t = String(v).trim()
+  return t === '' ? null : t
 }
 
 function celdaNumero(hoja, coord) {
-  const t = celdaTexto(hoja, coord);
-  if (t === null) return null;
-  const n = Number(t.replace(',', '.'));
-  return Number.isNaN(n) ? null : n;
+  const t = celdaTexto(hoja, coord)
+  if (t === null) return null
+  const n = Number(t.replace(',', '.'))
+  return Number.isNaN(n) ? null : n
 }
 
 function celdaMarcada(hoja, coord) {
-  const t = celdaTexto(hoja, coord);
-  return t !== null && t.toLowerCase() === 'x';
+  const t = celdaTexto(hoja, coord)
+  return t !== null && t.toLowerCase() === 'x'
 }
 
 function opcionMarcada(hoja, fila, columnas) {
   for (const [col, etiqueta] of Object.entries(columnas)) {
-    if (celdaMarcada(hoja, `${col}${fila}`)) return etiqueta;
+    if (celdaMarcada(hoja, `${col}${fila}`)) return etiqueta
   }
-  return null;
+  return null
 }
 
 // ------------------------------------------------------------
@@ -93,9 +93,9 @@ function opcionMarcada(hoja, fila, columnas) {
 //    { tipo, categoria, item, puntaje, valoracion, comentario }
 // ------------------------------------------------------------
 function extraerItems(scoreSheet, commentSheet) {
-  const items = [];
+  const items = []
   for (const cat of CATEGORIAS_EVALUACION) {
-    const filaHeader = cat.filasItems[0];
+    const filaHeader = cat.filasItems[0]
     items.push({
       tipo: 'categoria',
       categoria: cat.nombre,
@@ -103,11 +103,11 @@ function extraerItems(scoreSheet, commentSheet) {
       puntaje: celdaNumero(scoreSheet, `M${filaHeader}`),
       valoracion: null,
       comentario: celdaTexto(commentSheet, `E${cat.filaComentario}`),
-    });
+    })
 
     for (const fila of cat.filasItems) {
-      const texto = celdaTexto(scoreSheet, `N${fila}`);
-      if (texto === null) continue;
+      const texto = celdaTexto(scoreSheet, `N${fila}`)
+      if (texto === null) continue
       items.push({
         tipo: 'criterio',
         categoria: cat.nombre,
@@ -115,62 +115,62 @@ function extraerItems(scoreSheet, commentSheet) {
         puntaje: celdaNumero(scoreSheet, `AH${fila}`),
         valoracion: opcionMarcada(scoreSheet, fila, BUCKET_COLUMNAS),
         comentario: null,
-      });
+      })
     }
   }
-  return items;
+  return items
 }
 
 // ============================================================
 //  Composable
 // ============================================================
 export function useVistaPreviaObservacion() {
-  const analizando = ref(false);
+  const analizando = ref(false)
   // Objeto con la misma forma que `detalle` del modal + { errores, advertencias }
-  const preview = ref(null);
-  const errorLectura = ref(null);
+  const preview = ref(null)
+  const errorLectura = ref(null)
 
   // La carga se habilita SOLO si hay preview y no tiene errores.
   const previewValida = computed(() =>
     !!preview.value && preview.value.errores.length === 0
-  );
+  )
 
   const limpiarPreview = () => {
-    preview.value = null;
-    errorLectura.value = null;
-    analizando.value = false;
-  };
+    preview.value = null
+    errorLectura.value = null
+    analizando.value = false
+  }
 
   const analizarArchivo = async (file) => {
-    limpiarPreview();
-    if (!file) return;
+    limpiarPreview()
+    if (!file) return
 
-    analizando.value = true;
+    analizando.value = true
     try {
-      const buffer = await file.arrayBuffer();
-      const wb = new (await cargarExcelJS()).Workbook();
-      await wb.xlsx.load(buffer);
+      const buffer = await file.arrayBuffer()
+      const wb = new (await cargarExcelJS()).Workbook()
+      await wb.xlsx.load(buffer)
 
-      const scoreSheet = wb.getWorksheet('Score sheet');
-      const commentSheet = wb.getWorksheet('Comment sheet');
+      const scoreSheet = wb.getWorksheet('Score sheet')
+      const commentSheet = wb.getWorksheet('Comment sheet')
 
-      const errores = [];
-      const advertencias = [];
+      const errores = []
+      const advertencias = []
 
       // --- Validación de formato: mismas hojas que exige el PHP ---
       if (!scoreSheet || !commentSheet) {
         errorLectura.value =
-          "El archivo no tiene el formato esperado (faltan las hojas 'Score sheet' / 'Comment sheet').";
-        return;
+          "El archivo no tiene el formato esperado (faltan las hojas 'Score sheet' / 'Comment sheet')."
+        return
       }
 
       // --- Lecturas (mismas celdas que cargarObservacionExcel) ---
-      const puntajeFinal = celdaNumero(scoreSheet, 'S11');
-      const items = extraerItems(scoreSheet, commentSheet);
+      const puntajeFinal = celdaNumero(scoreSheet, 'S11')
+      const items = extraerItems(scoreSheet, commentSheet)
 
       // --- Regla que BLOQUEA la carga: solo la falta de puntaje final ---
       if (puntajeFinal === null) {
-        errores.push('No figura el PUNTAJE FINAL. Revisá haber puesto el PUNTAJE INICIAL. No se puede cargar la observación hasta que la planilla lo muestre. ');
+        errores.push('No figura el PUNTAJE FINAL. Revisá haber puesto el PUNTAJE INICIAL. No se puede cargar la observación hasta que la planilla lo muestre. ')
       }
 
       // --- Armado del objeto de preview (forma compatible con el modal de detalle) ---
@@ -190,14 +190,14 @@ export function useVistaPreviaObservacion() {
         // Diagnóstico
         errores,
         advertencias,
-      };
+      }
     } catch (e) {
-      console.error('analizarArchivo:', e);
-      errorLectura.value = 'No se pudo leer el archivo Excel. ¿Está dañado o protegido con contraseña?';
+      console.error('analizarArchivo:', e)
+      errorLectura.value = 'No se pudo leer el archivo Excel. ¿Está dañado o protegido con contraseña?'
     } finally {
-      analizando.value = false;
+      analizando.value = false
     }
-  };
+  }
 
   return {
     analizando,
@@ -206,5 +206,5 @@ export function useVistaPreviaObservacion() {
     errorLectura,
     analizarArchivo,
     limpiarPreview,
-  };
+  }
 }

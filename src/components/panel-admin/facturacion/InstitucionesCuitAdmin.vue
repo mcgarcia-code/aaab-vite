@@ -277,7 +277,7 @@ import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
@@ -343,14 +343,14 @@ const editarInstitucion = (inst) => {
   formModal.value = { ...inst }
 
   if (inst.forma_de_pago === 'Cancha' || inst.forma_de_pago === 'Contrafactura') {
-    tipoPagoSelect.value = inst.forma_de_pago;
-    tipoPagoOtro.value = '';
+    tipoPagoSelect.value = inst.forma_de_pago
+    tipoPagoOtro.value = ''
   } else if (inst.forma_de_pago) {
-    tipoPagoSelect.value = 'Otro';
-    tipoPagoOtro.value = inst.forma_de_pago;
+    tipoPagoSelect.value = 'Otro'
+    tipoPagoOtro.value = inst.forma_de_pago
   } else {
-    tipoPagoSelect.value = '';
-    tipoPagoOtro.value = '';
+    tipoPagoSelect.value = ''
+    tipoPagoOtro.value = ''
   }
 
   modoModal.value = 'editar'
@@ -367,7 +367,7 @@ const guardarDatos = async () => {
     return
   }
 
-  formModal.value.forma_de_pago = tipoPagoSelect.value === 'Otro' ? tipoPagoOtro.value : tipoPagoSelect.value;
+  formModal.value.forma_de_pago = tipoPagoSelect.value === 'Otro' ? tipoPagoOtro.value : tipoPagoSelect.value
 
   cargando.value = true
   try {
@@ -467,13 +467,13 @@ const institucionesPaginadas = computed(() => {
 const totalFiltrados = computed(() => institucionesFiltradas.value.length)
 
 const cambiarPagina = (delta) => {
-  paginaActual.value += delta;
+  paginaActual.value += delta
   setTimeout(() => {
     if (window.innerWidth <= 768) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }, 50);
-};
+  }, 50)
+}
 
 watch(filtros, () => { paginaActual.value = 1 }, { deep: true })
 watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) paginaActual.value = nuevoTotal })

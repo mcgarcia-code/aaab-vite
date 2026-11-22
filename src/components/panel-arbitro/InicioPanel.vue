@@ -193,7 +193,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { fechaATimestamp } from '@/utils/fechas'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import { textoPlano } from '@/utils/texto'
 import { auth } from '@/api/auth'

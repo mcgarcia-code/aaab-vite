@@ -139,8 +139,8 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, reactive, onMounted, computed } from 'vue'
 import { api } from '@/api/api'
-import { auth } from '../../../api/auth'
-import { useHead } from '@vueuse/head'
+import { auth } from '@/api/auth'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Mi Rendimiento | AAAB',

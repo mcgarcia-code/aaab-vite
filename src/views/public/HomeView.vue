@@ -112,11 +112,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 
 // 1. Importación de imágenes para procesamiento de Vite
-import heroBg from '../../assets/fotos/hero-background.webp'
-import ctaBg from '../../assets/fotos/imagen-cta.webp'
+import heroBg from '@/assets/fotos/hero-background.webp'
+import ctaBg from '@/assets/fotos/imagen-cta.webp'
 
 // Variable reactiva para la fecha que viene del JSON
 const fechaDesignacion = ref('...')
@@ -161,13 +161,13 @@ const fetchFecha = async () => {
     const datos = await response.json()
     fechaDesignacion.value = datos.fecha || 'Próximamente'
   } catch (error) {
-    console.error("Error cargando la fecha en el inicio", error);
+    console.error("Error cargando la fecha en el inicio", error)
     // Valor por defecto por si falla la carga
-    fechaDesignacion.value = 'Próximamente';
+    fechaDesignacion.value = 'Próximamente'
   }
 }
 
-onMounted(fetchFecha);
+onMounted(fetchFecha)
 </script>
 
 

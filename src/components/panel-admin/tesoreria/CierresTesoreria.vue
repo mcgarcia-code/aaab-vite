@@ -91,7 +91,7 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, onMounted, inject } from 'vue'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 
 useHead({ title: 'Cierre Mensual | AAAB' })
 

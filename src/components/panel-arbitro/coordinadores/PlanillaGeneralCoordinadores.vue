@@ -149,7 +149,7 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted } from 'vue'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head';
+import { useHead } from '@unhead/vue'
 
 // Actualización de Meta Tags
 useHead({
@@ -215,8 +215,6 @@ const cargarArbitros = async () => {
     })
     if ((res.ok || res.success) && res.payload) {
       arbitros.value = res.payload
-      // DIAGNÓSTICO temporal: descomentá para ver los campos que llegan
-      // if (res.payload[0]) console.log('Campos del árbitro:', Object.keys(res.payload[0]), res.payload[0])
     }
   } catch (e) { console.error('cargarArbitros:', e) }
 }

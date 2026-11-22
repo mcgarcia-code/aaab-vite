@@ -128,7 +128,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 
 useHead({
   title: 'Glosario Reglas de Juego | AAAB',

@@ -218,7 +218,7 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
-import { useHead } from '@vueuse/head'
+import { useHead } from '@unhead/vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
 
 // Actualización de Meta Tags
