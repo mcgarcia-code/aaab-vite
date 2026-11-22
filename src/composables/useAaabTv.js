@@ -149,7 +149,7 @@ const CLIPS_EJEMPLO = [
   {
     id: 'ej-1', titulo: 'Descalificación por golpe en la cara al lanzador',
     descripcion: 'El defensor llega tarde al bloqueo y golpea con el antebrazo en la cara del lanzador en suspensión. Regla 8:5.',
-    etiqueta: 'Descalificación', color: 'rojo', partido: 'River vs. SAG Villa Ballester', fecha: '2026-11-15',
+    etiqueta: 'Red/Blue Card', color: 'rojo', partido: 'River vs. SAG Villa Ballester', fecha: '2026-11-15',
     inicio: 1114, fin: 1130, estado: 'publico', idAutor: null, autor: 'Ejemplo', publicadoEl: '2026-11-15T21:00:00'
   },
   {
@@ -161,11 +161,17 @@ const CLIPS_EJEMPLO = [
   {
     id: 'ej-3', titulo: 'Ventaja bien aplicada en el contraataque',
     descripcion: 'Falta leve en mitad de cancha: la pareja espera y el extremo convierte. Regla 13:2.',
-    etiqueta: 'Play on (ventaja)', color: 'verde', partido: 'Sedalo vs. CID Moreno', fecha: '2026-11-01',
+    etiqueta: 'Play on', color: 'verde', partido: 'Sedalo vs. CID Moreno', fecha: '2026-11-01',
     inicio: 1440, fin: 1456, estado: 'pendiente', idAutor: null, autor: 'Ejemplo', publicadoEl: '2026-11-01T20:30:00'
   }
 ]
-const clipsPublicados = ref(leer(CLAVE_CLIPS, null) || CLIPS_EJEMPLO.map(c => ({ ...c })))
+// Los ejemplos que ya estaban guardados en el navegador toman la etiqueta del panel actual
+// (el resto de lo que se guardó, como su estado de moderación, se respeta)
+const ETIQUETA_EJEMPLO = Object.fromEntries(CLIPS_EJEMPLO.map(c => [c.id, c.etiqueta]))
+const clipsGuardados = leer(CLAVE_CLIPS, null)
+const clipsPublicados = ref(clipsGuardados
+  ? clipsGuardados.map(c => (ETIQUETA_EJEMPLO[c.id] ? { ...c, etiqueta: ETIQUETA_EJEMPLO[c.id] } : c))
+  : CLIPS_EJEMPLO.map(c => ({ ...c })))
 // Videos locales de esta sesión (no se pueden guardar): id del clip → URL del archivo
 const videosDeSesion = reactive({})
 watch(clipsPublicados, (v) => guardar(CLAVE_CLIPS, v), { deep: true })
