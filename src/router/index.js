@@ -232,6 +232,7 @@ const routes = [
       { path: 'curso-arbitros/encuentros-mini', name: 'EncuentrosMiniCursoAdmin', component: () => import('@/components/panel-admin/curso-arbitros/EncuentrosMiniCursoAdmin.vue'), meta: { modulo: 'curso' }},
       { path: 'curso-arbitros/cronograma', name: 'CronogramaCursoAdmin', component: () => import('@/components/panel-admin/curso-arbitros/CronogramaCursoAdmin.vue'), meta: { modulo: 'curso' }},
       { path: 'curso-arbitros/examenes-curso', name: 'ExamenesCursoAdmin', component: () => import('@/components/panel-admin/curso-arbitros/ExamenesCursoAdmin.vue'), meta: { modulo: 'curso' }},
+      { path: 'curso-arbitros/practicas-catalogo', name: 'PracticasCatalogoCursoAdmin', component: () => import('@/components/panel-admin/curso-arbitros/PracticasCatalogoCursoAdmin.vue'), meta: { modulo: 'curso' }},
 
 
     ]

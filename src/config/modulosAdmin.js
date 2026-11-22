@@ -99,7 +99,8 @@ export const CATEGORIAS_ADMIN = [
       { modulo: 'curso', to: '/panel-admin/curso-arbitros/encuentros-mini', title: 'Encuentros de Mini', icon: 'bi bi-people-fill', desc: 'Convocatoria y asistencia' },
       { modulo: 'curso', to: '/panel-admin/curso-arbitros/cronograma', title: 'Clases y asistencia', icon: 'bi bi-calendar3-week', desc: 'Cronograma y exámenes por clase', pendiente: 'clasesSinAsistencia' },
       { modulo: 'curso', to: '/panel-admin/curso-arbitros/observaciones-curso', title: 'Observaciones del curso', icon: 'bi bi-clipboard-data-fill', desc: 'Observaciones de los aspirantes', pendiente: 'observacionesCurso' },
-      { modulo: 'curso', to: '/panel-admin/curso-arbitros/examenes-curso', title: 'Exámenes del curso', icon: 'bi bi-journal-check', desc: 'Exámenes y resultados' }
+      { modulo: 'curso', to: '/panel-admin/curso-arbitros/examenes-curso', title: 'Exámenes del curso', icon: 'bi bi-journal-check', desc: 'Exámenes y resultados' },
+      { modulo: 'curso', to: '/panel-admin/curso-arbitros/practicas-catalogo', title: 'Práctica del catálogo', icon: 'bi bi-ui-checks-grid', desc: 'Aspirantes que practican' }
     ]
   },
   {
