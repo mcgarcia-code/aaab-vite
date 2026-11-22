@@ -216,6 +216,8 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, nextTick, inject } from 'vue'
+import { useGruposPlanilla } from '@/composables/useGruposPlanilla'
+import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
@@ -250,9 +252,6 @@ const grupoActivo = ref(null)
 /* ====================================================
    UTILIDADES
    ==================================================== */
-const normalizar = (v) => {
-  return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
-}
 
 // Acepta 'dd/mm/yyyy', 'yyyy-mm-dd' y 'yyyy-mm-dd hh:mm:ss'
 const parseFechaFlexible = (f) => {
@@ -385,47 +384,7 @@ onMounted(cargarTodo)
 /* ====================================================
    GRUPOS (SOLAPAS)
    ==================================================== */
-const etiquetaGrupo = (g) => {
-  if (!g) return ''
-  if (g.clave === 'singrupo') return 'Sin grupo'
-  return g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre
-}
-
-const perteneceAlGrupo = (a, g) => {
-  const grupoArb = a.nombre_grupo || a.grupo || ''
-  const subArb = a.subgrupo || ''
-  if (g.clave === 'singrupo') {
-    // Árbitro que no matchea con ningún grupo de la lista
-    return !grupos.value.some(gr =>
-      normalizar(grupoArb) === normalizar(gr.nombre) &&
-      normalizar(subArb) === normalizar(gr.subgrupo || '')
-    )
-  }
-  return normalizar(grupoArb) === normalizar(g.nombre) &&
-         normalizar(subArb) === normalizar(g.subgrupo || '')
-}
-
-const gruposTabs = computed(() => {
-  const tabs = grupos.value.map(g => ({
-    ...g,
-    clave: `${g.id}`,
-  }))
-  // Solapa extra para árbitros sin grupo asignado (solo si existen)
-  const sinGrupo = { clave: 'singrupo', id: null, nombre: 'Sin grupo', subgrupo: '' }
-  const haySinGrupo = arbitros.value.some(a => perteneceAlGrupo(a, sinGrupo))
-  return haySinGrupo ? [...tabs, sinGrupo] : tabs
-})
-
-const contarArbitros = (g) => arbitros.value.filter(a => perteneceAlGrupo(a, g)).length
-
-/* Colores de los grupos: se usan en las pestañas de las hojas del Excel */
-const PALETA_GRUPOS = ['#0d6efd', '#6f42c1', '#d63384', '#fd7e14', '#198754', '#20c997', '#0dcaf0', '#dc3545', '#6610f2', '#795548', '#607d8b', '#9e9d24']
-const colorDeGrupo = (indice) => PALETA_GRUPOS[indice % PALETA_GRUPOS.length]
-
-// Selector de grupo de la barra de herramientas
-const elegirGrupo = (clave) => {
-  grupoActivo.value = gruposTabs.value.find(g => g.clave === clave) || null
-}
+const { etiquetaGrupo, perteneceAlGrupo, gruposTabs, contarArbitros, elegirGrupo, colorDeGrupo } = useGruposPlanilla({ arbitros, grupos, grupoActivo, modo: 'nombre' })
 
 
 const arbitrosDelGrupo = computed(() => {
@@ -436,9 +395,9 @@ const arbitrosDelGrupo = computed(() => {
 })
 
 const arbitrosVisibles = computed(() => {
-  const b = normalizar(busqueda.value)
+  const b = normalizarTexto(busqueda.value)
   if (!b) return arbitrosDelGrupo.value
-  return arbitrosDelGrupo.value.filter(a => normalizar(`${a.apellido} ${a.nombre}`).includes(b))
+  return arbitrosDelGrupo.value.filter(a => normalizarTexto(`${a.apellido} ${a.nombre}`).includes(b))
 })
 
 /* ====================================================
@@ -459,8 +418,8 @@ const reunionAplicaAlGrupo = (r, g) => {
   // Por ids si vienen; si no, por nombres de grupo
   const ids = String(r.id_grupos ?? '').split(',').map(s => s.trim()).filter(Boolean)
   if (ids.length > 0 && g.id) return ids.includes(String(g.id))
-  const nombres = (r.nombresGrupos || []).map(normalizar)
-  return nombres.includes(normalizar(etiquetaGrupo(g))) || nombres.includes(normalizar(g.nombre))
+  const nombres = (r.nombresGrupos || []).map(normalizarTexto)
+  return nombres.includes(normalizarTexto(etiquetaGrupo(g))) || nombres.includes(normalizarTexto(g.nombre))
 }
 
 const fechaDeEvento = (ev) => ev.fecha_examen || ev.fecha_formateada || ev.fecha_evento || ev.fecha || ''

@@ -1129,6 +1129,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, watch, inject, nextTick } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import { useHead } from '@unhead/vue'
@@ -1301,10 +1302,6 @@ const totalADesignarEnSeleccion = computed(() =>
 /* ====================================================
    UTILIDADES DE TEXTO Y FECHAS
    ==================================================== */
-const normalizarTexto = (valor) => {
-  return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
-}
-
 const capitalizarNombre = (texto) => {
   return String(texto || '')
     .toLowerCase()

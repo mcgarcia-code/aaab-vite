@@ -433,6 +433,7 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { cargarExcelJS } from '@/utils/librerias'
@@ -487,7 +488,6 @@ const enviandoDescargo = ref(false)
 const fileInput = ref(null)
 const adjuntosDescargo = ref(0)
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 const revertirFechaParaInput = (fecha) => {
   if (!fecha) return ''
   if (fecha.includes('-')) return fecha
@@ -548,11 +548,11 @@ const aniosDisponibles = computed(() => {
 
 const sancionesFiltradas = computed(() => {
   return sanciones.value.filter(s => {
-    const matchArb = normalizar(s.arbitro).includes(normalizar(filtros.arbitro))
-    const matchBusqueda = normalizar((s.motivo || '') + ' ' + (s.articulo || '') + ' ' + (s.sancion || '')).includes(normalizar(filtros.busqueda))
+    const matchArb = normalizarTexto(s.arbitro).includes(normalizarTexto(filtros.arbitro))
+    const matchBusqueda = normalizarTexto((s.motivo || '') + ' ' + (s.articulo || '') + ' ' + (s.sancion || '')).includes(normalizarTexto(filtros.busqueda))
     const matchDes = (s.desde || '').includes(filtros.desde)
     const textoHasta = s.es_indefinido == 1 ? 'indefinido' : (s.hasta || '')
-    const matchHas = normalizar(textoHasta).includes(normalizar(filtros.hasta))
+    const matchHas = normalizarTexto(textoHasta).includes(normalizarTexto(filtros.hasta))
 
     let matchAnio = true
     if (filtros.anio) matchAnio = extraerAnio(s.desde) === filtros.anio

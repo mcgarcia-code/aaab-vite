@@ -338,6 +338,7 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { cargarExcelJS } from '@/utils/librerias'
@@ -378,7 +379,6 @@ const cargandoHistorial = ref(false)
 const licenciaSeleccionada = ref(null)
 const historialLicencia = ref([])
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 const formatearFechaVista = (f) => f ? f.split(' ')[0].split('-').reverse().join('/') : ''
 const formatearFechaAusencia = (lic) => {
   if (lic.tiempo_indeterminado == 1) return 'Tiempo indeterminado'
@@ -410,10 +410,10 @@ const aniosDisponibles = computed(() => {
 
 const licenciasFiltradas = computed(() => {
   return licencias.value.filter(l => {
-    const matchApe = normalizar(l.apellido).includes(normalizar(filtros.apellido))
-    const matchNom = normalizar(l.nombre).includes(normalizar(filtros.nombre))
+    const matchApe = normalizarTexto(l.apellido).includes(normalizarTexto(filtros.apellido))
+    const matchNom = normalizarTexto(l.nombre).includes(normalizarTexto(filtros.nombre))
     const matchEst = filtros.estado === '' || l.estado === filtros.estado
-    const matchFec = normalizar(formatearFechaAusencia(l)).includes(normalizar(filtros.fecha))
+    const matchFec = normalizarTexto(formatearFechaAusencia(l)).includes(normalizarTexto(filtros.fecha))
     const matchFecSol = formatearFechaVista(l.fecha_solicitud).includes(filtros.fecha_solicitud)
     // Año: coincide por fecha de ausencia o de solicitud.
     // Las indeterminadas (sin fecha de ausencia) se muestran siempre.

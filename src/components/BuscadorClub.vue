@@ -38,6 +38,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 
 // Buscador de clubes: se escribe el nombre y se tilda el club.
 // opciones: lista de nombres (['Club A', ...]) o de objetos ({ id, nombre }).
@@ -59,7 +60,6 @@ const emit = defineEmits(['update:modelValue', 'elegir'])
 const busqueda = ref('')
 const cambiando = ref(false)
 
-const normalizar = (v) => String(v ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 const lista = computed(() => props.opciones.map(o => (typeof o === 'object' && o !== null
   ? { valor: String(o.id ?? o.valor ?? ''), etiqueta: String(o.nombre ?? o.etiqueta ?? '') }
@@ -74,9 +74,9 @@ const valores = computed(() => {
 const elegidos = computed(() => valores.value.map(v => lista.value.find(o => o.valor === v) || { valor: v, etiqueta: v }))
 
 const resultados = computed(() => {
-  const texto = normalizar(busqueda.value.trim())
+  const texto = normalizarTexto(busqueda.value.trim())
   if (!texto) return []
-  return lista.value.filter(o => normalizar(o.etiqueta).includes(texto)).slice(0, 15)
+  return lista.value.filter(o => normalizarTexto(o.etiqueta).includes(texto)).slice(0, 15)
 })
 
 const estaElegido = (valor) => valores.value.includes(valor)

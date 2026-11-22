@@ -147,6 +147,8 @@
 <script setup>
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted } from 'vue'
+import { useGruposPlanilla } from '@/composables/useGruposPlanilla'
+import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
@@ -178,9 +180,6 @@ const grupoActivo = ref(null)
 /* ====================================================
    UTILIDADES
    ==================================================== */
-const normalizar = (v) => {
-  return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
-}
 
 // Acepta 'dd/mm/yyyy', 'yyyy-mm-dd' y 'yyyy-mm-dd hh:mm:ss'
 const parseFechaFlexible = (f) => {
@@ -316,67 +315,7 @@ onMounted(cargarTodo)
 /* ====================================================
    GRUPOS (SOLAPAS)
    ==================================================== */
-const etiquetaGrupo = (g) => {
-  if (!g) return ''
-  if (g.clave === 'singrupo') return 'Sin grupo'
-  return g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre
-}
-
-const perteneceAlGrupo = (a, g) => {
-  const idGrupoArb = a.id_grupo ?? a.idGrupo ?? null
-
-  if (g.clave === 'singrupo') {
-    return idGrupoArb == null
-  }
-
-  if (idGrupoArb != null && g.id != null) {
-    return Number(idGrupoArb) === Number(g.id)
-  }
-
-  // Fallback por nombre si no hubiera id
-  const grupoArb = a.nombre_grupo || a.grupo || ''
-  return normalizar(grupoArb) === normalizar(g.nombre)
-}
-
-const gruposTabs = computed(() => {
-  // Coordinador: armamos las solapas a partir de los grupos que realmente
-  // tienen árbitros en la lista (que el backend ya filtró a sus grupos).
-  // Buscamos el nombre en obtenerGrupos; si no está, usamos el que traiga
-  // el propio árbitro.
-  const idsPresentes = new Map() // id_grupo -> { id, nombre, subgrupo }
-
-  arbitros.value.forEach(a => {
-    const idGrupo = a.id_grupo ?? a.idGrupo ?? null
-    if (idGrupo == null) return
-    if (idsPresentes.has(String(idGrupo))) return
-
-    const grupoObj = grupos.value.find(gr => Number(gr.id) === Number(idGrupo))
-    idsPresentes.set(String(idGrupo), {
-      id: idGrupo,
-      clave: `${idGrupo}`,
-      nombre: grupoObj ? grupoObj.nombre : (a.grupo || a.nombre_grupo || `Grupo ${idGrupo}`),
-      subgrupo: grupoObj ? (grupoObj.subgrupo || '') : (a.subgrupo || '')
-    })
-  })
-
-  const tabs = [...idsPresentes.values()]
-
-  // Solapa extra para árbitros sin id_grupo (por las dudas)
-  const sinGrupo = { clave: 'singrupo', id: null, nombre: 'Sin grupo', subgrupo: '' }
-  const haySinGrupo = arbitros.value.some(a => (a.id_grupo ?? a.idGrupo) == null)
-  return haySinGrupo ? [...tabs, sinGrupo] : tabs
-})
-
-const contarArbitros = (g) => arbitros.value.filter(a => perteneceAlGrupo(a, g)).length
-
-/* Colores de los grupos: se usan en las pestañas de las hojas del Excel */
-const PALETA_GRUPOS = ['#0d6efd', '#6f42c1', '#d63384', '#fd7e14', '#198754', '#20c997', '#0dcaf0', '#dc3545', '#6610f2', '#795548', '#607d8b', '#9e9d24']
-const colorDeGrupo = (indice) => PALETA_GRUPOS[indice % PALETA_GRUPOS.length]
-
-// Selector de grupo de la barra de herramientas
-const elegirGrupo = (clave) => {
-  grupoActivo.value = gruposTabs.value.find(g => g.clave === clave) || null
-}
+const { etiquetaGrupo, perteneceAlGrupo, gruposTabs, contarArbitros, elegirGrupo, colorDeGrupo } = useGruposPlanilla({ arbitros, grupos, grupoActivo, modo: 'id' })
 
 
 const arbitrosDelGrupo = computed(() => {
@@ -387,9 +326,9 @@ const arbitrosDelGrupo = computed(() => {
 })
 
 const arbitrosVisibles = computed(() => {
-  const b = normalizar(busqueda.value)
+  const b = normalizarTexto(busqueda.value)
   if (!b) return arbitrosDelGrupo.value
-  return arbitrosDelGrupo.value.filter(a => normalizar(`${a.apellido} ${a.nombre}`).includes(b))
+  return arbitrosDelGrupo.value.filter(a => normalizarTexto(`${a.apellido} ${a.nombre}`).includes(b))
 })
 
 /* ====================================================
@@ -411,9 +350,9 @@ const reunionAplicaAlGrupo = (r, g) => {
   const ids = String(r.id_grupos ?? '').split(',').map(s => s.trim()).filter(Boolean)
   if (ids.length > 0 && g.id) return ids.includes(String(g.id))
   // Fallback por nombres de grupo (obtenerReuniones devuelve nombresGrupos)
-  const nombres = (r.nombresGrupos || []).map(normalizar)
+  const nombres = (r.nombresGrupos || []).map(normalizarTexto)
   if (nombres.length > 0) {
-    return nombres.includes(normalizar(etiquetaGrupo(g))) || nombres.includes(normalizar(g.nombre))
+    return nombres.includes(normalizarTexto(etiquetaGrupo(g))) || nombres.includes(normalizarTexto(g.nombre))
   }
   // Si la reunión no trae info de grupo pero llegó igual (backend ya la
   // filtró para el coordinador), la mostramos en su grupo.

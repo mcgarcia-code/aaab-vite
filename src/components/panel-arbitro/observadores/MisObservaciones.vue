@@ -280,6 +280,8 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import { categoriaObs, nombreDeTorneo } from '@/utils/observaciones'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { fechaArg } from '@/utils/fechas'
@@ -313,15 +315,10 @@ const obtenerTorneos = async () => {
 }
 
 // Devuelve el nombre del torneo a partir del id guardado en la observación.
-const nombreTorneo = (o) => {
-  const t = torneos.value.find(t => String(t.id) === String(o?.id_torneo))
-  return t ? t.nombre : '-'
-}
+const nombreTorneo = (o) => nombreDeTorneo(torneos.value, o)
 const paginaActual = ref(1)
 const registrosPorPagina = 10
 
-const normalizar = (texto) =>
-  texto ? texto.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : ''
 
 const formatearFecha = (fecha) => fechaArg(fecha, 'S/F')
 
@@ -333,7 +330,6 @@ const nombresArbitros = (o) => {
 }
 
 // Categoría del partido con fallback a la categoría de edad del Excel.
-const categoriaObs = (o) => o.categoria || o.categoria_edad || '-'
 
 const etiquetaEstado = (estado) => {
   const e = (estado || 'pendiente').toLowerCase()
@@ -364,11 +360,11 @@ const avisoComentario = (estado) => {
 const esPendiente = (obs) => (obs.estado || 'pendiente').toLowerCase() === 'pendiente'
 
 const observacionesFiltradas = computed(() => {
-  const q = normalizar(busqueda.value)
+  const q = normalizarTexto(busqueda.value)
   if (!q) return observaciones.value
   return observaciones.value.filter((obs) => {
     const texto = `${obs.arb1 || ''} ${obs.arb2 || ''} ${obs.categoria || ''} ${obs.categoria_edad || ''} ${obs.equipo_local || ''} ${obs.equipo_visitante || ''}`
-    return normalizar(texto).includes(q)
+    return normalizarTexto(texto).includes(q)
   })
 })
 

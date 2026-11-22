@@ -632,6 +632,8 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import { categoriaObs, nombreDeTorneo } from '@/utils/observaciones'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { fechaArg, fechaHoraArg, MESES as MESES_LARGOS } from '@/utils/fechas'
@@ -666,7 +668,6 @@ const paginaActual = ref(1)
 const registrosPorPagina = 10
 
 // Filtros y Paginación
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 const formatearFecha = (fecha) => fechaArg(fecha, 'S/F')
 
@@ -682,7 +683,6 @@ const nombresArbitros = (o) => {
 
 // Categoría del partido: usa la categoría del partido (o.categoria) y cae a la
 // categoría de edad del Excel (categoria_edad) si aquella no está.
-const categoriaObs = (o) => o.categoria || o.categoria_edad || '-'
 
 const etiquetaEstado = (estado) => {
   const e = (estado || 'pendiente').toLowerCase()
@@ -724,10 +724,10 @@ const observacionesFiltradas = computed(() => {
     const matchMes = !filtros.mes || (o.fecha_partido || '').substring(5, 7) === filtros.mes
     const matchAnio = !filtros.anio || (o.fecha_partido || '').substring(0, 4) === filtros.anio
     const matchEstado = !filtros.estado || (o.estado || 'pendiente').toLowerCase() === filtros.estado
-    const matchObs = normalizar(o.nombre_observador).includes(normalizar(filtros.nombre_observador))
-    const matchArb = normalizar(nombresArbitros(o)).includes(normalizar(filtros.arbitros))
-    const matchComp = normalizar(nombreTorneo(o)).includes(normalizar(filtros.competencia))
-    const matchCat = normalizar(categoriaObs(o)).includes(normalizar(filtros.categoria))
+    const matchObs = normalizarTexto(o.nombre_observador).includes(normalizarTexto(filtros.nombre_observador))
+    const matchArb = normalizarTexto(nombresArbitros(o)).includes(normalizarTexto(filtros.arbitros))
+    const matchComp = normalizarTexto(nombreTorneo(o)).includes(normalizarTexto(filtros.competencia))
+    const matchCat = normalizarTexto(categoriaObs(o)).includes(normalizarTexto(filtros.categoria))
 
     return matchMes && matchAnio && matchEstado && matchObs && matchArb && matchComp && matchCat
   })
@@ -849,10 +849,7 @@ const obtenerTorneos = async () => {
   }
 }
 
-const nombreTorneo = (o) => {
-  const t = torneos.value.find(t => String(t.id) === String(o?.id_torneo))
-  return t ? t.nombre : '-'
-}
+const nombreTorneo = (o) => nombreDeTorneo(torneos.value, o)
 
 const idCategoria = ref(null)
 

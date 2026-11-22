@@ -376,6 +376,7 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, onMounted, inject, watch } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { cargarExcelJS } from '@/utils/librerias'
@@ -448,12 +449,11 @@ const cargarConceptos = async () => {
 }
 
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') : ''
 const formatearMonto = (v) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(v)
 
 const movimientosFiltrados = computed(() => {
   return movimientos.value.filter(m => {
-    const matchArbitro = normalizar(m.arbitro).includes(normalizar(filtros.arbitro))
+    const matchArbitro = normalizarTexto(m.arbitro).includes(normalizarTexto(filtros.arbitro))
     const matchPeriodo = !filtros.periodo || (m.fecha_generacion || '').startsWith(filtros.periodo)
     const matchConcepto = !filtros.concepto || m.concepto === filtros.concepto
     const matchEstado = !filtros.estado || m.estado === filtros.estado

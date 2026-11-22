@@ -192,8 +192,9 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, onMounted, inject } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import { useHead } from '@unhead/vue'
-import { api } from '@/api/api'
+import { api, listaDe } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
@@ -326,14 +327,11 @@ function arbitrosDeEvento(idEvento) {
   return arbitrosHabilitadosPorEvento.value[idEvento] || []
 }
 
-function normalizar(v) {
-  return String(v || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
-}
 
 const arbitrosFiltrados = computed(() => {
-  const b = normalizar(busquedaArbitro.value)
+  const b = normalizarTexto(busquedaArbitro.value)
   if (!b) return arbitros.value
-  return arbitros.value.filter(a => normalizar(a.apellido).includes(b))
+  return arbitros.value.filter(a => normalizarTexto(a.apellido).includes(b))
 })
 
 function nombreGrupo(idGrupo) {
@@ -421,8 +419,9 @@ async function abrirModalReunion() {
       action: 'obtenerReuniones',
       payload: {}
     })
-    const lista = res?.payload ?? res ?? []
-    reuniones.value = lista.filter(r => String(r.categoria || '').toLowerCase() === 'reunion')
+    // Si falla, el catch muestra el aviso (antes lo lograba de casualidad el .filter sobre el objeto de error)
+    if (!res?.ok) throw new Error(res?.message)
+    reuniones.value = listaDe(res).filter(r => String(r.categoria || '').toLowerCase() === 'reunion')
   } catch {
     toast({ tipo: 'danger', mensaje: 'No se pudieron obtener las reuniones' })
   } finally {

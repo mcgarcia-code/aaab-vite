@@ -694,7 +694,7 @@ import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h }
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { normalizarTexto } from '@/utils/texto'
-import { api } from '@/api/api'
+import { api, listaDe } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
@@ -1229,8 +1229,7 @@ const obtenerReuniones = async () => {
 const obtenerGrupos = async () => {
   try {
     const res = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' })
-    const lista = res?.payload ?? res ?? []
-    grupos.value = Array.isArray(lista) ? lista : []
+    grupos.value = listaDe(res)
   } catch (e) { console.error('obtenerGrupos:', e) }
 }
 

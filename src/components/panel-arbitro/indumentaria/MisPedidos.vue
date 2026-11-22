@@ -134,6 +134,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, onMounted, watch, inject } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { api } from '@/api/api'
@@ -159,12 +160,11 @@ const cargando = ref(false)
 const paginaActual = ref(1)
 const registrosPorPagina = 10
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 const pedidosFiltradas = computed(() => {
   return pedidos.value.filter(p => {
     const texto = `${p.descripcion} ${p.estado}`.toLowerCase()
-    return normalizar(texto).includes(normalizar(busqueda.value))
+    return normalizarTexto(texto).includes(normalizarTexto(busqueda.value))
   })
 })
 

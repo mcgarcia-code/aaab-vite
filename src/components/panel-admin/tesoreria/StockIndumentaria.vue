@@ -191,6 +191,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, onUnmounted, computed, reactive, inject, watch } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { cargarExcelJS } from '@/utils/librerias'
@@ -235,10 +236,9 @@ const { hayCambios } = useCambiosSinGuardar(
   mostrarModal
 )
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 const stockFiltrado = computed(() => {
-  return listaStock.value.filter(l => normalizar(l.descripcion).includes(normalizar(filtros.modelo)))
+  return listaStock.value.filter(l => normalizarTexto(l.descripcion).includes(normalizarTexto(filtros.modelo)))
 })
 
 const { totalPaginas, paginados: stockPaginado } = usePaginacion(stockFiltrado, registrosPorPagina, paginaActual)

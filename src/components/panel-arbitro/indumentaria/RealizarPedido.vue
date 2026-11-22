@@ -250,6 +250,7 @@
 <script setup>
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, onUnmounted, computed, watch, inject } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
@@ -356,11 +357,10 @@ const cargarStock = async () => {
   }
 }
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 const stockFiltrado = computed(() => {
   return listaAgrupada.value
-    .filter(p => normalizar(p.descripcion).includes(normalizar(busqueda.value)))
+    .filter(p => normalizarTexto(p.descripcion).includes(normalizarTexto(busqueda.value)))
     .sort((a, b) => a.descripcion.localeCompare(b.descripcion))
 })
 

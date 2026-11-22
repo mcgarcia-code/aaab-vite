@@ -141,6 +141,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, computed, onMounted, inject } from 'vue'
+import { categoriaObs, nombreDeTorneo } from '@/utils/observaciones'
 import { fechaArg } from '@/utils/fechas'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
@@ -172,15 +173,11 @@ const obtenerTorneos = async () => {
 
 // Devuelve el nombre del torneo a partir del id guardado en la observación.
 // Cadena vacía si no hay match, para respetar el fallback ('Observación') de la tarjeta.
-const nombreTorneo = (o) => {
-  const t = torneos.value.find(t => String(t.id) === String(o?.id_torneo))
-  return t ? t.nombre : ''
-}
+const nombreTorneo = (o) => nombreDeTorneo(torneos.value, o, '')
 
 const formatearFecha = (fecha) => fechaArg(fecha, 'S/F')
 
 // Categoría del partido con fallback a la categoría de edad del Excel.
-const categoriaObs = (o) => o.categoria || o.categoria_edad || '-'
 
 const aniosDisponibles = computed(() => {
   const set = new Set()

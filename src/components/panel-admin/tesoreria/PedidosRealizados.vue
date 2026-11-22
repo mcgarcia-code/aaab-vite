@@ -291,6 +291,7 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { cargarExcelJS } from '@/utils/librerias'
@@ -323,7 +324,6 @@ const historialArbitro = ref([])
 const arbitroHistorialNombre = ref('')
 
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 // Extrae el año a 4 dígitos desde fecha_creacion (formato DD/MM/YY o DD/MM/YYYY)
 const extraerAnio = (fecha) => {
@@ -347,8 +347,8 @@ const aniosDisponibles = computed(() => {
 const pedidosFiltrados = computed(() => {
   return pedidos.value.filter(p => {
     const nombreCompleto = `${p.apellido} ${p.nombre}`
-    const matchArb = normalizar(nombreCompleto).includes(normalizar(filtros.arbitro))
-    const matchPrenda = normalizar(p.descripcion).includes(normalizar(filtros.prenda))
+    const matchArb = normalizarTexto(nombreCompleto).includes(normalizarTexto(filtros.arbitro))
+    const matchPrenda = normalizarTexto(p.descripcion).includes(normalizarTexto(filtros.prenda))
     const matchEst = filtros.estado === '' || (p.estado && p.estado.toLowerCase() === filtros.estado.toLowerCase())
     const matchFecha = p.fecha_creacion && p.fecha_creacion.includes(filtros.fecha)
     const matchAnio = !filtros.anio || extraerAnio(p.fecha_creacion) === filtros.anio

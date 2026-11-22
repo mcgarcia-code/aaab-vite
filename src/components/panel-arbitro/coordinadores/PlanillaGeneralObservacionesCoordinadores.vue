@@ -244,6 +244,9 @@
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import { categoriaObs, nombreDeTorneo } from '@/utils/observaciones'
+import { useGruposPlanilla } from '@/composables/useGruposPlanilla'
+import { normalizarTexto } from '@/utils/texto'
 import { fechaArg } from '@/utils/fechas'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
@@ -273,7 +276,6 @@ const grupoActivo = ref(null)
 /* ====================================================
    UTILIDADES
    ==================================================== */
-const normalizar = (v) => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim()
 
 const formatearFecha = (fecha) => fechaArg(fecha, 'S/F')
 
@@ -305,10 +307,7 @@ const cargarTorneos = async () => {
   } catch (e) { console.error('cargarTorneos:', e) }
 }
 
-const nombreTorneo = (o) => {
-  const t = torneos.value.find(t => String(t.id) === String(o?.id_torneo))
-  return t ? t.nombre : '-'
-}
+const nombreTorneo = (o) => nombreDeTorneo(torneos.value, o)
 
 /* ====================================================
    CARGA DE DATOS
@@ -354,61 +353,7 @@ onMounted(cargarTodo)
 /* ====================================================
    GRUPOS (SOLAPAS)  — mismo criterio que PlanillaGeneralAdmin
    ==================================================== */
-const etiquetaGrupo = (g) => {
-  if (!g) return ''
-  if (g.clave === 'singrupo') return 'Sin grupo'
-  return g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre
-}
-
-const perteneceAlGrupo = (a, g) => {
-  const idGrupoArb = a.id_grupo ?? a.idGrupo ?? null
-
-  if (g.clave === 'singrupo') {
-    return idGrupoArb == null
-  }
-
-  if (idGrupoArb != null && g.id != null) {
-    return Number(idGrupoArb) === Number(g.id)
-  }
-
-  // Fallback por nombre si no hubiera id
-  const grupoArb = a.nombre_grupo || a.grupo || ''
-  return normalizar(grupoArb) === normalizar(g.nombre)
-}
-
-const gruposTabs = computed(() => {
-  // Coordinador: armamos las solapas a partir de los grupos que realmente
-  // tienen árbitros en la lista (que el backend ya filtró a sus grupos).
-  const idsPresentes = new Map() // id_grupo -> { id, nombre, subgrupo }
-
-  arbitros.value.forEach(a => {
-    const idGrupo = a.id_grupo ?? a.idGrupo ?? null
-    if (idGrupo == null) return
-    if (idsPresentes.has(String(idGrupo))) return
-
-    const grupoObj = grupos.value.find(gr => Number(gr.id) === Number(idGrupo))
-    idsPresentes.set(String(idGrupo), {
-      id: idGrupo,
-      clave: `${idGrupo}`,
-      nombre: grupoObj ? grupoObj.nombre : (a.grupo || a.nombre_grupo || `Grupo ${idGrupo}`),
-      subgrupo: grupoObj ? (grupoObj.subgrupo || '') : (a.subgrupo || '')
-    })
-  })
-
-  const tabs = [...idsPresentes.values()]
-
-  // Solapa extra para árbitros sin id_grupo (por las dudas)
-  const sinGrupo = { clave: 'singrupo', id: null, nombre: 'Sin grupo', subgrupo: '' }
-  const haySinGrupo = arbitros.value.some(a => (a.id_grupo ?? a.idGrupo) == null)
-  return haySinGrupo ? [...tabs, sinGrupo] : tabs
-})
-
-const contarArbitros = (g) => arbitros.value.filter(a => perteneceAlGrupo(a, g)).length
-
-// Selector de grupo de la barra de herramientas
-const elegirGrupo = (clave) => {
-  grupoActivo.value = gruposTabs.value.find(g => g.clave === clave) || null
-}
+const { etiquetaGrupo, perteneceAlGrupo, gruposTabs, contarArbitros, elegirGrupo } = useGruposPlanilla({ arbitros, grupos, grupoActivo, modo: 'id' })
 
 
 const arbitrosDelGrupo = computed(() => {
@@ -419,9 +364,9 @@ const arbitrosDelGrupo = computed(() => {
 })
 
 const arbitrosVisibles = computed(() => {
-  const b = normalizar(busqueda.value)
+  const b = normalizarTexto(busqueda.value)
   if (!b) return arbitrosDelGrupo.value
-  return arbitrosDelGrupo.value.filter(a => normalizar(`${a.apellido} ${a.nombre}`).includes(b))
+  return arbitrosDelGrupo.value.filter(a => normalizarTexto(`${a.apellido} ${a.nombre}`).includes(b))
 })
 
 /* ====================================================
@@ -509,7 +454,6 @@ const cargandoDetalleId = ref(null)
 const tabDetalle = ref('puntajes')
 
 // Categoría del partido con fallback a la categoría de edad del Excel.
-const categoriaObs = (o) => o?.categoria || o?.categoria_edad || '-'
 
 // Comentarios por categoría (Comment sheet): los ítems tipo categoría que tienen comentario.
 const comentariosPorCategoria = computed(() => {

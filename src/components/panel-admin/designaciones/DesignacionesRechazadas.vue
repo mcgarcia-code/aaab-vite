@@ -335,6 +335,7 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { cargarExcelJS } from '@/utils/librerias'
@@ -378,7 +379,6 @@ const mostrarFiltrosMobile = ref(false)
 const paginaActual = ref(1)
 const registrosPorPagina = 10
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : ''
 const formatearFechaVista = (f) => f ? String(f).split(' ')[0].split('-').reverse().join('/') : ''
 
 // Extrae el año (AAAA) de la fecha del partido, en formato 'AAAA-MM-DD ...'. '' si no hay.
@@ -401,7 +401,7 @@ const aniosDisponibles = computed(() => {
 const rechazosFiltrados = computed(() => {
   return rechazos.value.filter(r => {
     const nombreCompleto = `${r.apellido || ''} ${r.nombre || ''}`
-    const matchArb = normalizar(nombreCompleto).includes(normalizar(filtros.arbitro))
+    const matchArb = normalizarTexto(nombreCompleto).includes(normalizarTexto(filtros.arbitro))
     const matchEst = filtros.estado === '' || r.estado === filtros.estado
     const matchFun = filtros.funcion === '' || r.funcion === filtros.funcion
     const matchAnio = filtros.anio === '' || anioDeFecha(r.fecha) === filtros.anio

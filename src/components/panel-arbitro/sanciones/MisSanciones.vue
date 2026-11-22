@@ -275,6 +275,7 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, reactive, computed, onMounted, watch, inject } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { auth } from '@/api/auth'
@@ -306,7 +307,6 @@ const adjuntosDescargo = ref(0)
 const mostrarModalApelar = ref(false)
 
 const limpiarFiltros = () => { filtros.motivo_articulo = ''; filtros.sancion = ''; filtros.desde = ''; filtros.hasta = ''; filtros.estado = '' }
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 const obtenerTextoEstado = (estado_dinamico) => {
   if (estado_dinamico == 1) return 'VIGENTE'
@@ -333,8 +333,8 @@ const obtenerClaseTextoSancion = (estado_dinamico) => {
 
 const sancionesFiltradas = computed(() => {
   return sanciones.value.filter(s => {
-    const matchMotArt = normalizar((s.motivo || '') + ' ' + (s.articulo || '')).includes(normalizar(filtros.motivo_articulo))
-    const matchSan = normalizar(s.sancion || '').includes(normalizar(filtros.sancion))
+    const matchMotArt = normalizarTexto((s.motivo || '') + ' ' + (s.articulo || '')).includes(normalizarTexto(filtros.motivo_articulo))
+    const matchSan = normalizarTexto(s.sancion || '').includes(normalizarTexto(filtros.sancion))
     const matchDes = (s.desde_formateada || '').includes(filtros.desde)
     const matchHas = (s.hasta_formateada || '').includes(filtros.hasta)
 

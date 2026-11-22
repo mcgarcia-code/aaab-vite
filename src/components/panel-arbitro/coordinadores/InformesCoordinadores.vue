@@ -413,6 +413,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { OPCIONES_TORNEO, etiquetaTorneo } from '@/utils/informes'
@@ -455,7 +456,6 @@ const mostrarFiltrosMobile = ref(false)
 const paginaActual = ref(1)
 const registrosPorPagina = 10
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ''
 
 /* ====================================================
    FECHAS
@@ -503,9 +503,9 @@ const informesFiltrados = computed(() => {
     const matchAnio = !filtros.anio || (inf.fecha_partido || '').substring(0, 4) === filtros.anio
     const matchEstado = !filtros.estado || (inf.estado || 'creado').toLowerCase() === filtros.estado
     const matchTorneo = !filtros.torneo || inf.torneo === filtros.torneo
-    const matchEnc = normalizar(inf.encuentro).includes(normalizar(filtros.encuentro))
-    const matchArb = normalizar(inf.arbitros).includes(normalizar(filtros.arbitros))
-    const matchImp = normalizar(inf.implicado).includes(normalizar(filtros.implicado))
+    const matchEnc = normalizarTexto(inf.encuentro).includes(normalizarTexto(filtros.encuentro))
+    const matchArb = normalizarTexto(inf.arbitros).includes(normalizarTexto(filtros.arbitros))
+    const matchImp = normalizarTexto(inf.implicado).includes(normalizarTexto(filtros.implicado))
 
     return matchFec && matchAnio && matchEstado && matchTorneo && matchEnc && matchArb && matchImp
   })

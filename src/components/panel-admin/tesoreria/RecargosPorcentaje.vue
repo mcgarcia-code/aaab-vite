@@ -177,6 +177,7 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, reactive, computed, onMounted, inject, watch } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { api } from '@/api/api'
@@ -206,7 +207,6 @@ const formBase = () => ({ id_arbitro: '', porcentaje: null, motivo: '', fecha_de
 const form = reactive(formBase())
 const { hayCambios } = useCambiosSinGuardar(form, mostrarModal)
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') : ''
 
 const estaActivo = (r) => {
   if (!r.activo || Number(r.activo) === 0) return false
@@ -216,7 +216,7 @@ const estaActivo = (r) => {
 
 const recargosFiltrados = computed(() => {
   return recargos.value.filter(r => {
-    const matchBusqueda = normalizar(`${r.arbitro} ${r.motivo}`).includes(normalizar(filtros.busqueda))
+    const matchBusqueda = normalizarTexto(`${r.arbitro} ${r.motivo}`).includes(normalizarTexto(filtros.busqueda))
     let matchEstado = true
     if (filtros.estado === 'activo') matchEstado = estaActivo(r)
     if (filtros.estado === 'finalizado') matchEstado = !estaActivo(r)

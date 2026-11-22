@@ -62,6 +62,7 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, onMounted } from 'vue'
+import { normalizarTexto } from '@/utils/texto'
 import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
@@ -73,12 +74,11 @@ const cargando = ref(false)
 const arbitrosCuenta = ref([])
 const busqueda = ref('')
 
-const normalizar = (t) => t ? t.toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') : ''
 const formatearMonto = (v) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 }).format(Number(v) || 0)
 const saldoTotal = (a) => (Number(a.saldo_ultimo_cierre) || 0) + (Number(a.pendiente_sin_cerrar) || 0)
 
 const arbitrosFiltrados = computed(() => {
-  return arbitrosCuenta.value.filter(a => normalizar(`${a.apellido} ${a.nombre}`).includes(normalizar(busqueda.value)))
+  return arbitrosCuenta.value.filter(a => normalizarTexto(`${a.apellido} ${a.nombre}`).includes(normalizarTexto(busqueda.value)))
     .sort((a, b) => `${a.apellido} ${a.nombre}`.localeCompare(`${b.apellido} ${b.nombre}`))
 })
 
