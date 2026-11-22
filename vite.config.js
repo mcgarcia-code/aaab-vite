@@ -61,6 +61,10 @@ export default defineConfig({
       generateRobotsTxt: false 
     }),
   ],
+  // ffmpeg.wasm (recorte de clips de AAAB TV) arma su propio worker: Vite no lo tiene que pre-empaquetar
+  optimizeDeps: {
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
+  },
   build: {
     // ExcelJS y html2pdf pesan ~950 KB cada uno, pero se cargan solo al exportar (utils/librerias.js)
     chunkSizeWarningLimit: 1000

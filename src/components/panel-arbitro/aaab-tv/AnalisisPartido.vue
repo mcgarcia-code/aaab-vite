@@ -26,6 +26,19 @@
       </div>
     </div>
 
+    <!-- ============ EVENTO: guardar y retomar después ============ -->
+    <div class="barra-eventos mb-3">
+      <button type="button" class="btn btn-sm btn-danger fw-bold" :disabled="!sesion.tags.length || guardandoEvento" @click="guardarEventoActual">
+        <span v-if="guardandoEvento" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <i v-else class="bi bi-floppy" aria-hidden="true"></i> {{ sesion.idEvento ? 'Guardar cambios' : 'Guardar evento' }}
+      </button>
+      <button type="button" class="btn btn-sm btn-light border fw-bold" @click="abrirMisEventos">
+        <i class="bi bi-folder2-open" aria-hidden="true"></i> Mis eventos <span class="badge bg-dark ms-1">{{ eventos.length }}</span>
+      </button>
+      <span v-if="hayCambiosSinGuardar" class="small fw-semibold texto-aviso"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> Tags sin guardar</span>
+      <span v-else-if="sesion.idEvento" class="small fw-semibold text-success"><i class="bi bi-check-circle" aria-hidden="true"></i> Evento guardado</span>
+    </div>
+
     <div class="row g-3">
       <!-- ============ COLUMNA PRINCIPAL ============ -->
       <div class="col-12 col-xl-8">
@@ -146,22 +159,17 @@
         <section class="bloque">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
             <h3 class="titulo-bloque m-0">Marcar situación</h3>
-            <span class="small text-muted">Clic o tecla · <kbd class="tecla">Espacio</kbd> play/pausa · <kbd class="tecla">←</kbd><kbd class="tecla">→</kbd> 5 s</span>
+            <span class="small text-muted d-none d-md-inline">Video: <kbd class="tecla">Espacio</kbd> play/pausa · <kbd class="tecla">←</kbd><kbd class="tecla">→</kbd> 5 s</span>
           </div>
           <p v-if="motivoPadDeshabilitado" class="small text-muted mb-2"><i class="bi bi-info-circle" aria-hidden="true"></i> {{ motivoPadDeshabilitado }}</p>
-          <div v-for="cat in CATEGORIAS_TAG" :key="cat.clave" class="mb-2">
-            <template v-if="botonesDe(cat.clave).length">
-              <span class="etiqueta-categoria">{{ cat.titulo }}</span>
-              <div class="pad">
-                <button v-for="b in botonesDe(cat.clave)" :key="b.id" type="button" class="boton-tag"
-                        :class="{ destello: destelloId === b.id }" :disabled="!!motivoPadDeshabilitado"
-                        :style="{ background: colorTag(b.color).fondo, color: colorTag(b.color).texto, borderColor: colorTag(b.color).solido }"
-                        @click="marcar(b)">
-                  <span class="text-truncate">{{ b.nombre }}</span>
-                  <kbd v-if="b.atajo" class="tecla">{{ b.atajo }}</kbd>
-                </button>
-              </div>
-            </template>
+          <!-- Celular y app: botones cuadrados, 3 por fila. Escritorio: botones anchos -->
+          <div v-if="botones.length" class="pad">
+            <button v-for="b in botones" :key="b.id" type="button" class="boton-tag"
+                    :class="{ destello: destelloId === b.id }" :disabled="!!motivoPadDeshabilitado"
+                    :style="{ background: colorTag(b.color).fondo, color: colorTag(b.color).texto, borderColor: colorTag(b.color).solido }"
+                    @click="marcar(b)">
+              <span class="nombre-tag" lang="es" :title="b.nombre">{{ conCortesDeSilaba(b.nombre) }}</span>
+            </button>
           </div>
           <EstadoVacio v-if="!botones.length" icono="bi-ui-checks-grid" titulo="Tu panel no tiene botones" mensaje="Agregalos en el paso 1 · Mi panel." />
         </section>
@@ -206,12 +214,28 @@
                 </button>
                 <button type="button" class="btn btn-sm btn-light border" :disabled="t.segundo === null" aria-label="Mover 1 segundo antes" title="1 s antes" @click="moverTag(t.id, -1)">-1s</button>
                 <button type="button" class="btn btn-sm btn-light border" :disabled="t.segundo === null" aria-label="Mover 1 segundo después" title="1 s después" @click="moverTag(t.id, 1)">+1s</button>
-                <button type="button" class="btn btn-sm btn-light border ms-auto text-danger" :aria-label="`Borrar ${t.titulo}`" title="Borrar" @click="borrarTag(t.id)">
+                <button type="button" class="btn btn-sm btn-light border ms-auto" :disabled="!video.url || t.segundo === null || recortando"
+                        :aria-label="`Descargar clip ${t.titulo}`" title="Descargar clip" @click="descargarClips([t])">
+                  <i class="bi bi-download" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-light border text-danger" :aria-label="`Borrar ${t.titulo}`" title="Borrar" @click="borrarTag(t.id)">
                   <i class="bi bi-trash3" aria-hidden="true"></i>
                 </button>
               </div>
             </li>
           </ul>
+
+          <!-- Descargar: para todos (cada árbitro se lleva sus clips para analizarlos) -->
+          <div v-if="sesion.tags.length" class="pie-clips">
+            <div v-if="recortando" class="d-flex align-items-center gap-2 small fw-semibold" role="status">
+              <span class="spinner-border spinner-border-sm" aria-hidden="true"></span> {{ progreso }}
+            </div>
+            <button type="button" class="btn btn-dark fw-bold w-100" :disabled="!clipsDescargables.length || !video.url || recortando" @click="descargarClips(clipsDescargables)">
+              <i class="bi bi-file-earmark-zip" aria-hidden="true"></i> Descargar {{ clipsDescargables.length === 1 ? 'el clip' : `los ${clipsDescargables.length} clips` }} (ZIP)
+            </button>
+            <span v-if="!video.url" class="small text-muted">Cargá el video del partido para descargar los clips.</span>
+            <span v-else class="small text-muted">Se recortan en tu dispositivo, sin subir el video. La primera vez descarga la herramienta de recorte (unos 30 MB).</span>
+          </div>
 
           <div v-if="sesion.tags.length && puedePublicar" class="pie-clips">
             <span class="small text-muted">{{ seleccionados.length }} para publicar · quedan pendientes hasta que los revise Desarrollo Arbitral</span>
@@ -220,7 +244,7 @@
             </button>
           </div>
           <p v-else-if="sesion.tags.length" class="small text-muted border-top pt-2 mt-1 mb-0">
-            <i class="bi bi-info-circle" aria-hidden="true"></i> Podés analizar y ver tus clips. Publicar en AAAB TV es solo para coordinadores y observadores.
+            <i class="bi bi-info-circle" aria-hidden="true"></i> Publicar en AAAB TV es solo para coordinadores y observadores.
           </p>
         </section>
       </aside>
@@ -270,16 +294,69 @@
         </div>
       </template>
     </ModalBase>
+
+    <!-- ============ MIS EVENTOS ============ -->
+    <ModalBase :show="mostrarEventos" titulo="Mis eventos" icono="bi-folder2-open" color-icono="bg-danger-subtle text-danger"
+               max-width="640px" @close="mostrarEventos = false">
+      <p class="small text-muted mb-3">
+        Los partidos que guardaste para retomar después: por ejemplo, marcás en vivo hoy desde el celular y mañana cargás el video en la computadora y sincronizás.
+        <template v-if="AAAB_TV_CON_SERVIDOR">Los ves desde cualquier dispositivo en el que entres con tu usuario.</template>
+        <template v-else>Por ahora quedan guardados en este dispositivo.</template>
+      </p>
+
+      <div v-if="cargandoEventos && !eventos.length" class="text-center py-4">
+        <span class="spinner-border spinner-border-sm text-secondary" aria-hidden="true"></span>
+        <p class="small text-muted mt-2 mb-0">Cargando tus eventos...</p>
+      </div>
+
+      <div v-else-if="errorEventos" class="text-center py-3">
+        <p class="small text-danger fw-semibold mb-2">{{ errorEventos }}</p>
+        <button type="button" class="btn btn-sm btn-light border fw-bold" @click="recargarEventos">Reintentar</button>
+      </div>
+
+      <EstadoVacio v-else-if="!eventos.length" icono="bi-folder2" titulo="Todavía no guardaste eventos" mensaje="Marcá tus tags y tocá “Guardar evento”." />
+
+      <ul v-else class="list-unstyled m-0 d-flex flex-column gap-2">
+        <li v-for="ev in eventos" :key="ev.id" class="evento-guardado" :class="{ actual: ev.id === sesion.idEvento }">
+          <div class="flex-grow-1 min-w-0">
+            <div class="fw-bold text-truncate">{{ ev.partido || 'Partido sin nombre' }}</div>
+            <div class="small text-muted">
+              {{ fechaDMA(ev.fecha) }} · {{ ev.cantidadTags }} {{ ev.cantidadTags === 1 ? 'tag' : 'tags' }}
+              · {{ ev.modo === 'vivo' ? (ev.tagsSinSincronizar ? 'en vivo, sin sincronizar' : 'en vivo, sincronizado') : 'sobre video' }}
+            </div>
+            <div class="small text-muted">Guardado el {{ fechaGuardado(ev.guardadoEl) }}</div>
+          </div>
+          <div class="d-flex gap-1 flex-shrink-0">
+            <button type="button" class="btn btn-sm btn-danger fw-bold" :disabled="ev.id === sesion.idEvento || !!eventoOcupado" @click="pedirAbrirEvento(ev)">
+              <span v-if="eventoOcupado === ev.id" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+              {{ ev.id === sesion.idEvento ? 'Abierto' : 'Abrir' }}
+            </button>
+            <button type="button" class="btn btn-sm btn-light border text-danger" :disabled="!!eventoOcupado" :aria-label="`Borrar evento ${ev.partido}`" title="Borrar" @click="pedirBorrarEvento(ev)">
+              <i class="bi bi-trash3" aria-hidden="true"></i>
+            </button>
+          </div>
+        </li>
+      </ul>
+
+      <template #footer>
+        <button type="button" class="btn btn-dark fw-bold" @click="mostrarEventos = false">Cerrar</button>
+      </template>
+    </ModalBase>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, inject, onMounted, onBeforeUnmount } from 'vue'
+import { conCortesDeSilaba, normalizarTexto } from '@/utils/texto'
+import { fechaDMA } from '@/utils/fechas'
+import { crearZip, descargarBlob } from '@/utils/zip'
 import ModalBase from '@/components/ModalBase.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import {
-  useAaabTv, CATEGORIAS_TAG, VENTANA_SEGUNDOS, colorTag, formatearTiempo, limitesClip
+  useAaabTv, VENTANA_SEGUNDOS, colorTag, formatearTiempo, limitesClip
 } from '@/composables/useAaabTv'
+import { useRecorteClips } from '@/composables/useRecorteClips'
+import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 
 const emit = defineEmits(['publicado'])
 const toast = inject('toast')
@@ -287,12 +364,14 @@ const notificar = inject('notificar')
 
 const {
   botones, sesion, video, segundosReloj, tagsOrdenados, tagsSinSincronizar,
-  cargarVideo, marcarTag, borrarTag, moverTag, puedePublicar,
-  iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion, publicarClips
+  cargarVideo, archivoDelVideo, marcarTag, borrarTag, moverTag, puedePublicar,
+  iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion, publicarClips,
+  eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento
 } = useAaabTv()
 
+const { recortando, progreso, recortar } = useRecorteClips()
+
 const VELOCIDADES = [0.5, 1, 2]
-const botonesDe = (categoria) => botones.value.filter(b => b.categoria === categoria)
 
 // ─── Video ──────────────────────────────────────────────────
 const videoRef = ref(null)
@@ -451,9 +530,137 @@ const confirmarNuevaSesion = () => {
   notificar({
     tipo: 'danger',
     titulo: 'Nueva sesión',
-    mensaje: 'Se borran los tags de este partido (los clips ya publicados no se tocan).',
+    mensaje: hayCambiosSinGuardar.value
+      ? 'Tenés tags sin guardar: si seguís se pierden. Si los querés retomar después, cancelá y tocá “Guardar evento”.'
+      : 'Se limpia la pantalla para un partido nuevo. Los eventos guardados y los clips publicados no se tocan.',
     alConfirmar: nuevaSesion
   })
+}
+
+// ─── Eventos guardados ──────────────────────────────────────
+const mostrarEventos = ref(false)
+const guardandoEvento = ref(false)
+const errorEventos = ref('')
+const eventoOcupado = ref(null)   // id del evento que se está abriendo o borrando
+
+// Nombre de archivo sin tildes ni símbolos (ej. "River vs. Ferro" → "river-vs-ferro")
+const slug = (texto) => normalizarTexto(texto).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+
+const fechaGuardado = (iso) => {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+}
+
+const recargarEventos = async () => {
+  errorEventos.value = ''
+  const res = await cargarEventos()
+  if (!res?.ok) errorEventos.value = res?.message || 'No se pudieron cargar tus eventos.'
+}
+
+// Se recarga cada vez que se abre: con servidor puede haber eventos guardados desde otro dispositivo
+const abrirMisEventos = () => {
+  mostrarEventos.value = true
+  recargarEventos()
+}
+
+const guardarEventoActual = async () => {
+  if (!sesion.partido.trim()) {
+    toast({ tipo: 'warning', titulo: 'Falta el partido', mensaje: 'Escribí el nombre del partido para poder encontrar el evento después.' })
+    document.getElementById('tv-partido')?.focus()
+    return
+  }
+  guardandoEvento.value = true
+  try {
+    const res = await guardarEvento()
+    if (!res?.ok) throw new Error(res?.message)
+    const n = res.payload.tags.length
+    toast({ tipo: 'success', titulo: 'Evento guardado', mensaje: `“${res.payload.partido}” quedó en Mis eventos con ${n} ${n === 1 ? 'tag' : 'tags'}.` })
+  } catch (e) {
+    toast({ tipo: 'danger', titulo: 'No se pudo guardar', mensaje: `${e.message || 'Intentá de nuevo.'} Tus tags siguen en pantalla.` })
+  } finally {
+    guardandoEvento.value = false
+  }
+}
+
+const abrirEventoElegido = async (ev) => {
+  eventoOcupado.value = ev.id
+  try {
+    const res = await abrirEvento(ev.id)
+    if (!res.ok) throw new Error(res.message)
+    mostrarEventos.value = false
+    mostrarVideoEnVivo.value = false
+    const evento = res.payload
+    const sinSincronizar = evento.tags.filter(t => t.segundo === null).length
+    toast({
+      tipo: 'success',
+      titulo: 'Evento abierto',
+      mensaje: sinSincronizar
+        ? `Cargá el video del partido y sincronizalo para ubicar ${sinSincronizar === 1 ? 'el tag marcado' : `los ${sinSincronizar} tags marcados`} en vivo.`
+        : `${evento.partido}: ${evento.tags.length} ${evento.tags.length === 1 ? 'tag' : 'tags'}. Cargá el video para ver y descargar los clips.`
+    })
+  } catch (e) {
+    toast({ tipo: 'danger', titulo: 'No se pudo abrir', mensaje: e.message || 'Intentá de nuevo.' })
+  } finally {
+    eventoOcupado.value = null
+  }
+}
+
+const pedirAbrirEvento = (ev) => {
+  if (!hayCambiosSinGuardar.value) return abrirEventoElegido(ev)
+  notificar({
+    tipo: 'danger',
+    titulo: 'Tags sin guardar',
+    mensaje: 'La sesión que tenés abierta tiene tags sin guardar. Si abrís otro evento, se pierden.',
+    alConfirmar: () => abrirEventoElegido(ev)
+  })
+}
+
+const pedirBorrarEvento = (ev) => {
+  notificar({
+    tipo: 'danger',
+    titulo: 'Borrar evento',
+    mensaje: `Se borra “${ev.partido || 'Partido sin nombre'}” de Mis eventos. Si lo tenés abierto, los tags siguen en pantalla.`,
+    alConfirmar: async () => {
+      eventoOcupado.value = ev.id
+      const res = await borrarEvento(ev.id)
+      eventoOcupado.value = null
+      if (!res?.ok) toast({ tipo: 'danger', titulo: 'No se pudo borrar', mensaje: res?.message || 'Intentá de nuevo.' })
+    }
+  })
+}
+
+// ─── Descargar clips (para todos) ───────────────────────────
+const clipsDescargables = computed(() => tagsOrdenados.value.filter(t => t.segundo !== null))
+
+const nombreClip = (t, numero) => {
+  const { inicio } = limitesClip(t.segundo, video.duracion)
+  const mm = String(Math.floor(inicio / 60)).padStart(2, '0')
+  const ss = String(Math.floor(inicio % 60)).padStart(2, '0')
+  return `${String(numero).padStart(2, '0')}-${slug(t.titulo || t.nombre) || 'clip'}-${mm}m${ss}s`
+}
+
+const descargarClips = async (lista) => {
+  const archivo = archivoDelVideo()
+  if (!archivo || !video.url) {
+    toast({ tipo: 'warning', titulo: 'Falta el video', mensaje: 'Cargá el video del partido para descargar los clips.' })
+    return
+  }
+  const clips = lista.map(t => {
+    const { inicio, duracion } = limitesClip(t.segundo, video.duracion)
+    const numero = clipsDescargables.value.findIndex(c => c.id === t.id) + 1
+    return { nombre: nombreClip(t, numero), inicio, duracion }
+  })
+  try {
+    const recortes = await recortar(archivo, clips)
+    if (recortes.length === 1) {
+      descargarBlob(new Blob([recortes[0].datos], { type: archivo.type || 'video/mp4' }), recortes[0].nombre)
+    } else {
+      descargarBlob(crearZip(recortes), `aaab-tv-${slug(sesion.partido) || 'clips'}-${sesion.fecha || 'sin-fecha'}.zip`)
+    }
+  } catch (e) {
+    console.error('Recorte de clips:', e)
+    toast({ tipo: 'danger', titulo: 'No se pudieron descargar los clips', mensaje: 'Revisá tu conexión (la primera vez se descarga la herramienta de recorte) e intentá de nuevo.' })
+  }
 }
 
 // ─── Publicar ───────────────────────────────────────────────
@@ -494,10 +701,10 @@ const publicar = async () => {
   }
 }
 
-// ─── Atajos de teclado ─────────────────────────────────────
+// ─── Teclado: solo controles del video (los tags se marcan con los botones) ───
 const alPresionarTecla = (e) => {
   const destino = e.target
-  if (mostrarPublicar.value || e.ctrlKey || e.metaKey || e.altKey) return
+  if (mostrarPublicar.value || mostrarEventos.value || e.ctrlKey || e.metaKey || e.altKey) return
   if (destino.closest?.('input, textarea, select, [contenteditable="true"]')) return
 
   if (e.code === 'Space' && videoRef.value) {
@@ -507,13 +714,7 @@ const alPresionarTecla = (e) => {
     return
   }
   if (e.key === 'ArrowLeft' && videoRef.value) { e.preventDefault(); mover(-5); return }
-  if (e.key === 'ArrowRight' && videoRef.value) { e.preventDefault(); mover(5); return }
-
-  const boton = botones.value.find(b => b.atajo && b.atajo === e.key.toUpperCase())
-  if (boton) {
-    e.preventDefault()
-    marcar(boton)
-  }
+  if (e.key === 'ArrowRight' && videoRef.value) { e.preventDefault(); mover(5) }
 }
 
 onMounted(() => window.addEventListener('keydown', alPresionarTecla))
@@ -530,6 +731,27 @@ onBeforeUnmount(() => {
   border-radius: 14px;
   padding: 14px;
 }
+
+/* Barra de eventos guardados */
+.barra-eventos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.texto-aviso { color: var(--o-ambar-texto, #b45309); }
+
+.evento-guardado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--o-borde, #e2e8f0);
+  border-radius: 12px;
+  background: var(--o-tarjeta, #fff);
+}
+.evento-guardado.actual { border-color: #dc2626; box-shadow: 0 0 0 1px #dc2626; }
+.min-w-0 { min-width: 0; }
 .bloque-oscuro {
   background: #0f172a;
   border-color: var(--o-texto, #0f172a);
@@ -661,33 +883,51 @@ onBeforeUnmount(() => {
 .input-tiempo { width: 80px; text-align: center; }
 
 /* Pad */
-.etiqueta-categoria {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--o-texto-suave, #64748b);
-  margin-bottom: 6px;
-}
+/* Celular y app (mobile first): botones cuadrados, 3 por fila, con el nombre centrado.
+   La letra se achica con el ancho de la pantalla; los nombres largos pasan a dos o tres líneas y
+   las palabras que no entran se cortan entre sílabas (conCortesDeSilaba). Probado de 320 a 390 px */
 .pad {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 .boton-tag {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 52px;
-  padding: 8px 12px;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 4px;
   border: 2px solid;
-  border-radius: 12px;
+  border-radius: 14px;
   font-weight: 800;
-  font-size: 0.875rem;
-  text-align: left;
+  font-size: clamp(0.64rem, 3.1vw, 0.85rem);
+  line-height: 1.15;
+  text-align: center;
   transition: transform 0.1s ease, filter 0.15s ease;
+}
+.nombre-tag {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  hyphens: manual;
+}
+
+/* Escritorio: botones anchos en una línea, con el nombre centrado */
+@media (min-width: 768px) {
+  .pad { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .boton-tag {
+    aspect-ratio: auto;
+    min-height: 52px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+  }
+  .nombre-tag {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow-wrap: normal;
+  }
 }
 .boton-tag:hover:not(:disabled) { filter: brightness(0.96); }
 .boton-tag:active:not(:disabled) { transform: scale(0.97); }

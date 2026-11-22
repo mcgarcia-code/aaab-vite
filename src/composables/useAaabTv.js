@@ -1,5 +1,6 @@
 import { reactive, ref, computed, watch } from 'vue'
 import { auth } from '@/api/auth'
+import { crearRepositorioEventos, resumirEvento } from '@/api/aaabTvEventos'
 
 // =====================================================================
 // AAAB TV — Estudio de análisis de partidos + portal de clips
@@ -12,11 +13,6 @@ import { auth } from '@/api/auth'
 // Cada tag genera un clip de 8 segundos antes y 8 después del momento marcado
 export const VENTANA_SEGUNDOS = 8
 
-export const CATEGORIAS_TAG = [
-  { clave: 'sancion', titulo: 'Sanciones disciplinarias' },
-  { clave: 'juego', titulo: 'Situaciones de juego' }
-]
-
 // Colores de los botones (categóricos: sirven para distinguir tags entre sí)
 export const COLORES_TAG = {
   rojo: { nombre: 'Rojo', solido: '#dc2626', fondo: '#fee2e2', texto: '#991b1b' },
@@ -24,22 +20,31 @@ export const COLORES_TAG = {
   amarillo: { nombre: 'Amarillo', solido: '#ca8a04', fondo: '#fef9c3', texto: '#854d0e' },
   verde: { nombre: 'Verde', solido: '#16a34a', fondo: '#dcfce7', texto: '#166534' },
   azul: { nombre: 'Azul', solido: '#1d4ed8', fondo: '#dbeafe', texto: '#1e3a8a' },
+  celeste: { nombre: 'Celeste', solido: '#0891b2', fondo: '#cffafe', texto: '#155e75' },
   violeta: { nombre: 'Violeta', solido: '#7c3aed', fondo: '#ede9fe', texto: '#5b21b6' },
   gris: { nombre: 'Gris', solido: '#475569', fondo: '#e2e8f0', texto: '#1e293b' },
   negro: { nombre: 'Negro', solido: '#0f172a', fondo: '#cbd5e1', texto: '#0f172a' }
 }
 export const colorTag = (clave) => COLORES_TAG[clave] || COLORES_TAG.gris
 
+// Panel predeterminado: una sola lista, sin categorías ni teclas de atajo
 const BOTONES_DEFECTO = [
-  { id: 'tarjeta-amarilla', nombre: 'Tarjeta amarilla', categoria: 'sancion', color: 'amarillo', atajo: '1' },
-  { id: 'dos-minutos', nombre: '2 minutos', categoria: 'sancion', color: 'naranja', atajo: '2' },
-  { id: 'descalificacion', nombre: 'Descalificación', categoria: 'sancion', color: 'rojo', atajo: '3' },
-  { id: 'tarjeta-azul', nombre: 'Tarjeta azul', categoria: 'sancion', color: 'azul', atajo: '4' },
-  { id: 'siete-metros', nombre: '7 metros', categoria: 'juego', color: 'violeta', atajo: 'Q' },
-  { id: 'play-on', nombre: 'Play on (ventaja)', categoria: 'juego', color: 'verde', atajo: 'W' },
-  { id: 'falta-ataque', nombre: 'Falta en ataque', categoria: 'juego', color: 'gris', atajo: 'E' },
-  { id: 'juego-pasivo', nombre: 'Juego pasivo', categoria: 'juego', color: 'negro', atajo: 'R' }
+  { id: 'progresiva', nombre: 'Progresiva', color: 'amarillo' },
+  { id: 'dos-minutos', nombre: '2 minutos', color: 'naranja' },
+  { id: 'red-blue-card', nombre: 'Red/Blue Card', color: 'rojo' },
+  { id: 'faltas-tecnicas', nombre: 'Faltas técnicas', color: 'gris' },
+  { id: 'juego-pasivo', nombre: 'Juego pasivo', color: 'negro' },
+  { id: 'play-on', nombre: 'Play on', color: 'verde' },
+  { id: 'siete-metros', nombre: '7 metros', color: 'violeta' },
+  { id: 'body-language', nombre: 'Body language', color: 'azul' },
+  { id: 'pivot-zone', nombre: 'Pivot zone', color: 'celeste' }
 ]
+
+// Predeterminado anterior (con categorías). Si el panel guardado de un usuario es exactamente
+// este, sin cambios, se reemplaza por el nuevo; si lo había personalizado, se respeta
+const IDS_DEFECTO_ANTERIOR = 'tarjeta-amarilla,dos-minutos,descalificacion,tarjeta-azul,siete-metros,play-on,falta-ataque,juego-pasivo'
+const esDefectoAnterior = (lista) =>
+  Array.isArray(lista) && lista.map(b => b.id).join(',') === IDS_DEFECTO_ANTERIOR
 
 // ─── Utilidades ──────────────────────────────────────────────────────
 export const formatearTiempo = (segundos) => {
@@ -79,7 +84,10 @@ const guardar = (clave, valor) => {
 const idUsuario = () => auth.getUser()?.id ?? 'anonimo'
 const claveStorage = (nombre) => `aaabTv.${nombre}.${idUsuario()}`
 
-const botones = ref(leer(claveStorage('panel'), null) || BOTONES_DEFECTO.map(b => ({ ...b })))
+const panelGuardado = leer(claveStorage('panel'), null)
+const botones = ref(panelGuardado && !esDefectoAnterior(panelGuardado)
+  ? panelGuardado
+  : BOTONES_DEFECTO.map(b => ({ ...b })))
 
 const SESION_VACIA = () => ({
   partido: '',
@@ -89,15 +97,32 @@ const SESION_VACIA = () => ({
   // Reloj del modo en vivo (se guarda para no perderlo si se recarga la página)
   reloj: { corriendo: false, acumulado: 0, desde: null },
   // Segundo del video en el que se inició el cronómetro (null = todavía no se sincronizó)
-  sincronizacion: null
+  sincronizacion: null,
+  // Evento guardado del que viene esta sesión (null = todavía no se guardó)
+  idEvento: null,
+  // Huella de lo que se guardó o abrió por última vez: si la sesión cambió, hay cambios sin guardar
+  huellaGuardada: null
 })
 const sesion = reactive({ ...SESION_VACIA(), ...leer(claveStorage('sesion'), {}) })
 
-// El video no se guarda: es un archivo local que se vuelve a elegir al recargar
+// El video no se guarda: es un archivo local que se vuelve a elegir al recargar.
+// El File queda fuera del estado reactivo: lo usa el recorte de clips para descargarlos
 const video = reactive({ url: '', nombre: '', duracion: 0 })
+let archivoVideo = null
+
+// "Mis eventos": sesiones guardadas para retomarlas (ej. marcar en vivo hoy y cargar el video mañana).
+// Con servidor se ven desde cualquier dispositivo; sin servidor, en este navegador (ver api/aaabTvEventos.js)
+const repoEventos = crearRepositorioEventos(() => claveStorage('eventos'))
+const eventos = ref([])          // resúmenes, de la lista
+const cargandoEventos = ref(false)
 
 watch(botones, (v) => guardar(claveStorage('panel'), v), { deep: true })
 watch(sesion, (v) => guardar(claveStorage('sesion'), v), { deep: true })
+
+const copiar = (valor) => JSON.parse(JSON.stringify(valor))
+const huellaDe = (s) => JSON.stringify({ partido: s.partido.trim(), fecha: s.fecha, tags: s.tags, sincronizacion: s.sincronizacion })
+// Id de un evento nuevo: UUID (lo usa el servidor como clave), con respaldo si el navegador no lo tiene
+const nuevoIdEvento = () => (globalThis.crypto?.randomUUID ? crypto.randomUUID() : nuevoId())
 
 // ─── Clips de AAAB TV ─────────────────────────────────────────────
 // Estados: al publicar quedan "pendiente"; Desarrollo Arbitral los pasa a
@@ -168,21 +193,13 @@ asegurarIntervalo()
 
 export function useAaabTv() {
   // ─── Mi panel ─────────────────────────────────────────────
-  const agregarBoton = ({ nombre, categoria, color, atajo }) => {
-    const tecla = String(atajo || '').trim().toUpperCase().slice(0, 1)
-    if (tecla && botones.value.some(b => b.atajo === tecla)) {
-      return { ok: false, mensaje: `La tecla ${tecla} ya la usa otro botón.` }
-    }
-    botones.value.push({ id: nuevoId(), nombre: nombre.trim(), categoria, color, atajo: tecla })
+  const agregarBoton = ({ nombre, color }) => {
+    botones.value.push({ id: nuevoId(), nombre: nombre.trim(), color })
     return { ok: true }
   }
-  const editarBoton = (id, cambios) => {
-    const tecla = String(cambios.atajo || '').trim().toUpperCase().slice(0, 1)
-    if (tecla && botones.value.some(b => b.id !== id && b.atajo === tecla)) {
-      return { ok: false, mensaje: `La tecla ${tecla} ya la usa otro botón.` }
-    }
+  const editarBoton = (id, { nombre, color }) => {
     const boton = botones.value.find(b => b.id === id)
-    if (boton) Object.assign(boton, { ...cambios, nombre: cambios.nombre.trim(), atajo: tecla })
+    if (boton) Object.assign(boton, { nombre: nombre.trim(), color })
     return { ok: true }
   }
   const borrarBoton = (id) => { botones.value = botones.value.filter(b => b.id !== id) }
@@ -194,7 +211,9 @@ export function useAaabTv() {
     video.url = URL.createObjectURL(archivo)
     video.nombre = archivo.name
     video.duracion = 0
+    archivoVideo = archivo
   }
+  const archivoDelVideo = () => archivoVideo
 
   // ─── Tags ─────────────────────────────────────────────────
   // En modo video el segundo es el del video; en vivo, el del cronómetro (se pasa al video al sincronizar)
@@ -269,6 +288,72 @@ export function useAaabTv() {
     asegurarIntervalo()
   }
 
+  // ─── Eventos guardados ────────────────────────────────────
+  // Hay cambios sin guardar si la sesión tiene tags y difiere de lo último que se guardó o abrió
+  const hayCambiosSinGuardar = computed(() => sesion.tags.length > 0 && huellaDe(sesion) !== sesion.huellaGuardada)
+
+  const cargarEventos = async () => {
+    cargandoEventos.value = true
+    try {
+      const res = await repoEventos.listar()
+      if (res?.ok) eventos.value = res.payload
+      return res
+    } finally {
+      cargandoEventos.value = false
+    }
+  }
+
+  // Guarda (o actualiza) la sesión actual como evento. El cronómetro se guarda en pausa,
+  // con el tiempo que llevaba: al abrir el evento se puede seguir desde ahí.
+  // Devuelve { ok, payload: evento guardado, message }
+  const guardarEvento = async () => {
+    const evento = {
+      id: sesion.idEvento || nuevoIdEvento(),
+      partido: sesion.partido.trim(),
+      fecha: sesion.fecha,
+      modo: sesion.modo,
+      tags: copiar(sesion.tags),
+      reloj: { acumulado: segundosReloj.value },
+      sincronizacion: sesion.sincronizacion
+    }
+    // La huella es la de lo que se manda (si se marca un tag mientras guarda, queda como cambio sin guardar)
+    const huella = huellaDe(evento)
+    const res = await repoEventos.guardar(evento)
+    if (!res?.ok) return res
+    const guardado = res.payload?.id ? res.payload : evento
+    sesion.idEvento = guardado.id
+    sesion.huellaGuardada = huella
+    eventos.value = [resumirEvento(guardado), ...eventos.value.filter(e => e.id !== guardado.id)]
+    return { ok: true, payload: guardado }
+  }
+
+  // Trae el evento completo y lo deja como sesión actual. Devuelve { ok, payload: evento, message }
+  const abrirEvento = async (id) => {
+    const res = await repoEventos.obtener(id)
+    if (!res?.ok || !res.payload) return { ok: false, message: res?.message || 'No se pudo abrir el evento.' }
+    const ev = res.payload
+    Object.assign(sesion, SESION_VACIA(), {
+      partido: ev.partido || '',
+      fecha: ev.fecha || '',
+      modo: ev.modo === 'vivo' ? 'vivo' : 'video',
+      tags: Array.isArray(ev.tags) ? ev.tags : [],
+      reloj: { corriendo: false, acumulado: Number(ev.reloj?.acumulado) || 0, desde: null },
+      sincronizacion: Number.isFinite(ev.sincronizacion) ? ev.sincronizacion : null,
+      idEvento: ev.id
+    })
+    sesion.huellaGuardada = huellaDe(sesion)
+    asegurarIntervalo()
+    return { ok: true, payload: ev }
+  }
+
+  const borrarEvento = async (id) => {
+    const res = await repoEventos.borrar(id)
+    if (!res?.ok) return res
+    eventos.value = eventos.value.filter(e => e.id !== id)
+    if (sesion.idEvento === id) Object.assign(sesion, { idEvento: null, huellaGuardada: null })
+    return res
+  }
+
   // ─── Publicación ──────────────────────────────────────────
   // VPS: subir el video completo (subida por partes, puede pesar varios GB) y enviar
   // { idVideo, partido, fecha, clips: [{ inicio, fin, titulo, descripcion, etiqueta }] }.
@@ -328,8 +413,9 @@ export function useAaabTv() {
     botones, sesion, video, clipsPublicados,
     segundosReloj, tagsOrdenados, tagsSinSincronizar,
     agregarBoton, editarBoton, borrarBoton, restablecerBotones,
-    cargarVideo, marcarTag, borrarTag, moverTag,
+    cargarVideo, archivoDelVideo, marcarTag, borrarTag, moverTag,
     iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion,
+    eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento,
     publicarClips, borrarClipPublicado,
     puedePublicar, clipsVisibles, urlVideoDe, cambiarEstadoClip, editarClip
   }
