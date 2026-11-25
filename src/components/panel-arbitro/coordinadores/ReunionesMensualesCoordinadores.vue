@@ -132,284 +132,51 @@
           </button>
         </div>
 
-        <div :class="['bg-light p-3 border-bottom', mostrarFiltrosMobile ? 'd-block' : 'd-none']">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <span class="small fw-bold text-dark text-uppercase">Filtrar Árbitros</span>
-            <button @click="mostrarFiltrosMobile = false" class="btn-close btn-sm" aria-label="Cerrar filtros"></button>
-          </div>
-          <div class="row g-2">
-            <div class="col-6"><input aria-label="Apellido" v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="APELLIDO..."></div>
-            <div class="col-6"><input aria-label="Nombre" v-model="filtros.nombre"   class="form-control form-control-sm shadow-none" placeholder="NOMBRE..."></div>
-            <div class="col-6">
-              <select aria-label="Filtrar por grupo" v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
-                <option value="">GRUPO</option>
-                <option v-for="g in GRUPOS" :key="g" :value="g">{{ g }}</option>
-              </select>
-            </div>
-            <div class="col-6">
-              <select aria-label="Filtrar por subgrupo" v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
-                <option value="">SUBGRUPO</option>
-                <option v-for="sg in SUBGRUPOS" :key="sg" :value="sg">{{ sg }}</option>
-              </select>
-            </div>
-            <div class="col-12" v-if="modoReunion">
-              <select aria-label="Filtrar por asistencia" v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
-                <option value="">ASISTENCIA</option>
-                <option value="presente">SOLO PRESENTES</option>
-                <option value="ausente">SOLO AUSENTES</option>
-                <option value="sin_registro">SIN REGISTRO</option>
-              </select>
-            </div>
-            <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger rounded-pill w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-body p-0 p-md-3 bg-white">
-          <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-container">
-            <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075">
-              <thead class="table-light">
-                <tr>
-                  <th class="py-3 ps-3 text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
-                  <th class="py-3 text-center text-uppercase text-muted col-fija col-acciones" style="width: 90px;">Acciones</th>
-                  <th class="py-3 text-uppercase text-muted col-fija col-apellido">Apellido</th>
-                  <th class="py-3 text-uppercase text-muted col-fija col-nombre">Nombre</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Grupo</th>
-                  <th class="py-3 text-center text-uppercase text-muted">Subgrupo</th>
-                  <th v-if="!modoReunion" class="py-3 text-center text-uppercase text-muted">Reuniones</th>
-                  <th v-if="modoReunion" class="py-3 text-center text-uppercase text-muted">Teórico</th>
-                  <th v-if="modoReunion" class="py-3 text-uppercase text-muted" style="min-width: 270px;">
-                    Asistencia
-                    <span class="fw-normal fst-italic text-muted ms-1 texto-07">(guardado automático)</span>
-                  </th>
-                </tr>
-                <tr class="bg-light">
-                  <td class="p-2 align-middle text-center border-bottom border-2 col-fija col-id"></td>
-                  <td class="p-2 border-bottom border-2 col-fija col-acciones"></td>
-                  <td class="p-2 border-bottom border-2 col-fija col-apellido">
-                    <input aria-label="Filtrar.." v-model="filtros.apellido" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
-                  </td>
-                  <td class="p-2 border-bottom border-2 col-fija col-nombre">
-                    <input aria-label="Filtrar.." v-model="filtros.nombre" class="form-control form-control-sm shadow-none" placeholder="FILTRAR..">
-                  </td>
-                  <td class="p-2 border-bottom border-2">
-                    <select aria-label="Filtrar por grupo" v-model="filtros.grupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
-                      <option value="">TODOS</option>
-                      <option v-for="g in GRUPOS" :key="g" :value="g">{{ g }}</option>
-                    </select>
-                  </td>
-                  <td class="p-2 border-bottom border-2">
-                    <select aria-label="Filtrar por subgrupo" v-model="filtros.subgrupo" class="form-select form-select-sm shadow-none text-uppercase text-dark">
-                      <option value="">TODOS</option>
-                      <option v-for="sg in SUBGRUPOS" :key="sg" :value="sg">{{ sg }}</option>
-                    </select>
-                  </td>
-                  <td class="p-2 border-bottom border-2 text-center" v-if="!modoReunion">
-                    <span class="text-muted small fst-italic">← Seleccioná una reunión</span>
-                  </td>
-                  <td v-if="modoReunion" class="p-2 border-bottom border-2"></td>
-                  <td v-if="modoReunion" class="p-2 border-bottom border-2">
-                    <select aria-label="Filtrar por asistencia" v-model="filtros.asistencia" class="form-select form-select-sm shadow-none text-uppercase text-dark">
-                      <option value="">TODAS</option>
-                      <option value="presente">SOLO PRESENTES</option>
-                      <option value="ausente">SOLO AUSENTES</option>
-                      <option value="sin_registro">SIN REGISTRO</option>
-                    </select>
-                  </td>
-                </tr>
-              </thead>
-
-              <tbody>
-                <tr v-if="cargandoInicial || cargandoArbitros">
-                  <td :colspan="modoReunion ? 8 : 7">
-                    <EstadoCargando texto="Cargando datos" />
-                  </td>
-                </tr>
-                <tr v-else-if="!arbitrosPaginados.length">
-                  <td :colspan="modoReunion ? 8 : 7" class="text-center py-4 text-muted">
-                    <i class="bi bi-search opacity-50 d-block mb-2" style="font-size: 32px;"></i>
-                    <span class="fw-bold">No se encontraron árbitros.</span>
-                  </td>
-                </tr>
-                <tr
-                  v-else
-                  v-for="a in arbitrosPaginados"
-                  :key="a.id"
-                  :class="{
-                    'fila-presente': modoReunion && asistencias[a.id] === 'presente',
-                    'fila-ausente':  modoReunion && asistencias[a.id] === 'ausente',
-                  }"
+        <TablaAsistenciaReunion @ver-historial="verDetalleArbitro" @guardar="guardarAsistencia">
+          <!-- Columna del teórico: nota del examen habilitado para la reunión -->
+          <template #encabezado-extra>
+            <th class="py-3 text-center text-uppercase text-muted">Teórico</th>
+          </template>
+          <template #celda-extra="{ arbitro: a }">
+            <td class="text-center">
+              <div v-if="examenes[a.id]" class="d-flex align-items-center justify-content-center gap-2">
+                <span class="fw-bold" :class="examenes[a.id].aprobado ? 'text-success' : 'text-danger'">
+                  {{ examenes[a.id].calificacion.toFixed(2) }} %
+                </span>
+                <button
+                  type="button"
+                  @click="descargarPdfTeorico(a)"
+                  :disabled="!!descargandoPdf[a.id]"
+                  class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark"
+                  title="Descargar teórico"
+                  aria-label="Descargar teórico"
                 >
-                  <td class="ps-3 text-muted fw-bold font-monospace col-fija col-id">{{ a.id }}</td>
-                  <td class="text-center col-fija col-acciones">
-                    <div class="d-flex justify-content-center gap-1">
-                      <button @click="verDetalleArbitro(a)" class="btn btn-light btn-sm border shadow-sm rounded p-1 text-warning" title="Ver historial" aria-label="Ver historial">
-                        <i class="bi bi-search texto-16px"></i>
-                      </button>
-                    </div>
-                  </td>
-                  <td class="text-dark fw-bold text-uppercase col-fija col-apellido">{{ a.apellido }}</td>
-                  <td class="text-dark fw-bold text-uppercase col-fija col-nombre">{{ a.nombre }}</td>
-                  <td class="text-center text-dark">{{ a.nombre_grupo || a.grupo || '-' }}</td>
-                  <td class="text-center text-dark">{{ a.subgrupo || '-' }}</td>
-
-                  <td v-if="!modoReunion" class="text-center">
-                    <div class="d-flex align-items-center justify-content-center gap-2">
-                      <ResumenAsistencia :resumen="resumenAsistencia(a.id)" />
-                    </div>
-                  </td>
-
-                  <td v-if="modoReunion" class="text-center">
-                    <div v-if="examenes[a.id]" class="d-flex align-items-center justify-content-center gap-2">
-                      <span class="fw-bold" :class="examenes[a.id].aprobado ? 'text-success' : 'text-danger'">
-                        {{ examenes[a.id].calificacion.toFixed(2) }} %
-                      </span>
-                      <button
-                        @click="descargarPdfTeorico(a)"
-                        :disabled="!!descargandoPdf[a.id]"
-                        class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark"
-                        title="Descargar teórico"
-                        aria-label="Descargar teórico"
-                      >
-                        <span v-if="descargandoPdf[a.id]" class="spinner-border spinner-border-sm"></span>
-                        <i v-else class="bi bi-eye"></i>
-                      </button>
-                    </div>
-                    <span v-else class="text-muted">-</span>
-                  </td>
-
-                  <td v-if="modoReunion">
-                    <div class="d-flex align-items-center gap-3">
-                      <div class="form-check form-check-inline mb-0">
-                        <input
-                          type="radio"
-                          :id="`pres-${a.id}`"
-                          :name="`asist-${a.id}`"
-                          value="presente"
-                          v-model="asistencias[a.id]"
-                          @change="guardarAsistencia(a)"
-                          :disabled="!!guardando[a.id]"
-                          class="form-check-input radio-presente"
-                        >
-                        <label :for="`pres-${a.id}`" class="form-check-label fw-bold text-success">✓ Presente</label>
-                      </div>
-                      <div class="form-check form-check-inline mb-0">
-                        <input
-                          type="radio"
-                          :id="`aus-${a.id}`"
-                          :name="`asist-${a.id}`"
-                          value="ausente"
-                          v-model="asistencias[a.id]"
-                          @change="guardarAsistencia(a)"
-                          :disabled="!!guardando[a.id]"
-                          class="form-check-input radio-ausente"
-                        >
-                        <label :for="`aus-${a.id}`" class="form-check-label fw-bold text-secondary">✗ Ausente</label>
-                      </div>
-                      <span class="estado-indicator">
-                        <span v-if="guardando[a.id]"       class="spinner-border spinner-border-sm text-danger" role="status"></span>
-                        <i    v-else-if="guardadoOk[a.id]" class="bi bi-check-circle-fill text-success"></i>
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="d-md-none p-3 bg-light">
-            <div v-if="cargandoInicial || cargandoArbitros" class="bg-white rounded-3 shadow-sm border">
-              <EstadoCargando texto="Cargando datos" />
-            </div>
-            <template v-else>
-              <div
-                v-for="a in arbitrosPaginados"
-                :key="'mob-'+a.id"
-                class="card shadow-sm mb-3 border-light-subtle rounded-3"
-                :class="{
-                  'border-success border-2':   modoReunion && asistencias[a.id] === 'presente',
-                  'border-secondary border-2': modoReunion && asistencias[a.id] === 'ausente',
-                }"
+                  <span v-if="descargandoPdf[a.id]" class="spinner-border spinner-border-sm"></span>
+                  <i v-else class="bi bi-eye"></i>
+                </button>
+              </div>
+              <span v-else class="text-muted">-</span>
+            </td>
+          </template>
+          <template #tarjeta-extra="{ arbitro: a }">
+            <div v-if="examenes[a.id]" class="d-flex justify-content-between align-items-center text-dark mb-2 border-bottom border-secondary-subtle pb-2">
+              <span class="small">
+                <strong>Teórico:</strong>
+                <span class="fw-bold ms-1" :class="examenes[a.id].aprobado ? 'text-success' : 'text-danger'">{{ examenes[a.id].calificacion.toFixed(2) }} %</span>
+              </span>
+              <button
+                type="button"
+                @click="descargarPdfTeorico(a)"
+                :disabled="!!descargandoPdf[a.id]"
+                class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark"
+                aria-label="Descargar teórico"
               >
-                <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                  <div class="text-dark fw-bold text-uppercase texto-105">{{ a.apellido }}, {{ a.nombre }}</div>
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="small text-muted fw-bold font-monospace">#{{ a.id }}</div>
-                    <span v-if="modoReunion && guardando[a.id]"    class="spinner-border spinner-border-sm text-danger"></span>
-                    <i v-else-if="modoReunion && guardadoOk[a.id]" class="bi bi-check-circle-fill text-success fs-6"></i>
-                  </div>
-                </div>
-                <div class="card-body pt-0 px-3 pb-3">
-                  <div class="d-flex justify-content-between text-dark mb-2 border-bottom border-secondary-subtle pb-2">
-                    <span class="small">
-                      <strong>Grupo:</strong> {{ a.grupo }}
-                      <template v-if="a.subgrupo"> / {{ a.subgrupo }}</template>
-                    </span>
-                    <span class="small"><strong>Reuniones:</strong> {{ resumenAsistencia(a.id).total }}</span>
-                  </div>
-
-                  <div v-if="modoReunion && examenes[a.id]" class="d-flex justify-content-between align-items-center text-dark mb-2 border-bottom border-secondary-subtle pb-2">
-                    <span class="small">
-                      <strong>Teórico:</strong>
-                      <span class="fw-bold ms-1" :class="examenes[a.id].aprobado ? 'text-success' : 'text-danger'">{{ examenes[a.id].calificacion.toFixed(2) }} %</span>
-                    </span>
-                    <button
-                      @click="descargarPdfTeorico(a)"
-                      :disabled="!!descargandoPdf[a.id]"
-                      class="btn btn-light btn-sm border shadow-sm rounded p-1 text-dark"
-                      aria-label="Descargar teórico"
-                    >
-                      <span v-if="descargandoPdf[a.id]" class="spinner-border spinner-border-sm"></span>
-                      <i v-else class="bi bi-eye"></i>
-                    </button>
-                  </div>
-
-                  <div v-if="!modoReunion" class="d-flex gap-2">
-                    <div class="flex-grow-1 bg-light p-2 rounded border border-light-subtle">
-                      <ResumenAsistencia :resumen="resumenAsistencia(a.id)" :mobile="true" />
-                    </div>
-                    <button @click="verDetalleArbitro(a)" class="btn btn-sm btn-outline-warning shadow-sm px-3 d-flex justify-content-center align-items-center" aria-label="Ver historial">
-                      <i class="bi bi-search texto-18px"></i>
-                    </button>
-                  </div>
-
-                  <div v-else class="d-flex gap-2">
-                    <label
-                      :for="`presm-${a.id}`"
-                      class="toggle-asist flex-grow-1 d-flex align-items-center justify-content-center py-2 rounded-2 fw-bold small"
-                      :class="asistencias[a.id] === 'presente'
-                        ? 'bg-success text-white border border-success'
-                        : 'bg-white text-success border border-success'"
-                    >
-                      <input type="radio" :id="`presm-${a.id}`" :name="`asistm-${a.id}`" value="presente"
-                        v-model="asistencias[a.id]" @change="guardarAsistencia(a)" :disabled="!!guardando[a.id]" class="visually-hidden">
-                      ✓ Presente
-                    </label>
-                    <label
-                      :for="`ausm-${a.id}`"
-                      class="toggle-asist flex-grow-1 d-flex align-items-center justify-content-center py-2 rounded-2 fw-bold small"
-                      :class="asistencias[a.id] === 'ausente'
-                        ? 'bg-secondary text-white border border-secondary'
-                        : 'bg-white text-secondary border border-secondary'"
-                    >
-                      <input type="radio" :id="`ausm-${a.id}`" :name="`asistm-${a.id}`" value="ausente"
-                        v-model="asistencias[a.id]" @change="guardarAsistencia(a)" :disabled="!!guardando[a.id]" class="visually-hidden">
-                      ✗ Ausente
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div v-if="!arbitrosPaginados.length" class="text-center p-4 bg-white rounded-3 shadow-sm border mt-3">
-                <i class="bi bi-search text-muted opacity-50 d-block mb-2 texto-40px"></i>
-                <p class="text-muted m-0 fw-bold">No se encontraron árbitros.</p>
-              </div>
-            </template>
-          </div>
-
-          <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
-        </div>
+                <span v-if="descargandoPdf[a.id]" class="spinner-border spinner-border-sm"></span>
+                <i v-else class="bi bi-eye"></i>
+              </button>
+            </div>
+          </template>
+        </TablaAsistenciaReunion>
       </div>
     </div>
 
@@ -438,6 +205,7 @@
           v-model:fecha-seleccionada="formReunion.fecha_evento"
           :fecha-minima="modoEdicionReunion ? manianaStr() : hoyStr()"
           :grupos-destacados="misGrupos.map(g => Number(g.id))"
+          incluir-clases-curso
           @cargado="evs => eventosAgenda = evs"
         />
       </div>
@@ -454,7 +222,7 @@
             <textarea aria-label="Lugar" v-model="formReunion.descripcion" class="form-control shadow-none border-secondary-subtle" rows="2" placeholder="Ej: Casa del Handball..." required></textarea>
           </div>
 
-          <div class="col-12 col-md-6">
+          <div class="col-6 col-md-4">
             <label class="small fw-bold text-dark mb-1">Fecha de la Reunión *</label>
             <input aria-label="Fecha de la Reunión" v-model="formReunion.fecha_evento" type="date" :min="modoEdicionReunion ? manianaStr() : hoyStr()" class="form-control shadow-none border-secondary-subtle" required>
             <small v-if="eventosMismoDia.length" class="d-block text-danger fw-semibold mt-1">
@@ -462,9 +230,21 @@
             </small>
           </div>
 
-          <div class="col-12 col-md-6">
+          <div class="col-6 col-md-3">
+            <label for="reunion-hora" class="small fw-bold text-dark mb-1">Hora</label>
+            <input id="reunion-hora" v-model="formReunion.hora_evento" type="time" class="form-control shadow-none border-secondary-subtle"
+                   aria-describedby="reunion-hora-ayuda">
+          </div>
+
+          <div class="col-12 col-md-5">
             <label class="small fw-bold text-dark mb-1">Categoría</label>
             <div class="form-control bg-light border-secondary-subtle fw-bold text-dark">Reunión</div>
+          </div>
+
+          <div class="col-12 mt-1">
+            <p id="reunion-hora-ayuda" class="small text-muted m-0">
+              <i class="bi bi-clock me-1"></i>Las reuniones se cargan a las {{ HORA_REUNION }} hs; podés cambiar la hora.
+            </p>
           </div>
 
           <div class="col-12">
@@ -598,104 +378,18 @@
       </template>
     </ModalBase>
 
-    <ModalBase :show="mostrarModalDetalle" @close="mostrarModalDetalle = false" icono="person_search" colorIcono="bg-warning-subtle text-warning-emphasis" maxWidth="800px">
-      <template #header>
-        <div class="text-center w-100">
-          <span class="fw-bold fs-5">Detalle de {{ arbitroSeleccionado.apellido }}, {{ arbitroSeleccionado.nombre }}</span>
-          <div class="text-muted small mt-1">Historial de reuniones</div>
-        </div>
-      </template>
-
-      <div v-if="cargandoHistorial" class="text-center py-5 bg-white rounded shadow-sm border border-light-subtle">
-        <div class="spinner-border text-warning" role="status"></div>
-        <div class="mt-2 text-muted fw-bold small">Cargando historial...</div>
-      </div>
-
-      <div v-else-if="!reunionesDelArbitroDetalle.length" class="text-center py-5 text-muted bg-white rounded shadow-sm border border-light-subtle">
-        <i class="bi bi-clock-history d-block mb-2" style="font-size: 48px; color: #cbd5e1;"></i>
-        <p class="mb-0 fw-bold">No hay reuniones registradas para este árbitro.</p>
-      </div>
-
-      <div v-else>
-        <div class="d-flex justify-content-end mb-3" v-if="añosDetalleArbitro.length">
-          <div class="d-flex align-items-center gap-2">
-            <label class="small fw-bold text-dark text-uppercase m-0">Año:</label>
-            <select aria-label="Año" v-model="filtroAñoDetalle" class="form-select form-select-sm shadow-sm border-secondary-subtle text-uppercase text-dark" style="min-width: 140px;">
-              <option value="">AÑO</option>
-              <option v-for="año in añosDetalleArbitro" :key="año" :value="año">{{ año }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row g-2 mb-4">
-          <div class="col-4">
-            <div class="card border-0 shadow-sm h-100 bg-success">
-              <div class="card-body p-2 text-center text-white">
-                <i class="bi bi-person-check-fill" style="font-size: 1.25rem;"></i>
-                <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.presentes }}</div>
-                <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Presentes</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="card border-0 shadow-sm h-100 bg-secondary">
-              <div class="card-body p-2 text-center text-white">
-                <i class="bi bi-person-dash-fill" style="font-size: 1.25rem;"></i>
-                <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.ausentes }}</div>
-                <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Ausentes</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="card border-0 shadow-sm h-100 bg-light">
-              <div class="card-body p-2 text-center text-muted">
-                <i class="bi bi-question-circle-fill" style="font-size: 1.25rem;"></i>
-                <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.sinInformacion }}</div>
-                <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Sin info</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="d-flex align-items-center mb-3 pb-2 border-bottom border-2 border-warning">
-          <i class="bi bi-calendar-event text-warning-emphasis me-2"></i>
-          <h6 class="fw-bold m-0 text-dark text-uppercase">Reuniones</h6>
-        </div>
-        <div class="row g-2">
-          <div v-for="ex in reunionesFiltradosDetalle" :key="ex.id" class="col-12 col-md-6">
-            <div class="card border border-light-subtle shadow-sm h-100 bg-white">
-              <div class="card-body p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <div class="text-dark fw-bold small mb-1">
-                      <i class="bi bi-calendar3 me-1 text-muted"></i>{{ formatFecha(ex.fecha_reunion) }}
-                    </div>
-                    <div v-if="ex.titulo" class="text-muted small fst-italic">{{ ex.titulo }}</div>
-                  </div>
-                  <div class="d-flex flex-column align-items-end gap-1">
-                    <span class="badge bg-dark font-monospace texto-065">#{{ ex.id }}</span>
-                    <AsistenciaBadge :asistencia="ex.asistencia" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </ModalBase>
+    <ModalHistorialReuniones :show="mostrarModalDetalle" :arbitro="arbitroSeleccionado" @close="mostrarModalDetalle = false" />
   </div>
 </template>
 
 <script setup>
-import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
-import { anioActual, conAnioActual } from '@/utils/anios'
-import { ref, onMounted, computed, reactive, inject, watch, defineComponent, h } from 'vue'
-import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
-import { usePaginacion } from '@/composables/usePaginacion'
-import { normalizarTexto } from '@/utils/texto'
-import { api, listaDe } from '@/api/api'
+import { ref, onMounted, computed, reactive, inject, watch, provide } from 'vue'
+import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
+import TablaAsistenciaReunion from '@/components/comunes/reuniones/TablaAsistenciaReunion.vue'
+import ModalHistorialReuniones from '@/components/comunes/reuniones/ModalHistorialReuniones.vue'
+import { useAsistenciaReuniones } from '@/composables/useAsistenciaReuniones'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import CalendarioEventos from '@/components/CalendarioEventos.vue'
@@ -707,14 +401,8 @@ useHead({
 })
 
 // ─── Constantes ───────────────────────────────────────────────────
-const GRUPOS            = ['LH', 'Pre Liga', 'SR', '1', '2', '3', '4']
-const SUBGRUPOS         = ['A', 'B', 'C']
-const CATEGORIA         = 'reunion'
 
 // ─── Helpers ─────────────────────────────────────────────────────
-const formatFecha  = (f) => f?.split(' ')[0] ?? ''
-const añoDeFecha   = (f) => (f?.split(' ')[0] ?? '').split('/')[2] ?? ''
-const sortPorFecha = (lista) => [...lista].sort((a, b) => (b._ts ?? 0) - (a._ts ?? 0))
 
 // True si la fecha del evento ya pasó (comparación por día, hora 00:00).
 // No se puede habilitar un examen para una reunión con fecha pasada.
@@ -751,70 +439,29 @@ const manianaStr = () => { const d = new Date(); d.setDate(d.getDate() + 1); ret
 const esFechaFutura = (fechaEvento) => !!fechaEvento && aISO(fechaEvento) > hoyStr()
 
 // Nombre legible de un grupo a partir de su id (usa la lista cargada de grupos).
-const nombreGrupo = (idGrupo) => {
-  const g = grupos.value.find(x => Number(x.id) === Number(idGrupo))
-  if (!g) return '—'
-  return g.subgrupo ? `${g.nombre} ${g.subgrupo}` : g.nombre
-}
-
-const normalizarAsistencia = (valor) => {
-  if (valor === null || valor === undefined) return ''
-  const texto = String(valor).trim().toLowerCase()
-  if (texto === 'presente') return 'presente'
-  if (texto === 'ausente')  return 'ausente'
-  return ''
-}
 
 // ─── Componentes internos ─────────────────────────────────────────
-const ResumenAsistencia = defineComponent({
-  props: { resumen: Object, mobile: Boolean },
-  setup(props) {
-    return () => {
-      const r = props.resumen ?? { presentes: 0, ausentes: 0 }
-      const items = []
-      if (r.presentes > 0) items.push({ label: 'Presentes', short: 'pres.', badge: 'bg-success',   icon: 'bi-person-check-fill', count: r.presentes })
-      if (r.ausentes  > 0) items.push({ label: 'Ausentes',  short: 'aus.',  badge: 'bg-secondary', icon: 'bi-person-dash-fill',  count: r.ausentes  })
-      if (!items.length) {
-        return h('div', { class: 'd-flex gap-1 flex-wrap' }, [
-          h('span', { class: 'badge bg-dark rounded-pill px-3 py-1', title: 'Sin registro' }, '0')
-        ])
-      }
-      return h('div', { class: 'd-flex gap-1 flex-wrap' }, items.map(k =>
-        h('span', { class: `badge ${k.badge} text-white px-2 py-1`, title: k.label },
-          props.mobile ? `${k.count} ${k.short}` : [h('i', { class: `bi ${k.icon} me-1` }), String(k.count)]
-        )
-      ))
-    }
-  },
-})
-
-const AsistenciaBadge = defineComponent({
-  props: { asistencia: String },
-  setup(props) {
-    return () => {
-      const estado = normalizarAsistencia(props.asistencia)
-      return h('span', {
-        class: estado === 'presente'
-          ? 'badge bg-success text-white px-2 py-1'
-          : estado === 'ausente'
-            ? 'badge bg-secondary text-white px-2 py-1'
-            : 'badge bg-light text-muted border px-2 py-1',
-      }, estado === 'presente' ? 'PRESENTE' : estado === 'ausente' ? 'AUSENTE' : 'SIN INFORMACION')
-    }
-  },
-})
 
 // ─── Inyectado ───────────────────────────────────────────────────
 const toast = inject('toast')
+
+// ─── Asistencia (compartida con el panel admin) ──────────────────
+// El coordinador ve solo los árbitros de los grupos que coordina.
+const asistencia = useAsistenciaReuniones({ toast, accionArbitros: 'grupos' })
+provide('asistenciaReuniones', asistencia)
+const {
+  arbitrosReunion, grupos, reunionSeleccionada, soloActivos,
+  asistencias, cargandoInicial, cargandoArbitros, paginaActual, mostrarFiltrosMobile,
+  nombreGrupo, modoReunion, resumenReunionActual, totalFiltrados,
+  obtenerGrupos, cargarArbitros, cargarAsistenciasGlobales,
+  limpiarAsistencias, limpiarFiltros, cargarArbitrosReunion
+} = asistencia
 const notificar = inject('notificar')
 
 // ─── Estado ──────────────────────────────────────────────────────
 const arrReuniones        = ref([])
-const arbitros            = ref([])
-const arbitrosReunion     = ref([])
 const examenes            = ref({})
 const descargandoPdf      = reactive({})
-const grupos              = ref([])
 const habilitandoExamen   = ref(false)
 const deshabilitandoExamen = ref(false)
 const examenHabilitado    = ref(false)
@@ -827,34 +474,13 @@ const { hayCambios: hayCambiosExamen } = useCambiosSinGuardar(
   () => mostrarModalExamen.value && !cargandoReglas.value
 )
 
-const reunionSeleccionada = ref('')
-const soloActivos         = ref(false)
-
-const registrosExistentes = ref({})
-const asistencias         = reactive({})
-const guardando           = reactive({})
-const guardadoOk          = reactive({})
-
-const cargandoInicial      = ref(true)
-const cargandoArbitros     = ref(false)
-const paginaActual         = ref(1)
-const registrosPorPagina   = 10
-const mostrarFiltrosMobile = ref(false)
 const mostrarModalDetalle  = ref(false)
 const arbitroSeleccionado  = ref({ id: null, apellido: '', nombre: '' })
-const filtroAñoDetalle     = ref(anioActual())
-
-const filtros = reactive({ apellido: '', nombre: '', grupo: '', subgrupo: '', asistencia: '' })
-
-const cargandoHistorial              = ref(false)
-const reunionesArbitroSeleccionado   = ref([])
-const asistenciasGlobales            = ref({})
 
 // ─── Computeds: modo ─────────────────────────────────────────────
 // El select trabaja con una clave "idEvento|idGrupo" (o "idEvento|all" para
 // reuniones de todos los grupos), de modo que cada grupo de una reunión es una
 // opción separada. Igual acá derivamos el idEvento y el idGrupo elegidos.
-const modoReunion = computed(() => !!reunionSeleccionada.value)
 
 // Opciones del select: una por evento + grupo. Para un coordinador, el backend
 // adjunta idsGruposCoordinados/nombresGruposCoordinados (solo los grupos que
@@ -1116,100 +742,10 @@ async function deshabilitarExamenReunion() {
   }
 }
 
-const resumenReunionActual = computed(() => {
-  const r = { presentes: 0, ausentes: 0, sinRegistro: 0 }
-  for (const a of arbitrosReunion.value) {
-    const v = asistencias[a.id]
-    if      (v === 'presente') r.presentes++
-    else if (v === 'ausente')  r.ausentes++
-    else                       r.sinRegistro++
-  }
-  return r
-})
-
-const resumenAsistencia = (id) =>
-  asistenciasGlobales.value[id] ?? { presentes: 0, ausentes: 0, total: 0 }
-
 // ─── Computeds: modal historial ───────────────────────────────────
-const reunionesDelArbitroDetalle = computed(() => {
-  if (!reunionesArbitroSeleccionado.value.length) return []
-  const map = {}
-  reunionesArbitroSeleccionado.value.forEach(row => {
-    if (row.tipo !== CATEGORIA) return
-    const key = row.id_evento
-    if (!map[key]) {
-      map[key] = {
-        id:            row.id,
-        id_evento:     row.id_evento,
-        id_arbitro:    row.id_arbitro,
-        tipo:          row.tipo,
-        asistencia:    row.asistencia,
-        fecha_reunion: row.fecha_examen,
-        titulo:        row.titulo,
-        _ts:           row.ts,
-        detalles:      [],
-      }
-    }
-  })
-  return sortPorFecha(Object.values(map))
-})
-
-const añosDetalleArbitro = computed(() => {
-  const set = new Set()
-  for (const ex of reunionesDelArbitroDetalle.value) {
-    const año = añoDeFecha(ex.fecha_reunion)
-    if (año) set.add(año)
-  }
-  return conAnioActual(set)
-})
-
-const reunionesFiltradosDetalle = computed(() =>
-  !filtroAñoDetalle.value
-    ? reunionesDelArbitroDetalle.value
-    : reunionesDelArbitroDetalle.value.filter(ex => añoDeFecha(ex.fecha_reunion) === filtroAñoDetalle.value)
-)
-
-const resumenDetalle = computed(() => {
-  const r = { presentes: 0, ausentes: 0, sinInformacion: 0 }
-  for (const ex of reunionesFiltradosDetalle.value) {
-    const estado = normalizarAsistencia(ex.asistencia)
-    if      (estado === 'presente') r.presentes++
-    else if (estado === 'ausente')  r.ausentes++
-    else                            r.sinInformacion++
-  }
-  return r
-})
 
 // ─── Computeds: filtrado y paginación ────────────────────────────
-const arbitrosMostrados = computed(() =>
-  modoReunion.value ? arbitrosReunion.value : arbitros.value
-)
 
-const arbitrosFiltrados = computed(() => {
-  const { apellido, nombre, grupo, subgrupo, asistencia } = filtros
-  return arbitrosMostrados.value.filter(a => {
-    if (apellido && !normalizarTexto(a.apellido).includes(normalizarTexto(apellido))) return false
-    if (nombre   && !normalizarTexto(a.nombre).includes(normalizarTexto(nombre)))     return false
-    if (grupo    && (a.nombre_grupo || a.grupo) !== grupo)                            return false
-    if (subgrupo && (a.subgrupo ?? '') !== subgrupo)                                  return false
-    if (modoReunion.value && asistencia) {
-      const estadoActual = asistencias[a.id] || ''
-      if (asistencia === 'presente'     && estadoActual !== 'presente')                                    return false
-      if (asistencia === 'ausente'      && estadoActual !== 'ausente')                                     return false
-      if (asistencia === 'sin_registro' && (estadoActual === 'presente' || estadoActual === 'ausente'))    return false
-    }
-    return true
-  })
-})
-
-const arbitrosOrdenados = computed(() =>
-  [...arbitrosFiltrados.value].sort((a, b) =>
-    normalizarTexto(a.apellido).localeCompare(normalizarTexto(b.apellido), 'es')
-  )
-)
-
-const totalFiltrados    = computed(() => arbitrosOrdenados.value.length)
-const { totalPaginas, paginados: arbitrosPaginados } = usePaginacion(arbitrosOrdenados, registrosPorPagina, paginaActual)
 
 // ─── Cargas ──────────────────────────────────────────────────────
 const obtenerReuniones = async () => {
@@ -1226,51 +762,15 @@ const obtenerReuniones = async () => {
   } catch (e) { console.error('obtenerReuniones:', e) }
 }
 
-const obtenerGrupos = async () => {
-  try {
-    const res = await api.getCacheado({ entity: 'grupos', action: 'obtenerGrupos' })
-    grupos.value = listaDe(res)
-  } catch (e) { console.error('obtenerGrupos:', e) }
-}
-
 // ← ÚNICO CAMBIO vs. admin: obtenerArbitrosFiltradosPorGrupo
-const cargarArbitros = async () => {
-  try {
-    const res = await api.get({
-      entity: 'arbitros',
-      action: 'obtenerArbitrosFiltradosPorGrupo',
-      payload: { soloActivos: soloActivos.value }
-    })
-    if ((res.ok || res.success) && res.payload) arbitros.value = res.payload
-  } catch (e) { console.error('cargarArbitros:', e) }
-}
 
 // Un solo request con los totales de presentes/ausentes por árbitro
 // (antes se pedía obtenerArbitrosReunion una vez por cada reunión).
-const cargarAsistenciasGlobales = async () => {
-  if (!arbitros.value.length) return
-  const mapa = {}
-  arbitros.value.forEach(a => { mapa[a.id] = { presentes: 0, ausentes: 0, total: 0 } })
-  try {
-    const res = await api.get({ entity: 'reuniones', action: 'obtenerResumenAsistenciasReuniones', payload: {} })
-    if (!res?.ok) throw new Error(res?.message || 'No se pudo obtener el resumen de asistencias')
-    for (const r of (res.payload || [])) {
-      const presentes = Number(r.presentes) || 0
-      const ausentes  = Number(r.ausentes) || 0
-      mapa[r.id_arbitro] = { presentes, ausentes, total: presentes + ausentes }
-    }
-    asistenciasGlobales.value = mapa
-  } catch (e) { console.error('Error cargando asistencias globales:', e) }
-}
 
 // ─── Cambio de reunión ────────────────────────────────────────────
 const limpiarEstadoReunion = () => {
-  Object.keys(asistencias).forEach(k => delete asistencias[k])
-  Object.keys(guardando).forEach(k => delete guardando[k])
-  Object.keys(guardadoOk).forEach(k => delete guardadoOk[k])
+  limpiarAsistencias()
   Object.keys(descargandoPdf).forEach(k => delete descargandoPdf[k])
-  registrosExistentes.value = {}
-  arbitrosReunion.value = []
   examenes.value = {}
   examenHabilitado.value = false
   mostrarModalExamen.value = false
@@ -1289,18 +789,7 @@ const onReunionSeleccionada = async () => {
   }
   cargandoArbitros.value = true
   try {
-    const resArb = await api.get({
-      entity: 'reuniones',
-      action: 'obtenerArbitrosReunion',
-      payload: { idEvento: Number(idEventoSeleccionado.value), soloActivos: soloActivos.value }
-    })
-    if ((resArb.ok || resArb.success) && resArb.payload) {
-      arbitrosReunion.value = resArb.payload
-      resArb.payload.forEach(a => {
-        const asistencia = normalizarAsistencia(a.asistencia)
-        if (asistencia) asistencias[a.id] = asistencia
-      })
-    }
+    await cargarArbitrosReunion(idEventoSeleccionado.value)
     await Promise.all([cargarExamenes(), cargarProgramacionExamen()])
   } catch (e) {
     console.error('onReunionSeleccionada:', e)
@@ -1338,55 +827,21 @@ const descargarPdfTeorico = async (a) => {
   }
 }
 
-const guardarAsistencia = async (a) => {
-  const estado = asistencias[a.id]
-  if (!estado) return
+// Solo se toma asistencia en reuniones aprobadas
+const guardarAsistencia = (a) => {
+  if (!asistencias[a.id]) return
   if (!reunionAprobada.value) {
     delete asistencias[a.id]
     toast({ titulo: 'Reunión no aprobada', mensaje: 'La reunión todavía no fue aprobada: no se puede tomar asistencia.', tipo: 'danger' })
     return
   }
-  guardando[a.id] = true
-  delete guardadoOk[a.id]
-  try {
-    const res = await api.post({
-      entity: 'reuniones',
-      action: 'registrarAsistenciaArbitro',
-      payload: { idEvento: Number(idEventoSeleccionado.value), idArbitro: a.id, tipo: estado },
-    })
-    if (res.payload) {
-      guardadoOk[a.id] = true
-      setTimeout(() => { delete guardadoOk[a.id] }, 2500)
-    } else {
-      const prev = registrosExistentes.value[a.id]
-      if (prev) asistencias[a.id] = prev.estado == 2 ? 'ausente' : 'presente'
-      else delete asistencias[a.id]
-      toast({ titulo: 'Error', mensaje: res.message || 'No se pudo guardar la asistencia.', tipo: 'danger' })
-    }
-  } catch {
-    toast({ titulo: 'Error fatal', mensaje: 'Error de conexión con el servidor.', tipo: 'danger' })
-  } finally {
-    guardando[a.id] = false
-  }
+  asistencia.guardarAsistencia(a, idEventoSeleccionado.value)
 }
 
 // ─── Acciones ────────────────────────────────────────────────────
-const verDetalleArbitro = async (a) => {
+const verDetalleArbitro = (a) => {
   arbitroSeleccionado.value = { id: a.id, apellido: a.apellido, nombre: a.nombre }
-  filtroAñoDetalle.value = anioActual()
   mostrarModalDetalle.value = true
-  reunionesArbitroSeleccionado.value = []
-  cargandoHistorial.value = true
-  try {
-    const res = await api.get({
-      entity: 'reuniones',
-      action: 'obtenerAsistenciasArbitro',
-      payload: { idArbitro: a.id }
-    })
-    if ((res.ok || res.success) && res.payload)
-      reunionesArbitroSeleccionado.value = res.payload
-  } catch (e) { console.error('Error al cargar historial del árbitro:', e) }
-  finally { cargandoHistorial.value = false }
 }
 
 const recargar = async () => {
@@ -1409,7 +864,19 @@ const cargandoMisGrupos  = ref(false)
 const misGrupos          = ref([]) // grupos que coordina el usuario
 const gruposReunion      = ref([]) // ids de grupos destinatarios elegidos
 
-const formReunionBase = () => ({ titulo: '', descripcion: '', fecha_evento: '' })
+// Hora por defecto de las reuniones (la misma que en Gestión de Eventos; se puede cambiar)
+const HORA_REUNION = '19:30'
+
+// Hora de una reunión ya cargada: la que trae el evento; si no viene, la de su fecha;
+// si tampoco, la de por defecto (igual que Gestión de Eventos)
+const horaDeReunion = (r) => {
+  if (r.hora) return String(r.hora).slice(0, 5)
+  const m = String(r.fecha_evento || '').match(/[ T](\d{2}:\d{2})/)
+  if (m && m[1] !== '00:00') return m[1]
+  return HORA_REUNION
+}
+
+const formReunionBase = () => ({ titulo: '', descripcion: '', fecha_evento: '', hora_evento: HORA_REUNION })
 const formReunion = reactive(formReunionBase())
 const { hayCambios: hayCambiosReunion, tomarFoto: tomarFotoReunion } = useCambiosSinGuardar(
   () => ({ ...formReunion, grupos: [...gruposReunion.value].sort((a, b) => a - b) }),
@@ -1420,7 +887,8 @@ const eventosAgenda = ref([])
 const eventosMismoDia = computed(() => eventosAgenda.value.filter(e =>
   e.fecha_evento === formReunion.fecha_evento &&
   e.categoria !== 'recordatorio' &&
-  Number(e.id) !== Number(idReunionEditada.value)
+  // las clases del curso (solo lectura) siempre cuentan; de los eventos se excluye la reunión que se edita
+  (e.soloLectura || Number(e.id) !== Number(idReunionEditada.value))
 ))
 
 const cargarMisGrupos = async () => {
@@ -1444,6 +912,7 @@ const abrirModalEditarReunion = () => {
     titulo: r.titulo || '',
     descripcion: r.descripcion || '',
     fecha_evento: aISO(r.fecha_evento),
+    hora_evento: horaDeReunion(r),
   })
   gruposReunion.value = (r.idsGrupos || []).map(Number)
   mostrarModalNueva.value = true
@@ -1491,6 +960,7 @@ const guardarReunion = async () => {
         titulo: formReunion.titulo,
         descripcion: formReunion.descripcion,
         fecha_evento: formReunion.fecha_evento,
+        hora_evento: formReunion.hora_evento,
         categoria: 'reunion',
         todosLosGrupos: false,
         nombresGrupos: [],
@@ -1524,11 +994,6 @@ const guardarReunion = async () => {
 }
 
 // ─── Misc ────────────────────────────────────────────────────────
-const limpiarFiltros = () => Object.keys(filtros).forEach(k => (filtros[k] = ''))
-
-
-watch(filtros,      () => { paginaActual.value = 1 }, { deep: true })
-watch(modoReunion,  () => { paginaActual.value = 1 })
 
 watch(soloActivos, async () => {
   if (modoReunion.value) {
@@ -1559,19 +1024,6 @@ onMounted(async () => {
 @media (min-width: 1400px) {
   .select-reunion { flex-basis: 380px; max-width: 380px; }
 }
-.col-acciones { left: 60px;  min-width: 90px;  }
-.col-apellido { left: 150px; min-width: 150px; }
-.col-nombre   { left: 300px; min-width: 150px; }
-.col-nombre::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 1px; background: linear-gradient(to right, rgba(0,0,0,0.1), transparent); }
-.fila-presente           { background-color: var(--o-verde-fondo, #f0fdf4) !important; }
-.fila-presente .col-fija { background-color: var(--o-verde-fondo, #f0fdf4) !important; }
-.fila-ausente            { background-color: var(--o-superficie, #f9fafb) !important; }
-.fila-ausente  .col-fija { background-color: var(--o-superficie, #f9fafb) !important; }
-.radio-presente { accent-color: var(--o-verde-texto, #198754); }
-.radio-ausente  { accent-color: var(--o-texto-suave, #6c757d); }
-.estado-indicator { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; }
-.toggle-asist { cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; user-select: none; font-size: 0.85rem; }
-.toggle-asist:active { opacity: 0.82; }
 .texto-creacion { font-size: 0.75rem; }
 .control-encabezado { height: 40px; }
 
