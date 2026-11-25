@@ -243,7 +243,9 @@
 
           <div class="col-12 mt-1">
             <p id="reunion-hora-ayuda" class="small text-muted m-0">
-              <i class="bi bi-clock me-1"></i>Las reuniones se cargan a las {{ HORA_REUNION }} hs; podés cambiar la hora.
+              <i class="bi bi-clock me-1"></i>
+              <template v-if="modoEdicionReunion && !formReunion.hora_evento">Si dejás la hora vacía, se mantiene la que ya tenía la reunión.</template>
+              <template v-else>Las reuniones se cargan a las {{ HORA_REUNION }} hs; podés cambiar la hora.</template>
             </p>
           </div>
 
@@ -867,13 +869,11 @@ const gruposReunion      = ref([]) // ids de grupos destinatarios elegidos
 // Hora por defecto de las reuniones (la misma que en Gestión de Eventos; se puede cambiar)
 const HORA_REUNION = '19:30'
 
-// Hora de una reunión ya cargada: la que trae el evento; si no viene, la de su fecha;
-// si tampoco, la de por defecto (igual que Gestión de Eventos)
+// Hora de una reunión ya cargada. reuniones/obtenerReuniones todavía no la devuelve:
+// en ese caso queda vacía y, al guardar, no se manda (el backend conserva la que tenía).
 const horaDeReunion = (r) => {
-  if (r.hora) return String(r.hora).slice(0, 5)
-  const m = String(r.fecha_evento || '').match(/[ T](\d{2}:\d{2})/)
-  if (m && m[1] !== '00:00') return m[1]
-  return HORA_REUNION
+  const hora = r.hora_evento || r.hora
+  return hora ? String(hora).slice(0, 5) : ''
 }
 
 const formReunionBase = () => ({ titulo: '', descripcion: '', fecha_evento: '', hora_evento: HORA_REUNION })
@@ -960,7 +960,8 @@ const guardarReunion = async () => {
         titulo: formReunion.titulo,
         descripcion: formReunion.descripcion,
         fecha_evento: formReunion.fecha_evento,
-        hora_evento: formReunion.hora_evento,
+        // Solo si hay hora: al modificar sin tocarla, se mantiene la que ya tenía
+        ...(formReunion.hora_evento ? { hora_evento: formReunion.hora_evento } : {}),
         categoria: 'reunion',
         todosLosGrupos: false,
         nombresGrupos: [],
