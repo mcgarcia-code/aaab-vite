@@ -122,7 +122,7 @@
                     <td class="text-dark text-truncate" :title="inf.implicado" style="max-width: 160px;">{{ inf.implicado }}</td>
                     <td class="text-dark text-truncate" :title="inf.arbitros" style="max-width: 200px;">{{ inf.arbitros || '-' }}</td>
                     <td class="text-center">
-                      <span :class="badgeEstado(inf.estado)">{{ etiquetaEstado(inf.estado) }}</span>
+                      <span :class="claseEstadoInforme(inf.estado)">{{ etiquetaEstadoInforme(inf.estado) }}</span>
                     </td>
                     <td class="text-center pe-3 text-muted">{{ formatearFechaHora(inf.creado_en) }}</td>
                   </tr>
@@ -148,7 +148,7 @@
                     #{{ inf.id }}<br>
                     {{ formatearFecha(inf.fecha_partido) }}
                     <div class="mt-1">
-                      <span :class="badgeEstado(inf.estado)">{{ etiquetaEstado(inf.estado) }}</span>
+                      <span :class="claseEstadoInforme(inf.estado)">{{ etiquetaEstadoInforme(inf.estado) }}</span>
                     </div>
                   </div>
                 </div>
@@ -211,78 +211,24 @@
          MODAL DETALLE
          ========================================== -->
     <ModalBase :show="mostrarDetalle" @close="cerrarDetalle" titulo="Detalle del informe" icono="description" colorIcono="bg-danger text-white" maxWidth="640px">
-      <div v-if="informeSel" class="text-start">
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-          <span class="fw-bold text-muted small">Informe #{{ informeSel.id }}</span>
-          <span :class="badgeEstado(informeSel.estado)">{{ etiquetaEstado(informeSel.estado) }}</span>
-        </div>
-
-        <div class="row g-3">
-          <div class="col-6"><DatoDetalle etiqueta="Fecha del partido" :valor="formatearFecha(informeSel.fecha_partido)" /></div>
-          <div class="col-6"><DatoDetalle etiqueta="Categoría" :valor="informeSel.categoria || '-'" /></div>
-          <div class="col-12"><DatoDetalle etiqueta="Torneo" :valor="etiquetaTorneo(informeSel.torneo)" /></div>
-          <div class="col-12"><DatoDetalle etiqueta="Encuentro" :valor="informeSel.encuentro" /></div>
-          <div class="col-12"><DatoDetalle etiqueta="Árbitros" :valor="informeSel.arbitros || '-'" /></div>
-          <div class="col-12" v-if="informeSel.delegado_tecnico">
-            <DatoDetalle etiqueta="Delegado técnico (cargó el informe)" :valor="informeSel.delegado_tecnico" />
+      <DetalleInforme v-if="informeSel" :informe="informeSel" :descargando-archivo="descargandoArchivo" @descargar="descargarArchivo">
+        <template #despues>
+          <!-- Cambio de estado (siempre editable: se puede revertir) -->
+          <div class="mt-4 pt-3 border-top">
+            <label class="form-label small fw-bold text-dark mb-1">Actualizar estado del informe</label>
+            <select aria-label="Actualizar estado del informe" v-model="nuevoEstado" class="form-select form-select-sm shadow-none fw-bold">
+              <option value="creado">Creado</option>
+              <option value="pendiente">Pendiente de correción</option>
+              <option value="aprobado">Aprobar informe</option>
+              <option value="desestimado">Desestimar informe</option>
+              <option value="anulado">Anular informe</option>
+            </select>
+            <p class="text-muted small mt-2 mb-0">
+              <i class="bi bi-info-circle me-1"></i>Aprobados y desestimados pasan al panel de administración. Los anulados quedan fuera del circuito. Podés revertir el estado si hace falta.
+            </p>
           </div>
-          <div class="col-6"><DatoDetalle etiqueta="Implicado" :valor="informeSel.implicado" /></div>
-          <div class="col-6"><DatoDetalle etiqueta="Sanción" :valor="informeSel.sancion" /></div>
-          <div class="col-12"><DatoDetalle etiqueta="Institución" :valor="informeSel.institucion_nombre" /></div>
-          <div class="col-12">
-            <label class="form-label small fw-bold text-muted mb-1">Motivo y descripción</label>
-            <div class="border rounded p-2 bg-light small text-break texto-preformateado">{{ informeSel.motivo_descripcion }}</div>
-          </div>
-          <div class="col-12">
-            <DatoDetalle :etiqueta="informeSel.cargado_por_es_rol ? 'Cargado por' : (informeSel.delegado_tecnico ? 'Cargado por el delegado técnico' : 'Cargado por el árbitro')" :valor="`${formatearFechaHora(informeSel.creado_en)} — ${informeSel.cargado_por_nombre || informeSel.delegado_tecnico || informeSel.arbitros || '-'}`" />
-          </div>
-
-          <!-- ARCHIVOS ADJUNTOS -->
-          <div class="col-12" v-if="informeSel.archivos && informeSel.archivos.length">
-            <label class="form-label small fw-bold text-muted mb-1">
-              <i class="bi bi-paperclip me-1"></i>Archivos adjuntos ({{ informeSel.archivos.length }})
-            </label>
-            <ul class="list-group list-group-flush border rounded">
-              <li
-                v-for="(arc, idx) in informeSel.archivos"
-                :key="idx"
-                class="list-group-item d-flex justify-content-between align-items-center py-2 px-2 small"
-              >
-                <span class="text-break d-flex align-items-center gap-2 min-w-0">
-                  <i class="bi bi-file-earmark-arrow-down text-danger flex-shrink-0"></i>
-                  <span class="text-truncate">{{ arc.archivo_nombre }}</span>
-                </span>
-                <button
-                  type="button"
-                  @click="descargarArchivo(arc)"
-                  class="btn btn-sm btn-outline-danger py-0 px-2 ms-2 flex-shrink-0 d-flex align-items-center gap-1"
-                  :disabled="descargandoArchivo === arc.url_completa"
-                  title="Descargar"
-                >
-                  <span v-if="descargandoArchivo === arc.url_completa" class="spinner-border spinner-border-sm" style="width:12px;height:12px;"></span>
-                  <i v-else class="bi bi-download"></i>
-                  <span class="d-none d-sm-inline">Descargar</span>
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Cambio de estado (siempre editable: se puede revertir) -->
-        <div class="mt-4 pt-3 border-top">
-          <label class="form-label small fw-bold text-dark mb-1">Actualizar estado del informe</label>
-          <select aria-label="Actualizar estado del informe" v-model="nuevoEstado" class="form-select form-select-sm shadow-none fw-bold">
-            <option value="creado">Creado</option>
-            <option value="pendiente">Pendiente de correción</option>
-            <option value="aprobado">Aprobar informe</option>
-            <option value="desestimado">Desestimar informe</option>
-            <option value="anulado">Anular informe</option>
-          </select>
-          <p class="text-muted small mt-2 mb-0">
-            <i class="bi bi-info-circle me-1"></i>Aprobados y desestimados pasan al panel de administración. Los anulados quedan fuera del circuito. Podés revertir el estado si hace falta.
-          </p>
-        </div>
-      </div>
+        </template>
+      </DetalleInforme>
 
       <template #footer>
         <button @click="cerrarDetalle" class="btn btn-light border rounded-pill px-4 fw-bold flex-grow-1" :disabled="procesando">
@@ -295,115 +241,8 @@
       </template>
     </ModalBase>
 
-    <!-- ==========================================
-         MODAL EDICIÓN
-         ========================================== -->
-    <ModalBase :show="mostrarEdicion" :hay-cambios="hayCambiosEdicion" @close="cerrarEdicion" titulo="Editar informe" icono="edit" colorIcono="bg-danger text-white" maxWidth="640px">
-      <div v-if="informeEdit" class="text-start">
-        <div class="mb-3">
-          <label class="form-label small fw-bold text-dark mb-1">Torneo *</label>
-          <select aria-label="Torneo" v-model="formEdit.torneo" class="form-select form-select-sm shadow-none">
-            <option v-for="t in opcionesTorneo" :key="t.valor" :value="t.valor">{{ t.etiqueta }}</option>
-          </select>
-        </div>
-        <div class="row g-2 mb-3">
-          <div class="col-md-6">
-            <label class="form-label small fw-bold text-dark mb-1">Implicado *</label>
-            <input aria-label="Implicado" v-model="formEdit.implicado" type="text" class="form-control form-control-sm shadow-none">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label small fw-bold text-dark mb-1">Sanción *</label>
-            <input aria-label="Sanción" v-model="formEdit.sancion" type="text" class="form-control form-control-sm shadow-none">
-          </div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label small fw-bold text-dark mb-1">Institución *</label>
-          <select aria-label="Institución" v-model="formEdit.institucion" class="form-select form-select-sm shadow-none">
-            <option value="local">{{ informeEdit.equipo_local }}</option>
-            <option value="visitante">{{ informeEdit.equipo_visitante }}</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label small fw-bold text-dark mb-1">Motivo y descripción *</label>
-          <textarea aria-label="Motivo y descripción" v-model="formEdit.motivo_descripcion" class="form-control shadow-none" rows="4"></textarea>
-        </div>
-
-        <!-- ARCHIVOS YA ADJUNTOS -->
-        <div class="mb-3" v-if="informeEdit.archivos && informeEdit.archivos.length">
-          <label class="form-label small fw-bold text-dark mb-1">
-            <i class="bi bi-paperclip me-1"></i>Archivos adjuntos actuales
-          </label>
-          <ul class="list-group list-group-flush border rounded">
-            <li
-              v-for="(arc, idx) in informeEdit.archivos"
-              :key="'exist-'+idx"
-              class="list-group-item d-flex justify-content-between align-items-center py-2 px-2 small"
-              :class="{ 'text-decoration-line-through text-muted opacity-75': archivosAEliminar.includes(arc.id) }"
-            >
-              <span class="text-break d-flex align-items-center gap-2 min-w-0">
-                <i class="bi bi-file-earmark-text text-danger flex-shrink-0"></i>
-                <span class="text-truncate">{{ arc.archivo_nombre }}</span>
-              </span>
-              <button
-                type="button"
-                v-if="informeEdit.estado === 'creado' || informeEdit.estado === 'pendiente'"
-                @click="toggleEliminarArchivo(arc.id)"
-                class="btn btn-sm btn-link p-0 ms-2 flex-shrink-0"
-                :class="archivosAEliminar.includes(arc.id) ? 'text-secondary' : 'text-danger'"
-                :title="archivosAEliminar.includes(arc.id) ? 'Deshacer' : 'Quitar'"
-              >
-                <i class="bi" :class="archivosAEliminar.includes(arc.id) ? 'bi-arrow-counterclockwise' : 'bi-x-circle-fill'"></i>
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <!-- AGREGAR NUEVOS ARCHIVOS (solo mientras el informe sea editable) -->
-        <div class="mb-1" v-if="informeEdit.estado === 'creado' || informeEdit.estado === 'pendiente'">
-          <label class="form-label small fw-bold text-dark mb-1">
-            <i class="bi bi-plus-circle me-1"></i>Agregar archivos <span class="text-muted fw-normal">(opcional)</span>
-          </label>
-          <input
-            ref="inputArchivosEdit"
-            type="file"
-            class="form-control form-control-sm shadow-none"
-            multiple
-            @change="onArchivosEditSeleccionados"
-          >
-          <p class="text-muted small mt-1 mb-2">
-            Podés adjuntar fotos, videos u otros documentos. Máx. 10&nbsp;MB por archivo.
-          </p>
-
-          <ul v-if="formEdit.archivos_nuevos.length" class="list-group list-group-flush border rounded">
-            <li
-              v-for="(arc, idx) in formEdit.archivos_nuevos"
-              :key="'nuevo-'+idx"
-              class="list-group-item d-flex justify-content-between align-items-center py-2 px-2 small"
-            >
-              <span class="text-break d-flex align-items-center gap-2 min-w-0">
-                <i class="bi bi-file-earmark-plus text-success flex-shrink-0"></i>
-                <span class="text-truncate">{{ arc.name }}</span>
-              </span>
-              <button
-                type="button"
-                @click="quitarArchivoEdit(idx)"
-                class="btn btn-sm btn-link text-danger p-0 ms-2 flex-shrink-0"
-                title="Quitar"
-              >
-                <i class="bi bi-x-circle-fill"></i>
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <template #footer="{ cerrar }">
-        <button @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold flex-grow-1 border" :disabled="procesando">CANCELAR</button>
-        <button @click="guardarEdicion" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm flex-grow-1" :disabled="procesando || !edicionValida">
-          <span v-if="procesando" class="spinner-border spinner-border-sm me-1"></span> GUARDAR
-        </button>
-      </template>
-    </ModalBase>
+    <!-- Edición: formulario y guardado en ModalEditarInforme -->
+    <ModalEditarInforme :show="mostrarEdicion" :informe="informeEdit" @close="cerrarEdicion" />
 
   </div>
 </template>
@@ -412,17 +251,18 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
-import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue'
+import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
-import { OPCIONES_TORNEO, etiquetaTorneo } from '@/utils/informes'
+import { OPCIONES_TORNEO, etiquetaTorneo, etiquetaEstadoInforme, claseEstadoInforme } from '@/utils/informes'
 import { useDescargasInforme } from '@/composables/useDescargasInforme'
 import { fechaArg, fechaHoraArg } from '@/utils/fechas'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
-import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
+import DetalleInforme from '@/components/comunes/informes/DetalleInforme.vue'
+import ModalEditarInforme from '@/components/comunes/informes/ModalEditarInforme.vue'
 
 useHead({
   title: 'Informes de mi grupo | AAAB',
@@ -430,13 +270,6 @@ useHead({
 })
 
 const toast = inject('toast')
-
-// Mini componente para mostrar un dato en el detalle
-const DatoDetalle = (props) => h('div', {}, [
-  h('label', { class: 'form-label small fw-bold text-muted mb-1' }, props.etiqueta),
-  h('div', { class: 'fw-bold text-dark small text-break' }, props.valor)
-])
-DatoDetalle.props = ['etiqueta', 'valor']
 
 /* ====================================================
    CATÁLOGOS
@@ -456,34 +289,12 @@ const mostrarFiltrosMobile = ref(false)
 const paginaActual = ref(1)
 const registrosPorPagina = 10
 
-
 /* ====================================================
    FECHAS
    ==================================================== */
 const formatearFecha = (fecha) => fechaArg(fecha, 'S/F')
 
 const formatearFechaHora = (fechaHora) => fechaHoraArg(fechaHora, '-')
-
-/* ====================================================
-   ESTADOS (píldoras)
-   ==================================================== */
-const etiquetaEstado = (estado) => {
-  const e = (estado || 'creado').toLowerCase()
-  if (e === 'aprobado') return 'APROBADO'
-  if (e === 'desestimado') return 'DESESTIMADO'
-  if (e === 'anulado') return 'ANULADO'
-  if (e === 'pendiente') return 'PENDIENTE'
-  return 'CREADO'
-}
-
-const badgeEstado = (estado) => {
-  const e = (estado || 'creado').toLowerCase()
-  if (e === 'aprobado') return 'estado-pill estado-aprobado'
-  if (e === 'desestimado') return 'estado-pill estado-desestimado'
-  if (e === 'anulado') return 'estado-pill estado-anulado'
-  if (e === 'pendiente') return 'estado-pill estado-pendiente'
-  return 'estado-pill estado-creado'
-}
 
 /* ====================================================
    FILTROS Y PAGINACIÓN
@@ -512,7 +323,6 @@ const informesFiltrados = computed(() => {
 })
 
 const { totalPaginas, paginados: informesPaginados } = usePaginacion(informesFiltrados, registrosPorPagina, paginaActual)
-
 
 const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); filtros.anio = anioActual() }
 
@@ -553,7 +363,7 @@ const verDetalle = (inf) => {
 const cerrarDetalle = () => { mostrarDetalle.value = false; informeSel.value = null }
 
 // Descargas del informe (adjuntos y PDF): compartidas con las otras pantallas de informes
-const { descargandoArchivo, descargarArchivo, descargandoId, descargarPDF } = useDescargasInforme({ etiquetaEstado, toast })
+const { descargandoArchivo, descargarArchivo, descargandoId, descargarPDF } = useDescargasInforme({ etiquetaEstado: etiquetaEstadoInforme, toast })
 
 // El coordinador puede pasar el informe a: creado, pendiente, aprobado o anulado
 const guardarEstado = async () => {
@@ -595,111 +405,12 @@ const mensajeEstado = (estado) => {
 }
 
 /* ====================================================
-   EDICIÓN
+   EDICIÓN (el formulario y el guardado están en ModalEditarInforme)
    ==================================================== */
 const mostrarEdicion = ref(false)
 const informeEdit = ref(null)
-const inputArchivosEdit = ref(null)
-const archivosAEliminar = ref([])  // ids de archivos existentes a borrar
-const formEdit = reactive({
-  torneo: '', implicado: '', sancion: '', institucion: '', motivo_descripcion: '',
-  archivos_nuevos: []  // File[] (binario, multipart)
-})
-
-const edicionValida = computed(() =>
-  formEdit.torneo && formEdit.implicado.trim() && formEdit.sancion.trim() && formEdit.institucion && formEdit.motivo_descripcion.trim()
-)
-
-// Límite por archivo (10 MB)
-const MAX_ARCHIVO_BYTES = 10 * 1024 * 1024
-
-const onArchivosEditSeleccionados = (e) => {
-  const files = Array.from(e.target.files || [])
-  for (const file of files) {
-    if (file.size > MAX_ARCHIVO_BYTES) {
-      toast({ titulo: 'Archivo muy grande', mensaje: `"${file.name}" supera los 10 MB y no se adjuntó.`, tipo: 'warning' })
-      continue
-    }
-    formEdit.archivos_nuevos.push(file)
-  }
-  if (inputArchivosEdit.value) inputArchivosEdit.value.value = ''
-}
-
-const quitarArchivoEdit = (idx) => {
-  formEdit.archivos_nuevos.splice(idx, 1)
-}
-
-const toggleEliminarArchivo = (id) => {
-  const i = archivosAEliminar.value.indexOf(id)
-  if (i === -1) archivosAEliminar.value.push(id)
-  else archivosAEliminar.value.splice(i, 1)
-}
-
-const abrirEdicion = (inf) => {
-  informeEdit.value = inf
-  formEdit.torneo = inf.torneo || ''
-  formEdit.implicado = inf.implicado || ''
-  formEdit.sancion = inf.sancion || ''
-  formEdit.institucion = inf.institucion || ''
-  formEdit.motivo_descripcion = inf.motivo_descripcion || ''
-  formEdit.archivos_nuevos = []
-  archivosAEliminar.value = []
-  if (inputArchivosEdit.value) inputArchivosEdit.value.value = ''
-  mostrarEdicion.value = true
-}
+const abrirEdicion = (inf) => { informeEdit.value = inf; mostrarEdicion.value = true }
 const cerrarEdicion = () => { mostrarEdicion.value = false; informeEdit.value = null }
-
-const { hayCambios: hayCambiosEdicion } = useCambiosSinGuardar(
-  () => ({ ...formEdit, archivos_nuevos: formEdit.archivos_nuevos.map(f => f.name), eliminar: [...archivosAEliminar.value].sort() }),
-  mostrarEdicion
-)
-
-const guardarEdicion = async () => {
-  if (!edicionValida.value || !informeEdit.value) return
-  const inf = informeEdit.value
-  const institucionNombre = formEdit.institucion === 'local' ? inf.equipo_local : inf.equipo_visitante
-
-  procesando.value = true
-  try {
-    const fd = new FormData()
-    fd.append('id_informe', inf.id)
-    fd.append('torneo', formEdit.torneo)
-    fd.append('implicado', formEdit.implicado.trim())
-    fd.append('sancion', formEdit.sancion.trim())
-    fd.append('institucion', formEdit.institucion)
-    fd.append('institucion_nombre', institucionNombre)
-    fd.append('motivo_descripcion', formEdit.motivo_descripcion.trim())
-    fd.append('archivos_eliminar', JSON.stringify(archivosAEliminar.value))
-    formEdit.archivos_nuevos.forEach(file => fd.append('archivos_nuevos[]', file, file.name))
-
-    const res = await api.postFile({
-      entity: 'informes',
-      action: 'actualizarInforme',
-      payload: fd
-    })
-    if (res.ok || res.success) {
-      Object.assign(inf, {
-        torneo: formEdit.torneo,
-        implicado: formEdit.implicado.trim(),
-        sancion: formEdit.sancion.trim(),
-        institucion: formEdit.institucion,
-        institucion_nombre: institucionNombre,
-        motivo_descripcion: formEdit.motivo_descripcion.trim()
-      })
-      if (res.payload && Array.isArray(res.payload.archivos)) {
-        inf.archivos = res.payload.archivos
-      }
-      cerrarEdicion()
-      toast({ titulo: 'Informe actualizado', mensaje: 'Se guardaron los cambios.', tipo: 'success' })
-    } else {
-      throw new Error((res.payload && res.payload.mensaje) ? res.payload.mensaje : 'Error del servidor')
-    }
-  } catch (err) {
-    toast({ titulo: 'Error', mensaje: err.message || 'No se pudo guardar.', tipo: 'danger' })
-  } finally {
-    procesando.value = false
-  }
-}
 
 onMounted(obtenerInformes)
 </script>

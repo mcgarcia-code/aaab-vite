@@ -131,7 +131,7 @@
                     <td class="text-dark text-truncate" :title="inf.implicado" style="max-width: 160px;">{{ inf.implicado }}</td>
                     <td class="text-dark text-truncate" :title="inf.arbitros" style="max-width: 200px;">{{ inf.arbitros || '-' }}</td>
                     <td class="text-center">
-                      <span :class="badgeEstado(inf.estado)">{{ etiquetaEstado(inf.estado) }}</span>
+                      <span :class="claseEstadoInforme(inf.estado)">{{ etiquetaEstadoInforme(inf.estado) }}</span>
                     </td>
                     <td class="text-center">
                       <div class="form-check form-switch d-inline-flex align-items-center gap-2 m-0 justify-content-center">
@@ -172,7 +172,7 @@
                     #{{ inf.id }}<br>
                     {{ formatearFecha(inf.fecha_partido) }}
                     <div class="mt-1">
-                      <span :class="badgeEstado(inf.estado)">{{ etiquetaEstado(inf.estado) }}</span>
+                      <span :class="claseEstadoInforme(inf.estado)">{{ etiquetaEstadoInforme(inf.estado) }}</span>
                     </div>
                   </div>
                 </div>
@@ -236,36 +236,18 @@
          MODAL DETALLE
          ========================================== -->
     <ModalBase :show="mostrarDetalle" :hay-cambios="hayCambiosEdicion" @close="cerrarDetalle" titulo="Detalle del informe" icono="description" colorIcono="bg-danger text-white" maxWidth="640px">
-      <div v-if="informeSel" class="text-start">
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-          <span class="fw-bold text-muted small">Informe #{{ informeSel.id }}</span>
-          <span :class="badgeEstado(informeSel.estado)">{{ etiquetaEstado(informeSel.estado) }}</span>
-        </div>
-
-        <div class="row g-3">
-          <div class="col-6"><DatoDetalle etiqueta="Fecha del partido" :valor="formatearFecha(informeSel.fecha_partido)" /></div>
-          <div class="col-6"><DatoDetalle etiqueta="Categoría" :valor="informeSel.categoria || '-'" /></div>
-          <div class="col-12"><DatoDetalle etiqueta="Torneo" :valor="etiquetaTorneo(informeSel.torneo)" /></div>
-          <div class="col-12"><DatoDetalle etiqueta="Encuentro" :valor="informeSel.encuentro" /></div>
-          <div class="col-12"><DatoDetalle etiqueta="Árbitros" :valor="informeSel.arbitros || '-'" /></div>
-          <div class="col-12" v-if="informeSel.delegado_tecnico">
-            <DatoDetalle etiqueta="Delegado técnico (cargó el informe)" :valor="informeSel.delegado_tecnico" />
-          </div>
-          <div class="col-6"><DatoDetalle etiqueta="Implicado" :valor="informeSel.implicado" /></div>
-          <div class="col-6"><DatoDetalle etiqueta="Sanción" :valor="informeSel.sancion" /></div>
-          <div class="col-12"><DatoDetalle etiqueta="Institución" :valor="informeSel.institucion_nombre" /></div>
-          <div class="col-12">
-            <label class="form-label small fw-bold text-muted mb-1">Motivo y descripción</label>
-            <div v-if="!modoEdicion" class="border rounded p-2 bg-light small text-break texto-preformateado">{{ informeSel.motivo_descripcion }}</div>
-            <textarea aria-label="Motivo y descripción"
-              v-else
-              v-model="formAdmin.motivo_descripcion"
-              class="form-control shadow-none"
-              rows="5"
-              placeholder="Motivo y descripción del informe..."
-            ></textarea>
-          </div>
-
+      <DetalleInforme v-if="informeSel" :informe="informeSel" :descargando-archivo="descargandoArchivo" @descargar="descargarArchivo">
+        <template #motivo>
+          <div v-if="!modoEdicion" class="border rounded p-2 bg-light small text-break texto-preformateado">{{ informeSel.motivo_descripcion }}</div>
+          <textarea aria-label="Motivo y descripción"
+            v-else
+            v-model="formAdmin.motivo_descripcion"
+            class="form-control shadow-none"
+            rows="5"
+            placeholder="Motivo y descripción del informe..."
+          ></textarea>
+        </template>
+        <template #cargado="{ etiquetaCargado, textoCargado }">
           <!-- Cambiar estado (solo en modo edición y si el informe no fue resuelto) -->
           <div class="col-12" v-if="modoEdicion">
             <label class="form-label small fw-bold text-muted mb-1">Estado del informe</label>
@@ -282,7 +264,7 @@
             </small>
           </div>
 
-          <div class="col-6"><DatoDetalle :etiqueta="informeSel.cargado_por_es_rol ? 'Cargado por' : (informeSel.delegado_tecnico ? 'Cargado por el delegado técnico' : 'Cargado por el árbitro')" :valor="`${formatearFechaHora(informeSel.creado_en)} — ${informeSel.cargado_por_nombre || informeSel.delegado_tecnico || informeSel.arbitros || '-'}`" /></div>
+          <div class="col-6"><DatoDetalle :etiqueta="etiquetaCargado" :valor="textoCargado" /></div>
           <div class="col-6"><DatoDetalle etiqueta="Cargado en Larry" :valor="informeSel.cargado_larry ? 'Sí' : 'No'" /></div>
 
           <!-- COORDINADOR/ES DEL GRUPO (para contacto desde admin) -->
@@ -311,38 +293,8 @@
               Sin coordinador asignado al grupo.
             </div>
           </div>
-
-          <!-- ARCHIVOS ADJUNTOS -->
-          <div class="col-12" v-if="informeSel.archivos && informeSel.archivos.length">
-            <label class="form-label small fw-bold text-muted mb-1">
-              <i class="bi bi-paperclip me-1"></i>Archivos adjuntos ({{ informeSel.archivos.length }})
-            </label>
-            <ul class="list-group list-group-flush border rounded">
-              <li
-                v-for="(arc, idx) in informeSel.archivos"
-                :key="idx"
-                class="list-group-item d-flex justify-content-between align-items-center py-2 px-2 small"
-              >
-                <span class="text-break d-flex align-items-center gap-2 min-w-0">
-                  <i class="bi bi-file-earmark-arrow-down text-danger flex-shrink-0"></i>
-                  <span class="text-truncate">{{ arc.archivo_nombre }}</span>
-                </span>
-                <button
-                  type="button"
-                  @click="descargarArchivo(arc)"
-                  class="btn btn-sm btn-outline-danger py-0 px-2 ms-2 flex-shrink-0 d-flex align-items-center gap-1"
-                  :disabled="descargandoArchivo === arc.url_completa"
-                  title="Descargar"
-                >
-                  <span v-if="descargandoArchivo === arc.url_completa" class="spinner-border spinner-border-sm" style="width:12px;height:12px;"></span>
-                  <i v-else class="bi bi-download"></i>
-                  <span class="d-none d-sm-inline">Descargar</span>
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+        </template>
+      </DetalleInforme>
 
       <template #footer>
         <!-- Modo edición: guardar / cancelar -->
@@ -376,16 +328,18 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
-import { ref, onMounted, computed, reactive, inject, watch, h } from 'vue'
+import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
 import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
-import { OPCIONES_TORNEO, etiquetaTorneo } from '@/utils/informes'
+import { OPCIONES_TORNEO, etiquetaTorneo, etiquetaEstadoInforme, claseEstadoInforme } from '@/utils/informes'
 import { useDescargasInforme } from '@/composables/useDescargasInforme'
 import { fechaArg, fechaHoraArg } from '@/utils/fechas'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
+import DetalleInforme from '@/components/comunes/informes/DetalleInforme.vue'
+import DatoDetalle from '@/components/comunes/informes/DatoInforme.vue'
 import ModalCargarInforme from '@/components/ModalCargarInforme.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 
@@ -396,32 +350,12 @@ useHead({
 
 const toast = inject('toast')
 
-const DatoDetalle = (props) => h('div', {}, [
-  h('label', { class: 'form-label small fw-bold text-muted mb-1' }, props.etiqueta),
-  h('div', { class: 'fw-bold text-dark small text-break' }, props.valor)
-])
-DatoDetalle.props = ['etiqueta', 'valor']
-
 /* ====================================================
    CATÁLOGOS
    ==================================================== */
 const opcionesTorneo = OPCIONES_TORNEO
 
 /* Estados (píldoras) — en admin llegan creado, pendiente, aprobado y desestimado */
-const etiquetaEstado = (estado) => {
-  const e = (estado || '').toLowerCase()
-  if (e === 'desestimado') return 'DESESTIMADO'
-  if (e === 'pendiente') return 'PENDIENTE'
-  if (e === 'creado') return 'CREADO'
-  return 'APROBADO'
-}
-const badgeEstado = (estado) => {
-  const e = (estado || '').toLowerCase()
-  if (e === 'desestimado') return 'estado-pill estado-desestimado'
-  if (e === 'pendiente') return 'estado-pill estado-pendiente'
-  if (e === 'creado') return 'estado-pill estado-creado'
-  return 'estado-pill estado-aprobado'
-}
 
 /* ====================================================
    ESTADO GLOBAL DE LA TABLA
@@ -435,7 +369,6 @@ const mostrarFiltrosMobile = ref(false)
 
 const paginaActual = ref(1)
 const registrosPorPagina = 10
-
 
 /* ====================================================
    FECHAS
@@ -474,7 +407,6 @@ const informesFiltrados = computed(() => {
 })
 
 const { totalPaginas, paginados: informesPaginados } = usePaginacion(informesFiltrados, registrosPorPagina, paginaActual)
-
 
 const limpiarFiltros = () => { Object.keys(filtros).forEach(key => filtros[key] = ''); filtros.anio = anioActual() }
 
@@ -626,7 +558,7 @@ const guardarCambiosAdmin = async () => {
 }
 
 // Descargas del informe (adjuntos y PDF): compartidas con las otras pantallas de informes
-const { descargandoArchivo, descargarArchivo, descargandoId, descargarPDF } = useDescargasInforme({ etiquetaEstado, toast })
+const { descargandoArchivo, descargarArchivo, descargandoId, descargarPDF } = useDescargasInforme({ etiquetaEstado: etiquetaEstadoInforme, toast })
 
 /* ====================================================
    CARGAR INFORME (modal compartido)

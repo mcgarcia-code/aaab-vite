@@ -11,3 +11,25 @@ export const OPCIONES_TORNEO = [
 ]
 
 export const etiquetaTorneo = (valor) => (OPCIONES_TORNEO.find(t => t.valor === valor) || {}).etiqueta || valor
+
+// Estado del informe: texto y píldora (creado · pendiente · aprobado · desestimado · anulado)
+export const etiquetaEstadoInforme = (estado) => {
+  const e = (estado || 'creado').toLowerCase()
+  if (e === 'aprobado') return 'APROBADO'
+  if (e === 'desestimado') return 'DESESTIMADO'
+  if (e === 'anulado') return 'ANULADO'
+  if (e === 'pendiente') return 'PENDIENTE'
+  return 'CREADO'
+}
+
+export const claseEstadoInforme = (estado) => {
+  const e = (estado || 'creado').toLowerCase()
+  if (e === 'aprobado') return 'estado-pill estado-aprobado'
+  if (e === 'desestimado') return 'estado-pill estado-desestimado'
+  if (e === 'anulado') return 'estado-pill estado-anulado'
+  if (e === 'pendiente') return 'estado-pill estado-pendiente'
+  return 'estado-pill estado-creado'
+}
+
+// Un informe se puede editar (y cambiar sus archivos) mientras no fue resuelto
+export const informeEditable = (inf) => !!inf && (inf.estado === 'creado' || inf.estado === 'pendiente')
