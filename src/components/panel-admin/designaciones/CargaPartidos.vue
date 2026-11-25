@@ -166,403 +166,41 @@
 
             <EstadoVacio v-if="canchas.length === 0" icono="bi-search" titulo="No se encontraron partidos con ese filtro" />
 
-            <!-- ============ VISTA DESKTOP: TABLA TIPO EXCEL ============ -->
-            <div v-else class="d-none d-md-block border rounded shadow-sm bg-white grilla-container">
-              <table class="table align-middle mb-0 grilla-designaciones">
-              <thead>
-                <tr>
-                  <th class="text-uppercase text-muted" style="width: 15%;">Categoría / División</th>
-                  <th class="text-uppercase text-muted text-center" style="width: 6%;">Horario</th>
-                  <th class="text-uppercase text-muted" style="width: 14%;">Local</th>
-                  <th class="text-uppercase text-muted" style="width: 14%;">Visitante</th>
-                  <th class="text-uppercase text-muted text-center" style="width: 5%;">Susp.</th>
-                  <th class="text-uppercase text-muted" style="width: 10%;">Árbitro 1</th>
-                  <th class="text-uppercase text-muted" style="width: 10%;">Árbitro 2</th>
-                  <th class="text-uppercase text-muted" style="width: 10%;">Observador</th>
-                  <th class="text-uppercase text-muted" style="width: 10%;">Del. Técnico</th>
-                  <th class="text-uppercase text-muted text-center" style="width: 4%;">Mesa</th>
-                  <th style="width: 2%;"></th>
-                </tr>
-              </thead>
-                <tbody>
-                  <template v-for="c in canchas" :key="fechaSeleccionada + '-' + c.nombre">
+            <!-- Vista escritorio: tabla tipo Excel -->
+            <TablaPartidosEscritorio
+              v-else
+              :canchas="canchas"
+              :fecha-seleccionada="fechaSeleccionada"
+              :es-admin="esAdmin"
+              :partido-resaltado="partidoResaltado"
+              :avisos-map="avisosMap"
+              @cancha="abrirSelectorCancha"
+              @fecha-horario="abrirModalFechaHorario"
+              @suspender="toggleSuspendido"
+              @arbitro="abrirSelectorArbitro"
+              @color="abrirSelectorColor"
+              @mesa="abrirModalMesa"
+              @avisos="mostrarAvisosPartido"
+              @borrar="borrarPartido"
+            />
 
-              <tr class="fila-cancha">
-                <td colspan="11">
-                  <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-geo-alt fs-5"></i>
 
-                    <span class="nombre-cancha fw-bold text-uppercase">
-                      {{ c.nombre }}
-                    </span>
-
-                    <a
-                      v-if="c.linkMapa"
-                      :href="c.linkMapa"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="link-mapa"
-                      title="Ver ubicación en Google Maps"
-                    >
-                      Mapa
-                    </a>
-
-                    <span class="badge bg-white text-dark rounded-pill">
-                      {{ c.partidos.length }} PARTIDOS
-                    </span>
-                  </div>
-                </td>
-              </tr>
-
-                    <tr
-                      v-for="p in c.partidos"
-                      :key="p.id || p._uid"
-                      :id="'partido-' + (p.id || p._uid)"
-                      :class="[
-                        'fila-estado-' + estadoDesignacion(p),
-                        { 'fila-suspendida': p.suspendido, 'fila-resaltada': partidoResaltado === (p.id || p._uid) }
-                      ]"
-                    >
-                      <td>
-                        <span class="celda-texto d-flex align-items-center gap-2">
-                          <span class="punto-estado" :class="'punto-' + estadoDesignacion(p)" :title="tituloEstado(p)"></span>
-                          {{ p.categoria_division || '—' }}
-                        </span>
-                        <button
-                          v-if="!p.cancha"
-                          @click="abrirSelectorCancha(p)"
-                          class="badge-sin-cancha"
-                          title="Asignar cancha a este partido"
-                        >
-                          <i class="bi bi-geo-alt" style="font-size: 12px; vertical-align: middle;"></i>
-                          SIN CANCHA
-                        </button>
-                      </td>
-                      <td class="text-center">
-                        <button
-                          v-if="esAdmin"
-                          @click="abrirModalFechaHorario(p)"
-                          class="celda-arbitro"
-                          title="Editar fecha y horario (admin)"
-                        >
-                          {{ p.horario || '—' }}
-                        </button>
-                        <span v-else class="celda-texto">{{ p.horario || '—' }}</span>
-                      </td>
-                      <td><span class="celda-texto">{{ p.local || '—' }}</span></td>
-                      <td><span class="celda-texto">{{ p.visitante || '—' }}</span></td>
-                      <td class="text-center">
-                        <input
-                          type="checkbox"
-                          class="form-check-input susp-check"
-                          :checked="p.suspendido"
-                          @change="toggleSuspendido(p, $event)"
-                          title="Partido suspendido antes del inicio"
-                        >
-                      </td>
-                      <td>
-                        <div class="celda-arb-wrap">
-                          <button
-                            @click="abrirSelectorArbitro(p, 1)"
-                            class="celda-arbitro"
-                            :class="[colorClase(p, 1), { 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'sin-arbitro': esSinArbitro(p, 1), 'vacio': !p.arbitro_1 }]"
-                            :title="tituloCelda(p, 1)"
-                          >
-                            {{ p.arbitro_1 || '— Asignar —' }}
-                          </button>
-                          <button
-                            v-if="p.arbitro_1"
-                            @click="abrirSelectorColor(p, 1)"
-                            class="btn-color-tag"
-                            :class="colorClase(p, 1)"
-                            title="Marcar estado del árbitro"
-                          >
-                            <i class="bi bi-tag texto-14px"></i>
-                          </button>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="celda-arb-wrap">
-                          <button
-                            @click="abrirSelectorArbitro(p, 2)"
-                            class="celda-arbitro"
-                            :class="[colorClase(p, 2), { 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'sin-arbitro': esSinArbitro(p, 2), 'vacio': !p.arbitro_2 }]"
-                            :title="tituloCelda(p, 2)"
-                          >
-                            {{ p.arbitro_2 || '— Asignar —' }}
-                          </button>
-                          <button
-                            v-if="p.arbitro_2"
-                            @click="abrirSelectorColor(p, 2)"
-                            class="btn-color-tag"
-                            :class="colorClase(p, 2)"
-                            title="Marcar estado del árbitro"
-                          >
-                            <i class="bi bi-tag texto-14px"></i>
-                          </button>
-                        </div>
-                      </td>
-                      <td>
-                        <button
-                          @click="abrirSelectorArbitro(p, 'observador')"
-                          class="celda-arbitro"
-                          :class="{ 'externo': esExternoRol(p, 'observador'), 'vacio': !p.observador }"
-                          :title="tituloCeldaRol(p, 'observador')"
-                        >
-                          {{ p.observador || '— Asignar —' }}
-                        </button>
-                      </td>
-                      <td>
-                        <div class="celda-arb-wrap">
-                          <button
-                            @click="abrirSelectorArbitro(p, 'delegado')"
-                            class="celda-arbitro"
-                            :class="[colorClaseDelegado(p), { 'externo': esExternoRol(p, 'delegado'), 'vacio': !p.delegado }]"
-                            :title="tituloCeldaRol(p, 'delegado')"
-                          >
-                            {{ p.delegado || '— Asignar —' }}
-                          </button>
-                          <button
-                            v-if="p.delegado"
-                            @click="abrirSelectorColor(p, 'delegado')"
-                            class="btn-color-tag"
-                            :class="colorClaseDelegado(p)"
-                            title="Marcar estado del delegado técnico"
-                          >
-                            <i class="bi bi-tag texto-14px"></i>
-                          </button>
-                        </div>
-                      </td>
-                      <td class="text-center">
-                      <button
-                        @click="abrirModalMesa(p)"
-                        class="btn-mesa"
-                        :class="{ 'con-mesa': tieneMesa(p) }"
-                        :title="tituloMesa(p)"
-                      >
-                        <i class="bi bi-table texto-18px"></i>
-                      </button>
-                    </td>
-                      <td class="text-center">
-                        <div class="d-flex align-items-center justify-content-center gap-1">
-                          <div
-                            v-if="avisosPartido(p) > 0"
-                            class="aviso-barra"
-                            :class="'aviso-' + etiquetaPartido(p)"
-                            :title="textoAvisosPartido(p)"
-                            @click="mostrarAvisosPartido(p)"
-                          ></div>
-                          <i
-                            v-if="estadoDesignacion(p) === 'a_designar'"
-                            class="bi bi-x-circle text-danger borrar-partido"
-                            title="Borrar partido"
-                            @click="borrarPartido(p)"
-                          ></i>
-                        </div>
-                      </td>
-                    </tr>
-
-                  </template>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- ============ VISTA MÓVIL: CARDS POR CANCHA ============ -->
-            <div class="d-md-none">
-              <div v-for="c in canchas" :key="'mob-' + fechaSeleccionada + '-' + c.nombre" class="mb-3">
-
-            <!-- Encabezado de cancha (solo lectura) -->
-            <div class="cancha-mobile-header d-flex align-items-center gap-2 px-3 py-2 rounded-top-3">
-              <i class="bi bi-geo-alt fs-5"></i>
-              <span class="nombre-cancha fw-bold text-uppercase flex-grow-1">{{ c.nombre }}</span>
-
-              <a
-                v-if="c.linkMapa"
-                :href="c.linkMapa"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="link-mapa"
-                title="Ver ubicación en Google Maps"
-              >Mapa</a>
-
-              <span class="badge bg-white text-dark rounded-pill">{{ c.partidos.length }}</span>
-            </div>
-
-                <!-- Un card por partido -->
-                <div
-                  v-for="p in c.partidos"
-                  :key="'mobp-' + (p.id || p._uid)"
-                  :id="'partido-mob-' + (p.id || p._uid)"
-                  class="card shadow-sm border-light-subtle rounded-0 partido-mobile"
-                  :class="['card-estado-' + estadoDesignacion(p), { 'card-resaltada': partidoResaltado === (p.id || p._uid) }]"
-                >
-                  <div class="card-body p-3">
-
-                    <!-- Fila superior: categoría + estado + alerta -->
-                    <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                      <span class="fw-bold flex-grow-1" style="font-size: 0.9rem;">{{ p.categoria_division || '—' }}</span>
-                      <span class="badge-estado" :class="'badge-' + estadoDesignacion(p)">{{ etiquetaEstado(p) }}</span>
-                      <div
-                        v-if="avisosPartido(p) > 0"
-                        class="aviso-barra flex-shrink-0"
-                        :class="'aviso-' + etiquetaPartido(p)"
-                        :title="textoAvisosPartido(p)"
-                        @click="mostrarAvisosPartido(p)"
-                      ></div>
-                      <i
-                        v-if="estadoDesignacion(p) === 'a_designar'"
-                        class="bi bi-x-circle text-danger borrar-partido flex-shrink-0"
-                        title="Borrar partido"
-                        @click="borrarPartido(p)"
-                      ></i>
-                    </div>
-
-                    <!-- Horario -->
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                      <i class="bi bi-clock text-danger texto-18px"></i>
-                      <button
-                        v-if="esAdmin"
-                        @click="abrirModalFechaHorario(p)"
-                        class="btn btn-sm btn-outline-secondary py-0 px-2 d-flex align-items-center gap-1"
-                        title="Editar fecha y horario (admin)"
-                      >
-                        <span class="fw-bold">{{ p.horario || '—' }}</span>
-                        <i class="bi bi-pencil texto-14px"></i>
-                      </button>
-                      <span v-else class="fw-bold">{{ p.horario || '—' }}</span>
-                    </div>
-
-                    <!-- Cancha sin asignar (tocar para elegir) -->
-                    <button
-                      v-if="!p.cancha"
-                      @click="abrirSelectorCancha(p)"
-                      class="badge-sin-cancha w-100 text-start mb-2"
-                      title="Asignar cancha a este partido"
-                    >
-                      <i class="bi bi-geo-alt texto-14px" style="vertical-align: middle;"></i>
-                      SIN CANCHA — Tocá para asignar
-                    </button>
-
-                    <!-- Equipos -->
-                    <div class="bg-light rounded p-2 mb-2">
-                      <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="badge bg-secondary" style="font-size: 0.65rem;">LOCAL</span>
-                        <span class="fw-bold">{{ p.local || '—' }}</span>
-                      </div>
-                      <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.65rem;">VISIT</span>
-                        <span class="fw-bold">{{ p.visitante || '—' }}</span>
-                      </div>
-                      <div class="form-check mb-0">
-                        <input
-                          type="checkbox"
-                          class="form-check-input"
-                          :id="'susp-' + (p.id || p._uid)"
-                          :checked="p.suspendido"
-                          @change="toggleSuspendido(p, $event)"
-                        >
-                        <label class="form-check-label small fw-bold text-danger" :for="'susp-' + (p.id || p._uid)">
-                          Partido suspendido antes del inicio
-                        </label>
-                      </div>
-                    </div>
-
-                    <!-- Árbitros principales (prioridad) -->
-                    <div class="row g-2 mt-1">
-                      <div class="col-6">
-                        <label class="form-label small fw-bold text-muted mb-1">Árbitro 1</label>
-                        <button
-                          @click="abrirSelectorArbitro(p, 1)"
-                          class="celda-arbitro-mobile w-100 text-start"
-                          :class="[colorClase(p, 1), { 'sin-match': esSinMatch(p, 1), 'externo': esExterno(p, 1), 'sin-arbitro': esSinArbitro(p, 1), 'vacio': !p.arbitro_1 }]"
-                        >
-                          {{ p.arbitro_1 || '— Asignar —' }}
-                        </button>
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold text-muted mb-1">Árbitro 2</label>
-                        <button
-                          @click="abrirSelectorArbitro(p, 2)"
-                          class="celda-arbitro-mobile w-100 text-start"
-                          :class="[colorClase(p, 2), { 'sin-match': esSinMatch(p, 2), 'externo': esExterno(p, 2), 'sin-arbitro': esSinArbitro(p, 2), 'vacio': !p.arbitro_2 }]"
-                        >
-                          {{ p.arbitro_2 || '— Asignar —' }}
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Botones de etiqueta de color (estado del árbitro) -->
-                    <div class="row g-2 mt-1" v-if="p.arbitro_1 || p.arbitro_2">
-                      <div class="col-6">
-                        <button
-                          v-if="p.arbitro_1"
-                          @click="abrirSelectorColor(p, 1)"
-                          class="btn btn-sm btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-1"
-                          :class="colorClase(p, 1)"
-                        >
-                          <i class="bi bi-tag texto-14px"></i>
-                          <span class="small">Estado Árb. 1</span>
-                        </button>
-                      </div>
-                      <div class="col-6">
-                        <button
-                          v-if="p.arbitro_2"
-                          @click="abrirSelectorColor(p, 2)"
-                          class="btn btn-sm btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-1"
-                          :class="colorClase(p, 2)"
-                        >
-                          <i class="bi bi-tag texto-14px"></i>
-                          <span class="small">Estado Árb. 2</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Observador / Delegado técnico -->
-                    <div class="row g-2 mt-1">
-                      <div class="col-6">
-                        <label class="form-label small fw-bold text-muted mb-1">Observador</label>
-                        <button
-                          @click="abrirSelectorArbitro(p, 'observador')"
-                          class="celda-arbitro-mobile w-100 text-start"
-                          :class="{ 'externo': esExternoRol(p, 'observador'), 'vacio': !p.observador }"
-                        >
-                          {{ p.observador || '— Asignar —' }}
-                        </button>
-                      </div>
-                      <div class="col-6">
-                        <label class="form-label small fw-bold text-muted mb-1">Del. Técnico</label>
-                        <button
-                          @click="abrirSelectorArbitro(p, 'delegado')"
-                          class="celda-arbitro-mobile w-100 text-start"
-                          :class="[colorClaseDelegado(p), { 'externo': esExternoRol(p, 'delegado'), 'vacio': !p.delegado }]"
-                        >
-                          {{ p.delegado || '— Asignar —' }}
-                        </button>
-                        <button
-                          v-if="p.delegado"
-                          @click="abrirSelectorColor(p, 'delegado')"
-                          class="btn btn-sm btn-outline-secondary w-100 mt-1 d-flex align-items-center justify-content-center gap-1"
-                          :class="colorClaseDelegado(p)"
-                        >
-                          <i class="bi bi-tag texto-14px"></i>
-                          <span class="small">Estado</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <button
-                      @click="abrirModalMesa(p)"
-                      class="btn btn-sm w-100 mt-2 d-flex align-items-center justify-content-center gap-2"
-                      :class="tieneMesa(p) ? 'btn-danger' : 'btn-outline-secondary'"
-                    >
-                      <i class="bi bi-table texto-16px"></i>
-                      <span class="small fw-bold">{{ tieneMesa(p) ? 'Mesa de control asignada' : 'Planillero / Cronometrista' }}</span>
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-            </div>
+            <!-- Vista celular: tarjetas por cancha -->
+            <TarjetasPartidosCelular
+              :canchas="canchas"
+              :fecha-seleccionada="fechaSeleccionada"
+              :es-admin="esAdmin"
+              :partido-resaltado="partidoResaltado"
+              :avisos-map="avisosMap"
+              @cancha="abrirSelectorCancha"
+              @fecha-horario="abrirModalFechaHorario"
+              @suspender="toggleSuspendido"
+              @arbitro="abrirSelectorArbitro"
+              @color="abrirSelectorColor"
+              @mesa="abrirModalMesa"
+              @avisos="mostrarAvisosPartido"
+              @borrar="borrarPartido"
+            />
 
           </template>
 
@@ -592,94 +230,27 @@
       </div>
     </div>
 
-    <ModalBase
+    <ModalSelectorColor
       :show="mostrarSelectorColor"
       :titulo="tituloSelectorColor"
-      icono="label"
-      colorIcono="bg-danger text-white"
-      maxWidth="420px"
+      :opciones="opcionesColor"
       @close="cerrarSelectorColor"
-    >
-      <div class="lista-colores">
-        <button @click="asignarColor('')" class="opcion-color">
-          <span class="muestra-color muestra-none"></span>
-          Sin marca
-        </button>
-        <button
-          v-for="op in opcionesColor"
-          :key="op.valor"
-          @click="asignarColor(op.valor)"
-          class="opcion-color"
-        >
-          <span class="muestra-color" :class="'estado-' + op.valor"></span>
-          {{ op.etiqueta }}
-        </button>
-      </div>
-    </ModalBase>
+      @elegir="asignarColor"
+    />
 
-    <ModalBase
+    <ModalSelectorArbitro
+      v-model:busqueda="busquedaArbitro"
       :show="mostrarSelectorArbitro"
       :titulo="tituloSelector"
-      icono="sports"
-      colorIcono="bg-danger text-white"
-      maxWidth="500px"
-      :zIndex="zIndexSelector"
+      :z-index="zIndexSelector"
+      :arbitros="arbitrosFiltrados"
+      :permite-sin-arbitro="!!seleccionArbitro && (seleccionArbitro.numero === 1 || seleccionArbitro.numero === 2)"
+      :texto-sin-arbitro="SIN_ARBITRO"
       @close="cerrarSelectorArbitro"
-    >
-      <input aria-label="Buscar por apellido o nombre"
-        v-model="busquedaArbitro"
-        type="text"
-        class="form-control shadow-none border-secondary-subtle mb-3"
-        placeholder="BUSCAR POR APELLIDO O NOMBRE..."
-      >
-
-      <div class="lista-arbitros border rounded">
-        <button @click="asignarArbitro(null)" class="opcion-arbitro text-danger fw-bold">
-          — Sin asignar —
-        </button>
-
-        <button
-          v-if="seleccionArbitro && (seleccionArbitro.numero === 1 || seleccionArbitro.numero === 2)"
-          @click="asignarSinArbitro"
-          class="opcion-arbitro text-secondary fw-bold d-flex align-items-center gap-2"
-        >
-          <i class="bi bi-person-x texto-16px"></i>
-          {{ SIN_ARBITRO }}
-        </button>
-
-        <button
-          v-if="busquedaArbitro.trim() && arbitrosFiltrados.length === 0"
-          @click="asignarArbitroLibre(busquedaArbitro)"
-          class="opcion-arbitro text-danger fw-bold d-flex align-items-center gap-2"
-        >
-          <i class="bi bi-person-plus texto-16px"></i>
-          Usar "{{ busquedaArbitro.trim().toUpperCase() }}" (árbitro externo)
-        </button>
-
-        <button
-          v-for="a in arbitrosFiltrados"
-          :key="a.id"
-          @click="asignarArbitro(a)"
-          class="opcion-arbitro"
-        >
-          {{ a.apellido }}, {{ a.nombre }}
-        </button>
-
-        <button
-          v-if="busquedaArbitro.trim() && arbitrosFiltrados.length > 0"
-          @click="asignarArbitroLibre(busquedaArbitro)"
-          class="opcion-arbitro text-danger d-flex align-items-center gap-2 border-top"
-        >
-          <i class="bi bi-person-plus texto-16px"></i>
-          Usar "{{ busquedaArbitro.trim().toUpperCase() }}" como árbitro externo
-        </button>
-      </div>
-
-      <p class="text-muted small mt-2 mb-0">
-        <i class="bi bi-info-circle me-1"></i>
-        Si el árbitro no está en el padrón (ej: viene del interior), escribí su nombre y usá la opción azul. Queda designado pero no le aparece en su panel.
-      </p>
-    </ModalBase>
+      @asignar="asignarArbitro"
+      @sin-arbitro="asignarSinArbitro"
+      @externo="asignarArbitroLibre"
+    />
     <ModalAvisos
       :show="mostrarModalConfirmarDesignacion"
       titulo="⚠ Avisos de esta designación"
@@ -704,49 +275,12 @@
       @seleccionar="seleccionarArchivoExcel"
       @confirmar="confirmarCargaExcel"
     />
-    <ModalBase
+    <ModalMesaControl
       :show="mostrarModalMesa"
-      titulo="Mesa de control"
-      icono="table_restaurant"
-      colorIcono="bg-danger text-white"
-      maxWidth="480px"
-      :zIndex="1055"
+      :partido="partidoMesa"
       @close="cerrarModalMesa"
-    >
-          <p class="text-muted small mb-3">
-            <i class="bi bi-info-circle me-1"></i>
-            Asigná planillero y/o cronometrista solo si este partido se juega con mesa de control. Ambos son opcionales.
-          </p>
-
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-muted">Planillero</label>
-            <button @click="abrirSelectorMesa('planillero')" class="celda-arbitro-mobile w-100 text-start" :class="{ 'vacio': !partidoMesa?.planillero }">
-              {{ partidoMesa?.planillero || '— Asignar planillero —' }}
-            </button>
-          </div>
-
-          <div class="mb-2">
-            <label class="form-label small fw-bold text-muted">Cronometrista</label>
-            <button @click="abrirSelectorMesa('cronometrista')" class="celda-arbitro-mobile w-100 text-start" :class="{ 'vacio': !partidoMesa?.cronometrista }">
-              {{ partidoMesa?.cronometrista || '— Asignar cronometrista —' }}
-            </button>
-          </div>
-
-      <template #footer>
-        <button
-          @click="cerrarModalMesa"
-          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
-        >
-          Cancelar
-        </button>
-        <button
-          @click="cerrarModalMesa"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
-        >
-          Confirmar
-        </button>
-      </template>
-    </ModalBase>
+      @elegir="abrirSelectorMesa"
+    />
     <ModalCancha
       v-model="campoJuegoSeleccionado"
       :show="mostrarSelectorCancha"
@@ -791,101 +325,22 @@
       @confirmar="confirmarDescarga"
     />
 
-    <!-- Modal de navegación: partidos sin designar / árbitros sin coincidencia -->
-    <ModalBase
+    <!-- Navegación: partidos sin designar / sin cancha / árbitros sin coincidencia / avisos -->
+    <ModalPendientes
       :show="mostrarModalPendientes"
       :titulo="tituloModalPendientes"
       :icono="iconoModalPendientes"
-      :colorIcono="colorIconoModalPendientes"
-      maxWidth="640px"
+      :color-icono="colorIconoModalPendientes"
+      :tipo="tipoPendientes"
+      :es-avisos="esModalAvisos"
+      :tipo-aviso="tipoAvisoModal"
+      :grupos="gruposModalPendientes"
       @close="mostrarModalPendientes = false"
-    >
-      <div v-if="esModalAvisos" class="small mb-3">
-        <p v-if="tipoAvisoModal" class="text-muted mb-2">
-          <span class="aviso-barra aviso-muestra me-1" :class="'aviso-' + tipoAvisoModal.color"></span>
-          <strong>{{ tipoAvisoModal.titulo }}:</strong> {{ tipoAvisoModal.descripcion }}
-        </p>
-        <p class="text-muted mb-0">
-          Se listan los partidos según su aviso más grave. Tocá uno para ir al partido.
-        </p>
-      </div>
-      <p v-else-if="tipoPendientes === 'sin_match'" class="text-muted small mb-3">
-        Estos árbitros no coinciden con el padrón: los partidos <strong>no</strong> les aparecerán en su panel. Tocá un partido para ir a corregirlo.
-      </p>
-      <p v-else-if="tipoPendientes === 'sin_cancha'" class="text-muted small mb-3">
-        Estos partidos no tienen cancha asignada. Tocá uno para ir a asignarle la cancha.
-      </p>
-      <p v-else class="text-muted small mb-3">
-        Estos partidos todavía no tienen árbitros asignados. Tocá uno para ir a designarlo.
-      </p>
-
-      <EstadoVacio v-if="partidosPendientesModal.length === 0" icono="bi-check-circle" titulo="No hay pendientes" />
-
-      <div v-else class="lista-pendientes">
-        <div v-for="grupo in pendientesAgrupados" :key="grupo.fecha" class="mb-3">
-          <div class="fecha-encabezado small fw-bold text-uppercase text-muted mb-2">
-            <i class="bi bi-calendar-event me-1"></i> {{ etiquetaDia(grupo.fecha) }}
-            <span class="badge bg-light text-dark border ms-1">{{ grupo.partidos.length }}</span>
-          </div>
-
-          <button
-            v-for="p in grupo.partidos"
-            :key="p.id || p._uid"
-            @click="irAPartido(p)"
-            class="item-pendiente w-100 text-start"
-            type="button"
-          >
-            <div class="d-flex align-items-center gap-2">
-              <span
-                v-if="esModalAvisos"
-                class="aviso-barra flex-shrink-0"
-                :class="'aviso-' + etiquetaPartido(p)"
-              ></span>
-              <span v-else class="punto-estado flex-shrink-0" :class="'punto-' + estadoDesignacion(p)"></span>
-              <div class="flex-grow-1 overflow-hidden">
-                <div class="fw-bold text-truncate">
-                  {{ p.local || '—' }} <span class="text-muted fw-normal">vs</span> {{ p.visitante || '—' }}
-                </div>
-                <div class="small text-muted text-truncate">
-                  <span v-if="p.horario">{{ p.horario }} · </span>
-                  <span v-if="p.categoria_division">{{ p.categoria_division }} · </span>
-                  {{ p.cancha || 'Sin cancha' }}
-                </div>
-                <div v-if="tipoPendientes === 'sin_match'" class="small text-warning-emphasis fw-bold text-truncate">
-                  <i class="bi bi-person-x me-1"></i>{{ arbitrosSinMatchDe(p).join(', ') }}
-                </div>
-                <div v-else-if="tipoPendientes === 'sin_cancha'" class="small text-danger fw-bold text-truncate">
-                  <i class="bi bi-geo-alt me-1"></i>Sin cancha asignada
-                </div>
-                <div v-else-if="esModalAvisos" class="mt-1">
-                  <div v-for="g in gruposAvisosPartido(p)" :key="g.nombre" class="small mb-1">
-                    <span class="aviso-barra aviso-mini me-1" :class="'aviso-' + g.etiqueta"></span>
-                    <span class="fw-bold">{{ g.nombre }}</span>
-                    <ul class="mb-0 ps-3 text-body-secondary lista-avisos">
-                      <li v-for="(a, i) in g.avisos" :key="i">{{ a }}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <i class="bi bi-chevron-right text-muted flex-shrink-0"></i>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <template #footer>
-        <button
-          @click="mostrarModalPendientes = false"
-          class="btn btn-light rounded-pill px-4 fw-bold border w-100"
-        >
-          Cerrar
-        </button>
-      </template>
-    </ModalBase>
+      @ir="irAPartido"
+    />
 
   </div>
 </template>
-
 
 <script setup>
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
@@ -896,7 +351,6 @@ import { normalizarTexto } from '@/utils/texto'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import { useHead } from '@unhead/vue'
-import ModalBase from '@/components/ModalBase.vue'
 import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import ModalAvisos from '@/components/panel-admin/designaciones/carga-partidos/ModalAvisos.vue'
 import ModalCargaExcel from '@/components/panel-admin/designaciones/carga-partidos/ModalCargaExcel.vue'
@@ -904,6 +358,15 @@ import ModalCancha from '@/components/panel-admin/designaciones/carga-partidos/M
 import ModalFechaHorario from '@/components/panel-admin/designaciones/carga-partidos/ModalFechaHorario.vue'
 import ModalPublicar from '@/components/panel-admin/designaciones/carga-partidos/ModalPublicar.vue'
 import ModalDescarga from '@/components/panel-admin/designaciones/carga-partidos/ModalDescarga.vue'
+import ModalSelectorColor from '@/components/panel-admin/designaciones/carga-partidos/ModalSelectorColor.vue'
+import ModalSelectorArbitro from '@/components/panel-admin/designaciones/carga-partidos/ModalSelectorArbitro.vue'
+import ModalMesaControl from '@/components/panel-admin/designaciones/carga-partidos/ModalMesaControl.vue'
+import ModalPendientes from '@/components/panel-admin/designaciones/carga-partidos/ModalPendientes.vue'
+import TablaPartidosEscritorio from '@/components/panel-admin/designaciones/carga-partidos/TablaPartidosEscritorio.vue'
+import TarjetasPartidosCelular from '@/components/panel-admin/designaciones/carga-partidos/TarjetasPartidosCelular.vue'
+import {
+  SIN_ARBITRO, estadoDesignacion, cantidadAvisos, etiquetaAvisos, textoAvisos, gruposAvisos, esSinMatch
+} from '@/components/panel-admin/designaciones/carga-partidos/ayudasPartido'
 
 useHead({
   title: 'Carga de Designaciones | AAAB',
@@ -929,7 +392,6 @@ const semanaAtras = ref(0)
 const hayPosteriores = ref(false)
 let contadorUid = 0
 
-
 const avisosMap = ref({})
 
 const cargarAvisos = async () => {
@@ -952,32 +414,11 @@ const cargarAvisos = async () => {
   }
 }
 
-// Total de avisos de un partido (para el ícono de alerta)
-const avisosPartido = (p) => {
-  const grupos = p.id ? avisosMap.value[p.id] : null
-  if (!grupos) return 0
-  return grupos.reduce((total, g) => total + g.avisos.length, 0)
-}
-
-// Color de la barra de alerta: se toma el más grave entre los grupos
-// de avisos del partido (rojo > naranja > amarillo > verde).
-const PRIORIDAD_ETIQUETA = { rojo: 4, naranja: 3, amarillo: 2, verde: 1 }
-const etiquetaPartido = (p) => {
-  const grupos = (p.id ? avisosMap.value[p.id] : null) || []
-  return grupos.reduce((peor, g) => {
-    const prioridad = PRIORIDAD_ETIQUETA[g.etiqueta] || 0
-    return prioridad > (PRIORIDAD_ETIQUETA[peor] || 0) ? g.etiqueta : peor
-  }, 'amarillo')
-}
-
-// Texto del modal: por cada árbitro con problemas, su nombre y
-// debajo sus avisos con viñeta. Árbitros separados por línea en blanco.
-const textoAvisosPartido = (p) => {
-  const grupos = (p.id ? avisosMap.value[p.id] : null) || []
-  return grupos
-    .map(g => `${g.nombre}:\n` + g.avisos.map(a => `• ${a}`).join('\n'))
-    .join('\n\n')
-}
+// Avisos del partido (las funciones están en carga-partidos/ayudasPartido.js)
+const avisosPartido = (p) => cantidadAvisos(avisosMap.value, p)
+const etiquetaPartido = (p) => etiquetaAvisos(avisosMap.value, p)
+const textoAvisosPartido = (p) => textoAvisos(avisosMap.value, p)
+const gruposAvisosPartido = (p) => gruposAvisos(avisosMap.value, p)
 
 const totalConflictos = computed(() => {
   return designaciones.value.filter(p => avisosPartido(p) > 0).length
@@ -1002,12 +443,6 @@ const TIPOS_AVISO = [
   }
 ]
 
-// Grupos de avisos de un partido que realmente tienen avisos
-const gruposAvisosPartido = (p) => {
-  const grupos = (p.id ? avisosMap.value[p.id] : null) || []
-  return grupos.filter(g => g.avisos && g.avisos.length > 0)
-}
-
 const partidosConAviso = computed(() =>
   designaciones.value
     .filter(p => avisosPartido(p) > 0)
@@ -1027,36 +462,6 @@ const mostrarAvisosPartido = (p) => {
   if (avisosPartido(p) === 0) return
   textoAvisosPartidoActual.value = textoAvisosPartido(p)
   mostrarModalAvisosPartido.value = true
-}
-
-/* ====================================================
-   ESTADO DE DESIGNACIÓN DEL PARTIDO (ayuda visual)
-   - a_designar: sin árbitro 1 ni árbitro 2.
-   - designado:  al menos un árbitro asignado.
-   - publicado:  ya fue publicado (campo publicado del backend).
-   El estado publicado prevalece sobre los demás. Un partido
-   a_designar nunca puede estar publicado.
-   ==================================================== */
-
-const estadoDesignacion = (p) => {
-  const estado = String(p.estado || '').trim()
-  if (estado === 'publicado' || estado === 'designado' || estado === 'a_designar') return estado
-  // Fallback por si un registro viejo no tiene estado seteado
-  return (p.arbitro_1 || p.arbitro_2) ? 'designado' : 'a_designar'
-}
-
-const etiquetaEstado = (p) => {
-  const estado = estadoDesignacion(p)
-  if (estado === 'publicado') return 'Publicado'
-  if (estado === 'designado') return 'Designado'
-  return 'Sin designar'
-}
-
-const tituloEstado = (p) => {
-  const estado = estadoDesignacion(p)
-  if (estado === 'publicado') return 'Partido publicado'
-  if (estado === 'designado') return 'Partido designado (falta publicar)'
-  return 'Sin árbitros designados'
 }
 
 const totalADesignar = computed(() =>
@@ -1330,16 +735,6 @@ const tituloSelectorColor = computed(() =>
   seleccionColor.value?.numero === 'delegado' ? 'Estado del delegado técnico' : 'Estado del árbitro'
 )
 
-const colorClase = (p, numero) => {
-  const estado = numero === 1 ? p._estado1 : p._estado2
-  return estado ? 'estado-' + estado : ''
-}
-
-// La etiqueta del delegado técnico (solo lectura para el admin): la fija el
-// backend cuando el delegado rechaza el partido ('reemplazar'). Se limpia sola
-// al cambiar de delegado (ver asignarObservadorDelegado / editarObservadorDelegado).
-const colorClaseDelegado = (p) => (p._estadoDel ? 'estado-' + p._estadoDel : '')
-
 const asignarColor = async (valor) => {
   const sel = seleccionColor.value
   if (!sel) return
@@ -1416,7 +811,6 @@ const toggleSuspendido = async (p, event) => {
 
   // Actualización optimista
   p.suspendido = nuevoValor
-
 
   try {
     const resultado = await api.post({
@@ -1760,8 +1154,6 @@ const asignarArbitro = async (arbitro) => {
   await consultarDesignacion(p, sel.numero, arbitro.id)
 }
 
-const SIN_ARBITRO = 'Sin Árbitro'
-
 const asignarSinArbitro = () => {
   const sel = seleccionArbitro.value
   if (!sel || (sel.numero !== 1 && sel.numero !== 2)) return
@@ -1815,15 +1207,6 @@ const abrirModalMesa = (partido) => {
 const cerrarModalMesa = () => {
   mostrarModalMesa.value = false
   partidoMesa.value = null
-}
-
-const tieneMesa = (p) => !!p.planillero || !!p.cronometrista
-
-const tituloMesa = (p) => {
-  const partes = []
-  if (p.planillero) partes.push('Planillero: ' + p.planillero)
-  if (p.cronometrista) partes.push('Cronometrista: ' + p.cronometrista)
-  return partes.length ? partes.join(' · ') : 'Mesa de control (sin asignar)'
 }
 
 // Abre el selector de árbitros reutilizado, marcando el rol de mesa.
@@ -1930,27 +1313,6 @@ const asignarObservadorDelegado = async (arbitro, tipo, p) => {
   }
 }
 
-// Helpers de estado de la celda de árbitro
-const esSinArbitro = (p, numero) => {
-  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
-  const id = numero === 1 ? p.id_arb1 : p.id_arb2
-  return !id && normalizarTexto(nombre).trim() === normalizarTexto(SIN_ARBITRO)
-}
-
-const esExterno = (p, numero) => {
-  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
-  const id = numero === 1 ? p.id_arb1 : p.id_arb2
-  const ext = numero === 1 ? p._ext1 : p._ext2
-  return !!nombre && !id && !!ext && !esSinArbitro(p, numero)
-}
-
-const esSinMatch = (p, numero) => {
-  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
-  const id = numero === 1 ? p.id_arb1 : p.id_arb2
-  const ext = numero === 1 ? p._ext1 : p._ext2
-  return !!nombre && !id && !ext && !esSinArbitro(p, numero)
-}
-
 // Un partido "tiene sin coincidencia" si alguno de sus arbitros esta sin match
 const partidoTieneSinMatch = (p) => esSinMatch(p, 1) || esSinMatch(p, 2)
 
@@ -2044,6 +1406,22 @@ const arbitrosSinMatchDe = (p) => {
   return nombres
 }
 
+// Datos ya armados para ModalPendientes (solo se calculan con el modal abierto)
+const gruposModalPendientes = computed(() => {
+  if (!mostrarModalPendientes.value) return []
+  return pendientesAgrupados.value.map(g => ({
+    fecha: g.fecha,
+    etiqueta: etiquetaDia(g.fecha),
+    items: g.partidos.map(p => ({
+      partido: p,
+      etiqueta: esModalAvisos.value ? etiquetaPartido(p) : '',
+      estado: estadoDesignacion(p),
+      sinMatch: tipoPendientes.value === 'sin_match' ? arbitrosSinMatchDe(p) : [],
+      avisos: esModalAvisos.value ? gruposAvisosPartido(p) : []
+    }))
+  }))
+})
+
 // Salta al partido elegido: cambia a su fecha, limpia filtros, cierra el modal,
 // hace scroll a la fila y la resalta unos segundos.
 let timerResaltado = null
@@ -2065,30 +1443,6 @@ const irAPartido = (p) => {
   clearTimeout(timerResaltado)
   timerResaltado = setTimeout(() => { partidoResaltado.value = '' }, 3000)
 }
-
-const tituloCelda = (p, numero) => {
-  const nombre = numero === 1 ? p.arbitro_1 : p.arbitro_2
-  if (!nombre) return 'Asignar árbitro'
-  if (esSinArbitro(p, numero)) return 'El partido se juega sin árbitro en este puesto'
-  if (esExterno(p, numero)) return 'Árbitro externo (fuera del padrón): ' + nombre
-  if (esSinMatch(p, numero)) return 'Sin match en el padrón: ' + nombre
-  return nombre
-}
-
-// Observador / delegado sin id = puesto a mano (externo)
-const esExternoRol = (p, tipo) => {
-  const nombre = tipo === 'observador' ? p.observador : p.delegado
-  const id = tipo === 'observador' ? p.id_observador : p.id_delegado
-  return !!nombre && !id
-}
-
-const tituloCeldaRol = (p, tipo) => {
-  const nombre = tipo === 'observador' ? p.observador : p.delegado
-  const etiqueta = tipo === 'observador' ? 'Observador' : 'Delegado técnico'
-  if (!nombre) return 'Asignar ' + etiqueta.toLowerCase()
-  return etiqueta + ': ' + nombre
-}
-
 
 const limpiarPartidoParaEnviar = (p) => ({
   id: p.id,
@@ -2198,7 +1552,6 @@ const confirmarCargaExcel = async () => {
   }
 }
 
-
 /* ====================================================
    PUBLICAR (PDF PARA LA WEB + PANEL DE ARBITROS)
    Si hay cambios sin guardar, se guardan automáticamente
@@ -2305,219 +1658,8 @@ onMounted(async () => {
 })
 </script>
 
+<style scoped src="@/components/panel-admin/designaciones/carga-partidos/carga-partidos-compartido.css"></style>
 <style scoped>
-
-/* ====================================================
-   GRILLA TIPO EXCEL (un solo scroll: el de la página)
-   ==================================================== */
-.grilla-container {
-  overflow: visible;
-}
-
-/* En pantallas chicas la tabla necesita scroll horizontal propio */
-@media (max-width: 991px) {
-  .grilla-container {
-    overflow-x: auto;
-  }
-}
-
-.grilla-designaciones {
-  font-size: 0.8rem;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-.grilla-designaciones thead th {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background-color: var(--o-superficie, #f8f9fa);
-  border-bottom: 2px solid var(--o-borde, #dee2e6);
-  padding: 10px 8px;
-  font-size: 0.7rem;
-  letter-spacing: 0.5px;
-}
-
-.grilla-designaciones td {
-  padding: 2px 4px;
-  border-bottom: 1px solid var(--o-borde, #f1f3f5);
-}
-
-/* Fila separadora de cancha (como la celda combinada del Excel) */
-.fila-cancha td {
-  background-color: #1f2937;
-  color: #fff;
-  padding: 6px 10px;
-  position: sticky;
-  top: 37px;
-  z-index: 4;
-}
-
-/* Nombre de cancha (solo lectura) */
-.nombre-cancha {
-  color: #fff;
-  font-size: 0.8rem;
-  padding: 2px 6px;
-}
-
-/* Link a Google Maps con la dirección de la cancha */
-.link-mapa {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  padding: 2px 8px;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.link-mapa:hover {
-  background: rgba(255, 255, 255, 0.3);
-  color: #fff;
-}
-
-/* Celdas de solo lectura (categoría, horario, equipos) */
-.celda-texto {
-  display: block;
-  width: 100%;
-  padding: 5px 6px;
-  font-size: 0.8rem;
-  color: var(--o-texto, #212529);
-}
-
-/* Cancha sin asignar: chip clickeable que abre el selector de cancha */
-.badge-sin-cancha {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 2px;
-  padding: 2px 8px;
-  border: 1px solid #eab308;
-  border-radius: 16px;
-  background-color: var(--o-ambar-fondo, #fef9c3);
-  color: var(--o-ambar-texto, #854d0e);
-  font-size: 0.7rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.badge-sin-cancha:hover {
-  background-color: var(--o-ambar-fondo, #fef08a);
-}
-
-/* Celda de árbitro: botón liviano que abre el selector compartido */
-.celda-arbitro {
-  width: 100%;
-  text-align: left;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  background: transparent;
-  padding: 5px 6px;
-  font-size: 0.8rem;
-  color: var(--o-texto, #212529);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-
-/* Árbitro que no matcheó con el padrón (hay que corregirlo) */
-.celda-arbitro-mobile.sin-match {
-  background-color: var(--o-ambar-fondo, #fef08a);
-  border-color: #eab308;
-  font-weight: 700;
-}
-
-.celda-arbitro:hover {
-  border-color: var(--o-borde, #ced4da);
-  background: var(--o-tarjeta, #fff);
-}
-
-.celda-arbitro.vacio {
-  color: var(--o-texto-suave, #adb5bd);
-}
-
-/* Árbitro que no matcheó con el padrón (hay que corregirlo) */
-.celda-arbitro.sin-match {
-  background-color: var(--o-ambar-fondo, #fef08a);
-  border-color: #eab308;
-  font-weight: 700;
-}
-
-.celda-arbitro.sin-arbitro {
-  background-color: var(--o-chip, #f1f3f5);
-  border-color: var(--o-borde, #adb5bd);
-  border-style: dashed;
-  color: var(--o-texto-medio, #495057);
-  font-style: italic;
-  font-weight: 600;
-}
-
-/* Árbitro externo puesto a mano (intencional, fuera del padrón) */
-.celda-arbitro.externo {
-  background-color: var(--o-violeta-fondo, #f3e8ff);
-  border-color: #c084fc;
-  font-weight: 600;
-}
-
-/* Barra de alerta cuando el partido tiene un conflicto de designación.
-   El color indica la gravedad (etiqueta que devuelve el backend). */
-.aviso-barra {
-  display: inline-block;
-  width: 10px;
-  height: 18px;
-  border-radius: 4px;
-  cursor: pointer;
-  vertical-align: middle;
-  margin-right: 2px;
-}
-
-.aviso-verde {
-  background-color: #22c55e;
-}
-
-.aviso-amarillo {
-  background-color: #eab308;
-}
-
-.aviso-naranja {
-  background-color: #f97316;
-}
-
-.aviso-rojo {
-  background-color: #dc2626;
-}
-
-/* Muestras de color en la leyenda y en el modal de avisos */
-.aviso-muestra {
-  width: 8px;
-  height: 14px;
-  cursor: inherit;
-}
-
-.aviso-mini {
-  width: 6px;
-  height: 11px;
-  cursor: inherit;
-}
-
-.lista-avisos {
-  white-space: normal;
-}
-
-/* Ícono para borrar un partido sin designar */
-.borrar-partido {
-  font-size: 18px;
-  cursor: pointer;
-  vertical-align: middle;
-  transition: transform 0.12s ease;
-}
-
-.borrar-partido:hover {
-  transform: scale(1.15);
-}
-
 /* ====================================================
    CHIPS DE FILTRO
    ==================================================== */
@@ -2562,115 +1704,6 @@ onMounted(async () => {
 }
 
 /* ====================================================
-   MODAL DE PENDIENTES (lista navegable)
-   ==================================================== */
-.lista-pendientes {
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.fecha-encabezado {
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--o-borde, #e5e7eb);
-  padding-bottom: 4px;
-}
-
-.item-pendiente {
-  display: block;
-  background: var(--o-tarjeta, #fff);
-  border: 1px solid var(--o-borde, #e5e7eb);
-  border-radius: 12px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
-}
-
-.item-pendiente:hover {
-  background: var(--o-superficie, #f8fafc);
-  border-color: var(--o-borde, #cbd5e1);
-  transform: translateY(-1px);
-}
-
-/* Resaltado temporal al saltar a un partido desde el modal */
-.fila-resaltada td {
-  animation: destello 3s ease-out;
-}
-
-.card-resaltada {
-  animation: destello 3s ease-out;
-}
-
-@keyframes destello {
-  0%, 40% { background-color: var(--o-ambar-fondo, #fef3c7) !important; box-shadow: inset 0 0 0 2px #f59e0b; }
-  100% { background-color: transparent; box-shadow: none; }
-}
-
-/* ====================================================
-   FONDOS DE FILA SEGÚN ESTADO (DESKTOP)
-   a_designar: rojo tenue (hay que resolverlo)
-   designado:  amarillo tenue (falta publicar)
-   publicado:  verde tenue (ya publicado)
-   La fila suspendida (más abajo) prevalece sobre estos.
-   ==================================================== */
-.fila-estado-a_designar td {
-  background-color: var(--o-rojo-fondo, #fef2f2);
-}
-
-.fila-estado-designado td {
-  background-color: var(--o-ambar-fondo, #fefce8);
-}
-
-.fila-estado-publicado td {
-  background-color: var(--o-verde-fondo, #f0fdf4);
-}
-
-/* Punto de color junto a la categoría (refuerzo del estado) */
-.punto-estado {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: inline-block;
-}
-
-.punto-a_designar {
-  background-color: #dc2626;
-}
-
-.punto-designado {
-  background-color: #eab308;
-}
-
-.punto-publicado {
-  background-color: #22c55e;
-}
-
-/* ====================================================
-   SELECTOR DE ARBITRO
-   ==================================================== */
-.lista-arbitros {
-  max-height: 50vh;
-  overflow-y: auto;
-}
-
-.opcion-arbitro {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: var(--o-tarjeta, #fff);
-  border: none;
-  border-bottom: 1px solid var(--o-borde, #f1f3f5);
-  padding: 8px 12px;
-  font-size: 0.85rem;
-  color: var(--o-texto, #212529);
-  cursor: pointer;
-}
-
-.opcion-arbitro:hover {
-  background: var(--o-rojo-fondo, #fef2f2);
-}
-
-/* ====================================================
    BARRA FLOTANTE DE CAMBIOS SIN GUARDAR
    ==================================================== */
 .barra-cambios {
@@ -2683,108 +1716,6 @@ onMounted(async () => {
   padding: 10px 24px;
   z-index: 1050;
   border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-/* ====================================================
-   VISTA MÓVIL: CARDS POR CANCHA
-   ==================================================== */
-.cancha-mobile-header {
-  background-color: #1f2937;
-  color: #fff;
-}
-
-.partido-mobile {
-  border-left: 3px solid #dc2626;
-}
-
-.partido-mobile:last-child {
-  border-bottom-left-radius: 12px !important;
-  border-bottom-right-radius: 12px !important;
-  overflow: hidden;
-}
-
-/* Fondos y borde izquierdo de card según estado (móvil) */
-.card-estado-a_designar {
-  background-color: var(--o-rojo-fondo, #fef2f2);
-  border-left-color: #dc2626;
-}
-
-.card-estado-designado {
-  background-color: var(--o-ambar-fondo, #fefce8);
-  border-left-color: #eab308;
-}
-
-.card-estado-publicado {
-  background-color: var(--o-verde-fondo, #f0fdf4);
-  border-left-color: #22c55e;
-}
-
-/* Badge de estado en el card móvil */
-.badge-estado {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  padding: 3px 8px;
-  border-radius: 50rem;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.badge-a_designar {
-  background-color: var(--o-rojo-fondo, #fee2e2);
-  color: var(--o-rojo-texto, #991b1b);
-  border: 1px solid #f87171;
-}
-
-.badge-designado {
-  background-color: var(--o-ambar-fondo, #fef9c3);
-  color: var(--o-ambar-texto, #854d0e);
-  border: 1px solid #facc15;
-}
-
-.badge-publicado {
-  background-color: var(--o-verde-fondo, #dcfce7);
-  color: var(--o-verde-texto, #166534);
-  border: 1px solid #4ade80;
-}
-
-/* Botón de árbitro en móvil: como un select tocable */
-.celda-arbitro-mobile {
-  border: 1px solid var(--o-borde, #ced4da);
-  border-radius: 8px;
-  background: var(--o-tarjeta, #fff);
-  padding: 8px 10px;
-  font-size: 0.8rem;
-  color: var(--o-texto, #212529);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-}
-
-.celda-arbitro-mobile:active {
-  background: var(--o-superficie, #f8f9fa);
-}
-
-.celda-arbitro-mobile.vacio {
-  color: var(--o-texto-suave, #adb5bd);
-}
-
-.celda-arbitro-mobile.sin-arbitro {
-  background-color: var(--o-chip, #f1f3f5);
-  border-color: var(--o-borde, #adb5bd);
-  border-style: dashed;
-  color: var(--o-texto-medio, #495057);
-  font-style: italic;
-  font-weight: 600;
-}
-
-/* Árbitro externo puesto a mano (intencional) */
-.celda-arbitro-mobile.externo {
-  background-color: var(--o-violeta-fondo, #f3e8ff);
-  border-color: #c084fc;
-  font-weight: 600;
 }
 
 /* ====================================================
@@ -2811,153 +1742,6 @@ onMounted(async () => {
 /* Sombra exterior (anillo) roja a todo el grupo */
 .buscador-grupo:focus-within {
   box-shadow: 0 0 0 0.25rem rgba(220, 38, 38, 0.2) !important;
-}
-
-/* ====================================================
-   FILA SUSPENDIDA
-   ==================================================== */
-.fila-suspendida td {
-  background-color: var(--o-rojo-fondo, #fee2e2) !important;
-}
-
-.fila-suspendida .celda-texto {
-  color: var(--o-rojo-texto, #991b1b);
-  text-decoration: line-through;
-}
-
-.susp-check {
-  cursor: pointer;
-}
-
-.susp-check:checked {
-  background-color: #dc2626;
-  border-color: #dc2626;
-}
-
-/* ====================================================
-   MARCAS DE ESTADO POR COLOR (árbitros)
-   ==================================================== */
-.celda-arb-wrap {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.celda-arb-wrap .celda-arbitro {
-  flex-grow: 1;
-}
-
-.btn-color-tag {
-  border: 1px solid var(--o-borde, #ced4da);
-  border-radius: 4px;
-  background: var(--o-tarjeta, #fff);
-  color: var(--o-texto-suave, #6c757d);
-  padding: 3px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.btn-color-tag:hover {
-  background: var(--o-superficie, #f8f9fa);
-}
-
-/* Colores de estado (celda y botón toman el mismo fondo) */
-.estado-observaciones {
-  background-color: var(--o-violeta-fondo, #ede9fe) !important;
-  border-color: #8b5cf6 !important;
-  color: var(--o-violeta-texto, #5b21b6) !important;
-}
-
-.estado-reemplazar {
-  background-color: var(--o-rojo-fondo, #fee2e2) !important;
-  border-color: #dc2626 !important;
-  color: var(--o-rojo-texto, #991b1b) !important;
-}
-
-.estado-cambiar {
-  background-color: var(--o-ambar-fondo, #ffedd5) !important;
-  border-color: #f97316 !important;
-  color: var(--o-ambar-texto, #9a3412) !important;
-}
-
-.estado-confirmado {
-  background-color: var(--o-ambar-fondo, #fef9c3) !important;
-  border-color: #eab308 !important;
-  color: var(--o-ambar-texto, #854d0e) !important;
-}
-
-.estado-posible {
-  background-color: var(--o-verde-fondo, #dcfce7) !important;
-  border-color: #22c55e !important;
-  color: var(--o-verde-texto, #166534) !important;
-}
-
-/* ====================================================
-   SELECTOR DE COLOR (modal)
-   ==================================================== */
-.lista-colores {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.opcion-color {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  text-align: left;
-  background: var(--o-tarjeta, #fff);
-  border: 1px solid var(--o-borde, #f1f3f5);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 0.85rem;
-  color: var(--o-texto, #212529);
-  cursor: pointer;
-}
-
-.opcion-color:hover {
-  background: var(--o-superficie, #f8f9fa);
-}
-
-.muestra-color {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-}
-
-.muestra-none {
-  background: repeating-linear-gradient(45deg, var(--o-chip, #f1f3f5), var(--o-chip, #f1f3f5) 4px, var(--o-tarjeta, #fff) 4px, var(--o-tarjeta, #fff) 8px);
-}
-
-/* ====================================================
-   BOTÓN MESA DE CONTROL (planillero / cronometrista)
-   ==================================================== */
-.btn-mesa {
-  border: 1px solid var(--o-borde, #ced4da);
-  border-radius: 4px;
-  background: var(--o-tarjeta, #fff);
-  color: var(--o-texto-suave, #adb5bd);
-  padding: 3px 6px;
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.btn-mesa:hover {
-  background: var(--o-superficie, #f8f9fa);
-  color: var(--o-texto-suave, #6c757d);
-}
-
-/* Cuando el partido ya tiene planillero o cronometrista */
-.btn-mesa.con-mesa {
-  background: var(--o-rojo-fondo, #fee2e2);
-  border-color: #dc2626;
-  color: var(--o-rojo-texto, #dc2626);
 }
 
 /* Chips de filtro por estado */

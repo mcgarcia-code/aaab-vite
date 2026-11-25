@@ -1,0 +1,185 @@
+/* =========================================================
+   Clases compartidas entre CargaPartidos.vue y sus modales
+   (se importa con <style scoped src="..."> en cada uno)
+   ========================================================= */
+
+/* Barra de alerta cuando el partido tiene un conflicto de designación.
+   El color indica la gravedad (etiqueta que devuelve el backend). */
+.aviso-barra {
+  display: inline-block;
+  width: 10px;
+  height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+.aviso-verde { background-color: #22c55e; }
+.aviso-amarillo { background-color: #eab308; }
+.aviso-naranja { background-color: #f97316; }
+.aviso-rojo { background-color: #dc2626; }
+
+/* Muestras de color en la leyenda y en el modal de avisos */
+.aviso-muestra {
+  width: 8px;
+  height: 14px;
+  cursor: inherit;
+}
+
+.aviso-mini {
+  width: 6px;
+  height: 11px;
+  cursor: inherit;
+}
+
+/* Punto de color junto a la categoría (refuerzo del estado) */
+.punto-estado {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.punto-a_designar { background-color: #dc2626; }
+.punto-designado { background-color: #eab308; }
+.punto-publicado { background-color: #22c55e; }
+
+/* Colores de la marca del árbitro (celda, botón y muestra del selector toman el mismo fondo) */
+.estado-observaciones {
+  background-color: var(--o-violeta-fondo, #ede9fe) !important;
+  border-color: #8b5cf6 !important;
+  color: var(--o-violeta-texto, #5b21b6) !important;
+}
+
+.estado-reemplazar {
+  background-color: var(--o-rojo-fondo, #fee2e2) !important;
+  border-color: #dc2626 !important;
+  color: var(--o-rojo-texto, #991b1b) !important;
+}
+
+.estado-cambiar {
+  background-color: var(--o-ambar-fondo, #ffedd5) !important;
+  border-color: #f97316 !important;
+  color: var(--o-ambar-texto, #9a3412) !important;
+}
+
+.estado-confirmado {
+  background-color: var(--o-ambar-fondo, #fef9c3) !important;
+  border-color: #eab308 !important;
+  color: var(--o-ambar-texto, #854d0e) !important;
+}
+
+.estado-posible {
+  background-color: var(--o-verde-fondo, #dcfce7) !important;
+  border-color: #22c55e !important;
+  color: var(--o-verde-texto, #166534) !important;
+}
+
+/* Botón de árbitro en móvil (y en la mesa de control): como un select tocable */
+.celda-arbitro-mobile {
+  border: 1px solid var(--o-borde, #ced4da);
+  border-radius: 8px;
+  background: var(--o-tarjeta, #fff);
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  color: var(--o-texto, #212529);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+/* Árbitro que no matcheó con el padrón (hay que corregirlo) */
+.celda-arbitro-mobile.sin-match {
+  background-color: var(--o-ambar-fondo, #fef08a);
+  border-color: #eab308;
+  font-weight: 700;
+}
+
+.celda-arbitro-mobile:active {
+  background: var(--o-superficie, #f8f9fa);
+}
+
+.celda-arbitro-mobile.vacio {
+  color: var(--o-texto-suave, #adb5bd);
+}
+
+.celda-arbitro-mobile.sin-arbitro {
+  background-color: var(--o-chip, #f1f3f5);
+  border-color: var(--o-borde, #adb5bd);
+  border-style: dashed;
+  color: var(--o-texto-medio, #495057);
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* Árbitro externo puesto a mano (intencional) */
+.celda-arbitro-mobile.externo {
+  background-color: var(--o-violeta-fondo, #f3e8ff);
+  border-color: #c084fc;
+  font-weight: 600;
+}
+
+/* Cancha, borrar partido, sin cancha y resaltado: los usan la tabla y las tarjetas */
+/* Nombre de cancha (solo lectura) */
+.nombre-cancha {
+  color: #fff;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+}
+
+/* Link a Google Maps con la dirección de la cancha */
+.link-mapa {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 2px 8px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.link-mapa:hover {
+  background: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+/* Cancha sin asignar: chip clickeable que abre el selector de cancha */
+.badge-sin-cancha {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  padding: 2px 8px;
+  border: 1px solid #eab308;
+  border-radius: 16px;
+  background-color: var(--o-ambar-fondo, #fef9c3);
+  color: var(--o-ambar-texto, #854d0e);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.badge-sin-cancha:hover {
+  background-color: var(--o-ambar-fondo, #fef08a);
+}
+
+/* Ícono para borrar un partido sin designar */
+.borrar-partido {
+  font-size: 18px;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: transform 0.12s ease;
+}
+
+.borrar-partido:hover {
+  transform: scale(1.15);
+}
+
+@keyframes destello {
+  0%, 40% { background-color: var(--o-ambar-fondo, #fef3c7) !important; box-shadow: inset 0 0 0 2px #f59e0b; }
+  100% { background-color: transparent; box-shadow: none; }
+}
