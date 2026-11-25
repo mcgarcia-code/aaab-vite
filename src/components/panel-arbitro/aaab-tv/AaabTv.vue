@@ -93,7 +93,7 @@
           <button v-if="esPropioPendiente(clipAbierto)" type="button" class="btn btn-light border text-danger fw-bold" @click="confirmarBorrado">
             <i class="bi bi-trash3" aria-hidden="true"></i> Borrar
           </button>
-          <button type="button" class="btn btn-danger fw-bold ms-auto" @click="clipAbierto = null">Cerrar</button>
+          <button type="button" class="btn btn-danger rounded-pill fw-bold ms-auto" @click="clipAbierto = null">Cerrar</button>
         </div>
       </template>
     </ModalBase>

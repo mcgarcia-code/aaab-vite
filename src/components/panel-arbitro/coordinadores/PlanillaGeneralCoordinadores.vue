@@ -680,7 +680,6 @@ const descargarExcel = async () => {
 </script>
 
 <style scoped>
-
 /* ====================================================
    TABLA TIPO EXCEL
    ==================================================== */
@@ -772,17 +771,6 @@ const descargarExcel = async () => {
 .celda-verde { background-color: var(--o-verde-fondo, #d1e7dd); color: var(--o-verde-texto, #0f5132); font-weight: 600; }
 .celda-roja { background-color: var(--o-rojo-fondo, #f8d7da); color: var(--o-rojo-texto, #842029); font-weight: 600; }
 .celda-gris { background-color: var(--o-chip, #e9ecef); color: var(--o-texto-suave, #6c757d); font-weight: 600; }
-
-/* Leyenda */
-.cuadrito {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border: 1px solid var(--o-borde, #ced4da);
-  border-radius: 4px;
-  margin-right: 4px;
-  vertical-align: -1px;
-}
 .cuadrito.bg-success-subtle { background-color: var(--o-verde-fondo, #d1e7dd) !important; }
 .cuadrito.bg-danger-subtle { background-color: var(--o-rojo-fondo, #f8d7da) !important; }
 .cuadrito.bg-secondary-subtle { background-color: var(--o-chip, #e9ecef) !important; }

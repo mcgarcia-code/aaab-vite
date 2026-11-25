@@ -202,7 +202,7 @@
           <button type="button" class="btn fw-bold" :class="formExamen.tipo === 'teorico' ? 'btn-danger' : 'btn-outline-danger'" @click="formExamen.tipo = 'teorico'">
             <i class="bi bi-journal-text me-1"></i> Teórico
           </button>
-          <button type="button" class="btn fw-bold" :class="formExamen.tipo === 'fisico' ? 'btn-danger' : 'btn-outline-secondary'" @click="formExamen.tipo = 'fisico'">
+          <button type="button" class="btn fw-bold" :class="formExamen.tipo === 'fisico' ? 'btn-danger' : 'btn-outline-danger'" @click="formExamen.tipo = 'fisico'">
             <i class="bi bi-stopwatch me-1"></i> Físico
           </button>
         </div>

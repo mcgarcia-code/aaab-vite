@@ -155,7 +155,7 @@
           />
         </div>
 
-        <button v-if="edicionAbierta" @click="guardarCambios" class="btn btn-danger w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
+        <button v-if="edicionAbierta" @click="guardarCambios" class="btn btn-danger rounded-pill w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
           ACTUALIZAR DISPONIBILIDAD
         </button>
@@ -233,7 +233,7 @@
             <div class="p-3 p-md-4 rounded-4 shadow-lg" style="background: #0c1624; border: 1px dashed rgba(255,255,255,0.2);">
                 <h6 class="text-white fw-bold small mb-2 text-uppercase">Informar cambio urgente</h6>
                 <textarea aria-label="Detallá aquí tu cambio de horarios" v-model="solicitudCambio" class="form-control mb-3 custom-textarea p-3" rows="3" placeholder="Detallá aquí tu cambio de horarios..."></textarea>
-                <button @click="enviarSolicitudRectificacion" class="btn btn-danger w-100 fw-bold py-3 py-md-2 shadow" :disabled="cargando || !solicitudCambio">
+                <button @click="enviarSolicitudRectificacion" class="btn btn-danger rounded-pill w-100 fw-bold py-3 py-md-2 shadow" :disabled="cargando || !solicitudCambio">
                     ENVIAR SOLICITUD FORMAL
                 </button>
             </div>

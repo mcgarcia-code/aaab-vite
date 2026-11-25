@@ -81,7 +81,7 @@
             <button
               @click="solicitarLicencia"
               :disabled="!puedeEnviar || cargando"
-              class="btn btn-danger w-100 fw-bold py-3 py-md-2 shadow-sm"
+              class="btn btn-danger rounded-pill w-100 fw-bold py-3 py-md-2 shadow-sm"
             >
               <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
               {{ cargando ? 'PROCESANDO...' : 'ENVIAR SOLICITUD' }}

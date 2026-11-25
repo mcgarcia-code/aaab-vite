@@ -10,7 +10,7 @@
     <div v-if="needRefresh" class="aviso" role="status">
       <i class="bi bi-arrow-repeat text-danger" aria-hidden="true"></i>
       <span class="flex-grow-1">Hay una versión nueva del sitio.</span>
-      <button type="button" class="btn btn-danger btn-sm fw-bold" @click="actualizar">Actualizar</button>
+      <button type="button" class="btn btn-danger rounded-pill btn-sm fw-bold" @click="actualizar">Actualizar</button>
       <button type="button" class="btn-close" aria-label="Más tarde" title="Más tarde" @click="needRefresh = false"></button>
     </div>
 
@@ -22,7 +22,7 @@
         <template v-if="esIos">Tocá <i class="bi bi-box-arrow-up" aria-label="Compartir"></i> y después <strong>“Agregar a inicio”</strong>.</template>
         <template v-else>Abrila como una app y usala aunque se corte la señal.</template>
       </span>
-      <button v-if="!esIos" type="button" class="btn btn-danger btn-sm fw-bold" @click="instalar">Instalar</button>
+      <button v-if="!esIos" type="button" class="btn btn-danger rounded-pill btn-sm fw-bold" @click="instalar">Instalar</button>
       <button type="button" class="btn-close" aria-label="No mostrar por ahora" title="No mostrar por ahora" @click="descartarInstalacion"></button>
     </div>
   </div>

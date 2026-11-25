@@ -27,7 +27,7 @@
           A partir del alta vas a poder iniciar sesión con tu usuario <strong class="text-dark">{{ usuarioCreado }}</strong>
           y la contraseña que elegiste.
         </p>
-        <router-link to="/" class="btn btn-danger fw-bold px-4 py-2 rounded-3">
+        <router-link to="/" class="btn btn-danger fw-bold px-4 py-2 rounded-pill">
           <i class="bi bi-house-door me-1"></i> VOLVER AL INICIO
         </router-link>
       </div>
@@ -55,7 +55,7 @@
 
         <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end border-top pt-3 mt-4">
           <router-link to="/" class="btn btn-light border fw-bold px-4 py-2 rounded-3 order-2 order-md-1">CANCELAR</router-link>
-          <button type="submit" class="btn btn-danger fw-bold px-4 py-2 rounded-3 order-1 order-md-2" :disabled="enviando">
+          <button type="submit" class="btn btn-danger fw-bold px-4 py-2 rounded-pill order-1 order-md-2" :disabled="enviando">
             <span v-if="enviando" class="spinner-border spinner-border-sm me-1"></span>
             {{ enviando ? 'ENVIANDO...' : 'ENVIAR INSCRIPCIÓN' }}
           </button>

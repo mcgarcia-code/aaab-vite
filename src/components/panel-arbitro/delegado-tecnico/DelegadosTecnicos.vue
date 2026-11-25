@@ -14,7 +14,7 @@
             <i class="bi bi-gear-fill me-2"></i> CONFIG
           </button>
           <button
-            class="btn btn-danger px-3 py-2 fw-bold shadow-sm d-flex align-items-center texto-085"
+            class="btn btn-danger rounded-pill px-3 py-2 fw-bold shadow-sm d-flex align-items-center texto-085"
             @click="resetMatch"
            
           >
@@ -61,7 +61,7 @@
 
           <div class="d-flex flex-column gap-2 mt-2">
             <button
-              class="btn btn-danger w-100 py-2 py-md-3 fw-bold fs-5 shadow-sm"
+              class="btn btn-danger rounded-pill w-100 py-2 py-md-3 fw-bold fs-5 shadow-sm"
               @click="toggleTimer"
               :disabled="state.activeTTO !== null || state.matchStatus === 'finished' || state.breakActive"
             >

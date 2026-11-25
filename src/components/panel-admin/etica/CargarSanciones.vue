@@ -44,7 +44,7 @@
                       </div>
 
                       <div class="col-12 mt-4 pt-3 border-top border-light-subtle">
-                        <button type="submit" :disabled="cargando" class="btn btn-danger w-100 fw-bold py-3 shadow-sm rounded-3">
+                        <button type="submit" :disabled="cargando" class="btn btn-danger w-100 fw-bold py-3 shadow-sm rounded-pill">
                           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
                           {{ cargando ? 'INICIANDO PROCESO...' : 'REGISTRAR SANCIÓN' }}
                         </button>

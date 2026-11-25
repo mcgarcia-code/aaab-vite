@@ -24,7 +24,7 @@
               <input aria-label="Período" type="month" v-model="periodoGenerar" class="form-control form-control-sm shadow-none">
             </div>
             <div class="col-6 col-md-3">
-              <button @click="confirmarGenerar" :disabled="!periodoGenerar || generando" class="btn btn-danger btn-sm w-100 fw-bold shadow-sm">
+              <button @click="confirmarGenerar" :disabled="!periodoGenerar || generando" class="btn btn-danger rounded-pill btn-sm w-100 fw-bold shadow-sm">
                 <span v-if="generando" class="spinner-border spinner-border-sm me-1"></span>
                 Generar Aportes del Período
               </button>
@@ -60,7 +60,7 @@
               </select>
             </div>
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger rounded-pill w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>

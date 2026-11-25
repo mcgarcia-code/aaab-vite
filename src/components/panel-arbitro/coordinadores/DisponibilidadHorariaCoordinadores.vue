@@ -64,7 +64,7 @@
               <input aria-label="Zona" v-model="filtros.zona" class="form-control form-control-sm shadow-none" placeholder="ZONA...">
             </div>
             <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger rounded-pill w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -530,16 +530,12 @@ onMounted(cargarDatos)
 </script>
 
 <style scoped>
-.status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-
 /* ── Tabla ── */
 .tabla-container { overflow-x: auto; max-height: 75vh; }
-.col-fija { position: sticky; background-color: inherit; z-index: 10; }
-.tabla-fija thead .col-fija { background-color: var(--o-superficie, #f8f9fa); z-index: 30; }
-.tabla-fija tbody .col-fija { background-color: var(--o-tarjeta, #ffffff); }
-.col-apellido { left: 0;     min-width: 140px; z-index: 11; }
-.col-nombre   { left: 140px; min-width: 140px; z-index: 11; }
-.col-licencia { left: 280px; min-width: 160px; z-index: 11; }
+.tabla-fija thead .col-fija { z-index: 30; }
+.tabla-fija .col-apellido { left: 0;     min-width: 140px; z-index: 11; }
+.tabla-fija .col-nombre   { left: 140px; min-width: 140px; z-index: 11; }
+.tabla-fija .col-licencia { left: 280px; min-width: 160px; z-index: 11; }
 .col-licencia::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 2px; background: linear-gradient(to right, rgba(0,0,0,0.15), transparent); }
 
 /* ── Tooltip observaciones ── */

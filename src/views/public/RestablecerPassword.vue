@@ -19,7 +19,7 @@
           <input aria-label="Repetir Contraseña" v-model="confirmPassword" type="password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required minlength="6" :disabled="cargando">
         </div>
 
-        <button :disabled="cargando" type="submit" class="btn btn-danger w-100 fw-bold py-3 mt-2 rounded-3 shadow-sm btn-login">
+        <button :disabled="cargando" type="submit" class="btn btn-danger w-100 fw-bold py-3 mt-2 rounded-pill shadow-sm btn-login">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
           {{ cargando ? 'GUARDANDO...' : 'GUARDAR CONTRASEÑA' }}
         </button>

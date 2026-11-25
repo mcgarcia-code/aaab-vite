@@ -8,6 +8,7 @@
     :zIndex="1055"
     @close="emit('close')"
   >
+    <div class="modal-carga-partidos">
     <p class="text-muted small mb-3">
       <i class="bi bi-info-circle me-1"></i>
       Asigná planillero y/o cronometrista solo si este partido se juega con mesa de control. Ambos son opcionales.
@@ -25,6 +26,7 @@
       <button type="button" @click="emit('elegir', 'cronometrista')" class="celda-arbitro-mobile w-100 text-start" :class="{ 'vacio': !partido?.cronometrista }">
         {{ partido?.cronometrista || '— Asignar cronometrista —' }}
       </button>
+    </div>
     </div>
 
     <template #footer>
@@ -51,4 +53,3 @@ defineProps({
 const emit = defineEmits(['close', 'elegir'])
 </script>
 
-<style scoped src="@/components/panel-admin/designaciones/carga-partidos/carga-partidos-compartido.css"></style>

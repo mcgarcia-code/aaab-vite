@@ -1,5 +1,5 @@
 <template>
-  <div class="full-screen-wrapper px-3 px-md-4">
+  <div class="full-screen-wrapper carga-partidos px-3 px-md-4">
     <div class="admin-panel animate__animated animate__fadeIn">
 
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
@@ -424,7 +424,7 @@ const {
 onMounted(iniciar)
 </script>
 
-<style scoped src="@/components/panel-admin/designaciones/carga-partidos/carga-partidos-compartido.css"></style>
+<style src="@/components/panel-admin/designaciones/carga-partidos/carga-partidos-compartido.css"></style>
 <style scoped>
 /* ====================================================
    CHIPS DE FILTRO

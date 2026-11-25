@@ -66,7 +66,7 @@
             </div>
 
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger rounded-pill w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -79,7 +79,7 @@
           <template v-else>
             <!-- TABLA (Solo Escritorio) -->
             <div class="d-none d-md-block table-responsive border rounded shadow-sm tabla-sin-lineas">
-              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija texto-075 tabla-layout-fijo">
+              <table class="table table-hover align-middle mb-0 text-nowrap tabla-fija solo-escritorio texto-075 tabla-layout-fijo">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 text-center text-uppercase text-muted col-fija col-id" style="width: 50px;">ID</th>
@@ -826,28 +826,7 @@ onMounted(fetchSanciones)
    TABLA CON COLUMNAS FIJAS Y SIN LÍNEAS
    ==================================================== */
 
-@media (min-width: 768px) {
-  /* Columnas fijas base */
-  .col-fija {
-    position: sticky !important;
-    background-color: inherit;
-    z-index: 10;
-  }
-
-  /* Fondo thead y Z-INDEX 12 (Tapa el scroll vertical) */
-  .tabla-fija thead .col-fija {
-    background-color: var(--o-superficie, #f8f9fa) !important;
-    z-index: 12;
-  }
-
-  /* Fondo tbody */
-  .tabla-fija tbody .col-fija {
-    background-color: var(--o-tarjeta, #ffffff) !important;
-  }
-
-  /* Posiciones y anchos calculados */
-  .col-id       { left: 0; min-width: 50px !important; max-width: 50px !important; }
-  .col-acciones { left: 50px; min-width: 140px !important; max-width: 140px !important; }
+@media (min-width: 768px) {  .col-acciones { left: 50px; min-width: 140px !important; max-width: 140px !important; }
   .col-arbitro  {
     left: 190px;
     min-width: 200px !important;

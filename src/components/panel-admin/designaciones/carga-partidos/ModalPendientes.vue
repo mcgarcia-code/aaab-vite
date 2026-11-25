@@ -7,6 +7,7 @@
     maxWidth="640px"
     @close="emit('close')"
   >
+    <div class="modal-carga-partidos">
     <div v-if="esAvisos" class="small mb-3">
       <p v-if="tipoAviso" class="text-muted mb-2">
         <span class="aviso-barra aviso-muestra me-1" :class="'aviso-' + tipoAviso.color"></span>
@@ -75,6 +76,7 @@
         </button>
       </div>
     </div>
+    </div>
 
     <template #footer>
       <button type="button" @click="emit('close')" class="btn btn-light rounded-pill px-4 fw-bold border w-100">
@@ -105,7 +107,6 @@ defineProps({
 const emit = defineEmits(['close', 'ir'])
 </script>
 
-<style scoped src="@/components/panel-admin/designaciones/carga-partidos/carga-partidos-compartido.css"></style>
 <style scoped>
 .lista-pendientes {
   max-height: 60vh;

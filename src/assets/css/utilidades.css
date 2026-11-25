@@ -56,3 +56,21 @@
   border-left: none !important;
   border-right: none !important;
 }
+
+/* Columnas fijas de las tablas: <table class="tabla-fija"> con celdas .col-fija
+   (la primera, .col-id). Cada sección pone el left/ancho de sus otras columnas.
+   Con "tabla-fija solo-escritorio" las columnas se fijan desde 768px. */
+.tabla-fija:not(.solo-escritorio) .col-fija { position: sticky; background-color: inherit; z-index: 10; }
+.tabla-fija:not(.solo-escritorio) thead .col-fija { background-color: var(--o-superficie, #f8f9fa); z-index: 12; }
+.tabla-fija:not(.solo-escritorio) tbody .col-fija { background-color: var(--o-tarjeta, #ffffff); }
+.tabla-fija:not(.solo-escritorio) .col-id { left: 0; min-width: 60px; }
+
+@media (min-width: 768px) {
+  .tabla-fija.solo-escritorio .col-fija { position: sticky !important; background-color: inherit; z-index: 10; }
+  .tabla-fija.solo-escritorio thead .col-fija { background-color: var(--o-superficie, #f8f9fa) !important; z-index: 12; }
+  .tabla-fija.solo-escritorio tbody .col-fija { background-color: var(--o-tarjeta, #ffffff) !important; }
+  .tabla-fija.solo-escritorio .col-id { left: 0; min-width: 50px !important; max-width: 50px !important; }
+}
+
+/* Punto de estado (activo / inactivo, apto médico) junto a un nombre */
+.status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }

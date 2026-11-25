@@ -36,7 +36,7 @@
               <button
                 type="button"
                 @click="descargar(designacionPrincipal.semanaAtras)"
-                class="btn btn-danger btn-lg fw-bold px-4 py-3 d-inline-flex align-items-center justify-content-center gap-2 shadow-lg w-100 btn-download"
+                class="btn btn-danger rounded-pill btn-lg fw-bold px-4 py-3 d-inline-flex align-items-center justify-content-center gap-2 shadow-lg w-100 btn-download"
                 style="max-width: 350px;"
                 :class="{ 'disabled-link': !designacionPrincipal }"
                 :disabled="!designacionPrincipal || descargando !== null"

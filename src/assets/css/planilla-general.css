@@ -4,8 +4,8 @@
    - Escritorio: tabla tipo Excel con scroll propio.
    - Celular y app: una tarjeta por árbitro con sus resultados en filas.
    Se usa como <style scoped src> en PlanillaGeneralAdmin,
-   PlanillaGeneralObservacionesAdmin, PlanillaGeneralCoordinadores
-   y PlanillaGeneralObservacionesCoordinadores.
+   PlanillaGeneralCoordinadores y comunes/PlanillaGeneralObservaciones
+   (admin y coordinadores).
    ========================================================= */
 
 /* Al llegar al borde de la tabla, el gesto no sigue arrastrando la página */
@@ -26,4 +26,10 @@
   .barra-planilla .busqueda-wrap { flex: 1 1 160px; max-width: none; }
   .barra-planilla .busqueda-wrap input { min-width: 0; width: 100%; }
   .selector-grupo { flex: 1 1 160px; max-width: none; }
+}
+
+/* Cuadradito de la leyenda de colores (cada planilla le pone su color) */
+.cuadrito {
+  display: inline-block; width: 12px; height: 12px; border: 1px solid var(--o-borde, #ced4da);
+  border-radius: 4px; margin-right: 4px; vertical-align: -1px;
 }

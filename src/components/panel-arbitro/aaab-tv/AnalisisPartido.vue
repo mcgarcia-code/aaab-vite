@@ -28,7 +28,7 @@
 
     <!-- ============ EVENTO: guardar y retomar después ============ -->
     <div class="barra-eventos mb-3">
-      <button type="button" class="btn btn-sm btn-danger fw-bold" :disabled="!sesion.tags.length || guardandoEvento" @click="guardarEventoActual">
+      <button type="button" class="btn btn-sm btn-danger rounded-pill fw-bold" :disabled="!sesion.tags.length || guardandoEvento" @click="guardarEventoActual">
         <span v-if="guardandoEvento" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
         <i v-else class="bi bi-floppy" aria-hidden="true"></i> {{ sesion.idEvento ? 'Guardar cambios' : 'Guardar evento' }}
       </button>
@@ -83,7 +83,7 @@
               </div>
               <div class="d-flex align-items-center gap-1">
                 <div class="btn-group btn-group-sm" role="group" aria-label="Velocidad">
-                  <button v-for="v in VELOCIDADES" :key="v" type="button" class="btn" :class="velocidad === v ? 'btn-dark' : 'btn-light border'" @click="cambiarVelocidad(v)">{{ v }}x</button>
+                  <button v-for="v in VELOCIDADES" :key="v" type="button" class="btn" :class="velocidad === v ? 'btn-danger' : 'btn-outline-danger'" @click="cambiarVelocidad(v)">{{ v }}x</button>
                 </div>
                 <button type="button" class="btn btn-sm btn-light border" title="Cambiar video" aria-label="Cambiar video" @click="inputVideo?.click()">
                   <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
@@ -327,7 +327,7 @@
             <div class="small text-muted">Guardado el {{ fechaGuardado(ev.guardadoEl) }}</div>
           </div>
           <div class="d-flex gap-1 flex-shrink-0">
-            <button type="button" class="btn btn-sm btn-danger fw-bold" :disabled="ev.id === sesion.idEvento || !!eventoOcupado" @click="pedirAbrirEvento(ev)">
+            <button type="button" class="btn btn-sm btn-danger rounded-pill fw-bold" :disabled="ev.id === sesion.idEvento || !!eventoOcupado" @click="pedirAbrirEvento(ev)">
               <span v-if="eventoOcupado === ev.id" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
               {{ ev.id === sesion.idEvento ? 'Abierto' : 'Abrir' }}
             </button>

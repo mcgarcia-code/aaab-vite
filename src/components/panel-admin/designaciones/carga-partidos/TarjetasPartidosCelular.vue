@@ -216,10 +216,9 @@ defineProps({
 const emit = defineEmits(['cancha', 'fecha-horario', 'suspender', 'arbitro', 'color', 'mesa', 'avisos', 'borrar'])
 </script>
 
-<style scoped src="@/components/panel-admin/designaciones/carga-partidos/carga-partidos-compartido.css"></style>
 <style scoped>
 .card-resaltada {
-  animation: destello 3s ease-out;
+  animation: destello-partido 3s ease-out;
 }
 
 /* ====================================================

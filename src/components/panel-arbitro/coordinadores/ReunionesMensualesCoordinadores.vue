@@ -87,7 +87,7 @@
                 <template v-if="!reunionEsPasada">
                   <button
                     type="button"
-                    class="btn btn-sm btn-danger fw-bold d-flex align-items-center justify-content-center gap-1 flex-fill flex-sm-grow-0"
+                    class="btn btn-sm btn-danger rounded-pill fw-bold d-flex align-items-center justify-content-center gap-1 flex-fill flex-sm-grow-0"
                     :disabled="habilitandoExamen || cargandoArbitros || !idsGruposExamenReunion.length || examenHabilitado || !asistenciaGrupoExamen.presentes || !reunionAprobada"
                     @click="abrirModalExamen"
                     :title="tituloBotonHabilitar"
@@ -127,7 +127,7 @@
             <span v-if="reunionActual.motivo_rechazo"> Motivo: {{ reunionActual.motivo_rechazo }}.</span>
             Reprogramala para que vuelva a revisión.
           </div>
-          <button v-if="puedeModificarReunion" type="button" class="btn btn-danger btn-sm fw-bold flex-shrink-0" @click="abrirModalEditarReunion">
+          <button v-if="puedeModificarReunion" type="button" class="btn btn-danger rounded-pill btn-sm fw-bold flex-shrink-0" @click="abrirModalEditarReunion">
             <i class="bi bi-calendar-plus me-1"></i>REPROGRAMAR
           </button>
         </div>
@@ -161,7 +161,7 @@
               </select>
             </div>
             <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger rounded-pill w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -1559,10 +1559,6 @@ onMounted(async () => {
 @media (min-width: 1400px) {
   .select-reunion { flex-basis: 380px; max-width: 380px; }
 }
-.col-fija { position: sticky; background-color: inherit; z-index: 10; }
-.tabla-fija thead .col-fija { background-color: var(--o-superficie, #f8f9fa); z-index: 12; }
-.tabla-fija tbody .col-fija { background-color: var(--o-tarjeta, #ffffff); }
-.col-id       { left: 0;     min-width: 60px;  }
 .col-acciones { left: 60px;  min-width: 90px;  }
 .col-apellido { left: 150px; min-width: 150px; }
 .col-nombre   { left: 300px; min-width: 150px; }

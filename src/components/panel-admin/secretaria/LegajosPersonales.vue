@@ -56,7 +56,7 @@
               </select>
             </div>
             <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger rounded-pill w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -623,7 +623,7 @@
               <button @click="abrirEdicionDesdeSolicitud(sol)" class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center gap-1 fw-bold flex-fill" title="Abrir legajo para editar">
                 <i class="bi bi-pencil texto-16px"></i> LEGAJO
               </button>
-              <button @click="rechazarSolicitud(sol)" class="btn btn-sm btn-danger fw-bold flex-fill">RECHAZAR</button>
+              <button @click="rechazarSolicitud(sol)" class="btn btn-sm btn-danger rounded-pill fw-bold flex-fill">RECHAZAR</button>
               <button @click="aprobarSolicitud(sol)" class="btn btn-sm btn-success fw-bold flex-fill">APROBAR</button>
             </div>
           </div>
@@ -1634,51 +1634,10 @@ const claseEstadoSolicitud = (estado) => (estado ? 'estado-' + estado : 'estado-
   object-fit: cover;
   border: 2px solid #dc2626;
 }
-
-/* ====================================================
-   PUNTOS DE ESTADO (Activo/Inactivo)
-   ==================================================== */
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-/* ====================================================
-   TABLA CON COLUMNAS FIJAS
-   ==================================================== */
-
-/* Columnas fijas con position: sticky base (para los datos) */
-.col-fija {
-  position: sticky;
-  background-color: inherit;
-  z-index: 10;
-}
-
-/* Fondo para thead y Z-INDEX ALTO para que tape los datos al scrollear hacia abajo */
-.tabla-fija thead .col-fija {
-  background-color: var(--o-superficie, #f8f9fa);
-  z-index: 12;
-}
-
-/* Fondo para tbody */
-.tabla-fija tbody .col-fija {
-  background-color: var(--o-tarjeta, #ffffff);
-}
-
 /* Fondo especial para filas con bg-danger-subtle */
 .tabla-fija tbody tr.bg-danger-subtle .col-fija {
   background-color: var(--o-rojo-fondo, #f8d7da);
 }
-
-/* Posiciones de las columnas fijas */
-.col-id {
-  left: 0;
-  min-width: 60px;
-}
-
 .col-acciones {
   left: 60px;
   min-width: 100px;

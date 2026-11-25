@@ -44,7 +44,7 @@
             <input aria-label="Hasta (dd/mm/aaaa)" type="text" v-model="filtros.hasta" class="form-control form-control-sm shadow-none" placeholder="HASTA (DD/MM/AAAA)">
           </div>
           <div class="col-12 d-md-none mt-2">
-            <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold">Aplicar Filtros</button>
+            <button @click="mostrarFiltrosMobile = false" class="btn btn-danger rounded-pill w-100 btn-sm fw-bold">Aplicar Filtros</button>
           </div>
         </div>
       </div>
@@ -84,7 +84,7 @@
                       <span class="ms-1">{{ s.estado_dinamico == 3 ? 'Descargo' : 'Historial' }}</span>
                       <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
                     </button>
-                    <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-sm btn-danger fw-bold w-100 text-white">
+                    <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-sm btn-danger rounded-pill fw-bold w-100 text-white">
                       APELAR
                     </button>
                   </div>
@@ -139,7 +139,7 @@
                     <span class="ms-1">{{ s.estado_dinamico == 3 ? (s.tiene_nuevos ? 'Nuevo Mensaje' : 'Realizar Descargo') : 'Historial de Descargos' }}</span>
                     <span v-if="s.tiene_nuevos && s.estado_dinamico == 3" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
                   </button>
-                  <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-sm btn-danger fw-bold w-100 text-white">
+                  <button v-if="s.estado_dinamico == 1" @click="abrirApelar(s)" class="btn btn-sm btn-danger rounded-pill fw-bold w-100 text-white">
                     <i class="bi bi-envelope"></i> APELAR A CD
                   </button>
                 </div>
@@ -218,7 +218,7 @@
 
       <template #footer>
         <div v-if="sancionActiva?.estado_dinamico == 3" class="w-100 d-flex justify-content-end gap-2">
-          <button @click="enviarDescargo" class="btn btn-danger fw-bold" :disabled="enviandoDescargo || (!nuevoMensaje && !fileInput?.files?.length)">
+          <button @click="enviarDescargo" class="btn btn-danger rounded-pill fw-bold" :disabled="enviandoDescargo || (!nuevoMensaje && !fileInput?.files?.length)">
             <span v-if="enviandoDescargo" class="spinner-border spinner-border-sm me-1"></span>
             ENVIAR DESCARGO
           </button>

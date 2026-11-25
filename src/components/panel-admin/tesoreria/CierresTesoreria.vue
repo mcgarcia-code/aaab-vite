@@ -25,7 +25,7 @@
               </div>
             </div>
             <div class="col-4 col-md-3">
-              <button @click="confirmarCierre" :disabled="!periodoCerrar || cerrando" class="btn btn-danger btn-sm w-100 fw-bold shadow-sm">
+              <button @click="confirmarCierre" :disabled="!periodoCerrar || cerrando" class="btn btn-danger rounded-pill btn-sm w-100 fw-bold shadow-sm">
                 <span v-if="cerrando" class="spinner-border spinner-border-sm me-1"></span>
                 Cerrar Período
               </button>

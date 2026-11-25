@@ -29,7 +29,7 @@
           <input aria-label="Contraseña" v-model="password" type="password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required :disabled="cargando">
         </div>
 
-        <button :disabled="cargando" type="submit" class="btn btn-danger w-100 fw-bold py-3 mt-2 rounded-3 shadow-sm btn-login">
+        <button :disabled="cargando" type="submit" class="btn btn-danger w-100 fw-bold py-3 mt-2 rounded-pill shadow-sm btn-login">
           <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
           {{ cargando ? 'INGRESANDO...' : 'ENTRAR AL PORTAL' }}
         </button>

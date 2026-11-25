@@ -219,7 +219,7 @@
 
             <button
                 @click="enviarSolicitudRectificacion"
-                class="btn btn-danger w-100 fw-bold py-3 py-md-2 shadow"
+                class="btn btn-danger rounded-pill w-100 fw-bold py-3 py-md-2 shadow"
                 :disabled="cargando || !solicitudCambio"
             >
                 ENVIAR SOLICITUD DE CAMBIO

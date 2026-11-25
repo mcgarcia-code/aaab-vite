@@ -29,7 +29,7 @@
           <template v-else-if="pestana !== 'planilla'">
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
               <p class="small text-muted mb-0">{{ AYUDA_PESTANA[pestana] }}</p>
-              <button v-if="pestana === 'practico'" @click="abrirNuevo('practico')" class="btn btn-danger btn-sm fw-bold shadow-sm flex-shrink-0">
+              <button v-if="pestana === 'practico'" @click="abrirNuevo('practico')" class="btn btn-danger rounded-pill btn-sm fw-bold shadow-sm flex-shrink-0">
                 <i class="bi bi-plus-lg me-1"></i> Nuevo práctico
               </button>
             </div>

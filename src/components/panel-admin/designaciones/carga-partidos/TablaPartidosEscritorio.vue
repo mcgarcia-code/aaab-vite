@@ -220,7 +220,6 @@ defineProps({
 const emit = defineEmits(['cancha', 'fecha-horario', 'suspender', 'arbitro', 'color', 'mesa', 'avisos', 'borrar'])
 </script>
 
-<style scoped src="@/components/panel-admin/designaciones/carga-partidos/carga-partidos-compartido.css"></style>
 <style scoped>
 /* ====================================================
    GRILLA TIPO EXCEL (un solo scroll: el de la página)
@@ -327,7 +326,7 @@ const emit = defineEmits(['cancha', 'fecha-horario', 'suspender', 'arbitro', 'co
 
 /* Resaltado temporal al saltar a un partido desde el modal */
 .fila-resaltada td {
-  animation: destello 3s ease-out;
+  animation: destello-partido 3s ease-out;
 }
 
 /* ====================================================

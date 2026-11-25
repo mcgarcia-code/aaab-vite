@@ -57,7 +57,7 @@
             </div>
 
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger rounded-pill w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -298,54 +298,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ====================================================
-   ESTILOS GENERALES
-   ==================================================== */
-
-/* ====================================================
-   PUNTOS DE ESTADO (Activo/Inactivo)
-   ==================================================== */
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-/* ====================================================
-   TABLA CON COLUMNAS FIJAS
-   ==================================================== */
-
-/* Columnas fijas con position: sticky base (para los datos) */
-.col-fija {
-  position: sticky;
-  background-color: inherit;
-  z-index: 10;
-}
-
-/* Fondo para thead y Z-INDEX ALTO para que tape los datos al scrollear hacia abajo */
-.tabla-fija thead .col-fija {
-  background-color: var(--o-superficie, #f8f9fa);
-  z-index: 12;
-}
-
-/* Fondo para tbody */
-.tabla-fija tbody .col-fija {
-  background-color: var(--o-tarjeta, #ffffff);
-}
-
 /* Fondo especial para filas con bg-danger-subtle */
 .tabla-fija tbody tr.bg-danger-subtle .col-fija {
   background-color: var(--o-rojo-fondo, #f8d7da);
 }
-
-/* Posiciones de las columnas fijas */
-.col-id {
-  left: 0;
-  min-width: 60px;
-}
-
 .col-apellido {
   left: 60px;
   min-width: 150px;

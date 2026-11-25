@@ -30,7 +30,7 @@
               <input aria-label="Buscar por nombre, grupo o subgrupo" v-model="filtros.busqueda" class="form-control form-control-sm shadow-none" placeholder="BUSCAR POR NOMBRE, GRUPO O SUBGRUPO...">
             </div>
             <div class="col-12 d-md-none mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger rounded-pill w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>

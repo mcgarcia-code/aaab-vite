@@ -19,7 +19,7 @@
           <div v-else-if="!fechas.length" class="text-center py-5 text-muted">
             <i class="bi bi-calendar-x d-block fs-1 mb-2 opacity-50"></i>
             <span class="fw-bold d-block">Todavía no hay fechas de mini en {{ anio }}.</span>
-            <button type="button" class="btn btn-danger btn-sm fw-bold mt-3" @click="abrirModalFecha(null)"><i class="bi bi-calendar-plus me-1"></i> Programar una fecha</button>
+            <button type="button" class="btn btn-danger rounded-pill btn-sm fw-bold mt-3" @click="abrirModalFecha(null)"><i class="bi bi-calendar-plus me-1"></i> Programar una fecha</button>
           </div>
 
           <!-- FECHAS -->
@@ -65,7 +65,7 @@
                 <button v-if="fechaActual.id && !fechaActual.encuentros.length" type="button" class="btn btn-outline-danger btn-sm fw-bold" @click="confirmarEliminarFecha(fechaActual)" aria-label="Borrar fecha">
                   <i class="bi bi-trash3"></i>
                 </button>
-                <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm" @click="abrirNuevo(fechaActual.fecha)">
+                <button type="button" class="btn btn-danger rounded-pill btn-sm fw-bold shadow-sm" @click="abrirNuevo(fechaActual.fecha)">
                   <i class="bi bi-plus-lg me-1"></i> Agregar sede
                 </button>
               </div>

@@ -48,7 +48,7 @@
               <div class="small text-muted">{{ fechaLargaClase(x.fecha) }} · {{ x.cantidadPreguntas }} preguntas · {{ x.tiempoLimiteMin }} min</div>
             </div>
             <span v-if="!x.presente" class="badge bg-light text-muted border align-self-start align-self-md-center">Solo para presentes en la clase</span>
-            <button v-else type="button" class="btn btn-sm btn-danger fw-bold flex-shrink-0" @click="examenEnCurso = x">
+            <button v-else type="button" class="btn btn-sm btn-danger rounded-pill fw-bold flex-shrink-0" @click="examenEnCurso = x">
               <i class="bi bi-play-fill me-1"></i> {{ x.estado === 'en_curso' ? 'Continuar' : 'Rendir' }}
             </button>
           </div>

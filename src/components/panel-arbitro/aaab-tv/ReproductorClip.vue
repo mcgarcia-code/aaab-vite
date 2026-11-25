@@ -28,7 +28,7 @@
         <span class="tiempo">{{ formatearTiempo(posicion) }} / {{ formatearTiempo(duracion) }}</span>
       </div>
       <div class="btn-group btn-group-sm" role="group" aria-label="Velocidad">
-        <button v-for="v in VELOCIDADES" :key="v" type="button" class="btn" :class="velocidad === v ? 'btn-dark' : 'btn-light border'"
+        <button v-for="v in VELOCIDADES" :key="v" type="button" class="btn" :class="velocidad === v ? 'btn-danger' : 'btn-outline-danger'"
                 :disabled="!url" @click="cambiarVelocidad(v)">{{ v }}x</button>
       </div>
     </div>

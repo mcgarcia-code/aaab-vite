@@ -4,7 +4,7 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom pb-2 mb-3">
       <h5 class="fw-bold text-dark m-0 fs-6 fs-md-5">Revisión detallada</h5>
       <div class="btn-group btn-group-sm" role="group" aria-label="Filtrar preguntas">
-        <button type="button" class="btn fw-bold" :class="soloErradas ? 'btn-outline-secondary' : 'btn-secondary'" @click="soloErradas = false">
+        <button type="button" class="btn fw-bold" :class="soloErradas ? 'btn-outline-danger' : 'btn-danger'" @click="soloErradas = false">
           Todas ({{ revision.length }})
         </button>
         <button type="button" class="btn fw-bold" :class="soloErradas ? 'btn-danger' : 'btn-outline-danger'" @click="soloErradas = true">

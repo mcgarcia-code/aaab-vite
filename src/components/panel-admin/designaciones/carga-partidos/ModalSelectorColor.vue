@@ -7,7 +7,7 @@
     maxWidth="420px"
     @close="emit('close')"
   >
-    <div class="lista-colores">
+    <div class="lista-colores modal-carga-partidos">
       <button type="button" @click="emit('elegir', '')" class="opcion-color">
         <span class="muestra-color muestra-none"></span>
         Sin marca
@@ -40,7 +40,6 @@ defineProps({
 const emit = defineEmits(['close', 'elegir'])
 </script>
 
-<style scoped src="@/components/panel-admin/designaciones/carga-partidos/carga-partidos-compartido.css"></style>
 <style scoped>
 .lista-colores {
   display: flex;

@@ -77,7 +77,7 @@
               <input aria-label="Zona" v-model="filtros.zona" class="form-control form-control-sm shadow-none" placeholder="ZONA...">
             </div>
             <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-primary w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger rounded-pill w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -581,15 +581,6 @@ onMounted(cargarDatos)
   min-height: 100vh;
   border-radius: 12px;
 }
-
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
 /* ====================================================
    TABLA CON COLUMNAS FIJAS
    ==================================================== */
@@ -597,39 +588,21 @@ onMounted(cargarDatos)
   overflow-x: auto;
   max-height: 75vh;
 }
-
-/* Columnas fijas con position: sticky */
-.col-fija {
-  position: sticky;
-  background-color: inherit;
-  z-index: 10;
-}
-
-/* Fondo para thead */
-.tabla-fija thead .col-fija {
-  background-color: #f8f9fa;
-  z-index: 30;
-}
-
-/* Fondo para tbody */
-.tabla-fija tbody .col-fija {
-  background-color: #ffffff;
-}
-
+.tabla-fija thead .col-fija { z-index: 30; }
 /* Posiciones de las columnas fijas */
-.col-apellido {
+.tabla-fija .col-apellido {
   left: 0;
   min-width: 140px;
   z-index: 11;
 }
 
-.col-nombre {
+.tabla-fija .col-nombre {
   left: 140px;
   min-width: 140px;
   z-index: 11;
 }
 
-.col-licencia {
+.tabla-fija .col-licencia {
   left: 280px;
   min-width: 160px;
   z-index: 11;

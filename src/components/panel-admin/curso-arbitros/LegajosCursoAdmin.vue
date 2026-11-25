@@ -45,7 +45,7 @@
               </select>
             </div>
             <div class="col-12 mt-2">
-              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
+              <button @click="mostrarFiltrosMobile = false" class="btn btn-danger rounded-pill w-100 btn-sm fw-bold shadow-sm py-2">Aplicar Filtros</button>
             </div>
           </div>
         </div>
@@ -633,11 +633,6 @@ onMounted(() => {
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
 <style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
-
-.col-fija { position: sticky; background-color: inherit; z-index: 10; }
-.tabla-fija thead .col-fija { background-color: var(--o-superficie, #f8f9fa); z-index: 12; }
-.tabla-fija tbody .col-fija { background-color: var(--o-tarjeta, #ffffff); }
-.col-id { left: 0; min-width: 60px; }
 .col-acciones { left: 60px; min-width: 120px; }
 .col-apellido { left: 180px; min-width: 150px; }
 .col-nombre { left: 330px; min-width: 150px; }

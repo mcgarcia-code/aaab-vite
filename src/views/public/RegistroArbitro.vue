@@ -26,7 +26,7 @@
           Ya podés iniciar sesión con tu email <strong class="text-dark">{{ form.email }}</strong>
           y tu <strong class="text-dark">DNI</strong> como contraseña. Te recomendamos cambiarla desde tu panel.
         </p>
-        <router-link to="/login-arbitro" class="btn btn-danger fw-bold px-4 py-2 rounded-3">
+        <router-link to="/login-arbitro" class="btn btn-danger fw-bold px-4 py-2 rounded-pill">
           <i class="bi bi-box-arrow-in-right me-1"></i> IR A INICIAR SESIÓN
         </router-link>
       </div>
@@ -237,7 +237,7 @@
 
         <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end border-top pt-3">
           <router-link to="/" class="btn btn-light border fw-bold px-4 py-2 rounded-3 order-2 order-md-1">CANCELAR</router-link>
-          <button type="submit" class="btn btn-danger fw-bold px-4 py-2 rounded-3 order-1 order-md-2" :disabled="enviando">
+          <button type="submit" class="btn btn-danger fw-bold px-4 py-2 rounded-pill order-1 order-md-2" :disabled="enviando">
             <span v-if="enviando" class="spinner-border spinner-border-sm me-1"></span>
             {{ enviando ? 'ENVIANDO...' : 'ENVIAR REGISTRO' }}
           </button>

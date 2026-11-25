@@ -55,7 +55,7 @@
                     <a :href="infoInscripcion.scheduleLink" target="_blank" rel="noopener noreferrer" class="btn btn-light border shadow-sm w-100 btn-sm py-2 fw-bold">Cronograma Anual</a>
                   </div>
                   <div class="col-12 mt-2">
-                    <a :href="infoInscripcion.enrollLink" target="_blank" rel="noopener noreferrer" class="btn btn-danger btn-enroll w-100 py-2 fw-bold shadow-sm">INSCRIBIRME</a>
+                    <a :href="infoInscripcion.enrollLink" target="_blank" rel="noopener noreferrer" class="btn btn-danger rounded-pill btn-enroll w-100 py-2 fw-bold shadow-sm">INSCRIBIRME</a>
                   </div>
                 </div>
               </div>
