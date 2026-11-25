@@ -103,7 +103,7 @@
                     </td>
                     <td class="fw-bold text-uppercase text-dark">{{ lic.apellido }}, {{ lic.nombre }}</td>
                     <td class="text-center">
-                      <span :class="['badge-status-sm', lic.estado]">{{ lic.estado.toUpperCase() }}</span>
+                      <span :class="['estado-pill', 'estado-' + lic.estado]">{{ lic.estado.toUpperCase() }}</span>
                     </td>
                     <td class="text-muted small">{{ etiquetaMotivo(lic.motivo, true) }}</td>
                     <td class="text-center text-muted fw-bold">{{ formatearFechaVista(lic.fecha_solicitud) }}</td>
@@ -127,7 +127,7 @@
                 <div class="card-body pt-0 px-3 pb-3">
                   <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="fw-bold text-danger fs-5">{{ formatearFechaAusencia(lic) }}</span>
-                    <span class="texto-07" :class="['badge-status-sm', lic.estado]" style="padding: 3px 10px;">{{ lic.estado.toUpperCase() }}</span>
+                    <span class="texto-07" :class="['estado-pill', 'estado-' + lic.estado]">{{ lic.estado.toUpperCase() }}</span>
                   </div>
 
                   <div class="bg-light p-2 rounded border small mb-3">
@@ -306,7 +306,7 @@
                   {{ etiquetaMotivo(h.motivo, true) }}
                 </td>
                 <td class="text-center py-3 pe-3">
-                  <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
+                  <span :class="['estado-pill', 'estado-' + h.estado]">{{ h.estado.toUpperCase() }}</span>
                 </td>
               </tr>
             </tbody>
@@ -318,7 +318,7 @@
           <div v-for="h in historialLicencia" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-3 p-3 shadow-sm bg-light">
             <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
               <span class="fw-bold text-danger fs-5">{{ formatearFechaAusencia(h) }}</span>
-              <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
+              <span :class="['estado-pill', 'estado-' + h.estado]">{{ h.estado.toUpperCase() }}</span>
             </div>
             <div class="d-flex justify-content-between align-items-center text-muted small mt-2">
               <span><strong>Solicitada:</strong> {{ formatearFechaVista(h.fecha_solicitud) }}</span>
@@ -657,21 +657,6 @@ onMounted(() => {
   min-height: 100vh;
   border-radius: 12px;
 }
-
-/* ====================================================
-   BADGES DE ESTADOS CUSTOMIZADOS
-   ==================================================== */
-.badge-status-sm {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.aprobada { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border: 1px solid var(--o-verde-borde, #bbf7d0); }
-.pendiente { background: var(--o-ambar-fondo, #fef3c7); color: var(--o-ambar-texto, #d97706); border: 1px solid #fde047; }
-.rechazada { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
-.anulada { background: var(--o-chip, #e2e8f0); color: var(--o-texto-medio, #475569); border: 1px solid var(--o-borde, #cbd5e1); }
 
 /* ====================================================
    UTILIDADES

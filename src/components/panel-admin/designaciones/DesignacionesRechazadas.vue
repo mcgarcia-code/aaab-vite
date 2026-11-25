@@ -111,7 +111,7 @@
                   </td>
                   <td class="text-muted small">{{ etiquetaMotivo(r.motivo) }}</td>
                   <td class="text-center pe-3">
-                    <span :class="['badge-status-sm', r.estado]">{{ r.estado.toUpperCase() }}</span>
+                    <span :class="['estado-pill', claseEstadoRechazo(r.estado)]">{{ r.estado.toUpperCase() }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -131,7 +131,7 @@
               <div class="card-body pt-0 px-3 pb-3">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <span class="fw-bold text-dark">{{ r.local }} vs {{ r.visitante }}</span>
-                  <span class="texto-07" :class="['badge-status-sm', r.estado]" style="padding: 3px 10px;">{{ r.estado.toUpperCase() }}</span>
+                  <span class="texto-07" :class="['estado-pill', claseEstadoRechazo(r.estado)]">{{ r.estado.toUpperCase() }}</span>
                 </div>
 
                 <div class="bg-light p-2 rounded border small mb-3">
@@ -302,7 +302,7 @@
                 <td class="text-nowrap text-danger fw-bold py-3">{{ formatearFechaVista(h.fecha) }}</td>
                 <td class="text-muted py-3 text-wrap" style="word-wrap: break-word;">{{ etiquetaMotivo(h.motivo) }}</td>
                 <td class="text-center py-3 pe-3">
-                  <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
+                  <span :class="['estado-pill', claseEstadoRechazo(h.estado)]">{{ h.estado.toUpperCase() }}</span>
                 </td>
               </tr>
             </tbody>
@@ -314,7 +314,7 @@
           <div v-for="h in historial" :key="'mob-hist-'+h.id" class="border border-light-subtle rounded-3 p-3 shadow-sm bg-light">
             <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
               <span class="fw-bold text-dark">{{ h.local }} vs {{ h.visitante }}</span>
-              <span :class="['badge-status-sm', h.estado]">{{ h.estado.toUpperCase() }}</span>
+              <span :class="['estado-pill', claseEstadoRechazo(h.estado)]">{{ h.estado.toUpperCase() }}</span>
             </div>
             <div class="d-flex justify-content-between align-items-center text-muted small mt-1">
               <span><strong>Fecha:</strong> {{ formatearFechaVista(h.fecha) }}</span>
@@ -408,6 +408,9 @@ const rechazosFiltrados = computed(() => {
     return matchArb && matchEst && matchFun && matchAnio
   })
 })
+
+// Color del estado del rechazo: creado = sin resolver (ámbar)
+const claseEstadoRechazo = (estado) => (estado === 'creado' ? 'estado-pendiente' : 'estado-' + estado)
 
 // Sin resolver: alimentan el badge de notificación con dot
 const pendientes = computed(() => rechazos.value.filter(r => r.estado === 'creado').length)
@@ -627,21 +630,6 @@ onMounted(obtenerRechazos)
   70% { box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
   100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
 }
-
-/* ====================================================
-   BADGES DE ESTADO
-   ==================================================== */
-.badge-status-sm {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.justificado { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border: 1px solid var(--o-verde-borde, #bbf7d0); }
-.creado { background: var(--o-ambar-fondo, #fef3c7); color: var(--o-ambar-texto, #d97706); border: 1px solid #fde047; }
-.injustificado { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
-.borrado { background: var(--o-chip, #e5e7eb); color: var(--o-texto-medio, #4b5563); border: 1px solid var(--o-borde, #d1d5db); }
 
 /* ====================================================
    BADGE DE FUNCIÓN (árbitro / delegado técnico)

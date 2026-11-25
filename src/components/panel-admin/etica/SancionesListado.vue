@@ -126,7 +126,7 @@
                       <span v-else>{{ s.hasta_formateada || '-' }}</span>
                     </td>
                     <td class="text-center pe-3">
-                      <span :class="['badge-status-sm', obtenerClaseEstado(s.estado_dinamico)]">
+                      <span :class="obtenerClaseEstado(s.estado_dinamico)">
                         {{ obtenerTextoEstado(s.estado_dinamico) }}
                       </span>
                     </td>
@@ -155,7 +155,7 @@
                 <div class="px-3 pt-1 pb-2">
                   <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
                     <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" class="fs-6 fw-bold">{{ s.sancion }}</span>
-                    <span :class="['badge-status-sm', obtenerClaseEstado(s.estado_dinamico, true)]">
+                    <span :class="obtenerClaseEstado(s.estado_dinamico)">
                       {{ obtenerTextoEstado(s.estado_dinamico) }}
                     </span>
                   </div>
@@ -305,7 +305,7 @@
                   </span>
                 </td>
                 <td class="text-center py-3 pe-3">
-                  <span :class="['badge-status-sm', obtenerClaseEstado(h.estado_dinamico, true)]">
+                  <span :class="obtenerClaseEstado(h.estado_dinamico)">
                     {{ obtenerTextoEstado(h.estado_dinamico) }}
                   </span>
                 </td>
@@ -322,7 +322,7 @@
                 <span class="d-block fw-bold text-dark">Art. {{ h.articulo }}</span>
                 <span class="text-muted small lh-sm">{{ h.motivo }}</span>
               </div>
-              <span :class="['badge-status-sm', obtenerClaseEstado(h.estado_dinamico, true)]" class="text-center">
+              <span :class="obtenerClaseEstado(h.estado_dinamico)" class="text-center">
                 {{ obtenerTextoEstado(h.estado_dinamico) }}
               </span>
             </div>
@@ -519,15 +519,12 @@ const obtenerTextoEstado = (estado_dinamico) => {
   return 'DESCONOCIDO'
 }
 
-const obtenerClaseEstado = (estado_dinamico, es_sm = false) => {
-
-  const prefijo = es_sm ? 'badge-status-sm' : 'badge-status'
-
-  if (estado_dinamico == 1) return `${prefijo} vigente`
-  if (estado_dinamico == 2) return `${prefijo} cumplida`
-  if (estado_dinamico == 3) return `${prefijo} en-proceso`
-  if (estado_dinamico == 4) return `${prefijo} anulada`
-  return `${prefijo}`
+const obtenerClaseEstado = (estado_dinamico) => {
+  if (estado_dinamico == 1) return 'estado-pill estado-vigente'
+  if (estado_dinamico == 2) return 'estado-pill estado-cumplida'
+  if (estado_dinamico == 3) return 'estado-pill estado-en-proceso'
+  if (estado_dinamico == 4) return 'estado-pill estado-anulada'
+  return 'estado-pill estado-default'
 }
 
 const obtenerClaseTextoSancion = (estado_dinamico) => {
@@ -839,23 +836,6 @@ onMounted(fetchSanciones)
    ==================================================== */
 .text-en-proceso { color: var(--o-ambar-texto, #d97706) !important; }
 .text-anulada { color: var(--o-texto, #0f172a) !important; }
-
-/* Base para los badges de estado */
-.badge-status-sm {
-  border-radius: 20px;
-  font-weight: 700;
-  display: inline-block;
-  text-align: center;
-  border: 1px solid;
-  padding: 4px 10px;
-  font-size: 0.65rem;
-  white-space: nowrap;
-}
-
-.vigente { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border-color: var(--o-rojo-borde, #fecaca); }
-.cumplida { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border-color: var(--o-verde-borde, #bbf7d0); }
-.en-proceso { background: var(--o-ambar-fondo, #fef9c3); color: var(--o-ambar-texto, #a16207); border-color: var(--o-ambar-borde, #fef08a); }
-.anulada { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); border-color: var(--o-borde, #cbd5e1); }
 
 .animate__animated { animation-duration: 0.5s; }
 

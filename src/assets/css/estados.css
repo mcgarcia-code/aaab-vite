@@ -1,0 +1,77 @@
+/* =========================================================
+   Píldoras de estado: el mismo badge en todo el sitio.
+   Uso: <span class="estado-pill estado-aprobada">APROBADA</span>
+
+   Los colores solo aplican junto con .estado-pill, así no
+   chocan con otras clases .estado-* sueltas de las secciones
+   (tarjetas, cuadritos de planillas, etc.).
+
+   En claro usan el color de respaldo; en oscuro, las
+   variables --o-* de tema.css.
+
+   Si en una sección un estado significa otra cosa (por ejemplo
+   "creado" = en proceso), usar directamente el tono:
+   estado-verde, estado-ambar, estado-rojo, estado-gris, estado-violeta,
+   estado-azul o estado-naranja.
+   ========================================================= */
+.estado-pill {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.35em 0.85em;
+  font-weight: 700;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-align: center;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+/* Verde: aprobado, cumplido, entregado */
+.estado-pill:is(.estado-verde, .estado-aprobada, .estado-aprobado, .estado-cumplida, .estado-entregado, .estado-justificado) {
+  background-color: var(--o-verde-fondo, #e3f5e6);
+  color: var(--o-verde-texto, #2f8a45);
+  border-color: var(--o-verde-borde, #bfe6c8);
+}
+
+/* Ámbar: pendiente, enviado, en proceso */
+.estado-pill:is(.estado-ambar, .estado-pendiente, .estado-enviado, .estado-en-proceso) {
+  background-color: var(--o-ambar-fondo, #fdf3d3);
+  color: var(--o-ambar-texto, #a6841f);
+  border-color: var(--o-ambar-borde, #f2e2a5);
+}
+
+/* Rojo: rechazado, vigente (sanción o solicitud), injustificado */
+.estado-pill:is(.estado-rojo, .estado-rechazada, .estado-rechazado, .estado-vigente, .estado-injustificado) {
+  background-color: var(--o-rojo-fondo, #fde7ea);
+  color: var(--o-rojo-texto, #c0304a);
+  border-color: var(--o-rojo-borde, #f5c2cb);
+}
+
+/* Gris: anulado, borrado, cancelado, sin estado */
+.estado-pill:is(.estado-gris, .estado-anulada, .estado-anulado, .estado-borrada, .estado-borrado, .estado-cancelado, .estado-default) {
+  background-color: var(--o-chip, #eef1f5);
+  color: var(--o-texto-suave, #5b6b7f);
+  border-color: var(--o-borde, #d4dbe4);
+}
+
+/* Celeste: creado / cargado (todavía sin revisar), aceptado */
+.estado-pill:is(.estado-azul, .estado-creado, .estado-aceptado) {
+  background-color: var(--o-azul-fondo, #dceefb);
+  color: var(--o-azul-texto, #1c6ea4);
+  border-color: var(--o-azul-borde, #b6dcf5);
+}
+
+/* Violeta: alta del curso */
+.estado-pill.estado-violeta {
+  background-color: var(--o-violeta-fondo, #f3e8ff);
+  color: var(--o-violeta-texto, #7e22ce);
+  border-color: var(--o-violeta-borde, #e9d5ff);
+}
+
+/* Naranja: desestimado */
+.estado-pill:is(.estado-naranja, .estado-desestimado) {
+  background-color: var(--o-ambar-fondo, #fdecd8);
+  color: var(--o-ambar-texto, #b5691a);
+  border-color: var(--o-ambar-borde, #f6d3a8);
+}

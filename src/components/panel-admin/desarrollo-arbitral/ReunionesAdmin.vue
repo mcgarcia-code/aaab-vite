@@ -12,9 +12,9 @@
                     {{ reunionActual?.titulo }}
                     <span v-if="reunionActual?.nombreGrupo" class="fst-italic"> · {{ reunionActual.nombreGrupo }}</span>
                     — {{ arbitrosReunion.length }} árbitros
-                    <span v-if="resumenReunionActual.presentes"   class="ms-1 badge rounded-pill bg-success">✓ {{ resumenReunionActual.presentes }}</span>
-                    <span v-if="resumenReunionActual.ausentes"    class="ms-1 badge rounded-pill bg-secondary">✗ {{ resumenReunionActual.ausentes }}</span>
-                    <span v-if="resumenReunionActual.sinRegistro" class="ms-1 badge rounded-pill bg-light text-muted border">— {{ resumenReunionActual.sinRegistro }}</span>
+                    <span v-if="resumenReunionActual.presentes"   class="ms-1 estado-pill estado-verde">✓ {{ resumenReunionActual.presentes }}</span>
+                    <span v-if="resumenReunionActual.ausentes"    class="ms-1 estado-pill estado-naranja">✗ {{ resumenReunionActual.ausentes }}</span>
+                    <span v-if="resumenReunionActual.sinRegistro" class="ms-1 estado-pill estado-gris">— {{ resumenReunionActual.sinRegistro }}</span>
                   </template>
                   <template v-else>Presentes y ausentes · Todos los grupos · {{ totalFiltrados }} árbitros</template>
                 </p>
@@ -313,7 +313,7 @@
             </h5>
             <span class="text-muted small d-block mt-1">
               {{ mesDisertantes ? nombreMes(mesDisertantes) : 'Todos los meses' }} {{ anioDisertantes }} · {{ filasDisertantesFiltradas.length }} reuniones
-              <span v-if="sinAsignarDisertantes" class="ms-1 badge rounded-pill bg-warning text-dark">{{ sinAsignarDisertantes }} sin asignar</span>
+              <span v-if="sinAsignarDisertantes" class="ms-1 estado-pill estado-ambar">{{ sinAsignarDisertantes }} sin asignar</span>
             </span>
           </div>
 

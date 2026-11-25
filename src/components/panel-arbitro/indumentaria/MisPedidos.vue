@@ -61,7 +61,7 @@
                   <div class="text-muted fw-bold texto-08">
                     Pedido #{{ p.id }} <span class="mx-1">•</span> {{ p.fecha_creacion || 'S/F' }}
                   </div>
-                  <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
+                  <span :class="['estado-pill', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
                 </div>
               </div>
 
@@ -98,7 +98,7 @@
 
               <!-- COL 6: Estado (Escritorio) -->
               <div class="col-md-1 d-none d-md-flex justify-content-center">
-                <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
+                <span :class="['estado-pill', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
               </div>
 
               <!-- COL 7: Acciones (Ambos) -->
@@ -211,15 +211,15 @@ const abrirModalCancelar = (id) => {
 }
 
 const obtenerClaseEstado = (estado) => {
-  if (!estado) return 'estado-creado'
+  if (!estado) return 'estado-gris'
   switch (estado.toLowerCase()) {
-    case 'creado': return 'estado-creado'
-    case 'en proceso': return 'estado-proceso'
+    case 'creado': return 'estado-gris'
+    case 'en proceso': return 'estado-en-proceso'
     case 'aceptado': return 'estado-aceptado'
     case 'entregado': return 'estado-entregado'
     case 'rechazado': return 'estado-rechazado'
     case 'cancelado': return 'estado-cancelado'
-    default: return 'estado-creado'
+    default: return 'estado-gris'
   }
 }
 
@@ -246,24 +246,6 @@ onMounted(obtenerPedidos)
 .item-pedido:hover {
   background-color: var(--o-superficie, #f8fafc) !important;
 }
-
-/* ====================================================
-   3. BADGES (ESTADOS DE PEDIDO)
-   ==================================================== */
-.badge-status-sm {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.estado-creado { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); border: 1px solid var(--o-borde, #cbd5e1); }
-.estado-proceso { background: var(--o-ambar-fondo, #fef3c7); color: var(--o-ambar-texto, #b45309); border: 1px solid var(--o-ambar-borde, #fde68a); }
-.estado-aceptado { background: var(--o-chip, #e2e8f0); color: var(--o-texto, #0f172a); border: 1px solid #94a3b8; }
-.estado-entregado { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border: 1px solid var(--o-verde-borde, #bbf7d0); }
-.estado-rechazado { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
-.estado-cancelado { background: var(--o-chip, #f1f5f9); color: var(--o-texto-suave, #64748b); border: 1px solid var(--o-borde, #cbd5e1); }
 
 .animate__animated { animation-duration: 0.5s; }
 

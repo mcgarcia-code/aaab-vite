@@ -92,11 +92,11 @@
                       <div v-if="m.descripcion" class="text-muted small text-wrap" style="max-width: 260px;">{{ m.descripcion }}</div>
                     </td>
                     <td class="text-center">
-                      <span :class="['badge-status-sm', m.tipo === 'debito' ? 'debito' : 'credito']">{{ m.tipo === 'debito' ? 'DÉBITO' : 'CRÉDITO' }}</span>
+                      <span :class="['estado-pill', m.tipo === 'debito' ? 'estado-rojo' : 'estado-verde']">{{ m.tipo === 'debito' ? 'DÉBITO' : 'CRÉDITO' }}</span>
                     </td>
                     <td class="text-end fw-bold">{{ formatearMonto(m.monto) }}</td>
                     <td class="text-center">
-                      <span :class="['badge-status-sm', m.estado]">{{ m.estado.toUpperCase() }}</span>
+                      <span :class="['estado-pill', claseEstadoMovimiento(m.estado)]">{{ m.estado.toUpperCase() }}</span>
                     </td>
                     <td class="text-center">
                       <div v-if="m.concepto === 'ajuste_manual' && m.estado === 'pendiente'" class="d-flex justify-content-center gap-1">
@@ -124,7 +124,7 @@
               <div v-for="m in movimientosPaginados" :key="'mob-'+m.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
                   <div class="text-dark fw-bold text-uppercase" style="font-size: 0.95rem;">{{ m.arbitro }}</div>
-                  <span :class="['badge-status-sm', m.estado]">{{ m.estado.toUpperCase() }}</span>
+                  <span :class="['estado-pill', claseEstadoMovimiento(m.estado)]">{{ m.estado.toUpperCase() }}</span>
                 </div>
                 <div class="card-body pt-1 px-3 pb-3">
                   <div class="d-flex justify-content-between align-items-center mb-2">
@@ -132,7 +132,7 @@
                       {{ m.concepto_etiqueta }}
                       · {{ m.fecha_generacion }}
                     </span>
-                    <span :class="['badge-status-sm', m.tipo === 'debito' ? 'debito' : 'credito']">{{ m.tipo === 'debito' ? 'DÉBITO' : 'CRÉDITO' }}</span>
+                    <span :class="['estado-pill', m.tipo === 'debito' ? 'estado-rojo' : 'estado-verde']">{{ m.tipo === 'debito' ? 'DÉBITO' : 'CRÉDITO' }}</span>
                   </div>
                   <div v-if="m.partido_categoria" class="mb-2">
                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle text-wrap text-break text-start texto-065">{{ m.partido_categoria }}</span>
@@ -335,7 +335,7 @@
             <div v-else class="border rounded">
               <div v-for="(l, i) in lineas" :key="l.uid"
                    class="d-flex align-items-center gap-2 p-2" :class="{ 'border-bottom': i < lineas.length - 1 }">
-                <span :class="['badge-status-sm', l.tipo === 'debito' ? 'debito' : 'credito']">{{ l.tipo === 'debito' ? 'DÉB' : 'CRÉD' }}</span>
+                <span :class="['estado-pill', l.tipo === 'debito' ? 'estado-rojo' : 'estado-verde']">{{ l.tipo === 'debito' ? 'DÉB' : 'CRÉD' }}</span>
                 <div class="flex-grow-1 small text-truncate">
                   <span class="fw-bold text-dark">{{ l.item ? etiquetaItem(l.item) : (l.tipo === 'debito' ? 'Débito' : 'Crédito') }}</span>
                   <span v-if="l.cantidad > 1" class="text-muted"> × {{ l.cantidad }} ({{ formatearMonto(l.unitario) }} c/u)</span>
@@ -832,6 +832,9 @@ onMounted(() => {
   cargarConceptos() // para mostrar el nombre del ítem en la tabla
   cargarTiposMovimiento()
 })
+
+// Color del estado del movimiento: cerrado = confirmado (verde)
+const claseEstadoMovimiento = (estado) => (estado === 'cerrado' ? 'estado-verde' : 'estado-' + estado)
 </script>
 
 <style scoped>
@@ -850,21 +853,6 @@ onMounted(() => {
   min-height: 100vh;
   border-radius: 12px;
 }
-
-.badge-status-sm {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  display: inline-block;
-  text-align: center;
-  border: 1px solid;
-}
-.badge-status-sm.debito { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border-color: var(--o-rojo-borde, #fecaca); }
-.badge-status-sm.credito { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border-color: var(--o-verde-borde, #bbf7d0); }
-.badge-status-sm.pendiente { background: var(--o-ambar-fondo, #fef9c3); color: var(--o-ambar-texto, #a16207); border-color: var(--o-ambar-borde, #fef08a); }
-.badge-status-sm.cerrado { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); border-color: var(--o-borde, #cbd5e1); }
-.badge-status-sm.anulado { background: #0f172a; color: #ffffff; border-color: var(--o-texto, #0f172a); }
 
 .animate__animated { animation-duration: 0.5s; }
 </style>

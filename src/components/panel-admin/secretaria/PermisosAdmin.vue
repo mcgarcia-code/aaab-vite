@@ -95,7 +95,7 @@
                       <span class="badge-status-sm rol">{{ etiquetaRol(u.rol).toUpperCase() }}</span>
                     </td>
                     <td class="text-center">
-                      <span :class="['badge-status-sm', esActivo(u) ? 'activo' : 'inactivo']">{{ esActivo(u) ? 'ACTIVO' : 'INACTIVO' }}</span>
+                      <span :class="['estado-pill', esActivo(u) ? 'estado-verde' : 'estado-gris']">{{ esActivo(u) ? 'ACTIVO' : 'INACTIVO' }}</span>
                     </td>
                     <td class="pe-3 text-muted">{{ categoriasDeUsuario(u).join(' · ') }}</td>
                   </tr>
@@ -118,7 +118,7 @@
                 <div class="card-body pt-0 px-3 pb-3">
                   <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
                     <span class="text-muted small text-break">{{ u.usuario }}</span>
-                    <span class="texto-07" :class="['badge-status-sm', esActivo(u) ? 'activo' : 'inactivo']" style="padding: 3px 10px;">{{ esActivo(u) ? 'ACTIVO' : 'INACTIVO' }}</span>
+                    <span class="texto-07" :class="['estado-pill', esActivo(u) ? 'estado-verde' : 'estado-gris']">{{ esActivo(u) ? 'ACTIVO' : 'INACTIVO' }}</span>
                   </div>
 
                   <div class="bg-light p-2 rounded border small mb-3">
@@ -642,8 +642,6 @@ onMounted(() => {
   white-space: nowrap;
   display: inline-block;
 }
-.activo { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border: 1px solid var(--o-verde-borde, #bbf7d0); }
-.inactivo { background: var(--o-chip, #e2e8f0); color: var(--o-texto-medio, #475569); border: 1px solid var(--o-borde, #cbd5e1); }
 .rol { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
 .vos { background: var(--o-azul-fondo, #e0e7ff); color: var(--o-azul-texto, #4338ca); border: 1px solid var(--o-azul-borde, #c7d2fe); }
 

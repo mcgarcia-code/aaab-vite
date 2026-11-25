@@ -60,8 +60,8 @@
                 >
                   <span class="text-uppercase me-2">{{ grupo.mes }}</span>
                   <span class="badge rounded-pill me-1" :class="grupo.proximas ? 'bg-danger' : 'bg-secondary'">{{ grupo.clases.length }} {{ grupo.clases.length === 1 ? 'clase' : 'clases' }}</span>
-                  <span v-if="grupo.dictadas" class="badge bg-light text-muted border">{{ grupo.proximas ? grupo.dictadas + ' dictadas' : 'Dictadas' }}</span>
-                  <span v-if="grupo.clases.filter(faltaAsistencia).length" class="badge bg-warning text-dark ms-1"><i class="bi bi-exclamation-triangle-fill"></i> {{ grupo.clases.filter(faltaAsistencia).length }} sin asistencia</span>
+                  <span v-if="grupo.dictadas" class="estado-pill estado-gris">{{ grupo.proximas ? grupo.dictadas + ' dictadas' : 'Dictadas' }}</span>
+                  <span v-if="grupo.clases.filter(faltaAsistencia).length" class="estado-pill estado-ambar ms-1"><i class="bi bi-exclamation-triangle-fill"></i> {{ grupo.clases.filter(faltaAsistencia).length }} sin asistencia</span>
                 </button>
               </h2>
               <div v-show="mesesAbiertos[grupo.mes]" :id="'mes-admin-' + grupo.clave" class="accordion-collapse">
@@ -74,8 +74,8 @@
                         <div class="fw-bold text-dark small">{{ fechaLargaClase(c.fecha) }}</div>
                         <div v-if="horarioClase(c)" class="text-muted small">{{ horarioClase(c) }}</div>
                       </div>
-                      <span v-if="proximaClase?.id === c.id" class="badge bg-danger">Próxima</span>
-                      <span v-else-if="esClasePasada(c)" class="badge bg-secondary">Dictada</span>
+                      <span v-if="proximaClase?.id === c.id" class="estado-pill estado-azul">Próxima</span>
+                      <span v-else-if="esClasePasada(c)" class="estado-pill estado-gris">Dictada</span>
                     </div>
                     <div v-if="faltaAsistencia(c)" class="aviso-asistencia small fw-semibold mt-1">
                       <i class="bi bi-exclamation-triangle-fill me-1"></i> Falta tomar asistencia: cuenta como ausente para todos

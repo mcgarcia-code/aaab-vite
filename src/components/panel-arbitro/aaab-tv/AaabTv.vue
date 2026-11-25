@@ -43,7 +43,7 @@
                 <div class="miniatura">
                   <span class="badge-tag" :style="{ background: colorTag(c.color).solido }">{{ c.etiqueta }}</span>
                   <span class="icono-play" aria-hidden="true"><i class="bi bi-play-fill"></i></span>
-                  <span v-if="c.estado !== 'publico'" class="badge estado-miniatura" :class="ESTADOS_CLIP[c.estado].clase">
+                  <span v-if="c.estado !== 'publico'" class="estado-pill estado-miniatura" :class="ESTADOS_CLIP[c.estado].clase">
                     <i :class="['bi', ESTADOS_CLIP[c.estado].icono]" aria-hidden="true"></i> {{ ESTADOS_CLIP[c.estado].etiqueta }}
                   </span>
                   <span class="duracion">{{ formatearTiempo(c.fin - c.inicio) }}</span>
@@ -84,7 +84,7 @@
         <ReproductorClip :url="urlVideoDe(clipAbierto)" :inicio="clipAbierto.inicio" :fin="clipAbierto.fin" />
         <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
           <span class="badge-tag" :style="{ background: colorTag(clipAbierto.color).solido }">{{ clipAbierto.etiqueta }}</span>
-          <span v-if="clipAbierto.estado !== 'publico'" class="badge" :class="ESTADOS_CLIP[clipAbierto.estado].clase">
+          <span v-if="clipAbierto.estado !== 'publico'" class="estado-pill" :class="ESTADOS_CLIP[clipAbierto.estado].clase">
             <i :class="['bi', ESTADOS_CLIP[clipAbierto.estado].icono]" aria-hidden="true"></i> {{ ESTADOS_CLIP[clipAbierto.estado].etiqueta }}
           </span>
           <span class="small text-muted"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ fechaArg(clipAbierto.fecha) }}</span>

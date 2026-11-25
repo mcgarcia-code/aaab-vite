@@ -77,8 +77,8 @@
               <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !clasesAbiertas }" :aria-expanded="clasesAbiertas" aria-controls="seccion-clases" @click="clasesAbiertas = !clasesAbiertas">
                 <i class="bi bi-calendar-check me-2"></i>
                 <span class="me-2">Asistencia a clases</span>
-                <span class="badge bg-success me-1">{{ asistenciaClases.presentes }} P</span>
-                <span class="badge bg-secondary">{{ ausentesClases }} A</span>
+                <span class="estado-pill estado-verde me-1">{{ asistenciaClases.presentes }} P</span>
+                <span class="estado-pill estado-naranja">{{ ausentesClases }} A</span>
               </button>
             </h2>
             <div v-show="clasesAbiertas" id="seccion-clases" class="accordion-collapse">

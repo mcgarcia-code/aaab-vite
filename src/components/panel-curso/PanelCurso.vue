@@ -34,7 +34,7 @@
                   <span v-if="MODALIDADES_CURSO[alumno.modalidad_curso]" class="badge px-2 py-1" :class="MODALIDADES_CURSO[alumno.modalidad_curso].clase">
                     {{ MODALIDADES_CURSO[alumno.modalidad_curso].etiqueta }}
                   </span>
-                  <span v-if="ESTADOS_CURSO[estadoAlumno]" class="badge px-2 py-1" :class="ESTADOS_CURSO[estadoAlumno].clase">
+                  <span v-if="ESTADOS_CURSO[estadoAlumno]" class="estado-pill" :class="ESTADOS_CURSO[estadoAlumno].clase">
                     {{ ESTADOS_CURSO[estadoAlumno].etiqueta }}
                   </span>
                 </div>

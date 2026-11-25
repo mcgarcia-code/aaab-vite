@@ -9,7 +9,7 @@
           <p class="seccion-descripcion">
             Inscriptos del curso · Total: {{ legajosFiltrados.length }} inscriptos
             <template v-for="(cantidad, estado) in resumenEstados" :key="estado">
-              <span v-if="cantidad" class="badge rounded-pill ms-1" :class="ESTADOS_CURSO[estado].clase">{{ cantidad }} {{ ESTADOS_CURSO[estado].etiqueta.toLowerCase() }}</span>
+              <span v-if="cantidad" class="estado-pill ms-1" :class="ESTADOS_CURSO[estado].clase">{{ cantidad }} {{ ESTADOS_CURSO[estado].etiqueta.toLowerCase() }}</span>
             </template>
           </p>
 
@@ -102,7 +102,7 @@
                     <td class="text-dark fw-bold text-uppercase col-fija col-apellido">{{ l.apellido }}</td>
                     <td class="text-dark fw-bold text-uppercase col-fija col-nombre">{{ l.nombre }}</td>
                     <td v-for="c in COLUMNAS" :key="c.id" class="text-dark" :class="{ 'text-center': c.centro }">
-                      <span v-if="c.id === 'estado'" class="badge" :class="ESTADOS_CURSO[l.estado]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[l.estado]?.etiqueta || l.estado }}</span>
+                      <span v-if="c.id === 'estado'" class="estado-pill" :class="ESTADOS_CURSO[l.estado]?.clase || 'estado-gris'">{{ ESTADOS_CURSO[l.estado]?.etiqueta || l.estado }}</span>
                       <span v-else-if="c.largo" class="d-inline-block text-truncate" style="max-width: 220px; cursor: help;" :title="valorColumna(l, c.id)">{{ valorColumna(l, c.id) }}</span>
                       <template v-else>{{ valorColumna(l, c.id) }}</template>
                     </td>
@@ -122,7 +122,7 @@
               <div v-for="l in legajosPaginados" :key="'m-' + l.id" class="card shadow-sm mb-3 border-light-subtle rounded-3" :class="{ 'border-danger border-2': l.estado === 'baja' }">
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
                   <div class="text-dark fw-bold text-uppercase texto-105">{{ l.apellido }}, {{ l.nombre }}</div>
-                  <span class="badge" :class="ESTADOS_CURSO[l.estado]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[l.estado]?.etiqueta || l.estado }}</span>
+                  <span class="estado-pill" :class="ESTADOS_CURSO[l.estado]?.clase || 'estado-gris'">{{ ESTADOS_CURSO[l.estado]?.etiqueta || l.estado }}</span>
                 </div>
                 <div class="card-body pt-0 px-3 pb-3 small text-dark">
                   <div><strong>DNI:</strong> {{ l.dni }} · <strong>Cel:</strong> {{ l.celular }}</div>
@@ -227,10 +227,10 @@
                       <td>{{ e.titulo }}</td>
                       <td class="text-center fw-bold">{{ notaHistorial(e) }}</td>
                       <td class="text-center">
-                        <span v-if="e.ausente" class="badge bg-secondary">Ausente</span>
-                        <span v-else-if="e.aprobado === true" class="badge bg-success">Aprobado</span>
-                        <span v-else-if="e.aprobado === false" class="badge bg-danger">Desaprobado</span>
-                        <span v-else class="badge bg-light text-muted border">—</span>
+                        <span v-if="e.ausente" class="estado-pill estado-naranja">Ausente</span>
+                        <span v-else-if="e.aprobado === true" class="estado-pill estado-aprobado">Aprobado</span>
+                        <span v-else-if="e.aprobado === false" class="estado-pill estado-rojo">Desaprobado</span>
+                        <span v-else class="estado-pill estado-gris">—</span>
                       </td>
                     </tr>
                   </tbody>
@@ -278,10 +278,10 @@
                   </div>
                   <div class="small mt-1">
                     <template v-if="h.estado_anterior">
-                      <span class="badge" :class="ESTADOS_CURSO[h.estado_anterior]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[h.estado_anterior]?.etiqueta || h.estado_anterior }}</span>
+                      <span class="estado-pill" :class="ESTADOS_CURSO[h.estado_anterior]?.clase || 'estado-gris'">{{ ESTADOS_CURSO[h.estado_anterior]?.etiqueta || h.estado_anterior }}</span>
                       <i class="bi bi-arrow-right mx-1"></i>
                     </template>
-                    <span v-if="h.estado_nuevo" class="badge" :class="ESTADOS_CURSO[h.estado_nuevo]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[h.estado_nuevo]?.etiqueta || h.estado_nuevo }}</span>
+                    <span v-if="h.estado_nuevo" class="estado-pill" :class="ESTADOS_CURSO[h.estado_nuevo]?.clase || 'estado-gris'">{{ ESTADOS_CURSO[h.estado_nuevo]?.etiqueta || h.estado_nuevo }}</span>
                   </div>
                   <div v-if="h.motivo" class="small text-dark mt-1"><strong>Motivo:</strong> {{ h.motivo }}</div>
                   <div class="small text-muted">Por: {{ h.responsable }}</div>
@@ -312,7 +312,7 @@
         </p>
         <p class="small mb-3">
           Estado actual:
-          <span class="badge" :class="ESTADOS_CURSO[legajoEstado.estado]?.clase || 'bg-secondary'">{{ ESTADOS_CURSO[legajoEstado.estado]?.etiqueta || legajoEstado.estado }}</span>
+          <span class="estado-pill" :class="ESTADOS_CURSO[legajoEstado.estado]?.clase || 'estado-gris'">{{ ESTADOS_CURSO[legajoEstado.estado]?.etiqueta || legajoEstado.estado }}</span>
           <span v-if="legajoEstado.motivo_estado" class="text-muted"> · {{ legajoEstado.motivo_estado }}</span>
         </p>
         <label for="nuevo-estado" class="form-label small fw-bold text-dark">Nuevo estado *</label>

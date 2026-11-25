@@ -136,19 +136,19 @@
                     </div>
                     <div class="col-6">
                       <div class="dato-etiqueta">Teórico final</div>
-                      <span class="badge" :class="RESULTADOS[f.final].clase">{{ RESULTADOS[f.final].etiqueta }}</span>
+                      <span class="estado-pill" :class="RESULTADOS[f.final].clase">{{ RESULTADOS[f.final].etiqueta }}</span>
                     </div>
                     <div class="col-6">
                       <div class="dato-etiqueta">Práctico</div>
-                      <span class="badge" :class="RESULTADOS[f.practico].clase">{{ RESULTADOS[f.practico].etiqueta }}</span>
+                      <span class="estado-pill" :class="RESULTADOS[f.practico].clase">{{ RESULTADOS[f.practico].etiqueta }}</span>
                     </div>
                     <div class="col-6">
                       <div class="dato-etiqueta">Físico</div>
-                      <span class="badge" :class="RESULTADOS[f.fisico].clase">{{ RESULTADOS[f.fisico].etiqueta }}</span>
+                      <span class="estado-pill" :class="RESULTADOS[f.fisico].clase">{{ RESULTADOS[f.fisico].etiqueta }}</span>
                     </div>
                     <div class="col-12">
                       <div class="dato-etiqueta">Nota final</div>
-                      <span class="badge" :class="NOTA_FINAL[f.notaFinal].clase">{{ NOTA_FINAL[f.notaFinal].etiqueta }}</span>
+                      <span class="estado-pill" :class="NOTA_FINAL[f.notaFinal].clase">{{ NOTA_FINAL[f.notaFinal].etiqueta }}</span>
                     </div>
                   </div>
                   <div class="d-flex gap-2 mt-3">
@@ -175,9 +175,9 @@
       <div v-if="notaFinal" class="text-start">
         <div class="d-flex flex-wrap gap-1 mb-3">
           <span class="badge bg-light text-dark border">Parcialitos: {{ notaFinal.fila.parcialitos.aprobados }}/{{ notaFinal.fila.parcialitos.total }}</span>
-          <span class="badge" :class="RESULTADOS[notaFinal.fila.final].clase">Teórico final: {{ RESULTADOS[notaFinal.fila.final].etiqueta }}</span>
-          <span class="badge" :class="RESULTADOS[notaFinal.fila.practico].clase">Práctico: {{ RESULTADOS[notaFinal.fila.practico].etiqueta }}</span>
-          <span class="badge" :class="RESULTADOS[notaFinal.fila.fisico].clase">Físico: {{ RESULTADOS[notaFinal.fila.fisico].etiqueta }}</span>
+          <span class="estado-pill" :class="RESULTADOS[notaFinal.fila.final].clase">Teórico final: {{ RESULTADOS[notaFinal.fila.final].etiqueta }}</span>
+          <span class="estado-pill" :class="RESULTADOS[notaFinal.fila.practico].clase">Práctico: {{ RESULTADOS[notaFinal.fila.practico].etiqueta }}</span>
+          <span class="estado-pill" :class="RESULTADOS[notaFinal.fila.fisico].clase">Físico: {{ RESULTADOS[notaFinal.fila.fisico].etiqueta }}</span>
         </div>
         <div class="d-flex flex-column gap-2 mb-3" role="radiogroup" aria-label="Nota final">
           <label v-for="(op, clave) in NOTA_FINAL" :key="clave" class="opcion-final d-flex align-items-center gap-2" :class="{ activa: notaFinal.valor === clave }">
@@ -227,10 +227,10 @@
                     </div>
                     <div class="text-end flex-shrink-0">
                       <div class="fw-bold small">{{ textoNota(d) }}</div>
-                      <span v-if="!d.nota" class="badge bg-light text-muted border">No rindió</span>
-                      <span v-else-if="d.nota.ausente" class="badge bg-secondary">Ausente</span>
-                      <span v-else-if="d.nota.aprobado === true" class="badge bg-success">Aprobado</span>
-                      <span v-else-if="d.nota.aprobado === false" class="badge bg-danger">Desaprobado</span>
+                      <span v-if="!d.nota" class="estado-pill estado-gris">No rindió</span>
+                      <span v-else-if="d.nota.ausente" class="estado-pill estado-naranja">Ausente</span>
+                      <span v-else-if="d.nota.aprobado === true" class="estado-pill estado-aprobado">Aprobado</span>
+                      <span v-else-if="d.nota.aprobado === false" class="estado-pill estado-rojo">Desaprobado</span>
                     </div>
                   </div>
                 </div>

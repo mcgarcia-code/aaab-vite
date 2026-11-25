@@ -625,8 +625,8 @@
           </div>
 
           <div class="d-flex flex-column align-items-start align-items-md-end gap-2" style="flex: 0 0 auto;">
-            <span class="badge align-self-start align-self-md-end"
-                  :class="sol.estado === 'aprobado' ? 'bg-success' : (sol.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
+            <span class="estado-pill align-self-start align-self-md-end"
+                  :class="claseEstadoSolicitud(sol.estado)">
               {{ sol.estado ? sol.estado.toUpperCase() : 'ENVIADO' }}
             </span>
 
@@ -676,7 +676,7 @@
                 <td class="text-uppercase text-dark py-3 texto-075">{{ h.tipo_solicitud || 'general' }}</td>
                 <td class="text-dark py-3 texto-preformateado" style="word-wrap: break-word;">{{ h.mensaje }}</td>
                 <td class="text-center pe-3 py-3">
-                  <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
+                  <span class="estado-pill" :class="claseEstadoSolicitud(h.estado)">
                     {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
                   </span>
                 </td>
@@ -693,7 +693,7 @@
                 <span class="d-block fw-bold text-dark texto-075">{{ h.fecha }}</span>
                 <span class="text-uppercase text-muted fw-bold texto-075">TIPO: {{ h.tipo_solicitud || 'GENERAL' }}</span>
               </div>
-              <span class="badge" :class="h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')">
+              <span class="estado-pill" :class="claseEstadoSolicitud(h.estado)">
                 {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
               </span>
             </div>
@@ -1623,6 +1623,9 @@ onMounted(() => {
   cargarSolicitudes()
   cargarEstadoEdicion()
 })
+
+// Color del estado de una solicitud de cambios (sin estado = enviada, pendiente de revisión)
+const claseEstadoSolicitud = (estado) => (estado ? 'estado-' + estado : 'estado-enviado')
 </script>
 
 <style scoped>

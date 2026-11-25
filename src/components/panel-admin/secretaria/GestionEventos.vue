@@ -77,7 +77,7 @@
                 <div class="flex-grow-1 min-w-0">
                   <div class="fw-bold text-dark text-break">
                     {{ formatearFecha(r.fecha_evento) }} · {{ r.titulo }}
-                    <span v-if="r.fue_revisada" class="badge text-bg-secondary ms-1">MODIFICADA</span>
+                    <span v-if="r.fue_revisada" class="estado-pill estado-azul ms-1">MODIFICADA</span>
                   </div>
                   <div class="small text-muted text-break">
                     {{ r.grupos || 'Sin grupo' }} · {{ r.descripcion || 'Lugar a confirmar' }}<span v-if="r.creador"> · Cargada por {{ r.creador }}</span>

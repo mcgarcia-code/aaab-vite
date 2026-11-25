@@ -6,10 +6,10 @@
         <p class="seccion-descripcion">Cargá tus días y horarios</p>
 
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-          <span v-if="edicionAbierta" class="badge bg-secondary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
+          <span v-if="edicionAbierta" class="estado-pill estado-verde px-3 py-2 d-inline-flex align-items-center w-auto">
             <i class="bi bi-pencil-square me-1"></i> Edición Abierta
           </span>
-          <span v-else class="badge bg-secondary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
+          <span v-else class="estado-pill estado-gris px-3 py-2 d-inline-flex align-items-center w-auto">
             <i class="bi bi-lock-fill me-1"></i> Edición Cerrada
           </span>
         </div>
@@ -190,7 +190,7 @@
                         <!-- HEADER MOBILE: Fecha y Estado -->
                         <div class="col-12 d-md-none mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
                             <span class="small fw-bold text-dark">{{ h.fecha }}</span>
-                            <span class="texto-065" :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]">
+                            <span class="texto-065" :class="['estado-pill', claseEstadoSolicitud(h.estado)]">
                                 {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
                             </span>
                         </div>
@@ -207,7 +207,7 @@
 
                         <!-- COL 3: ESTADO (Escritorio) -->
                         <div class="col-md-3 d-none d-md-flex justify-content-center pe-3">
-                            <span class="texto-065 espaciado-05" :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]">
+                            <span class="texto-065 espaciado-05" :class="['estado-pill', claseEstadoSolicitud(h.estado)]">
                                 {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
                             </span>
                         </div>
@@ -523,6 +523,9 @@ const enviarSolicitudRectificacion = async () => {
         cargando.value = false
     }
 }
+
+// Color del estado de una solicitud de cambios (sin estado = enviada, pendiente de revisión)
+const claseEstadoSolicitud = (estado) => (estado ? 'estado-' + estado : 'estado-enviado')
 </script>
 
 <style scoped>

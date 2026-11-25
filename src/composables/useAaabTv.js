@@ -127,10 +127,11 @@ const nuevoIdEvento = () => (globalThis.crypto?.randomUUID ? crypto.randomUUID()
 // ─── Clips de AAAB TV ─────────────────────────────────────────────
 // Estados: al publicar quedan "pendiente"; Desarrollo Arbitral los pasa a
 // "publico" (los ve todo el que entra a AAAB TV) o "no_publico" (solo coordinadores y observadores).
+// clase: tono de la píldora de estado (assets/css/estados.css), se usa junto con .estado-pill
 export const ESTADOS_CLIP = {
-  pendiente: { etiqueta: 'Pendiente', icono: 'bi-hourglass-split', clase: 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' },
-  publico: { etiqueta: 'Público', icono: 'bi-globe2', clase: 'bg-success-subtle text-success-emphasis border border-success-subtle' },
-  no_publico: { etiqueta: 'No público', icono: 'bi-lock-fill', clase: 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle' }
+  pendiente: { etiqueta: 'Pendiente', icono: 'bi-hourglass-split', clase: 'estado-pendiente' },
+  publico: { etiqueta: 'Público', icono: 'bi-globe2', clase: 'estado-verde' },
+  no_publico: { etiqueta: 'No público', icono: 'bi-lock-fill', clase: 'estado-gris' }
 }
 
 // Roles del panel árbitro que pueden publicar y ver los clips no públicos

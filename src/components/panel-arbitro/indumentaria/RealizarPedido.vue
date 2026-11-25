@@ -111,13 +111,13 @@
                       </div>
 
                       <div class="col-12 mt-1 text-center">
-                        <span v-if="obtenerStockMaximo(prenda) > 0" class="badge rounded-pill bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem;">
+                        <span v-if="obtenerStockMaximo(prenda) > 0" class="estado-pill estado-verde">
                           Disp: {{ obtenerStockMaximo(prenda) }}
                         </span>
-                        <span v-else-if="permitePedidoSinStock(prenda)" class="badge rounded-pill bg-warning-subtle text-dark border border-warning texto-065">
+                        <span v-else-if="permitePedidoSinStock(prenda)" class="estado-pill estado-ambar">
                           A Pedido (Demora de fábrica)
                         </span>
-                        <span v-else class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle texto-065">
+                        <span v-else class="estado-pill estado-rojo">
                           Agotado Definitivamente
                         </span>
                       </div>

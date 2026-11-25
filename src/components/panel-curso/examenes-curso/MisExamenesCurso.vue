@@ -73,9 +73,9 @@
           </ul>
 
           <div v-if="porTipo[pestana].length" class="d-flex flex-wrap gap-1 mb-3 small">
-            <span class="badge bg-success">{{ resumenPestana.aprobados }} aprobados</span>
-            <span class="badge bg-danger">{{ resumenPestana.desaprobados }} desaprobados</span>
-            <span v-if="resumenPestana.pendientes" class="badge bg-light text-muted border">{{ resumenPestana.pendientes }} pendientes</span>
+            <span class="estado-pill estado-verde">{{ resumenPestana.aprobados }} aprobados</span>
+            <span class="estado-pill estado-rojo">{{ resumenPestana.desaprobados }} desaprobados</span>
+            <span v-if="resumenPestana.pendientes" class="estado-pill estado-ambar">{{ resumenPestana.pendientes }} pendientes</span>
           </div>
 
           <div v-if="!porTipo[pestana].length" class="text-center py-4 text-muted">
@@ -101,11 +101,11 @@
                     <i v-if="esRecuperatorio(e)" class="bi bi-arrow-repeat me-1"></i>{{ etiquetaExamen(e) }}
                   </span>
                   <span v-if="e.online" class="badge bg-light text-dark border"><i class="bi bi-laptop me-1"></i>Online</span>
-                  <span v-if="e.ausente" class="badge bg-secondary">Ausente</span>
-                  <span v-else-if="estaAprobado(e) !== null" class="badge" :class="estaAprobado(e) ? 'bg-success' : 'bg-danger'">
+                  <span v-if="e.ausente" class="estado-pill estado-naranja">Ausente</span>
+                  <span v-else-if="estaAprobado(e) !== null" class="estado-pill" :class="estaAprobado(e) ? 'estado-aprobado' : 'estado-rojo'">
                     {{ estaAprobado(e) ? 'Aprobado' : 'Desaprobado' }}
                   </span>
-                  <span v-else class="badge bg-light text-muted border">Nota pendiente</span>
+                  <span v-else class="estado-pill estado-pendiente">Nota pendiente</span>
                 </div>
                 <div v-if="e.comentarios && e.comentarios !== 'Rendido online'" class="small text-dark mt-2 comentario">{{ e.comentarios }}</div>
                 <button v-if="e.rendidoOnline" type="button" class="btn btn-sm btn-outline-danger fw-bold mt-3 align-self-start" :disabled="descargando === e.id" @click="descargarPdf(e)">

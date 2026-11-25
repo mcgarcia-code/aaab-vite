@@ -76,7 +76,7 @@
                     <td class="text-center">{{ r.fecha_desde }}</td>
                     <td class="text-center">{{ r.fecha_hasta || '-' }}</td>
                     <td class="pe-3 text-center">
-                      <span :class="['badge-status-sm', estaActivo(r) ? 'activo' : 'finalizado']">{{ estaActivo(r) ? 'ACTIVO' : 'FINALIZADO' }}</span>
+                      <span :class="['estado-pill', estaActivo(r) ? 'estado-vigente' : 'estado-gris']">{{ estaActivo(r) ? 'ACTIVO' : 'FINALIZADO' }}</span>
                     </td>
                   </tr>
                   <tr v-if="recargosPaginados.length === 0">
@@ -94,7 +94,7 @@
               <div v-for="r in recargosPaginados" :key="'mob-'+r.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
                   <div class="text-dark fw-bold text-uppercase" style="font-size: 1rem;">{{ r.arbitro }}</div>
-                  <span :class="['badge-status-sm', estaActivo(r) ? 'activo' : 'finalizado']">{{ estaActivo(r) ? 'ACTIVO' : 'FINALIZADO' }}</span>
+                  <span :class="['estado-pill', estaActivo(r) ? 'estado-vigente' : 'estado-gris']">{{ estaActivo(r) ? 'ACTIVO' : 'FINALIZADO' }}</span>
                 </div>
                 <div class="card-body pt-1 px-3 pb-3">
                   <div class="fw-bold text-danger fs-6 mb-2">{{ r.porcentaje }} %</div>
@@ -373,17 +373,6 @@ onMounted(() => {
   border-radius: 12px;
 }
 
-.badge-status-sm {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  display: inline-block;
-  text-align: center;
-  border: 1px solid;
-}
-.badge-status-sm.activo { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border-color: var(--o-rojo-borde, #fecaca); }
-.badge-status-sm.finalizado { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); border-color: var(--o-borde, #cbd5e1); }
 
 .animate__animated { animation-duration: 0.5s; }
 </style>

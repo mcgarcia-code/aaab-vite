@@ -75,7 +75,7 @@
                     <div v-for="s in ultimasSanciones" :key="s.id" class="border-bottom pb-3">
                       <div class="d-flex justify-content-between align-items-start mb-1">
                         <strong class="text-dark small text-uppercase">{{ s.arbitro || s.arbitro_nombre || s.id_arbitro }}</strong>
-                        <span :class="['badge-status-sm', obtenerClaseEstado(s.estado_dinamico)]">
+                        <span :class="obtenerClaseEstado(s.estado_dinamico)">
                           {{ obtenerTextoEstado(s.estado_dinamico) }}
                         </span>
                       </div>
@@ -136,11 +136,11 @@ const obtenerTextoEstado = (estado_dinamico) => {
 }
 
 const obtenerClaseEstado = (estado_dinamico) => {
-  if (estado_dinamico == 1) return 'badge-status rechazada'
-  if (estado_dinamico == 2) return 'badge-status aprobada'
-  if (estado_dinamico == 3) return 'badge-status pendiente text-dark'
-  if (estado_dinamico == 4) return 'badge-status anulada'
-  return 'badge-status'
+  if (estado_dinamico == 1) return 'estado-pill estado-vigente'
+  if (estado_dinamico == 2) return 'estado-pill estado-cumplida'
+  if (estado_dinamico == 3) return 'estado-pill estado-en-proceso'
+  if (estado_dinamico == 4) return 'estado-pill estado-anulada'
+  return 'estado-pill estado-default'
 }
 
 const obtenerTextoSancion = (s) => {
@@ -258,21 +258,6 @@ onMounted(() => {
    ==================================================== */
 .text-en-proceso { color: var(--o-ambar-texto, #d97706) !important; }
 .text-anulada { color: var(--o-texto, #0f172a) !important; }
-
-.badge-status-sm {
-  border-radius: 20px;
-  font-weight: 700;
-  display: inline-block;
-  text-align: center;
-  padding: 3px 8px;
-  font-size: 0.65rem;
-  border: 1px solid;
-}
-
-.vigente { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border-color: var(--o-rojo-borde, #fecaca); }
-.cumplida { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border-color: var(--o-verde-borde, #bbf7d0); }
-.en-proceso { background: var(--o-ambar-fondo, #fef9c3); color: var(--o-ambar-texto, #a16207); border-color: var(--o-ambar-borde, #fef08a); }
-.anulada { background: #0f172a; color: #ffffff; border-color: var(--o-texto, #0f172a); }
 
 .animate__animated { animation-duration: 0.5s; }
 

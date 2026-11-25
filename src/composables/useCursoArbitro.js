@@ -17,15 +17,16 @@ export const MODALIDADES_CURSO = {
   intensivo: { etiqueta: 'Curso intensivo', corta: 'Intensivo', clase: 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' },
 }
 
+// clase: tono de la píldora de estado (assets/css/estados.css), se usa junto con .estado-pill
 export const ESTADOS_CURSO = {
-  inscripto: { etiqueta: 'Inscripto', clase: 'bg-secondary' },
-  alta: { etiqueta: 'Alta', clase: 'bg-dark' },
-  regular: { etiqueta: 'Regular', clase: 'bg-success' },
-  reinscripcion: { etiqueta: 'Reinscripción', clase: 'bg-info text-dark' },
-  aprobado: { etiqueta: 'Aprobado', clase: 'bg-primary' },
-  desaprobado: { etiqueta: 'Desaprobado', clase: 'bg-warning text-dark' },
-  baja: { etiqueta: 'Baja', clase: 'bg-danger' },
-  rechazado: { etiqueta: 'Rechazado', clase: 'bg-danger-subtle text-danger-emphasis border border-danger-subtle' },
+  inscripto: { etiqueta: 'Inscripto', clase: 'estado-ambar' },
+  alta: { etiqueta: 'Alta', clase: 'estado-violeta' },
+  regular: { etiqueta: 'Regular', clase: 'estado-azul' },
+  reinscripcion: { etiqueta: 'Reinscripción', clase: 'estado-naranja' },
+  aprobado: { etiqueta: 'Aprobado', clase: 'estado-verde' },
+  desaprobado: { etiqueta: 'Desaprobado', clase: 'estado-rojo' },
+  baja: { etiqueta: 'Baja', clase: 'estado-gris' },
+  rechazado: { etiqueta: 'Rechazado', clase: 'estado-rojo' },
 }
 
 // Fotos de los alumnos: carpeta propia, separada de las de los árbitros

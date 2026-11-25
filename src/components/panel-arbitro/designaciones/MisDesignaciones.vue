@@ -124,7 +124,7 @@
                     <div class="mt-2 pt-2 border-top">
                       <div v-if="p.rechazada" class="mb-2">
                         <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                          <span class="badge d-inline-flex align-items-center gap-1" :class="badgeEstadoRechazo(p.rechazo_estado)">
+                          <span class="estado-pill d-inline-flex align-items-center gap-1" :class="badgeEstadoRechazo(p.rechazo_estado)">
                             <i class="bi" :class="iconoEstadoRechazo(p.rechazo_estado)"></i>
                             {{ textoEstadoRechazo(p.rechazo_estado) }}
                           </span>
@@ -280,7 +280,7 @@
                           <!-- ESTADO DE RECHAZO (solo lectura en anteriores) -->
                           <div v-if="p.rechazada" class="mt-2 pt-2 border-top">
                             <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                              <span class="badge d-inline-flex align-items-center gap-1" :class="badgeEstadoRechazo(p.rechazo_estado)">
+                              <span class="estado-pill d-inline-flex align-items-center gap-1" :class="badgeEstadoRechazo(p.rechazo_estado)">
                                 <i class="bi" :class="iconoEstadoRechazo(p.rechazo_estado)"></i>
                                 {{ textoEstadoRechazo(p.rechazo_estado) }}
                               </span>
@@ -607,9 +607,9 @@ const mensajeEstadoRechazo = (estado) => {
 }
 
 const badgeEstadoRechazo = (estado) => {
-  if (estado === 'justificado') return 'bg-success'
-  if (estado === 'injustificado') return 'bg-danger'
-  return 'bg-warning text-dark'
+  if (estado === 'justificado') return 'estado-justificado'
+  if (estado === 'injustificado') return 'estado-injustificado'
+  return 'estado-pendiente'
 }
 
 const iconoEstadoRechazo = (estado) => {

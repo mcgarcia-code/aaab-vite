@@ -97,8 +97,8 @@
         </ul>
 
         <div v-if="!cargandoHistorial && porTipo[pestana].length" class="d-flex flex-wrap gap-1 mb-3 small">
-          <span class="badge bg-success">{{ porTipo[pestana].filter(x => x.aprobado).length }} aprobados</span>
-          <span class="badge bg-danger">{{ porTipo[pestana].filter(x => !x.aprobado).length }} desaprobados</span>
+          <span class="estado-pill estado-verde">{{ porTipo[pestana].filter(x => x.aprobado).length }} aprobados</span>
+          <span class="estado-pill estado-rojo">{{ porTipo[pestana].filter(x => !x.aprobado).length }} desaprobados</span>
         </div>
 
         <div v-if="cargandoHistorial" class="text-center py-4">
@@ -128,7 +128,7 @@
 
               <!-- Badges y Calificación -->
               <div class="small d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-1 gap-sm-2 mt-1">
-                <span class="badge rounded-pill border" :class="ex.aprobado ? 'bg-success-subtle text-success border-success-subtle' : 'bg-danger-subtle text-danger border-danger-subtle'">
+                <span class="estado-pill" :class="ex.aprobado ? 'estado-aprobado' : 'estado-rojo'">
                   {{ ex.aprobado ? 'Aprobado' : 'Desaprobado' }}
                 </span>
                 <span class="fw-bold mt-1 mt-sm-0" :class="ex.aprobado ? 'text-success' : 'text-danger'">

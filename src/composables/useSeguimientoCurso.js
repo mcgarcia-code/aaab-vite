@@ -5,16 +5,16 @@ import { porcentajeAsistencia } from '@/composables/useAsistenciaCurso'
 export const ETIQUETAS_TIPO_EXAMEN = { teorico: 'Teórico', practico: 'Práctico', fisico: 'Físico' }
 
 export const RESULTADOS = {
-  aprobado: { etiqueta: 'Aprobado', clase: 'bg-success' },
-  desaprobado: { etiqueta: 'Desaprobado', clase: 'bg-danger' },
-  pendiente: { etiqueta: 'Pendiente', clase: 'bg-light text-muted border' },
+  aprobado: { etiqueta: 'Aprobado', clase: 'estado-verde' },
+  desaprobado: { etiqueta: 'Desaprobado', clase: 'estado-rojo' },
+  pendiente: { etiqueta: 'Pendiente', clase: 'estado-gris' },
 }
 
 // La nota final del curso es el estado del legajo
 export const NOTA_FINAL = {
-  aprobado: { etiqueta: 'Aprobó el curso', clase: 'bg-success', estado: 'aprobado' },
-  desaprobado: { etiqueta: 'Desaprobó el curso', clase: 'bg-danger', estado: 'desaprobado' },
-  pendiente: { etiqueta: 'Pendiente', clase: 'bg-light text-muted border', estado: 'regular' },
+  aprobado: { etiqueta: 'Aprobó el curso', clase: 'estado-verde', estado: 'aprobado' },
+  desaprobado: { etiqueta: 'Desaprobó el curso', clase: 'estado-rojo', estado: 'desaprobado' },
+  pendiente: { etiqueta: 'Pendiente', clase: 'estado-gris', estado: 'regular' },
 }
 
 export const notaFinalDeEstado = (estado) => (estado === 'aprobado' || estado === 'desaprobado' ? estado : 'pendiente')

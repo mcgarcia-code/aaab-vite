@@ -197,7 +197,7 @@
                 <div class="flex-grow-1 min-w-0">
                   <div class="d-flex align-items-center gap-1 flex-wrap">
                     <span class="badge-tag" :style="{ background: colorTag(t.color).fondo, color: colorTag(t.color).texto }">{{ t.nombre }}</span>
-                    <span v-if="t.publicado" class="badge bg-success">Publicado</span>
+                    <span v-if="t.publicado" class="estado-pill estado-verde">Publicado</span>
                   </div>
                   <div class="tiempo-clip">
                     <template v-if="t.segundo !== null">

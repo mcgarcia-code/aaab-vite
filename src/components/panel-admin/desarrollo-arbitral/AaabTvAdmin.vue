@@ -34,7 +34,7 @@
               <div class="flex-grow-1 min-w-0">
                 <div class="d-flex flex-wrap align-items-center gap-1 mb-1">
                   <span class="badge-tag" :style="{ background: colorTag(c.color).solido }">{{ c.etiqueta }}</span>
-                  <span class="badge" :class="ESTADOS_CLIP[c.estado].clase">
+                  <span class="estado-pill" :class="ESTADOS_CLIP[c.estado].clase">
                     <i :class="['bi', ESTADOS_CLIP[c.estado].icono]" aria-hidden="true"></i> {{ ESTADOS_CLIP[c.estado].etiqueta }}
                   </span>
                 </div>

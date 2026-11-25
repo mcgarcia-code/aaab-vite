@@ -632,16 +632,5 @@ const descargarExcel = async () => {
 .cuadrito.estado-rechazada { background-color: var(--o-rojo-fondo, #fde7ea) !important; }
 .cuadrito.estado-anulada { background-color: var(--o-chip, #eef1f5) !important; }
 
-/* ====================================================
-   PÍLDORAS DE ESTADO (mismo estilo que Solicitudes Institucionales)
-   ==================================================== */
-.estado-pill {
-  border-radius: 999px; padding: 0.35em 0.85em; font-weight: 700; font-size: 0.7rem;
-  letter-spacing: 0.02em; border: 1px solid transparent; display: inline-block; white-space: nowrap;
-}
-.estado-pendiente { background-color: var(--o-ambar-fondo, #fdf3d3); color: var(--o-ambar-texto, #a6841f); border-color: var(--o-ambar-borde, #f2e2a5); }
-.estado-aprobada { background-color: var(--o-verde-fondo, #e3f5e6); color: var(--o-verde-texto, #2f8a45); border-color: var(--o-verde-borde, #bfe6c8); }
-.estado-rechazada { background-color: var(--o-rojo-fondo, #fde7ea); color: var(--o-rojo-texto, #c0304a); border-color: var(--o-rojo-borde, #f5c2cb); }
-.estado-anulada { background-color: var(--o-chip, #eef1f5); color: var(--o-texto-suave, #5b6b7f); border-color: var(--o-borde, #d4dbe4); }
 </style>
 <style scoped src="@/assets/css/planilla-general.css"></style>

@@ -62,8 +62,8 @@
               <button type="button" class="accordion-button fw-bold" :class="{ collapsed: !abiertas.reuniones }" :aria-expanded="abiertas.reuniones" aria-controls="seccion-reuniones" @click="abiertas.reuniones = !abiertas.reuniones">
                 <i class="bi bi-calendar-check me-2"></i>
                 <span class="me-2">Asistencia a reuniones</span>
-                <span class="badge bg-success me-1">{{ statsGlobales.presentesReunion }} P</span>
-                <span class="badge bg-secondary">{{ statsGlobales.ausentesReunion }} A</span>
+                <span class="estado-pill estado-verde me-1">{{ statsGlobales.presentesReunion }} P</span>
+                <span class="estado-pill estado-naranja">{{ statsGlobales.ausentesReunion }} A</span>
               </button>
             </h2>
             <div v-show="abiertas.reuniones" id="seccion-reuniones" class="accordion-collapse">

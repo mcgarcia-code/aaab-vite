@@ -95,7 +95,7 @@
             <div class="small text-muted text-break"><template v-if="ev.hora && !ev.soloLectura"><i class="bi bi-clock me-1"></i>{{ ev.hora }} hs · </template>{{ ev.descripcion || 'Lugar a confirmar' }}</div>
             <div class="d-flex flex-wrap gap-1 mt-1">
               <span class="badge text-bg-light border text-uppercase">{{ ev.soloLectura ? 'Clase del curso' : ev.categoria }}</span>
-              <span v-if="ev.aprobacion === 'pendiente'" class="badge text-bg-warning"><i class="bi bi-hourglass-split me-1"></i>PENDIENTE DE APROBACIÓN</span>
+              <span v-if="ev.aprobacion === 'pendiente'" class="estado-pill estado-pendiente"><i class="bi bi-hourglass-split me-1"></i>PENDIENTE DE APROBACIÓN</span>
               <span v-if="ev.todosLosGrupos" class="badge" :style="{ background: COLOR_TODOS }">TODOS</span>
               <span v-for="id in ev.idsGrupos" :key="id" class="badge" :style="{ background: colorGrupo(id) }">{{ nombreGrupo(id) }}</span>
             </div>

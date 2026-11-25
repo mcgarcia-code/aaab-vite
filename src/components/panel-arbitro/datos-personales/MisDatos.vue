@@ -6,17 +6,17 @@
         <p class="seccion-descripcion">Modificá tus datos personales</p>
 
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
-            <span v-if="arbitro.apto_medico == 1" class="badge bg-success px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2">
+            <span v-if="arbitro.apto_medico == 1" class="estado-pill estado-verde px-3 py-2 d-inline-flex align-items-center gap-2">
                 <i class="bi bi-heart-pulse-fill"></i> APTO MÉDICO: SÍ
             </span>
-            <span v-else class="badge bg-danger px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2 animate__animated animate__pulse animate__infinite">
+            <span v-else class="estado-pill estado-rojo px-3 py-2 d-inline-flex align-items-center gap-2 animate__animated animate__pulse animate__infinite">
                 <i class="bi bi-exclamation-triangle-fill"></i> APTO MÉDICO: NO
             </span>
 
-            <span v-if="edicionAbierta" class="badge bg-secondary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
+            <span v-if="edicionAbierta" class="estado-pill estado-verde px-3 py-2 d-inline-flex align-items-center w-auto">
                 <i class="bi bi-pencil-square me-1"></i> Edición Abierta
             </span>
-            <span v-else class="badge bg-secondary px-3 py-2 shadow-sm d-inline-flex align-items-center w-auto">
+            <span v-else class="estado-pill estado-gris px-3 py-2 d-inline-flex align-items-center w-auto">
                 <i class="bi bi-lock-fill me-1"></i> Edición Cerrada
             </span>
         </div>
@@ -38,11 +38,10 @@
                     <span class="badge bg-dark fs-6 rounded-pill px-3 py-2 shadow-sm">
                         {{ arbitro.grupo }} {{ arbitro.subgrupo ? '- ' + arbitro.subgrupo : '' }}
                     </span>
-                    <!-- Reemplazamos status-pill custom por utilidades de Bootstrap -->
-                    <span v-if="arbitro.es_activo == 1" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-1 texto-085">
+                    <span v-if="arbitro.es_activo == 1" class="estado-pill estado-verde px-3 py-2 d-flex align-items-center gap-1 texto-085">
                         <i class="bi bi-check-circle-fill"></i> En actividad
                     </span>
-                    <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2 shadow-sm d-flex align-items-center gap-1 texto-085">
+                    <span v-else class="estado-pill estado-gris px-3 py-2 d-flex align-items-center gap-1 texto-085">
                         <i class="bi bi-x-circle-fill"></i> Inactivo
                     </span>
                 </div>
@@ -167,7 +166,7 @@
                     <!-- HEADER MOBILE: Fecha y Estado -->
                     <div class="col-12 d-md-none mb-2 pb-2 border-bottom d-flex justify-content-between align-items-center">
                         <span class="small fw-bold text-dark">{{ h.fecha }}</span>
-                        <span class="texto-065" :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]">
+                        <span class="texto-065" :class="['estado-pill', claseEstadoSolicitud(h.estado)]">
                             {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
                         </span>
                     </div>
@@ -184,7 +183,7 @@
 
                     <!-- COL 3: ESTADO (Escritorio) -->
                     <div class="col-md-3 d-none d-md-flex justify-content-center pe-3">
-                        <span class="texto-065 espaciado-05" :class="['badge', h.estado === 'aprobado' ? 'bg-success' : (h.estado === 'rechazado' ? 'bg-danger' : 'bg-warning text-dark')]">
+                        <span class="texto-065 espaciado-05" :class="['estado-pill', claseEstadoSolicitud(h.estado)]">
                             {{ h.estado ? h.estado.toUpperCase() : 'ENVIADO' }}
                         </span>
                     </div>
@@ -434,6 +433,9 @@ const enviarSolicitudRectificacion = async () => {
         cargando.value = false
     }
 }
+
+// Color del estado de una solicitud de cambios (sin estado = enviada, pendiente de revisión)
+const claseEstadoSolicitud = (estado) => (estado ? 'estado-' + estado : 'estado-enviado')
 </script>
 
 <style scoped>

@@ -16,6 +16,8 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 import './assets/css/animaciones.css'
 // Utilidades propias que reemplazan estilos inline repetidos
 import './assets/css/utilidades.css'
+// Píldoras de estado (aprobado, pendiente, rechazado, anulado...) compartidas por todas las secciones
+import './assets/css/estados.css'
 
 // Aplica el tema guardado antes de montar, para que no parpadee
 iniciarTema()

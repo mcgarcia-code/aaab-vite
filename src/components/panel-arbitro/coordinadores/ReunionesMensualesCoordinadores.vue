@@ -10,9 +10,9 @@
                 <p class="seccion-descripcion">
                   <template v-if="modoReunion && !cargandoArbitros">
                     {{ reunionActual?.titulo }} — {{ arbitrosReunion.length }} árbitros
-                    <span v-if="resumenReunionActual.presentes"   class="ms-1 badge rounded-pill bg-success">✓ {{ resumenReunionActual.presentes }}</span>
-                    <span v-if="resumenReunionActual.ausentes"    class="ms-1 badge rounded-pill bg-secondary">✗ {{ resumenReunionActual.ausentes }}</span>
-                    <span v-if="resumenReunionActual.sinRegistro" class="ms-1 badge rounded-pill bg-light text-muted border">— {{ resumenReunionActual.sinRegistro }}</span>
+                    <span v-if="resumenReunionActual.presentes"   class="ms-1 estado-pill estado-verde">✓ {{ resumenReunionActual.presentes }}</span>
+                    <span v-if="resumenReunionActual.ausentes"    class="ms-1 estado-pill estado-naranja">✗ {{ resumenReunionActual.ausentes }}</span>
+                    <span v-if="resumenReunionActual.sinRegistro" class="ms-1 estado-pill estado-gris">— {{ resumenReunionActual.sinRegistro }}</span>
                   </template>
                   <template v-else>Presentes y ausentes de cada reunión · {{ totalFiltrados }} árbitros</template>
                 </p>
@@ -522,9 +522,9 @@
       </template>
 
       <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
-        <span class="badge bg-success px-3 py-2"><i class="bi bi-person-check-fill me-1"></i>{{ asistenciaGrupoExamen.presentes }} presentes</span>
-        <span class="badge bg-secondary px-3 py-2"><i class="bi bi-person-dash-fill me-1"></i>{{ asistenciaGrupoExamen.ausentes }} ausentes</span>
-        <span v-if="asistenciaGrupoExamen.sinRegistro" class="badge bg-light text-muted border px-3 py-2">{{ asistenciaGrupoExamen.sinRegistro }} sin registro</span>
+        <span class="estado-pill estado-verde px-3 py-2"><i class="bi bi-person-check-fill me-1"></i>{{ asistenciaGrupoExamen.presentes }} presentes</span>
+        <span class="estado-pill estado-naranja px-3 py-2"><i class="bi bi-person-dash-fill me-1"></i>{{ asistenciaGrupoExamen.ausentes }} ausentes</span>
+        <span v-if="asistenciaGrupoExamen.sinRegistro" class="estado-pill estado-gris px-3 py-2">{{ asistenciaGrupoExamen.sinRegistro }} sin registro</span>
       </div>
       <p class="text-muted small text-center mb-4">Solo los árbitros presentes van a poder rendir el examen desde su panel.</p>
 

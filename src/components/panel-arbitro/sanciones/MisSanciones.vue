@@ -116,7 +116,7 @@
                 <!-- Sanción + Estado -->
                 <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
                   <span :class="obtenerClaseTextoSancion(s.estado_dinamico)" class="fs-6 fw-bold">{{ s.sancion }}</span>
-                  <span class="texto-07" :class="obtenerClaseEstado(s.estado_dinamico, true)" style="padding: 3px 10px;">{{ obtenerTextoEstado(s.estado_dinamico) }}</span>
+                  <span class="texto-07" :class="obtenerClaseEstado(s.estado_dinamico)">{{ obtenerTextoEstado(s.estado_dinamico) }}</span>
                 </div>
                 <!-- Motivo -->
                 <p class="mb-3 text-dark texto-085" style="line-height: 1.3;">
@@ -316,13 +316,12 @@ const obtenerTextoEstado = (estado_dinamico) => {
   return 'DESCONOCIDO'
 }
 
-const obtenerClaseEstado = (estado_dinamico, es_sm = false) => {
-  const prefijo = es_sm ? 'badge-status-sm' : 'badge-status'
-  if (estado_dinamico == 1) return `${prefijo} rechazada`
-  if (estado_dinamico == 2) return `${prefijo} aprobada`
-  if (estado_dinamico == 3) return `${prefijo} pendiente text-dark`
-  if (estado_dinamico == 4) return `${prefijo} anulada`
-  return `${prefijo}`
+const obtenerClaseEstado = (estado_dinamico) => {
+  if (estado_dinamico == 1) return 'estado-pill estado-vigente'
+  if (estado_dinamico == 2) return 'estado-pill estado-cumplida'
+  if (estado_dinamico == 3) return 'estado-pill estado-en-proceso'
+  if (estado_dinamico == 4) return 'estado-pill estado-anulada'
+  return 'estado-pill estado-default'
 }
 
 const obtenerClaseTextoSancion = (estado_dinamico) => {
@@ -458,18 +457,6 @@ onMounted(obtenerSancionesLocales)
 /* Mantenemos tus colores y medallas de estado */
 .text-en-proceso { color: var(--o-ambar-texto, #d97706) !important; }
 .text-anulada { color: var(--o-texto, #0f172a) !important; }
-
-.badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: inline-block; text-align: center;}
-.badge-status.aprobada { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border: 1px solid var(--o-verde-borde, #bbf7d0); }
-.badge-status.rechazada { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
-.badge-status.pendiente { background: var(--o-ambar-fondo, #fef9c3); color: var(--o-ambar-texto, #a16207); border: 1px solid var(--o-ambar-borde, #fef08a); }
-.badge-status.anulada { background: #0f172a; color: #ffffff; border: 1px solid var(--o-texto, #0f172a); }
-
-.badge-status-sm { padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700; display: inline-block; text-align: center;}
-.badge-status-sm.aprobada { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); }
-.badge-status-sm.rechazada { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); }
-.badge-status-sm.pendiente { background: var(--o-ambar-fondo, #fef9c3); color: var(--o-ambar-texto, #a16207); }
-.badge-status-sm.anulada { background: #0f172a; color: #ffffff; }
 
 .animate__animated { animation-duration: 0.5s; }
 

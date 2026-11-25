@@ -34,10 +34,10 @@
               <!-- HEADER MOBILE: Fecha y Estado (Se oculta en PC) -->
               <div class="col-12 d-md-none d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
                 <span class="text-muted small fw-bold">{{ notif.fecha }}</span>
-                <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
+                <span v-if="Number(notif.leida) === 1" class="estado-pill estado-gris d-inline-flex align-items-center gap-1">
                   <i class="bi bi-check2-all text-danger texto-14px"></i> Leída
                 </span>
-                <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
+                <span v-else class="estado-pill estado-rojo">
                   Nueva
                 </span>
               </div>
@@ -62,10 +62,10 @@
 
               <!-- COL 4: ESTADO (Escritorio) -->
               <div class="col-md-2 d-none d-md-flex justify-content-center pe-3">
-                <span v-if="Number(notif.leida) === 1" class="badge bg-light text-muted border rounded-pill d-inline-flex align-items-center gap-1 px-2 py-1">
+                <span v-if="Number(notif.leida) === 1" class="estado-pill estado-gris d-inline-flex align-items-center gap-1">
                   <i class="bi bi-check2-all text-danger texto-14px"></i> Leída
                 </span>
-                <span v-else class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
+                <span v-else class="estado-pill estado-rojo">
                   Nueva
                 </span>
               </div>

@@ -100,7 +100,7 @@
                   <td class="text-center fw-bold text-success">${{ (p.cantidad+p.cantidad_encargada) * p.precioUnitario }}</td>
                   <td class="text-center text-muted fw-bold">{{ p.fecha_creacion || 'S/F' }}</td>
                   <td class="text-center pe-3">
-                    <span :class="['badge-status-sm', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
+                    <span :class="['estado-pill', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -121,7 +121,7 @@
 
               <div class="card-body pt-0 px-3 pb-3">
                 <div class="mb-2">
-                  <span class="texto-07" :class="['badge-status-sm', obtenerClaseEstado(p.estado)]" style="padding: 3px 10px;">{{ (p.estado || 'N/A').toUpperCase() }}</span>
+                  <span class="texto-07" :class="['estado-pill', obtenerClaseEstado(p.estado)]">{{ (p.estado || 'N/A').toUpperCase() }}</span>
                   <span class="ms-2 text-muted small fw-bold">{{ p.fecha_creacion || 'S/F' }}</span>
                 </div>
 
@@ -248,7 +248,7 @@
               <td class="text-center fw-bold py-3 text-dark">{{ h.cantidad }}/{{ h.cantidad_encargada }}</td>
               <td class="text-end fw-bold text-success py-3">${{ (h.cantidad + h.cantidad_encargada )* h.precioUnitario }}</td>
               <td class="text-center pe-3 py-3">
-                <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">{{ (h.estado || 'N/A').toUpperCase() }}</span>
+                <span :class="['estado-pill', obtenerClaseEstado(h.estado)]">{{ (h.estado || 'N/A').toUpperCase() }}</span>
               </td>
             </tr>
             <tr v-if="historialArbitro.length === 0">
@@ -269,7 +269,7 @@
             <h6 class="fw-bold text-dark m-0 lh-sm pe-2 texto-075">
               {{ h.descripcion }} <span class="text-danger">({{ h.talle }})</span>
             </h6>
-            <span :class="['badge-status-sm', obtenerClaseEstado(h.estado)]">
+            <span :class="['estado-pill', obtenerClaseEstado(h.estado)]">
               {{ (h.estado || 'N/A').toUpperCase() }}
             </span>
           </div>
@@ -428,15 +428,15 @@ const limpiarFiltros = () => {
 }
 
 const obtenerClaseEstado = (estado) => {
-  if (!estado) return 'estado-creado'
+  if (!estado) return 'estado-gris'
   switch (estado.toLowerCase()) {
-    case 'creado': return 'estado-creado'
-    case 'en proceso': return 'estado-proceso'
+    case 'creado': return 'estado-gris'
+    case 'en proceso': return 'estado-en-proceso'
     case 'aceptado': return 'estado-aceptado'
     case 'entregado': return 'estado-entregado'
     case 'rechazado': return 'estado-rechazado'
     case 'cancelado': return 'estado-cancelado'
-    default: return 'estado-creado'
+    default: return 'estado-gris'
   }
 }
 
@@ -543,22 +543,6 @@ onMounted(obtenerPedidos)
   min-height: 100vh;
   border-radius: 12px;
 }
-
-/* ====================================================
-   BADGES DE ESTADOS CUSTOMIZADOS
-   ==================================================== */
-.badge-status-sm {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.estado-creado { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); border: 1px solid var(--o-borde, #cbd5e1); }
-.estado-proceso { background: var(--o-ambar-fondo, #fef3c7); color: var(--o-ambar-texto, #b45309); border: 1px solid var(--o-ambar-borde, #fde68a); }
-.estado-aceptado { background: var(--o-chip, #e2e8f0); color: var(--o-texto, #0f172a); border: 1px solid #94a3b8; }
-.estado-entregado { background: var(--o-verde-fondo, #dcfce7); color: var(--o-verde-texto, #15803d); border: 1px solid var(--o-verde-borde, #bbf7d0); }
-.estado-rechazado { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
 
 /* ====================================================
    UTILIDADES

@@ -142,8 +142,7 @@
 
                   <!-- ESTADO Y ACCIÓN (Ambos, en celular se parten mitad y mitad) -->
                   <div class="col-6 col-md-2 text-start text-md-center pe-2 pe-md-0">
-                    <span class="badge w-90 py-2 py-md-1 shadow-sm texto-07 espaciado-05"
-                          :class="{'bg-success': lic.estado === 'aprobada', 'bg-danger': lic.estado === 'rechazada' || lic.estado === 'borrada' || lic.estado === 'anulada', 'bg-warning text-dark': lic.estado === 'pendiente'}">
+                    <span class="estado-pill w-90 py-2 py-md-1 texto-07 espaciado-05" :class="'estado-' + lic.estado">
                       {{ lic.estado.toUpperCase() }}
                     </span>
                   </div>

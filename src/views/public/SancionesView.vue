@@ -58,9 +58,9 @@
                       <span v-else class="text-dark">{{ s.hasta_formateada || '-' }}</span>
                     </td>
                     <td class="pe-4 text-center">
-                      <span v-if="s.estado_dinamico == 1" class="badge bg-danger rounded-pill px-3 py-2 shadow-sm">Vigente</span>
-                      <span v-else-if="s.estado_dinamico == 3" class="badge bg-warning text-dark rounded-pill px-3 py-2 shadow-sm">En proceso</span>
-                      <span v-else class="badge bg-secondary rounded-pill px-3 py-2 shadow-sm">Cumplida</span>
+                      <span v-if="s.estado_dinamico == 1" class="estado-pill estado-vigente">Vigente</span>
+                      <span v-else-if="s.estado_dinamico == 3" class="estado-pill estado-en-proceso">En proceso</span>
+                      <span v-else class="estado-pill estado-cumplida">Cumplida</span>
                     </td>
                   </tr>
                 </tbody>
@@ -81,9 +81,9 @@
                       <span class="text-muted small fw-bold" v-if="s.articulo">Art. {{ s.articulo }}</span>
                     </div>
                     <div>
-                      <span v-if="s.estado_dinamico == 1" class="badge bg-danger shadow-sm">Vigente</span>
-                      <span v-else-if="s.estado_dinamico == 3" class="badge bg-warning text-dark shadow-sm">En proceso</span>
-                      <span v-else class="badge bg-secondary shadow-sm">Cumplida</span>
+                      <span v-if="s.estado_dinamico == 1" class="estado-pill estado-vigente">Vigente</span>
+                      <span v-else-if="s.estado_dinamico == 3" class="estado-pill estado-en-proceso">En proceso</span>
+                      <span v-else class="estado-pill estado-cumplida">Cumplida</span>
                     </div>
                   </div>
 

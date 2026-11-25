@@ -489,7 +489,7 @@ const etiquetaRama = (rama) => {
 }
 
 const claseEstado = (estado) => {
-  if (estado === 'creado') return 'estado-pill estado-creado'
+  if (estado === 'creado') return 'estado-pill estado-ambar'
   if (estado === 'vigente') return 'estado-pill estado-vigente'
   if (estado === 'cumplida') return 'estado-pill estado-cumplida'
   if (estado === 'borrado') return 'estado-pill estado-borrado'
@@ -851,49 +851,4 @@ onMounted(() => {
   border-right: none !important;
 }
 
-/* ====================================================
-   PÍLDORAS DE ESTADO
-   ==================================================== */
-.estado-pill {
-  border-radius: 999px;
-  padding: 0.35em 0.85em;
-  font-weight: 700;
-  font-size: 0.7rem;
-  letter-spacing: 0.02em;
-  border: 1px solid transparent;
-}
-
-/* VIGENTE — rojo/rosa */
-.estado-vigente {
-  background-color: var(--o-rojo-fondo, #fde7ea);
-  color: var(--o-rojo-texto, #c0304a);
-  border-color: var(--o-rojo-borde, #f5c2cb);
-}
-
-/* CUMPLIDA — verde */
-.estado-cumplida {
-  background-color: var(--o-verde-fondo, #e3f5e6);
-  color: var(--o-verde-texto, #2f8a45);
-  border-color: var(--o-verde-borde, #bfe6c8);
-}
-
-/* CREADO — amarillo (EN PROCESO) */
-.estado-creado {
-  background-color: var(--o-ambar-fondo, #fdf3d3);
-  color: var(--o-ambar-texto, #a6841f);
-  border-color: var(--o-ambar-borde, #f2e2a5);
-}
-
-/* BORRADO — gris azulado (ANULADA) */
-.estado-borrado {
-  background-color: var(--o-chip, #eef1f5);
-  color: var(--o-texto-suave, #5b6b7f);
-  border-color: var(--o-borde, #d4dbe4);
-}
-
-.estado-default {
-  background-color: var(--o-chip, #f1f3f5);
-  color: var(--o-texto-medio, #495057);
-  border-color: var(--o-borde, #dee2e6);
-}
 </style>

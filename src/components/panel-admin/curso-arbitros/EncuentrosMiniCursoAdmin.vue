@@ -36,10 +36,10 @@
                 <div v-if="!f.encuentros.length" class="small text-muted fst-italic mt-2">Sin sedes todavía</div>
                 <div v-else class="small text-muted mt-2 text-truncate w-100">{{ f.encuentros.map(e => e.titulo).join(' · ') }}</div>
                 <div v-if="f.encuentros.length" class="small mt-2">
-                  <span class="badge bg-light text-dark border me-1">{{ f.convocados }} convocados</span>
-                  <span class="badge bg-success me-1">{{ f.presentes }} presentes</span>
-                  <span class="badge bg-secondary me-1">{{ f.ausentes }} ausentes</span>
-                  <span v-if="f.sinMarcar" class="badge bg-light text-muted border">{{ f.sinMarcar }} sin marcar</span>
+                  <span class="estado-pill estado-gris me-1">{{ f.convocados }} convocados</span>
+                  <span class="estado-pill estado-verde me-1">{{ f.presentes }} presentes</span>
+                  <span class="estado-pill estado-naranja me-1">{{ f.ausentes }} ausentes</span>
+                  <span v-if="f.sinMarcar" class="estado-pill estado-gris">{{ f.sinMarcar }} sin marcar</span>
                 </div>
                 <div class="small fw-bold text-danger mt-auto pt-3">{{ f.encuentros.length ? 'Ver sedes' : 'Agregar sedes' }} <i class="bi bi-chevron-right"></i></div>
               </button>
@@ -78,10 +78,10 @@
                   <div v-if="e.hora" class="small text-muted"><i class="bi bi-clock me-1"></i>{{ e.hora }} hs</div>
                   <div v-if="e.docentes?.length" class="small text-dark mt-1"><i class="bi bi-person-video3 me-1"></i><strong>Profesor a cargo:</strong> {{ e.docentes.map(d => d.nombre).join(' · ') }}</div>
                   <div class="small mt-2">
-                    <span class="badge bg-light text-dark border me-1">{{ e.aspirantes.length }} convocados</span>
-                    <span class="badge bg-success me-1">{{ contar(e, 'presente') }} presentes</span>
-                    <span class="badge bg-secondary me-1">{{ contar(e, 'ausente') }} ausentes</span>
-                    <span v-if="contar(e, null)" class="badge bg-light text-muted border">{{ contar(e, null) }} sin marcar</span>
+                    <span class="estado-pill estado-gris me-1">{{ e.aspirantes.length }} convocados</span>
+                    <span class="estado-pill estado-verde me-1">{{ contar(e, 'presente') }} presentes</span>
+                    <span class="estado-pill estado-naranja me-1">{{ contar(e, 'ausente') }} ausentes</span>
+                    <span v-if="contar(e, null)" class="estado-pill estado-gris">{{ contar(e, null) }} sin marcar</span>
                   </div>
                   <div class="d-flex flex-wrap gap-2 mt-auto pt-3">
                     <button @click="abrirAsistencia(e)" :disabled="esEncuentroFuturo(e)" class="btn btn-sm btn-outline-success flex-fill fw-bold" :title="esEncuentroFuturo(e) ? 'La asistencia se toma desde el día del encuentro' : undefined"><i class="bi bi-person-check me-1"></i> Asistencia</button>
