@@ -680,109 +680,30 @@
         Si el árbitro no está en el padrón (ej: viene del interior), escribí su nombre y usá la opción azul. Queda designado pero no le aparece en su panel.
       </p>
     </ModalBase>
-    <ModalBase
+    <ModalAvisos
       :show="mostrarModalConfirmarDesignacion"
       titulo="⚠ Avisos de esta designación"
-      icono="warning"
-      colorIcono="bg-warning text-dark"
-      maxWidth="480px"
-      :zIndex="1060"
+      pregunta="¿Deseás continuar con esta designación de todos modos?"
+      :texto="textoAvisosDesignacionPendiente"
+      con-confirmacion
+      :z-index="1060"
       @close="rechazarDesignacionConAvisos"
-    >
-      <p class="text-muted small mb-3">¿Deseás continuar con esta designación de todos modos?</p>
-      <div class="alert alert-warning small py-2 px-3 d-flex align-items-start gap-2 mb-0">
-        <i class="bi bi-exclamation-triangle-fill mt-1"></i>
-        <span class="texto-preformateado">{{ textoAvisosDesignacionPendiente }}</span>
-      </div>
+      @confirmar="confirmarDesignacionConAvisos"
+    />
 
-      <template #footer>
-        <button
-          @click="rechazarDesignacionConAvisos"
-          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
-        >
-          No, quitar
-        </button>
-        <button
-          @click="confirmarDesignacionConAvisos"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
-        >
-          Sí, designar
-        </button>
-      </template>
-    </ModalBase>
-
-    <ModalBase
+    <ModalAvisos
       :show="mostrarModalAvisosPartido"
-      titulo="⚠ Avisos de este partido"
-      icono="warning"
-      colorIcono="bg-warning text-dark"
-      maxWidth="480px"
+      :texto="textoAvisosPartidoActual"
       @close="mostrarModalAvisosPartido = false"
-    >
-      <p class="text-muted small mb-3">Este partido tiene los siguientes avisos:</p>
-      <div class="alert alert-warning small py-2 px-3 d-flex align-items-start gap-2 mb-0">
-        <i class="bi bi-exclamation-triangle-fill mt-1"></i>
-        <span class="texto-preformateado">{{ textoAvisosPartidoActual }}</span>
-      </div>
-
-      <template #footer>
-        <button
-          @click="mostrarModalAvisosPartido = false"
-          class="btn btn-light rounded-pill px-4 fw-bold border w-100"
-        >
-          Cerrar
-        </button>
-      </template>
-    </ModalBase>
-    <ModalBase
+    />
+    <ModalCargaExcel
       :show="mostrarModalCarga"
-      titulo="Cargar Designaciones desde Excel"
-      icono="upload_file"
-      colorIcono="bg-danger text-white"
-      maxWidth="600px"
+      :archivo="archivoExcel"
+      :subiendo="subiendoExcel"
       @close="cerrarModalCarga"
-    >
-      <div class="alert alert-info small py-2 px-3 d-flex align-items-center gap-2">
-        <i class="bi bi-info-circle-fill"></i>
-        <span>El archivo se procesa en el servidor y sus partidos se agregan a la tabla de designaciones.</span>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Archivo Excel</label>
-        <input
-          @change="seleccionarArchivoExcel"
-          type="file"
-          class="form-control shadow-none border-secondary-subtle"
-          accept=".xlsx,.xls"
-        >
-        <div class="form-text small">
-          Columnas esperadas: FECHA, CANCHA, CATEGORIA, HORARIO, LOCAL, VISITANTE, ARBITRO 1, ARBITRO 2.
-        </div>
-      </div>
-
-      <div v-if="archivoExcel" class="alert alert-success small py-2 px-3 mb-0 d-flex align-items-center gap-2">
-        <i class="bi bi-file-earmark-excel-fill"></i>
-        <span>Archivo seleccionado: <strong>{{ archivoExcel.name }}</strong></span>
-      </div>
-
-      <template #footer>
-        <button
-          @click="cerrarModalCarga"
-          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
-          :disabled="subiendoExcel"
-        >
-          Cancelar
-        </button>
-        <button
-          @click="confirmarCargaExcel"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
-          :disabled="subiendoExcel || !archivoExcel"
-        >
-          <span v-if="subiendoExcel" class="spinner-border spinner-border-sm me-2"></span>
-          {{ subiendoExcel ? 'Cargando...' : 'Cargar Partidos' }}
-        </button>
-      </template>
-    </ModalBase>
+      @seleccionar="seleccionarArchivoExcel"
+      @confirmar="confirmarCargaExcel"
+    />
     <ModalBase
       :show="mostrarModalMesa"
       titulo="Mesa de control"
@@ -826,194 +747,49 @@
         </button>
       </template>
     </ModalBase>
-    <ModalBase
+    <ModalCancha
+      v-model="campoJuegoSeleccionado"
       :show="mostrarSelectorCancha"
-      titulo="Asignar cancha"
-      icono="stadium"
-      colorIcono="bg-danger text-white"
-      maxWidth="480px"
+      :partido="partidoCancha"
+      :campos-juego="camposJuego"
+      :guardando="guardandoCancha"
       @close="cerrarSelectorCancha"
-    >
-      <p class="text-muted small mb-3" v-if="partidoCancha">
-        {{ partidoCancha.local || '?' }} vs {{ partidoCancha.visitante || '?' }}
-      </p>
-
-      <div class="mb-2">
-        <label class="form-label small fw-bold">Cancha</label>
-        <select aria-label="Cancha" v-model="campoJuegoSeleccionado" class="form-select shadow-none border-secondary-subtle">
-          <option value="" disabled>Seleccione una cancha</option>
-          <option v-for="cj in camposJuego" :key="cj.cj_id" :value="cj.cj_id">
-            {{ cj.cj_nombre }} — {{ cj.club_nombre }}
-          </option>
-        </select>
-      </div>
-
-      <template #footer>
-        <button
-          @click="cerrarSelectorCancha"
-          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
-          :disabled="guardandoCancha"
-        >
-          Cancelar
-        </button>
-        <button
-          @click="confirmarCancha"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
-          :disabled="guardandoCancha || !campoJuegoSeleccionado"
-        >
-          <span v-if="guardandoCancha" class="spinner-border spinner-border-sm me-2"></span>
-          {{ guardandoCancha ? 'Guardando...' : 'Guardar' }}
-        </button>
-      </template>
-    </ModalBase>
-    <ModalBase
+      @confirmar="confirmarCancha"
+    />
+    <ModalFechaHorario
+      v-model:fecha="fechaEditada"
+      v-model:horario="horarioEditada"
       :show="mostrarModalFechaHorario"
-      titulo="Editar fecha y horario"
-      icono="event"
-      colorIcono="bg-danger text-white"
-      maxWidth="420px"
+      :partido="partidoFechaHorario"
+      :guardando="guardandoFechaHorario"
       @close="cerrarModalFechaHorario"
-    >
-      <p class="text-muted small mb-3" v-if="partidoFechaHorario">
-        {{ partidoFechaHorario.local || '?' }} vs {{ partidoFechaHorario.visitante || '?' }}
-      </p>
-
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Fecha</label>
-        <input aria-label="Fecha" v-model="fechaEditada" type="date" class="form-control shadow-none border-secondary-subtle">
-      </div>
-
-      <div class="mb-2">
-        <label class="form-label small fw-bold">Horario</label>
-        <input aria-label="Horario" v-model="horarioEditada" type="time" class="form-control shadow-none border-secondary-subtle">
-      </div>
-
-      <template #footer>
-        <button
-          @click="cerrarModalFechaHorario"
-          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
-          :disabled="guardandoFechaHorario"
-        >
-          Cancelar
-        </button>
-        <button
-          @click="confirmarFechaHorario"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
-          :disabled="guardandoFechaHorario || !fechaEditada || !horarioEditada"
-        >
-          <span v-if="guardandoFechaHorario" class="spinner-border spinner-border-sm me-2"></span>
-          {{ guardandoFechaHorario ? 'Guardando...' : 'Guardar' }}
-        </button>
-      </template>
-    </ModalBase>
-    <ModalBase
+      @confirmar="confirmarFechaHorario"
+    />
+    <ModalPublicar
       :show="mostrarModalPublicar"
-      titulo="Publicar Designaciones"
-      icono="publish"
-      colorIcono="bg-danger text-white"
-      maxWidth="600px"
+      :fechas="pestanasFechas"
+      :fechas-seleccionadas="fechasSeleccionadas"
+      :cantidad-a-publicar="cantidadPartidosAPublicar"
+      :hay-cambios="hayCambios"
+      :total-a-designar="totalADesignarEnSeleccion"
+      :total-sin-match="totalSinMatch"
+      :publicando="publicando"
       @close="mostrarModalPublicar = false"
-    >
-      <div class="alert alert-info small py-2 px-3 d-flex align-items-center gap-2">
-        <i class="bi bi-info-circle-fill"></i>
-        <span>Se publicarán los <strong>{{ cantidadPartidosAPublicar }}</strong> partidos designados de las fechas tildadas como una <strong>publicación nueva</strong>: se genera el PDF para la web pública y cada árbitro verá sus partidos en su panel.</span>
-      </div>
+      @toggle-fecha="toggleFechaSeleccionada"
+      @publicar="publicarDesignaciones"
+    />
 
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Fechas a publicar</label>
-        <div class="d-flex flex-column gap-1 border rounded p-2">
-          <label v-for="f in fechas" :key="f.fecha" class="d-flex align-items-center gap-2 small mb-0 cursor-pointer">
-            <input
-              type="checkbox"
-              class="form-check-input m-0 flex-shrink-0"
-              :checked="fechasSeleccionadas.includes(f.fecha)"
-              @change="toggleFechaSeleccionada(f.fecha)"
-            >
-            <span>{{ etiquetaDia(f.fecha) }}</span>
-            <span class="badge bg-light text-dark border ms-auto">{{ f.cantidad }}</span>
-          </label>
-        </div>
-      </div>
-
-      <div v-if="hayCambios" class="alert alert-primary small py-2 px-3 d-flex align-items-center gap-2">
-        <i class="bi bi-pencil-square"></i>
-        <span>Hay cambios recientes: se terminan de guardar automáticamente antes de publicar.</span>
-      </div>
-
-      <div v-if="totalADesignarEnSeleccion > 0" class="alert alert-danger small py-2 px-3 d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-circle-fill"></i>
-        <span>Hay <strong>{{ totalADesignarEnSeleccion }}</strong> partidos sin árbitros en las fechas tildadas: esos <strong>no</strong> se publican. Están marcados en rojo en la grilla.</span>
-      </div>
-
-      <div v-if="totalSinMatch > 0" class="alert alert-warning small py-2 px-3 d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>Hay <strong>{{ totalSinMatch }}</strong> árbitros sin coincidencia en el padrón: esos partidos <strong>no</strong> les van a aparecer en su panel. Están marcados en amarillo en la grilla.</span>
-      </div>
-
-      <template #footer>
-        <button
-          @click="mostrarModalPublicar = false"
-          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
-          :disabled="publicando"
-        >
-          Cancelar
-        </button>
-        <button
-          @click="publicarDesignaciones"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
-          :disabled="publicando || fechasSeleccionadas.length === 0"
-        >
-          <span v-if="publicando" class="spinner-border spinner-border-sm me-2"></span>
-          {{ publicando ? 'Publicando...' : 'Publicar Ahora' }}
-        </button>
-      </template>
-    </ModalBase>
-
-    <!-- Modal: elegir qué estados incluir al descargar PDF/Excel -->
-    <ModalBase
+    <!-- Elegir qué estados incluir al descargar PDF/Excel -->
+    <ModalDescarga
       :show="mostrarModalDescarga"
-      :titulo="'Descargar ' + (formatoDescarga === 'excel' ? 'Excel' : 'PDF')"
-      icono="download"
-      colorIcono="bg-dark text-white"
-      maxWidth="420px"
+      :formato="formatoDescarga"
+      :opciones="opcionesEstadoDescarga"
+      :estados="estadosDescarga"
+      :descargando="descargandoArchivo"
       @close="mostrarModalDescarga = false"
-    >
-      <label class="form-label small fw-bold">Estados a incluir</label>
-      <div class="d-flex flex-column gap-1 border rounded p-2">
-        <label v-for="e in opcionesEstadoDescarga" :key="e.valor" class="d-flex align-items-center gap-2 small mb-0 cursor-pointer">
-          <input
-            type="checkbox"
-            class="form-check-input m-0 flex-shrink-0"
-            :checked="estadosDescarga.includes(e.valor)"
-            @change="toggleEstadoDescarga(e.valor)"
-          >
-          <span>{{ e.etiqueta }}</span>
-        </label>
-      </div>
-
-      <div v-if="estadosDescarga.length === 0" class="alert alert-danger small py-2 px-3 mt-3 mb-0 d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-circle-fill"></i>
-        <span>Tildá al menos un estado para descargar.</span>
-      </div>
-
-      <template #footer>
-        <button
-          @click="mostrarModalDescarga = false"
-          class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-md-0"
-          :disabled="descargandoArchivo"
-        >
-          Cancelar
-        </button>
-        <button
-          @click="confirmarDescarga"
-          class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100"
-          :disabled="descargandoArchivo || estadosDescarga.length === 0"
-        >
-          <span v-if="descargandoArchivo" class="spinner-border spinner-border-sm me-2"></span>
-          {{ descargandoArchivo ? 'Descargando...' : 'Descargar' }}
-        </button>
-      </template>
-    </ModalBase>
+      @toggle-estado="toggleEstadoDescarga"
+      @confirmar="confirmarDescarga"
+    />
 
     <!-- Modal de navegación: partidos sin designar / árbitros sin coincidencia -->
     <ModalBase
@@ -1122,6 +898,12 @@ import { auth } from '@/api/auth'
 import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
+import ModalAvisos from '@/components/panel-admin/designaciones/carga-partidos/ModalAvisos.vue'
+import ModalCargaExcel from '@/components/panel-admin/designaciones/carga-partidos/ModalCargaExcel.vue'
+import ModalCancha from '@/components/panel-admin/designaciones/carga-partidos/ModalCancha.vue'
+import ModalFechaHorario from '@/components/panel-admin/designaciones/carga-partidos/ModalFechaHorario.vue'
+import ModalPublicar from '@/components/panel-admin/designaciones/carga-partidos/ModalPublicar.vue'
+import ModalDescarga from '@/components/panel-admin/designaciones/carga-partidos/ModalDescarga.vue'
 
 useHead({
   title: 'Carga de Designaciones | AAAB',
