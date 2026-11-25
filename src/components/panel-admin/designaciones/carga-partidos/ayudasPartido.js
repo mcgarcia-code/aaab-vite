@@ -6,6 +6,54 @@ import { normalizarTexto } from '@/utils/texto'
 export const SIN_ARBITRO = 'Sin Árbitro'
 
 /* ====================================================
+   UTILIDADES DE TEXTO Y FECHAS
+   ==================================================== */
+export const capitalizarNombre = (texto) => {
+  return String(texto || '')
+    .toLowerCase()
+    .split(' ')
+    .filter(Boolean)
+    .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+    .join(' ')
+}
+
+export const parsearFecha = (fecha) => {
+  if (!fecha) return 0
+  const texto = String(fecha).trim()
+
+  let m = texto.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getTime()
+
+  m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
+  if (m) {
+    const anio = m[3].length === 2 ? '20' + m[3] : m[3]
+    return new Date(Number(anio), Number(m[2]) - 1, Number(m[1])).getTime()
+  }
+
+  return 0
+}
+
+export const etiquetaDia = (fecha) => {
+  const timestamp = parsearFecha(fecha)
+  if (!timestamp) return fecha || 'Sin fecha'
+  const d = new Date(timestamp)
+  const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO']
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  return `${dias[d.getDay()]} ${dd}/${mm}/${d.getFullYear()}`
+}
+
+// Clave del día de un partido (la de las pestañas)
+export const claveFecha = (p) => String(p.fecha || '').trim() || 'Sin fecha'
+
+// Listas de partidos pendientes (de todas las fechas), ordenadas por fecha y horario
+export const ordenarPorFechaHorario = (a, b) => {
+  const df = parsearFecha(claveFecha(a)) - parsearFecha(claveFecha(b))
+  if (df !== 0) return df
+  return String(a.horario || '').localeCompare(String(b.horario || ''))
+}
+
+/* ====================================================
    ESTADO DE DESIGNACIÓN DEL PARTIDO (ayuda visual)
    - a_designar: sin árbitro 1 ni árbitro 2.
    - designado:  al menos un árbitro asignado.
