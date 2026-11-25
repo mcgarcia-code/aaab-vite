@@ -77,21 +77,8 @@
           <EstadoVacio v-else-if="designaciones.length === 0" icono="bi-file-earmark-arrow-up" titulo="No hay designaciones cargadas" mensaje="Usá el botón «Cargar Excel» para importar la planilla de partidos." />
 
           <template v-else>
-<!-- Pestañas por día (una sola línea, con scroll si no entran) -->
-            <div class="fechas-scroll mb-3">
-              <ul class="nav nav-pills gap-2 flex-nowrap">
-                <li v-for="f in fechas" :key="f.fecha" class="nav-item">
-                  <button
-                    @click="fechaSeleccionada = f.fecha"
-                    class="nav-link py-1 px-3 fw-bold small shadow-sm text-nowrap"
-                    :class="fechaSeleccionada === f.fecha ? 'active bg-danger text-white' : 'bg-white border text-dark'"
-                  >
-                    {{ etiquetaDia(f.fecha) }}
-                    <span class="badge ms-1" :class="fechaSeleccionada === f.fecha ? 'bg-white text-danger' : 'bg-light text-dark border'">{{ f.cantidad }}</span>
-                  </button>
-                </li>
-              </ul>
-            </div>
+            <!-- Pestañas por día (una sola línea, con scroll si no entran) -->
+            <PestanasSeccion v-model="fechaSeleccionada" :pestanas="pestanasFechas" class="mb-3" />
 
             <!-- Barra de estado: filtros por estado + buscador -->
             <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 mb-3 px-3 py-2 bg-white border rounded shadow-sm">
@@ -459,11 +446,11 @@
                     <!-- Equipos -->
                     <div class="bg-light rounded p-2 mb-2">
                       <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="badge bg-secondary" style="font-size: 0.6rem;">LOCAL</span>
+                        <span class="badge bg-secondary" style="font-size: 0.65rem;">LOCAL</span>
                         <span class="fw-bold">{{ p.local || '—' }}</span>
                       </div>
                       <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.6rem;">VISIT</span>
+                        <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.65rem;">VISIT</span>
                         <span class="fw-bold">{{ p.visitante || '—' }}</span>
                       </div>
                       <div class="form-check mb-0">
@@ -1134,6 +1121,7 @@ import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 
 useHead({
   title: 'Carga de Designaciones | AAAB',
@@ -1778,6 +1766,9 @@ const fechas = computed(() => {
     .sort((a, b) => parsearFecha(a) - parsearFecha(b))
     .map(f => ({ fecha: f, cantidad: mapa[f] }))
 })
+
+// Pestañas por día: etiqueta del día y cantidad de partidos
+const pestanasFechas = computed(() => fechas.value.map(f => ({ clave: f.fecha, etiqueta: etiquetaDia(f.fecha), cantidad: f.cantidad })))
 
 watch(fechas, (nuevas) => {
   if (!nuevas.find(f => f.fecha === fechaSeleccionada.value)) {
@@ -2533,25 +2524,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
-
-.animate__animated {
-  animation-duration: 0.5s;
-}
 
 /* ====================================================
    GRILLA TIPO EXCEL (un solo scroll: el de la página)
@@ -2568,7 +2540,7 @@ onMounted(async () => {
 }
 
 .grilla-designaciones {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -2580,7 +2552,7 @@ onMounted(async () => {
   background-color: var(--o-superficie, #f8f9fa);
   border-bottom: 2px solid var(--o-borde, #dee2e6);
   padding: 10px 8px;
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   letter-spacing: 0.5px;
 }
 
@@ -2628,7 +2600,7 @@ onMounted(async () => {
   display: block;
   width: 100%;
   padding: 5px 6px;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--o-texto, #212529);
 }
 
@@ -2640,10 +2612,10 @@ onMounted(async () => {
   margin-top: 2px;
   padding: 2px 8px;
   border: 1px solid #eab308;
-  border-radius: 20px;
+  border-radius: 16px;
   background-color: var(--o-ambar-fondo, #fef9c3);
   color: var(--o-ambar-texto, #854d0e);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -2660,7 +2632,7 @@ onMounted(async () => {
   border-radius: 4px;
   background: transparent;
   padding: 5px 6px;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--o-texto, #212529);
   white-space: nowrap;
   overflow: hidden;
@@ -2713,7 +2685,7 @@ onMounted(async () => {
   display: inline-block;
   width: 10px;
   height: 18px;
-  border-radius: 2px;
+  border-radius: 4px;
   cursor: pointer;
   vertical-align: middle;
   margin-right: 2px;
@@ -2732,7 +2704,7 @@ onMounted(async () => {
 }
 
 .aviso-rojo {
-  background-color: #ef4444;
+  background-color: #dc2626;
 }
 
 /* Muestras de color en la leyenda y en el modal de avisos */
@@ -2825,7 +2797,7 @@ onMounted(async () => {
   display: block;
   background: var(--o-tarjeta, #fff);
   border: 1px solid var(--o-borde, #e5e7eb);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 12px;
   margin-bottom: 8px;
   transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.12s ease;
@@ -2880,7 +2852,7 @@ onMounted(async () => {
 }
 
 .punto-a_designar {
-  background-color: #ef4444;
+  background-color: #dc2626;
 }
 
 .punto-designado {
@@ -2925,7 +2897,7 @@ onMounted(async () => {
   left: 50%;
   transform: translateX(-50%);
   background-color: #1f2937;
-  border-radius: 50px;
+  border-radius: 50rem;
   padding: 10px 24px;
   z-index: 1050;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -2940,7 +2912,7 @@ onMounted(async () => {
 }
 
 .partido-mobile {
-  border-left: 3px solid #dc3545;
+  border-left: 3px solid #dc2626;
 }
 
 .partido-mobile:last-child {
@@ -2952,7 +2924,7 @@ onMounted(async () => {
 /* Fondos y borde izquierdo de card según estado (móvil) */
 .card-estado-a_designar {
   background-color: var(--o-rojo-fondo, #fef2f2);
-  border-left-color: #ef4444;
+  border-left-color: #dc2626;
 }
 
 .card-estado-designado {
@@ -2967,12 +2939,12 @@ onMounted(async () => {
 
 /* Badge de estado en el card móvil */
 .badge-estado {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   padding: 3px 8px;
-  border-radius: 50px;
+  border-radius: 50rem;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -2998,7 +2970,7 @@ onMounted(async () => {
 /* Botón de árbitro en móvil: como un select tocable */
 .celda-arbitro-mobile {
   border: 1px solid var(--o-borde, #ced4da);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--o-tarjeta, #fff);
   padding: 8px 10px;
   font-size: 0.8rem;
@@ -3076,8 +3048,8 @@ onMounted(async () => {
 }
 
 .susp-check:checked {
-  background-color: #dc3545;
-  border-color: #dc3545;
+  background-color: #dc2626;
+  border-color: #dc2626;
 }
 
 /* ====================================================
@@ -3118,7 +3090,7 @@ onMounted(async () => {
 
 .estado-reemplazar {
   background-color: var(--o-rojo-fondo, #fee2e2) !important;
-  border-color: #ef4444 !important;
+  border-color: #dc2626 !important;
   color: var(--o-rojo-texto, #991b1b) !important;
 }
 
@@ -3157,7 +3129,7 @@ onMounted(async () => {
   text-align: left;
   background: var(--o-tarjeta, #fff);
   border: 1px solid var(--o-borde, #f1f3f5);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 10px 12px;
   font-size: 0.85rem;
   color: var(--o-texto, #212529);
@@ -3202,29 +3174,8 @@ onMounted(async () => {
 /* Cuando el partido ya tiene planillero o cronometrista */
 .btn-mesa.con-mesa {
   background: var(--o-rojo-fondo, #fee2e2);
-  border-color: #ef4444;
+  border-color: #dc2626;
   color: var(--o-rojo-texto, #dc2626);
-}
-
-/* Fechas en una sola línea, con scroll horizontal si no entran */
-.fechas-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 4px;
-}
-
-.fechas-scroll .nav {
-  width: max-content;
-}
-
-/* Scrollbar fina y discreta */
-.fechas-scroll::-webkit-scrollbar {
-  height: 5px;
-}
-
-.fechas-scroll::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
 }
 
 /* Chips de filtro por estado */
@@ -3234,9 +3185,9 @@ onMounted(async () => {
   gap: 6px;
   background: var(--o-tarjeta, #fff);
   border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 50px;
+  border-radius: 50rem;
   padding: 4px 12px;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--o-texto-medio, #475569);
   cursor: pointer;
