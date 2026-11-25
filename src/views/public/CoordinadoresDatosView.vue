@@ -289,7 +289,7 @@
 
       <template #footer>
         <button @click="mostrarModalExcel = false" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button @click="ejecutarDescargaExcel" class="btn btn-dark rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="!algunaSeleccionada">
+        <button @click="ejecutarDescargaExcel" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="!algunaSeleccionada">
           <i class="bi bi-file-earmark-excel me-1"></i> DESCARGAR EXCEL
         </button>
       </template>
@@ -582,10 +582,6 @@ onMounted(cargarDatos)
   border-radius: 12px;
 }
 
-.animate__animated {
-  animation-duration: 0.5s;
-}
-
 .status-dot {
   width: 10px;
   height: 10px;
@@ -600,18 +596,6 @@ onMounted(cargarDatos)
 .tabla-container {
   overflow-x: auto;
   max-height: 75vh;
-}
-
-.tabla-fija {
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-/* Eliminar bordes verticales de las celdas */
-.tabla-fija th,
-.tabla-fija td {
-  border-left: none !important;
-  border-right: none !important;
 }
 
 /* Columnas fijas con position: sticky */
@@ -682,7 +666,7 @@ td:hover .observacion-tooltip {
   background-color: #1f2937;
   color: white;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   white-space: normal;
   max-width: 300px;
   z-index: 1000;

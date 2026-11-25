@@ -60,22 +60,15 @@
       </div>
 
       <!-- ── Tabs: Puntajes / Comentarios ── -->
-      <ul class="nav nav-tabs mb-0" role="tablist">
-        <li class="nav-item">
-          <button class="nav-link" :class="{ active: tab === 'puntajes' }" type="button" @click="tab = 'puntajes'">
-            <i class="bi bi-list-ol me-1"></i> Puntajes
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" :class="{ active: tab === 'comentarios' }" type="button" @click="tab = 'comentarios'">
-            <i class="bi bi-chat-left-text me-1"></i> Comentarios
-          </button>
-        </li>
-      </ul>
+        <PestanasSeccion
+          v-model="tab"
+          class="mb-2"
+          :pestanas="[{ clave: 'puntajes', etiqueta: 'Puntajes', icono: 'bi-list-ol' }, { clave: 'comentarios', etiqueta: 'Comentarios', icono: 'bi-chat-left-text' }]"
+        />
 
       <!-- TAB PUNTAJES -->
-      <div v-show="tab === 'puntajes'" class="border border-top-0 rounded-bottom overflow-hidden">
-        <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
+      <div v-show="tab === 'puntajes'" class="border rounded overflow-hidden">
+        <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.8rem;">
           <thead class="table-light">
             <tr>
               <th class="py-2 ps-3 text-uppercase text-muted">Categoría / Ítem</th>
@@ -104,7 +97,7 @@
       </div>
 
       <!-- TAB COMENTARIOS -->
-      <div v-show="tab === 'comentarios'" class="border border-top-0 rounded-bottom p-3">
+      <div v-show="tab === 'comentarios'" class="border rounded p-3">
         <div v-if="comentariosPorCategoria.length">
           <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
             <div class="fw-bold small text-dark">{{ c.categoria }}</div>
@@ -134,6 +127,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 
 const props = defineProps({
   preview: { type: Object, default: null },

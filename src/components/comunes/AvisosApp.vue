@@ -157,14 +157,14 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 14px;
+  border-radius: 16px;
   background: var(--o-tarjeta, #fff);
   border: 1px solid var(--o-borde, #e2e8f0);
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
   font-size: 0.85rem;
   color: var(--o-texto, #0f172a);
 }
-.aviso > .bi { font-size: 1.2rem; }
+.aviso > .bi { font-size: 1.25rem; }
 .aviso-oscuro { background: #0f172a; border-color: var(--o-texto, #0f172a); color: #e2e8f0; }
 .icono-app { width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0; }
 </style>

@@ -5,8 +5,8 @@
 .busqueda-wrap { position: relative; max-width: 200px; flex: 0 0 auto; }
 .busqueda-wrap input { padding-right: 30px; }
 .btn-limpiar-busqueda { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); border: none; background: transparent; color: var(--o-texto-suave, #adb5bd); padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; line-height: 1; }
-.btn-limpiar-busqueda:hover { color: var(--o-rojo-texto, #dc3545); }
-.cuadrito { display: inline-block; width: 12px; height: 12px; border: 1px solid var(--o-borde, #ced4da); border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.btn-limpiar-busqueda:hover { color: var(--o-rojo-texto, #dc2626); }
+.cuadrito { display: inline-block; width: 12px; height: 12px; border: 1px solid var(--o-borde, #ced4da); border-radius: 4px; margin-right: 4px; vertical-align: -1px; }
 .cuadrito-verde { background-color: var(--o-verde-fondo, #d1e7dd); }
 .cuadrito-roja { background-color: var(--o-rojo-fondo, #f8d7da); }
 .cuadrito-gris { background-color: var(--o-chip, #e9ecef); }
@@ -17,9 +17,9 @@
 .tabla-excel { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 0.8rem; background: var(--o-tarjeta, #fff); }
 .tabla-excel th,
 .tabla-excel td { border-right: 1px solid var(--o-borde, #d4d4d8); border-bottom: 1px solid var(--o-borde, #d4d4d8); padding: 4px 8px; white-space: nowrap; }
-.tabla-excel thead th { background-color: var(--o-chip, #f1f3f5); color: var(--o-texto, #343a40); position: sticky; top: 0; z-index: 5; text-align: center; vertical-align: middle; font-size: 0.72rem; }
+.tabla-excel thead th { background-color: var(--o-chip, #f1f3f5); color: var(--o-texto, #343a40); position: sticky; top: 0; z-index: 5; text-align: center; vertical-align: middle; font-size: 0.7rem; }
 .th-curso, .th-total { min-width: 70px; }
-.fecha-evento { font-size: 0.68rem; color: var(--o-texto-suave, #6c757d); font-weight: 500; }
+.fecha-evento { font-size: 0.7rem; color: var(--o-texto-suave, #6c757d); font-weight: 500; }
 .col-alumno { position: sticky; left: 0; background-color: var(--o-tarjeta, #fff); z-index: 6; min-width: 190px; text-align: left !important; }
 .tabla-excel thead .esquina { z-index: 8; background-color: var(--o-chip, #e9ecef); }
 .celda-nombre { font-weight: 600; color: var(--o-texto, #212529); border-right: 2px solid var(--o-borde, #adb5bd) !important; }

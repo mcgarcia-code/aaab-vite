@@ -58,7 +58,7 @@ const estaActivo = (item) => (item.exacta ? route.path === item.to : route.path.
   font-weight: 600;
   text-decoration: none;
 }
-.barra-item .bi { font-size: 1.3rem; line-height: 1; }
+.barra-item .bi { font-size: 1.25rem; line-height: 1; }
 .barra-item:focus-visible { outline: 2px solid var(--t-barra-texto-suave); outline-offset: -4px; border-radius: 12px; }
 
 /* Pestaña actual: texto blanco e ícono rojo */

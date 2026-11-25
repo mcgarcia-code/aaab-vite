@@ -968,9 +968,6 @@ const descargarExcel = async () => {
 </script>
 
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
-.admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; padding: 16px 0; }
-.animate__animated { animation-duration: 0.4s; }
 
 /* ====================================================
    TABLA TIPO EXCEL
@@ -1007,7 +1004,7 @@ const descargarExcel = async () => {
   z-index: 5;
   text-align: center;
   vertical-align: middle;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
 }
 /* El encabezado tiene dos filas (evento + TEÓRICO/FÍSICO): se fija el thead completo,
    así las dos filas bajan juntas y la segunda no pasa por encima de la primera */
@@ -1026,7 +1023,7 @@ const descargarExcel = async () => {
 
 .th-evento { min-width: 140px; }
 .th-subtipo { font-weight: 600; color: var(--o-texto-suave, #6c757d); }
-.fecha-evento { font-size: 0.68rem; color: var(--o-texto-suave, #6c757d); font-weight: 500; }
+.fecha-evento { font-size: 0.7rem; color: var(--o-texto-suave, #6c757d); font-weight: 500; }
 .texto-recortado { max-width: 180px; overflow: hidden; text-overflow: ellipsis; margin: 0 auto; }
 
 /* Reuniones: columna angosta, solo la fecha */
@@ -1070,7 +1067,7 @@ const descargarExcel = async () => {
   width: 12px;
   height: 12px;
   border: 1px solid var(--o-borde, #ced4da);
-  border-radius: 2px;
+  border-radius: 4px;
   margin-right: 4px;
   vertical-align: -1px;
 }
@@ -1105,7 +1102,7 @@ const descargarExcel = async () => {
   border: 1px solid var(--o-borde, #ced4da);
   border-radius: 4px;
   padding: 2px;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   max-width: 92px;
 }
 
@@ -1160,7 +1157,7 @@ const descargarExcel = async () => {
 }
 
 .btn-limpiar-busqueda:hover {
-  color: var(--o-rojo-texto, #dc3545);
+  color: var(--o-rojo-texto, #dc2626);
 }
 </style>
 <style scoped src="@/assets/css/planilla-general.css"></style>

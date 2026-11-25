@@ -47,13 +47,7 @@
           </div>
 
           <!-- ============ PESTAÑAS ============ -->
-          <ul class="nav nav-pills flex-nowrap overflow-auto gap-1 mb-3 pb-1 pestanas" role="tablist">
-            <li v-for="p in PESTANAS" :key="p.clave" class="nav-item flex-shrink-0" role="presentation">
-              <button type="button" class="nav-link fw-bold" :class="{ active: pestana === p.clave }" role="tab" :aria-selected="pestana === p.clave" @click="pestana = p.clave">
-                <i :class="['bi', p.icono, 'me-1']"></i>{{ p.etiqueta }}
-              </button>
-            </li>
-          </ul>
+          <PestanasSeccion v-model="pestana" :pestanas="PESTANAS" class="mb-3" />
 
           <!-- ============ PRACTICAR ============ -->
           <div v-if="pestana === 'practicar'">
@@ -257,13 +251,14 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import { useHead } from '@unhead/vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { fechaHoraDMA, MESES } from '@/utils/fechas'
 import { usePracticaCatalogo, UMBRAL_APROBADO, CANTIDADES_PREGUNTAS, textoNumeroPregunta } from '@/composables/usePracticaCatalogo'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
-import PracticaCatalogoRunner from './PracticaCatalogoRunner.vue'
-import DetallePractica from './DetallePractica.vue'
+import PracticaCatalogoRunner from '@/components/comunes/practica-catalogo/PracticaCatalogoRunner.vue'
+import DetallePractica from '@/components/comunes/practica-catalogo/DetallePractica.vue'
 
 useHead({ title: 'Practicar catálogo | AAAB' })
 
@@ -424,8 +419,6 @@ onMounted(() => cargarTodo(anioSeleccionado.value))
 </script>
 
 <style scoped>
-.pestanas .nav-link { color: var(--o-texto-medio, #475569); background: var(--o-chip, #f1f5f9); font-size: 0.85rem; padding: 0.5rem 0.75rem; white-space: nowrap; }
-.pestanas .nav-link.active { background: #dc3545; color: #fff; }
 
 .dato-mes { background: var(--o-chip, #f8fafc); }
 .etiqueta-dato { font-size: 0.7rem; letter-spacing: 0.3px; }
@@ -442,7 +435,7 @@ onMounted(() => cargarTodo(anioSeleccionado.value))
 .btn-regla {
   height: 44px;
   padding: 0;
-  border-radius: 0.6rem;
+  border-radius: 8px;
 }
 
 .fila-mes {
@@ -450,13 +443,13 @@ onMounted(() => cargarTodo(anioSeleccionado.value))
   transition: border-color 0.15s ease;
 }
 .fila-mes:hover { border-color: var(--o-borde-fuerte, #94a3b8) !important; }
-.fila-mes.activa { border-color: #dc3545 !important; box-shadow: 0 0 0 1px #dc3545; }
+.fila-mes.activa { border-color: #dc2626 !important; box-shadow: 0 0 0 1px #dc2626; }
 
 .historial-card {
   background: var(--o-tarjeta, #fff);
   border: 1px solid var(--o-borde, #e5e7eb);
   border-left: 4px solid #6b7280;
-  border-radius: 10px;
+  border-radius: 12px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 button.historial-card:hover {
@@ -464,8 +457,7 @@ button.historial-card:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1) !important;
 }
 .borde-bien { border-left-color: #198754; }
-.borde-mal { border-left-color: #dc3545; }
+.borde-mal { border-left-color: #dc2626; }
 
 .min-w-0 { min-width: 0; }
-.animate__animated { animation-duration: 0.5s; }
 </style>

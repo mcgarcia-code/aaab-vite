@@ -70,10 +70,6 @@ useHead({
 </script>
 
 <style scoped>
-/* Transiciones suaves */
-.animate__animated {
-  animation-duration: 0.7s;
-}
 
 /* Ajustes para el ícono gigante */
 .display-1 {

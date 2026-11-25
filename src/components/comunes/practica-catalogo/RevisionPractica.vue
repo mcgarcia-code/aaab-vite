@@ -78,5 +78,5 @@ const iconoOpcion = (o) => {
 <style scoped>
 .tarjeta-revision { border-left: 4px solid transparent !important; }
 .borde-bien { border-left-color: var(--o-verde, #198754) !important; }
-.borde-mal { border-left-color: var(--o-rojo, #dc3545) !important; }
+.borde-mal { border-left-color: var(--o-rojo, #dc2626) !important; }
 </style>

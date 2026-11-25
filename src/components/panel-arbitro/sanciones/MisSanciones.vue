@@ -458,7 +458,4 @@ onMounted(obtenerSancionesLocales)
 .text-en-proceso { color: var(--o-ambar-texto, #d97706) !important; }
 .text-anulada { color: var(--o-texto, #0f172a) !important; }
 
-.animate__animated { animation-duration: 0.5s; }
-
-
 </style>

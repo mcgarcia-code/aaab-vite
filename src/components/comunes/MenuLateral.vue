@@ -161,7 +161,7 @@ const alternar = () => {
 }
 
 .lateral-nombre {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   max-width: 100%;
 }
@@ -202,10 +202,10 @@ const alternar = () => {
   min-height: 40px;
   padding: 0 12px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   background: none;
   color: var(--t-barra-texto-medio);
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 500;
   text-decoration: none;
   text-align: left;
@@ -236,14 +236,14 @@ const alternar = () => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ef4444;
+  background: #dc2626;
 }
 
 .lateral-badge {
   min-width: 20px;
   height: 20px;
   padding: 0 6px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #dc2626;
   color: #fff;
   font-size: 0.7rem;

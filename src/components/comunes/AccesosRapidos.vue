@@ -132,7 +132,7 @@ const restablecer = () => {
   min-height: 36px;
   padding: 0 10px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   background: transparent;
   font-size: 0.85rem;
   font-weight: 700;
@@ -169,7 +169,7 @@ const restablecer = () => {
   hyphens: auto;
   transition: background 0.2s;
 }
-.acceso-rapido i { font-size: 1.35rem; color: var(--t-barra-acento); }
+.acceso-rapido i { font-size: 1.25rem; color: var(--t-barra-acento); }
 .acceso-rapido:hover { background: var(--t-baldosa-hover); color: var(--t-baldosa-texto); }
 
 /* Escritorio: accesos horizontales (ícono + texto) */
@@ -181,7 +181,7 @@ const restablecer = () => {
     gap: 12px;
     min-height: 64px;
     padding: 0 18px;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     text-align: left;
   }
 }
@@ -221,7 +221,7 @@ const restablecer = () => {
   border-radius: 12px;
   background: var(--t-tarjeta);
   color: var(--t-texto);
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-align: left;
   min-width: 0;

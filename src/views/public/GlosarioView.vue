@@ -385,7 +385,7 @@ const glossaryEn = ref([
 .nav-pills .nav-link {
   background-color: transparent;
   border: 1px solid transparent;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   transition: all 0.3s ease;
 }
 
@@ -398,7 +398,7 @@ const glossaryEn = ref([
    ==================================================== */
 /* Focus custom para el input buscador */
 .focus-ring-danger:focus {
-  box-shadow: 0 0 0 .25rem rgba(220, 53, 69, .25);
+  box-shadow: 0 0 0 .25rem rgba(220, 38, 38, .25);
   outline: none;
 }
 
@@ -415,11 +415,7 @@ const glossaryEn = ref([
 }
 .table-responsive::-webkit-scrollbar-thumb {
   background-color: #6c757d;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
-/* Animación de entrada general */
-.animate__animated {
-  animation-duration: 0.8s;
-}
 </style>

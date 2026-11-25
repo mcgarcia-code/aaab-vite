@@ -243,7 +243,7 @@ const limpiarSiNo = (campoSiNo, campoClub, campoCategorias) => {
 
 <style scoped>
 .titulo-seccion {
-  color: var(--o-rojo-texto, #dc3545);
+  color: var(--o-rojo-texto, #dc2626);
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.8rem;

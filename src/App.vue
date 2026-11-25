@@ -30,12 +30,12 @@
 
 <script setup>
 import { reactive, provide, ref } from 'vue'
-import AppHeader from './components/AppHeader.vue'
-import AppFooter from './components/AppFooter.vue'
-import ModalExito from './components/ModalExito.vue'
-import ToastNotificacion from './components/ToastNotificacion.vue'
-import AvisosApp from './components/comunes/AvisosApp.vue'
-import { esAppInstalada } from './utils/app'
+import AppHeader from '@/components/AppHeader.vue'
+import AppFooter from '@/components/AppFooter.vue'
+import ModalExito from '@/components/ModalExito.vue'
+import ToastNotificacion from '@/components/ToastNotificacion.vue'
+import AvisosApp from '@/components/comunes/AvisosApp.vue'
+import { esAppInstalada } from '@/utils/app'
 
 const esApp = esAppInstalada()
 

@@ -37,13 +37,13 @@ defineProps({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   margin-bottom: 4px;
 }
 
 .estado-titulo {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--o-texto, #0f172a);
 }

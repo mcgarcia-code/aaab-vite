@@ -19,7 +19,7 @@
       <div v-else-if="!grupos.length" class="small text-muted fst-italic p-2 bg-light rounded border">El club no tiene categorías disponibles</div>
       <div v-else class="lista-categorias border rounded p-2" :class="{ 'border-danger': invalido && !categorias.length }">
         <div v-for="(grupo, g) in grupos" :key="grupo.etiqueta" class="mb-2">
-          <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
+          <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.7rem;">{{ grupo.etiqueta }}</div>
           <div class="row row-cols-1 row-cols-sm-2 g-1">
             <div v-for="(c, k) in grupo.categorias" :key="c" class="col">
               <div class="form-check mb-0">

@@ -3,13 +3,13 @@
     <EstadoCargando v-if="cargando" texto="Generando credencial" />
 
     <div v-else-if="perfil" class="w-100 d-flex flex-column gap-4" style="max-width: 750px;">
-      <div ref="credencialRef" class="card border-0 shadow-lg position-relative overflow-hidden mx-auto w-100" style="border-radius: 20px;">
+      <div ref="credencialRef" class="card border-0 shadow-lg position-relative overflow-hidden mx-auto w-100" style="border-radius: 16px;">
         <div class="watermark-center">{{ anioCredencial }}</div>
 
         <div class="row g-0 h-100 position-relative z-1">
           <div class="col-12 col-md-4 d-flex flex-column align-items-center justify-content-center p-4 p-md-5" style="background-color: #1a1a1a;">
             <div class="foto-wrap shadow-lg">
-              <img class="w-100 h-100 object-fit-cover" style="border-radius: 10px;" :src="urlFoto" alt="Foto del aspirante" @error="(e) => e.target.src = FOTO_POR_DEFECTO">
+              <img class="w-100 h-100 object-fit-cover" style="border-radius: 12px;" :src="urlFoto" alt="Foto del aspirante" @error="(e) => e.target.src = FOTO_POR_DEFECTO">
             </div>
           </div>
 
@@ -34,12 +34,12 @@
               <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start mt-2">
                 <div class="text-center text-md-start">
                   <span class="text-secondary fw-bold d-block mb-1 texto-075">DOCUMENTO</span>
-                  <span class="fw-bolder text-dark" style="font-size: 1.4rem;">{{ perfil.dni }}</span>
+                  <span class="fw-bolder text-dark" style="font-size: 1.5rem;">{{ perfil.dni }}</span>
                 </div>
                 <div class="vr d-none d-md-block mx-4 text-secondary opacity-25"></div>
                 <div class="text-center text-md-start mt-3 mt-md-0">
                   <span class="text-secondary fw-bold d-block mb-1 texto-075">CURSO</span>
-                  <span class="fw-bolder text-danger" style="font-size: 1.4rem;">{{ textoCurso }}</span>
+                  <span class="fw-bolder text-danger" style="font-size: 1.5rem;">{{ textoCurso }}</span>
                 </div>
               </div>
             </div>
@@ -145,7 +145,7 @@ onBeforeUnmount(() => window.removeEventListener('foto-curso-actualizada', refre
   height: clamp(140px, 30vw, 160px);
   background: white;
   padding: 8px;
-  border-radius: 15px;
+  border-radius: 16px;
 }
 .cinta-aspirante {
   display: inline-block;
@@ -156,7 +156,7 @@ onBeforeUnmount(() => window.removeEventListener('foto-curso-actualizada', refre
   letter-spacing: 1px;
   font-size: 0.8rem;
   padding: 6px 14px;
-  border-radius: 50px;
+  border-radius: 50rem;
 }
 @media (min-width: 768px) {
   .cinta-aspirante { align-self: flex-start; }
@@ -164,5 +164,4 @@ onBeforeUnmount(() => window.removeEventListener('foto-curso-actualizada', refre
 .fw-black { font-weight: 900; }
 .btn-download { max-width: 400px; font-size: 1.1rem; transition: all 0.3s ease; }
 .btn-download:hover:not(:disabled) { background: #a71d2a; transform: translateY(-2px); }
-.animate__animated { animation-duration: 0.5s; }
 </style>

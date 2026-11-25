@@ -110,8 +110,8 @@
 <script setup>
 import { ref, computed, inject, onMounted, onBeforeUnmount } from 'vue'
 import { api } from '@/api/api'
-import RevisionPractica from './RevisionPractica.vue'
-import ResumenResultado from './ResumenResultado.vue'
+import RevisionPractica from '@/components/comunes/practica-catalogo/RevisionPractica.vue'
+import ResumenResultado from '@/components/comunes/practica-catalogo/ResumenResultado.vue'
 
 const notificar = inject('notificar')
 
@@ -220,7 +220,7 @@ onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
 }
 
 .practica-box {
-  border-radius: 1rem;
+  border-radius: 16px;
   max-width: 760px;
 }
 
@@ -229,7 +229,7 @@ onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
 
 .opcion-item {
   cursor: pointer;
-  border-radius: .6rem !important;
+  border-radius: 8px !important;
   transition: background .12s ease;
 }
 /* Hover solo con mouse: en el celular el hover queda "pegado" en la última opción tocada */
@@ -240,20 +240,20 @@ onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
 /* Cada opción elegida: casillero completo en rojo + checkbox rojo (todas las que se marquen) */
 .opcion-item.elegida {
   background: var(--o-rojo-fondo, #fff5f5);
-  border-color: var(--o-rojo, #dc3545) !important;
-  box-shadow: 0 0 0 1px var(--o-rojo, #dc3545) !important;
+  border-color: var(--o-rojo, #dc2626) !important;
+  box-shadow: 0 0 0 1px var(--o-rojo, #dc2626) !important;
 }
 .opcion-item.elegida .text-dark { color: var(--o-rojo-texto, #b91c1c) !important; font-weight: 600; }
 .opcion-item .form-check-input:checked {
-  background-color: #dc3545;
-  border-color: #dc3545;
+  background-color: #dc2626;
+  border-color: #dc2626;
 }
-.opcion-item .form-check-input:focus { box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); border-color: #dc3545; }
+.opcion-item .form-check-input:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.25); border-color: #dc2626; }
 
 .nav-pregunta {
   width: 42px;
   height: 42px;
-  border-radius: .6rem;
+  border-radius: 8px;
   padding: 0;
   display: inline-flex;
   align-items: center;

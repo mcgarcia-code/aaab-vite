@@ -492,25 +492,6 @@ onUnmounted(() => {
 /* ====================================================
    1. LAYOUT BASE Y UTILIDADES
    ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  height: auto !important;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  max-width: 100%;
-  font-family: 'segoe ui', Tahoma, Verdana, sans-serif;
-  color: var(--o-texto, #000);
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
 
 .input-filtro-custom {
   font-size: 1rem !important;
@@ -653,7 +634,7 @@ onUnmounted(() => {
 .img-zoom-full {
   max-width: 95%;
   max-height: 85vh;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .btn-cerrar-zoom {
@@ -665,14 +646,12 @@ onUnmounted(() => {
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #dc2626;
   z-index: 11001;
 }
-
-.animate__animated { animation-duration: 0.5s; }
 
 </style>

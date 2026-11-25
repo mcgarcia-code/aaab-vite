@@ -2,7 +2,8 @@
    Generado desde node_modules/animate.css. Para sumar una animación, agregarla acá. */
 
 :root {
-  --animate-duration: 1s;
+  /* Misma velocidad de entrada en todas las secciones (antes cada componente ponía 0,4 · 0,5 · 0,8 s) */
+  --animate-duration: 0.5s;
   --animate-delay: 1s;
   --animate-repeat: 1;
 }

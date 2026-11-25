@@ -631,7 +631,7 @@
           <div class="col-4">
             <div class="card border-0 shadow-sm h-100 bg-success">
               <div class="card-body p-2 text-center text-white">
-                <i class="bi bi-person-check-fill" style="font-size: 1.2rem;"></i>
+                <i class="bi bi-person-check-fill" style="font-size: 1.25rem;"></i>
                 <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.presentes }}</div>
                 <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Presentes</div>
               </div>
@@ -640,7 +640,7 @@
           <div class="col-4">
             <div class="card border-0 shadow-sm h-100 bg-secondary">
               <div class="card-body p-2 text-center text-white">
-                <i class="bi bi-person-dash-fill" style="font-size: 1.2rem;"></i>
+                <i class="bi bi-person-dash-fill" style="font-size: 1.25rem;"></i>
                 <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.ausentes }}</div>
                 <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Ausentes</div>
               </div>
@@ -649,7 +649,7 @@
           <div class="col-4">
             <div class="card border-0 shadow-sm h-100 bg-light">
               <div class="card-body p-2 text-center text-muted">
-                <i class="bi bi-question-circle-fill" style="font-size: 1.2rem;"></i>
+                <i class="bi bi-question-circle-fill" style="font-size: 1.25rem;"></i>
                 <div class="fw-bold fs-5 mt-1 lh-1">{{ resumenDetalle.sinInformacion }}</div>
                 <div class="small text-uppercase fw-bold opacity-75 mt-1 texto-065">Sin info</div>
               </div>
@@ -1551,20 +1551,14 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
-.admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; }
-.animate__animated { animation-duration: 0.4s; }
 
 .select-reunion { width: 100%; min-width: 0; font-size: 1rem; }
 @media (min-width: 768px) {
-  .select-reunion { flex: 0 1 300px; max-width: 300px; font-size: 0.875rem; }
+  .select-reunion { flex: 0 1 300px; max-width: 300px; font-size: 0.85rem; }
 }
 @media (min-width: 1400px) {
   .select-reunion { flex-basis: 380px; max-width: 380px; }
 }
-.tabla-container { overflow-x: auto; }
-.tabla-fija { border-collapse: separate; border-spacing: 0; }
-.tabla-fija th, .tabla-fija td { border-left: none !important; border-right: none !important; }
 .col-fija { position: sticky; background-color: inherit; z-index: 10; }
 .tabla-fija thead .col-fija { background-color: var(--o-superficie, #f8f9fa); z-index: 12; }
 .tabla-fija tbody .col-fija { background-color: var(--o-tarjeta, #ffffff); }

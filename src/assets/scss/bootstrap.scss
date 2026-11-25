@@ -6,6 +6,8 @@
 // Color principal del sitio: el rojo institucional. De $primary salen el foco de los campos, checkboxes,
 // switches, links, ítems activos y barras de progreso (antes eran el azul de Bootstrap).
 $primary: #dc2626;
+// Mismo rojo para danger: botones, badges, alertas y textos rojos (antes era el #dc2626 de Bootstrap)
+$danger: #dc2626;
 
 // Configuración
 @import "bootstrap/scss/functions";

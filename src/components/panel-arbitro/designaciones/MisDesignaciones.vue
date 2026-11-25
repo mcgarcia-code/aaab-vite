@@ -30,30 +30,12 @@
         <template v-else>
 
           <!-- TABS: cada botón ocupa 50% en móvil, auto en desktop -->
-          <ul class="nav nav-pills gap-2 mb-4 flex-nowrap">
-            <li class="nav-item flex-fill flex-sm-grow-0">
-              <button
-                @click="vistaActiva = 'proximas'"
-                class="nav-link w-100 py-2 px-2 px-sm-4 fw-bold small shadow-sm d-flex align-items-center justify-content-center gap-2"
-                :class="vistaActiva === 'proximas' ? 'active bg-danger text-white' : 'bg-light border text-dark'"
-              >
-                <i class="bi bi-calendar-plus"></i>
-                <span>Próximas</span>
-                <span class="badge rounded-pill" :class="vistaActiva === 'proximas' ? 'bg-white text-danger' : 'bg-secondary'">{{ proximas.length }}</span>
-              </button>
-            </li>
-            <li class="nav-item flex-fill flex-sm-grow-0">
-              <button
-                @click="vistaActiva = 'anteriores'"
-                class="nav-link w-100 py-2 px-2 px-sm-4 fw-bold small shadow-sm d-flex align-items-center justify-content-center gap-2"
-                :class="vistaActiva === 'anteriores' ? 'active bg-dark text-white' : 'bg-light border text-dark'"
-              >
-                <i class="bi bi-clock-history"></i>
-                <span>Anteriores</span>
-                <span class="badge rounded-pill" :class="vistaActiva === 'anteriores' ? 'bg-white text-dark' : 'bg-secondary'">{{ anteriores.length }}</span>
-              </button>
-            </li>
-          </ul>
+          <PestanasSeccion
+            v-model="vistaActiva"
+            llenar
+            class="mb-4"
+            :pestanas="[{ clave: 'proximas', etiqueta: 'Próximas', icono: 'bi-calendar-plus', cantidad: proximas.length }, { clave: 'anteriores', etiqueta: 'Anteriores', icono: 'bi-clock-history', cantidad: anteriores.length }]"
+          />
 
           <!-- ================= PROXIMAS ================= -->
           <div v-if="vistaActiva === 'proximas'">
@@ -549,6 +531,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, onMounted, computed, watch, inject } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import { fechaATimestamp, MESES as MESES_LARGOS } from '@/utils/fechas'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
@@ -1112,7 +1095,7 @@ onMounted(cargarMisDesignaciones)
   display: block;
   background: #dc2626;
   color: #fff;
-  border-radius: 20px;
+  border-radius: 16px;
   font-weight: 700;
   font-size: 0.75rem;
   text-align: center;
@@ -1127,7 +1110,7 @@ onMounted(cargarMisDesignaciones)
   background: var(--o-tarjeta, #fff);
   border: 1px solid var(--o-borde, #e5e7eb);
   border-left: 4px solid #dc2626;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 12px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -1146,7 +1129,7 @@ onMounted(cargarMisDesignaciones)
   align-items: flex-start;
   gap: 8px;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--o-rojo-fondo, #fef2f2);
   border: 1px solid var(--o-rojo-borde, #fecaca);
   color: var(--o-rojo-texto, #991b1b);
@@ -1157,7 +1140,7 @@ onMounted(cargarMisDesignaciones)
 
 .timeline-card.card-rechazada {
   background-color: var(--o-rojo-fondo, #fee2e2) !important;
-  border-color: #ef4444 !important;
+  border-color: #dc2626 !important;
   border-left-color: #dc2626 !important;
 }
 
@@ -1189,7 +1172,7 @@ onMounted(cargarMisDesignaciones)
 /* El rechazo pinta de rojo aun en anteriores */
 .anteriores .timeline-card.card-rechazada {
   background-color: var(--o-rojo-fondo, #fee2e2) !important;
-  border-color: #ef4444 !important;
+  border-color: #dc2626 !important;
   border-left-color: #dc2626 !important;
 }
 
@@ -1268,8 +1251,6 @@ onMounted(cargarMisDesignaciones)
   border-color: var(--o-borde, #dee2e6);
   box-shadow: none;
 }
-
-.animate__animated { animation-duration: 0.5s; }
 
 @media (min-width: 576px) {
   .timeline-hora { width: 70px; }

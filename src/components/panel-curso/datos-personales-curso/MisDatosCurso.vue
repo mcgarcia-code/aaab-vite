@@ -73,8 +73,8 @@
             <input id="mdc-parentesco" v-model.trim="form.parentescoContacto" type="text" maxlength="100" class="form-control" :class="clase('parentescoContacto')">
           </div>
           <div class="col-12 d-flex flex-column flex-sm-row gap-2 justify-content-end">
-            <button type="button" @click="editando = false" class="btn btn-light border fw-bold px-4">CANCELAR</button>
-            <button type="submit" class="btn btn-danger fw-bold px-4" :disabled="guardando">
+            <button type="button" @click="editando = false" class="btn btn-light border rounded-pill fw-bold px-4">CANCELAR</button>
+            <button type="submit" class="btn btn-danger rounded-pill fw-bold px-4" :disabled="guardando">
               <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
               GUARDAR CAMBIOS
             </button>
@@ -109,7 +109,7 @@
             <input id="mdc-pass-confirmacion" v-model="pass.confirmacion" type="password" autocomplete="new-password" maxlength="72" class="form-control">
           </div>
           <div class="col-12 d-flex justify-content-end">
-            <button type="submit" class="btn btn-light border fw-bold px-4" :disabled="cambiandoPass || !pass.nueva">
+            <button type="submit" class="btn btn-light border rounded-pill fw-bold px-4" :disabled="cambiandoPass || !pass.nueva">
               <span v-if="cambiandoPass" class="spinner-border spinner-border-sm me-1"></span>
               CAMBIAR CONTRASEÑA
             </button>
@@ -273,7 +273,7 @@ const cambiarPassword = async () => {
 
 <style scoped>
 .titulo-seccion {
-  color: var(--o-rojo-texto, #dc3545);
+  color: var(--o-rojo-texto, #dc2626);
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.8rem;
@@ -284,7 +284,7 @@ const cambiarPassword = async () => {
 }
 .dato-etiqueta {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--o-texto-suave, #64748b);
   font-weight: 600;
   margin-bottom: 2px;

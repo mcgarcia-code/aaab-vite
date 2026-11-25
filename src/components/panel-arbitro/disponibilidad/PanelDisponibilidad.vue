@@ -109,7 +109,7 @@
               <div v-else-if="!categoriasPorRama.length" class="small text-muted fst-italic p-2 bg-light rounded">El club no tiene categorías activas</div>
               <div v-else class="lista-categorias border rounded p-2">
                 <div v-for="(grupo, g) in categoriasPorRama" :key="grupo.etiqueta" class="mb-1">
-                  <div class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
+                  <div class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">{{ grupo.etiqueta }}</div>
                   <div v-for="(c, k) in grupo.categorias" :key="grupo.etiqueta + c" class="form-check mb-0">
                     <input :id="`disp-cat-${g}-${k}`" v-model="categoriasElegidas" class="form-check-input" type="checkbox" :value="c">
                     <label class="form-check-label small" :for="`disp-cat-${g}-${k}`">{{ c }}</label>
@@ -178,7 +178,7 @@
                 <!-- LISTA UNIFICADA (Reemplaza la tabla rígida) -->
                 <div v-if="historialRectificaciones.length > 0" class="d-flex flex-column">
                     <!-- Encabezado de Columnas (Solo Escritorio) -->
-                    <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.70rem;">
+                    <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.7rem;">
                         <div class="col-md-2 ps-3">Fecha</div>
                         <div class="col-md-7">Mensaje</div>
                         <div class="col-md-3 text-center pe-3">Estado</div>
@@ -223,7 +223,7 @@
         </div>
 
         <div v-if="!edicionAbierta" class="mt-4">
-            <div class="alert alert-info border-0 shadow-sm mb-3 d-flex align-items-center p-3" style="background-color: var(--o-azul-fondo, #e0f7fa); color: var(--o-azul-texto, #006064); border-radius: 10px;">
+            <div class="alert alert-info border-0 shadow-sm mb-3 d-flex align-items-center p-3" style="background-color: var(--o-azul-fondo, #e0f7fa); color: var(--o-azul-texto, #006064); border-radius: 12px;">
                 <i class="bi bi-info-circle-fill me-3 fs-5 d-none d-md-block"></i>
                 <div class="small">
                     Informar cambios urgentes a <strong>secretaría y designaciones</strong>.
@@ -571,8 +571,6 @@ const claseEstadoSolicitud = (estado) => (estado ? 'estado-' + estado : 'estado-
 .item-historial:hover {
   background-color: var(--o-superficie, #f8fafc) !important;
 }
-
-.animate__animated { animation-duration: 0.5s; }
 
 .lista-categorias { max-height: 220px; overflow-y: auto; background: var(--o-tarjeta, #fff); }
 

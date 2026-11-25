@@ -157,8 +157,4 @@ onUnmounted(() => {
   transform: translateY(-2px);
 }
 
-.animate__animated {
-  animation-duration: 0.3s;
-}
-
 </style>

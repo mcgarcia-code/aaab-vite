@@ -482,7 +482,7 @@
         </div>
         <div v-for="h in historialSeleccionado" :key="'hmob-'+h.id" class="border border-light-subtle rounded-3 p-3 shadow-sm bg-light mb-3">
           <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-2">
-            <div class="fw-bold lh-sm text-dark pe-2" style="font-size: 0.95rem;">
+            <div class="fw-bold lh-sm text-dark pe-2" style="font-size: 0.9rem;">
               {{ h.equipo_local }} vs {{ h.equipo_visitante }}
               <div class="text-danger mt-1 texto-075">{{ categoriaObs(h) }} • {{ formatearFecha(h.fecha_partido) }}</div>
             </div>
@@ -551,7 +551,7 @@
 
         <!-- TAB PUNTAJES (Score sheet) -->
         <div v-show="tabDetalle === 'puntajes'" class="border border-top-0 rounded-bottom overflow-hidden">
-          <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
+          <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.8rem;">
             <thead class="table-light">
               <tr>
                 <th class="py-2 ps-3 text-uppercase text-muted">Categoría / Ítem</th>
@@ -1160,37 +1160,10 @@ onMounted(() => {
 /* ====================================================
    ESTILOS GENERALES
    ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
-
-.animate__animated { animation-duration: 0.5s; }
 
 /* ====================================================
    TABLA CON COLUMNAS FIJAS Y SIN LÍNEAS
    ==================================================== */
-.tabla-sin-lineas th,
-.tabla-sin-lineas td {
-  border-left: none !important;
-  border-right: none !important;
-}
-
-.tabla-fija {
-  border-collapse: separate;
-  border-spacing: 0;
-}
 
 @media (min-width: 768px) {
   .col-fija {
@@ -1226,12 +1199,12 @@ onMounted(() => {
   padding: 40px 20px; border: 2px dashed var(--o-borde, #cbd5e1); border-radius: 12px; background: var(--o-superficie, #f8fafc);
   cursor: pointer; transition: 0.2s;
 }
-.excel-dropzone:hover { border-color: #dc3545; background: var(--o-rojo-fondo, #fff8f8); }
-.excel-dropzone.is-dragover { border-color: #dc3545; background: var(--o-rojo-fondo, #fff8f8); transform: scale(1.01); }
+.excel-dropzone:hover { border-color: #dc2626; background: var(--o-rojo-fondo, #fff8f8); }
+.excel-dropzone.is-dragover { border-color: #dc2626; background: var(--o-rojo-fondo, #fff8f8); transform: scale(1.01); }
 .excel-dropzone.has-file { border-style: solid; border-color: #198754; background: var(--o-verde-fondo, #f0fdf4); }
 .excel-dropzone-icon { font-size: 42px; color: var(--o-texto-suave, #94a3b8); margin-bottom: 10px; }
 .excel-dropzone.is-dragover .excel-dropzone-icon,
-.excel-dropzone:hover .excel-dropzone-icon { color: var(--o-rojo-texto, #dc3545); }
+.excel-dropzone:hover .excel-dropzone-icon { color: var(--o-rojo-texto, #dc2626); }
 .excel-dropzone.has-file .excel-dropzone-icon { color: var(--o-verde-texto, #198754); }
 
 </style>

@@ -323,7 +323,7 @@
                   <span class="text-dark" v-if="event.player_number && event.type !== 'goal_removed' && event.type !== 'tiempo_ajustado'"> (#{{ event.player_number }})</span><span class="text-dark">:</span>
                   <span class="text-secondary ms-1">{{ formatEventType(event.type) }}</span>
                   <span v-if="event.type === 'tiempo_ajustado'" class="text-muted small ms-1">- {{ event.player_number }}</span>
-                  <span v-if="!event.synced" class="badge bg-warning text-dark ms-2" style="font-size: 0.6rem;">Pendiente</span>
+                  <span v-if="!event.synced" class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem;">Pendiente</span>
                 </div>
                 <button
                   v-if="event.team !== 'sistema'"
@@ -371,8 +371,8 @@
         </div>
       </div>
       <template #footer>
-        <button class="btn btn-light fw-bold px-4 border" @click="cerrarModalDorsal">CANCELAR</button>
-        <button class="btn btn-danger fw-bold px-4 shadow-sm" @click="confirmarSancion">CONFIRMAR</button>
+        <button class="btn btn-light border rounded-pill fw-bold px-4" @click="cerrarModalDorsal">CANCELAR</button>
+        <button class="btn btn-danger rounded-pill fw-bold px-4 shadow-sm" @click="confirmarSancion">CONFIRMAR</button>
       </template>
     </ModalBase>
 
@@ -412,8 +412,8 @@
         </div>
       </div>
       <template #footer>
-        <button class="btn btn-light fw-bold px-4 border" @click="modalTiempo.visible = false">CANCELAR</button>
-        <button class="btn btn-danger fw-bold px-4 shadow-sm" @click="confirmarAjusteTiempo">GUARDAR TIEMPO</button>
+        <button class="btn btn-light border rounded-pill fw-bold px-4" @click="modalTiempo.visible = false">CANCELAR</button>
+        <button class="btn btn-danger rounded-pill fw-bold px-4 shadow-sm" @click="confirmarAjusteTiempo">GUARDAR TIEMPO</button>
       </template>
     </ModalBase>
 
@@ -508,8 +508,8 @@
         </div>
       </div>
       <template #footer="{ cerrar }">
-        <button class="btn btn-light fw-bold px-4 border" @click="cerrar">CANCELAR</button>
-        <button class="btn btn-danger fw-bold px-4 shadow-sm" @click="guardarConfig">GUARDAR</button>
+        <button class="btn btn-light border rounded-pill fw-bold px-4" @click="cerrar">CANCELAR</button>
+        <button class="btn btn-danger rounded-pill fw-bold px-4 shadow-sm" @click="guardarConfig">GUARDAR</button>
       </template>
     </ModalBase>
 
@@ -555,8 +555,8 @@
         </div>
       </div>
       <template #footer>
-        <button class="btn btn-light fw-bold px-4 border" @click="modalPenalidad.visible = false">CANCELAR</button>
-        <button class="btn btn-warning fw-bold px-4 shadow-sm text-dark" @click="confirmarEditarPenalidad">GUARDAR</button>
+        <button class="btn btn-light border rounded-pill fw-bold px-4" @click="modalPenalidad.visible = false">CANCELAR</button>
+        <button class="btn btn-danger rounded-pill fw-bold px-4 shadow-sm" @click="confirmarEditarPenalidad">GUARDAR</button>
       </template>
     </ModalBase>
 
@@ -1415,8 +1415,8 @@ onUnmounted(() => {
 /* =========================================
    BADGES Y PUNTOS DE TTO
    ========================================= */
-.penalty-box { background: #1e293b; padding: 4px 10px; border-radius: 8px; font-family: monospace; font-size: 0.95rem; display: flex; gap: 8px; border: 1px solid #475569; font-weight: bold; }
-.penalty-box.local { border-color: #ef4444; color: #fca5a5; }
+.penalty-box { background: #1e293b; padding: 4px 10px; border-radius: 8px; font-family: monospace; font-size: 0.9rem; display: flex; gap: 8px; border: 1px solid #475569; font-weight: bold; }
+.penalty-box.local { border-color: #dc2626; color: #fca5a5; }
 .penalty-box.visitor { border-color: #3b82f6; color: #bfdbfe; }
 
 .min-h-24 { min-height: 24px; }
@@ -1454,8 +1454,5 @@ onUnmounted(() => {
 .shirt-svg { width: 100%; height: auto; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1)); }
 .dorsal-input { position: absolute; width: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 1.5rem; font-weight: 900; background: transparent; border: none; border-bottom: 2px dashed rgba(255,255,255,0.5); color: white; outline: none; text-transform: uppercase; }
 .dorsal-input::placeholder { color: rgba(255,255,255,0.4); }
-
-.animate__animated { animation-duration: 0.5s; }
-
 
 </style>

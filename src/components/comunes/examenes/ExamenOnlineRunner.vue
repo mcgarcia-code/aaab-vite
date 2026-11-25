@@ -393,13 +393,13 @@ onBeforeUnmount(() => {
 }
 
 .examen-box {
-  border-radius: 1rem;
+  border-radius: 16px;
   max-width: 760px;
 }
 
 .opcion-item {
   cursor: pointer;
-  border-radius: .6rem !important;
+  border-radius: 8px !important;
   transition: background .12s ease;
 }
 
@@ -418,7 +418,7 @@ onBeforeUnmount(() => {
 .nav-pregunta {
   width: 42px;
   height: 42px;
-  border-radius: .6rem;
+  border-radius: 8px;
   padding: 0;
   display: inline-flex;
   align-items: center;

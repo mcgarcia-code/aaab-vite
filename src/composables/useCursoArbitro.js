@@ -32,10 +32,10 @@ export const ESTADOS_CURSO = {
 // Fotos de los alumnos: carpeta propia, separada de las de los árbitros
 export const urlFotoCurso = (dni, version = '') => {
   const limpio = String(dni || '').replace(/\D/g, '')
-  if (!limpio) return 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'
+  if (!limpio) return 'https://ui-avatars.com/api/?name=Sin+Foto&background=dc2626&color=fff'
   return `https://arbitroshandball.com.ar/uploads/carnet-curso/${limpio}.webp${version ? `?v=${version}` : ''}`
 }
-export const FOTO_POR_DEFECTO = 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'
+export const FOTO_POR_DEFECTO = 'https://ui-avatars.com/api/?name=Sin+Foto&background=dc2626&color=fff'
 
 const separar = (texto) => String(texto || '').split('|').map(c => c.trim()).filter(Boolean)
 

@@ -93,7 +93,7 @@ const hideNavBar = () => {
   color: #ffffff !important;
   font-weight: bold;
   padding: 8px 24px;
-  border-radius: 6px;
+  border-radius: 8px;
   text-decoration: none;
   display: flex;
   justify-content: center;

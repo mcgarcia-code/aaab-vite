@@ -43,7 +43,7 @@
           <EstadoCargando v-if="cargando" texto="Cargando observaciones" />
           <template v-else>
             <div class="d-none d-md-block table-responsive planilla-scroll border rounded shadow-sm">
-              <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.78rem;">
+              <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.8rem;">
                 <thead class="table-light">
                   <tr>
                     <th class="py-3 ps-3 text-center text-uppercase text-muted">Acciones</th>
@@ -178,7 +178,7 @@
           <div v-if="mostrarMotivoRechazo" class="mt-2">
             <label for="motivo-rechazo" class="form-label small fw-bold text-dark">Motivo del rechazo *</label>
             <textarea id="motivo-rechazo" v-model.trim="motivoRechazo" rows="2" maxlength="500" class="form-control" placeholder="El observador lo va a ver en su panel"></textarea>
-            <button type="button" class="btn btn-danger btn-sm fw-bold mt-2" :disabled="revisando || motivoRechazo.length < 3" @click="revisar('rechazada')">
+            <button type="button" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold mt-2" :disabled="revisando || motivoRechazo.length < 3" @click="revisar('rechazada')">
               <span v-if="revisando" class="spinner-border spinner-border-sm me-1"></span> Confirmar rechazo
             </button>
           </div>
@@ -336,9 +336,9 @@ onMounted(cargarObservaciones)
 <style scoped>
 
 .dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: var(--o-texto-suave, #64748b); text-transform: uppercase; }
-.revision { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; background: var(--o-superficie, #f8fafc); }
-.bloque-comentario { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; padding: 10px 12px; }
-.detalle-titulo { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
+.revision { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 12px; background: var(--o-superficie, #f8fafc); }
+.bloque-comentario { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 12px; padding: 10px 12px; }
+.detalle-titulo { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
 .detalle-texto { white-space: pre-wrap; font-size: 0.9rem; color: var(--o-texto, #1e293b); overflow-wrap: anywhere; }
 
 </style>

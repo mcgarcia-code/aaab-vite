@@ -344,21 +344,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
 
 .grupos-grid {
   display: grid;
@@ -377,7 +362,7 @@ onMounted(() => {
 
 .grupo-tile:hover {
   transform: translateY(-2px);
-  border-color: rgba(220, 53, 69, 0.5);
+  border-color: rgba(220, 38, 38, 0.5);
 }
 
 .tile-orden {
@@ -390,7 +375,7 @@ onMounted(() => {
   min-width: 22px;
   height: 22px;
   padding: 0 6px;
-  border-radius: 6px;
+  border-radius: 8px;
   /* Etiqueta blanca con número negro en los dos temas (la tarjeta es siempre oscura) */
   background: #ffffff;
   color: #000000;
@@ -401,7 +386,7 @@ onMounted(() => {
 .tile-avatar {
   width: 42px;
   height: 42px;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -411,7 +396,7 @@ onMounted(() => {
 }
 
 .tile-nombre {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 14px;
 }
@@ -428,5 +413,4 @@ onMounted(() => {
   padding-top: 12px;
 }
 
-.animate__animated { animation-duration: 0.5s; }
 </style>

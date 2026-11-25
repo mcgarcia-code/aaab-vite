@@ -127,7 +127,7 @@
 
       <template #footer="{ cerrar }">
         <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 w-100">
-          <button class="btn btn-outline-secondary rounded-pill px-4 w-100 w-sm-auto" @click="cerrar">Cancelar</button>
+          <button class="btn btn-light border rounded-pill px-4 w-100 w-sm-auto" @click="cerrar">Cancelar</button>
           <button class="btn btn-danger rounded-pill px-4 fw-bold w-100 w-sm-auto" :disabled="guardando" @click="guardar">
             <span v-if="guardando" class="spinner-border spinner-border-sm me-2"></span>Guardar
           </button>
@@ -175,7 +175,7 @@
 
       <template #footer>
         <div class="d-flex flex-column-reverse flex-sm-row justify-content-end gap-2 w-100">
-          <button class="btn btn-outline-secondary rounded-pill px-4 w-100 w-sm-auto" @click="cerrarModalReunion">Cancelar</button>
+          <button class="btn btn-light border rounded-pill px-4 w-100 w-sm-auto" @click="cerrarModalReunion">Cancelar</button>
           <button class="btn btn-danger rounded-pill px-4 fw-bold w-100 w-sm-auto"
                   :disabled="guardandoReunion || !opcionActual || !opcionActual.idsGrupos.length"
                   @click="guardarReunion">
@@ -509,9 +509,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.animate__animated {
-  animation-duration: 0.5s;
-}
 
 .evento-card {
   background: var(--o-tarjeta, #ffffff);
@@ -537,7 +534,7 @@ onMounted(async () => {
   align-items: center;
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--o-borde, #dee2e6);
-  border-radius: 0.6rem;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
   user-select: none;
@@ -545,12 +542,12 @@ onMounted(async () => {
 }
 
 .grupo-item:hover {
-  border-color: #dc3545;
+  border-color: #dc2626;
   background: var(--o-rojo-fondo, #fff5f5);
 }
 
 .grupo-item.activo {
-  border-color: #dc3545;
+  border-color: #dc2626;
   background: var(--o-rojo-fondo, #fff0f0);
   font-weight: 600;
 }
@@ -567,6 +564,6 @@ onMounted(async () => {
   max-height: 40vh;
   overflow-y: auto;
   border: 1px solid var(--o-borde, #dee2e6);
-  border-radius: 0.5rem;
+  border-radius: 8px;
 }
 </style>

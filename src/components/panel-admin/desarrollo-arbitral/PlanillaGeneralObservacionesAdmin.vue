@@ -147,22 +147,15 @@
         </div>
 
         <!-- Tabs: Score sheet (puntajes) / Comment sheet (comentarios) -->
-        <ul class="nav nav-tabs mb-0" role="tablist">
-          <li class="nav-item">
-            <button class="nav-link" :class="{ active: tabDetalle === 'puntajes' }" type="button" @click="tabDetalle = 'puntajes'">
-              <i class="bi bi-list-ol me-1"></i> Puntajes
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" :class="{ active: tabDetalle === 'comentarios' }" type="button" @click="tabDetalle = 'comentarios'">
-              <i class="bi bi-chat-left-text me-1"></i> Comentarios
-            </button>
-          </li>
-        </ul>
+        <PestanasSeccion
+          v-model="tabDetalle"
+          class="mb-2"
+          :pestanas="[{ clave: 'puntajes', etiqueta: 'Puntajes', icono: 'bi-list-ol' }, { clave: 'comentarios', etiqueta: 'Comentarios', icono: 'bi-chat-left-text' }]"
+        />
 
         <!-- TAB PUNTAJES (Score sheet) -->
-        <div v-show="tabDetalle === 'puntajes'" class="border border-top-0 rounded-bottom overflow-hidden">
-          <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
+        <div v-show="tabDetalle === 'puntajes'" class="border rounded overflow-hidden">
+          <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.8rem;">
             <thead class="table-light">
               <tr>
                 <th class="py-2 ps-3 text-uppercase text-muted">Categoría / Ítem</th>
@@ -191,7 +184,7 @@
         </div>
 
         <!-- TAB COMENTARIOS (Comment sheet) -->
-        <div v-show="tabDetalle === 'comentarios'" class="border border-top-0 rounded-bottom p-3">
+        <div v-show="tabDetalle === 'comentarios'" class="border rounded p-3">
           <!-- Comentario por categoría -->
           <div v-if="comentariosPorCategoria.length">
             <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
@@ -242,6 +235,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import { categoriaObs, nombreDeTorneo } from '@/utils/observaciones'
 import { useGruposPlanilla } from '@/composables/useGruposPlanilla'
 import { normalizarTexto } from '@/utils/texto'
@@ -545,9 +539,6 @@ const descargarExcel = async () => {
 </script>
 
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
-.admin-panel { width: 100%; background-color: #0f172a; min-height: 100vh; border-radius: 12px; padding: 16px 0; }
-.animate__animated { animation-duration: 0.4s; }
 
 /* Búsqueda */
 .busqueda-wrap { position: relative; }
@@ -570,7 +561,7 @@ const descargarExcel = async () => {
 /* Mobile-first: en pantallas chicas achicamos un poco todo y limitamos
    el ancho de la columna fija de árbitro para que quede más lugar de scroll. */
 @media (max-width: 575.98px) {
-  .tabla-excel { font-size: 0.72rem; }
+  .tabla-excel { font-size: 0.7rem; }
   .tabla-excel th, .tabla-excel td { padding: 3px 5px; }
   .celda-nombre { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
   .th-obs { min-width: 52px; }
@@ -582,7 +573,7 @@ const descargarExcel = async () => {
 }
 .tabla-excel thead th {
   background-color: var(--o-chip, #f1f3f5); color: var(--o-texto, #343a40); position: sticky; top: 0; z-index: 5;
-  text-align: center; vertical-align: middle; font-size: 0.72rem;
+  text-align: center; vertical-align: middle; font-size: 0.7rem;
 }
 .th-obs { min-width: 64px; }
 
@@ -601,7 +592,7 @@ const descargarExcel = async () => {
 /* Contenido de la celda: nota + botón de Ver al lado */
 .celda-obs-contenido { display: flex; align-items: center; justify-content: center; gap: 4px; }
 .celda-obs-nota {
-  min-width: 22px; padding: 1px 3px; border-radius: 3px;
+  min-width: 22px; padding: 1px 3px; border-radius: 4px;
 }
 .btn-ver-celda {
   border: none; background: transparent; color: var(--o-rojo-texto, #dc2626); cursor: pointer;
@@ -620,7 +611,7 @@ const descargarExcel = async () => {
 /* Leyenda (cuadraditos con los mismos colores) */
 .cuadrito {
   display: inline-block; width: 12px; height: 12px; border: 1px solid var(--o-borde, #ced4da);
-  border-radius: 2px; margin-right: 4px; vertical-align: -1px;
+  border-radius: 4px; margin-right: 4px; vertical-align: -1px;
 }
 .cuadrito.estado-aprobada { background-color: var(--o-verde-fondo, #e3f5e6) !important; }
 .cuadrito.estado-pendiente { background-color: var(--o-ambar-fondo, #fdf3d3) !important; }

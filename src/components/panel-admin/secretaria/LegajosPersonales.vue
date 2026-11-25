@@ -519,7 +519,7 @@
               <div v-else-if="!equiposModal.length" class="small text-muted fst-italic p-2 bg-light rounded border">El club no tiene categorías activas</div>
               <div v-else class="lista-categorias border border-secondary-subtle rounded p-2">
                 <div v-for="grupo in equiposModal" :key="grupo.rama" class="mb-1">
-                  <div class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
+                  <div class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">{{ grupo.etiqueta }}</div>
                   <div v-for="c in grupo.categorias" :key="c.id" class="form-check mb-0">
                     <input :id="`modal-cat-${c.id}`" v-model="formModal.ids_equipos_juega" class="form-check-input" type="checkbox" :value="c.id">
                     <label class="form-check-label small" :for="`modal-cat-${c.id}`">{{ c.nombre }}</label>
@@ -583,23 +583,12 @@
         </div>
       </template>
 
-      <div class="d-flex flex-wrap flex-sm-nowrap justify-content-between gap-2 w-100 bg-light p-2 rounded-3 border border-light-subtle mb-4">
-        <button class="btn fw-bold rounded px-2 py-1 flex-fill d-flex align-items-center justify-content-center gap-1 texto-08"
-                :class="tabActivo === 'enviado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'" @click="tabActivo = 'enviado'">
-          PENDIENTES
-          <span v-if="solicitudesPendientes.length > 0" class="badge bg-white text-danger rounded-pill p-1 d-flex align-items-center justify-content-center" style="font-size: 0.7rem; min-width: 20px;">
-            {{ solicitudesPendientes.length }}
-          </span>
-        </button>
-        <button class="btn fw-bold rounded px-2 py-1 flex-fill texto-08"
-                :class="tabActivo === 'aprobado' ? 'btn-success shadow-sm text-white' : 'btn-transparent text-muted'" @click="tabActivo = 'aprobado'">
-          APROBADAS
-        </button>
-        <button class="btn fw-bold rounded px-2 py-1 flex-fill texto-08"
-                :class="tabActivo === 'rechazado' ? 'btn-danger shadow-sm text-white' : 'btn-transparent text-muted'" @click="tabActivo = 'rechazado'">
-          RECHAZADAS
-        </button>
-      </div>
+      <PestanasSeccion
+        v-model="tabActivo"
+        llenar
+        class="mb-4"
+        :pestanas="[{ clave: 'enviado', etiqueta: 'Pendientes', cantidad: solicitudesPendientes.length || null }, { clave: 'aprobado', etiqueta: 'Aprobadas' }, { clave: 'rechazado', etiqueta: 'Rechazadas' }]"
+      />
 
       <div v-if="cargandoSolicitudes" class="text-center py-5">
         <span class="spinner-border text-danger"></span>
@@ -714,6 +703,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, onMounted, computed, reactive, inject, watch } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { fechaArg } from '@/utils/fechas'
@@ -915,7 +905,7 @@ watch(() => handball.error.value, (mensaje) => {
 
 const urlFotoModal = computed(() => {
   if (!formModal.value.dni) {
-    return 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'
+    return 'https://ui-avatars.com/api/?name=Sin+Foto&background=dc2626&color=fff'
   }
   const dniLimpio = String(formModal.value.dni).trim()
   return `https://arbitroshandball.com.ar/uploads/carnet-arbitros/${dniLimpio}.webp`
@@ -1633,21 +1623,6 @@ const claseEstadoSolicitud = (estado) => (estado ? 'estado-' + estado : 'estado-
 /* ====================================================
    ESTILOS GENERALES
    ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
 
 /* ====================================================
    FOTO DE PERFIL (Modal Edición)
@@ -1671,28 +1646,9 @@ const claseEstadoSolicitud = (estado) => (estado ? 'estado-' + estado : 'estado-
   flex-shrink: 0;
 }
 
-.animate__animated {
-  animation-duration: 0.5s;
-}
-
 /* ====================================================
    TABLA CON COLUMNAS FIJAS
    ==================================================== */
-.tabla-container {
-  overflow-x: auto;
-}
-
-.tabla-fija {
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-/* Eliminar bordes verticales de las celdas */
-.tabla-fija th,
-.tabla-fija td {
-  border-left: none !important;
-  border-right: none !important;
-}
 
 /* Columnas fijas con position: sticky base (para los datos) */
 .col-fija {

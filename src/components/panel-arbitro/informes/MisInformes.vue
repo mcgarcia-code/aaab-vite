@@ -126,7 +126,7 @@
                     <td class="text-center fw-bold col-fija col-fecha">{{ formatearFecha(inf.fecha_partido) }}</td>
                     <td class="fw-bold text-uppercase text-dark text-truncate" :title="inf.encuentro" style="max-width: 220px;">
                       {{ inf.encuentro }}
-                      <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal" style="font-size:0.6rem;">{{ etiquetaOrigen(inf) }}</span>
+                      <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal" style="font-size:0.65rem;">{{ etiquetaOrigen(inf) }}</span>
                     </td>
                     <td class="text-dark text-truncate" :title="inf.categoria" style="max-width: 130px;">{{ inf.categoria || '-' }}</td>
                     <td class="text-dark text-truncate" :title="etiquetaTorneo(inf.torneo)" style="max-width: 180px;">{{ etiquetaTorneo(inf.torneo) }}</td>
@@ -155,7 +155,7 @@
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
                   <div class="text-dark fw-bold text-uppercase texto-105 lh-12">
                     {{ inf.encuentro }}
-                    <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal align-middle" style="font-size:0.6rem;">{{ etiquetaOrigen(inf) }}</span>
+                    <span v-if="!esAutor(inf)" class="badge bg-secondary-subtle text-secondary border ms-1 text-lowercase fw-normal align-middle" style="font-size:0.65rem;">{{ etiquetaOrigen(inf) }}</span>
                   </div>
                   <div class="small text-muted fw-bold text-end">
                     #{{ inf.id }}<br>
@@ -785,23 +785,6 @@ onMounted(obtenerInformes)
 /* ====================================================
    ESTILOS GENERALES
    ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
-
-.animate__animated { animation-duration: 0.5s; }
 
 /* Inputs de solo lectura: sin borde azul de foco */
 .input-readonly { cursor: default; }
@@ -812,16 +795,6 @@ onMounted(obtenerInformes)
 /* ====================================================
    TABLA CON COLUMNAS FIJAS Y SIN LÍNEAS
    ==================================================== */
-.tabla-sin-lineas th,
-.tabla-sin-lineas td {
-  border-left: none !important;
-  border-right: none !important;
-}
-
-.tabla-fija {
-  border-collapse: separate;
-  border-spacing: 0;
-}
 
 @media (min-width: 768px) {
   .col-fija {

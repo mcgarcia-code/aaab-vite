@@ -80,7 +80,7 @@ const textoFinal = computed(() => props.texto || config.value.texto)
   min-height: 40px;
   min-width: 40px;
   padding: 6px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 0.85rem;
   font-weight: 600;
   white-space: nowrap;

@@ -29,5 +29,4 @@ const grupos = [
 </script>
 
 <style scoped>
-.animate__animated { animation-duration: 0.5s; }
 </style>

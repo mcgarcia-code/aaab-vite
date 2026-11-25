@@ -5,16 +5,7 @@
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 border-bottom">
           <p class="seccion-descripcion">Análisis de partidos y clips</p>
-          <div class="pestanas" role="tablist" aria-label="AAAB TV">
-            <button type="button" role="tab" :aria-selected="vista === 'tv'" :class="{ activa: vista === 'tv' }" @click="irA('tv')">
-              <i class="bi bi-play-btn" aria-hidden="true"></i> AAAB TV
-              <span class="badge rounded-pill">{{ clipsVisibles.length }}</span>
-            </button>
-            <button type="button" role="tab" :aria-selected="vista === 'estudio'" :class="{ activa: vista === 'estudio' }" @click="irA('estudio')">
-              <i class="bi bi-camera-reels" aria-hidden="true"></i> Estudio
-              <span v-if="sesion.tags.length" class="badge rounded-pill">{{ sesion.tags.length }}</span>
-            </button>
-          </div>
+          <PestanasSeccion :model-value="vista" :pestanas="pestanasTv" llenar aria-label="AAAB TV" @update:model-value="irA" />
         </div>
 
         <div class="card-body p-3 p-md-4">
@@ -111,14 +102,15 @@
 
 <script setup>
 import { ref, computed, inject } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import ModalBase from '@/components/ModalBase.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import MiPanelTags from './MiPanelTags.vue'
-import AnalisisPartido from './AnalisisPartido.vue'
-import ReproductorClip from './ReproductorClip.vue'
+import MiPanelTags from '@/components/panel-arbitro/aaab-tv/MiPanelTags.vue'
+import AnalisisPartido from '@/components/panel-arbitro/aaab-tv/AnalisisPartido.vue'
+import ReproductorClip from '@/components/panel-arbitro/aaab-tv/ReproductorClip.vue'
 import { useAaabTv, colorTag, formatearTiempo, ESTADOS_CLIP } from '@/composables/useAaabTv'
 import { auth } from '@/api/auth'
 import { normalizarTexto } from '@/utils/texto'
@@ -169,37 +161,16 @@ const confirmarBorrado = () => {
     }
   })
 }
+
+// Pestañas: AAAB TV con la cantidad de clips; Estudio con los clips marcados (si hay)
+const pestanasTv = computed(() => [
+  { clave: 'tv', etiqueta: 'AAAB TV', icono: 'bi-play-btn', cantidad: clipsVisibles.value.length },
+  { clave: 'estudio', etiqueta: 'Estudio', icono: 'bi-camera-reels', cantidad: sesion.tags.length || null }
+])
 </script>
 
 <style scoped>
 /* Pestañas AAAB TV / Estudio */
-.pestanas {
-  display: flex;
-  background: var(--o-chip, #f1f5f9);
-  border-radius: 12px;
-  padding: 4px;
-  gap: 4px;
-}
-.pestanas button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  flex: 1;
-  min-height: 40px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  font-weight: 800;
-  font-size: 0.875rem;
-  color: var(--o-texto-medio, #475569);
-  white-space: nowrap;
-}
-.pestanas button .badge { background: var(--o-chip, #e2e8f0); color: var(--o-texto, #0f172a); }
-.pestanas button.activa { background: #0f172a; color: #fff; }
-.pestanas button.activa .badge { background: #dc2626; color: #fff; }
-
 /* Pasos del estudio */
 .pasos {
   display: flex;
@@ -238,7 +209,7 @@ const confirmarBorrado = () => {
 .filtro {
   min-height: 34px;
   padding: 0 14px;
-  border-radius: 999px;
+  border-radius: 50rem;
   border: 1px solid var(--o-borde, #e2e8f0);
   background: var(--o-tarjeta, #fff);
   font-size: 0.8rem;
@@ -257,7 +228,7 @@ const confirmarBorrado = () => {
   flex-direction: column;
   padding: 0;
   border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 14px;
+  border-radius: 16px;
   background: var(--o-tarjeta, #fff);
   overflow: hidden;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -283,7 +254,7 @@ const confirmarBorrado = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 .duracion {
@@ -291,7 +262,7 @@ const confirmarBorrado = () => {
   right: 10px;
   bottom: 10px;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: rgba(0, 0, 0, 0.75);
   color: #fff;
   font-size: 0.75rem;
@@ -301,15 +272,15 @@ const confirmarBorrado = () => {
 .badge-tag {
   display: inline-block;
   padding: 3px 9px;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #fff;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
 }
 .miniatura .badge-tag { position: absolute; top: 10px; left: 10px; }
 .estado-miniatura { position: absolute; top: 10px; right: 10px; }
 
-.titulo-clip { font-size: 0.95rem; font-weight: 800; color: var(--o-texto, #0f172a); margin-bottom: 4px; line-height: 1.3; }
+.titulo-clip { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); margin-bottom: 4px; line-height: 1.3; }
 .descripcion-clip {
   font-size: 0.8rem;
   color: var(--o-texto-suave, #64748b);
@@ -328,9 +299,5 @@ const confirmarBorrado = () => {
   font-size: 0.75rem;
   color: var(--o-texto-medio, #475569);
   font-weight: 600;
-}
-
-@media (max-width: 575px) {
-  .pestanas { width: 100%; }
 }
 </style>

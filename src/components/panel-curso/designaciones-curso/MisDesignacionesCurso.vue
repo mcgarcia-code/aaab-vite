@@ -18,32 +18,12 @@
         <template v-else>
 
           <!-- TABS: cada botón ocupa 50% en móvil, auto en desktop -->
-          <ul class="nav nav-pills gap-2 mb-4 flex-nowrap">
-            <li class="nav-item flex-fill flex-sm-grow-0">
-              <button
-                type="button"
-                @click="vistaActiva = 'proximas'"
-                class="nav-link w-100 py-2 px-2 px-sm-4 fw-bold small shadow-sm d-flex align-items-center justify-content-center gap-2"
-                :class="vistaActiva === 'proximas' ? 'active bg-danger text-white' : 'bg-light border text-dark'"
-              >
-                <i class="bi bi-calendar-plus"></i>
-                <span>Próximas</span>
-                <span class="badge rounded-pill" :class="vistaActiva === 'proximas' ? 'bg-white text-danger' : 'bg-secondary'">{{ proximas.length }}</span>
-              </button>
-            </li>
-            <li class="nav-item flex-fill flex-sm-grow-0">
-              <button
-                type="button"
-                @click="vistaActiva = 'anteriores'"
-                class="nav-link w-100 py-2 px-2 px-sm-4 fw-bold small shadow-sm d-flex align-items-center justify-content-center gap-2"
-                :class="vistaActiva === 'anteriores' ? 'active bg-dark text-white' : 'bg-light border text-dark'"
-              >
-                <i class="bi bi-clock-history"></i>
-                <span>Anteriores</span>
-                <span class="badge rounded-pill" :class="vistaActiva === 'anteriores' ? 'bg-white text-dark' : 'bg-secondary'">{{ anteriores.length }}</span>
-              </button>
-            </li>
-          </ul>
+          <PestanasSeccion
+            v-model="vistaActiva"
+            llenar
+            class="mb-4"
+            :pestanas="[{ clave: 'proximas', etiqueta: 'Próximas', icono: 'bi-calendar-plus', cantidad: proximas.length }, { clave: 'anteriores', etiqueta: 'Anteriores', icono: 'bi-clock-history', cantidad: anteriores.length }]"
+          />
 
           <!-- ================= PROXIMAS ================= -->
           <div v-if="vistaActiva === 'proximas'">
@@ -175,6 +155,7 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import { MESES } from '@/utils/fechas'
 import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
@@ -299,7 +280,7 @@ onMounted(async () => {
   display: block;
   background: #dc2626;
   color: #fff;
-  border-radius: 20px;
+  border-radius: 16px;
   font-weight: 700;
   font-size: 0.75rem;
   text-align: center;
@@ -312,7 +293,7 @@ onMounted(async () => {
   background: var(--o-tarjeta, #fff);
   border: 1px solid var(--o-borde, #e5e7eb);
   border-left: 4px solid #dc2626;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 12px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }

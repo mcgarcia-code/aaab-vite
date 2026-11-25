@@ -87,14 +87,7 @@
         </div>
 
         <!-- Pestañas por tipo de examen -->
-        <ul class="nav nav-pills flex-nowrap overflow-auto gap-1 mb-3 pb-1 pestanas" role="tablist">
-          <li v-for="t in TIPOS" :key="t.clave" class="nav-item flex-shrink-0" role="presentation">
-            <button type="button" class="nav-link fw-bold" :class="{ active: pestana === t.clave }" role="tab" :aria-selected="pestana === t.clave" @click="pestana = t.clave">
-              <i :class="['bi', t.icono, 'd-none d-sm-inline me-1']"></i>{{ t.etiqueta }}
-              <span class="badge rounded-pill ms-1" :class="pestana === t.clave ? 'bg-white text-danger' : 'bg-secondary'">{{ porTipo[t.clave].length }}</span>
-            </button>
-          </li>
-        </ul>
+        <PestanasSeccion v-model="pestana" :pestanas="pestanasConCantidad" class="mb-3" />
 
         <div v-if="!cargandoHistorial && porTipo[pestana].length" class="d-flex flex-wrap gap-1 mb-3 small">
           <span class="estado-pill estado-verde">{{ porTipo[pestana].filter(x => x.aprobado).length }} aprobados</span>
@@ -115,7 +108,7 @@
         <div v-else class="d-flex flex-column gap-3">
           <div v-for="ex in porTipo[pestana]" :key="ex.id_evento"
                class="historial-card shadow-sm d-flex flex-row justify-content-between align-items-center gap-2 p-3 w-100"
-               :style="{ borderLeftColor: ex.aprobado ? '#198754' : '#dc3545' }">
+               :style="{ borderLeftColor: ex.aprobado ? '#198754' : '#dc2626' }">
 
             <div class="flex-grow-1 min-w-0">
               <!-- Fecha posicionada dentro de la Card -->
@@ -162,6 +155,7 @@
 <script setup>
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import { ref, computed, watch, onMounted } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
 import { api, listaDe } from '@/api/api'
@@ -276,19 +270,20 @@ async function descargarPdf(idEvento) {
 }
 
 onMounted(recargar)
+
+// Pestañas con la cantidad de exámenes de cada tipo
+const pestanasConCantidad = computed(() => TIPOS.map(t => ({ ...t, cantidad: porTipo.value[t.clave].length })))
 </script>
 <style scoped>
 /* ====================================================
    VISTA HISTORIAL (Cards apiladas)
    ==================================================== */
-.pestanas .nav-link { color: var(--o-texto-medio, #475569); background: var(--o-chip, #f1f5f9); font-size: 0.85rem; padding: 0.5rem 0.75rem; white-space: nowrap; }
-.pestanas .nav-link.active { background: #dc3545; color: #fff; }
 
 .historial-card {
   background: var(--o-tarjeta, #fff);
   border: 1px solid var(--o-borde, #e5e7eb);
   border-left: 4px solid #6b7280; /* El color se sobreescribe inline con :style */
-  border-radius: 10px;
+  border-radius: 12px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -301,7 +296,4 @@ onMounted(recargar)
   min-width: 0;
 }
 
-.animate__animated {
-  animation-duration: 0.5s;
-}
 </style>

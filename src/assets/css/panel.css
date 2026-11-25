@@ -7,7 +7,7 @@
    que ahora se muestra en el header del panel */
 .seccion-descripcion {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   color: var(--t-texto-medio);
   line-height: 1.4;
 }
@@ -31,6 +31,7 @@
 /* Algunas secciones usaban un contenedor de ancho completo copiado
    del panel de admin: dentro del panel árbitro respetamos los márgenes */
 .panel-layout .full-screen-wrapper {
+  position: relative;
   width: auto !important;
   margin-left: 0 !important;
   transform: none !important;
@@ -73,7 +74,7 @@
 
 /* Botones sueltos de las barras (ej. filtro de inconsistencias): mismo alto y radio */
 .panel-layout button.control-barra {
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 6px 12px;
   white-space: nowrap;
 }

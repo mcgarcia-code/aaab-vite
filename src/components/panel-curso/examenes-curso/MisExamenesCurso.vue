@@ -63,14 +63,7 @@
         <EstadoCargando v-if="cargando" texto="Cargando tus exámenes" />
         <EstadoVacio v-else-if="!examenes.length" icono="bi-clipboard" titulo="Todavía no tenés exámenes cargados" />
         <div v-else class="card-body p-3 p-md-4">
-          <ul class="nav nav-pills flex-nowrap overflow-auto gap-1 mb-3 pb-1 pestanas" role="tablist">
-            <li v-for="tipo in TIPOS" :key="tipo" class="nav-item flex-shrink-0" role="presentation">
-              <button type="button" class="nav-link fw-bold w-100" :class="{ active: pestana === tipo }" role="tab" :aria-selected="pestana === tipo" @click="pestana = tipo">
-                <i :class="['bi', ICONOS_TIPO[tipo], 'd-none d-sm-inline me-1']"></i>{{ ETIQUETAS_TIPO[tipo] }}
-                <span class="badge rounded-pill ms-1" :class="pestana === tipo ? 'bg-white text-danger' : 'bg-secondary'">{{ porTipo[tipo].length }}</span>
-              </button>
-            </li>
-          </ul>
+          <PestanasSeccion v-model="pestana" :pestanas="pestanasConCantidad" class="mb-3" />
 
           <div v-if="porTipo[pestana].length" class="d-flex flex-wrap gap-1 mb-3 small">
             <span class="estado-pill estado-verde">{{ resumenPestana.aprobados }} aprobados</span>
@@ -125,6 +118,7 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import { ref, computed, onMounted, inject } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import ExamenOnlineRunner from '@/components/comunes/examenes/ExamenOnlineRunner.vue'
@@ -252,6 +246,9 @@ onMounted(async () => {
     cargando.value = false
   }
 })
+
+// Pestañas con la cantidad de exámenes de cada tipo
+const pestanasConCantidad = computed(() => TIPOS.map(tipo => ({ clave: tipo, etiqueta: ETIQUETAS_TIPO[tipo], icono: ICONOS_TIPO[tipo], cantidad: porTipo.value[tipo].length })))
 </script>
 
 <style scoped>
@@ -261,12 +258,10 @@ onMounted(async () => {
   padding: 14px;
   background: var(--o-tarjeta, #fff);
 }
-.nota { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.nota { font-size: 1.5rem; font-weight: 800; line-height: 1; }
 .comentario { white-space: pre-wrap; background: var(--o-superficie, #f8fafc); border-radius: 8px; padding: 8px 10px; }
 .min-w-0 { min-width: 0; }
 .examen-card.recuperatorio { background: var(--o-ambar-fondo, #fffbeb); border-color: var(--o-ambar-borde, #fde68a); }
 .card-recuperatorio .card-header { background: var(--o-ambar-fondo, #fffbeb); }
-.adeudado { border: 1px solid var(--o-ambar-borde, #fde68a); background: var(--o-ambar-fondo, #fffbeb); border-radius: 10px; padding: 8px 12px; }
-.pestanas .nav-link { color: var(--o-texto-medio, #475569); background: var(--o-chip, #f1f5f9); font-size: 0.85rem; padding: 0.5rem 0.75rem; white-space: nowrap; }
-.pestanas .nav-link.active { background: #dc3545; color: #fff; }
+.adeudado { border: 1px solid var(--o-ambar-borde, #fde68a); background: var(--o-ambar-fondo, #fffbeb); border-radius: 12px; padding: 8px 12px; }
 </style>

@@ -6,7 +6,7 @@
     <div v-else class="w-100 d-flex flex-column gap-4" style="max-width: 750px;">
 
       <!-- Contenedor Principal del Carnet -->
-      <div ref="credencialRef" class="card border-0 shadow-lg position-relative overflow-hidden mx-auto w-100" style="border-radius: 20px;">
+      <div ref="credencialRef" class="card border-0 shadow-lg position-relative overflow-hidden mx-auto w-100" style="border-radius: 16px;">
 
         <!-- Marca de agua de fondo -->
         <div class="watermark-center">{{ añoActual }}</div>
@@ -18,9 +18,9 @@
             <div class="foto-wrap shadow-lg">
               <img
                 class="w-100 h-100 object-fit-cover"
-                style="border-radius: 10px;"
-                :src="`https://arbitroshandball.com.ar/uploads/carnet-arbitros/${String(arbitro.dni).trim()}.webp?t=${new Date().getTime()}`"
-                @error="e => e.target.src = 'https://ui-avatars.com/api/?name=Sin+Foto&background=ef4444&color=fff'" alt="Foto del árbitro"
+                style="border-radius: 12px;"
+                :src="urlFoto"
+                @error="e => e.target.src = 'https://ui-avatars.com/api/?name=Sin+Foto&background=dc2626&color=fff'" alt="Foto del árbitro"
               >
             </div>
 
@@ -51,7 +51,7 @@
               <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start mt-2">
                 <div class="text-center text-md-start">
                   <span class="text-secondary fw-bold d-block mb-1 texto-075">DOCUMENTO</span>
-                  <span class="fw-bolder text-dark" style="font-size: 1.4rem;">{{ arbitro.dni }}</span>
+                  <span class="fw-bolder text-dark" style="font-size: 1.5rem;">{{ arbitro.dni }}</span>
                 </div>
 
                 <!-- Línea divisoria nativa de Bootstrap (Solo en escritorio) -->
@@ -59,7 +59,7 @@
 
                 <div class="text-center text-md-start mt-3 mt-md-0">
                   <span class="text-secondary fw-bold d-block mb-1 texto-075">GRUPO</span>
-                  <span class="fw-bolder text-danger" style="font-size: 1.4rem;">{{ arbitro.grupo }}</span>
+                  <span class="fw-bolder text-danger" style="font-size: 1.5rem;">{{ arbitro.grupo }}</span>
                 </div>
               </div>
             </div>
@@ -95,7 +95,7 @@
 
 <script setup>
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { cargarHtml2canvas } from '@/utils/librerias'
 import { api } from '@/api/api'
 import QrcodeVue from 'qrcode.vue'
@@ -144,6 +144,11 @@ const cargarDatos = async () => {
   }
 }
 
+// Foto del carnet: la marca de versión se fija una vez al cargar (evita la caché vieja
+// sin volver a descargar la foto cada vez que la vista se redibuja)
+const versionFoto = Date.now()
+const urlFoto = computed(() => `https://arbitroshandball.com.ar/uploads/carnet-arbitros/${String(arbitro.value.dni).trim()}.webp?t=${versionFoto}`)
+
 onMounted(cargarDatos)
 
 const descargar = async () => {
@@ -188,7 +193,7 @@ const descargar = async () => {
   height: clamp(140px, 30vw, 160px);
   background: white;
   padding: 8px;
-  border-radius: 15px;
+  border-radius: 16px;
 }
 
 .fw-black {
@@ -206,7 +211,5 @@ const descargar = async () => {
   background: #a71d2a;
   transform: translateY(-2px);
 }
-
-.animate__animated { animation-duration: 0.5s; }
 
 </style>

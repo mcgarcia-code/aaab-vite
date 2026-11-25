@@ -106,7 +106,7 @@
             <div v-else class="h-100 d-flex flex-column">
 
               <!-- Encabezado Escritorio -->
-              <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 text-uppercase text-muted fw-bold" style="font-size: 0.70rem;">
+              <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">
                 <div class="col-md-3 ps-3">Fecha</div>
                 <div class="col-md-2">Solicitada</div>
                 <div class="col-md-3">Motivo</div>
@@ -484,7 +484,7 @@ onMounted(() => {
 
 /* Botón Anular con color personalizado y animación */
 .btn-anular {
-  background-color: #ef4444;
+  background-color: #dc2626;
   color: #ffffff;
   font-size: 0.65rem;
   text-transform: uppercase;
@@ -528,5 +528,4 @@ input[type="date"]:not(:placeholder-shown)::-webkit-datetime-edit-text {
   color: var(--o-texto, #000) !important;
 }
 
-.animate__animated { animation-duration: 0.5s; }
 </style>

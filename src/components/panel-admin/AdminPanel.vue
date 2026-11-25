@@ -207,7 +207,7 @@ useHead({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   transition: background 0.2s;
 }
 .btn-icono:hover, .btn-icono:focus-visible { background: var(--t-barra-elevado-hover); }

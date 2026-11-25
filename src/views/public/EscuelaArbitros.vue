@@ -354,7 +354,7 @@ const infoInscripcion = ref({
 }
 .docente-horizontal-card:hover {
   transform: translateX(10px);
-  border-color: #dc3545 !important;
+  border-color: #dc2626 !important;
 }
 
 /* ====================================================
@@ -365,12 +365,7 @@ const infoInscripcion = ref({
 }
 .btn-enroll:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4) !important;
-}
-
-/* Animación de entrada general */
-.animate__animated {
-  animation-duration: 0.8s;
+  box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4) !important;
 }
 
 </style>

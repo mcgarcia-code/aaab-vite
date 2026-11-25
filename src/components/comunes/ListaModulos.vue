@@ -70,7 +70,7 @@ defineProps({
   color: var(--t-sobre-fondo-suave);
   margin: 0 0 8px 4px;
 }
-.lista-categoria i { font-size: 0.95rem; color: var(--o-rojo-texto, #dc2626); }
+.lista-categoria i { font-size: 0.9rem; color: var(--o-rojo-texto, #dc2626); }
 
 .lista-grupo {
   background: var(--t-tarjeta);
@@ -96,13 +96,13 @@ defineProps({
   width: 36px;
   height: 36px;
   min-width: 36px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--t-icono-fondo);
   color: var(--t-icono-texto);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.05rem;
+  font-size: 1rem;
 }
 
 .lista-texto {
@@ -113,7 +113,7 @@ defineProps({
 }
 
 .lista-titulo {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--t-texto);
   line-height: 1.25;

@@ -61,7 +61,7 @@
             <div class="col-6 col-md-1">
               <div class="form-check form-switch bg-white border rounded shadow-sm m-0 h-100 d-flex align-items-center justify-content-center px-2 py-1" title="Solo pendientes de respuesta">
                 <input class="form-check-input shadow-none m-0 cursor-pointer" type="checkbox" role="switch" v-model="filtros.conNuevos" id="conNuevos">
-                <label class="form-check-label ms-2 small fw-bold text-danger d-none d-xl-inline cursor-pointer" for="conNuevos" style="font-size:0.80rem;">Pendientes</label>
+                <label class="form-check-label ms-2 small fw-bold text-danger d-none d-xl-inline cursor-pointer" for="conNuevos" style="font-size:0.8rem;">Pendientes</label>
               </div>
             </div>
 
@@ -815,21 +815,6 @@ onMounted(fetchSanciones)
 /* ====================================================
    ESTILOS GENERALES
    ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
 
 /* ====================================================
    ESTADOS DE SANCIONES (Badges y Textos)
@@ -837,21 +822,9 @@ onMounted(fetchSanciones)
 .text-en-proceso { color: var(--o-ambar-texto, #d97706) !important; }
 .text-anulada { color: var(--o-texto, #0f172a) !important; }
 
-.animate__animated { animation-duration: 0.5s; }
-
 /* ====================================================
    TABLA CON COLUMNAS FIJAS Y SIN LÍNEAS
    ==================================================== */
-.tabla-sin-lineas th,
-.tabla-sin-lineas td {
-  border-left: none !important;
-  border-right: none !important;
-}
-
-.tabla-fija {
-  border-collapse: separate;
-  border-spacing: 0;
-}
 
 @media (min-width: 768px) {
   /* Columnas fijas base */

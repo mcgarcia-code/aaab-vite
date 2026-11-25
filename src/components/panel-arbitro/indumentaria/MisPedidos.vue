@@ -247,6 +247,4 @@ onMounted(obtenerPedidos)
   background-color: var(--o-superficie, #f8fafc) !important;
 }
 
-.animate__animated { animation-duration: 0.5s; }
-
 </style>

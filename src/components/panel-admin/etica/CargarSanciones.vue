@@ -229,21 +229,6 @@ onMounted(() => {
 /* ====================================================
    ESTILOS GENERALES
    ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
 
 /* ====================================================
    UTILIDADES PARA INPUTS
@@ -258,8 +243,6 @@ onMounted(() => {
    ==================================================== */
 .text-en-proceso { color: var(--o-ambar-texto, #d97706) !important; }
 .text-anulada { color: var(--o-texto, #0f172a) !important; }
-
-.animate__animated { animation-duration: 0.5s; }
 
 /* Cero media queries. Totalmente manejado por las grillas col-12 col-lg-8/4 de Bootstrap */
 </style>

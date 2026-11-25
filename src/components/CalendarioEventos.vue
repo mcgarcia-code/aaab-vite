@@ -370,16 +370,16 @@ defineExpose({ recargar, irAFecha, cargando })
 }
 .cal-dia:hover { border-color: var(--o-borde, #adb5bd); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); }
 .cal-dia.fuera-mes { opacity: 0.45; }
-.cal-dia.es-hoy .num { background: #dc3545; color: #fff; border-radius: 999px; padding: 0 6px; }
+.cal-dia.es-hoy .num { background: #dc2626; color: #fff; border-radius: 50rem; padding: 0 6px; }
 .cal-dia.activo { border-color: #212529; box-shadow: 0 0 0 1px #212529; }
-.cal-dia.elegido { border-color: #dc3545; box-shadow: 0 0 0 2px #dc3545; }
+.cal-dia.elegido { border-color: #dc2626; box-shadow: 0 0 0 2px #dc2626; }
 .cal-dia.bloqueado { cursor: not-allowed; background: var(--o-superficie, #f8f9fa); }
 .cal-dia.bloqueado .num { color: var(--o-texto-suave, #adb5bd); }
 .num { font-size: 0.8rem; font-weight: 700; color: var(--o-texto, #212529); }
 .chip {
   display: block;
   color: #fff;
-  font-size: 0.55rem;
+  font-size: 0.65rem;
   font-weight: 700;
   line-height: 1.3;
   padding: 1px 3px;
@@ -395,7 +395,7 @@ defineExpose({ recargar, irAFecha, cargando })
   outline-offset: -1px;
 }
 .mas { font-size: 0.65rem; color: var(--o-texto-suave, #6c757d); font-weight: 600; }
-.punto { display: inline-block; width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
+.punto { display: inline-block; width: 8px; height: 8px; border-radius: 50rem; flex-shrink: 0; }
 .cal-cargando {
   position: absolute;
   inset: 0;
@@ -409,10 +409,10 @@ defineExpose({ recargar, irAFecha, cargando })
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   padding: 2px 8px;
   border: 1px solid var(--o-borde, #e5e7eb);
-  border-radius: 999px;
+  border-radius: 50rem;
   background: var(--o-tarjeta, #fff);
   color: var(--o-texto, #212529);
 }
@@ -421,6 +421,6 @@ defineExpose({ recargar, irAFecha, cargando })
 .min-w-0 { min-width: 0; }
 @media (min-width: 768px) {
   .cal-dia { min-height: 96px; padding: 6px; }
-  .chip { font-size: 0.68rem; padding: 1px 5px; }
+  .chip { font-size: 0.7rem; padding: 1px 5px; }
 }
 </style>

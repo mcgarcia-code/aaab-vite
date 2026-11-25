@@ -133,8 +133,4 @@ const documentos = ref([
   box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.4) !important;
 }
 
-/* Animación de entrada general */
-.animate__animated {
-  animation-duration: 0.8s;
-}
 </style>

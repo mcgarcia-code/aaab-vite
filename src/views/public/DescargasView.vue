@@ -298,8 +298,4 @@ const categorias = ref([
   transform: translateX(8px); /* Desplazamiento moderno hacia la derecha */
 }
 
-/* Animación de entrada general */
-.animate__animated {
-  animation-duration: 0.8s;
-}
 </style>

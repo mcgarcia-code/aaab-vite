@@ -57,7 +57,7 @@
                   <td class="fw-bold text-muted ps-3">{{ fechaDMA(obs.fecha_partido) }}</td>
                   <td class="fw-bold text-uppercase text-dark">
                     <div>{{ obs.apellido }}, {{ obs.nombre }}</div>
-                    <div class="text-muted fw-normal text-capitalize" style="font-size: 0.72rem;">{{ MODALIDADES_CURSO[obs.modalidad_curso]?.etiqueta }}</div>
+                    <div class="text-muted fw-normal text-capitalize" style="font-size: 0.7rem;">{{ MODALIDADES_CURSO[obs.modalidad_curso]?.etiqueta }}</div>
                   </td>
                   <td class="text-dark">
                     <div class="fw-bold">{{ obs.categoria || '-' }}</div>
@@ -295,6 +295,5 @@ onMounted(cargar)
 </script>
 
 <style scoped>
-.animate__animated { animation-duration: 0.5s; }
 
 </style>

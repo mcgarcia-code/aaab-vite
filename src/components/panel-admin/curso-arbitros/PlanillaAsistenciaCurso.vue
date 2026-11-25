@@ -60,7 +60,7 @@
               <div v-for="c in clasesPlanilla.filter(c => correspondeClase(c, a))" :key="'pame-' + a.id + '-' + c.id" class="fila-planilla d-flex justify-content-between align-items-center gap-2">
                 <div class="min-w-0">
                   <div class="text-dark fw-semibold">{{ fechaDMA(c.fecha) }}</div>
-                  <div class="text-muted text-break" style="font-size: 0.68rem;">{{ c.titulo }}</div>
+                  <div class="text-muted text-break" style="font-size: 0.7rem;">{{ c.titulo }}</div>
                 </div>
                 <span class="chip-nota flex-shrink-0" :class="claseCeldaAsistencia(c, a)">{{ textoCeldaAsistencia(c, a) || 'Sin marcar' }}</span>
               </div>

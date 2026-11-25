@@ -446,22 +446,11 @@ const cargarObservacionExcel = async () => {
 </script>
 
 <style scoped>
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
 .panel-personal {
   width: 100%;
   background-color: var(--t-panel-fondo);
   min-height: 100vh;
   border-radius: 12px;
-}
-.animate__animated {
-  animation-duration: 0.4s;
 }
 
 /* Zona de arrastrar y soltar el Excel de la observación */
@@ -478,11 +467,11 @@ const cargarObservacionExcel = async () => {
   cursor: pointer;
   transition: 0.2s;
 }
-.excel-dropzone:hover { border-color: #dc3545; background: var(--o-rojo-fondo, #fff8f8); }
-.excel-dropzone.is-dragover { border-color: #dc3545; background: var(--o-rojo-fondo, #fff8f8); transform: scale(1.01); }
+.excel-dropzone:hover { border-color: #dc2626; background: var(--o-rojo-fondo, #fff8f8); }
+.excel-dropzone.is-dragover { border-color: #dc2626; background: var(--o-rojo-fondo, #fff8f8); transform: scale(1.01); }
 .excel-dropzone.has-file { border-style: solid; border-color: #198754; background: var(--o-verde-fondo, #f0fdf4); }
 .excel-dropzone-icon { font-size: 42px; color: var(--o-texto-suave, #94a3b8); margin-bottom: 10px; }
 .excel-dropzone.is-dragover .excel-dropzone-icon,
-.excel-dropzone:hover .excel-dropzone-icon { color: var(--o-rojo-texto, #dc3545); }
+.excel-dropzone:hover .excel-dropzone-icon { color: var(--o-rojo-texto, #dc2626); }
 .excel-dropzone.has-file .excel-dropzone-icon { color: var(--o-verde-texto, #198754); }
 </style>

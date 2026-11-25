@@ -234,7 +234,7 @@ onMounted(fetchDesignaciones)
 
 .btn-download:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4) !important;
+  box-shadow: 0 10px 20px rgba(220, 38, 38, 0.4) !important;
 }
 
 .disabled-link {
@@ -251,7 +251,7 @@ onMounted(fetchDesignaciones)
 }
 
 .history-card:hover {
-  border-color: #ef4444 !important;
+  border-color: #dc2626 !important;
   transform: translateY(-4px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
 }

@@ -167,22 +167,15 @@
         </div>
 
         <!-- Tabs: Score sheet (puntajes) / Comment sheet (comentarios) -->
-        <ul class="nav nav-tabs mb-0" role="tablist">
-          <li class="nav-item">
-            <button class="nav-link" :class="{ active: tabDetalle === 'puntajes' }" type="button" @click="tabDetalle = 'puntajes'">
-              <i class="bi bi-list-ol me-1"></i> Puntajes
-            </button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" :class="{ active: tabDetalle === 'comentarios' }" type="button" @click="tabDetalle = 'comentarios'">
-              <i class="bi bi-chat-left-text me-1"></i> Comentarios
-            </button>
-          </li>
-        </ul>
+        <PestanasSeccion
+          v-model="tabDetalle"
+          class="mb-2"
+          :pestanas="[{ clave: 'puntajes', etiqueta: 'Puntajes', icono: 'bi-list-ol' }, { clave: 'comentarios', etiqueta: 'Comentarios', icono: 'bi-chat-left-text' }]"
+        />
 
         <!-- TAB PUNTAJES (Score sheet) -->
-        <div v-show="tabDetalle === 'puntajes'" class="border border-top-0 rounded-bottom overflow-hidden">
-          <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
+        <div v-show="tabDetalle === 'puntajes'" class="border rounded overflow-hidden">
+          <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.8rem;">
             <thead class="table-light">
               <tr>
                 <th class="py-2 ps-3 text-uppercase text-muted">Categoría / Ítem</th>
@@ -211,7 +204,7 @@
         </div>
 
         <!-- TAB COMENTARIOS (Comment sheet) -->
-        <div v-show="tabDetalle === 'comentarios'" class="border border-top-0 rounded-bottom p-3">
+        <div v-show="tabDetalle === 'comentarios'" class="border rounded p-3">
           <div v-if="comentariosPorCategoria.length">
             <div v-for="(c, idx) in comentariosPorCategoria" :key="'com-' + idx" class="mb-3">
               <div class="fw-bold small text-dark">{{ c.categoria }}</div>
@@ -280,6 +273,7 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import { categoriaObs, nombreDeTorneo } from '@/utils/observaciones'
 import { normalizarTexto } from '@/utils/texto'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
@@ -498,6 +492,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.animate__animated { animation-duration: 0.5s; }
 
 </style>

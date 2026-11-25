@@ -28,7 +28,7 @@ const emit = defineEmits(['alternar'])
   min-height: 44px;
   margin-top: 6px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--o-chip, #f1f5f9);
   color: var(--o-texto-medio, #475569);
   font-size: 0.85rem;

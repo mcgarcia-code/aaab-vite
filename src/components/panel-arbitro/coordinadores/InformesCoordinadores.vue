@@ -708,39 +708,12 @@ onMounted(obtenerInformes)
 /* ====================================================
    ESTILOS GENERALES
    ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
-
-.animate__animated { animation-duration: 0.5s; }
 
 .min-w-0 { min-width: 0; }
 
 /* ====================================================
    TABLA CON COLUMNAS FIJAS Y SIN LÍNEAS
    ==================================================== */
-.tabla-sin-lineas th,
-.tabla-sin-lineas td {
-  border-left: none !important;
-  border-right: none !important;
-}
-
-.tabla-fija {
-  border-collapse: separate;
-  border-spacing: 0;
-}
 
 @media (min-width: 768px) {
   .col-fija {

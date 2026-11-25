@@ -117,7 +117,7 @@ const gruposFiltrados = computed(() => {
   flex-shrink: 0;
 }
 
-.menu-nombre { font-size: 1.05rem; font-weight: 800; color: var(--t-texto); }
+.menu-nombre { font-size: 1rem; font-weight: 800; color: var(--t-texto); }
 .menu-id { font-size: 0.85rem; color: var(--t-texto-medio); }
 
 .opcion-perfil {
@@ -131,12 +131,12 @@ const gruposFiltrados = computed(() => {
   border-top: 1px solid var(--t-tarjeta-borde);
   background: none;
   color: var(--t-texto);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   text-decoration: none;
   text-align: left;
 }
-.opcion-perfil > .bi:first-child { color: var(--t-icono-texto); font-size: 1.05rem; width: 20px; text-align: center; }
+.opcion-perfil > .bi:first-child { color: var(--t-icono-texto); font-size: 1rem; width: 20px; text-align: center; }
 .opcion-perfil:hover { background: var(--t-tarjeta-hover); }
 .flecha { color: var(--t-texto-tenue); font-size: 0.8rem; }
 
@@ -149,7 +149,7 @@ const gruposFiltrados = computed(() => {
   padding: 0 14px;
   background: var(--t-baldosa);
   border: 1px solid var(--t-baldosa-borde);
-  border-radius: 14px;
+  border-radius: 16px;
   color: var(--t-sobre-fondo-suave);
 }
 .buscador:focus-within { border-color: var(--t-sobre-fondo-suave); }
@@ -190,5 +190,4 @@ const gruposFiltrados = computed(() => {
 .opcion-salir,
 .opcion-perfil.opcion-salir > .bi:first-child { color: var(--t-peligro-texto); }
 
-.animate__animated { animation-duration: 0.4s; }
 </style>

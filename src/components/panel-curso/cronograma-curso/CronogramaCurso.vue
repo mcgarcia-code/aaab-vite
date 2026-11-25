@@ -174,7 +174,7 @@ onMounted(() => cargar(anio))
 :deep(.clase-item.destacada) { border-color: #dc2626 !important; box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12); }
 :deep(.cal-box), .cal-box {
   width: 48px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--o-rojo-fondo, #fee2e2);
   color: var(--o-rojo-texto, #b91c1c);
   padding: 6px 0;
@@ -184,8 +184,8 @@ onMounted(() => cargar(anio))
   align-items: center;
 }
 .cal-box-grande { width: 58px; background: #dc2626; color: #fff; }
-:deep(.cal-box .dia), .cal-box .dia { font-size: 1.2rem; font-weight: 800; line-height: 1; }
-:deep(.cal-box .mes), .cal-box .mes { font-size: 0.62rem; font-weight: 700; margin-top: 2px; }
+:deep(.cal-box .dia), .cal-box .dia { font-size: 1.25rem; font-weight: 800; line-height: 1; }
+:deep(.cal-box .mes), .cal-box .mes { font-size: 0.65rem; font-weight: 700; margin-top: 2px; }
 :deep(.min-w-0), .min-w-0 { min-width: 0; }
 :deep(.texto-pre-line) { white-space: pre-wrap; }
 </style>

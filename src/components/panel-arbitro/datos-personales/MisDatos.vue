@@ -137,7 +137,7 @@
         </div>
 
         <div v-if="edicionAbierta" class="mt-4 pt-4 border-top">
-            <button @click="guardarCambios" class="btn btn-danger w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
+            <button @click="guardarCambios" class="btn btn-danger rounded-pill w-100 fw-bold shadow-sm py-3 py-md-2" :disabled="cargando">
                 <span v-if="cargando" class="spinner-border spinner-border-sm me-2"></span>
                 GUARDAR CAMBIOS EN LEGAJO
             </button>
@@ -154,7 +154,7 @@
             <div v-if="historialRectificaciones.length > 0" class="d-flex flex-column">
 
                 <!-- Encabezado de Columnas (Solo Escritorio) -->
-                <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.70rem;">
+                <div class="row g-0 d-none d-md-flex bg-light border-bottom p-2 fw-bold text-uppercase text-muted" style="font-size: 0.7rem;">
                     <div class="col-md-2 ps-3">Fecha</div>
                     <div class="col-md-7">Mensaje de Solicitud</div>
                     <div class="col-md-3 text-center pe-3">Estado</div>
@@ -449,7 +449,7 @@ const claseEstadoSolicitud = (estado) => (estado ? 'estado-' + estado : 'estado-
 
 .manual-section {
   background-color: #0c1624;
-  border-radius: 1rem;
+  border-radius: 16px;
 }
 
 .btn-danger {
@@ -486,7 +486,5 @@ const claseEstadoSolicitud = (estado) => (estado ? 'estado-' + estado : 'estado-
 .item-historial:hover {
   background-color: var(--o-superficie, #f8fafc) !important;
 }
-
-.animate__animated { animation-duration: 0.5s; }
 
 </style>

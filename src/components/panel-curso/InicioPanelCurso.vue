@@ -292,7 +292,7 @@ onMounted(cargarInicio)
 /* ============ PRÓXIMA CLASE ============ */
 .tarjeta-hero {
   background: var(--o-tarjeta, #fff);
-  border-radius: 20px;
+  border-radius: 16px;
   padding: 16px;
   color: var(--o-texto, #0f172a);
 }
@@ -311,7 +311,7 @@ onMounted(cargarInicio)
   background: var(--o-ambar-fondo, #fef3c7);
   color: var(--o-ambar-texto, #92400e);
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 50rem;
   white-space: nowrap;
 }
 
@@ -319,7 +319,7 @@ onMounted(cargarInicio)
   width: 64px;
   min-width: 64px;
   height: 76px;
-  border-radius: 14px;
+  border-radius: 16px;
   background: #0f172a;
   color: #fff;
   display: flex;
@@ -332,13 +332,13 @@ onMounted(cargarInicio)
 .bloque-numero { font-size: 1.75rem; font-weight: 800; line-height: 1.1; }
 .bloque-mes { font-size: 0.75rem; font-weight: 700; color: #f87171; }
 
-.hero-partido { font-size: 1.05rem; font-weight: 800; line-height: 1.25; }
+.hero-partido { font-size: 1rem; font-weight: 800; line-height: 1.25; }
 
 .hero-dato {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   color: var(--o-texto-medio, #475569);
 }
 
@@ -353,7 +353,7 @@ onMounted(cargarInicio)
 .link-mapa:hover { text-decoration: underline; }
 
 .link-hero {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--o-rojo-texto, #b91c1c);
   text-decoration: none;
@@ -374,11 +374,10 @@ onMounted(cargarInicio)
 .aviso-registro > .bi:first-child { font-size: 1.5rem; color: var(--o-verde-texto, #059669); }
 .aviso-registro:hover { background: var(--o-verde-fondo, #d1fae5); color: #064e3b; }
 
-
 /* ============ AVISOS ============ */
 .tarjeta-avisos {
   background: var(--o-tarjeta, #fff);
-  border-radius: 20px;
+  border-radius: 16px;
   padding: 16px;
   color: var(--o-texto, #0f172a);
 }
@@ -403,7 +402,7 @@ onMounted(cargarInicio)
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--o-texto-medio, #475569);
-  border-radius: 9px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -423,12 +422,11 @@ onMounted(cargarInicio)
   background-color: var(--o-chip, #e2e8f0);
   color: var(--o-texto-medio, #334155);
   padding: 1px 6px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 0.7rem;
   font-weight: 800;
 }
 .tab-btn.activa .tab-badge { background: #0f172a; color: #fff; }
-
 
 .evento {
   display: flex;
@@ -450,14 +448,14 @@ onMounted(cargarInicio)
   min-width: 48px;
   height: 48px;
 }
-.cal-box .day { font-weight: 800; font-size: 1.05rem; line-height: 1; color: var(--o-texto, #0f172a); }
+.cal-box .day { font-weight: 800; font-size: 1rem; line-height: 1; color: var(--o-texto, #0f172a); }
 .cal-box .month { font-size: 0.7rem; font-weight: 700; color: var(--o-rojo-texto, #b91c1c); margin-top: 2px; }
 .today-bg { background: #dc2626; }
 .today-bg .day, .today-bg .month { color: #fff; }
 
 .event-info { flex: 1; min-width: 0; }
 .event-info strong {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   color: var(--o-texto, #0f172a);
   display: block;
   line-height: 1.25;
@@ -470,5 +468,4 @@ onMounted(cargarInicio)
 
 .empty-msg { font-size: 0.8rem; color: var(--o-texto-suave, #64748b); font-style: italic; padding: 12px 0 4px; margin: 0; }
 
-.animate__animated { animation-duration: 0.4s; }
 </style>

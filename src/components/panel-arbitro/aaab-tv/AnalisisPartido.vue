@@ -49,7 +49,7 @@
             <i class="bi bi-camera-video" aria-hidden="true"></i>
             <p class="fw-bold mb-1">Cargá el video completo del partido</p>
             <p class="small text-muted mb-3">Los dos tiempos en un solo archivo (MP4). Por ahora se reproduce desde tu computadora.</p>
-            <button type="button" class="btn btn-danger fw-bold" @click="inputVideo?.click()">
+            <button type="button" class="btn btn-danger rounded-pill fw-bold px-4" @click="inputVideo?.click()">
               <i class="bi bi-upload" aria-hidden="true"></i> Elegir video
             </button>
           </div>
@@ -109,7 +109,7 @@
           <div class="reloj" aria-live="off">{{ formatearTiempo(segundosReloj) }}</div>
 
           <div class="d-flex flex-wrap justify-content-center gap-2">
-            <button v-if="!sesion.reloj.corriendo" type="button" class="btn btn-danger fw-bold px-4" @click="iniciarReloj">
+            <button v-if="!sesion.reloj.corriendo" type="button" class="btn btn-danger rounded-pill fw-bold px-4" @click="iniciarReloj">
               <i class="bi bi-play-fill" aria-hidden="true"></i> {{ segundosReloj ? 'Seguir' : 'Iniciar con el pitazo' }}
             </button>
             <button v-else type="button" class="btn btn-light fw-bold px-4" @click="pausarReloj">
@@ -239,7 +239,7 @@
 
           <div v-if="sesion.tags.length && puedePublicar" class="pie-clips">
             <span class="small text-muted">{{ seleccionados.length }} para publicar · quedan pendientes hasta que los revise Desarrollo Arbitral</span>
-            <button type="button" class="btn btn-danger fw-bold w-100" :disabled="!seleccionados.length" @click="abrirPublicar">
+            <button type="button" class="btn btn-danger rounded-pill fw-bold w-100" :disabled="!seleccionados.length" @click="abrirPublicar">
               <i class="bi bi-broadcast" aria-hidden="true"></i> Publicar en AAAB TV
             </button>
           </div>
@@ -286,8 +286,8 @@
 
       <template #footer>
         <div class="d-flex gap-2 justify-content-end w-100">
-          <button type="button" class="btn btn-light border fw-bold" :disabled="publicando" @click="mostrarPublicar = false">Cancelar</button>
-          <button type="submit" form="form-publicar" class="btn btn-danger fw-bold" :disabled="publicando">
+          <button type="button" class="btn btn-light border rounded-pill px-4 fw-bold" :disabled="publicando" @click="mostrarPublicar = false">Cancelar</button>
+          <button type="submit" form="form-publicar" class="btn btn-danger rounded-pill fw-bold px-4" :disabled="publicando">
             <span v-if="publicando" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
             {{ publicando ? 'Publicando...' : `Publicar ${formPublicar.clips.length} ${formPublicar.clips.length === 1 ? 'clip' : 'clips'}` }}
           </button>
@@ -728,7 +728,7 @@ onBeforeUnmount(() => {
 .bloque {
   background: var(--o-tarjeta, #fff);
   border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 14px;
 }
 
@@ -757,13 +757,13 @@ onBeforeUnmount(() => {
   border-color: var(--o-texto, #0f172a);
   color: #e2e8f0;
 }
-.titulo-bloque { font-size: 0.95rem; font-weight: 800; color: var(--o-texto, #0f172a); }
+.titulo-bloque { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); }
 
 /* Selector de modo */
 .selector-modo {
   display: flex;
   background: var(--o-chip, #f1f5f9);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 3px;
   gap: 3px;
 }
@@ -774,7 +774,7 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   background: transparent;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   color: var(--o-texto-medio, #475569);
 }
 .selector-modo button.activo { background: #0f172a; color: #fff; }
@@ -803,7 +803,7 @@ onBeforeUnmount(() => {
   left: 50%;
   transform: translateX(-50%);
   padding: 6px 14px;
-  border-radius: 999px;
+  border-radius: 50rem;
   color: #fff;
   font-size: 0.8rem;
   font-weight: 800;
@@ -827,7 +827,7 @@ onBeforeUnmount(() => {
   position: absolute;
   top: 5px;
   bottom: 5px;
-  border-radius: 3px;
+  border-radius: 4px;
   opacity: 0.85;
 }
 .cabezal {
@@ -859,7 +859,7 @@ onBeforeUnmount(() => {
 }
 .estado-vivo .punto { width: 10px; height: 10px; border-radius: 50%; background: #64748b; }
 .estado-vivo.corriendo { color: #fca5a5; }
-.estado-vivo.corriendo .punto { background: #ef4444; animation: latido 1.2s infinite; }
+.estado-vivo.corriendo .punto { background: #dc2626; animation: latido 1.2s infinite; }
 @keyframes latido { 50% { opacity: 0.3; } }
 @media (prefers-reduced-motion: reduce) { .estado-vivo.corriendo .punto { animation: none; } }
 
@@ -872,7 +872,7 @@ onBeforeUnmount(() => {
   line-height: 1.1;
   margin: 10px 0 14px;
 }
-.nota-vivo { font-size: 0.78rem; color: var(--o-texto-suave, #94a3b8); text-align: center; margin: 12px 0 0; }
+.nota-vivo { font-size: 0.8rem; color: var(--o-texto-suave, #94a3b8); text-align: center; margin: 12px 0 0; }
 
 .sincronizar {
   margin-top: 14px;
@@ -899,7 +899,7 @@ onBeforeUnmount(() => {
   min-width: 0;
   padding: 4px;
   border: 2px solid;
-  border-radius: 14px;
+  border-radius: 16px;
   font-weight: 800;
   font-size: clamp(0.64rem, 3.1vw, 0.85rem);
   line-height: 1.15;
@@ -920,7 +920,7 @@ onBeforeUnmount(() => {
     min-height: 52px;
     padding: 8px 12px;
     border-radius: 12px;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
   }
   .nombre-tag {
     overflow: hidden;
@@ -938,9 +938,9 @@ onBeforeUnmount(() => {
 .tecla {
   background: #0f172a;
   color: #fff;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   padding: 2px 6px;
-  border-radius: 6px;
+  border-radius: 8px;
   margin-left: 2px;
 }
 
@@ -950,7 +950,7 @@ onBeforeUnmount(() => {
 .clip {
   border: 1px solid var(--o-borde, #e2e8f0);
   border-left: 4px solid;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px;
   margin-bottom: 8px;
 }
@@ -958,11 +958,11 @@ onBeforeUnmount(() => {
 .badge-tag {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 0.72rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
   font-weight: 800;
 }
-.tiempo-clip { font-size: 0.78rem; font-weight: 700; color: var(--o-texto-medio, #475569); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.tiempo-clip { font-size: 0.8rem; font-weight: 700; color: var(--o-texto-medio, #475569); margin-top: 4px; font-variant-numeric: tabular-nums; }
 .pie-clips {
   display: flex;
   flex-direction: column;

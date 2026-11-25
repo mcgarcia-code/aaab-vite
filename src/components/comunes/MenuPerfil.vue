@@ -95,7 +95,7 @@ onUnmounted(() => window.removeEventListener('keydown', alPresionarTecla))
 .menu-perfil-asa {
   width: 40px;
   height: 4px;
-  border-radius: 2px;
+  border-radius: 4px;
   background: var(--t-borde-fuerte);
   margin: 10px auto 0;
 }
@@ -162,7 +162,7 @@ onUnmounted(() => window.removeEventListener('keydown', alPresionarTecla))
   color: var(--t-texto-medio);
   background: var(--t-chip);
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 50rem;
 }
 
 .opcion-perfil {
@@ -174,7 +174,7 @@ onUnmounted(() => window.removeEventListener('keydown', alPresionarTecla))
   padding: 0 16px;
   background: none;
   border: 0;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--t-texto);
   text-decoration: none;
@@ -185,7 +185,7 @@ onUnmounted(() => window.removeEventListener('keydown', alPresionarTecla))
 .opcion-icono {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--t-icono-fondo);
   color: var(--t-icono-texto);
   display: flex;

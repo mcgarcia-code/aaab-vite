@@ -75,7 +75,7 @@ const ayuda = computed(() => {
 .selector-opcion {
   min-height: 56px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 8px;
   background: transparent;
   color: var(--t-texto-medio);
   display: flex;

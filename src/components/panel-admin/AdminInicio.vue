@@ -263,7 +263,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
 }
-.cal-dia { font-size: 1.05rem; font-weight: 800; color: var(--o-texto, #0f172a); line-height: 1; }
+.cal-dia { font-size: 1rem; font-weight: 800; color: var(--o-texto, #0f172a); line-height: 1; }
 .cal-mes { font-size: 0.7rem; font-weight: 700; color: var(--o-rojo-texto, #b91c1c); margin-top: 2px; }
 .cal-box.hoy { background: #dc2626; }
 .cal-box.hoy .cal-dia, .cal-box.hoy .cal-mes { color: #fff; }
@@ -283,18 +283,18 @@ onMounted(async () => {
 .evento-pendiente {
   display: inline-block;
   margin-top: 3px;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--o-ambar-texto, #92400e);
   background: var(--o-ambar-fondo, #fef3c7);
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: 50rem;
 }
 
 /* ============ PENDIENTES ============ */
 .tarjeta-pendientes {
   background: var(--o-tarjeta, #fff);
-  border-radius: 20px;
+  border-radius: 16px;
   padding: 16px;
   color: var(--o-texto, #0f172a);
 }
@@ -351,8 +351,6 @@ onMounted(async () => {
   font-size: 0.9rem;
   color: var(--o-texto-medio, #475569);
 }
-.al-dia .bi { font-size: 1.2rem; color: var(--o-verde-texto, #16a34a); }
+.al-dia .bi { font-size: 1.25rem; color: var(--o-verde-texto, #16a34a); }
 
-
-.animate__animated { animation-duration: 0.4s; }
 </style>

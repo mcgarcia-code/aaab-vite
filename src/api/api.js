@@ -1,5 +1,5 @@
 // src/api/api.js
-import { auth } from './auth'
+import { auth } from '@/api/auth'
 export const BASE_URL = import.meta.env.VITE_BASE_URL
 
 function obtenerHeaders() {

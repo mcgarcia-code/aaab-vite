@@ -530,15 +530,10 @@ onMounted(cargarDatos)
 </script>
 
 <style scoped>
-.full-screen-wrapper { position: relative; width: 99vw; min-height: 100vh; margin-left: 50%; transform: translateX(-50%); padding-bottom: 120px; }
-.admin-panel { width: 100%; min-height: 100vh; border-radius: 12px; }
-.animate__animated { animation-duration: 0.5s; }
 .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 
 /* ── Tabla ── */
 .tabla-container { overflow-x: auto; max-height: 75vh; }
-.tabla-fija { border-collapse: separate; border-spacing: 0; }
-.tabla-fija th, .tabla-fija td { border-left: none !important; border-right: none !important; }
 .col-fija { position: sticky; background-color: inherit; z-index: 10; }
 .tabla-fija thead .col-fija { background-color: var(--o-superficie, #f8f9fa); z-index: 30; }
 .tabla-fija tbody .col-fija { background-color: var(--o-tarjeta, #ffffff); }
@@ -550,7 +545,7 @@ onMounted(cargarDatos)
 /* ── Tooltip observaciones ── */
 .observacion-texto { cursor: help; }
 td:hover .observacion-tooltip { display: block; }
-.observacion-tooltip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background-color: #1f2937; color: white; padding: 8px 12px; border-radius: 6px; white-space: normal; max-width: 300px; z-index: 1000; font-size: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 5px; }
+.observacion-tooltip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background-color: #1f2937; color: white; padding: 8px 12px; border-radius: 8px; white-space: normal; max-width: 300px; z-index: 1000; font-size: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 5px; }
 .observacion-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: #1f2937; }
 
 /* ── Colores de filas ── */

@@ -301,21 +301,6 @@ onMounted(() => {
 /* ====================================================
    ESTILOS GENERALES
    ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
 
 /* ====================================================
    PUNTOS DE ESTADO (Activo/Inactivo)
@@ -328,28 +313,9 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.animate__animated {
-  animation-duration: 0.5s;
-}
-
 /* ====================================================
    TABLA CON COLUMNAS FIJAS
    ==================================================== */
-.tabla-container {
-  overflow-x: auto;
-}
-
-.tabla-fija {
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-/* Eliminar bordes verticales de las celdas */
-.tabla-fija th,
-.tabla-fija td {
-  border-left: none !important;
-  border-right: none !important;
-}
 
 /* Columnas fijas con position: sticky base (para los datos) */
 .col-fija {

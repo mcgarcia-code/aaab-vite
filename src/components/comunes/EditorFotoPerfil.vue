@@ -18,7 +18,7 @@
       </div>
       <p class="text-muted small text-center mb-3">{{ textoAyuda }}</p>
       <div class="d-flex gap-2">
-        <button type="button" class="btn btn-outline-secondary rounded-pill fw-bold flex-grow-1" @click="cancelar" :disabled="subiendo">
+        <button type="button" class="btn btn-light border rounded-pill fw-bold flex-grow-1" @click="cancelar" :disabled="subiendo">
           Cancelar
         </button>
         <button type="button" class="btn btn-danger rounded-pill fw-bold flex-grow-1 d-flex justify-content-center align-items-center" @click="confirmar" :disabled="subiendo || !previewUrl">
@@ -192,7 +192,7 @@ defineExpose({ abrirSelector, ampliar })
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;

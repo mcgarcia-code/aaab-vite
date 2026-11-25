@@ -48,12 +48,12 @@
       <p v-if="error" class="text-danger small fw-semibold mt-2 mb-0" role="alert">{{ error }}</p>
 
       <div class="d-flex flex-wrap gap-2 mt-3">
-        <button type="submit" class="btn btn-danger fw-bold">
+        <button type="submit" class="btn btn-danger rounded-pill fw-bold px-4">
           <i :class="['bi', editandoId ? 'bi-check-lg' : 'bi-plus-lg']" aria-hidden="true"></i>
           {{ editandoId ? 'Guardar cambios' : 'Agregar botón' }}
         </button>
-        <button v-if="editandoId" type="button" class="btn btn-light border fw-bold" @click="limpiarFormulario">Cancelar</button>
-        <button v-else type="button" class="btn btn-light border fw-bold ms-md-auto" @click="restablecerBotones">
+        <button v-if="editandoId" type="button" class="btn btn-light border rounded-pill px-4 fw-bold" @click="limpiarFormulario">Cancelar</button>
+        <button v-else type="button" class="btn btn-light border rounded-pill px-4 fw-bold ms-md-auto" @click="restablecerBotones">
           <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Restablecer botones
         </button>
       </div>
@@ -98,7 +98,7 @@ const guardarBoton = () => {
 <style scoped>
 .lista-botones {
   border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 14px;
+  border-radius: 16px;
   background: var(--o-tarjeta, #fff);
   overflow: hidden;
 }
@@ -125,13 +125,13 @@ const guardarBoton = () => {
   padding: 8px 10px;
   border: 1px solid var(--o-borde, #e2e8f0);
   border-left: 4px solid;
-  border-radius: 10px;
-  font-size: 0.875rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
 }
 
 .formulario-boton {
   border: 1px dashed var(--o-borde, #cbd5e1);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 14px;
   background: var(--o-superficie, #f8fafc);
 }

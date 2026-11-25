@@ -229,5 +229,4 @@ onMounted(cargarTodo)
 .item-movimiento { transition: background-color 0.2s; }
 .item-movimiento:hover { background-color: var(--o-superficie, #f8fafc); }
 
-.animate__animated { animation-duration: 0.5s; }
 </style>

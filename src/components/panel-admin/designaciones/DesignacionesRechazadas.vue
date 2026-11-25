@@ -593,31 +593,14 @@ onMounted(obtenerRechazos)
 </script>
 
 <style scoped>
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
-
-.animate__animated { animation-duration: 0.5s; }
 
 /* ====================================================
    BADGE "NUEVOS" + DOT (estilo tarjeta de pedidos)
    ==================================================== */
 .badge-nuevos {
-  background: #dc3545;
+  background: #dc2626;
   color: #fff;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.5px;
   padding: 4px 10px;
@@ -626,9 +609,9 @@ onMounted(obtenerRechazos)
 }
 
 @keyframes pulso {
-  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.5); }
-  70% { box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
 }
 
 /* ====================================================

@@ -618,21 +618,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
 
 .badge-status-sm {
   padding: 4px 10px;
@@ -645,5 +630,4 @@ onMounted(() => {
 .rol { background: var(--o-rojo-fondo, #fee2e2); color: var(--o-rojo-texto, #b91c1c); border: 1px solid var(--o-rojo-borde, #fecaca); }
 .vos { background: var(--o-azul-fondo, #e0e7ff); color: var(--o-azul-texto, #4338ca); border: 1px solid var(--o-azul-borde, #c7d2fe); }
 
-.animate__animated { animation-duration: 0.5s; }
 </style>

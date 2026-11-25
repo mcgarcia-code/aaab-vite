@@ -4,7 +4,7 @@
     <div v-if="seleccionados.length" class="d-flex flex-wrap gap-1 mb-2">
       <span v-for="a in seleccionados" :key="'sel-' + a.id" class="badge bg-dark d-inline-flex align-items-center gap-1 py-2 px-2 text-wrap text-start">
         <i class="bi bi-person-fill"></i> {{ a.nombre }}
-        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.55rem;" :aria-label="'Quitar a ' + a.nombre" @click="quitar(a.id)"></button>
+        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.65rem;" :aria-label="'Quitar a ' + a.nombre" @click="quitar(a.id)"></button>
       </span>
     </div>
 

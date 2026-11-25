@@ -41,8 +41,8 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { fechaHoraDMA } from '@/utils/fechas'
 import { usePracticaCatalogo } from '@/composables/usePracticaCatalogo'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
-import RevisionPractica from './RevisionPractica.vue'
-import ResumenResultado from './ResumenResultado.vue'
+import RevisionPractica from '@/components/comunes/practica-catalogo/RevisionPractica.vue'
+import ResumenResultado from '@/components/comunes/practica-catalogo/ResumenResultado.vue'
 
 const props = defineProps({
   idPractica: { type: Number, required: true },
@@ -92,7 +92,7 @@ onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
 }
 
 .practica-box {
-  border-radius: 1rem;
+  border-radius: 16px;
   max-width: 760px;
 }
 

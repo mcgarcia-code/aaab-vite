@@ -202,8 +202,4 @@ const modalStyle = computed(() => ({
   backdrop-filter: blur(6px);
 }
 
-.animate__animated {
-  animation-duration: 0.3s;
-}
-
 </style>

@@ -217,6 +217,6 @@ onMounted(fetchFecha)
 
 .hero-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(220, 53, 69, 0.4) !important;
+  box-shadow: 0 10px 20px rgba(220, 38, 38, 0.4) !important;
 }
 </style>

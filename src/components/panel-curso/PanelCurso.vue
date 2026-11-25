@@ -316,7 +316,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   transition: background 0.2s;
 }
 .btn-icono:hover, .btn-icono:focus-visible { background: var(--t-barra-elevado-hover); }
@@ -327,7 +327,7 @@ onBeforeUnmount(() => {
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
-  border-radius: 9px;
+  border-radius: 8px;
   background: #dc2626;
   color: #fff;
   font-size: 0.7rem;

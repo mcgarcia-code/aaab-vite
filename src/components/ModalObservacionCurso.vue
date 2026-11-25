@@ -270,5 +270,5 @@ const guardar = async () => {
 </script>
 
 <style scoped>
-.encuentro-elegido { border: 1px solid var(--o-borde, #e2e8f0); border-left: 4px solid #dc3545; border-radius: 8px; padding: 8px 12px; background: var(--o-superficie, #f8fafc); }
+.encuentro-elegido { border: 1px solid var(--o-borde, #e2e8f0); border-left: 4px solid #dc2626; border-radius: 8px; padding: 8px 12px; background: var(--o-superficie, #f8fafc); }
 </style>

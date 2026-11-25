@@ -41,7 +41,7 @@
           <div v-for="a in visibles" :key="a.id" class="fila-asistencia d-flex justify-content-between align-items-center gap-2">
             <div class="min-w-0">
               <div class="fw-bold text-dark small text-uppercase text-break">{{ a.apellido }}, {{ a.nombre }}</div>
-              <div v-if="a.modalidadCurso || a.tieneExamen || a.aviso" class="text-muted" style="font-size: 0.72rem;">
+              <div v-if="a.modalidadCurso || a.tieneExamen || a.aviso" class="text-muted" style="font-size: 0.7rem;">
                 <template v-if="a.modalidadCurso">{{ MODALIDADES_CURSO[a.modalidadCurso]?.corta }}</template>
                 <span v-if="a.tieneExamen" class="badge bg-secondary-subtle text-secondary-emphasis ms-1" title="Ya rindió o tiene nota en el examen de esta clase">
                   <i class="bi bi-journal-check"></i> Rindió
@@ -62,7 +62,7 @@
 
     <template #footer>
       <button type="button" @click="intentarCerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-      <button type="button" @click="emit('guardar', filas)" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando || cargando || !filas.length">
+      <button type="button" @click="emit('guardar', filas)" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardando || cargando || !filas.length">
         <span v-if="guardando" class="spinner-border spinner-border-sm me-1"></span>
         GUARDAR ASISTENCIA
       </button>
@@ -148,10 +148,10 @@ const intentarCerrar = () => {
 .filtro-badge { cursor: pointer; font-size: 0.75rem; padding: 0.35em 0.65em; transition: opacity 0.15s ease, box-shadow 0.15s ease; }
 .filtro-badge.activo { box-shadow: 0 0 0 2px #0f172a; }
 .filtro-badge.apagado { opacity: 0.45; }
-.fila-asistencia { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; padding: 8px 10px; }
+.fila-asistencia { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 12px; padding: 8px 10px; }
 .busqueda-asistencia { position: relative; }
 .busqueda-asistencia input { padding-right: 30px; }
 .btn-limpiar { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); border: none; background: transparent; color: var(--o-texto-suave, #adb5bd); padding: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem; line-height: 1; }
-.btn-limpiar:hover { color: var(--o-rojo-texto, #dc3545); }
+.btn-limpiar:hover { color: var(--o-rojo-texto, #dc2626); }
 .min-w-0 { min-width: 0; }
 </style>

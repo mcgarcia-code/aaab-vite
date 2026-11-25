@@ -96,8 +96,8 @@
 
       <template #footer>
         <div class="d-flex gap-2 justify-content-end w-100">
-          <button type="button" class="btn btn-light border fw-bold" @click="editando = null">Cancelar</button>
-          <button type="submit" form="form-clip-admin" class="btn btn-danger fw-bold">Guardar</button>
+          <button type="button" class="btn btn-light border rounded-pill px-4 fw-bold" @click="editando = null">Cancelar</button>
+          <button type="submit" form="form-clip-admin" class="btn btn-danger rounded-pill px-4 fw-bold">Guardar</button>
         </div>
       </template>
     </ModalBase>
@@ -192,7 +192,7 @@ const guardar = () => {
   gap: 6px;
   min-height: 36px;
   padding: 0 14px;
-  border-radius: 999px;
+  border-radius: 50rem;
   border: 1px solid var(--o-borde, #e2e8f0);
   background: var(--o-tarjeta, #fff);
   font-size: 0.85rem;
@@ -214,7 +214,7 @@ const guardar = () => {
   border-left: 4px solid;
   border-radius: 12px;
 }
-.titulo-clip { font-size: 0.95rem; font-weight: 800; color: var(--o-texto, #0f172a); margin: 0 0 2px; }
+.titulo-clip { font-size: 0.9rem; font-weight: 800; color: var(--o-texto, #0f172a); margin: 0 0 2px; }
 .datos-clip { font-size: 0.8rem; color: var(--o-texto-suave, #64748b); margin: 0; }
 .acciones { display: flex; flex-wrap: wrap; gap: 6px; }
 @media (max-width: 767px) {
@@ -225,9 +225,9 @@ const guardar = () => {
 .badge-tag {
   display: inline-block;
   padding: 3px 9px;
-  border-radius: 6px;
+  border-radius: 8px;
   color: #fff;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 800;
 }
 
@@ -245,7 +245,7 @@ const guardar = () => {
   border-radius: 12px;
   cursor: pointer;
 }
-.opcion > .bi { font-size: 1.2rem; color: var(--o-texto-suave, #64748b); }
+.opcion > .bi { font-size: 1.25rem; color: var(--o-texto-suave, #64748b); }
 .opcion.elegida { border-color: #dc2626; background: var(--o-rojo-fondo, #fef2f2); }
 .opcion.elegida > .bi { color: var(--o-rojo-texto, #dc2626); }
 .opcion:focus-within { outline: 2px solid var(--o-texto, #0f172a); outline-offset: 2px; }

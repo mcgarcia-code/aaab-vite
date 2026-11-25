@@ -394,8 +394,4 @@ const categorias = ref([
   padding-bottom: 0 !important;
 }
 
-/* Animación de entrada general */
-.animate__animated {
-  animation-duration: 0.8s;
-}
 </style>

@@ -111,7 +111,7 @@ onMounted(() => cargarPermisos())
   font-size: 1.1rem;
 }
 
-.menu-nombre { font-size: 1.05rem; font-weight: 800; color: var(--t-texto); }
+.menu-nombre { font-size: 1rem; font-weight: 800; color: var(--t-texto); }
 .menu-cargo { font-size: 0.85rem; color: var(--t-texto-medio); }
 
 /* ============ BUSCADOR ============ */
@@ -123,7 +123,7 @@ onMounted(() => cargarPermisos())
   padding: 0 14px;
   background: var(--t-baldosa);
   border: 1px solid var(--t-baldosa-borde);
-  border-radius: 14px;
+  border-radius: 16px;
   color: var(--t-sobre-fondo-suave);
 }
 .buscador:focus-within { border-color: var(--t-sobre-fondo-suave); }
@@ -166,14 +166,13 @@ onMounted(() => cargarPermisos())
   justify-content: center;
   gap: 10px;
   min-height: 52px;
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid var(--t-barra-salir-borde);
   background: transparent;
   color: var(--t-barra-salir);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 .btn-cerrar-sesion:hover { background: var(--t-barra-salir-hover); }
 
-.animate__animated { animation-duration: 0.4s; }
 </style>

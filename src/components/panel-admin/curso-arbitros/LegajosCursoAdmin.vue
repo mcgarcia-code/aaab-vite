@@ -634,9 +634,6 @@ onMounted(() => {
 <style scoped src="@/assets/css/acordeon-curso.css"></style>
 <style scoped>
 
-.tabla-container { overflow-x: auto; }
-.tabla-fija { border-collapse: separate; border-spacing: 0; }
-.tabla-fija th, .tabla-fija td { border-left: none !important; border-right: none !important; }
 .col-fija { position: sticky; background-color: inherit; z-index: 10; }
 .tabla-fija thead .col-fija { background-color: var(--o-superficie, #f8f9fa); z-index: 12; }
 .tabla-fija tbody .col-fija { background-color: var(--o-tarjeta, #ffffff); }
@@ -646,9 +643,9 @@ onMounted(() => {
 .col-nombre { left: 330px; min-width: 150px; }
 .col-nombre::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 1px; background: linear-gradient(to right, rgba(0,0,0,0.1), transparent); }
 
-.resumen-historial { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; padding: 8px; text-align: center; height: 100%; }
-.resumen-historial .valor { font-size: 1.3rem; font-weight: 800; line-height: 1.1; }
-.resumen-historial .etiqueta { font-size: 0.68rem; color: var(--o-texto-suave, #64748b); font-weight: 700; text-transform: uppercase; }
+.resumen-historial { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 12px; padding: 8px; text-align: center; height: 100%; }
+.resumen-historial .valor { font-size: 1.25rem; font-weight: 800; line-height: 1.1; }
+.resumen-historial .etiqueta { font-size: 0.7rem; color: var(--o-texto-suave, #64748b); font-weight: 700; text-transform: uppercase; }
 .linea-tiempo li { border-left: 3px solid var(--o-ambar-borde, #fde68a); padding-left: 12px; }
 .fila-baja td, .tabla-fija tbody .fila-baja .col-fija { background-color: var(--o-rojo-fondo, #fef2f2) !important; }
 </style>

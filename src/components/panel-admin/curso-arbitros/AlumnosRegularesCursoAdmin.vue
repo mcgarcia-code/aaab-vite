@@ -482,12 +482,12 @@ onMounted(cargar)
 <style scoped>
 .dato-etiqueta { font-size: 0.65rem; font-weight: 800; color: var(--o-texto-suave, #64748b); text-transform: uppercase; }
 .fila-detalle { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 8px; padding: 6px 10px; }
-.opcion-final { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; padding: 10px 12px; cursor: pointer; }
-.opcion-final.activa { border-color: #dc3545; background: var(--o-rojo-fondo, #fef2f2); }
+.opcion-final { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 12px; padding: 10px 12px; cursor: pointer; }
+.opcion-final.activa { border-color: #dc2626; background: var(--o-rojo-fondo, #fef2f2); }
 
 /* Planilla: anchos de columna propios (el resto está en planilla-curso.css) */
 .th-corta { min-width: 70px; }
 .th-media { min-width: 110px; }
 .th-larga { min-width: 150px; }
-.detalle-parcialitos { font-size: 0.72rem; font-weight: 600; margin-left: 2px; }
+.detalle-parcialitos { font-size: 0.7rem; font-weight: 600; margin-left: 2px; }
 </style>

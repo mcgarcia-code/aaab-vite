@@ -83,8 +83,8 @@
                       <div v-for="e in columnasPlanilla.filter(e => correspondeExamen(e, a))" :key="'plme-' + a.id + '-' + e.id" class="fila-planilla d-flex justify-content-between align-items-center gap-2">
                         <div class="min-w-0">
                           <div class="text-dark text-break">{{ e.titulo }}</div>
-                          <div class="text-muted" style="font-size: 0.68rem;">{{ etiquetaColumna(e) }} · {{ fechaDMA(e.fecha) }}</div>
-                          <div v-if="inconsistencia(e, a)" class="text-warning-emphasis fw-semibold" style="font-size: 0.68rem;">
+                          <div class="text-muted" style="font-size: 0.7rem;">{{ etiquetaColumna(e) }} · {{ fechaDMA(e.fecha) }}</div>
+                          <div v-if="inconsistencia(e, a)" class="text-warning-emphasis fw-semibold" style="font-size: 0.7rem;">
                             <i class="bi bi-exclamation-triangle-fill text-warning"></i> {{ inconsistencia(e, a) }}
                           </div>
                         </div>

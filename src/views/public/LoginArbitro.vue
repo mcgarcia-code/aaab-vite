@@ -164,8 +164,8 @@ const iniciarSesion = async () => {
 
 .custom-input:focus {
   background-color: var(--o-tarjeta, #ffffff);
-  border-color: #ef4444; /* Borde rojo al enfocar */
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important; /* Resplandor rojo suave */
+  border-color: #dc2626; /* Borde rojo al enfocar */
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15) !important; /* Resplandor rojo suave */
 }
 
 /* ====================================================
@@ -177,7 +177,7 @@ const iniciarSesion = async () => {
 
 .btn-login:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(220, 53, 69, 0.3) !important;
+  box-shadow: 0 8px 15px rgba(220, 38, 38, 0.3) !important;
   background-color: #b91c1c !important; /* Rojo un poco más oscuro */
 }
 
@@ -190,8 +190,4 @@ const iniciarSesion = async () => {
   text-decoration: underline !important;
 }
 
-/* Animación de entrada */
-.animate__animated {
-  animation-duration: 0.6s;
-}
 </style>

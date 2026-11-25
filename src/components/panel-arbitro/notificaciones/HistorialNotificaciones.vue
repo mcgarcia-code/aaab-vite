@@ -174,6 +174,4 @@ onMounted(() => {
   background-color: rgba(220, 38, 38, 0.03) !important;
 }
 
-.animate__animated { animation-duration: 0.5s; }
-
 </style>

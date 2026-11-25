@@ -225,7 +225,7 @@ onUnmounted(() => {
    BUSCADOR PERSONALIZADO TIPO CRISTAL (GLASSMORPHISM)
    ==================================================== */
 .buscador-publico {
-  border-radius: 50px;
+  border-radius: 50rem;
   padding: 14px 24px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -240,15 +240,10 @@ onUnmounted(() => {
 
 .buscador-publico:focus {
   background: rgba(255, 255, 255, 0.1);
-  border-color: #ef4444; /* Borde rojo al enfocar */
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25);
+  border-color: #dc2626; /* Borde rojo al enfocar */
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.25);
   color: #ffffff;
   outline: none;
-}
-
-/* Animación de entrada general */
-.animate__animated {
-  animation-duration: 0.8s;
 }
 
 /* Cero media queries. Todo el layout funciona con las utilidades de Bootstrap */

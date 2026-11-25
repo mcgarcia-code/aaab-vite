@@ -261,17 +261,8 @@ onMounted(cargarDatos)
   border-radius: 12px;
 }
 
-.animate__animated {
-  animation-duration: 0.5s;
-}
-
 /* ====================================================
    TABLA SIN LÍNEAS VERTICALES
    ==================================================== */
-.tabla-sin-lineas th,
-.tabla-sin-lineas td {
-  border-left: none !important;
-  border-right: none !important;
-}
 
 </style>

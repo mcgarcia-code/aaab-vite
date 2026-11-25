@@ -674,25 +674,6 @@ onMounted(() => {
 /* ====================================================
    ESTILOS GENERALES
    ==================================================== */
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
-
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
-
-.animate__animated {
-  animation-duration: 0.5s;
-}
 
 /* ====================================================
    TABLA CON COLUMNAS FIJAS
@@ -700,18 +681,6 @@ onMounted(() => {
 .tabla-container {
   overflow-x: auto;
   max-height: 75vh;
-}
-
-.tabla-fija {
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-/* Eliminar bordes verticales de las celdas */
-.tabla-fija th,
-.tabla-fija td {
-  border-left: none !important;
-  border-right: none !important;
 }
 
 /* Base de columnas fijas */
@@ -796,7 +765,7 @@ td:hover .observacion-tooltip {
   background-color: #1f2937;
   color: white;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   white-space: normal;
   max-width: 300px;
   z-index: 1000;

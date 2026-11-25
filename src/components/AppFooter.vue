@@ -90,8 +90,8 @@
           <div class="col-12 col-lg-4">
             <div class="text-center text-lg-end">
               <img loading="lazy" decoding="async" :src="logo" alt="AAAB Logo" class="footer-logo mb-3" />
-              <h5 class="fw-black text-white m-0" style="letter-spacing: 3px; font-size: 1.2rem;">CAMBIA TU VISIÓN</h5>
-              <h5 class="fw-black text-danger m-0" style="letter-spacing: 3px; font-size: 1.2rem;">HACETE ÁRBITRO</h5>
+              <h5 class="fw-black text-white m-0" style="letter-spacing: 3px; font-size: 1.25rem;">CAMBIA TU VISIÓN</h5>
+              <h5 class="fw-black text-danger m-0" style="letter-spacing: 3px; font-size: 1.25rem;">HACETE ÁRBITRO</h5>
 
               <div class="mt-4">
                 <p class="small text-secondary mb-2">Seguinos en redes</p>
@@ -140,7 +140,7 @@ import logo from '@/assets/fotos/logo.png'
 }
 
 .transition-hover:hover {
-  color: #dc3545 !important;
+  color: #dc2626 !important;
 }
 
 .social-link {
@@ -148,7 +148,7 @@ import logo from '@/assets/fotos/logo.png'
 }
 
 .social-link:hover {
-  color: #dc3545 !important;
+  color: #dc2626 !important;
   transform: translateY(-3px);
 }
 

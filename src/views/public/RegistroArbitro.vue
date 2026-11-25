@@ -191,7 +191,7 @@
               <div v-else-if="!categoriasPorRama.length" class="small text-muted fst-italic p-2 bg-light rounded border">{{ form.genero ? 'El club no tiene categorías activas para tu rama' : 'El club no tiene categorías activas' }}</div>
               <div v-else class="lista-categorias border rounded p-2" :class="{ 'border-danger': intentoEnviar && errores.idsCategorias }">
                 <div v-for="grupo in categoriasPorRama" :key="grupo.rama" class="mb-1">
-                  <div class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
+                  <div class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">{{ grupo.etiqueta }}</div>
                   <div v-for="c in grupo.categorias" :key="c.id" class="form-check mb-0">
                     <input :id="`reg-cat-${c.id}`" v-model="form.idsCategorias" class="form-check-input" type="checkbox" :value="c.id">
                     <label class="form-check-label small" :for="`reg-cat-${c.id}`">{{ c.nombre }}</label>
@@ -536,7 +536,7 @@ onMounted(async () => {
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
 }
 .titulo-seccion {
-  color: var(--o-rojo-texto, #dc3545);
+  color: var(--o-rojo-texto, #dc2626);
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.8rem;
@@ -554,12 +554,12 @@ onMounted(async () => {
 .form-control:focus,
 .form-select:focus {
   background-color: var(--o-tarjeta, #ffffff);
-  border-color: #ef4444;
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15);
 }
 .form-control.is-invalid,
 .form-select.is-invalid {
-  border-color: #dc3545;
+  border-color: #dc2626;
 }
 .lista-categorias {
   max-height: 220px;

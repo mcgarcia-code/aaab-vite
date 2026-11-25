@@ -158,18 +158,11 @@
       <EstadoCargando v-if="cargandoDetalle" texto="Cargando prácticas" />
       <p v-else-if="errorDetalle" class="text-danger fw-bold text-center py-4 m-0">{{ errorDetalle }}</p>
       <template v-else-if="detalle">
-        <ul class="nav nav-pills gap-1 mb-3 pestanas" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button type="button" class="nav-link fw-bold" :class="{ active: pestanaDetalle === 'practicas' }" role="tab" :aria-selected="pestanaDetalle === 'practicas'" @click="pestanaDetalle = 'practicas'">
-              Prácticas ({{ detalle.practicas.length }})
-            </button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button type="button" class="nav-link fw-bold" :class="{ active: pestanaDetalle === 'falladas' }" role="tab" :aria-selected="pestanaDetalle === 'falladas'" @click="pestanaDetalle = 'falladas'">
-              Más falladas ({{ detalle.falladas.length }})
-            </button>
-          </li>
-        </ul>
+        <PestanasSeccion
+          v-model="pestanaDetalle"
+          class="mb-3"
+          :pestanas="[{ clave: 'practicas', etiqueta: 'Prácticas', cantidad: detalle.practicas.length }, { clave: 'falladas', etiqueta: 'Más falladas', cantidad: detalle.falladas.length }]"
+        />
 
         <!-- Prácticas -->
         <div v-if="pestanaDetalle === 'practicas'" class="d-flex flex-column gap-2">
@@ -209,6 +202,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
@@ -340,10 +334,7 @@ const cerrarDetalle = () => {
 .th-media { min-width: 110px; }
 .th-larga { min-width: 150px; }
 
-.pestanas .nav-link { color: var(--o-texto-medio, #475569); background: var(--o-chip, #f1f5f9); font-size: 0.85rem; padding: 0.45rem 0.75rem; }
-.pestanas .nav-link.active { background: #dc3545; color: #fff; }
-
 .fila-practica { background: var(--o-tarjeta, #fff); border-left-width: 4px !important; }
 .borde-bien { border-left-color: #198754 !important; }
-.borde-mal { border-left-color: #dc3545 !important; }
+.borde-mal { border-left-color: #dc2626 !important; }
 </style>

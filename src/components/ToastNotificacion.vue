@@ -119,7 +119,7 @@ defineExpose({ mostrar, quitar })
 }
 
 .toast-success { border-left-color: #198754; }
-.toast-danger  { border-left-color: #dc3545; }
+.toast-danger  { border-left-color: #dc2626; }
 .toast-warning { border-left-color: #ffc107; }
 
 .toast-icono {

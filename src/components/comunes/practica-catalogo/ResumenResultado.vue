@@ -50,7 +50,7 @@ const aprobado = computed(() => Number(props.resultado.calificacion) >= UMBRAL_A
   justify-content: center;
 }
 .nota-bien { border-color: var(--o-verde, #198754); color: var(--o-verde, #198754); }
-.nota-mal { border-color: var(--o-rojo, #dc3545); color: var(--o-rojo, #dc3545); }
-.nota-valor { font-size: 1.8rem; font-weight: 800; }
+.nota-mal { border-color: var(--o-rojo, #dc2626); color: var(--o-rojo, #dc2626); }
+.nota-valor { font-size: 1.75rem; font-weight: 800; }
 .dato-resumen { background: var(--o-chip, #f8fafc); }
 </style>

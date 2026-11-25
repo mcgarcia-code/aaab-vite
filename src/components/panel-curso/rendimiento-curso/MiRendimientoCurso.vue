@@ -186,14 +186,14 @@ onMounted(async () => {
 }
 a.resumen-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
 a.resumen-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(15, 23, 42, 0.2); }
-.resumen-card i { font-size: 1.2rem; }
-.resumen-card .valor { font-size: 1.4rem; font-weight: 800; line-height: 1.1; margin-top: 4px; }
-.resumen-card .etiqueta { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
-.resumen-card .detalle { font-size: 0.68rem; opacity: 0.8; margin-top: 2px; }
+.resumen-card i { font-size: 1.25rem; }
+.resumen-card .valor { font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-top: 4px; }
+.resumen-card .etiqueta { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; opacity: 0.85; }
+.resumen-card .detalle { font-size: 0.7rem; opacity: 0.8; margin-top: 2px; }
 .resumen-card .detalle i { font-size: 0.65rem; }
 .fila-item {
   border: 1px solid var(--o-borde, #e2e8f0);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 10px 12px;
   background: var(--o-tarjeta, #fff);
 }

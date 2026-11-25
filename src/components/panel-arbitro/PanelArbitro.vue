@@ -443,7 +443,7 @@ useHead({
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   transition: background 0.2s;
 }
 .btn-icono:hover, .btn-icono:focus-visible { background: var(--t-barra-elevado-hover); }
@@ -462,7 +462,7 @@ useHead({
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
-  border-radius: 9px;
+  border-radius: 8px;
   background: #dc2626;
   color: #fff;
   font-size: 0.7rem;
@@ -520,7 +520,7 @@ useHead({
 }
 .notification-list::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 .notification-list::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;

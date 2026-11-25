@@ -4,7 +4,7 @@
     <div v-if="elegidos.length" class="d-flex flex-wrap gap-1 mb-1">
       <span v-for="o in elegidos" :key="'sel-' + o.valor" class="badge bg-dark d-inline-flex align-items-center gap-1 py-2 px-2 text-wrap text-start">
         <i class="bi bi-shield-fill"></i> {{ o.etiqueta }}
-        <button v-if="!deshabilitado" type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.55rem;" :aria-label="'Quitar ' + o.etiqueta" @click="quitar(o.valor)"></button>
+        <button v-if="!deshabilitado" type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.65rem;" :aria-label="'Quitar ' + o.etiqueta" @click="quitar(o.valor)"></button>
       </span>
     </div>
 

@@ -87,7 +87,7 @@
                 <div v-else-if="cargandoEquiposDeClub(f.idClub, false)" class="small text-muted p-2"><span class="spinner-border spinner-border-sm me-1"></span> Cargando categorías...</div>
                 <div v-else class="lista-categorias border rounded p-2">
                   <div v-for="(grupo, g) in categoriasPorRama(f.idClub)" :key="grupo.etiqueta" class="mb-2">
-                    <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.68rem;">{{ grupo.etiqueta }}</div>
+                    <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.7rem;">{{ grupo.etiqueta }}</div>
                     <div class="row row-cols-2 row-cols-md-3 g-1">
                       <div v-for="(c, k) in grupo.categorias" :key="c" class="col">
                         <div class="form-check mb-0">

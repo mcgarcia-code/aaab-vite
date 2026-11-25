@@ -128,8 +128,8 @@ const solicitarRecuperacion = async () => {
 
 .custom-input:focus {
   background-color: var(--o-tarjeta, #ffffff);
-  border-color: #ef4444;
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15) !important;
 }
 
 /* ====================================================
@@ -141,7 +141,7 @@ const solicitarRecuperacion = async () => {
 
 .btn-login:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(220, 53, 69, 0.3) !important;
+  box-shadow: 0 8px 15px rgba(220, 38, 38, 0.3) !important;
   background-color: #b91c1c !important;
 }
 
@@ -157,8 +157,4 @@ const solicitarRecuperacion = async () => {
   text-decoration: underline !important;
 }
 
-/* Animación de entrada */
-.animate__animated {
-  animation-duration: 0.6s;
-}
 </style>

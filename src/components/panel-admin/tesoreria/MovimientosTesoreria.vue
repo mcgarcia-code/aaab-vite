@@ -123,7 +123,7 @@
             <div class="d-md-none p-3 bg-light">
               <div v-for="m in movimientosPaginados" :key="'mob-'+m.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
                 <div class="card-header bg-white border-bottom-0 pb-1 px-3 pt-3 d-flex justify-content-between align-items-start rounded-top-3">
-                  <div class="text-dark fw-bold text-uppercase" style="font-size: 0.95rem;">{{ m.arbitro }}</div>
+                  <div class="text-dark fw-bold text-uppercase" style="font-size: 0.9rem;">{{ m.arbitro }}</div>
                   <span :class="['estado-pill', claseEstadoMovimiento(m.estado)]">{{ m.estado.toUpperCase() }}</span>
                 </div>
                 <div class="card-body pt-1 px-3 pb-3">
@@ -838,21 +838,5 @@ const claseEstadoMovimiento = (estado) => (estado === 'cerrado' ? 'estado-verde'
 </script>
 
 <style scoped>
-.full-screen-wrapper {
-  position: relative;
-  width: 99vw;
-  min-height: 100vh;
-  margin-left: 50%;
-  transform: translateX(-50%);
-  padding-bottom: 120px;
-}
 
-.admin-panel {
-  width: 100%;
-  background-color: #0f172a;
-  min-height: 100vh;
-  border-radius: 12px;
-}
-
-.animate__animated { animation-duration: 0.5s; }
 </style>

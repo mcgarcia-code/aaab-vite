@@ -19,14 +19,7 @@
 
         <!-- PESTAÑAS -->
         <div class="px-3 pt-3 bg-white">
-          <ul class="nav nav-pills flex-nowrap overflow-auto gap-2 pb-2 pestanas-examenes" role="tablist">
-            <li v-for="p in PESTANAS" :key="p.clave" class="nav-item flex-shrink-0" role="presentation">
-              <button type="button" class="nav-link fw-bold d-flex align-items-center gap-2" :class="{ active: pestana === p.clave }" role="tab" :aria-selected="pestana === p.clave" @click="pestana = p.clave">
-                <i :class="['bi', p.icono]"></i> {{ p.etiqueta }}
-                <span v-if="p.clave !== 'planilla'" class="badge rounded-pill" :class="pestana === p.clave ? 'bg-white text-danger' : 'bg-secondary'">{{ grupos[p.clave].length }}</span>
-              </button>
-            </li>
-          </ul>
+          <PestanasSeccion v-model="pestana" :pestanas="pestanasConCantidad" class="mb-2" />
         </div>
 
         <div class="card-body bg-white" :class="pestana === 'planilla' && !cargando ? 'p-0 border-top' : 'p-3'">
@@ -196,7 +189,7 @@
               <div class="row g-2 align-items-center">
                 <div class="col-12 min-w-0" :class="esPorAspirante ? 'col-md-5' : 'col-md-4'">
                   <div class="fw-bold text-dark small text-uppercase text-break">{{ n.apellido }}, {{ n.nombre }}</div>
-                  <div class="text-muted" style="font-size: 0.72rem;">
+                  <div class="text-muted" style="font-size: 0.7rem;">
                     {{ MODALIDADES_CURSO[n.modalidadCurso]?.corta }}<template v-if="examenNotas.tipo === 'fisico'"> · aprueba con {{ formatoNota(n.umbralFisico) }}</template>
                   </div>
                 </div>
@@ -243,7 +236,7 @@
       </div>
       <template #footer="{ cerrar }">
         <button type="button" @click="cerrar" class="btn btn-light rounded-pill px-4 fw-bold border w-100 mb-2 mb-sm-0">CANCELAR</button>
-        <button type="button" @click="guardarNotas" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoNotas || !notas.length">
+        <button type="button" @click="guardarNotas" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100" :disabled="guardandoNotas || !notas.length">
           <span v-if="guardandoNotas" class="spinner-border spinner-border-sm me-1"></span>
           GUARDAR NOTAS
         </button>
@@ -256,6 +249,7 @@
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
+import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
@@ -604,6 +598,9 @@ onMounted(() => {
   cargarExamenes()
   cargarClases(anio.value)
 })
+
+// Pestañas con la cantidad de exámenes de cada grupo (la planilla no lleva número)
+const pestanasConCantidad = computed(() => PESTANAS.map(p => ({ ...p, cantidad: p.clave === 'planilla' ? null : grupos.value[p.clave].length })))
 </script>
 
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>
@@ -612,19 +609,16 @@ onMounted(() => {
 .filtro-badge { cursor: pointer; font-size: 0.75rem; padding: 0.35em 0.65em; transition: opacity 0.15s ease, box-shadow 0.15s ease; }
 .filtro-badge.activo { box-shadow: 0 0 0 2px #0f172a; }
 .filtro-badge.apagado { opacity: 0.45; }
-.pestanas-examenes { scrollbar-width: thin; }
-.pestanas-examenes .nav-link { color: var(--o-texto-medio, #475569); background: var(--o-chip, #f1f5f9); font-size: 0.85rem; white-space: nowrap; }
-.pestanas-examenes .nav-link.active { background: #dc3545; color: #fff; }
 .examen-card { background: var(--o-tarjeta, #fff); border: 1px solid var(--o-borde, #e2e8f0); border-top: 4px solid #94a3b8; border-radius: 12px; min-width: 0; overflow-wrap: anywhere; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06); }
-.examen-card.borde-teorico { border-top-color: #dc3545; }
+.examen-card.borde-teorico { border-top-color: #dc2626; }
 .examen-card.borde-practico { border-top-color: var(--o-texto, #0f172a); }
 .examen-card.borde-fisico { border-top-color: #16a34a; }
-.fecha-bloque { width: 52px; border-radius: 10px; background: var(--o-chip, #f1f5f9); padding: 6px 0; line-height: 1; }
-.fecha-bloque .dia { font-size: 1.3rem; font-weight: 900; color: var(--o-texto, #0f172a); }
-.fecha-bloque .mes { font-size: 0.65rem; font-weight: 800; color: var(--o-rojo-texto, #dc3545); letter-spacing: 1px; margin-top: 3px; }
-.stat { border-radius: 10px; padding: 6px 4px; }
+.fecha-bloque { width: 52px; border-radius: 12px; background: var(--o-chip, #f1f5f9); padding: 6px 0; line-height: 1; }
+.fecha-bloque .dia { font-size: 1.25rem; font-weight: 900; color: var(--o-texto, #0f172a); }
+.fecha-bloque .mes { font-size: 0.65rem; font-weight: 800; color: var(--o-rojo-texto, #dc2626); letter-spacing: 1px; margin-top: 3px; }
+.stat { border-radius: 12px; padding: 6px 4px; }
 .stat .valor { font-size: 1.25rem; font-weight: 900; line-height: 1.1; }
-.stat .etiqueta { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; }
+.stat .etiqueta { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; }
 .stat-ok { background: var(--o-verde-fondo, #f0fdf4); color: var(--o-verde-texto, #15803d); }
 .stat-mal { background: var(--o-rojo-fondo, #fef2f2); color: var(--o-rojo-texto, #b91c1c); }
 .stat-aus { background: var(--o-chip, #f1f5f9); color: var(--o-texto-medio, #475569); }
@@ -632,6 +626,6 @@ onMounted(() => {
 
 .estado-vacio { border: 2px dashed var(--o-borde, #e2e8f0); border-radius: 12px; }
 .etiquetas-examen .badge { white-space: normal; text-align: left; line-height: 1.3; }
-.fila-nota { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 10px; padding: 8px 10px; }
+.fila-nota { border: 1px solid var(--o-borde, #e2e8f0); border-radius: 12px; padding: 8px 10px; }
 
 </style>
