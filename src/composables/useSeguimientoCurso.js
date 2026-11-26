@@ -1,6 +1,7 @@
 // Seguimiento de los alumnos regulares del curso: asistencia, mini, parcialitos, teórico final, práctico y físico.
 // Lo usa AlumnosRegularesCursoAdmin.vue con los datos de seguimiento_curso_arbitro/obtenerSeguimientoCurso.
 import { porcentajeAsistencia } from '@/composables/useAsistenciaCurso'
+import { PORCENTAJE_APROBACION_DEFECTO } from '@/composables/useExamenesCurso'
 
 export const ETIQUETAS_TIPO_EXAMEN = { teorico: 'Teórico', practico: 'Práctico', fisico: 'Físico' }
 
@@ -26,7 +27,7 @@ const corresponde = (curso, alumno) => curso === 'ambos' || curso === alumno.mod
 export const aproboNota = (examen, nota) => {
   if (!nota || nota.ausente || nota.nota === null) return false
   if (nota.aprobado !== null && nota.aprobado !== undefined) return nota.aprobado
-  return (nota.nota / (examen.notaMaxima || 100)) * 100 >= (examen.porcentajeAprobacion ?? 75)
+  return (nota.nota / (examen.notaMaxima || 100)) * 100 >= (examen.porcentajeAprobacion ?? PORCENTAJE_APROBACION_DEFECTO)
 }
 const desaprobo = (examen, nota) => Boolean(nota && (nota.ausente || (nota.nota !== null && !aproboNota(examen, nota))))
 

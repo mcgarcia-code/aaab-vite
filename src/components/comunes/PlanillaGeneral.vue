@@ -47,8 +47,8 @@
               <BotonHerramienta tipo="excel" :disabled="cargando" @click="descargarExcel" />
               <span class="text-muted text-nowrap">{{ arbitrosVisibles.length }} árbitros</span>
               <span class="leyenda-planilla ms-auto d-flex flex-wrap gap-3">
-                <span><span class="cuadrito bg-success-subtle border-success-subtle"></span> Aprobado / Teórico ≥ 75 / Presente</span>
-                <span><span class="cuadrito bg-danger-subtle border-danger-subtle"></span> Desaprobado / Teórico ≤ 74 / Ausente a reunión</span>
+                <span><span class="cuadrito bg-success-subtle border-success-subtle"></span> Aprobado / Teórico ≥ {{ UMBRAL_APROBADO }} / Presente</span>
+                <span><span class="cuadrito bg-danger-subtle border-danger-subtle"></span> Desaprobado / Teórico ≤ {{ UMBRAL_APROBADO - 1 }} / Ausente a reunión</span>
                 <span><span class="cuadrito bg-secondary-subtle border-secondary-subtle"></span> No lo hizo / Ausente (AUS)</span>
               </span>
             </div>
@@ -231,6 +231,7 @@ import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
+import { UMBRAL_APROBADO } from '@/utils/cuestionarios'
 
 // Actualización de Meta Tags
 // Planilla general de árbitros (asambleas, recuperatorios y reuniones), compartida por
@@ -563,11 +564,11 @@ const claseCeldaExamen = (a, col, tipo) => {
   if (nota) {
     if (nota.estado === 'no lo hizo') return 'celda-gris'
     if (nota.estado === 'ausente') return 'celda-gris'
-    // Umbral SOLO para el teórico: verde con 75 o más, rojo con 74 o menos.
+    // Umbral SOLO para el teórico: verde con UMBRAL_APROBADO (75) o más, rojo con menos.
     // El físico se colorea siempre por su estado.
     if (tipo === 'teorico') {
       const num = notaNumerica(nota)
-      if (num !== null) return num >= 75 ? 'celda-verde' : 'celda-roja'
+      if (num !== null) return num >= UMBRAL_APROBADO ? 'celda-verde' : 'celda-roja'
     }
     if (nota.estado === 'aprobado') return 'celda-verde'
     if (nota.estado === 'desaprobado') return 'celda-roja'
@@ -628,13 +629,13 @@ const abrirEditor = async (a, col, tipo) => {
 
 const cerrarEditor = () => { editor.value = null }
 
-// En el teórico, al tipear la nota se autocompleta el estado por el umbral 75
+// En el teórico, al tipear la nota se autocompleta el estado por UMBRAL_APROBADO (75)
 // (se puede cambiar a mano igual)
 const alTipearNota = () => {
   const e = editor.value
   if (!e || e.tipo !== 'teorico') return
   const num = parseFloat(String(e.calificacion ?? '').replace('%', '').replace(',', '.').trim())
-  if (!Number.isNaN(num)) e.estado = num >= 75 ? 'aprobado' : 'desaprobado'
+  if (!Number.isNaN(num)) e.estado = num >= UMBRAL_APROBADO ? 'aprobado' : 'desaprobado'
 }
 
 // Guarda la ausencia de UN solo tipo (teórico o físico) en examenes_panel

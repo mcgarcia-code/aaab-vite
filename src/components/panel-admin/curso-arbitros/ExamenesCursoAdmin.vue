@@ -257,7 +257,7 @@ import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA, MESES_CORTOS } from '@/utils/fechas'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
-import { formatoNota } from '@/composables/useExamenesCurso'
+import { formatoNota, PORCENTAJE_APROBACION_DEFECTO } from '@/composables/useExamenesCurso'
 import { useCronogramaCurso } from '@/composables/useCronogramaCurso'
 import PlanillaNotasCurso from '@/components/panel-admin/curso-arbitros/PlanillaNotasCurso.vue'
 
@@ -266,7 +266,6 @@ useHead({ title: 'Exámenes del Curso | AAAB' })
 const notificar = inject('notificar')
 const toast = inject('toast', (m) => notificar(m))
 
-const PORCENTAJE_DEFECTO = 75
 
 const TIPOS_EXAMEN = {
   teorico: { etiqueta: 'Teórico', clase: 'bg-danger' },
@@ -368,7 +367,7 @@ watch(anio, () => {
 })
 
 // ─── Alta / edición del examen ───────────────────────────────────
-const examenVacio = () => ({ id: null, titulo: '', tipo: 'practico', fecha: '', curso: 'ambos', idClase: null, notaMaxima: 100, porcentajeAprobacion: PORCENTAJE_DEFECTO, esFinal: false })
+const examenVacio = () => ({ id: null, titulo: '', tipo: 'practico', fecha: '', curso: 'ambos', idClase: null, notaMaxima: 100, porcentajeAprobacion: PORCENTAJE_APROBACION_DEFECTO, esFinal: false })
 const form = ref(examenVacio())
 const mostrarModal = ref(false)
 const intento = ref(false)

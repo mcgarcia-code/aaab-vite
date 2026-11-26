@@ -141,6 +141,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import { useHead } from '@unhead/vue'
+import { UMBRAL_APROBADO } from '@/utils/cuestionarios'
 
 useHead({
   title: 'Mi Rendimiento | AAAB',
@@ -185,14 +186,14 @@ const notaNumerica = (detalle) => {
   return Number.isNaN(num) ? null : num
 }
 
-// Estado efectivo del teórico según el umbral 75 (≥75 aprobado, ≤74 desaprobado),
+// Estado efectivo del teórico según UMBRAL_APROBADO (75 o más aprobado, menos desaprobado),
 // igual que en la Planilla General. El físico y los estados especiales
 // (ausente / no lo hizo) usan el estado tal cual viene.
 const estadoEfectivo = (detalle, tipo) => {
   if (!detalle) return ''
   if (tipo === 'teorico' && detalle.estado !== 'no lo hizo' && detalle.estado !== 'ausente') {
     const num = notaNumerica(detalle)
-    if (num !== null) return num >= 75 ? 'aprobado' : 'desaprobado'
+    if (num !== null) return num >= UMBRAL_APROBADO ? 'aprobado' : 'desaprobado'
   }
   return detalle.estado
 }
@@ -413,7 +414,7 @@ const statsGlobales = computed(() => {
     else if (estado === 'ausente')  r.ausentesReunion++
   }
 
-  // Exámenes (el teórico respeta el umbral 75, igual que el badge)
+  // Exámenes (el teórico respeta UMBRAL_APROBADO, igual que el badge)
   for (const ex of examenesFiltrados.value) {
     for (const det of ex.detalles) {
       const est = estadoEfectivo(det, det.tipo)

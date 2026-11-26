@@ -4,19 +4,8 @@ import { api } from '@/api/api'
 // Práctica del catálogo de preguntas desde el panel del árbitro y el del curso (backend: catalogo_practica.php).
 // Cada práctica queda guardada a nombre de quien inició sesión: árbitro (id_arbitro) o alumno del curso (id_alumno_curso), los dos salen del token.
 
-// Misma nota de aprobación que los exámenes online (solo para pintar verde / rojo)
-export const UMBRAL_APROBADO = 75
+// La nota de aprobación (UMBRAL_APROBADO) y el número de pregunta (textoNumeroPregunta) están en @/utils/cuestionarios
 export const CANTIDADES_PREGUNTAS = [5, 10, 20, 30, 'todas']
-
-// "Regla 17.1": regla (codigo) y número de pregunta dentro de la regla (subcodigo),
-// para que se pueda ubicar la pregunta en el catálogo. Sin subcodigo queda "Regla 17"
-export const textoNumeroPregunta = (pregunta, etiqueta = 'Regla') => {
-  if (!pregunta) return ''
-  const { codigo, subcodigo } = pregunta
-  return subcodigo !== null && subcodigo !== undefined && subcodigo !== ''
-    ? `${etiqueta} ${codigo}.${subcodigo}`
-    : `${etiqueta} ${codigo}`
-}
 
 export function usePracticaCatalogo() {
   const reglas = ref([])            // [{ codigo, cantidad }]

@@ -29,7 +29,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { UMBRAL_APROBADO } from '@/composables/usePracticaCatalogo'
+import { aprobado as estaAprobado } from '@/utils/cuestionarios'
 import { useTextosCatalogo } from '@/composables/textosCatalogo'
 
 const props = defineProps({
@@ -40,7 +40,7 @@ const props = defineProps({
 
 const t = useTextosCatalogo(() => props.idioma)
 
-const aprobado = computed(() => Number(props.resultado.calificacion) >= UMBRAL_APROBADO)
+const aprobado = computed(() => estaAprobado(props.resultado.calificacion))
 </script>
 
 <style scoped>

@@ -77,7 +77,7 @@
                 </thead>
                 <tbody>
                   <tr v-for="p in filas" :key="p.id">
-                    <td class="ps-3 fw-bold text-dark text-nowrap">{{ codigoCompleto(p) }}</td>
+                    <td class="ps-3 fw-bold text-dark text-nowrap">{{ numeroPregunta(p) }}</td>
                     <td>
                       <div class="texto-recortado text-dark">{{ p.texto }}</div>
                       <span v-if="p.excluidaExamenes" class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis mt-1">Excluida de exámenes</span>
@@ -93,10 +93,10 @@
                       </span>
                     </td>
                     <td class="text-end pe-3 text-nowrap">
-                      <button type="button" class="btn btn-sm btn-light border me-1" title="Editar pregunta y respuestas" :aria-label="'Editar pregunta ' + codigoCompleto(p)" @click="abrirModal(p.id)">
+                      <button type="button" class="btn btn-sm btn-light border me-1" title="Editar pregunta y respuestas" :aria-label="'Editar pregunta ' + numeroPregunta(p)" @click="abrirModal(p.id)">
                         <i class="bi bi-pencil-square"></i>
                       </button>
-                      <button type="button" class="btn btn-sm btn-light border text-danger" title="Borrar pregunta" :aria-label="'Borrar pregunta ' + codigoCompleto(p)" @click="confirmarBorrar(p)">
+                      <button type="button" class="btn btn-sm btn-light border text-danger" title="Borrar pregunta" :aria-label="'Borrar pregunta ' + numeroPregunta(p)" @click="confirmarBorrar(p)">
                         <i class="bi bi-trash3"></i>
                       </button>
                     </td>
@@ -110,7 +110,7 @@
               <div v-for="p in filas" :key="'m-' + p.id" class="card shadow-sm mb-3 border-light-subtle rounded-3">
                 <div class="card-body p-3 small">
                   <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                    <span class="fw-bold text-danger">{{ codigoCompleto(p) }}</span>
+                    <span class="fw-bold text-danger">{{ numeroPregunta(p) }}</span>
                     <div class="d-flex flex-wrap justify-content-end gap-1">
                       <span v-if="p.excluidaExamenes" class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">Excluida</span>
                       <span v-if="!p.textoEn" class="badge rounded-pill bg-light text-muted border">Sin inglés</span>
@@ -124,7 +124,7 @@
                     <button type="button" class="btn btn-sm btn-light border rounded-pill fw-bold flex-fill" @click="abrirModal(p.id)">
                       <i class="bi bi-pencil-square me-1"></i>Editar
                     </button>
-                    <button type="button" class="btn btn-sm btn-light border rounded-pill text-danger" title="Borrar pregunta" :aria-label="'Borrar pregunta ' + codigoCompleto(p)" @click="confirmarBorrar(p)">
+                    <button type="button" class="btn btn-sm btn-light border rounded-pill text-danger" title="Borrar pregunta" :aria-label="'Borrar pregunta ' + numeroPregunta(p)" @click="confirmarBorrar(p)">
                       <i class="bi bi-trash3"></i>
                     </button>
                   </div>
@@ -155,7 +155,8 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import ModalPreguntaCatalogo from '@/components/panel-admin/catalogo-preguntas/ModalPreguntaCatalogo.vue'
-import { useCatalogoAdmin, codigoCompleto } from '@/composables/useCatalogoAdmin'
+import { useCatalogoAdmin } from '@/composables/useCatalogoAdmin'
+import { numeroPregunta } from '@/utils/cuestionarios'
 import { normalizarTexto } from '@/utils/texto'
 
 useHead({ title: 'Catálogo de preguntas | AAAB' })
@@ -186,7 +187,7 @@ const filtros = reactive({ texto: '', estado: '' })
 const filas = computed(() => {
   const texto = normalizarTexto(filtros.texto)
   return preguntas.value.filter(p =>
-    (!texto || normalizarTexto(`${codigoCompleto(p)} ${p.texto} ${p.textoEn}`).includes(texto)) &&
+    (!texto || normalizarTexto(`${numeroPregunta(p)} ${p.texto} ${p.textoEn}`).includes(texto)) &&
     (filtros.estado !== 'sinCorrecta' || !p.correctas) &&
     (filtros.estado !== 'sinIngles' || !p.textoEn) &&
     (filtros.estado !== 'excluidas' || p.excluidaExamenes)
@@ -234,7 +235,7 @@ const cerrarModal = () => {
 // ============ BORRAR ============
 const confirmarBorrar = (pregunta) => {
   notificar({
-    titulo: `¿Borrar la pregunta ${codigoCompleto(pregunta)}?`,
+    titulo: `¿Borrar la pregunta ${numeroPregunta(pregunta)}?`,
     mensaje: 'Se borran la pregunta y todas sus respuestas, y deja de salir en los exámenes, la práctica y el catálogo público. Los exámenes y prácticas ya rendidos no cambian.',
     tipo: 'danger',
     alConfirmar: async () => {

@@ -10,13 +10,6 @@ const ENTIDAD = 'catalogo_admin'
 // Una pregunta sin ninguna respuesta correcta no aparece en exámenes, práctica ni catálogo público
 export const AVISO_SIN_CORRECTA = 'Sin respuesta correcta: no aparece en los exámenes, la práctica ni el catálogo público.'
 
-// "8.12" (regla.número de pregunta)
-export const codigoCompleto = (pregunta) => {
-  if (!pregunta) return ''
-  const { codigo, subcodigo } = pregunta
-  return subcodigo !== null && subcodigo !== undefined && subcodigo !== '' ? `${codigo}.${subcodigo}` : String(codigo)
-}
-
 // Lanza el mensaje del backend si la respuesta no fue ok
 const conRespuesta = (res, mensaje) => {
   if (!res?.ok) throw new Error(res?.message || mensaje)

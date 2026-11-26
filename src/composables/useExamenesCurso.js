@@ -1,8 +1,10 @@
+import { UMBRAL_APROBADO } from '@/utils/cuestionarios'
+
 // Notas de exámenes del curso (examenes_curso_arbitro + notas_examen_curso_arbitro).
 // Lo usan MiRendimientoCurso.vue, MisExamenesCurso.vue y ExamenesCursoAdmin.vue.
 
 // El teórico se aprueba con el 75% de la nota máxima (cada examen puede tener su porcentaje)
-export const PORCENTAJE_APROBACION_DEFECTO = 75
+export const PORCENTAJE_APROBACION_DEFECTO = UMBRAL_APROBADO
 
 export const formatoNota = (n) => {
   if (n === null || n === undefined || n === '') return ''

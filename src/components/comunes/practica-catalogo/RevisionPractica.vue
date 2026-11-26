@@ -47,7 +47,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { textoNumeroPregunta } from '@/composables/usePracticaCatalogo'
+import { textoNumeroPregunta } from '@/utils/cuestionarios'
 import { useTextosCatalogo } from '@/composables/textosCatalogo'
 
 // Revisión de la práctica, el catálogo público y los exámenes online (asamblea y curso)

@@ -174,7 +174,8 @@
 import { ref, reactive, computed, watch, inject } from 'vue'
 import ModalBase from '@/components/ModalBase.vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
-import { useCatalogoAdmin, codigoCompleto, AVISO_SIN_CORRECTA } from '@/composables/useCatalogoAdmin'
+import { useCatalogoAdmin, AVISO_SIN_CORRECTA } from '@/composables/useCatalogoAdmin'
+import { numeroPregunta } from '@/utils/cuestionarios'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -200,7 +201,7 @@ const nueva = reactive({ texto: '', textoEn: '', esCorrecta: false })
 const guardandoRespuesta = ref(false)
 const errorRespuesta = ref('')
 
-const tituloModal = computed(() => pregunta.value ? `Pregunta ${codigoCompleto(pregunta.value)}` : 'Nueva pregunta')
+const tituloModal = computed(() => pregunta.value ? `Pregunta ${numeroPregunta(pregunta.value)}` : 'Nueva pregunta')
 const cantidadCorrectas = computed(() => (pregunta.value?.respuestas || []).filter(r => r.esCorrecta).length)
 
 const valoresPregunta = (p) => ({
