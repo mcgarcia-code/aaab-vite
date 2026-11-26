@@ -32,8 +32,9 @@
 
 <script setup>
 import { computed } from 'vue'
+import { compararReglas } from '@/utils/cuestionarios'
 
-// Selector de reglas del reglamento (1 a 18) con la cantidad de preguntas de cada una.
+// Selector de reglas del reglamento (1 a 18 y las que tienen nombre, ej. SAR) con la cantidad de preguntas de cada una.
 // Lo usan la práctica del catálogo, el catálogo público y la programación de exámenes
 // (reuniones de coordinadores y clases del curso). v-model: lista de códigos elegidos.
 const props = defineProps({
@@ -77,7 +78,7 @@ const alternar = (codigo) => {
   const lista = props.modelValue.includes(codigo)
     ? props.modelValue.filter(c => c !== codigo)
     : [...props.modelValue, codigo]
-  emit('update:modelValue', lista.sort((a, b) => a - b))
+  emit('update:modelValue', lista.sort(compararReglas))
 }
 
 const alternarTodas = () => emit('update:modelValue', todasElegidas.value ? [] : props.reglas.map(r => r.codigo))

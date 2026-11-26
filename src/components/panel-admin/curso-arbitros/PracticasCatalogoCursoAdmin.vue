@@ -209,7 +209,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import ModalBase from '@/components/ModalBase.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
-import { UMBRAL_APROBADO, textoNumeroPregunta } from '@/utils/cuestionarios'
+import { UMBRAL_APROBADO, textoNumeroPregunta, textoReglas } from '@/utils/cuestionarios'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaHoraDMA, MESES } from '@/utils/fechas'
 import { normalizarTexto } from '@/utils/texto'
@@ -249,10 +249,6 @@ const textoNota = (valor) => (valor === null || valor === undefined
   ? '—'
   : `${Number(valor).toLocaleString('es-AR', { maximumFractionDigits: 1 })}%`)
 const claseNota = (valor) => (Number(valor) >= UMBRAL_APROBADO ? 'text-success' : 'text-danger')
-const textoReglas = (lista = []) => {
-  if (lista.length >= 18) return 'Todas las reglas'
-  return lista.length === 1 ? `Regla ${lista[0]}` : `Reglas ${lista.join(', ')}`
-}
 
 // ============ LISTA ============
 const delCurso = computed(() => alumnos.value.filter(a => !filtros.modalidad || a.modalidadCurso === filtros.modalidad))

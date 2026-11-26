@@ -237,7 +237,7 @@ import { useHead } from '@unhead/vue'
 import { anioActual, conAnioActual } from '@/utils/anios'
 import { fechaHoraDMA, MESES } from '@/utils/fechas'
 import { usePracticaCatalogo, CANTIDADES_PREGUNTAS } from '@/composables/usePracticaCatalogo'
-import { UMBRAL_APROBADO, textoNumeroPregunta } from '@/utils/cuestionarios'
+import { UMBRAL_APROBADO, textoNumeroPregunta, textoReglas } from '@/utils/cuestionarios'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import SelectorReglas from '@/components/comunes/SelectorReglas.vue'
 import PracticaCatalogoRunner from '@/components/comunes/practica-catalogo/PracticaCatalogoRunner.vue'
@@ -264,10 +264,6 @@ const idDetalle = ref(null)
 const formatoNota = (valor) => Number(valor || 0).toLocaleString('es-AR', { maximumFractionDigits: 1 })
 const claseNota = (valor) => Number(valor) >= UMBRAL_APROBADO ? 'text-success' : 'text-danger'
 
-const textoReglas = (lista = []) => {
-  if (reglas.value.length && lista.length >= reglas.value.length) return 'Todas las reglas'
-  return lista.length === 1 ? `Regla ${lista[0]}` : `Reglas ${lista.join(', ')}`
-}
 
 // ============ RESUMEN DEL MES Y DEL AÑO ============
 const mesActual = new Date().getMonth() + 1
