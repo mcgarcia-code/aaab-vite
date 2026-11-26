@@ -165,17 +165,25 @@ async function irAPregunta(i) {
   await guardarAvance()
 }
 
+// Identifica esta apertura del examen en el seguimiento del backend (examenes_online_seguimiento):
+// si en el historial cambia, el examen se retomó o estaba abierto en otro dispositivo o pestaña
+const sesion = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+
+// Estado que se manda al guardar y al finalizar
+const estadoActual = () => ({
+  ...props.identificador,
+  indice: indice.value,
+  seleccion: seleccion.value,
+  tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000),
+  sesion
+})
+
 // Va en cola (de a un envío): si el usuario navega rápido o tiene mala conexión,
 // un guardado viejo no puede llegar último y pisar la selección más reciente
 const { guardar: encolarGuardado } = useGuardadoEnCola(() => api.post({
   entity: props.entity,
   action: props.acciones.guardar,
-  payload: {
-    ...props.identificador,
-    indice: indice.value,
-    seleccion: seleccion.value,
-    tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
-  }
+  payload: estadoActual()
 }))
 
 async function guardarAvance() {
@@ -199,7 +207,7 @@ async function iniciar() {
     const res = await api.post({
       entity: props.entity,
       action: props.acciones.iniciar,
-      payload: { ...props.identificador }
+      payload: { ...props.identificador, sesion }
     })
     if (res?.ok === false) throw new Error(res.message || 'No se pudo iniciar el examen')
     const data = res?.payload ?? res
@@ -235,11 +243,7 @@ async function finalizar() {
     const res = await api.post({
       entity: props.entity,
       action: props.acciones.finalizar,
-      payload: {
-        ...props.identificador,
-        seleccion: seleccion.value,
-        tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
-      }
+      payload: estadoActual()
     })
     if (res?.ok === false) throw new Error(res.message || 'No se pudo finalizar el examen')
     resultado.value = res?.payload ?? res
