@@ -100,9 +100,14 @@
 
         <p class="fw-bold mb-4 fs-6 fs-md-5 lh-base px-1 text-break texto-ofuscado"><template v-for="(seg, i) in segmentosPregunta" :key="i">{{ seg }}<template v-if="i < segmentosPregunta.length - 1"><span class="espacio-oculto">@</span><wbr></template></template></p>
 
+        <p class="small text-muted mb-2 px-1">
+          <i class="bi bi-info-circle me-1"></i>Puede haber más de una respuesta correcta. Para cambiar una respuesta, destildá la anterior.
+        </p>
+
         <div class="list-group mb-4 gap-2">
           <label v-for="(o, i) in opcionesActuales" :key="o.id"
-                 class="list-group-item d-flex gap-2 gap-md-3 align-items-start p-2 p-md-3 opcion-item shadow-sm border">
+                 class="list-group-item d-flex gap-2 gap-md-3 align-items-start p-2 p-md-3 opcion-item shadow-sm border"
+                 :class="{ elegida: estaElegida(preguntaActual.id, o.id) }">
             <input class="form-check-input flex-shrink-0 fs-5 mt-1" type="checkbox"
                    :checked="estaElegida(preguntaActual.id, o.id)"
                    @change="toggleOpcion(preguntaActual.id, o.id)">
@@ -169,6 +174,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
+import { useGuardadoEnCola } from '@/composables/useGuardadoEnCola'
 
 // Examen online a pantalla completa, común al panel árbitro (examen de reunión / asamblea)
 // y al panel curso. Cada panel le indica su backend:
@@ -242,21 +248,26 @@ async function irAPregunta(i) {
   await guardarAvance()
 }
 
+// Va en cola (de a un envío): si el usuario navega rápido o tiene mala conexión,
+// un guardado viejo no puede llegar último y pisar la selección más reciente
+const { guardar: encolarGuardado } = useGuardadoEnCola(() => api.post({
+  entity: props.entity,
+  action: props.acciones.guardar,
+  payload: {
+    ...props.identificador,
+    indice: indice.value,
+    seleccion: seleccion.value,
+    tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
+  }
+}))
+
 async function guardarAvance() {
   let res
   try {
-    res = await api.post({
-      entity: props.entity,
-      action: props.acciones.guardar,
-      payload: {
-        ...props.identificador,
-        indice: indice.value,
-        seleccion: seleccion.value,
-        tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000)
-      }
-    })
+    res = await encolarGuardado()
   } catch { return }
-  if (res?.ok === false) {
+  // Si el examen ya se finalizó, un guardado que llega tarde no debe tapar el resultado
+  if (res?.ok === false && fase.value === 'examen') {
     detenerReloj()
     detenerTrackingVisibilidad()
     mensajeError.value = res.message || 'No podés continuar con este examen'
@@ -403,9 +414,23 @@ onBeforeUnmount(() => {
   transition: background .12s ease;
 }
 
-.opcion-item:hover {
-  background: var(--o-rojo-fondo, #fff5f5);
+/* Hover solo con mouse: en el celular el hover queda "pegado" en la última opción tocada */
+@media (hover: hover) {
+  .opcion-item:hover { background: var(--o-rojo-fondo, #fff5f5); }
 }
+
+/* Cada opción elegida: casillero completo en rojo + checkbox rojo, para que se vea si quedó más de una marcada */
+.opcion-item.elegida {
+  background: var(--o-rojo-fondo, #fff5f5);
+  border-color: var(--o-rojo, #dc2626) !important;
+  box-shadow: 0 0 0 1px var(--o-rojo, #dc2626) !important;
+}
+.opcion-item.elegida .text-dark { color: var(--o-rojo-texto, #b91c1c) !important; font-weight: 600; }
+.opcion-item .form-check-input:checked {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+.opcion-item .form-check-input:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.25); border-color: #dc2626; }
 
 .espacio-oculto {
   display: inline-block;

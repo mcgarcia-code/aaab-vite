@@ -110,6 +110,7 @@
 <script setup>
 import { ref, computed, inject, onMounted, onBeforeUnmount } from 'vue'
 import { api } from '@/api/api'
+import { useGuardadoEnCola } from '@/composables/useGuardadoEnCola'
 import RevisionPractica from '@/components/comunes/practica-catalogo/RevisionPractica.vue'
 import ResumenResultado from '@/components/comunes/practica-catalogo/ResumenResultado.vue'
 
@@ -149,12 +150,13 @@ const alternarOpcion = (idPregunta, idOpcion) => {
 }
 
 // El avance se guarda al cambiar de pregunta: si se cierra la app, se retoma donde estaba.
-// Si falla (sin conexión) no se corta la práctica: se reintenta en el próximo cambio
-const guardarAvance = () => api.post({
+// Si falla (sin conexión) no se corta la práctica: se reintenta en el próximo cambio.
+// Va en cola (de a un envío) para que un guardado viejo no pise al más reciente
+const { guardar: guardarAvance } = useGuardadoEnCola(() => api.post({
   entity: 'catalogo_practica',
   action: 'guardarAvancePractica',
   payload: { idPractica: props.practica.id, indice: indice.value, seleccion: seleccion.value }
-})
+}))
 
 const irAPregunta = (i) => {
   if (i < 0 || i >= total.value || i === indice.value) return
