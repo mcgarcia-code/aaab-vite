@@ -87,7 +87,7 @@
             </li>
           </ol>
           <p class="small text-muted mt-2 mb-0">
-            <i class="bi bi-info-circle me-1"></i>Las letras son las que vio la persona en su examen (las opciones se mezclan para cada uno).
+            <i class="bi bi-info-circle me-1"></i>Las letras son las que vio la persona (las opciones se mezclan en cada examen o práctica).
           </p>
         </div>
 
@@ -155,13 +155,14 @@ const dispositivos = computed(() => [...new Set((detalle.value?.pasos || []).map
 const sesiones = computed(() => new Set((detalle.value?.pasos || []).map(p => p.sesion).filter(Boolean)).size)
 
 const textoPaso = (p) => {
+  const cosa = props.tipo === 'practica' ? 'la práctica' : 'el examen'
   if (p.evento === 'iniciar') {
-    if (p.estadoIntento === 'nuevo') return 'Empezó el examen'
-    if (p.estadoIntento === 'en_curso') return 'Retomó el examen'
-    return 'Intentó abrir un examen ya finalizado'
+    if (p.estadoIntento === 'nuevo') return `Empezó ${cosa}`
+    if (p.estadoIntento === 'en_curso') return `Retomó ${cosa}`
+    return `Intentó abrir ${cosa} ya finalizado`
   }
-  if (p.evento === 'finalizar') return p.estadoIntento === 'finalizado' ? 'Intentó finalizar de nuevo' : 'Finalizó el examen'
-  if (p.estadoIntento !== 'en_curso') return 'Guardado después de finalizar (no se tuvo en cuenta)'
+  if (p.evento === 'finalizar') return p.estadoIntento === 'en_curso' ? `Finalizó ${cosa}` : 'Intentó finalizar de nuevo'
+  if (p.estadoIntento !== 'en_curso') return 'Guardado después de terminar (no se tuvo en cuenta)'
   return p.pregunta ? `Pasó a la pregunta ${p.pregunta}` : EVENTOS_SEGUIMIENTO.guardar.etiqueta
 }
 </script>

@@ -15,7 +15,7 @@
           </div>
         </div>
 
-        <TablaIntentosExamen :intentos="filasTabla" :cargando="cargando" :filtrar="filtrarCategoria" @ver="seleccionado = $event">
+        <TablaIntentosExamen :intentos="filasTabla" :cargando="cargando" :filtrar="filtrarCategoria" texto-vacio="Todavía no hay exámenes online con seguimiento este año" @ver="seleccionado = $event">
           <template #filtros>
             <select v-model="categoria" class="form-select form-select-sm shadow-none w-auto" aria-label="Tipo de evento">
               <option value="">Todos los eventos</option>

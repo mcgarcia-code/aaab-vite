@@ -13,7 +13,7 @@
             <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark control-barra" style="width: 110px;" aria-label="Año">
               <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
             </select>
-            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargarExamenes(); planillaRef?.recargar()" />
+            <BotonHerramienta tipo="actualizar" :cargando="cargandoPestana" @click="actualizar" />
           </div>
         </div>
 
@@ -22,7 +22,10 @@
           <PestanasSeccion v-model="pestana" :pestanas="pestanasConCantidad" class="mb-2" />
         </div>
 
-        <div class="card-body bg-white" :class="pestana === 'planilla' && !cargando ? 'p-0 border-top' : 'p-3'">
+        <!-- SEGUIMIENTO: cada examen online paso a paso (tabla examenes_online_seguimiento) -->
+        <SeguimientoCurso v-if="pestana === 'seguimiento'" ref="seguimientoRef" tipo="curso" :anio="anio" :modalidad="filtroCurso" class="border-top" />
+
+        <div v-else class="card-body bg-white" :class="pestana === 'planilla' && !cargando ? 'p-0 border-top' : 'p-3'">
           <EstadoCargando v-if="cargando" texto="Cargando exámenes" />
 
           <!-- EXÁMENES DE LA PESTAÑA -->
@@ -250,6 +253,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import { ref, computed, watch, onMounted, inject } from 'vue'
 import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
+import SeguimientoCurso from '@/components/panel-admin/curso-arbitros/SeguimientoCurso.vue'
 import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import ModalBase from '@/components/ModalBase.vue'
@@ -310,6 +314,7 @@ const PESTANAS = [
   { clave: 'practico', etiqueta: 'Prácticos', icono: 'bi-flag' },
   { clave: 'fisico', etiqueta: 'Físicos', icono: 'bi-stopwatch' },
   { clave: 'planilla', etiqueta: 'Planilla', icono: 'bi-table' },
+  { clave: 'seguimiento', etiqueta: 'Seguimiento de exámenes', icono: 'bi-clock-history' },
 ]
 const AYUDA_PESTANA = {
   parcialito: 'Parcialitos de cada clase y recuperatorios de parcialitos. Se programan desde Clases y Asistencia.',
@@ -598,8 +603,18 @@ onMounted(() => {
   cargarClases(anio.value)
 })
 
-// Pestañas con la cantidad de exámenes de cada grupo (la planilla no lleva número)
-const pestanasConCantidad = computed(() => PESTANAS.map(p => ({ ...p, cantidad: p.clave === 'planilla' ? null : grupos.value[p.clave].length })))
+// Pestañas con la cantidad de exámenes de cada grupo (la planilla y el seguimiento no llevan número)
+const SIN_CANTIDAD = ['planilla', 'seguimiento']
+const pestanasConCantidad = computed(() => PESTANAS.map(p => ({ ...p, cantidad: SIN_CANTIDAD.includes(p.clave) ? null : grupos.value[p.clave].length })))
+
+// El botón Actualizar recarga la pestaña que está abierta
+const seguimientoRef = ref(null)
+const actualizar = () => {
+  if (pestana.value === 'seguimiento') return seguimientoRef.value?.cargar()
+  cargarExamenes()
+  planillaRef.value?.recargar()
+}
+const cargandoPestana = computed(() => (pestana.value === 'seguimiento' ? !!seguimientoRef.value?.cargando : cargando.value))
 </script>
 
 <style scoped src="@/assets/css/panel-admin-curso.css"></style>

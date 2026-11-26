@@ -1,8 +1,9 @@
 import { api } from '@/api/api'
 
-// Seguimiento de los exámenes online (backend: seguimiento_examenes.php, tabla examenes_online_seguimiento).
-// tipo 'reunion': exámenes de árbitros de un evento (reunión, asamblea o recuperatorio) → permiso seguimiento_examenes
-// tipo 'curso': exámenes de los aspirantes del curso → permiso curso
+// Seguimiento paso a paso (backend: seguimiento_examenes.php). Las listas salen de las tablas de seguimiento:
+// tipo 'reunion': exámenes de árbitros de un evento (reunión, asamblea o recuperatorio), examenes_online_seguimiento → permiso seguimiento_examenes
+// tipo 'curso': exámenes online de los aspirantes del curso, examenes_online_seguimiento → permiso curso
+// tipo 'practica': práctica del catálogo de los aspirantes, catalogo_practicas_seguimiento → permiso curso
 
 const ENTIDAD = 'seguimiento_examenes'
 
@@ -16,7 +17,9 @@ export const CATEGORIAS_EVENTO = {
 
 export const ESTADOS_INTENTO = {
   en_curso: { etiqueta: 'En curso', clase: 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' },
-  finalizado: { etiqueta: 'Finalizado', clase: 'bg-success-subtle text-success-emphasis border border-success-subtle' }
+  finalizado: { etiqueta: 'Finalizado', clase: 'bg-success-subtle text-success-emphasis border border-success-subtle' },
+  abandonado: { etiqueta: 'Abandonada', clase: 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle' },
+  sin_intento: { etiqueta: 'Sin intento', clase: 'bg-light text-muted border' }
 }
 
 export const EVENTOS_SEGUIMIENTO = {
@@ -85,9 +88,12 @@ export function useSeguimientoExamenes() {
   const cargarIntentosCurso = async (anio) =>
     conRespuesta(await api.get({ entity: ENTIDAD, action: 'intentosExamenesCurso', payload: { anio } }), 'No se pudieron cargar los exámenes') || []
 
+  const cargarPracticasCurso = async (anio) =>
+    conRespuesta(await api.get({ entity: ENTIDAD, action: 'practicasSeguimientoCurso', payload: { anio } }), 'No se pudieron cargar las prácticas') || []
+
   // { estado, calificacion, aprobado, tiempoVisibleSeg, pasos: [...], revision: [...], puntaje, posible }
   const obtenerDetalle = async ({ tipo, idExamen, idPersona }) =>
     conRespuesta(await api.get({ entity: ENTIDAD, action: 'detalleSeguimientoExamen', payload: { tipo, idExamen, idPersona } }), 'No se pudo cargar el seguimiento')
 
-  return { cargarIntentosReunion, cargarIntentosCurso, obtenerDetalle }
+  return { cargarIntentosReunion, cargarIntentosCurso, cargarPracticasCurso, obtenerDetalle }
 }

@@ -5,7 +5,7 @@
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
           <p v-if="pestana === 'practicas'" class="seccion-descripcion">Aspirantes que practican con el catálogo de preguntas desde su panel · {{ alumnos.length }} aspirantes</p>
-          <p v-else class="seccion-descripcion">Exámenes online de los aspirantes: qué marcaron en cada momento, desde qué dispositivo y si los retomaron</p>
+          <p v-else class="seccion-descripcion">Prácticas del catálogo de los aspirantes paso a paso: qué marcaron en cada momento, desde qué dispositivo y si las retomaron</p>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
             <select v-model="filtros.modalidad" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark control-barra" style="width: 150px;" aria-label="Curso">
               <option value="">CURSO</option>
@@ -23,11 +23,11 @@
           class="px-3 pt-3"
           :pestanas="[
             { clave: 'practicas', etiqueta: 'Prácticas del catálogo', icono: 'bi-ui-checks-grid' },
-            { clave: 'examenes', etiqueta: 'Seguimiento de exámenes', icono: 'bi-clock-history' }
+            { clave: 'seguimiento', etiqueta: 'Seguimiento de prácticas', icono: 'bi-clock-history' }
           ]"
         />
 
-        <SeguimientoExamenesCurso v-if="pestana === 'examenes'" ref="seguimientoRef" :anio="anio" :modalidad="filtros.modalidad" class="border-top mt-3" />
+        <SeguimientoCurso v-if="pestana === 'seguimiento'" ref="seguimientoRef" tipo="practica" :anio="anio" :modalidad="filtros.modalidad" class="border-top mt-3" />
 
         <div v-else class="card-body bg-white mt-3" :class="cargando ? 'p-3' : 'p-0 border-top'">
           <EstadoCargando v-if="cargando" texto="Cargando prácticas del catálogo" />
@@ -220,7 +220,7 @@ import { api } from '@/api/api'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import ModalBase from '@/components/ModalBase.vue'
-import SeguimientoExamenesCurso from '@/components/panel-admin/curso-arbitros/SeguimientoExamenesCurso.vue'
+import SeguimientoCurso from '@/components/panel-admin/curso-arbitros/SeguimientoCurso.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { UMBRAL_APROBADO, textoNumeroPregunta, textoReglas } from '@/utils/cuestionarios'
 import { conAnioActual, anioActual } from '@/utils/anios'
@@ -258,11 +258,11 @@ watch(anio, cargar)
 onMounted(cargar)
 
 // ============ PESTAÑAS ============
-// "Seguimiento de exámenes": los exámenes online de los aspirantes (backend: seguimiento_examenes)
+// "Seguimiento de prácticas": cada práctica paso a paso (backend: seguimiento_examenes, tabla catalogo_practicas_seguimiento)
 const pestana = ref('practicas')
 const seguimientoRef = ref(null)
-const actualizar = () => (pestana.value === 'examenes' ? seguimientoRef.value?.cargar() : cargar())
-const cargandoPestana = computed(() => (pestana.value === 'examenes' ? !!seguimientoRef.value?.cargando : cargando.value))
+const actualizar = () => (pestana.value === 'seguimiento' ? seguimientoRef.value?.cargar() : cargar())
+const cargandoPestana = computed(() => (pestana.value === 'seguimiento' ? !!seguimientoRef.value?.cargando : cargando.value))
 
 // ============ FORMATOS ============
 const textoNota = (valor) => (valor === null || valor === undefined
