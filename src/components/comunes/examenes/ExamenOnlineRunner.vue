@@ -102,6 +102,7 @@ import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import { useGuardadoEnCola } from '@/composables/useGuardadoEnCola'
+import { useTiempoVisible } from '@/composables/useTiempoVisible'
 import RevisionPractica from '@/components/comunes/practica-catalogo/RevisionPractica.vue'
 import PreguntaCuestionario from '@/components/comunes/cuestionario/PreguntaCuestionario.vue'
 import NavegacionCuestionario from '@/components/comunes/cuestionario/NavegacionCuestionario.vue'
@@ -139,9 +140,10 @@ const limiteSeg = ref(0)
 const restante = ref(0)
 let timer = null
 
-// Tiempo (en ms) que la pestaña permaneció visible durante el examen (Page Visibility API)
-const tiempoVisibleMs = ref(0)
-let visibleDesde = null
+// Tiempo con el examen a la vista en esta sesión (Page Visibility API)
+const tiempoVisible = useTiempoVisible()
+const iniciarTrackingVisibilidad = tiempoVisible.iniciar
+const detenerTrackingVisibilidad = tiempoVisible.detener
 
 const resultado = ref(null)    // { calificacion, aprobado, puntaje, posible, revision }
 
@@ -174,7 +176,7 @@ const estadoActual = () => ({
   ...props.identificador,
   indice: indice.value,
   seleccion: seleccion.value,
-  tiempoVisibleSeg: Math.round(tiempoVisibleMs.value / 1000),
+  tiempoVisibleSeg: tiempoVisible.segundos(),
   sesion
 })
 
@@ -263,29 +265,6 @@ function arrancarReloj() {
   }, 1000)
 }
 function detenerReloj() { if (timer) { clearInterval(timer); timer = null } }
-
-function onVisibilityChange() {
-  if (document.visibilityState === 'visible') {
-    visibleDesde = Date.now()
-  } else if (visibleDesde !== null) {
-    tiempoVisibleMs.value += Date.now() - visibleDesde
-    visibleDesde = null
-  }
-}
-
-function iniciarTrackingVisibilidad() {
-  tiempoVisibleMs.value = 0
-  visibleDesde = document.visibilityState === 'visible' ? Date.now() : null
-  document.addEventListener('visibilitychange', onVisibilityChange)
-}
-
-function detenerTrackingVisibilidad() {
-  document.removeEventListener('visibilitychange', onVisibilityChange)
-  if (visibleDesde !== null) {
-    tiempoVisibleMs.value += Date.now() - visibleDesde
-    visibleDesde = null
-  }
-}
 
 const relojTexto = computed(() => {
   const m = String(Math.floor(restante.value / 60)).padStart(2, '0')

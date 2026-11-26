@@ -85,6 +85,7 @@
 import { ref, computed, inject, onMounted, onBeforeUnmount } from 'vue'
 import { api } from '@/api/api'
 import { useGuardadoEnCola } from '@/composables/useGuardadoEnCola'
+import { useTiempoVisible } from '@/composables/useTiempoVisible'
 import { useTextosCatalogo } from '@/composables/textosCatalogo'
 import RevisionPractica from '@/components/comunes/practica-catalogo/RevisionPractica.vue'
 import ResumenResultado from '@/components/comunes/practica-catalogo/ResumenResultado.vue'
@@ -137,7 +138,10 @@ const alternarOpcion = (idPregunta, idOpcion) => {
 // si en el historial cambia, la práctica se retomó o estaba abierta en otro dispositivo o pestaña
 const sesion = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 
-const estadoActual = () => ({ indice: indice.value, seleccion: seleccion.value })
+// Tiempo con la práctica a la vista (para el seguimiento: cuánto estuvo fuera de la pantalla)
+const tiempoVisible = useTiempoVisible()
+
+const estadoActual = () => ({ indice: indice.value, seleccion: seleccion.value, tiempoVisibleSeg: tiempoVisible.segundos() })
 
 const guardarEnPanel = () => api.post({
   entity: 'catalogo_practica',
@@ -188,6 +192,7 @@ const finalizar = async () => {
   fase.value = 'enviando'
   try {
     resultado.value = props.finalizar ? await props.finalizar(estadoActual()) : await finalizarEnPanel()
+    tiempoVisible.detener()
     fase.value = 'resultado'
     emit('finalizada')
     document.querySelector('.practica-overlay')?.scrollTo({ top: 0 })
@@ -198,7 +203,10 @@ const finalizar = async () => {
 }
 
 // Con la práctica abierta no se desliza la página de fondo
-onMounted(() => document.body.classList.add('overflow-hidden'))
+onMounted(() => {
+  document.body.classList.add('overflow-hidden')
+  tiempoVisible.iniciar()
+})
 onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
 </script>
 

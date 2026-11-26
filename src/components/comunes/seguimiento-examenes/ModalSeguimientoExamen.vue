@@ -44,6 +44,10 @@
             <div class="dato-resumen rounded-3 border p-2 h-100" title="Tiempo total con la pestaña del examen a la vista, sumando todas las sesiones">
               <div class="dato-etiqueta">Pestaña visible</div>
               <span class="fw-bold text-dark">{{ formatoDuracion(detalle.tiempoVisibleSeg) }}</span>
+              <small v-if="fueraDePantalla !== null" class="d-block mt-1" :class="fueraDePantalla >= 60 ? 'text-danger fw-semibold' : 'text-muted'"
+                     title="Tiempo con otra pestaña u otra app adelante, o con la pantalla bloqueada">
+                Fuera de pantalla: {{ formatoDuracion(fueraDePantalla) }}
+              </small>
             </div>
           </div>
         </div>
@@ -150,6 +154,12 @@ watch(() => props.intento, (intento) => {
 const duracion = computed(() => {
   const pasos = detalle.value?.pasos || []
   return pasos.length ? segundosEntre(pasos[0].fecha, pasos[pasos.length - 1].fecha) : null
+})
+// Duración menos tiempo visible. Incluye los ratos en que la pantalla estuvo cerrada entre sesiones
+const fueraDePantalla = computed(() => {
+  const visible = detalle.value?.tiempoVisibleSeg
+  if (duracion.value === null || visible === null || visible === undefined) return null
+  return Math.max(0, duracion.value - visible)
 })
 const dispositivos = computed(() => [...new Set((detalle.value?.pasos || []).map(p => resumirDispositivo(p.dispositivo)))])
 const sesiones = computed(() => new Set((detalle.value?.pasos || []).map(p => p.sesion).filter(Boolean)).size)
