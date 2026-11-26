@@ -11,12 +11,12 @@
       <form @submit.prevent="guardarNuevaPassword">
         <div class="mb-3">
           <label class="form-label small fw-bold text-dark">Nueva Contraseña</label>
-          <input aria-label="Nueva Contraseña" v-model="password" type="password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required minlength="6" :disabled="cargando">
+          <InputPassword id="restablecer-password" v-model="password" aria-label="Nueva Contraseña" autocomplete="new-password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required minlength="6" :disabled="cargando" />
         </div>
 
         <div class="mb-4">
           <label class="form-label small fw-bold text-dark">Repetir Contraseña</label>
-          <input aria-label="Repetir Contraseña" v-model="confirmPassword" type="password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required minlength="6" :disabled="cargando">
+          <InputPassword id="restablecer-password2" v-model="confirmPassword" aria-label="Repetir Contraseña" autocomplete="new-password" class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required minlength="6" :disabled="cargando" />
         </div>
 
         <button :disabled="cargando" type="submit" class="btn btn-danger w-100 fw-bold py-3 mt-2 rounded-pill shadow-sm btn-login">
@@ -41,6 +41,7 @@ import { ref, onMounted, inject } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
+import InputPassword from '@/components/comunes/InputPassword.vue'
 
 useHead({
   title: 'Crear Nueva Contraseña | AAAB'
@@ -161,13 +162,13 @@ const guardarNuevaPassword = async () => {
 /* ====================================================
    INPUTS PERSONALIZADOS
    ==================================================== */
-.custom-input {
+:deep(.custom-input) {
   background-color: var(--o-superficie, #f8fafc);
   border: 1px solid var(--o-borde, #e2e8f0);
   transition: all 0.3s ease;
 }
 
-.custom-input:focus {
+:deep(.custom-input:focus) {
   background-color: var(--o-tarjeta, #ffffff);
   border-color: #dc2626;
   box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15) !important;

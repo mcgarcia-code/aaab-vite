@@ -26,17 +26,8 @@
           <div class="d-flex justify-content-between align-items-center mb-1">
             <label class="form-label small fw-bold text-dark mb-0">Contraseña</label>
             </div>
-          <div class="position-relative">
-            <input id="login-password" aria-label="Contraseña" v-model="password" :type="verPassword ? 'text' : 'password'" autocomplete="current-password"
-                   class="form-control form-control-lg custom-input shadow-none fs-6 input-con-ojo" placeholder="••••••••" required :disabled="cargando">
-            <button type="button" class="btn-ver-password" :disabled="cargando"
-                    :title="verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-                    :aria-label="verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-                    :aria-pressed="verPassword" aria-controls="login-password"
-                    @click="verPassword = !verPassword">
-              <i class="bi" :class="verPassword ? 'bi-eye-slash' : 'bi-eye'" aria-hidden="true"></i>
-            </button>
-          </div>
+          <InputPassword id="login-password" v-model="password" aria-label="Contraseña" autocomplete="current-password"
+                         class="form-control form-control-lg custom-input shadow-none fs-6" placeholder="••••••••" required :disabled="cargando" />
         </div>
 
         <button :disabled="cargando" type="submit" class="btn btn-danger w-100 fw-bold py-3 mt-2 rounded-pill shadow-sm btn-login">
@@ -69,6 +60,7 @@ import { useRouter } from 'vue-router'
 import { auth } from '@/api/auth'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
+import InputPassword from '@/components/comunes/InputPassword.vue'
 
 useHead({
   title: 'Iniciar Sesión | AAAB',
@@ -84,7 +76,6 @@ useHead({
 const router = useRouter()
 const email = ref('')
 const password = ref('')
-const verPassword = ref(false)   // ojo del campo contraseña: mostrar / ocultar lo escrito
 const errorMsg = ref('')
 const cargando = ref(false)
 
@@ -167,46 +158,16 @@ const iniciarSesion = async () => {
 /* ====================================================
    INPUTS PERSONALIZADOS
    ==================================================== */
-.custom-input {
+:deep(.custom-input) {
   background-color: var(--o-superficie, #f8fafc);
   border: 1px solid var(--o-borde, #e2e8f0);
   transition: all 0.3s ease;
 }
 
-.custom-input:focus {
+:deep(.custom-input:focus) {
   background-color: var(--o-tarjeta, #ffffff);
   border-color: #dc2626; /* Borde rojo al enfocar */
   box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.15) !important; /* Resplandor rojo suave */
-}
-
-/* Ojo para ver la contraseña: dentro del campo, a la derecha (el campo deja lugar con padding) */
-.input-con-ojo {
-  padding-right: 3rem;
-}
-
-.btn-ver-password {
-  position: absolute;
-  top: 50%;
-  right: 6px;
-  transform: translateY(-50%);
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--o-texto-medio, #64748b);
-  font-size: 1.15rem;
-  transition: color 0.2s ease, background-color 0.2s ease;
-}
-
-.btn-ver-password:hover:not(:disabled),
-.btn-ver-password:focus-visible {
-  color: #dc2626;
-  background-color: var(--o-rojo-fondo, #fff5f5);
-  outline: none;
 }
 
 /* ====================================================

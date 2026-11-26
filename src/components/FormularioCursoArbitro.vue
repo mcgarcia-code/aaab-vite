@@ -37,13 +37,11 @@
       </div>
       <div class="col-12 col-md-6">
         <label :for="`${prefijo}-password`" class="form-label small fw-bold text-dark">Contraseña {{ passwordObligatoria ? '*' : '' }}</label>
-        <input :id="`${prefijo}-password`" v-model="form.password" type="password" maxlength="72" autocomplete="new-password" class="form-control" :class="clase('password')" :placeholder="passwordObligatoria ? 'Mínimo 8 caracteres' : 'Dejar vacío para no cambiarla'">
-        <div class="invalid-feedback">{{ errores.password }}</div>
+        <InputPassword :id="`${prefijo}-password`" v-model="form.password" maxlength="72" autocomplete="new-password" class="form-control" :class="clase('password')" :error="clase('password') ? errores.password : ''" :placeholder="passwordObligatoria ? 'Mínimo 8 caracteres' : 'Dejar vacío para no cambiarla'" />
       </div>
       <div class="col-12 col-md-6">
         <label :for="`${prefijo}-password2`" class="form-label small fw-bold text-dark">Repetir contraseña {{ passwordObligatoria ? '*' : '' }}</label>
-        <input :id="`${prefijo}-password2`" v-model="form.passwordConfirmacion" type="password" maxlength="72" autocomplete="new-password" class="form-control" :class="clase('passwordConfirmacion')">
-        <div class="invalid-feedback">{{ errores.passwordConfirmacion }}</div>
+        <InputPassword :id="`${prefijo}-password2`" v-model="form.passwordConfirmacion" maxlength="72" autocomplete="new-password" class="form-control" :class="clase('passwordConfirmacion')" :error="clase('passwordConfirmacion') ? errores.passwordConfirmacion : ''" />
       </div>
       <div v-if="ayudaPassword" class="col-12"><div class="form-text mt-0">{{ ayudaPassword }}</div></div>
     </div>
@@ -205,6 +203,7 @@
 import { computed } from 'vue'
 import SelectorClubCategorias from '@/components/SelectorClubCategorias.vue'
 import InputFechaDMA from '@/components/InputFechaDMA.vue'
+import InputPassword from '@/components/comunes/InputPassword.vue'
 import { GENEROS_CURSO, DOMINIO_USUARIO_CURSO, MAX_CLUBES_DT, MODALIDADES_CURSO, filaDtVacia } from '@/composables/useCursoArbitro'
 
 // Campos del formulario del curso (inscripción pública y modal del admin).
