@@ -85,26 +85,7 @@
                 </div>
               </div>
 
-              <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="form-label small fw-bold text-dark mb-0">Reglas a incluir</span>
-                  <div class="form-check form-switch m-0">
-                    <input id="practica-todas" class="form-check-input shadow-none" type="checkbox" role="switch" :checked="todasElegidas" @change="alternarTodas">
-                    <label class="form-check-label small fw-bold text-muted" for="practica-todas">Todas</label>
-                  </div>
-                </div>
-                <div class="grilla-reglas">
-                  <button v-for="r in reglas" :key="r.codigo" type="button"
-                          class="btn btn-regla fw-bold"
-                          :class="formulario.reglas.includes(r.codigo) ? 'btn-danger' : 'btn-light border'"
-                          :aria-pressed="formulario.reglas.includes(r.codigo)"
-                          :title="`${r.cantidad} preguntas`"
-                          @click="alternarRegla(r.codigo)">
-                    {{ r.codigo }}
-                  </button>
-                </div>
-                <small class="text-muted d-block mt-2">{{ preguntasDisponibles }} preguntas en las reglas elegidas.</small>
-              </div>
+              <SelectorReglas v-model="formulario.reglas" :reglas="reglas" titulo="Reglas a incluir" id="practica-reglas" class="mb-3" />
 
               <div v-if="errorFormulario" class="alert alert-danger py-2 px-3 small fw-bold d-flex align-items-center gap-2">
                 <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>{{ errorFormulario }}
@@ -257,6 +238,7 @@ import { anioActual, conAnioActual } from '@/utils/anios'
 import { fechaHoraDMA, MESES } from '@/utils/fechas'
 import { usePracticaCatalogo, UMBRAL_APROBADO, CANTIDADES_PREGUNTAS, textoNumeroPregunta } from '@/composables/usePracticaCatalogo'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
+import SelectorReglas from '@/components/comunes/SelectorReglas.vue'
 import PracticaCatalogoRunner from '@/components/comunes/practica-catalogo/PracticaCatalogoRunner.vue'
 import DetallePractica from '@/components/comunes/practica-catalogo/DetallePractica.vue'
 
@@ -330,7 +312,6 @@ const errorFormulario = ref('')
 const iniciando = ref(false)
 const descartando = ref(false)
 
-const todasElegidas = computed(() => reglas.value.length > 0 && formulario.reglas.length === reglas.value.length)
 const preguntasDisponibles = computed(() => reglas.value
   .filter(r => formulario.reglas.includes(r.codigo))
   .reduce((suma, r) => suma + r.cantidad, 0))
@@ -340,17 +321,8 @@ const respondidasEnCurso = computed(() => {
   return Object.values(seleccion).filter(elegidas => elegidas?.length).length
 })
 
-const alternarRegla = (codigo) => {
-  errorFormulario.value = ''
-  formulario.reglas = formulario.reglas.includes(codigo)
-    ? formulario.reglas.filter(r => r !== codigo)
-    : [...formulario.reglas, codigo].sort((a, b) => a - b)
-}
-
-const alternarTodas = () => {
-  errorFormulario.value = ''
-  formulario.reglas = todasElegidas.value ? [] : reglas.value.map(r => r.codigo)
-}
+// Al cambiar las reglas se borra el aviso de error del formulario
+watch(() => formulario.reglas, () => { errorFormulario.value = '' })
 
 // Al llegar las reglas arrancan todas elegidas, como en el catálogo
 watch(reglas, (lista) => {
@@ -422,21 +394,6 @@ onMounted(() => cargarTodo(anioSeleccionado.value))
 
 .dato-mes { background: var(--o-chip, #f8fafc); }
 .etiqueta-dato { font-size: 0.7rem; letter-spacing: 0.3px; }
-
-/* Reglas: botones grandes para tocar en el celular */
-.grilla-reglas {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
-}
-@media (min-width: 576px) {
-  .grilla-reglas { grid-template-columns: repeat(9, 1fr); }
-}
-.btn-regla {
-  height: 44px;
-  padding: 0;
-  border-radius: 8px;
-}
 
 .fila-mes {
   background: var(--o-tarjeta, #fff);

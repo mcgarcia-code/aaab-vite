@@ -61,14 +61,6 @@
         </div>
 
         <div class="mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="form-label small fw-bold text-dark mb-0">{{ t.reglas }}</span>
-            <div class="form-check form-switch m-0">
-              <input id="catalogo-todas" class="form-check-input shadow-none" type="checkbox" role="switch" :checked="todasElegidas" :disabled="!reglas.length" @change="alternarTodas">
-              <label class="form-check-label small fw-bold text-muted" for="catalogo-todas">{{ t.todas }}</label>
-            </div>
-          </div>
-
           <div v-if="cargandoReglas" class="text-center py-3">
             <span class="spinner-border spinner-border-sm text-danger" aria-hidden="true"></span>
           </div>
@@ -77,19 +69,7 @@
             <span class="flex-grow-1">{{ errorReglas }}</span>
             <button type="button" class="btn btn-sm btn-light border rounded-pill fw-bold" @click="cargarReglas">{{ t.reintentar }}</button>
           </div>
-          <template v-else>
-            <div class="grilla-reglas">
-              <button v-for="r in reglas" :key="r.codigo" type="button"
-                      class="btn btn-regla fw-bold"
-                      :class="formulario.reglas.includes(r.codigo) ? 'btn-danger' : 'btn-light border'"
-                      :aria-pressed="formulario.reglas.includes(r.codigo)"
-                      :title="t.preguntasEnRegla(r.cantidad)"
-                      @click="alternarRegla(r.codigo)">
-                {{ r.codigo }}
-              </button>
-            </div>
-            <small class="text-muted d-block mt-2">{{ t.disponibles(preguntasDisponibles) }}</small>
-          </template>
+          <SelectorReglas v-else v-model="formulario.reglas" :reglas="reglas" :titulo="t.reglas" :idioma="formulario.idioma" id="catalogo-reglas" />
         </div>
 
         <div v-if="errorFormulario" class="alert alert-danger py-2 px-3 small fw-bold d-flex align-items-center gap-2">
@@ -112,6 +92,7 @@ import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
 import PracticaCatalogoRunner from '@/components/comunes/practica-catalogo/PracticaCatalogoRunner.vue'
+import SelectorReglas from '@/components/comunes/SelectorReglas.vue'
 
 // Catálogo de preguntas público (sin login), backend: catalogo_publico.php.
 // Usa el mismo runner, resumen y revisión que la práctica del panel, pero no guarda nada en el servidor:
@@ -146,8 +127,6 @@ const TEXTOS = {
     continuar: 'Continuar',
     descartar: 'Descartar',
     reintentar: 'Reintentar',
-    preguntasEnRegla: (n) => `${n} preguntas`,
-    disponibles: (n) => `${n} preguntas en las reglas elegidas.`,
     errorReglas: 'No se pudieron cargar las reglas.',
     elegiRegla: 'Elegí al menos una regla.',
     sinPreguntas: 'No hay preguntas en las reglas elegidas.',
@@ -172,8 +151,6 @@ const TEXTOS = {
     continuar: 'Continue',
     descartar: 'Discard',
     reintentar: 'Try again',
-    preguntasEnRegla: (n) => `${n} questions`,
-    disponibles: (n) => `${n} questions in the selected rules.`,
     errorReglas: 'The rules could not be loaded.',
     elegiRegla: 'Select at least one rule.',
     sinPreguntas: 'There are no questions in the selected rules.',
@@ -208,24 +185,14 @@ watch(reglas, (lista) => {
   if (!formulario.reglas.length) formulario.reglas = lista.map(r => r.codigo)
 })
 
-const todasElegidas = computed(() => reglas.value.length > 0 && formulario.reglas.length === reglas.value.length)
 const preguntasDisponibles = computed(() => reglas.value
   .filter(r => formulario.reglas.includes(r.codigo))
   .reduce((suma, r) => suma + r.cantidad, 0))
 
 const errorFormulario = ref('')
 
-const alternarRegla = (codigo) => {
-  errorFormulario.value = ''
-  formulario.reglas = formulario.reglas.includes(codigo)
-    ? formulario.reglas.filter(r => r !== codigo)
-    : [...formulario.reglas, codigo].sort((a, b) => a - b)
-}
-
-const alternarTodas = () => {
-  errorFormulario.value = ''
-  formulario.reglas = todasElegidas.value ? [] : reglas.value.map(r => r.codigo)
-}
+// Al cambiar las reglas se borra el aviso de error del formulario
+watch(() => formulario.reglas, () => { errorFormulario.value = '' })
 
 // ============ CUESTIONARIO EN ESTE NAVEGADOR ============
 // cuestionario: { clave, idioma, preguntas, opciones, seleccion, indice }
@@ -374,20 +341,5 @@ onMounted(() => {
 .aviso-en-curso {
   background: var(--o-ambar-fondo, #fffbeb);
   border-color: var(--o-ambar-borde, #fcd34d) !important;
-}
-
-/* Reglas: botones grandes para tocar en el celular (igual que la práctica del panel) */
-.grilla-reglas {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
-}
-@media (min-width: 576px) {
-  .grilla-reglas { grid-template-columns: repeat(9, 1fr); }
-}
-.btn-regla {
-  height: 44px;
-  padding: 0;
-  border-radius: 8px;
 }
 </style>

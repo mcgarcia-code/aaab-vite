@@ -269,19 +269,7 @@
             </div>
           </div>
           <div v-else class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="form-label small fw-bold text-dark m-0">Reglas * <span class="text-muted fw-normal">({{ preguntasDisponibles }} preguntas disponibles)</span></span>
-              <div class="d-flex gap-2">
-                <button type="button" class="btn btn-link btn-sm p-0 fw-bold" @click="formExamen.reglas = reglasDisponibles.map(r => r.codigo)">Todas</button>
-                <button type="button" class="btn btn-link btn-sm p-0 fw-bold text-secondary" @click="formExamen.reglas = []">Ninguna</button>
-              </div>
-            </div>
-            <div class="d-flex flex-wrap gap-3 border rounded-3 p-3" :class="{ 'border-danger': intentoExamen && !formExamen.reglas.length }">
-              <div v-for="r in reglasDisponibles" :key="r.codigo" class="form-check m-0" style="min-width: 110px;">
-                <input :id="'ex-regla-' + r.codigo" v-model="formExamen.reglas" class="form-check-input" type="checkbox" :value="r.codigo">
-                <label class="form-check-label small fw-bold" :for="'ex-regla-' + r.codigo">Regla {{ r.codigo }} <span class="text-muted fw-normal">({{ r.cantidad }})</span></label>
-              </div>
-            </div>
+            <SelectorReglas v-model="formExamen.reglas" :reglas="reglasDisponibles" requerido id="examen-clase-reglas" :invalido="intentoExamen && !formExamen.reglas.length" />
           </div>
           <div class="col-12">
             <div class="form-check form-switch">
@@ -306,6 +294,7 @@
 <script setup>
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
+import SelectorReglas from '@/components/comunes/SelectorReglas.vue'
 import { ref, reactive, computed, watch, onMounted, inject } from 'vue'
 import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import { useHead } from '@unhead/vue'

@@ -51,32 +51,7 @@
           </div>
         </div>
 
-        <h5 class="fw-bold text-dark border-bottom pb-2 mb-3 fs-5">Revisión detallada</h5>
-
-        <div v-for="(r, idx) in resultado.revision" :key="idx" class="card border-0 bg-light shadow-sm rounded-4 mb-3">
-          <div class="card-body p-3 p-md-4">
-            <h6 class="fw-bold text-dark mb-3 fs-6 lh-base"><span class="text-danger">{{ idx + 1 }}.</span> {{ r.texto }}</h6>
-            <div class="d-flex flex-column gap-2">
-              <div v-for="(o, j) in r.opciones" :key="j"
-                   class="list-group-item rounded-3 border d-flex align-items-start px-3 py-2"
-                   :class="[
-                     o.elegida && o.es_correcta ? 'list-group-item-success border-success text-success fw-bold' : '',
-                     !o.elegida && o.es_correcta ? 'list-group-item-warning border-warning text-dark' : '',
-                     o.elegida && !o.es_correcta ? 'list-group-item-danger border-danger text-danger fw-bold' : '',
-                     !o.elegida && !o.es_correcta ? 'bg-white text-muted' : ''
-                   ]">
-                <i class="bi me-2 mt-1 flex-shrink-0"
-                   :class="[
-                     o.elegida && o.es_correcta ? 'bi-check-circle-fill' : '',
-                     !o.elegida && o.es_correcta ? 'bi-exclamation-circle-fill text-warning' : '',
-                     o.elegida && !o.es_correcta ? 'bi-x-circle-fill' : '',
-                     !o.elegida && !o.es_correcta ? 'bi-circle opacity-25' : ''
-                   ]"></i>
-                <span class="small text-break lh-sm mt-1">{{ o.texto }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <RevisionPractica :revision="resultado.revision" />
 
         <div class="text-center mt-4">
           <button class="btn btn-outline-danger rounded-pill px-4 px-md-5 py-2 fw-bold w-100 w-sm-auto" @click="emit('salir')">
@@ -175,6 +150,7 @@ import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import { useGuardadoEnCola } from '@/composables/useGuardadoEnCola'
+import RevisionPractica from '@/components/comunes/practica-catalogo/RevisionPractica.vue'
 
 // Examen online a pantalla completa, común al panel árbitro (examen de reunión / asamblea)
 // y al panel curso. Cada panel le indica su backend:

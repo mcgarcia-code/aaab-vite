@@ -318,31 +318,7 @@
       <form v-else id="formProgramarExamen" @submit.prevent="habilitarExamenReunion" class="text-start">
         <div class="row g-3">
           <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <label class="small fw-bold text-danger m-0">Reglas a evaluar *</label>
-              <div class="d-flex gap-2">
-                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" @click="seleccionarTodasLasReglas(true)">Todas</button>
-                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-muted" @click="seleccionarTodasLasReglas(false)">Ninguna</button>
-              </div>
-            </div>
-            <div class="bg-light border border-danger-subtle rounded p-3">
-              <div v-if="reglasDisponibles.length" class="d-flex flex-wrap gap-3">
-                <div v-for="r in reglasDisponibles" :key="r.codigo" class="form-check m-0" style="min-width: 110px;">
-                  <input
-                    :id="`examen-regla-${r.codigo}`"
-                    class="form-check-input shadow-none border-secondary-subtle"
-                    type="checkbox"
-                    :value="r.codigo"
-                    v-model="formExamen.reglas"
-                  >
-                  <label class="form-check-label small fw-bold mt-1" :for="`examen-regla-${r.codigo}`">
-                    Regla {{ r.codigo }} <span class="text-muted fw-normal">({{ r.cantidad }})</span>
-                  </label>
-                </div>
-              </div>
-              <p v-else class="text-muted small mb-0">No hay preguntas cargadas.</p>
-            </div>
-            <span class="d-block text-muted mt-1 texto-075">{{ preguntasDisponiblesExamen }} preguntas disponibles con las reglas elegidas.</span>
+            <SelectorReglas v-model="formExamen.reglas" :reglas="reglasDisponibles" titulo="Reglas a evaluar" requerido id="examen-reunion-reglas" :invalido="!formExamen.reglas.length" />
           </div>
 
           <div class="col-12 col-md-6">
@@ -390,6 +366,7 @@ import { ref, onMounted, computed, reactive, inject, watch, provide } from 'vue'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import TablaAsistenciaReunion from '@/components/comunes/reuniones/TablaAsistenciaReunion.vue'
+import SelectorReglas from '@/components/comunes/SelectorReglas.vue'
 import ModalHistorialReuniones from '@/components/comunes/reuniones/ModalHistorialReuniones.vue'
 import { useAsistenciaReuniones } from '@/composables/useAsistenciaReuniones'
 import ModalBase from '@/components/ModalBase.vue'
@@ -639,9 +616,6 @@ const programacionValida = computed(() =>
   formExamen.tiempoLimiteMin <= 180
 )
 
-const seleccionarTodasLasReglas = (todas) => {
-  formExamen.reglas = todas ? reglasDisponibles.value.map(r => r.codigo) : []
-}
 
 const cargarProgramacionExamen = async () => {
   examenHabilitado.value = false
