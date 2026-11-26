@@ -48,7 +48,8 @@ const cargar = async () => {
 watch(() => props.anio, cargar)
 onMounted(cargar)
 
-defineExpose({ cargar })
+// La pantalla de arriba usa cargar() en su botón Actualizar y cargando para el giro del botón
+defineExpose({ cargar, cargando })
 
 const filasTabla = computed(() => intentos.value.map(i => ({
   ...i,
@@ -59,5 +60,9 @@ const filasTabla = computed(() => intentos.value.map(i => ({
   examenDetalle: fechaDMA(i.fecha)
 })))
 
-const filtrarModalidad = (i) => !props.modalidad || i.modalidadCurso === props.modalidad
+// Es un computed para que, al cambiar el curso, la tabla vuelva a la primera página
+const filtrarModalidad = computed(() => {
+  const modalidad = props.modalidad
+  return (i) => !modalidad || i.modalidadCurso === modalidad
+})
 </script>

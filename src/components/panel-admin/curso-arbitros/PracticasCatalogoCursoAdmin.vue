@@ -14,7 +14,7 @@
             <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark control-barra" style="width: 110px;" aria-label="Año del curso">
               <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
             </select>
-            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="actualizar" />
+            <BotonHerramienta tipo="actualizar" :cargando="cargandoPestana" @click="actualizar" />
           </div>
         </div>
 
@@ -262,6 +262,7 @@ onMounted(cargar)
 const pestana = ref('practicas')
 const seguimientoRef = ref(null)
 const actualizar = () => (pestana.value === 'examenes' ? seguimientoRef.value?.cargar() : cargar())
+const cargandoPestana = computed(() => (pestana.value === 'examenes' ? !!seguimientoRef.value?.cargando : cargando.value))
 
 // ============ FORMATOS ============
 const textoNota = (valor) => (valor === null || valor === undefined

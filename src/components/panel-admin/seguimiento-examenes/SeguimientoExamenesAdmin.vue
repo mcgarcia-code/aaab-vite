@@ -7,7 +7,7 @@
           <p class="seccion-descripcion">
             Exámenes online de los árbitros en reuniones, asambleas y recuperatorios: qué marcó en cada momento, desde qué dispositivo y si lo retomó · {{ intentos.length }} exámenes
           </p>
-          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
+          <div class="d-flex flex-nowrap flex-shrink-0 gap-2 align-items-center justify-content-center">
             <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-dark control-barra" style="width: 110px;" aria-label="Año">
               <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
             </select>
@@ -78,5 +78,9 @@ const filasTabla = computed(() => intentos.value.map(i => ({
 })))
 
 const categoriasPresentes = computed(() => [...new Set(intentos.value.map(i => i.categoria).filter(Boolean))])
-const filtrarCategoria = (i) => !categoria.value || i.categoria === categoria.value
+// Es un computed para que, al cambiar la categoría, la tabla vuelva a la primera página
+const filtrarCategoria = computed(() => {
+  const elegida = categoria.value
+  return (i) => !elegida || i.categoria === elegida
+})
 </script>

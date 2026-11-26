@@ -21,7 +21,7 @@
       <span class="text-muted text-nowrap ms-auto">{{ filas.length }} de {{ intentos.length }}</span>
     </div>
 
-    <EstadoCargando v-if="cargando && !intentos.length" texto="Cargando exámenes" />
+    <EstadoCargando v-if="cargando" texto="Cargando exámenes" />
     <EstadoVacio v-else-if="!filas.length" icono="bi-search" :titulo="intentos.length ? 'Ningún examen coincide con el filtro' : textoVacio" />
 
     <template v-else>
@@ -40,7 +40,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="i in filas" :key="i.clave" class="fila-intento" @click="emit('ver', i)">
+            <tr v-for="i in paginados" :key="i.clave" class="fila-intento" @click="emit('ver', i)">
               <td class="ps-3">
                 <div class="fw-bold text-dark text-uppercase">{{ i.persona }}</div>
                 <span v-if="i.personaDetalle" class="badge mt-1" :class="i.personaDetalleClase || 'bg-light text-dark border'">{{ i.personaDetalle }}</span>
@@ -74,7 +74,7 @@
 
       <!-- CELULAR Y TABLET -->
       <div class="d-lg-none p-3">
-        <button v-for="i in filas" :key="'m-' + i.clave" type="button" class="card shadow-sm mb-3 border-light-subtle rounded-3 w-100 text-start p-0" @click="emit('ver', i)">
+        <button v-for="i in paginados" :key="'m-' + i.clave" type="button" class="card shadow-sm mb-3 border-light-subtle rounded-3 w-100 text-start p-0" @click="emit('ver', i)">
           <div class="card-body p-3 small w-100">
             <div class="d-flex justify-content-between align-items-start gap-2">
               <div class="min-w-0">
@@ -95,14 +95,18 @@
           </div>
         </button>
       </div>
+
+      <BarraPaginacion v-model="paginaActual" :total="totalPaginas" class="mt-4 mb-3" />
     </template>
   </div>
 </template>
 
 <script setup>
-import { reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
+import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
+import { usePaginacion } from '@/composables/usePaginacion'
 import { ESTADOS_INTENTO, alertasIntento } from '@/composables/useSeguimientoExamenes'
 import { aprobado as estaAprobado } from '@/utils/cuestionarios'
 import { normalizarTexto } from '@/utils/texto'
@@ -130,6 +134,13 @@ const filas = computed(() => {
     (!filtros.soloAlertas || alertasIntento(i.seguimiento).some(a => a.texto !== 'Sin registro'))
   )
 })
+
+// ============ PAGINACIÓN ============
+// Al cambiar un filtro (o los datos: otro año, otro curso, actualizar) se vuelve a la primera página
+const REGISTROS_POR_PAGINA = 10
+const paginaActual = ref(1)
+const { totalPaginas, paginados } = usePaginacion(filas, REGISTROS_POR_PAGINA, paginaActual)
+watch([filtros, () => props.intentos, () => props.filtrar], () => { paginaActual.value = 1 }, { deep: true })
 
 const textoNota = (i) => (i.calificacion === null || i.calificacion === undefined || i.estado !== 'finalizado'
   ? '—'
