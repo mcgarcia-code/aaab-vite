@@ -5,24 +5,24 @@
     </div>
     <h2 class="fw-bold fs-4 mb-3" :class="aprobado ? 'text-success' : 'text-danger'">
       <i class="bi me-1" :class="aprobado ? 'bi-trophy-fill' : 'bi-journal-bookmark-fill'"></i>
-      {{ aprobado ? '¡Muy bien!' : 'A seguir practicando' }}
+      {{ aprobado ? t.muyBien : t.aSeguir }}
     </h2>
     <div class="row g-2 justify-content-center">
       <div class="col-6 col-sm-4">
         <div class="dato-resumen rounded-3 border py-2 px-1">
           <span class="d-block fw-bold fs-5 text-dark">{{ resultado.correctas }} / {{ resultado.total }}</span>
-          <small class="text-muted">Preguntas correctas</small>
+          <small class="text-muted">{{ t.preguntasCorrectas }}</small>
         </div>
       </div>
       <div class="col-6 col-sm-4">
         <div class="dato-resumen rounded-3 border py-2 px-1">
           <span class="d-block fw-bold fs-5 text-dark">{{ resultado.puntaje }} / {{ resultado.posible }}</span>
-          <small class="text-muted">Puntaje</small>
+          <small class="text-muted">{{ t.puntaje }}</small>
         </div>
       </div>
     </div>
     <p class="small text-muted mt-3 mb-0">
-      <i class="bi bi-info-circle me-1"></i>Se corrige igual que los exámenes: cada opción incorrecta marcada resta una correcta.
+      <i class="bi bi-info-circle me-1"></i>{{ t.comoSeCorrige }}
     </p>
   </div>
 </template>
@@ -30,11 +30,15 @@
 <script setup>
 import { computed } from 'vue'
 import { UMBRAL_APROBADO } from '@/composables/usePracticaCatalogo'
+import { useTextosCatalogo } from '@/composables/textosCatalogo'
 
 const props = defineProps({
   // { calificacion, correctas, total, puntaje, posible }
-  resultado: { type: Object, required: true }
+  resultado: { type: Object, required: true },
+  idioma: { type: String, default: 'es' }
 })
+
+const t = useTextosCatalogo(() => props.idioma)
 
 const aprobado = computed(() => Number(props.resultado.calificacion) >= UMBRAL_APROBADO)
 </script>

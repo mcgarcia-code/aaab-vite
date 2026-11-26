@@ -18,6 +18,8 @@
     :mensaje="modalConfig.mensaje"
     :tipo="modalConfig.tipo"
     :tieneAccion="modalConfig.tieneAccion"
+    :texto-confirmar="modalConfig.textoConfirmar"
+    :texto-cancelar="modalConfig.textoCancelar"
     @cerrar="cerrarModal"
     @confirmar="ejecutarAccion"
   />
@@ -45,10 +47,14 @@ const modalConfig = reactive({
   mensaje: '',
   tipo: 'success',
   tieneAccion: false,
-  accionConfirmar: null
+  accionConfirmar: null,
+  textoConfirmar: '',
+  textoCancelar: ''
 })
 
-const abrirModal = ({ titulo, mensaje, tipo = 'success', alConfirmar = null }) => {
+const abrirModal = ({ titulo, mensaje, tipo = 'success', alConfirmar = null, textoConfirmar = '', textoCancelar = '' }) => {
+  modalConfig.textoConfirmar = textoConfirmar
+  modalConfig.textoCancelar = textoCancelar
   modalConfig.titulo = titulo || (tipo === 'success' ? '¡Cambios Guardados!' : '¿Estás seguro?')
   modalConfig.mensaje = mensaje || (tipo === 'success' ? 'La información se actualizó correctamente.' : 'Esta acción no se puede deshacer.')
   modalConfig.tipo = tipo

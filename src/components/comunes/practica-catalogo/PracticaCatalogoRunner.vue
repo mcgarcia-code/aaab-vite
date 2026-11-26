@@ -5,34 +5,38 @@
       <!-- Enviando -->
       <div v-if="fase === 'enviando'" class="text-center py-5 my-md-5">
         <div class="spinner-border text-danger mb-3" role="status"></div>
-        <p class="fw-bold text-muted mb-0 fs-5">Corrigiendo tu práctica...</p>
+        <p class="fw-bold text-muted mb-0 fs-5">{{ t.corrigiendo }}</p>
       </div>
 
       <!-- Error al finalizar (se puede reintentar: la selección sigue en pantalla) -->
       <div v-else-if="fase === 'error'" class="text-center py-5 my-md-5 px-2">
         <i class="bi bi-exclamation-triangle-fill fs-1 text-warning mb-3"></i>
-        <p class="fw-bold text-dark mb-1 fs-4">Ocurrió un problema</p>
+        <p class="fw-bold text-dark mb-1 fs-4">{{ t.ocurrioProblema }}</p>
         <p class="text-muted small mb-4">{{ mensajeError }}</p>
         <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
           <button class="btn btn-danger rounded-pill px-4 fw-bold" @click="finalizar">
-            <i class="bi bi-arrow-clockwise me-2"></i>Reintentar
+            <i class="bi bi-arrow-clockwise me-2"></i>{{ t.reintentar }}
           </button>
           <button class="btn btn-outline-secondary rounded-pill px-4" @click="fase = 'practica'">
-            Volver a las preguntas
+            {{ t.volverPreguntas }}
           </button>
         </div>
       </div>
 
       <!-- Resultado -->
       <div v-else-if="fase === 'resultado'">
-        <ResumenResultado :resultado="resultado" class="mb-4" />
-        <RevisionPractica :revision="resultado.revision" />
+        <ResumenResultado :resultado="resultado" :idioma="idioma" class="mb-4" />
+        <!-- Acciones extra de quien usa el runner (ej. el PDF del catálogo público) -->
+        <div v-if="$slots['acciones-resultado']" class="d-flex flex-column flex-sm-row justify-content-center gap-2 mb-4">
+          <slot name="acciones-resultado" :resultado="resultado"></slot>
+        </div>
+        <RevisionPractica :revision="resultado.revision" :idioma="idioma" />
         <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mt-4">
           <button class="btn btn-danger rounded-pill px-4 py-2 fw-bold" @click="emit('otra')">
-            <i class="bi bi-arrow-repeat me-2"></i>Practicar de nuevo
+            <i class="bi bi-arrow-repeat me-2"></i>{{ t.practicarDeNuevo }}
           </button>
           <button class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-bold" @click="emit('salir')">
-            Volver
+            {{ t.volver }}
           </button>
         </div>
       </div>
@@ -42,14 +46,12 @@
         <div class="d-flex align-items-start justify-content-between gap-2 mb-3 border-bottom pb-3">
           <div class="min-w-0">
             <h5 class="fw-bold text-muted mb-1 text-uppercase fs-6 espaciado-1">
-              Pregunta <span class="text-danger fs-4">{{ indice + 1 }}</span> de {{ total }}
+              {{ t.pregunta }} <span class="text-danger fs-4">{{ indice + 1 }}</span> {{ t.de }} {{ total }}
             </h5>
-            <small class="text-secondary d-block">
-              Práctica del catálogo
-            </small>
+            <small class="text-secondary d-block">{{ subtitulo }}</small>
           </div>
           <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-bold flex-shrink-0" @click="salirGuardando">
-            <i class="bi bi-pause-fill me-1"></i>Salir
+            <i class="bi bi-pause-fill me-1"></i>{{ t.salir }}
           </button>
         </div>
 
@@ -57,7 +59,8 @@
           <div class="progress-bar bg-danger" :style="{ width: `${(respondidas / total) * 100}%` }"></div>
         </div>
 
-        <p class="fw-bold mb-4 fs-6 fs-md-5 lh-base px-1 text-break">{{ preguntaActual?.texto }}</p>
+        <p class="fw-bold mb-3 fs-6 fs-md-5 lh-base px-1 text-break">{{ preguntaActual?.texto }}</p>
+        <p class="small text-muted mb-2 px-1"><i class="bi bi-info-circle me-1"></i>{{ t.masDeUna }}</p>
 
         <div class="list-group mb-4 gap-2">
           <label v-for="(o, i) in opcionesActuales" :key="o.id"
@@ -74,15 +77,15 @@
         <div class="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-stretch align-items-sm-center border-top pt-3 gap-2">
           <div class="w-100 w-sm-auto">
             <button v-if="indice > 0" class="btn btn-outline-secondary rounded-pill px-4 fw-bold w-100 py-2" @click="irAPregunta(indice - 1)">
-              <i class="bi bi-arrow-left me-2"></i>Anterior
+              <i class="bi bi-arrow-left me-2"></i>{{ t.anterior }}
             </button>
           </div>
           <div class="w-100 w-sm-auto">
             <button v-if="indice < total - 1" class="btn btn-danger rounded-pill px-4 py-2 fw-bold w-100" @click="irAPregunta(indice + 1)">
-              Siguiente<i class="bi bi-arrow-right ms-2"></i>
+              {{ t.siguiente }}<i class="bi bi-arrow-right ms-2"></i>
             </button>
             <button v-else class="btn btn-danger rounded-pill px-4 py-2 fw-bold w-100 shadow" @click="pedirConfirmacionFinalizar">
-              <i class="bi bi-check-circle-fill me-2"></i>Finalizar
+              <i class="bi bi-check-circle-fill me-2"></i>{{ t.finalizar }}
             </button>
           </div>
         </div>
@@ -90,7 +93,7 @@
         <!-- Navegación rápida -->
         <div class="border-top pt-3 mt-3">
           <small class="text-muted d-block mb-2 fw-bold text-center text-sm-start">
-            Navegación rápida <span class="fw-normal">— tocá un número para ir a esa pregunta</span>
+            {{ t.navegacionRapida }} <span class="fw-normal">{{ t.navegacionAyuda }}</span>
           </small>
           <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
             <button v-for="(p, i) in preguntas" :key="p.id" type="button"
@@ -111,6 +114,7 @@
 import { ref, computed, inject, onMounted, onBeforeUnmount } from 'vue'
 import { api } from '@/api/api'
 import { useGuardadoEnCola } from '@/composables/useGuardadoEnCola'
+import { useTextosCatalogo } from '@/composables/textosCatalogo'
 import RevisionPractica from '@/components/comunes/practica-catalogo/RevisionPractica.vue'
 import ResumenResultado from '@/components/comunes/practica-catalogo/ResumenResultado.vue'
 
@@ -118,9 +122,18 @@ const notificar = inject('notificar')
 
 const props = defineProps({
   // Práctica devuelta por iniciarPractica / practicaEnCurso: { id, preguntas, opciones, seleccion, indice }
-  practica: { type: Object, required: true }
+  practica: { type: Object, required: true },
+  idioma: { type: String, default: 'es' },
+  subtitulo: { type: String, default: 'Práctica del catálogo' },
+  // Por defecto guarda y corrige en el backend del panel (catalogo_practica).
+  // El catálogo público pasa las suyas: guardar({ indice, seleccion }) y
+  // finalizar({ indice, seleccion }) → resultado { calificacion, puntaje, posible, correctas, total, revision }
+  guardar: { type: Function, default: null },
+  finalizar: { type: Function, default: null }
 })
 const emit = defineEmits(['salir', 'otra', 'finalizada'])
+
+const t = useTextosCatalogo(() => props.idioma)
 
 // fase: 'practica' | 'enviando' | 'resultado' | 'error'
 const fase = ref('practica')
@@ -153,14 +166,28 @@ const alternarOpcion = (idPregunta, idOpcion) => {
 // si en el historial cambia, la práctica se retomó o estaba abierta en otro dispositivo o pestaña
 const sesion = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 
+const estadoActual = () => ({ indice: indice.value, seleccion: seleccion.value })
+
+const guardarEnPanel = () => api.post({
+  entity: 'catalogo_practica',
+  action: 'guardarAvancePractica',
+  payload: { idPractica: props.practica.id, ...estadoActual(), sesion }
+})
+
+const finalizarEnPanel = async () => {
+  const res = await api.post({
+    entity: 'catalogo_practica',
+    action: 'finalizarPractica',
+    payload: { idPractica: props.practica.id, ...estadoActual(), sesion }
+  })
+  if (res?.ok === false) throw new Error(res.message || t.value.errorFinalizar)
+  return res.payload
+}
+
 // El avance se guarda al cambiar de pregunta: si se cierra la app, se retoma donde estaba.
 // Si falla (sin conexión) no se corta la práctica: se reintenta en el próximo cambio.
 // Va en cola (de a un envío) para que un guardado viejo no pise al más reciente
-const { guardar: guardarAvance } = useGuardadoEnCola(() => api.post({
-  entity: 'catalogo_practica',
-  action: 'guardarAvancePractica',
-  payload: { idPractica: props.practica.id, indice: indice.value, seleccion: seleccion.value, sesion }
-}))
+const { guardar: guardarAvance } = useGuardadoEnCola(() => (props.guardar ? props.guardar(estadoActual()) : guardarEnPanel()))
 
 const irAPregunta = (i) => {
   if (i < 0 || i >= total.value || i === indice.value) return
@@ -177,30 +204,24 @@ const salirGuardando = async () => {
 const pedirConfirmacionFinalizar = () => {
   const sinResponder = total.value - respondidas.value
   notificar({
-    titulo: '¿Finalizar práctica?',
-    mensaje: sinResponder > 0
-      ? `Te ${sinResponder === 1 ? 'queda 1 pregunta' : `quedan ${sinResponder} preguntas`} sin responder: cuentan como erradas. ¿Querés finalizar igual?`
-      : 'Vas a ver la corrección de cada pregunta. ¿Querés finalizar?',
+    titulo: t.value.confirmarTitulo,
+    mensaje: sinResponder > 0 ? t.value.confirmarSinResponder(sinResponder) : t.value.confirmarListo,
     tipo: 'danger',
-    alConfirmar: finalizar
+    alConfirmar: finalizar,
+    textoConfirmar: t.value.botonFinalizar,
+    textoCancelar: t.value.botonCancelar
   })
 }
 
 const finalizar = async () => {
   fase.value = 'enviando'
   try {
-    const res = await api.post({
-      entity: 'catalogo_practica',
-      action: 'finalizarPractica',
-      payload: { idPractica: props.practica.id, indice: indice.value, seleccion: seleccion.value, sesion }
-    })
-    if (res?.ok === false) throw new Error(res.message || 'No se pudo finalizar la práctica')
-    resultado.value = res.payload
+    resultado.value = props.finalizar ? await props.finalizar(estadoActual()) : await finalizarEnPanel()
     fase.value = 'resultado'
     emit('finalizada')
     document.querySelector('.practica-overlay')?.scrollTo({ top: 0 })
   } catch (e) {
-    mensajeError.value = e?.message || 'No se pudo finalizar la práctica'
+    mensajeError.value = e?.message || t.value.errorFinalizar
     fase.value = 'error'
   }
 }

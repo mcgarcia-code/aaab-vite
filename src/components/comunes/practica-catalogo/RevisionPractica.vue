@@ -2,28 +2,28 @@
   <div>
     <!-- Filtro: todas / solo las erradas -->
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-bottom pb-2 mb-3">
-      <h5 class="fw-bold text-dark m-0 fs-6 fs-md-5">Revisión detallada</h5>
+      <h5 class="fw-bold text-dark m-0 fs-6 fs-md-5">{{ t.revisionDetallada }}</h5>
       <div class="btn-group btn-group-sm" role="group" aria-label="Filtrar preguntas">
         <button type="button" class="btn fw-bold" :class="soloErradas ? 'btn-outline-danger' : 'btn-danger'" @click="soloErradas = false">
-          Todas ({{ revision.length }})
+          {{ t.todas }} ({{ revision.length }})
         </button>
         <button type="button" class="btn fw-bold" :class="soloErradas ? 'btn-danger' : 'btn-outline-danger'" @click="soloErradas = true">
-          Erradas ({{ cantidadErradas }})
+          {{ t.erradas }} ({{ cantidadErradas }})
         </button>
       </div>
     </div>
 
     <p v-if="!visibles.length" class="text-center text-muted fw-bold py-4 m-0">
-      <i class="bi bi-emoji-smile d-block fs-2 mb-2 text-success"></i>¡No te equivocaste en ninguna!
+      <i class="bi bi-emoji-smile d-block fs-2 mb-2 text-success"></i>{{ t.ningunaErrada }}
     </p>
 
     <div v-for="r in visibles" :key="r.id" class="card border-0 bg-light shadow-sm rounded-4 mb-3 tarjeta-revision" :class="r.correcta ? 'borde-bien' : 'borde-mal'">
       <div class="card-body p-3 p-md-4">
         <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small">
           <span class="badge rounded-pill" :class="r.correcta ? 'bg-success' : 'bg-danger'">
-            <i class="bi me-1" :class="r.correcta ? 'bi-check-lg' : 'bi-x-lg'"></i>{{ r.correcta ? 'Correcta' : (r.respondida ? 'Incorrecta' : 'Sin responder') }}
+            <i class="bi me-1" :class="r.correcta ? 'bi-check-lg' : 'bi-x-lg'"></i>{{ r.correcta ? t.correcta : (r.respondida ? t.incorrecta : t.sinResponder) }}
           </span>
-          <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">{{ textoNumeroPregunta(r) }}</span>
+          <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis">{{ textoNumeroPregunta(r, t.regla) }}</span>
         </div>
         <h6 class="fw-bold text-dark mb-3 fs-6 lh-base text-break"><span class="text-danger">{{ r.numero }}.</span> {{ r.texto }}</h6>
         <div class="d-flex flex-column gap-2">
@@ -38,9 +38,9 @@
     </div>
 
     <div class="d-flex flex-wrap gap-3 small text-muted mt-2">
-      <span><i class="bi bi-check-circle-fill text-success me-1"></i>Elegida y correcta</span>
-      <span><i class="bi bi-x-circle-fill text-danger me-1"></i>Elegida e incorrecta</span>
-      <span><i class="bi bi-exclamation-circle-fill text-warning me-1"></i>Correcta no elegida</span>
+      <span><i class="bi bi-check-circle-fill text-success me-1"></i>{{ t.elegidaCorrecta }}</span>
+      <span><i class="bi bi-x-circle-fill text-danger me-1"></i>{{ t.elegidaIncorrecta }}</span>
+      <span><i class="bi bi-exclamation-circle-fill text-warning me-1"></i>{{ t.correctaNoElegida }}</span>
     </div>
   </div>
 </template>
@@ -48,11 +48,15 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { textoNumeroPregunta } from '@/composables/usePracticaCatalogo'
+import { useTextosCatalogo } from '@/composables/textosCatalogo'
 
 const props = defineProps({
   // [{ id, codigo, texto, correcta, respondida, opciones: [{ texto, es_correcta, elegida }] }]
-  revision: { type: Array, default: () => [] }
+  revision: { type: Array, default: () => [] },
+  idioma: { type: String, default: 'es' }
 })
+
+const t = useTextosCatalogo(() => props.idioma)
 
 const soloErradas = ref(false)
 

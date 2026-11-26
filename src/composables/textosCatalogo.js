@@ -1,0 +1,90 @@
+import { computed, toValue } from 'vue'
+
+// Textos de la práctica del catálogo en español e inglés. El panel usa siempre español;
+// el catálogo público cambia al idioma elegido para las preguntas (como el catálogo viejo).
+export const TEXTOS_CATALOGO = {
+  es: {
+    // Runner
+    corrigiendo: 'Corrigiendo tus respuestas...',
+    ocurrioProblema: 'Ocurrió un problema',
+    reintentar: 'Reintentar',
+    volverPreguntas: 'Volver a las preguntas',
+    practicarDeNuevo: 'Practicar de nuevo',
+    volver: 'Volver',
+    pregunta: 'Pregunta',
+    de: 'de',
+    salir: 'Salir',
+    anterior: 'Anterior',
+    siguiente: 'Siguiente',
+    finalizar: 'Finalizar',
+    masDeUna: 'Puede haber más de una respuesta correcta.',
+    navegacionRapida: 'Navegación rápida',
+    navegacionAyuda: '— tocá un número para ir a esa pregunta',
+    confirmarTitulo: '¿Finalizar?',
+    confirmarSinResponder: (n) => `Te ${n === 1 ? 'queda 1 pregunta' : `quedan ${n} preguntas`} sin responder: cuentan como erradas. ¿Querés finalizar igual?`,
+    confirmarListo: 'Vas a ver la corrección de cada pregunta. ¿Querés finalizar?',
+    botonFinalizar: 'FINALIZAR',
+    botonCancelar: 'CANCELAR',
+    errorFinalizar: 'No se pudieron corregir tus respuestas',
+    // Resumen
+    muyBien: '¡Muy bien!',
+    aSeguir: 'A seguir practicando',
+    preguntasCorrectas: 'Preguntas correctas',
+    puntaje: 'Puntaje',
+    comoSeCorrige: 'Se corrige igual que los exámenes: cada opción incorrecta marcada resta una correcta.',
+    // Revisión
+    revisionDetallada: 'Revisión detallada',
+    todas: 'Todas',
+    erradas: 'Erradas',
+    ningunaErrada: '¡No te equivocaste en ninguna!',
+    correcta: 'Correcta',
+    incorrecta: 'Incorrecta',
+    sinResponder: 'Sin responder',
+    regla: 'Regla',
+    elegidaCorrecta: 'Elegida y correcta',
+    elegidaIncorrecta: 'Elegida e incorrecta',
+    correctaNoElegida: 'Correcta no elegida'
+  },
+  en: {
+    corrigiendo: 'Checking your answers...',
+    ocurrioProblema: 'Something went wrong',
+    reintentar: 'Try again',
+    volverPreguntas: 'Back to the questions',
+    practicarDeNuevo: 'Start over',
+    volver: 'Back',
+    pregunta: 'Question',
+    de: 'out of',
+    salir: 'Exit',
+    anterior: 'Previous',
+    siguiente: 'Next',
+    finalizar: 'End',
+    masDeUna: 'There may be more than one correct answer.',
+    navegacionRapida: 'Quick navigation',
+    navegacionAyuda: '— tap a number to go to that question',
+    confirmarTitulo: 'Finish?',
+    confirmarSinResponder: (n) => `${n === 1 ? '1 question is' : `${n} questions are`} still unanswered and will count as wrong. Finish anyway?`,
+    confirmarListo: 'You will see the correction of every question. Finish?',
+    botonFinalizar: 'FINISH',
+    botonCancelar: 'CANCEL',
+    errorFinalizar: 'Your answers could not be checked',
+    muyBien: 'Well done!',
+    aSeguir: 'Keep practicing',
+    preguntasCorrectas: 'Correct questions',
+    puntaje: 'Score',
+    comoSeCorrige: 'Scored like the exams: each wrong option you mark cancels a correct one.',
+    revisionDetallada: 'Detailed review',
+    todas: 'All',
+    erradas: 'Wrong',
+    ningunaErrada: 'You got every question right!',
+    correcta: 'Correct',
+    incorrecta: 'Wrong',
+    sinResponder: 'Unanswered',
+    regla: 'Rule',
+    elegidaCorrecta: 'Chosen and correct',
+    elegidaIncorrecta: 'Chosen and wrong',
+    correctaNoElegida: 'Correct, not chosen'
+  }
+}
+
+// idioma: 'es' | 'en' (valor, ref, computed o función, ej. () => props.idioma)
+export const useTextosCatalogo = (idioma) => computed(() => TEXTOS_CATALOGO[toValue(idioma)] || TEXTOS_CATALOGO.es)

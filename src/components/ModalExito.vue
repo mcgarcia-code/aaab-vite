@@ -37,14 +37,14 @@
             @click="cerrar"
             class="btn btn-light border rounded-pill px-4 fw-bold w-100 w-sm-auto"
           >
-            CANCELAR
+            {{ textoCancelar || 'CANCELAR' }}
           </button>
 
           <button
             @click="handleAccion"
             class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm w-100 w-sm-auto hover-elevate"
           >
-            {{ tieneAccion ? (tipo === 'danger' ? 'CONTINUAR' : 'CONFIRMAR') : 'ACEPTAR' }}
+            {{ textoConfirmar || (tieneAccion ? (tipo === 'danger' ? 'CONTINUAR' : 'CONFIRMAR') : 'ACEPTAR') }}
           </button>
         </div>
 
@@ -63,6 +63,9 @@ const props = defineProps({
   mensaje: String,
   tipo: String,
   tieneAccion: Boolean,
+  // Textos de los botones (opcionales, ej. en inglés en el catálogo público)
+  textoConfirmar: { type: String, default: '' },
+  textoCancelar: { type: String, default: '' },
   zIndex: { type: [Number, String], default: 1060 }
 })
 
