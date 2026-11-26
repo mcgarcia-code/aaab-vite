@@ -34,6 +34,7 @@ export const MODULOS_ADMIN = [
   { clave: 'curso', categoria: 'Curso de Árbitros', etiqueta: 'Curso de árbitros completo' },
   { clave: 'facturacion', categoria: 'Herramientas', etiqueta: 'Facturación' },
   { clave: 'informes', categoria: 'Herramientas', etiqueta: 'Informes' },
+  { clave: 'catalogo_preguntas', categoria: 'Herramientas', etiqueta: 'Catálogo de preguntas (exámenes, práctica y catálogo público)' },
 ]
 
 // Módulos del panel por categoría. El título y la descripción (desc) son
@@ -108,7 +109,8 @@ export const CATEGORIAS_ADMIN = [
     icono: 'bi bi-tools',
     items: [
       { modulo: 'facturacion', to: '/panel-admin/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Datos fiscales de clubes' },
-      { modulo: 'informes', to: '/panel-admin/informes', title: 'Informes', icon: 'bi bi-file-earmark-text', desc: 'Informes arbitrales', pendiente: 'informes' }
+      { modulo: 'informes', to: '/panel-admin/informes', title: 'Informes', icon: 'bi bi-file-earmark-text', desc: 'Informes arbitrales', pendiente: 'informes' },
+      { modulo: 'catalogo_preguntas', to: '/panel-admin/catalogo-preguntas', title: 'Catálogo de preguntas', icon: 'bi bi-ui-checks-grid', desc: 'Preguntas y respuestas de exámenes y práctica' }
     ]
   }
 ]

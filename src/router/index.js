@@ -208,6 +208,7 @@ const routes = [
 
       // --- HERRAMIENTAS ---
       { path: 'facturacion', name: 'InstitucionesCuitAdmin', component: () => import('@/components/panel-admin/facturacion/InstitucionesCuitAdmin.vue'), meta: { modulo: 'facturacion' } },
+      { path: 'catalogo-preguntas', name: 'CatalogoPreguntasAdmin', component: () => import('@/components/panel-admin/catalogo-preguntas/CatalogoPreguntasAdmin.vue'), meta: { modulo: 'catalogo_preguntas' } },
 
       // --- INFORMES ---
       { path: 'informes', name: 'InformesAdmin', component: () => import('@/components/panel-admin/informes/InformesAdmin.vue'), meta: { modulo: 'informes' } },
