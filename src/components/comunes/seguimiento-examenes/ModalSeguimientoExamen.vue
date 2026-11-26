@@ -41,7 +41,7 @@
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="dato-resumen rounded-3 border p-2 h-100" title="Tiempo con la pestaña del examen a la vista">
+            <div class="dato-resumen rounded-3 border p-2 h-100" title="Tiempo total con la pestaña del examen a la vista, sumando todas las sesiones">
               <div class="dato-etiqueta">Pestaña visible</div>
               <span class="fw-bold text-dark">{{ formatoDuracion(detalle.tiempoVisibleSeg) }}</span>
             </div>
@@ -72,7 +72,7 @@
                 <span v-if="p.sesionNueva" class="badge rounded-pill bg-primary-subtle text-primary-emphasis" :title="'Sesión ' + p.sesion">Sesión nueva</span>
                 <span v-if="p.dispositivoNuevo" class="badge rounded-pill bg-danger-subtle text-danger-emphasis" :title="p.dispositivo">Otro dispositivo: {{ resumirDispositivo(p.dispositivo) }}</span>
                 <span v-if="p.ipNueva" class="badge rounded-pill bg-info-subtle text-info-emphasis">Otra IP: {{ p.ip }}</span>
-                <span v-if="p.tiempoVisibleSeg !== null" class="text-muted ms-auto" title="Tiempo acumulado con la pestaña visible">
+                <span v-if="p.tiempoVisibleSeg !== null" class="text-muted ms-auto" title="Tiempo con la pestaña visible acumulado en esta sesión (vuelve a cero cuando hay una sesión nueva)">
                   <i class="bi bi-eye me-1"></i>{{ formatoDuracion(p.tiempoVisibleSeg) }}
                 </span>
               </div>
