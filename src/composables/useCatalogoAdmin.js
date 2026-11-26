@@ -58,11 +58,11 @@ export function useCatalogoAdmin() {
   const obtenerPregunta = async (id) =>
     conRespuesta(await api.get({ entity: ENTIDAD, action: 'detallePreguntaCatalogo', payload: { id } }), 'No se pudo cargar la pregunta')
 
-  const guardarPregunta = async ({ id, codigo, subcodigo, texto, textoEn }) =>
+  const guardarPregunta = async ({ id, codigo, subcodigo, texto, textoEn, excluidaExamenes }) =>
     conRespuesta(await api.post({
       entity: ENTIDAD,
       action: 'guardarPreguntaCatalogo',
-      payload: { id: id || 0, codigo, subcodigo: subcodigo ?? '', texto, textoEn }
+      payload: { id: id || 0, codigo, subcodigo: subcodigo ?? '', texto, textoEn, excluidaExamenes: !!excluidaExamenes }
     }), 'No se pudo guardar la pregunta')
 
   const borrarPregunta = async (id) =>

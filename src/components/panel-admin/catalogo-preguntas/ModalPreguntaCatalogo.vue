@@ -20,12 +20,7 @@
     <template v-else>
       <!-- ============ PREGUNTA ============ -->
       <form class="mb-4" novalidate @submit.prevent="guardarDatosPregunta">
-        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-          <h6 class="fw-bold text-dark m-0 me-auto">Pregunta</h6>
-          <span v-if="pregunta?.excluidaExamenes" class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis" title="Está en la lista de preguntas que no se toman en los exámenes online">
-            <i class="bi bi-slash-circle me-1"></i>Excluida de exámenes
-          </span>
-        </div>
+        <h6 class="fw-bold text-dark mb-3">Pregunta</h6>
 
         <div class="row g-3">
           <div class="col-6 col-md-3">
@@ -47,6 +42,14 @@
           <div class="col-12 col-md-6">
             <label for="catalogo-texto-en" class="form-label small fw-bold text-dark">Texto en inglés</label>
             <textarea id="catalogo-texto-en" v-model="formPregunta.textoEn" class="form-control shadow-none" rows="5" maxlength="5000"></textarea>
+          </div>
+
+          <div class="col-12">
+            <div class="form-check m-0 p-2 ps-5 rounded-3 border" :class="{ 'excluida-activa': formPregunta.excluidaExamenes }">
+              <input id="catalogo-excluida" v-model="formPregunta.excluidaExamenes" class="form-check-input shadow-none" type="checkbox">
+              <label for="catalogo-excluida" class="form-check-label small fw-bold text-dark">Excluir de los exámenes online</label>
+              <small class="d-block text-muted">No sale en los exámenes de asamblea ni del curso. En la práctica y en el catálogo público sigue apareciendo.</small>
+            </div>
           </div>
         </div>
 
@@ -188,7 +191,7 @@ const pregunta = ref(null)           // la pregunta guardada (con respuestas) o 
 const cargando = ref(false)
 const errorCarga = ref('')
 
-const formPregunta = reactive({ codigo: '', subcodigo: '', texto: '', textoEn: '' })
+const formPregunta = reactive({ codigo: '', subcodigo: '', texto: '', textoEn: '', excluidaExamenes: false })
 const guardandoPregunta = ref(false)
 const errorPregunta = ref('')
 
@@ -204,12 +207,13 @@ const valoresPregunta = (p) => ({
   codigo: String(p?.codigo ?? ''),
   subcodigo: p?.subcodigo !== null && p?.subcodigo !== undefined ? String(p.subcodigo) : '',
   texto: p?.texto || '',
-  textoEn: p?.textoEn || ''
+  textoEn: p?.textoEn || '',
+  excluidaExamenes: !!p?.excluidaExamenes
 })
 
 const preguntaModificada = computed(() => {
   const original = valoresPregunta(pregunta.value)
-  return Object.keys(original).some(clave => String(formPregunta[clave] ?? '').trim() !== original[clave].trim())
+  return Object.keys(original).some(clave => String(formPregunta[clave] ?? '').trim() !== String(original[clave]).trim())
 })
 
 const hayCambios = computed(() =>
@@ -229,7 +233,7 @@ const limpiar = () => {
   errorPregunta.value = ''
   errorRespuesta.value = ''
   editando.value = null
-  Object.assign(formPregunta, { codigo: props.reglaInicial || '', subcodigo: '', texto: '', textoEn: '' })
+  Object.assign(formPregunta, { codigo: props.reglaInicial || '', subcodigo: '', texto: '', textoEn: '', excluidaExamenes: false })
   Object.assign(nueva, { texto: '', textoEn: '', esCorrecta: false })
 }
 
@@ -351,4 +355,8 @@ const confirmarBorrarRespuesta = (respuesta) => {
   border-color: var(--o-verde-borde, #86efac) !important;
 }
 .nueva-respuesta { border-style: dashed !important; }
+.excluida-activa {
+  background: var(--o-ambar-fondo, #fffbeb);
+  border-color: var(--o-ambar-borde, #fcd34d) !important;
+}
 </style>
