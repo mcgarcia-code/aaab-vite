@@ -7,13 +7,7 @@ import { api } from '@/api/api'
 
 const ENTIDAD = 'seguimiento_examenes'
 
-export const CATEGORIAS_EVENTO = {
-  reunion: 'Reunión',
-  asamblea: 'Asamblea',
-  recuperatorio: 'Recuperatorio',
-  urgente: 'Urgente',
-  recordatorio: 'Recordatorio'
-}
+export { CATEGORIAS_EVENTO } from '@/utils/eventos'
 
 export const ESTADOS_INTENTO = {
   en_curso: { etiqueta: 'En curso', clase: 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' },
@@ -69,7 +63,6 @@ export const segundosEntre = (desde, hasta) => {
 // Avisos de un intento a partir del resumen de su seguimiento
 export const alertasIntento = (seguimiento = {}) => {
   const alertas = []
-  if (!seguimiento.pasos) alertas.push({ texto: 'Sin registro', clase: 'bg-secondary-subtle text-secondary-emphasis', ayuda: 'No hay pasos guardados (examen rendido antes de que existiera el seguimiento)' })
   if (seguimiento.sesiones > 1) alertas.push({ texto: `${seguimiento.sesiones} sesiones`, clase: 'bg-warning-subtle text-warning-emphasis', ayuda: 'Lo retomó o lo tuvo abierto en más de un lugar' })
   if (seguimiento.dispositivos > 1) alertas.push({ texto: `${seguimiento.dispositivos} dispositivos`, clase: 'bg-danger-subtle text-danger-emphasis', ayuda: 'Se usó más de un dispositivo o navegador' })
   if (seguimiento.ips > 1) alertas.push({ texto: `${seguimiento.ips} IP`, clase: 'bg-info-subtle text-info-emphasis', ayuda: 'Hubo más de una conexión (por ejemplo, wifi y datos)' })

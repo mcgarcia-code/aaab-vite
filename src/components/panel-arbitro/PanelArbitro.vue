@@ -239,7 +239,7 @@ const TITULOS_SECCION = {
   PanelContactosCelulares: 'Contactos',
   DelegadoTecnico: 'Delegado técnico',
   DesignacionesArbitro: 'Designaciones',
-  ExamenAsamblea: 'Exámenes',
+  ExamenesArbitro: 'Exámenes',
   PracticaCatalogo: 'Practicar catálogo',
   InformesArbitro: 'Informes',
   PanelMenu: 'Menú'

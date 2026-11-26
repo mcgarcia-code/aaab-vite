@@ -108,7 +108,7 @@ import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { ESTADOS_INTENTO, alertasIntento } from '@/composables/useSeguimientoExamenes'
-import { aprobado as estaAprobado } from '@/utils/cuestionarios'
+import { aprobado as estaAprobado, textoPorcentaje } from '@/utils/cuestionarios'
 import { normalizarTexto } from '@/utils/texto'
 
 // Lista de intentos de exámenes online con su resumen de seguimiento (árbitros y aspirantes del curso).
@@ -131,7 +131,7 @@ const filas = computed(() => {
     props.filtrar(i) &&
     (!texto || normalizarTexto(`${i.persona} ${i.examen}`).includes(texto)) &&
     (!filtros.estado || i.estado === filtros.estado) &&
-    (!filtros.soloAlertas || alertasIntento(i.seguimiento).some(a => a.texto !== 'Sin registro'))
+    (!filtros.soloAlertas || alertasIntento(i.seguimiento).length > 0)
   )
 })
 
@@ -142,9 +142,7 @@ const paginaActual = ref(1)
 const { totalPaginas, paginados } = usePaginacion(filas, REGISTROS_POR_PAGINA, paginaActual)
 watch([filtros, () => props.intentos, () => props.filtrar], () => { paginaActual.value = 1 }, { deep: true })
 
-const textoNota = (i) => (i.calificacion === null || i.calificacion === undefined || i.estado !== 'finalizado'
-  ? '—'
-  : `${Number(i.calificacion).toLocaleString('es-AR', { maximumFractionDigits: 2 })}%`)
+const textoNota = (i) => (i.estado === 'finalizado' ? textoPorcentaje(i.calificacion) : '—')
 const claseNota = (i) => {
   if (i.estado !== 'finalizado' || i.calificacion === null) return 'text-muted'
   const aprobo = i.aprobado ?? estaAprobado(i.calificacion)

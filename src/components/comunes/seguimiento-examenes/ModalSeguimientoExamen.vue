@@ -29,7 +29,7 @@
             <div class="dato-resumen rounded-3 border p-2 h-100">
               <div class="dato-etiqueta">Nota</div>
               <span class="fw-bold" :class="detalle.estado === 'finalizado' ? (detalle.aprobado ? 'text-success' : 'text-danger') : 'text-muted'">
-                {{ detalle.estado === 'finalizado' && detalle.calificacion !== null ? `${detalle.calificacion}%` : '—' }}
+                {{ detalle.estado === 'finalizado' ? textoPorcentaje(detalle.calificacion) : '—' }}
               </span>
               <small class="text-muted ms-1">({{ detalle.puntaje }}/{{ detalle.posible }})</small>
             </div>
@@ -109,6 +109,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import RevisionPractica from '@/components/comunes/practica-catalogo/RevisionPractica.vue'
+import { textoPorcentaje } from '@/utils/cuestionarios'
 import {
   useSeguimientoExamenes, ESTADOS_INTENTO, EVENTOS_SEGUIMIENTO,
   resumirDispositivo, formatoDuracion, horaDe, segundosEntre

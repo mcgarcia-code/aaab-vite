@@ -22,7 +22,7 @@ const MODULOS = [
   { to: '/panel-arbitro/coordinadores', title: 'Coordinadores', icon: 'bi bi-people-fill', desc: 'Exámenes y reuniones', rolesPermitidos: [4], categoria: 'Actividad Arbitral' },
   { to: '/panel-arbitro/observaciones', title: 'Observaciones realizadas', icon: 'bi bi-clipboard-check', desc: 'Cargá y revisá las tuyas', rolesPermitidos: [2, 4], categoria: 'Actividad Arbitral' },
 
-  { to: '/panel-arbitro/examen-asamblea', title: 'Exámenes', icon: 'bi bi-journal-check', desc: 'Rendí los teóricos online', categoria: 'Exámenes' },
+  { to: '/panel-arbitro/examenes', title: 'Exámenes', icon: 'bi bi-journal-check', desc: 'Rendí los teóricos online', categoria: 'Exámenes' },
 
   { to: '/panel-arbitro/licencia', title: 'Licencias', icon: 'bi bi-calendar-check', desc: 'Avisá tus inasistencias', categoria: 'Administración' },
   { to: '/panel-arbitro/sanciones', title: 'Tribunal de Ética', icon: 'bi bi-shield-exclamation', desc: 'Consultá tus sanciones', categoria: 'Administración' },
@@ -42,7 +42,7 @@ const MODULOS = [
 
 // Accesos de uso más frecuente (etiquetas cortas para que no se corten en el celular)
 const ACCESOS_RAPIDOS = [
-  { to: '/panel-arbitro/examen-asamblea', title: 'Exámenes', icon: 'bi bi-journal-check' },
+  { to: '/panel-arbitro/examenes', title: 'Exámenes', icon: 'bi bi-journal-check' },
   { to: '/panel-arbitro/practica-catalogo', title: 'Catálogo', icon: 'bi bi-ui-checks-grid' },
   { to: '/panel-arbitro/licencia', title: 'Licencias', icon: 'bi bi-calendar-check' },
   { to: '/panel-arbitro/rendimiento', title: 'Rendimiento', icon: 'bi bi-graph-up-arrow' }

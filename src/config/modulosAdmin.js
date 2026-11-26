@@ -87,7 +87,7 @@ export const CATEGORIAS_ADMIN = [
       { modulo: 'desarrollo', to: '/panel-admin/desarrollo-arbitral/observaciones', title: 'Observaciones realizadas', icon: 'bi bi-clipboard-data-fill', desc: 'Seguimiento de las observaciones', pendiente: 'observaciones' },
       { modulo: 'desarrollo', to: '/panel-admin/desarrollo-arbitral/reuniones-mensuales', title: 'Reuniones mensuales', icon: 'bi bi-calendar-event', desc: 'Presentes y ausentes' },
       { modulo: 'desarrollo', to: '/panel-admin/desarrollo-arbitral/resumen-arbitros', title: 'Planilla general de árbitros', icon: 'bi bi-table', desc: 'Asambleas, recuperatorios y reuniones' },
-      { modulo: 'desarrollo', to: '/panel-admin/desarrollo-arbitral/habilitacion-examenes-asamblea', title: 'Habilitación de exámenes', icon: 'bi bi-shield-check', desc: 'Grupos habilitados para rendir' },
+      { modulo: 'desarrollo', to: '/panel-admin/desarrollo-arbitral/habilitacion-examenes', title: 'Habilitación de exámenes', icon: 'bi bi-shield-check', desc: 'Grupos habilitados para rendir' },
       { modulo: 'desarrollo', to: '/panel-admin/desarrollo-arbitral/planilla-general-observaciones', title: 'Planilla general de observaciones', icon: 'bi bi-clipboard2-data-fill', desc: 'Observaciones de todos los árbitros' },
       { modulo: 'desarrollo', to: '/panel-admin/desarrollo-arbitral/aaab-tv', title: 'AAAB TV', icon: 'bi bi-camera-reels', desc: 'Clips pendientes y visibilidad' }
     ]

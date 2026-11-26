@@ -77,6 +77,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { MESES_CORTOS } from '@/utils/fechas'
+import { CATEGORIAS_EVENTO } from '@/utils/eventos'
 import { RouterLink } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { api } from '@/api/api'
@@ -91,13 +92,6 @@ useHead({
 const { cargarPermisos, tienePermiso, gruposModulos, pendientes, cargarPendientes, cargandoPendientes } = useModulosAdmin()
 
 // ============ PRÓXIMOS EVENTOS (los próximos 30 días) ============
-const CATEGORIAS_EVENTO = {
-  reunion: 'Reunión',
-  urgente: 'Urgente',
-  recordatorio: 'Recordatorio',
-  recuperatorio: 'Recuperatorio',
-  asamblea: 'Asamblea'
-}
 const MESES = MESES_CORTOS
 const MAX_EVENTOS = 8
 

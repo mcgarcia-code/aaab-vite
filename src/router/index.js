@@ -130,7 +130,9 @@ const routes = [
       { path: 'designaciones', name: 'DesignacionesArbitro', component: () => import('@/components/panel-arbitro/designaciones/MisDesignaciones.vue') },
 
       // --- EXAMEN ASAMBLEA GENERAL - REUNIÓN MENSUAL ---
-      { path: 'examen-asamblea', name: 'ExamenAsamblea', component: () => import('@/components/panel-arbitro/examenes/ExamenAsambleaGeneral.vue') },
+      { path: 'examenes', name: 'ExamenesArbitro', component: () => import('@/components/panel-arbitro/examenes/ExamenesArbitro.vue') },
+      // Dirección vieja (favoritos, accesos rápidos guardados): el examen puede ser de reunión, asamblea o recuperatorio
+      { path: 'examen-asamblea', redirect: { name: 'ExamenesArbitro' } },
 
       // --- PRÁCTICA DEL CATÁLOGO (exámenes de práctica guardados por árbitro) ---
       { path: 'practica-catalogo', name: 'PracticaCatalogo', component: () => import('@/components/comunes/practica-catalogo/PracticaCatalogo.vue') },
@@ -224,7 +226,8 @@ const routes = [
       { path: 'desarrollo-arbitral/observaciones', name: 'ObservacionesAdmin', component: () => import('@/components/panel-admin/desarrollo-arbitral/ObservacionesAdmin.vue'), meta: { modulo: 'desarrollo' } },
       { path: 'desarrollo-arbitral/reuniones-mensuales', name: 'ReunionesAdmin', component: () => import('@/components/panel-admin/desarrollo-arbitral/ReunionesAdmin.vue'), meta: { modulo: 'desarrollo' } },
       { path: 'desarrollo-arbitral/resumen-arbitros', name: 'ResumenArbitrosAdmin', component: () => import('@/components/panel-admin/desarrollo-arbitral/PlanillaGeneralAdmin.vue'), meta: { modulo: 'desarrollo' } },
-      { path: 'desarrollo-arbitral/habilitacion-examenes-asamblea', name: 'HabilitacionExamenesAsamblea', component: () => import('@/components/panel-admin/desarrollo-arbitral/HabilitacionExamenesAsamblea.vue'), meta: { modulo: 'desarrollo' } },
+      { path: 'desarrollo-arbitral/habilitacion-examenes', name: 'HabilitacionExamenes', component: () => import('@/components/panel-admin/desarrollo-arbitral/HabilitacionExamenes.vue'), meta: { modulo: 'desarrollo' } },
+      { path: 'desarrollo-arbitral/habilitacion-examenes-asamblea', redirect: { name: 'HabilitacionExamenes' } },
       { path: 'desarrollo-arbitral/planilla-general-observaciones', name: 'PlanillaGeneralObservaciones', component: () => import('@/components/panel-admin/desarrollo-arbitral/PlanillaGeneralObservacionesAdmin.vue'), meta: { modulo: 'desarrollo' } },
 
       // --- CURSOS ---

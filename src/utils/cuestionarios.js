@@ -7,6 +7,28 @@ export const UMBRAL_APROBADO = 75
 
 export const aprobado = (porcentaje) => Number(porcentaje) >= UMBRAL_APROBADO
 
+// 66.6667 → "66,67%" · null / '' → "—" (mismo formato en listas, seguimiento y prácticas)
+export const textoPorcentaje = (valor, decimales = 2) => {
+  if (valor === null || valor === undefined || valor === '') return '—'
+  const numero = Number(valor)
+  return Number.isNaN(numero) ? '—' : `${numero.toLocaleString('es-AR', { maximumFractionDigits: decimales })}%`
+}
+
+// Nota cargada a mano o guardada como texto: acepta 80, "80", "80%", "72,5". null si no es un número
+export const notaNumerica = (calificacion) => {
+  const numero = parseFloat(String(calificacion ?? '').replace('%', '').replace(',', '.').trim())
+  return Number.isNaN(numero) ? null : numero
+}
+
+// Estado efectivo del teórico de los árbitros (planilla general y Mi rendimiento): con nota, aprueba desde
+// UMBRAL_APROBADO; sin nota, o si está ausente / no lo hizo, queda el estado cargado
+export const estadoTeorico = (detalle) => {
+  if (!detalle) return ''
+  if (detalle.estado === 'no lo hizo' || detalle.estado === 'ausente') return detalle.estado
+  const numero = notaNumerica(detalle.calificacion)
+  return numero === null ? detalle.estado : (numero >= UMBRAL_APROBADO ? 'aprobado' : 'desaprobado')
+}
+
 // Reglas del reglamento: del 1 al 18 y algunas con nombre (ej. "SAR"). Orden: primero los números, después el resto
 const esNumero = (regla) => /^\d+$/.test(String(regla))
 

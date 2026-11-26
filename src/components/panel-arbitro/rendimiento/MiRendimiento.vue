@@ -141,7 +141,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import { useHead } from '@unhead/vue'
-import { UMBRAL_APROBADO } from '@/utils/cuestionarios'
+import { notaNumerica, estadoTeorico } from '@/utils/cuestionarios'
 
 useHead({
   title: 'Mi Rendimiento | AAAB',
@@ -179,24 +179,9 @@ const getDetalle = (ex, tipo) => {
   return ex.detalles.find(d => d.tipo.toLowerCase() === tipo.toLowerCase()) || null
 }
 
-// Nota numérica (acepta "80", "80%", "72,5") — igual que la planilla admin
-const notaNumerica = (detalle) => {
-  if (!detalle) return null
-  const num = parseFloat(String(detalle.calificacion ?? '').replace('%', '').replace(',', '.').trim())
-  return Number.isNaN(num) ? null : num
-}
-
-// Estado efectivo del teórico según UMBRAL_APROBADO (75 o más aprobado, menos desaprobado),
-// igual que en la Planilla General. El físico y los estados especiales
-// (ausente / no lo hizo) usan el estado tal cual viene.
-const estadoEfectivo = (detalle, tipo) => {
-  if (!detalle) return ''
-  if (tipo === 'teorico' && detalle.estado !== 'no lo hizo' && detalle.estado !== 'ausente') {
-    const num = notaNumerica(detalle)
-    if (num !== null) return num >= UMBRAL_APROBADO ? 'aprobado' : 'desaprobado'
-  }
-  return detalle.estado
-}
+// Estado efectivo: el teórico se calcula con la nota (igual que en la Planilla General);
+// el físico y los estados especiales (ausente / no lo hizo) usan el estado tal cual viene
+const estadoEfectivo = (detalle, tipo) => (tipo === 'teorico' ? estadoTeorico(detalle) : (detalle?.estado ?? ''))
 
 // Lógica para las tarjetas de Exámenes
 const formatEstadoExamen = (detalle, tipo) => {
@@ -441,7 +426,7 @@ const promedioTeoricos = computed(() => {
   for (const ex of examenesFiltrados.value) {
     const det = getDetalle(ex, 'teorico')
     if (!det || det.estado === 'no lo hizo' || det.estado === 'ausente') continue
-    const num = notaNumerica(det)
+    const num = notaNumerica(det.calificacion)
     if (num !== null) notas.push(num)
   }
   if (!notas.length) return null

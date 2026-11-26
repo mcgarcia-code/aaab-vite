@@ -222,7 +222,7 @@ import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import ModalBase from '@/components/ModalBase.vue'
 import SeguimientoCurso from '@/components/panel-admin/curso-arbitros/SeguimientoCurso.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
-import { UMBRAL_APROBADO, textoNumeroPregunta, textoReglas } from '@/utils/cuestionarios'
+import { UMBRAL_APROBADO, textoNumeroPregunta, textoReglas, textoPorcentaje } from '@/utils/cuestionarios'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaHoraDMA, MESES } from '@/utils/fechas'
 import { normalizarTexto } from '@/utils/texto'
@@ -265,9 +265,7 @@ const actualizar = () => (pestana.value === 'seguimiento' ? seguimientoRef.value
 const cargandoPestana = computed(() => (pestana.value === 'seguimiento' ? !!seguimientoRef.value?.cargando : cargando.value))
 
 // ============ FORMATOS ============
-const textoNota = (valor) => (valor === null || valor === undefined
-  ? '—'
-  : `${Number(valor).toLocaleString('es-AR', { maximumFractionDigits: 1 })}%`)
+const textoNota = (valor) => textoPorcentaje(valor, 1)
 const claseNota = (valor) => (Number(valor) >= UMBRAL_APROBADO ? 'text-success' : 'text-danger')
 
 // ============ LISTA ============

@@ -231,7 +231,7 @@ import { cargarExcelJS } from '@/utils/librerias'
 import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
-import { UMBRAL_APROBADO } from '@/utils/cuestionarios'
+import { UMBRAL_APROBADO, notaNumerica } from '@/utils/cuestionarios'
 
 // Actualización de Meta Tags
 // Planilla general de árbitros (asambleas, recuperatorios y reuniones), compartida por
@@ -530,12 +530,6 @@ const totalColumnasFisicas = computed(() =>
 const notaDe = (a, col, tipo) => notasExamenes.value[`${col.id}|${a.id}|${tipo}`] || null
 const asistenciaDe = (a, col) => asistencias.value[`${col.id}|${a.id}`] || ''
 
-// Nota numérica (acepta "80", "80%", "72,5")
-const notaNumerica = (nota) => {
-  if (!nota) return null
-  const num = parseFloat(String(nota.calificacion ?? '').replace('%', '').replace(',', '.').trim())
-  return Number.isNaN(num) ? null : num
-}
 
 const textoCeldaExamen = (a, col, tipo) => {
   const nota = notaDe(a, col, tipo)
@@ -567,7 +561,7 @@ const claseCeldaExamen = (a, col, tipo) => {
     // Umbral SOLO para el teórico: verde con UMBRAL_APROBADO (75) o más, rojo con menos.
     // El físico se colorea siempre por su estado.
     if (tipo === 'teorico') {
-      const num = notaNumerica(nota)
+      const num = notaNumerica(nota.calificacion)
       if (num !== null) return num >= UMBRAL_APROBADO ? 'celda-verde' : 'celda-roja'
     }
     if (nota.estado === 'aprobado') return 'celda-verde'
@@ -634,8 +628,8 @@ const cerrarEditor = () => { editor.value = null }
 const alTipearNota = () => {
   const e = editor.value
   if (!e || e.tipo !== 'teorico') return
-  const num = parseFloat(String(e.calificacion ?? '').replace('%', '').replace(',', '.').trim())
-  if (!Number.isNaN(num)) e.estado = num >= UMBRAL_APROBADO ? 'aprobado' : 'desaprobado'
+  const num = notaNumerica(e.calificacion)
+  if (num !== null) e.estado = num >= UMBRAL_APROBADO ? 'aprobado' : 'desaprobado'
 }
 
 // Guarda la ausencia de UN solo tipo (teórico o físico) en examenes_panel

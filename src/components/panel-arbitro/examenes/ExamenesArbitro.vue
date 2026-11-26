@@ -5,7 +5,7 @@
     entity="examen_online"
     :acciones="{ iniciar: 'iniciarOReanudar', guardar: 'guardarAvance', finalizar: 'finalizarExamen' }"
     :identificador="{ idEvento: evento.id_evento }"
-    :titulo="evento.titulo || 'Examen Asamblea General - Reunión Mensual'"
+    :titulo="evento.titulo || 'Examen online'"
     titulo-pagina="Examen Online | AAAB"
     descripcion-pagina="Examen online para los árbitros de la AAAB."
     @terminar="alTerminar"
@@ -135,7 +135,7 @@
               <button class="btn btn-outline-secondary btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px;"
                       :disabled="descargando[ex.id_evento]"
                       :aria-label="`Descargar PDF de ${ex.titulo}`"
-                      @click="descargarPdf(ex.id_evento)">
+                      @click="descargarPdf(ex)">
                 <span v-if="descargando[ex.id_evento]" class="spinner-border spinner-border-sm text-secondary"></span>
                 <i v-else class="bi bi-file-earmark-pdf-fill fs-5" :class="ex.aprobado ? 'text-success' : 'text-danger'"></i>
               </button>
@@ -182,7 +182,7 @@ const anioDe = (ex) => String(ex.fecha || '').substring(0, 4)
 const aniosDisponibles = computed(() => conAnioActual(historial.value.map(anioDe).filter(Boolean)))
 const porTipo = computed(() => Object.fromEntries(TIPOS.map(t => [
   t.clave,
-  historial.value.filter(ex => anioDe(ex) === String(anioSeleccionado.value) && (ex.categoria || 'asamblea') === t.clave),
+  historial.value.filter(ex => anioDe(ex) === String(anioSeleccionado.value) && (ex.categoria || 'reunion') === t.clave),
 ])))
 
 // Al cambiar el año, se abre la primera pestaña que tenga exámenes
@@ -251,7 +251,8 @@ function volverAlPanel() {
   recargar()
 }
 
-async function descargarPdf(idEvento) {
+async function descargarPdf(ex) {
+  const idEvento = ex.id_evento
   descargando.value = { ...descargando.value, [idEvento]: true }
   errorPdf.value = ''
   try {
@@ -259,7 +260,7 @@ async function descargarPdf(idEvento) {
       entity: 'examen_online',
       action: 'descargarPdfExamen',
       payload: { idEvento }
-    }, 'examen_asamblea.pdf')
+    }, `examen_${ex.titulo || ex.fecha || idEvento}.pdf`)
   } catch (e) {
     errorPdf.value = e?.message || 'No se pudo descargar el PDF'
   } finally {
