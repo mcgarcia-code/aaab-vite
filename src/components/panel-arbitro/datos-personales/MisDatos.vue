@@ -126,7 +126,7 @@
         <div class="row g-3 align-items-end">
             <div class="col-12 col-md-8">
                 <label class="small text-muted mb-1 d-block">Nueva Contraseña</label>
-                <input aria-label="Nueva Contraseña" v-model="nuevaPassword" type="password" class="form-control form-control-sm py-2" placeholder="Escribí tu nueva clave aquí">
+                <InputPassword id="mis-datos-password" v-model="nuevaPassword" aria-label="Nueva Contraseña" autocomplete="new-password" class="form-control form-control-sm py-2" placeholder="Escribí tu nueva clave aquí" />
             </div>
             <div class="col-12 col-md-4">
                 <button @click="cambiarPassword" class="btn btn-light border btn-sm w-100 fw-bold py-2 shadow-sm" :disabled="cargando || !nuevaPassword">
@@ -235,6 +235,7 @@ import { fechaDMA } from '@/utils/fechas'
 import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import { useHead } from '@unhead/vue'
+import InputPassword from '@/components/comunes/InputPassword.vue'
 
 useHead({
   title: 'Mis Datos | AAAB',

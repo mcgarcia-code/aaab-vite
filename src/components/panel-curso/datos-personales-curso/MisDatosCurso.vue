@@ -102,11 +102,11 @@
         <form class="row g-3" novalidate @submit.prevent="cambiarPassword">
           <div class="col-12 col-md-6">
             <label for="mdc-pass-nueva" class="form-label small fw-bold text-dark">Nueva contraseña</label>
-            <input id="mdc-pass-nueva" v-model="pass.nueva" type="password" autocomplete="new-password" maxlength="72" class="form-control" placeholder="Mínimo 8 caracteres">
+            <InputPassword id="mdc-pass-nueva" v-model="pass.nueva" autocomplete="new-password" maxlength="72" class="form-control" placeholder="Mínimo 8 caracteres" />
           </div>
           <div class="col-12 col-md-6">
             <label for="mdc-pass-confirmacion" class="form-label small fw-bold text-dark">Repetir nueva contraseña</label>
-            <input id="mdc-pass-confirmacion" v-model="pass.confirmacion" type="password" autocomplete="new-password" maxlength="72" class="form-control">
+            <InputPassword id="mdc-pass-confirmacion" v-model="pass.confirmacion" autocomplete="new-password" maxlength="72" class="form-control" />
           </div>
           <div class="col-12 d-flex justify-content-end">
             <button type="submit" class="btn btn-light border rounded-pill fw-bold px-4" :disabled="cambiandoPass || !pass.nueva">
@@ -129,6 +129,7 @@ import { api } from '@/api/api'
 import { GENEROS_CURSO, MODALIDADES_CURSO, DOMINIO_USUARIO_CURSO, textoDtClubes } from '@/composables/useCursoArbitro'
 import { fechaDMA } from '@/utils/fechas'
 import { usePerfilCurso } from '@/composables/usePerfilCurso'
+import InputPassword from '@/components/comunes/InputPassword.vue'
 
 useHead({ title: 'Datos Personales | Curso AAAB' })
 

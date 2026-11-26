@@ -241,13 +241,11 @@
           <template v-if="!modoEdicion">
             <div class="col-12 col-sm-6">
               <label class="small fw-bold text-dark mb-1">Contraseña *</label>
-              <input aria-label="Contraseña" v-model="form.password" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.password }">
-              <div class="invalid-feedback">{{ errores.password }}</div>
+              <InputPassword id="usuario-admin-password" v-model="form.password" aria-label="Contraseña" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.password }" :error="errores.password || ''" />
             </div>
             <div class="col-12 col-sm-6">
               <label class="small fw-bold text-dark mb-1">Repetir contraseña *</label>
-              <input aria-label="Repetir contraseña" v-model="form.confirmacion" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.confirmacion }">
-              <div class="invalid-feedback">{{ errores.confirmacion }}</div>
+              <InputPassword id="usuario-admin-password2" v-model="form.confirmacion" aria-label="Repetir contraseña" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': errores.confirmacion }" :error="errores.confirmacion || ''" />
             </div>
           </template>
         </div>
@@ -280,13 +278,11 @@
         <div class="row g-3">
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Nueva contraseña *</label>
-            <input aria-label="Nueva contraseña" v-model="formPassword.password" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': erroresPassword.password }">
-            <div class="invalid-feedback">{{ erroresPassword.password }}</div>
+            <InputPassword id="cambiar-password-admin" v-model="formPassword.password" aria-label="Nueva contraseña" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': erroresPassword.password }" :error="erroresPassword.password || ''" />
           </div>
           <div class="col-12">
             <label class="small fw-bold text-dark mb-1">Repetir contraseña *</label>
-            <input aria-label="Repetir contraseña" v-model="formPassword.confirmacion" type="password" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': erroresPassword.confirmacion }">
-            <div class="invalid-feedback">{{ erroresPassword.confirmacion }}</div>
+            <InputPassword id="cambiar-password-admin2" v-model="formPassword.confirmacion" aria-label="Repetir contraseña" autocomplete="new-password" class="form-control shadow-none border-secondary-subtle" :class="{ 'is-invalid': erroresPassword.confirmacion }" :error="erroresPassword.confirmacion || ''" />
           </div>
         </div>
       </form>
@@ -315,6 +311,7 @@ import { api } from '@/api/api'
 import { auth } from '@/api/auth'
 import ModalBase from '@/components/ModalBase.vue'
 import { useCambiosSinGuardar } from '@/composables/useCambiosSinGuardar'
+import InputPassword from '@/components/comunes/InputPassword.vue'
 import { MODULOS_ADMIN, ROL_ADMIN, etiquetaRol } from '@/config/modulosAdmin'
 
 useHead({
