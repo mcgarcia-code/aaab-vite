@@ -68,9 +68,9 @@
         <p class="lead mb-5 text-white mx-auto" style="max-width: 700px;">
           ¿Querés dominar el catálogo y las reglas del Handball? Este es el lugar perfecto para practicar. Accedé al catálogo 100% virtual, tanto en inglés como en español y perfeccioná tus conocimientos.
         </p>
-        <a href="https://arbitroshandball.com.ar/catalogo/" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light btn-lg px-5 py-3 fw-bold rounded-pill shadow-sm hero-btn">
+        <RouterLink to="/catalogo" class="btn btn-outline-light btn-lg px-5 py-3 fw-bold rounded-pill shadow-sm hero-btn">
           Ingresá al Catálogo
-        </a>
+        </RouterLink>
       </div>
     </section>
 

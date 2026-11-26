@@ -24,9 +24,7 @@
           <li class="nav-item"><RouterLink class="nav-link fw-semibold px-xl-3 text-nowrap" to="/escuela-arbitros">Escuela de Árbitros</RouterLink></li>
           <li class="nav-item"><RouterLink class="nav-link fw-semibold px-xl-3 text-nowrap" to="/designaciones">Designaciones</RouterLink></li>
           <li class="nav-item"><RouterLink class="nav-link fw-semibold px-xl-3 text-nowrap" to="/tribunal-de-etica">Tribunal de Ética</RouterLink></li>
-          <li class="nav-item">
-            <a class="nav-link fw-semibold px-xl-3 text-nowrap" href="https://arbitroshandball.com.ar/catalogo/" target="_blank" rel="noopener noreferrer">Catálogo Online</a>
-          </li>
+          <li class="nav-item"><RouterLink class="nav-link fw-semibold px-xl-3 text-nowrap" to="/catalogo">Catálogo Online</RouterLink></li>
           <li class="nav-item"><RouterLink class="nav-link fw-semibold px-xl-3 pe-xl-4 text-nowrap" to="/preguntas-frecuentes">Preguntas Frecuentes</RouterLink></li>
 
           <!-- Usamos mt-3 mt-xl-0 para darle aire arriba en celular, pero dejamos que tenga su ancho natural -->
