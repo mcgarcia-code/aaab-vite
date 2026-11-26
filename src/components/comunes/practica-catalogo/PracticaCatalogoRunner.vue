@@ -59,51 +59,22 @@
           <div class="progress-bar bg-danger" :style="{ width: `${(respondidas / total) * 100}%` }"></div>
         </div>
 
-        <p class="fw-bold mb-3 fs-6 fs-md-5 lh-base px-1 text-break">{{ preguntaActual?.texto }}</p>
-        <p class="small text-muted mb-2 px-1"><i class="bi bi-info-circle me-1"></i>{{ t.masDeUna }}</p>
+        <PreguntaCuestionario
+          :texto="preguntaActual?.texto"
+          :opciones="opcionesActuales"
+          :elegidas="seleccion[preguntaActual?.id] || []"
+          :ayuda="t.masDeUna"
+          @alternar="alternarOpcion(preguntaActual.id, $event)"
+        />
 
-        <div class="list-group mb-4 gap-2">
-          <label v-for="(o, i) in opcionesActuales" :key="o.id"
-                 class="list-group-item d-flex gap-2 gap-md-3 align-items-start p-2 p-md-3 opcion-item shadow-sm border"
-                 :class="{ elegida: estaElegida(preguntaActual.id, o.id) }">
-            <input class="form-check-input flex-shrink-0 fs-5 mt-1" type="checkbox"
-                   :checked="estaElegida(preguntaActual.id, o.id)"
-                   @change="alternarOpcion(preguntaActual.id, o.id)">
-            <span class="text-danger fw-bold mt-1">{{ letra(i) }})</span>
-            <span class="text-dark lh-sm mt-1 text-break">{{ o.texto }}</span>
-          </label>
-        </div>
-
-        <div class="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-stretch align-items-sm-center border-top pt-3 gap-2">
-          <div class="w-100 w-sm-auto">
-            <button v-if="indice > 0" class="btn btn-outline-secondary rounded-pill px-4 fw-bold w-100 py-2" @click="irAPregunta(indice - 1)">
-              <i class="bi bi-arrow-left me-2"></i>{{ t.anterior }}
-            </button>
-          </div>
-          <div class="w-100 w-sm-auto">
-            <button v-if="indice < total - 1" class="btn btn-danger rounded-pill px-4 py-2 fw-bold w-100" @click="irAPregunta(indice + 1)">
-              {{ t.siguiente }}<i class="bi bi-arrow-right ms-2"></i>
-            </button>
-            <button v-else class="btn btn-danger rounded-pill px-4 py-2 fw-bold w-100 shadow" @click="pedirConfirmacionFinalizar">
-              <i class="bi bi-check-circle-fill me-2"></i>{{ t.finalizar }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Navegación rápida -->
-        <div class="border-top pt-3 mt-3">
-          <small class="text-muted d-block mb-2 fw-bold text-center text-sm-start">
-            {{ t.navegacionRapida }} <span class="fw-normal">{{ t.navegacionAyuda }}</span>
-          </small>
-          <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
-            <button v-for="(p, i) in preguntas" :key="p.id" type="button"
-                    class="btn btn-sm nav-pregunta fw-bold"
-                    :class="i === indice ? 'btn-danger' : (preguntaRespondida(p.id) ? 'btn-success' : 'btn-light border')"
-                    @click="irAPregunta(i)">
-              {{ i + 1 }}
-            </button>
-          </div>
-        </div>
+        <NavegacionCuestionario
+          :preguntas="preguntas"
+          :indice="indice"
+          :seleccion="seleccion"
+          :idioma="idioma"
+          @ir="irAPregunta"
+          @finalizar="pedirConfirmacionFinalizar"
+        />
       </div>
 
     </div>
@@ -117,6 +88,8 @@ import { useGuardadoEnCola } from '@/composables/useGuardadoEnCola'
 import { useTextosCatalogo } from '@/composables/textosCatalogo'
 import RevisionPractica from '@/components/comunes/practica-catalogo/RevisionPractica.vue'
 import ResumenResultado from '@/components/comunes/practica-catalogo/ResumenResultado.vue'
+import PreguntaCuestionario from '@/components/comunes/cuestionario/PreguntaCuestionario.vue'
+import NavegacionCuestionario from '@/components/comunes/cuestionario/NavegacionCuestionario.vue'
 
 const notificar = inject('notificar')
 
@@ -150,8 +123,6 @@ const preguntaActual = computed(() => preguntas.value[indice.value] || null)
 const opcionesActuales = computed(() => preguntaActual.value ? (opciones.value[preguntaActual.value.id] || []) : [])
 const respondidas = computed(() => preguntas.value.filter(p => preguntaRespondida(p.id)).length)
 
-const letra = (i) => String.fromCharCode(97 + i)
-const estaElegida = (idPregunta, idOpcion) => (seleccion.value[idPregunta] || []).includes(idOpcion)
 const preguntaRespondida = (idPregunta) => (seleccion.value[idPregunta] || []).length > 0
 
 const alternarOpcion = (idPregunta, idOpcion) => {
@@ -254,36 +225,4 @@ onBeforeUnmount(() => document.body.classList.remove('overflow-hidden'))
 .min-w-0 { min-width: 0; }
 .espaciado-1 { letter-spacing: 1px; }
 
-.opcion-item {
-  cursor: pointer;
-  border-radius: 8px !important;
-  transition: background .12s ease;
-}
-/* Hover solo con mouse: en el celular el hover queda "pegado" en la última opción tocada */
-@media (hover: hover) {
-  .opcion-item:hover { background: var(--o-rojo-fondo, #fff5f5); }
-}
-
-/* Cada opción elegida: casillero completo en rojo + checkbox rojo (todas las que se marquen) */
-.opcion-item.elegida {
-  background: var(--o-rojo-fondo, #fff5f5);
-  border-color: var(--o-rojo, #dc2626) !important;
-  box-shadow: 0 0 0 1px var(--o-rojo, #dc2626) !important;
-}
-.opcion-item.elegida .text-dark { color: var(--o-rojo-texto, #b91c1c) !important; font-weight: 600; }
-.opcion-item .form-check-input:checked {
-  background-color: #dc2626;
-  border-color: #dc2626;
-}
-.opcion-item .form-check-input:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.25); border-color: #dc2626; }
-
-.nav-pregunta {
-  width: 42px;
-  height: 42px;
-  border-radius: 8px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
 </style>

@@ -73,70 +73,22 @@
           </div>
         </div>
 
-        <p class="fw-bold mb-4 fs-6 fs-md-5 lh-base px-1 text-break texto-ofuscado"><template v-for="(seg, i) in segmentosPregunta" :key="i">{{ seg }}<template v-if="i < segmentosPregunta.length - 1"><span class="espacio-oculto">@</span><wbr></template></template></p>
+        <PreguntaCuestionario
+          :texto="preguntaActual?.texto"
+          :opciones="opcionesActuales"
+          :elegidas="seleccion[preguntaActual?.id] || []"
+          ofuscado
+          ayuda="Puede haber más de una respuesta correcta. Para cambiar una respuesta, destildá la anterior."
+          @alternar="toggleOpcion(preguntaActual.id, $event)"
+        />
 
-        <p class="small text-muted mb-2 px-1">
-          <i class="bi bi-info-circle me-1"></i>Puede haber más de una respuesta correcta. Para cambiar una respuesta, destildá la anterior.
-        </p>
-
-        <div class="list-group mb-4 gap-2">
-          <label v-for="(o, i) in opcionesActuales" :key="o.id"
-                 class="list-group-item d-flex gap-2 gap-md-3 align-items-start p-2 p-md-3 opcion-item shadow-sm border"
-                 :class="{ elegida: estaElegida(preguntaActual.id, o.id) }">
-            <input class="form-check-input flex-shrink-0 fs-5 mt-1" type="checkbox"
-                   :checked="estaElegida(preguntaActual.id, o.id)"
-                   @change="toggleOpcion(preguntaActual.id, o.id)">
-            <span class="text-danger fw-bold mt-1">{{ letra(i) }})</span>
-            <!-- text-break y mt-1 para que el texto multilínea quede alineado con el input -->
-            <span class="text-dark lh-sm mt-1 text-break">{{ o.texto }}</span>
-          </label>
-        </div>
-
-        <!-- Botones de navegación (Apilados invertidos en móvil, distribuidos en escritorio) -->
-        <div class="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-stretch align-items-sm-center border-top pt-3 gap-2">
-
-          <!-- Contenedor izquierdo: Botón "Anterior" o espacio vacío -->
-          <div class="w-100 w-sm-auto">
-            <button v-if="indice > 0" class="btn btn-outline-secondary rounded-pill px-3 px-md-4 fw-bold w-100 py-2 py-sm-1" @click="anterior">
-              <i class="bi bi-arrow-left me-1 me-md-2"></i>Anterior
-            </button>
-          </div>
-
-          <!-- Contenedor derecho: Botón "Siguiente" o "Finalizar" -->
-          <div class="w-100 w-sm-auto">
-            <button v-if="indice < total - 1" class="btn btn-danger rounded-pill px-3 px-md-4 py-2 fw-bold w-100" @click="siguiente">
-              Siguiente<i class="bi bi-arrow-right ms-1 ms-md-2"></i>
-            </button>
-            <button v-else class="btn btn-danger rounded-pill px-3 px-md-4 py-2 fw-bold w-100 shadow" @click="pedirConfirmacionFinalizar">
-              <i class="bi bi-check-circle-fill me-1 me-md-2"></i>Finalizar
-            </button>
-          </div>
-
-        </div>
-
-        <!-- Navegación rápida (debajo de los botones Anterior/Siguiente) -->
-        <div class="border-top pt-3 mt-3">
-          <small class="text-muted d-block mb-2 fw-bold text-center text-sm-start">
-            Navegación rápida
-            <span class="fw-normal">— tocá un número para ir a esa pregunta</span>
-          </small>
-          <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-sm-start">
-            <button v-for="(p, i) in preguntas" :key="p.id"
-                    type="button"
-                    class="btn btn-sm nav-pregunta fw-bold"
-                    :class="[
-                      i === indice ? 'btn-danger' : (preguntaRespondida(p.id) ? 'btn-success' : 'btn-light border')
-                    ]"
-                    @click="irAPregunta(i)">
-              {{ i + 1 }}
-            </button>
-          </div>
-          <div class="d-flex flex-wrap gap-3 mt-2 justify-content-center justify-content-sm-start small text-muted">
-            <span><i class="bi bi-square-fill text-danger me-1"></i>Actual</span>
-            <span><i class="bi bi-square-fill text-success me-1"></i>Respondida</span>
-            <span><i class="bi bi-square text-secondary me-1"></i>Sin responder</span>
-          </div>
-        </div>
+        <NavegacionCuestionario
+          :preguntas="preguntas"
+          :indice="indice"
+          :seleccion="seleccion"
+          @ir="irAPregunta"
+          @finalizar="pedirConfirmacionFinalizar"
+        />
 
       </div>
 
@@ -151,6 +103,8 @@ import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import { useGuardadoEnCola } from '@/composables/useGuardadoEnCola'
 import RevisionPractica from '@/components/comunes/practica-catalogo/RevisionPractica.vue'
+import PreguntaCuestionario from '@/components/comunes/cuestionario/PreguntaCuestionario.vue'
+import NavegacionCuestionario from '@/components/comunes/cuestionario/NavegacionCuestionario.vue'
 
 // Examen online a pantalla completa, común al panel árbitro (examen de reunión / asamblea)
 // y al panel curso. Cada panel le indica su backend:
@@ -197,15 +151,6 @@ const opcionesActuales = computed(() => {
   const p = preguntaActual.value
   return p ? (opciones.value[p.id] || []) : []
 })
-// El BE reemplaza los espacios del enunciado por '@'; acá se separan en segmentos
-// para poder renderizar cada '@' como un span invisible (mismo ancho, opacity 0),
-// de forma que se vea como un espacio normal pero al copiar el texto arrastre el '@'.
-const segmentosPregunta = computed(() => (preguntaActual.value?.texto || '').split('@'))
-
-function estaElegida(pid, rid) {
-  return (seleccion.value[pid] || []).includes(rid)
-}
-
 function toggleOpcion(pid, rid) {
   const arr = seleccion.value[pid] ? [...seleccion.value[pid]] : []
   const i = arr.indexOf(rid)
@@ -214,12 +159,8 @@ function toggleOpcion(pid, rid) {
   seleccion.value = { ...seleccion.value, [pid]: arr }
 }
 
-function preguntaRespondida(pid) {
-  return (seleccion.value[pid] || []).length > 0
-}
-
 async function irAPregunta(i) {
-  if (i === indice.value) return
+  if (i === indice.value || i < 0 || i >= total.value) return
   indice.value = i
   await guardarAvance()
 }
@@ -251,12 +192,6 @@ async function guardarAvance() {
   }
 }
 
-async function anterior() {
-  if (indice.value > 0) { indice.value--; await guardarAvance() }
-}
-async function siguiente() {
-  if (indice.value < total.value - 1) { indice.value++; await guardarAvance() }
-}
 
 async function iniciar() {
   fase.value = 'cargando'
@@ -354,7 +289,6 @@ const relojTexto = computed(() => {
   return `${m}:${s}`
 })
 
-function letra(i) { return String.fromCharCode(97 + i) }
 
 onMounted(() => {
   document.body.style.overflow = 'hidden'
@@ -384,45 +318,4 @@ onBeforeUnmount(() => {
   max-width: 760px;
 }
 
-.opcion-item {
-  cursor: pointer;
-  border-radius: 8px !important;
-  transition: background .12s ease;
-}
-
-/* Hover solo con mouse: en el celular el hover queda "pegado" en la última opción tocada */
-@media (hover: hover) {
-  .opcion-item:hover { background: var(--o-rojo-fondo, #fff5f5); }
-}
-
-/* Cada opción elegida: casillero completo en rojo + checkbox rojo, para que se vea si quedó más de una marcada */
-.opcion-item.elegida {
-  background: var(--o-rojo-fondo, #fff5f5);
-  border-color: var(--o-rojo, #dc2626) !important;
-  box-shadow: 0 0 0 1px var(--o-rojo, #dc2626) !important;
-}
-.opcion-item.elegida .text-dark { color: var(--o-rojo-texto, #b91c1c) !important; font-weight: 600; }
-.opcion-item .form-check-input:checked {
-  background-color: #dc2626;
-  border-color: #dc2626;
-}
-.opcion-item .form-check-input:focus { box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.25); border-color: #dc2626; }
-
-.espacio-oculto {
-  display: inline-block;
-  width: 0.27em;
-  overflow: hidden;
-  opacity: 0;
-  vertical-align: bottom;
-}
-
-.nav-pregunta {
-  width: 42px;
-  height: 42px;
-  border-radius: 8px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
 </style>

@@ -1,6 +1,7 @@
 import { computed, toValue } from 'vue'
 
-// Textos de la práctica del catálogo en español e inglés. El panel usa siempre español;
+// Textos de los cuestionarios (práctica, catálogo público y examen online) en español e inglés.
+// El panel y los exámenes usan siempre español;
 // el catálogo público cambia al idioma elegido para las preguntas (como el catálogo viejo).
 export const TEXTOS_CATALOGO = {
   es: {
@@ -20,6 +21,8 @@ export const TEXTOS_CATALOGO = {
     masDeUna: 'Puede haber más de una respuesta correcta.',
     navegacionRapida: 'Navegación rápida',
     navegacionAyuda: '— tocá un número para ir a esa pregunta',
+    actual: 'Actual',
+    respondidaLeyenda: 'Respondida',
     confirmarTitulo: '¿Finalizar?',
     confirmarSinResponder: (n) => `Te ${n === 1 ? 'queda 1 pregunta' : `quedan ${n} preguntas`} sin responder: cuentan como erradas. ¿Querés finalizar igual?`,
     confirmarListo: 'Vas a ver la corrección de cada pregunta. ¿Querés finalizar?',
@@ -61,6 +64,8 @@ export const TEXTOS_CATALOGO = {
     masDeUna: 'There may be more than one correct answer.',
     navegacionRapida: 'Quick navigation',
     navegacionAyuda: '— tap a number to go to that question',
+    actual: 'Current',
+    respondidaLeyenda: 'Answered',
     confirmarTitulo: 'Finish?',
     confirmarSinResponder: (n) => `${n === 1 ? '1 question is' : `${n} questions are`} still unanswered and will count as wrong. Finish anyway?`,
     confirmarListo: 'You will see the correction of every question. Finish?',
