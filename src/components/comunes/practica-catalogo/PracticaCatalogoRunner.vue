@@ -149,13 +149,17 @@ const alternarOpcion = (idPregunta, idOpcion) => {
   seleccion.value = { ...seleccion.value, [idPregunta]: elegidas }
 }
 
+// Identifica esta apertura de la práctica en el seguimiento del backend (catalogo_practicas_seguimiento):
+// si en el historial cambia, la práctica se retomó o estaba abierta en otro dispositivo o pestaña
+const sesion = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+
 // El avance se guarda al cambiar de pregunta: si se cierra la app, se retoma donde estaba.
 // Si falla (sin conexión) no se corta la práctica: se reintenta en el próximo cambio.
 // Va en cola (de a un envío) para que un guardado viejo no pise al más reciente
 const { guardar: guardarAvance } = useGuardadoEnCola(() => api.post({
   entity: 'catalogo_practica',
   action: 'guardarAvancePractica',
-  payload: { idPractica: props.practica.id, indice: indice.value, seleccion: seleccion.value }
+  payload: { idPractica: props.practica.id, indice: indice.value, seleccion: seleccion.value, sesion }
 }))
 
 const irAPregunta = (i) => {
@@ -188,7 +192,7 @@ const finalizar = async () => {
     const res = await api.post({
       entity: 'catalogo_practica',
       action: 'finalizarPractica',
-      payload: { idPractica: props.practica.id, seleccion: seleccion.value }
+      payload: { idPractica: props.practica.id, indice: indice.value, seleccion: seleccion.value, sesion }
     })
     if (res?.ok === false) throw new Error(res.message || 'No se pudo finalizar la práctica')
     resultado.value = res.payload
