@@ -35,6 +35,7 @@ export const MODULOS_ADMIN = [
   { clave: 'facturacion', categoria: 'Herramientas', etiqueta: 'Facturación' },
   { clave: 'informes', categoria: 'Herramientas', etiqueta: 'Informes' },
   { clave: 'catalogo_preguntas', categoria: 'Herramientas', etiqueta: 'Catálogo de preguntas (exámenes, práctica y catálogo público)' },
+  { clave: 'seguimiento_examenes', categoria: 'Herramientas', etiqueta: 'Seguimiento de exámenes online de los árbitros' },
 ]
 
 // Módulos del panel por categoría. El título y la descripción (desc) son
@@ -101,7 +102,7 @@ export const CATEGORIAS_ADMIN = [
       { modulo: 'curso', to: '/panel-admin/curso-arbitros/cronograma', title: 'Clases y asistencia', icon: 'bi bi-calendar3-week', desc: 'Cronograma y exámenes por clase', pendiente: 'clasesSinAsistencia' },
       { modulo: 'curso', to: '/panel-admin/curso-arbitros/observaciones-curso', title: 'Observaciones del curso', icon: 'bi bi-clipboard-data-fill', desc: 'Observaciones de los aspirantes', pendiente: 'observacionesCurso' },
       { modulo: 'curso', to: '/panel-admin/curso-arbitros/examenes-curso', title: 'Exámenes del curso', icon: 'bi bi-journal-check', desc: 'Exámenes y resultados' },
-      { modulo: 'curso', to: '/panel-admin/curso-arbitros/practicas-catalogo', title: 'Práctica del catálogo', icon: 'bi bi-ui-checks-grid', desc: 'Aspirantes que practican' }
+      { modulo: 'curso', to: '/panel-admin/curso-arbitros/practicas-catalogo', title: 'Práctica del catálogo', icon: 'bi bi-ui-checks-grid', desc: 'Prácticas y seguimiento de exámenes' }
     ]
   },
   {
@@ -110,7 +111,8 @@ export const CATEGORIAS_ADMIN = [
     items: [
       { modulo: 'facturacion', to: '/panel-admin/facturacion', title: 'Facturación', icon: 'bi bi-receipt', desc: 'Datos fiscales de clubes' },
       { modulo: 'informes', to: '/panel-admin/informes', title: 'Informes', icon: 'bi bi-file-earmark-text', desc: 'Informes arbitrales', pendiente: 'informes' },
-      { modulo: 'catalogo_preguntas', to: '/panel-admin/catalogo-preguntas', title: 'Catálogo de preguntas', icon: 'bi bi-ui-checks-grid', desc: 'Preguntas y respuestas de exámenes y práctica' }
+      { modulo: 'catalogo_preguntas', to: '/panel-admin/catalogo-preguntas', title: 'Catálogo de preguntas', icon: 'bi bi-ui-checks-grid', desc: 'Preguntas y respuestas de exámenes y práctica' },
+      { modulo: 'seguimiento_examenes', to: '/panel-admin/seguimiento-examenes', title: 'Seguimiento de exámenes', icon: 'bi bi-clock-history', desc: 'Exámenes online de los árbitros paso a paso' }
     ]
   }
 ]

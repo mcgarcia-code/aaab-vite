@@ -4,7 +4,8 @@
       <div class="card shadow border-0 w-100 mx-auto bg-white mb-4 radio-12 overflow-hidden">
 
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom gap-3">
-          <p class="seccion-descripcion">Aspirantes que practican con el catálogo de preguntas desde su panel · {{ alumnos.length }} aspirantes</p>
+          <p v-if="pestana === 'practicas'" class="seccion-descripcion">Aspirantes que practican con el catálogo de preguntas desde su panel · {{ alumnos.length }} aspirantes</p>
+          <p v-else class="seccion-descripcion">Exámenes online de los aspirantes: qué marcaron en cada momento, desde qué dispositivo y si los retomaron</p>
           <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
             <select v-model="filtros.modalidad" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark control-barra" style="width: 150px;" aria-label="Curso">
               <option value="">CURSO</option>
@@ -13,11 +14,22 @@
             <select v-model="anio" class="form-select shadow-sm border-secondary-subtle fw-semibold text-uppercase text-dark control-barra" style="width: 110px;" aria-label="Año del curso">
               <option v-for="a in anios" :key="a" :value="a">{{ a }}</option>
             </select>
-            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="cargar" />
+            <BotonHerramienta tipo="actualizar" :cargando="cargando" @click="actualizar" />
           </div>
         </div>
 
-        <div class="card-body bg-white" :class="cargando ? 'p-3' : 'p-0 border-top'">
+        <PestanasSeccion
+          v-model="pestana"
+          class="px-3 pt-3"
+          :pestanas="[
+            { clave: 'practicas', etiqueta: 'Prácticas del catálogo', icono: 'bi-ui-checks-grid' },
+            { clave: 'examenes', etiqueta: 'Seguimiento de exámenes', icono: 'bi-clock-history' }
+          ]"
+        />
+
+        <SeguimientoExamenesCurso v-if="pestana === 'examenes'" ref="seguimientoRef" :anio="anio" :modalidad="filtros.modalidad" class="border-top mt-3" />
+
+        <div v-else class="card-body bg-white mt-3" :class="cargando ? 'p-3' : 'p-0 border-top'">
           <EstadoCargando v-if="cargando" texto="Cargando prácticas del catálogo" />
           <template v-else>
             <!-- ============ RESUMEN ============ -->
@@ -208,6 +220,7 @@ import { api } from '@/api/api'
 import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import BotonHerramienta from '@/components/comunes/BotonHerramienta.vue'
 import ModalBase from '@/components/ModalBase.vue'
+import SeguimientoExamenesCurso from '@/components/panel-admin/curso-arbitros/SeguimientoExamenesCurso.vue'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { UMBRAL_APROBADO, textoNumeroPregunta, textoReglas } from '@/utils/cuestionarios'
 import { conAnioActual, anioActual } from '@/utils/anios'
@@ -243,6 +256,12 @@ const cargar = async () => {
 
 watch(anio, cargar)
 onMounted(cargar)
+
+// ============ PESTAÑAS ============
+// "Seguimiento de exámenes": los exámenes online de los aspirantes (backend: seguimiento_examenes)
+const pestana = ref('practicas')
+const seguimientoRef = ref(null)
+const actualizar = () => (pestana.value === 'examenes' ? seguimientoRef.value?.cargar() : cargar())
 
 // ============ FORMATOS ============
 const textoNota = (valor) => (valor === null || valor === undefined
