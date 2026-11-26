@@ -9,6 +9,9 @@ export const aprobado = (porcentaje) => Number(porcentaje) >= UMBRAL_APROBADO
 
 // Reglas del reglamento: del 1 al 18 y algunas con nombre (ej. "SAR"). Orden: primero los números, después el resto
 const esNumero = (regla) => /^\d+$/.test(String(regla))
+
+// Como llega del backend o de la base: "8" → 8, "sar" → "SAR"
+export const normalizarRegla = (regla) => (esNumero(regla) ? Number(regla) : String(regla ?? '').trim().toUpperCase())
 export const compararReglas = (a, b) => {
   if (esNumero(a) && esNumero(b)) return Number(a) - Number(b)
   if (esNumero(a) !== esNumero(b)) return esNumero(a) ? -1 : 1

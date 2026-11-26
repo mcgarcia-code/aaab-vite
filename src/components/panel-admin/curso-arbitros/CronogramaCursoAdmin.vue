@@ -305,6 +305,7 @@ import SelectorArbitros from '@/components/SelectorArbitros.vue'
 import ModalAsistenciaCurso from '@/components/panel-admin/curso-arbitros/ModalAsistenciaCurso.vue'
 import { conAnioActual, anioActual } from '@/utils/anios'
 import { fechaDMA } from '@/utils/fechas'
+import { normalizarRegla } from '@/utils/cuestionarios'
 import { MODALIDADES_CURSO } from '@/composables/useCursoArbitro'
 import { PORCENTAJE_APROBACION_DEFECTO } from '@/composables/useExamenesCurso'
 import { useCronogramaCurso, fechaLargaClase, horarioClase, esClasePasada, hoyIso } from '@/composables/useCronogramaCurso'
@@ -536,7 +537,6 @@ const esFisico = computed(() => formExamen.value.tipo === 'fisico')
 const modosExamen = computed(() => (esFisico.value ? MODOS_FISICO : MODOS_TEORICO))
 const esRecuperatorioParcialitos = computed(() => formExamen.value.modo === 'recuperatorio')
 const esRecuperatorioFinal = computed(() => formExamen.value.modo === 'recuperatorio_final')
-const REGLAS_FINAL = Array.from({ length: 18 }, (_, i) => i + 1)
 // La clase puede tener a la vez un teórico, un recuperatorio de parcialitos y un físico
 // (por ejemplo, el parcialito de la clase y un segundo recuperatorio para quienes desaprobaron o faltaron al primero)
 const examenesClase = ref({ teorico: null, recuperatorio: null, fisico: null })
@@ -556,7 +556,7 @@ const formularioDesde = (tipo, guardado) => {
     tipo,
     cantidadPreguntas: base.cantidadPreguntas,
     tiempoLimiteMin: base.tiempoLimiteMin,
-    reglas: (base.reglas || []).filter(r => codigos.includes(r)),
+    reglas: (base.reglas || []).map(normalizarRegla).filter(r => codigos.includes(r)),
     habilitado: base.habilitado,
     modo: base.modo || (tipo === 'fisico' ? 'simulacro' : 'parcialito'),
     // En el recuperatorio de parcialitos, el examen vinculado es el recuperatorio anterior
@@ -593,11 +593,10 @@ watch(() => formExamen.value.modo, (modo) => {
 }, { flush: 'sync' })
 const reglasEnUso = computed(() => formExamen.value.reglas)
 
-// Al elegir el teórico final (o su recuperatorio) se tildan las reglas 1 a 18
+// Al elegir el teórico final (o su recuperatorio) se tildan todas las reglas que tienen preguntas (1 a 18 y SAR)
 watch(() => formExamen.value.modo, (modo) => {
   if (aplicandoExamenGuardado || esFisico.value || !['final', 'recuperatorio_final'].includes(modo)) return
-  const conPreguntas = reglasDisponibles.value.map(r => r.codigo)
-  formExamen.value.reglas = REGLAS_FINAL.filter(r => conPreguntas.includes(r))
+  formExamen.value.reglas = reglasDisponibles.value.map(r => r.codigo)
 }, { flush: 'sync' })
 const preguntasDisponibles = computed(() =>
   reglasDisponibles.value.filter(r => reglasEnUso.value.includes(r.codigo)).reduce((t, r) => t + r.cantidad, 0)
@@ -617,9 +616,9 @@ const cargarReglas = async () => {
   if (reglasDisponibles.value.length) return
   const res = await api.get({ entity: 'examenes_habilitaciones', action: 'obtenerReglasExamen', payload: {} })
   if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar las reglas')
-  reglasDisponibles.value = (res.payload?.reglas || []).map(r => ({ codigo: Number(r.codigo), cantidad: Number(r.cantidad) }))
+  reglasDisponibles.value = (res.payload?.reglas || []).map(r => ({ codigo: normalizarRegla(r.codigo), cantidad: Number(r.cantidad) }))
   const d = res.payload?.defecto || {}
-  configDefecto.value = { cantidadPreguntas: Number(d.cantidadPreguntas) || 20, tiempoLimiteMin: Number(d.tiempoLimiteMin) || 25, reglas: (d.reglas || []).map(Number) }
+  configDefecto.value = { cantidadPreguntas: Number(d.cantidadPreguntas) || 20, tiempoLimiteMin: Number(d.tiempoLimiteMin) || 25, reglas: (d.reglas || []).map(normalizarRegla) }
 }
 
 const abrirExamen = async (c) => {

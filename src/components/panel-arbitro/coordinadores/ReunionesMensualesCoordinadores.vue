@@ -367,6 +367,7 @@ import { api } from '@/api/api'
 import { useHead } from '@unhead/vue'
 import TablaAsistenciaReunion from '@/components/comunes/reuniones/TablaAsistenciaReunion.vue'
 import SelectorReglas from '@/components/comunes/SelectorReglas.vue'
+import { compararReglas, normalizarRegla } from '@/utils/cuestionarios'
 import ModalHistorialReuniones from '@/components/comunes/reuniones/ModalHistorialReuniones.vue'
 import { useAsistenciaReuniones } from '@/composables/useAsistenciaReuniones'
 import ModalBase from '@/components/ModalBase.vue'
@@ -449,7 +450,7 @@ const cargandoReglas      = ref(false)
 const reglasDisponibles   = ref([])
 const formExamen          = reactive({ cantidadPreguntas: 20, tiempoLimiteMin: 25, reglas: [] })
 const { hayCambios: hayCambiosExamen } = useCambiosSinGuardar(
-  () => ({ ...formExamen, reglas: [...formExamen.reglas].sort((a, b) => a - b) }),
+  () => ({ ...formExamen, reglas: [...formExamen.reglas].sort(compararReglas) }),
   () => mostrarModalExamen.value && !cargandoReglas.value
 )
 
@@ -632,7 +633,7 @@ const cargarProgramacionExamen = async () => {
     examenHabilitado.value = !!p.habilitado
     formExamen.cantidadPreguntas = p.cantidadPreguntas
     formExamen.tiempoLimiteMin = p.tiempoLimiteMin
-    formExamen.reglas = (p.reglas || []).map(Number)
+    formExamen.reglas = (p.reglas || []).map(normalizarRegla)
   } catch (e) { console.error('cargarProgramacionExamen:', e) }
 }
 
@@ -647,7 +648,7 @@ async function abrirModalExamen() {
   try {
     const res = await api.get({ entity: 'examenes_habilitaciones', action: 'obtenerReglasExamen' })
     if (!res?.ok) throw new Error(res?.message || 'No se pudieron cargar las reglas')
-    reglasDisponibles.value = (res?.payload?.reglas || []).map(r => ({ codigo: Number(r.codigo), cantidad: Number(r.cantidad) }))
+    reglasDisponibles.value = (res?.payload?.reglas || []).map(r => ({ codigo: normalizarRegla(r.codigo), cantidad: Number(r.cantidad) }))
     const codigos = reglasDisponibles.value.map(r => r.codigo)
     formExamen.reglas = formExamen.reglas.filter(c => codigos.includes(c))
   } catch (e) {
