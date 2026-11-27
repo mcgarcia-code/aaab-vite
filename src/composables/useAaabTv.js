@@ -1,13 +1,18 @@
 import { reactive, ref, computed, watch } from 'vue'
 import { auth } from '@/api/auth'
-import { crearRepositorioEventos, resumirEvento } from '@/api/aaabTvEventos'
+import { crearRepositorioEventos, resumirEvento, AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
+import { crearRepositorioClips, esRolPublicador } from '@/api/aaabTvClips'
 
 // =====================================================================
 // AAAB TV — Estudio de análisis de partidos + portal de clips
 // ---------------------------------------------------------------------
-// Por ahora todo es local (mockup): el backend y los videos van a vivir en
-// un VPS aparte. Las funciones marcadas con "VPS" son las que después se
-// reemplazan por llamadas reales; el resto de la pantalla no cambia.
+// Los datos (eventos, panel, clips, moderación) van al backend del hosting y el video
+// a la VPS, a través de api/aaabTvEventos.js y api/aaabTvClips.js. Sin servidor
+// (VITE_AAAB_TV_SERVIDOR distinto de 'true') esos mismos archivos guardan todo en el navegador.
+//
+// Un evento es un video: el usuario decide si carga el partido completo o cada tiempo
+// por separado (un evento por tiempo). Los segundos de los tags y de los clips son
+// siempre del video de ese evento.
 // =====================================================================
 
 // Cada tag genera un clip de 8 segundos antes y 8 después del momento marcado
@@ -84,10 +89,14 @@ const guardar = (clave, valor) => {
 const idUsuario = () => auth.getUser()?.id ?? 'anonimo'
 const claveStorage = (nombre) => `aaabTv.${nombre}.${idUsuario()}`
 
-const panelGuardado = leer(claveStorage('panel'), null)
-const botones = ref(panelGuardado && !esDefectoAnterior(panelGuardado)
-  ? panelGuardado
-  : BOTONES_DEFECTO.map(b => ({ ...b })))
+// Panel de botones: sin servidor se lee al instante de este navegador; con servidor arranca con el
+// predeterminado y cargarPanel() trae el del usuario (el mismo en el celular y en la computadora)
+const panelDe = (lista) => (lista && !esDefectoAnterior(lista) ? lista : BOTONES_DEFECTO.map(b => ({ ...b })))
+const botones = ref(panelDe(AAAB_TV_CON_SERVIDOR ? null : leer(claveStorage('panel'), null)))
+let panelCargado = !AAAB_TV_CON_SERVIDOR
+// Lo último guardado o leído: si el panel no cambió respecto de eso, no se vuelve a guardar
+let ultimoPanel = JSON.stringify(botones.value)
+let temporizadorPanel = null
 
 const SESION_VACIA = () => ({
   partido: '',
@@ -116,7 +125,6 @@ const repoEventos = crearRepositorioEventos(() => claveStorage('eventos'))
 const eventos = ref([])          // resúmenes, de la lista
 const cargandoEventos = ref(false)
 
-watch(botones, (v) => guardar(claveStorage('panel'), v), { deep: true })
 watch(sesion, (v) => guardar(claveStorage('sesion'), v), { deep: true })
 
 const copiar = (valor) => JSON.parse(JSON.stringify(valor))
@@ -125,63 +133,106 @@ const huellaDe = (s) => JSON.stringify({ partido: s.partido.trim(), fecha: s.fec
 const nuevoIdEvento = () => (globalThis.crypto?.randomUUID ? crypto.randomUUID() : nuevoId())
 
 // ─── Clips de AAAB TV ─────────────────────────────────────────────
-// Estados: al publicar quedan "pendiente"; Desarrollo Arbitral los pasa a
-// "publico" (los ve todo el que entra a AAAB TV) o "no_publico" (solo coordinadores y observadores).
+// Un clip se publica en uno o más canales: el público y/o los de los grupos de la asociación.
+// Cada canal ("destino") se autoriza por separado: al publicar queda "pendiente" y el coordinador
+// general lo pasa a "autorizado" (se ve en ese canal) o "no_autorizado" (no se ve en ese canal).
 // clase: tono de la píldora de estado (assets/css/estados.css), se usa junto con .estado-pill
-export const ESTADOS_CLIP = {
+export const ESTADOS_DESTINO = {
   pendiente: { etiqueta: 'Pendiente', icono: 'bi-hourglass-split', clase: 'estado-pendiente' },
-  publico: { etiqueta: 'Público', icono: 'bi-globe2', clase: 'estado-verde' },
-  no_publico: { etiqueta: 'No público', icono: 'bi-lock-fill', clase: 'estado-gris' }
+  autorizado: { etiqueta: 'Autorizado', icono: 'bi-check-circle-fill', clase: 'estado-verde' },
+  no_autorizado: { etiqueta: 'No autorizado', icono: 'bi-x-circle-fill', clase: 'estado-gris' }
 }
 
-// Roles del panel árbitro que pueden publicar y ver los clips no públicos
-const ROL_OBSERVADOR = 2
-const ROL_COORDINADOR = 4
-const ROLES_PUBLICAN = [ROL_OBSERVADOR, ROL_COORDINADOR]
+// Clave del canal para selectores y comparaciones: 'publico' o 'g-<idGrupo>'
+export const claveCanal = (idGrupo) => (idGrupo === null || idGrupo === undefined ? 'publico' : `g-${idGrupo}`)
+// Al revés: 'publico' → null, 'g-7' → 7
+export const idGrupoDeClave = (clave) => (clave === 'publico' ? null : Number(String(clave).slice(2)))
 
-const usuarioActual = () => auth.getUser() || {}
-const esRolPublicador = (u = usuarioActual()) => ROLES_PUBLICAN.includes(Number(u.rol))
+// Estado de conjunto de un clip (para la moderación): pendiente si algún canal espera revisión;
+// si no, autorizado si se ve en al menos un canal; si no, no autorizado
+export const estadoGeneral = (clip) => {
+  const estados = (clip.destinos || []).map(d => d.estado)
+  if (estados.includes('pendiente')) return 'pendiente'
+  return estados.includes('autorizado') ? 'autorizado' : 'no_autorizado'
+}
 
-// Mockup: los clips se guardan en este navegador, compartidos entre usuarios (así se puede
-// probar publicar con un usuario y moderar con otro). El video local no se puede guardar:
-// solo se reproduce en la sesión en la que se publicó. VPS: todo esto viene del backend.
-const CLAVE_CLIPS = 'aaabTv.clips'
-const CLIPS_EJEMPLO = [
-  {
-    id: 'ej-1', titulo: 'Descalificación por golpe en la cara al lanzador',
-    descripcion: 'El defensor llega tarde al bloqueo y golpea con el antebrazo en la cara del lanzador en suspensión. Regla 8:5.',
-    etiqueta: 'Red/Blue Card', color: 'rojo', partido: 'River vs. SAG Villa Ballester', fecha: '2026-11-15',
-    inicio: 1114, fin: 1130, estado: 'publico', idAutor: null, autor: 'Ejemplo', publicadoEl: '2026-11-15T21:00:00'
-  },
-  {
-    id: 'ej-2', titulo: '2 minutos por agarre al pivote desde atrás',
-    descripcion: 'El pivote gana la posición y el defensor lo toma de la cintura impidiendo el giro. 2 minutos y 7 metros.',
-    etiqueta: '2 minutos', color: 'naranja', partido: 'Ferro vs. Dorrego', fecha: '2026-11-08',
-    inicio: 3367, fin: 3383, estado: 'no_publico', idAutor: null, autor: 'Ejemplo', publicadoEl: '2026-11-08T22:00:00'
-  },
-  {
-    id: 'ej-3', titulo: 'Ventaja bien aplicada en el contraataque',
-    descripcion: 'Falta leve en mitad de cancha: la pareja espera y el extremo convierte. Regla 13:2.',
-    etiqueta: 'Play on', color: 'verde', partido: 'Sedalo vs. CID Moreno', fecha: '2026-11-01',
-    inicio: 1440, fin: 1456, estado: 'pendiente', idAutor: null, autor: 'Ejemplo', publicadoEl: '2026-11-01T20:30:00'
-  }
-]
-// Los ejemplos que ya estaban guardados en el navegador toman la etiqueta del panel actual
-// (el resto de lo que se guardó, como su estado de moderación, se respeta)
-const ETIQUETA_EJEMPLO = Object.fromEntries(CLIPS_EJEMPLO.map(c => [c.id, c.etiqueta]))
-const clipsGuardados = leer(CLAVE_CLIPS, null)
-const clipsPublicados = ref(clipsGuardados
-  ? clipsGuardados.map(c => (ETIQUETA_EJEMPLO[c.id] ? { ...c, etiqueta: ETIQUETA_EJEMPLO[c.id] } : c))
-  : CLIPS_EJEMPLO.map(c => ({ ...c })))
-// Videos locales de esta sesión (no se pueden guardar): id del clip → URL del archivo
+// Clips, moderación, comentarios, listas y panel: con servidor o en este navegador (ver api/aaabTvClips.js)
+const repoClips = crearRepositorioClips(() => claveStorage('panel'), () => claveStorage('listas'))
+
+watch(botones, (v) => {
+  if (!panelCargado) return   // con servidor: no pisar el panel guardado antes de leerlo
+  const json = JSON.stringify(v)
+  if (json === ultimoPanel) return
+  ultimoPanel = json
+  clearTimeout(temporizadorPanel)
+  // Con servidor se espera a que termine de editar para no mandar un pedido por cada cambio
+  temporizadorPanel = setTimeout(() => repoClips.guardarPanel(copiar(v)), AAAB_TV_CON_SERVIDOR ? 800 : 0)
+}, { deep: true })
+
+const cargarPanel = async () => {
+  if (panelCargado) return { ok: true, payload: botones.value }
+  const res = await repoClips.obtenerPanel()
+  if (!res?.ok) return res
+  const lista = panelDe(Array.isArray(res.payload) ? res.payload : null)
+  ultimoPanel = JSON.stringify(lista)
+  botones.value = lista
+  panelCargado = true
+  return res
+}
+
+// Portal: los clips que el usuario puede ver (el servidor ya los filtra según sus canales)
+const clipsVisibles = ref([])
+const cargandoClips = ref(false)
+// Canales que el usuario ve: [{ idGrupo, nombre }] (el público tiene idGrupo null)
+const canales = ref([])
+// Grupos en los que se puede publicar: [{ idGrupo, nombre }]
+const gruposPublicacion = ref([])
+// Listas de reproducción del usuario: [{ id, nombre, idsClips }]
+const listasReproduccion = ref([])
+// Moderación (coordinador general): todos los clips
+const clipsModeracion = ref([])
+const cargandoModeracion = ref(false)
+// Qué vistas se cargaron alguna vez (para recargar solo esas si cambian en otra pestaña)
+const vistasUsadas = { portal: false, moderacion: false }
+
+// Videos locales de esta sesión (maqueta: el video no se sube): id del clip → URL del archivo
 const videosDeSesion = reactive({})
-watch(clipsPublicados, (v) => guardar(CLAVE_CLIPS, v), { deep: true })
+// Subida del video al publicar: null = no hay subida; 0..1 = fracción subida
+const progresoSubida = ref(null)
 
-// Si se modera desde otra pestaña (panel admin abierto al mismo tiempo), se refleja acá
-window.addEventListener('storage', (e) => {
-  if (e.key === CLAVE_CLIPS && e.newValue) {
-    try { clipsPublicados.value = JSON.parse(e.newValue) } catch { /* dato inválido: se ignora */ }
+const cargarEn = async (destino, cargando, listar) => {
+  if (cargando) cargando.value = true
+  try {
+    const res = await listar()
+    if (res?.ok) destino.value = res.payload
+    return res
+  } finally {
+    if (cargando) cargando.value = false
   }
+}
+const cargarClips = () => {
+  vistasUsadas.portal = true
+  return cargarEn(clipsVisibles, cargandoClips, repoClips.listarClips)
+}
+const cargarClipsModeracion = () => {
+  vistasUsadas.moderacion = true
+  return cargarEn(clipsModeracion, cargandoModeracion, repoClips.listarClipsAdmin)
+}
+const cargarCanales = () => cargarEn(canales, null, repoClips.listarCanales)
+const cargarGruposPublicacion = () => cargarEn(gruposPublicacion, null, repoClips.listarGruposPublicacion)
+const cargarListasReproduccion = () => cargarEn(listasReproduccion, null, repoClips.listarListas)
+
+// Reemplaza un clip actualizado en las vistas cargadas
+const actualizarEnVistas = (clip) => {
+  for (const vista of [clipsVisibles, clipsModeracion]) {
+    vista.value = vista.value.map(c => (c.id === clip.id ? { ...c, ...clip } : c))
+  }
+}
+
+// Si se modera desde otra pestaña (solo en la maqueta), se recargan las vistas que se usan
+repoClips.alCambiarEnOtraPestana(() => {
+  if (vistasUsadas.portal) cargarClips()
+  if (vistasUsadas.moderacion) cargarClipsModeracion()
 })
 
 // Reloj en vivo: se calcula con la hora real, así no se atrasa si la pestaña queda en segundo plano
@@ -281,7 +332,8 @@ export function useAaabTv() {
   }
 
   // Cronómetro → video: el segundo del video en el que arrancó el cronómetro.
-  // Como el partido se filma completo (los dos tiempos juntos), alcanza con un solo punto.
+  // Alcanza con un solo punto porque cada evento es un solo video: el partido completo, o un
+  // tiempo si el usuario carga cada tiempo como un evento aparte (con su propio cronómetro).
   const sincronizar = (segundoInicioEnVideo) => {
     const offset = Math.max(0, Math.floor(segundoInicioEnVideo))
     sesion.sincronizacion = offset
@@ -362,68 +414,146 @@ export function useAaabTv() {
   }
 
   // ─── Publicación ──────────────────────────────────────────
-  // VPS: subir el video completo (subida por partes, puede pesar varios GB) y enviar
-  // { idVideo, partido, fecha, clips: [{ inicio, fin, titulo, descripcion, etiqueta }] }.
-  // El servidor corta cada clip con ffmpeg y lo publica en AAAB TV.
-  const publicarClips = async ({ partido, fecha, clips }) => {
+  // Con servidor: se sube a la VPS el video cargado en este evento (el partido completo o un
+  // tiempo, lo que haya elegido el usuario) y el hosting registra los clips; la VPS los corta.
+  // Devuelve { ok, payload: cantidad de clips, message }
+  // destinos: canales elegidos, [idGrupo | null] (null = canal público)
+  const publicarClips = async ({ partido, fecha, destinos, clips }) => {
     if (!puedePublicar.value) return { ok: false, message: 'Solo coordinadores y observadores pueden publicar.' }
-    await new Promise(r => setTimeout(r, 900))
-    const autor = usuarioActual()
-    const nombreAutor = `${autor.nombre || ''} ${autor.apellido || ''}`.trim()
-    clips.forEach(c => {
-      const { inicio, fin } = limitesClip(c.segundo, video.duracion)
-      const id = nuevoId()
-      clipsPublicados.value.unshift({
-        id, titulo: c.titulo.trim(), descripcion: c.descripcion.trim(),
-        etiqueta: c.nombre, color: c.color, partido, fecha, inicio, fin,
-        estado: 'pendiente', idAutor: autor.id ?? null, autor: nombreAutor, publicadoEl: new Date().toISOString()
+    if (!archivoVideo) return { ok: false, message: 'Cargá el video para poder publicar los clips.' }
+    if (!destinos?.length) return { ok: false, message: 'Elegí al menos un canal.' }
+    progresoSubida.value = 0
+    try {
+      const res = await repoClips.publicarClips({
+        archivo: archivoVideo,
+        partido,
+        fecha,
+        destinos,
+        idEvento: sesion.idEvento,
+        clips: clips.map(c => ({
+          ...c,
+          titulo: c.titulo.trim(),
+          descripcion: c.descripcion.trim(),
+          // inicio y fin los usa la maqueta; con servidor los calcula el hosting a partir del segundo
+          ...limitesClip(c.segundo, video.duracion)
+        })),
+        alProgresar: (fraccion) => { progresoSubida.value = fraccion }
       })
-      videosDeSesion[id] = video.url
-      const tag = sesion.tags.find(t => t.id === c.id)
-      if (tag) { tag.publicado = true; tag.seleccionado = false }
-    })
-    return { ok: true, payload: clips.length }
+      if (!res?.ok) return res
+      const nuevos = Array.isArray(res.payload?.clips) ? res.payload.clips : []
+      // En la maqueta el clip se ve con el video local de esta sesión
+      if (!AAAB_TV_CON_SERVIDOR) nuevos.forEach(c => { videosDeSesion[c.id] = video.url })
+      clipsVisibles.value = [...nuevos, ...clipsVisibles.value.filter(c => !nuevos.some(n => n.id === c.id))]
+      clips.forEach(c => {
+        const tag = sesion.tags.find(t => t.id === c.id)
+        if (tag) { tag.publicado = true; tag.seleccionado = false }
+      })
+      return { ok: true, payload: res.payload?.cantidad ?? nuevos.length }
+    } finally {
+      progresoSubida.value = null
+    }
   }
 
-  // VPS: borrar en el servidor
-  const borrarClipPublicado = (id) => { clipsPublicados.value = clipsPublicados.value.filter(c => c.id !== id) }
+  // Video externo (pestaña "Subir video"): una jugada que llegó por fuera del análisis, por ejemplo
+  // por WhatsApp. Se sube entero y queda como un solo clip, pendiente en cada canal elegido.
+  // archivo: File del video; duracion: segundos (la lee el navegador). Devuelve { ok, payload: clip, message }
+  const publicarVideoExterno = async ({ archivo, titulo, descripcion, etiqueta, color, partido, fecha, duracion, destinos }) => {
+    if (!puedePublicar.value) return { ok: false, message: 'Solo coordinadores y observadores pueden subir videos.' }
+    if (!destinos?.length) return { ok: false, message: 'Elegí al menos un canal.' }
+    progresoSubida.value = 0
+    try {
+      const res = await repoClips.publicarVideoExterno({
+        archivo,
+        titulo: titulo.trim(),
+        descripcion: descripcion.trim(),
+        etiqueta,
+        color,
+        partido: partido.trim(),
+        fecha,
+        duracion: Math.floor(duracion),
+        destinos,
+        alProgresar: (fraccion) => { progresoSubida.value = fraccion }
+      })
+      if (!res?.ok) return res
+      const clip = res.payload?.clips?.[0]
+      if (!clip) return { ok: true, payload: null }
+      // En la maqueta el clip se ve con el archivo local de esta sesión
+      if (!AAAB_TV_CON_SERVIDOR) videosDeSesion[clip.id] = URL.createObjectURL(archivo)
+      clipsVisibles.value = [clip, ...clipsVisibles.value.filter(c => c.id !== clip.id)]
+      return { ok: true, payload: clip }
+    } finally {
+      progresoSubida.value = null
+    }
+  }
 
-  // ─── Permisos y visibilidad ───────────────────────────────
+  // El autor borra su clip mientras está pendiente
+  const borrarClipPublicado = async (id) => {
+    const res = await repoClips.borrarClip(id)
+    if (res?.ok) clipsVisibles.value = clipsVisibles.value.filter(c => c.id !== id)
+    return res
+  }
+
+  // ─── Permisos y reproducción ──────────────────────────────
   const puedePublicar = computed(() => esRolPublicador())
 
-  // Lo que ve cada uno en el portal: públicos para todos; no públicos para coordinadores y
-  // observadores; y sus propios clips (aunque estén pendientes) para quien los publicó
-  const clipsVisibles = computed(() => {
-    const u = usuarioActual()
-    const veNoPublicos = esRolPublicador(u)
-    return clipsPublicados.value.filter(c =>
-      c.estado === 'publico' ||
-      (c.estado === 'no_publico' && veNoPublicos) ||
-      (c.idAutor !== null && String(c.idAutor) === String(u.id))
-    )
-  })
+  // Qué reproducir de un clip: si el servidor ya lo cortó, el archivo del clip entero;
+  // si no (maqueta), el tramo [inicio, fin] del video local de esta sesión
+  const tramoDe = (clip) => (clip.urlVideo
+    ? { url: clip.urlVideo, inicio: 0, fin: Math.max(0, clip.fin - clip.inicio) }
+    : { url: videosDeSesion[clip.id] || '', inicio: clip.inicio, fin: clip.fin })
 
-  const urlVideoDe = (clip) => videosDeSesion[clip.id] || ''
-
-  // ─── Moderación (Desarrollo Arbitral) ─────────────────────
-  // VPS: cambiar estado y editar en el servidor
-  const cambiarEstadoClip = (id, estado) => {
-    const clip = clipsPublicados.value.find(c => c.id === id)
-    if (clip && ESTADOS_CLIP[estado]) clip.estado = estado
+  // ─── Moderación (coordinador general) ─────────────────────
+  // Devuelven { ok, payload: clip actualizado, message }
+  const cambiarEstadoDestino = async (id, idGrupo, estado) => {
+    if (!ESTADOS_DESTINO[estado]) return { ok: false, message: 'Estado no válido.' }
+    const res = await repoClips.cambiarEstadoDestino(id, idGrupo, estado)
+    if (res?.ok && res.payload?.id) actualizarEnVistas(res.payload)
+    return res
   }
-  const editarClip = (id, { titulo, descripcion }) => {
-    const clip = clipsPublicados.value.find(c => c.id === id)
-    if (clip) Object.assign(clip, { titulo: titulo.trim(), descripcion: descripcion.trim() })
+  // destinos: [{ idGrupo, estado }]
+  const editarClip = async (id, { titulo, descripcion, destinos }) => {
+    const res = await repoClips.editarClip({ id, titulo: titulo.trim(), descripcion: descripcion.trim(), destinos })
+    if (res?.ok && res.payload?.id) actualizarEnVistas(res.payload)
+    return res
+  }
+
+  // ─── Comentarios de un clip ───────────────────────────────
+  // El coordinador general comenta desde la moderación; los demás desde el portal
+  const listarComentarios = (idClip) => repoClips.listarComentarios(idClip)
+  const agregarComentario = (idClip, texto) => repoClips.agregarComentario(idClip, texto.trim())
+  const borrarComentario = (id) => repoClips.borrarComentario(id)
+
+  // ─── Listas de reproducción (de cada usuario) ─────────────
+  const crearListaReproduccion = async (nombre) => {
+    const res = await repoClips.guardarLista({ nombre: nombre.trim() })
+    if (res?.ok) listasReproduccion.value = [...listasReproduccion.value, res.payload]
+    return res
+  }
+  const borrarListaReproduccion = async (id) => {
+    const res = await repoClips.borrarLista(id)
+    if (res?.ok) listasReproduccion.value = listasReproduccion.value.filter(l => l.id !== id)
+    return res
+  }
+  // incluir: true agrega el clip a la lista, false lo saca
+  const cambiarClipEnLista = async (idLista, idClip, incluir) => {
+    const res = await repoClips.cambiarClipEnLista(idLista, idClip, incluir)
+    if (res?.ok && res.payload?.id) {
+      listasReproduccion.value = listasReproduccion.value.map(l => (l.id === idLista ? res.payload : l))
+    }
+    return res
   }
 
   return {
-    botones, sesion, video, clipsPublicados,
+    botones, sesion, video,
     segundosReloj, tagsOrdenados, tagsSinSincronizar,
-    agregarBoton, editarBoton, borrarBoton, restablecerBotones,
+    cargarPanel, agregarBoton, editarBoton, borrarBoton, restablecerBotones,
     cargarVideo, archivoDelVideo, marcarTag, borrarTag, moverTag,
     iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion,
     eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento,
-    publicarClips, borrarClipPublicado,
-    puedePublicar, clipsVisibles, urlVideoDe, cambiarEstadoClip, editarClip
+    gruposPublicacion, cargarGruposPublicacion, publicarClips, publicarVideoExterno, progresoSubida, borrarClipPublicado,
+    puedePublicar, clipsVisibles, cargandoClips, cargarClips, canales, cargarCanales, tramoDe,
+    clipsModeracion, cargandoModeracion, cargarClipsModeracion, cambiarEstadoDestino, editarClip,
+    listarComentarios, agregarComentario, borrarComentario,
+    listasReproduccion, cargarListasReproduccion, crearListaReproduccion, borrarListaReproduccion, cambiarClipEnLista
   }
 }

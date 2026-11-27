@@ -47,8 +47,11 @@
         <section v-if="sesion.modo === 'video' || mostrarVideoEnVivo" class="bloque mb-3">
           <div v-if="!video.url" class="zona-video-vacia">
             <i class="bi bi-camera-video" aria-hidden="true"></i>
-            <p class="fw-bold mb-1">Cargá el video completo del partido</p>
-            <p class="small text-muted mb-3">Los dos tiempos en un solo archivo (MP4). Por ahora se reproduce desde tu computadora.</p>
+            <p class="fw-bold mb-1">Cargá el video del partido</p>
+            <p class="small text-muted mb-3">
+              Puede ser el partido completo o un solo tiempo (MP4). Si lo cargás por tiempos, usá un evento para cada uno.
+              Por ahora se reproduce desde tu computadora.
+            </p>
             <button type="button" class="btn btn-danger rounded-pill fw-bold px-4" @click="inputVideo?.click()">
               <i class="bi bi-upload" aria-hidden="true"></i> Elegir video
             </button>
@@ -120,8 +123,10 @@
             </button>
           </div>
           <p class="nota-vivo">
-            Iniciá el cronómetro con el pitazo inicial y dejalo correr todo el partido (también en el entretiempo):
-            así coincide con el video completo y alcanza con sincronizar un solo punto.
+            Iniciá el cronómetro con el pitazo inicial. Vos elegís cómo seguir:
+            si vas a cargar el partido completo en un solo video, dejalo correr también en el entretiempo;
+            si lo vas a cargar por tiempos, al terminar el primer tiempo guardá el evento y empezá uno nuevo
+            para el segundo, con el cronómetro desde cero en su pitazo inicial.
             Lo que marques queda guardado en este dispositivo aunque se corte internet.
           </p>
 
@@ -129,8 +134,8 @@
           <div class="sincronizar">
             <h3 class="sincronizar-titulo"><i class="bi bi-link-45deg" aria-hidden="true"></i> Sincronizar con el video</h3>
             <ol class="small mb-2 ps-3">
-              <li>Cargá el video completo del partido.</li>
-              <li>Llevalo hasta el pitazo inicial (cuando iniciaste el cronómetro).</li>
+              <li>Cargá el video de este evento: el partido completo o el tiempo que marcaste.</li>
+              <li>Llevalo hasta el pitazo con el que iniciaste el cronómetro.</li>
               <li>Tocá <strong>“Sincronizar acá”</strong>, o escribí ese momento a mano.</li>
             </ol>
             <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -269,6 +274,9 @@
           </div>
         </div>
 
+        <!-- Canales: el público y/o los de los grupos. El coordinador general autoriza cada uno por separado -->
+        <SelectorCanales v-model="formPublicar.canales" class="mb-3" :invalido="intentoPublicar && !formPublicar.canales.length" />
+
         <div v-for="(c, i) in formPublicar.clips" :key="c.id" class="clip-publicar">
           <div class="d-flex align-items-center justify-content-between gap-2 mb-2 flex-wrap">
             <span class="badge-tag" :style="{ background: colorTag(c.color).fondo, color: colorTag(c.color).texto }">{{ i + 1 }}. {{ c.nombre }}</span>
@@ -289,7 +297,7 @@
           <button type="button" class="btn btn-light border rounded-pill px-4 fw-bold" :disabled="publicando" @click="mostrarPublicar = false">Cancelar</button>
           <button type="submit" form="form-publicar" class="btn btn-danger rounded-pill fw-bold px-4" :disabled="publicando">
             <span v-if="publicando" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-            {{ publicando ? 'Publicando...' : `Publicar ${formPublicar.clips.length} ${formPublicar.clips.length === 1 ? 'clip' : 'clips'}` }}
+            {{ textoBotonPublicar }}
           </button>
         </div>
       </template>
@@ -353,10 +361,11 @@ import { crearZip, descargarBlob } from '@/utils/zip'
 import ModalBase from '@/components/ModalBase.vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
 import {
-  useAaabTv, VENTANA_SEGUNDOS, colorTag, formatearTiempo, limitesClip
+  useAaabTv, VENTANA_SEGUNDOS, colorTag, formatearTiempo, limitesClip, idGrupoDeClave
 } from '@/composables/useAaabTv'
 import { useRecorteClips } from '@/composables/useRecorteClips'
 import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
+import SelectorCanales from '@/components/panel-arbitro/aaab-tv/SelectorCanales.vue'
 
 const emit = defineEmits(['publicado'])
 const toast = inject('toast')
@@ -365,7 +374,7 @@ const notificar = inject('notificar')
 const {
   botones, sesion, video, segundosReloj, tagsOrdenados, tagsSinSincronizar,
   cargarVideo, archivoDelVideo, marcarTag, borrarTag, moverTag, puedePublicar,
-  iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion, publicarClips,
+  iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion, publicarClips, progresoSubida,
   eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento
 } = useAaabTv()
 
@@ -668,7 +677,18 @@ const seleccionados = computed(() => tagsOrdenados.value.filter(t => t.seleccion
 const mostrarPublicar = ref(false)
 const publicando = ref(false)
 const intentoPublicar = ref(false)
-const formPublicar = reactive({ partido: '', fecha: '', clips: [] })
+// canales: claves de los canales elegidos ('publico', 'g-<idGrupo>'); los de la vez anterior se mantienen
+const formPublicar = reactive({ partido: '', fecha: '', canales: ['publico'], clips: [] })
+
+// Mientras se sube el video a la VPS se muestra cuánto va; después, mientras se registran los clips, "Publicando"
+const textoBotonPublicar = computed(() => {
+  if (!publicando.value) {
+    const n = formPublicar.clips.length
+    return `Publicar ${n} ${n === 1 ? 'clip' : 'clips'}`
+  }
+  const p = progresoSubida.value
+  return p !== null && p < 1 ? `Subiendo video ${Math.floor(p * 100)}%...` : 'Publicando...'
+})
 
 const abrirPublicar = () => {
   if (!video.url) {
@@ -684,15 +704,21 @@ const abrirPublicar = () => {
 
 const publicar = async () => {
   intentoPublicar.value = true
-  const valido = formPublicar.partido.trim() && formPublicar.fecha && formPublicar.clips.every(c => c.titulo.trim())
+  const valido = formPublicar.partido.trim() && formPublicar.fecha && formPublicar.canales.length &&
+    formPublicar.clips.every(c => c.titulo.trim())
   if (!valido) return
   publicando.value = true
   try {
-    const res = await publicarClips({ partido: formPublicar.partido.trim(), fecha: formPublicar.fecha, clips: formPublicar.clips })
+    const res = await publicarClips({
+      partido: formPublicar.partido.trim(),
+      fecha: formPublicar.fecha,
+      destinos: formPublicar.canales.map(idGrupoDeClave),
+      clips: formPublicar.clips
+    })
     if (!res.ok) throw new Error(res.message)
     sesion.partido = formPublicar.partido.trim()
     mostrarPublicar.value = false
-    toast({ tipo: 'success', titulo: 'Enviado a AAAB TV', mensaje: `${res.payload === 1 ? 'El clip quedó pendiente' : `Los ${res.payload} clips quedaron pendientes`} hasta que Desarrollo Arbitral lo revise.` })
+    toast({ tipo: 'success', titulo: 'Enviado a AAAB TV', mensaje: `${res.payload === 1 ? 'El clip quedó pendiente' : `Los ${res.payload} clips quedaron pendientes`} hasta que el coordinador general autorice cada canal.` })
     emit('publicado')
   } catch (e) {
     toast({ tipo: 'danger', titulo: 'No se pudo publicar', mensaje: e.message || 'Intentá de nuevo.' })

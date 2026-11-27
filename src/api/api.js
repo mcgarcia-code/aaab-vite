@@ -2,14 +2,13 @@
 import { auth } from '@/api/auth'
 export const BASE_URL = import.meta.env.VITE_BASE_URL
 
-function obtenerHeaders() {
+// destino: { baseUrl, token } para hablar con otro servidor (ej. la VPS de video de AAAB TV).
+// Sin destino se usa el backend de siempre con el token de la sesión
+function obtenerHeaders(destino = {}) {
   const headers = {
     'Content-Type': 'application/json',
   }
-  const token = auth.getToken()
-  if (!token) {
-    return headers
-  }
+  const token = destino.token ?? auth.getToken()
   if (token) {
     headers.Authorization = `Bearer ${token}`
   }
@@ -20,20 +19,20 @@ function esFormData(valor) {
   return typeof FormData !== 'undefined' && valor instanceof FormData
 }
 
-function obtenerConfigJson(datos = {}) {
+function obtenerConfigJson(datos = {}, destino = {}) {
   return {
     method: 'POST',
-    headers: obtenerHeaders(),
+    headers: obtenerHeaders(destino),
     body: JSON.stringify(datos),
   }
 }
 
-function obtenerConfigArchivo(datos = {}) {
+function obtenerConfigArchivo(datos = {}, destino = {}) {
   if (!esFormData(datos.payload)) {
     throw new Error('api.postFile() requiere un payload de tipo FormData')
   }
 
-  const headers = obtenerHeaders()
+  const headers = obtenerHeaders(destino)
   delete headers['Content-Type']
 
   const formData = datos.payload
@@ -57,23 +56,31 @@ function manejarSesionVencida() {
 
 // Siempre devuelve un objeto { ok, payload, message }: nunca lanza por errores de red o del servidor,
 // así cada pantalla puede chequear res.ok sin un try/catch obligatorio
-async function request(metodo, datos = {}, tipoPost = 'json') {
+async function request(metodo, datos = {}, tipoPost = 'json', destino = {}) {
+  const esOtroServidor = !!destino.baseUrl
+  const base = destino.baseUrl || BASE_URL
   try {
     const config = metodo === 'POST'
-      ? (tipoPost === 'archivo' ? obtenerConfigArchivo(datos) : obtenerConfigJson(datos))
+      ? (tipoPost === 'archivo' ? obtenerConfigArchivo(datos, destino) : obtenerConfigJson(datos, destino))
       : {
           method: metodo,
-          headers: obtenerHeaders(),
+          headers: obtenerHeaders(destino),
         }
 
-    let url = BASE_URL
+    let url = base
     if (metodo === 'GET') {
       // Se arma un objeto nuevo: no se modifica el que pasó la pantalla
       const parametros = { ...datos, payload: JSON.stringify(datos.payload ?? {}) }
-      url = `${BASE_URL}?${new URLSearchParams(parametros).toString()}`
+      url = `${base}?${new URLSearchParams(parametros).toString()}`
     }
 
     const respuesta = await fetch(url, config)
+
+    // 401 de otro servidor = venció el permiso que dio ese servidor (ej. el token de subida de video),
+    // no la sesión: no se cierra la sesión, se avisa para que quien llama pida un permiso nuevo
+    if (respuesta.status === 401 && esOtroServidor) {
+      return { ok: false, payload: null, message: 'El permiso para esta operación venció.', permisoVencido: true }
+    }
 
     if (respuesta.status === 401 && auth.getToken()) {
       manejarSesionVencida()
@@ -164,20 +171,21 @@ function invalidarCache(entity) {
   }
 }
 
-function postInvalidando(datos, tipo) {
-  invalidarCache(datos.entity)
-  return request('POST', datos, tipo)
+function postInvalidando(datos, tipo, destino = {}) {
+  if (!destino.baseUrl) invalidarCache(datos.entity)
+  return request('POST', datos, tipo, destino)
 }
 
 // Lista que vino en la respuesta, o [] si el pedido falló o el payload no es una lista.
 // Evita guardar el objeto de error ({ ok: false, payload: null }) como si fuera la lista
 export const listaDe = (res) => (res?.ok !== false && Array.isArray(res?.payload) ? res.payload : [])
 
+// destino (opcional) en get, post y postFile: { baseUrl, token } para llamar a otro servidor
 export const api = {
-  get: (params = {}) => request('GET', params),
+  get: (params = {}, destino = {}) => request('GET', params, 'json', destino),
   getCacheado,
   invalidarCache,
-  post: (data = {}) => postInvalidando(data, 'json'),
-  postFile: (data = {}) => postInvalidando(data, 'archivo'),
+  post: (data = {}, destino = {}) => postInvalidando(data, 'json', destino),
+  postFile: (data = {}, destino = {}) => postInvalidando(data, 'archivo', destino),
   getFile: (data = {}, nombreArchivo) => descargarArchivo(data, nombreArchivo),
 }

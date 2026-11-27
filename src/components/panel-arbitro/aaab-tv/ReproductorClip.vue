@@ -39,8 +39,8 @@
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { formatearTiempo } from '@/composables/useAaabTv'
 
-// Reproduce solo el tramo [inicio, fin] de un video (los clips son ventanas del partido completo).
-// Cuando el VPS corte los clips, `url` va a ser el clip ya recortado con inicio 0.
+// Reproduce solo el tramo [inicio, fin] de un video (los clips son ventanas del video del evento:
+// el partido completo o un tiempo). Si la VPS ya cortó el clip, `url` es el clip recortado con inicio 0.
 const props = defineProps({
   url: { type: String, default: '' },
   inicio: { type: Number, default: 0 },
