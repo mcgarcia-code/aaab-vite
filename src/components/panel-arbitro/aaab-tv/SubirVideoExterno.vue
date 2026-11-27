@@ -53,7 +53,14 @@
 
         <!-- Datos -->
         <div class="col-12 col-lg-6">
-          <label for="ext-titulo" class="form-label small fw-bold">Título *</label>
+          <label for="ext-situacion" class="form-label small fw-bold">Situación *</label>
+          <select id="ext-situacion" v-model="form.idBoton" class="form-select" :class="{ 'is-invalid': intento && !botonElegido }">
+            <option value="" disabled>Elegí la situación</option>
+            <option v-for="b in botones" :key="b.id" :value="b.id">{{ b.nombre }}</option>
+          </select>
+          <div class="invalid-feedback">Elegí la situación (son los botones de "Mi panel").</div>
+
+          <label for="ext-titulo" class="form-label small fw-bold mt-2">Título *</label>
           <input id="ext-titulo" v-model="form.titulo" type="text" maxlength="100" class="form-control"
                  :class="{ 'is-invalid': intento && !form.titulo.trim() }" placeholder="Ej: Falta en ataque del pivote">
           <div class="invalid-feedback">El video necesita un título.</div>
@@ -111,13 +118,13 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 // por fuera del análisis (ej. por WhatsApp) entero, como un solo clip, con el mismo circuito de canales.
 const emit = defineEmits(['publicado'])
 const toast = inject('toast')
-const { publicarVideoExterno, progresoSubida, publicaAutorizado } = useAaabTv()
-
-// No se elige situación: todos los videos externos llevan esta etiqueta en el portal
-const ETIQUETA_EXTERNO = { nombre: 'Video externo', color: 'gris' }
+const { botones, publicarVideoExterno, progresoSubida, publicaAutorizado } = useAaabTv()
 
 const hoy = () => new Date().toISOString().slice(0, 10)
-const formVacio = () => ({ titulo: '', descripcion: '', partido: '', fecha: hoy(), canales: ['publico'], decision: null, arbitros: [] })
+// idBoton: la situación, uno de los botones de "Mi panel" (el clip toma su nombre y su color)
+const formVacio = () => ({
+  idBoton: '', titulo: '', descripcion: '', partido: '', fecha: hoy(), canales: ['publico'], decision: null, arbitros: []
+})
 const conServidor = AAAB_TV_CON_SERVIDOR
 // El navegador no puede mostrar el video (HEVC, .mov): con servidor se sube igual y la VPS lo convierte
 const noSeVe = ref(false)
@@ -156,6 +163,8 @@ const alCargarMetadatos = (e) => {
   noSeVe.value = !duracion.value || !e.target.videoWidth
 }
 
+const botonElegido = computed(() => botones.value.find(b => b.id === form.idBoton) || null)
+
 const textoBoton = computed(() => {
   if (!subiendo.value) return 'Subir y publicar'
   const p = progresoSubida.value
@@ -164,7 +173,7 @@ const textoBoton = computed(() => {
 
 const publicar = async () => {
   intento.value = true
-  const valido = archivo.value && form.titulo.trim() && form.fecha && form.canales.length
+  const valido = archivo.value && botonElegido.value && form.titulo.trim() && form.fecha && form.canales.length
   if (!valido || subiendo.value) return
   // En la maqueta se necesita la duración que lee el navegador; con servidor la calcula la VPS
   if (noSeVe.value && !conServidor) {
@@ -177,8 +186,8 @@ const publicar = async () => {
       archivo: archivo.value,
       titulo: form.titulo,
       descripcion: form.descripcion,
-      etiqueta: ETIQUETA_EXTERNO.nombre,
-      color: ETIQUETA_EXTERNO.color,
+      etiqueta: botonElegido.value.nombre,
+      color: botonElegido.value.color,
       partido: form.partido,
       fecha: form.fecha,
       duracion: duracion.value,
