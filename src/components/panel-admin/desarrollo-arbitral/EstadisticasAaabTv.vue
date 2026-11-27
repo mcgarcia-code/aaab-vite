@@ -97,6 +97,38 @@
           <p v-if="porArbitro.length" class="small text-muted mt-1">Correctas / incorrectas / a revisar. Los 15 árbitros con más clips.</p>
         </section>
 
+        <!-- Datos de la jugada (si se cargaron al publicar o al revisar) -->
+        <section class="col-12 col-lg-6">
+          <h3 class="titulo-grafico">Clips por zona de la cancha</h3>
+          <p v-if="!porZona.length" class="small text-muted">Todavía no hay clips con la zona cargada.</p>
+          <div v-else class="barras">
+            <div v-for="f in porZona" :key="f.nombre" class="fila-barra" :title="`${f.nombre}: ${f.cantidad}`">
+              <span class="nombre text-truncate">{{ f.nombre }}</span>
+              <span class="pista"><span class="barra" :style="{ width: ancho(f.cantidad, porZona) }"></span></span>
+              <span class="numero">{{ f.cantidad }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="col-12 col-lg-6">
+          <h3 class="titulo-grafico">Sanción aplicada y la que correspondía</h3>
+          <p v-if="!sancionesDistintas.length" class="small text-muted">
+            No hay clips donde la sanción aplicada difiera de la que correspondía.
+          </p>
+          <div v-else class="table-responsive">
+            <table class="table table-sm align-middle mb-0 tabla-sanciones">
+              <thead>
+                <tr><th scope="col">Aplicada</th><th scope="col">Correspondía</th><th scope="col" class="text-end">Clips</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="s in sancionesDistintas" :key="`${s.aplicada}-${s.correspondia}`">
+                  <td>{{ s.aplicada }}</td><td>{{ s.correspondia }}</td><td class="text-end fw-bold">{{ s.cantidad }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         <section class="col-12 col-lg-6">
           <h3 class="titulo-grafico">Clips más vistos</h3>
           <p v-if="!masVistos.length" class="small text-muted">Todavía no hay vistas registradas en el período.</p>
@@ -127,7 +159,9 @@
 <script setup>
 import { ref, computed, inject } from 'vue'
 import EstadoVacio from '@/components/comunes/EstadoVacio.vue'
-import { DECISIONES, ESTADOS_DESTINO, estadoGeneral, formatearTiempo } from '@/composables/useAaabTv'
+import {
+  DECISIONES, ESTADOS_DESTINO, ZONAS_CANCHA, EQUIPOS, SANCIONES, estadoGeneral, formatearTiempo
+} from '@/composables/useAaabTv'
 import { pintarCeldaExcel, pintarCabeceraExcel, anchosColumnasExcel, descargarLibroExcel } from '@/composables/useExcelPlanilla'
 import { fechaArg } from '@/utils/fechas'
 
@@ -223,6 +257,21 @@ const decisionesPorArbitro = computed(() => {
 const porArbitro = computed(() => decisionesPorArbitro.value.slice(0, MAXIMO_ARBITROS))
 const maximoArbitro = computed(() => Math.max(1, ...porArbitro.value.map(a => a.total)))
 
+// Datos de la jugada: por zona, y las veces que la sanción aplicada no fue la que correspondía
+const porZona = computed(() => contar(clipsDelPeriodo.value, c => ZONAS_CANCHA[c.jugada?.zona]))
+const sancionesDistintas = computed(() => {
+  const mapa = new Map()
+  clipsDelPeriodo.value.forEach(c => {
+    const j = c.jugada
+    if (!j?.sancion || !j.sancionCorrecta || j.sancion === j.sancionCorrecta) return
+    const clave = `${j.sancion}|${j.sancionCorrecta}`
+    const fila = mapa.get(clave) || { aplicada: SANCIONES[j.sancion], correspondia: SANCIONES[j.sancionCorrecta], cantidad: 0 }
+    fila.cantidad++
+    mapa.set(clave, fila)
+  })
+  return [...mapa.values()].sort((a, b) => b.cantidad - a.cantidad)
+})
+
 // Los 10 clips con más vistas (cada persona cuenta una vez por clip)
 const masVistos = computed(() => clipsDelPeriodo.value
   .filter(c => c.cantidadVistas > 0)
@@ -288,12 +337,19 @@ const exportarExcel = async () => {
         porcentaje(a.correcta, a.correcta + a.incorrecta) ?? '—'
       ]), [32, 12, 12, 12, 10, 14])
 
+    agregarHoja(libro, 'Por zona', ['Zona de la cancha', 'Clips'],
+      porZona.value.map(f => [f.nombre, f.cantidad]), [32, 10])
+
+    agregarHoja(libro, 'Sanciones', ['Sanción aplicada', 'Correspondía', 'Clips'],
+      sancionesDistintas.value.map(s => [s.aplicada, s.correspondia, s.cantidad]), [32, 32, 10], [0, 1])
+
     agregarHoja(libro, 'Quién publica', ['Autor', 'Clips'],
       contar(clipsDelPeriodo.value, c => c.autor || 'Sin nombre').map(f => [f.nombre, f.cantidad]), [32, 10])
 
     agregarHoja(libro, 'Clips', [
       'Título', 'Situación', 'Partido', 'Fecha', 'Minuto', 'Duración', 'Origen', 'Publicó', 'Publicado el',
-      'Estado', 'Canales', 'Decisión', 'Árbitros involucrados', 'Vistas', 'Descripción'
+      'Estado', 'Canales', 'Decisión', 'Árbitros involucrados', 'Zona', 'Equipo', 'Sanción aplicada', 'Correspondía',
+      'Vistas', 'Descripción'
     ], [...clipsDelPeriodo.value]
       .sort((a, b) => String(b.publicadoEl || '').localeCompare(String(a.publicadoEl || '')))
       .map(c => [
@@ -310,9 +366,13 @@ const exportarExcel = async () => {
         c.destinos.map(d => `${d.nombre}: ${ESTADOS_DESTINO[d.estado]?.etiqueta || d.estado}`).join(' · '),
         DECISIONES[c.decision]?.etiqueta || 'Sin valorar',
         (c.arbitros || []).map(a => a.nombre).join(' · '),
+        ZONAS_CANCHA[c.jugada?.zona] || '',
+        EQUIPOS[c.jugada?.equipo] || '',
+        SANCIONES[c.jugada?.sancion] || '',
+        SANCIONES[c.jugada?.sancionCorrecta] || '',
         c.cantidadVistas || 0,
         c.descripcion || ''
-      ]), [36, 18, 28, 12, 9, 10, 14, 22, 18, 14, 40, 13, 34, 8, 50], [0, 1, 2, 7, 10, 12, 14])
+      ]), [36, 18, 28, 12, 9, 10, 14, 22, 18, 14, 40, 13, 34, 24, 12, 26, 26, 8, 50], [0, 1, 2, 7, 10, 12, 13, 15, 16, 18])
 
     const hoy = new Date().toISOString().slice(0, 10)
     await descargarLibroExcel(libro, `aaab-tv-estadisticas-${periodo.value === 'todo' ? 'todo' : `${periodo.value}-dias`}-${hoy}.xlsx`)
@@ -382,6 +442,8 @@ const exportarExcel = async () => {
 .mes { font-size: 0.7rem; color: var(--o-texto-suave, #64748b); }
 
 .leyenda { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.75rem; font-weight: 600; color: var(--o-texto-medio, #475569); }
+.tabla-sanciones { font-size: 0.8rem; }
+.tabla-sanciones th { font-size: 0.75rem; color: var(--o-texto-suave, #64748b); font-weight: 700; }
 .item-leyenda { display: inline-flex; align-items: center; gap: 4px; }
 .muestra { width: 10px; height: 10px; border-radius: 2px; }
 </style>

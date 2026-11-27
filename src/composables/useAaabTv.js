@@ -81,6 +81,39 @@ export const DECISIONES = {
   a_revisar: { etiqueta: 'A revisar', icono: 'bi-question-circle-fill', clase: 'estado-pendiente' }
 }
 
+// Datos de la jugada de un clip (todos opcionales): dónde pasó, qué equipo, qué sanción se aplicó
+// y cuál correspondía. Sirven para filtrar y para las estadísticas
+export const ZONAS_CANCHA = {
+  area: 'Área de 6 m',
+  entre_6_9: 'Entre 6 y 9 m',
+  mas_9: 'Más de 9 m',
+  mitad: 'Mitad de cancha / contraataque',
+  cambios: 'Zona de cambios / banco'
+}
+export const EQUIPOS = {
+  local: 'Local',
+  visitante: 'Visitante'
+}
+export const SANCIONES = {
+  ninguna: 'Sin sanción',
+  ventaja: 'Ventaja',
+  tiro_libre: 'Tiro libre',
+  siete_metros: '7 metros',
+  pasivo: 'Juego pasivo',
+  amonestacion: 'Amonestación (amarilla)',
+  exclusion: '2 minutos',
+  descalificacion: 'Descalificación (roja)',
+  descalificacion_informe: 'Descalificación con informe (azul)'
+}
+export const JUGADA_VACIA = () => ({ zona: null, equipo: null, sancion: null, sancionCorrecta: null })
+// Texto corto de la jugada para mostrar ("Área de 6 m · Local · 2 minutos (correspondía: Descalificación)")
+export const resumenJugada = (jugada) => {
+  if (!jugada) return ''
+  const partes = [ZONAS_CANCHA[jugada.zona], EQUIPOS[jugada.equipo], SANCIONES[jugada.sancion]].filter(Boolean)
+  const distinta = jugada.sancionCorrecta && jugada.sancionCorrecta !== jugada.sancion
+  return `${partes.join(' · ')}${distinta ? ` (correspondía: ${SANCIONES[jugada.sancionCorrecta]})` : ''}`
+}
+
 const nuevoId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 
 const leer = (clave, defecto) => {
@@ -253,6 +286,17 @@ const videosDeSesion = reactive({})
 const vistasRegistradas = new Set()
 // Subida del video al publicar: null = no hay subida; 0..1 = fracción subida
 const progresoSubida = ref(null)
+// Subida en curso: se puede cancelar (se detiene después de la parte que está subiendo)
+let controlSubida = null
+// Mientras se sube un video, cerrar o recargar la pestaña pide confirmación
+const avisarAlSalir = (e) => {
+  e.preventDefault()
+  e.returnValue = ''
+}
+watch(progresoSubida, (valor, anterior) => {
+  if (valor !== null && anterior === null) window.addEventListener('beforeunload', avisarAlSalir)
+  if (valor === null && anterior !== null) window.removeEventListener('beforeunload', avisarAlSalir)
+})
 
 const cargarEn = async (destino, cargando, listar) => {
   if (cargando) cargando.value = true
@@ -543,6 +587,7 @@ export function useAaabTv() {
     if (!archivoVideo) return { ok: false, message: 'Cargá el video para poder publicar los clips.' }
     if (!destinos?.length) return { ok: false, message: 'Elegí al menos un canal.' }
     progresoSubida.value = 0
+    controlSubida = { cancelado: false }
     try {
       // Solo las cámaras sincronizadas y con su archivo elegido: sin eso no se sabe qué cortar
       const camarasListas = sesion.camaras
@@ -562,7 +607,8 @@ export function useAaabTv() {
           // Inicio y fin ya ajustados por el usuario (antes / después del momento marcado)
           ...limitesDeTag(c, video.duracion)
         })),
-        alProgresar: (fraccion) => { progresoSubida.value = fraccion }
+        alProgresar: (fraccion) => { progresoSubida.value = fraccion },
+        control: controlSubida
       })
       if (!res?.ok) return res
       const nuevos = Array.isArray(res.payload?.clips) ? res.payload.clips : []
@@ -583,16 +629,18 @@ export function useAaabTv() {
       return { ok: true, payload: res.payload?.cantidad ?? nuevos.length }
     } finally {
       progresoSubida.value = null
+      controlSubida = null
     }
   }
 
   // Video externo (pestaña "Subir video"): una jugada que llegó por fuera del análisis, por ejemplo
   // por WhatsApp. Se sube entero y queda como un solo clip, pendiente en cada canal elegido.
   // archivo: File del video; duracion: segundos (la lee el navegador). Devuelve { ok, payload: clip, message }
-  const publicarVideoExterno = async ({ archivo, titulo, descripcion, etiqueta, color, partido, fecha, duracion, destinos, decision, arbitros }) => {
+  const publicarVideoExterno = async ({ archivo, titulo, descripcion, etiqueta, color, partido, fecha, duracion, destinos, decision, arbitros, jugada }) => {
     if (!puedePublicar.value) return { ok: false, message: 'Solo coordinadores y observadores pueden subir videos.' }
     if (!destinos?.length) return { ok: false, message: 'Elegí al menos un canal.' }
     progresoSubida.value = 0
+    controlSubida = { cancelado: false }
     try {
       const res = await repoClips.publicarVideoExterno({
         archivo,
@@ -606,7 +654,9 @@ export function useAaabTv() {
         destinos,
         decision,
         arbitros,
-        alProgresar: (fraccion) => { progresoSubida.value = fraccion }
+        jugada,
+        alProgresar: (fraccion) => { progresoSubida.value = fraccion },
+        control: controlSubida
       })
       if (!res?.ok) return res
       const clip = res.payload?.clips?.[0]
@@ -617,7 +667,13 @@ export function useAaabTv() {
       return { ok: true, payload: clip }
     } finally {
       progresoSubida.value = null
+      controlSubida = null
     }
+  }
+
+  // Cancela la subida en curso (se detiene después de la parte que está subiendo)
+  const cancelarSubida = () => {
+    if (controlSubida) controlSubida.cancelado = true
   }
 
   // El autor borra su clip mientras está pendiente
@@ -668,9 +724,10 @@ export function useAaabTv() {
     return res
   }
   // destinos: [{ idGrupo, estado }]; decision: clave de DECISIONES o null; arbitros: [{ id, nombre }]
-  const editarClip = async (id, { titulo, descripcion, decision, arbitros, destinos }) => {
+  const editarClip = async (id, { titulo, descripcion, decision, arbitros, jugada, destinos }) => {
     const res = await repoClips.editarClip({
-      id, titulo: titulo.trim(), descripcion: descripcion.trim(), decision: decision || null, arbitros: arbitros || [], destinos
+      id, titulo: titulo.trim(), descripcion: descripcion.trim(), decision: decision || null, arbitros: arbitros || [],
+      jugada: jugada || null, destinos
     })
     if (res?.ok && res.payload?.id) actualizarEnVistas(res.payload)
     return res
@@ -752,7 +809,7 @@ export function useAaabTv() {
     marcarTag, borrarTag, moverTag, ajustarTag, fijarTag,
     iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion,
     eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento,
-    gruposPublicacion, cargarGruposPublicacion, publicarClips, publicarVideoExterno, progresoSubida, borrarClipPublicado,
+    gruposPublicacion, cargarGruposPublicacion, publicarClips, publicarVideoExterno, progresoSubida, cancelarSubida, borrarClipPublicado,
     puedePublicar, publicaAutorizado, clipsVisibles, cargandoClips, cargarClips, canales, cargarCanales, tramoDe,
     clipsModeracion, cargandoModeracion, cargarClipsModeracion, cambiarEstadoDestino, editarClip, guardarAnotaciones,
     listarComentarios, agregarComentario, borrarComentario, registrarVista, listarVistas,

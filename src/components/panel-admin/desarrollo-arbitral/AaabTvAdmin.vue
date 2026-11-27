@@ -144,6 +144,7 @@
               <SelectorArbitros id="clip-admin-arbitros" v-model="form.arbitros" />
             </div>
           </div>
+          <DatosJugada id="clip-admin-jugada" v-model="form.jugada" />
 
           <span class="form-label small fw-bold d-block mt-3">Autorización por canal</span>
           <div v-for="d in form.destinos" :key="claveCanal(d.idGrupo)" class="destino-form">
@@ -195,6 +196,7 @@ import EstadisticasAaabTv from '@/components/panel-admin/desarrollo-arbitral/Est
 import PestanasSeccion from '@/components/comunes/PestanasSeccion.vue'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
 import SelectorArbitros from '@/components/SelectorArbitros.vue'
+import DatosJugada from '@/components/panel-arbitro/aaab-tv/DatosJugada.vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   useAaabTv, ESTADOS_DESTINO, DECISIONES, claveCanal, estadoGeneral, colorTag, formatearTiempo
@@ -301,7 +303,7 @@ const cambiar = async (clip, destino, estado) => {
 const editando = ref(null)
 const intento = ref(false)
 const guardando = ref(false)
-const form = reactive({ titulo: '', descripcion: '', decision: null, arbitros: [], destinos: [] })
+const form = reactive({ titulo: '', descripcion: '', decision: null, arbitros: [], jugada: null, destinos: [] })
 
 const abrir = (clip) => {
   editando.value = clip
@@ -310,6 +312,7 @@ const abrir = (clip) => {
     descripcion: clip.descripcion || '',
     decision: clip.decision ?? null,
     arbitros: [...(clip.arbitros || [])],
+    jugada: clip.jugada ? { ...clip.jugada } : null,
     destinos: clip.destinos.map(d => ({ ...d }))
   })
   intento.value = false
@@ -321,6 +324,7 @@ const hayCambios = computed(() => !!editando.value && (
   form.descripcion !== (editando.value.descripcion || '') ||
   form.decision !== (editando.value.decision ?? null) ||
   idsArbitros(form.arbitros) !== idsArbitros(editando.value.arbitros) ||
+  JSON.stringify(form.jugada || null) !== JSON.stringify(editando.value.jugada || null) ||
   form.destinos.some((d, i) => d.estado !== editando.value.destinos[i]?.estado)
 ))
 
@@ -361,6 +365,7 @@ const guardar = async () => {
       descripcion: form.descripcion,
       decision: form.decision,
       arbitros: form.arbitros,
+      jugada: form.jugada,
       destinos: form.destinos.map(d => ({ idGrupo: d.idGrupo, estado: d.estado }))
     })
     if (!res?.ok) {

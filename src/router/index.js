@@ -276,6 +276,10 @@ router.beforeEach(async (to, from, next) => {
     }
 
     if (to.path.startsWith('/panel-arbitro') && esAutoridad) {
+      // Enlace directo a un clip de AAAB TV: la autoridad lo abre en su pestaña AAAB TV del panel admin
+      if (to.path.startsWith('/panel-arbitro/aaab-tv') && to.query.clip) {
+        return next({ path: '/panel-admin/desarrollo-arbitral/aaab-tv', query: { vista: 'tv', clip: to.query.clip } })
+      }
       return next('/panel-admin')
     }
 

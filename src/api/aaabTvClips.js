@@ -68,6 +68,8 @@ import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 //         angulos: [{ nombre, urlVideo, urlHls }], anotaciones: [anotación], destinos: [{ idGrupo, nombre, estado }] }
 //   origen: 'analisis' (cortado de un partido) | 'externo' (video subido entero desde "Subir video")
 //   decision: 'correcta' | 'incorrecta' | 'a_revisar' | null (valoración de la decisión arbitral del clip)
+//   jugada: { zona, equipo, sancion, sancionCorrecta } | null — datos de la jugada (claves de ZONAS_CANCHA, EQUIPOS
+//     y SANCIONES en composables/useAaabTv.js; cada uno puede ser null). sancionCorrecta: la que correspondía
 //   estado de cada destino: 'pendiente' | 'autorizado' | 'no_autorizado'
 //   anotación (dibujo sobre el video): { id, segundo, formas: [{ tipo: 'flecha'|'linea'|'circulo'|'libre', color, puntos: [[x, y]] }] }
 //     segundo: dentro del clip (desde su inicio); x e y entre 0 y 1 (proporción del cuadro)
@@ -125,8 +127,14 @@ const listarGrupos = async () => {
 const huellaDe = (archivo) => `${archivo.name}|${archivo.size}|${archivo.lastModified}`
 
 // ─── Subida de un video a la VPS, por partes ──────────────────
-// alProgresar(fraccion 0..1). Devuelve { ok, payload: { idVideo }, message }
-const subirVideo = async (archivo, alProgresar) => {
+// alProgresar(fraccion 0..1). control: { cancelado } — si se pone en true, la subida se detiene
+// después de la parte en curso (lo que ya subió queda en la VPS y se retoma al volver a publicar).
+// Devuelve { ok, payload: { idVideo }, message } o { ok: false, cancelado: true, message }
+const SUBIDA_CANCELADA = {
+  ok: false, payload: null, cancelado: true,
+  message: 'Subida cancelada. Si volvés a publicar el mismo video, sigue desde donde quedó.'
+}
+const subirVideo = async (archivo, alProgresar, control = {}) => {
   const pedirPermiso = () => api.post({
     entity: ENTIDAD,
     action: 'iniciarSubida',
@@ -161,6 +169,7 @@ const subirVideo = async (archivo, alProgresar) => {
 
   const totalPartes = Math.max(1, Math.ceil(archivo.size / tamanioParte))
   for (let numero = 0; numero < totalPartes; numero++) {
+    if (control.cancelado) return SUBIDA_CANCELADA
     if (!recibidas.has(numero)) {
       const parte = archivo.slice(numero * tamanioParte, (numero + 1) * tamanioParte)
       let res = null
@@ -179,6 +188,7 @@ const subirVideo = async (archivo, alProgresar) => {
     alProgresar?.((numero + 1) / totalPartes)
   }
 
+  if (control.cancelado) return SUBIDA_CANCELADA
   const fin = await enVps(destino => api.post({ entity: ENTIDAD_VPS, action: 'completarSubida', payload: { idVideo } }, destino))
   if (!fin?.ok) return fin
   return { ok: true, payload: { idVideo } }
@@ -186,12 +196,12 @@ const subirVideo = async (archivo, alProgresar) => {
 
 // Sube varios videos uno detrás de otro (la cámara principal y las extra), con un solo progreso
 // pesado por tamaño. Devuelve { ok, payload: [idVideo, ...] en el mismo orden }
-const subirVideos = async (archivos, alProgresar) => {
+const subirVideos = async (archivos, alProgresar, control = {}) => {
   const total = archivos.reduce((s, a) => s + a.size, 0) || 1
   let hecho = 0
   const ids = []
   for (const archivo of archivos) {
-    const res = await subirVideo(archivo, (f) => alProgresar?.((hecho + f * archivo.size) / total))
+    const res = await subirVideo(archivo, (f) => alProgresar?.((hecho + f * archivo.size) / total), control)
     if (!res?.ok) return res
     hecho += archivo.size
     ids.push(res.payload.idVideo)
@@ -215,8 +225,8 @@ const conServidor = {
   borrarClip: (id) => enviar('borrarClip', { id }),
 
   listarClipsAdmin: async () => comoLista(await pedir('listarClipsAdmin')),
-  editarClip: ({ id, titulo, descripcion, decision, arbitros, destinos }) =>
-    enviar('editarClip', { id, titulo, descripcion, decision, arbitros: idsDe(arbitros), destinos }),
+  editarClip: ({ id, titulo, descripcion, decision, arbitros, jugada, destinos }) =>
+    enviar('editarClip', { id, titulo, descripcion, decision, arbitros: idsDe(arbitros), jugada: jugada || null, destinos }),
   cambiarEstadoDestino: (id, idGrupo, estado) => enviar('cambiarEstadoDestino', { id, idGrupo, estado }),
   guardarAnotaciones: (idClip, anotaciones) => enviar('guardarAnotaciones', { idClip, anotaciones }),
 
@@ -240,8 +250,8 @@ const conServidor = {
 
 
   // archivo: el video del evento (partido completo o un tiempo); camaras: [{ archivo, nombre, desfase }]
-  publicarClips: async ({ archivo, camaras = [], partido, fecha, idEvento, destinos, clips, alProgresar }) => {
-    const subida = await subirVideos([archivo, ...camaras.map(c => c.archivo)], alProgresar)
+  publicarClips: async ({ archivo, camaras = [], partido, fecha, idEvento, destinos, clips, alProgresar, control }) => {
+    const subida = await subirVideos([archivo, ...camaras.map(c => c.archivo)], alProgresar, control)
     if (!subida?.ok) return subida
     const [idVideo, ...idsCamaras] = subida.payload
     return enviar('publicarClips', {
@@ -253,18 +263,18 @@ const conServidor = {
       camaras: camaras.map((c, i) => ({ idVideo: idsCamaras[i], nombre: c.nombre, desfase: c.desfase })),
       clips: clips.map(c => ({
         idTag: c.id, inicio: c.inicio, fin: c.fin, titulo: c.titulo, descripcion: c.descripcion,
-        etiqueta: c.nombre, color: c.color, decision: c.decision || null, arbitros: idsDe(c.arbitros)
+        etiqueta: c.nombre, color: c.color, decision: c.decision || null, arbitros: idsDe(c.arbitros), jugada: c.jugada || null
       }))
     })
   },
 
   // Video externo (ej. una jugada que llegó por WhatsApp): se sube entero y es un solo clip
-  publicarVideoExterno: async ({ archivo, titulo, descripcion, etiqueta, color, partido, fecha, destinos, decision, arbitros, alProgresar }) => {
-    const subida = await subirVideo(archivo, alProgresar)
+  publicarVideoExterno: async ({ archivo, titulo, descripcion, etiqueta, color, partido, fecha, destinos, decision, arbitros, jugada, alProgresar, control }) => {
+    const subida = await subirVideo(archivo, alProgresar, control)
     if (!subida?.ok) return subida
     return enviar('publicarVideoExterno', {
       idVideo: subida.payload.idVideo, titulo, descripcion, etiqueta, color, partido, fecha, destinos,
-      decision: decision || null, arbitros: idsDe(arbitros)
+      decision: decision || null, arbitros: idsDe(arbitros), jugada: jugada || null
     })
   },
 
@@ -326,6 +336,17 @@ const escribir = (clave, valor) => {
   }
 }
 const nuevoId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+
+// Maqueta: una "subida" de ~1,5 s con progreso, que se puede cancelar. Devuelve false si se canceló
+const simularSubida = async (alProgresar, control = {}) => {
+  const PASOS = 10
+  for (let paso = 1; paso <= PASOS; paso++) {
+    if (control.cancelado) return false
+    await new Promise(r => setTimeout(r, 150))
+    alProgresar?.(paso / PASOS)
+  }
+  return !control.cancelado
+}
 const nombreDe = (u) => `${u.nombre || ''} ${u.apellido || ''}`.trim()
 const ahoraIso = () => new Date().toISOString()
 
@@ -440,8 +461,8 @@ const enNavegador = (clavePanel, claveListas) => {
         payload: leerClips().map(c => ({ ...c, cantidadVistas: (vistas[c.id] || []).length, vistoPorMi: vioElClip(vistas, c.id) }))
       }
     },
-    editarClip: async ({ id, titulo, descripcion, decision, arbitros, destinos }) => modificarClip(id, (clip) => {
-      Object.assign(clip, { titulo, descripcion, decision: decision || null, arbitros: arbitros || [] })
+    editarClip: async ({ id, titulo, descripcion, decision, arbitros, jugada, destinos }) => modificarClip(id, (clip) => {
+      Object.assign(clip, { titulo, descripcion, decision: decision || null, arbitros: arbitros || [], jugada: jugada || null })
       clip.destinos = clip.destinos.map(d => {
         const cambio = destinos.find(x => String(x.idGrupo) === String(d.idGrupo))
         return cambio ? { ...d, estado: cambio.estado } : d
@@ -528,24 +549,22 @@ const enNavegador = (clavePanel, claveListas) => {
 
 
     // En la maqueta no se sube nada: cada clip lleva inicio y fin dentro del video local
-    publicarClips: async ({ partido, fecha, destinos, clips, alProgresar }) => {
-      await new Promise(r => setTimeout(r, 900))
-      alProgresar?.(1)
+    publicarClips: async ({ partido, fecha, destinos, clips, alProgresar, control }) => {
+      if (!(await simularSubida(alProgresar, control))) return SUBIDA_CANCELADA
       const nuevos = await Promise.all(clips.map(c => armarClip({
         titulo: c.titulo, descripcion: c.descripcion, etiqueta: c.nombre, color: c.color,
         partido, fecha, inicio: c.inicio, fin: c.fin, origen: 'analisis',
-        decision: c.decision || null, arbitros: c.arbitros || []
+        decision: c.decision || null, arbitros: c.arbitros || [], jugada: c.jugada || null
       }, destinos)))
       return guardarNuevos(nuevos)
     },
 
     // Video externo: un solo clip con el video entero
-    publicarVideoExterno: async ({ titulo, descripcion, etiqueta, color, partido, fecha, duracion, destinos, decision, arbitros, alProgresar }) => {
-      await new Promise(r => setTimeout(r, 900))
-      alProgresar?.(1)
+    publicarVideoExterno: async ({ titulo, descripcion, etiqueta, color, partido, fecha, duracion, destinos, decision, arbitros, jugada, alProgresar, control }) => {
+      if (!(await simularSubida(alProgresar, control))) return SUBIDA_CANCELADA
       const clip = await armarClip({
         titulo, descripcion, etiqueta, color, partido, fecha, inicio: 0, fin: duracion, origen: 'externo',
-        decision: decision || null, arbitros: arbitros || []
+        decision: decision || null, arbitros: arbitros || [], jugada: jugada || null
       }, destinos)
       return guardarNuevos([clip])
     },

@@ -185,21 +185,23 @@ const calidades = ref([])   // [{ indice, alto }]
 const calidad = ref(-1)     // -1 = automática
 
 const soltarHls = () => {
-  if (hls) { hls.destroy(); hls = null }
+  if (hls) {
+    hls.destroy()
+    hls = null
+  }
   calidades.value = []
   calidad.value = -1
 }
 
+// HLS: se usa hls.js siempre que el navegador lo soporte (también Safari en Mac, iPad y los iPhone
+// recientes), así hay selector de calidad en todos. Si no, el HLS propio del navegador (sin selector),
+// y si tampoco, el MP4
 const cargarFuente = async () => {
   soltarHls()
   await nextTick()
   const v = videoRef.value
   if (!v) return
   const { url, urlHls } = fuente.value
-  if (urlHls && v.canPlayType('application/vnd.apple.mpegurl')) {
-    v.src = urlHls   // Safari y iPhone reproducen HLS solos
-    return
-  }
   if (urlHls) {
     const { default: Hls } = await import('hls.js')
     if (Hls.isSupported()) {
@@ -212,6 +214,10 @@ const cargarFuente = async () => {
       })
       hls.loadSource(urlHls)
       hls.attachMedia(v)
+      return
+    }
+    if (v.canPlayType('application/vnd.apple.mpegurl')) {
+      v.src = urlHls
       return
     }
   }
@@ -246,19 +252,45 @@ const alCargar = () => {
 // Al llegar al segundo de un dibujo guardado, pausa y lo muestra
 const anotacionVisible = ref(null)
 let ultimaPosicion = 0
+
+// Si el video pasó por el segundo de un dibujo guardado, lo pausa ahí y lo muestra
+const revisarDibujos = (pos) => {
+  const v = videoRef.value
+  if (!v || v.paused || dibujando.value) return false
+  const alcanzada = props.anotaciones.find(a => a.segundo > ultimaPosicion && a.segundo <= pos + 0.02)
+  if (!alcanzada) return false
+  v.pause()
+  moverA(alcanzada.segundo)
+  anotacionVisible.value = alcanzada
+  ultimaPosicion = alcanzada.segundo
+  return true
+}
+
+// Revisión cuadro por cuadro (requestVideoFrameCallback): frena justo en el dibujo. Sin ese soporte
+// del navegador, alcanza con el aviso de avance del video (unas 4 veces por segundo)
+let idVigilancia = null
+const dejarDeVigilar = () => {
+  if (idVigilancia !== null) videoRef.value?.cancelVideoFrameCallback?.(idVigilancia)
+  idVigilancia = null
+}
+const vigilarDibujos = () => {
+  const v = videoRef.value
+  dejarDeVigilar()
+  if (!v?.requestVideoFrameCallback || !props.anotaciones.length) return
+  idVigilancia = v.requestVideoFrameCallback((_ahora, datos) => {
+    idVigilancia = null
+    const pos = Math.max(0, datos.mediaTime - fuente.value.inicio)
+    if (revisarDibujos(pos)) return
+    ultimaPosicion = pos
+    if (!v.paused) vigilarDibujos()
+  })
+}
+
 const alAvanzar = () => {
   const v = videoRef.value
   actual.value = v.currentTime
   const pos = posicion.value
-  if (!v.paused && !dibujando.value) {
-    const alcanzada = props.anotaciones.find(a => a.segundo > ultimaPosicion && a.segundo <= pos + 0.05)
-    if (alcanzada) {
-      v.pause()
-      moverA(alcanzada.segundo)
-      anotacionVisible.value = alcanzada
-    }
-  }
-  ultimaPosicion = pos
+  if (!revisarDibujos(pos)) ultimaPosicion = pos
   // Se cuenta como visto con 3 segundos reproducidos (o la mitad, si el clip es más corto)
   if (!vistoAvisado && !v.paused && pos >= Math.min(3, duracion.value / 2)) {
     vistoAvisado = true
@@ -277,6 +309,7 @@ const alAvanzar = () => {
 const alReproducir = () => {
   reproduciendo.value = true
   anotacionVisible.value = null
+  vigilarDibujos()
 }
 
 const alternar = () => {
@@ -379,6 +412,7 @@ const irA = (segundo) => {
 defineExpose({ irA })
 
 onBeforeUnmount(() => {
+  dejarDeVigilar()
   videoRef.value?.pause()
   soltarHls()
 })

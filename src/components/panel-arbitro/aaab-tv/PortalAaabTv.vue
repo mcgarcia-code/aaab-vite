@@ -142,6 +142,9 @@
         <p v-if="clipAbierto.arbitros?.length" class="small mt-2 mb-0">
           <i class="bi bi-person-badge" aria-hidden="true"></i> <strong>Árbitros:</strong> {{ clipAbierto.arbitros.map(a => a.nombre).join(' · ') }}
         </p>
+        <p v-if="resumenJugada(clipAbierto.jugada)" class="small mt-1 mb-0">
+          <i class="bi bi-geo-alt" aria-hidden="true"></i> <strong>Jugada:</strong> {{ resumenJugada(clipAbierto.jugada) }}
+        </p>
         <p class="mt-2 mb-0 texto-pre-line">{{ clipAbierto.descripcion || 'Sin descripción.' }}</p>
         <p v-if="clipAbierto.autor" class="small text-muted mt-2 mb-0">Publicado por {{ clipAbierto.autor }}</p>
         <p v-if="esPropio(clipAbierto) && clipAbierto.destinos.some(d => d.estado === 'pendiente')" class="small text-muted mt-1 mb-0">
@@ -207,7 +210,7 @@ import EstadoCargando from '@/components/comunes/EstadoCargando.vue'
 import ReproductorClip from '@/components/panel-arbitro/aaab-tv/ReproductorClip.vue'
 import ComentariosClip from '@/components/panel-arbitro/aaab-tv/ComentariosClip.vue'
 import BarraPaginacion from '@/components/comunes/BarraPaginacion.vue'
-import { useAaabTv, colorTag, formatearTiempo, ESTADOS_DESTINO, DECISIONES, claveCanal } from '@/composables/useAaabTv'
+import { useAaabTv, colorTag, formatearTiempo, ESTADOS_DESTINO, DECISIONES, claveCanal, resumenJugada } from '@/composables/useAaabTv'
 import { usePaginacion } from '@/composables/usePaginacion'
 import { NOMBRE_CANAL_PUBLICO, esUsuarioActual, estaInvolucrado } from '@/api/aaabTvClips'
 import { normalizarTexto } from '@/utils/texto'

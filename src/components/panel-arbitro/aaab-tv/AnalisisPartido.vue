@@ -365,12 +365,17 @@
               <span class="small text-muted">Lo ven en "Mis clips" cuando se autoriza.</span>
             </div>
           </div>
+          <DatosJugada v-model="c.jugada" :id="'pub-jugada-' + c.id" />
         </div>
       </form>
 
       <template #footer>
         <div class="d-flex gap-2 justify-content-end w-100">
-          <button type="button" class="btn btn-light border rounded-pill px-4 fw-bold" :disabled="publicando" @click="mostrarPublicar = false">Cancelar</button>
+          <!-- Mientras sube el video se puede cancelar (lo subido queda: al volver a publicar sigue desde ahí) -->
+          <button v-if="subiendoVideo" type="button" class="btn btn-outline-danger rounded-pill px-4 fw-bold" @click="cancelarSubida">
+            Cancelar subida
+          </button>
+          <button v-else type="button" class="btn btn-light border rounded-pill px-4 fw-bold" :disabled="publicando" @click="mostrarPublicar = false">Cancelar</button>
           <button type="submit" form="form-publicar" class="btn btn-danger rounded-pill fw-bold px-4" :disabled="publicando">
             <span v-if="publicando" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
             {{ textoBotonPublicar }}
@@ -446,6 +451,7 @@ import SelectorCanales from '@/components/panel-arbitro/aaab-tv/SelectorCanales.
 import CamarasPartido from '@/components/panel-arbitro/aaab-tv/CamarasPartido.vue'
 import LineaTiempoPistas from '@/components/panel-arbitro/aaab-tv/LineaTiempoPistas.vue'
 import SelectorArbitros from '@/components/SelectorArbitros.vue'
+import DatosJugada from '@/components/panel-arbitro/aaab-tv/DatosJugada.vue'
 
 const emit = defineEmits(['publicado'])
 const toast = inject('toast')
@@ -454,7 +460,7 @@ const notificar = inject('notificar')
 const {
   botones, sesion, video, archivoCamara, segundosReloj, tagsOrdenados, tagsSinSincronizar,
   cargarVideo, archivoDelVideo, marcarTag, borrarTag, moverTag, ajustarTag, puedePublicar,
-  iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion, publicarClips, progresoSubida, publicaAutorizado,
+  iniciarReloj, pausarReloj, reiniciarReloj, sincronizar, nuevaSesion, publicarClips, progresoSubida, cancelarSubida, publicaAutorizado,
   eventos, cargandoEventos, cargarEventos, hayCambiosSinGuardar, guardarEvento, abrirEvento, borrarEvento
 } = useAaabTv()
 
@@ -810,6 +816,8 @@ const textoBotonPublicar = computed(() => {
   const p = progresoSubida.value
   return p !== null && p < 1 ? `Subiendo video ${Math.floor(p * 100)}%...` : 'Publicando...'
 })
+// Se puede cancelar mientras el video todavía se está subiendo
+const subiendoVideo = computed(() => publicando.value && progresoSubida.value !== null && progresoSubida.value < 1)
 
 const abrirPublicar = () => {
   if (!video.url) {
@@ -819,7 +827,9 @@ const abrirPublicar = () => {
   formPublicar.partido = sesion.partido
   formPublicar.fecha = sesion.fecha
   // Los tags viejos no tienen valoración ni árbitros: se completan para el formulario
-  formPublicar.clips = seleccionados.value.map(t => ({ ...t, decision: t.decision ?? null, arbitros: [...(t.arbitros || [])] }))
+  formPublicar.clips = seleccionados.value.map(t => ({
+    ...t, decision: t.decision ?? null, arbitros: [...(t.arbitros || [])], jugada: t.jugada ? { ...t.jugada } : null
+  }))
   intentoPublicar.value = false
   mostrarPublicar.value = true
 }
@@ -837,6 +847,10 @@ const publicar = async () => {
       destinos: formPublicar.canales.map(idGrupoDeClave),
       clips: formPublicar.clips
     })
+    if (res?.cancelado) {
+      toast({ tipo: 'warning', titulo: 'Subida cancelada', mensaje: res.message })
+      return
+    }
     if (!res.ok) throw new Error(res.message)
     sesion.partido = formPublicar.partido.trim()
     mostrarPublicar.value = false

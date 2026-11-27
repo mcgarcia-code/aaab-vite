@@ -90,13 +90,19 @@
           <span class="form-label small fw-bold d-block mt-2">Árbitros involucrados</span>
           <SelectorArbitros id="ext-arbitros" v-model="form.arbitros" />
           <span class="small text-muted">Lo ven en "Mis clips" cuando se autoriza.</span>
+
+          <DatosJugada id="ext-jugada" v-model="form.jugada" />
         </div>
 
         <div class="col-12">
           <SelectorCanales v-model="form.canales" :invalido="intento && !form.canales.length" />
         </div>
 
-        <div class="col-12 d-flex justify-content-end">
+        <div class="col-12 d-flex flex-wrap justify-content-end gap-2">
+          <!-- Mientras sube el video se puede cancelar (lo subido queda: al volver a publicar sigue desde ahí) -->
+          <button v-if="subiendoVideo" type="button" class="btn btn-outline-danger rounded-pill fw-bold px-4" @click="cancelarSubida">
+            Cancelar subida
+          </button>
           <button type="submit" class="btn btn-danger rounded-pill fw-bold px-4 boton-publicar" :disabled="subiendo">
             <span v-if="subiendo" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
             <i v-else class="bi bi-broadcast" aria-hidden="true"></i> {{ textoBoton }}
@@ -112,18 +118,19 @@ import { ref, reactive, computed, inject, onBeforeUnmount } from 'vue'
 import { useAaabTv, formatearTiempo, idGrupoDeClave, DECISIONES } from '@/composables/useAaabTv'
 import SelectorCanales from '@/components/panel-arbitro/aaab-tv/SelectorCanales.vue'
 import SelectorArbitros from '@/components/SelectorArbitros.vue'
+import DatosJugada from '@/components/panel-arbitro/aaab-tv/DatosJugada.vue'
 import { AAAB_TV_CON_SERVIDOR } from '@/api/aaabTvEventos'
 
 // Pestaña "Subir video" del Estudio (solo observadores y coordinadores): publica un video que llegó
 // por fuera del análisis (ej. por WhatsApp) entero, como un solo clip, con el mismo circuito de canales.
 const emit = defineEmits(['publicado'])
 const toast = inject('toast')
-const { botones, publicarVideoExterno, progresoSubida, publicaAutorizado } = useAaabTv()
+const { botones, publicarVideoExterno, progresoSubida, cancelarSubida, publicaAutorizado } = useAaabTv()
 
 const hoy = () => new Date().toISOString().slice(0, 10)
 // idBoton: la situación, uno de los botones de "Mi panel" (el clip toma su nombre y su color)
 const formVacio = () => ({
-  idBoton: '', titulo: '', descripcion: '', partido: '', fecha: hoy(), canales: ['publico'], decision: null, arbitros: []
+  idBoton: '', titulo: '', descripcion: '', partido: '', fecha: hoy(), canales: ['publico'], decision: null, arbitros: [], jugada: null
 })
 const conServidor = AAAB_TV_CON_SERVIDOR
 // El navegador no puede mostrar el video (HEVC, .mov): con servidor se sube igual y la VPS lo convierte
@@ -165,6 +172,9 @@ const alCargarMetadatos = (e) => {
 
 const botonElegido = computed(() => botones.value.find(b => b.id === form.idBoton) || null)
 
+// Se puede cancelar mientras el video todavía se está subiendo
+const subiendoVideo = computed(() => subiendo.value && progresoSubida.value !== null && progresoSubida.value < 1)
+
 const textoBoton = computed(() => {
   if (!subiendo.value) return 'Subir y publicar'
   const p = progresoSubida.value
@@ -193,8 +203,13 @@ const publicar = async () => {
       duracion: duracion.value,
       destinos: form.canales.map(idGrupoDeClave),
       decision: form.decision,
-      arbitros: form.arbitros
+      arbitros: form.arbitros,
+      jugada: form.jugada
     })
+    if (res?.cancelado) {
+      toast({ tipo: 'warning', titulo: 'Subida cancelada', mensaje: res.message })
+      return
+    }
     if (!res?.ok) {
       toast({ tipo: 'danger', titulo: 'No se pudo subir', mensaje: res?.message || 'Intentá de nuevo.' })
       return
